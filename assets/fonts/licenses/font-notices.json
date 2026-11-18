@@ -669,6 +669,32 @@
   ],
   "repositoryOnlyFonts": [
     {
+      "repositoryPath": "tests/fixtures/fonts/RHWPNativeContainer.ttf",
+      "sha256": "a83760f59c9621a92ea17d86869cf8433030612e03d119a33efdc8347ae65bd1",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "assets/fonts/licenses/NotoSansKR-OFL.txt",
+        "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md"
+      ],
+      "copyrightNotices": [
+        "(c) 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+      ],
+      "provenance": "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md"
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/RHWPNativeContainer.ttc",
+      "sha256": "9d7f153357374b2c855cf1de114b0c36a3c2249e6fb28a14e7337700b5129530",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "assets/fonts/licenses/NotoSansKR-OFL.txt",
+        "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md"
+      ],
+      "copyrightNotices": [
+        "(c) 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+      ],
+      "provenance": "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md"
+    },
+    {
       "repositoryPath": "tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf",
       "sha256": "ba3121428c49e4ce8d2bf06e9977e126ee08e51dc6b4a840701a1945df3b2e84",
       "license": "MIT",
@@ -773,6 +799,18 @@
       "license": "MIT",
       "licenseFiles": [
         "LICENSE"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ]
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHostFixture-Preferred.ttf",
+      "sha256": "3b94fcb46b425f2f2c3b4bbba2abdf352b3f5a4d5187a4574d7182b4f75887f6",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE",
+        "tests/fixtures/fonts/RHWPHostFixture.LICENSE.md"
       ],
       "copyrightNotices": [
         "Copyright (c) 2025-2026 Edward Kim"

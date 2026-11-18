@@ -140,6 +140,40 @@ impl FormattedParagraph {
         bottom
     }
 
+    /// 원본 줄 사이의 부동 개체 공간을 같은 줄 프레임으로 측정·배치한다.
+    /// 재조판·다른 줄 메트릭에는 저장 축을 덧씌우지 않는다.
+    pub(in crate::renderer::typeset) fn host_text_bounds(
+        &self,
+        para: &Paragraph,
+        range: std::ops::Range<usize>,
+        dpi: f64,
+    ) -> (f64, f64) {
+        let unchanged_rows = self.line_count() == para.line_segs.len()
+            && !self.stored_ladder_is_filler
+            && self.computed_host_lines.is_none()
+            && !self.exact_reflow_text_box
+            && self.square_host_plan.is_none()
+            && para.line_segs.iter().enumerate().all(|(index, line)| {
+                self.line_heights[index] == crate::renderer::hwpunit_to_px(line.line_height, dpi)
+                    && self.line_spacings[index]
+                        == crate::renderer::hwpunit_to_px(line.line_spacing, dpi)
+            });
+        if unchanged_rows {
+            if let Some((content, advance)) =
+                crate::renderer::float_placement::stored_float_row_span_hu(para, range.clone(), dpi)
+            {
+                return (
+                    crate::renderer::hwpunit_to_px(content, dpi),
+                    crate::renderer::hwpunit_to_px(advance, dpi),
+                );
+            }
+        }
+        (
+            self.line_content_height(range.clone(), 0.0),
+            self.line_advances_sum(range),
+        )
+    }
+
     /// [#6753] `flow_advance_height` 가 실제로 트림한 것 중 **`spacing_before` 몫**(px).
     ///
     /// 트림 자체는 "저장 사다리가 이미 담았고 vpos-snap 이 좌표를 복원한다"는 전제 위에

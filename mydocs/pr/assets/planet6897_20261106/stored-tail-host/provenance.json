@@ -1,0 +1,68 @@
+{
+  "recorded_at": "2026-11-06T13:48:03.411205+00:00",
+  "role": "Native 원인 보정의 집중 10쪽. 최종 전쪽/fresh WASM 게이트 대체 금지.",
+  "producer": {
+    "base": "45684640be5eddcf5972b063260250345b34d928",
+    "head": "0c3278967f948134e7520da3e80a03a6d6419737",
+    "changed_sources": [
+      {
+        "path": "src/renderer/float_placement/stored_empty_host_frame.rs",
+        "sha256": "fe76dd7aa8d06bb495dabdf9f32485daebe63bbc34dff27eeb23a79f4e147f61"
+      },
+      {
+        "path": "src/renderer/typeset/table/block/entry.rs",
+        "sha256": "e1f1332ec433ed35ca6e5204efc9ad83dd21dd8e644772d732dc23386aa7c7cb"
+      }
+    ],
+    "started_at": "2026-11-06T13:38:06.778423+00:00",
+    "producer": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r10",
+    "producer_sha256": "de21f4d7a52219d9043196f2baec068378ab0243859d2867f3609457a024c90a",
+    "completed_at": "2026-11-06T13:45:16.954169+00:00"
+  },
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+  "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+  "pdf": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+  "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+  "pages": [
+    16,
+    18,
+    25,
+    59,
+    124,
+    125,
+    136,
+    143,
+    155,
+    193
+  ],
+  "dpi": 96,
+  "compat": "2022",
+  "font_environment": "설치된 시스템 글꼴 전체 및 정식 웹 공급. Rust 회귀의 최소 글꼴 격리와 구분.",
+  "artifacts": [
+    {
+      "path": "native-selected.tsv",
+      "sha256": "81983ecfa1ec89a1f92c9298ace9fe5f42a7f2338796cb9131e4223c1ba6a646",
+      "source": "output/pr-review/planet6897-integration-20261106/report-628-tail-host-r10/report-628-tail-host-r10/silhouette.tsv"
+    },
+    {
+      "path": "p059-review.png",
+      "sha256": "22032cb39badf822956b63c9040890eda42c84ade8227dee8140683fd9b6f421",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/report-628-tail-host-r10/review/review_059.png"
+    },
+    {
+      "path": "p059-overlay.png",
+      "sha256": "b4016581bada6a7949f2d8e0a3e5a179210f6b22a87b250a6d1e339173575037",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/report-628-tail-host-r10/overlay/overlay_059.png"
+    },
+    {
+      "path": "p143-review.png",
+      "sha256": "1ad08cc3be938ccb375358fb377fae12baa99da1221535c4806d9adf3e7d6a94",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/report-628-tail-host-r10/review/review_143.png"
+    },
+    {
+      "path": "p143-overlay.png",
+      "sha256": "b1bd19800bc473d285adbff086489446268487f8c3b1416c45095541dd0eb58b",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/report-628-tail-host-r10/overlay/overlay_143.png"
+    }
+  ]
+}

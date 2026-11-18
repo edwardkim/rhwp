@@ -1,0 +1,109 @@
+{
+  "pr": 8889,
+  "merge_sha": "050e78455ea22857665973be3cdb68981fd71cb0",
+  "duration": {
+    "conclusion": "success",
+    "jobs": [
+      {
+        "completedAt": "2026-11-10T04:03:14Z",
+        "conclusion": "success",
+        "databaseId": 129620311328,
+        "name": "Refresh nextest target duration data",
+        "startedAt": "2026-11-10T03:58:41Z",
+        "status": "completed",
+        "steps": [
+          {
+            "completedAt": "2026-11-10T03:58:43Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-11-10T03:58:42Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-10T04:03:01Z",
+            "conclusion": "success",
+            "name": "Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 2,
+            "startedAt": "2026-11-10T03:58:43Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-10T04:03:07Z",
+            "conclusion": "success",
+            "name": "Collect verified PR duration measurements",
+            "number": 3,
+            "startedAt": "2026-11-10T04:03:01Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-10T04:03:07Z",
+            "conclusion": "success",
+            "name": "Prepare duration policy data",
+            "number": 4,
+            "startedAt": "2026-11-10T04:03:07Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-10T04:03:12Z",
+            "conclusion": "success",
+            "name": "Publish duration policy with guarded Git Data API",
+            "number": 5,
+            "startedAt": "2026-11-10T04:03:07Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-10T04:03:12Z",
+            "conclusion": "success",
+            "name": "Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1",
+            "number": 10,
+            "startedAt": "2026-11-10T04:03:12Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "2026-11-10T04:03:12Z",
+            "conclusion": "success",
+            "name": "Complete job",
+            "number": 11,
+            "startedAt": "2026-11-10T04:03:12Z",
+            "status": "completed"
+          }
+        ],
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/42752855786/job/129620311328"
+      }
+    ],
+    "status": "completed",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42752855786"
+  },
+  "duration_log_relevant": [
+    "Refresh nextest target duration data\tPrepare duration policy data\t2026-11-10T04:03:07.9671742Z [NextestTargetDuration] refreshed_targets=44"
+  ],
+  "issue8856_auto_closed_at": "2026-11-10T03:58:47Z",
+  "verification_workflows_restarted_after_merge": false,
+  "followup_route": "option2",
+  "verified_measurements": {
+    "ready": true,
+    "reason": "successful-pr-worker-measurements",
+    "pullNumber": 8889,
+    "finalHeadRunId": 42748908063,
+    "finalHeadRunAttempt": 1,
+    "finalHeadSha": "b9d22dfbffc4ccf0dab9bcc9078b30e902a06dab",
+    "reviewOnlyTail": false,
+    "sourceRunId": 42748908063,
+    "latestRunAttempt": 1,
+    "measurementAttempts": {
+      "b": 1,
+      "c": 1,
+      "d": 1,
+      "e": 1
+    },
+    "testedMergeSha": "5ec8896af995ad1dc115e088954f0d16d7abec96",
+    "sourceHeadSha": "b9d22dfbffc4ccf0dab9bcc9078b30e902a06dab",
+    "artifactIds": [
+      13733563029,
+      13733273357,
+      13734396205,
+      13733369324
+    ]
+  }
+}

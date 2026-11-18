@@ -1,0 +1,159 @@
+{
+  "scope": "diagnostic; stage9 image-only binary and pre-lint style JSON; no product rule changed here",
+  "pdf": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+  "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+  "page": 110,
+  "source_record": {
+    "recordId": "page:109:run:19:char:0",
+    "source": {
+      "status": "complete",
+      "sectionIndex": 3,
+      "paragraphIndex": 587,
+      "nestedPath": [
+        0,
+        2,
+        0
+      ],
+      "runIndex": 19,
+      "charOffset": 0,
+      "character": "•",
+      "codePoint": 8226,
+      "charShapeId": 6
+    },
+    "document": {
+      "languageSlot": 5,
+      "inheritedLanguageSlot": null,
+      "face": "한양신명조",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "한양신명조",
+      "normalizedFace": "NotoSansKR-Regular",
+      "cssFamilyChain": [
+        "NotoSansKR-Regular"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "한양신명조",
+          "output": "NotoSansKR-Regular",
+          "reason": "issue8856-report-original-human-control-diagnostic"
+        }
+      ]
+    },
+    "layoutMetric": {
+      "requestedFace": "한양신명조 (HFT)",
+      "aliasResolvedFace": "한양신명조 (HFT)",
+      "matchKind": "exact",
+      "metricEntry": 626,
+      "characterMatch": "miss",
+      "widthSource": "heuristicHalfwidth",
+      "baseAdvanceHwpunit": 550,
+      "transforms": [
+        {
+          "kind": "ratio",
+          "input": "7.333333333333333",
+          "output": "0.9",
+          "reason": "documentCharacterWidthRatio"
+        }
+      ],
+      "finalAdvanceHwpunit": 492
+    },
+    "paint": {
+      "native": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "NotoSansKR-Regular",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "nativeSkiaFeatureUnavailable"
+        ]
+      },
+      "canvas2d": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "NotoSansKR-Regular",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      },
+      "canvaskit": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "NotoSansKR-Regular",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      }
+    },
+    "provenance": [
+      {
+        "candidateId": "candidate.28970f1984ed0e4ce06d",
+        "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+        "sourceOwner": "rust-measurement",
+        "relationType": "unknown",
+        "evidenceStatus": "inferred",
+        "knownLimitations": [
+          "The predicate selects advances; it does not prove glyph identity.",
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift"
+      },
+      {
+        "candidateId": "candidate.2627e3f07b81472e07ad",
+        "ruleId": "rule.rust-metric.2627e3f07b81472e07ad",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.2627e3f07b81472e07ad",
+        "sourceOwner": "rust-metric",
+        "relationType": "metric-entry",
+        "evidenceStatus": "verified-by-test",
+        "knownLimitations": [
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift"
+      }
+    ],
+    "oracle": {
+      "status": "declared",
+      "profileId": "issue8856-report-original-human-control-diagnostic",
+      "knownLimitations": [
+        "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+      ]
+    }
+  },
+  "independent_pdf": {
+    "content_xref": 1069,
+    "bullet_operations": "/F7 92.000 Tf\n90.217392 Tz\n1.000 0.000 0.000 -1.000 893.000 1679.000 Tm\n[<007c>]TJ",
+    "following_text_operations": "/F6 92.000 Tf\n89.130440 Tz\n1.000 0.000 0.000 -1.000 975.000 1679.000 Tm",
+    "device_transform_scale": 0.12,
+    "pdf_points_to_96dpi": 1.3333333333333333,
+    "bullet_origin_96dpi": 142.88,
+    "following_text_origin_96dpi": 156.0,
+    "actual_layout_advance_96dpi": 13.12,
+    "paint_font_descriptor_xref": 1599,
+    "paint_font_descriptor": "<< /Type /FontDescriptor\n/FontName /INPILL+Gulim\n/FontBBox  [0 -150 1000 863] \n/Flags 32\n/CapHeight 0\n/Ascent 858\n/Descent -141\n/ItalicAngle 0\n/StemV 0\n/FontFile2 1601 0 R\n\n/CIDSet 1602 0 R\n >>\n",
+    "cid_font_label_warning": "Raw /BaseFont /HCI Poppy has unescaped space and is not reliable actual program identity; descriptor says Gulim. The original PDF is preserved and PDFium remains canonical.",
+    "bullet_natural_paint_width_em": 0.375,
+    "layout_vs_glyph": "Original HFT source layout advance is distinct from the painted fallback glyph natural width. Do not substitute the 0.375em painted width for the source layout advance."
+  },
+  "current_model": {
+    "bullet_origin_96dpi": 142.866667,
+    "following_text_origin_96dpi": 149.426667,
+    "actual_layout_advance_96dpi": 6.56,
+    "advance_source": "heuristicHalfwidth"
+  },
+  "known_source_table": "font_metrics_overlays.rs already has HanyangSinMyeongJo U+2022 full em but font_metric_legacy_hft.rs selected original-program partial table contains only ASCII and square root; actual trace has metric miss and heuristicHalfwidth"
+}

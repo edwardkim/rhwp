@@ -1,0 +1,44 @@
+{
+  "source": "0bda2cfac592e6141f96fb3c64ad59de04fae3fa",
+  "unitBefore": {
+    "passed": 6,
+    "failed": 1
+  },
+  "unitAfter": {
+    "passed": 7,
+    "failed": 0
+  },
+  "realWorkerWakeRepeats": 3,
+  "extensionSuites": [
+    {
+      "name": "extension-smoke",
+      "status": "pass",
+      "durationMs": 3556,
+      "exitCode": 0
+    },
+    {
+      "name": "download-interceptor",
+      "status": "pass",
+      "durationMs": 15790,
+      "exitCode": 0
+    },
+    {
+      "name": "extension-lifecycle",
+      "status": "pass",
+      "durationMs": 40001,
+      "exitCode": 0
+    }
+  ],
+  "runtimeEnvironment": {
+    "node": "v24.15.0",
+    "platform": "linux",
+    "arch": "x64",
+    "puppeteer": "25.17.0",
+    "chrome": "157.0.8103.50",
+    "executable": "/home/edward/.cache/puppeteer/chromium/linux-1660786/chrome-linux/chrome",
+    "harnessSha": "0bda2cfac592e6141f96fb3c64ad59de04fae3fa",
+    "harnessDirty": false
+  },
+  "permissionsChanged": false,
+  "newNetworkOperations": false
+}

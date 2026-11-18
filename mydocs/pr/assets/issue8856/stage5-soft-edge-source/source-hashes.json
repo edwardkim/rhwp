@@ -1,0 +1,9 @@
+{
+  "src/model/image.rs": "9b01ee3c62384b0c34c85fdf179aa9a853c52df3ebbd5f9e183bda5859b1d6f8",
+  "src/model/border_paint.rs": "08672a4917cd5b35ca04ae737234146854d7dfe48fe29efd92a7f56c1084b942",
+  "src/parser/control/shape.rs": "e5a29192888005a37ce31968d86fff1596ba380e6df8cdc9d1768c1be7c43b09",
+  "src/parser/hwpx/section.rs": "d1281ecf4877b3a952c8a6f0c36d742f59001193984e68b19c990bdc9855925d",
+  "src/serializer/control.rs": "f2a407ad320161ae41f19c0e156bc51cf97cd38aff03f8f47336d3ff7c68359c",
+  "src/serializer/hwpx/picture.rs": "e82fcf23627c9a3803a88cddb080916f6de26ae27d7faa935e1c9bda1f82d4a6",
+  "tests/cases/issue_8856_picture_soft_edge_ownership.rs": "b97ffac8902e118e3396a62431370a5aadda4cd44fcef3ed75fcbd97e086a66e"
+}

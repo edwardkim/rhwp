@@ -1,0 +1,25 @@
+{
+  "head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+  "path": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+  "sha256": "bfaf0c9f4104ceea10106be1b813bf94e1824755855ba6043dc00ea6af06c1f7",
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp",
+    "-j",
+    "8"
+  ],
+  "build_log_sha256": "08dd71bbc49dc261f043296f9e6223337e0c64d97dd55c2b0b2345e1e20bc2d4",
+  "built_at": "2026-11-11T11:49:34.176152+09:00"
+}

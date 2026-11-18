@@ -1,0 +1,20 @@
+{
+  "state": "complete",
+  "pid": 44574,
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "server_pid": 15091,
+  "url": "http://127.0.0.1:7751",
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+    "node",
+    "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/canvaskit-actual-font-preparation.mjs"
+  ],
+  "started_at": "2026-11-09T18:45:50.079113+09:00",
+  "test_pid": 15129,
+  "exit_code": 0,
+  "initialization_sha256": "fffb7fe0996a881450da5420fb6b3a0c3bfca108cf99a73058512a78f7bf7f12",
+  "finished_at": "2026-11-09T18:46:40.344620+09:00"
+}

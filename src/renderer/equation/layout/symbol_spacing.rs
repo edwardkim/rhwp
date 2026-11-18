@@ -166,7 +166,7 @@ impl EqLayout {
     }
 
     pub(super) fn row_children(&self, nodes: &[EqNode], fs: f64) -> Vec<LayoutBox> {
-        if self.legacy_equation {
+        if self.legacy_equation || self.implicit_legacy_font {
             return super::legacy::row_children(self, nodes, fs);
         }
         let significant: Vec<usize> = nodes

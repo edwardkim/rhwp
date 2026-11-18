@@ -1,0 +1,372 @@
+{
+  "current_head": "e0ce30729e4d87d2a75376d17c6d351a29ef4345",
+  "base": "3170fddc48cc4fcac0c18761d146b619d0f90c7b",
+  "build_parent": "01d2197973e282d7c96671cb1335ad83fbe68e8d",
+  "runtime_equivalence": true,
+  "source_files": 1782,
+  "native_sha256": "47203f928bac9f3c8d27293edf6a87351fa51d3342c326016190303d51328219",
+  "wasm_sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121",
+  "js_sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+  "rows": [
+    {
+      "key": "interview",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.23307,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/interview/silhouette.tsv",
+        "sha256": "a91f5bdb108ab7f031060e73c4dba9a46a46f06129a6db17593cdd2c170b4228",
+        "bytes": 149
+      },
+      "manifest": {
+        "path": "whole/native/interview/manifest.json",
+        "sha256": "077649310d656b066123861181e6004de00f440542a26b52159096d8426d4229",
+        "bytes": 7553
+      }
+    },
+    {
+      "key": "interview",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": 99.25469,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/interview/silhouette.tsv",
+        "sha256": "ffb3e4f10d7646bc3c1b4bf4ea18a726368a36aab5f42133c6ada70636b0744c",
+        "bytes": 149
+      },
+      "manifest": {
+        "path": "whole/wasm/interview/manifest.json",
+        "sha256": "28bd039c8b276b573b8f40c73bb873c3f826a912136c2443591babc35dff68e8",
+        "bytes": 8030
+      }
+    },
+    {
+      "key": "request",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 99.22562,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/request/silhouette.tsv",
+        "sha256": "81a33ad5a330b22d50ada36a63d778b5186c199db3dde2b196db1e4e86991923",
+        "bytes": 130
+      },
+      "manifest": {
+        "path": "whole/native/request/manifest.json",
+        "sha256": "bad5f4fc71aaf450603a827d95e094b42ab48a7a67c8bf18ca1144d84e591935",
+        "bytes": 6115
+      }
+    },
+    {
+      "key": "request",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 99.20457,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/request/silhouette.tsv",
+        "sha256": "77af816b090ba869dff24c5a98566717d62e254142cdb69bd9c4ce57080ccd64",
+        "bytes": 130
+      },
+      "manifest": {
+        "path": "whole/wasm/request/manifest.json",
+        "sha256": "9891c8ba4c8b60d1e2405d7813a244675fc5fd57470bb7d2d40efa37280ea4a1",
+        "bytes": 6596
+      }
+    },
+    {
+      "key": "newyear",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 98.42814,
+      "minimum_pages": [
+        3
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/newyear/silhouette.tsv",
+        "sha256": "cf26ebd9bf88f8538a645dae95d07d121075083df44da99b4c991b6900e45fc9",
+        "bytes": 177
+      },
+      "manifest": {
+        "path": "whole/native/newyear/manifest.json",
+        "sha256": "13103d4d5b7e9f8049aee54d7fb644a5608fb8220af8da71564c1fdb77063e49",
+        "bytes": 8162
+      }
+    },
+    {
+      "key": "newyear",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 98.42806,
+      "minimum_pages": [
+        3
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/newyear/silhouette.tsv",
+        "sha256": "bd6f353e6dbca71dc962e8f8790253591bf3277b77598babdb10a5fbdc24b260",
+        "bytes": 177
+      },
+      "manifest": {
+        "path": "whole/wasm/newyear/manifest.json",
+        "sha256": "ea4bc34022eb0561303dbc45ce137b3807d58f8aa6589a564310019559c07b70",
+        "bytes": 8635
+      }
+    },
+    {
+      "key": "ktx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 99.66127,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/ktx/silhouette.tsv",
+        "sha256": "00a2d29bbaa7d61ee4d3e6a78132977ac6d9c8b4e417b7bfe1bd91ae57196d2e",
+        "bytes": 131
+      },
+      "manifest": {
+        "path": "whole/native/ktx/manifest.json",
+        "sha256": "03b30d9a80a6564fe1ee0b0793f6053a0bb59341f4be9909962b645c9df453ea",
+        "bytes": 6086
+      }
+    },
+    {
+      "key": "ktx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 99.697,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/ktx/silhouette.tsv",
+        "sha256": "ba3c9e973aae019a1ca4a95b01ada6f7a9ad018384b1ab6a11c2978fa97dd23d",
+        "bytes": 131
+      },
+      "manifest": {
+        "path": "whole/wasm/ktx/manifest.json",
+        "sha256": "b64d5d0ad2530aa3cf027cd3b7e89bd34588dc40cdb142cf686af352f206e18c",
+        "bytes": 6565
+      }
+    },
+    {
+      "key": "policy-flags0",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 99.99813,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/policy-flags0/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "manifest": {
+        "path": "whole/native/policy-flags0/manifest.json",
+        "sha256": "2852a8c25fca7767dc7afcb11d9aaabb270356e3ff2357ecb49a5acb216c301a",
+        "bytes": 7310
+      }
+    },
+    {
+      "key": "policy-flags0",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 99.99259,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/policy-flags0/silhouette.tsv",
+        "sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "bytes": 130
+      },
+      "manifest": {
+        "path": "whole/wasm/policy-flags0/manifest.json",
+        "sha256": "2dc6ebeaecc9604591083b60246a1ef72ba90dda6be44b04c0f9af704f85c2af",
+        "bytes": 7791
+      }
+    },
+    {
+      "key": "legislation-summary",
+      "backend": "native",
+      "pages": 10,
+      "minimum": 99.23795,
+      "minimum_pages": [
+        2
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/legislation-summary/silhouette.tsv",
+        "sha256": "b497156b4c268d51c2c4570f71c47e6dff350364605aa77cb2e7410a0f773f5f",
+        "bytes": 293
+      },
+      "manifest": {
+        "path": "whole/native/legislation-summary/manifest.json",
+        "sha256": "5e7b522b80c0d57f26bbdf13da6d05f24ff96af80809101ed370b02a4f3f7ebd",
+        "bytes": 14626
+      }
+    },
+    {
+      "key": "legislation-summary",
+      "backend": "wasm",
+      "pages": 10,
+      "minimum": 99.2209,
+      "minimum_pages": [
+        2
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/legislation-summary/silhouette.tsv",
+        "sha256": "d720c9c14e34c1a7e81e882b938a185fe1c9adc965edf795857572784580a7b8",
+        "bytes": 293
+      },
+      "manifest": {
+        "path": "whole/wasm/legislation-summary/manifest.json",
+        "sha256": "7f0ffdd3fb8b48105ad97d7030597c13b4f0823a4bcbffe7ad3c169d89441774",
+        "bytes": 15069
+      }
+    },
+    {
+      "key": "report-628",
+      "backend": "native",
+      "pages": 195,
+      "minimum": 94.83952,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/report-628/silhouette.tsv",
+        "sha256": "4424cead8a35e1de2ef8d64915a792553f1afcc0d469c3bd03df78e49d3ebb42",
+        "bytes": 3912
+      },
+      "manifest": {
+        "path": "whole/native/report-628/manifest.json",
+        "sha256": "cdd08eb08ce02fe921891395b7053025e7f7ea57786b504afffb1c4718fc49d4",
+        "bytes": 179234
+      }
+    },
+    {
+      "key": "report-628",
+      "backend": "wasm",
+      "pages": 195,
+      "minimum": 94.84611,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/report-628/silhouette.tsv",
+        "sha256": "5fc2c869ebe28398d23eb727a4bbba15e4748274ade6cffc74afc98b2d395732",
+        "bytes": 3912
+      },
+      "manifest": {
+        "path": "whole/wasm/report-628/manifest.json",
+        "sha256": "8399c724e0ce33bc46c90b1db0bcd48f36bbd441f59a286a46adb1eb5d69aa98",
+        "bytes": 178926
+      }
+    },
+    {
+      "key": "idol-counterexample",
+      "backend": "native",
+      "pages": 2,
+      "minimum": 99.50829,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/idol-counterexample/silhouette.tsv",
+        "sha256": "351216e9f545af4f02fd3370aa1a993211bd67965b6490980f6317bb27c94b6c",
+        "bytes": 149
+      },
+      "manifest": {
+        "path": "whole/native/idol-counterexample/manifest.json",
+        "sha256": "b3e60c88e635f1f67ab9e426f0f4c1a3839f2bdd22eaeaebe11a2298c7417d59",
+        "bytes": 7643
+      }
+    },
+    {
+      "key": "idol-counterexample",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": 99.50802,
+      "minimum_pages": [
+        1
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/idol-counterexample/silhouette.tsv",
+        "sha256": "190482b923caa6b2b284d878bc112332f7cfc7175015e01ce2729b9e5d9dfee8",
+        "bytes": 149
+      },
+      "manifest": {
+        "path": "whole/wasm/idol-counterexample/manifest.json",
+        "sha256": "bf818ac51559670814f8e134ee3b154ca45271a85749fbf6fc8ec10ef630d416",
+        "bytes": 8121
+      }
+    },
+    {
+      "key": "clip5587",
+      "backend": "native",
+      "pages": 4,
+      "minimum": 92.32561,
+      "minimum_pages": [
+        3
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/native/clip5587/silhouette.tsv",
+        "sha256": "ad1c51cefbb417bc0fe479db065e966d3fc95f11a67b1093e39f05cd7e4ccccb",
+        "bytes": 184
+      },
+      "manifest": {
+        "path": "whole/native/clip5587/manifest.json",
+        "sha256": "4dd6d47b519fee231a6429744ce8be6434cbea374f99c269033269290a7407e8",
+        "bytes": 9935
+      }
+    },
+    {
+      "key": "clip5587",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": 92.15037,
+      "minimum_pages": [
+        3
+      ],
+      "below90": [],
+      "tsv": {
+        "path": "whole/wasm/clip5587/silhouette.tsv",
+        "sha256": "aaf3d1f173efde86a7efe5cd876f4dcd1727f34f2caab789005954c1601d21b0",
+        "bytes": 184
+      },
+      "manifest": {
+        "path": "whole/wasm/clip5587/manifest.json",
+        "sha256": "51adeed28ca1b330ec6c81c0f5e9037698a4926d92602a818270511283348a1d",
+        "bytes": 10404
+      }
+    }
+  ]
+}

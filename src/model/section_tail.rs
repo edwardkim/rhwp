@@ -43,13 +43,44 @@ impl SectionTail {
             Some((memo, group))
         })
     }
+
+    /// 원본 레코드마다 바탕쪽 목록(메모가 아닌 수준 1 LIST_HEADER로 시작하는 목록)에 속하는지 표시한다.
+    pub(crate) fn master_list_mask(&self) -> Vec<bool> {
+        use crate::parser::tags::HWPTAG_LIST_HEADER;
+        self.record_groups()
+            .flat_map(|(memo, group)| {
+                let master = !memo && group[0].level == 1 && group[0].tag_id == HWPTAG_LIST_HEADER;
+                std::iter::repeat_n(master, group.len())
+            })
+            .collect()
+    }
+}
+
+/// 구역 끝 원본 목록이 바탕쪽 목록을 가졌는지. 가졌으면 그 구역의 확장 바탕쪽은 원본이 저장한다.
+pub(crate) fn holds_master_lists(tail: &SectionTail) -> bool {
+    tail.master_list_mask().contains(&true)
 }
 
 pub(crate) fn projection_digest(doc: &Document) -> [u8; 32] {
-    let masters: Vec<_> = doc
+    // 확장 바탕쪽(마지막 쪽·임의 쪽)은 구역 끝 원본 목록이, 기본 바탕쪽은 구역 정의 자식의 원본
+    // 레코드가 남아 있는 동안만 원본으로 저장되므로 그때만 봉인한다. 바탕쪽 편집 API가 원본 레코드를
+    // 버리면 모델이 저장을 맡는다.
+    let masters: Vec<Vec<_>> = doc
         .sections
         .iter()
-        .map(|s| &s.section_def.master_pages)
+        .map(|s| {
+            let raw_base = s
+                .section_def
+                .extra_child_records
+                .iter()
+                .any(|raw| raw.tag_id == crate::parser::tags::HWPTAG_LIST_HEADER);
+            let raw_tail = s.trailing_lists.as_ref().is_some_and(holds_master_lists);
+            s.section_def
+                .master_pages
+                .iter()
+                .filter(|master| raw_base || (master.is_extension && raw_tail))
+                .collect()
+        })
         .collect();
     crate::model::raw_provenance::value_digest(&masters, "구역 끝 바탕쪽 투영")
 }

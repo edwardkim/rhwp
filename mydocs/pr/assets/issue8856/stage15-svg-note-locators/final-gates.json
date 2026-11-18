@@ -1,0 +1,136 @@
+{
+  "source_head": "c88877ee5a9795f050cf8066f572bcb3feed9b5f",
+  "runtime_unchanged": true,
+  "full_nextest": {
+    "passed": 13153,
+    "failed": 0,
+    "skipped": 45,
+    "seconds": 334.65
+  },
+  "gates": [
+    {
+      "name": "fmt",
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "suite-node-contracts",
+      "exit": 0,
+      "log_sha256": "fb459658c80de28c62006d6e9be10f9cc649c9eadb37fc8199712826d3a4d8f4"
+    },
+    {
+      "name": "focused-svg-locators",
+      "exit": 0,
+      "log_sha256": "4f07278e662c03476ed1dd53b372d48e915f0eebcf71fd31882cc2e40f83cf7d"
+    },
+    {
+      "name": "suite-node-contracts-after-locators",
+      "exit": 0,
+      "log_sha256": "9adc91dff183599477961f79b070c51e36ae8af6b04aac8fa5ad197fd4b1ef37"
+    },
+    {
+      "name": "full-nextest-final",
+      "exit": 0,
+      "log_sha256": "6c06e429e46dbb66c0efdfed67b1ddb2753716f7c6d313d4901dfb47356b7d9c"
+    },
+    {
+      "name": "native-root-clippy",
+      "exit": 0,
+      "log_sha256": "88d134f74334af14fb8accf5494b3b254b6f90224839b4d7b9eda3ba4bdea029"
+    },
+    {
+      "name": "wasm-clippy",
+      "exit": 0,
+      "log_sha256": "e1aad31de5b14cb45021c8a8299c3afd85defbb2e7e7cab32ccc274de8db88a3"
+    },
+    {
+      "name": "workspace-build",
+      "exit": 0,
+      "log_sha256": "7beef11c86279e3354b8b416b81c2781b8a58dbc505d06776bba3a15a7e63fac"
+    },
+    {
+      "name": "workspace-clippy",
+      "exit": 0,
+      "log_sha256": "b68236c4c3557234bedcfed8dce1986391eddc9ab4f1caec02e97fecb6f90802"
+    },
+    {
+      "name": "native-feature-clippy",
+      "exit": 0,
+      "log_sha256": "11a1a31ee5329be58d3ab652a3a8156eecc73341dcd7015c4337a3c547b8fd8e"
+    },
+    {
+      "name": "skia-lib",
+      "exit": 0,
+      "log_sha256": "4791e4223a05396f0581ba35ee891bfd565f68284e60d8890ab1bbd9226211e0"
+    },
+    {
+      "name": "native-ci-module",
+      "exit": 0,
+      "log_sha256": "a3783ab126b6d89be61271df30771d0dc37288ff5e2595a98a1020b3c411b603"
+    },
+    {
+      "name": "skia-png",
+      "exit": 0,
+      "log_sha256": "5d30cd1edbe31e7a552d398b96d1275d30ebff063d3c1c977c9eee6e23645351"
+    },
+    {
+      "name": "skia-pdf",
+      "exit": 0,
+      "log_sha256": "89b9cdb8effce28e1d005f673fd3757bd2ed75509e90e00228756260a2935249"
+    },
+    {
+      "name": "manifest",
+      "exit": 0,
+      "log_sha256": "9bff18c2bbcda4bf65172a659baf583d7a115143186d758ced551633b13fbcb4"
+    },
+    {
+      "name": "unit-tiers",
+      "exit": 0,
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    },
+    {
+      "name": "font-contracts",
+      "exit": 0,
+      "log_sha256": "956145e1aa7072cb314f6e578db4ac8a3fac4fe0da449e08ecdbd405ac561645"
+    },
+    {
+      "name": "markdown-links",
+      "exit": 0,
+      "log_sha256": "dbe28527e96a7b01f824d63fcd952538978128033c7f99e1d855b818484f2fc0"
+    },
+    {
+      "name": "canvas-browser-contracts",
+      "exit": 0,
+      "log_sha256": "0fe004cffa28a23d4459a79b833a478fcd9ce4be28e56d9962c5cdc32c5a812c"
+    }
+  ],
+  "prior_failure": [
+    {
+      "name": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+        "env",
+        "-u",
+        "RHWP_FONT_PATH",
+        "CARGO_BUILD_JOBS=8",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 100,
+      "log_sha256": "5ae8aed1038f18d6a26a4fd92cc3f8be8938c87ee4bb90f4502f045a81855687"
+    }
+  ],
+  "evidence_note": "임시 로그는 output에만 보존. 이전 실패를 숨기지 않고 실제 출력과 원 수정 대조 후 두 SVG 조회만 보정."
+}

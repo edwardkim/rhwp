@@ -1,0 +1,14 @@
+{
+  "source_commit": "612b4053db0a09cd714aa85e9fefa045f7c4d193",
+  "corresponding_alert": 597,
+  "rule": "rust/cleartext-logging",
+  "remaining_flows": 4,
+  "source_kind": "PyO3 receiver extraction",
+  "sink_argument": "page_index: usize",
+  "runtime_payload_removed": true,
+  "positive_log_capture_and_content_preservation_tests_passed": 2,
+  "source_file_sha256": "d188f55521b33fac2cd7b0d1bb23c337220ac602859c7a2aaa4279566cd7c7de",
+  "recommended_classification_after_source_application": "false positive",
+  "classification_action_taken": false,
+  "condition": "Verify corrected source and same flow on the corresponding protected refs, then obtain additional explicit classification approval. Original remote code still contains the payload before source publication."
+}

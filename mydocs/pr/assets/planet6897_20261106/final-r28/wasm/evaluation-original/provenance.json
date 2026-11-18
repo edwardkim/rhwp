@@ -1,0 +1,38 @@
+{
+  "key": "evaluation-original",
+  "backend": "wasm",
+  "state": "measured-not-final-review",
+  "prs": [
+    8638
+  ],
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8638/evaluation-original.hwp",
+  "input_sha256": "a89b8d63ec93e34281c8dbe22f6ef89804a97130855432bda5416a2a3e1ad5ec",
+  "pdf": "pdf/planet6897-20261106/pr8638/evaluation-original-2020.pdf",
+  "pdf_sha256": "10866c14fdf960ad41407ee8c12629c2f60e73e2817e1891e1081f3da71cfc3e",
+  "pdf_pages": 2,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.68,
+  "below90": 0,
+  "full_tsv": "wasm/evaluation-original/full.tsv",
+  "full_tsv_sha256": "5a7f7367b59de7631b3ff75a549bb74b6eff6f59eede652b63c7874d743a38a8",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r28-direction-wasm/evaluation-original/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-batch-corrections-r28",
+    "sha256": {
+      "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "rhwp_bg.wasm": "63b74db31592ee2b83c562155a4906694209f45eb9416aeb253d2347f67ee0bc"
+    }
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.68",
+      "actual_png_sha256": "cb885bfd093947ab9eb66c016a2c4adf85aead68a92429e594841fb85a699c37",
+      "pdf_png_sha256": "be1e1ae3d100df22c788368a66c7da49bea11a5d7be0b15cf61755b5b1356e3b",
+      "review": "wasm/evaluation-original/review-001.png",
+      "overlay": "wasm/evaluation-original/overlay-001.png"
+    }
+  ]
+}

@@ -65,12 +65,17 @@
     max-width: 100%;
     max-height: 90dvh;
     border-radius: 12px 12px 0 0;
-    overflow-y: auto;
+    overflow: hidden;
     -webkit-overflow-scrolling: touch;
   }
   .dialog-wrap.recovery-dialog {
     max-height: 90dvh;
     overflow: hidden;
+  }
+  /* 제품 정보 창도 시트 폭·높이를 따른다. 스크롤은 본문이 맡는다 (#8905). */
+  .dialog-wrap.about-dialog {
+    max-width: 100%;
+    max-height: 90dvh;
   }
   .dialog-title {
     padding: 12px 16px;

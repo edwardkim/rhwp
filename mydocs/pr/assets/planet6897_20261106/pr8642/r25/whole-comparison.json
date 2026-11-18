@@ -1,0 +1,141 @@
+{
+  "role": "R25 전306쪽/backend 완료. 보호17문서 및 최종 head 완료 아님.",
+  "results": [
+    {
+      "backend": "native",
+      "key": "report-628",
+      "pages": 195,
+      "minimum": 92.99,
+      "declines": [],
+      "improved": [
+        {
+          "page": 15,
+          "before": 99.68,
+          "after": 99.92
+        },
+        {
+          "page": 16,
+          "before": 88.48,
+          "after": 96.88
+        },
+        {
+          "page": 18,
+          "before": 58.9,
+          "after": 99.72
+        },
+        {
+          "page": 116,
+          "before": 99.74,
+          "after": 99.95
+        },
+        {
+          "page": 120,
+          "before": 85.11,
+          "after": 96.55
+        },
+        {
+          "page": 122,
+          "before": 54.14,
+          "after": 99.58
+        },
+        {
+          "page": 123,
+          "before": 68.02,
+          "after": 99.77
+        },
+        {
+          "page": 124,
+          "before": 57.87,
+          "after": 99.92
+        },
+        {
+          "page": 125,
+          "before": 33.39,
+          "after": 99.81
+        }
+      ],
+      "tsv": "output/pr-review/planet6897-integration-20261106/implicit-r25-native-full/report-628/report-628/silhouette.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "report-838",
+      "pages": 109,
+      "minimum": 94.99,
+      "declines": [],
+      "improved": [],
+      "tsv": "output/pr-review/planet6897-integration-20261106/implicit-r25-native-full/report-838/report-838/silhouette.tsv"
+    },
+    {
+      "backend": "native",
+      "key": "stored-band",
+      "pages": 2,
+      "minimum": 100.0,
+      "declines": [],
+      "improved": [],
+      "tsv": "output/pr-review/planet6897-integration-20261106/implicit-r25-native-full/stored-band/stored-band/silhouette.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "report-628",
+      "pages": 195,
+      "minimum": 96.06,
+      "declines": [],
+      "improved": [
+        {
+          "page": 16,
+          "before": 88.5,
+          "after": 96.93
+        },
+        {
+          "page": 18,
+          "before": 58.77,
+          "after": 99.73
+        },
+        {
+          "page": 120,
+          "before": 84.95,
+          "after": 96.58
+        },
+        {
+          "page": 122,
+          "before": 53.95,
+          "after": 99.59
+        },
+        {
+          "page": 123,
+          "before": 67.79,
+          "after": 99.77
+        },
+        {
+          "page": 124,
+          "before": 57.76,
+          "after": 99.91
+        },
+        {
+          "page": 125,
+          "before": 33.56,
+          "after": 99.79
+        }
+      ],
+      "tsv": "output/pr-review/planet6897-integration-20261106/implicit-r25-wasm-full/report-628/report-628/silhouette.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "report-838",
+      "pages": 109,
+      "minimum": 94.94,
+      "declines": [],
+      "improved": [],
+      "tsv": "output/pr-review/planet6897-integration-20261106/implicit-r25-wasm-full/report-838/report-838/silhouette.tsv"
+    },
+    {
+      "backend": "wasm",
+      "key": "stored-band",
+      "pages": 2,
+      "minimum": 100.0,
+      "declines": [],
+      "improved": [],
+      "tsv": "output/pr-review/planet6897-integration-20261106/implicit-r25-wasm-full/stored-band/stored-band/silhouette.tsv"
+    }
+  ]
+}

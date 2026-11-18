@@ -1,0 +1,47 @@
+{
+  "time": "2026-11-10T02:57:33.188423+09:00",
+  "base": "b5064fae1eefff92d60464c51844a38debec09f9",
+  "rebase_head": "10026faaf8ecf34cc7517cfb738ae0cfe421157f",
+  "host": "macOS ARM64",
+  "minimal_font_profile": {
+    "path": "output/issue8856/start/minimal-font.sb",
+    "sha256": "1b8ba67f5e14b1adbdbd748ad6a35c9dd548e85ca0cfed5b119c17a9b9e8cf85"
+  },
+  "pdf_diagnostics": {
+    "passed": 2,
+    "failed": 0,
+    "exit": 0,
+    "log_sha256": "66456e8d5134f1fd01532c55915716504fb8d32b7649b60d094c84afc8947651"
+  },
+  "qcms": {
+    "passed": 30,
+    "failed": 0,
+    "exit": 0,
+    "log_sha256": "06631985d15121031e441d836a2ba33881d994f83cadee9599a92f10a43718a3",
+    "features": [
+      "c_bindings"
+    ],
+    "arm_neon_feature": false,
+    "reference_files": 15,
+    "reference_manifest_sha256": "7f3d8c241079aac91eb12d37c26769fefc3289c568c3341994c04d1f723155a0",
+    "source_file_hashes": {
+      "vendor/rhwp-qcms/src/resource.rs": "08f7f86dcf1ece989c347deceb99ec97bb998225cba336c1939b72af4ddd169e",
+      "vendor/rhwp-qcms/src/transform_neon.rs": "c730f330de55031546d5154ea0931d036385331fcc3c0000af7b1d77121e6221",
+      "vendor/rhwp-qcms/src/chain.rs": "30af73cf4207e6d02c8216913abe656871774ab3af4fa96084fef13e68731db4",
+      "vendor/rhwp-qcms/src/lib.rs": "d5965cb24a308f1e72b5b198630f0582f9a74e90ebb3509b108a2ba77214b038",
+      "vendor/rhwp-qcms/src/c_bindings.rs": "bab2f65edaba748bcdd68c0a088aa111d2f32f64d512d98672646fa319230a9b",
+      "vendor/rhwp-qcms/src/matrix.rs": "8c09f8b6ca0fc0b6d6b5f66d67405bf1d5e7683cfb5d65546c48eaa8046db199",
+      "vendor/rhwp-qcms/src/transform_util.rs": "02ae890213de33bd2150b482f4ba54674d94e2a58df02e223c6c7b0d015e886b",
+      "vendor/rhwp-qcms/src/transform_sse2.rs": "559a5b63eebeda4d2726bb398798a622fbc11ae2c907151aea5296f104143135",
+      "vendor/rhwp-qcms/src/gtest.rs": "cffcdc03fc03b95aae9937ef0d6526ec091dee159e6c2a75373e5c60027664f4",
+      "vendor/rhwp-qcms/src/iccread.rs": "ef065eddbbf86f8f446acfbc19acc52d7d0921729a82fdb66d8218171380a264",
+      "vendor/rhwp-qcms/src/transform.rs": "990a16cc18b20638bd2a95878a2e0d641686e32309290c2bce084cc631836ff0",
+      "vendor/rhwp-qcms/src/transform_avx.rs": "4302e3d16279fe0cd5e7e5d2dacdf01b3a8e523823559303947c6ac7a1c1d107",
+      "vendor/rhwp-codec-resource/src/lib.rs": "f78baea89c6ffa944e1da066d0622bbfc311ba436d934415c4ab9cc60880718c"
+    },
+    "test_body_same_as_executed": true,
+    "note": "실행 뒤 gtest 첫머리의 직전 커밋 시각 주석만 정정했다. 구현과 검사 본문은 동일하다."
+  },
+  "whole_visual_pending": true,
+  "scope": "new upstream PDF diagnostics and qcms C ABI; no claim of whole PR completion"
+}

@@ -1,0 +1,35 @@
+{
+  "key": "cover",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8550
+  ],
+  "input": "samples/issue8516/1051000-202000124-evidence-policy-cover.hwp",
+  "input_sha256": "c6165192bc6d07fe1d8026d11d866333038e8665eb9f925427c841e1f8d83ffe",
+  "pdf": "pdf/issue8516/1051000-202000124-evidence-policy-cover-2020.pdf",
+  "pdf_sha256": "25cc0e909e74a313ffaa6eab6bd961943b0b02abd549b416bccd27089081e533",
+  "pdf_pages": 4,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.79,
+  "below90": 0,
+  "full_tsv": "native/cover/full.tsv",
+  "full_tsv_sha256": "2a736db9e18a91002cd063287ce5dadd4719c09c840a19563ddc89fd625a8616",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/cover/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.79",
+      "actual_png_sha256": "c35359a945fb4dd4256fda836f9b02e692f461c84cfc18678c039f4dbc27088f",
+      "pdf_png_sha256": "b0fde93eb41c49d5090999ae73ff0d93415fa9fd06af4953944f85b1a069e24b",
+      "review": "native/cover/review-001.png",
+      "overlay": "native/cover/overlay-001.png"
+    }
+  ]
+}

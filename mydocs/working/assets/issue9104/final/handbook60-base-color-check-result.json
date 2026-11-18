@@ -1,0 +1,22 @@
+{
+  "base_source": "4f44355f5ff234abd1289d340cb4a3fe13297982",
+  "candidate_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "same_png": false,
+  "base_png_sha256": "60a370b2988468714ce795bbac2b58105f158b42be8c9b18e92d2433b474a022",
+  "candidate_png_sha256": "1c47ca6afab8995f739cdd0195e893b3cf4fcd4a8084a3e9add8ea7c12401965",
+  "note": "White underlines over grey source fields pre-exist unchanged in exact devel WASM; current change preserves all authored field positions and decoration, not a Canvas color change",
+  "unchanged_source_field_region": [
+    100,
+    150,
+    770,
+    420
+  ],
+  "same_source_field_pixels": true,
+  "actual_changed_bbox": [
+    182,
+    795,
+    290,
+    811
+  ],
+  "changed_body_review": "Lower repeated title field visible origins now match independent Print; source upper white guide lines unchanged from exact devel"
+}

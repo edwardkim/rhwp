@@ -1,0 +1,92 @@
+{
+  "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+  "tag_source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+  "changed_paths": [
+    "scripts/crates_io_publish_preflight.py",
+    "scripts/tests/test_crates_io_publish_preflight.py",
+    "vendor/rhwp-jpeg-decoder/Cargo.toml"
+  ],
+  "unit_tests": 40,
+  "pre_fix_failures": 3,
+  "cargo_dry_run_exit": 0,
+  "archive_sha256": "1f2bd23d396ee20440f3909fe3248dc749272f0952b7387b11eababecf9ec9af",
+  "vcs": {
+    "git": {
+      "sha1": "4a765822988575099104c30081516b2bb7c4ddb5"
+    },
+    "path_in_vcs": "vendor/rhwp-jpeg-decoder"
+  },
+  "all_packages": [
+    {
+      "name": "rhwp-codec-resource",
+      "version": "0.1.0",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-contracts",
+      "version": "0.1.0",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-jpeg-decoder",
+      "version": "0.3.2-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-jpeg-encoder",
+      "version": "0.7.1-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-ooxml-chart",
+      "version": "0.1.0",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-password-crypto",
+      "version": "0.1.0",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-svg2pdf",
+      "version": "0.13.0-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-zune-jpeg",
+      "version": "0.5.15-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-hayro-ccitt",
+      "version": "0.3.0-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-hayro-jpeg2000",
+      "version": "0.4.0-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-qcms",
+      "version": "0.3.0-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-hayro-jbig2",
+      "version": "0.3.0-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp-pdf-import-backend",
+      "version": "0.3.78-rhwp.1",
+      "required_metadata_present": true
+    },
+    {
+      "name": "rhwp",
+      "version": "0.9.0",
+      "required_metadata_present": true
+    }
+  ],
+  "upload_performed": false
+}

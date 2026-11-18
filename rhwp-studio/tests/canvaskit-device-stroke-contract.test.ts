@@ -140,3 +140,50 @@ test('HWP dash periods use the nominal width before the raster floor', () => {
     surface.delete();
   }
 });
+
+// 관계형 검사: 합성 도형의 빈 선 패턴은 실선과 같은 실제 CanvasKit 픽셀을 그려야 한다.
+// 독립 문서 좌표나 PDF 일치율을 고정하는 검사가 아니며, 명시적 물리 패턴 검증은 유지한다.
+for (const shape of ['line', 'rectangle'] as const) {
+  test(`빈 일반 선 패턴은 실선으로 소비한다: ${shape}`, () => {
+    function raster(dash: number[] | 'solid') {
+      const surface = kit.MakeSurface(64, 64)!;
+      const canvas = surface.getCanvas();
+      let image;
+      try {
+        canvas.clear(kit.WHITE);
+        const value = renderer();
+        const paint = value.makeStrokePaint('#000000', 1);
+        try {
+          value.drawStrokeWithDash(dash, paint, () => {
+            if (shape === 'line') canvas.drawLine(5, 32, 59, 32, paint);
+            else canvas.drawRect(kit.XYWHRect(5, 5, 54, 54), paint);
+          });
+        } finally { paint.delete(); }
+        assert.equal(value.unsupportedOps.size, 0);
+        surface.flush();
+        image = surface.makeImageSnapshot();
+        return Array.from(image.readPixels(0, 0, { width: 64, height: 64,
+          colorType: kit.ColorType.RGBA_8888, alphaType: kit.AlphaType.Unpremul,
+          colorSpace: kit.ColorSpace.SRGB })!);
+      } finally {
+        image?.delete();
+        surface.delete();
+      }
+    }
+    const solid = raster('solid');
+    assert.ok(solid.some((channel, i) => i % 4 !== 3 && channel < 255));
+    assert.deepEqual(raster([]), solid);
+    assert.notDeepEqual(raster([6, 3]), solid);
+  });
+}
+
+test('명시적 물리 선 패턴의 빈 배열은 일반 실선으로 우회하지 않는다', () => {
+  const value = renderer();
+  const paint = value.makeStrokePaint('#000000', 1);
+  let drawCount = 0;
+  try {
+    value.drawStrokeWithDash([], paint, () => { drawCount += 1; }, []);
+    assert.equal(drawCount, 0);
+    assert.deepEqual([...value.unsupportedOps], ['strokeDash:invalidPhysicalPattern']);
+  } finally { paint.delete(); }
+});

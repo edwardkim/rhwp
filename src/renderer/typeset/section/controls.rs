@@ -16,7 +16,7 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         section_index: usize,
         has_table: bool,
-        picture_host_origin: (usize, u16, f64),
+        picture_host_origin: (usize, u16, f64, bool),
         native_hwp5_footnote_break: Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>,
     ) {
         match self.place_paragraph_controls_with_storage(
@@ -45,10 +45,26 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         section_index: usize,
         has_table: bool,
-        picture_host_origin: (usize, u16, f64),
+        picture_host_origin: (usize, u16, f64, bool),
         native_hwp5_footnote_break: Option<notes::footnotes::boundary::NativeHwp5FootnoteBreak>,
         storage: &S,
     ) -> Result<(), S::Error> {
+        // [#8795] 그림을 다음 쪽으로 미루는지 판정할 때의 앵커 문단 시작은 저장 vpos
+        // 스냅(VPOS_CORR)을 마친 위치다. 스냅 전 측정 누적에는 앞 문단의 trailing_ls 등
+        // drift 가 남는다(1351000-201500141 pi969: 786.67 ↔ 저장 59600 = 794.67).
+        // 이 값은 저장 사다리가 그림을 다음 쪽에 둔 경우에만 앵커 원점이다 — 그때 앵커의
+        // 첫 저장 줄 앞에는 자기 개체가 없다. 그림이 같은 쪽에 남으면 첫 저장 줄은 자기
+        // 그림 아래로 밀린 본문 위치이므로(1351000-201800239 pi838: 48506 = 19380 + 654 +
+        // 28472) 같은 쪽 배치는 스냅 전 원점을 그대로 쓴다.
+        let deferral_host_y = match (st.vpos_snapped_flow_start, st.vpos_snapped_flow_page) {
+            (Some((snapped, y)), Some(page))
+                if snapped == para_idx
+                    && page == (picture_host_origin.0, picture_host_origin.1) =>
+            {
+                y
+            }
+            _ => picture_host_origin.2,
+        };
         // [#1995] 한 문단에 근접-전면(near-full-page) non-TAC 그림이 여러 장이면
         // (임베드 매뉴얼을 페이지 이미지로 삽입한 경우 등) 각 이미지는 공존 불가하므로
         // 각각 한 페이지에 단독 배치해야 한다. 미수정 시 96장이 한 앵커에 스택되어
@@ -149,6 +165,14 @@ impl TypesetEngine {
             {
                 st.collect_endnote(en_ref.clone());
             }
+            // 앵커 쪽에 남는 겹침 불허 무리(#4770)는 첫 그림만 이 쪽에 두고 나머지는
+            // 새 쪽마다 하나씩 맨 위로 옮긴다. 앞 그림과 겹칠 수 없는데 쪽에 둘이 들어가지
+            // 않는다 — 1351000-201800239 s2/pi1007 그림 24장(150×212mm)은 한/글 2020
+            // Print 211~234쪽에 한 장씩이고, 뒤 빈 문단 저장 줄도 쪽마다 그림 옆(cs 42520)이다.
+            if stored_line_beside_pile && ctrl_idx > 0 {
+                st.queue_cascaded_pile_picture(para_idx, ctrl_idx);
+                continue;
+            }
             // [#1995] 다수 전면 이미지: 각 전면 그림을 새 페이지에 단독 배치.
             if is_multi_fullpage_img_para && fullpage_img_ctrls.contains(&ctrl_idx) {
                 st.force_new_page_with_storage(storage)?;
@@ -183,6 +207,30 @@ impl TypesetEngine {
                         continue;
                     }
                     if !has_table {
+                        // 원본 HWP3의 호스트는 앞 쪽에 남아도 그림 틀이 넘치고
+                        // 다음 쪽 저장 줄이 그 밴드를 예약했다면 그림만 이월한다.
+                        if st.col_count == 1
+                            && self.profile.get().hwp3_native_layout()
+                            && !self.profile.get().session_edited()
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                        {
+                            if let Some(placement) = crate::renderer::float_placement::hwp3_square_picture_before_page_break_placement(
+                                para, &paragraphs[para_idx + 1..],
+                                st.vpos_page_base.unwrap_or(0), picture_host_origin.2,
+                                st.available_height(), self.dpi,
+                            ) {
+                                st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                                    target_page: None,
+                                    following_body_para_index: None,
+                                    kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                                    para_index: para_idx,
+                                    control_index: ctrl_idx,
+                                    placement,
+                                });
+                                continue;
+                            }
+                        }
                         // 다음 본문이 그림 전체 높이에서 시작하는 저장 이월은 호스트와
                         // 개체의 쪽 소유를 분리한다. 현재 쪽 하단을 clamp해 그림을 끼우지 않는다.
                         if st.col_count == 1
@@ -194,10 +242,11 @@ impl TypesetEngine {
                         {
                             if let Some(placements) = crate::renderer::float_placement::stored_picture_group_next_page_placements(
                                 para, &paragraphs[para_idx + 1..], st.vpos_page_base.unwrap_or(0),
-                                picture_host_origin.2, st.available_height(), self.dpi,
+                                deferral_host_y, st.available_height(), self.dpi,
                             ) {
                                 let placement = placements[ctrl_idx];
                                 st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
+                                    target_page: None,
                                     following_body_para_index: None,
                                     kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                                     para_index: para_idx,
@@ -206,23 +255,48 @@ impl TypesetEngine {
                                 });
                                 continue;
                             }
-                            if let Some(placement) =
+                            // [#8732] 다음 쪽 저장 재시작 문단은 그림과 같은 쪽에서 시작한다.
+                            // 빈 문단의 되감김도 이 등식이 쪽 소유를 증명하므로 명시한다.
+                            let preceding_frame =
+                                st.deferred_next_page_stored_frames.iter().rev().find_map(
+                                    |frame| {
+                                        if !matches!(
+                                        frame.kind,
+                                        crate::renderer::typeset::DeferredStoredFrameKind::Picture
+                                    ) {
+                                            return None;
+                                        }
+                                        let reset = frame.following_body_para_index?;
+                                        (reset > para_idx).then_some((reset, frame.target_page?))
+                                    },
+                                );
+                            if let Some((placement, following_body_para_index)) =
                                 crate::renderer::float_placement::stored_picture_next_page_placement(
                                     para,
                                     &paragraphs[para_idx + 1..],
-                                    st.vpos_page_base.unwrap_or(0),
-                                    picture_host_origin.2,
+                                    crate::renderer::float_placement::StoredColumnFrame {
+                                        source_origin_hu: st.vpos_page_base.unwrap_or(0),
+                                        column_anchor_y: st.vpos_col_anchor,
+                                    },
+                                    preceding_frame.map(|(reset, _)| reset - para_idx - 1),
+                                    deferral_host_y,
                                     st.available_height(),
                                     self.dpi,
                                 )
+                                .map(|(placement, reset)| (placement, Some(para_idx + 1 + reset)))
                                 .or_else(|| crate::renderer::float_placement::stored_background_picture_next_page_placement(
                                     para, &paragraphs[para_idx + 1..],
-                                    st.vpos_page_base.unwrap_or(0), picture_host_origin.2,
-                                    st.available_height(), self.dpi))
+                                    st.vpos_page_base.unwrap_or(0), deferral_host_y,
+                                    st.available_height(), self.dpi).map(|placement| (placement, None)))
                             {
+                                let target_page = following_body_para_index.map(|index| {
+                                    preceding_frame.filter(|(reset, _)| *reset < index)
+                                        .map_or(st.pages.len() + 1, |(_, page)| page + 1)
+                                });
                                 st.defer_stored_frame(
                                     crate::renderer::typeset::DeferredStoredFrameControl {
-                                        following_body_para_index: None,
+                                        target_page,
+                                        following_body_para_index,
                                         kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                                         para_index: para_idx,
                                         control_index: ctrl_idx,
@@ -268,6 +342,37 @@ impl TypesetEngine {
                         // `find_inline_control_target_page` 의 `in_current` 검사가 `None` 을
                         // 돌려주므로 제자리 개체는 하나도 움직이지 않는다. 같은 문서의
                         // `pi=25` 가 그 경우다(`would_route=None`).
+                        // [#8660] 쪽 영역 안으로 제한한 문단 기준 개체가 본문 아래 끝을 넘으면
+                        // 한컴은 개체만 다음 쪽 본문 맨 위에 그린다(기준 문단은 남는다). 같은 쪽
+                        // 아래 끝으로 끌어올리는 그리기 단계 제한(#2032·#2075)보다 먼저 쪽을 정한다.
+                        if st.col_count == 1
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                        {
+                            if let Some(placement) = st
+                                .restricted_object_host_top(para_idx, para, picture_host_origin.2, self.dpi)
+                                .and_then(|host_top| {
+                                    crate::renderer::float_placement::overflow_para_object_next_page_placement(
+                                        ctrl,
+                                        host_top,
+                                        st.available_height(),
+                                        self.dpi,
+                                    )
+                                })
+                            {
+                                st.defer_stored_frame(
+                                    crate::renderer::typeset::DeferredStoredFrameControl {
+                                        following_body_para_index: None,
+                                        kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
+                                        para_index: para_idx,
+                                        control_index: ctrl_idx,
+                                        placement,
+                                        target_page: None,
+                                    },
+                                );
+                                continue;
+                            }
+                        }
                         let routed =
                             if crate::renderer::pagination::is_routable_anchored_picture_or_shape(
                                 ctrl,
@@ -295,9 +400,10 @@ impl TypesetEngine {
                             }
                         }
                         // [Task #1052] 글상자 내 각주 수집 (engine.rs:1376-1398 동등)
-                        // NO_LS 호스트의 측정 원점만 전달한다. 저장 vpos 소유자는
-                        // 기존 저장 배치 경로에 남긴다.
-                        let host_top = (para.line_segs.is_empty()
+                        // 저장 첫 줄과 배치 전 펜이 같은 원점을 증명하고 같은 쪽/단에
+                        // 수용된 host도 확정 원점을 전달한다. 소유 줄이 다른 쪽으로
+                        // 옮겨진 그림의 위치를 원시 vpos만으로 추정하지 않는다.
+                        let host_top = ((para.line_segs.is_empty() || picture_host_origin.3)
                             && (st.pages.len(), st.current_column)
                                 == (picture_host_origin.0, picture_host_origin.1))
                             .then_some(picture_host_origin.2);
@@ -321,6 +427,49 @@ impl TypesetEngine {
                             }) {
                                 st.record_paragraph_float_placement_with_storage((para_idx, ctrl_idx), placement, storage)?;
                                 st.register_side_wrap_picture(para_idx, ctrl_idx, para, Some(placement.anchor_y), styles);
+                            }
+                        }
+                        // 빈 저장 호스트 앞을 같은 앵커의 겹침 금지 그림들이 닫으면,
+                        // 측정한 전체 프레임 예약과 각 그림의 개별 원점을 함께 발행한다.
+                        if !self.profile.get().session_edited()
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout())
+                            && (st.pages.len(), st.current_column)
+                                == (picture_host_origin.0, picture_host_origin.1)
+                        {
+                            let host_style = styles.para_styles.get(para.para_shape_id as usize);
+                            if let Some(placements) =
+                                crate::renderer::float_placement::stored_picture_stack_before_host(
+                                    para,
+                                    st.vpos_page_base.unwrap_or(0),
+                                    picture_host_origin.2,
+                                    host_style.map_or(0.0, |s| s.margin_left),
+                                    host_style.map_or(0.0, |s| s.spacing_after),
+                                    self.dpi,
+                                )
+                            {
+                                if let Some((_, selected)) = placements
+                                    .iter()
+                                    .find(|(index, _)| *index == ctrl_idx)
+                                    .copied()
+                                    .filter(|(_, p)| {
+                                        p.paragraph_end(st.current_height, 0.0)
+                                            <= st.available_height()
+                                    })
+                                {
+                                    for (index, placement) in placements {
+                                        st.record_paragraph_float_placement_with_storage(
+                                            (para_idx, index),
+                                            placement,
+                                            storage,
+                                        )?;
+                                    }
+                                    st.align_flow_to(
+                                        st.current_height
+                                            .max(selected.paragraph_end(st.current_height, 0.0)),
+                                    );
+                                    continue;
+                                }
                             }
                         }
                         // 저장된 그림 앞 공간과 뒤 호스트 줄을 하나의 프레임으로 예약한다.
@@ -528,6 +677,10 @@ impl TypesetEngine {
                             .para_styles
                             .get(para.para_shape_id as usize)
                             .map_or(0.0, |style| style.spacing_before);
+                        let host_spacing_after = styles
+                            .para_styles
+                            .get(para.para_shape_id as usize)
+                            .map_or(0.0, |style| style.spacing_after);
                         // (obj_h, extra=obj_h+margin_bottom, h_left, h_right px)
                         let pushdown_h: Option<(f64, f64, f64, f64)> = match ctrl {
                             Control::Picture(pic)
@@ -549,6 +702,7 @@ impl TypesetEngine {
                                         para,
                                         &pic.common,
                                         host_spacing_before,
+                                        host_spacing_after,
                                         self.dpi,
                                     )
                                 } else {
@@ -577,9 +731,31 @@ impl TypesetEngine {
                                     })
                                     .flatten()
                                     .filter(|end| *end <= st.available_height());
+                                // 띠가 줄 상자 아래에서 시작하는 글 없는 host 는 줄이 띠 위에
+                                // 따로 있다 — 다음 문단은 문단 시작 + 오프셋 + 띠에서 시작한다
+                                // (배치 `layout_shape_item` 과 같은 판정).
+                                let band_end_above_line = (pic.caption.is_none()
+                                    && crate::renderer::textless_host_line_above_topbottom_float(
+                                        paragraphs,
+                                        para_idx,
+                                        &pic.common,
+                                    )
+                                    && (st.pages.len(), st.current_column)
+                                        == (picture_host_origin.0, picture_host_origin.1))
+                                    .then(|| {
+                                        picture_host_origin.2
+                                            + hwpunit_to_px(
+                                                crate::renderer::float_placement::signed_hwpunit(
+                                                    pic.common.vertical_offset,
+                                                ),
+                                                self.dpi,
+                                            )
+                                            + h
+                                            + mb
+                                    });
                                 // 호스트 글줄은 이미 current_height에 들어 있다. 문단
                                 // 앵커에서 계산한 실제 끝까지 남은 띠만 예약한다.
-                                let advance = source_end.map_or(
+                                let advance = source_end.or(band_end_above_line).map_or(
                                     (h + mb - absorbed_host_line).max(0.0) + host_line,
                                     |end| (end - st.current_height).max(0.0),
                                 );
@@ -591,7 +767,11 @@ impl TypesetEngine {
                                     && matches!(s.common().vert_rel_to, VertRelTo::Para) =>
                             {
                                 let cm = s.common();
-                                let h = hwpunit_to_px(cm.height as i32, self.dpi);
+                                let h = hwpunit_to_px(
+                                    s.restricted_textbox_table_height_hu()
+                                        .map_or(cm.height as i32, |h| h.max(cm.height as i32)),
+                                    self.dpi,
+                                );
                                 let mb = hwpunit_to_px(cm.margin.bottom as i32, self.dpi);
                                 let hl = hwpunit_to_px(cm.horizontal_offset as i32, self.dpi);
                                 let hr = hl + hwpunit_to_px(cm.width as i32, self.dpi);
@@ -603,6 +783,7 @@ impl TypesetEngine {
                                         para,
                                         cm,
                                         host_spacing_before,
+                                        host_spacing_after,
                                         self.dpi,
                                     );
                                 Some((h, (h + mb - absorbed_host_line).max(0.0), hl, hr))
@@ -617,10 +798,9 @@ impl TypesetEngine {
                             const PUSHDOWN_GAP_TOL_PX: f64 = 8.0;
                             let already_accounted = para_idx > 0 && {
                                 let v_cur = para.line_segs.first().map(|s| s.vertical_pos);
-                                let prev_end = paragraphs[para_idx - 1]
-                                    .line_segs
-                                    .last()
-                                    .map(|s| s.vertical_pos.saturating_add(s.line_height));
+                                let prev_end = crate::renderer::stored_previous_flow_end_hu(
+                                    paragraphs, para_idx,
+                                );
                                 match (v_cur, prev_end) {
                                     (Some(vc), Some(pe)) if vc > pe => {
                                         hwpunit_to_px((vc - pe) as i32, self.dpi)
@@ -674,7 +854,7 @@ impl TypesetEngine {
                                 let single_picture_overflows = pushdown_topbottom_ctrl_count == 1
                                     && picture_host_origin.0 == st.pages.len()
                                     && picture_host_origin.1 == st.current_column
-                                    && picture_host_origin.2 > 1.0
+                                    && deferral_host_y > 1.0
                                     && stored_ladder_restarts_after(
                                         para,
                                         paragraphs.get(para_idx + 1),
@@ -688,7 +868,7 @@ impl TypesetEngine {
                                                 .max(0),
                                                 self.dpi,
                                             );
-                                            picture_host_origin.2 + v_off + obj_h
+                                            deferral_host_y + v_off + obj_h
                                                 > st.available_height() + 0.5
                                         }
                                         _ => false,

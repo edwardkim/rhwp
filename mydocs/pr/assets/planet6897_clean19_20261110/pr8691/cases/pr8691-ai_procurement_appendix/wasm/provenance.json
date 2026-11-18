@@ -1,0 +1,305 @@
+{
+  "pr": 8691,
+  "backend": "wasm",
+  "key": "pr8691-ai_procurement_appendix",
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "producer": {
+    "complete": true,
+    "phase": "complete",
+    "runs": [
+      {
+        "name": "native",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "-j",
+          "8"
+        ],
+        "pid": 83180,
+        "exit_code": 0
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "pid": 93423,
+        "exit_code": 0
+      }
+    ],
+    "parent_head": "0f2ebe265e6ef4f2572925fca66ed2f5bd18a0c3",
+    "source_hashes": {
+      "src/document_core/queries/rendering.rs": "c1b43a62d9a6aa730c9dfddd17145b798018b46a34fb4cdf28e19b004a74fe42",
+      "src/paint/builder.rs": "966701b7a6fb94b546aa33c9cf49d5057c215d56d24b76da775f20b468fc95ac",
+      "src/parser/hwp3/mod.rs": "eecb17a72eaba544d2afbaa7b1aa21c736fbefb5c54fe52bf4d4ac1a920eea84",
+      "src/renderer/composer/line_breaking.rs": "6e6f2c7ba5f795e83f8643d4bf7c282f1c020b0556eac77664480a3b1fb701cf",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "836ab234a5035f093d218cdfc296f7e6d7bcf047f15e23557687dd8009cbeee8",
+      "src/renderer/float_placement/square_lane.rs": "2d29eb142a8adf351bc00d7bef132b56b8dd3560b56d595f94fb481f0cd0834b",
+      "src/renderer/float_placement/stored_square_top_band.rs": "55f1353be64100d0edaf9894d4e85a8c08b01dd11da619bd0af2e4a2b6d5db5c",
+      "src/renderer/height_measurer.rs": "8ad30b462ac0e7ec4e81e7a1cf46cd950edd25a301aaa17b147749bc363580db",
+      "src/renderer/layout.rs": "7723e9e3508d13e2cfbf645679c4e99d6902e2aed28b94058ac2fb459342f202",
+      "src/renderer/layout/paragraph_layout.rs": "b9a757e5bd258c134075202598a9eb3408e61df7313560c52c9809854082124f",
+      "src/renderer/layout/shape_layout.rs": "afc8da8da519faa674b2b6b36d530edd21b0d6648be0f10b2687f4754f93018d",
+      "src/renderer/layout/stored_tac_frame.rs": "325f0a1ed57eda8e61f3b3fbefac9ceb99c40be013f54909b7c1dc28d9ded5ea",
+      "src/renderer/layout/table_layout.rs": "60e94b774ff8ae5738d68d298aefd7f968e13a78ffe720c07c65e2c7615e626d",
+      "src/renderer/mod.rs": "259a54bef6781c60476ba7e6b46492a2e9ed508615107cd63fc609f9b55eb603",
+      "src/renderer/pagination.rs": "c3cb2acda1f75ad9a9538c8d3686394593de08df7e3dd279a5f00191204c03ea",
+      "src/renderer/render_tree.rs": "f5adc25d468bec605aa7f3d917d46d307b2a6ac1abf62ca2f7917b7e215bef1e",
+      "src/renderer/svg.rs": "4de706badd8164210757f5bb5f5077edbb47cb50e2174197403c1903563052bc",
+      "src/renderer/typeset.rs": "e3d513b8acfead7e5fd2d4e36eab65de6159b54f96b92a8df510d584803d137c",
+      "src/renderer/typeset/controls/deferred_picture.rs": "44f6fbbd5d54f8e5be275c881a9ada93b4fb1e0d82592b3571176448f05ce710",
+      "src/renderer/typeset/controls/host_wrap.rs": "fb80c43d2b01717e53b2c44cf9ccebd62afcfd98c86be50cf96396b11a5bd677",
+      "src/renderer/typeset/controls/stored_tac.rs": "b08e2c2501abc268d7647f299129f4b93d110dcf597855e7e16f2e5a17f806f6",
+      "src/renderer/typeset/controls/tac_fit.rs": "efec0181ba25c2f2ccc9a8629d1bfe268dac9251d2105824042840e721d1fed6",
+      "src/renderer/typeset/controls/wrap_absorption.rs": "1aa0fdd8a8366b8387c9a7d90eda9a75a7704f46a241524f00e55ea55c227ee3",
+      "src/renderer/typeset/controls/wrap_flow.rs": "175fd74ff3491c7dfe6a0ffd6e85195c11079c6b51c418d1445fe70cf85bed78",
+      "src/renderer/typeset/controls/wrap_match.rs": "6d0a6f49c0f26f53fbb321a6ba69c124a9f1ad051b5b416d8a608ec6f80819a7",
+      "src/renderer/typeset/paragraph.rs": "cbc38ba38a69b2ede303ca1ce9df7a65b44b37b5f71d7d6442d48ba668c0e385",
+      "src/renderer/typeset/paragraph/content.rs": "894dd06bb33acd4151e1c44e187b6f12103870c24eac14d9e38e36999523c5fc",
+      "src/renderer/typeset/paragraph/format.rs": "c95b71c449b9a08f028fbc9890cbba15c2d94d4a63a07f4a766a6230597a698a",
+      "src/renderer/typeset/paragraph/placement.rs": "564d2459e485735a05b871d5695a33a4cb10eba81eefc29122168447e4aa6670",
+      "src/renderer/typeset/section.rs": "25caa0b783ce499d1887e1ad8c45ffd11906dd3db3b86ac1134900b543c5f450",
+      "src/renderer/typeset/section/controls.rs": "a896e9f643f8db70cf5d1c3b7d014cb491e16265f35c4cc0cbb4273d5287ac4c",
+      "src/renderer/typeset/section/flow.rs": "ae3ede44081d412e9d7fa10da9c03cca1d3b3d16222cf3a2272301cb0b78e852",
+      "src/renderer/typeset/section/post_flow.rs": "579b189656d839f11795c6643f3a35692a266412d37e7af5ee076d8a70e86b78",
+      "src/renderer/typeset/state.rs": "3ac568f6d7e4b724ac0febe8d4c4136c92832513a23dc7cea0a9c94b5762dfc7",
+      "src/renderer/typeset/state/commands.rs": "55ed99145004bca61817457f58f45f8cb1a8f257950ff6559f9de8e7af46468b",
+      "src/renderer/typeset/state/data.rs": "5e5dc6c299f2aed57b64adda922c1961938e0a0b1d490ae358fb67f75c150e89",
+      "src/renderer/typeset/state/transition.rs": "5ed3a9f1d0e0a68fc6db91d8df563ca987d1a4687e4a8dc70defb9bbb37113f7",
+      "src/renderer/typeset/table/block/entry.rs": "873230a1e73286cef074fb2eaf4331697250af22835cb913324989f086aa4617"
+    },
+    "source_diff_sha256": "2c6584f12fcbcdda2f23c275ad91fb10a24066a4dc8d790579f90752a4c9f67e",
+    "started_at": "2026-11-11T00:50:48.049257+09:00",
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+    "binary_sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d",
+    "wasm_files": {
+      "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "rhwp_bg.wasm": "bf23f3629528d45cdc6a223d148e1aa37e1887a6fb4d25b40b41560369b9a851"
+    },
+    "studio_public_matches": {
+      "rhwp.js": true,
+      "rhwp_bg.wasm": true
+    },
+    "wasm_method": "Mac locked wrapper local no-opt alternative; not Docker optimization",
+    "success": true,
+    "finished_at": "2026-11-11T00:58:42.135978+09:00"
+  },
+  "case": {
+    "pr": 8691,
+    "key": "pr8691-ai_procurement_appendix",
+    "doc": "samples/issue8682/ai_procurement_appendix.hwp",
+    "pdf": "pdf/issue8682/ai_procurement_appendix-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "8f18a357c73ff2aae4b0e2a2df3f1fecf9679aab65d137e684c7791685c09b5a",
+    "pdf_sha256": "a6fe15e195cda7b85c520b69bfa53bc8a0727821ac90c1822e956e227269c68b",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix",
+  "pages": 4,
+  "minimum": 97.46,
+  "claim_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "review_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/silhouette.tsv",
+      "sha256": "7c842622d9068f78d163dfa282d24ad6e9d336b704c350567dc317957d06fac0"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/silhouette_manifest.json",
+      "sha256": "66319efd1b7659d5d58e3b6ed2cb8cfdeeed5d152fc1112a1edd37646dd2cfbe"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/rhwp_png/rhwp_001.png",
+      "sha256": "777fbe3b962a469514c5276d4e98d574087817f1a41183564437e2a151e28186"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/pdf_png/pdf-001.png",
+      "sha256": "c3405d85ac43502699ca7eb1abe245002040b96149e1f5126e705e6a1e5bba4f"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/review/review_001.png",
+      "sha256": "51f0430e6e3ed1cb3bbbeba79994336859f1d76321c96c19699e32615ec42d94"
+    },
+    {
+      "page": 1,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/overlay/overlay_001.png",
+      "sha256": "5096cbe637d86dd77be4138d0316e87e669eda4955dc07941218e54fc346a54a"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/raw-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/rhwp_png/rhwp_002.png",
+      "sha256": "47d4d635c2595c5fa485fa4e3bcd21cd6c5c0fac198fbf44fb70eb11ee6d43fb"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/pdf-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/pdf_png/pdf-002.png",
+      "sha256": "7b6b2295ba38199cbfd6f65dac2ba7288543d6fc440cb9434dbdd76cfbeb975b"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/review-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/review/review_002.png",
+      "sha256": "475dd35624308c1bcaf549ee67a06269601da4face948d19a3645cffabf12e99"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/overlay-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/overlay/overlay_002.png",
+      "sha256": "28023ea0eacde3adb9fa4d063f2ecd2c3fb4242d89e4ef1a75aefe19db281cb9"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/raw-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/rhwp_png/rhwp_003.png",
+      "sha256": "7d5169581d16a1e6eaac39bde4f8d9e410cd6ff5e4658f55aab965174ba5a13c"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/pdf-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/pdf_png/pdf-003.png",
+      "sha256": "b04a119b84b02df90922166e801f702d2264bab88e8e5be1d1695bbf5f28cbb3"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/review-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/review/review_003.png",
+      "sha256": "f9a3d1814b827f9790af183b28cf167278f889b5d013f13fbed4493d17e05222"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim",
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/overlay-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/overlay/overlay_003.png",
+      "sha256": "54a1f4d090972b13baedeafe0b80361f17aba39419641d1dd305523963fc4103"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/raw-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/rhwp_png/rhwp_004.png",
+      "sha256": "2c5259472c42ea0d0b6812606687df23876a334308b907b0840d84bdc57b7521"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/pdf-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8691-ai_procurement_appendix/pdf_png/pdf-004.png",
+      "sha256": "0dbb2b6a73661e64acbceb73443ba0dc6d0cb96e3d20ba438eff16f2e5c3cec7"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/review-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/review/review_004.png",
+      "sha256": "090223aea37b0a23277c517c658d4f57519b7d9d4b5b63560e6c60619f786a5a"
+    },
+    {
+      "page": 4,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8691/cases/pr8691-ai_procurement_appendix/wasm/overlay-004.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8691-ai_procurement_appendix/overlay/overlay_004.png",
+      "sha256": "01808255e09fc22377e876ac7edec8ac89403d9cdc00c4c9017d0ad7f7b16fdb"
+    }
+  ],
+  "final_direct_reading": "wasm-direct-reading-audit.json: 동일한 raw/PDF SHA의 직접 판독 완료"
+}

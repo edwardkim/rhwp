@@ -1,4 +1,6 @@
 /**
+ * 관계형: 같은 쪽의 legacy/layer 채우기 순서·픽셀 출력을 대조한다. PDF 좌표를 고정하는 검사가 아니다.
+ * 주석 갱신: 2026-11-11T16:29:24+09:00 (Asia/Seoul).
  * Browser canvas visual diff between the legacy PageRenderTree path and the
  * default PageLayerTree replay path.
  *
@@ -162,7 +164,9 @@ function resultLine(result, { markdown = false } = {}) {
     ? `${result.width}x${result.height}`
     : `${result.legacyWidth}x${result.legacyHeight} vs ${result.layerWidth}x${result.layerHeight}`;
   const fixture = markdown ? markdownCell(result.fixture) : result.fixture;
-  return `${fixture} page ${result.pageIndex + 1}: ${result.diffPixels}/${result.totalPixels} pixels differ (${percent}%), max channel delta ${result.maxChannelDelta}, size ${size}`;
+  return `${fixture} page ${result.pageIndex + 1}: ${result.diffPixels}/${result.totalPixels} pixels differ (${percent}%), max channel delta ${result.maxChannelDelta}, size ${size}`
+    + (result.paintOrderRequired && !result.paintOrderMatched
+      ? `, fill order mismatch at ${result.paintOrderFirstMismatch}` : '');
 }
 
 function renderMarkdownSummary(config, results) {
@@ -265,8 +269,35 @@ runTest('Canvas legacy/layer visual diff', async ({ page }) => {
 
           const legacyCanvas = document.createElement('canvas');
           const layerCanvas = document.createElement('canvas');
-          doc.renderPageToCanvasLegacy(args.pageIndex, legacyCanvas, args.scale);
-          doc.renderPageToCanvas(args.pageIndex, layerCanvas, args.scale);
+          // 같은 단의 앵커는 두 소비자 모두 공통 paint 순서로 그려야 한다.
+          // OS별 안티앨리어싱이 차이를 가려도, 배경 채우기의 순서 역전 자체를 검출한다.
+          // 실제 Canvas 호출은 그대로 실행하고 관측 함수는 반드시 복원한다.
+          const fills = [[], []];
+          const proto = CanvasRenderingContext2D.prototype;
+          const fillRect = proto.fillRect;
+          proto.fillRect = function (...coordinates) {
+            const index = this.canvas === legacyCanvas ? 0 : this.canvas === layerCanvas ? 1 : -1;
+            if (index >= 0) {
+              const matrix = this.getTransform();
+              fills[index].push({
+                coordinates,
+                transform: [matrix.a, matrix.b, matrix.c, matrix.d, matrix.e, matrix.f],
+                fill: String(this.fillStyle),
+                alpha: this.globalAlpha,
+                composite: this.globalCompositeOperation,
+              });
+            }
+            return Reflect.apply(fillRect, this, coordinates);
+          };
+          try {
+            doc.renderPageToCanvasLegacy(args.pageIndex, legacyCanvas, args.scale);
+            doc.renderPageToCanvas(args.pageIndex, layerCanvas, args.scale);
+          } finally {
+            proto.fillRect = fillRect;
+          }
+          const paintOrderMatched = JSON.stringify(fills[0]) === JSON.stringify(fills[1]);
+          const paintOrderFirstMismatch = fills[0].findIndex((fill, index) =>
+            JSON.stringify(fill) !== JSON.stringify(fills[1][index]));
 
           const width = Math.max(legacyCanvas.width, layerCanvas.width);
           const height = Math.max(legacyCanvas.height, layerCanvas.height);
@@ -325,11 +356,20 @@ runTest('Canvas legacy/layer visual diff', async ({ page }) => {
 
           const totalPixels = width * height;
           const diffRatio = totalPixels === 0 ? 1 : diffPixels / totalPixels;
-          const pass = sameSize && diffRatio <= args.maxDiffRatio;
+          const pass = sameSize && diffRatio <= args.maxDiffRatio
+            && (!args.verifyPaintOrder || paintOrderMatched);
           const includeImages = args.writeImages || !pass;
 
           return {
             pageIndex: args.pageIndex,
+            paintOrderRequired: args.verifyPaintOrder,
+            paintOrderMatched,
+            paintOrderFirstMismatch,
+            fillCounts: fills.map(items => items.length),
+            paintOrderMismatch: !paintOrderMatched ? {
+              legacy: fills[0][paintOrderFirstMismatch] ?? null,
+              layer: fills[1][paintOrderFirstMismatch] ?? null,
+            } : null,
             legacyWidth: legacyCanvas.width,
             legacyHeight: legacyCanvas.height,
             layerWidth: layerCanvas.width,
@@ -351,6 +391,7 @@ runTest('Canvas legacy/layer visual diff', async ({ page }) => {
           };
         }, {
           pageIndex,
+          verifyPaintOrder: fixture === 'basic/KTX.hwp',
           scale: config.scale,
           channelTolerance: config.channelTolerance,
           maxDiffRatio: config.maxDiffRatio,

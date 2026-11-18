@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-11-10T04:14:25.127128+09:00",
+  "source_manifest": "mydocs/pr/assets/planet6897_20261106/final-b768bee1-20261109/final-source/incoming8754-clip5587/native-manifest.json",
+  "source_manifest_sha256": "62c4d63f5b6a76c85d757dce3e87f2ff29401277d21ec3c946c3cd988895707b",
+  "recorded_fonts": 1210,
+  "read_files": 1210,
+  "missing": [],
+  "changed": [],
+  "font_set_sha256": "a1c13f23aebefa15c7a00391a4f6f6e919edc33ac6d57d0d0bc26deff34c5ed6"
+}

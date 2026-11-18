@@ -374,9 +374,11 @@ impl TypesetState {
     /// 아래끝 뒤에 남는 본문 공간).
     ///
     /// 한/글은 줄을 놓을 때마다 그 줄의 각주를 등록한다. 각주가 다 들어가면 뒤 줄은 그 위에
-    /// 들어가야 하고, 앞부분만 들어가면 그 쪽의 나머지를 각주가 차지해 뒤 줄은 다음 쪽으로 간다.
-    /// 한 줄도 들어가지 않으면 각주는 통째로 다음 쪽에서 시작하고 뒤 줄을 막지 않는다
-    /// (그 뒤 각주도 번호 순서대로 따라간다).
+    /// 들어가야 한다. 다 들어가지 않으면 그 줄 뒤 공간에 들어가는 가장 긴 앞 조각(저장 각주
+    /// 사다리의 나눔 또는 줄 단위)만 이 쪽에 남고, 뒤 줄은 그 앞 조각 위에 남는 공간을 쓴다
+    /// — 글자 줄만 있는 각주는 앞 조각이 남은 공간을 거의 다 채우지만, 나눌 수 없는 표 줄이
+    /// 걸리면 앞 조각이 짧아 뒤 본문이 이어진다(i838 90쪽 각주 273). 한 줄도 들어가지 않으면
+    /// 각주는 통째로 다음 쪽에서 시작한다. 어느 쪽이든 뒤 번호 각주는 다음 쪽으로 따라간다.
     pub(in crate::renderer::typeset) fn own_line_note_levels(
         &self,
         notes: &[crate::renderer::typeset::OwnLineNote],
@@ -385,9 +387,8 @@ impl TypesetState {
         let mut levels: Vec<OwnLineNoteLevel> = Vec::new();
         let mut placed: Vec<crate::renderer::typeset::OwnLineNote> = Vec::new();
         let mut deferred = self.has_deferred_body_footnotes();
-        let mut blocked = false;
         for note in notes {
-            if !blocked && !deferred {
+            if !deferred {
                 let space = space_after_line(note.line) + 0.5;
                 let with = |content_height: f64| {
                     let mut probe = note.clone();
@@ -396,27 +397,31 @@ impl TypesetState {
                 };
                 if with(note.content_height) <= space {
                     placed.push(note.clone());
-                } else if note
-                    .stored_split
-                    .map(|split| split.prefix_height)
-                    .or_else(|| note.lines.first().map(|(height, _)| *height))
-                    .is_some_and(|first| with(first) <= space)
-                {
-                    blocked = true;
                 } else {
+                    let prefix = note
+                        .stored_split
+                        .map(|split| split.prefix_height)
+                        .filter(|&height| with(height) <= space)
+                        .or_else(|| {
+                            (1..note.lines.len())
+                                .rev()
+                                .map(|end| own_line_note_fragment_height(note, 0, end))
+                                .find(|&height| with(height) <= space)
+                        });
+                    if let Some(height) = prefix {
+                        let mut probe = note.clone();
+                        probe.content_height = height;
+                        placed.push(probe);
+                    }
                     deferred = true;
                 }
             }
             let cost = self.own_line_note_cost(placed.iter());
             match levels.last_mut() {
-                Some(level) if level.line == note.line => {
-                    level.cost = cost;
-                    level.blocks_later_lines = blocked;
-                }
+                Some(level) if level.line == note.line => level.cost = cost,
                 _ => levels.push(OwnLineNoteLevel {
                     line: note.line,
                     cost,
-                    blocks_later_lines: blocked,
                 }),
             }
         }
@@ -519,20 +524,8 @@ impl TypesetState {
             return Some(split);
         }
         let line_count = note.lines.len();
-        let fragment_height = |start: usize, end: usize| -> f64 {
-            note.lines[start..end]
-                .iter()
-                .enumerate()
-                .map(|(index, (height, spacing))| {
-                    height
-                        + if start + index + 1 < end {
-                            *spacing
-                        } else {
-                            0.0
-                        }
-                })
-                .sum()
-        };
+        let fragment_height =
+            |start: usize, end: usize| own_line_note_fragment_height(note, start, end);
         let split_line = (1..line_count)
             .rev()
             .find(|&end| fits(fragment_height(0, end)))?;
@@ -562,8 +555,26 @@ impl TypesetState {
 #[derive(Debug, Clone, Copy)]
 pub(in crate::renderer::typeset) struct OwnLineNoteLevel {
     pub line: usize,
-    /// 이 줄까지 이 쪽에 통째로 놓이는 각주들이 본문에서 빼는 높이.
+    /// 이 줄까지 이 쪽에 놓이는 각주(다 들어가지 않는 각주는 앞 조각)가 본문에서 빼는 높이.
     pub cost: f64,
-    /// 이 줄의 각주가 앞부분만 들어가 쪽 나머지를 차지한다(뒤 줄은 다음 쪽).
-    pub blocks_later_lines: bool,
+}
+
+/// 각주 줄 `start..end` 조각의 높이 — 마지막 줄 뒤 줄간격은 넣지 않는다.
+fn own_line_note_fragment_height(
+    note: &crate::renderer::typeset::OwnLineNote,
+    start: usize,
+    end: usize,
+) -> f64 {
+    note.lines[start..end]
+        .iter()
+        .enumerate()
+        .map(|(index, (height, spacing))| {
+            height
+                + if start + index + 1 < end {
+                    *spacing
+                } else {
+                    0.0
+                }
+        })
+        .sum()
 }

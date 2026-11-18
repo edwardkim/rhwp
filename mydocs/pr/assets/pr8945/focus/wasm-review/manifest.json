@@ -1,0 +1,130 @@
+[
+  {
+    "case": "b-rowbreak-bottom-margin-overflow",
+    "page": 1,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/rhwp_png/rhwp_001.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/pdf_png/pdf-001.png"
+    ],
+    "crop_source_px": [
+      101,
+      120,
+      233,
+      990
+    ],
+    "scale": 1,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/b-rowbreak-bottom-margin-overflow-p001.png"
+  },
+  {
+    "case": "b-rowbreak-bottom-margin-overflow",
+    "page": 2,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/rhwp_png/rhwp_002.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/pdf_png/pdf-002.png"
+    ],
+    "crop_source_px": [
+      104,
+      157,
+      689,
+      217
+    ],
+    "scale": 2,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/b-rowbreak-bottom-margin-overflow-p002.png"
+  },
+  {
+    "case": "c-rowbreak-table-moves-next-page",
+    "page": 1,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/c-rowbreak-table-moves-next-page/rhwp_png/rhwp_001.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/c-rowbreak-table-moves-next-page/pdf_png/pdf-001.png"
+    ],
+    "crop_source_px": [
+      101,
+      120,
+      193,
+      968
+    ],
+    "scale": 1,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/c-rowbreak-table-moves-next-page-p001.png"
+  },
+  {
+    "case": "c-rowbreak-table-moves-next-page",
+    "page": 2,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/c-rowbreak-table-moves-next-page/rhwp_png/rhwp_002.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/c-rowbreak-table-moves-next-page/pdf_png/pdf-002.png"
+    ],
+    "crop_source_px": [
+      101,
+      157,
+      689,
+      267
+    ],
+    "scale": 2,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/c-rowbreak-table-moves-next-page-p002.png"
+  },
+  {
+    "case": "d-rowbreak-splits-at-row-boundary",
+    "page": 1,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/rhwp_png/rhwp_001.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/pdf_png/pdf-001.png"
+    ],
+    "crop_source_px": [
+      101,
+      120,
+      689,
+      969
+    ],
+    "scale": 1,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/d-rowbreak-splits-at-row-boundary-p001.png"
+  },
+  {
+    "case": "d-rowbreak-splits-at-row-boundary",
+    "page": 2,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/rhwp_png/rhwp_002.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/pdf_png/pdf-002.png"
+    ],
+    "crop_source_px": [
+      101,
+      157,
+      689,
+      579
+    ],
+    "scale": 1,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/d-rowbreak-splits-at-row-boundary-p002.png"
+  },
+  {
+    "case": "a-rowbreak-float",
+    "page": 1,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/a-rowbreak-float/rhwp_png/rhwp_001.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/a-rowbreak-float/pdf_png/pdf-001.png"
+    ],
+    "crop_source_px": [
+      101,
+      120,
+      689,
+      242
+    ],
+    "scale": 2,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/a-rowbreak-float-p001.png"
+  },
+  {
+    "case": "control-float",
+    "page": 1,
+    "inputs": [
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/control-float/rhwp_png/rhwp_001.png",
+      "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/control-float/pdf_png/pdf-001.png"
+    ],
+    "crop_source_px": [
+      101,
+      120,
+      689,
+      242
+    ],
+    "scale": 2,
+    "output": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm-pairs/control-float-p001.png"
+  }
+]

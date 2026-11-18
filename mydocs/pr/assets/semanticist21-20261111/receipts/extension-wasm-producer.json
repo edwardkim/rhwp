@@ -1,0 +1,22 @@
+{
+  "source": "5ea1227505978156082121f1601cb03044a0583f",
+  "role": "unchanged engine for PR8915 extension-only browser comparison",
+  "artifacts": [
+    {
+      "file": "rhwp.js",
+      "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+    },
+    {
+      "file": "rhwp_bg.wasm",
+      "sha256": "d04aa82f7a395e6576d8d9af6f9ebbdb752ef742cd9c9c7ffc58e1a4918a5f02"
+    },
+    {
+      "file": "rhwp.d.ts",
+      "sha256": "998c8145a37f67edf71591aceb64f3ebb2fb58aa4bff635f651ea1112b2b7b88"
+    },
+    {
+      "file": "rhwp_bg.wasm.d.ts",
+      "sha256": "b804de95d3cc6a60540cd1df4b2b8b0a03c9689ea3af2c08953f85077d578ee6"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "pid": 2494271,
+  "state": "native-producer-ready",
+  "steps": [],
+  "updated_at": "2026-11-06T20:58:09.751277+00:00",
+  "build_exit": 0,
+  "source": {
+    "source_head": "319d2e1d1e2811bf9b90bef81bc179232cbd70a4",
+    "prepared_at": "2026-11-06T20:51:36.140283+00:00",
+    "changes": [
+      {
+        "path": "mydocs/pr/assets/planet6897_20261106/equation-implicit-fields-plan.md",
+        "sha256": "a0f92dd9e67327196efbd0cc76571470c598de96634b5e0dce90e73366edfd09"
+      },
+      {
+        "path": "src/renderer/typeset/section/tail.rs",
+        "sha256": "e3bbc520fb53f59078e6e4a8aeb4be668e112ab5529a7a0931294586c5ee9d84"
+      },
+      {
+        "path": "src/renderer/typeset/state/empty_run.rs",
+        "sha256": "11e1d5c0780360e2f702f39ef6cf6da8b83099af599f5087bf5eabf5802c22f1"
+      }
+    ]
+  },
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-implicit-equation-r25",
+    "sha256": "2a536938d8f6e3d3fecfcc9d10ef81b371ad71b24e2e263aba316cfbf8b86d3f"
+  }
+}

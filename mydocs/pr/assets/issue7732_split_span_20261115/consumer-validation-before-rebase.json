@@ -1,0 +1,231 @@
+{
+  "source": "3b4212267b26723917ba0f5a9eaf4c8e1b907afb",
+  "profile": "print",
+  "layout_compat": "2022",
+  "DPI": 96,
+  "font_condition": "실제 설치 SFNT metadata/blob의 Local Font Access adapter; 실제 OS 열거 성공을 주장하지 않음",
+  "actual_source_bytes": true,
+  "initialization_wasm_matches_frozen_package": true,
+  "initialization_js_source_matches_after_vite_only_wasm_url_rewrite": true,
+  "responses": [
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp.js",
+      "sha256": "43c75a7923b6abbc7928aeaec73762f6df30ec5e42293a3aa7b013f551e50399",
+      "bytes": 3281327
+    },
+    {
+      "url": "http://127.0.0.1:7787/@fs$REPO/pkg/rhwp_bg.wasm",
+      "sha256": "1f2c1169cc678b0e57844d2cccfdb4806c45a54d74c0f0fc4dd6e4d3e7368e3c",
+      "bytes": 31919290
+    }
+  ],
+  "scores": [
+    {
+      "backend": "canvas2d",
+      "page": 36,
+      "raw": 99.75605,
+      "png_sha256": "ea21abb184e1a5487991f0831e744ff958857b18f7269fb1fd4c8149d594e6e6"
+    },
+    {
+      "backend": "canvas2d",
+      "page": 37,
+      "raw": 99.07736,
+      "png_sha256": "24b77f65c6db389a7d7c10bd375ffd0084dcc8632afef9eb51a4d9cec637f808"
+    },
+    {
+      "backend": "canvas2d",
+      "page": 38,
+      "raw": 99.5714,
+      "png_sha256": "3e22e6c6f9c4e80daba924164c3bbacd9b26a102ee4c78120632ad481e362c3a"
+    },
+    {
+      "backend": "svg",
+      "page": 36,
+      "raw": 88.253,
+      "png_sha256": "e7e2f64f8dff1b2d3895d52c517c33c1b940382057e35f926aee28e77743bfb0"
+    },
+    {
+      "backend": "svg",
+      "page": 37,
+      "raw": 90.23439,
+      "png_sha256": "a7f894718dd9ec0c3e6f4da93dcd0020f99a24f347510c4bf289b31326846f9c"
+    },
+    {
+      "backend": "svg",
+      "page": 38,
+      "raw": 91.98205,
+      "png_sha256": "8e624e4227e77732444e1b7f5a6d275acf8dedaa8a9469401405a068b4786296"
+    }
+  ],
+  "actual_backends": [
+    {
+      "sample": "footnote-p036",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "fallback": null
+    },
+    {
+      "sample": "footnote-p036",
+      "requested": "canvaskit-compat",
+      "actual": "canvas2d",
+      "fallback": "canvaskitResourcePreparationFailed"
+    },
+    {
+      "sample": "footnote-p036",
+      "requested": "canvaskit-default",
+      "actual": "canvas2d",
+      "fallback": "canvaskitResourcePreparationFailed"
+    },
+    {
+      "sample": "footnote-p037",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "fallback": null
+    },
+    {
+      "sample": "footnote-p037",
+      "requested": "canvaskit-compat",
+      "actual": "canvas2d",
+      "fallback": "canvaskitResourcePreparationFailed"
+    },
+    {
+      "sample": "footnote-p037",
+      "requested": "canvaskit-default",
+      "actual": "canvas2d",
+      "fallback": "canvaskitResourcePreparationFailed"
+    },
+    {
+      "sample": "footnote-p038",
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "fallback": null
+    },
+    {
+      "sample": "footnote-p038",
+      "requested": "canvaskit-compat",
+      "actual": "canvas2d",
+      "fallback": "canvaskitResourcePreparationFailed"
+    },
+    {
+      "sample": "footnote-p038",
+      "requested": "canvaskit-default",
+      "actual": "canvas2d",
+      "fallback": "canvaskitResourcePreparationFailed"
+    }
+  ],
+  "canvaskit_status": "resource preparation fallback; CK 통과로 세지 않음",
+  "remaining_before_pr_ready": "PR9088 병합 e7ee272c를 반영해 리베이스한 뒤 바뀐 인쇄/글꼴 소비·보호 기준을 새 source에서 확인한다.",
+  "base_scores": [
+    {
+      "backend": "canvas2d",
+      "page": 36,
+      "raw": 99.75605
+    },
+    {
+      "backend": "canvas2d",
+      "page": 37,
+      "raw": 98.52771
+    },
+    {
+      "backend": "canvas2d",
+      "page": 38,
+      "raw": 99.5714
+    },
+    {
+      "backend": "svg",
+      "page": 36,
+      "raw": 88.253
+    },
+    {
+      "backend": "svg",
+      "page": 37,
+      "raw": 89.97757
+    },
+    {
+      "backend": "svg",
+      "page": 38,
+      "raw": 91.98205
+    }
+  ],
+  "preexisting_svg_limit": "36쪽 SVG 88.253%는 같은 실제 프로그램의 base와 후보에서 동일하다. 37쪽 SVG는89.97757%→90.23439%. 이 기존 미달·CK fallback을 해결 또는 전체 소비 경로 PASS로 처리하지 않는다."
+}

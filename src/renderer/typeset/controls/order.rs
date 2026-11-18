@@ -2,7 +2,7 @@
 //! 문서 배열을 바꾸지 않고 기존 정렬 인덱스만 반환한다. 페이지·배치 상태는 읽거나 쓰지 않는다.
 
 use super::super::paragraph::metrics::FormattedParagraph;
-use super::super::{is_para_topbottom_float, para_has_non_whitespace_text, signed_hwpunit};
+use super::super::{is_para_topbottom_float, signed_hwpunit};
 use super::tac_flow::TacFlowQuery;
 use crate::model::{control::Control, paragraph::Paragraph};
 
@@ -175,11 +175,10 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
     // (1.hwpx pi=322: TAC(v_off 0)가 자리차지(v_off 1768) 앞으로) 리셋
     // 경계 배치가 무너져 두 표가 같은 쪽에 겹친다. #1639 음수-혼재와
     // 동일하게 정렬을 끄고 배열(저장) 순서를 보존한다.
-    let has_mid_para_vpos_reset = para.line_segs.windows(2).any(|w| {
-        (w[0].tag | w[1].tag) & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            && w[1].vertical_pos <= 0
-            && w[0].vertical_pos > 5000
-    });
+    let has_mid_para_vpos_reset = para
+        .line_segs
+        .windows(2)
+        .any(|w| crate::renderer::typeset::stored_line_restarts_page(&w[0], &w[1]));
     // [#5807] 자리차지(양수 v_off) 표와 TAC 표가 한 host 에 co-anchored 되면
     // 아래 정렬 키가 TAC 에 0 을 주어 TAC 가 float **앞**으로 온다. 한글의 실제
     // 배치는 선언 위치의 겹침 여부로 갈린다:
@@ -253,7 +252,14 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
                                 + i32::from(table.outer_margin_bottom), flow.dpi(),
                         ) > column_height)
         });
-    let should_sort_para_float_tables = !para_has_non_whitespace_text(para)
+    // 저장 줄 없는 공백 host 는 줄 배치만 글자 host 와 같다. 글자가 없으므로 [#1510] 의
+    // 제목 글·공동 앵커 표 순서 문제가 없고, 흐름 개체가 하나뿐이라 이 정렬이 바꾸는 것은
+    // 글자처럼 취급 표와 그 줄 아래에서 시작하는 양수 오프셋 표의 순서뿐이다(TAC 먼저).
+    let host_has_real_text = para
+        .text
+        .chars()
+        .any(|c| c > '\u{001F}' && c != '\u{FFFC}' && !c.is_whitespace());
+    let should_sort_para_float_tables = !host_has_real_text
         && !has_negative_para_float
         && !has_mid_para_vpos_reset
         && !has_tac_overlapped_by_positive_float
@@ -354,10 +360,25 @@ pub(in crate::renderer::typeset) fn for_paragraph_with_storage<S: crate::storage
     }
     // is_first_table/is_last_table 는 배열순서가 아닌 "놓이는 순서(ctrl_order)"
     // 기준으로 잡아, pre/post 텍스트와 spacing 이 실제 배치 첫/마지막 표에 붙도록 한다.
+    // 쪽·종이 기준 비-TAC 표는 host 줄 흐름 밖에 놓여 표 앞 줄을 소유하지 않는다.
+    // 같은 저장 줄에서 먼저 정렬돼도 앞 줄(누름틀 줄 등)은 흐름에 참여하는 첫 표가
+    // 내보낸다(결재문서: 쪽 기준 발신명의 상자 + 누름틀 뒤 다음 줄로 넘긴 TAC 표).
+    let is_table = |i: usize| matches!(para.controls[i], Control::Table(_));
+    let flows_with_host = |i: usize| match &para.controls[i] {
+        Control::Table(table) => {
+            table.common.treat_as_char
+                || matches!(
+                    table.common.vert_rel_to,
+                    crate::model::shape::VertRelTo::Para
+                )
+        }
+        _ => false,
+    };
     let first_placed_table = ctrl_order
         .iter()
         .copied()
-        .find(|&i| matches!(para.controls[i], Control::Table(_)));
+        .find(|&i| flows_with_host(i))
+        .or_else(|| ctrl_order.iter().copied().find(|&i| is_table(i)));
     let last_placed_table = ctrl_order
         .iter()
         .copied()

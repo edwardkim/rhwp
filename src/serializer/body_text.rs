@@ -217,6 +217,11 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
                 )?;
             }
         }
+        // 원본 끝 목록이 바탕쪽 목록을 갖지 않으면(메모 목록만 남았거나 바탕쪽 편집이 원본 바탕쪽
+        // 목록을 버렸으면) 확장 바탕쪽은 모델이 저장한다.
+        if !crate::model::section_tail::holds_master_lists(tail) {
+            try_serialize_master_page_tail(section, &mut records, storage)?;
+        }
     } else {
         try_serialize_master_page_tail(section, &mut records, storage)?;
     }
@@ -228,6 +233,7 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
     if has_memo_tail && !memo_raw_matches {
         try_serialize_memo_tail(memo_lists, &mut records, storage)?;
     }
+    set_tail_master_count(&mut records, raw_start, storage)?;
     // 변경추적 병합 문단 여부(UINT16)는 5.0.3.2부터 존재한다. 재귀로 생성한
     // 머리말·꼬리말·셀 문단도 같은 출력 버전을 따른다. 보존된 24바이트 이상의
     // 헤더는 건드리지 않으며, 원본 스트림 재사용은 위에서 이미 반환했다.
@@ -242,6 +248,44 @@ fn try_serialize_section_inner<S: crate::storage::Storage>(
         }
     }
     super::record_writer::try_write_records(&records, storage)
+}
+
+/// 구역 정의(secd)의 대표Language 다음 UINT16에 구역 끝에 실제로 쓴 바탕쪽 목록 수를 적는다.
+/// 한컴 12.30은 이 수만큼만 구역 끝 바탕쪽 목록(마지막 쪽·임의 쪽)을 읽고, 0이면 무시한다.
+/// 원본 끝 목록을 그대로 썼든 모델에서 새로 썼든 쓴 레코드에서 센다(메모 목록은 빼고).
+fn set_tail_master_count<S: crate::storage::Storage>(
+    records: &mut [Record],
+    tail_start: usize,
+    storage: &S,
+) -> Result<(), S::Error> {
+    // CTRL_HEADER 자료에서 ctrl id(4)와 구역 정의 고정부(24), 대표Language(2) 다음 자리.
+    const COUNT_AT: usize = 30;
+    let mut previous = None;
+    let mut count: u16 = 0;
+    for record in records[tail_start..].iter().filter(|r| r.level == 1) {
+        if record.tag_id == tags::HWPTAG_LIST_HEADER && previous != Some(tags::HWPTAG_MEMO_LIST) {
+            count += 1;
+        }
+        previous = Some(record.tag_id);
+    }
+    let secd = tags::CTRL_SECTION_DEF.to_le_bytes();
+    let Some(record) = records[..tail_start]
+        .iter_mut()
+        .find(|r| r.tag_id == tags::HWPTAG_CTRL_HEADER && r.data.starts_with(&secd))
+    else {
+        return Ok(());
+    };
+    if record.data.len() < COUNT_AT + 2 {
+        if count == 0 {
+            return Ok(());
+        }
+        let missing = COUNT_AT + 2 - record.data.len();
+        storage.reserve(&mut record.data, missing)?;
+        record.data.resize(COUNT_AT + 2, 0);
+        record.size = record.data.len() as u32;
+    }
+    record.data[COUNT_AT..COUNT_AT + 2].copy_from_slice(&count.to_le_bytes());
+    Ok(())
 }
 
 fn try_serialize_master_page_tail<S: crate::storage::Storage>(
@@ -1333,6 +1377,32 @@ fn try_serialize_para_text_with_slots<S: crate::storage::Storage>(
     // [#4402] 이 구간은 본디 위치 예산(offset/prev_end 갭 채우기)을 추적하지 않지만,
     // `char_shapes` 시프트 계산은 절대 위치가 필요하다 — `prev_end` 를 그대로 이어 써서
     // (메인 루프가 끝난 시점 값에서 시작) 8 code unit 씩 전진시킨다.
+
+    // [#9082] 글자 끝에서 닫히는 필드 가운데 닫는 자리(`control_idx + inner_slot_count`
+    // 번째 컨트롤 뒤)가 이미 본문 루프에서 지나간 것은 여기서 닫는다. 값이 든 누름틀이
+    // 이 경우다 — FIELD_BEGIN 이 값의 첫 글자 앞에서 나갔다. 파서는 `inner_slot_count` 를
+    // BEGIN 과 END 사이 컨트롤 수로 채우므로 아직 남은 컨트롤은 모두 그 필드 **밖**이다.
+    // 아래 루프는 `ctrl_idx` 부터만 보아 이 표식을 꺼내지 못하고, 그대로 두면 문단 맨
+    // 끝(남은 컨트롤들 뒤)에 붙어 필드가 뒤따르던 표·책갈피를 감싼다. 한글은 값을 채워도
+    // 끝 표식을 값 바로 뒤에 쓴다(`시작 · 값 · 끝 · 표1 · 표2`).
+    // 고아 종료 마커보다 먼저 닫는다 — 이 문단에서 연 필드가 앞 문단에서 연 필드보다 안쪽이다.
+    let mut passed_end_slots: Vec<usize> = storage.collect(
+        trailing_end_after_ctrl
+            .keys()
+            .copied()
+            .filter(|&end_after| end_after < ctrl_idx),
+    )?;
+    passed_end_slots.sort_unstable();
+    for end_after in passed_end_slots {
+        if let Some(end_markers) = trailing_end_after_ctrl.remove(&end_after) {
+            for marker in end_markers {
+                trace_field_end(marker, prev_end, &mut ends);
+                try_push_field_end_ctrl(&mut code_units, marker, storage)?;
+                prev_end += 8;
+            }
+        }
+    }
+
     // 마지막 문자 뒤(또는 텍스트가 없는 문단)의 고아 종료 마커.
     for ofe in para
         .orphan_field_ends
@@ -1405,8 +1475,8 @@ fn try_serialize_para_text_with_slots<S: crate::storage::Storage>(
         ctrl_idx += 1;
     }
 
-    // orphan trailing FIELD_END: FIELD_BEGIN이 본문 갭에서 이미 배치된 경우
-    // (trailing_end_after_ctrl에 남아있는 항목 = ctrl_idx가 이미 소진된 컨트롤)
+    // 남은 trailing FIELD_END: 닫는 자리가 `controls` 범위를 벗어난 경우.
+    // (닫는 자리가 본문 루프에서 이미 지나간 것은 위 [#9082] 에서 남은 컨트롤 앞에 닫았다)
     //
     // [#4402] 이 경로의 안내문 잔재는 의도적으로 되살리지 않는다 — 슬롯 위치 추정이
     // 이미 무너진 mismatch/퇴화 경로라 주입이 개선이라 단정할 수 없다는 #3545 의

@@ -1,6 +1,10 @@
 //! Issue #1052: 글상자 안 각주 본문이 페이지 하단 각주 영역에 누락되는 결함 회귀 가드.
 //!
 //! 재현 문서: `samples/hwpx/footnote-tbox-01.hwpx` + `samples/footnote-tbox-01.hwp`.
+//! 검사 유형: 관계형(각주 본문·참조 번호의 내용 존재). 좌표 고정 검사가 아니다.
+//! 이번에 변경한 HWPX 번호 검사의 전체 1쪽: 최소 글꼴 Native 100% / fresh WASM 100%.
+//! 주석 갱신: 2026-11-10T10:41:54+09:00.
+//! 독립 기준: pdf/issue8856/issue8856-textbox-footnote-2020.pdf (실제 한컴2020 Print).
 //!
 //! 한컴 PDF 정답지 (`pdf/hwpx/footnote-tbox-01.pdf`):
 //! ```
@@ -94,14 +98,15 @@ fn issue_1052_body_footnote_no_regression_hwpx() {
     );
 }
 
-/// 글상자 안 각주 마크 "1)" 기존 위치 유지 (본 회귀 가드는 텍스트 부재 검사).
+/// 관계형: 글상자·본문의 각주 번호가 실제 SVG 텍스트에 존재한다. 위치를 고정하지 않는다.
 #[test]
 fn issue_1052_textbox_footnote_marker_present() {
     let doc = load_doc("samples/hwpx/footnote-tbox-01.hwpx");
     let svg = page_svg(&doc, 0);
     // 글상자 안 각주 번호 마크 (suffix=")")
-    let one_paren = svg.matches("1)").count();
-    let two_paren = svg.matches("2)").count();
+    let text = svg_text_sequence(&svg);
+    let one_paren = text.matches("1)").count();
+    let two_paren = text.matches("2)").count();
     // 각주 마크 (본문 위치) + 각주 본문 영역 prefix (1)/2)) 양쪽 모두 표시
     assert!(
         one_paren >= 1,

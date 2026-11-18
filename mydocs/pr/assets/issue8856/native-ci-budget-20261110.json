@@ -1,0 +1,59 @@
+{
+  "classification": "O2 timeout only",
+  "source_head": "1081052170207a88eb9e8cd38e4aac7fba328fd9",
+  "run": "https://github.com/edwardkim/rhwp/actions/runs/42744623533",
+  "job": "https://github.com/edwardkim/rhwp/actions/runs/42744623533/job/129594142261",
+  "conclusion": "cancelled",
+  "started_at": "2026-11-10T02:44:15Z",
+  "completed_at": "2026-11-10T03:14:29Z",
+  "native_step_started_at": "2026-11-10T02:49:24Z",
+  "cache": "No cache found; cancelled job skipped post-cache save",
+  "old_timeout_minutes": 30,
+  "new_timeout_minutes": 45,
+  "completed_test_summaries": [
+    "2026-11-10T03:02:13.1687229Z test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3807 filtered out; finished in 0.33s",
+    "2026-11-10T03:02:13.1769446Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s",
+    "2026-11-10T03:02:13.1812819Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s",
+    "2026-11-10T03:02:13.1821609Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+    "2026-11-10T03:09:08.7512919Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.66s",
+    "2026-11-10T03:09:11.4747245Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s",
+    "2026-11-10T03:09:41.9573931Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 324 filtered out; finished in 0.79s",
+    "2026-11-10T03:10:04.9495461Z test result: ok. 35 passed; 0 failed; 0 ignored; 0 measured; 291 filtered out; finished in 0.49s",
+    "2026-11-10T03:10:27.9383932Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 333 filtered out; finished in 0.59s",
+    "2026-11-10T03:10:49.1183745Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 330 filtered out; finished in 0.15s",
+    "2026-11-10T03:11:14.4390093Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 332 filtered out; finished in 0.09s",
+    "2026-11-10T03:11:44.2514940Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 329 filtered out; finished in 1.05s",
+    "2026-11-10T03:12:10.3043915Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.03s",
+    "2026-11-10T03:12:38.2767929Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 316 filtered out; finished in 0.03s",
+    "2026-11-10T03:13:05.9124922Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 298 filtered out; finished in 0.84s",
+    "2026-11-10T03:13:35.1438590Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 312 filtered out; finished in 5.67s",
+    "2026-11-10T03:13:59.1534182Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 311 filtered out; finished in 0.74s",
+    "2026-11-10T03:14:00.1446875Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 308 filtered out; finished in 0.24s",
+    "2026-11-10T03:14:01.4446858Z test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 288 filtered out; finished in 0.55s",
+    "2026-11-10T03:14:26.1442332Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 340 filtered out; finished in 2.47s"
+  ],
+  "log_sha256": "fa147b7b018694be17d0604f4174258fdeece7a8097f2f99a4bc7fd900f05983",
+  "tests_or_thresholds_removed": false,
+  "required_check_name_events_concurrency_permissions_and_commands_unchanged": true,
+  "rollback": "Revert only timeout45 to30 in native-skia-tests; keep product changes unchanged.",
+  "next": "Local YAML/policy contracts then exact new head Full CI. Review/today records use option2 after code merge.",
+  "at": "2026-11-10T12:19:25.834009+09:00",
+  "local_validation": {
+    "yaml_semantic_diff": "Only native-skia-tests timeout30->45; all other fields identical (Ruby safe YAML parse)",
+    "workflow_contracts": {
+      "passed": 100,
+      "failed": 0,
+      "seconds": 8.392
+    },
+    "classifier_and_policy": {
+      "passed": 95,
+      "failed": 0
+    },
+    "validation_log_sha256": {
+      "native-budget-yaml-check.log": "8db0e1a5b4598b3fc83c3219361ba987010bd3bad9099466e850d8c29c558440",
+      "native-budget-workflow-tests.log": "89199683490b3f39b8f8450be20f60ad951f9ed4e4fd7b6444f76e6cbe7dd979",
+      "native-budget-policy-tests.log": "84b67a9540bcd54438e7528b708a8ac1999e10e8f8165126a87b471cdb4734ff"
+    },
+    "product_runtime_unchanged": true
+  }
+}

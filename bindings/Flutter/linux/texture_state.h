@@ -1,6 +1,7 @@
 #ifndef RHWP_FLUTTER_LINUX_TEXTURE_STATE_H_
 #define RHWP_FLUTTER_LINUX_TEXTURE_STATE_H_
 
+#include "../common/cache_trim.h"
 #include <atomic>
 #include <cstdint>
 #include <memory>
@@ -9,6 +10,7 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include "../common/gpu_cache_metrics.h"
 
 namespace rhwp_flutter {
 
@@ -43,10 +45,15 @@ struct SnapshotInfo {
 struct Target {
   uint32_t texture = 0, fbo = 0, width = 0, height = 0;
 };
+struct DriverInfo { std::string vendor, renderer, version; };
 struct Callbacks {
   const void* (*load)(void*, const char*);
   int32_t (*current)(void*, uint64_t);
   void* user;
+};
+struct RenderResult {
+  uint64_t whole_frame_readbacks = 0;
+  rhwp::metrics::CacheMetrics cache_metrics;
 };
 
 class Bridge {
@@ -56,10 +63,13 @@ class Bridge {
   virtual void release_snapshot(uint64_t snapshot) noexcept = 0;
   virtual uint64_t snapshot_release_failures() const noexcept { return 0; }
   virtual uint64_t create(uint64_t context, uint64_t generation, Callbacks) = 0;
-  virtual uint64_t render(uint64_t presenter, uint64_t context,
+  virtual RenderResult render(uint64_t presenter, uint64_t context,
                           const Description&, const Target&) = 0;
   virtual void release(uint64_t presenter, uint64_t context, uint64_t generation) = 0;
   virtual void abandon(uint64_t presenter) = 0;
+  virtual rhwp::cache::TrimReceipt trim_cache(uint64_t, uint64_t, uint64_t, uint64_t) {
+    throw Failure("unsupported", "Native cache trimming is unavailable");
+  }
 };
 
 // A retained context supplies procedures only to its creating raster OS thread.
@@ -69,6 +79,9 @@ class Context {
   virtual ~Context() = default;
   virtual bool same_current() const noexcept = 0;
   virtual bool same_context(const Context&) const noexcept = 0;
+  // Called once when this raster context becomes a retained owner, while it is
+  // current. This describes the actual consumer/producer context, not a probe.
+  virtual DriverInfo driver_info() const { return {}; }
   virtual const void* procedure(const char*) noexcept = 0;
   virtual Target allocate(uint32_t width, uint32_t height) = 0;
   virtual void destroy(Target&) noexcept = 0;
@@ -94,15 +107,24 @@ struct Status {
   bool closing = false, cleanup_complete = false, raster_owner = false, owner_thread_exit = false;
   std::string code, message;
   Stamp accepted_stamp;
+  // Distinct IDs in the accepted transaction, retained through close so a
+  // delayed submit reply can be reconciled without guessing lease ownership.
+  std::vector<uint64_t> accepted_snapshots;
   Stamp rendered_stamp;
+  DriverInfo driver;
+  rhwp::metrics::CacheMetrics cache_metrics;
 };
 
 class Shared : public std::enable_shared_from_this<Shared> {
  public:
-  explicit Shared(std::shared_ptr<Bridge> bridge) : bridge(std::move(bridge)) {}
+  explicit Shared(std::shared_ptr<Bridge> bridge, uint64_t device = 1) : bridge(std::move(bridge)) { status_.device = device; }
   // New IDs transfer only after a successful return. IDs already retained by
   // this texture are borrowed from its existing leases, never released twice.
   uint64_t submit(Description description);
+  static void submit_group(const std::shared_ptr<Shared>& first, const std::shared_ptr<Shared>& second,
+                           Description first_frame, Description second_frame);
+  rhwp::cache::TrimReceipt trim_cache(uint64_t request, uint64_t generation, uint64_t target, bool poll);
+  rhwp::cache::TrimMailbox cache_trim;
   void close();  // Only metadata/registry release: never waits for GPU work.
   Status status() const;
   void error(const std::string& code, const std::string& message);

@@ -1,0 +1,182 @@
+{
+  "source_head": "602b0595cac811a94e36858df79b0f9a7501a1cc",
+  "scope": "원본 다섯 문서 Native/fresh WASM 각389쪽",
+  "measured_date_kst": "2026-11-15",
+  "conditions": {
+    "dpi": 96,
+    "compat": "2022",
+    "pixel_threshold": 32,
+    "silhouette_tolerance_px": 2,
+    "fonts": "일반 설치 글꼴; 회귀 격리 환경과 구분"
+  },
+  "datasets": [
+    {
+      "backend": "native",
+      "cases": [
+        {
+          "key": "cbta",
+          "pages": 204,
+          "minimum": 98.11,
+          "minimum_page": 2,
+          "exit_code": 0,
+          "tsv_sha256": "9f1bc1effa1845326d5b91fedbf91a03b79f01d0ddc4e035f0abf1bf8965f11d",
+          "tsv": "native-cbta.tsv"
+        },
+        {
+          "key": "recommendation",
+          "pages": 22,
+          "minimum": 98.69,
+          "minimum_page": 7,
+          "exit_code": 0,
+          "tsv_sha256": "c917f618379b62d2c92c349af2853cdd4f2ec606c2fd384338439e1558c6b2e9",
+          "tsv": "native-recommendation.tsv"
+        },
+        {
+          "key": "exam",
+          "pages": 8,
+          "minimum": 99.49,
+          "minimum_page": 3,
+          "exit_code": 0,
+          "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+          "tsv": "native-exam.tsv"
+        },
+        {
+          "key": "api",
+          "pages": 105,
+          "minimum": 99.55,
+          "minimum_page": 97,
+          "exit_code": 0,
+          "tsv_sha256": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+          "tsv": "native-api.tsv"
+        },
+        {
+          "key": "footnote",
+          "pages": 50,
+          "minimum": 98.75,
+          "minimum_page": 37,
+          "exit_code": 0,
+          "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+          "tsv": "native-footnote.tsv"
+        }
+      ],
+      "state_sha256": "bdad2b529fb70ca8c0b9336b2399cc60f3937e43f0f9bb03d8b4642bfda5c0c2"
+    },
+    {
+      "backend": "wasm",
+      "cases": [
+        {
+          "key": "cbta",
+          "pages": 204,
+          "minimum": 98.08,
+          "minimum_page": 2,
+          "exit_code": 0,
+          "tsv_sha256": "74183b8f7ebe41b766e41eab96ff3b41475aaf51c9160fc047330d945ce8289a",
+          "tsv": "wasm-cbta.tsv"
+        },
+        {
+          "key": "recommendation",
+          "pages": 22,
+          "minimum": 98.68,
+          "minimum_page": 7,
+          "exit_code": 0,
+          "tsv_sha256": "995214847f754f6bede10a66779ed3e17a732cd86a0f99365a6a41fd0e0f381b",
+          "tsv": "wasm-recommendation.tsv"
+        },
+        {
+          "key": "exam",
+          "pages": 8,
+          "minimum": 99.49,
+          "minimum_page": 3,
+          "exit_code": 0,
+          "tsv_sha256": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+          "tsv": "wasm-exam.tsv"
+        },
+        {
+          "key": "api",
+          "pages": 105,
+          "minimum": 99.55,
+          "minimum_page": 97,
+          "exit_code": 0,
+          "tsv_sha256": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac",
+          "tsv": "wasm-api.tsv"
+        },
+        {
+          "key": "footnote",
+          "pages": 50,
+          "minimum": 98.75,
+          "minimum_page": 37,
+          "exit_code": 0,
+          "tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+          "tsv": "wasm-footnote.tsv"
+        }
+      ],
+      "state_sha256": "cea8e80b01fea6bfe3813355efe8a299a987f1f351f05073036d35e0911ff807"
+    }
+  ],
+  "direct_reviews": [
+    {
+      "backend": "native",
+      "page": 37,
+      "type": "review",
+      "path": "native-p037-review.png",
+      "sha256": "169358c3cf82eeb4f7693e747a2c0d0663cdae63c5a35486024ccdc14b24cc20",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    },
+    {
+      "backend": "native",
+      "page": 37,
+      "type": "overlay",
+      "path": "native-p037-overlay.png",
+      "sha256": "a356c33926f4700f3d65a27fba12d5c06ba79b590c7b569aeb5284540090982f",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    },
+    {
+      "backend": "native",
+      "page": 38,
+      "type": "review",
+      "path": "native-p038-review.png",
+      "sha256": "ad3226b9327a69a2f8d6375ea8e344fde3b47081f5df466c03be46bbd90ecf95",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    },
+    {
+      "backend": "native",
+      "page": 38,
+      "type": "overlay",
+      "path": "native-p038-overlay.png",
+      "sha256": "007357e66530c4985757bd0cd717566157ff714db4c268248da31ed17636ff01",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    },
+    {
+      "backend": "wasm",
+      "page": 37,
+      "type": "review",
+      "path": "wasm-p037-review.png",
+      "sha256": "1f206a0635396b982bfcb68dd8a3ced925581a93be76f7792474bf7a3218c1f3",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    },
+    {
+      "backend": "wasm",
+      "page": 37,
+      "type": "overlay",
+      "path": "wasm-p037-overlay.png",
+      "sha256": "840ed25514e33865062890f841195f4c04324be1678d96ba06da228d91ee2ade",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    },
+    {
+      "backend": "wasm",
+      "page": 38,
+      "type": "review",
+      "path": "wasm-p038-review.png",
+      "sha256": "d4ce2f23128ae48d747e56a6cc328f81d40e9eec9412df50167725c15b29039b",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    },
+    {
+      "backend": "wasm",
+      "page": 38,
+      "type": "overlay",
+      "path": "wasm-p038-overlay.png",
+      "sha256": "c8d76d65497f5b0ca7ecfd104700c314e372479f197eabc95e9f5a4870850274",
+      "reading": "24)와25)는 각 원문 다음의 서로 다른 줄에서 한 번씩 표시. 38쪽 병합 꼬리와 다음 내용의 소유 유지; 남은 하단 글줄·괘선 차이를100%로 주장하지 않음."
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "runtime_head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "reviewed_at": "2026-11-11T22:54:00.548173+09:00",
+  "backend": "native",
+  "key": "pr8729-hft-sinmyeong_junggothic-probe",
+  "page": 3,
+  "prs": [
+    8729
+  ],
+  "review": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8729-hft-sinmyeong_junggothic-probe/native/review_003.png",
+  "overlay": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/claims/pr8729-hft-sinmyeong_junggothic-probe/native/overlay_003.png",
+  "raw_sha256": "4c04de0b705c8dd9c9e0008d532a5e14bcb4f5ae7918ee5c523abcc65f768938",
+  "pdf_sha256": "27f8abda2f2fe8e3eef69e41b0258e2db61e8a0084db5dba088e064a24328adc",
+  "score": {
+    "page": "3",
+    "tolerant_content_match_percent": "90.79",
+    "below_90": "0",
+    "silhouette_raw_match_percent": "90.79",
+    "silhouette_boundary_reconciled_pixels": "0"
+  },
+  "conclusion": "최신 review와 standalone overlay를 함께 직접 대조했다. U+0078~007E와 U+3000 이후 표본의 순서·줄 소속·각 행의 가 접두/접미와 기호가 보존된다. 글리프 외곽·전진의 작은 차이는 남으므로 픽셀 동일이나 전 표본 100%를 주장하지 않는다. 원 PR의 HFT 문자 매핑/윤곽 보존 주장과 90% 기준을 검토한 결과이며 추가 자형 개선 범위를 확대하지 않는다."
+}

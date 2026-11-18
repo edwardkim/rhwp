@@ -1,0 +1,31 @@
+  ➜  Local:   http://127.0.0.1:7700/
+=== E2E: Task #1448 자동 백업 복구 ===
+
+  [browser] headless Chrome 실행
+  PASS: 복구 대화상자 표시
+  PASS: 원본 자동 덮어쓰기 아님 안내 표시
+  PASS: 복구 후보 파일명 표시 (새 문서.hwp)
+  PASS: 새 문서 복구본 페이지 수 확인 (1)
+  PASS: 새 문서 복구본 파일명 확인 (새 문서 복구본.hwp)
+  PASS: 새 문서 복구본은 저장 전 dirty 상태 유지
+  PASS: 복구 성공 후 원본 새 문서 draft 삭제
+  Screenshot: e2e/screenshots/autosave-recovery-new-document.png
+  PASS: 복구 대화상자 표시
+  PASS: 원본 자동 덮어쓰기 아님 안내 표시
+  PASS: 복구 후보 파일명 표시 (셀보호2.hwp)
+  PASS: HWP 복구본 페이지 수 확인 (1)
+  PASS: HWP 복구본 파일명 확인 (셀보호2 복구본.hwp)
+  PASS: 복구본은 저장 전 dirty 상태 유지
+  PASS: 복구 성공 후 원본 HWP draft 삭제
+  Screenshot: e2e/screenshots/autosave-recovery-hwp.png
+  PASS: 복구 대화상자 표시
+  PASS: 원본 자동 덮어쓰기 아님 안내 표시
+  PASS: 복구 후보 파일명 표시 (셀보호2.hwpx)
+  PASS: HWPX 출처 복구본 페이지 수 확인 (1)
+  PASS: HWPX 출처 복구본은 .hwp 파일명 (셀보호2 복구본.hwp)
+  PASS: 복구 데이터는 HWP로 로드됨 (hwp)
+  PASS: HWPX 출처 복구본도 저장 전 dirty 상태 유지
+  PASS: 복구 성공 후 원본 HWPX draft 삭제
+  Screenshot: e2e/screenshots/autosave-recovery-hwpx.png
+
+📋 HTML 보고서: ../output/e2e/autosave-recovery-report.html

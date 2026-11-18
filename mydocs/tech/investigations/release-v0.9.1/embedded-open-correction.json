@@ -1,0 +1,70 @@
+{
+  "diagnosticBeforeCommit": {
+    "baseSource": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+    "trackedChangesNotYetCommitted": true,
+    "fileSha256": {
+      "rhwp-studio/src/main.ts": "405a5a3167ee6c07ea0f90d821b6dc56642c362a0b62caeaeb864b1aa457a4bb",
+      "rhwp-studio/src/core/document-open-session.ts": "6d477c7dae1ddf936c3556d358982680abe07d6bcae0db740c04b852db0404c4",
+      "rhwp-studio/tests/document-open-session.test.ts": "5f967e6335ad70122a971b9d976be410d154dc4c4e4f20365149e1364d051391"
+    },
+    "before": "Existing E2E failed: 새 문서 열기가 시작되었습니다.",
+    "afterRepeats": [
+      {
+        "run": 1,
+        "exitCode": 0
+      },
+      {
+        "run": 2,
+        "exitCode": 0
+      },
+      {
+        "run": 3,
+        "exitCode": 0
+      }
+    ],
+    "studio": {
+      "passed": 2811,
+      "failed": 0,
+      "skipped": 0
+    },
+    "rustInputsChanged": false
+  },
+  "finalVerifiedSource": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "finalFileHashes": {
+    "rhwp-studio/src/main.ts": "34bb7038bdbe4fcd51d8781e677575ef1f3b7515228c7c0a1c98fb29ca3455e6",
+    "rhwp-studio/src/core/document-open-session.ts": "a792805dc72d311127284ede8e47d17ecaf73f1fbfd2eb75e92de210f265a7f3",
+    "rhwp-studio/tests/document-open-session.test.ts": "a5118166f31dcb17f573c039554ddcddcddde05f6df245fdb10130924eaa0b6a"
+  },
+  "finalFilesMatchDeclaredCommit": true,
+  "diagnosticAndFinalSnapshotsIdentical": false,
+  "existingSdkE2e": {
+    "name": "browser-embed",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "e2e/embed-transport.test.mjs",
+      "--mode=headless"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation/rhwp-studio",
+    "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+    "exitCode": 0,
+    "seconds": 10.65
+  },
+  "studio": {
+    "job": "studio-tests",
+    "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+    "command": [
+      "npm",
+      "--prefix",
+      "rhwp-studio",
+      "test"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/release-0.9.1-preparation",
+    "exitCode": 0,
+    "seconds": 32.957,
+    "completedAt": "2026-11-18T06:43:30.214993+00:00"
+  },
+  "note": "The historical precommit diagnostic and the final committed snapshot are recorded separately; final H runs are the submission evidence."
+}

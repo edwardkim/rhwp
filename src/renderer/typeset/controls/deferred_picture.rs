@@ -145,7 +145,6 @@ pub(in crate::renderer::typeset) fn next_page_owner(
             anchor_para_index: para_idx,
             anchor_cs: reset_seg.column_start,
             anchor_sw: reset_seg.segment_width as i32,
-            anchor_image_margin_right: common.margin.right as i32,
             band_y_range: None,
         },
     ))

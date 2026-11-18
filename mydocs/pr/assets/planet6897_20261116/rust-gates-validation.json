@@ -1,0 +1,34 @@
+{
+  "status": "passed",
+  "original_full_head": "2e3e6698d198cf09189105746a2ed8e988ac4b0d",
+  "source_and_gate_provenance": "final/rust-validation.json",
+  "full_nextest": {
+    "code_head": "2e3e6698d198cf09189105746a2ed8e988ac4b0d",
+    "base": "443dafb08107152e066689544e88d90988339567",
+    "status": "passed",
+    "tests_run": 13634,
+    "passed": 13634,
+    "skipped": 45,
+    "failed": 0,
+    "test_seconds": 821.026,
+    "log_sha256": "a68a5c59b470fbe13081692ddee7cf64a47ebea1bcb9b9dadb2f13059f8486a6",
+    "minimal_font_profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/Users/tsjang/rhwp/target/pr-review",
+      "--test-threads",
+      "8",
+      "--no-fail-fast",
+      "--tests"
+    ],
+    "scope": "full integration nextest; Native-feature and remaining Rust gates recorded separately"
+  },
+  "post_rebase_focus": "final/rebase-validation.json",
+  "note": "Original full run remains attributed to its actual SHA; new-base focused tests are separate."
+}

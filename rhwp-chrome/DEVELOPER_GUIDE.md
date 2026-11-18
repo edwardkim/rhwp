@@ -136,7 +136,7 @@
 
 ## 디버깅
 
-rhwp 확장이 설치된 브라우저에서 개발자 도구(F12) → 콘솔에서 디버깅 명령어를 사용할 수 있습니다.
+Chrome/Edge에서는 페이지의 `<head>`에 `<meta name="hwp:integration" content="enabled">`를 추가하면 개발자 도구(F12) → 콘솔에서 디버깅 명령어를 사용할 수 있습니다. 일반 HWP 링크의 배지와 호버 미리보기에는 이 태그가 필요하지 않습니다.
 
 ```javascript
 // 페이지 전체 검사 — HWP 링크 목록, 메타 태그, 개선 사항 출력
@@ -164,7 +164,7 @@ rhwpDev.version
 
 ## 확장 프로그램 감지
 
-웹사이트에서 rhwp 확장 설치 여부를 감지할 수 있습니다.
+Chrome/Edge에서는 `hwp:integration` 메타 태그로 통합을 활성화한 페이지에서 아래 속성과 이벤트로 rhwp 설치 여부를 감지할 수 있습니다.
 
 ```javascript
 // 방법 1: data 속성 확인

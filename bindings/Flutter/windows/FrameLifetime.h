@@ -9,6 +9,10 @@
 #include <mutex>
 
 namespace rhwp::d3d {
+enum class PublicationMode { LegacyImmutable, ImmutableOwnershipTransfer };
+inline const char* publication_mode_name(PublicationMode mode) {
+  return mode == PublicationMode::ImmutableOwnershipTransfer ? "immutableOwnershipTransfer" : "legacyImmutable";
+}
 struct Stamp {
   uint64_t document = 0, revision = 0, font = 0, view = 0, device = 0;
   double scale = 0;
@@ -48,15 +52,69 @@ inline size_t frame_charge(uint64_t width, uint64_t height) {
   return surface >= required ? size_t(surface * 2) : 0;
 }
 
-// Public descriptor release means "opened", not GPU completion. There is no
-// consumer-retire/reset/clear method. Published and uncertain GPU work retain
-// their resource bundle and credit for process lifetime, across plugin close.
+// Both modes share the same process-wide four-slot/64-MiB admission limit.
+// Legacy publication retains process-lifetime resources. Explicit ownership
+// transfer releases only creator references to fresh immutable D3D11 resources
+// after opening and CPU descriptor quiescence; the consumer's references and
+// driver deferred allocations are outside this producer-ownership accounting.
+// No transition permits rewriting a published target or proves GPU completion.
 class ImmutableFrames {
-  enum class Phase { Free, Reserved, Producing, Complete, Immutable, Quarantined };
-  struct Slot { size_t bytes = 0; Phase phase = Phase::Free; std::shared_ptr<void> resources; };
-  struct State { std::mutex mutex; std::array<Slot, 4> slots; size_t bytes = 0; };
+  enum class Phase { Free, Reserved, Producing, Complete, Immutable, TransferPublished,
+                     TransferPending, TransferOpened, Quarantined };
+  struct Slot {
+    size_t bytes = 0;
+    Phase phase = Phase::Free;
+    PublicationMode mode = PublicationMode::LegacyImmutable;
+    bool private_split = false;
+    std::shared_ptr<void> resources;
+  };
+  struct State {
+    std::mutex mutex;
+    std::array<Slot, 4> slots;
+    size_t bytes = 0;
+    size_t private_targets = 0, private_bytes = 0, private_idle = 0, private_idle_bytes = 0;
+    uint64_t private_reuses = 0;
+    uint64_t handed_off = 0, unexposed_discarded = 0;
+  };
  public:
-  struct Stats { size_t outstanding = 0, immutable = 0, quarantined = 0, bytes = 0; };
+  struct Stats {
+    size_t outstanding = 0, immutable = 0, quarantined = 0, bytes = 0;
+    size_t producer_owned = 0, producer_owned_bytes = 0, import_pending = 0, import_pending_bytes = 0;
+    size_t legacy_retained = 0, permanent = 0;
+    uint64_t handed_off = 0, unexposed_discarded = 0;
+    size_t private_targets = 0, private_bytes = 0, private_idle = 0, private_idle_bytes = 0;
+    uint64_t private_reuses = 0;
+  };
+  class Reservation;
+  // This charge outlives the frame which first allocated its private target.
+  // It shares the original 64-MiB ledger and never consumes a public frame slot.
+  class PrivateReservation {
+   public:
+    ~PrivateReservation() {
+      if (!charged_) return;
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      state_->bytes -= bytes_; state_->private_bytes -= bytes_; --state_->private_targets;
+      if (idle_) { --state_->private_idle; state_->private_idle_bytes -= bytes_; }
+    }
+    size_t bytes() const { return bytes_; }
+    bool set_idle(bool idle) {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      if (!charged_) return false;
+      if (idle_ == idle) return true;
+      if (idle && state_->private_idle == 2) return false;
+      if (idle) { ++state_->private_idle; state_->private_idle_bytes += bytes_; }
+      else { --state_->private_idle; state_->private_idle_bytes -= bytes_; }
+      idle_ = idle; return true;
+    }
+    PrivateReservation(const PrivateReservation&) = delete;
+    PrivateReservation& operator=(const PrivateReservation&) = delete;
+   private:
+    friend class Reservation;
+    PrivateReservation(std::shared_ptr<State> state, size_t bytes) : state_(std::move(state)), bytes_(bytes) {}
+    std::shared_ptr<State> state_;
+    const size_t bytes_;
+    bool charged_ = false, idle_ = false;
+  };
   class Reservation {
    public:
     ~Reservation() {
@@ -65,12 +123,42 @@ class ImmutableFrames {
       {
         std::lock_guard<std::mutex> lock(state_->mutex);
         auto& slot = state_->slots[index_];
-        if (slot.phase == Phase::Reserved || slot.phase == Phase::Complete) {
+        if (slot.phase == Phase::Reserved || slot.phase == Phase::Complete ||
+            slot.phase == Phase::TransferPublished || slot.phase == Phase::TransferOpened) {
+          if (slot.phase == Phase::TransferOpened && state_->handed_off < uint64_t(std::numeric_limits<int64_t>::max()))
+            ++state_->handed_off;
+          else if (slot.phase == Phase::TransferPublished &&
+              state_->unexposed_discarded < uint64_t(std::numeric_limits<int64_t>::max())) ++state_->unexposed_discarded;
           state_->bytes -= slot.bytes; discarded = std::move(slot.resources); slot = {};
-        } else if (slot.phase == Phase::Producing) slot.phase = Phase::Quarantined;
+        } else if (slot.phase == Phase::Producing || slot.phase == Phase::TransferPending) {
+          slot.phase = Phase::Quarantined;
+        }
       }
     }
     size_t bytes() const { std::lock_guard<std::mutex> lock(state_->mutex); return state_->slots[index_].bytes; }
+    std::shared_ptr<PrivateReservation> split_private(size_t bytes) {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      auto& slot = state_->slots[index_];
+      if (!charged_ || slot.phase != Phase::Reserved || slot.private_split || !bytes ||
+          bytes > 8 * 1024 * 1024 || slot.bytes != bytes * 2 || state_->private_targets == 4) return {};
+      auto result = std::shared_ptr<PrivateReservation>(new PrivateReservation(state_, bytes));
+      slot.bytes -= bytes; slot.private_split = true;
+      ++state_->private_targets; state_->private_bytes += bytes;
+      result->charged_ = true; return result; // state_->bytes is unchanged.
+    }
+    bool adopt_private(const std::shared_ptr<PrivateReservation>& credit) {
+      if (!credit || credit->state_ != state_) return false;
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      auto& slot = state_->slots[index_];
+      if (!charged_ || slot.phase != Phase::Reserved || slot.private_split || !credit->charged_ ||
+          !credit->idle_ || slot.bytes != credit->bytes_ * 2) return false;
+      // The private allocation already owns its charge. Remove only the new
+      // frame's duplicate allowance; its public D3D11 destination stays fresh.
+      slot.bytes -= credit->bytes_; state_->bytes -= credit->bytes_; slot.private_split = true;
+      credit->idle_ = false; --state_->private_idle; state_->private_idle_bytes -= credit->bytes_;
+      if (state_->private_reuses < uint64_t(std::numeric_limits<int64_t>::max())) ++state_->private_reuses;
+      return true;
+    }
     // Resource bundle is attached before the first producer GPU operation, so
     // exceptions/close cannot drop potentially in-flight D3D12/D3D11 resources.
     bool begin_gpu(std::shared_ptr<void> resources) {
@@ -91,7 +179,25 @@ class ImmutableFrames {
       std::lock_guard<std::mutex> lock(state_->mutex);
       auto& slot = state_->slots[index_];
       if (slot.phase != Phase::Complete || !slot.resources) return false;
-      slot.phase = Phase::Immutable; return true;
+      slot.phase = slot.mode == PublicationMode::ImmutableOwnershipTransfer ?
+          Phase::TransferPublished : Phase::Immutable;
+      return true;
+    }
+    // Only the bounded import-ticket layer calls these methods. A strong ticket
+    // must pin both descriptor storage and this reservation before exposure.
+    bool offer_to_consumer() {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      auto& slot = state_->slots[index_];
+      if (slot.mode != PublicationMode::ImmutableOwnershipTransfer) return false;
+      if (slot.phase == Phase::TransferPublished) slot.phase = Phase::TransferPending;
+      return slot.phase == Phase::TransferPending || slot.phase == Phase::TransferOpened;
+    }
+    bool consumer_opened() {
+      std::lock_guard<std::mutex> lock(state_->mutex);
+      auto& slot = state_->slots[index_];
+      if (slot.mode != PublicationMode::ImmutableOwnershipTransfer) return false;
+      if (slot.phase == Phase::TransferPending) slot.phase = Phase::TransferOpened;
+      return slot.phase == Phase::TransferOpened;
     }
     Reservation(const Reservation&) = delete;
     Reservation& operator=(const Reservation&) = delete;
@@ -103,14 +209,15 @@ class ImmutableFrames {
     bool charged_ = false;
   };
   ImmutableFrames() : state_(std::make_shared<State>()) {}
-  std::shared_ptr<Reservation> reserve(size_t bytes) {
+  std::shared_ptr<Reservation> reserve(size_t bytes,
+      PublicationMode mode = PublicationMode::LegacyImmutable) {
     std::lock_guard<std::mutex> lock(state_->mutex);
     if (!bytes || bytes > 16 * 1024 * 1024 || bytes > 64 * 1024 * 1024 - state_->bytes) return {};
     for (size_t index = 0; index < state_->slots.size(); ++index) {
       auto& slot = state_->slots[index];
       if (slot.phase != Phase::Free) continue;
       auto result = std::shared_ptr<Reservation>(new Reservation(state_, index));
-      slot.bytes = bytes; slot.phase = Phase::Reserved; state_->bytes += bytes;
+      slot.bytes = bytes; slot.phase = Phase::Reserved; slot.mode = mode; state_->bytes += bytes;
       result->charged_ = true; return result;
     }
     return {};
@@ -118,10 +225,23 @@ class ImmutableFrames {
   Stats stats() const {
     std::lock_guard<std::mutex> lock(state_->mutex);
     Stats result; result.bytes = state_->bytes;
+    result.private_targets = state_->private_targets; result.private_bytes = state_->private_bytes;
+    result.private_idle = state_->private_idle; result.private_idle_bytes = state_->private_idle_bytes;
+    result.private_reuses = state_->private_reuses;
+    result.handed_off = state_->handed_off; result.unexposed_discarded = state_->unexposed_discarded;
     for (const auto& slot : state_->slots) {
       if (slot.phase != Phase::Free) ++result.outstanding;
       if (slot.phase == Phase::Immutable) ++result.immutable;
       if (slot.phase == Phase::Quarantined || slot.phase == Phase::Producing) ++result.quarantined;
+      if (slot.phase == Phase::Immutable || slot.phase == Phase::Quarantined) ++result.permanent;
+      if (slot.mode == PublicationMode::LegacyImmutable &&
+          (slot.phase == Phase::Immutable || slot.phase == Phase::Quarantined)) ++result.legacy_retained;
+      if (slot.mode == PublicationMode::ImmutableOwnershipTransfer && slot.phase != Phase::Free) {
+        ++result.producer_owned; result.producer_owned_bytes += slot.bytes;
+      }
+      if (slot.phase == Phase::TransferPending) {
+        ++result.import_pending; result.import_pending_bytes += slot.bytes;
+      }
     }
     return result;
   }

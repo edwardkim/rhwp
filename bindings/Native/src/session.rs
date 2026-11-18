@@ -706,9 +706,13 @@ fn worker_output(host: &mut Host, worker: u64, output: NativeRuntimeOutput) -> V
 }
 
 fn next_handle() -> Result<u64, NativeHostError> {
-    NEXT_HANDLE
-        .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
-        .map_err(|_| NativeHostError::LimitExceeded("handle space exhausted".into()))
+    rhwp_codec_resource::atomic::try_update_u64(
+        &NEXT_HANDLE,
+        Ordering::Relaxed,
+        Ordering::Relaxed,
+        |id| id.checked_add(1),
+    )
+    .map_err(|_| NativeHostError::LimitExceeded("handle space exhausted".into()))
 }
 
 pub(crate) fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *mut c_char {

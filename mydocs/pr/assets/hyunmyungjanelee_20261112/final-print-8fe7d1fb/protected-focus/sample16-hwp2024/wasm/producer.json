@@ -1,0 +1,42 @@
+{
+  "code_head": "8fe7d1fb8bc5024d0377ff7aa37d98c78e8f071a",
+  "page": 51,
+  "key": "sample16-hwp2024",
+  "raw_match": "100.00",
+  "recorded_at": "2026-11-12T10:35:15.731187+00:00",
+  "PNG_producer": "current fresh WASM whole sweep, no new render",
+  "previous_head_reuse": "previous 3532 whole PNG byte hashes match current whole output; current TSV independently recalculated",
+  "current_and_previous_hashes": {
+    "rhwp_sha256": "de8803c4e8e34cb5b1a91dd95df31db03e9801df8b2a297b09f3309f58d974e3",
+    "pdf_sha256": "041266322ddeffa01e85640e9d07530db93a94fc257e4f6cb2a4dfcda6a3319e"
+  },
+  "panel_producer": "current canonical visual_sweep.make_overlay_compares/make_compares/make_review_panels, default threshold32, radius2",
+  "input_manifest": "/Users/tsjang/rhwp/output/pr-review/hyunmyungJaneLee-integration-20261112/repair-v8/protected-wasm/sample16-hwp2024/silhouette_manifest.json",
+  "direct_reading": {
+    "checked_at": "2026-11-12T10:35:43.112983+00:00",
+    "review_and_overlay_opened": true,
+    "conclusion": "제목의 ○ 두 개와 뒤 한글이 같은 윤곽·전진으로 표시되고, 전체 표·주기·쪽번호의 소속을 보존한다. 해당 쪽 현재 fresh WASM raw 실루엣 100.00%. 전쪽 또는 실제 Studio backend 전체 완료를 대신하지 않는다."
+  },
+  "artifacts": [
+    {
+      "file": "compare_051.png",
+      "sha256": "ee829b2b6a188a94f89e358ac419c705c4f900ec86ae7bcd4e2059f72e05b534"
+    },
+    {
+      "file": "overlay_051.png",
+      "sha256": "f9be94083093ab1b7ce8942eda0b4c3f02948ed85c37d185f72d3473387224eb"
+    },
+    {
+      "file": "pdf-051.png",
+      "sha256": "041266322ddeffa01e85640e9d07530db93a94fc257e4f6cb2a4dfcda6a3319e"
+    },
+    {
+      "file": "raw-051.png",
+      "sha256": "de8803c4e8e34cb5b1a91dd95df31db03e9801df8b2a297b09f3309f58d974e3"
+    },
+    {
+      "file": "review_051.png",
+      "sha256": "d784093e692d9b73134aff3a089d3642021ea5369a33a50ce6662d73b853c32b"
+    }
+  ]
+}

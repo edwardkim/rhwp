@@ -1,0 +1,155 @@
+{
+  "product_commit": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+  "document_head": "60249ed66be61b4fbe798d06a5488589afb06172",
+  "input": "samples/issue8639/sign_board_register_card.hwp",
+  "input_sha256": "dd3d1f1c2c3637d0663b90adab21b997d85ef2dd3131ca30ef02ba13772f04b0",
+  "pdf": "pdf/issue8639/sign_board_register_card-print-2022.pdf",
+  "pdf_sha256": "066e32b476f0e6048a45335191d37b70729537cc9d95a655f80f3980e3a8e811",
+  "pages": 1,
+  "dpi": 96,
+  "compat": "2022",
+  "font_condition": "원 회귀 머리 주석과 실제 독립 2022 PDF는 Haansoft Batang. 원본 두 서울 계열의 그 Print 대체를 명시한다. 전체 시스템 글꼴은 계속 공급한다.",
+  "direct_read": "머리 칸 의무설치기한의 3행 보존, 모든 글줄의 셀 내부 표시, 표 겹침 없음, 다음 관리카드·설치 표의 순서와 원점 대조 완료. raw 100은 픽셀 바이트 동일을 뜻하지 않음.",
+  "artifacts": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8662/print2022/font-environment.json",
+      "sha256": "c445dde894cf033ca397ff4a52b493161492d28e8ff649747f5d1bde78dd2d8d"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8662/print2022/native.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8662/print2022/native-review-001.png",
+      "sha256": "669ca01c55667848f89e2b359705edf4917f9647e8e13dee35a83c7eaba861bb"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8662/print2022/native-overlay-001.png",
+      "sha256": "a9980a1c3b5b0ae33983b3c42f05a002763f39f297c727f5d0b2695c7b2c5102"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8662/print2022/wasm.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8662/print2022/wasm-review-001.png",
+      "sha256": "ff159b88fbd8e653c85d994118c54ae4c9c94c5b8317427c2e71e41ce1abf596"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/pr8662/print2022/wasm-overlay-001.png",
+      "sha256": "838c45411a45504bfaed825906de71ae75c448d6982bb16f69d245d0e77251ca"
+    }
+  ],
+  "backend_evidence": [
+    {
+      "backend": "native",
+      "source_manifest": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-native/sign-board-2022-batang/sign-board-2022-batang/silhouette_manifest.json",
+      "panels": [
+        {
+          "page": 1,
+          "rhwp": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-native/sign-board-2022-batang/sign-board-2022-batang/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "6665180d3001b7ad21142d8e26c7b238bc2be2e81dcc23afb8037b2089727c04",
+          "pdf": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-native/sign-board-2022-batang/sign-board-2022-batang/pdf_png/pdf-001.png",
+          "pdf_sha256": "d745b5023abc391956d2c94e845b9cc05bf70996d2e033d0ca87cd4722ff236e",
+          "metrics": {
+            "page": 1,
+            "rhwp_png": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-native/sign-board-2022-batang/sign-board-2022-batang/rhwp_png/rhwp_001.png",
+            "pdf_png": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-native/sign-board-2022-batang/sign-board-2022-batang/pdf_png/pdf-001.png",
+            "overlay_png": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-panels/native/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 24101,
+            "diff_ratio": 0.02705339,
+            "pixel_match_percent": 97.29466,
+            "ink_union_pixels": 41185,
+            "ink_diff_pixels": 24101,
+            "ink_diff_ratio": 0.58518878,
+            "ink_match_percent": 41.48112,
+            "visual_accuracy_proxy_percent": 41.48112,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 41185,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 2.968,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              68,
+              94,
+              712,
+              965
+            ]
+          }
+        }
+      ],
+      "page": 1,
+      "raw": 100.0
+    },
+    {
+      "backend": "wasm",
+      "source_manifest": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-wasm/sign-board-2022-batang/sign-board-2022-batang/silhouette_manifest.json",
+      "panels": [
+        {
+          "page": 1,
+          "rhwp": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-wasm/sign-board-2022-batang/sign-board-2022-batang/rhwp_png/rhwp_001.png",
+          "rhwp_sha256": "5ff619b46c9e772493cadb26521a20323ac17c41d45d56d1e89f12a9d4033e06",
+          "pdf": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-wasm/sign-board-2022-batang/sign-board-2022-batang/pdf_png/pdf-001.png",
+          "pdf_sha256": "d745b5023abc391956d2c94e845b9cc05bf70996d2e033d0ca87cd4722ff236e",
+          "metrics": {
+            "page": 1,
+            "rhwp_png": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-wasm/sign-board-2022-batang/sign-board-2022-batang/rhwp_png/rhwp_001.png",
+            "pdf_png": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-wasm/sign-board-2022-batang/sign-board-2022-batang/pdf_png/pdf-001.png",
+            "overlay_png": "output/pr-review/planet6897-integration-20261106/sign-board-2022-print-font-panels/wasm/overlay/overlay_001.png",
+            "width": 794,
+            "height": 1122,
+            "pixel_diff_threshold": 32,
+            "overlay_color_legend": {
+              "rhwp_only": "blue",
+              "pdf_only": "red",
+              "both_different": "orange",
+              "matching": "gray"
+            },
+            "total_pixels": 890868,
+            "diff_pixels": 22907,
+            "diff_ratio": 0.02571312,
+            "pixel_match_percent": 97.42869,
+            "ink_union_pixels": 40687,
+            "ink_diff_pixels": 22907,
+            "ink_diff_ratio": 0.56300538,
+            "ink_match_percent": 43.69946,
+            "visual_accuracy_proxy_percent": 43.69946,
+            "tolerant_content_match_radius_px": 2,
+            "silhouette_method": "threshold_boundary_color_support_v1",
+            "silhouette_raw_match_percent": 100.0,
+            "silhouette_raw_unmatched_pixels": 0,
+            "silhouette_boundary_reconciled_pixels": 0,
+            "silhouette_color_tolerance": 32,
+            "silhouette_content_union_pixels": 40687,
+            "tolerant_content_match_percent": 100.0,
+            "mean_abs_channel_delta": 2.759,
+            "max_channel_delta": 255,
+            "diff_bbox": [
+              68,
+              94,
+              712,
+              965
+            ]
+          }
+        }
+      ],
+      "page": 1,
+      "raw": 100.0
+    }
+  ]
+}

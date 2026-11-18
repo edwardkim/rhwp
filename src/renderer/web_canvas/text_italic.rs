@@ -10,11 +10,14 @@ impl WebCanvasRenderer {
             return false;
         }
         let families = crate::renderer::canvas_text_font::family_chain(style);
+        // 합성 굵기 run은 보통 굵기 face를 고른다(CanvasTextFont와 같은 굵기 규칙, #8430).
+        let bold = style.is_visually_bold()
+            && crate::renderer::faux_bold_stroke_width(style, size).is_none();
         let selected = self.hft_outline_fonts.as_ref().and_then(|fonts| {
             fonts
                 .pua_coverage
                 .text_faces
-                .select(&families, text, style.is_visually_bold(), true)
+                .select(&families, text, bold, true)
         });
         let Some(selected) = selected else {
             return false;
@@ -22,11 +25,7 @@ impl WebCanvasRenderer {
         self.ctx.set_font(&format!(
             "{}{}{:.3}px {}",
             if selected.slanted { "italic " } else { "" },
-            if style.is_visually_bold() {
-                "bold "
-            } else {
-                ""
-            },
+            if bold { "bold " } else { "" },
             size,
             families
         ));

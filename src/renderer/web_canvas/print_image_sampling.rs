@@ -93,7 +93,7 @@ fn draw_inner(
     replay_raster(context, &raster)
 }
 
-fn replay_raster(
+pub(super) fn replay_raster(
     context: &CanvasRenderingContext2d,
     raster: &crate::renderer::print_image_sampling::DeviceRaster,
 ) -> Option<()> {

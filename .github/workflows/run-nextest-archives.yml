@@ -33,7 +33,7 @@ on:
 jobs:
   run:
     name: Default-feature tests (${{ inputs.label }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#3284] 러너 hang을 실패로 드러내는 상한이며 성능 목표가 아니다.
     timeout-minutes: 60
     permissions:
@@ -49,7 +49,7 @@ jobs:
           toolchain: 1.93.1
 
       - name: Install cargo-nextest
-        uses: taiki-e/install-action@68a389c788b2cd04016ce8c80ee23b80d2ab3d68 # v2.88.1
+        uses: taiki-e/install-action@cfdb7ed4ccc7c7dce37759eae89dc5674b469b39 # v2.90.3
         with:
           tool: nextest
 

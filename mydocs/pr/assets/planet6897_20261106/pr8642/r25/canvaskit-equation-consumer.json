@@ -1,0 +1,120 @@
+{
+  "ops": 1,
+  "requests": [
+    "legacy",
+    "ENSMJ",
+    "HGSMJ",
+    "FLSMJ"
+  ],
+  "registered": 4,
+  "replay": {
+    "svgReplays": 0,
+    "layoutReplays": 1,
+    "fallbackReplays": 0,
+    "failedReplays": 0,
+    "routes": [
+      {
+        "svgResourceId": null,
+        "hasInlineSvg": false,
+        "bbox": {
+          "x": 143.613,
+          "y": 241.56,
+          "width": 483.507,
+          "height": 140.907
+        },
+        "route": "layout",
+        "reason": "layoutRequested"
+      }
+    ],
+    "droppedDiagnostics": 0
+  },
+  "diagnostics": {
+    "surfaceCreated": 1,
+    "surfaceReused": 0,
+    "staticPictureCacheEntries": 0,
+    "staticPictureCacheBytes": 0,
+    "staticPictureCacheHits": 0,
+    "staticPictureCacheMisses": 0,
+    "staticPictureCacheEvictions": 0,
+    "textBlobCacheEntries": 0,
+    "textBlobCacheBytes": 0,
+    "textBlobCacheHits": 0,
+    "textBlobCacheMisses": 0,
+    "fallbackFamilyCacheEntries": 10,
+    "paragraphFontEntries": 7,
+    "paragraphFontBytes": 4170540,
+    "paragraphProviderBuilds": 0,
+    "paragraphFontRejections": 0,
+    "pendingImageLoads": 0,
+    "mode": "default",
+    "surfacePreference": "software",
+    "surfaceBackend": "software",
+    "surfaceFallbackReason": null,
+    "lastRenderCompleted": true,
+    "lastUnsupportedOps": [],
+    "lastExpectedUnsupportedOps": [],
+    "lastUnexpectedUnsupportedOps": [],
+    "lastRenderError": null,
+    "passesRuntimeReadinessGate": true,
+    "readinessBlockers": [],
+    "hiddenCanvas2dOverlayUsed": false,
+    "lastRenderDurationMs": 192.89999997615814,
+    "renderCount": 1,
+    "imageCacheEntries": 0,
+    "imageCacheLimit": 128,
+    "imageCachePixels": 0,
+    "imageCachePixelLimit": 67108864,
+    "imageCacheHits": 0,
+    "imageCacheMisses": 0,
+    "imageCacheEvictions": 0,
+    "mipmapCacheEntries": 0,
+    "mipmapCacheBytes": 0,
+    "mipmapCacheHits": 0,
+    "mipmapCacheMisses": 0,
+    "imageFailureCacheHits": 0,
+    "imageFailures": [],
+    "localTypefaceCount": 4,
+    "localTypefaceLoadFailureCount": 0,
+    "localTypefacePendingCount": 0,
+    "bundledTypefaceCount": 0,
+    "bundledTypefaceLoadFailureCount": 0,
+    "glyphRunFontBlobCount": 0,
+    "glyphRunFontBlobBytes": 0,
+    "glyphRunTypefaceCount": 0,
+    "glyphRunFontCount": 0,
+    "fontSubstitutionLimit": 4096,
+    "unregisteredFontFallbacks": 0,
+    "fontSubstitutions": [],
+    "replayFeatureCounts": {
+      "dashedStrokes": 0,
+      "glyphRuns": 0,
+      "tabLeaders": 0,
+      "charOverlaps": 0,
+      "verticalPresentationPunctuation": 0,
+      "verticalTextRuns": 0
+    },
+    "textVariantDiagnosticGroups": 0,
+    "textVariantDiagnosticParts": 0,
+    "replayDiagnosticsDropped": 0
+  },
+  "role": "실제 원본 18쪽의 fresh WASM 수식 좌표 → 실제 브라우저 CanvasKit layout replay. SVG 우회를 제거한 소비 경로 진단이며 전쪽 Print 증거를 대체하지 않음.",
+  "wasmSha256": "1d0ddf7e6ee28ade2cc13cb6b3fbc5bdf3dcdc8adb1561613cea4452b140e95c",
+  "fonts": [
+    {
+      "program": "ENSMJ",
+      "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+    },
+    {
+      "program": "HGSMJ",
+      "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+    },
+    {
+      "program": "FLSMJ",
+      "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+    },
+    {
+      "program": "legacy",
+      "sha256": "e7a47a66a224c6a05acc10cbb5d7d018a5104194bb30fb84e75520bb16309c02"
+    }
+  ]
+}

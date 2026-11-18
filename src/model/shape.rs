@@ -1,5 +1,6 @@
 //! 그리기 개체 (Shape, Line, Rect, Ellipse, Arc, Polygon, Curve, Group, TextBox)
 
+use super::control::Control;
 use super::paragraph::Paragraph;
 use super::style::{Fill, ShapeBorderLine};
 use super::*;
@@ -689,7 +690,71 @@ impl ShapeObject {
         } else {
             attr.current_height as i32
         };
-        (self.common().height as i32).max(current)
+        (self.common().height as i32)
+            .max(current)
+            .max(self.restricted_textbox_table_height_hu().unwrap_or(0))
+    }
+
+    /// 첫 빈 앵커의 한 행 표를 글상자 안에 제한할 때 필요한 최소 프레임.
+    /// 원본 셀 높이·표 바깥 여백·글상자 안 여백을 같은 상자에 포함한다.
+    /// 저장 줄·변환·인라인·크기 보호 프레임은 각 기존 소유 계약을 유지한다.
+    pub(crate) fn restricted_textbox_table_height_hu(&self) -> Option<i32> {
+        let common = self.common();
+        let drawing = self.drawing()?;
+        let text_box = drawing.text_box.as_ref()?;
+        let attr = &drawing.shape_attr;
+        if common.treat_as_char
+            || common.size_protect
+            || attr.rotation_angle != 0
+            || attr.render_b != 0.0
+            || attr.render_c != 0.0
+            || text_box.list_attr & 0x07 != 0
+            || text_box.paint_clip.is_some()
+            || text_box.paragraphs.iter().any(|p| !p.line_segs.is_empty())
+        {
+            return None;
+        }
+        let first = text_box.paragraphs.first()?;
+        if !first.text.trim().is_empty() {
+            return None;
+        }
+        first
+            .controls
+            .iter()
+            .filter_map(|control| {
+                let Control::Table(table) = control else {
+                    return None;
+                };
+                Self::restricted_textbox_table_bottom_hu(table)?
+                    .checked_add(i32::from(text_box.margin_top))?
+                    .checked_add(i32::from(text_box.margin_bottom))
+            })
+            .max()
+    }
+
+    /// 제한된 한 행 표의 바닥. 세로 정렬과 바깥 프레임이 같은 물리 상자를 쓴다.
+    pub(crate) fn restricted_textbox_table_bottom_hu(table: &super::table::Table) -> Option<i32> {
+        let c = &table.common;
+        if c.treat_as_char
+            || !c.flow_with_text
+            || c.vert_rel_to != VertRelTo::Para
+            || c.vert_align != VertAlign::Top
+            || !matches!(c.text_wrap, TextWrap::InFrontOfText | TextWrap::BehindText)
+            || table.row_count != 1
+        {
+            return None;
+        }
+        // 한 행에서는 열 병합 여부와 무관하게 양수 셀 선언의 최대가 행 하한이다.
+        // 표 CTRL_HEADER 높이는 재저장 전 낡은 값일 수 있어 여기서 늘리지 않는다.
+        let row = table
+            .cells
+            .iter()
+            .filter(|cell| cell.row == 0 && cell.row_span == 1)
+            .filter_map(|cell| i32::try_from(cell.height).ok().filter(|h| *h > 0))
+            .max()?;
+        row.checked_add((c.vertical_offset as i32).max(0))?
+            .checked_add(i32::from(table.outer_margin_top))?
+            .checked_add(i32::from(table.outer_margin_bottom))
     }
 
     /// 도형이 줄 흐름에서 차지하는 가로 범위 (HWPUNIT). [`Self::flow_height_hu`] 와 같은 규칙.

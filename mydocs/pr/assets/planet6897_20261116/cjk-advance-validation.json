@@ -1,0 +1,234 @@
+{
+  "product_source": "10d0d6ae43273430f74f7055c39b3d74948c1d7f",
+  "method": "canonical PNG, 96 DPI, compat2022, raw 2px; direct Print comparison",
+  "font_receipt": "windows-probe-font-transfer.json",
+  "producer": {
+    "status": "native_ready",
+    "pid": 4779,
+    "base": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+    "branch": "review/integration-20261116-planet6897",
+    "applied": [
+      {
+        "pr": 9078,
+        "source": "d9458af38001922d665332212b0a7687a4fe4d5a",
+        "applied": "93de9b33aa5b021e35abb2f8cd8cafd0fd8ddc4c"
+      },
+      {
+        "pr": 9078,
+        "source": "4d2332018372c7d9eb5c76128c891e4c7d2386d2",
+        "applied": "b2dfb8709c393246c7a966fd32411058681420a5"
+      },
+      {
+        "pr": 9080,
+        "source": "b8fb8b898d92c40301207e674b1cd5bc74532b70",
+        "applied": "fa634c26790b5a68f20f20564e81afbb6079ef64"
+      },
+      {
+        "pr": 9080,
+        "source": "0e8d7669971ae89bbd2607ddee17f265bebc46af",
+        "applied": "73fc88711bdb25c393b24dd7d9b2c5a43a76cdcd"
+      },
+      {
+        "pr": 9086,
+        "source": "70266b902ecc5b8f279184a4c2a1a727d9662820",
+        "applied": "4b63a0f2dfacbfb534dae57c006572ffb753ed0a"
+      },
+      {
+        "pr": 9086,
+        "source": "df9e88aaed2a1ded5b6003988924033df4d9e7e9",
+        "applied": "7f8dc8105845404986bcaec3c4a1aab9be9a629e"
+      },
+      {
+        "pr": 9098,
+        "source": "fbec9d688d2d5f5dde917c6e200904c8f7659534",
+        "applied": "709bd6962c3b46f81de15b35560e023eb2246908"
+      },
+      {
+        "pr": 9098,
+        "source": "cb888d8497151b089c029d1b963ab2952d4e7c06",
+        "applied": "c72c16d88efc615c592b8640320899ed31e28c0e"
+      }
+    ],
+    "updated_at": "2026-11-16T08:43:04.929580+00:00",
+    "base_wasm_exit": 0,
+    "base_wasm_seconds": 355.858,
+    "base_wasm_hashes": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "41f8b2e8242ef2006b0b02a4506f43b9947ff65889ce1d14673f4bda9d4136d6"
+    },
+    "head": "10d0d6ae43273430f74f7055c39b3d74948c1d7f",
+    "candidate_build_exit": 0,
+    "candidate_build_seconds": 216.832,
+    "candidate_binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v1/rhwp-native",
+    "candidate_binary_sha256": "93652d0eca39e840909284bfb05b33de7ff9f94ccc1cc9a966ee273fe4d1d78d",
+    "initial_head": "c72c16d88efc615c592b8640320899ed31e28c0e",
+    "candidate_wasm_hashes": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "4cda423a86fadf62ca80c547d5e0824568cb5d7a49c0e5581e85e6d6ffa48f1f"
+    },
+    "repair_build_results": [
+      {
+        "kind": "native",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "-j",
+          "8"
+        ],
+        "exit": 0,
+        "seconds": 197.579
+      },
+      {
+        "kind": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit": 0,
+        "seconds": 811.241
+      }
+    ]
+  },
+  "measurements": [
+    {
+      "backend": "native",
+      "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-probe-2022.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "raw_percent": 100.0
+        },
+        {
+          "page": 2,
+          "raw_percent": 100.0
+        },
+        {
+          "page": 3,
+          "raw_percent": 99.66029
+        },
+        {
+          "page": 4,
+          "raw_percent": 97.42349
+        }
+      ],
+      "minimum": 97.42349
+    },
+    {
+      "backend": "native",
+      "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe-2022.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "raw_percent": 99.99536
+        },
+        {
+          "page": 2,
+          "raw_percent": 99.99537
+        },
+        {
+          "page": 3,
+          "raw_percent": 99.65994
+        },
+        {
+          "page": 4,
+          "raw_percent": 97.59521
+        }
+      ],
+      "minimum": 97.59521
+    },
+    {
+      "backend": "wasm",
+      "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-probe-2022.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "raw_percent": 100.0
+        },
+        {
+          "page": 2,
+          "raw_percent": 100.0
+        },
+        {
+          "page": 3,
+          "raw_percent": 99.66062
+        },
+        {
+          "page": 4,
+          "raw_percent": 97.39462
+        }
+      ],
+      "minimum": 97.39462
+    },
+    {
+      "backend": "wasm",
+      "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+      "pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe-2022.pdf",
+      "pages": [
+        {
+          "page": 1,
+          "raw_percent": 99.99536
+        },
+        {
+          "page": 2,
+          "raw_percent": 99.99537
+        },
+        {
+          "page": 3,
+          "raw_percent": 99.66001
+        },
+        {
+          "page": 4,
+          "raw_percent": 97.50866
+        }
+      ],
+      "minimum": 97.50866
+    }
+  ],
+  "fixed_page": 3,
+  "pdf_following_hangul_x_pt": 105.54280090332031,
+  "fixed_tolerance_px": 2,
+  "rust_regression_status": "before 2FAIL / after focused 10PASS (includes both new regressions)",
+  "causality": {
+    "before_product": "c72c16d88efc615c592b8640320899ed31e28c0e",
+    "after_product": "10d0d6ae43273430f74f7055c39b3d74948c1d7f",
+    "test_head": "21ff0a582d876c5abdab6c39ce329577997b9988",
+    "before_source_sha256": "7d74d0f71621089f59939e2b8f25f2ae53865607b38435091f0c3b1954afad72",
+    "after_source_sha256": "a89fa0f89cbb2e0afd810f1a5ecb04f0fb164b49ca0e9ce6e3b343093cd8ba68",
+    "status": "before_failed_as_expected_source_restored",
+    "before_exit": 100,
+    "source_restored": true,
+    "before_expected_failures": true
+  },
+  "minimum_font_evidence": {
+    "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+    "normal_faces": 1890,
+    "isolated_faces": 528,
+    "private_file_access": {
+      "tested": 1218,
+      "readable": []
+    },
+    "os_font_aliases": [
+      {
+        "path": "/Library/Fonts/Arial Unicode.ttf",
+        "resolved": "/System/Library/Fonts/Supplemental/Arial Unicode.ttf"
+      }
+    ],
+    "personal_fonts_modified": false
+  }
+}

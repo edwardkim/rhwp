@@ -1,0 +1,21 @@
+{
+  "exitCode": 0,
+  "elapsedSeconds": 23.232834813999943,
+  "command": [
+    "python3",
+    "-B",
+    "bindings/Flutter/tool/reference_app.py",
+    "build",
+    "--flutter-sdk",
+    "/home/edward/.local/share/rhwp-tools/flutter-c197ca5199e9",
+    "--native",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/native/librhwp_native_ffi.so",
+    "--native-source",
+    "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "--output",
+    "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/linux-reference-build",
+    "--mode",
+    "debug",
+    "--trace"
+  ]
+}

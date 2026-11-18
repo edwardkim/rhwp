@@ -42,14 +42,22 @@ impl ContinuousTextShadow {
 
 /// 세 backend가 같은 순서의 그림자를 소비한다. 원문은 이 반복 뒤에 한 번만 그린다.
 pub(crate) fn offsets(style: &TextStyle) -> impl Iterator<Item = [f64; 2]> + '_ {
+    offsets_for(
+        style.shadow_type,
+        [style.shadow_offset_x, style.shadow_offset_y],
+        style.continuous_shadow.as_ref(),
+    )
+}
+
+/// TextRun과 엄격 glyph 대안이 동일한 준비 계획을 재생한다.
+pub(crate) fn offsets_for(
+    kind: u8,
+    nominal: [f64; 2],
+    plan: Option<&ContinuousTextShadow>,
+) -> impl Iterator<Item = [f64; 2]> + '_ {
     // 편집·출력 투영에서 종류가 바뀌면 이전 세션 계획으로 효과를 되살리지 않는다.
-    let continuous = style
-        .continuous_shadow
-        .as_ref()
-        .filter(|_| style.shadow_type == 2)
-        .map(|plan| plan.offsets());
-    let endpoint = (style.shadow_type > 0 && continuous.is_none())
-        .then_some([style.shadow_offset_x, style.shadow_offset_y]);
+    let continuous = plan.filter(|_| kind == 2).map(|plan| plan.offsets());
+    let endpoint = (kind > 0 && continuous.is_none()).then_some(nominal);
     continuous.into_iter().flatten().chain(endpoint)
 }
 

@@ -1,0 +1,14 @@
+{
+  "source_sha": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "profile": "Mac local locked wrapper --target web --out-dir pkg --no-opt; not Docker",
+  "expected_sha256": "280057fd4e2257a45a3aa5911e81cae7b1cfb1a2d3d3026ae070736f8fc77796",
+  "page": "http://127.0.0.1:7793/?renderer=canvas2d&renderProfile=print",
+  "matched": true,
+  "received": [
+    {
+      "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "280057fd4e2257a45a3aa5911e81cae7b1cfb1a2d3d3026ae070736f8fc77796"
+    }
+  ]
+}

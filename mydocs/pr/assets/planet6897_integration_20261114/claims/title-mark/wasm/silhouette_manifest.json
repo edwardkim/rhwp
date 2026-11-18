@@ -1,0 +1,305 @@
+{
+  "key": "title-mark",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "25b6e0389d79f9dab112808d5c7dae291f0898fc0cf520fb15bbd6d2914bd969",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-001.png",
+      "pdf_sha256": "ce6ba7b271936feb25b871cffd61cee53bb93d81bee4385b9d99202addafd8b9"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "4b50808d21de15e9908713d98216e16e1eee3474672c574c31e6ca0e0db7b301",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-002.png",
+      "pdf_sha256": "385f7d3a07c032186b34e6efd9dbbe1ee50409e5eb3072c72ceafe42e3730b81"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "af188a0771cb49af8e93f1bc534efa99f2768fd96ba743978d950bf21effddca",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-003.png",
+      "pdf_sha256": "8793beb0ddf9b5055f9a605a52138fc6cfde46a95389394bda478605c4ed5d3a"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "261d191ee6314e194e1e76e997da43c29f18c5efdb980273913b3cd3c909ddea",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-004.png",
+      "pdf_sha256": "dc41822c36c2cdaa1f8a1250e9cb4f8e9a408f25485e3c7dd632f24669213181"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "ba220b1d967da1a9742bc1446b7a16f328fb01d67730527de98e177f0424cc0c",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-005.png",
+      "pdf_sha256": "fc6da3ae40a4b0c7dfeed9c6f8fa191f2c4d5b282d42ad9c1a73bbddabaa8628"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "bcc834576f7bf268be821b055c319a34d9613a49c65c1ba2db7472ad610ed5af",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-006.png",
+      "pdf_sha256": "948a02bb0235004aa13813a7cdcc3a02dd0e390ebb8ab7d89923f16765eda4f0"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "02d280dd76b40554b8fd8b8407aa27cefabfb54eabcd40844c440fa1b6fa105e",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-007.png",
+      "pdf_sha256": "d9414824a0f276db0b2ff0065024cd0d5d70a2d2343733d158aa04ffd8bf4f7a"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "9e0b4a299225c5de64c74c51d760b3a5f090328fe852ca71ae24d3f6efdc4053",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-008.png",
+      "pdf_sha256": "ee852b11357bb37a3d88ee5f6543ab97dbffc93ac2ece3fb0b6ccaf46e338dde"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "4a2ea286f903d08d91ecde785e0522ccb748af5fae1401967c8ee72634fd731d",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-009.png",
+      "pdf_sha256": "8dacc84a56045b4727e1bd62f47bba3d819956be341c7c4bcefa58b841bfc564"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "51289972352052e6b352d4bf5acc522a2ed56b71c39ad4c9392566aa66bf3ff6",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/pdf_png/pdf-010.png",
+      "pdf_sha256": "2e4926d88c106831456eafc2f1ff8beb9e30d666f1c8a37f25db749588c857c1"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.48671,
+      "silhouette_raw_unmatched_pixels": 2290,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 41536,
+      "tolerant_content_match_percent": 94.48671
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 14011,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96795,
+      "silhouette_raw_unmatched_pixels": 18,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56157,
+      "tolerant_content_match_percent": 99.96795
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9513,
+      "silhouette_raw_unmatched_pixels": 25,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 51332,
+      "tolerant_content_match_percent": 99.9513
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9835,
+      "silhouette_raw_unmatched_pixels": 8,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48484,
+      "tolerant_content_match_percent": 99.9835
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42960,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 40397,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 108702,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 134646,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74587,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 10,
+      "pdf": 10
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue9016/1730000-title-mark-empty-stream.hwp",
+      "sha256": "4982322f105f602ea89eccfbcc934068ad0cf71ddb3b9294ab79316b2a4f8036"
+    },
+    "pdf": {
+      "path": "pdf/issue9016/1730000-title-mark-empty-stream-2020.pdf",
+      "sha256": "591d5713a0b8e945c6f5e5ef330ce886a4fa0972e5e19c6429a2250712e9ec05"
+    },
+    "git_head": "613d992a61cd1e0da317b3875a686cc73d50c010",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/rhwp-candidate-native",
+      "path": "output/pr-review/planet6897-integration-20261114/rhwp-candidate-native",
+      "sha256": "bc70e213d5f5806e9efd1172c6b54794a9a52ef4da6440bcda836b6acee505a0"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp.js",
+          "sha256": "2d48f8a6c3ff7f848f08725bb54d04094b296af1a40ae61203081a7cf8061a1a"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "sha256": "7264506ce4e20ec49d7cf0568296c3d6c3ec1f6aa67258ea878827d6f566a08f"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "automatic_local_and_web",
+      "program_record_count": 1208,
+      "program_records_sha256": "da0784a0e28fa281da660bac15b3e14d4508ffec8cb2dffe8312855e2ce93ff0",
+      "record_policy": "Full installed-program inventory remains local; this digest records the supplied program list without repeating unrelated local font paths."
+    }
+  },
+  "checkpoint": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261114/claims/candidate-wasm/title-mark/silhouette-checkpoint.json",
+  "full_execution_manifest_sha256": "4d0b5dd532b961fc9d83bfb79f0accf723d510639d1efd7bfa4608d230ae5132"
+}

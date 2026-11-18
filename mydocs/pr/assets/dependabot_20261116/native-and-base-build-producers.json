@@ -1,0 +1,35 @@
+{
+  "base": {
+    "base": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+    "native_source": "8472674645",
+    "native_original_producer_receipt": "mydocs/pr/assets/issue7732_split_span_20261115/native-svg-source-program/after-native-svg/validation.json",
+    "native_sha256": "fccca6a5d7abc8f803ec3522501be1a79b2d36eedbd5e70ee49dcc977420c98e",
+    "native_build_inputs_diff": [],
+    "wasm_source": "2749e491e843ec851de12467751ec200ab551014",
+    "wasm_sha256": "1cc3864ad1097224f125ceb5513ba55e110cd3517de5b84237dfada4b51bfe7e",
+    "wasm_build_input_difference_native_cli_only": [
+      "src/cli/outputs/vector.rs"
+    ],
+    "font_supply": "verified 183-original-program bundle in dataset-preserved order; independent Native/fresh WASM base qualification completed",
+    "no_new_base_build_claimed": true,
+    "native_source_full": "8472674645743d111d53de80d43d230449beaa3d",
+    "native_qualification_completed": true,
+    "native_qualification": "protected-native-validation.json",
+    "wasm_qualification_completed": true,
+    "wasm_qualification": "protected-wasm-validation.json"
+  },
+  "candidate_native": {
+    "source_head": "87c78424bc261f90e1167ecedc6a0f2106864d37",
+    "build": "cargo build --locked --profile release-test --features native-skia --bin rhwp -j8",
+    "log": "logs/native-build-v3.log",
+    "binary_sha256": "ed7be1ef4b4ca40714ae38b899efabde538dd35faeef04f7668cad3c5baea47e",
+    "cargo_toml_sha256": "7be1b2a6eef2f872633fdd8079742f6c3ee99e12b52e073e79733d5b7c1943fd",
+    "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+    "note": "build began with the final syn3 lock edge in worktree; it was committed as87c78424bc during the same build; no build input bytes changed",
+    "current_head_at_audit": "c47698bb7bdc07c84e674c587256759543053727"
+  },
+  "font_archive": "output/visual-sweep-protected-fonts-20261115.zip",
+  "font_archive_sha256": "34a0705321226f9a6ba7b66fdf149122877ccf10f7f70b52e58cc2e3042eeef0",
+  "font_files_checked": 183,
+  "font_binary_committed": false
+}

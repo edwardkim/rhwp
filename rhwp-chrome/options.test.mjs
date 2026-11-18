@@ -187,3 +187,52 @@ test('load failure keeps inputs disabled and displays a load error', async () =>
   assert.equal(elements.get('saved').textContent, 'Load failed');
   assert.equal(elements.get('saved').classList.contains('error'), true);
 });
+
+// The packaged content script must wait for a valid settings reply before enabling UI.
+async function contentSettingsProbe(reply, lastError) {
+  const { readFile } = await import('node:fs/promises');
+  const { runInNewContext } = await import('node:vm');
+  const source = await readFile(new URL('./content-script.js', import.meta.url), 'utf8');
+  const observed = { scans: 0, observers: 0, timers: 0, errorReads: 0 };
+  let receive;
+  runInNewContext(source, {
+    chrome: { runtime: {
+      sendMessage(message, callback) {
+        assert.equal(message.type, 'get-settings');
+        receive = callback;
+      },
+      get lastError() { observed.errorReads++; return lastError; },
+    } },
+    document: {
+      head: { querySelector() { return null; } }, body: {},
+      querySelectorAll() { observed.scans++; return []; },
+    },
+    MutationObserver: class { observe() { observed.observers++; } },
+    setTimeout() { observed.timers++; }, URL, console,
+  });
+  assert.equal(typeof receive, 'function');
+  assert.equal(observed.scans, 0, 'no scan before settings arrive');
+  receive(reply);
+  return observed;
+}
+
+test('content settings channel failure is handled without enabling default badges or prefetch', async () => {
+  const result = await contentSettingsProbe(undefined, { message: 'message channel closed' });
+  assert.equal(result.errorReads, 1, 'consume callback-scoped runtime.lastError');
+  assert.equal(result.scans, 0);
+  assert.equal(result.observers, 0);
+  assert.equal(result.timers, 0);
+});
+
+test('content settings disabled reply preserves the user choice', async () => {
+  const result = await contentSettingsProbe({ showBadges: false, hoverPreview: false }, undefined);
+  assert.equal(result.scans, 0);
+  assert.equal(result.observers, 0);
+  assert.equal(result.timers, 0);
+});
+
+test('content settings enabled reply still starts the normal scan and observer', async () => {
+  const result = await contentSettingsProbe({ showBadges: true, hoverPreview: false }, undefined);
+  assert.equal(result.scans, 1);
+  assert.equal(result.observers, 1);
+});

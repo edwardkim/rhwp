@@ -1,0 +1,11 @@
+[RustTestSuite] issue_8642_report838_page_ownership -> regression_suite_015::issue_8642_report838_page_ownership
+[RustTestSuite] cargo test --locked -j 8 --test regression_suite_015 issue_8642_report838_page_ownership::
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.12s
+     Running tests/generated/regression_suite_015.rs (target/pr-review/debug/deps/regression_suite_015-f70e1c757e193bb1)
+
+running 1 test
+test issue_8642_report838_page_ownership::report838_preserves_all_note_references_and_the_print_page_owners ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 334 filtered out; finished in 3.36s
+

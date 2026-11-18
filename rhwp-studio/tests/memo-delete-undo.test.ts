@@ -2,8 +2,7 @@ import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -11,7 +10,10 @@ import { fileURLToPath } from 'node:url';
 // tests/support/memo-wasm.runner.mjs 로 확인한다. command.ts 의 parameter property 때문에
 // cell-flow-boundary.test.ts 와 같이 production 모듈을 임시 CommonJS 로 변환해 실행한다.
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const runtimeRoot = mkdtempSync(path.join(tmpdir(), 'rhwp-memo-delete-undo-'));
+const outputRoot = path.resolve(studioRoot, '../output/pr-review');
+mkdirSync(outputRoot, { recursive: true });
+const runtimeRoot = mkdtempSync(path.join(outputRoot, 'memo-delete-undo-'));
+writeFileSync(path.join(runtimeRoot, 'package.json'), JSON.stringify({ type: 'commonjs' }));
 const compiler = process.env.RHWP_STUDIO_TSC ?? process.execPath;
 const compilerArgs = process.env.RHWP_STUDIO_TSC
   ? []
@@ -23,8 +25,9 @@ const compilation = spawnSync(compiler, [
   'src/engine/history.ts',
   '--target', 'ES2022',
   '--module', 'commonjs',
-  '--rootDir', 'src',
+  '--rootDir', '..',
   '--outDir', runtimeRoot,
+  '--listEmittedFiles',
   '--skipLibCheck',
   '--noCheck',
 ], {
@@ -38,10 +41,18 @@ assert.equal(
   `memo delete test runtime compile failed:\n${compilation.stdout}${compilation.stderr}`,
 );
 
+// 공유 type-only 의존성도 소유한 임시 트리 안에만 출력해야 한다.
+for (const line of compilation.stdout.split(/\r?\n/).filter(line => line.startsWith('TSFILE: '))) {
+  const relative = path.relative(runtimeRoot, line.slice(8).trim());
+  assert.ok(relative !== '..' && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative),
+    `test compiler escaped temporary output: ${line}`);
+}
+const runtimeStudioSource = path.join(runtimeRoot, 'rhwp-studio', 'src');
+
 const require = createRequire(import.meta.url);
-const { DeleteTextCommand } = require(path.join(runtimeRoot, 'engine', 'command.js'));
-const { CommandHistory } = require(path.join(runtimeRoot, 'engine', 'history.js'));
-const { touchesMemoAnchor } = require(path.join(runtimeRoot, 'core', 'memo.js'));
+const { DeleteTextCommand } = require(path.join(runtimeStudioSource, 'engine', 'command.js'));
+const { CommandHistory } = require(path.join(runtimeStudioSource, 'engine', 'history.js'));
+const { touchesMemoAnchor } = require(path.join(runtimeStudioSource, 'core', 'memo.js'));
 
 after(() => {
   rmSync(runtimeRoot, { recursive: true, force: true });

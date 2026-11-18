@@ -1,0 +1,32 @@
+{
+  "workflow": ".github/workflows/adapter-diff.yml",
+  "observed_run": 42754626675,
+  "attempt": 2,
+  "job": 129680270325,
+  "previous_job_timeout_minutes": 3,
+  "job_timeout_minutes": 10,
+  "checkout_timeout_minutes": 8,
+  "permission_changes": false,
+  "worker_timeout_unchanged_minutes": 25,
+  "validation": {
+    "negative_before": {
+      "tests": 1,
+      "failures": 1,
+      "log": "adapter-timeout-negative.log"
+    },
+    "workflow_contracts": {
+      "tests": 79,
+      "exit_code": 0,
+      "log": "adapter-timeout-workflow-tests.log"
+    },
+    "routing_reuse_contracts": {
+      "tests": 334,
+      "exit_code": 0,
+      "log": "adapter-timeout-routing-tests.log"
+    },
+    "actionlint": {
+      "exit_code": 0,
+      "log": "adapter-timeout-actionlint.log"
+    }
+  }
+}

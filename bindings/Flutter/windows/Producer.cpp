@@ -1,5 +1,6 @@
 #include "Producer.h"
 #include "NativeReply.h"
+#include "../common/bounded_tile_group.h"
 #include <algorithm>
 #include <chrono>
 #include <stdexcept>
@@ -9,6 +10,12 @@ namespace rhwp::d3d {
 namespace {
 std::atomic<size_t> producer_count{0};
 std::atomic<uint64_t> opened_count{0};
+void descriptor_opened(void* context) noexcept {
+  auto* pixels = static_cast<Pixels*>(context);
+  pixels->opened_notifications.fetch_add(1, std::memory_order_relaxed);
+  opened_count.fetch_add(1, std::memory_order_relaxed);
+  // Opening transfers creator references only. No GPU fence/reuse is claimed.
+}
 struct NativeFailure : std::runtime_error {
   std::string code;
   NativeFailure(std::string code, const std::string& message) : std::runtime_error(message), code(std::move(code)) {}
@@ -41,11 +48,25 @@ bool producer_proof(const std::string& text, const Job& job) {
       frame.field("origin").text() == "topLeft";
 }
 
+rhwp::metrics::CacheMetrics cache_metrics(const std::shared_ptr<NativeApi>& api, uint64_t presenter) noexcept {
+  try {
+    static const uint8_t command[] = "{\"op\":\"info\"}";
+    const auto response = api->read(api->request(presenter, command, sizeof(command) - 1));
+    NativeReply reply(response);
+    if (!reply.field("ok").boolean()) return {};
+    auto info = reply.field("info");
+    return rhwp::metrics::capture([&](bool target, const char* key) -> std::optional<uint64_t> {
+      return info.field(target ? "managedTargets" : "tileCache").field(key).integer();
+    });
+  } catch (...) { return {}; }
+}
+
 struct Device {
   ComPtr<ID3D12Device> device12;
   ComPtr<ID3D12CommandQueue> queue12;
   ComPtr<ID3D11Device1> device11;
   ComPtr<ID3D11DeviceContext> context11;
+  PrivateTargetPool<PrivatePixels> private_pool;
   explicit Device(IDXGIAdapter1* adapter) {
     DXGI_ADAPTER_DESC1 expected{}; checked(adapter->GetDesc1(&expected), "engine adapter description failed");
     checked(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device12)), "D3D12 device unavailable");
@@ -66,25 +87,36 @@ struct Device {
   }
   std::shared_ptr<Pixels> allocate(const std::shared_ptr<NativeApi>& api, const Job& job) {
     auto pixels = std::make_shared<Pixels>(); pixels->api = api;
-    pixels->device12 = device12; pixels->queue12 = queue12;
     pixels->device11 = device11; pixels->context11 = context11;
-    D3D12_RESOURCE_DESC desc{};
-    desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; desc.Width = job.width; desc.Height = job.height;
-    desc.DepthOrArraySize = 1; desc.MipLevels = 1; desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    desc.SampleDesc.Count = 1; desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-    desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
-    const auto allocation = device12->GetResourceAllocationInfo(0, 1, &desc);
-    if (!allocation.SizeInBytes || allocation.SizeInBytes == UINT64_MAX || allocation.SizeInBytes > job.credit->bytes() / 2)
-      throw std::runtime_error("D3D12 allocation exceeds the reserved two-surface frame budget");
-    D3D12_HEAP_PROPERTIES heap{}; heap.Type = D3D12_HEAP_TYPE_DEFAULT;
-    heap.CreationNodeMask = heap.VisibleNodeMask = 1;
-    checked(device12->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_SHARED, &desc,
-        D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&pixels->resource12)), "shared D3D12 target allocation failed");
-    checked(device12->CreateSharedHandle(pixels->resource12.Get(), nullptr, GENERIC_ALL, nullptr,
-        &pixels->nt_handle), "D3D12 shared NT handle creation failed");
-    checked(device11->OpenSharedResource1(pixels->nt_handle, IID_PPV_ARGS(&pixels->opened11)),
-        "D3D11 could not open the shared D3D12 resource");
-    D3D11_TEXTURE2D_DESC opened{}; pixels->opened11->GetDesc(&opened);
+    const PrivateGeometry geometry{job.stamp.device, job.width, job.height};
+    pixels->producer = private_pool.take(geometry, job.credit);
+    if (!pixels->producer) {
+      auto credit = job.credit->split_private(frame_charge(job.width, job.height) / 2);
+      if (!credit) throw std::runtime_error("private D3D12 target reservation is unavailable");
+      auto input = std::make_shared<PrivatePixels>();
+      input->device12 = device12; input->queue12 = queue12;
+      input->device11 = device11; input->context11 = context11;
+      D3D12_RESOURCE_DESC desc{};
+      desc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D; desc.Width = job.width; desc.Height = job.height;
+      desc.DepthOrArraySize = 1; desc.MipLevels = 1; desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+      desc.SampleDesc.Count = 1; desc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+      desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_SIMULTANEOUS_ACCESS;
+      const auto allocation = device12->GetResourceAllocationInfo(0, 1, &desc);
+      if (!allocation.SizeInBytes || allocation.SizeInBytes == UINT64_MAX || allocation.SizeInBytes > credit->bytes())
+        throw std::runtime_error("D3D12 allocation exceeds its independently retained private target budget");
+      D3D12_HEAP_PROPERTIES heap{}; heap.Type = D3D12_HEAP_TYPE_DEFAULT;
+      heap.CreationNodeMask = heap.VisibleNodeMask = 1;
+      checked(device12->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_SHARED, &desc,
+          D3D12_RESOURCE_STATE_COMMON, nullptr, IID_PPV_ARGS(&input->resource12)), "shared D3D12 target allocation failed");
+      checked(device12->CreateSharedHandle(input->resource12.Get(), nullptr, GENERIC_ALL, nullptr,
+          &input->nt_handle), "D3D12 shared NT handle creation failed");
+      checked(device11->OpenSharedResource1(input->nt_handle, IID_PPV_ARGS(&input->opened11)),
+          "D3D11 could not open the shared D3D12 resource");
+      D3D11_QUERY_DESC query{D3D11_QUERY_EVENT, 0};
+      checked(device11->CreateQuery(&query, &input->completion11), "D3D11 copy completion query unavailable");
+      pixels->producer = std::make_shared<PrivateTarget<PrivatePixels>>(geometry, std::move(credit), std::move(input));
+    }
+    D3D11_TEXTURE2D_DESC opened{}; pixels->producer->resource->opened11->GetDesc(&opened);
     if (opened.Width != job.width || opened.Height != job.height || opened.Format != DXGI_FORMAT_B8G8R8A8_UNORM ||
         opened.ArraySize != 1 || opened.MipLevels != 1 || opened.SampleDesc.Count != 1 || opened.SampleDesc.Quality ||
         opened.Usage != D3D11_USAGE_DEFAULT || !(opened.BindFlags & D3D11_BIND_SHADER_RESOURCE))
@@ -96,42 +128,55 @@ struct Device {
     ComPtr<IDXGIResource> resource; checked(pixels->legacy11.As(&resource), "legacy DXGI resource query failed");
     checked(resource->GetSharedHandle(&pixels->legacy_handle), "legacy DXGI shared handle unavailable");
     if (!pixels->legacy_handle) throw std::runtime_error("legacy shared handle is null");
-    D3D11_QUERY_DESC query{D3D11_QUERY_EVENT, 0};
-    checked(device11->CreateQuery(&query, &pixels->completion11), "D3D11 copy completion query unavailable");
     pixels->descriptor.struct_size = sizeof(FlutterDesktopGpuSurfaceDescriptor);
     pixels->descriptor.handle = pixels->legacy_handle;
     pixels->descriptor.width = pixels->descriptor.visible_width = job.width;
     pixels->descriptor.height = pixels->descriptor.visible_height = job.height;
     pixels->descriptor.format = kFlutterDesktopPixelFormatBGRA8888;
     pixels->descriptor.release_context = pixels.get();
-    pixels->descriptor.release_callback = [](void* context) {
-      auto* pixels = static_cast<Pixels*>(context);
-      pixels->opened_notifications.fetch_add(1, std::memory_order_relaxed);
-      opened_count.fetch_add(1, std::memory_order_relaxed);
-      // This callback only acknowledges opening, never GPU-complete/recycle.
-    };
+    pixels->descriptor.release_callback = &descriptor_opened;
     return pixels;
   }
   void copy_and_wait(const std::shared_ptr<Pixels>& pixels) {
-    context11->CopyResource(pixels->legacy11.Get(), pixels->opened11.Get());
-    context11->End(pixels->completion11.Get()); context11->Flush();
+    if (!pixels->producer->begin_copy()) throw std::runtime_error("private copy started before Native completion");
+    const auto& input = pixels->producer->resource;
+    context11->CopyResource(pixels->legacy11.Get(), input->opened11.Get());
+    context11->End(input->completion11.Get()); context11->Flush();
     const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(5);
     for (;;) {
       BOOL completed = FALSE;
-      const auto result = context11->GetData(pixels->completion11.Get(), &completed, sizeof(completed), 0);
+      const auto result = context11->GetData(input->completion11.Get(), &completed, sizeof(completed), 0);
       if (FAILED(device11->GetDeviceRemovedReason()))
         throw NativeFailure("deviceLost", "D3D11 device removal reported; frame quarantined");
       if (FAILED(result) || std::chrono::steady_clock::now() >= deadline)
         throw NativeFailure("submissionFailed", "D3D11 producer copy completion unknown; frame quarantined");
-      if (result == S_OK && completed) return;
+      if (result == S_OK && completed) {
+        if (!pixels->producer->copy_complete()) throw std::runtime_error("private copy completion phase mismatch");
+        return;
+      }
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
+  }
+  void recycle_private(const std::shared_ptr<Pixels>& pixels) {
+    // recycle leaves the caller's pin intact on rejection. Only a proved
+    // producer-complete private input is ever removed from this frame bundle.
+    private_pool.recycle(pixels->producer);
   }
 };
 }  // namespace
 
 ImmutableFrames& frames() { static auto* value = new ImmutableFrames; return *value; }
 uint64_t descriptor_opened_notifications() { return opened_count.load(std::memory_order_relaxed); }
+void register_surface_imports(const std::shared_ptr<State>& state) {
+  if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer)
+    SurfaceImports::register_owner(state->import_owner);
+}
+void retire_surface_imports(const std::shared_ptr<State>& state) noexcept {
+  try {
+    if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer)
+      SurfaceImports::unregistered(state->import_owner);
+  } catch (...) { /* Failed CPU retirement remains bounded and pinned. */ }
+}
 std::shared_ptr<int> reserve_producer() {
   size_t current = producer_count.load();
   do { if (current >= 2) return {}; } while (!producer_count.compare_exchange_weak(current, current + 1));
@@ -164,11 +209,58 @@ bool State::accept(const std::shared_ptr<Job>& job) {
   }
   changed.notify_one(); return true;
 }
+bool State::accept_group(const std::shared_ptr<State>& first, const std::shared_ptr<State>& second,
+                         const std::shared_ptr<Job>& a, const std::shared_ptr<Job>& b) {
+  if (!first || !second || first == second || !(a->stamp == b->stamp)) return false;
+  const auto ids = rhwp::tiles::unique_snapshots({a->ids, b->ids});
+  std::shared_ptr<Job> pending_a, pending_b;
+  std::shared_ptr<Published> frame_a, frame_b;
+  {
+    std::scoped_lock lock(first->mutex, second->mutex);
+    if (first->closed || second->closed || !first->ready || !second->ready ||
+        !first->api || first->api != second->api || first->generation != second->generation) return false;
+    auto gate_a = first->gate, gate_b = second->gate;
+    const auto serial_a = gate_a.accept(a->stamp), serial_b = gate_b.accept(b->stamp);
+    if (!serial_a || !serial_b) return false;
+    auto leases_a = first->leases, leases_b = second->leases;
+    for (auto* leases : {&leases_a, &leases_b})
+      for (auto it = leases->begin(); it != leases->end();) if (it->second.expired()) it = leases->erase(it); else ++it;
+    auto leases = rhwp::tiles::prepare_leases<SnapshotLease>(ids, [&](uint64_t id) {
+      auto left = leases_a.find(id), right = leases_b.find(id);
+      auto l = left == leases_a.end() ? nullptr : left->second.lock();
+      auto r = right == leases_b.end() ? nullptr : right->second.lock();
+      if (l && r && l != r) throw std::invalid_argument("two destructive leases for tile snapshot");
+      auto lease = l ? l : r;
+      if (!lease) { lease = std::make_shared<SnapshotLease>(); lease->id = id; lease->api = first->api; }
+      leases_a[id] = lease; leases_b[id] = lease;
+      return lease;
+    });
+    if (leases_a.size() > 32 || leases_b.size() > 32) return false;
+    a->snapshots = leases; b->snapshots = leases;
+    auto receipt_a = a->ids, receipt_b = b->ids;
+    // The request's two immutable frame credits and all receipt/lease storage
+    // were reserved before either producer can observe accepted ownership.
+    a->serial = serial_a; b->serial = serial_b;
+    for (const auto& lease : leases) lease->transferred = true;
+    first->gate = gate_a; second->gate = gate_b;
+    first->accepted_stamp = a->stamp; second->accepted_stamp = b->stamp;
+    first->accepted_serial = serial_a; second->accepted_serial = serial_b;
+    first->accepted_ids = std::move(receipt_a); second->accepted_ids = std::move(receipt_b);
+    first->leases = std::move(leases_a); second->leases = std::move(leases_b);
+    pending_a = std::move(first->pending); pending_b = std::move(second->pending);
+    frame_a = std::move(first->current); frame_b = std::move(second->current);
+    first->pending = a; second->pending = b;
+    first->error.clear(); first->error_code.clear(); first->device_failure = false;
+    second->error.clear(); second->error_code.clear(); second->device_failure = false;
+  }
+  first->changed.notify_one(); second->changed.notify_one(); return true;
+}
+
 void State::close() {
   std::shared_ptr<Job> previous; std::shared_ptr<Published> old_frame;
   {
     std::lock_guard<std::mutex> lock(mutex);
-    closed = true; ready = false; gate.close(); previous = std::move(pending); old_frame = std::move(current);
+    closed = true; ready = false; gate.close(); cache_trim.cancel(); previous = std::move(pending); old_frame = std::move(current);
   }
   changed.notify_one();
 }
@@ -198,45 +290,72 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
     }
     for (;;) {
       std::shared_ptr<Job> job;
+      std::optional<rhwp::cache::TrimReceipt> trim;
       {
         std::unique_lock<std::mutex> lock(state->mutex);
-        state->changed.wait(lock, [&] { return state->closed || state->pending; });
+        state->changed.wait(lock, [&] { return state->closed || state->pending || state->cache_trim.queued(); });
         if (state->closed) break;
-        job = std::move(state->pending); state->in_flight = true;
+        trim = state->cache_trim.take();
+        if (!trim) { job = std::move(state->pending); state->in_flight = true; }
       }
-      bool completed = false;
+      if (trim) {
+        try {
+          const std::string request = "{\"op\":\"trimCache\",\"targetBytes\":" + std::to_string(trim->target) + "}";
+          const auto text = api->read(api->request(presenter, reinterpret_cast<const uint8_t*>(request.data()), request.size()));
+          NativeReply reply(text);
+          if (!reply.field("ok").boolean() || reply.field("targetBytes").integer() != trim->target)
+            throw std::runtime_error("invalid Native cache trim identity");
+          state->cache_trim.finish(trim->request, reply.field("before").integer(), reply.field("after").integer(),
+              reply.field("trimmed").integer(), reply.field("busy").boolean());
+        } catch (...) { state->cache_trim.fail(trim->request); }
+        continue;
+      }
+      bool completed = false, published = false;
       try {
         if (!api->current(job->check_json)) {
           std::lock_guard<std::mutex> lock(state->mutex); ++state->stale_drops;
         } else {
           auto pixels = device.allocate(api, *job);
           if (!job->credit->begin_gpu(pixels)) throw std::runtime_error("frame resource reservation is invalid");
-          const auto rendered = api->read(api->render(presenter, pixels->resource12.Get(),
+          if (!pixels->producer->begin_native()) throw std::runtime_error("private Native target phase is invalid");
+          const auto rendered = api->read(api->render(presenter, pixels->producer->resource->resource12.Get(),
               reinterpret_cast<const uint8_t*>(job->render_json.data()), job->render_json.size()));
           NativeReply reply(rendered);
           if (!reply.field("ok").boolean()) {
             const bool stale = reply.field("code").text() == "staleFrame" &&
                 reply.field("unpublishedTargetSafeToDiscard").boolean();
-            if (stale) { completed = true; job->credit->producer_complete(); }
+            if (stale) {
+              if (!pixels->producer->native_complete() || !pixels->producer->skip_copy())
+                throw std::runtime_error("private stale target completion phase mismatch");
+              completed = true; job->credit->producer_complete(); device.recycle_private(pixels);
+            }
             else throw NativeFailure(reply.field("code").text(), reply.field("error").text());
           } else {
             if (!producer_proof(rendered, *job)) throw std::runtime_error("native D3D frame proof/metadata mismatch");
+            const auto measured = cache_metrics(api, presenter);
+            if (!pixels->producer->native_complete()) throw std::runtime_error("private Native completion phase mismatch");
             completed = true;  // D3D12 is complete; D3D11 copy has not started.
             if (api->current(job->check_json)) {
               completed = false; device.copy_and_wait(pixels); completed = true;
               job->credit->producer_complete();
+              device.recycle_private(pixels);
               if (api->current(job->check_json)) {
                 auto frame = std::make_shared<Published>(); frame->job = job; frame->pixels = pixels;
+                frame->cache_metrics = measured;
                 {
                   std::lock_guard<std::mutex> lock(state->mutex);
                   if (state->gate.current(job->serial, job->stamp)) {
                     if (!job->credit->publish_immutable()) throw std::runtime_error("frame was not producer-complete");
                     state->current = std::move(frame); state->error.clear(); state->error_code.clear(); state->device_failure = false;
+                    published = true;
                   } else ++state->stale_drops;
                 }
                 mark_frame(state);
               }
-            } else job->credit->producer_complete();
+            } else {
+              if (!pixels->producer->skip_copy()) throw std::runtime_error("private skipped copy phase mismatch");
+              job->credit->producer_complete(); device.recycle_private(pixels);
+            }
           }
         }
       } catch (const NativeFailure& error) {
@@ -249,6 +368,7 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
       {
         std::lock_guard<std::mutex> lock(state->mutex); state->in_flight = false;
       }
+      if (published && state->producer_ready) state->producer_ready(job->serial, job->stamp);
     }
   } catch (const std::exception& error) { try { state->fail(error.what()); } catch (...) {} }
   try {
@@ -270,6 +390,11 @@ void run_producer(const std::shared_ptr<State>& state) noexcept {
 const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void* user) {
   auto state = static_cast<Registration*>(user)->state;
   try {
+    const bool transfer = state->publication_mode == PublicationMode::ImmutableOwnershipTransfer;
+    // The next callback on this same raster OS thread proves prior descriptor
+    // CPU reads ended. Closing alone does not retire that descriptor storage.
+    auto callback = transfer ? SurfaceImports::begin_callback(state->import_owner) : SurfaceImports::Callback{};
+    if (transfer && !callback) return nullptr;
     std::shared_ptr<Published> frame;
     {
       std::lock_guard<std::mutex> lock(state->mutex);
@@ -280,7 +405,22 @@ const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void*
       state->fail("source changed; hide Texture and refresh owner snapshots", "staleFrame"); return nullptr;
     }
     std::lock_guard<std::mutex> lock(state->mutex);
-    return state->gate.current(frame->job->serial, frame->job->stamp) ? &frame->pixels->descriptor : nullptr;
-  } catch (...) { return nullptr; }
+    if (!state->gate.current(frame->job->serial, frame->job->stamp)) return nullptr;
+    if (!transfer) return &frame->pixels->descriptor;
+    const auto* descriptor = SurfaceImports::offer(state->import_owner, frame->pixels->descriptor,
+        frame, frame->job->credit, &descriptor_opened, frame->pixels.get());
+    if (!descriptor) throw std::runtime_error("bounded surface import ticket capacity exceeded");
+    return descriptor;
+  } catch (const std::exception& error) {
+    if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer) {
+      state->fail(error.what(), "consumerImportError"); state->close();
+    }
+    return nullptr;
+  } catch (...) {
+    if (state->publication_mode == PublicationMode::ImmutableOwnershipTransfer) {
+      state->fail("surface import callback failed", "consumerImportError"); state->close();
+    }
+    return nullptr;
+  }
 }
 }  // namespace rhwp::d3d

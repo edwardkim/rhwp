@@ -3,7 +3,7 @@
 use super::StrokeDash;
 
 mod border;
-pub(crate) use border::{border_circle, border_dash};
+pub(crate) use border::{border_circle, border_dash, table_border_circle};
 
 // 독립 한컴 Print의 pen 해상도. HWPUNIT에서 반올림한 뒤 출력 좌표로 변환한다.
 const HANCOM_PRINT_PEN_DPI: f64 = 600.0;

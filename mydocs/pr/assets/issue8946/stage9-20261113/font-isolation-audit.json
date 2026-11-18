@@ -1,0 +1,25 @@
+{
+  "all_passed": true,
+  "reads": [
+    {
+      "path": "output/issue8946/stage6/user-fonts/HBATANG.TTF",
+      "expected_readable": false,
+      "readable": false
+    },
+    {
+      "path": "output/issue8946/stage6/user-fonts/HMKMM.TTF",
+      "expected_readable": false,
+      "readable": false
+    },
+    {
+      "path": "$T7/fonts/Windows-Fonts-20261112-204958/batang.ttc",
+      "expected_readable": false,
+      "readable": false
+    },
+    {
+      "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+      "expected_readable": true,
+      "readable": true
+    }
+  ]
+}

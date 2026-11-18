@@ -155,8 +155,7 @@ impl LayerBuilder {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
             && (super::metafile::has_wmf(&tree.root)
-                || (self.hancom2024_print_bitmap
-                    && super::text_shadow::needs_font_metrics(&tree.root))
+                || super::text_shadow::needs_font_metrics(&tree.root)
                 || super::dot_leader::needs_font_program(&tree.root))
         {
             for font in fonts {
@@ -248,6 +247,9 @@ impl LayerBuilder {
             tree.frame.horizontal_shaping_sidecars(),
             &mut layer_tree.resources,
         ));
+        if !self.hangul2024_print {
+            context.publish_text_ink_em(&mut layer_tree.root, &claimed_glyph_run_sources);
+        }
         lower_font_native_glyph_sidecars_excluding(
             &mut layer_tree.root,
             &mut layer_tree.resources,
@@ -333,13 +335,17 @@ impl LayerBuilder {
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
             return None;
         }
-        if matches!(
-            &node.node_type,
-            RenderNodeType::Placeholder(placeholder)
-                if placeholder.kind
-                    == crate::renderer::render_tree::PlaceholderKind::MissingPicture
-                    && !self.profile.shows_editor_visuals()
-        ) {
+        if !self.profile.shows_editor_visuals()
+            && match &node.node_type {
+                RenderNodeType::Placeholder(placeholder) => {
+                    placeholder.kind
+                        == crate::renderer::render_tree::PlaceholderKind::MissingPicture
+                }
+                // #8858 그림 미지정과 #8957 미해결 연결 그림의 편집용 표시를 제외한다.
+                RenderNodeType::Image(image) => image.is_nonprinting_picture_placeholder(),
+                _ => false,
+            }
+        {
             return None;
         }
 
@@ -413,19 +419,30 @@ impl LayerBuilder {
                     run.display_text = Some(String::new());
                 }
                 let mut leader_paths = Vec::new();
-                if self.profile == RenderProfile::Print && self.hangul2024_print && !run.is_vertical
-                {
-                    run.style.continuous_shadow = super::text_shadow::prepare(
-                        &self.metafile_fonts,
-                        run.display_or_text(),
-                        &run.style,
-                        self.layout_dpi,
-                    );
-                    if let Some(plan) = &run.style.continuous_shadow {
-                        [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
+                // 연속 글자 그림자는 2020·2024 Print에서 같은 장치 계약이다.
+                // 글꼴 기반 공통 계획을 특정 조판 세대에 한정하지 않는다.
+                if self.profile == RenderProfile::Print && !run.is_vertical {
+                    if run.style.shadow_type == 2 {
+                        // 준비된 TextRun의 전송·재생은 원본 SFNT를 다시 요구하지 않는다.
+                        // 이미 확정한 계획을 빈 재조회 결과로 지우지 않는다.
+                        if run.style.continuous_shadow.is_none() {
+                            run.style.continuous_shadow = super::text_shadow::prepare(
+                                &self.metafile_fonts,
+                                run.display_or_text(),
+                                &run.style,
+                                self.layout_dpi,
+                            );
+                        }
+                        if let Some(plan) = &run.style.continuous_shadow {
+                            [run.style.shadow_offset_x, run.style.shadow_offset_y] = plan.extent();
+                        }
+                    } else {
+                        run.style.continuous_shadow = None;
                     }
-                    leader_paths =
-                        super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
+                    if self.hangul2024_print {
+                        leader_paths =
+                            super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
+                    }
                 }
                 let mut ops = text_run_ops(node.bbox, run, self.output_options);
                 ops.extend(
@@ -449,7 +466,13 @@ impl LayerBuilder {
                     .metafile_device_pixel_width
                     .filter(|_| self.hancom2024_print_bitmap);
                 if let Some(context) = self.page_context {
-                    context.picture_border_pen(&mut rect, pixel);
+                    // 그림의 물리 띠·외곽 pen은 비트맵 색상 세대와 별개의
+                    // Print 계약이다. 독립 2022·2024 Print가 같은 600dpi
+                    // pen을 사용하며 일반 사각형의 세대별 좌표는 유지한다.
+                    context.picture_border_pen(
+                        &mut rect,
+                        Some(self.layout_dpi / crate::renderer::print_picture_pen::DEVICE_DPI),
+                    );
                 }
                 let image_frame = rect
                     .image_frame_owner
@@ -545,6 +568,15 @@ impl LayerBuilder {
                         // 투영한 paint 연산만 그 프레임 전체에 그림을 재생한다.
                         image.fill_mode = Some(crate::model::style::ImageFillMode::FitToSize);
                     }
+                    let mut soft_edge_payload =
+                        crate::renderer::image_resolver::prepare_picture_soft_edge(
+                            &mut image,
+                            frame,
+                            node.bbox,
+                            self.layout_dpi,
+                            self.shape_group_depth == 0,
+                        );
+                    let soft_edge_prepared = soft_edge_payload.is_some();
                     let group_projection = (self.shape_group_depth > 0
                         && image_fill_clip.is_none())
                     .then(|| super::group_picture::project(&image, frame, self.layout_dpi))
@@ -554,15 +586,26 @@ impl LayerBuilder {
                         vec![PaintOp::image(full, image, Some(payload))]
                     } else {
                         crate::renderer::image_resolver::publish_print_jpeg_crop(&mut image);
-                        let mut resolved = (self.profile == RenderProfile::Print)
-                            .then(|| {
-                                crate::renderer::image_resolver::print_jpeg_payload(
-                                    &image,
-                                    frame,
-                                    self.layout_dpi,
-                                )
+                        let device_effect = soft_edge_payload.as_ref().is_some_and(|p| {
+                            p.kind == crate::paint::ResolvedImageKind::OutputDeviceWindow
+                        });
+                        let resolved_effect = if device_effect {
+                            soft_edge_payload.take()
+                        } else {
+                            None
+                        };
+                        let mut resolved = resolved_effect
+                            .or_else(|| {
+                                (self.profile == RenderProfile::Print)
+                                    .then(|| {
+                                        crate::renderer::image_resolver::print_jpeg_payload(
+                                            &image,
+                                            frame,
+                                            self.layout_dpi,
+                                        )
+                                    })
+                                    .flatten()
                             })
-                            .flatten()
                             .or_else(|| {
                                 if self.profile != RenderProfile::Print
                                     || self.hancom2024_print_bitmap
@@ -631,7 +674,13 @@ impl LayerBuilder {
                                 crate::renderer::print_raster::PrintRasterFrame::new(
                                     self.image_page_size,
                                     self.image_reference_origin,
-                                    node.bbox,
+                                    // 원본 꼭짓점이 정한 내부 그림 창에 맞춘 장치 표본이다.
+                                    // 개체의 흐름 프레임을 쓰면 작은 그림의 가운데 내용이 clip 밖으로 밀린다.
+                                    if image.source_rect.is_some() {
+                                        image.transformed_paint_bbox(&frame)
+                                    } else {
+                                        node.bbox
+                                    },
                                     self.layout_dpi,
                                 )
                             {
@@ -658,6 +707,29 @@ impl LayerBuilder {
                                 resolved = Some(payload);
                             }
                         }
+                        // 일반 WMF도 실제 출력 장치 PNG로 준비된 뒤에는 PNG와 같은
+                        // 물리 프레임을 소비한다. 중간 WMFC·별도 색/마스크 전달은 각
+                        // 소유 경로를 유지하고, 준비 전 자원의 크기·원본 bbox는 바꾸지 않는다.
+                        if self.hancom2024_print_bitmap
+                            && !image.transform.has_transform()
+                            && image.content_inset.is_none()
+                            && image.source_rect.is_none()
+                            && image.fill_mode.is_none()
+                            && resolved.as_ref().is_some_and(|payload| {
+                                payload.kind == crate::paint::ResolvedImageKind::OutputDevice
+                                    && !payload.suppress_effects
+                                    && crate::renderer::image_resolver::png_sampling::metafile_surface(
+                                        &payload.data,
+                                    )
+                            })
+                        {
+                            frame = self.page_context.map_or(frame, |context| {
+                                context.raster_image_frame(node, &image)
+                            });
+                            if let Some(owned) = self.image_frames.get_mut(&node.id) {
+                                owned.paint = frame;
+                            }
+                        }
                         if self.profile == RenderProfile::Print
                             && !image.transform.has_transform()
                             && image.content_inset.is_none()
@@ -680,6 +752,18 @@ impl LayerBuilder {
                             {
                                 frame = surface_frame;
                                 resolved = Some(payload);
+                            }
+                        }
+                        // 효과 바이트는 원본 bin ID의 지연 재조회로 복원할 수 없다.
+                        // 동일 BinData의 무효과/다른 반경과 resource cache를 공유하지 않는다.
+                        if soft_edge_prepared {
+                            if let Some(payload) = resolved.as_mut() {
+                                if payload.kind == crate::paint::ResolvedImageKind::FormatConverted
+                                {
+                                    payload.kind = crate::paint::ResolvedImageKind::SourceWindow;
+                                }
+                            } else {
+                                resolved = soft_edge_payload;
                             }
                         }
                         vec![PaintOp::image(frame, image, resolved)]
@@ -859,11 +943,15 @@ impl LayerBuilder {
     }
 }
 
-fn line_decoration_trim_target(
+fn line_decoration_trim_targets(
     children: &[LayerNode],
-) -> Option<(crate::paint::TextSourceSpan, usize)> {
-    fn scan(node: &LayerNode, found: &mut Option<Option<(crate::paint::TextSourceSpan, usize)>>) {
-        if found.is_some() {
+) -> Vec<(crate::paint::TextSourceSpan, usize)> {
+    fn scan(
+        node: &LayerNode,
+        targets: &mut Vec<(crate::paint::TextSourceSpan, usize)>,
+        finished: &mut bool,
+    ) {
+        if *finished {
             return;
         }
         match &node.kind {
@@ -875,14 +963,19 @@ fn line_decoration_trim_target(
                         ..
                     } = op
                     {
+                        // 문단 끝·명시적 줄바꿈의 공백은 서명란 등 저자 콘텐츠다.
+                        // 공백이 별도 run으로 나뉘어도 앞 run까지 함께 보존한다.
+                        if run.is_para_end || run.is_line_break_end {
+                            targets.clear();
+                            *finished = true;
+                            return;
+                        }
+                        let trailing = run.text.chars().rev().take_while(|ch| *ch == ' ').count();
+                        if trailing > 0 {
+                            targets.push((source.clone(), trailing));
+                        }
                         if run.text.chars().any(|ch| ch != ' ') {
-                            if run.is_para_end || run.is_line_break_end {
-                                *found = Some(None);
-                                return;
-                            }
-                            let trailing =
-                                run.text.chars().rev().take_while(|ch| *ch == ' ').count();
-                            *found = Some((trailing > 0).then_some((source.clone(), trailing)));
+                            *finished = true;
                             return;
                         }
                     }
@@ -890,25 +983,30 @@ fn line_decoration_trim_target(
             }
             LayerNodeKind::Group { children, .. } => {
                 for child in children.iter().rev() {
-                    scan(child, found);
-                    if found.is_some() {
+                    scan(child, targets, finished);
+                    if *finished {
                         return;
                     }
                 }
             }
             LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-                scan(child, found)
+                scan(child, targets, finished)
             }
         }
     }
-    let mut found = None;
+    let mut targets = Vec::new();
+    let mut finished = false;
     for child in children.iter().rev() {
-        scan(child, &mut found);
-        if found.is_some() {
+        scan(child, &mut targets, &mut finished);
+        if finished {
             break;
         }
     }
-    found.flatten()
+    // 가시 본문이 없는 공백 전용 줄은 밑줄 입력란일 수 있으므로 유지한다.
+    if !finished {
+        targets.clear();
+    }
+    targets
 }
 
 fn publish_line_decoration_trims(node: &mut LayerNode) {
@@ -918,7 +1016,7 @@ fn publish_line_decoration_trims(node: &mut LayerNode) {
         ..
     } = &mut node.kind
     {
-        if let Some((source, trim)) = line_decoration_trim_target(children) {
+        for (source, trim) in line_decoration_trim_targets(children) {
             set_decoration_trim_for_source(children, &source, trim);
         }
     }

@@ -1,0 +1,101 @@
+[
+  {
+    "pr": 8962,
+    "head": "469ca8c04f5fab5a9a87bec1c8a09873032d4720",
+    "reviewId": 5919913090,
+    "url": "https://github.com/edwardkim/rhwp/pull/8962#pullrequestreview-5919913090",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:24:43Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `469ca8c04f5fab5a9a87bec1c8a09873032d4720` — Linux 참조 앱 resize.\n- tool/reference_app.py의 configure_reference_runner가 생성 템플릿의 정책 없음·유일한 project/view 순서를 확인하고 공개 FL_UI_THREAD_POLICY_RUN_ON_SEPARATE_THREAD·Skia를 설정한다. 문서 렌더나 timeout 상수를 바꾸지 않는다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 8963,
+    "head": "05d303178b0c8f14be8e3f6d1edf78892a66cd98",
+    "reviewId": 5919913882,
+    "url": "https://github.com/edwardkim/rhwp/pull/8963#pullrequestreview-5919913882",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:24:46Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `05d303178b0c8f14be8e3f6d1edf78892a66cd98` — producer-ready EventChannel.\n- common/producer_ready.h의 2개 등록·1개 drain mailbox → OS platform thread EventSink → messenger/backend별 Dart hub → owner·serial·전체 stamp 확인 → 기존 status/snapshot 확인을 추적했다. 이벤트는 표시 권한이나 consumer 완료 증거가 아니다. Windows는 AddRef/Lock/IsAvailable로 messenger 종료를 보호한다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 8964,
+    "head": "d8251257d53c365de873fcab61b03f52ecdb67ff",
+    "reviewId": 5919914638,
+    "url": "https://github.com/edwardkim/rhwp/pull/8964#pullrequestreview-5919914638",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:24:49Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `d8251257d53c365de873fcab61b03f52ecdb67ff` — 창 종료와 GPU retirement.\n- NativeWindowClose.didRequestAppExit가 중복 요청을 하나의 future로 합치고 저장 결정·mounted GPU retirement·owner 종료까지 기다린다. 취소·예외·onError 예외·widget/owner 교체는 exit 허가로 승격하지 않는다. 강제 프로세스 종료를 가로챈다고 주장하지 않는다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 8965,
+    "head": "2023cd3d2715a5eda2cadf30801ffcacefb4aab8",
+    "reviewId": 5919915268,
+    "url": "https://github.com/edwardkim/rhwp/pull/8965#pullrequestreview-5919915268",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:24:52Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `2023cd3d2715a5eda2cadf30801ffcacefb4aab8` — 공통 GPU 타일 정책과 Metal cache.\n- 기존 GL 타일 키/geometry → 공통 gpu_tiles의 full source·font·device·profile·scale/phase key → LRU pin/managed target credit → 각 backend surface/replay/compose를 추적했다. frame_resources의 Rc pin은 완료된 작업만 반환하며 불명확한 작업은 자원과 credit을 유지한다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 8966,
+    "head": "80062f4d0d11b69bfc1849d116150b96e7d7e899",
+    "reviewId": 5919915924,
+    "url": "https://github.com/edwardkim/rhwp/pull/8966#pullrequestreview-5919915924",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:24:56Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `80062f4d0d11b69bfc1849d116150b96e7d7e899` — D3D bounded tile cache.\n- D3D가 같은 공통 타일 키·count/byte budget을 소비하며 Native render/scratch/tile pin이 target quota를 공유한다. 외부 public target을 내부 cache로 재사용하지 않는다. 기존 JSON 설정의 기본값과 cache 비활성 경계를 확인했다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 8967,
+    "head": "41e8618fdff2a55a16ab60fc8c667f9255692179",
+    "reviewId": 5919916571,
+    "url": "https://github.com/edwardkim/rhwp/pull/8967#pullrequestreview-5919916571",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:24:59Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `41e8618fdff2a55a16ab60fc8c667f9255692179` — 완료된 D3D private target 재사용.\n- PrivateTargetPool의 Reserved→NativePending→NativeComplete→CopyPending→Complete와 두 실제 fence 완료를 추적했다. 같은 device/geometry·unique complete target만 재사용한다. 공개 descriptor opening은 private 완료 증거가 아니며 public immutable texture는 재사용하지 않는다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 9128,
+    "head": "207476213889668e17b2ea6f64eb80c735632f46",
+    "reviewId": 5919917318,
+    "url": "https://github.com/edwardkim/rhwp/pull/9128#pullrequestreview-5919917318",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:25:02Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `207476213889668e17b2ea6f64eb80c735632f46` — 프로세스 Metal context admission.\n- Native ABI 생성 예약 → 성공 직후 mark_live → 정상 presenter release_confirmed 또는 영구 quarantine를 추적했다. 한 atomic word에 live+quarantine 수를 저장하며 프로세스 cap 4를 thread 재생성으로 우회하지 못한다. 생성 실패만 미노출 예약을 반환한다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 9129,
+    "head": "720c161b9b961b862f6834ab045f6ff599279de3",
+    "reviewId": 5919917957,
+    "url": "https://github.com/edwardkim/rhwp/pull/9129#pullrequestreview-5919917957",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:25:06Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `720c161b9b961b862f6834ab045f6ff599279de3` — 유휴 상태 polling 억제.\n- EventChannel listen 성공과 현재 publication의 full status/snapshot 검증이 둘 다 있어야 idle status RPC를 멈춘다. _tick의 로컬 current 정보 확인은 유지하며 작업 중·미지원·listen/stream 실패에는 기존 poll/deadline으로 복귀한다. 새 device health fence나 전력 측정은 아니다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 9130,
+    "head": "c1d53287a6991c6195840c71927502dbc22f8907",
+    "reviewId": 5919918553,
+    "url": "https://github.com/edwardkim/rhwp/pull/9130#pullrequestreview-5919918553",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:25:09Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `c1d53287a6991c6195840c71927502dbc22f8907` — owner thread cache trim.\n- 공개 trimCache/trimCacheStatus의 requestId·generation·target·member 순서 → bounded queue → actual owner/current context → unpinned completed target 제거 → typed receipt를 추적했다. target은 각 presenter의 목표며 그룹은 member 합계/pending/busy OR다. 실패·quarantine·published front를 숨기거나 해제하지 않는다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 9131,
+    "head": "3798dd236733ed41cf547e15c73b622ff44a5b04",
+    "reviewId": 5919919187,
+    "url": "https://github.com/edwardkim/rhwp/pull/9131#pullrequestreview-5919919187",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:25:12Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `3798dd236733ed41cf547e15c73b622ff44a5b04` — 메모리 압력과 typed trim receipt.\n- WidgetsBinding memory pressure → NativeGpuLifecycle의 한 pending future/owner epoch → controller.trimCaches → validated typed members를 추적했다. owner 교체·dispose·close의 늦은 결과는 새 owner 상태를 덮지 않는다. 전체 VRAM 회수로 표시하지 않는다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  },
+  {
+    "pr": 9132,
+    "head": "4379aa080b01a5da26f03f154287057ff6fb8269",
+    "reviewId": 5919919968,
+    "url": "https://github.com/edwardkim/rhwp/pull/9132#pullrequestreview-5919919968",
+    "state": "APPROVED",
+    "submittedAt": "2026-11-16T12:25:16Z",
+    "body": "검토를 완료해 승인합니다. 기여해 주셔서 감사합니다.\n\n- 원 head: `4379aa080b01a5da26f03f154287057ff6fb8269` — 게시 세대의 cache metrics와 JSON CLI.\n- Native render 이후 계수 snapshot → plugin의 게시 frame stamp → Dart 현재 요청 전체 stamp·양 tile 검증 → bounded trace → CLI summary를 추적했다. 모르는 값은 0을 만들지 않고 생략한다. gauges와 누적 delta·reset·epoch·샘플 누락을 분리하며 CLI labels를 실제 수행 증거로 승격하지 않는다.\n- 원 head의 최신 CI 성공과 devel `443dafb08107152e066689544e88d90988339567`에 대한 충돌 없는 병합을 재확인했습니다. 동일 병합 소스에서 Flutter Native 연결 360건·Rust 집중 21건, 실제 Linux GL/Windows D3D 표시·캐시 축소·메모리 압력·종료를 검증했습니다. 전체 Rust/Native 광범위 회귀는 같은 원 code head의 GitHub Full CI 결과를 재사용했습니다.\n- macOS는 테스트 환경 부재로 기여자 주장을 수용한 메인테이너 결정에 따릅니다. Apple SDK/Metal 실기, 물리 GPU 가속·consumer fence·전체 VRAM/FPS 측정 완료를 주장하지 않습니다.\n\n검증한 원 기여 SHA를 보존해 누적 PR #9132에서 merge commit으로 통합할 계획입니다. 부모 #536·#8701은 OPEN을 유지합니다.\n"
+  }
+]

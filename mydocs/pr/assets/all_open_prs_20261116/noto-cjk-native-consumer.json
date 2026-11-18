@@ -1,0 +1,270 @@
+{
+  "producer_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "platform": "macOS CoreText + Native Skia",
+  "environment": "validated minimal-font sandbox; original user fonts unchanged",
+  "font_supply": {
+    "source_host": "ubuntu-ted",
+    "source_path": "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+    "source_sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a",
+    "collection_index": 1,
+    "family": "Noto Sans CJK KR",
+    "single_face_sha256": "2de1037a1e2684b8661bb8714ef9c4090ffa69fa2b42ee38e5e582dda4752578",
+    "scope": "로컬 실제 Native 소비 진단용, Git 배포 제외"
+  },
+  "scope": "Linux 배포 TTC의 KR face를 macOS Native에 명시 공급한 실제 소비 검증. Linux Fontconfig·Windows DirectWrite 실행으로 확대하지 않는다.",
+  "results": [
+    {
+      "requested": "돋움",
+      "native_raster_has_ink": true,
+      "glyphs": [
+        {
+          "character": "한",
+          "native": {
+            "candidates": [
+              "돋움",
+              "Dotum",
+              "Noto Sans KR ExtraLight",
+              "Noto Sans KR",
+              "Noto Sans CJK KR",
+              "Malgun Gothic",
+              "맑은 고딕",
+              "Apple SD Gothic Neo",
+              "HCR Dotum",
+              "함초롬돋움",
+              "Pretendard",
+              "HCR Batang",
+              "함초롬바탕",
+              "HCR Batang Ext",
+              "함초롬바탕 확장",
+              "HCR Batang ExtB",
+              "함초롬바탕 확장B",
+              "RHWP Old Hangul",
+              "Segoe UI Emoji",
+              "Noto Emoji",
+              "Noto Color Emoji",
+              "sans-serif"
+            ],
+            "capabilities": [
+              "nativeTypefaceChainEnumerated",
+              "nativeGlyphCoverageObserved"
+            ],
+            "certainty": "observed",
+            "failures": [],
+            "requested": "돋움",
+            "resolved": "Noto Sans CJK KR",
+            "source": "custom",
+            "status": "complete"
+          }
+        },
+        {
+          "character": "글",
+          "native": {
+            "candidates": [
+              "돋움",
+              "Dotum",
+              "Noto Sans KR ExtraLight",
+              "Noto Sans KR",
+              "Noto Sans CJK KR",
+              "Malgun Gothic",
+              "맑은 고딕",
+              "Apple SD Gothic Neo",
+              "HCR Dotum",
+              "함초롬돋움",
+              "Pretendard",
+              "HCR Batang",
+              "함초롬바탕",
+              "HCR Batang Ext",
+              "함초롬바탕 확장",
+              "HCR Batang ExtB",
+              "함초롬바탕 확장B",
+              "RHWP Old Hangul",
+              "Segoe UI Emoji",
+              "Noto Emoji",
+              "Noto Color Emoji",
+              "sans-serif"
+            ],
+            "capabilities": [
+              "nativeTypefaceChainEnumerated",
+              "nativeGlyphCoverageObserved"
+            ],
+            "certainty": "observed",
+            "failures": [],
+            "requested": "돋움",
+            "resolved": "Noto Sans CJK KR",
+            "source": "custom",
+            "status": "complete"
+          }
+        }
+      ]
+    },
+    {
+      "requested": "굴림",
+      "native_raster_has_ink": true,
+      "glyphs": [
+        {
+          "character": "한",
+          "native": {
+            "candidates": [
+              "굴림",
+              "Gulim",
+              "Noto Sans KR ExtraLight",
+              "Noto Sans KR",
+              "Noto Sans CJK KR",
+              "Malgun Gothic",
+              "맑은 고딕",
+              "Apple SD Gothic Neo",
+              "HCR Dotum",
+              "함초롬돋움",
+              "Pretendard",
+              "HCR Batang",
+              "함초롬바탕",
+              "HCR Batang Ext",
+              "함초롬바탕 확장",
+              "HCR Batang ExtB",
+              "함초롬바탕 확장B",
+              "RHWP Old Hangul",
+              "Segoe UI Emoji",
+              "Noto Emoji",
+              "Noto Color Emoji",
+              "sans-serif"
+            ],
+            "capabilities": [
+              "nativeTypefaceChainEnumerated",
+              "nativeGlyphCoverageObserved"
+            ],
+            "certainty": "observed",
+            "failures": [],
+            "requested": "굴림",
+            "resolved": "Noto Sans CJK KR",
+            "source": "custom",
+            "status": "complete"
+          }
+        },
+        {
+          "character": "글",
+          "native": {
+            "candidates": [
+              "굴림",
+              "Gulim",
+              "Noto Sans KR ExtraLight",
+              "Noto Sans KR",
+              "Noto Sans CJK KR",
+              "Malgun Gothic",
+              "맑은 고딕",
+              "Apple SD Gothic Neo",
+              "HCR Dotum",
+              "함초롬돋움",
+              "Pretendard",
+              "HCR Batang",
+              "함초롬바탕",
+              "HCR Batang Ext",
+              "함초롬바탕 확장",
+              "HCR Batang ExtB",
+              "함초롬바탕 확장B",
+              "RHWP Old Hangul",
+              "Segoe UI Emoji",
+              "Noto Emoji",
+              "Noto Color Emoji",
+              "sans-serif"
+            ],
+            "capabilities": [
+              "nativeTypefaceChainEnumerated",
+              "nativeGlyphCoverageObserved"
+            ],
+            "certainty": "observed",
+            "failures": [],
+            "requested": "굴림",
+            "resolved": "Noto Sans CJK KR",
+            "source": "custom",
+            "status": "complete"
+          }
+        }
+      ]
+    },
+    {
+      "requested": "Noto Sans CJK KR",
+      "native_raster_has_ink": true,
+      "glyphs": [
+        {
+          "character": "한",
+          "native": {
+            "candidates": [
+              "Noto Sans CJK KR",
+              "Malgun Gothic",
+              "맑은 고딕",
+              "Apple SD Gothic Neo",
+              "HCR Dotum",
+              "함초롬돋움",
+              "Noto Sans KR ExtraLight",
+              "Noto Sans KR",
+              "Pretendard",
+              "HCR Batang",
+              "함초롬바탕",
+              "HCR Batang Ext",
+              "함초롬바탕 확장",
+              "HCR Batang ExtB",
+              "함초롬바탕 확장B",
+              "RHWP Old Hangul",
+              "Segoe UI Emoji",
+              "Noto Emoji",
+              "Noto Color Emoji",
+              "sans-serif"
+            ],
+            "capabilities": [
+              "nativeTypefaceChainEnumerated",
+              "nativeGlyphCoverageObserved"
+            ],
+            "certainty": "observed",
+            "failures": [],
+            "requested": "Noto Sans CJK KR",
+            "resolved": "Noto Sans CJK KR",
+            "source": "custom",
+            "status": "complete"
+          }
+        },
+        {
+          "character": "글",
+          "native": {
+            "candidates": [
+              "Noto Sans CJK KR",
+              "Malgun Gothic",
+              "맑은 고딕",
+              "Apple SD Gothic Neo",
+              "HCR Dotum",
+              "함초롬돋움",
+              "Noto Sans KR ExtraLight",
+              "Noto Sans KR",
+              "Pretendard",
+              "HCR Batang",
+              "함초롬바탕",
+              "HCR Batang Ext",
+              "함초롬바탕 확장",
+              "HCR Batang ExtB",
+              "함초롬바탕 확장B",
+              "RHWP Old Hangul",
+              "Segoe UI Emoji",
+              "Noto Emoji",
+              "Noto Color Emoji",
+              "sans-serif"
+            ],
+            "capabilities": [
+              "nativeTypefaceChainEnumerated",
+              "nativeGlyphCoverageObserved"
+            ],
+            "certainty": "observed",
+            "failures": [],
+            "requested": "Noto Sans CJK KR",
+            "resolved": "Noto Sans CJK KR",
+            "source": "custom",
+            "status": "complete"
+          }
+        }
+      ]
+    }
+  ],
+  "preflight_corrections": [
+    "파일 경로를 디렉터리 계약의 with_font_paths에 넘긴 첫 시도는 공급하지 못했다.",
+    "10 face TTC 전체의 try_with_font_data는 64MiB 유지 한도를 초과했다. 한도는 바꾸지 않고 동일 TTC의 KR face만 로컬 추출해 공급했다.",
+    "macOS의 일반 고딕은 기존 정책상 Apple SD Gothic Neo가 먼저이므로, 원본 프로그램 없는 돋움·굴림 갈래와 명시 CJK 요청을 검증했다."
+  ]
+}

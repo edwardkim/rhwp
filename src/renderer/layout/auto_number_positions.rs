@@ -7,6 +7,8 @@ use crate::model::paragraph::Paragraph;
 pub(crate) struct AutoNumberPlaceholderPosition {
     pub source: usize,
     pub logical: usize,
+    /// 자리표를 소유한 `AutoNumber` 컨트롤의 `para.controls` 색인.
+    pub control_index: usize,
 }
 
 impl LayoutEngine {
@@ -72,6 +74,7 @@ impl LayoutEngine {
                     positions.push(AutoNumberPlaceholderPosition {
                         source: pos,
                         logical: pos + inline_slots,
+                        control_index: ctrl_idx,
                     });
                 }
                 search_from = pos.saturating_add(1);

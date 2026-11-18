@@ -1,0 +1,45 @@
+[
+  {
+    "path": "pdf/issue8856/policy-cut40-flags0-2024.pdf",
+    "sha256": "c8a52ce6d8a64852752eb2d2d6e1a5a665a6dcd578c4c14dced8c344d3fd280d",
+    "pages": 1,
+    "bottom_rows": [
+      "연구결과 ",
+      "활용방안",
+      " 근무성적평정 50%, 성과상여금 50% 및 성과연봉 40% 반영(안) / 우수부서 대상  포상금 ",
+      "지급(본청 상위권 7개 부서, 읍․면 4개부서)"
+    ],
+    "captured_runtime_path": "output/issue8856/policy-width-oracle/policy-cut40-flags0-2024.pdf"
+  },
+  {
+    "path": "pdf/issue8856/policy-cut40-flags8-2024.pdf",
+    "sha256": "66a1c8533e6cd07889a2cdb876dc7080c6d6b4c01a684ee80de3c094e77f9042",
+    "pages": 1,
+    "bottom_rows": [
+      "연구결과 ",
+      "활용방안",
+      " 근무성적평정 ",
+      "50%, ",
+      "성과상여금 ",
+      "50% ",
+      "및 ",
+      "성과연봉 ",
+      "40% ",
+      "반영(안) ",
+      "/ 우수부서 대상  포상금 지급(본청 상위권 7개 부서, 읍․면 4개부서)"
+    ],
+    "captured_runtime_path": "output/issue8856/policy-width-oracle/policy-cut40-flags8-2024.pdf"
+  },
+  {
+    "path": "pdf/issue8856/policy-trackchange0-repeat-2024.pdf",
+    "sha256": "5db18f4de114825262047f7674771e02a9cf3f2493d598215d00984941812112",
+    "pages": 1,
+    "bottom_rows": [
+      "연구결과 ",
+      "활용방안",
+      " 근무성적평정 50%, 성과상여금 50% 및 성과연봉 40% 반영(안) / 우수부서 대상  포상금 ",
+      "지급(본청 상위권 7개 부서, 읍․면 4개부서)"
+    ],
+    "captured_runtime_path": "output/issue8856/policy-width-oracle/policy-trackchange0-repeat-2024.pdf"
+  }
+]

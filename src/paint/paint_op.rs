@@ -284,7 +284,13 @@ impl PaintOp {
             && *trim_trailing_spaces == 0)
             .then(|| crate::renderer::glyph_fit::terminal_underline_positions(run))
             .flatten();
-        if paint_geometry.is_none() && terminal_positions.is_none() {
+        let line_baseline = *kind == TextDecorationKind::Underline
+            && run.style.underline == crate::model::style::UnderlineType::Bottom
+            && run
+                .style
+                .font_position
+                .is_some_and(|position| position != 0);
+        if paint_geometry.is_none() && terminal_positions.is_none() && !line_baseline {
             return Some((*bbox, std::borrow::Cow::Borrowed(run.as_ref())));
         }
         let scale = paint_geometry.map_or(1.0, |geometry| geometry.inline_scale);
@@ -298,6 +304,11 @@ impl PaintOp {
             replay_bbox.width = positions.last().copied().unwrap_or(0.0) * scale;
         }
         let mut replay = run.as_ref().clone();
+        // 독립 Print의 -12/0/+12 대조군에서 아래 밑줄은 줄 기준선에 남는다.
+        // 원본 소유·검증용 run은 유지하고 실제 장식 재생에만 글자 위치를 제외한다.
+        if line_baseline {
+            replay.style.font_position = None;
+        }
         replay.layout_positions = Some(positions.iter().map(|position| position * scale).collect());
         Some((replay_bbox, std::borrow::Cow::Owned(replay)))
     }
@@ -2120,7 +2131,7 @@ impl From<&TextStyle> for PaintTextStyle {
         Self {
             script_metrics: style.script_metrics,
             font_family: style.font_family.clone(),
-            font_size: style.font_size,
+            font_size: style.effective_font_size(),
             font_position: style.font_position,
             color: style.color,
             bold: style.bold,

@@ -1,0 +1,10 @@
+{
+  "key": "pr8929-wide_tac_trailing_tail",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "fdd438f68b646de2cddc39af9af326b15d25e25f5272248f04f2dfe132edead2"
+}

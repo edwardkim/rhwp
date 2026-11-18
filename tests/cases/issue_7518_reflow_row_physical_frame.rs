@@ -99,15 +99,19 @@ fn original_no_ls_rows_fit_the_body_and_preserve_the_following_blank_line() {
     assert!(saw_following_line, "following blank paragraph is preserved");
 }
 
-// The independent Hancom 2024 p22 uses Palatino Linotype for U+00B7:
-// the dot closes line two of the original paragraph; line three begins "울".
-// The original HFT one-dot leader remains covered separately by issue_5906.
+// 관계형: 독립 한컴 2024 Print 22쪽의 문단·줄 소속을 검사한다. 좌표 핀이 아니다.
+// 주석 갱신: 2026-11-09T00:52:24+09:00. Native raw 99.94307%, fresh WASM raw 99.94699%.
+// Print가 U+00B7·인용부호에 사용한 Palatino 조건을 명시한다. 설치된 원본 HCI Poppy를
+// 자동 선택한 출력은 다른 글꼴 조건이므로 같은 줄 경계를 요구하지 않는다. 제품의 원본
+// 글꼴 우선 선택은 유지하며, 원본 HFT 한 점 leader는 issue_5906에서 별도로 보호한다.
 #[test]
 fn regulatory_22_legacy_latin_dot_preserves_the_source_word_boundary() {
     let input = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/76076_regulatory_analysis.hwp");
     let source = rhwp::parse_document(&std::fs::read(&input).unwrap()).unwrap();
     assert!(source.sections[0].paragraphs[180].text.contains("덮개·울"));
-    let page = &rendered_pages(&input)[21];
+    let font_environment = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/pr7518_review_page_budget/legacy-latin-print-font-environment.json");
+    let page = &rendered_pages_in_environment(&input, Some(&font_environment))[21];
     let lines: Vec<_> = nodes(page)
         .into_iter()
         .filter(|node| node["type"] == "TextLine" && node["pi"] == 180)

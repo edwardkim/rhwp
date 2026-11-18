@@ -1,0 +1,24 @@
+{
+  "kind": "independent-print-provenance",
+  "source": {
+    "path": "mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx",
+    "sha256": "3395e19bebea8b6689f383df1f4ea1ddb253dee91c4320392cc40e90e2e4f191"
+  },
+  "pdf": {
+    "path": "pdf/issue8946/hwp3-sample10-hwpx-user-print.pdf",
+    "sha256": "07ee80366057a4644b5686c758a33a997361de94619b18063be5e61fec47bc8d",
+    "bytes": 26587,
+    "pages": 1,
+    "title": "hwp3-sample10-hwpx.hwpx",
+    "producer": "Microsoft: Print To PDF",
+    "creationDate": "2026-11-09T02:22:21+09:00"
+  },
+  "provenance": {
+    "confirmedBy": "user",
+    "confirmation": "이슈의 HWPX 원본의 Print 출력",
+    "confirmedDate": "2026-11-11"
+  },
+  "scope": "표지 1쪽의 독립 기준. 763쪽 전쪽 기준으로 사용하지 않음.",
+  "fontEnvironment": "제품 빌드와 실제 설치 글꼴 파일은 미확인.",
+  "linkedImages": "표지의 외부 연결 그림 세 개가 출력에 없음."
+}

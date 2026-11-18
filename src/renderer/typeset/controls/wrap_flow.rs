@@ -57,7 +57,7 @@ pub(in crate::renderer::typeset) fn place(
                     paragraphs, para_idx,
                 );
             if anchor_is_picture || st.following_wrap_is_derived() || stored_empty_body_flow {
-                let anchor = wrap_match::picture_anchor(paragraphs, band);
+                let anchor = wrap_match::picture_anchor(band);
                 st.register_following_wrap_anchor(para_idx, anchor);
             } else {
                 // Table anchor: 어울림 문단을 표 옆에 기록 + height 소비 없음.
@@ -123,20 +123,27 @@ pub(in crate::renderer::typeset) fn place(
                             == 0
                     })
                 {
-                    st.register_following_wrap_anchor(
-                        para_idx,
-                        wrap_match::picture_anchor(paragraphs, band),
-                    );
+                    st.register_following_wrap_anchor(para_idx, wrap_match::picture_anchor(band));
                 }
                 // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
                 // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
                 // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.
-                st.end_following_wrap();
+                st.end_following_wrap_before(para_idx);
                 // fall through → 일반 paragraph 배치
             }
+        } else if let Some(pen) = unstored_lane_text(para, is_empty_para)
+            .then(|| st.square_band_lane_pen())
+            .flatten()
+        {
+            // 저장 줄 없이 rhwp 가 전폭으로 합성한 줄만 가진 문단은 차선 증거가 없다.
+            // 한/글은 이 문단을 표 옆 차선에서 이어 흘린다(36458608 pi=10~13: 뒤 저장
+            // 문단 pi=14 의 vpos 가 차선 높이를 그대로 누적한다). 앞 흡수 문단의 끝에서
+            // 시작해 자기 높이를 소비하고, 밴드는 닫지 않는다.
+            st.start_paragraph_at_band_pen(para_idx, pen);
+            st.register_following_wrap_anchor(para_idx, wrap_match::picture_anchor(band));
         } else {
             // 매칭 실패 → wrap zone 종료, 정상 처리 진행
-            st.end_following_wrap();
+            st.end_following_wrap_before(para_idx);
             // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
             // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
             // hwp3-sample10-hwp5.hwp paragraph 26 ("● 제목차례 ●") case —
@@ -154,4 +161,15 @@ pub(in crate::renderer::typeset) fn place(
         }
     }
     false
+}
+
+/// 합성 줄만 가진(저장 줄이 없는) 개체 없는 본문 문단인가.
+fn unstored_lane_text(para: &Paragraph, is_empty_para: bool) -> bool {
+    !is_empty_para
+        && para.controls.is_empty()
+        && !para.line_segs.is_empty()
+        && para
+            .line_segs
+            .iter()
+            .all(crate::renderer::typeset::is_synthetic_line_seg)
 }

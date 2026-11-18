@@ -1,0 +1,17 @@
+{
+  "source_head": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+  "build": "passed",
+  "exitCode": 0,
+  "elapsedSeconds": 408.0172318459954,
+  "profile": "release-test",
+  "features": [
+    "native-skia-d3d"
+  ],
+  "artifacts": {
+    "rhwp_native_ffi.dll": {
+      "path": "/home/edward/mygithub/rhwp/target/pr-review/x86_64-pc-windows-msvc/release-test/rhwp_native_ffi.dll",
+      "sha256": "c77d5383d39d67e2b05860c718498618b48a6087d9cfa119486450401e82df50",
+      "bytes": 72465408
+    }
+  }
+}

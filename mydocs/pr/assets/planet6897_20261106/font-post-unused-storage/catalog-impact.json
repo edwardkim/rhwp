@@ -1,0 +1,72 @@
+{
+  "checked_programs": 1219,
+  "affected": [
+    {
+      "source": "/Users/tsjang/Library/Fonts/Spoqa Han Sans Bold.ttf",
+      "source_sha256": "5a6b9b258145e243dfd5f70cc869119c6af708843658e380304bdfe3d4f4eaef",
+      "program_sha256": "5a6b9b258145e243dfd5f70cc869119c6af708843658e380304bdfe3d4f4eaef",
+      "old_post_bytes": 474280,
+      "new_post_bytes": 370538,
+      "removed_bytes": 103742,
+      "families": [
+        "SpoqaHanSans",
+        "SpoqaHanSans-Bold"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/Spoqa Han Sans Regular.ttf",
+      "source_sha256": "1f56c8535b6592672ea7f540a67bb5792c34558d72875fc504166a3e2b28b4b1",
+      "program_sha256": "1f56c8535b6592672ea7f540a67bb5792c34558d72875fc504166a3e2b28b4b1",
+      "old_post_bytes": 474272,
+      "new_post_bytes": 370536,
+      "removed_bytes": 103736,
+      "families": [
+        "SpoqaHanSans",
+        "SpoqaHanSans-Regular"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/hankc.ttf",
+      "source_sha256": "86ef0563e50f815e9a6f0a409efbe580f6af06dc0b5de320e6d53755b7863bc1",
+      "program_sha256": "86ef0563e50f815e9a6f0a409efbe580f6af06dc0b5de320e6d53755b7863bc1",
+      "old_post_bytes": 116472,
+      "new_post_bytes": 58825,
+      "removed_bytes": 57647,
+      "families": [
+        "«—∞‹∑π∞·√º",
+        "한겨레결체",
+        "TSThgrgl"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/중나좋체 Light.ttf",
+      "source_sha256": "db8ccf4ade02e9c2da3b85ddcdd91e45dab77a45aba2c2d6f2773ad6d97300b3",
+      "program_sha256": "db8ccf4ade02e9c2da3b85ddcdd91e45dab77a45aba2c2d6f2773ad6d97300b3",
+      "old_post_bytes": 361529,
+      "new_post_bytes": 349320,
+      "removed_bytes": 12209,
+      "families": [
+        "Joongnajoche",
+        "Joongnajoche Light",
+        "중나좋체",
+        "중나좋체 Light",
+        "JoongnajocheL-KSCpc-EUC-H"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/중나좋체 Medium.ttf",
+      "source_sha256": "17559246336d58ad2966e2792bb55befffd48fe00a5a6a4c5f6ea447f7febbd4",
+      "program_sha256": "17559246336d58ad2966e2792bb55befffd48fe00a5a6a4c5f6ea447f7febbd4",
+      "old_post_bytes": 361581,
+      "new_post_bytes": 349289,
+      "removed_bytes": 12292,
+      "families": [
+        "Joongnajoche",
+        "Joongnajoche Medium",
+        "중나좋체",
+        "중나좋체 Medium",
+        "JoongnajocheM-KSCpc-EUC-H"
+      ]
+    }
+  ]
+}

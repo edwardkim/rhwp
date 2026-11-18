@@ -1,0 +1,16 @@
+[
+  {
+    "ubuntu": "24.04",
+    "ok": true,
+    "text": "각",
+    "rgbaSha256": "7d3b0ab1fb85bc00e9d4db02dd69fbc3044753f0cdfc0242eac3d5db678550d2",
+    "bytes": 262144
+  },
+  {
+    "ubuntu": "26.04",
+    "ok": true,
+    "text": "각",
+    "rgbaSha256": "7d3b0ab1fb85bc00e9d4db02dd69fbc3044753f0cdfc0242eac3d5db678550d2",
+    "bytes": 262144
+  }
+]

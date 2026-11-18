@@ -1,0 +1,1438 @@
+{
+  "head": "30fa7739f0340f2a248b22542c7dd36d9354f056",
+  "pages": 46,
+  "minimum": 95.91,
+  "scores_identical_to_pre_rebase": true,
+  "png_count": 184,
+  "identical_pngs": 184,
+  "scores": [
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1430-below",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1450-beside",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-600-no-extra-line",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-beside-line",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-then-topbottom-push",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-paper-companion-beside-line",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-then-topbottom-push",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-topbottom-line-below",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-negative-offset-table",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-line-below",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-two-tables-negative-offset",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "before": "99.75",
+      "after": "99.75",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 2,
+      "before": "98.00",
+      "after": "98.00",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "before": "95.91",
+      "after": "95.91",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor",
+      "page": 1,
+      "before": "99.97",
+      "after": "99.97",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor_large",
+      "page": 1,
+      "before": "99.96",
+      "after": "99.96",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_step_tall",
+      "page": 1,
+      "before": "99.93",
+      "after": "99.93",
+      "equal": true
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "before": "99.76",
+      "after": "99.76",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "short-empty",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "short-spaces",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "short-text",
+      "page": 1,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 1,
+      "before": "97.18",
+      "after": "97.18",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 1,
+      "before": "97.18",
+      "after": "97.18",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 1,
+      "before": "97.18",
+      "after": "97.18",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "before": "100.00",
+      "after": "100.00",
+      "equal": true
+    }
+  ],
+  "images": [
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-split-table",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1430-below",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1430-below",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1430-below",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1430-below",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1450-beside",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1450-beside",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1450-beside",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-1450-beside",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-600-no-extra-line",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-600-no-extra-line",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-600-no-extra-line",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-band-600-no-extra-line",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-beside-line",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-beside-line",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-beside-line",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-beside-line",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-empty-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-split-table",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-paper-companion-beside-line",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-paper-companion-beside-line",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-paper-companion-beside-line",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-paper-companion-beside-line",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-topbottom-line-below",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-topbottom-line-below",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-topbottom-line-below",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-text-host-topbottom-line-below",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-negative-offset-table",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-negative-offset-table",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-negative-offset-table",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-negative-offset-table",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-split-table",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-square-then-topbottom-push",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-line-below",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-line-below",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-line-below",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-line-below",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-topbottom-stacked-zones",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-two-tables-negative-offset",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-two-tables-negative-offset",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-two-tables-negative-offset",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8897-whitespace-host-two-tables-negative-offset",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8895-title_line_overflows",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor_large",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor_large",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor_large",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_floor_large",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_step_tall",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_step_tall",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_step_tall",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8900-column_axis_step_tall",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_top",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_center",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "pr8920-float_line_valign_top",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "short-empty",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "short-empty",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "short-empty",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "short-empty",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "short-spaces",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "short-spaces",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "short-spaces",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "short-spaces",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "short-text",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "short-text",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "short-text",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "short-text",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-empty",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-spaces",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 1,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 1,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 1,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 1,
+      "kind": "overlay",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "kind": "raw",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "kind": "pdf",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "kind": "review",
+      "equal": true
+    },
+    {
+      "key": "page-boundary-text",
+      "page": 2,
+      "kind": "overlay",
+      "equal": true
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+[
+  {
+    "number": 8915,
+    "title": "fix(chrome): 일반 SSR 페이지에서 설치 감지용 DOM 주입 방지 (#8914)",
+    "head": "61198fcf3f4d185c8f78eac5b3259d99303b8845",
+    "merge_sha": "95d1631bd81431b7c1639f0cc5f1e16fb9cfce76",
+    "merged_at": "2026-11-11T06:56:03Z",
+    "reviews": [
+      {
+        "id": 5854945786,
+        "state": "APPROVED",
+        "commit_id": "61198fcf3f4d185c8f78eac5b3259d99303b8845",
+        "url": "https://github.com/edwardkim/rhwp/pull/8915#pullrequestreview-5854945786"
+      }
+    ],
+    "merge_runs": [
+      {
+        "id": 42975873023,
+        "name": "Refresh nextest target duration data",
+        "event": "push",
+        "status": "in_progress",
+        "conclusion": null,
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/42975873023"
+      },
+      {
+        "id": 42975873034,
+        "name": "Close Issues on devel Push",
+        "event": "push",
+        "status": "completed",
+        "conclusion": "success",
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/42975873034"
+      }
+    ]
+  },
+  {
+    "number": 8913,
+    "title": "fix(selection): 문단 끝 줄은 문단 부호까지만 칠한다 (#8908)",
+    "head": "66141a6c485844e37cdd133f7ac92890e9d8a2c3",
+    "merge_sha": "243e6417278564228570cc1ccb879d5cc52f43f9",
+    "merged_at": "2026-11-11T06:57:23Z",
+    "reviews": [
+      {
+        "id": 5854957180,
+        "state": "APPROVED",
+        "commit_id": "66141a6c485844e37cdd133f7ac92890e9d8a2c3",
+        "url": "https://github.com/edwardkim/rhwp/pull/8913#pullrequestreview-5854957180"
+      }
+    ],
+    "merge_runs": [
+      {
+        "id": 42976018340,
+        "name": "Refresh nextest target duration data",
+        "event": "push",
+        "status": "pending",
+        "conclusion": null,
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/42976018340"
+      },
+      {
+        "id": 42976018205,
+        "name": "Close Issues on devel Push",
+        "event": "push",
+        "status": "in_progress",
+        "conclusion": null,
+        "url": "https://github.com/edwardkim/rhwp/actions/runs/42976018205"
+      }
+    ]
+  }
+]

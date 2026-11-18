@@ -1,0 +1,142 @@
+{
+  "product_source": "be778bae9b3803050146dcc47a896940587a612e",
+  "method": "Existing verified page rasters; canonical make_overlay_page/make_compares/make_review_panels. No engine rerender or source/test change.",
+  "pages": [
+    {
+      "backend": "native",
+      "page": 1,
+      "pixel_match_percent": 99.81647,
+      "visual_accuracy_proxy_percent": 94.99908,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "ee072da07541b4e89155d483b0548256a2195e985b9fe6fc5356ff2b9fd39220",
+      "pdf_png_sha256": "14b559fdf8fbeaf3da065b98e674620a4fa4b9c8df608b04ad2e46c0201265d0",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "native",
+      "page": 2,
+      "pixel_match_percent": 99.8158,
+      "visual_accuracy_proxy_percent": 94.76739,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "fa812500bf185c8bb018282601a232b438992be8d74ba6f081b6208b08f24fd5",
+      "pdf_png_sha256": "ecafe98f32cb16fe3b84df90a7d5c797448d8b17338383871cf5a6f8b72e9061",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "native",
+      "page": 3,
+      "pixel_match_percent": 99.86912,
+      "visual_accuracy_proxy_percent": 96.26066,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "c7f5b158c502f71d179643180b05d005388674c160dea6f3d8898bb2602a223e",
+      "pdf_png_sha256": "b5b1eb1d44add325a16265dcbc61ff6456b9231321cd86741b764afb971e6094",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "native",
+      "page": 4,
+      "pixel_match_percent": 99.81524,
+      "visual_accuracy_proxy_percent": 94.72487,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "a38394acf1171430c12e4c31c19ab5c2a5a94f6d47367d7f3ead095c6dd58845",
+      "pdf_png_sha256": "fa7758ee03b113e3c64af7372d98da457449ffc427d299cfda0b92b646edc8fd",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "native",
+      "page": 5,
+      "pixel_match_percent": 99.81557,
+      "visual_accuracy_proxy_percent": 94.73077,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "f1d147affd7dce8d04d27fe41aa35c2bcc541604d9e8e7df9908a68a417c7c67",
+      "pdf_png_sha256": "771242aa1d58fa8914cf9e2ef430916d6213cdd701cf62ce939637fd43f060f6",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "native",
+      "page": 6,
+      "pixel_match_percent": 99.81501,
+      "visual_accuracy_proxy_percent": 94.28115,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "a56c07715b9c8b4d0f9efb4998c9a7ea6eab0490a97ff810808f2361cbe747f6",
+      "pdf_png_sha256": "83189b4ddd94ae963ea3362235138988a938ba7e6f32463808d851beea6797bf",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "wasm",
+      "page": 1,
+      "pixel_match_percent": 99.81647,
+      "visual_accuracy_proxy_percent": 94.99908,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "f6841c14ecb1c3508c131f5f469ec54b9357713bfdc10d6057e4d3c139ae5d2b",
+      "pdf_png_sha256": "14b559fdf8fbeaf3da065b98e674620a4fa4b9c8df608b04ad2e46c0201265d0",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "wasm",
+      "page": 2,
+      "pixel_match_percent": 99.81468,
+      "visual_accuracy_proxy_percent": 94.7355,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "bcdf4e52adb0cf6a5a94901e00ba220122fa993e6a2c555178eca33c47d2fc0c",
+      "pdf_png_sha256": "ecafe98f32cb16fe3b84df90a7d5c797448d8b17338383871cf5a6f8b72e9061",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "wasm",
+      "page": 3,
+      "pixel_match_percent": 99.86856,
+      "visual_accuracy_proxy_percent": 96.24463,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "dfcfd1b7760a44a6123c3a43b67b6cc31607cab096c0804a0d52c2086508c01b",
+      "pdf_png_sha256": "b5b1eb1d44add325a16265dcbc61ff6456b9231321cd86741b764afb971e6094",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "wasm",
+      "page": 4,
+      "pixel_match_percent": 99.81468,
+      "visual_accuracy_proxy_percent": 94.70901,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "91130520c859e9e3ec523e445983400a2e0c5b25479f5cce6e012689d22109c4",
+      "pdf_png_sha256": "fa7758ee03b113e3c64af7372d98da457449ffc427d299cfda0b92b646edc8fd",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "wasm",
+      "page": 5,
+      "pixel_match_percent": 99.81535,
+      "visual_accuracy_proxy_percent": 94.72418,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "9d7e27935bc2baf2652919a289eea182e7841fb7e8c76d4f888790988d01409e",
+      "pdf_png_sha256": "771242aa1d58fa8914cf9e2ef430916d6213cdd701cf62ce939637fd43f060f6",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "wasm",
+      "page": 6,
+      "pixel_match_percent": 99.81479,
+      "visual_accuracy_proxy_percent": 94.27421,
+      "silhouette_raw_match_percent": 100.0,
+      "source_png_sha256": "51f810967c02c7eaedd6540741bb9cdded3e1b2ca10386a94a42ea747429a351",
+      "pdf_png_sha256": "83189b4ddd94ae963ea3362235138988a938ba7e6f32463808d851beea6797bf",
+      "document": "radial-pages"
+    },
+    {
+      "backend": "native",
+      "document": "bitmap-channel",
+      "page": 1,
+      "pixel_match_percent": 100.0,
+      "visual_accuracy_proxy_percent": 100.0,
+      "silhouette_raw_match_percent": 100.0
+    },
+    {
+      "backend": "wasm",
+      "document": "bitmap-channel",
+      "page": 1,
+      "pixel_match_percent": 100.0,
+      "visual_accuracy_proxy_percent": 100.0,
+      "silhouette_raw_match_percent": 100.0
+    }
+  ]
+}

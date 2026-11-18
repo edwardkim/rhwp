@@ -1,0 +1,144 @@
+{
+  "pr": 9136,
+  "issue": 9133,
+  "mergeSha": "8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7",
+  "codeHead": "15837c689f1a84eaba4661794dd7d8d70bc3f94a",
+  "trailingHead": "207d25d0d8f84c7af6c579256160d9f6891ca986",
+  "mergedAt": "2026-11-16T10:20:16Z",
+  "issueState": "closed",
+  "issueStateReason": "completed",
+  "issueClosedAt": "2026-11-16T10:20:33Z",
+  "duration": {
+    "runId": 43847929087,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43847929087",
+    "status": "completed",
+    "conclusion": "success",
+    "ready": false,
+    "reason": "no-verified-pr-duration-measurements",
+    "explanation": "Trailing and code CI both correctly skipped Rust workers; no measurements were published; existing metrics preserved."
+  },
+  "comments": {
+    "status": "completed",
+    "apiBodyVerified": true,
+    "browserImagesVerified": true,
+    "receipts": [
+      {
+        "issue": 9133,
+        "kind": "issue-9133-comment",
+        "id": 6913820737,
+        "url": "https://github.com/edwardkim/rhwp/issues/9133#issuecomment-6913820737",
+        "createdAt": "2026-11-16T10:26:27Z",
+        "author": "edwardkim",
+        "bodySha256": "3b4b5610cee2d178244c5888c4be562a5c2d2efbe0572f9741eb2f4246353b82",
+        "bodyMatches": true,
+        "reusedExisting": false
+      },
+      {
+        "issue": 8905,
+        "kind": "issue-8905-reply",
+        "id": 6913821397,
+        "url": "https://github.com/edwardkim/rhwp/issues/8905#issuecomment-6913821397",
+        "createdAt": "2026-11-16T10:26:29Z",
+        "author": "edwardkim",
+        "bodySha256": "beae5b487a6de0843ab3efcdbfdd92b82dab4507d0454bd42aee836780899763",
+        "bodyMatches": true,
+        "reusedExisting": false
+      },
+      {
+        "issue": 9136,
+        "kind": "pr-outcome",
+        "id": 6913822105,
+        "url": "https://github.com/edwardkim/rhwp/pull/9136#issuecomment-6913822105",
+        "createdAt": "2026-11-16T10:26:31Z",
+        "author": "edwardkim",
+        "bodySha256": "91124d227ae9e665641da81d44bc5b00c8a49e305e37e0ac23f00f5492397bf2",
+        "bodyMatches": true,
+        "reusedExisting": false
+      }
+    ],
+    "browser": [
+      {
+        "id": 6913820737,
+        "status": 200,
+        "url": "https://github.com/edwardkim/rhwp/issues/9133#issuecomment-6913820737",
+        "images": [
+          {
+            "alt": "800×360에서 제목과 조작이 보이는 편집 용지 창",
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7/mydocs/working/assets/issue9133/rebase/after-page-800x360.png",
+            "complete": true,
+            "width": 800,
+            "height": 360
+          }
+        ]
+      },
+      {
+        "id": 6913821397,
+        "status": 200,
+        "url": "https://github.com/edwardkim/rhwp/issues/8905#issuecomment-6913821397",
+        "images": [
+          {
+            "alt": "공통 보완 후 800×360 편집 용지 창",
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7/mydocs/working/assets/issue9133/rebase/after-page-800x360.png",
+            "complete": true,
+            "width": 800,
+            "height": 360
+          }
+        ]
+      },
+      {
+        "id": 6913822105,
+        "status": 200,
+        "url": "https://github.com/edwardkim/rhwp/pull/9136#issuecomment-6913822105",
+        "images": [
+          {
+            "alt": "800×360 공통 대화창 보완 결과",
+            "src": "https://raw.githubusercontent.com/edwardkim/rhwp/8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7/mydocs/working/assets/issue9133/rebase/after-page-800x360.png",
+            "complete": true,
+            "width": 800,
+            "height": 360
+          }
+        ]
+      }
+    ]
+  },
+  "cleanup": {
+    "status": "completed",
+    "log": "/home/edward/mygithub/rhwp/.git/codex-cleanup-pr9136.log",
+    "removedRemoteBranch": "task/9133-dialog-viewport-containment",
+    "removedLocalBranch": "task/9133-dialog-viewport-containment",
+    "removedWorktree": "/home/edward/mygithub/rhwp-worktrees/task-9133-dialog-viewport-containment",
+    "rootOutputRemoved": true,
+    "debugAbsent": true,
+    "debugAlreadyAbsent": true,
+    "allocatedBytesRemoved": 12963340288,
+    "before": {
+      "outputBytes": 19406848,
+      "worktreeBytes": 12943933440,
+      "debugBytes": 0,
+      "freeBytes": 224218136576
+    },
+    "after": {
+      "outputExists": false,
+      "debugExists": false,
+      "worktreeExists": false,
+      "freeBytes": 237197041664,
+      "remainingTargetDirectories": [
+        "/home/edward/mygithub/rhwp/target/pr-review/web-canvas-outline-harness-70df0d7a3c7c",
+        "/home/edward/mygithub/rhwp/target/pr-review/package",
+        "/home/edward/mygithub/rhwp/target/pr-review/release-test",
+        "/home/edward/mygithub/rhwp/target/pr-review/wasm32-unknown-unknown",
+        "/home/edward/mygithub/rhwp/target/pr-review/doc",
+        "/home/edward/mygithub/rhwp/target/pr-review/tmp",
+        "/home/edward/mygithub/rhwp/target/pr-review/release",
+        "/home/edward/mygithub/rhwp/target/pr-review/x86_64-unknown-linux-gnu",
+        "/home/edward/mygithub/rhwp/target/pr-review/x86_64-pc-windows-msvc",
+        "/home/edward/mygithub/rhwp/target/pr-review/remote-branch-audit-20261110"
+      ]
+    },
+    "otherWorktreesPreserved": true
+  },
+  "postmergeValidationWorkflowsStarted": false,
+  "develSyncAtMerge": "8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7",
+  "operationsRecordCommit": "71890c886cc45578b6560b7fb3036c5fd4d66ad8",
+  "completedAt": "2026-11-16T10:28:11.381529+00:00"
+}

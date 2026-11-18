@@ -103,12 +103,21 @@ class FakeTexturePlugin {
   final NativeTexturePlatform platform;
   final calls = <String>[];
   final submissions = <Map<String, Object?>>[];
+  final covers = <Map<String, Object?>>[];
+  final retireAcks = <Map<String, Object?>>[];
   final owned = <int>{}, releasedByPlugin = <int>{};
   int nextTexture = 1, serial = 0;
   bool publish = true, closed = false, ready = true;
   String? submitError, statusError;
   bool acceptedBeforeReply = false;
+  bool covered = true, rejectUncover = false;
+  int visibilitySerial = 0;
   Completer<void>? createGate, submitGate, statusGate;
+  Completer<void>? coverGate, uncoverGate, uncoverAckGate;
+  Completer<void>? retireAckGate;
+  Completer<void>? closeReplyGate;
+  String? retireAckError;
+  Map<String, Object?> retireAckOverrides = {};
   Map<String, Object?>? acceptedStamp;
   List<int> acceptedIds = [];
   void install() {
@@ -129,6 +138,8 @@ class FakeTexturePlugin {
     'closing': closed,
     'ownerFinished': closed,
     'cleanupComplete': closed,
+    if (platform == NativeTexturePlatform.macosMetalView)
+      'nativeViewLayerDetached': closed,
     'code': statusError ?? '',
     'errorCode': statusError ?? '',
     'error': statusError == null ? '' : 'strict replay failed',
@@ -141,7 +152,8 @@ class FakeTexturePlugin {
     'renderedStamp': publish ? acceptedStamp : null,
     'limits': {
       'continuousPresentationSupported':
-          platform == NativeTexturePlatform.linux,
+          platform == NativeTexturePlatform.linux ||
+          platform == NativeTexturePlatform.macosMetalView,
       'consumerRetirement': false,
       'maxFrames': 4,
       'outstandingFrames': owned.length,
@@ -167,7 +179,15 @@ class FakeTexturePlugin {
     switch (call.method) {
       case 'create':
         await createGate?.future;
-        return {...status(), 'textureId': nextTexture++};
+        return {
+          ...status(),
+          'textureId': nextTexture++,
+          if (platform == NativeTexturePlatform.macosMetalView) ...{
+            'ready': false,
+            'presentationKind': 'nativeView',
+            'viewType': 'rhwp_native/metal_view',
+          },
+        };
       case 'status':
         await statusGate?.future;
         return status();
@@ -181,11 +201,58 @@ class FakeTexturePlugin {
         if (submitError != null) throw PlatformException(code: submitError!);
         if (!acceptedBeforeReply) accept(arguments);
         return {...status(), 'accepted': true};
+      case 'setCovered':
+        covers.add(arguments);
+        final hide = arguments['covered'] == true;
+        if (hide) {
+          await coverGate?.future;
+        } else {
+          await uncoverGate?.future;
+        }
+        final sequence = arguments['visibilitySerial']! as int;
+        final latest = sequence >= visibilitySerial;
+        if (latest) visibilitySerial = sequence;
+        final matches =
+            acceptedStamp != null &&
+            NativePresentationStamp.fromJson(acceptedStamp!)
+                .matches(arguments['stamp']);
+        final accepted =
+            latest &&
+            !closed &&
+            (hide || (!rejectUncover && publish && matches));
+        if (accepted) covered = hide;
+        final result = {
+          'textureId': arguments['textureId'],
+          'covered': covered,
+          'visibilitySerial': sequence,
+          'accepted': accepted,
+          'renderedStamp': publish ? acceptedStamp : null,
+        };
+        if (!hide) await uncoverAckGate?.future;
+        return result;
       case 'close':
         closed = true;
+        covered = true;
         releasedByPlugin.addAll(owned);
         owned.clear();
+        await closeReplyGate?.future;
         return status();
+      case 'retireAck':
+        retireAcks.add(arguments);
+        await retireAckGate?.future;
+        if (retireAckError != null) {
+          throw PlatformException(code: retireAckError!);
+        }
+        return {
+          'textureId': arguments['textureId'],
+          'deviceGeneration': 1,
+          'acknowledged': closed,
+          'closed': closed,
+          'ownerFinished': closed,
+          'registered': !closed,
+          'nativeViewLayerDetached': closed,
+          ...retireAckOverrides,
+        };
     }
     throw MissingPluginException();
   }

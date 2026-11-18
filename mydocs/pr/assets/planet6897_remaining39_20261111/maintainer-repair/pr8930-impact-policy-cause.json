@@ -1,0 +1,8 @@
+{
+  "pr": 8930,
+  "reason": "workflow-not-success:Render Diff:failure",
+  "meaning": "CI Impact Policy는 별도 제품 결함이 아니라 원 Render Diff 실패를 전달한다. CI 정책 수정으로 범위를 확대하지 않는다.",
+  "source_log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/logs/scope-final-pr8930-impact-policy.log",
+  "source_log_sha256": "47b7e4817f1b4032ea523f17693e9c5fbdae255ab7b1d3ce6d2e4adb9b2466ec",
+  "local_correction": "f95c27dce9의 legacy/layer 공통 채우기 순서 보정은 이미 후보에 포함; Linux 동일 검사 대기 중"
+}

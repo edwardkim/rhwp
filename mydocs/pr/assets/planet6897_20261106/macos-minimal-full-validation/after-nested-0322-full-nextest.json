@@ -1,0 +1,205 @@
+{
+  "code_head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+  "full_nextest": {
+    "run": 13079,
+    "passed": 13079,
+    "failed": 0,
+    "skipped": 45,
+    "test_seconds": 427.072,
+    "whole_command_seconds": 963.6655602499377,
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--tests",
+      "-j",
+      "8",
+      "--no-fail-fast"
+    ],
+    "log_path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full-nextest.log",
+    "log_sha256": "70f1f3ed597f94f7702e772c781190711fa487f31d30a12f9cca1d3b48b05a40"
+  },
+  "font_isolation": {
+    "profile_path": "mydocs/pr/assets/planet6897_20261106/macos-minimal-full-validation/full-minimal-font.sb",
+    "profile_sha256": "89a8955370fe85029f0f08372f77ec17b86a7c4ae574ddc197abbe9267f47bd7",
+    "current_coretext_count": 528,
+    "non_os_fonts": [],
+    "same_as_committed_inventory": true,
+    "committed_inventory_sha256": "d3cf941e923ce633051cc27be12a54858292abbd4ac579e238709196cca21d61",
+    "font_tuple_sha256": "6bb63002f6d97617ffb91aa8a928efc37c549b7e3142222df7ab3a91ca5dbf5a",
+    "allowed_os_prefixes": [
+      "/System/Library/Fonts",
+      "/System/Library/AssetsV2",
+      "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved"
+    ],
+    "actual_probe_log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-coretext-inventory.log"
+  },
+  "scope": "제품 코드0322의 최소 글꼴 환경 전체 기본 회귀와 Native Skia 필수3종 완료. 전체 시각 검증과 나머지 PR 검증 완료를 의미하지 않는다.",
+  "native_skia": {
+    "root_lib": {
+      "passed": 3852,
+      "ignored": 12
+    },
+    "other_libraries": {
+      "passed": 182
+    },
+    "png": {
+      "passed": 2
+    },
+    "pdf": {
+      "passed": 35
+    },
+    "evidence": {
+      "state": "complete",
+      "pid": 54205,
+      "head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+      "results": [
+        {
+          "case": "issue_2225_missing_picture_placeholder",
+          "exit_code": 0,
+          "seconds": 304.9351345000323,
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-issue_2225_missing_picture_placeholder.log",
+          "log_sha256": "fb9f57385c0cd8e3c9b90f98d338a10700953a9e46c688e6fc2337cf62901d41"
+        },
+        {
+          "case": "render_p37_direct_pdf_export",
+          "exit_code": 0,
+          "seconds": 35.07381212501787,
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-render_p37_direct_pdf_export.log",
+          "log_sha256": "b2e5db919ec4ab1ce43ab5dbd3f74d7afb4318613975569ce8c3d87fec845be1"
+        }
+      ]
+    },
+    "lib_and_lint_evidence": {
+      "state": "complete",
+      "pid": 43690,
+      "checks": [
+        {
+          "label": "fmt",
+          "command": [
+            "cargo",
+            "fmt",
+            "--all",
+            "--",
+            "--check"
+          ],
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-fmt.log",
+          "state": "complete",
+          "pid": 43700,
+          "exit_code": 0,
+          "seconds": 15.886314499890432,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "label": "native-lib",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+            "cargo",
+            "test",
+            "--locked",
+            "--profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--features",
+            "native-skia",
+            "-j",
+            "8",
+            "--lib",
+            "--",
+            "--test-threads",
+            "8"
+          ],
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-native-lib.log",
+          "state": "complete",
+          "pid": 44786,
+          "exit_code": 0,
+          "seconds": 191.4960220840294,
+          "sha256": "2d77485e0757610f5ca32f2c168e36b19cba441fab8daf0a98447cb4577c6c42"
+        },
+        {
+          "label": "native-clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--features",
+            "native-skia",
+            "--lib",
+            "--bin",
+            "rhwp",
+            "--test",
+            "regression_suite_001",
+            "--test",
+            "regression_suite_005",
+            "--test",
+            "regression_suite_009",
+            "--test",
+            "regression_suite_027",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-native-clippy.log",
+          "state": "complete",
+          "pid": 58554,
+          "exit_code": 0,
+          "seconds": 40.81697395793162,
+          "sha256": "c1c0b177a996144f6ee856dd1c53f31343d6e3c5f61347d8714be017dbf5e72b"
+        },
+        {
+          "label": "wasm-clippy",
+          "command": [
+            "cargo",
+            "clippy",
+            "--locked",
+            "--profile",
+            "release-test",
+            "--target-dir",
+            "target/pr-review",
+            "--target",
+            "wasm32-unknown-unknown",
+            "--lib",
+            "--",
+            "-D",
+            "warnings"
+          ],
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-clippy.log",
+          "state": "complete",
+          "pid": 61500,
+          "exit_code": 0,
+          "seconds": 46.66989858401939,
+          "sha256": "ebe14ee3076814fb3bf2888a14877dc47f64036f863e237368920398bd87bc2d"
+        },
+        {
+          "label": "manifest",
+          "command": [
+            "node",
+            "scripts/rust-test-suite-manifest.mjs",
+            "--check"
+          ],
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-manifest.log",
+          "state": "complete",
+          "pid": 64746,
+          "exit_code": 0,
+          "seconds": 3.868302207905799,
+          "sha256": "1916b86a13bbcb6fbfa8ac79e6f697f4f5c5e1868517cc54359f8e234cee4a06"
+        }
+      ]
+    }
+  }
+}

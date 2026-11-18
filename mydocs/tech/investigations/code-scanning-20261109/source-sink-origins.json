@@ -1,0 +1,112 @@
+[
+  {
+    "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+    "line": 58,
+    "origin_commit": "4662c069e557e928ed7968d061121fde90b1f027",
+    "author-time": "1792131474",
+    "author-tz": "+0900",
+    "committer-time": "1792131474",
+    "committer-tz": "+0900",
+    "summary": "feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+    "origin_filename": "vendor/rhwp-pdf-import-backend/src/python.rs"
+  },
+  {
+    "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+    "line": 18659,
+    "origin_commit": "4662c069e557e928ed7968d061121fde90b1f027",
+    "author-time": "1792131474",
+    "author-tz": "+0900",
+    "committer-time": "1792131474",
+    "committer-tz": "+0900",
+    "summary": "feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+    "origin_filename": "vendor/rhwp-pdf-import-backend/src/document.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/c_bindings.rs",
+    "line": 254,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/c_bindings.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/gtest.rs",
+    "line": 191,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/gtest.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/gtest.rs",
+    "line": 220,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/gtest.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/gtest.rs",
+    "line": 315,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/gtest.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/gtest.rs",
+    "line": 588,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/gtest.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/gtest.rs",
+    "line": 608,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/gtest.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/gtest.rs",
+    "line": 759,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/gtest.rs"
+  },
+  {
+    "path": "vendor/rhwp-qcms/src/gtest.rs",
+    "line": 820,
+    "origin_commit": "f125c735c7d2d44eaa44b78c70465bc89af45fb1",
+    "author-time": "1793255674",
+    "author-tz": "+0900",
+    "committer-time": "1793255674",
+    "committer-tz": "+0900",
+    "summary": "feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+    "origin_filename": "vendor/rhwp-qcms/src/gtest.rs"
+  }
+]

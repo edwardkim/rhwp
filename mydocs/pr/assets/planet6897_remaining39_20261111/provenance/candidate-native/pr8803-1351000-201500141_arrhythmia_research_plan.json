@@ -1,0 +1,485 @@
+{
+  "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64,
+    65,
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85,
+    86,
+    87,
+    88,
+    89,
+    90,
+    91,
+    92,
+    93,
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100,
+    101
+  ],
+  "missing_pages": [],
+  "radius_px": 2,
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 101,
+      "pdf": 101
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue8795/1351000-201500141_arrhythmia_research_plan.hwp",
+      "sha256": "3f76136a2300da44efc04692f50c63ab2bf311a2e04abe2d55839e0c94b3f145"
+    },
+    "pdf": {
+      "path": "pdf/issue8795/1351000-201500141_arrhythmia_research_plan-2020.pdf",
+      "sha256": "f3055ffc1c57202bac4ab4e04ea823d07699d9f76db12eb878eccbf9021c984f"
+    },
+    "git_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/bin/python3.14",
+      "executable_sha256": "87d4df53fd91304be5bac391fb204643c36b7df2023c04a0953bcbc7d4fdf634",
+      "library": "output/pr-review/planet6897-remaining39-integration-20261111/venv/lib/python3.14/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "path": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "sha256": "bfaf0c9f4104ceea10106be1b813bf94e1824755855ba6043dc00ea6af06c1f7"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {
+        "굴림": "NotoSansKRExtraLight",
+        "맑은 고딕": "Pretendard-Regular",
+        "바탕": "NotoSerifKRExtraLight-Regular",
+        "HY견명조": "NotoSerifKRExtraLight-Bold",
+        "고딕": "NotoSansKRExtraLight",
+        "휴먼명조": "NotoSansKR-Regular",
+        "한양신명조": "NotoSansKR-Regular",
+        "한양중고딕": "NotoSansKR-Regular",
+        "한양그래픽": "NotoSansKRExtraLight",
+        "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+        "명조": "NotoSerifKRExtraLight-Bold"
+      },
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [
+        "한양신명조",
+        "휴먼명조"
+      ],
+      "local_document_substitutes": [],
+      "resources": [
+        {
+          "url": "fonts/NotoSansKR-ExtraLight.woff2",
+          "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+          "native_path": "output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+          "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+          "native_face": "NotoSansKRExtraLight"
+        },
+        {
+          "url": "fonts/Pretendard-Regular.woff2",
+          "source_sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63",
+          "native_path": "output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+          "native_sha256": "7a7c63f2c8394dd85870dd22734a2fb479ced783b913141445adf0c8e9b99ebc",
+          "native_face": "Pretendard-Regular"
+        },
+        {
+          "url": "fonts/NotoSerifKR-Regular.woff2",
+          "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+          "native_path": "output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+          "native_face": "NotoSerifKRExtraLight-Regular"
+        },
+        {
+          "url": "fonts/NotoSerifKR-Bold.woff2",
+          "source_sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941",
+          "native_path": "output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+          "native_sha256": "d88ec0ddb32437f9df01fcd6faafed8521e1c11d27ef174d1f4c2bd39ae457d7",
+          "native_face": "NotoSerifKRExtraLight-Bold"
+        },
+        {
+          "url": "fonts/NotoSansKR-Regular.woff2",
+          "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+          "native_path": "output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+          "native_face": "NotoSansKR-Regular"
+        }
+      ],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "output/pr-review/native-webfont-cache/environments/9eef0ab250e16c8e1d9601a52edbad9355ae7807b73e0ae2b5f5d3425d4da084.json",
+      "sha256": "9eef0ab250e16c8e1d9601a52edbad9355ae7807b73e0ae2b5f5d3425d4da084"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+          "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+        },
+        {
+          "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+          "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+        },
+        {
+          "path": "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+          "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+        },
+        {
+          "path": "ttfs/opensource/RHWPOldHangul-Regular.otf",
+          "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+        },
+        {
+          "path": "ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+          "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+          "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+          "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+          "sha256": "7a7c63f2c8394dd85870dd22734a2fb479ced783b913141445adf0c8e9b99ebc"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/source.woff2",
+          "sha256": "fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+          "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+          "sha256": "d88ec0ddb32437f9df01fcd6faafed8521e1c11d27ef174d1f4c2bd39ae457d7"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/source.woff2",
+          "sha256": "504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        },
+        {
+          "path": "output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+          "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+        }
+      ]
+    }
+  },
+  "canonical_manifest_sha256": "86d7892cb2d5c292bc73c263018ed3f05a381f0af96da11c00c683aa6e87dd37",
+  "font_environment_content": {
+    "documentGlyphFallbacks": [
+      {
+        "faces": [
+          "HCRBatang"
+        ],
+        "fontId": 9,
+        "languageSlot": 1,
+        "source": "휴먼명조"
+      },
+      {
+        "faces": [
+          "HCRBatang"
+        ],
+        "fontId": 7,
+        "languageSlot": 2,
+        "source": "휴먼명조"
+      },
+      {
+        "faces": [
+          "HCRBatang"
+        ],
+        "fontId": 7,
+        "languageSlot": 3,
+        "source": "휴먼명조"
+      },
+      {
+        "faces": [
+          "HCRBatang"
+        ],
+        "fontId": 6,
+        "languageSlot": 4,
+        "source": "휴먼명조"
+      },
+      {
+        "faces": [
+          "HCRBatang"
+        ],
+        "fontId": 7,
+        "languageSlot": 5,
+        "source": "휴먼명조"
+      },
+      {
+        "faces": [
+          "HCRBatang"
+        ],
+        "fontId": 5,
+        "languageSlot": 6,
+        "source": "휴먼명조"
+      }
+    ],
+    "documentSubstitutions": [],
+    "id": "native-webfont-206f080dd0bace98a861da1d",
+    "preserveSourceMetrics": true,
+    "substitutions": {
+      "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+      "HY견명조": "NotoSerifKRExtraLight-Bold",
+      "고딕": "NotoSansKRExtraLight",
+      "굴림": "NotoSansKRExtraLight",
+      "맑은 고딕": "Pretendard-Regular",
+      "명조": "NotoSerifKRExtraLight-Bold",
+      "바탕": "NotoSerifKRExtraLight-Regular",
+      "한양그래픽": "NotoSansKRExtraLight",
+      "한양신명조": "NotoSansKR-Regular",
+      "한양중고딕": "NotoSansKR-Regular",
+      "휴먼명조": "NotoSansKR-Regular"
+    }
+  }
+}

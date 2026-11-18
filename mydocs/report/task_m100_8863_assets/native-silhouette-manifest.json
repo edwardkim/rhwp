@@ -1,0 +1,522 @@
+{
+  "key": "native-delete",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "43d0d3d0f86c5e6eb3e778eaa9e16ea734368e2fb8a60e9aa0605dab7518ca7d",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-001.png",
+      "pdf_sha256": "f15eb55cb69736833df1137c74c7852982d1c62450fe728e6a08f7d70324c02c"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "9628f9745e42620aae60ba7bb9366f3d09e947323e9568590245e56f6f6b9f92",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-002.png",
+      "pdf_sha256": "cdfbeade285ca54958b76e2d4ab0efa9a2b281512259226eba704c235bf8f6aa"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "ddc93862b49460ca2c5d9e00ae33af59b6f8a2ea319e0972f01b3dfe9ae491ee",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-003.png",
+      "pdf_sha256": "44d3ef3d65de1646d5f5e265cada83803c1b0273bebc750c57700d159f2a6546"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "04b25a0fb174917b46de2818492a237dcdd4e5942cd74a37b2be8cd15852e669",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-004.png",
+      "pdf_sha256": "a1bec975f72cdb1ce199917e813040f9e4b95d3ad9f742725a92b8930831d39d"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "d6eb827214c1b534bbccc4712010ef1e9cd7ce6b774984e12154d741045d5df4",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-005.png",
+      "pdf_sha256": "69e232d3c7a925277fe8bc908ccb062219bc4eb851f7c6933de197ac6f506b80"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "cd9a7ed0fbb2e79a27e81a65f6d3cf04b87abd50d1a73cd7b2b55b81c6ca6acd",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-006.png",
+      "pdf_sha256": "a36edffd10abc7d6b7aec42ddaf4c2a2c6a5b7dd3a894f3a99c244ec404bd589"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "8a278c2ca54280236010bcf9cac476dbd1cc20f1e17f182420617e350c02aa8d",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-007.png",
+      "pdf_sha256": "581e04a8c669f8607b9cc4efcdf76f84a36f38fd13893af47227d1dd918927cf"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "42dc5b96086ccc250e22df78446edc1ea6b0d62fc220ba5659867af62eaa81bd",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-008.png",
+      "pdf_sha256": "2eb40709d10046be8423d707f5f3ac5521d44f2b49b114e395727759d52d9f75"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "c1230f24f0e8cb38c21b3e6116ca30aad0813a19eec2ef83045ec11ee3d34477",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-009.png",
+      "pdf_sha256": "a0ff0b29ebb4d9486fc95e5cd63847e085fd180c7165219333945b28313780c2"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "e6b22603f1daefb57a1c9e8a5a66c2c01bf8d6748c6a9414fc8e4d8043ad8a46",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-010.png",
+      "pdf_sha256": "508fed7495bb2c298273a6bcc5e065156dd6d13926a8c8de78e99b39693a3a77"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "fc18d38f799799dc32bf2ad4e5874e586134538a9bd76896d18babd8c8333f65",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-011.png",
+      "pdf_sha256": "996a737db24d9330d5a41e027a89d7a19107f0f5a5ccce054eb6f253a9c3e5ed"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "4faa100588c6f823dd277f552a6d25cb0115edd51bd8eb0f0a42817cb6bd28c4",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-012.png",
+      "pdf_sha256": "d708b8e416667ffef94a667955ae77d26b2317a8172b4ccbe4037993bed347e1"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "91f30f161defd9d93a54d8ce765342f6cd7b06fdd0d6b3b3945b5ea758519273",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-013.png",
+      "pdf_sha256": "88a33194bce986d4465deb423922f7b7e62d0aedb6d43bd89d0404069f3962c8"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "ba78ff3d8f6a6198083f44f283eac4e278f36ce51b644cdf74c505729d93c660",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-014.png",
+      "pdf_sha256": "1513c0ceab929408136f8ed0abc73843cbd90101db1b76a0efef4a19bc9b4bf6"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "7887c717ad81034f64f580ff26ded66ccf0eb8324bdaea13cdf2149cf759beec",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-015.png",
+      "pdf_sha256": "4d4203c61b5527d7851207edede897bfe95df818b7342c9d85835add8281c299"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "1b5e5d95873d7b6563386a0365cedee7324830ca911213edef9dbaced5655a43",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-016.png",
+      "pdf_sha256": "3e9ed7369f815b8bd720e6baaed34900de7e755167a7ebb5a25f833330dfd2b2"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "e520baa4ec9a2a5f9bd2e4bcb6369c64ce253998b32d4fe89eb0840befece7c5",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-017.png",
+      "pdf_sha256": "1975180dc9301a5b48d5b82b39356086bc29326112086f349df5ba80fd96c5b5"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "c6bfde51b9e1acb640e5342480858e4e87bbd9966a9b3ba3eb20fce23e46a512",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-018.png",
+      "pdf_sha256": "95a28075ac981fd1df4933dbf6cae12e4e5207c8b3c324db4975403657424cc5"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "bcb1240489c0cbba500129fec4fd20cf27e5c7946c19bd6bda8609b1a5644601",
+      "pdf_png": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/pdf_png/pdf-019.png",
+      "pdf_sha256": "54e79c0a47311e30a49eab0b727947f22f3974a25f49a1160baadef096d0b956"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.43597,
+      "silhouette_raw_unmatched_pixels": 1152,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 32323,
+      "tolerant_content_match_percent": 96.43597
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.77397,
+      "silhouette_raw_unmatched_pixels": 1395,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43242,
+      "tolerant_content_match_percent": 96.77397
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.22352,
+      "silhouette_raw_unmatched_pixels": 3540,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61283,
+      "tolerant_content_match_percent": 94.22352
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.9593,
+      "silhouette_raw_unmatched_pixels": 630,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60536,
+      "tolerant_content_match_percent": 98.9593
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 92.83247,
+      "silhouette_raw_unmatched_pixels": 5063,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 70638,
+      "tolerant_content_match_percent": 92.83247
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.00567,
+      "silhouette_raw_unmatched_pixels": 3681,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61408,
+      "tolerant_content_match_percent": 94.00567
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.13383,
+      "silhouette_raw_unmatched_pixels": 1660,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 57917,
+      "tolerant_content_match_percent": 97.13383
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.5346,
+      "silhouette_raw_unmatched_pixels": 752,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 51317,
+      "tolerant_content_match_percent": 98.5346
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 90.96057,
+      "silhouette_raw_unmatched_pixels": 5874,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64982,
+      "tolerant_content_match_percent": 90.96057
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.1119,
+      "silhouette_raw_unmatched_pixels": 2396,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49017,
+      "tolerant_content_match_percent": 95.1119
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.22994,
+      "silhouette_raw_unmatched_pixels": 1774,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64042,
+      "tolerant_content_match_percent": 97.22994
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 91.35219,
+      "silhouette_raw_unmatched_pixels": 4063,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 46983,
+      "tolerant_content_match_percent": 91.35219
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.10986,
+      "silhouette_raw_unmatched_pixels": 1837,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 47222,
+      "tolerant_content_match_percent": 96.10986
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.92791,
+      "silhouette_raw_unmatched_pixels": 910,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43917,
+      "tolerant_content_match_percent": 97.92791
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 97.67224,
+      "silhouette_raw_unmatched_pixels": 1245,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 53485,
+      "tolerant_content_match_percent": 97.67224
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.20988,
+      "silhouette_raw_unmatched_pixels": 1777,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 46885,
+      "tolerant_content_match_percent": 96.20988
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.2002,
+      "silhouette_raw_unmatched_pixels": 2087,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43481,
+      "tolerant_content_match_percent": 95.2002
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.11785,
+      "silhouette_raw_unmatched_pixels": 3332,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56646,
+      "tolerant_content_match_percent": 94.11785
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.55951,
+      "silhouette_raw_unmatched_pixels": 335,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 23256,
+      "tolerant_content_match_percent": 98.55951
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 19,
+      "pdf": 19
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "output/issue8863/visual/native-delete.hwp",
+      "sha256": "d72724f4f85027f85d2bbbb200f10965f9e57934d5d667d777a85b90c21efa53"
+    },
+    "pdf": {
+      "path": "pdf/issue8863/hancom-edited-expected-2020.pdf",
+      "sha256": "17e1d14b6a6eeb1f654ccba9c984004fc16dd8d7e3fd29eed5bc944f0e98a47d"
+    },
+    "git_head": "fb5a25f868609ff81cb9fedb5b0a29a83ebf63c6",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/target/pr-review/release-test/rhwp",
+      "path": "/home/edward/mygithub/rhwp/target/pr-review/release-test/rhwp",
+      "sha256": "327de56629baa75f4ac2e5709d5a17d22ce53269e39eca74c4b9e4783110361c"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "a2dfdd11b0e50ed9512dafdac9207b6d6217d048e2cab1e8569243803e77033e",
+      "mappings": {
+        "굴림": "NotoSansKRExtraLight",
+        "바탕": "NotoSerifKRExtraLight-Regular",
+        "한컴바탕확장": "NotoSansKR-Regular"
+      },
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [
+        "한컴바탕확장"
+      ],
+      "local_document_substitutes": [],
+      "resources": [
+        {
+          "url": "fonts/NotoSansKR-ExtraLight.woff2",
+          "source_sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+          "native_sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8",
+          "native_face": "NotoSansKRExtraLight"
+        },
+        {
+          "url": "fonts/NotoSerifKR-Regular.woff2",
+          "source_sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "native_sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18",
+          "native_face": "NotoSerifKRExtraLight-Regular"
+        },
+        {
+          "url": "fonts/NotoSansKR-Regular.woff2",
+          "source_sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+          "native_path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "native_sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+          "native_face": "NotoSansKR-Regular"
+        }
+      ],
+      "module_sha256": "604d15d877f3a60d6cb2444fafefd3057fc5d595d402f06bb08748c9fe28c1cf"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/environments/c9b003f735496f348b568e41383e419f81788be47d59575fe3b18bf2389b8c44.json",
+      "sha256": "c9b003f735496f348b568e41383e419f81788be47d59575fe3b18bf2389b8c44"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "automatic_local_and_web",
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+          "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/source.woff2",
+          "sha256": "3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/source.woff2",
+          "sha256": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/source.woff2",
+          "sha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp-worktrees/task-8863-char-shapes/output/issue8863/visual/native-scores/native-delete/silhouette-checkpoint.json"
+}

@@ -1,0 +1,12 @@
+{
+  "source_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "audited_at": "2026-11-11T02:13:38.150952+09:00",
+  "complete": true,
+  "all_claim_pages_read": true,
+  "counts": {
+    "native": 65,
+    "wasm": 65
+  },
+  "native": "native-direct-reading-reuse-audit.json",
+  "wasm": "wasm-direct-reading-audit.json"
+}

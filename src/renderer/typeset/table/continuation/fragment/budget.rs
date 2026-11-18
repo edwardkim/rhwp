@@ -442,7 +442,14 @@ impl TypesetEngine {
                     .min(host_h);
                 raw.max(host_content_h) - host_h
             } else {
-                0.0
+                // [#8810] 빈 쪽을 여는 쪽 기준 표의 첫 조각은 본문 위끝 + 오프셋에서 시작한다.
+                crate::renderer::float_placement::page_relative_first_fragment_offset_px(
+                    table, self.dpi,
+                )
+                .filter(|_| {
+                    start_cut.is_empty() && st.current_items.is_empty() && st.current_height < 0.5
+                })
+                .unwrap_or(0.0)
             }
         };
         // [Task #1860] 빈 host out-of-flow para float(비-TAC, TopAndBottom,
@@ -704,13 +711,14 @@ impl TypesetEngine {
                         st.current_zone_y_offset.to_bits(),
                     )
             {
-                // 흐름 원점(현재 높이 + 호스트 앞 간격)이 이미 위 여백을 담은 계획은
-                // 다시 열지 않는다. 그 간격이 곧 바깥 위 여백이라 더하면 조각이 두 번
-                // 내려간다(1613000 58쪽 1×1 상자: 계획 3.77 + 여백 3.77).
+                // 배치 계획이 만든 앵커에서 이미 위 여백을 열었으면 다시 더하지 않는다.
+                // 준비 뒤 저장 줄 원점으로 보정된 현재 커서는 원래 계획의 소유 근거가
+                // 아니다. 그 커서와 비교하면 기존 위 여백을 미소비로 오인하여 첫 조각을
+                // 내리고, 들어갈 저장 글줄도 다음 쪽으로 보낸다.
                 let margin = hwpunit_to_px(table.outer_margin_top as i32, self.dpi);
-                let opened_by_flow =
-                    (p.table_top - (st.current_height + host_before_overhead)).abs() <= 0.01
-                        && host_before_overhead + 0.01 >= margin;
+                let opened_by_flow = (p.table_top - (p.anchor_y + host_before_overhead)).abs()
+                    <= 0.01
+                    && host_before_overhead + 0.01 >= margin;
                 if !opened_by_flow {
                     p.table_top += margin;
                 }
@@ -1012,8 +1020,16 @@ impl TypesetEngine {
         // 그렇지 않으면 컷은 여백을 빼고 정해지지만 괘선은 여백만큼 위에 그려진다.
         fragment_placement = fragment_placement.or_else(|| {
             (crate::renderer::para_has_no_stored_line_segs(para)
-                && !para_has_non_whitespace_text(para)
-                && para.controls.len() == 1
+                && ((!para_has_non_whitespace_text(para) && para.controls.len() == 1)
+                    // 계산한 글자·공백 host도 같은 그림 행의 원점을 소유한다.
+                    // 첫 opening은 host 줄과 같은 원점을 공유한다. 이어받은 조각은
+                    // 기존 조각 배치가 위 여백을 소비하므로 host의 NextLine 점유까지
+                    // 다시 전달하면 종료 뒤 본문에 그 여백이 한 번 더 붙는다.
+                    || (!is_continuation
+                        && crate::renderer::is_unstored_whitespace_object_host(para)
+                        && table.cells.iter().any(
+                            crate::renderer::height_measurer::unstored_square_picture_cell_owns_padding,
+                        )))
                 && !table.common.treat_as_char
                 && crate::renderer::typeset::is_para_topbottom_float(&table.common)
                 && table.caption.is_none())

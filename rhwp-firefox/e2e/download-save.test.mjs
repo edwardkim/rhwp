@@ -57,7 +57,9 @@ try {
   });
   browser = await puppeteer.launch({
     browser: 'firefox', executablePath, headless: true,
-    args: ['--remote-allow-system-access'], userDataDir: join(temp, 'profile'),
+    // 확장 페이지의 실제 문맥을 검사하는 격리 브라우저에만 권한을 공급한다.
+    env: { ...process.env, MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: '1' },
+    userDataDir: join(temp, 'profile'),
     extraPrefsFirefox: {
       'browser.download.folderList': 2,
       'browser.download.dir': downloads,
@@ -74,11 +76,27 @@ try {
   await until(() => page.evaluate(() => Boolean(document.querySelector('.rhwp-badge'))), 'extension ready');
   await page.click('#download');
   const viewer = await until(async () => {
-    for (const candidate of await browser.pages()) {
-      // BiDi Page.url() can report about:blank for privileged extension pages.
-      const url = await candidate.evaluate(() => location.href);
-      if (url.includes('/viewer.html?')) return candidate;
-    }
+    // Firefox가 확장에서 연 탭은 Puppeteer의 페이지 캐시에 빠질 수 있다.
+    // 실제 BiDi 문맥을 조회하여 자동으로 열린 바로 그 뷰어에서 DOM 명령을 실행한다.
+    const { result: { contexts } } = await browser.connection.send('browsingContext.getTree', {});
+    const context = contexts.find(context => context.url.includes('/viewer.html?'));
+    if (!context) return;
+    return {
+      async evaluate(fn, ...args) {
+        const functionDeclaration = `function(serialized) {
+          return Promise.resolve((${fn.toString()})(...JSON.parse(serialized)))
+            .then(value => JSON.stringify(value === undefined ? null : value));
+        }`;
+        const { result } = await browser.connection.send('script.callFunction', {
+          functionDeclaration, target: { context: context.context }, awaitPromise: true,
+          arguments: [{ type: 'string', value: JSON.stringify(args) }],
+        });
+        if (result.type !== 'success') {
+          throw new Error(`Firefox 뷰어 실행 실패: ${JSON.stringify(result.exceptionDetails)}`);
+        }
+        return JSON.parse(result.result.value);
+      },
+    };
   }, 'auto-open viewer');
   // #1328/#1454 asks the user before checking installed fonts. Select the real
   // fallback button instead of bypassing consent; status text is now "1 / 1 쪽".

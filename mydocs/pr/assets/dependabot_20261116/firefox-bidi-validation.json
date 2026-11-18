@@ -1,0 +1,27 @@
+{
+  "scope": "Firefox 다운로드→자동 뷰어→편집→저장/다른 이름으로 저장",
+  "browser": "firefox/160.0",
+  "before": "Puppeteer browser.pages 캐시에서 확장이 실제로 연 viewer가 누락되어 auto-open timeout",
+  "independent_observation": "확장 browser.tabs.query와 BiDi browsingContext.getTree에서 같은 URL의 실제 viewer 확인",
+  "product_behavior_changed": false,
+  "test_compatibility_repair": "실제 BiDi 문맥 조회와 script.callFunction으로 같은 뷰어의 기존 DOM 명령을 실행; 새 viewer 생성/우회 없음",
+  "test_launch_environment": {
+    "MOZ_REMOTE_ALLOW_SYSTEM_ACCESS": "1",
+    "scope": "이 테스트가 만든 격리 Firefox child only"
+  },
+  "final_result": {
+    "viewerTabs": 1,
+    "completedDownloads": 3,
+    "savedNames": [
+      "신청서(SW) (개인)_1(1).hwp",
+      "신청서(SW) (개인)_1(2).hwp"
+    ],
+    "editPreserved": true
+  },
+  "log_sha256": "8fce5187a9674f0985e0913b16dfdf801c78fe0fd41edc1cf505df586c586901",
+  "test_input_sha256": "5a121673753da70681ec8c4da6efc30599f127ff5170745bcd260ad801f5e883",
+  "references": [
+    "https://firefox-source-docs.mozilla.org/remote/Security.html",
+    "https://developer.mozilla.org/en-US/docs/Web/WebDriver/Reference/BiDi/Modules/browsingContext/contextCreated"
+  ]
+}

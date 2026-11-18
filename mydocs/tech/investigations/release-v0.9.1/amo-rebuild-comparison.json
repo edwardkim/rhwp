@@ -1,0 +1,33 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "sourceEntriesUnchangedAfterBuild": 4894,
+  "wasmArtifacts": [
+    {
+      "name": "rhwp.js",
+      "originalSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rebuiltSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "identical": true
+    },
+    {
+      "name": "rhwp_bg.wasm",
+      "originalSha256": "4708ca98a0683c3e95a79c6ff33c847de062100ae2c15b4fbf268c90b2ce5cce",
+      "rebuiltSha256": "4708ca98a0683c3e95a79c6ff33c847de062100ae2c15b4fbf268c90b2ce5cce",
+      "identical": true
+    }
+  ],
+  "firefoxPayloadFileCount": 108,
+  "firefoxPayloadDifferences": [],
+  "firefoxPayloadByteIdentical": true,
+  "functionalRebuiltFirefoxTest": {
+    "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+    "archiveSha256": "22410c6ae05d2f008c9d70c319279e2b14e694d10d08162cf63e7e490337d7dd",
+    "command": [
+      "node",
+      "e2e/download-save.test.mjs"
+    ],
+    "distribution": "/home/edward/mygithub/rhwp/output/release-v0.9.1/amo-build/rhwp-source/rhwp-firefox/dist",
+    "exitCode": 0,
+    "seconds": 10.05
+  },
+  "bitReproducibilityClaimed": false
+}

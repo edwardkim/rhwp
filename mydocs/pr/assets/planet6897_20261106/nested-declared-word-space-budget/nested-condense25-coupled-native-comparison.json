@@ -1,0 +1,62 @@
+[
+  {
+    "key": "sample16-hwp2022",
+    "page": "rhwp_017.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwp2022",
+    "page": "rhwp_035.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwp2022",
+    "page": "rhwp_038.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwp2024",
+    "page": "rhwp_017.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwp2024",
+    "page": "rhwp_035.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwp2024",
+    "page": "rhwp_038.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwpx",
+    "page": "rhwp_017.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwpx",
+    "page": "rhwp_035.png",
+    "identical": true
+  },
+  {
+    "key": "sample16-hwpx",
+    "page": "rhwp_038.png",
+    "identical": true
+  },
+  {
+    "key": "nested",
+    "page": "rhwp_003.png",
+    "identical": false
+  },
+  {
+    "key": "nested",
+    "page": "rhwp_008.png",
+    "identical": true
+  },
+  {
+    "key": "nested",
+    "page": "rhwp_017.png",
+    "identical": true
+  }
+]

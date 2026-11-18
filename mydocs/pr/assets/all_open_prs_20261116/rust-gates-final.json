@@ -1,0 +1,326 @@
+{
+  "status": "passed",
+  "head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+  "base": "53774cc1508591b6ac794950f0063452fbaf6e87",
+  "minimum_font_isolation": "output/pr-review/all-open-pr-integration-20261116/minimal-font/isolation-validation.json",
+  "results": [
+    {
+      "gate": "suite-prepare",
+      "exit": 0,
+      "seconds": 4.77,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "full-nextest",
+      "exit": 0,
+      "seconds": 1244.867,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "native-skia-lib",
+      "exit": 0,
+      "seconds": 457.543,
+      "minimum_font": true,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
+    },
+    {
+      "gate": "native-picture-placeholder",
+      "exit": 0,
+      "seconds": 450.339,
+      "minimum_font": true,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
+    },
+    {
+      "gate": "native-direct-pdf",
+      "exit": 0,
+      "seconds": 79.625,
+      "minimum_font": true,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
+    },
+    {
+      "gate": "fmt",
+      "exit": 0,
+      "seconds": 15.379,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "clippy-native",
+      "exit": 0,
+      "seconds": 3.13,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "clippy-wasm",
+      "exit": 0,
+      "seconds": 1.374,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "workspace-build",
+      "exit": 0,
+      "seconds": 29.102,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "clippy-all-targets",
+      "exit": 0,
+      "seconds": 16.271,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "minimum_font": true,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "suite-policy",
+      "exit": 0,
+      "seconds": 1.809,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "53774cc1508591b6ac794950f0063452fbaf6e87"
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "unit-tier-policy",
+      "exit": 0,
+      "seconds": 20.907,
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "53774cc1508591b6ac794950f0063452fbaf6e87"
+      ],
+      "minimum_font": false,
+      "test_head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+      "evidence": "current execution after relation test change"
+    },
+    {
+      "gate": "doc-test",
+      "exit": 0,
+      "seconds": 271.395,
+      "minimum_font": true,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+      "evidence": "reused unaffected execution",
+      "reuse_reason": "product src/crates/Cargo inputs and these Native feature/doc test sources are unchanged; the sole later test behavior change is covered by the new complete integration run"
+    }
+  ],
+  "native_skia_lib_summary": {
+    "rhwp_passed": 3852,
+    "rhwp_failed": 0,
+    "rhwp_ignored": 12,
+    "other_workspace_library_passed": [
+      15,
+      165,
+      2
+    ],
+    "summaries": [
+      "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 17.18s",
+      "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+      "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+    ],
+    "log_sha256": "807fda3e57bf329b9aa65cb7d1ed9ada6008a80b51ead3433023543698f966e9"
+  },
+  "native_direct_pdf_summary": {
+    "passed": 36,
+    "failed": 0,
+    "log_sha256": "36280d797d37d944b453a92db465552aa04f435c26a519a13f11fb77fb1388da"
+  },
+  "native_picture_placeholder_summary": {
+    "passed": 2,
+    "failed": 0
+  },
+  "previous_test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+  "product_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "rerun_gates": 9,
+  "reused_unaffected_gates": 4,
+  "minimum_font_profile_sha256": "d6303bc13d7fdf3cad52056338eae3164b1a2b6049f09bccc70b6b097b093875"
+}

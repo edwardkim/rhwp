@@ -14,6 +14,9 @@ use wasm_bindgen::prelude::*;
 #[cfg(target_arch = "wasm32")]
 use web_sys::HtmlCanvasElement;
 
+#[cfg(target_arch = "wasm32")]
+mod canvas2d_outline_preview;
+
 use crate::document_core::helpers::parse_removed_para_meta;
 use crate::document_core::{
     DeferredPaginationJobState, DeferredPaginationStepResult, DocumentCore, DEFAULT_FALLBACK_FONT,
@@ -847,10 +850,84 @@ impl HwpDocument {
             .map_err(JsValue::from)
     }
 
+    /// FontFace에 적재된 SFNT 조각들을 같은 family의 실제 조회 순서로 등록한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = registerHftOutlineFontCandidates)]
+    pub fn register_hft_outline_font_candidates(
+        &mut self,
+        family: &str,
+        programs: js_sys::Array,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        if programs.length() == 0 || programs.length() > 64 {
+            return Err(JsValue::from_str("outline font candidate limit exceeded"));
+        }
+        let mut total = 0usize;
+        let mut bytes = Vec::new();
+        for program in programs.iter() {
+            let array = program
+                .dyn_into::<js_sys::Uint8Array>()
+                .map_err(|_| JsValue::from_str("outline font candidate must be Uint8Array"))?;
+            total = total.saturating_add(array.length() as usize);
+            if array.length() == 0 || array.length() > 32 * 1024 * 1024 || total > 64 * 1024 * 1024
+            {
+                return Err(JsValue::from_str("outline font byte limit exceeded"));
+            }
+            bytes.push(array.to_vec());
+        }
+        let candidates: Vec<_> = bytes.iter().map(|bytes| (bytes.as_slice(), 0)).collect();
+        self.register_hft_outline_font_candidates_native(family, &candidates)
+            .map_err(JsValue::from)
+    }
+
     /// 호스트가 실제 FontFace에 적재한 프로그램의 호환 글리프 지원을 등록한다.
     #[wasm_bindgen(js_name = clearTextFontFamily)]
     pub fn clear_text_font_family_wasm(&mut self, family: &str) {
         self.clear_text_font_family_native(family);
+    }
+
+    /// 쪽별 host paint 자원만 해제한다. 측정·coverage·문서 상태는 유지한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = clearTextFontOutline)]
+    pub fn clear_text_font_outline_wasm(&mut self, family: &str) {
+        self.hft_outline_fonts.clear_outline_family(family);
+    }
+
+    /// TTC 원본 신원을 보존한 paint 후보. FontFace용 정규화 사본과 구분한다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = registerHftOutlineFontFaces)]
+    pub fn register_hft_outline_font_faces(
+        &mut self,
+        family: &str,
+        programs: js_sys::Array,
+    ) -> Result<bool, JsValue> {
+        use wasm_bindgen::JsCast;
+        if programs.length() == 0 || programs.length() > 64 {
+            return Err(JsValue::from_str("outline font candidate limit exceeded"));
+        }
+        let mut total = 0usize;
+        let mut faces = Vec::new();
+        for program in programs.iter() {
+            let array = js_sys::Reflect::get(&program, &JsValue::from_str("bytes"))?
+                .dyn_into::<js_sys::Uint8Array>()
+                .map_err(|_| JsValue::from_str("outline font bytes must be Uint8Array"))?;
+            let index = js_sys::Reflect::get(&program, &JsValue::from_str("faceIndex"))?
+                .as_f64()
+                .filter(|v| v.is_finite() && *v >= 0.0 && *v <= u32::MAX as f64 && v.fract() == 0.0)
+                .ok_or_else(|| JsValue::from_str("invalid outline face index"))?;
+            total = total.saturating_add(array.length() as usize);
+            if array.length() == 0 || array.length() > 32 * 1024 * 1024 || total > 64 * 1024 * 1024
+            {
+                return Err(JsValue::from_str("outline font byte limit exceeded"));
+            }
+            faces.push((array.to_vec(), index as u32));
+        }
+        let candidates: Vec<_> = faces
+            .iter()
+            .map(|(bytes, index)| (bytes.as_slice(), *index))
+            .collect();
+        self.register_hft_outline_font_candidates_native(family, &candidates)
+            .map_err(JsValue::from)
     }
 
     #[wasm_bindgen(js_name = registerTextFontGlyphCoverage)]
@@ -947,18 +1024,33 @@ impl HwpDocument {
             let mut programs = Vec::with_capacity(values.len());
             let mut total_bytes = 0usize;
             for value in values {
-                if !value.is_instance_of::<js_sys::Uint8Array>() {
+                let (source, face_index) = if value.is_instance_of::<js_sys::Uint8Array>() {
+                    (value, 0)
+                } else {
+                    let source = js_sys::Reflect::get(&value, &JsValue::from_str("bytes"))?;
+                    let index = js_sys::Reflect::get(&value, &JsValue::from_str("faceIndex"))?
+                        .as_f64()
+                        .filter(|index| {
+                            index.is_finite()
+                                && *index >= 0.0
+                                && *index <= f64::from(u32::MAX)
+                                && index.fract() == 0.0
+                        })
+                        .ok_or_else(|| JsValue::from_str("OTF provider faceIndex must be a u32"))?;
+                    (source, index as u32)
+                };
+                if !source.is_instance_of::<js_sys::Uint8Array>() {
                     return Err(JsValue::from_str(
                         "OTF provider must return Uint8Array, an array of Uint8Array, or null",
                     ));
                 }
-                let array = js_sys::Uint8Array::new(&value);
+                let array = js_sys::Uint8Array::new(&source);
                 let length = array.length() as usize;
                 total_bytes = total_bytes.saturating_add(length);
                 if length > 32 * 1024 * 1024 || total_bytes > 64 * 1024 * 1024 {
                     return Err(JsValue::from_str("OTF provider program exceeds limit"));
                 }
-                programs.push((array.to_vec(), 0));
+                programs.push((array.to_vec(), face_index));
             }
             prepared.insert(
                 (
@@ -981,6 +1073,16 @@ impl HwpDocument {
                 .unwrap_or_default()
         })
         .map_err(JsValue::from)
+    }
+
+    /// 원본 SFNT/TTC 바이트와 선택 face를 함께 받는 공급 계약의 기능 탐지 경계.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = prepareNativeOtfFontFaces)]
+    pub fn prepare_native_otf_font_faces_wasm(
+        &mut self,
+        provider: &js_sys::Function,
+    ) -> Result<bool, JsValue> {
+        self.prepare_native_otf_fonts_wasm(provider)
     }
 
     #[wasm_bindgen(js_name = registerNativePuaFont)]
@@ -1118,6 +1220,19 @@ impl HwpDocument {
         self.invalidate_page_tree_cache();
     }
 
+    /// 편집 화면의 바탕쪽을 흐리게 그릴지 반환한다.
+    #[wasm_bindgen(js_name = getDimMasterPages)]
+    pub fn get_dim_master_pages(&self) -> bool {
+        self.dim_master_pages
+    }
+
+    /// 편집 화면(`renderPageToCanvas`)에서 바탕쪽을 흐리게 그릴지 설정한다. 한컴은 편집 화면의
+    /// 바탕쪽을 본문보다 흐리게 보이고 미리 보기·인쇄에서는 본래 모양으로 그린다.
+    #[wasm_bindgen(js_name = setDimMasterPages)]
+    pub fn set_dim_master_pages(&mut self, enabled: bool) {
+        self.dim_master_pages = enabled;
+    }
+
     #[wasm_bindgen(js_name = setClipEnabled)]
     pub fn set_clip_enabled(&mut self, enabled: bool) {
         self.clip_enabled = enabled;
@@ -1221,10 +1336,33 @@ impl HwpDocument {
             renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
             renderer.show_paragraph_marks = self.show_paragraph_marks;
             renderer.show_control_codes = self.show_control_codes;
+            renderer.dim_master_pages = self.dim_master_pages;
             renderer.set_scale(scale);
             renderer.render_page(&tree).map_err(JsValue::from)?;
             Ok(())
         })
+    }
+
+    /// 같은 preview의 paint 자원 준비에 필요한 트리. 일반 쪽 캐시는 변경하지 않는다.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = getHeaderFooterEditPreviewLayerTree)]
+    pub fn get_header_footer_edit_preview_layer_tree(
+        &self,
+        page_num: u32,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<String, JsValue> {
+        let tree = self
+            .build_header_footer_edit_preview_tree(
+                page_num,
+                section_idx as usize,
+                is_header,
+                apply_to,
+            )
+            .map_err(JsValue::from)?;
+        let mut builder = crate::paint::LayerBuilder::new(crate::paint::RenderProfile::Screen);
+        Ok(builder.build(&tree).to_json())
     }
 
     /// 구역 첫 페이지에 요청한 머리말/꼬리말 정의를 가상 투영해 Canvas 2D로 렌더링한다.
@@ -1305,6 +1443,21 @@ impl HwpDocument {
     ) -> Result<(), JsValue> {
         render_patch_boundary::render_page_to_canvas_filtered_with_profile(
             self, page_num, canvas, scale, layer_kind, profile,
+        )
+    }
+
+    /// Explicit Canvas2D outline preview with actual selection diagnostics.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = renderPageToCanvasStrictOutlineWithProfile)]
+    pub fn render_page_to_canvas_strict_outline_with_profile(
+        &self,
+        page_num: u32,
+        canvas: &HtmlCanvasElement,
+        scale: f64,
+        profile: &str,
+    ) -> Result<String, JsValue> {
+        render_patch_boundary::render_page_to_canvas_strict_outline_with_profile(
+            self, page_num, canvas, scale, profile,
         )
     }
 
@@ -2227,6 +2380,11 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 경로 기반: 셀/글상자 문단의 글자를 반환한다 (중첩 표/글상자 지원).
+    ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]` — 본문 문단
+    /// `parent_para_idx`에서 시작해 바깥부터 한 단계씩 적는다. 마지막 단계가 읽을 칸과 칸 문단이다.
+    /// 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
     #[wasm_bindgen(js_name = getTextInCellByPath)]
     pub fn get_text_in_cell_by_path_api(
         &self,
@@ -2274,6 +2432,45 @@ impl HwpDocument {
         apply_to: u8,
     ) -> Result<String, JsValue> {
         self.create_header_footer_native(section_idx as usize, is_header, apply_to)
+            .map_err(|e| e.into())
+    }
+
+    /// 바탕쪽(양 쪽·짝수 쪽·홀수 쪽) 생성 — 빈 문단 1개 포함.
+    ///
+    /// options: `{"applyTo":0|1|2}`. 반환: `{"ok":true,"applyTo":16+n}`.
+    /// 바탕쪽 문단은 머리말·꼬리말 편집 API에 그 `applyTo`(16 + 바탕쪽 번호)를 주어 편집한다.
+    #[wasm_bindgen(js_name = createMasterPage)]
+    pub fn create_master_page(
+        &mut self,
+        section_idx: u32,
+        options_json: &str,
+    ) -> Result<String, JsValue> {
+        self.create_master_page_native(section_idx as usize, options_json)
+            .map_err(|e| e.into())
+    }
+
+    /// 바탕쪽 삭제. `apply_to`는 16 + 바탕쪽 번호.
+    #[wasm_bindgen(js_name = deleteMasterPage)]
+    pub fn delete_master_page(
+        &mut self,
+        section_idx: u32,
+        apply_to: u8,
+    ) -> Result<String, JsValue> {
+        self.delete_master_page_native(section_idx as usize, apply_to)
+            .map_err(|e| e.into())
+    }
+
+    /// 구역의 바탕쪽 목록. 반환: `{"ok":true,"masterPages":[{index,applyTo,isExtension,overlap,replaceBase,pageNumber,paraCount}]}`
+    #[wasm_bindgen(js_name = getMasterPages)]
+    pub fn get_master_pages(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.get_master_pages_native(section_idx as usize)
+            .map_err(|e| e.into())
+    }
+
+    /// 쪽에서 고칠 바탕쪽. 반환: `{"ok":true,"found":true,"sectionIndex":N,"applyTo":16+n}` 또는 `{"ok":true,"found":false}`
+    #[wasm_bindgen(js_name = getMasterPageEditTarget)]
+    pub fn get_master_page_edit_target(&self, page_num: u32) -> Result<String, JsValue> {
+        self.get_master_page_edit_target_native(page_num)
             .map_err(|e| e.into())
     }
 
@@ -3225,6 +3422,9 @@ impl HwpDocument {
     }
 
     /// 경로 기반: 셀/글상자 내 문단 수를 반환한다 (중첩 표/글상자 지원).
+    ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+    /// `cellIndex`가 셀을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
     #[wasm_bindgen(js_name = getCellParagraphCountByPath)]
     pub fn get_cell_paragraph_count_by_path(
         &self,
@@ -3244,6 +3444,9 @@ impl HwpDocument {
     }
 
     /// 경로 기반: 셀 내 문단의 글자 수를 반환한다 (중첩 표 지원).
+    ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계가
+    /// 셀과 그 셀의 문단을 고른다. 형식과 중첩 예시는 `getTableDimensionsByPath` 설명을 본다.
     #[wasm_bindgen(js_name = getCellParagraphLengthByPath)]
     pub fn get_cell_paragraph_length_by_path(
         &self,
@@ -6021,8 +6224,8 @@ impl HwpDocument {
 
     /// 문서의 메모를 문서 순서대로 반환한다.
     ///
-    /// 반환: `[{id,index,author,date,text,place,sectionIndex,paraIndex,
-    /// startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`
+    /// 반환: `[{id,index,parentId,author,date,text,place,sectionIndex,paraIndex,
+    /// startCharIdx,endCharIdx,path,page,editable,readOnlyReason}]`. parentId는 댓글의 부모 메모 번호다.
     #[wasm_bindgen(js_name = getMemoList)]
     pub fn get_memo_list(&self) -> String {
         self.get_memo_list_json()
@@ -6089,6 +6292,36 @@ impl HwpDocument {
     pub fn remove_memo(&mut self, id: u32) -> Result<String, JsValue> {
         self.core
             .remove_memo(id)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 메모에 댓글을 단다(한컴 12.30 메모 풍선의 댓글). 부모와 같은 기준 글에 메모를 달고 관계를 적는다.
+    /// 댓글의 댓글은 맨 위 메모의 댓글이 된다. `json` = insertMemo와 같다. 지운 부모의 댓글은 함께 지운다.
+    ///
+    /// 반환: `{"ok":true,"id":N,"index":N}`. getMemoList의 `parentId`가 부모 메모 번호다.
+    #[wasm_bindgen(js_name = insertMemoReply)]
+    pub fn insert_memo_reply(&mut self, parent_id: u32, json: &str) -> Result<String, JsValue> {
+        self.core
+            .insert_memo_reply_json_native(parent_id, json)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 구역이 쓰는 메모 모양(한컴 입력 > 메모 > 메모 모양).
+    ///
+    /// 반환: `{width,lineType,lineWidth,lineColor,fillColor,activeColor}`. 너비는 HWPUNIT,
+    /// 선 종류는 0(선 없음)~11(삼중선), 선 굵기는 한컴 굵기 목록(0.1~5.0mm, 0.5mm 없음) 순번이다.
+    #[wasm_bindgen(js_name = getMemoShape)]
+    pub fn get_memo_shape(&self, section_idx: u32) -> Result<String, JsValue> {
+        self.core
+            .get_memo_shape_json(section_idx as usize)
+            .map_err(|e| JsValue::from_str(&e.to_json()))
+    }
+
+    /// 메모 모양을 한 구역(`section_idx`) 또는 모든 구역(`-1`)에 준다. `json`은 getMemoShape 형식이다.
+    #[wasm_bindgen(js_name = setMemoShape)]
+    pub fn set_memo_shape(&mut self, section_idx: i32, json: &str) -> Result<String, JsValue> {
+        self.core
+            .set_memo_shape_json(usize::try_from(section_idx).ok(), json)
             .map_err(|e| JsValue::from_str(&e.to_json()))
     }
 
@@ -7228,6 +7461,10 @@ impl HwpDocument {
 
     /// 경로 기반 셀 정보 조회 (중첩 표용).
     ///
+    /// `path_json`: `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`. 마지막 단계의
+    /// `controlIndex`가 표, `cellIndex`가 조회할 칸이며 세 필드가 모두 필요하다. 형식과 중첩
+    /// 예시는 `getTableDimensionsByPath` 설명을 본다.
+    ///
     /// 반환: JSON `{"row":N,"col":N,"rowSpan":N,"colSpan":N}`
     #[wasm_bindgen(js_name = getCellInfoByPath)]
     pub fn get_cell_info_by_path(
@@ -7241,6 +7478,19 @@ impl HwpDocument {
     }
 
     /// 경로 기반 표 차원 조회 (중첩 표용).
+    ///
+    /// `path_json`은 본문 문단 `parent_para_idx`에서 시작해 표까지 내려가는 단계의 배열이다.
+    /// `[{"controlIndex":N,"cellIndex":N,"cellParaIndex":N}, ...]`
+    /// - `controlIndex`: 현재 문단의 컨트롤 번호(표·글상자 등).
+    /// - `cellIndex`: 그 표의 칸 번호(행 우선, 0부터). 글상자는 글상자 번호(독립 글상자는 0).
+    /// - `cellParaIndex`: 그 칸(글상자) 안 문단 번호.
+    ///
+    /// 이 API는 표 자체를 가리키므로 **마지막 단계에는 `controlIndex`만 필요**하다. 마지막 단계의
+    /// `cellIndex`·`cellParaIndex`는 생략할 수 있고, 주어져도 쓰지 않는다. 앞 단계(바깥 표의 칸을
+    /// 지나는 단계)는 세 필드가 모두 필요하다.
+    ///
+    /// 예: 본문 문단 3의 컨트롤 1(바깥 표) → 그 표 칸 2의 문단 0에 든 컨트롤 0(안쪽 표)
+    /// `getTableDimensionsByPath(0, 3, '[{"controlIndex":1,"cellIndex":2,"cellParaIndex":0},{"controlIndex":0}]')`
     ///
     /// 반환: JSON `{"rowCount":N,"colCount":N,"cellCount":N}`
     #[wasm_bindgen(js_name = getTableDimensionsByPath)]
@@ -7259,6 +7509,9 @@ impl HwpDocument {
     }
 
     /// 경로 기반 표 셀 바운딩박스 조회 (중첩 표용).
+    ///
+    /// `path_json` 형식은 `getTableDimensionsByPath`와 같다. 표 자체를 가리키므로 마지막 단계에는
+    /// `controlIndex`만 필요하고 `cellIndex`·`cellParaIndex`는 생략할 수 있다(주어져도 쓰지 않음).
     ///
     /// 반환: JSON 배열 `[{"cellIdx":N,"row":N,"col":N,...,"x":F,"y":F,"w":F,"h":F}, ...]`
     #[wasm_bindgen(js_name = getTableCellBboxesByPath)]
@@ -8559,6 +8812,11 @@ impl HwpDocument {
             attr: 1 << 3,
             ..Default::default()
         }; // a,b,c
+
+        // 합성 기본 목록은 문서의 0번 모양을 참조하지 않고 본문을 따른다.
+        for head in &mut n.heads {
+            head.char_shape_id = u32::MAX;
+        }
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
@@ -8623,6 +8881,9 @@ impl HwpDocument {
 
         n.start_number = json_i32(json, "startNumber").unwrap_or(1) as u16;
         n.level_start_numbers = [n.start_number as u32; crate::model::style::NUMBERING_LEVELS];
+        for head in &mut n.heads {
+            head.char_shape_id = u32::MAX;
+        }
         self.core.document.doc_info.numberings.push(n);
         // 새 번호 정의는 DocInfo 원본 스트림에 없어 HWP 저장이 모델에서 다시 쓰게 한다.
         self.core.document.doc_info.raw_stream_dirty = true;
@@ -8690,6 +8951,7 @@ impl HwpDocument {
             bullet_char: bullet_ch,
             attr: 1 << 3, // 자동 내어쓰기 (한/글 기본 머리 모양)
             text_distance: 50,
+            char_shape_id: u32::MAX,
             ..Default::default()
         };
         self.core.document.doc_info.bullets.push(b);

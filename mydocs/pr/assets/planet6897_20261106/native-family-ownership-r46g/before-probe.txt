@@ -1,0 +1,10 @@
+SYSTEM_FAMILIES=["Rhwp Family Contract", "검사용 WWS 가족", "검사용 표기 가족", "검사용 가족 이름", "Latin Modern Math", "RHWP LMM Variable Outline"]
+SYSTEM_STYLE=(FontStyle { weight: Weight(400), width: Width(5), slant: Upright }, Some("Regular")) family=Rhwp Family Contract source_style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright }
+SYSTEM_STYLE=(FontStyle { weight: Weight(400), width: Width(5), slant: Upright }, Some("Regular")) family=Latin Modern Math source_style=FontStyle { weight: Weight(400), width: Width(5), slant: Upright }
+DECISION bold=false {"candidates":["Latin Modern Math","Malgun Gothic","맑은 고딕","Apple SD Gothic Neo","HCR Dotum","함초롬돋움","Noto Sans KR ExtraLight","Noto Sans KR","Pretendard","HCR Batang","함초롬바탕","HCR Batang Ext","함초롬바탕 확장","HCR Batang ExtB","함초롬바탕 확장B","RHWP Old Hangul","Segoe UI Emoji","Noto Emoji","Noto Color Emoji","sans-serif"],"capabilities":["nativeTypefaceChainEnumerated","nativeGlyphCoverageObserved"],"certainty":"observed","failures":[],"requested":"Latin Modern Math","resolved":"Rhwp Family Contract","source":"system","status":"complete"}
+
+thread 'main' (3564473) panicked at /home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r46g-system-family-contract-probe.rs:5:1217:
+assertion `left == right` failed: unrelated TTF must not replace requested CFF family
+  left: String("Rhwp Family Contract")
+ right: "Latin Modern Math"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace

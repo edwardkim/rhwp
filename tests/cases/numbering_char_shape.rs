@@ -129,7 +129,7 @@ fn follow_body_size_number_uses_paragraph_end_not_first_character() {
 fn fixed_number_char_shape_keeps_its_size_and_detaching_restores_body_shape() {
     let mut doc = paragraphs(&[2000], None);
     let (id, char_shape) = number_all(&mut doc, 1, Some(r#"{"fontSize":1000,"italic":true}"#));
-    assert_ne!(char_shape, 0, "0은 머리 모양에서 '참조 없음'이다");
+    assert_ne!(char_shape, 0, "글자 모양 지정 API의 기존 양수 ID 반환");
     assert_sizes(&markers(&doc), &[PT10_PX]);
     assert_eq!(
         doc.set_numbering_char_shape_native(id, 0, None).unwrap(),

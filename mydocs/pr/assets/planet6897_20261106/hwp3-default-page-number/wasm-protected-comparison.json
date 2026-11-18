@@ -1,0 +1,93 @@
+{
+  "backend": "wasm",
+  "pages": 763,
+  "minimum": 99.38,
+  "losses": [
+    {
+      "page": 133,
+      "baseline": "99.98",
+      "candidate": "99.96"
+    },
+    {
+      "page": 251,
+      "baseline": "99.83",
+      "candidate": "99.81"
+    },
+    {
+      "page": 509,
+      "baseline": "99.90",
+      "candidate": "99.86"
+    },
+    {
+      "page": 658,
+      "baseline": "99.95",
+      "candidate": "99.94"
+    },
+    {
+      "page": 659,
+      "baseline": "99.98",
+      "candidate": "99.97"
+    },
+    {
+      "page": 660,
+      "baseline": "99.98",
+      "candidate": "99.96"
+    },
+    {
+      "page": 708,
+      "baseline": "99.82",
+      "candidate": "99.81"
+    },
+    {
+      "page": 757,
+      "baseline": "99.40",
+      "candidate": "99.38"
+    }
+  ],
+  "gains": [
+    {
+      "page": 15,
+      "baseline": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "page": 18,
+      "baseline": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "page": 474,
+      "baseline": "99.90",
+      "candidate": "99.91"
+    },
+    {
+      "page": 690,
+      "baseline": "99.94",
+      "candidate": "99.95"
+    },
+    {
+      "page": 705,
+      "baseline": "99.99",
+      "candidate": "100.00"
+    }
+  ],
+  "producer": {
+    "key": "sample10",
+    "prs": [
+      8389,
+      8397
+    ],
+    "finished": true,
+    "exit_code": 0,
+    "pages": 763,
+    "expected_pages": 763,
+    "page_set_matches": true,
+    "minimum": 99.38,
+    "below90": [],
+    "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hwp3-number-owner-wasm-whole/sample10/sample10/silhouette.tsv",
+    "tsv_sha256": "bde60c0226dea53440fee38673e8584ac03c0de924ca7a76a136b35e192a98e4",
+    "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hwp3-number-owner-wasm-whole/sample10/run.log",
+    "dpi": 96,
+    "compat": "2022"
+  }
+}

@@ -1,5 +1,9 @@
-#include "include/rhwp_native_reference/rhwp_d3d_plugin_c_api.h"
+#include "rhwp_native_reference/rhwp_d3d_plugin.h"
 #include "Producer.h"
+#include "ProducerReadyEvents.h"
+#include "CloseRecordRegistry.h"
+#include "../common/bounded_tile_group.h"
+#include <optional>
 #include <flutter/method_channel.h>
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
@@ -38,6 +42,14 @@ const Value& field(const Map& values, const char* name) {
   if (found == values.end()) throw MethodError("invalidArgument", "missing argument field");
   return found->second;
 }
+PublicationMode publication_mode(const Map& args) {
+  auto found = args.find(Value("publicationMode"));
+  if (found == args.end()) return PublicationMode::LegacyImmutable;
+  const auto* mode = std::get_if<std::string>(&found->second);
+  if (mode && *mode == "legacyImmutable") return PublicationMode::LegacyImmutable;
+  if (mode && *mode == "immutableOwnershipTransfer") return PublicationMode::ImmutableOwnershipTransfer;
+  throw MethodError("invalidArgument", "publicationMode must be legacyImmutable or immutableOwnershipTransfer");
+}
 uint64_t integer(const Value& value) {
   int64_t result;
   if (auto* wide = std::get_if<int64_t>(&value)) result = *wide;
@@ -74,12 +86,48 @@ std::string stamp_json(const Stamp& stamp) {
       << ",\"viewGeneration\":" << stamp.view << ",\"deviceGeneration\":" << stamp.device << ",\"deviceScale\":" << stamp.scale << '}';
   return out.str();
 }
-Value limits() {
+Value trim_value(uint64_t texture, uint64_t generation, const rhwp::cache::TrimReceipt& trim) {
+  return Value(Map{{Value("textureId"),unsigned_value(texture)},{Value("deviceGeneration"),unsigned_value(generation)},
+      {Value("requestId"),unsigned_value(trim.request)},{Value("targetBytes"),unsigned_value(trim.target)},
+      {Value("before"),unsigned_value(trim.before)},{Value("after"),unsigned_value(trim.after)},
+      {Value("trimmed"),unsigned_value(trim.trimmed)},{Value("pending"),Value(trim.pending)},
+      {Value("busy"),Value(trim.busy)},{Value("reason"),Value(trim.reason)},{Value("scope"),Value("managedGpuTargets")}});
+}
+Value limits(PublicationMode mode = PublicationMode::LegacyImmutable, bool close_ack = false) {
   const auto stats = frames().stats();
-  return Value(Map{{Value("consumerRetirement"), Value(false)}, {Value("continuousPresentationSupported"), Value(false)},
+  const auto imports = SurfaceImports::stats();
+  const bool transfer = mode == PublicationMode::ImmutableOwnershipTransfer;
+  return Value(Map{{Value("publicationMode"), Value(publication_mode_name(mode))},
+      {Value("closeAcknowledgementRequired"), Value(close_ack)},
+      {Value("maxRetainedCloseRecords"), Value(2)}, {Value("maxClosedReceipts"), Value(2)},
+      {Value("consumerRetirement"), Value(false)}, {Value("continuousPresentationSupported"), Value(transfer)},
+      {Value("consumerGpuCompletionVerified"), Value(false)}, {Value("targetReuse"), Value(false)},
+      {Value("privateTargetReuse"), Value(true)}, {Value("maxPrivateTargets"), Value(4)},
+      {Value("maxIdlePrivateTargets"), Value(2)},
+      {Value("privateTargets"), unsigned_value(stats.private_targets)},
+      {Value("privateTargetBytes"), unsigned_value(stats.private_bytes)},
+      {Value("frameReservedBytes"), unsigned_value(stats.bytes - stats.private_bytes)},
+      {Value("idlePrivateTargets"), unsigned_value(stats.private_idle)},
+      {Value("idlePrivateTargetBytes"), unsigned_value(stats.private_idle_bytes)},
+      {Value("privateTargetReuses"), unsigned_value(stats.private_reuses)},
+      {Value("backpressureRetryable"), Value(transfer && stats.permanent < 4)},
+      {Value("frameAccountingScope"), Value("legacyRetainedAndPluginOwnedReferences")},
+      {Value("consumerAndDriverMemoryIncluded"), Value(false)},
       {Value("cpuFallbackRequiredWhenSaturated"), Value(true)}, {Value("outstandingFrames"), unsigned_value(stats.outstanding)},
       {Value("immutableFrames"), unsigned_value(stats.immutable)}, {Value("quarantinedFrames"), unsigned_value(stats.quarantined)},
-      {Value("pendingRetireFrames"), unsigned_value(stats.immutable + stats.quarantined)},
+      {Value("pendingRetireFrames"), unsigned_value(transfer ? stats.outstanding : stats.immutable + stats.quarantined)},
+      {Value("legacyRetainedFrames"), unsigned_value(stats.legacy_retained)},
+      {Value("producerOwnedFrames"), unsigned_value(stats.producer_owned)},
+      {Value("producerOwnedBytes"), unsigned_value(stats.producer_owned_bytes)},
+      {Value("importPendingFrames"), unsigned_value(stats.import_pending)},
+      {Value("importPendingBytes"), unsigned_value(stats.import_pending_bytes)},
+      {Value("handedOffFrames"), unsigned_value(stats.handed_off)},
+      {Value("discardedUnexposedFrames"), unsigned_value(stats.unexposed_discarded)},
+      {Value("descriptorTickets"), unsigned_value(imports.tickets)},
+      {Value("descriptorCpuPendingTickets"), unsigned_value(imports.cpu_pending)},
+      {Value("descriptorAwaitingOpenedTickets"), unsigned_value(imports.awaiting_opened)},
+      {Value("descriptorDuplicateOrLateNotifications"), unsigned_value(imports.ignored)},
+      {Value("maxDescriptorTickets"), Value(int64_t(SurfaceImports::kMaxTickets))},
       {Value("reservedTargetBytes"), unsigned_value(stats.bytes)}, {Value("maxFrames"), Value(4)},
       {Value("maxTargetBytes"), Value(int64_t(64 * 1024 * 1024))}, {Value("maxSingleFrameBytes"), Value(16 * 1024 * 1024)},
       {Value("descriptorOpenedNotifications"), unsigned_value(descriptor_opened_notifications())},
@@ -91,18 +139,37 @@ Value status(const std::shared_ptr<State>& state) {
   const bool has_frame = state->current && state->error.empty() &&
       state->gate.current(state->current->job->serial, state->current->job->stamp);
   Map value{{Value("textureId"), Value(state->texture_id)}, {Value("deviceGeneration"), unsigned_value(state->generation)},
+      {Value("producerReadyEvents"), Value(bool(state->producer_ready))},
+      {Value("publicationMode"), Value(publication_mode_name(state->publication_mode))},
+      {Value("closeAcknowledgementRequired"), Value(state->close_ack_required)},
       {Value("ready"), Value(state->ready && !state->closed)}, {Value("closed"), Value(state->closed)},
       {Value("ownerFinished"), Value(state->finished)}, {Value("inFlight"), Value(state->in_flight)},
-      {Value("unregistered"), Value(state->unregistered)}, {Value("error"), Value(state->error)},
+      {Value("unregistered"), Value(state->unregistered)}, {Value("registered"), Value(!state->unregistered)},
+      {Value("error"), Value(state->error)},
       {Value("errorCode"), Value(state->error_code)}, {Value("deviceFailure"), Value(state->device_failure)},
       {Value("acceptedSerial"), unsigned_value(state->accepted_serial)}, {Value("acceptedStamp"), Value(stamp_value(state->accepted_stamp))},
       {Value("acceptedSnapshots"), Value(ids)}, {Value("staleDrops"), unsigned_value(state->stale_drops)},
       {Value("hasFrame"), Value(has_frame)},
-      {Value("renderedSerial"), unsigned_value(has_frame ? state->current->job->serial : 0)}, {Value("limits"), limits()}};
+      {Value("descriptorOpenedSerial"), unsigned_value(has_frame && state->current->pixels->opened_notifications.load() ?
+          state->current->job->serial : 0)},
+      {Value("renderedSerial"), unsigned_value(has_frame ? state->current->job->serial : 0)},
+      {Value("limits"), limits(state->publication_mode, state->close_ack_required)}};
   value[Value("renderedStamp")] = has_frame ? Value(stamp_value(state->current->job->stamp)) : Value();
+  if (has_frame && !state->current->cache_metrics.empty()) {
+    Map counters;
+    const auto& sample = state->current->cache_metrics;
+    for (size_t index = 0; index < rhwp::metrics::kCounters.size(); ++index) {
+      if (sample.values[index])
+        counters[Value(rhwp::metrics::kCounters[index].name)] = unsigned_value(*sample.values[index]);
+    }
+    value[Value("producerDiagnostics")] = Value(Map{{Value("schemaVersion"), Value(1)},
+        {Value("backend"), Value("d3d12Ganesh")}, {Value("scope"), Value(rhwp::metrics::kScope)},
+        {Value("stamp"), Value(stamp_value(state->current->job->stamp))},
+        {Value("counters"), Value(std::move(counters))}});
+  }
   return Value(std::move(value));
 }
-std::shared_ptr<Job> parse_job(const Map& args) {
+std::shared_ptr<Job> parse_job(const Map& args, PublicationMode mode) {
   auto job = std::make_shared<Job>();
   const auto& source = map(&field(args, "stamp"));
   job->stamp = {integer(source, "documentId"), integer(source, "revision"), integer(source, "fontGeneration"),
@@ -110,7 +177,8 @@ std::shared_ptr<Job> parse_job(const Map& args) {
   if (!job->stamp.valid()) throw MethodError("invalidArgument", "invalid source/view/device stamp");
   job->width = integer32(args, "width"); job->height = integer32(args, "height");
   const auto charge = frame_charge(job->width, job->height);
-  if (!charge) throw MethodError("backpressure", "two-surface viewport exceeds the immutable frame budget; use CPU");
+  if (!charge) throw MethodError(mode == PublicationMode::ImmutableOwnershipTransfer ? "targetTooLarge" : "backpressure",
+      "two-surface viewport exceeds the immutable frame budget; use CPU");
   const auto* pages = std::get_if<List>(&field(args, "placements"));
   if (!pages || pages->empty() || pages->size() > 8) throw MethodError("invalidArgument", "expected 1..8 placements");
   std::ostringstream out; out.imbue(std::locale::classic()); out << std::setprecision(17);
@@ -138,7 +206,7 @@ std::shared_ptr<Job> parse_job(const Map& args) {
   check << "]}"; job->check_json = check.str();
   if (job->render_json.size() > 64 * 1024 || job->check_json.size() > 64 * 1024)
     throw MethodError("invalidArgument", "request metadata exceeds 64 KiB");
-  job->credit = frames().reserve(charge);
+  job->credit = frames().reserve(charge, mode);
   if (!job->credit) throw MethodError("backpressure", "immutable GPU frame credits are exhausted; use CPU");
   return job;
 }
@@ -146,54 +214,222 @@ std::shared_ptr<Job> parse_job(const Map& args) {
 class RhwpD3dPlugin final : public flutter::Plugin {
  public:
   RhwpD3dPlugin(flutter::PluginRegistrarWindows* registrar,
-      FlutterDesktopTextureRegistrarRef texture_registrar) : registrar_(registrar),
-      texture_registrar_(texture_registrar) {
+      FlutterDesktopTextureRegistrarRef texture_registrar,
+      FlutterDesktopMessengerRef messenger) : registrar_(registrar),
+      texture_registrar_(texture_registrar),
+      messenger_(messenger) {
+    ready_events_ = std::make_shared<ProducerReadyEvents>(registrar->messenger(), messenger);
     channel_ = std::make_unique<flutter::MethodChannel<Value>>(registrar->messenger(), "rhwp_native/texture_windows",
         &flutter::StandardMethodCodec::GetInstance());
     channel_->SetMethodCallHandler([this](const auto& call, auto result) {
       try { result->Success(invoke(call.method_name(), map(call.arguments()))); }
-      catch (const MethodError& error) { result->Error(error.code, error.what(), limits()); }
-      catch (const std::exception& error) { result->Error("nativeError", error.what(), limits()); }
+      catch (const MethodError& error) { result->Error(error.code, error.what(), error_limits(call.arguments())); }
+      catch (const std::invalid_argument& error) { result->Error("invalidArgument", error.what(), error_limits(call.arguments())); }
+      catch (const std::exception& error) { result->Error("nativeError", error.what(), error_limits(call.arguments())); }
     });
   }
   ~RhwpD3dPlugin() override {
-    channel_->SetMethodCallHandler(nullptr);
-    for (auto& item : textures_) close(item.second);
+    ready_events_->stop();
+    messenger_.if_available([&] { channel_->SetMethodCallHandler(nullptr); });
+    for (auto& item : textures_.records()) close(item.second);
   }
  private:
   struct Record { std::shared_ptr<State> state; Registration* registration; };
+  struct ClosedReceipt { Value value; PublicationMode mode; bool close_ack; uint64_t generation; };
   flutter::PluginRegistrarWindows* registrar_;
   FlutterDesktopTextureRegistrarRef texture_registrar_;
+  MessengerLifetime messenger_;
   std::unique_ptr<flutter::MethodChannel<Value>> channel_;
-  std::map<int64_t, Record> textures_;
-  std::shared_ptr<State> last_closed_;
+  std::shared_ptr<ProducerReadyEvents> ready_events_;
+  CloseRecordRegistry<Record, ClosedReceipt> textures_;
+  struct TileGroup { rhwp::tiles::Identity identity; Value terminal; };
+  std::optional<TileGroup> group_;
+  std::set<int64_t> unexposed_creations_;
   void close(Record& record) {
     record.state->close();
     if (!record.registration) return;
     auto* cookie = record.registration; record.registration = nullptr;
     FlutterDesktopTextureRegistrarUnregisterExternalTexture(texture_registrar_, record.state->texture_id, [](void* value) {
       auto* cookie = static_cast<Registration*>(value);
+      // Finish our descriptor/creator bookkeeping before exposing retirement.
+      // The engine has already removed this registration at this point.
+      retire_surface_imports(cookie->state);
+      cookie->credit.reset();
       {
         std::lock_guard<std::mutex> lock(cookie->state->mutex);
         cookie->state->unregistered = true; cookie->state->registrar = nullptr;
       }
-      delete cookie;  // Callback userdata lifetime only, never a frame/GPU credit.
+      delete cookie;  // CPU registration/descriptor quiescence is not a GPU fence.
     }, cookie);
   }
   void prune() {
-    for (auto it = textures_.begin(); it != textures_.end();) {
-      bool done;
-      { std::lock_guard<std::mutex> lock(it->second.state->mutex); done = it->second.state->closed && it->second.state->unregistered && it->second.state->finished; }
-      if (done) { last_closed_ = it->second.state; it = textures_.erase(it); } else ++it;
+    // Old clients never negotiated retireAck. Preserve their existing automatic
+    // create-time retirement; new clients retain closing records until ack.
+    for (auto it = textures_.records().begin(); it != textures_.records().end();) {
+      const auto id = (it++)->first;
+      auto* item = record(uint64_t(id));
+      if (item && (!item->state->close_ack_required || unexposed_creations_.count(id))) {
+        if (retire(id, false)) unexposed_creations_.erase(id);
+      }
     }
   }
   Record* record(uint64_t id) {
-    auto found = textures_.find(int64_t(id)); return found == textures_.end() ? nullptr : &found->second;
+    return textures_.find(int64_t(id));
   }
-  Value invoke(const std::string& method, const Map& args) {
+  bool retire(int64_t id, bool acknowledged) {
+    return textures_.retire(id, [](const Record& record) {
+      std::lock_guard<std::mutex> lock(record.state->mutex);
+      return CloseCompletion{record.state->closed, record.state->finished, record.state->unregistered, record.state->in_flight}.ready();
+    }, [acknowledged](const Record& record) {
+      auto value = status(record.state);
+      std::get_if<Map>(&value)->emplace(Value("acknowledged"), Value(acknowledged));
+      return ClosedReceipt{std::move(value), record.state->publication_mode, record.state->close_ack_required, record.state->generation};
+    });
+  }
+  Value closed_status(const ClosedReceipt& receipt) {
+    auto value = receipt.value;
+    (*std::get_if<Map>(&value))[Value("limits")] = limits(receipt.mode, receipt.close_ack);
+    return value;
+  }
+  void check_generation(const Map& args, uint64_t generation, bool required) {
+    const auto found = args.find(Value("deviceGeneration"));
+    const bool present = found != args.end();
+    if (!close_generation_matches(generation, present ? integer(found->second) : 0, present, required)) {
+      throw MethodError(present ? "contextChanged" : "invalidArgument", "texture calls require the correct deviceGeneration");
+    }
+  }
+  Value error_limits(const Value* arguments) {
+    PublicationMode mode = PublicationMode::LegacyImmutable;
+    try {
+      const auto& args = map(arguments);
+      auto found = args.find(Value("textureId"));
+      if (found != args.end()) {
+        if (auto* item = record(integer(found->second))) return limits(item->state->publication_mode, item->state->close_ack_required);
+        else if (const auto* receipt = textures_.completed(int64_t(integer(found->second)))) return limits(receipt->mode, receipt->close_ack);
+      } else if (auto group = args.find(Value("groupId")); group != args.end()) {
+        const auto generation = args.find(Value("deviceGeneration"));
+        if (group_ && group_->identity.matches(integer(group->second)) &&
+            generation != args.end() && integer(generation->second) == group_->identity.generation) {
+          // Group calls carry no textureId/publicationMode. Derive retry policy
+          // from this exact retained owner, never the caller's requested mode.
+          const auto member = group_->identity.textures[0];
+          if (auto* item = record(member); item && item->state->generation == group_->identity.generation)
+            return limits(item->state->publication_mode, item->state->close_ack_required);
+          if (const auto* receipt = textures_.completed(int64_t(member)); receipt && receipt->generation == group_->identity.generation)
+            return limits(receipt->mode, receipt->close_ack);
+        }
+      } else mode = publication_mode(args);
+    } catch (...) { /* Invalid request metadata cannot choose a transfer mode. */ }
+    return limits(mode);
+  }
+  Value invoke(const std::string& method, const Map& args, uint64_t group_generation = 0) {
+    if (method == "capabilities") return Value(Map{{Value("tileGroups"), Value(true)},
+        {Value("maxTileGroupTiles"),Value(2)},{Value("maxTileGroupSnapshots"),Value(4)},
+        {Value("sharedSnapshotLeases"),Value(true)},{Value("consumerGpuCompletionVerified"),Value(false)},
+        {Value("cacheTrim"),Value(true)}});
+    if ((method=="trimCache" || method=="trimCacheStatus") && args.count(Value("groupId"))) {
+      if (!group_ || !group_->identity.matches(integer(args,"groupId")) ||
+          integer(args,"deviceGeneration") != group_->identity.generation ||
+          !std::holds_alternative<std::monostate>(group_->terminal))
+        throw MethodError("contextChanged","unknown, retired or stale trim group");
+      const auto generation=group_->identity.generation,request=integer(args,"requestId");
+      const auto target=method=="trimCache" && args.count(Value("targetBytes")) ? integer(args,"targetBytes") : 0;
+      rhwp::cache::TrimReceipt combined;combined.request=request;combined.target=target;combined.busy=false;
+      List members;
+      for (const auto id : group_->identity.textures) {
+        Map child{{Value("textureId"),unsigned_value(id)},{Value("deviceGeneration"),unsigned_value(generation)},
+            {Value("requestId"),unsigned_value(request)},{Value("targetBytes"),unsigned_value(target)}};
+        auto member=invoke(method,child);const auto& value=std::get<Map>(member);
+        combined.target=integer(value,"targetBytes");combined.before+=integer(value,"before");
+        combined.after+=integer(value,"after");combined.trimmed+=integer(value,"trimmed");
+        combined.pending=combined.pending||std::get<bool>(field(value,"pending"));
+        combined.busy=combined.busy||std::get<bool>(field(value,"busy"));members.push_back(std::move(member));
+      }
+      combined.reason=combined.pending?"queued":combined.busy?"memberBusy":"completed";
+      auto summary=std::get<Map>(trim_value(group_->identity.id(),generation,combined));
+      summary[Value("groupId")]=unsigned_value(group_->identity.id());summary[Value("members")]=Value(std::move(members));
+      return Value(std::move(summary));
+    }
+    if (method == "createGroup") {
+      prune();
+      if (group_ && std::holds_alternative<std::monostate>(group_->terminal))
+        throw MethodError("backpressure", "one two-tile group is already retained");
+      const auto generation = next_generation.fetch_add(1);
+      if (!generation) throw MethodError("backpressure", "tile group generation exhausted");
+      rhwp::tiles::Identity identity; identity.generation = generation;
+      List members; members.reserve(2);
+      try {
+        for (size_t index=0; index<2; ++index) {
+          auto created = invoke("create",args,generation);
+          identity.textures[index] = integer(std::get<Map>(created),"textureId");
+          members.push_back(std::move(created));
+        }
+      } catch (...) {
+        for (const auto id : identity.textures) if (id) {
+          auto* item=record(id); if (item) {unexposed_creations_.insert(int64_t(id));close(*item);}
+        }
+        throw;
+      }
+      group_=TileGroup{identity,Value()};
+      return Value(Map{{Value("groupId"),unsigned_value(identity.id())},{Value("deviceGeneration"),unsigned_value(generation)},
+          {Value("members"),Value(std::move(members))}});
+    }
+    if (method == "submitGroup" || method == "statusGroup" || method == "closeGroup" || method == "retireGroupAck") {
+      const auto id=integer(args,"groupId");
+      if (!group_ || !group_->identity.matches(id) || integer(args,"deviceGeneration")!=group_->identity.generation)
+        throw MethodError("contextChanged","unknown or stale tile group");
+      const auto identity=group_->identity;
+      if (!std::holds_alternative<std::monostate>(group_->terminal)) {
+        if (method=="submitGroup") throw MethodError("closed","tile group is closed");
+        return group_->terminal;
+      }
+      if (method=="submitGroup") {
+        const auto* tiles=std::get_if<List>(&field(args,"tiles"));
+        if (!tiles || tiles->size()!=2) throw MethodError("invalidArgument","two tile descriptions required");
+        std::array<std::shared_ptr<Job>,2> jobs;
+        std::array<std::shared_ptr<State>,2> states;
+        for(size_t index=0;index<2;++index) {
+          auto* item=record(identity.textures[index]);
+          if(!item) throw MethodError("closed","tile member no longer exists");
+          auto tile=map(&(*tiles)[index]);
+          if(integer(tile,"textureId")!=identity.textures[index]) throw MethodError("invalidArgument","tile member order/identity differs");
+          tile[Value("stamp")]=field(args,"stamp");tile[Value("clearColor")]=field(args,"clearColor");
+          states[index]=item->state;jobs[index]=parse_job(tile,item->state->publication_mode);
+          if(jobs[index]->stamp.device!=identity.generation) throw MethodError("contextChanged","tile stamp device differs");
+          std::shared_ptr<NativeApi> api;
+          {std::lock_guard<std::mutex> lock(item->state->mutex);api=item->state->api;}
+          if(!api || !api->current(jobs[index]->check_json)) throw MethodError("staleFrame","tile full stamp is not current");
+        }
+        const auto ids=rhwp::tiles::unique_snapshots({jobs[0]->ids,jobs[1]->ids});
+        List accepted;for(const auto snapshot:ids)accepted.emplace_back(unsigned_value(snapshot));
+        Map reply{{Value("accepted"),Value(true)},{Value("acceptedStamp"),Value(stamp_value(jobs[0]->stamp))},
+            {Value("acceptedSnapshots"),Value(std::move(accepted))},
+            {Value("limits"),limits(states[0]->publication_mode,true)}};
+        if(!State::accept_group(states[0],states[1],jobs[0],jobs[1]))
+          throw MethodError("staleFrame","tile group did not accept either member");
+        return Value(std::move(reply));
+      }
+      List members;members.reserve(2);
+      for(const auto member:identity.textures) {
+        Map child{{Value("textureId"),unsigned_value(member)},{Value("deviceGeneration"),unsigned_value(identity.generation)}};
+        members.push_back(invoke(method=="statusGroup"?"status":method=="closeGroup"?"close":"retireAck",child));
+      }
+      auto reply=Value(Map{{Value("groupId"),unsigned_value(identity.id())},{Value("deviceGeneration"),unsigned_value(identity.generation)},
+          {Value("members"),Value(std::move(members))}});
+      if(method=="retireGroupAck")group_->terminal=reply;
+      return reply;
+    }
     if (method == "create") {
       prune();
-      if (textures_.size() >= 2) throw MethodError("backpressure", "two GPU textures are already active or closing");
+      if (!textures_.can_create()) throw MethodError("backpressure", "two GPU textures are active or awaiting close acknowledgement");
+      const auto mode = publication_mode(args);
+      bool close_ack = false;
+      const auto request_ack = args.find(Value("closeAcknowledgementRequired"));
+      if (request_ack != args.end()) {
+        const auto* requested = std::get_if<bool>(&request_ack->second);
+        if (!requested) throw MethodError("invalidArgument", "closeAcknowledgementRequired must be a boolean");
+        close_ack = *requested;
+      }
       const auto* path = std::get_if<std::string>(&field(args, "libraryPath"));
       if (!path || path->empty() || path->size() > 32768 || !std::filesystem::u8path(*path).is_absolute())
         throw MethodError("invalidArgument", "libraryPath must be a bounded canonical absolute path");
@@ -202,31 +438,75 @@ class RhwpD3dPlugin final : public flutter::Plugin {
       ComPtr<IDXGIAdapter> adapter; ComPtr<IDXGIAdapter1> adapter1;
       if (!registrar_->GetGraphicsAdapter(&adapter) || !adapter || FAILED(adapter.As(&adapter1)))
         throw MethodError("notReady", "Flutter graphics adapter is unavailable; select CPU");
-      const auto generation = next_generation.fetch_add(1);
-      if (!generation) throw MethodError("backpressure", "device generation exhausted");
-      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit);
+      const auto import_owner = next_generation.fetch_add(1);
+      const auto generation = group_generation ? group_generation : import_owner;
+      if (!generation || !import_owner) throw MethodError("backpressure", "device generation exhausted");
+      auto state = std::make_shared<State>(generation, *path, adapter1, texture_registrar_, producer_credit, mode, close_ack, import_owner);
       auto cookie = std::make_unique<Registration>(Registration{state, registration_credit});
       FlutterDesktopTextureInfo info{}; info.type = kFlutterDesktopGpuSurfaceTexture;
       info.gpu_surface_config.struct_size = sizeof(FlutterDesktopGpuSurfaceTextureConfig);
       info.gpu_surface_config.type = kFlutterDesktopGpuSurfaceTypeDxgiSharedHandle;
       info.gpu_surface_config.callback = surface_callback; info.gpu_surface_config.user_data = cookie.get();
+      register_surface_imports(state);
       state->texture_id = FlutterDesktopTextureRegistrarRegisterExternalTexture(texture_registrar_, &info);
-      if (state->texture_id < 0) throw MethodError("notReady", "Flutter D3D11/DXGI texture registration failed");
+      if (state->texture_id < 0) {
+        retire_surface_imports(state);
+        throw MethodError("notReady", "Flutter D3D11/DXGI texture registration failed");
+      }
       Record inserted{state, cookie.release()};
       try {
-        textures_.emplace(state->texture_id, inserted);
+        if (ready_events_->available()) {
+          std::weak_ptr<ProducerReadyEvents> events = ready_events_;
+          const auto id = uint64_t(state->texture_id);
+          state->producer_ready = [events, id](uint64_t serial, const Stamp& stamp) {
+            if (auto ready = events.lock()) ready->offer({id, stamp.device, serial,
+                stamp.document, stamp.revision, stamp.font, stamp.view, stamp.scale});
+          };
+        }
+        if (!textures_.insert(state->texture_id, inserted))
+          throw MethodError("backpressure", "texture ID is retained by an unacknowledged owner");
         std::thread([state] { run_producer(state); }).detach();
-      } catch (...) { close(inserted); textures_.erase(state->texture_id); throw; }
+      } catch (...) {
+        close(inserted);
+        // A rejected reused ID still belongs to its previous unacknowledged
+        // record. Erase only a record that actually owns this new generation.
+        auto* rollback = record(uint64_t(state->texture_id));
+        if (rollback && rollback->state == state) textures_.erase_failed_creation(state->texture_id);
+        throw;
+      }
       return status(state);
     }
     const auto id = integer(args, "textureId");
     auto* item = record(id);
     if (!item) {
-      if (method == "status" && last_closed_ && last_closed_->texture_id == int64_t(id)) return status(last_closed_);
+      if (const auto* receipt = textures_.completed(int64_t(id))) {
+        check_generation(args, receipt->generation, receipt->close_ack);
+        if (method == "status" || method == "close" || (method == "retireAck" && receipt->close_ack)) return closed_status(*receipt);
+      }
       throw MethodError("invalidArgument", "unknown GPU texture ID");
+    }
+    check_generation(args, item->state->generation, item->state->close_ack_required);
+    if (method=="trimCache" || method=="trimCacheStatus") {
+      const auto generation=integer(args,"deviceGeneration"),request=integer(args,"requestId");
+      if (generation != item->state->generation) throw MethodError("contextChanged","cache trim owner generation changed");
+      const auto target=method=="trimCache" && args.count(Value("targetBytes")) ? integer(args,"targetBytes") : 0;
+      rhwp::cache::TrimReceipt receipt;
+      {
+        std::lock_guard<std::mutex> lock(item->state->mutex);
+        if (item->state->closed) throw MethodError("closing","GPU texture is closing");
+        if (!item->state->ready) throw MethodError("notReady","GPU producer is not ready");
+        receipt=method=="trimCacheStatus" ? item->state->cache_trim.poll(request) : item->state->cache_trim.enqueue(request,target);
+      }
+      if (method=="trimCache") item->state->changed.notify_one();
+      return trim_value(id,generation,receipt);
     }
     if (method == "status") return status(item->state);
     if (method == "close") { close(*item); return status(item->state); }
+    if (method == "retireAck") {
+      if (!item->state->close_ack_required) throw MethodError("unsupported", "close acknowledgement was not negotiated");
+      if (!retire(int64_t(id), true)) throw MethodError("retirePending", "producer and unregister completion are still pending");
+      return closed_status(*textures_.completed(int64_t(id)));
+    }
     if (method == "submit") {
       std::shared_ptr<NativeApi> api;
       {
@@ -235,12 +515,12 @@ class RhwpD3dPlugin final : public flutter::Plugin {
         if (!item->state->ready) throw MethodError("notReady", "GPU producer is not ready");
         api = item->state->api;
       }
-      auto job = parse_job(args);
+      auto job = parse_job(args, item->state->publication_mode);
       if (!api->current(job->check_json)) throw MethodError("staleFrame", "source/view/device stamp is stale");
       List ids; for (auto snapshot : job->ids) ids.emplace_back(unsigned_value(snapshot));
       Map receipt{{Value("accepted"), Value(true)}, {Value("acceptedSerial"), Value(int64_t(0))},
           {Value("acceptedStamp"), Value(stamp_value(job->stamp))}, {Value("acceptedSnapshots"), Value(ids)},
-          {Value("limits"), limits()}};
+          {Value("limits"), limits(item->state->publication_mode, item->state->close_ack_required)}};
       auto serial = receipt.find(Value("acceptedSerial"));
       if (!item->state->accept(job)) throw MethodError("staleFrame", "closed, superseded or invalid frame generation");
       // All response storage was allocated before ID ownership transferred.
@@ -261,5 +541,5 @@ void RhwpD3dPluginRegisterWithRegistrar(FlutterDesktopPluginRegistrarRef registr
   // The C registration entry owns the public raw registrar. The C++ wrapper's
   // registrar() accessor is protected and is not a plugin-facing API.
   auto* texture_registrar = FlutterDesktopRegistrarGetTextureRegistrar(registrar);
-  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper, texture_registrar));
+  wrapper->AddPlugin(std::make_unique<rhwp::d3d::RhwpD3dPlugin>(wrapper, texture_registrar, FlutterDesktopPluginRegistrarGetMessenger(registrar)));
 }

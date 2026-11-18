@@ -976,6 +976,8 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
                 pic.raw_picture_extra[4],
             ]);
         }
+        pic.effects.soft_edge_radius =
+            crate::model::image::picture_soft_edge_radius(&pic.raw_picture_extra);
         // 꼬리 중간의 그림 효과 정보 뒤에 원본 크기와 투명도가 온다.
         let layout = crate::model::image::picture_extra_layout(&pic.raw_picture_extra);
         if let Some(&alpha) = layout

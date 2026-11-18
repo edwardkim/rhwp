@@ -1,0 +1,21 @@
+{
+  "scope": "Actual pre-fix CLI tree, not separate Rust fixed-test execution",
+  "rows": [
+    {
+      "before_caption_body_x": 153.4,
+      "independent_pdf_css_x": 171.52,
+      "outside_2px": true
+    }
+  ],
+  "title_before_x": {
+    "차": 176.32,
+    "례": 218.29333333333335,
+    "상": 281.2266666666667
+  },
+  "independent_pdf_css_x": {
+    "차": 169.44,
+    "례": 211.36,
+    "상": 267.36
+  },
+  "all_title_origins_outside_2px": true
+}

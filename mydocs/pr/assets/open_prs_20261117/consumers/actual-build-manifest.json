@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "source_sha": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "profile": "Mac local locked wrapper --target web --out-dir pkg --no-opt; not Docker",
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539,
+      "paths": [
+        "/Users/tsjang/rhwp/pkg/rhwp.js",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg/rhwp.js"
+      ]
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "280057fd4e2257a45a3aa5911e81cae7b1cfb1a2d3d3026ae070736f8fc77796",
+      "bytes": 32200096,
+      "paths": [
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm",
+        "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/candidate-pkg/rhwp_bg.wasm"
+      ]
+    }
+  }
+}

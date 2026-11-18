@@ -1,0 +1,28 @@
+[
+  {
+    "key": "cover-bold",
+    "box": [
+      282,
+      926,
+      656,
+      944
+    ],
+    "changed_pixels": 2769,
+    "base_crop_rgb_mae": 3.682006411969009,
+    "head_crop_rgb_mae": 3.244990649211862,
+    "direct_reading": "독립 Print·devel·후보를 같은 좌표에서 3배 확대했다. 기관명의 글자 순서·위치·자간은 유지되고 차이는 굵은 글리프의 윤곽 래스터에 한정된다. 전체 raw 100%를 RGB 동일로 해석하지 않는다."
+  },
+  {
+    "key": "mixed",
+    "box": [
+      282,
+      926,
+      656,
+      944
+    ],
+    "changed_pixels": 2331,
+    "base_crop_rgb_mae": 3.682006411969009,
+    "head_crop_rgb_mae": 3.264026182206786,
+    "direct_reading": "독립 Print·devel·후보를 같은 좌표에서 3배 확대했다. 기관명의 글자 순서·위치·자간은 유지되고 차이는 굵은 글리프의 윤곽 래스터에 한정된다. 전체 raw 100%를 RGB 동일로 해석하지 않는다."
+  }
+]

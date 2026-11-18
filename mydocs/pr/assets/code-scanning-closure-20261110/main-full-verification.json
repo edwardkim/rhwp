@@ -1,0 +1,895 @@
+{
+  "at": "2026-11-10T10:12:51.823977+09:00",
+  "run": 42728536362,
+  "head": "7213ed1f96266b95e22cd5645a07851c9c18298e",
+  "analysis": {
+    "id": 2131629953,
+    "ref": "refs/heads/main",
+    "commit_sha": "7213ed1f96266b95e22cd5645a07851c9c18298e",
+    "analysis_key": ".github/workflows/codeql.yml:analyze",
+    "category": ".github/workflows/codeql.yml:analyze/language:rust",
+    "environment": "{\"language\":\"rust\"}",
+    "results_count": 137,
+    "rules_count": 26,
+    "tool": {
+      "name": "CodeQL",
+      "guid": null,
+      "version": "2.27.4"
+    },
+    "error": "",
+    "warning": ""
+  },
+  "baseline_analysis": 2124551567,
+  "results_before": 144,
+  "results_after": 137,
+  "qcms_invalid_pointer_before": 7,
+  "qcms_invalid_pointer_after": 0,
+  "full_init_confirmed": true,
+  "rules_unchanged": true,
+  "rule_ids": [
+    "rust/access-invalid-pointer",
+    "rust/cleartext-logging",
+    "rust/cleartext-storage-database",
+    "rust/cleartext-transmission",
+    "rust/command-line-injection",
+    "rust/disabled-certificate-check",
+    "rust/hard-coded-cryptographic-value",
+    "rust/insecure-cookie",
+    "rust/non-https-url",
+    "rust/path-injection",
+    "rust/regex-injection",
+    "rust/request-forgery",
+    "rust/sql-injection",
+    "rust/summary/lines-of-code",
+    "rust/summary/lines-of-user-code",
+    "rust/summary/nodes-at-type-path-length-limit",
+    "rust/summary/number-of-files-extracted-with-errors",
+    "rust/summary/number-of-successfully-extracted-files",
+    "rust/summary/query-sink-counts",
+    "rust/summary/reduced-summary-statistics",
+    "rust/summary/summary-statistics",
+    "rust/telemetry/extraction-information",
+    "rust/uncontrolled-allocation-size",
+    "rust/weak-cryptographic-algorithm",
+    "rust/weak-sensitive-data-hashing",
+    "rust/xss"
+  ],
+  "components_before": [
+    {
+      "name": "CodeQL",
+      "version": "2.27.4"
+    },
+    {
+      "name": "codeql/rust-queries",
+      "version": "0.1.46+1be292a1e54696ca543b4ad0f9b4537b9687caa7"
+    },
+    {
+      "name": "codeql/rust-all",
+      "version": "0.2.25+1be292a1e54696ca543b4ad0f9b4537b9687caa7"
+    },
+    {
+      "name": "codeql/threat-models",
+      "version": "1.1.1+1be292a1e54696ca543b4ad0f9b4537b9687caa7"
+    }
+  ],
+  "components_after": [
+    {
+      "name": "CodeQL",
+      "version": "2.27.4"
+    },
+    {
+      "name": "codeql/rust-queries",
+      "version": "0.1.46+1be292a1e54696ca543b4ad0f9b4537b9687caa7"
+    },
+    {
+      "name": "codeql/rust-all",
+      "version": "0.2.25+1be292a1e54696ca543b4ad0f9b4537b9687caa7"
+    },
+    {
+      "name": "codeql/threat-models",
+      "version": "1.1.1+1be292a1e54696ca543b4ad0f9b4537b9687caa7"
+    }
+  ],
+  "ref_states": {
+    "597": {
+      "overall_state": "fixed",
+      "rule": "rust/cleartext-logging",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    },
+    "616": {
+      "overall_state": "fixed",
+      "rule": "rust/access-invalid-pointer",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    },
+    "617": {
+      "overall_state": "fixed",
+      "rule": "rust/access-invalid-pointer",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    },
+    "618": {
+      "overall_state": "fixed",
+      "rule": "rust/access-invalid-pointer",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    },
+    "619": {
+      "overall_state": "fixed",
+      "rule": "rust/access-invalid-pointer",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    },
+    "620": {
+      "overall_state": "fixed",
+      "rule": "rust/access-invalid-pointer",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    },
+    "621": {
+      "overall_state": "fixed",
+      "rule": "rust/access-invalid-pointer",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    },
+    "622": {
+      "overall_state": "fixed",
+      "rule": "rust/access-invalid-pointer",
+      "main_instances": [
+        {
+          "ref": "refs/heads/main",
+          "state": "fixed",
+          "analysis_key": ".github/workflows/codeql.yml:analyze",
+          "category": ".github/workflows/codeql.yml:analyze/language:rust",
+          "environment": "{\"language\":\"rust\"}"
+        }
+      ]
+    }
+  },
+  "remaining_numeric_alert": 623,
+  "remaining_pdf_flows": [
+    [
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 28,
+          "endLine": 158,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 28,
+          "endLine": 158,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "TryExpr"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 49,
+          "endLine": 158,
+          "startColumn": 38,
+          "startLine": 158
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 37,
+          "endLine": 160,
+          "startColumn": 33,
+          "startLine": 160
+        },
+        "message": "page"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 55,
+          "endLine": 17335,
+          "startColumn": 38,
+          "startLine": 17335
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 63,
+          "endLine": 17337,
+          "startColumn": 53,
+          "startLine": 17337
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 52,
+          "endLine": 18548,
+          "startColumn": 35,
+          "startLine": 18548
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 54,
+          "endLine": 18552,
+          "startColumn": 44,
+          "startLine": 18552
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 18661,
+          "startColumn": 13,
+          "startLine": 18659
+        },
+        "message": "MacroExpr"
+      }
+    ],
+    [
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 10,
+          "endLine": 230,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 10,
+          "endLine": 230,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "TryExpr"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 20,
+          "endLine": 231,
+          "startColumn": 9,
+          "startLine": 231
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 29,
+          "endLine": 246,
+          "startColumn": 25,
+          "startLine": 246
+        },
+        "message": "page"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 16621,
+          "startColumn": 9,
+          "startLine": 16621
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 49,
+          "endLine": 16637,
+          "startColumn": 39,
+          "startLine": 16637
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 6158,
+          "startColumn": 9,
+          "startLine": 6158
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 60,
+          "endLine": 6218,
+          "startColumn": 50,
+          "startLine": 6218
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 58,
+          "endLine": 18495,
+          "startColumn": 41,
+          "startLine": 18495
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 55,
+          "endLine": 18496,
+          "startColumn": 45,
+          "startLine": 18496
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 52,
+          "endLine": 18548,
+          "startColumn": 35,
+          "startLine": 18548
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 54,
+          "endLine": 18552,
+          "startColumn": 44,
+          "startLine": 18552
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 18661,
+          "startColumn": 13,
+          "startLine": 18659
+        },
+        "message": "MacroExpr"
+      }
+    ],
+    [
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 22,
+          "endLine": 337,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 22,
+          "endLine": 337,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "TryExpr"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 43,
+          "endLine": 337,
+          "startColumn": 32,
+          "startLine": 337
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 31,
+          "endLine": 340,
+          "startColumn": 27,
+          "startLine": 340
+        },
+        "message": "page"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 49,
+          "endLine": 7692,
+          "startColumn": 32,
+          "startLine": 7692
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 48,
+          "endLine": 7693,
+          "startColumn": 38,
+          "startLine": 7693
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 56,
+          "endLine": 7725,
+          "startColumn": 39,
+          "startLine": 7725
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 50,
+          "endLine": 7732,
+          "startColumn": 40,
+          "startLine": 7732
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 50,
+          "endLine": 12736,
+          "startColumn": 33,
+          "startLine": 12736
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 86,
+          "endLine": 12740,
+          "startColumn": 76,
+          "startLine": 12740
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 54,
+          "endLine": 12743,
+          "startColumn": 44,
+          "startLine": 12743
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 50,
+          "endLine": 16436,
+          "startColumn": 33,
+          "startLine": 16436
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 16438,
+          "startColumn": 13,
+          "startLine": 16438
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 16450,
+          "startColumn": 9,
+          "startLine": 16450
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 43,
+          "endLine": 16453,
+          "startColumn": 33,
+          "startLine": 16453
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 16473,
+          "startColumn": 9,
+          "startLine": 16473
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 16480,
+          "startColumn": 13,
+          "startLine": 16480
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 16491,
+          "startColumn": 9,
+          "startLine": 16491
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 69,
+          "endLine": 16514,
+          "startColumn": 59,
+          "startLine": 16514
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 52,
+          "endLine": 18548,
+          "startColumn": 35,
+          "startLine": 18548
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 54,
+          "endLine": 18552,
+          "startColumn": 44,
+          "startLine": 18552
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 18661,
+          "startColumn": 13,
+          "startLine": 18659
+        },
+        "message": "MacroExpr"
+      }
+    ],
+    [
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 21,
+          "endLine": 347,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 21,
+          "endLine": 347,
+          "startColumn": 6,
+          "startLine": 58
+        },
+        "message": "TryExpr"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 42,
+          "endLine": 347,
+          "startColumn": 31,
+          "startLine": 347
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 31,
+          "endLine": 348,
+          "startColumn": 27,
+          "startLine": 348
+        },
+        "message": "page"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 43,
+          "endLine": 337,
+          "startColumn": 32,
+          "startLine": 337
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+        "region": {
+          "endColumn": 31,
+          "endLine": 340,
+          "startColumn": 27,
+          "startLine": 340
+        },
+        "message": "page"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 49,
+          "endLine": 7692,
+          "startColumn": 32,
+          "startLine": 7692
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 48,
+          "endLine": 7693,
+          "startColumn": 38,
+          "startLine": 7693
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 56,
+          "endLine": 7725,
+          "startColumn": 39,
+          "startLine": 7725
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 50,
+          "endLine": 7732,
+          "startColumn": 40,
+          "startLine": 7732
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 50,
+          "endLine": 12736,
+          "startColumn": 33,
+          "startLine": 12736
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 86,
+          "endLine": 12740,
+          "startColumn": 76,
+          "startLine": 12740
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 54,
+          "endLine": 12743,
+          "startColumn": 44,
+          "startLine": 12743
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 50,
+          "endLine": 16436,
+          "startColumn": 33,
+          "startLine": 16436
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 16438,
+          "startColumn": 13,
+          "startLine": 16438
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 16450,
+          "startColumn": 9,
+          "startLine": 16450
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 43,
+          "endLine": 16453,
+          "startColumn": 33,
+          "startLine": 16453
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 16473,
+          "startColumn": 9,
+          "startLine": 16473
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 16480,
+          "startColumn": 13,
+          "startLine": 16480
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 26,
+          "endLine": 16491,
+          "startColumn": 9,
+          "startLine": 16491
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 69,
+          "endLine": 16514,
+          "startColumn": 59,
+          "startLine": 16514
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 52,
+          "endLine": 18548,
+          "startColumn": 35,
+          "startLine": 18548
+        },
+        "message": "...: usize"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 54,
+          "endLine": 18552,
+          "startColumn": 44,
+          "startLine": 18552
+        },
+        "message": "page_index"
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "region": {
+          "endColumn": 23,
+          "endLine": 18661,
+          "startColumn": 13,
+          "startLine": 18659
+        },
+        "message": "MacroExpr"
+      }
+    ]
+  ],
+  "flow_topology_matches_devel": true,
+  "classification_not_yet_changed": true,
+  "main_open_before_classification": [
+    623
+  ]
+}

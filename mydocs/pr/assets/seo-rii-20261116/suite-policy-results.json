@@ -1,0 +1,22 @@
+[
+  {
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "443dafb08107152e066689544e88d90988339567"
+    ],
+    "exitCode": 0
+  },
+  {
+    "command": [
+      "node",
+      "scripts/rust-unit-test-tiers.mjs",
+      "--check",
+      "--base-ref",
+      "443dafb08107152e066689544e88d90988339567"
+    ],
+    "exitCode": 0
+  }
+]

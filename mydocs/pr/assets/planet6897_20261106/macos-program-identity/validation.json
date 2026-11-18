@@ -1,0 +1,232 @@
+{
+  "parent_head": "1b159d1f855c82a28de8b909b6f15a9b1d65c7b7",
+  "native_producer": {
+    "head": "1b159d1f855c82a28de8b909b6f15a9b1d65c7b7",
+    "diff_sha256": "84b54df023ec6d67047b8e485d510c6c71369aecd8c1a59a12c81adc5e151174",
+    "binary_sha256": "8b3cbc3f5f43b1ee6f7c68af2913d0dd98a7e43b6cd525970cbb303b6fb80b56",
+    "sources": {
+      "src/renderer/skia/mod.rs": "f23d83815e8e36f62a2df68efa78df9edd4346ea1c584a7625a684fe3a809c02",
+      "src/renderer/skia/native_pua_fonts.rs": "90bc56aa9bb097859e992aa71eef413b443ab6b7ebeb6f7141f343a7d91be101",
+      "src/renderer/skia/font_program.rs": "4dc563e8a24108badeb8a35087b132b66375bf0851c37b8485a5b314ffdf0df7"
+    },
+    "build_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/native-after-build.log"
+  },
+  "native": {
+    "page_count": 209,
+    "passed_protected_comparison": false,
+    "declines": [
+      {
+        "key": "nested",
+        "page": 3,
+        "protected": "99.76",
+        "candidate": "99.75",
+        "passed": false
+      }
+    ],
+    "documents": [
+      {
+        "key": "nested",
+        "pages": 17,
+        "minimum": 96.04
+      },
+      {
+        "key": "sample16-hwp2022",
+        "pages": 64,
+        "minimum": 100.0
+      },
+      {
+        "key": "sample16-hwp2024",
+        "pages": 64,
+        "minimum": 99.99
+      },
+      {
+        "key": "sample16-hwpx",
+        "pages": 64,
+        "minimum": 99.99
+      }
+    ]
+  },
+  "macos_focused": {
+    "executed": 28,
+    "passed": 28,
+    "failed": 0,
+    "filtered_out": 1282
+  },
+  "macos_clippy": {
+    "exit_code": 0
+  },
+  "format_and_manifest": "passed",
+  "fresh_wasm_build": {
+    "state": "complete",
+    "pid": 67397,
+    "source": "1b159d1f855c82a28de8b909b6f15a9b1d65c7b7",
+    "source_diff_sha256": "9622873d3d624efdce475d7c89ee6cf89529c64e5561d2e5c489da6286f87d28",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "build_kind": "Mac locked wrapper --no-opt local alternative; not Docker optimized",
+    "started_at": "2026-11-08T21:57:38.050848+09:00",
+    "child_pid": 67409,
+    "exit_code": 0,
+    "elapsed_seconds": 326.6388809680939,
+    "package_sha256": {
+      "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+      "rhwp_bg.wasm": "2a4fe0b94c51217088cc4e71a9e0de0e0435ea82bed849641c9382978c573faa"
+    },
+    "studio_public_sha256": {
+      "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+      "rhwp_bg.wasm": "2a4fe0b94c51217088cc4e71a9e0de0e0435ea82bed849641c9382978c573faa"
+    }
+  },
+  "browser_initialization_http": {
+    "state": "complete",
+    "receipts": [
+      {
+        "pid": 98438,
+        "server": "http://127.0.0.1:51969",
+        "command": [
+          "node",
+          "/Users/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs",
+          "--pkg",
+          "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/fresh-wasm-pkg",
+          "--input",
+          "/Users/tsjang/rhwp/samples/hwp3-sample16-hwp5.hwpx",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/priority-full-wasm/sample16-hwpx/sample16-hwpx/silhouette-parts/p0002-0064",
+          "--fonts",
+          "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/priority-full-wasm/sample16-hwpx/sample16-hwpx/silhouette-parts/p0002-0064/font-catalog.json",
+          "--options",
+          "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/priority-full-wasm/sample16-hwpx/sample16-hwpx/silhouette-parts/p0002-0064/canvas-options.json"
+        ],
+        "at": "2026-11-08T22:04:47.273318+09:00",
+        "responses": {
+          "rhwp.js": {
+            "http_status": 200,
+            "sha256": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+            "bytes": 570533
+          },
+          "rhwp_bg.wasm": {
+            "http_status": 200,
+            "sha256": "2a4fe0b94c51217088cc4e71a9e0de0e0435ea82bed849641c9382978c573faa",
+            "bytes": 31141611
+          }
+        },
+        "matches_fresh_package": true
+      }
+    ]
+  },
+  "windows": {
+    "state": "complete",
+    "executed": 27,
+    "passed": 27,
+    "failed": 0,
+    "shell": "SSH / PowerShell",
+    "os": "Windows 10 Pro 10.0.19045",
+    "review_head": "1b159d1f855c82a28de8b909b6f15a9b1d65c7b7",
+    "sources": {
+      "src/renderer/skia/native_pua_fonts.rs": "90bc56aa9bb097859e992aa71eef413b443ab6b7ebeb6f7141f343a7d91be101",
+      "tests/cases/security_svg_font_boundary.rs": "d69400e458a75a2d3b91833a14c681f93814d842dd79a54c9d04ab83a2f2d7f5",
+      "tests/cases/native_fractional_glyph_origin.rs": "982a3439626e58d933bd4349281c14026b22d496d76170d6785565702a5f29a3",
+      "tests/cases/hft_outline_font_contract.rs": "a54d9e118a148b31cef6ffdfefeffc6396f75faa41a2bea1e825e84bc608c60f",
+      "src/renderer/skia/font_program.rs": "4dc563e8a24108badeb8a35087b132b66375bf0851c37b8485a5b314ffdf0df7",
+      "tests/cases/native_system_font_family_ownership.rs": "cacd61c318f6f1dc4b939618726b786577ae5a846d3fdd03b534e508bd8c0577",
+      "src/renderer/skia/mod.rs": "f23d83815e8e36f62a2df68efa78df9edd4346ea1c584a7625a684fe3a809c02"
+    },
+    "primary_branch": "devel",
+    "primary_head": "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3",
+    "primary_dirty": [],
+    "worktree_retained": true,
+    "pdb_warning": "lib cdylib and bin rhwp share rhwp.pdb; tests all passed"
+  },
+  "acceptance": "pending-native-protected-page3-and-wasm-sample16-images",
+  "evidence": {
+    "native-nested-p008-review.png": "d01f7d7f4abad1f769ed2d7c993956649d504571c83a2260102039df7a754920",
+    "native-nested-p008-overlay.png": "92500402c819f45e0f6c2423272b7416cd69b5399f4077100e4d3c11c25b235d"
+  },
+  "fresh_wasm_visual": {
+    "page_count": 209,
+    "baselines": {
+      "nested": {
+        "path": "mydocs/pr/assets/issue_8371/regression/nested-wasm.tsv",
+        "sha256": "7958b7064ec7b2c9193d54f5b151008c6eb036276ed90b0e4f60c7b68f0b7a48"
+      },
+      "sample16-hwp2022": {
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwp2022-wasm.tsv",
+        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+      },
+      "sample16-hwp2024": {
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwp2024-wasm.tsv",
+        "sha256": "b63dc2408d611890f7d966e88f036d930fb514dcaf3e7d82e017d10da28b0ffa"
+      },
+      "sample16-hwpx": {
+        "path": "mydocs/pr/assets/issue_8153/final-50cdf-validation-20261030/sample16-hwpx-wasm.tsv",
+        "sha256": "b63dc2408d611890f7d966e88f036d930fb514dcaf3e7d82e017d10da28b0ffa"
+      }
+    },
+    "declines": [
+      {
+        "key": "nested",
+        "page": 3,
+        "protected": "99.75",
+        "candidate": "99.73",
+        "passed": false
+      },
+      {
+        "key": "nested",
+        "page": 8,
+        "protected": "99.50",
+        "candidate": "98.71",
+        "passed": false
+      },
+      {
+        "key": "nested",
+        "page": 11,
+        "protected": "98.79",
+        "candidate": "98.73",
+        "passed": false
+      },
+      {
+        "key": "nested",
+        "page": 17,
+        "protected": "98.46",
+        "candidate": "96.10",
+        "passed": false
+      },
+      {
+        "key": "sample16-hwp2024",
+        "page": 18,
+        "protected": "99.99",
+        "candidate": "87.45",
+        "passed": false
+      },
+      {
+        "key": "sample16-hwp2024",
+        "page": 35,
+        "protected": "100.00",
+        "candidate": "93.60",
+        "passed": false
+      },
+      {
+        "key": "sample16-hwpx",
+        "page": 18,
+        "protected": "99.99",
+        "candidate": "87.45",
+        "passed": false
+      },
+      {
+        "key": "sample16-hwpx",
+        "page": 35,
+        "protected": "100.00",
+        "candidate": "93.60",
+        "passed": false
+      }
+    ],
+    "passed_protected_comparison": false,
+    "nested_failed_cache_input_repaired_without_changing_fonts": true
+  }
+}

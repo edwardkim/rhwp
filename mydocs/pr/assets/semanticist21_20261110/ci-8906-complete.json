@@ -1,0 +1,589 @@
+{
+  "pre_merge_verification": {
+    "baseRefOid": "411d4a91fd692f88fdeebd6b323eca0b295318b1",
+    "headRefOid": "8beab3f5677d985f07866ffbc61fde2fca6b7cfe",
+    "isDraft": false,
+    "mergeStateStatus": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "number": 8906,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:24:55Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790508941/job/129742472687",
+        "name": "cancel-stale-runs",
+        "startedAt": "2026-11-10T09:25:03Z",
+        "status": "COMPLETED",
+        "workflowName": "Cancel stale PR runs"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:06Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512548/job/129742422913",
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "startedAt": "2026-11-10T09:24:59Z",
+        "status": "COMPLETED",
+        "workflowName": "Adapter inter-diff"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:07Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742428383",
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "startedAt": "2026-11-10T09:25:00Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:15Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790508917/job/129742415099",
+        "name": "Evaluate trusted CI impact policy",
+        "startedAt": "2026-11-10T09:24:58Z",
+        "status": "COMPLETED",
+        "workflowName": "CI Impact Policy Controller"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:06Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512760/job/129742427100",
+        "name": "cancel-stale-runs",
+        "startedAt": "2026-11-10T09:24:59Z",
+        "status": "COMPLETED",
+        "workflowName": "Cancel stale PR runs"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:05Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512527/job/129742422798",
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "startedAt": "2026-11-10T09:24:59Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:04Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512536/job/129742422595",
+        "name": "trusted_postmerge_reuse / Verify trusted post-merge reuse",
+        "startedAt": "2026-11-10T09:24:59Z",
+        "status": "COMPLETED",
+        "workflowName": "Proptest roundtrip"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:22Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512513/job/129742480452",
+        "name": "Render Diff preflight",
+        "startedAt": "2026-11-10T09:25:06Z",
+        "status": "COMPLETED",
+        "workflowName": "Render Diff"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:24:57Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742430070",
+        "name": "WASM Build",
+        "startedAt": "2026-11-10T09:24:57Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:13Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512548/job/129742499152",
+        "name": "adapter inter-diff preflight",
+        "startedAt": "2026-11-10T09:25:08Z",
+        "status": "COMPLETED",
+        "workflowName": "Adapter inter-diff"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:17Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512527/job/129742490982",
+        "name": "CodeQL preflight",
+        "startedAt": "2026-11-10T09:25:07Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:12Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512536/job/129742488016",
+        "name": "Proptest preflight",
+        "startedAt": "2026-11-10T09:25:07Z",
+        "status": "COMPLETED",
+        "workflowName": "Proptest roundtrip"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:55:35Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512513/job/129742630014",
+        "name": "Canvas visual diff",
+        "startedAt": "2026-11-10T09:25:25Z",
+        "status": "COMPLETED",
+        "workflowName": "Render Diff"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:34:07Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512548/job/129742557592",
+        "name": "adapter inter-diff",
+        "startedAt": "2026-11-10T09:25:16Z",
+        "status": "COMPLETED",
+        "workflowName": "Adapter inter-diff"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:20Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742508543",
+        "name": "CI preflight",
+        "startedAt": "2026-11-10T09:25:10Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:34:51Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512527/job/129742592470",
+        "name": "Analyze (javascript-typescript)",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:33:43Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512536/job/129742547966",
+        "name": "prop roundtrip",
+        "startedAt": "2026-11-10T09:25:15Z",
+        "status": "COMPLETED",
+        "workflowName": "Proptest roundtrip"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:31:20Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512527/job/129742592536",
+        "name": "Analyze (python)",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:48:39Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512527/job/129742592580",
+        "name": "Analyze (rust)",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:30:09Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512527/job/129742592553",
+        "name": "Analyze (actions)",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CodeQL"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:20Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742615593",
+        "name": "release-operations-contracts",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:20Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742615485",
+        "name": "native-host-package",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:27Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742612925",
+        "name": "Resolve nextest target duration policy",
+        "startedAt": "2026-11-10T09:25:23Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:40:21Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742613135",
+        "name": "build-test-archive-a / Build test archive (a)",
+        "startedAt": "2026-11-10T09:25:23Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:42:44Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742612945",
+        "name": "Lint (fmt, clippy, WASM check)",
+        "startedAt": "2026-11-10T09:25:23Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:54:33Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742612987",
+        "name": "Native Skia tests",
+        "startedAt": "2026-11-10T09:25:22Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:20Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742615052",
+        "name": "Frontend unit gates",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:41:07Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742613026",
+        "name": "Frontend package gates",
+        "startedAt": "2026-11-10T09:25:22Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:25:20Z",
+        "conclusion": "SKIPPED",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742615633",
+        "name": "Workflow promotion preflight",
+        "startedAt": "2026-11-10T09:25:20Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:43:14Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742667628",
+        "name": "build-test-archive-b / Build test archive (b)",
+        "startedAt": "2026-11-10T09:25:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:45:22Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742667698",
+        "name": "build-test-archive-c / Build test archive (c)",
+        "startedAt": "2026-11-10T09:25:30Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:43:40Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742667591",
+        "name": "build-test-archive-d / Build test archive (d)",
+        "startedAt": "2026-11-10T09:25:30Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:41:12Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129742667724",
+        "name": "build-test-archive-e / Build test archive (e)",
+        "startedAt": "2026-11-10T09:25:29Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:45:36Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129749755892",
+        "name": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+        "startedAt": "2026-11-10T09:40:24Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:52:33Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129751126998",
+        "name": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+        "startedAt": "2026-11-10T09:43:17Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:52:34Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129752127722",
+        "name": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+        "startedAt": "2026-11-10T09:45:32Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:52:13Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129751327925",
+        "name": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+        "startedAt": "2026-11-10T09:43:55Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:48:51Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129750176775",
+        "name": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+        "startedAt": "2026-11-10T09:41:15Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:54:42Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/actions/runs/42790512773/job/129756496830",
+        "name": "Build & Test",
+        "startedAt": "2026-11-10T09:54:36Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "StatusContext",
+        "context": "CI Impact Policy",
+        "startedAt": "2026-11-10T09:55:57Z",
+        "state": "SUCCESS",
+        "targetUrl": "https://github.com/edwardkim/rhwp/actions/runs/42794781760"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-11-10T09:30:04Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/edwardkim/rhwp/runs/129744813676",
+        "name": "CodeQL",
+        "startedAt": "2026-11-10T09:30:00Z",
+        "status": "COMPLETED",
+        "workflowName": ""
+      }
+    ],
+    "url": "https://github.com/edwardkim/rhwp/pull/8906",
+    "verified_at": "2026-11-10T18:56:54.851114+09:00",
+    "archive_summaries": [
+      {
+        "job": "test-archive-a-shard-1 / Default-feature tests (Archive A)",
+        "id": 129749755892,
+        "conclusion": "success",
+        "summaries": [
+          "2026-11-10T09:45:33.8847609Z      Summary [  49.398s] 3796 tests run: 3796 passed, 12 skipped"
+        ]
+      },
+      {
+        "job": "test-archive-e-shard-1 / Default-feature tests (Archive E)",
+        "id": 129750176775,
+        "conclusion": "success",
+        "summaries": [
+          "2026-11-10T09:48:46.2552539Z      Summary [ 172.620s] 2467 tests run: 2467 passed, 7 skipped"
+        ]
+      },
+      {
+        "job": "test-archive-b-shard-1 / Default-feature tests (Archive B)",
+        "id": 129751126998,
+        "conclusion": "success",
+        "summaries": [
+          "2026-11-10T09:52:27.0709528Z      Summary [ 246.281s] 1987 tests run: 1987 passed (1 slow), 13 skipped"
+        ]
+      },
+      {
+        "job": "test-archive-d-shard-1 / Default-feature tests (Archive D)",
+        "id": 129751327925,
+        "conclusion": "success",
+        "summaries": [
+          "2026-11-10T09:52:06.9573759Z      Summary [ 339.454s] 2148 tests run: 2148 passed, 5 skipped"
+        ]
+      },
+      {
+        "job": "test-archive-c-shard-1 / Default-feature tests (Archive C)",
+        "id": 129752127722,
+        "conclusion": "success",
+        "summaries": [
+          "2026-11-10T09:52:30.0877015Z      Summary [ 154.254s] 2600 tests run: 2600 passed, 8 skipped"
+        ]
+      }
+    ],
+    "local_timezone_verification": {
+      "failed_pr_head": "5dd73f65d7215f4cb5ab0ab863458bc4557dd56b",
+      "corrected_test_head": "8beab3f5677d985f07866ffbc61fde2fca6b7cfe",
+      "failed_ci_job": "https://github.com/edwardkim/rhwp/actions/runs/42785982420/job/129736312467",
+      "origin_pr": 8269,
+      "origin_merge": "ccc2453261f777a1c12662d8d5ff6dafda174071",
+      "origin_time_contract_commit": "cbd4508f5a2d5d5b3ff0a65ea6fef84ff5bdf244",
+      "cause": "KST 저장 HWPX의 리터럴 Z 날짜와 FILETIME에서 현지 시각으로 변환한 HWP 날짜를 같은 UTC 문자열로 가정한 통합 검사 오류",
+      "correction": "제품 변경 없이 같은 입력·저장 형식의 무편집 대조군과 날짜를 포함한 메모 조회 전체를 비교; 바탕쪽 변경 직후 전체 메모 보존도 검사",
+      "minimum_font_before_utc": {
+        "run": 2,
+        "passed": 1,
+        "failed": 1
+      },
+      "minimum_font_after": [
+        {
+          "timezone": "UTC",
+          "run": 27,
+          "passed": 27,
+          "failed": 0,
+          "exit_code": 0
+        },
+        {
+          "timezone": "Asia/Seoul",
+          "run": 27,
+          "passed": 27,
+          "failed": 0,
+          "exit_code": 0
+        }
+      ],
+      "changed_files": [
+        "tests/cases/master_page_memo_section_slots.rs"
+      ],
+      "runtime_changes": false,
+      "fmt": true,
+      "suite_manifest": true,
+      "unit_tiers": true,
+      "diff_check": true,
+      "logs": {
+        "memo-timezone-before-utc.log": {
+          "sha256": "12f961164373ac4269287c4656d663db7b511662ecf5873d7848ba5f4fa61572",
+          "bytes": 5752,
+          "location": "ignored output; 종료 정리 대상, 로그 자체는 Git에 제출하지 않음"
+        },
+        "memo-timezone-final-UTC.log": {
+          "sha256": "1f3c51a54f22dff747e5352d3485cd4a14b6b51c1b928140b4b9cddb9a215aa7",
+          "bytes": 4900,
+          "location": "ignored output; 종료 정리 대상, 로그 자체는 Git에 제출하지 않음"
+        },
+        "memo-timezone-final-Asia-Seoul.log": {
+          "sha256": "3ad686f79f79d59aca53073a0d8d78a123c3f579a299226d5f8344485300062a",
+          "bytes": 4860,
+          "location": "ignored output; 종료 정리 대상, 로그 자체는 Git에 제출하지 않음"
+        }
+      }
+    }
+  },
+  "merge": {
+    "headRefOid": "8beab3f5677d985f07866ffbc61fde2fca6b7cfe",
+    "mergeCommit": {
+      "oid": "d7873c65bd5b5f3c55b842ee462afe8fcce51861"
+    },
+    "mergedAt": "2026-11-10T09:56:59Z",
+    "state": "MERGED",
+    "url": "https://github.com/edwardkim/rhwp/pull/8906"
+  },
+  "duration": {
+    "run": "https://github.com/edwardkim/rhwp/actions/runs/42794973755",
+    "conclusion": "success",
+    "refreshed_targets": 44,
+    "collection": {
+      "ready": true,
+      "reason": "successful-pr-worker-measurements",
+      "pullNumber": 8906,
+      "finalHeadRunId": 42790512773,
+      "finalHeadRunAttempt": 1,
+      "finalHeadSha": "8beab3f5677d985f07866ffbc61fde2fca6b7cfe",
+      "reviewOnlyTail": false,
+      "sourceRunId": 42790512773,
+      "latestRunAttempt": 1,
+      "measurementAttempts": {
+        "b": 1,
+        "c": 1,
+        "d": 1,
+        "e": 1
+      },
+      "testedMergeSha": "1cab88572c0509c4eb671217776c9242f6774e31",
+      "sourceHeadSha": "8beab3f5677d985f07866ffbc61fde2fca6b7cfe",
+      "artifactIds": [
+        13753452349,
+        13753546377,
+        13753092872,
+        13751797673
+      ]
+    },
+    "publication": {
+      "published": true,
+      "reason": "published",
+      "previousSha": "a24a89464c33dba74366876c3d625fb95b365bb1",
+      "commitSha": "672ddde74c962fc00cb35abb4116f15e003305d7",
+      "blobSha": "e5e9a64f0f37a3cebd443e4a2cd8aa0ca6e10b2d",
+      "sourceMergeSha": "d7873c65bd5b5f3c55b842ee462afe8fcce51861"
+    }
+  },
+  "followup_route": "옵션 2: 원 PR CI workflow 변경으로 별도 문서 PR에서 기록; 원 PR에 문서 trailing commit을 추가하지 않음",
+  "tested_merge": {
+    "sha": "1cab88572c0509c4eb671217776c9242f6774e31",
+    "parents": [
+      "0f91d29ca81f00be3d5adb91857875b40ec5e355",
+      "8beab3f5677d985f07866ffbc61fde2fca6b7cfe"
+    ],
+    "actual_merge_parent": "c1b2962b20636befc9cc3eb95088edc9a9031149",
+    "base_changes_after_tested_merge": [
+      "mydocs/orders/20261110.md",
+      "mydocs/pr/archives/pr_8869_review.md",
+      "mydocs/pr/archives/pr_8870_review.md",
+      "mydocs/pr/archives/pr_8871_review.md",
+      "mydocs/pr/archives/pr_8872_review.md",
+      "mydocs/pr/archives/pr_8873_review.md",
+      "mydocs/pr/archives/pr_8874_review.md",
+      "mydocs/pr/archives/seo_rii_20261110_review_impl.md",
+      "mydocs/pr/assets/seo-rii-20261110/README.md",
+      "mydocs/pr/assets/seo-rii-20261110/remote-action-plan.md"
+    ],
+    "base_runtime_delta_after_tested_merge": false
+  }
+}

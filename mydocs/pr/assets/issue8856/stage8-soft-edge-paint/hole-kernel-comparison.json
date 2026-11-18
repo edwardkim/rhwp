@@ -1,0 +1,10 @@
+[
+  {
+    "model": "square",
+    "different_mask_bits_in_hole_corner_62500": 537
+  },
+  {
+    "model": "disk",
+    "different_mask_bits_in_hole_corner_62500": 1281
+  }
+]

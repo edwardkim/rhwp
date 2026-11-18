@@ -362,6 +362,9 @@ pub(crate) fn parse_char_shape_mods(json: &str) -> crate::model::style::CharShap
     if let Some(v) = json_u16(json, "fontId") {
         mods.font_id = Some(v);
     }
+    if let Some(v) = json_str(json, "fontName") {
+        mods.font_name = Some(v);
+    }
     if let Some(v) = json_color(json, "textColor") {
         mods.text_color = Some(v);
     }
@@ -945,6 +948,15 @@ pub(crate) fn json_usize(json: &str, key: &str) -> Result<usize, HwpError> {
         .map_err(|_| HwpError::RenderError(format!("JSON 필드 '{}' 값 파싱 실패", key)))
 }
 
+/// JSON 선택 필드 usize 파싱 (없으면 `None`, 있는데 값이 잘못되면 에러)
+pub(crate) fn json_usize_opt(json: &str, key: &str) -> Result<Option<usize>, HwpError> {
+    let pattern = format!("\"{}\":", key);
+    if !compact_json(json).contains(&pattern) {
+        return Ok(None);
+    }
+    json_usize(json, key).map(Some)
+}
+
 /// JSON 문자열 이스케이프
 /// JSON 문자열 본문으로 이스케이프한다 (바깥 따옴표는 호출부 몫).
 ///
@@ -1063,10 +1075,10 @@ pub(crate) fn color_ref_to_css(color: crate::model::ColorRef) -> String {
 pub(crate) fn fill_json_values(
     fill: &crate::model::style::Fill,
 ) -> (&'static str, String, String, i32) {
-    use crate::model::style::FillType;
+    use crate::model::style::{FillType, HatchStyle};
     match (&fill.fill_type, &fill.solid) {
         (FillType::Solid, Some(s)) => {
-            let no_fill = s.pattern_type <= 0
+            let no_fill = s.hatch().is_none()
                 && crate::model::color::opaque_rgb(s.background_color).is_none();
             (
                 if no_fill { "none" } else { "solid" },
@@ -1075,9 +1087,26 @@ pub(crate) fn fill_json_values(
                 s.pattern_type,
             )
         }
-        (FillType::Gradient, _) => ("gradient", "#ffffff".to_string(), "#000000".to_string(), 0),
-        (FillType::Image, _) => ("image", "#ffffff".to_string(), "#000000".to_string(), 0),
-        _ => ("none", "#ffffff".to_string(), "#000000".to_string(), 0),
+        // 무늬 없음은 -1이다. 0은 가로줄이라, 조회값을 되쓰며 fillType 만 solid 로
+        // 바꾸는 호출이 가로줄을 저장하게 된다 (#8978).
+        (FillType::Gradient, _) => (
+            "gradient",
+            "#ffffff".to_string(),
+            "#000000".to_string(),
+            HatchStyle::NONE,
+        ),
+        (FillType::Image, _) => (
+            "image",
+            "#ffffff".to_string(),
+            "#000000".to_string(),
+            HatchStyle::NONE,
+        ),
+        _ => (
+            "none",
+            "#ffffff".to_string(),
+            "#000000".to_string(),
+            HatchStyle::NONE,
+        ),
     }
 }
 
@@ -1325,34 +1354,97 @@ pub(crate) fn html_to_plain_text(html: &str) -> String {
         .to_string()
 }
 
-/// HTML 태그에서 숫자 속성값을 추출한다.
-pub(crate) fn parse_html_attr_f64(tag: &str, attr: &str) -> Option<f64> {
-    // width="200" 또는 width='200' 형식
-    let patterns = [format!("{}=\"", attr), format!("{}='", attr)];
-    for pat in &patterns {
-        if let Some(start) = tag.to_lowercase().find(&pat.to_lowercase()) {
-            let after = &tag[start + pat.len()..];
-            let delim = if pat.ends_with('"') { '"' } else { '\'' };
-            if let Some(end) = after.find(delim) {
-                let val_str = &after[..end].trim();
-                // 한글은 `width="97pt"` 로 낸다 — pt 를 px 로 읽으면 그림이 25% 작아진다.
-                // "200px"·"200" → 200.0, "97pt" → 129.3(px), "2cm"·"20mm" 도 px 로 환산.
-                let (num_str, factor) = if let Some(v) = val_str.strip_suffix("pt") {
-                    (v, 96.0 / 72.0)
-                } else if let Some(v) = val_str.strip_suffix("cm") {
-                    (v, 96.0 / 2.54)
-                } else if let Some(v) = val_str.strip_suffix("mm") {
-                    (v, 96.0 / 25.4)
-                } else if let Some(v) = val_str.strip_suffix("in") {
-                    (v, 96.0)
-                } else {
-                    (val_str.trim_end_matches("px"), 1.0)
-                };
-                return num_str.trim().parse::<f64>().ok().map(|n| n * factor);
+/// 첫 여는 태그에서 이름이 일치하는 따옴표 속성의 값을 읽는다.
+/// 다른 속성의 이름·값 안을 검색하지 않으며, 기존 따옴표 값 지원 범위를 유지한다.
+pub(crate) fn html_quoted_attribute<'a>(tag: &'a str, attr: &str) -> Option<&'a str> {
+    let bytes = tag.as_bytes();
+    let mut pos = 0;
+    while bytes.get(pos).is_some_and(u8::is_ascii_whitespace) {
+        pos += 1;
+    }
+    if bytes.get(pos) != Some(&b'<') {
+        return None;
+    }
+    pos += 1;
+    // 태그 이름을 건너뛴다. ASCII 구분자에서만 자르므로 UTF-8 값의 byte 위치도 보존한다.
+    while bytes
+        .get(pos)
+        .is_some_and(|b| !b.is_ascii_whitespace() && !matches!(b, b'>' | b'/'))
+    {
+        pos += 1;
+    }
+    loop {
+        while bytes.get(pos).is_some_and(u8::is_ascii_whitespace) {
+            pos += 1;
+        }
+        if matches!(bytes.get(pos), None | Some(b'>' | b'/')) {
+            return None;
+        }
+        let name_start = pos;
+        while bytes
+            .get(pos)
+            .is_some_and(|b| !b.is_ascii_whitespace() && !matches!(b, b'=' | b'>' | b'/'))
+        {
+            pos += 1;
+        }
+        let name_matches = tag[name_start..pos].eq_ignore_ascii_case(attr);
+        while bytes.get(pos).is_some_and(u8::is_ascii_whitespace) {
+            pos += 1;
+        }
+        if bytes.get(pos) != Some(&b'=') {
+            if name_matches {
+                return None;
+            }
+            continue;
+        }
+        pos += 1;
+        while bytes.get(pos).is_some_and(u8::is_ascii_whitespace) {
+            pos += 1;
+        }
+        if let Some(&quote @ (b'\'' | b'"')) = bytes.get(pos) {
+            pos += 1;
+            let value_start = pos;
+            while bytes.get(pos).is_some_and(|b| *b != quote) {
+                pos += 1;
+            }
+            bytes.get(pos)?;
+            let value_end = pos;
+            pos += 1;
+            if name_matches {
+                return Some(&tag[value_start..value_end]);
+            }
+        } else {
+            // 따옴표 없는 값도 한 속성으로 건너뛰어 뒤의 유효한 속성을 읽는다.
+            while bytes
+                .get(pos)
+                .is_some_and(|b| !b.is_ascii_whitespace() && *b != b'>')
+            {
+                pos += 1;
+            }
+            if name_matches {
+                return None;
             }
         }
     }
-    None
+}
+
+/// HTML 태그에서 숫자 속성값을 추출한다.
+pub(crate) fn parse_html_attr_f64(tag: &str, attr: &str) -> Option<f64> {
+    let val_str = html_quoted_attribute(tag, attr)?.trim();
+    // 한글은 `width="97pt"` 로 낸다 — pt 를 px 로 읽으면 그림이 25% 작아진다.
+    // "200px"·"200" → 200.0, "97pt" → 129.3(px), "2cm"·"20mm" 도 px 로 환산.
+    let (num_str, factor) = if let Some(v) = val_str.strip_suffix("pt") {
+        (v, 96.0 / 72.0)
+    } else if let Some(v) = val_str.strip_suffix("cm") {
+        (v, 96.0 / 2.54)
+    } else if let Some(v) = val_str.strip_suffix("mm") {
+        (v, 96.0 / 25.4)
+    } else if let Some(v) = val_str.strip_suffix("in") {
+        (v, 96.0)
+    } else {
+        (val_str.trim_end_matches("px"), 1.0)
+    };
+    num_str.trim().parse::<f64>().ok().map(|n| n * factor)
 }
 
 /// HTML 태그에서 정수 속성값을 추출한다 (colspan="3" 등).

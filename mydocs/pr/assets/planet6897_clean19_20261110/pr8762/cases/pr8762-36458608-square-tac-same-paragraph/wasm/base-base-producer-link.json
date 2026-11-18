@@ -1,0 +1,57 @@
+{
+  "side": "base-wasm",
+  "key": "pr8762-36458608-square-tac-same-paragraph",
+  "counts": {
+    "rhwp": 7,
+    "pdf": 6
+  },
+  "source_manifests": [
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8762-36458608-square-tac-same-paragraph/silhouette-parts/p0002-0007/run_manifest.json",
+      "sha256": "ec9b453aa1b60b1cb851fec03e0082cc158a167b33c580e596e22a581cf98b5e"
+    },
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8762-36458608-square-tac-same-paragraph/silhouette-parts/p0001-0001/run_manifest.json",
+      "sha256": "7b631ce98879a973ab5912c988bbdb7da964194c15e3909d2ab503fbcfe4ae1e"
+    }
+  ],
+  "unpaired_rhwp_pages": [
+    {
+      "page": 7,
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8762-36458608-square-tac-same-paragraph/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+      "sha256": "56945920141a72926d2a2268d4ecc29f5896261270cb9d714a0faf80f8e9bfb5"
+    }
+  ],
+  "output": "output/pr-review/planet6897-clean20-integration-20261110/base-pagination-quantified/base-wasm/pr8762-36458608-square-tac-same-paragraph",
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 3,
+        "silhouette_raw_match_percent": 76.1772
+      },
+      {
+        "page": 4,
+        "silhouette_raw_match_percent": 9.27968
+      },
+      {
+        "page": 5,
+        "silhouette_raw_match_percent": 21.2568
+      },
+      {
+        "page": 6,
+        "silhouette_raw_match_percent": 32.75085
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 7,
+      "pdf": 6
+    },
+    "page_count_mismatch": true
+  },
+  "note": "고정 base의 쪽수 불일치·90% 미달을 그대로 유지한 비교 자료다. 통과한 후보 증거가 아니다."
+}

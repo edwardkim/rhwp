@@ -1,0 +1,295 @@
+{
+  "scope": "중간 보정; 전체 통합 PR 검증 미완료",
+  "recorded_at": "2026-11-09T01:51:19.971470+09:00",
+  "native": {
+    "head": "7e7ad9722619f6acb9b0d7d7ef4c902af8ad1709",
+    "sources": {
+      "src/renderer/mod.rs": "36386a052887f062b9c9c3f4e38804e16be2d70f867f4d81043cb402e836acda",
+      "src/renderer/native_pua_fonts.rs": "659bb9115b23e28a1b37a49467db25906d46e8f7f432e1b40e967d6e7fe0449e",
+      "tests/cases/issue_8153_symbol_fallback.rs": "269bf11dedaf8f22012d4457a4dd4852f46950488758ae1881b796da8499b3d5"
+    },
+    "binary": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/rhwp-primary-truetype-symbol-v2",
+    "binary_sha256": "ab24937effcc701face9a3ab8866261d867457f785c26cbf2b1929cf41a94390",
+    "build_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-v2-native-build.log",
+    "build_log_sha256": "c3dd6bdc62dbf9faaca11570208a1c351b82a2999c858299691318865807c1ec"
+  },
+  "wasm_source_snapshot": {
+    "parent_head": "7e7ad9722619f6acb9b0d7d7ef4c902af8ad1709",
+    "sources": {
+      "src/renderer/mod.rs": "c784fcd0145b82bbe5c571260adeaafb0e9a502026d63bf1cd372152656c62a1",
+      "src/renderer/native_pua_fonts.rs": "659bb9115b23e28a1b37a49467db25906d46e8f7f432e1b40e967d6e7fe0449e",
+      "tests/cases/issue_8153_symbol_fallback.rs": "269bf11dedaf8f22012d4457a4dd4852f46950488758ae1881b796da8499b3d5"
+    },
+    "diff_sha256": "bc8b1b161cc4dbf8f010a85197562c47698080b888d5ab455e8c65465acaa293",
+    "variant": "유형 미상에만 실제 주 TTF coverage 보완; 명시 TTF는 기존 glyph 공급 계약 유지",
+    "native_plan_probe": {
+      "binary": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/rhwp-primary-truetype-symbol",
+      "sha256": "71519dc693d26fedaae2bd3e10d209631bb5f2abb4e21dcdb6c2bafcc55d3bfe",
+      "build_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/symbol-fallback-after.log",
+      "build_log_sha256": "89bc9e78112c322e2779aa2d70306d2d5d4568acb97b3da7bbd0af4557fab1f8",
+      "source_receipt": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-native-producer.json",
+      "role": "새 WASM 측정의 입력 쪽수·실행 계획 탐색에만 사용하는 이전 고정 Native CLI; 새 Native source producer로 주장하지 않음"
+    },
+    "scope": "새 WASM의 source snapshot. Native binary는 별도 probe이며 새 Native 빌드·검증은 아직 필요함."
+  },
+  "wasm_build": {
+    "pid": 82192,
+    "state": "complete",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "producer": {
+      "parent_head": "7e7ad9722619f6acb9b0d7d7ef4c902af8ad1709",
+      "sources": {
+        "src/renderer/mod.rs": "c784fcd0145b82bbe5c571260adeaafb0e9a502026d63bf1cd372152656c62a1",
+        "src/renderer/native_pua_fonts.rs": "659bb9115b23e28a1b37a49467db25906d46e8f7f432e1b40e967d6e7fe0449e",
+        "tests/cases/issue_8153_symbol_fallback.rs": "269bf11dedaf8f22012d4457a4dd4852f46950488758ae1881b796da8499b3d5"
+      },
+      "diff_sha256": "bc8b1b161cc4dbf8f010a85197562c47698080b888d5ab455e8c65465acaa293",
+      "variant": "유형 미상에만 실제 주 TTF coverage 보완; 명시 TTF는 기존 glyph 공급 계약 유지",
+      "native_plan_probe": {
+        "binary": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/rhwp-primary-truetype-symbol",
+        "sha256": "71519dc693d26fedaae2bd3e10d209631bb5f2abb4e21dcdb6c2bafcc55d3bfe",
+        "build_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/symbol-fallback-after.log",
+        "build_log_sha256": "89bc9e78112c322e2779aa2d70306d2d5d4568acb97b3da7bbd0af4557fab1f8",
+        "source_receipt": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-native-producer.json",
+        "role": "새 WASM 측정의 입력 쪽수·실행 계획 탐색에만 사용하는 이전 고정 Native CLI; 새 Native source producer로 주장하지 않음"
+      },
+      "scope": "새 WASM의 source snapshot. Native binary는 별도 probe이며 새 Native 빌드·검증은 아직 필요함."
+    },
+    "exit_code": 0,
+    "seconds": 355.0064524170011,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-v2-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "d7ec21e764c14fa7180310e67deaa3902be2f03f20d6374e7ab62575a1bf07de",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "d7ec21e764c14fa7180310e67deaa3902be2f03f20d6374e7ab62575a1bf07de",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-v2-wasm-pkg/rhwp_bg.wasm": "d7ec21e764c14fa7180310e67deaa3902be2f03f20d6374e7ab62575a1bf07de"
+      }
+    },
+    "source_note": "Native v2와 mod.rs 들여쓰기만 다름. 변경 전 원본 source는 ignored output에 보존했으며 rustfmt 보정 외 의미 변경 없음."
+  },
+  "native_whole": {
+    "pages": 383,
+    "minimum_display": "99.96",
+    "display_100_pages": 382,
+    "protected_decreases": [],
+    "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+  },
+  "gates": {
+    "pid": 37302,
+    "state": "complete",
+    "head": "7e7ad9722619f6acb9b0d7d7ef4c902af8ad1709",
+    "steps": [
+      {
+        "name": "prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 1.7867289579007775
+      },
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 12.849471541121602
+      },
+      {
+        "name": "focused",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_8153_symbol_fallback",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ],
+        "exit_code": 0,
+        "seconds": 197.616860459093
+      },
+      {
+        "name": "native-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--bin",
+          "rhwp",
+          "-j",
+          "8"
+        ],
+        "exit_code": 0,
+        "seconds": 184.95717908418737
+      },
+      {
+        "name": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check",
+          "--base-ref",
+          "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3"
+        ],
+        "exit_code": 0,
+        "seconds": 3.210285458015278
+      },
+      {
+        "name": "unit-tiers",
+        "command": [
+          "node",
+          "scripts/rust-unit-test-tiers.mjs",
+          "--check",
+          "--base-ref",
+          "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3"
+        ],
+        "exit_code": 0,
+        "seconds": 21.384522374952212
+      },
+      {
+        "name": "skia-lib",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--lib",
+          "-j",
+          "8",
+          "--",
+          "--test-threads",
+          "8"
+        ],
+        "exit_code": 0,
+        "seconds": 221.7708325420972
+      },
+      {
+        "name": "skia-png",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "issue_2225_missing_picture_placeholder",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8"
+        ],
+        "exit_code": 0,
+        "seconds": 230.4246012920048
+      },
+      {
+        "name": "skia-pdf",
+        "command": [
+          "node",
+          "scripts/run-rust-test.mjs",
+          "render_p37_direct_pdf_export",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8"
+        ],
+        "exit_code": 0,
+        "seconds": 7.903762916103005
+      }
+    ],
+    "sources": {
+      "src/renderer/mod.rs": "36386a052887f062b9c9c3f4e38804e16be2d70f867f4d81043cb402e836acda",
+      "src/renderer/native_pua_fonts.rs": "659bb9115b23e28a1b37a49467db25906d46e8f7f432e1b40e967d6e7fe0449e",
+      "tests/cases/issue_8153_symbol_fallback.rs": "269bf11dedaf8f22012d4457a4dd4852f46950488758ae1881b796da8499b3d5"
+    },
+    "current": "skia-pdf"
+  },
+  "before_test": {
+    "kind": "공개 Native API의 합성 paint를 standalone Rust harness에서 재현",
+    "result": "1 FAIL",
+    "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/symbol-fallback-before.log",
+    "sha256": "8368143dea80b7b4ee90c5fae94f22c0814257b7f658743af545abeb842c468f"
+  },
+  "after_test": {
+    "kind": "현재 파생 suite·native-skia 실행",
+    "result": "2 PASS / 0 FAIL / 331 선택 밖",
+    "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-v2-focused.log",
+    "sha256": "a72bad762b4c14f76fb63cf543fd27bb70e51201199f6913f4e2acbbea0dec09"
+  },
+  "page198": [
+    {
+      "label": "native-before",
+      "raw": 99.71102,
+      "source_directory": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/remaining-native-retry/handbook-hwp/handbook-hwp",
+      "input_png_sha256": "4eba1a6b3bc95076af81be701d6f72e1d90d9f2bcf045561254b80c5c5073b7d",
+      "pdf_png_sha256": "2509e2e2078752485be274245fc51364abf0f6d136941fc66c3154a57a35f1c7"
+    },
+    {
+      "label": "native-after",
+      "raw": 100.0,
+      "source_directory": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-v2-handbook-native-whole/handbook-hwp/handbook-hwp",
+      "input_png_sha256": "9ce4c01989c6c530a193c02832fe2c70c775d16a8ce07818e25c87e655b50bdc",
+      "pdf_png_sha256": "2509e2e2078752485be274245fc51364abf0f6d136941fc66c3154a57a35f1c7"
+    },
+    {
+      "label": "wasm-before",
+      "raw": 99.68423,
+      "source_directory": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/protected-residual-wasm-before/handbook-hwp/handbook-hwp",
+      "input_png_sha256": "8ac5cdae7f4fe94490decc5b95f17e65efd764c05b9866e42dd7bd53941dbf5b",
+      "pdf_png_sha256": "2509e2e2078752485be274245fc51364abf0f6d136941fc66c3154a57a35f1c7"
+    },
+    {
+      "label": "wasm-after",
+      "raw": 100.0,
+      "source_directory": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/primary-truetype-symbol-v2-wasm-focus/handbook-hwp/handbook-hwp",
+      "input_png_sha256": "b575c28cff6c8f83cda34081977796d3a02c8518b1c69346085d7bb31e7fbff3",
+      "pdf_png_sha256": "2509e2e2078752485be274245fc51364abf0f6d136941fc66c3154a57a35f1c7"
+    }
+  ],
+  "not_complete": [
+    "HWPX WASM 198쪽 99.65%는 동일 보정 전 WASM에서도 재현됨. 이번 변경의 새 회귀로 해석하지 않으며 공급자 불일치 보정은 다음 단계.",
+    "sample10·outline·nested의 Native 보호값 및 sample16 WASM p35 보호값 하락 잔여",
+    "새 source의 93조건 전체 양 backend·전체 nextest·최종 소비 검증은 미완료"
+  ]
+}

@@ -1,0 +1,351 @@
+{
+  "scope": "Native 집중 보정; 최종 head 전쪽 fresh WASM·전체 회귀·필수 gate 완료 아님",
+  "base": "b5064fae1eefff92d60464c51844a38debec09f9",
+  "parent_head": "df4b5916a28d1fcc50854a513eb2f1f35d4e1068",
+  "before_binary": {
+    "path": "/Users/tsjang/rhwp/output/issue8856/start/rhwp-source-save-final",
+    "sha256": "d6f6631547ada00c09e37f7b8abb2c8ad8eb53305933eed6aa91abc24ce248ec"
+  },
+  "after_binary": {
+    "path": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/rhwp-symbol-cell-final",
+    "sha256": "fefcde6d1645008eeb1aadd3069874879bb3d03bdbea94cba879d96275d41802"
+  },
+  "after_producer": {
+    "parent_head": "df4b5916a28d1fcc50854a513eb2f1f35d4e1068",
+    "diff_sha256": "ea8cf7949414d53112d16325149bb9df5fc255d3d8a1bd28739bb8a602695399",
+    "sources": {
+      "src/renderer/mod.rs": "1da2602b2f9bf40bb7d3f8570adcfd26b436457c1b060b37a9ba1bfcb1f648d8",
+      "scripts/rust-test-suite-manifest.mjs": "b489408389ecd32a437e07f6777fc7345159bd4cb297f9398665d0270703d5df",
+      "tests/cases/issue_8856_replacement_symbol_cell.rs": "4ed62aa001a11038e7d5f11bae32b0f60cb3fabbaa54fe3f11133b43d12f42df"
+    },
+    "binary_sha256": "fefcde6d1645008eeb1aadd3069874879bb3d03bdbea94cba879d96275d41802",
+    "font_environment_sha256": "81705de8fef321b10e64247a4023e7a3c88a97ce2762654f907e180c3e6e43c9",
+    "font_scope": "복구한 기존 명시 Print 글꼴 환경; 최소 글꼴 환경 아님",
+    "command": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--hwp",
+      "samples/basic/issue1994_behindtext_table_20200830.hwp",
+      "--pdf",
+      "pdf/semanticist21-20261008/basic-issue1994_behindtext_table_20200830-8e7a95cf5919-2020.pdf",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/rhwp-symbol-cell-final",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--page-workers",
+      "8",
+      "--key",
+      "clip5587",
+      "--font-environment",
+      "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/81705de8fef321b10e64247a4023e7a3c88a97ce2762654f907e180c3e6e43c9.json",
+      "--out",
+      "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/symbol-cell-after"
+    ],
+    "started": "2026-11-10T04:08:14.746931+09:00",
+    "running": false,
+    "exit": 0,
+    "ended": "2026-11-10T04:08:27.979245+09:00"
+  },
+  "input": {
+    "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+    "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+  },
+  "pdf": {
+    "path": "pdf/semanticist21-20261008/basic-issue1994_behindtext_table_20200830-8e7a95cf5919-2020.pdf",
+    "sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8"
+  },
+  "font_environment_sha256": "81705de8fef321b10e64247a4023e7a3c88a97ce2762654f907e180c3e6e43c9",
+  "canonical_profile": {
+    "dpi": 96,
+    "compat": "2022",
+    "radius_px": 2,
+    "threshold_changed": false,
+    "font_scope": "기존 독립 Print 대응 명시 글꼴 환경; 최소 글꼴 아님"
+  },
+  "native_pages": [
+    {
+      "page": 1,
+      "before": 99.96356,
+      "after": 99.96356
+    },
+    {
+      "page": 2,
+      "before": 99.7265,
+      "after": 99.7265
+    },
+    {
+      "page": 3,
+      "before": 98.69196,
+      "after": 98.75608
+    },
+    {
+      "page": 4,
+      "before": 99.80186,
+      "after": 99.94357
+    }
+  ],
+  "strict_native_page4": {
+    "protected": 99.94357,
+    "before": 99.80186,
+    "after": 99.94357,
+    "decline_pp_after": "0.00000"
+  },
+  "render_trees": [
+    {
+      "page": 1,
+      "identical": true,
+      "sha256": "e7939196952ec3ea37459b1e0d5ae7d2263049d894d04330812462f1c154e67e"
+    },
+    {
+      "page": 2,
+      "identical": true,
+      "sha256": "518f327c4bafca8ad10a8ceb6f24d29f1140af5aeafbcc24493403bbc1d89eeb"
+    },
+    {
+      "page": 3,
+      "identical": true,
+      "sha256": "00e05df31b55c9904d447396e56bc74fad2edb65ad7c2e33f4085f7656c871db"
+    },
+    {
+      "page": 4,
+      "identical": true,
+      "sha256": "2bed50d46f058261d262a74e62bda9fb03f822c8ed0943882b231070f14b69c9"
+    }
+  ],
+  "pdf_pngs_identical": true,
+  "focused_tests": {
+    "minimal_font_sandbox": "output/issue8856/start/minimal-font.sb",
+    "new_before": {
+      "passed": 0,
+      "failed": 1,
+      "log": "output/issue8856/clip-font-intent/symbol-before-v2.log"
+    },
+    "new_after": {
+      "passed": 1,
+      "failed": 0,
+      "log": "output/issue8856/clip-font-intent/symbol-after.log"
+    },
+    "related": {
+      "passed": 29,
+      "failed": 0,
+      "runs": [
+        {
+          "case": "issue_8153_symbol_fallback",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+            "env",
+            "-u",
+            "RHWP_FONT_PATH",
+            "CARGO_BUILD_JOBS=8",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "issue_8153_symbol_fallback",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "/Users/tsjang/rhwp/target/pr-review",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/issue_8153_symbol_fallback-related.log",
+          "log_sha256": "17fedff4648758e65cba56585485b4173bf82baca4146945ea53f22e1a6ba5b3"
+        },
+        {
+          "case": "issue_1994_document_font_program_scope",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+            "env",
+            "-u",
+            "RHWP_FONT_PATH",
+            "CARGO_BUILD_JOBS=8",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "issue_1994_document_font_program_scope",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "/Users/tsjang/rhwp/target/pr-review",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/issue_1994_document_font_program_scope-related.log",
+          "log_sha256": "12c9aae6a9d433f614c66b1d025d4effdf160fa9344ea69d5f4857c2b4bcaeb7"
+        },
+        {
+          "case": "hft_outline_font_contract",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+            "env",
+            "-u",
+            "RHWP_FONT_PATH",
+            "CARGO_BUILD_JOBS=8",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "hft_outline_font_contract",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "/Users/tsjang/rhwp/target/pr-review",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/hft_outline_font_contract-related.log",
+          "log_sha256": "4f804d776a771efab32adbbcd824ceb40c9874a06ff639e741c49c93dcd583d1"
+        },
+        {
+          "case": "issue_7445_missing_glyph_advance",
+          "command": [
+            "sandbox-exec",
+            "-f",
+            "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+            "env",
+            "-u",
+            "RHWP_FONT_PATH",
+            "CARGO_BUILD_JOBS=8",
+            "node",
+            "scripts/run-rust-test.mjs",
+            "issue_7445_missing_glyph_advance",
+            "--",
+            "--cargo-profile",
+            "release-test",
+            "--target-dir",
+            "/Users/tsjang/rhwp/target/pr-review",
+            "--features",
+            "native-skia",
+            "--test-threads",
+            "8"
+          ],
+          "exit": 0,
+          "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/issue_7445_missing_glyph_advance-related.log",
+          "log_sha256": "cbd9ef0084c5bc8f56fe2db2432494a52e2241f02330396f1735498232ffbd5e"
+        }
+      ]
+    },
+    "current_test_sha256": "a31ba945bdcc4ed8426b644c8a97ed13f676d370d2456328490755e36e9aa246",
+    "tested_test_sha256": "4ed62aa001a11038e7d5f11bae32b0f60cb3fabbaa54fe3f11133b43d12f42df",
+    "post_test_comment_only_timestamp_update_verified": true
+  },
+  "checks": {
+    "fmt": "PASS",
+    "manifest_with_base": "PASS",
+    "unit_tiers_with_base": "PASS"
+  },
+  "direct_reviews": {
+    "pages": [
+      3,
+      4
+    ],
+    "observations": [
+      "왼쪽 리터럴 기호의 수평 여백이 독립 Print와 정렬됨",
+      "본문·시·표의 줄 소속과 배치 tree는 동일",
+      "남은 작은 윤곽·세로 raster 차이를 완전 동일로 주장하지 않음"
+    ]
+  },
+  "artifacts": {
+    "pdf-p003.png": "fec67b1febf1456400e7394da2eb0e0fa7a7ab680cbfd72ca8809eeaa35dbceb",
+    "exact-environment-recovery.json": "ff968271ff3a845ff4dea8333cfc085726c30b2739dbad59644e5791fb7274bd",
+    "pdf-p004.png": "da31644595024404fb204a9a613412880b89fc6b5f13b041c53c03ffa3b7e9b5",
+    "before-native-p004-review.png": "f1702c0ec3340d5026a1181a62ee57228bdb614feb043296bf666910892e9fb8",
+    "historical-font-supply-audit.json": "adcc1412f839b2a82ce224bf23f2a651065430cd89a0312ff26be1ca8300588d",
+    "before-native-p004-raw.png": "0f7fdf2fabe7e1057f5521659fb2b2fc16c9726aa1cfc633a41c24e23265b71d",
+    "after-native-p003-review.png": "ba002c51b6b7b0eec0f2b2aa4236c2dc8cd173b78d5b323a3cd9f73764daa642",
+    "before-native-p003-overlay.png": "23ea1e459bb0ebc79f313beb333c6457c053993336eb145026bcea303b981093",
+    "after-native-p004-review.png": "f2465ffd14cf4112bb7b08c14bf1efc1ccfa5801099f84725aa1112fc4b0acfe",
+    "before-native-p003-review.png": "66209a04c53bf585d31e257bb3d70968705b248e39b6f76caefcb0e6a0649fb4",
+    "after-native-p003-overlay.png": "6de4c7c3c4aa3b9e121d70faf9c6b900af9ddfa9ad5cfe8c2dfc5daf2f6a954d",
+    "after-native-p003-raw.png": "1753b467b3f05a5651182b6fb8757d48d4acf6a69b8a655ed65bb8c6a9e666db",
+    "before-native.tsv": "7e269d878111f5ee7dc1b5925dcd292669c2a446e848610257b4086018ab1c86",
+    "after-native.tsv": "a388df331e57c4f8cea85040934cec69608b8d8714c6c173e3059bab7f30895d",
+    "README.md": "2e8ec4df80b8dda64b9fe246489bb73dd3da2f5aed9ef2c69c870556a6f55278",
+    "after-native-p004-overlay.png": "c8a21cf94e1db4da4e36e243eadeb8c47515635cfcf763132bc9bd0fb7ab8ca7",
+    "before-native-p003-raw.png": "cfce86b45066b9a6d39da450a472c2dd503b8096b26b36cadef3bc7938fbce40",
+    "before-native-p004-overlay.png": "7ea4316d16e039e81b0a23974879efc2363cb6addfb59246c516c28701910355",
+    "bullet-program-origin-oracle.json": "3d1a4e88fd659d096254764a4deed3f28dc34ff99a615a3c31b2e55e2ed8cd74",
+    "after-native-p004-raw.png": "10be17be81e965fd3bab7dd3a6483842bda09b6180c25f903ccbba14634f34fb"
+  },
+  "check_records": [
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--check"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/fmt-stage6-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "b5064fae1eefff92d60464c51844a38debec09f9"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/manifest-stage6-final.log",
+      "sha256": "20d55f8420a3c6ab2f1da7ad5b870d2d00b1a232893a4f04f19e71b7feb9a7e6"
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "b5064fae1eefff92d60464c51844a38debec09f9"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/unit-tiers-stage6-final.log",
+      "sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/diff-stage6-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "markdown-links",
+      "command": [
+        "python3",
+        "scripts/check_markdown_links.py",
+        "mydocs/working/task_m100_8856_stage6.md",
+        "mydocs/pr/assets/issue8856/stage6-replacement-symbol-cell/README.md"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/issue8856/clip-font-intent/markdown-links-stage6-final.log",
+      "sha256": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa"
+    }
+  ],
+  "historical_font_audit": "historical-font-supply-audit.json"
+}

@@ -1,0 +1,47 @@
+{
+  "purpose": "Public synthetic controls only; detection is not suppressed. Full source before/after is evaluated separately.",
+  "codeql": "2.27.4",
+  "query_pack": "0.1.46",
+  "results": [
+    {
+      "rule": "rust/cleartext-logging",
+      "locations": [
+        {
+          "physicalLocation": {
+            "artifactLocation": {
+              "uri": "src/lib.rs",
+              "uriBaseId": "%SRCROOT%",
+              "index": 0
+            },
+            "region": {
+              "startLine": 3,
+              "startColumn": 57,
+              "endColumn": 80
+            }
+          }
+        }
+      ]
+    },
+    {
+      "rule": "rust/hard-coded-cryptographic-value",
+      "locations": [
+        {
+          "physicalLocation": {
+            "artifactLocation": {
+              "uri": "src/lib.rs",
+              "uriBaseId": "%SRCROOT%",
+              "index": 0
+            },
+            "region": {
+              "startLine": 5,
+              "startColumn": 22,
+              "endColumn": 57
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "public_control_source": "// Public synthetic positives; never linked into rhwp or sent real credentials.\nfn check_credential(password: &str) -> bool { !password.is_empty() }\npub fn raw_password_logging(password: &str) { eprintln!(\"credential={password}\"); }\npub fn fixed_operational_credential() -> bool {\n    check_credential(\"PUBLIC-SYNTHETIC-POSITIVE-CONTROL\")\n}\n",
+  "source_sha256": "9963fddfe3865063bf71efbe5160767291ebc99c1a1468d2bd9b234be0980933"
+}

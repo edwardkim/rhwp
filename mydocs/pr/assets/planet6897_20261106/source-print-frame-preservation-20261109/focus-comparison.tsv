@@ -1,0 +1,33 @@
+document	backend	page	protected_display	candidate_display
+sample16-hwp2024	native	18	99.99	99.99
+sample16-hwp2024	native	35	99.99	100.00
+sample16-hwpx	native	18	99.99	99.99
+sample16-hwpx	native	35	99.99	100.00
+sample10	native	133	99.98	99.99
+sample10	native	251	99.84	99.86
+sample10	native	509	99.89	99.91
+sample10	native	658	99.95	99.99
+sample10	native	659	99.98	99.99
+sample10	native	660	99.98	99.98
+sample10	native	708	99.81	99.88
+sample10	native	757	99.41	99.55
+metafile-aspect-explicit-pen	native	1		100.00
+metafile-rounded-axis-controls	native	1		100.00
+metafile-bidirectional-axis-controls	native	1		100.00
+metafile-equal-axis-controls	native	1		100.00
+sample16-hwp2024	wasm	18	99.99	99.99
+sample16-hwp2024	wasm	35	100.00	100.00
+sample16-hwpx	wasm	18	99.99	99.99
+sample16-hwpx	wasm	35	100.00	100.00
+sample10	wasm	133	99.98	99.99
+sample10	wasm	251	99.83	99.86
+sample10	wasm	509	99.90	99.91
+sample10	wasm	658	99.95	99.99
+sample10	wasm	659	99.98	99.99
+sample10	wasm	660	99.98	99.98
+sample10	wasm	708	99.82	99.88
+sample10	wasm	757	99.40	99.55
+metafile-aspect-explicit-pen	wasm	1		100.00
+metafile-rounded-axis-controls	wasm	1		100.00
+metafile-bidirectional-axis-controls	wasm	1		100.00
+metafile-equal-axis-controls	wasm	1		100.00

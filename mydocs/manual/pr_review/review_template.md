@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review/intake_and_review.md
-last_verified: 2026-10-23
+last_verified: 2026-11-08
 ---
 
 # PR #N 리뷰 — 변경 요약
@@ -52,9 +52,18 @@ TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·pr
 90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
 [상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
 
+collaborator·maintainer의 조판·렌더링 PR review에는
+[정본 보호 TSV 비교](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도 기록한다.
+공식 두 자리 표시값의 페이지별 하락은 허용하지 않는다. 일반 사용자·외부 contributor에게 이 검증이나
+원본 OTF 설치를 제출 의무로 요구하지 않으며, 통합 담당자가 보호 기준·후보 TSV와 실제 결과를 연결한다.
+
 실제 사용한 HWP/HWPX·한컴 기준 PDF의 저장소 경로, 출처·SHA-256·검토 commit 포함
 여부를 적는다. 실행한 명령과 대상 head·통과/실패/미실행 범위를 구분한다. 조판 원칙,
 focused·전체 회귀·lint·Native/WASM·시각 검증 중 적용되는 것을 기록한다.
+원 PR이 웹한글기안기 출력 PDF를 기준이라고 명시했다면
+[웹한글기안기 PDF 처리](visual_fixture_evidence.md#원-pr이-웹한글기안기-pdf를-기준으로-제시한-경우)에 따라
+해당 PDF의 판정 제외와 동일 입력의 데스크톱 Print 재검증을 명시한다. 실제 한컴 출력 제품·빌드와
+MCP engine 또는 수동 Print 확인을 연결하며, 저장 제품 연도를 출력 제품 연도로 바꾸어 쓰지 않는다.
 50 MiB 이상 PDF는 PR에서 제외하고 로컬 경로·바이트 수·SHA-256·출처·전체 쪽수와
 [대용량 PDF 로컬 보관 확인](intake_and_review.md#28-검증-입력-커밋-확인)을 기록한다.
 
@@ -79,6 +88,8 @@ Native/fresh WASM의 내용 식별자·확대 증거·원인·처리 결과를 �
 merge SHA 고정 raw image URL, 남은 차이, `--body-file` 게시와 API 재조회를 계획한다.
 기여자에게 게시할 문안은 한국어 존댓말로 준비한다. 메인터너 보정이 있으면 원 기여가 해결한
 문제와 추가 보정이 필요했던 이유·범위를 구분해 설명하고 반말이나 책임 전가 표현을 쓰지 않는다.
+원 PR이 웹한글기안기 PDF를 제시한 경우 코멘트에도 판정 제외와 실제 데스크톱 한컴
+Print 제품·버전·영수증을 적는다. 리뷰 문서에만 기록하고 코멘트에서 생략하지 않는다.
 
 이 파일은 작성 예시다. 각 review에 해당하지 않는 절은 이유를 적고, 실제 검증 전에는
 예시 문장을 완료 사실로 옮기지 않는다. 필수 기록과 실행 순서는

@@ -1,0 +1,19 @@
+{
+  "remote_analysis": 2124551567,
+  "remote_count": 144,
+  "local_count": 144,
+  "identical_rule_message_locations_and_all_flow_locations": false,
+  "local_only": 1,
+  "remote_only": 1,
+  "normalization": "Ignore artifact table indices and redundant same-line endLine omission. Sort whole flow paths without changing any source/sink/location/message.",
+  "same_rule_and_sink_set": true,
+  "exact_all_flow_matches": 143,
+  "target_8_exact_all_flow_matches": true,
+  "alternative_witness": {
+    "rule": "rust/hard-coded-cryptographic-value",
+    "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+    "line": 689,
+    "source": "zero-initialized RNG work buffer",
+    "difference": "Four witness paths are reported in both runs. One remote path reaches an encryption-key test; the local path instead reaches the R6 key-salt consumer. No source code change in this file. Both are within the approved RNG-buffer false-positive classification."
+  }
+}

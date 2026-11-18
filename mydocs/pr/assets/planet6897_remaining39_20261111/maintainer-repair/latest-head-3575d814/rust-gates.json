@@ -1,0 +1,269 @@
+{
+  "pid": 37689,
+  "phase": "completed",
+  "results": [
+    {
+      "gate": "suite-prepare",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-suite-prepare.log",
+      "sha256": "2b2407f85462b0b8b510a62d1c110d004aa5265ae4b98a00a8b8515b8e47bb05",
+      "finished_at": "2026-11-11T22:08:02.120568+09:00"
+    },
+    {
+      "gate": "full-nextest",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-full-nextest.log",
+      "sha256": "48b4698b02d68474caa3d0d573007709410073aade9a80581b898524f78e9bdf",
+      "finished_at": "2026-11-11T22:26:39.050443+09:00"
+    },
+    {
+      "gate": "fmt-check",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-fmt-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "finished_at": "2026-11-11T22:26:56.447013+09:00"
+    },
+    {
+      "gate": "native-clippy",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-native-clippy.log",
+      "sha256": "e3e7a0c20f695ad8a5718a53e4afe59e75a53d1ca85435df6dd46f72c1ab769d",
+      "finished_at": "2026-11-11T22:27:26.145575+09:00"
+    },
+    {
+      "gate": "wasm-clippy",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-wasm-clippy.log",
+      "sha256": "e4f2cc66450631cee96ba2d5a61f7b5038bd081d8bd501ab97046f92dee8bc6d",
+      "finished_at": "2026-11-11T22:27:53.619319+09:00"
+    },
+    {
+      "gate": "workspace-build",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-workspace-build.log",
+      "sha256": "1ac85739d2d71ae3670aee5b91de491e05760d52d10cebf86fade11f21d74900",
+      "finished_at": "2026-11-11T22:28:31.971456+09:00"
+    },
+    {
+      "gate": "all-target-clippy",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-all-target-clippy.log",
+      "sha256": "24e0259f2424932026ccf84114ccf46d9d57a77f9e17e08c0e3302ec89c8b15e",
+      "finished_at": "2026-11-11T22:29:26.667291+09:00"
+    },
+    {
+      "gate": "native-skia-lib",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-native-skia-lib.log",
+      "sha256": "226d3de6f603e3da88f2de158607225d47a0ca7514384691b051a0f9620a695a",
+      "finished_at": "2026-11-11T22:34:38.849173+09:00"
+    },
+    {
+      "gate": "native-png-contract",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-native-png-contract.log",
+      "sha256": "864f68fbdf8708e18efde5b629ce9e4c20c3954bdfea832b3ef482a1b9d9a7c9",
+      "finished_at": "2026-11-11T22:40:48.279770+09:00"
+    },
+    {
+      "gate": "native-pdf-contract",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-native-pdf-contract.log",
+      "sha256": "bcaa3a4122d66e7936e1aaf5ea890654405d26bb2a90a03bc040d85d771990cc",
+      "finished_at": "2026-11-11T22:41:17.195099+09:00"
+    },
+    {
+      "gate": "manifest-check",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "4c876654d86d071d342fc78706c51cfff6ddbde4"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-manifest-check.log",
+      "sha256": "8d3f421b4d54bb1a8b4805bad6e213508212cf18b648c8e60b43ef28efbb7aec",
+      "finished_at": "2026-11-11T22:41:20.010987+09:00"
+    },
+    {
+      "gate": "unit-tier-check",
+      "exit": 0,
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "4c876654d86d071d342fc78706c51cfff6ddbde4"
+      ],
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/scope-final-unit-tier-check.log",
+      "sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "finished_at": "2026-11-11T22:42:04.996171+09:00"
+    }
+  ],
+  "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "current": "unit-tier-check",
+  "started_at": "2026-11-11T22:41:20.019675+09:00",
+  "child_pid": 2500,
+  "finished_at": "2026-11-11T22:42:04.997315+09:00"
+}

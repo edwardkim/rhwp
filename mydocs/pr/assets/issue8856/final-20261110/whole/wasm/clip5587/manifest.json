@@ -1,0 +1,225 @@
+{
+  "key": "clip5587",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "9f014552f03bd78b27b6e2ebc3e48dbfb69f30f67e3f22ba5c1b91b0ccd17c22",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/pdf_png/pdf-001.png",
+      "pdf_sha256": "c3ca6eb235e44f7dc92476283a80209898269f659f7152e12a9de75293f962d3"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "c6bed3bed937d2763ae1b568810672e760f4f76fa98716b8f6943cf6f670158d",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/pdf_png/pdf-002.png",
+      "pdf_sha256": "6441a63b0c6693837e02c30a9dfcf6988eb002ee0e7bc4a9872faf61ac025165"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "ca4daa6218486c38b51c61d09d268f2084e43bc16d1a67bf38ecf992be3adfbd",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/pdf_png/pdf-003.png",
+      "pdf_sha256": "fec67b1febf1456400e7394da2eb0e0fa7a7ab680cbfd72ca8809eeaa35dbceb"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "1ddfee552e47074a450986e1db1be8e52dee9ecec5127a88bfd237514c7360b3",
+      "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/pdf_png/pdf-004.png",
+      "pdf_sha256": "da31644595024404fb204a9a613412880b89fc6b5f13b041c53c03ffa3b7e9b5"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 95.63432,
+      "silhouette_raw_unmatched_pixels": 6835,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 156562,
+      "tolerant_content_match_percent": 95.63432
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.19758,
+      "silhouette_raw_unmatched_pixels": 4393,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 243728,
+      "tolerant_content_match_percent": 98.19758
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 92.15037,
+      "silhouette_raw_unmatched_pixels": 11476,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 146198,
+      "tolerant_content_match_percent": 92.15037
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.99573,
+      "silhouette_raw_unmatched_pixels": 3329,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110809,
+      "tolerant_content_match_percent": 96.99573
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 4,
+      "pdf": 4
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/basic/issue1994_behindtext_table_20200830.hwp",
+      "sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f"
+    },
+    "pdf": {
+      "path": "pdf/semanticist21-20261008/basic-issue1994_behindtext_table_20200830-8e7a95cf5919-2020.pdf",
+      "sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8"
+    },
+    "git_head": "01d2197973e282d7c96671cb1335ad83fbe68e8d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "8f674979f8457e8a99721412607e878580f8a702ad90d36d37adf571202b4087",
+      "version": "152.0.7947.0",
+      "wrapper_version": "5.12.1",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/rhwp-native",
+      "path": "output/issue8856/note-reference-source-style/rhwp-native",
+      "sha256": "47203f928bac9f3c8d27293edf6a87351fa51d3342c326016190303d51328219"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/06fdbbe4cf1c89c4a01b2348f5e05e7f5d4083a5d40e0ed4fe511afc019c42f2.json",
+      "sha256": "06fdbbe4cf1c89c4a01b2348f5e05e7f5d4083a5d40e0ed4fe511afc019c42f2"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/frozen-pkg/rhwp.js",
+          "sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/frozen-pkg/rhwp_bg.wasm",
+          "sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a/native.ttf",
+          "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b2b25ce9c9179e0a4c867bd2610e1db5595965345aa1cdb857964ab802c4ee3e/native.ttf",
+          "sha256": "55ded6d110b0c2851fe9b42328d95257f8c82a0f978f369dec57da89fc3e5348"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/fad853f7f47c6c8b103171e7193fa095708cdcd70850a71d93aa5379e8a61d63/native.ttf",
+          "sha256": "7a7c63f2c8394dd85870dd22734a2fb479ced783b913141445adf0c8e9b99ebc"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45/native.ttf",
+          "sha256": "0ea7b146035288e22ca008e890bd16dbfb1a1a1ba370af0f15ed2e299ac86d18"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/985c795cc1e342c3091e6d217fd6f71155471f8a191fdce52180289662cf9db1/native.ttf",
+          "sha256": "151e926206cf4f797dfb0e99cb6888a0ce56c752d3e088adc6e25e16a42aa703"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/native.ttf",
+          "sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/3b5cac6af73fd94fa91ded10f6cfc54c7ce52189986fe7ca6fd457208f1d3673/native.ttf",
+          "sha256": "f40f958a1dd2310490030505337433de9244d5d8b30b3ae2bc8592689cdbc2c8"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/504d6af6abb882acd912d47bafa383c4512a6c8c33635e4e8fb37111d9310941/native.ttf",
+          "sha256": "d88ec0ddb32437f9df01fcd6faafed8521e1c11d27ef174d1f4c2bd39ae457d7"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/whole/wasm/clip5587/silhouette-checkpoint.json"
+}

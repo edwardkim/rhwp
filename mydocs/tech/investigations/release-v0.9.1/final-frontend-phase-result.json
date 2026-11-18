@@ -1,0 +1,10 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "observerExitCode": 143,
+  "observerReportedPostbuildExitCode": 0,
+  "childAmoSourceResult": "amo-source-result.json",
+  "childAmoRuntimeResult": "amo-rebuilt-firefox-e2e-result.json",
+  "childWorkCompleted": true,
+  "verdictDerivedFromIndividualChildReceipts": true,
+  "observedAt": "2026-11-18T07:06:08.256921+00:00"
+}

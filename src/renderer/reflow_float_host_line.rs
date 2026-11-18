@@ -2,7 +2,7 @@
 
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::VertAlign;
+use crate::model::shape::{ShapeObject, VertAlign};
 use crate::model::table::Table;
 
 use super::composer::ComposedParagraph;
@@ -25,6 +25,9 @@ pub(crate) fn neutral_anchor_metrics(
     if super::para_is_unstored_empty_overlay_table_host(para) {
         return super::unstored_overlay_table_host_line_metrics(para, styles, para_style);
     }
+    if let Some(metrics) = hwp_topbottom_band_host_metrics(para, styles, para_style, dpi) {
+        return Some(metrics);
+    }
     if !para.text.trim().is_empty()
         || para.controls.is_empty()
         || !super::empty_host_controls_are_flow_neutral(para)
@@ -36,7 +39,12 @@ pub(crate) fn neutral_anchor_metrics(
         .char_shape_id_at(0)
         .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
     let char_style = styles.char_styles.get(shape as usize)?;
-    let font_size = char_style.font_size;
+    // 가시 잉크가 없어도 문단 끝 문자는 마지막 줄의 글자 상자에 참여한다.
+    // 재조판 프레임이 이미 계산한 종단 크기를 첫 공백 run의 크기로 낮추면
+    // 측정·배치가 함께 짧아져 뒤 제목과 표가 앞당겨진다.
+    let font_size = char_style
+        .font_size
+        .max(super::composer::paragraph_end_font_size_px(para, styles));
     if font_size <= 0.0 {
         return None;
     }
@@ -53,6 +61,87 @@ pub(crate) fn neutral_anchor_metrics(
     let (height, leading) =
         super::corrected_line_metrics(0.0, 0.0, font_size, spacing_type, spacing);
     Some((height, leading, font_size))
+}
+
+/// 한/글 문서(호환 대상이 MS 워드가 아님)에서 저장 줄 없는 빈 문단이 문단 기준 자리차지
+/// 직선만 가지면, 그 문단은 자기 글자 줄을 그대로 갖고 띠는 걸리는 줄만 민다.
+///
+/// - 띠가 앵커 줄 상자 안에서 시작하면(세로 오프셋 < 줄 높이) 앵커 줄이 띠를 흡수한다. 다음
+///   문단은 `max(앵커 줄 끝, 띠 아래끝)` 에서 시작한다(저장 줄 문서의
+///   [`super::empty_host_line_absorbed_by_topbottom_float`] 와 같은 관계).
+/// - 띠가 그보다 아래면 앵커 줄 뒤 줄들 중 띠에 처음 걸리는 줄만 띠 아래로 밀린다. 뒤 줄은
+///   앵커 줄과 같은 줄 피치로 이어진다고 보고 그 밀림을 앵커 줄 전진에 싣는다.
+///
+/// 웹한글기안기 인쇄(`samples/issue8582/hwp_band.hwpx`, 높이 120 HU 직선, 줄 피치 1100 HU):
+/// 세로 오프셋 600·0 은 밀림 없음, 2374 는 셋째 줄(2200~3300)이 띠(2374~2494)에 걸려 +294 HU.
+/// 개체 항목이 흐름에 더하는 개체 높이(종전 계약)는 앵커 줄 전진에서 뺀다.
+pub(crate) fn hwp_topbottom_band_host_metrics(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    para_style: Option<&ResolvedParaStyle>,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    if styles.word_compat_target
+        || !para.text.trim().is_empty()
+        || para.controls.is_empty()
+        || !super::para_has_no_stored_line_segs(para)
+    {
+        return None;
+    }
+    let mut band: Option<(f64, f64)> = None;
+    let mut object_flow = 0.0f64;
+    for control in &para.controls {
+        // 직선만 본다. 그림·글상자·묶음 개체·표는 종전 경로(앵커 줄을 접고 개체 높이만 흐름에
+        // 더함)를 따른다.
+        let common = match control {
+            Control::Shape(shape) if matches!(shape.as_ref(), ShapeObject::Line(_)) => {
+                shape.common()
+            }
+            _ => return None,
+        };
+        if !is_para_topbottom_float(common) {
+            return None;
+        }
+        let top = super::hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+        let height_px = super::hwpunit_to_px(common.height as i32, dpi);
+        object_flow = object_flow.max(height_px);
+        band = Some(band.map_or((top, top + height_px), |(t, b)| {
+            (t.min(top), b.max(top + height_px))
+        }));
+    }
+    let (band_top, band_bottom) = band?;
+    if band_top < 0.0 || band_bottom <= band_top {
+        return None;
+    }
+    let shape = para
+        .char_shape_id_at(0)
+        .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))?;
+    let font_size = styles.char_styles.get(shape as usize)?.font_size;
+    if font_size <= 0.0 {
+        return None;
+    }
+    let spacing_type = para_style.map_or(crate::model::style::LineSpacingType::Percent, |style| {
+        style.line_spacing_type
+    });
+    let spacing = para_style.map_or(160.0, |style| style.line_spacing);
+    let (height, leading) =
+        super::corrected_line_metrics(0.0, 0.0, font_size, spacing_type, spacing);
+    let pitch = height + leading;
+    if pitch <= 0.0 {
+        return None;
+    }
+    let flow = if band_top < height {
+        // 앵커 줄 상자 안의 띠: 줄이 흡수하고 다음 문단은 줄 끝과 띠 아래끝 중 아래에서.
+        pitch.max(band_bottom)
+    } else {
+        // 띠에 처음 걸리는 뒤 줄(상자 [k·피치, k·피치 + 줄 높이))만 띠 아래로 민다.
+        let first_hit = (1..)
+            .map(|k| k as f64 * pitch)
+            .take_while(|line_top| *line_top < band_bottom)
+            .find(|line_top| line_top + height > band_top);
+        pitch + first_hit.map_or(0.0, |line_top| band_bottom - line_top)
+    };
+    Some(((flow - leading - object_flow).max(0.0), leading, font_size))
 }
 
 /// 양수 첫줄 들여쓰기는 텍스트 없이도 줄 안쪽을 차지한다.

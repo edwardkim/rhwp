@@ -1,0 +1,39 @@
+{
+  "files": [
+    "/home/edward/mygithub/rhwp-worktrees/task-9154-deprecated-atomic-apis/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/task-9154-deprecated-atomic-apis/ttfs/opensource/NotoSansKR-Regular.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/task-9154-deprecated-atomic-apis/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "/home/edward/mygithub/rhwp-worktrees/task-9154-deprecated-atomic-apis/ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "/home/edward/mygithub/rhwp-worktrees/task-9154-deprecated-atomic-apis/ttfs/opensource/RHWPPublicBatang-Regular.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuMathTeXGyre.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSans-Bold.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSans-BoldOblique.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSans-ExtraLight.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSans-Oblique.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSans.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansCondensed-Bold.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansCondensed-BoldOblique.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansCondensed-Oblique.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansCondensed.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansMono-Bold.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansMono-BoldOblique.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansMono-Oblique.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSansMono.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerif-Bold.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerif-BoldItalic.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerif-Italic.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerif.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerifCondensed-Bold.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerifCondensed-BoldItalic.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerifCondensed-Italic.ttf",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/DejaVuSerifCondensed.ttf"
+  ],
+  "fontCount": 27,
+  "allowedDirectories": [
+    "/home/edward/mygithub/rhwp-worktrees/task-9154-deprecated-atomic-apis/ttfs/opensource/",
+    "/home/edward/mygithub/rhwp/output/deprecated-methods/minimal-font/fonts/"
+  ],
+  "dnsResolverReadonlyBind": "/mnt/wsl/resolv.conf",
+  "personalSystemFontsExposed": false,
+  "probeNote": "The first path-only assertion omitted the already-authorized repository OSS directory; the font environment was unchanged."
+}

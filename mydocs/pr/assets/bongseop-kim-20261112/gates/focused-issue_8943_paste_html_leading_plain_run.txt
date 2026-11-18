@@ -1,0 +1,19 @@
+[RustTestSuite] issue_8943_paste_html_leading_plain_run -> regression_suite_027::issue_8943_paste_html_leading_plain_run
+[RustTestSuite] cargo nextest run --locked --test regression_suite_027 -E test(/(^|::)issue_8943_paste_html_leading_plain_run::/) --cargo-profile release-test
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+warning: in config file .config/nextest.toml, ignoring unknown configuration key: profile.ci-duration-observation.junit.report-skipped
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-8942-bongseop-html-clipboard)
+    Finished `release-test` profile [optimized] target(s) in 13.57s
+────────────
+ Nextest run ID d7962dac-4825-4eea-93fd-b38759db1e29 with nextest profile: default
+    Starting 6 tests across 1 binary (280 tests skipped)
+        PASS [   0.008s] (1/6) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::html_plain_run_keeps_surrounding_styled_caret_text
+        PASS [   0.009s] (2/6) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::plain_text_before_a_format_stays_plain_in_later_paragraphs
+        PASS [   0.009s] (3/6) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::first_paragraph_keeps_the_same_result
+        PASS [   0.009s] (4/6) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::leading_plain_run_survives_hwpx_save_and_reopen
+        PASS [   0.018s] (5/6) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::cell_html_plain_run_and_surrounding_styles_survive_both_formats_twice
+        PASS [   0.018s] (6/6) rhwp::regression_suite_027 issue_8943_paste_html_leading_plain_run::mixed_body_and_table_styles_survive_both_formats_twice
+────────────
+     Summary [   0.019s] 6 tests run: 6 passed, 280 skipped
+warning: this repository recommends nextest version 0.9.140, but the current version is 0.9.137
+info: update nextest with cargo nextest self update, or bypass check with --override-version-check

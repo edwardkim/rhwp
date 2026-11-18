@@ -1,0 +1,22 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "8f073dddd67cf8f44bea7c0315c3f9950ba73641e9393747cdbc52d24b33f9a1",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [
+    {
+      "family": "HCR Batang",
+      "style": "Regular",
+      "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+      "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+      "native_path": "/home/edward/mygithub/rhwp-worktrees/review-integration-20261114-jinho-parser-cli-fidelity/output/pr-review/handbook-8153-webfont-cache/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c/HANBatang.woff.ttf",
+      "native_sha256": "2d9a6fc7545efc7eef039c1134ebead1c981bec47b5caafe3239e28b50de09ee"
+    }
+  ],
+  "manifest": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/typed-frame-handbook/required-handbook-8153-native/silhouette_manifest.json",
+  "elapsed_seconds": 417.419
+}

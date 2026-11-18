@@ -1,0 +1,65 @@
+{
+  "source": "3b4212267b26723917ba0f5a9eaf4c8e1b907afb",
+  "base": "f8234f6f90cb25d9601c9d5d762e0a565aea19e4",
+  "profile": "print",
+  "dpi": 96,
+  "compat": "2022",
+  "capture_workers": 8,
+  "minimum_font_environment_used_for_visual": false,
+  "backends": [
+    {
+      "backend": "native",
+      "pages": 50,
+      "minimum": 99.23,
+      "minimum_page": 47,
+      "below_98": 0,
+      "tsv": "native-footnote.tsv",
+      "tsv_sha256": "463f0d0f1809cdacebe16ef4ada3aa28257099999cd5f940f906c185519590aa",
+      "base_tsv": "mydocs/pr/assets/issues7727_7732_20261114/final-1123f322/native-footnote.tsv",
+      "base_tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+      "changes": [
+        {
+          "page": 37,
+          "base": 98.75,
+          "candidate": 99.29
+        }
+      ]
+    },
+    {
+      "backend": "wasm",
+      "pages": 50,
+      "minimum": 99.23,
+      "minimum_page": 47,
+      "below_98": 0,
+      "tsv": "wasm-footnote.tsv",
+      "tsv_sha256": "463f0d0f1809cdacebe16ef4ada3aa28257099999cd5f940f906c185519590aa",
+      "base_tsv": "mydocs/pr/assets/issues7727_7732_20261114/canvaskit-common-3f7e4340/wasm-footnote.tsv",
+      "base_tsv_sha256": "1e7ec85986045afd1dd77a87d88a53c1fa3f61951494d428ba1c2714acdaca6f",
+      "changes": [
+        {
+          "page": 37,
+          "base": 98.75,
+          "candidate": 99.29
+        }
+      ]
+    }
+  ],
+  "direct_reading": {
+    "page": 37,
+    "native_and_wasm": "행31의 정책실현이 독립 Print 및 같은 행 번호31과 같은 기준선에 놓였다. 표 위아래·옆 셀·다음 쪽 문단을 함께 판독했다.",
+    "remaining": "기존 글리프 가장자리·괘선의 미세한 래스터 차이를 100%로 주장하지 않는다."
+  },
+  "focused_cargo": {
+    "tests": 2,
+    "passed": 2,
+    "failed": 0,
+    "seconds": 0.125,
+    "suite": "regression_suite_001",
+    "profile": "release-test",
+    "features": [
+      "native-skia"
+    ],
+    "log_sha256": "04b5a2215a417b612935ad9798d5ab7550d23d4784b3ecff8b118834e886f4c5",
+    "font_isolation": true
+  }
+}

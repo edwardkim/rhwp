@@ -1,0 +1,45 @@
+{
+  "base": "b5064fae1eefff92d60464c51844a38debec09f9",
+  "running": false,
+  "current": "base-fresh-wasm",
+  "steps": [
+    {
+      "name": "base-native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "-j",
+        "8"
+      ],
+      "cwd": "/Users/tsjang/rhwp/output/issue8856/final-source-82c6f27a/fixed-base-source",
+      "exit": 0,
+      "log_sha256": "2dd154c4a269b1a7cd40dd29643c7cbd0495ccc66bb2c47fa22298c5be979ff7"
+    },
+    {
+      "name": "base-fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "cwd": "/Users/tsjang/rhwp/output/issue8856/final-source-82c6f27a/fixed-base-source",
+      "exit": 0,
+      "log_sha256": "fbb04c99a93129399d2b760ce6db82ca8d7fea514341764b0a8fc43075758f27"
+    }
+  ],
+  "native_sha256": "ea429618ca4b9d88126ad1420a7f4445d37feb937abc543dec1edfbf880ee798",
+  "wasm_sha256": "2572b035acf8b70cb6139028ed7acae69de8f60de963fb5bd188afc87ec5f197",
+  "js_sha256": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+  "complete": true,
+  "ended": "2026-11-10T08:36:47.180859+09:00"
+}

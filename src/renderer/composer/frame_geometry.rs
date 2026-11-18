@@ -14,6 +14,20 @@ pub(crate) struct FrameGeometry {
 }
 
 impl ComposedParagraph {
+    /// 현재 줄 소속을 셀의 정렬·저장 extent·실제 문단 배치까지 함께 전달한다.
+    pub(crate) fn cell_with_frame_geometry(
+        composed: &[Self],
+        source: &crate::model::table::Cell,
+    ) -> Option<crate::model::table::Cell> {
+        let mut projected = None;
+        for (index, (common, paragraph)) in composed.iter().zip(&source.paragraphs).enumerate() {
+            if let Cow::Owned(paragraph) = common.paragraph_with_frame_geometry(paragraph) {
+                let cell = projected.get_or_insert_with(|| source.clone());
+                cell.paragraphs[index] = paragraph;
+            }
+        }
+        projected
+    }
     /// 여러 인라인 표의 같은 줄/다른 줄 소속을 현재 프레임이 발행했는지 본다.
     pub(crate) fn frame_owns_multiple_inline_tables(&self) -> bool {
         self.frame_geometry
@@ -39,14 +53,23 @@ impl ComposedParagraph {
                 .collect()
         } else if crate::renderer::para_has_no_stored_line_segs(para) {
             // 합성 줄은 저장 캐시로 수용하지 않는다. 대신 조합기가 이미 발행한
-            // 개체의 실제 줄 소속을 사용해 측정과 전체·부분 배치가 공유한다.
+            // 줄의 글자 범위로 개체의 실제 줄 소속을 정해 측정과 전체·부분 배치가 공유한다.
+            // [#8995] 조합기의 인라인 개체 목록은 줄 소속을 0 으로만 싣는다
+            // (`try_identify_inline_controls`). 그 값을 그대로 쓰면 둘째 줄의 표도 첫 줄
+            // 글자 뒤 펜을 받아 쪽 밖으로 밀린다. 개체의 글자 위치가 시작한 마지막 줄이 소유자다.
+            let positions = para.control_text_positions();
             (0..para.controls.len())
                 .map(|index| {
                     self.inline_controls
                         .iter()
-                        .find(|owner| owner.control_index == index)
-                        .filter(|owner| owner.line_index < self.lines.len())
-                        .map(|owner| owner.line_index)
+                        .find(|owner| owner.control_index == index)?;
+                    let position = *positions.get(index)?;
+                    Some(
+                        self.lines
+                            .iter()
+                            .rposition(|line| line.char_start <= position)
+                            .unwrap_or(0),
+                    )
                 })
                 .collect()
         } else {

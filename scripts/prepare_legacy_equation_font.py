@@ -24,7 +24,9 @@ from prepare_hft_hangul_font import (
 
 HP = 'http://www.hancom.co.kr/hwpml/2011/paragraph'
 ROLE = 'independent-legacy-equation-alphabet-v1'
+ARITHMETIC_ROLE = 'independent-legacy-equation-alphabet-with-arithmetic-v2'
 FAMILY = 'RHWP Hancom Legacy Equation'
+ARITHMETIC_EXTRA = [('times', '×'), ('div', '÷')]
 EXTRA = [
     ('+', '+'), ('-', '-'), ('=', '='), (':', ':'), ('<', '<'), ('>', '>'),
     (',', ','), ('.', '.'), ('/', '/'), ('(', '('), (')', ')'), ('[', '['),
@@ -37,13 +39,14 @@ def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def probes():
+def probes(include_arithmetic=False):
     return [{'script': 'rm {' + c + '}', 'expected': c}
             for c in string.ascii_uppercase + string.ascii_lowercase + string.digits] + [
-        {'script': script, 'expected': character} for script, character in EXTRA]
+        {'script': script, 'expected': character}
+        for script, character in (ARITHMETIC_EXTRA if include_arithmetic else []) + EXTRA]
 
 
-def create(template, output):
+def create(template, output, *, include_arithmetic=False):
     with zipfile.ZipFile(template) as source:
         if any('script' in name.lower() for name in source.namelist()):
             raise ValueError('스크립트가 없는 깨끗한 HWPX 서식을 사용하세요')
@@ -56,7 +59,7 @@ def create(template, output):
         section.set('masterPageCnt', '0')
         for child in list(root):
             root.remove(child)
-        for index, item in enumerate(probes()):
+        for index, item in enumerate(probes(include_arithmetic)):
             paragraph = ET.SubElement(root, '{' + HP + '}p', {
                 'id': str(index), 'paraPrIDRef': '0', 'styleIDRef': '0',
                 'pageBreak': '0', 'columnBreak': '0', 'merged': '0'})
@@ -89,21 +92,25 @@ def create(template, output):
                         if info.filename == 'Contents/section0.xml'
                         else source.read(info.filename))
                 destination.writestr(info, data)
-    manifest = {'role': ROLE, 'input': str(output.resolve()),
+    manifest = {'role': ARITHMETIC_ROLE if include_arithmetic else ROLE,
+                'input': str(output.resolve()),
                 'input_sha256': digest(output), 'font_family': FAMILY,
-                'probes': probes(), 'template_sha256': digest(template)}
+                'probes': probes(include_arithmetic), 'template_sha256': digest(template)}
     output.with_suffix('.manifest.json').write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
 def recover(pdf, manifest_path, output):
     manifest = json.loads(manifest_path.read_text(encoding='utf-8'))
-    if (manifest.get('role') != ROLE or manifest.get('probes') != probes()
+    include_arithmetic = manifest.get('role') == ARITHMETIC_ROLE
+    expected_probes = probes(include_arithmetic)
+    if (manifest.get('role') not in (ROLE, ARITHMETIC_ROLE)
+            or manifest.get('probes') != expected_probes
             or digest(manifest['input']) != manifest['input_sha256']):
         raise ValueError('동일한 독립 문자 표본과 입력 SHA-256이 필요합니다')
     document = pymupdf.open(pdf)
     observed = ''.join(c for page in document for c in page.get_text() if not c.isspace())
-    if observed != ''.join(item['expected'] for item in probes()):
+    if observed != ''.join(item['expected'] for item in expected_probes):
         raise ValueError('대상 PDF는 사용할 수 없습니다. 전체 독립 문자 표본을 Print 하세요')
     glyphs = {}
     fonts = {font[0] for page in document for font in page.get_fonts() if font[2] == 'Type3'}
@@ -122,8 +129,10 @@ def recover(pdf, manifest_path, output):
                 raise ValueError(f'서로 다른 글리프 U+{scalar:04X}')
             glyphs[scalar] = program
     required = set(map(ord, string.ascii_letters + string.digits + '+-=:<>,./()[]'))
+    if include_arithmetic:
+        required.update(map(ord, '×÷'))
     if set(glyphs) != required:
-        raise ValueError('구형의 독립 Type3 문자 75개 전체가 필요합니다')
+        raise ValueError(f'구형의 독립 Type3 문자 {len(required)}개 전체가 필요합니다')
     builder = FontBuilder(1000, isTTF=False)
     builder.setupGlyphOrder(['.notdef'] + [f'uni{c:04X}' for c in sorted(glyphs)])
     builder.setupCharacterMap({c: f'uni{c:04X}' for c in glyphs})
@@ -146,7 +155,7 @@ def recover(pdf, manifest_path, output):
                                     for name, value in strings.items()})
     output.parent.mkdir(parents=True, exist_ok=True)
     builder.save(output)
-    evidence = {'role': ROLE, 'input_sha256': manifest['input_sha256'],
+    evidence = {'role': manifest['role'], 'input_sha256': manifest['input_sha256'],
                 'pdf': str(pdf), 'pdf_sha256': digest(pdf), 'font': str(output),
                 'font_sha256': digest(output), 'family': FAMILY,
                 'glyph_transform': 'identity; no target PDF, shift, scale or contour correction',
@@ -162,13 +171,16 @@ def main():
     create_parser = commands.add_parser('create')
     create_parser.add_argument('--template', type=Path, required=True)
     create_parser.add_argument('--output', type=Path, required=True)
+    create_parser.add_argument('--include-arithmetic-operators', action='store_true',
+                               help='구형 ×·÷도 포함한 86문자/Type3 77자 독립 표본')
     recover_parser = commands.add_parser('recover')
     recover_parser.add_argument('--pdf', type=Path, required=True)
     recover_parser.add_argument('--manifest', type=Path, required=True)
     recover_parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     if args.command == 'create':
-        create(args.template, args.output)
+        create(args.template, args.output,
+               include_arithmetic=args.include_arithmetic_operators)
     else:
         recover(args.pdf, args.manifest, args.output)
 

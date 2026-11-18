@@ -1,0 +1,113 @@
+{
+  "source": "eeaecff59e834f28437c98b509089bbb36a7682d",
+  "checks": [
+    {
+      "key": "both",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "both",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "both-hwp",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "both-hwp",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "even",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "even",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "symmetric",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "symmetric",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "reverse",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "reverse",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "rectangle",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "rectangle",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "table",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "table",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "color",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "color",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "color-hwpx",
+      "backend": "native",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    },
+    {
+      "key": "color-hwpx",
+      "backend": "wasm",
+      "pages": 3,
+      "pixel_identical_to_reviewed_5e61789786_output": true
+    }
+  ]
+}

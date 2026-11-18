@@ -1,0 +1,1019 @@
+{
+  "entries": [
+    {
+      "before": {
+        "rule": "rust/hard-coded-cryptographic-value",
+        "message": "This hard-coded value is used as [a salt](1).\nThis hard-coded value is used as [a salt](2).\nThis hard-coded value is used as [a salt](3).\nThis hard-coded value is used as [a salt](4).\nThis hard-coded value is used as [a password](5).",
+        "locations": [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+            "region": {
+              "startLine": 689,
+              "startColumn": 24,
+              "endLine": 689,
+              "endColumn": 27
+            },
+            "message": null
+          }
+        ],
+        "flows": [
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 586,
+                "startColumn": 20,
+                "endLine": 586,
+                "endColumn": 44
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 586,
+                "startColumn": 20,
+                "endLine": 586,
+                "endColumn": 45
+              },
+              "message": "TryExpr [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 586,
+                "startColumn": 9,
+                "endLine": 586,
+                "endColumn": 17
+              },
+              "message": "key_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 605,
+                "startColumn": 34,
+                "endLine": 605,
+                "endColumn": 42
+              },
+              "message": "key_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 605,
+                "startColumn": 33,
+                "endLine": 605,
+                "endColumn": 42
+              },
+              "message": "&key_salt"
+            }
+          ],
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 635,
+                "startColumn": 20,
+                "endLine": 635,
+                "endColumn": 44
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 635,
+                "startColumn": 20,
+                "endLine": 635,
+                "endColumn": 45
+              },
+              "message": "TryExpr [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 635,
+                "startColumn": 9,
+                "endLine": 635,
+                "endColumn": 17
+              },
+              "message": "key_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 656,
+                "startColumn": 34,
+                "endLine": 656,
+                "endColumn": 42
+              },
+              "message": "key_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 656,
+                "startColumn": 33,
+                "endLine": 656,
+                "endColumn": 42
+              },
+              "message": "&key_salt"
+            }
+          ],
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 585,
+                "startColumn": 27,
+                "endLine": 585,
+                "endColumn": 51
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 585,
+                "startColumn": 27,
+                "endLine": 585,
+                "endColumn": 52
+              },
+              "message": "TryExpr [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 585,
+                "startColumn": 9,
+                "endLine": 585,
+                "endColumn": 24
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 592,
+                "startColumn": 34,
+                "endLine": 592,
+                "endColumn": 49
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 592,
+                "startColumn": 33,
+                "endLine": 592,
+                "endColumn": 49
+              },
+              "message": "&validation_salt"
+            }
+          ],
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 634,
+                "startColumn": 27,
+                "endLine": 634,
+                "endColumn": 51
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 634,
+                "startColumn": 27,
+                "endLine": 634,
+                "endColumn": 52
+              },
+              "message": "TryExpr [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 634,
+                "startColumn": 9,
+                "endLine": 634,
+                "endColumn": 24
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 642,
+                "startColumn": 34,
+                "endLine": 642,
+                "endColumn": 49
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 642,
+                "startColumn": 33,
+                "endLine": 642,
+                "endColumn": 49
+              },
+              "message": "&validation_salt"
+            }
+          ]
+        ]
+      },
+      "after_raw": {
+        "rule": "rust/hard-coded-cryptographic-value",
+        "message": "This hard-coded value is used as [a password](1).\nThis hard-coded value is used as [a salt](2).\nThis hard-coded value is used as [a salt](3).\nThis hard-coded value is used as [a salt](4).\nThis hard-coded value is used as [a salt](5).",
+        "locations": [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+            "region": {
+              "startLine": 689,
+              "startColumn": 24,
+              "endLine": 689,
+              "endColumn": 27
+            },
+            "message": null
+          }
+        ],
+        "flows": [
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 117,
+                "startColumn": 5,
+                "endLine": 117,
+                "endColumn": 38
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 116,
+                "startColumn": 80,
+                "endLine": 118,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 49,
+                "startColumn": 16,
+                "endLine": 49,
+                "endColumn": 58
+              },
+              "message": "generate_random_encryption_key(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 49,
+                "startColumn": 9,
+                "endLine": 49,
+                "endColumn": 58
+              },
+              "message": "return ... [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 1042,
+                "startColumn": 30,
+                "endLine": 1050,
+                "endColumn": 10
+              },
+              "message": "compute_encryption_key(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 1042,
+                "startColumn": 30,
+                "endLine": 1051,
+                "endColumn": 18
+              },
+              "message": "... .unwrap() [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 1042,
+                "startColumn": 13,
+                "endLine": 1042,
+                "endColumn": 27
+              },
+              "message": "encryption_key [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 1054,
+                "startColumn": 53,
+                "endLine": 1054,
+                "endColumn": 67
+              },
+              "message": "encryption_key [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 1054,
+                "startColumn": 52,
+                "endLine": 1054,
+                "endColumn": 67
+              },
+              "message": "&encryption_key [&ref, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 525,
+                "startColumn": 5,
+                "endLine": 525,
+                "endColumn": 26
+              },
+              "message": "...: ... [&ref, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 532,
+                "startColumn": 37,
+                "endLine": 532,
+                "endColumn": 51
+              },
+              "message": "encryption_key [&ref, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 554,
+                "startColumn": 25,
+                "endLine": 554,
+                "endColumn": 45
+              },
+              "message": "...: ... [&ref, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 558,
+                "startColumn": 43,
+                "endLine": 558,
+                "endColumn": 56
+              },
+              "message": "user_password"
+            }
+          ],
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 586,
+                "startColumn": 20,
+                "endLine": 586,
+                "endColumn": 44
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 586,
+                "startColumn": 20,
+                "endLine": 586,
+                "endColumn": 45
+              },
+              "message": "TryExpr [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 586,
+                "startColumn": 9,
+                "endLine": 586,
+                "endColumn": 17
+              },
+              "message": "key_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 605,
+                "startColumn": 34,
+                "endLine": 605,
+                "endColumn": 42
+              },
+              "message": "key_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 605,
+                "startColumn": 33,
+                "endLine": 605,
+                "endColumn": 42
+              },
+              "message": "&key_salt"
+            }
+          ],
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 585,
+                "startColumn": 27,
+                "endLine": 585,
+                "endColumn": 51
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 585,
+                "startColumn": 27,
+                "endLine": 585,
+                "endColumn": 52
+              },
+              "message": "TryExpr [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 585,
+                "startColumn": 9,
+                "endLine": 585,
+                "endColumn": 24
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 592,
+                "startColumn": 34,
+                "endLine": 592,
+                "endColumn": 49
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 592,
+                "startColumn": 33,
+                "endLine": 592,
+                "endColumn": 49
+              },
+              "message": "&validation_salt"
+            }
+          ],
+          [
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 27
+              },
+              "message": "0u8"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 24,
+                "endLine": 689,
+                "endColumn": 32
+              },
+              "message": "...::from_elem(...) [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 689,
+                "startColumn": 9,
+                "endLine": 689,
+                "endColumn": 16
+              },
+              "message": "mut buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 8,
+                "endLine": 699,
+                "endColumn": 11
+              },
+              "message": "buf [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 699,
+                "startColumn": 5,
+                "endLine": 699,
+                "endColumn": 12
+              },
+              "message": "Ok(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 688,
+                "startColumn": 64,
+                "endLine": 700,
+                "endColumn": 2
+              },
+              "message": "{ ... } [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 634,
+                "startColumn": 27,
+                "endLine": 634,
+                "endColumn": 51
+              },
+              "message": "generate_random_bytes(...) [Ok, element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 634,
+                "startColumn": 27,
+                "endLine": 634,
+                "endColumn": 52
+              },
+              "message": "TryExpr [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 634,
+                "startColumn": 9,
+                "endLine": 634,
+                "endColumn": 24
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 642,
+                "startColumn": 34,
+                "endLine": 642,
+                "endColumn": 49
+              },
+              "message": "validation_salt [element]"
+            },
+            {
+              "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+              "region": {
+                "startLine": 642,
+                "startColumn": 33,
+                "endLine": 642,
+                "endColumn": 49
+              },
+              "message": "&validation_salt"
+            }
+          ]
+        ]
+      },
+      "note": "Same primary finding. Witness enumeration and message path-reference order can differ; no source change is inferred from witness order alone."
+    }
+  ]
+}

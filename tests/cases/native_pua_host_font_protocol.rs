@@ -1,9 +1,15 @@
 //! 관계형: 글꼴 소유자 등록과 해제의 세션 프로토콜 계약.
-//! 주석 갱신: 2026-11-03T19:15:40+09:00; 직전 파일 커밋: 2026-11-01T22:36:27+09:00 (9b0a86aabd).
+//! 주석 갱신: 2026-11-12T00:52:45+09:00; 직전 파일 커밋: 2026-11-09T21:28:10+09:00 (54b3f8b8bb00c8e51cd96494ce9dbf4a8f355c59).
 //! 근거: tests/fixtures/fonts/RHWPHostFixture.LICENSE.md, tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md.
 //! 글꼴 등록·해제 전후의 세션 소유 관계 검사이며 페이지별 raw 측정은 대상이 아니다.
 //! 실제 글꼴 요청 이름과 명시 exact 소유자의 세션 프로토콜 계약.
 //! 실제 페이지 좌표나 한컴 피델리티의 기대값을 고정하지 않는다.
+//! 작은 삼각형의 실제 입력은 중첩 표 17쪽, 독립 한컴 Print PDFium 96 DPI·색상 보정 전 2px raw다.
+//! 원본: samples/basic/issue2007_nested_cell_pagination_42065.hwp; 기준 PDF와 입력 SHA는 보호 manifest에 있다.
+//! 2026-11-12 Native 전쪽 최저 97.99083%, fresh WASM 전쪽 최저 98.05646%.
+//! 8쪽 Native/fresh WASM 99.52149%/99.52472%, 9쪽 99.98562%/99.98759%.
+//! 원 글리프·전진·해제 대체의 합성 관계 검사이며 실물 좌표는 고정하지 않는다.
+//! 근거: mydocs/pr/assets/pr8896/protection/ 및 font-supply/README.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -373,6 +379,8 @@ fn host_font_request_names_are_not_css_quoted() {
 #[test]
 fn source_pointer_requests_its_program_without_reclassifying_unicode_pointer() {
     for (text, requires_source_program) in [
+        ("\u{f02fb}", true),
+        ("▸", false),
         ("\u{f02fc}", true),
         ("►", false),
         ("\u{f031c}", true),
@@ -586,6 +594,11 @@ fn prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_
 }
 
 #[test]
+fn small_source_triangle_keeps_its_program_and_clear_restores_unicode_fallback() {
+    assert_prepared_source_symbol('\u{f02fb}', "▸");
+}
+
+#[test]
 fn source_square_uses_supplied_hmtx_and_clear_restores_unicode_fallback() {
     assert_prepared_source_symbol('\u{f031c}', "■");
 }
@@ -611,6 +624,40 @@ use rhwp::renderer::native_pua_fonts::NativePuaFonts;
 const REGULAR: &[u8] = include_bytes!("../../tests/fixtures/fonts/RHWPEquationLatinOnly.ttf");
 const LIGHT: &[u8] = include_bytes!("../../tests/fixtures/fonts/RHWPEquationCJKLight.ttf");
 const NO_DIGIT: &[u8] = include_bytes!("../../tests/fixtures/fonts/RHWPHftOutline.otf");
+
+#[test]
+fn original_truetype_provider_requires_program_family_ownership() {
+    use rhwp::model::style::Font;
+
+    let prepare = |family: &str, alt_type: u8| {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        let mut document = core.document().clone();
+        for fonts in &mut document.doc_info.font_faces {
+            fonts[0] = Font {
+                name: family.into(),
+                alt_type,
+                ..Default::default()
+            };
+        }
+        for shape in &mut document.doc_info.char_shapes {
+            shape.font_ids = [0; 7];
+        }
+        core.set_document(document);
+        core.prepare_native_otf_fonts_with(|_| Some((REGULAR.to_vec(), 0)))
+            .unwrap()
+    };
+
+    // 공개 fixture의 name ID 1과 6은 같은 원본 프로그램을 식별한다.
+    assert!(prepare("RHWP Equation Contract", 1));
+    assert!(prepare("RHWPEquationContract-LatinOnly", 1));
+    // ID 4는 표시용 full name이며 다른 family의 원본 전진을 인증하지 않는다.
+    assert!(!prepare("RHWP Equation Contract LatinOnly", 1));
+    assert!(!prepare("Missing Source", 1));
+    assert!(!prepare("Missing Source,RHWP Equation Contract", 1));
+    // HFT의 표시용 대체 프로그램은 원본 TrueType 전진 요청과 구분한다.
+    assert!(prepare("Missing Source", 2));
+}
 
 #[test]
 fn compact_truetype_retains_unicode_coverage_and_natural_advances() {
@@ -707,7 +754,7 @@ fn literal_space_programs_are_owned_by_source_type() {
 }
 
 #[test]
-fn unassigned_hwp5_font_bits_do_not_create_truetype_requests() {
+fn unassigned_hwp5_font_bits_allow_source_probe_without_truetype_declaration() {
     use rhwp::model::provenance::SourceFormat;
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
@@ -728,10 +775,46 @@ fn unassigned_hwp5_font_bits_do_not_create_truetype_requests() {
     doc.provenance.format = SourceFormat::Hwp5;
     doc.provenance.hwpx_lineage = false;
     core.set_document(doc.clone());
-    assert!(!core
-        .native_otf_font_requests()
-        .iter()
-        .any(|request| request.source_ttf));
+    let original = format!("{:?}", core.document());
+    let requests = core.native_otf_font_requests();
+    assert!(
+        !requests.is_empty(),
+        "미확인 원본 프로그램은 조회할 수 있다"
+    );
+    assert!(
+        requests.iter().all(|request| {
+            request.source_ttf && request.family == "RHWP unlisted source fixture"
+        }),
+        "원본과 같은 이름의 실제 TrueType만 요청한다"
+    );
+
+    // HWP5 사양의 미분류 비트는 조회 자격과 달리 TTF 선언의 근거가 아니다.
+    // 실제 프로그램이 없는 동안 paint의 원본 유형과 문서 IR을 그대로 보존한다.
+    fn collect_source_types(
+        node: &rhwp::renderer::render_tree::RenderNode,
+        text: &mut String,
+        declarations: &mut Vec<bool>,
+    ) {
+        if let rhwp::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text.chars().any(|ch| "A가".contains(ch)) {
+                text.push_str(&run.text);
+                declarations.push(run.style.source_font_is_ttf);
+            }
+        }
+        for child in &node.children {
+            collect_source_types(child, text, declarations);
+        }
+    }
+    let tree = core.build_page_render_tree(0).unwrap();
+    let mut text = String::new();
+    let mut declarations = Vec::new();
+    collect_source_types(&tree.root, &mut text, &mut declarations);
+    assert!(
+        text.contains('A') && text.contains('가'),
+        "실제 본문 run을 확인한다"
+    );
+    assert!(!declarations.is_empty() && declarations.iter().all(|declared| !declared));
+    assert_eq!(format!("{:?}", core.document()), original);
     doc.provenance.hwpx_lineage = true;
     core.set_document(doc.clone());
     assert!(core

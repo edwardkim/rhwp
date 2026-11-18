@@ -1,0 +1,30 @@
+{
+  "recorded_at": "2026-11-12T15:21:56.246247+00:00",
+  "tested_code_head": "73d06ed0b18df7c222a850bb5d9340c9b7de2bcc",
+  "candidate_head": "9781dfd740b6722ee77c70fd5854e7ee1fa7a17a",
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "identical_source_trees": {
+    "src": "9f3d2efea280b9b6f2eea33819fe01043ac3e6f1",
+    "crates": "419c7064dfa4e626ad47734fd105ebc1dfa736a3",
+    "scripts": "fa0a728014c9114687aa5ba58607b3e272be0fc1",
+    "assets": "73414adcf00534f04ccc94e83eb743483c15cb21",
+    "ttfs": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+    "tests": "b2fbbbdf86d7b94271cfd2bfc1c10cbfb17d60c5",
+    "samples": "d1278101c5ad8da7a5e0ba8b13ac1c71afa308ca",
+    "pdf": "dfa97e86a407b5547a880bbdd6c825cc692530b0",
+    "rhwp-studio/src": "e532beb6e5644e60169288ee626f0b7ee7c31df7",
+    "rhwp-studio/e2e": "635360d6082afab46283e613ea5ad53e03e35c9b",
+    "Cargo.toml": "67ffbf80f174ba3465e4454d140f758395833b2e",
+    "Cargo.lock": "34d08aa8d5150817968568e1ab6f68af228eeeac",
+    "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787"
+  },
+  "generated_public_js_comment_only": true,
+  "public_js_matches_actual_tested_package": true,
+  "changed_files": 2398,
+  "first_rust_file_index": 1,
+  "under_github_files_3000_limit": true,
+  "merge_tree_exit": 0,
+  "merge_tree": "95b91c4fc44f3c719a3aa40154790d357822a7f1",
+  "working_tree_clean": true,
+  "private_font_or_log_or_derived_files_added": false
+}

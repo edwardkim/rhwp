@@ -1,0 +1,51 @@
+{
+  "key": "nars-2021",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8615
+  ],
+  "input": "samples/issue8610/36849-nars-press-release-20211116.hwp",
+  "input_sha256": "c41571e0bda978ce72eb96283d6437cff635b6a1d424919a6f84b9388df8ed89",
+  "pdf": "pdf/issue8610/36849-nars-press-release-20211116-2022.pdf",
+  "pdf_sha256": "4eb12aebb771a714fb8fa4210a4706411c236e8a953959707a7ce72cd748d10b",
+  "pdf_pages": 3,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.85,
+  "below90": 0,
+  "full_tsv": "native/nars-2021/full.tsv",
+  "full_tsv_sha256": "4b9f9f3b34e88b7ab5d02e6baa1375c155757cd0a57c7c836634422616430078",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r28-direction-native/nars-2021/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.85",
+      "actual_png_sha256": "4c0c8c463a9ef65428ba286f767bc089322aee110e6fc09882da95198be49e0b",
+      "pdf_png_sha256": "65cfef3a78d4a3f08d9fbe9463b53e23c59ba131d2467e7188274ca1d5430b6c",
+      "review": "native/nars-2021/review-001.png",
+      "overlay": "native/nars-2021/overlay-001.png"
+    },
+    {
+      "page": 2,
+      "raw": "100.00",
+      "actual_png_sha256": "f486da608962b64fabffa303d1eca51954bee4813879747d59c87407d5a085f9",
+      "pdf_png_sha256": "33614b779440bce722a79b5395c6ac0aefc945b7af758540e5c3e788f6a9abf6",
+      "review": "native/nars-2021/review-002.png",
+      "overlay": "native/nars-2021/overlay-002.png"
+    },
+    {
+      "page": 3,
+      "raw": "100.00",
+      "actual_png_sha256": "a8bbfbbe3bc4b3d7804291f7734897b259342978222bf2d925a7728eec4be97b",
+      "pdf_png_sha256": "fd72d473356728535d12516b60e56ce6b7bc248687471e63363c70d63fcec351",
+      "review": "native/nars-2021/review-003.png",
+      "overlay": "native/nars-2021/overlay-003.png"
+    }
+  ]
+}

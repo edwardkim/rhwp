@@ -1,0 +1,1046 @@
+{
+  "os": "ProductName:\t\tmacOS\nProductVersion:\t\t26.6.2\nBuildVersion:\t\t25G83\n",
+  "font_files": [
+    {
+      "path": "/System/Library/Fonts/Apple Braille Outline 6 Dot.ttf",
+      "sha256": "aa7570d12d0bd44ef0d736683b600efa0c6eb28ab118a9261009cce1aa06aa1a",
+      "bytes": 266008
+    },
+    {
+      "path": "/System/Library/Fonts/Apple Braille Outline 8 Dot.ttf",
+      "sha256": "42ec4e61ddf37e2f13cac751d5ace0e3a9138a489202652aefe1e8ecd5b34701",
+      "bytes": 283076
+    },
+    {
+      "path": "/System/Library/Fonts/Apple Braille Pinpoint 6 Dot.ttf",
+      "sha256": "40be69c5d8e6a0dde50f22eb4732bb617dfce91aaee354774274d56e3ee5c492",
+      "bytes": 185180
+    },
+    {
+      "path": "/System/Library/Fonts/Apple Braille Pinpoint 8 Dot.ttf",
+      "sha256": "3a40d041c49e8c710350df653be597df9e5cb3b1588df6df2b4aeaf68a1aef71",
+      "bytes": 191768
+    },
+    {
+      "path": "/System/Library/Fonts/Apple Braille.ttf",
+      "sha256": "0e8538123007b421c99a7f3bcbaec0c24856ce64a466d79246c473cf569729ad",
+      "bytes": 138012
+    },
+    {
+      "path": "/System/Library/Fonts/Apple Color Emoji.ttc",
+      "sha256": "435ee0b75b26d671e089ddad38640473cc31febc4dbdfae27843a0a000d7ff62",
+      "bytes": 192123488
+    },
+    {
+      "path": "/System/Library/Fonts/Apple Symbols.ttf",
+      "sha256": "99b1a177669c568bcb157c107ea4ba0f1f60c77021df990cc5c1d7afa3863b92",
+      "bytes": 897936
+    },
+    {
+      "path": "/System/Library/Fonts/AppleSDGothicNeo.ttc",
+      "sha256": "e33989af92c53dd2b80efd88f50c404094a046658d0e7a7692619587570e616c",
+      "bytes": 55373848
+    },
+    {
+      "path": "/System/Library/Fonts/ArialHB.ttc",
+      "sha256": "45844259d86c0f2ea1b2446ecf34be47491b09d868f2f996672396ffe505f3f3",
+      "bytes": 459376
+    },
+    {
+      "path": "/System/Library/Fonts/Avenir Next Condensed.ttc",
+      "sha256": "2648d9b6344edc3706a4ba14e8c08a03f4640b404090dfca9d991cadbaedeff8",
+      "bytes": 3288644
+    },
+    {
+      "path": "/System/Library/Fonts/Avenir Next.ttc",
+      "sha256": "98dec241f3ee712a37fad61aafdb83e225ed54c3e5b6e9f0abeb24eba13743ba",
+      "bytes": 4994280
+    },
+    {
+      "path": "/System/Library/Fonts/Avenir.ttc",
+      "sha256": "8a91c65df9df9f597bf9e5460e6c6d2a1c9d7d10c5e1d2af310318df23739490",
+      "bytes": 1644004
+    },
+    {
+      "path": "/System/Library/Fonts/GeezaPro.ttc",
+      "sha256": "5b4309f8d596abee520c0826885a39483a16fb244489d2c313322575df4b04a2",
+      "bytes": 979396
+    },
+    {
+      "path": "/System/Library/Fonts/Geneva.ttf",
+      "sha256": "b33d76749bbe41ebdffbdfc0330ace133f231d845539063bb2499d6681681a2a",
+      "bytes": 736764
+    },
+    {
+      "path": "/System/Library/Fonts/Helvetica.ttc",
+      "sha256": "25eceb458d4baf628ee0b6a135a9f8ac5ec7b2826646720834bd2bf00dfc825a",
+      "bytes": 2369592
+    },
+    {
+      "path": "/System/Library/Fonts/HelveticaNeue.ttc",
+      "sha256": "a43317500f5c8086ebbe479b32e86f53ce7c075c14283aa9894cc23be5bfd8e2",
+      "bytes": 4472716
+    },
+    {
+      "path": "/System/Library/Fonts/Hiragino Sans GB.ttc",
+      "sha256": "f887295caf2881cab9554b14c5ab4c9ee624c3895599da152ec37416b5aefae0",
+      "bytes": 23522052
+    },
+    {
+      "path": "/System/Library/Fonts/Kohinoor.ttc",
+      "sha256": "464b1d1eb2bde3bdd68bed5a2e87af1c54c35712ba532d2c7ec9822be17a01d7",
+      "bytes": 1400200
+    },
+    {
+      "path": "/System/Library/Fonts/KohinoorBangla.ttc",
+      "sha256": "b24e05af7634658467865703d741ce2fb19c8fdff7d763ea69a1f413acb6a573",
+      "bytes": 706144
+    },
+    {
+      "path": "/System/Library/Fonts/KohinoorGujarati.ttc",
+      "sha256": "9fbcfdf420f0e85aa03981e2ad2d7757d8c9ac36359fbefb8be428d7dfa32171",
+      "bytes": 538456
+    },
+    {
+      "path": "/System/Library/Fonts/KohinoorTelugu.ttc",
+      "sha256": "6e55a5b0eb8169b634db0d6345078d6c5637b7a9d375cb56a1742a0944892bc7",
+      "bytes": 675700
+    },
+    {
+      "path": "/System/Library/Fonts/LucidaGrande.ttc",
+      "sha256": "d1030f2b3c967b740d236f2a59d38b69705eda36e0633c88eaef06d8b0833ab6",
+      "bytes": 3202372
+    },
+    {
+      "path": "/System/Library/Fonts/MarkerFelt.ttc",
+      "sha256": "f6d3bd86dc094b705768129ca621055192764145270138f5a67be4b546f14fb3",
+      "bytes": 628392
+    },
+    {
+      "path": "/System/Library/Fonts/Menlo.ttc",
+      "sha256": "dc256e0b39c2a6fec947129d421fef41b8b429f58f9b6e5d1b148c87f775c1f6",
+      "bytes": 2156036
+    },
+    {
+      "path": "/System/Library/Fonts/Monaco.ttf",
+      "sha256": "e110b2fb6248c654878dee87e9805ac0b2afc8fab19099cf92bfe12ea085c028",
+      "bytes": 534216
+    },
+    {
+      "path": "/System/Library/Fonts/MuktaMahee.ttc",
+      "sha256": "1b3107a0b99ccf581ea8b1a3fd36abaee4681d2312d333576e05f13b81f157cc",
+      "bytes": 873820
+    },
+    {
+      "path": "/System/Library/Fonts/Noteworthy.ttc",
+      "sha256": "7785163d9b841cc586d1e696fb4c16a657e16049b092e488a51003e74be8ec21",
+      "bytes": 562064
+    },
+    {
+      "path": "/System/Library/Fonts/NotoNastaliq.ttc",
+      "sha256": "c6b75b3b3ca434c69e4a1d44205c35de0c57f314cb14c3fc33f1ef0cf0455aa7",
+      "bytes": 920420
+    },
+    {
+      "path": "/System/Library/Fonts/NotoSansKannada.ttc",
+      "sha256": "165162cd71aebb8172df78a1371dd47f3d630eb195db8dae871fff73e1c8f45b",
+      "bytes": 1048500
+    },
+    {
+      "path": "/System/Library/Fonts/NotoSansMyanmar.ttc",
+      "sha256": "52189a3758c54cb0f37d6452d029d24a866fb1ef89bab970e320fe72cd7b0741",
+      "bytes": 1727576
+    },
+    {
+      "path": "/System/Library/Fonts/NotoSansOriya.ttc",
+      "sha256": "5cdd527c8ffa2f2d403ae700d4955294156edc8b75d258e7e8f6079229dcc6ee",
+      "bytes": 318288
+    },
+    {
+      "path": "/System/Library/Fonts/NotoSerifMyanmar.ttc",
+      "sha256": "ba99aa062aac7a52ee36ba641fe1984176637852f3fcd2317f6d9d022e6cd737",
+      "bytes": 1150952
+    },
+    {
+      "path": "/System/Library/Fonts/Optima.ttc",
+      "sha256": "1033090a681ea6b7f672febe9e23a91ae6ee06df645cd6efda4a8c1d49975803",
+      "bytes": 265552
+    },
+    {
+      "path": "/System/Library/Fonts/Palatino.ttc",
+      "sha256": "16ab9a45e8e802db73662cd411cd08402c1360e5c87ffdd4cd0824dc8457bf3e",
+      "bytes": 1788068
+    },
+    {
+      "path": "/System/Library/Fonts/STHeiti Light.ttc",
+      "sha256": "a57b0316cc0544f682b8fb9855e14ade79ae77340ef6a01ba9210e25b4c5a5b7",
+      "bytes": 55783456
+    },
+    {
+      "path": "/System/Library/Fonts/STHeiti Medium.ttc",
+      "sha256": "f8fa4a63e2cf500e98e64d4c73260daaba049306cf85dec9e3729bc285b7d645",
+      "bytes": 55754164
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Academy Engraved LET Fonts.ttf",
+      "sha256": "8fa97115d74b73c4657525f78fd4d7a2c7618245eeefdcf51e7f39b0efe23232",
+      "bytes": 109152
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Al Nile.ttc",
+      "sha256": "ef8e9a2e578d12fdedf719b70c12eb631996bd8bfd46ecbee0b0c7cc23832d3e",
+      "bytes": 131264
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Al Tarikh.ttc",
+      "sha256": "b16f4d19c1d300ec346894e7177af244f6815004e211f0a7071a5fdd2d2d5133",
+      "bytes": 79748
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/AlBayan.ttc",
+      "sha256": "180a77a55330ec8e72daec57741fbef87dd98adf04e41db4bb08a37f91a6c356",
+      "bytes": 186408
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/AmericanTypewriter.ttc",
+      "sha256": "a2e235b25ba5863306a8102077e923c9fb4971741e8416a939e7ae60f576ef3a",
+      "bytes": 2440576
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Andale Mono.ttf",
+      "sha256": "ca436a8f07f6699107542ebe19dcc9478f12aa666927699e9fa10115e7d2ee95",
+      "bytes": 109700
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Apple Chancery.ttf",
+      "sha256": "a9145a5dd2ab5b8f1813d22688de78ac1efee135d1c7f3bb30b5d8f30a311d80",
+      "bytes": 336652
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/AppleGothic.ttf",
+      "sha256": "def69dc2b5e12746049a5dcb189f95341ec460589f47587938567313af3020b1",
+      "bytes": 15255648
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/AppleMyungjo.ttf",
+      "sha256": "f2017df4b5dd45cd790567f318791045b0379f6fda6e0348997d36edfdbcc70c",
+      "bytes": 18760352
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Black.ttf",
+      "sha256": "7d7db3ad96a31373c1437c6ab14266f6605495544c8e663558b047521174c42e",
+      "bytes": 122556
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Bold Italic.ttf",
+      "sha256": "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731",
+      "bytes": 558672
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
+      "sha256": "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0",
+      "bytes": 750984
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Italic.ttf",
+      "sha256": "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98",
+      "bytes": 553284
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Narrow Bold Italic.ttf",
+      "sha256": "035cfb8b776e7ce27f4c0ea0dc3ca3ccf85c8da5d59595cecddf02de966fb985",
+      "bytes": 183932
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Narrow Bold.ttf",
+      "sha256": "fcf34b330033e26c06e9bd466bea5a3e4b2f39272972275369beb7d8b257ed57",
+      "bytes": 184420
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Narrow Italic.ttf",
+      "sha256": "f3d0827024939f01f134668c1d25709e56c5a085bd560e33dc598e86203d31d9",
+      "bytes": 184944
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Narrow.ttf",
+      "sha256": "9e1d881c4e43b51868f5e235ea5a12c838e23cc8df6277df1a3c94e158999826",
+      "bytes": 179492
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Rounded Bold.ttf",
+      "sha256": "a74ea71c366f15c81f9ce00a757cefb938cda21c0d32e51037d9a038e5ebc14b",
+      "bytes": 49296
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial Unicode.ttf",
+      "sha256": "876af2cd4854644e7f3e7feb2f688997fdb3343c6df6693611209c9dfb47ccec",
+      "bytes": 23278008
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Arial.ttf",
+      "sha256": "525979822591a3447cfc49d943d6f7683508e25543407871c0ed8fed05fd2bd9",
+      "bytes": 773236
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Ayuthaya.ttf",
+      "sha256": "96a974a13a8737931a343eb8cef7d0bfb534b2fcafeab9482dbed70f2d8662fe",
+      "bytes": 307268
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Baghdad.ttc",
+      "sha256": "0050385e9b57d794fe7acbc97495d4acffb476611d10bcbfd543732ef2fc41df",
+      "bytes": 109492
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Bangla MN.ttc",
+      "sha256": "d0f631d4d6cb83d5db456f4507182360cad1cadd1a58be1e32b00140b253de90",
+      "bytes": 317364
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Bangla Sangam MN.ttc",
+      "sha256": "85f08e8259c0a4773fc570bef2feec266ed620c9f22bf3e824c48195db55560e",
+      "bytes": 440816
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Baskerville.ttc",
+      "sha256": "11f63e492099fbcfb50ad4f2ac373485af16c049fd6c975ef4ea79ae53222ef9",
+      "bytes": 1373016
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Beirut.ttc",
+      "sha256": "d4ab09a2c25cf2d62ae54cba33c8fa29ba350e181350747e8a2ad4d216184a39",
+      "bytes": 81672
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/BigCaslon.ttf",
+      "sha256": "a422ba6e8853c4b199cf9b3a20f0e52549ea18f0cb66b83342780f12611a360a",
+      "bytes": 223700
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Bodoni 72 OS.ttc",
+      "sha256": "b0a6abffcb61e515bdc62d149027063ccf37a87a04033f7d69aa7a05de95570b",
+      "bytes": 239752
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Bodoni 72 Smallcaps Book.ttf",
+      "sha256": "bf8b3661d05b1a574233f6d039f04c26f9c56a5daa196c94b35289d45649da33",
+      "bytes": 83128
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Bodoni 72.ttc",
+      "sha256": "de4bde3c1510e2bb6da470a9fc8d7ac128ca4a917f2ae43ced4376f7e4e85d9c",
+      "bytes": 428976
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Bodoni Ornaments.ttf",
+      "sha256": "2318003edc3690be01e3680d4efc89fc7705ae392d5d37220b865f550e9b6e56",
+      "bytes": 73972
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Bradley Hand Bold.ttf",
+      "sha256": "ea54acf02ee9cc276e0e44ce6b2bf60e8eee0a4517468f0e989db55fc1ffe19c",
+      "bytes": 596736
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Brush Script.ttf",
+      "sha256": "28b58b7a1bab9fa76aeef353caed56918abcdef3385daeb569c75226618c7b1d",
+      "bytes": 222640
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Chalkboard.ttc",
+      "sha256": "c1ce8c38124fff79fa2de8e4e9003208a41821a254d2eeee5162672dbc3f3c6c",
+      "bytes": 177616
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/ChalkboardSE.ttc",
+      "sha256": "2f115e259dbd66e39a5891fe1fb49fa18b20b8d2db08a1e43b3b1360ca0e0bbe",
+      "bytes": 538448
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Chalkduster.ttf",
+      "sha256": "0579613b4e9911c66ccf70a8bc047f2a75d6fc36b32f660d9264f3015b377ef7",
+      "bytes": 486880
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Charter.ttc",
+      "sha256": "6ab86ae2c687f80652a8afdc851b3e3234c5ae702e307c0593adfcc63079e19f",
+      "bytes": 2121076
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Cochin.ttc",
+      "sha256": "bf59ed33c1960799671c6b990cb047e13c12efc8f1d588571ed550b7c43d519d",
+      "bytes": 1242524
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Comic Sans MS Bold.ttf",
+      "sha256": "c1d5060ad77da55f2fadfafda4e95bd6d78fbbb3a29178ff1389893d678fb400",
+      "bytes": 120120
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Comic Sans MS.ttf",
+      "sha256": "a6f559bc059fe6d0e68826e2daee0db31194844ed6145d5cc31a610c4e2700d2",
+      "bytes": 135484
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Copperplate.ttc",
+      "sha256": "2a14817d53238ac7a25688b4f7e0f0bd1c4c6e4fe84c72be7198151db5d2df22",
+      "bytes": 1268432
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Corsiva.ttc",
+      "sha256": "37980e3eca8fbe57ff4d860be7a6d5654f82be84ec9305f307606ab721910315",
+      "bytes": 75584
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Courier New Bold Italic.ttf",
+      "sha256": "60e4c514200985d3f8405af039ffb89cd24b45fef5005b019825a4937b96135d",
+      "bytes": 506640
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Courier New Bold.ttf",
+      "sha256": "500df4e46b554ae7d646e8727952fd8c7e60e94423481f6b82325cfddba2ee6a",
+      "bytes": 691796
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Courier New Italic.ttf",
+      "sha256": "b5c6d453f16fb1693652671fa2e11d8c8ad1cd0046c3f38ae2608d165838ecf1",
+      "bytes": 589900
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Courier New.ttf",
+      "sha256": "c886ca3172d8ce9189976992d145ec090500a4ff516ecb9d4df56b1a78336247",
+      "bytes": 684624
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/DIN Alternate Bold.ttf",
+      "sha256": "78e816b9938fc40dd5383f4a91b598494798e2fa1d526abbd9e7ff7e5b9bf0ee",
+      "bytes": 152012
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/DIN Condensed Bold.ttf",
+      "sha256": "36958182a424e1e8a1307b2636a615a6323ce1bbfadda136735ab4fb3bd26ceb",
+      "bytes": 212040
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Damascus.ttc",
+      "sha256": "7a7eb40a90e4adec2e02c6bb4936bdf5cb08db434612596f557a965b126d9e3b",
+      "bytes": 3025936
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/DecoTypeNaskh.ttc",
+      "sha256": "9cc16622afc00ac2ee567c7e460240c74ba2aa402562368e519c68e7de9c2945",
+      "bytes": 97544
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Devanagari Sangam MN.ttc",
+      "sha256": "aa26617121bda473948944563b7aae9b155236ec31340d3062ebad4d0b54d79b",
+      "bytes": 1029884
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/DevanagariMT.ttc",
+      "sha256": "461497bec04a4549bc7e221306390b62cd79027191faa1e62d50feec05da87d6",
+      "bytes": 409368
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Didot.ttc",
+      "sha256": "c227867f4e386af05fce563afeacde2a9360365e93e326fd40fb066d6f02fe8c",
+      "bytes": 724008
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Diwan Kufi.ttc",
+      "sha256": "32399807f00fe0e269d4998348138e6133fc7e74b38841096b0f7abed7b7100a",
+      "bytes": 93724
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Diwan Thuluth.ttf",
+      "sha256": "99faa92fcfe8107fc0096dc95f6e3e387d6a851ad303b2d5d145517d1c56d831",
+      "bytes": 1319880
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/EuphemiaCAS.ttc",
+      "sha256": "10cec00bc47c1a5e16f5ed8102b8891b3e1c9a8928264c434ba3c923eb2933a8",
+      "bytes": 490384
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Farah.ttc",
+      "sha256": "506964e2a985915d493bb4095b753a42c0a66930f1b5156502ac38025a11ab2f",
+      "bytes": 91112
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Farisi.ttf",
+      "sha256": "ce274d0fcab2c87dd1db2ad0c908ff6611283eac84bc9f83990c6fc4fa38c0cd",
+      "bytes": 281512
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Futura.ttc",
+      "sha256": "c59c04e8e87f752e2e57b3f3d43a793eba907a9e2affcbfeac85e7c6779e878f",
+      "bytes": 487620
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Galvji.ttc",
+      "sha256": "04f88f648e110ac1d350ac7df22d1ce328cad267cfc381fe2676567654f109c2",
+      "bytes": 430932
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Georgia Bold Italic.ttf",
+      "sha256": "a2036878f47d0da1765869a8747cfb0079b6125776675bad352468b59ca4493d",
+      "bytes": 385768
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
+      "sha256": "1cfa9abd55be746c798c22ef4eba88fce82257934897404be2dae53ed0a4142a",
+      "bytes": 363800
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Georgia Italic.ttf",
+      "sha256": "7758840cacb7382db65aa038e9fd1194d077ba9b55fe748f9cfb196d2773ac4e",
+      "bytes": 400624
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Georgia.ttf",
+      "sha256": "4f54eb299fccea7f103edeb0d92437359bfd4441811d53222b82b335369f6218",
+      "bytes": 379588
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/GillSans.ttc",
+      "sha256": "05f420c90f7bcdc744ba45a71d7d2a521b725ed8683d7c483ca2d0feabf8b12f",
+      "bytes": 1254028
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Gujarati Sangam MN.ttc",
+      "sha256": "09e896f51375351b07a82df2d990ddd2a82a5cb4ab831d1ca00016207704ba39",
+      "bytes": 546372
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/GujaratiMT.ttc",
+      "sha256": "b0f0e865bbd04d5c36a5ae6589788bbdafb56c09b681f243a0c91edf878a14af",
+      "bytes": 384232
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Gurmukhi MN.ttc",
+      "sha256": "583cc982c66dada84ae67e317d1e212d949dcb3c45f4ab93172e9bd3e6037c16",
+      "bytes": 230292
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Gurmukhi Sangam MN.ttc",
+      "sha256": "85aaabd40c2955ef75fd44c4b2be659fad3330c16e32377932dbaf3beabf6e0c",
+      "bytes": 143724
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Gurmukhi.ttf",
+      "sha256": "afca889f2afab872cb966bc1dd120deaa6813afc5036a37854d5ba95384f51dc",
+      "bytes": 65480
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Herculanum.ttf",
+      "sha256": "39f7fc0dfe082adb48330f7784f8e71ef1820dddf73f552e006007c4aaeb3c0d",
+      "bytes": 111468
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Hoefler Text Ornaments.ttf",
+      "sha256": "7f5d6d5646f86fe21d01986785525e501364aa501efd8788220414f7269753b1",
+      "bytes": 43380
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Hoefler Text.ttc",
+      "sha256": "4e7f471379588b2e40a6e9a96407e0d03207b5185fd92b77481abb4c9eae0e80",
+      "bytes": 1647144
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/ITFDevanagari.ttc",
+      "sha256": "6f2c8f345e48803bc1497398b63e8a069d50b1699c951fb061da943ba8210f54",
+      "bytes": 818456
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Impact.ttf",
+      "sha256": "57e95627fd36fe2740e5ee8a91ff1ae74fb216df9580bd23e30d6772814727be",
+      "bytes": 138488
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/InaiMathi-MN.ttc",
+      "sha256": "1935a6fd37722bc37aa0d8e6347584d86c5f1cae3d4804b584a6412947ca51d5",
+      "bytes": 457792
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Kailasa.ttc",
+      "sha256": "1f97f782da61a3329fd7aaa889dea8a6468b58cb4128bea083e0e540e3c9e551",
+      "bytes": 1178132
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Kannada MN.ttc",
+      "sha256": "f83dcc5f8f4ccae7fe24317d150c4a2d54e29a03b212672602e4758185d34d13",
+      "bytes": 343548
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Kannada Sangam MN.ttc",
+      "sha256": "3471871addd73c09460eed3d0176c86a05be10cbfcf479f12d947caa654271a6",
+      "bytes": 297528
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/KefaIII.ttf",
+      "sha256": "f89effe0ab7261b828835cde58c794e753d214ddc381d523225a1d66779f9a8c",
+      "bytes": 528520
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Khmer MN.ttc",
+      "sha256": "79769f359056867e8ae0d64d8e911452f0a70a3bf996a4f182f84463a7407cff",
+      "bytes": 495056
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Khmer Sangam MN.ttf",
+      "sha256": "60d4d878979f391fae7b3adfe69c03fc933001e9cfc8585e40b2f97047709424",
+      "bytes": 188048
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Kokonor.ttf",
+      "sha256": "e5352ac3b570d3dd17399829557a785ce604c052a95a4e23827a868e1451170c",
+      "bytes": 1081532
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Krungthep.ttf",
+      "sha256": "c5184e9ee4e5b9072133e7d030fa258edd95013ed79fd613a9cb91f6c965baf5",
+      "bytes": 190152
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/KufiStandardGK.ttc",
+      "sha256": "24a96bb1c10565d50e29d6c974ad4d17e697773e86a79159bccc762b0829c2c0",
+      "bytes": 57728
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Lao MN.ttc",
+      "sha256": "1d8c50b54f1e63a5f8d68f84db85972398abcd9e0a0f1b88b2c166867c3cd3cf",
+      "bytes": 96348
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Lao Sangam MN.ttf",
+      "sha256": "958682e1c151d1a1c9ef2508a2c44f0be869308c2aaad793a167739a23dc6356",
+      "bytes": 58092
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Luminari.ttf",
+      "sha256": "e564e432ed2ae168ac8f8592fb6abaa7aea4480cce9aebf13d122cf73dd6b064",
+      "bytes": 558352
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Malayalam MN.ttc",
+      "sha256": "a8e76aad43a779bf0b2075bea8a04068d9a16696cb6061a65fca2974191a8874",
+      "bytes": 174756
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Malayalam Sangam MN.ttc",
+      "sha256": "869a7cafc91c0b67053ee8f9bc5664f27482fea59baa198869d79bffd1a5e6c5",
+      "bytes": 184960
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Microsoft Sans Serif.ttf",
+      "sha256": "681fd20f201435edc09fac432cd5409722ca8fd10970dc3dc9be1b2de4b0ef43",
+      "bytes": 652248
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Mishafi Gold.ttf",
+      "sha256": "d769567e10c055c3af72d2eb2751fa946d88281c9ae234d859b70b5f1f710922",
+      "bytes": 649384
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Mishafi.ttf",
+      "sha256": "bacab1e58091125c62c5c579d9cfbb67f24511f7c099a5088b9d60ae391a10e3",
+      "bytes": 1426864
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Mshtakan.ttc",
+      "sha256": "8cf8f6dee0b434b5bd0269d5753ef362a80dbec8ea7373a0af296ea85823a977",
+      "bytes": 176224
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Muna.ttc",
+      "sha256": "0025e592f6cb37bedfaab0540964e6e61153d4e1604ca583e2b298b2ff5e85f4",
+      "bytes": 207352
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Myanmar MN.ttc",
+      "sha256": "e6bf13d07c820a75b13e9d5060255d8e48ddeb3e69d46dd6ed4203b20a0d0d45",
+      "bytes": 242060
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Myanmar Sangam MN.ttc",
+      "sha256": "3772190509b76977ec1c57120e1bc6c78dab0551d6a448dde95fbe25092c1504",
+      "bytes": 193720
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/NISC18030.ttf",
+      "sha256": "dea7284621b448197fbedffa0248fa2a494af9b3e992c3f70bcd04fd122aa598",
+      "bytes": 7110352
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Nadeem.ttc",
+      "sha256": "854f0d49e30e595efa641911db51530567cd411db19bdd7756df516dbd92e649",
+      "bytes": 62228
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/NewPeninimMT.ttc",
+      "sha256": "76e76b4fbf51e4534caef50d94d57cee89f3cb4314c14a37169df35a06f879af",
+      "bytes": 157392
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/NotoSansBatak-Regular.ttf",
+      "sha256": "a32831ffc38301991b631bb0fb1aa9dc5dd96f4047c84635bb031dd682d3c594",
+      "bytes": 22084
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/NotoSansNKo-Regular.ttf",
+      "sha256": "72107ca6885331147fb0ca4d7a71f96e6b3e989a75d66ef979a96966b28f8526",
+      "bytes": 24608
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/NotoSansSyriac-Regular.ttf",
+      "sha256": "d75500075158475aa8d9c5d586196945a0d92d1c27c5d66ecfb0c4f4af35ffe8",
+      "bytes": 115268
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/NotoSansTagalog-Regular.ttf",
+      "sha256": "69087a0b8ad9a405b065aefefe0c298d9aa7f61b0de345566baf282c9e8282e0",
+      "bytes": 7012
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Oriya MN.ttc",
+      "sha256": "14f5ed98d942978199bfda17e7c64b2cf19866a6c0d3248ff0e30b0e017525b4",
+      "bytes": 214512
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Oriya Sangam MN.ttc",
+      "sha256": "9762608b889c25dae1ce6be68e6da243818d0cd1c0d510bde82c0cb5fb721a29",
+      "bytes": 185976
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/PTMono.ttc",
+      "sha256": "449fd64aa2425eeba37237c73853a89daa94c6e43c1faafba0b53c2c13c3e2c7",
+      "bytes": 315876
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/PTSans.ttc",
+      "sha256": "cdce7c4305c44aff59b67937d508d2148c5a80c0145a660218bd609ac036ff99",
+      "bytes": 2794628
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/PTSerif.ttc",
+      "sha256": "793335027541837b62c041ae940b5cc0ea67721e37f957328602b8b2203220e3",
+      "bytes": 1164836
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/PTSerifCaption.ttc",
+      "sha256": "2848fdac9b77a47983ce867bda6408b7cd4e3535c19e1e1a88aa7ae7b7b9c45e",
+      "bytes": 706700
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Papyrus.ttc",
+      "sha256": "831d3ec987dbaee2c45dbf4edea1b910d5a61f062794b38cdeb73cca523bb20b",
+      "bytes": 1111320
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/PartyLET-plain.ttf",
+      "sha256": "1ba209e5965cd4ca77b3b17ccef6bc93279cdcb41805bf17ae54876bf1266982",
+      "bytes": 213112
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Phosphate.ttc",
+      "sha256": "5a41e3fd2fe555722aac02ef921dbc88e1c24ad86edbba5078b6c22d9a18df8b",
+      "bytes": 232068
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/PlantagenetCherokee.ttf",
+      "sha256": "0a73a09a449ec38e6ca0a5d7ff0e0378ecfcf2a01fed9300218e8fbbb706e8d5",
+      "bytes": 75012
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Raanana.ttc",
+      "sha256": "c191a61cc9091eaaa2301a788cf33dfc203d6a7999760f5fa338f0d56779b821",
+      "bytes": 43728
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Rockwell.ttc",
+      "sha256": "6d723f5f8e28f9e555753192cd744c7d2e3e6a458ed8a1080f375915eb57496b",
+      "bytes": 488992
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/STIXTwoMath.otf",
+      "sha256": "3a5f3f26f40d5698b3c62dd085d48d6663696a3f80825aab8b553d5097518e8c",
+      "bytes": 838652
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/STIXTwoText-Italic.ttf",
+      "sha256": "88c0e2e316eaff56eddc9e51e4850317e2a1e490bbf758b2dec4793aedba9c74",
+      "bytes": 454368
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/STIXTwoText.ttf",
+      "sha256": "7962b8b7811e6a896c9a91a0bccbb5241047770eb24d4997c5cb5fe21d5c0df2",
+      "bytes": 418956
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Sana.ttc",
+      "sha256": "f23cd7251a5d93e67cb2f2dd1b291afe3f02e245a8d2efcf773d134000d4f4de",
+      "bytes": 77604
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Sathu.ttf",
+      "sha256": "29f2d5c184e30805dbd752754d3840f53c3956dc35a89cc008da3729b2e71d60",
+      "bytes": 417676
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Savoye LET.ttc",
+      "sha256": "bc8f841db3e902a17a1709f106c858495ea8594cdd11dc17ca54553e53aa6ee6",
+      "bytes": 110272
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Shree714.ttc",
+      "sha256": "33aa7bd99829cb4f29e5023d224078a26d5947bb89c031a440410b8ebbde47b4",
+      "bytes": 533400
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/SignPainter.ttc",
+      "sha256": "e8f0f3cfb574111cde25f63fa9bee3fe852554dd3ce4a3d2678ecae117bfe9d4",
+      "bytes": 401228
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Silom.ttf",
+      "sha256": "ae3d2b9af860ca91a2bbd288dc00172a6cc06a05998c5b1bddd17d22c253bfad",
+      "bytes": 291508
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Sinhala MN.ttc",
+      "sha256": "78b9b9cda70b8bf33e7dd62225c8004e741bbbebb6b3ab4a94bf57a585dbf1b7",
+      "bytes": 780240
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Sinhala Sangam MN.ttc",
+      "sha256": "ab965f76f05df703eb96dd93bc5a3708626cddd45cd037cacbfe3f47c3f51ba4",
+      "bytes": 757768
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Skia.ttf",
+      "sha256": "c5662db30ec62800c67d6a854b1dc422c4fdec2a85833066badf88cd60771597",
+      "bytes": 489984
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/SnellRoundhand.ttc",
+      "sha256": "e0c5507164d81ed30b3a39021828a0fe83ac7d5bc5f0c33441577c747d37c71d",
+      "bytes": 3590372
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Songti.ttc",
+      "sha256": "6873ac2ccab5c2e74d87d6b690f3773098dd6a6238805363a3b3567f2caf6f47",
+      "bytes": 66933080
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/SukhumvitSet.ttc",
+      "sha256": "08b8ae91fe308a82d2390319e178cd578707412bb9df6841204ae9a68e772e75",
+      "bytes": 356420
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Tahoma Bold.ttf",
+      "sha256": "fc1863ab504b9c160abaa12b92296363db72f5b759311982510a85fe2aa9ff4f",
+      "bytes": 626928
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Tahoma.ttf",
+      "sha256": "359413e76969fc8a03e0acf91b355a98bb13c42472614e54bff5c8e4f4817fbb",
+      "bytes": 681120
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Tamil MN.ttc",
+      "sha256": "a90576bc9ff25f391e55024b3dcfe9e24353f6242cd3c665bcd04a47115c1272",
+      "bytes": 189232
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Tamil Sangam MN.ttc",
+      "sha256": "8a3606d50f768d1a0418906026f9665c6b6abadd9cdf700d86b08e0e085abbdf",
+      "bytes": 365320
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Telugu MN.ttc",
+      "sha256": "0516455cd1e33096e270f3b509f3816a44637555f10df9d56dbec5a4275f3fbc",
+      "bytes": 335380
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Telugu Sangam MN.ttc",
+      "sha256": "b967425608649f324aa6004be79182bfc722f65f0cc6d4129dcc0186a081ae2b",
+      "bytes": 307932
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Thonburi.ttc",
+      "sha256": "005370c5ec29075f193ba8b67db94b15a27739cd9b46bebace758fd8c01cabb1",
+      "bytes": 1515388
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Times New Roman Bold Italic.ttf",
+      "sha256": "906157e8294fdf168d83002eaabde01c2d30fc3f44977be89e33fa22f262002a",
+      "bytes": 620008
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Times New Roman Bold.ttf",
+      "sha256": "50f5b1f27b7d34621090e437e8b1dd4510a22d2823fc876b3286bed327b64bbb",
+      "bytes": 832472
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Times New Roman Italic.ttf",
+      "sha256": "7bb99c3a67697fbce15ab66d806d9a2151432ce1dab2eaba4156e1251da486c0",
+      "bytes": 660268
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Times New Roman.ttf",
+      "sha256": "f3b4ffff71c2a0c7227d37497683b2498fb2d0a4e8beae26f022e3ccfcaabfa3",
+      "bytes": 824920
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Trattatello.ttf",
+      "sha256": "07ea2c43c7844dba9bbe1ae0dbe4e8f6d2c1a77533ffc05432240c6f14874f3a",
+      "bytes": 932624
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Trebuchet MS Bold Italic.ttf",
+      "sha256": "7ea9e6c68ffd1ac74639277fece1b4258a2e51aa8d54d1cae4688b6f39953385",
+      "bytes": 137008
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Trebuchet MS Bold.ttf",
+      "sha256": "c7df0daa11665420461614fc22682c687852b2e1cf5c6ff9188096f5d2a8d0b2",
+      "bytes": 129360
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Trebuchet MS Italic.ttf",
+      "sha256": "15012b4dfe5470d0f8b75d98b38c461cf81b295485061e1382dc30030c00f2cd",
+      "bytes": 144820
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Trebuchet MS.ttf",
+      "sha256": "ff1d49fde63aabd7f4fc7cd0a80ac7cdb1b9540058988fcbb64d7c23639a7386",
+      "bytes": 138848
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Verdana Bold Italic.ttf",
+      "sha256": "252ef50efa09218d77d83311b531c14d7c0d45230e79389bd3db78448bc942f4",
+      "bytes": 173132
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Verdana Bold.ttf",
+      "sha256": "480f66b66430bdfa6e9a2199e4bf8f79d915221e60d58e7a32b4ff50645de2e0",
+      "bytes": 153260
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Verdana Italic.ttf",
+      "sha256": "a1149e84da9e5c0a9b4cad68b62542b8503cb16ed8d1d7efd2640b36ce202b44",
+      "bytes": 174612
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Verdana.ttf",
+      "sha256": "0da8c12f3e15d95585434d2cf294b3113a3e3fc84bf9ba9d64f2ef834ef4bd98",
+      "bytes": 186188
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Waseem.ttc",
+      "sha256": "449ef1ee696dff000c1158cc7340591d78b6951ac1fac2f9a71dff10f0886ab5",
+      "bytes": 370732
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Webdings.ttf",
+      "sha256": "876fd4b39d4049cc7d037e4181e2a3291652845d7f4ce85d11885156f2b3407a",
+      "bytes": 124308
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Wingdings 2.ttf",
+      "sha256": "6fce8b535724253e294c88f272613ad4b796c4181bae18b3e49775be63d02dcd",
+      "bytes": 68768
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Wingdings 3.ttf",
+      "sha256": "04d2acd5591632909c5e0c3d07309b8d8c01db8ac985d4cab3ef566dabca109a",
+      "bytes": 38308
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Wingdings.ttf",
+      "sha256": "709d5848799239f0c51c0544c471c8d02bcbf9f2bcdc49702ebca1691a4c760e",
+      "bytes": 86384
+    },
+    {
+      "path": "/System/Library/Fonts/Supplemental/Zapfino.ttf",
+      "sha256": "f30e7620766b57a7dc73a43fa415b0ecd81a655684c41255abe5910fc7cd1fdd",
+      "bytes": 403308
+    },
+    {
+      "path": "/System/Library/Fonts/Symbol.ttf",
+      "sha256": "fbd16f271abb9bb55708a15c138e3a45924dec215541e95595f7a6918304d867",
+      "bytes": 80016
+    },
+    {
+      "path": "/System/Library/Fonts/ZapfDingbats.ttf",
+      "sha256": "8733fa2693d29fa75de52f6893bdfe0b224349c01a1596cf5b9ba2e3d8e81a40",
+      "bytes": 156088
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u4e38\u30b3\u3099 ProN W4.ttc",
+      "sha256": "1129e740671eb79e89d820dfc9142adf647ee5e2594b59539cb9c243ae4ea1e0",
+      "bytes": 9718696
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u660e\u671d ProN.ttc",
+      "sha256": "36adcf3dcbec5880364487b380178c6388fcf518cec729ba18a855e71b69495c",
+      "bytes": 19409608
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W0.ttc",
+      "sha256": "5c8cb449d9e69e17e71d07c9bbbc17b839b0f6447a6359195b11dfaa4742b66d",
+      "bytes": 3573828
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W1.ttc",
+      "sha256": "f2fb620234e6e189326051b73e8b422855eae85eaaf3b442f6647f80cf86346c",
+      "bytes": 7277904
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W2.ttc",
+      "sha256": "4c3e37c0c3949beff00f3054fb724af46630d3ef2456cecc6259c8efe773ce01",
+      "bytes": 7261144
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W3.ttc",
+      "sha256": "833776a6fd68e2c71c0c52fd8041195bd3d0a336cdb278170b7ad71c7e1b3475",
+      "bytes": 7863660
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W4.ttc",
+      "sha256": "e1ee608f584acdaffc898efac7e2c9fa1c19457474bf215f6b7031ca720993d1",
+      "bytes": 7249820
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W5.ttc",
+      "sha256": "ae3189442e5a293c1c1eb7dd09e163d6b8ded7f859e670b36317a980076a0f6a",
+      "bytes": 7250364
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W6.ttc",
+      "sha256": "790fe535987adc662e83489e162dc54c1e50be8de15169300082f6cc7a082e4e",
+      "bytes": 7965696
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W7.ttc",
+      "sha256": "8ad617835895e4fb7ee4fc6ddc50f2be323f21506088b945f910c0ff89dd15c9",
+      "bytes": 3610100
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W8.ttc",
+      "sha256": "871fff8eeb3e87f6b0def549cb81449ec7060ddc6dc298bf0bb94a6bc7a26dfe",
+      "bytes": 3753728
+    },
+    {
+      "path": "/System/Library/Fonts/\u30d2\u30e9\u30ad\u3099\u30ce\u89d2\u30b3\u3099\u30b7\u30c3\u30af W9.ttc",
+      "sha256": "eb2d294fdc4e833705bd8a629097e6f40e59a03da8f12929a2d03b03182c28f0",
+      "bytes": 3471616
+    },
+    {
+      "path": "/System/Library/PrivateFrameworks/FontServices.framework/Resources/Reserved/PingFangUI.ttc",
+      "sha256": "13b201d63324db59de86956c11c46d1f0ad9ac0aeaa0b9d035c012a794062db7",
+      "bytes": 61080840
+    }
+  ],
+  "system_profiler_os_paths": 237
+}

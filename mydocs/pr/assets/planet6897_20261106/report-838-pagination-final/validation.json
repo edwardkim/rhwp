@@ -1,0 +1,54 @@
+{
+  "state": "complete",
+  "measured_code_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "fixed_base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "base_pages": 110,
+  "candidate_pages": 109,
+  "independent_print_pages": 109,
+  "note_references": 295,
+  "test_kind": "관계형",
+  "test_actual_minimal_font_cargo_summary": "1 passed; 0 failed",
+  "native_minimum": 98.7,
+  "wasm_minimum": 98.69,
+  "last_page_raw": {
+    "native": 99.97138,
+    "wasm": 99.97138
+  },
+  "direct_review": "Native/WASM의 마지막 참고문헌 6개 항목·7줄 및 인쇄 쪽 번호108을 같은 PDF와 review/overlay로 확인. 마지막 참고문헌을110쪽으로 넘기지 않고109쪽에 보존한다.",
+  "files": [
+    {
+      "path": "native-p109-review.png",
+      "sha256": "4be5d875514b26e9e5164343e3f729cafeee70735e66b7480320e3a4393b125e"
+    },
+    {
+      "path": "native-p109-overlay.png",
+      "sha256": "1a7228d4f45d24fae1e2162f3a2d1ac51fe8c5c96f3964e9b0572147345d4ddb"
+    },
+    {
+      "path": "native-silhouette.tsv",
+      "sha256": "f123d7f2ae55289139a5c1abe13198057fbe3aa79da7cbbf154da4c43db34b24"
+    },
+    {
+      "path": "wasm-p109-review.png",
+      "sha256": "b6aabd839dd6c7ae0f66ac055c6ae1d44da70a5d94871dd5d95c071a9eea3b45"
+    },
+    {
+      "path": "wasm-p109-overlay.png",
+      "sha256": "d8dfcbfbce0216d924efb0713acf8061b0e4a3c3469f65bb3eaa4434ccda1f14"
+    },
+    {
+      "path": "wasm-silhouette.tsv",
+      "sha256": "ff04e92f9486f5357dee5c9673d13470b40f7af0196de3e452d614c6eea57d51"
+    },
+    {
+      "path": "base-regression.txt",
+      "sha256": "4215f4b00a775e67e49b4adcbebc81a5be84cf69bb8d8212c44246537672d0f6"
+    },
+    {
+      "path": "candidate-regression.txt",
+      "sha256": "d360fff4b8a82fb0662a4e9baf80c62d949a59f9b40294f7c79104738ec7f214"
+    }
+  ],
+  "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+  "pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9"
+}

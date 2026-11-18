@@ -1,8 +1,10 @@
 //! 관계형: 사용자 선택 원본의 자연 전진과 다른 원본의 저장 메트릭 소유를 구분한다.
 //! Native/fresh WASM 일치율: 비해당. 공개 API로 생성한 합성 문서의 프로그램 선택 계약이다.
-//! 주석 갱신: 2026-11-08 00:47 KST. 사설 글꼴 설치·실물 px 좌표에 의존하지 않는다.
+//! 주석 갱신: 2026-11-09T12:10:11.685369+09:00; 직전 파일 변경: 38a5ce3e3580e72e502818cb454dd5aa9f3ef5c2 2026-11-09T02:00:31+09:00.
+//! 프로그램 선택은 Left에서 비교하고, 마지막 줄 Justify의 자연 폭 복원은 별도 관계로 보호한다.
+//! 자연 전진 선택과 윤곽 보존을 분리한 합성 계약이며 설치 글꼴·실물 좌표에 의존하지 않는다.
 use rhwp::{
-    model::style::Font,
+    model::style::{Alignment, Font},
     renderer::{
         font_environment::FontEnvironment,
         layout::{EmbeddedTextMeasurer, TextMeasurer},
@@ -106,8 +108,7 @@ fn source_metric_overrides_reject_unmapped_and_duplicate_sources() {
     }
 }
 
-#[test]
-fn omitted_natural_program_selection_keeps_legacy_leader() {
+fn legacy_leader_core(alignment: Alignment) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "-----. ").unwrap();
@@ -117,9 +118,22 @@ fn omitted_natural_program_selection_keeps_legacy_leader() {
             font.name = "한양신명조".into();
         }
     }
+    document.doc_info.para_shapes[0].alignment = alignment;
     core.set_document(document);
-    let legacy = json!({"id":"legacy-reference", "substitutions":{"한양신명조":"HYSinMyeongJo-Medium"},
-        "trueTypeFaces":["HYSinMyeongJo-Medium"]});
+    core
+}
+
+fn legacy_leader_environment() -> Value {
+    json!({"id":"legacy-reference", "substitutions":{"한양신명조":"HYSinMyeongJo-Medium"},
+        "trueTypeFaces":["HYSinMyeongJo-Medium"]})
+}
+
+#[test]
+fn omitted_natural_program_selection_keeps_legacy_leader() {
+    // 프로그램 선택은 정렬의 대시 채움과 독립적이다. 마지막 줄 Justify는
+    // #5830 계약으로 생략 상태도 자연 폭까지 복원하므로 Left에서 선택 전진을 비교한다.
+    let mut core = legacy_leader_core(Alignment::Left);
+    let legacy = legacy_leader_environment();
     let mut legacy_positions = None;
     for choice in [None, Some(false), Some(true)] {
         let mut value = legacy.clone();
@@ -143,9 +157,9 @@ fn omitted_natural_program_selection_keeps_legacy_leader() {
         let tree = core.build_page_render_tree(0).unwrap();
         let run = find(&tree.root, "-----. ").unwrap();
         assert_eq!(
-            run.style.preserve_glyph_ink,
+            run.style.natural_program_metrics,
             choice.is_some(),
-            "기존 메트릭 선언은 자연 윤곽 선택을 대신하지 않는다"
+            "기존 메트릭 선언은 자연 전진 선택을 대신하지 않는다"
         );
         let positions = EmbeddedTextMeasurer.compute_char_positions(&run.text, &run.style);
         if choice.is_none() {
@@ -160,6 +174,53 @@ fn omitted_natural_program_selection_keeps_legacy_leader() {
     let mut invalid = legacy;
     invalid["preserveSourceMetrics"] = Value::Null;
     assert!(FontEnvironment::from_json(&invalid.to_string()).is_err());
+}
+
+#[test]
+fn justified_last_line_restoration_does_not_select_a_natural_program() {
+    let mut core = legacy_leader_core(Alignment::Justify);
+    let original = core.export_hwp_native().unwrap();
+    let mut environment = legacy_leader_environment();
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(&environment.to_string()).unwrap(),
+    ))
+    .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let legacy = find(&tree.root, "-----. ").unwrap();
+    assert!(
+        !legacy.style.natural_program_metrics,
+        "정렬 복원은 프로그램 선택을 바꾸지 않는다"
+    );
+    assert!(
+        legacy.style.extra_dash_advance > 0.0,
+        "마지막 줄은 기존 #5830의 자연 폭 상한까지 복원한다"
+    );
+    let restored = EmbeddedTextMeasurer.compute_char_positions(&legacy.text, &legacy.style);
+    environment["preserveSourceMetrics"] = json!(false);
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(&environment.to_string()).unwrap(),
+    ))
+    .unwrap();
+    let tree = core.build_page_render_tree(0).unwrap();
+    let selected = find(&tree.root, "-----. ").unwrap();
+    assert!(selected.style.natural_program_metrics);
+    assert_eq!(
+        selected.style.extra_dash_advance, 0.0,
+        "자연 프로그램은 같은 폭을 이중 복원하지 않는다"
+    );
+    let natural = EmbeddedTextMeasurer.compute_char_positions(&selected.text, &selected.style);
+    assert_eq!(restored.len(), natural.len());
+    for (restored, natural) in restored.into_iter().zip(natural) {
+        assert!(
+            (restored - natural).abs() <= 1.0 / 75.0,
+            "같은 자연 전진 한도를 공유한다: {restored} / {natural}"
+        );
+    }
+    assert_eq!(
+        core.export_hwp_native().unwrap(),
+        original,
+        "세션 선택과 정렬은 저장 원본을 바꾸지 않는다"
+    );
 }
 
 fn selected_program_core() -> DocumentCore {

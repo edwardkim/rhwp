@@ -1,0 +1,91 @@
+[
+  {
+    "name": "linux",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/linux/tests/check_linux_plugin.py",
+      "--output",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/linux-portable"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:49:35.379770+00:00",
+    "elapsedSeconds": 6.2,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/portable-linux.log"
+  },
+  {
+    "name": "windows",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/windows/tests/check_windows_bridge.py",
+      "--output",
+      "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/windows-portable",
+      "--sanitize"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:49:41.575965+00:00",
+    "elapsedSeconds": 28.48,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/portable-windows.log"
+  },
+  {
+    "name": "reference-app",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/test/reference_app_contract.py"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:50:10.057127+00:00",
+    "elapsedSeconds": 2.53,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/portable-reference-app.log"
+  },
+  {
+    "name": "gpu-cache-benchmark",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/test/gpu_cache_benchmark_contract.py"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:50:12.585159+00:00",
+    "elapsedSeconds": 0.54,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/portable-gpu-cache-benchmark.log"
+  },
+  {
+    "name": "windows-continuous",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/test/windows_continuous_qualification_contract.py"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:50:13.136925+00:00",
+    "elapsedSeconds": 3.49,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/portable-windows-continuous.log"
+  },
+  {
+    "name": "metal-cache",
+    "command": [
+      "python3",
+      "-B",
+      "bindings/Flutter/macos/tests/metal_tile_cache_contract.py"
+    ],
+    "cwd": "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle",
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "startedAt": "2026-11-16T10:50:16.623346+00:00",
+    "elapsedSeconds": 0.06,
+    "exitCode": 0,
+    "log": "/home/edward/mygithub/rhwp/output/pr-review/seo-rii-20261116/portable-metal-cache.log"
+  }
+]

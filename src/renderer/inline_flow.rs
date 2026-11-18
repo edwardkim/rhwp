@@ -575,6 +575,10 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
     };
     let mut row = Vec::new();
     let mut row_metrics = RowMetrics::default();
+    // 이 줄 끝에 더 걸 수 있는 부동 앵커 앞 꼬리 공백 수(넘친 첫 공백에서 정한다).
+    let mut float_tail_hang: Option<usize> = None;
+    // 이 줄에서 건 꼬리 공백이 시작하는 줄 안 위치.
+    let mut float_tail_hung_from: Option<usize> = None;
     for atom in atoms {
         match atom {
             Atom::Float(exclusion) => {
@@ -587,6 +591,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     style,
                     frame.dpi,
                     RowEnding::Forced(&chars),
+                    float_tail_hung_from,
                     storage,
                 )?
                 else {
@@ -607,6 +612,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     style,
                     frame.dpi,
                     RowEnding::Forced(&chars),
+                    float_tail_hung_from,
                     storage,
                 )?
                 else {
@@ -631,6 +637,65 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                 let row_horizontal =
                     paragraph_row_horizontal(&horizontal, style, result.boxes.is_empty());
                 let row_width = row_horizontal.end - row_horizontal.start;
+                if row.is_empty() {
+                    float_tail_hang = None;
+                    float_tail_hung_from = None;
+                }
+                // 부동 앵커만 뒤에 남은 꼬리 공백은 일반 글줄의 공백 걸기를 따른다(#7168·#8639).
+                // 넘친 첫 공백을 줄 끝에 걸고, 바로 앞이 글자나 글자처럼 개체면 하나 더 건다.
+                // 나머지는 다음 줄로 넘긴다. 한/글은 이 공백 글자 크기로 다음 줄 높이를 정한다.
+                if let InlineFlowContent::Text { range, .. } = &item.content {
+                    if spaces.float_tail.contains(&range.start)
+                        && row_metrics.width + item.width > row_width + 0.01
+                        && separator_spaces::has_flow_content(&row, &chars)
+                    {
+                        let left = *float_tail_hang.get_or_insert_with(|| {
+                            let after_object = matches!(
+                                row.last().map(|last| &last.content),
+                                Some(
+                                    InlineFlowContent::Table { .. }
+                                        | InlineFlowContent::Picture { .. }
+                                )
+                            );
+                            let after_char = range
+                                .start
+                                .checked_sub(1)
+                                .is_some_and(|previous| !chars[previous].is_whitespace());
+                            if after_object || after_char {
+                                2
+                            } else {
+                                1
+                            }
+                        });
+                        if left > 0 {
+                            float_tail_hung_from.get_or_insert(row.len());
+                            item.width = 0.0;
+                            row_metrics = row_metrics.with(&item);
+                            storage.push(&mut row, item)?;
+                            float_tail_hang = Some(left - 1);
+                            if left == 1 {
+                                let Some(()) = finish_row_with_storage(
+                                    &mut result,
+                                    &mut row,
+                                    &horizontal,
+                                    &exclusions,
+                                    style,
+                                    frame.dpi,
+                                    RowEnding::Soft(&chars),
+                                    float_tail_hung_from,
+                                    storage,
+                                )?
+                                else {
+                                    return Ok(None);
+                                };
+                                row_metrics = RowMetrics::default();
+                                float_tail_hang = None;
+                                float_tail_hung_from = None;
+                            }
+                            continue;
+                        }
+                    }
+                }
                 // 개체 앞 작성 공백 그룹의 첫 공백만 우단 밖으로 전진한다.
                 // 그룹의 후속 공백이 처음 넘쳤다는 이유로 hanging하지 않는다.
                 let object_separator = matches!(&item.content, InlineFlowContent::Text { range, .. }
@@ -674,10 +739,11 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                         InlineFlowContent::Text { range, .. } if cut == range.end));
                 // A separator consumed by a soft wrap remains in the source
                 // row. It must not create a whitespace-only row before the
-                // next word/table. Space-only paragraphs and authored breaks
-                // retain their real line boxes.
+                // next word/table, nor after the last flow content of the
+                // paragraph (Hancom hangs trailing whitespace). Space-only
+                // paragraphs and authored breaks retain their real line boxes.
                 if matches!(&item.content, InlineFlowContent::Text { range, .. }
-                    if spaces.wrap.contains(&range.start))
+                    if spaces.wrap.contains(&range.start) || spaces.trailing.contains(&range.start))
                     && row_metrics.width + item.width > row_width + 0.01
                     && !first_overhang_space
                     && !keep_oversized_space
@@ -697,6 +763,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                             style,
                             frame.dpi,
                             RowEnding::Soft(&chars),
+                            float_tail_hung_from,
                             storage,
                         )?
                         else {
@@ -748,8 +815,12 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                     };
                     next.1 > old.1 + 0.01
                 };
+                // 전진폭이 없는 상자(문단 끝 표시 등)는 줄 폭을 늘리지 않으므로 줄을
+                // 넘기는 원인이 될 수 없다. 줄보다 넓은 첫 개체로 이미 넘친 줄에서도
+                // 그 줄에 남는다 — 한/글은 넓은 글자처럼 그림 뒤 문단 끝을 그림 줄에 둔다.
                 if !row.is_empty()
-                    && ((row_metrics.width + lookahead.width > row_width + 0.01
+                    && ((lookahead.width > 0.0
+                        && row_metrics.width + lookahead.width > row_width + 0.01
                         && !first_overhang_space
                         && !keep_oversized_space)
                         || (moves_existing_row && !keep_oversized_space))
@@ -762,6 +833,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                         style,
                         frame.dpi,
                         RowEnding::Soft(&chars),
+                        float_tail_hung_from,
                         storage,
                     )?
                     else {
@@ -782,6 +854,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         style,
         frame.dpi,
         RowEnding::ParagraphEnd(&chars),
+        float_tail_hung_from,
         storage,
     )?
     else {
@@ -798,6 +871,10 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
     Ok((result.start.is_finite() && result.end.is_finite()).then_some(result))
 }
 
+/// `hung_from`: 줄 끝에 건 부동 앵커 앞 꼬리 공백이 시작하는 줄 안 위치. 건 공백은 줄간격
+/// 글자 크기를 키울 수만 있고 줄이지는 않는다. 웹한글기안기 인쇄 실측(`samples/tac_space_tail`):
+/// 16pt 런의 글자처럼 표 줄에 13pt 공백을 걸어도 줄간격은 16pt, 20pt 공백을 걸면 20pt 다.
+#[allow(clippy::too_many_arguments)]
 fn finish_row_with_storage<S: crate::storage::Storage>(
     plan: &mut InlineFlowPlan,
     row: &mut Vec<InlineFlowBox>,
@@ -806,6 +883,7 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
     style: &ResolvedParaStyle,
     dpi: f64,
     ending: RowEnding<'_>,
+    hung_from: Option<usize>,
     storage: &S,
 ) -> Result<Option<()>, S::Error> {
     if row.is_empty() {
@@ -867,21 +945,27 @@ fn finish_row_with_storage<S: crate::storage::Storage>(
     let has_table = row
         .iter()
         .any(|b| matches!(b.content, InlineFlowContent::Table { .. }));
-    let row_font_size = row
+    let spacing_font = |item: &InlineFlowBox| {
+        matches!(
+            item.content,
+            InlineFlowContent::Text { .. }
+                | InlineFlowContent::Picture {
+                    affect_line_spacing: true,
+                    ..
+                }
+        )
+        .then_some(item.height)
+    };
+    let hung_from = hung_from.unwrap_or(row.len()).min(row.len());
+    let row_font_size = row[..hung_from]
         .iter()
-        .filter(|item| {
-            matches!(
-                item.content,
-                InlineFlowContent::Text { .. }
-                    | InlineFlowContent::Picture {
-                        affect_line_spacing: true,
-                        ..
-                    }
-            )
-        })
-        .map(|item| item.height)
+        .filter_map(spacing_font)
         .reduce(f64::max)
         .unwrap_or(plan.fallback_font_size);
+    let row_font_size = row[hung_from..]
+        .iter()
+        .filter_map(spacing_font)
+        .fold(row_font_size, f64::max);
     let first_box = plan.boxes.len();
     let row_x = x;
     for (index, mut item) in row.drain(..).enumerate() {
@@ -1177,7 +1261,15 @@ pub(crate) fn plan_square_table_host(
     use super::float_placement::{signed_hwpunit, ParagraphFloatFlow, ParagraphFloatPlacement};
     use super::layout_frame::FrameExclusionPolicy;
     use crate::model::shape::{HorzAlign, HorzRelTo, TextFlow, VertAlign, VertRelTo};
-    let uncached = super::is_no_lineseg_visible_text_host(para);
+    // 저장 줄 없는 host 중 그릴 글자가 없는(빈·공백) host. 한/글은 빈 host 도 글자 host 와
+    // 같이 어울림 표 옆 띠에 줄 하나를 두고 그 줄만큼만 흐름을 전진한다. 어울림 상자는 뒤
+    // 문단이 피하는 배제 영역으로 남는다.
+    let invisible_unstored = super::para_has_no_stored_line_segs(para)
+        && !para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace());
+    let uncached = super::is_no_lineseg_visible_text_host(para) || invisible_unstored;
     if !uncached
         && (!para
             .text
@@ -1193,6 +1285,25 @@ pub(crate) fn plan_square_table_host(
         matches!(c, Control::Table(t)
         if !t.common.treat_as_char && t.common.text_wrap == crate::model::shape::TextWrap::Square)
     })?;
+    // 저장 줄 없는 host 의 글앞·글뒤 그리기 개체와 쪽·종이 기준 어울림 개체는 제 위치를 따로
+    // 갖는 소유자라, 함께 있어도 같은 어울림 표 host 로 본다(웹기안기: 결재 표 칸 위에 놓인 종이
+    // 기준 어울림 도장 그림이 있어도 host 글줄은 표 옆에 남는다). 쪽·종이 기준 개체의 배제
+    // 영역은 이 문단 글줄 계산에 넣지 않는다.
+    let unstored_host_companion = |c: &Control| {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        let common = match c {
+            Control::Picture(p) => &p.common,
+            Control::Shape(s) => s.common(),
+            _ => return false,
+        };
+        uncached
+            && !common.treat_as_char
+            && (matches!(
+                common.text_wrap,
+                TextWrap::InFrontOfText | TextWrap::BehindText
+            ) || (matches!(common.text_wrap, TextWrap::Square)
+                && matches!(common.vert_rel_to, VertRelTo::Page | VertRelTo::Paper)))
+    };
     if para.controls.iter().enumerate().any(|(i, c)| {
         i != control
             && !super::composer::control_is_width_neutral_marker(c)
@@ -1200,6 +1311,7 @@ pub(crate) fn plan_square_table_host(
                     && matches!(p.common.text_wrap,
                         crate::model::shape::TextWrap::InFrontOfText
                             | crate::model::shape::TextWrap::BehindText))
+            && !unstored_host_companion(c)
     }) {
         return None;
     }
@@ -1215,6 +1327,21 @@ pub(crate) fn plan_square_table_host(
     let Control::Table(table) = &para.controls[control] else {
         return None;
     };
+    // 옆 글자 띠가 없는(단 폭을 채운) 빈 host 표는 줄이 표 아래로 가는 기존 소유자에 남긴다.
+    if invisible_unstored
+        && !super::is_no_lineseg_visible_text_host(para)
+        && super::unstored_empty_square_table_host_geometry_px(
+            para,
+            table,
+            column_width,
+            styles,
+            Some(style),
+            dpi,
+        )
+        .is_some()
+    {
+        return None;
+    }
     let measured = tables
         .iter()
         .find(|m| m.para_index == para_index && m.control_index == control)?;
@@ -1251,6 +1378,17 @@ pub(crate) fn plan_square_table_host(
         HorzAlign::Center => ref_left + (ref_width - object_width) / 2.0 + offset,
         HorzAlign::Right | HorzAlign::Outside => ref_left + ref_width - object_width - offset,
     };
+    // 빈·공백 host 는 표 옆 띠가 한/글 최소 줄 폭(1440HU = 0.2인치) 이상일 때만 옆 줄로 둔다
+    // (웹기안기: 띠 1430HU 는 뒤 문단이 표 아래, 1450HU 는 표 옆). 띠가 없는 단 폭 표는 구역·단
+    // 정의 같은 조판 부호가 함께 있어도 줄이 표 아래로 가는 기존 소유자에 남긴다.
+    if invisible_unstored && !super::is_no_lineseg_visible_text_host(para) {
+        let min_band = hwpunit_to_px(1440, dpi);
+        let left_band = outer_left.max(0.0);
+        let right_band = column_width - (outer_left + object_width);
+        if left_band < min_band && right_band < min_band {
+            return None;
+        }
+    }
     let box_ = super::composer::ParagraphBox::body_for_style(column_width, Some(style), dpi);
     let stored_rows = stored_square_rows::source(para, control, table, measured, &box_, dpi);
     let spacing_before =
@@ -1323,9 +1461,30 @@ pub(crate) fn plan_square_table_host(
         // 같은 물리 구간의 저장 줄은 기존 소유자에게 남긴다.
         return None;
     }
+    // 글자 없는 host 의 줄 하나는 개체 조판 부호의 글자 모양까지 든 가장 큰 글자로 높이를
+    // 정한다(웹기안기: 어울림 표 run 16pt + 문단 끝 10pt 인 빈 host 뒤 문단이 16pt 줄 뒤에서
+    // 시작한다). 그려지는 글자가 없으므로 줄 높이·간격만 바꾼다.
+    let mut rows = rows;
+    let mut flow_top_hu = frame.top;
+    if invisible_unstored && rows.len() == 1 {
+        if let Some((height, spacing, _)) =
+            super::unstored_overlay_table_host_line_metrics(para, styles, Some(style))
+        {
+            let row = &mut rows[0];
+            let height_hu = px_to_hwpunit(height, dpi);
+            if height_hu > row.line_height {
+                row.baseline_distance += height_hu - row.line_height;
+                row.text_height = row.text_height.max(height_hu);
+                row.line_height = height_hu;
+                row.line_spacing = px_to_hwpunit(spacing, dpi);
+                flow_top_hu =
+                    flow_top_hu.max(row.vertical_pos + row.line_height + row.line_spacing);
+            }
+        }
+    }
     // Following paragraphs can use the free side of the same object. The
     // object remains an exclusion and fit budget; it is not a text advance.
-    let end = spacing_before + hwpunit_to_px(frame.top, dpi) + style.spacing_after;
+    let end = spacing_before + hwpunit_to_px(flow_top_hu, dpi) + style.spacing_after;
     Some(InlineFlowPlan {
         stored_empty_host: false,
         stored_float_host: false,

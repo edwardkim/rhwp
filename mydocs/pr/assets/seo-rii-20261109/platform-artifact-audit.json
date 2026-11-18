@@ -1,0 +1,137 @@
+{
+  "artifacts": [
+    {
+      "archive": "macos-platform.zip",
+      "archive_sha256": "7d270baec276d2c77fb077ae852261243b7b8fba24d8bf29e1f6b59e9691b616",
+      "source": "e77a9da854fb78515f1564c3b057d04e13e3e3f1",
+      "receipts": [
+        {
+          "path": "_temp/rhwp-macos-qualification/desktop-capture/receipt.json",
+          "qualification": "macos-appkit-metal-view-passed",
+          "exitCode": 0,
+          "sourceHead": "e77a9da854fb78515f1564c3b057d04e13e3e3f1",
+          "nativeSourceHead": "4f738e766ccbba8faf938f2421ca6b516e939019",
+          "continuousPresentationSupported": true,
+          "consumerGpuCompletionVerified": false,
+          "hardwareAccelerationVerified": false,
+          "stages": 32
+        }
+      ],
+      "results": [
+        {
+          "path": "_temp/rhwp-macos-qualification/desktop-capture/result.json",
+          "ok": true,
+          "stats": {
+            "frameBytes": 0,
+            "frameHandles": 0,
+            "inFlightReplays": 0,
+            "leases": 0,
+            "retainedFrames": 0,
+            "retainedSnapshots": 0,
+            "snapshotEstimatedBytes": 0,
+            "snapshotHandles": 0,
+            "sources": 0
+          },
+          "publications": 32
+        }
+      ]
+    },
+    {
+      "archive": "windows-platform.zip",
+      "archive_sha256": "6e40ff2d8952ab54bc74a78b595d9a56d3037aeb9d22a21a0abd7ce341e1fa24",
+      "source": "e77a9da854fb78515f1564c3b057d04e13e3e3f1",
+      "receipts": [
+        {
+          "path": "_temp/rhwp-windows-qualification/continuous-capture/receipt.json",
+          "qualification": "windows-immutable-transfer-consumer-passed",
+          "exitCode": 0,
+          "sourceHead": "e77a9da854fb78515f1564c3b057d04e13e3e3f1",
+          "nativeSourceHead": "9452099dc796ca5626f1c4b52396a9ca07dc445e",
+          "continuousPresentationSupported": true,
+          "consumerGpuCompletionVerified": false,
+          "hardwareAccelerationVerified": false,
+          "stages": 32
+        },
+        {
+          "path": "_temp/rhwp-windows-qualification/desktop-capture/receipt.json",
+          "qualification": "bounded-windows-consumer-passed",
+          "exitCode": 0,
+          "sourceHead": "e77a9da854fb78515f1564c3b057d04e13e3e3f1",
+          "nativeSourceHead": "9452099dc796ca5626f1c4b52396a9ca07dc445e",
+          "continuousPresentationSupported": false,
+          "consumerGpuCompletionVerified": false,
+          "hardwareAccelerationVerified": false,
+          "stages": 3
+        },
+        {
+          "path": "_temp/rhwp-windows-qualification/p106-exact-review/desktop-capture/receipt.json",
+          "qualification": "bounded-windows-consumer-passed",
+          "exitCode": 0,
+          "sourceHead": "2e6268c8187ed5eda59f19ca4cb729371c1776da",
+          "nativeSourceHead": "9452099dc796ca5626f1c4b52396a9ca07dc445e",
+          "continuousPresentationSupported": false,
+          "consumerGpuCompletionVerified": false,
+          "hardwareAccelerationVerified": false,
+          "stages": 3
+        }
+      ],
+      "results": [
+        {
+          "path": "_temp/rhwp-windows-qualification/continuous-capture/result.json",
+          "ok": true,
+          "stats": {
+            "frameBytes": 0,
+            "frameHandles": 0,
+            "inFlightReplays": 0,
+            "leases": 0,
+            "retainedFrames": 0,
+            "retainedSnapshots": 0,
+            "snapshotEstimatedBytes": 0,
+            "snapshotHandles": 0,
+            "sources": 0
+          },
+          "publications": 32
+        },
+        {
+          "path": "_temp/rhwp-windows-qualification/desktop-capture/result.json",
+          "ok": true,
+          "stats": {
+            "frameBytes": 0,
+            "frameHandles": 0,
+            "inFlightReplays": 0,
+            "leases": 0,
+            "retainedFrames": 0,
+            "retainedSnapshots": 0,
+            "snapshotEstimatedBytes": 0,
+            "snapshotHandles": 0,
+            "sources": 0
+          },
+          "publications": 3
+        },
+        {
+          "path": "_temp/rhwp-windows-qualification/p106-exact-review/desktop-capture/result.json",
+          "ok": true,
+          "stats": {
+            "frameBytes": 0,
+            "frameHandles": 0,
+            "inFlightReplays": 0,
+            "leases": 0,
+            "retainedFrames": 0,
+            "retainedSnapshots": 0,
+            "snapshotEstimatedBytes": 0,
+            "snapshotHandles": 0,
+            "sources": 0
+          },
+          "publications": null
+        }
+      ]
+    }
+  ],
+  "platform_run_vs_pr8781_changed_paths": [
+    "bindings/Flutter/test/platform_qualification_paths_test.py",
+    "bindings/Flutter/tool/platform_qualification_paths.py",
+    "bindings/Flutter/tool/review_macos_animation_policy.py",
+    "bindings/Flutter/tool/review_p106_windows.py",
+    "bindings/Flutter/tool/review_p107_macos.py"
+  ]
+}

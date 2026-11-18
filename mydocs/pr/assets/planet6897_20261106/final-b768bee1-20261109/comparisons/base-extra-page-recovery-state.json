@@ -1,0 +1,112 @@
+{
+  "state": "complete",
+  "pid": 94688,
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "results": [
+    {
+      "backend": "native",
+      "key": "report-838",
+      "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+      "paired_pages": 109,
+      "document_page_counts": {
+        "rhwp": 110,
+        "pdf": 109
+      },
+      "unmatched_product_pages": [
+        {
+          "page": 110,
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/rhwp_png/rhwp_110.png",
+          "sha256": "2e6bceaec53036b8603b0f9173c462d6a3d71f22a00d3b6dc916c7075393a880",
+          "reason": "기준 PDF에는 대응 쪽이 없으므로 실루엣 점수를 만들지 않음"
+        }
+      ],
+      "original_result": {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 109,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "3f7ad6ef22da1e5961392e7c9288569402d37a0bde563c61b3550d16e1bd6c89"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+          "sha256": "648c09e903d5762ec1d15d76fb22575d26992e89bdc40dabd765c62be2cdb35d"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+          "sha256": "753e03fc5e48e53599649d9c00b25ccbd151d49c535a43b9a8846f45bc8b6e4f"
+        }
+      ],
+      "note": "이미 실제로 내보낸 원본 PNG만 정본 write_silhouette_tsv로 재측정했다. 문서 쪽수 차이와 base의 보류 판정을 유지하며 후보 통과나 110쪽 전체 PDF 대조로 주장하지 않는다."
+    },
+    {
+      "backend": "wasm",
+      "key": "report-838",
+      "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+      "paired_pages": 109,
+      "document_page_counts": {
+        "rhwp": 110,
+        "pdf": 109
+      },
+      "unmatched_product_pages": [
+        {
+          "page": 110,
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0066-0110/rhwp_png/rhwp_110.png",
+          "sha256": "e6d860aa3004e0df3e3d7cd5126d88899f11c66b93007cdfcac32a8f02b872b9",
+          "reason": "기준 PDF에는 대응 쪽이 없으므로 실루엣 점수를 만들지 않음"
+        }
+      ],
+      "original_result": {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 109,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "19818076c7db01180a5dbd1859534bb08e6c6e505861de33a7010287a4e75f2b"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+          "sha256": "13deb8caf9b375f4a915339460fac69211ba4a64ae8b7e43db641909d1e8ef55"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+          "sha256": "b0f377023de0fff32fde5bb5d5cf11bd33b73b6fd20bd6027ef698fb6b4c00d5"
+        }
+      ],
+      "note": "이미 실제로 내보낸 원본 PNG만 정본 write_silhouette_tsv로 재측정했다. 문서 쪽수 차이와 base의 보류 판정을 유지하며 후보 통과나 110쪽 전체 PDF 대조로 주장하지 않는다."
+    }
+  ],
+  "finished_at": "2026-11-09T19:08:51.639681+09:00"
+}

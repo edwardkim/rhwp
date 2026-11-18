@@ -400,6 +400,28 @@ CI 영향 분류와 trigger mirror는 다음 파일에 있다.
 관련 파일을 바꾼 경우 실제 존재하는 테스트만 선택해 실행하고, 변경 기록에 명령과 결과를 적는다. 경로
 필터 변경에는 적어도 classifier·policy의 Node test와 해당 CI·CodeQL workflow Python test를 포함한다.
 
+### 7.4.1 frontend Canvas와 Native PDF 검증의 분리 (#9097)
+
+`frontend_canvas_required`는 알려진 Studio 화면 소스와 직접 Canvas 글꼴 회귀를 선택한다.
+이 축이 켜지면 Frontend package gates에서 standard release + wasm-opt WASM을 한 번 만들고
+기존 package 검사와 Canvas 검사에 재사용한다. 개발용 WASM 빌드는 같은 job에서 실행하지 않는다.
+
+`scripts/frontend-canvas-gates.mjs`는 빌드 manifest의 최적화·모드·JS/WASM hash를 확인하고,
+실제 브라우저 초기화 응답을 같은 hash와 대조한다. #9077의 실제 setter/원시 setter 대조,
+기존 legacy/layer Canvas 비교와 선택 CanvasKit readiness를 실행한다. Native CLI·PDF를 빌드하거나
+내보내지 않는다. 기존 browser baseline 실행기의 `readiness-only` 선택 계약을 사용한다.
+
+`render_required`는 기존 전체 Render Diff를 계속 선택한다. Rust renderer·WASM/글꼴 입력·PDF,
+Studio 공개 자원·package/build 설정·알 수 없는 경로는 해당 전체 축을 유지하며,
+frontend Canvas와 혼합되면 필요한 두 축을 합친다. 분류 실패·누락은 full lane으로 닫는다.
+일반 command·unit 변경의 기존 선택 경로는 유지한다. 모든 `.ts` 변경의 시각 검사를 끄는 규칙은 아니다.
+
+정책 v9는 `fc` 축을 status에 포함한다. Canvas 축을 선택한 CI는 최적화 빌드와 실제 브라우저
+step이 각각 completed/success여야 하며, package job의 success만으로 대체하지 않는다.
+review-only 재사용에서는 검증한 code candidate와 실행 신원을 확인하는 기존 계약을 유지한다.
+처음 정책을 바꾸는 PR은 trusted base의 기존 분류에 따라 Full CI가 실행될 수 있다.
+그 실행 시간을 frontend-only 선택 실행의 개선 실측으로 보고하지 않는다.
+
 ### 7.5 workflow PR의 후행 review 기록
 
 후속 기록은 [옵션 2: 원 PR 병합 후 별도 기록 PR](pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로
@@ -697,6 +719,43 @@ gh workflow run cache-generation-sweep.yml --repo edwardkim/rhwp \
 - `runs-on`과 실제 runner fleet은 workflow와 GitHub live 상태에서 확인한다. 과거 self-hosted 실험 기록을
   현재 runner 존재의 근거로 쓰지 않는다.
 - runner 추가·삭제·label 변경은 O4이며, 동시 쓰기 경로·도구 설치·cache·메모리 격리를 먼저 설계한다.
+
+#### 10.2.1 Linux 제품 작업의 OS 기준
+
+제품 CI의 빌드·검사·archive producer/consumer, WASM·확장·Pages 빌드, CodeQL 분석과
+Oracle·layout advisory의 제품 실행은 `ubuntu-24.04`를 사용한다. metadata·정책 감사·게시
+제어 작업과 별도 Gym benchmark의 `ubuntu-latest`는 제품 baseline으로 간주하지 않는다.
+CLI 배포의 기존 `ubuntu-24.04`/`ubuntu-24.04-arm`과 macOS·Windows matrix는 유지한다.
+Rust·Node 버전 고정과 OS 고정은 별개다. OS를 고정해도 같은 LTS 이미지의 도구·패키지가
+갱신될 수 있으므로 실제 runner image version·도구 버전과 source SHA를 결과에 남긴다.
+
+Fuzz smoke와 Full Renderer Sweep은 schedule·기본 수동 실행에서 24.04를 사용한다.
+기존 `workflow_dispatch`의 `runner_image=ubuntu-26.04`만 명시적 호환성 대조로 허용한다.
+허용값 밖의 입력이나 선택 불일치는 checkout 전에 실패하며 자동 26.04 job은 추가하지 않는다.
+새 OS의 runner 가용성은 live 실행으로 확인한다. GitHub workflow 실행은 승인 뒤 수행한다.
+
+Fuzz의 sanitizer build와 run은 모두 `--codegen-units 16`을 사용한다. 같은 source·nightly의
+로컬 대조에서 기본 단일 단위의 peak RSS는 16.64 GiB, 분할은 13.18 GiB였다. 이는
+[표준 runner의 16 GB RAM](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)에
+맞추기 위한 빌드 자원 보완이며, 원격 exit 143의 OOM 원인을 확정하는 근거는 아니다.
+ASan·coverage·debug/overflow 검사, 기본 60초·입력별 30초·RSS 2 GiB는 유지한다.
+RSS 2 GiB는 퍼징 프로세스의 제한이며 컴파일러 메모리 한도가 아니다. 빌드 단계에서
+`free -m`·`nproc`와 GNU time의 실제 peak RSS를 남긴다. cache 상태·host/proc-macro
+재사용·CPU 차이를 기록하고 로컬 시간만으로 원격 완료나 같은 퍼징 throughput을 단정하지 않는다.
+
+네이티브 build cache의 key와 restore prefix에는 `ubuntu-24.04` 또는 선택한 OS를 넣는다.
+일반 `Linux-` prefix로 이전 OS의 산출물을 복원하지 않는다. 기존 cache를 삭제할 필요는 없으며,
+새 namespace의 첫 실행은 cold build와 cache 생성 비용을 관찰한다.
+
+Native host Linux 패키지는 24.04에서 빌드하고 `scripts/verify-linux-abi.py`로 실제 ELF의
+glibc 요구 버전이 2.39 이하인지 로드 전에 검사한다. 이후 기존 capability·패키징·headless
+편집·저장·재열기 검증을 수행한다. 자세한 명령과 소비 의존성은
+[Native 패키징 안내](../../bindings/Native/examples/PACKAGING.md)를 따른다.
+
+devel 반영만으로 main의 schedule·태그 배포 workflow가 바뀌지는 않는다. main 승격은 별도
+승인된 PR과 해당 source 검증으로 진행하고, 성공한 devel 검사나 로컬 Docker 실행을
+main·GitHub runner 실행 성공으로 대신하지 않는다. Fuzz의 과거 exit 143은 종료 계기가
+확정되지 않았으므로 OS 기준 보완을 그 종료 원인의 입증이나 영구 해결로 기록하지 않는다.
 
 ### 10.3 Git LFS
 

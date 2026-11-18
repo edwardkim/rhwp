@@ -1,0 +1,163 @@
+{
+  "baselineCodeSource": "083726fb7738a6e370576a69da2432c16599283e",
+  "baselineRun": "https://github.com/edwardkim/rhwp/actions/runs/44215150230",
+  "currentSource": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+  "reportOnlyWarningPages": 4,
+  "baselineDirectGateRatios": [
+    0.00757801,
+    0.00269187,
+    0.01882513
+  ],
+  "candidateDirectGateRatios": [
+    0.00757801,
+    0.00269187,
+    0.01882513
+  ],
+  "directGateRatiosEqual": true,
+  "imageComparisons": [
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-reference.png",
+      "size": [
+        1123,
+        794
+      ],
+      "archiveBytesIdentical": false,
+      "changedPixelsAboveChannel8": 7279,
+      "pixelCount": 891662,
+      "ratio": 0.008163407210355493,
+      "ciSha256": "723ca41bd2feb9edaa6a9017374d4fc1294b225f493b410c53dd7c51f0b3bc05",
+      "localSha256": "478bafbd5b9e98962e3f17af813e482b004e321e533016a4f4d29ba02a1993c4"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-raster.png",
+      "size": [
+        841,
+        595
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 500395,
+      "ratio": 0.0,
+      "ciSha256": "0c66222d7df173965624622f00d707ccb1101d93e7060e3979f46c19288dfdbc",
+      "localSha256": "0c66222d7df173965624622f00d707ccb1101d93e7060e3979f46c19288dfdbc"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-direct-raster.png",
+      "size": [
+        595,
+        841
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 500395,
+      "ratio": 0.0,
+      "ciSha256": "3b0d0328bb51861960df85a12b123d81082d59d2bfbbd6d3a0ba005c93c85d7a",
+      "localSha256": "3b0d0328bb51861960df85a12b123d81082d59d2bfbbd6d3a0ba005c93c85d7a"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-raster.png",
+      "size": [
+        595,
+        841
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 500395,
+      "ratio": 0.0,
+      "ciSha256": "00bce62ade9dc7cf7773de6965bdd5913026e58bc48f864275d01b7f6af9e4ba",
+      "localSha256": "00bce62ade9dc7cf7773de6965bdd5913026e58bc48f864275d01b7f6af9e4ba"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-reference.png",
+      "size": [
+        794,
+        1123
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 891662,
+      "ratio": 0.0,
+      "ciSha256": "3a89d8261d1eb2e917fdafccac63b14bbabb2fed81360289d6999b13c4b54111",
+      "localSha256": "3a89d8261d1eb2e917fdafccac63b14bbabb2fed81360289d6999b13c4b54111"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-direct-raster.png",
+      "size": [
+        595,
+        841
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 500395,
+      "ratio": 0.0,
+      "ciSha256": "97e03b9c528615e34968ad361997c9eb049f6ab8e119b565db1ea6f117d07836",
+      "localSha256": "97e03b9c528615e34968ad361997c9eb049f6ab8e119b565db1ea6f117d07836"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-raster.png",
+      "size": [
+        595,
+        841
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 500395,
+      "ratio": 0.0,
+      "ciSha256": "9bea9157610d9a62cc9b558484b5690f8520d805455a798d1040cfb872a6c11c",
+      "localSha256": "9bea9157610d9a62cc9b558484b5690f8520d805455a798d1040cfb872a6c11c"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-reference.png",
+      "size": [
+        794,
+        1123
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 891662,
+      "ratio": 0.0,
+      "ciSha256": "823e97f08bfabb37eae739272ee3378af3896bb0f40697039f42baa8d0b645c1",
+      "localSha256": "823e97f08bfabb37eae739272ee3378af3896bb0f40697039f42baa8d0b645c1"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-direct-raster.png",
+      "size": [
+        595,
+        841
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 500395,
+      "ratio": 0.0,
+      "ciSha256": "466f152a7ce712cf787e93a8739a2568249311f67c2188875ec45d831f28e86f",
+      "localSha256": "466f152a7ce712cf787e93a8739a2568249311f67c2188875ec45d831f28e86f"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-raster.png",
+      "size": [
+        595,
+        841
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 500395,
+      "ratio": 0.0,
+      "ciSha256": "1655c7d49a53acfc4c7f89dd1c243fcc6e89aa2aad937e62c54c945e032b51ae",
+      "localSha256": "1655c7d49a53acfc4c7f89dd1c243fcc6e89aa2aad937e62c54c945e032b51ae"
+    },
+    {
+      "path": "rhwp-studio/e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-reference.png",
+      "size": [
+        794,
+        1123
+      ],
+      "archiveBytesIdentical": true,
+      "changedPixelsAboveChannel8": 0,
+      "pixelCount": 891662,
+      "ratio": 0.0,
+      "ciSha256": "31f8a7efec60905ea1b5c339de52210a30a65f6c0c88a8773d1d8913540794df",
+      "localSha256": "31f8a7efec60905ea1b5c339de52210a30a65f6c0c88a8773d1d8913540794df"
+    }
+  ],
+  "limitation": "Existing CI renderer/PDF compatibility control; not independent Hancom Print or full-document visual fidelity evidence."
+}

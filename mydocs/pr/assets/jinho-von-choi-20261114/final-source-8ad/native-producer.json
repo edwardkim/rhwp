@@ -1,0 +1,23 @@
+{
+  "source": "8ad1c5c08aa4cd68accbd2af6b9c60bc458d8992",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "/home/edward/mygithub/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--bin",
+    "rhwp",
+    "--verbose"
+  ],
+  "started": "2026-11-15T08:17:02.667493+00:00",
+  "completed": "2026-11-15T08:22:16.714662+00:00",
+  "exitCode": 0,
+  "path": "/home/edward/mygithub/rhwp/output/pr-review/jinho-von-choi-20261114/resume/additional-corrections/rhwp-typed-frame-native",
+  "sha256": "4e826ffa5e12fa69dbb1e58f6cb803cbaf99b41a4e3ceb8d016a138fc9275254"
+}

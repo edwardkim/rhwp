@@ -1,5 +1,5 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-04 05:18:38 KST; 원본 전진과 실제 HFT 프로그램 선택의 출처를 구분.
+//! 주석 갱신: 2026-11-17T09:40:53+09:00; 직전 파일 변경: d7dff4f8f3bb15ae431f98205b9d73f5ac471021 (2026-11-15T09:58:22+09:00).
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -7,6 +7,151 @@ use rhwp::renderer::native_webfonts::{
     decode_font, prepare, NativeWebfontStyle, NativeWebfontSupply,
 };
 use rhwp::DocumentCore;
+
+#[cfg(feature = "native-skia")]
+fn observed_native_exporter(
+    enabled: bool,
+) -> rhwp::document_core::queries::png_export::NativePngExporter {
+    use rhwp::document_core::queries::png_export::NativePngExporter;
+    use rhwp::document_core::queries::rendering::PngExportOptions;
+    NativePngExporter::new(
+        rhwp::paint::RenderProfile::Print,
+        PngExportOptions {
+            max_dimension: Some(400),
+            font_paths: ["NotoSansKR-Regular.ttf", "NotoSansKR-ExtraLight.ttf"]
+                .iter()
+                .map(|name| {
+                    std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                        .join("ttfs/opensource")
+                        .join(name)
+                })
+                .collect(),
+            ..Default::default()
+        },
+    )
+    .with_font_fallback_reporting(enabled)
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_fallback_observation_preserves_png_and_deduplicates_cached_replay() {
+    let requested = "RHWP Missing Native Font 9104";
+    let mut core = document_with_face(requested);
+    core.insert_text_native(0, 0, 0, "가나다 ABC 123").unwrap();
+    let plain = observed_native_exporter(false);
+    plain.prepare_document(&mut core).unwrap();
+    let plain_png = plain.render_page(&core, 0).unwrap();
+    assert!(plain.font_fallback_report().is_none());
+
+    let observed = observed_native_exporter(true);
+    observed.prepare_document(&mut core).unwrap();
+    let observed_png = observed.render_page(&core, 0).unwrap();
+    assert_eq!(plain_png, observed_png, "진단은 실제 PNG를 바꾸지 않음");
+    let before = observed.font_fallback_report().unwrap();
+    assert_eq!(before.state, "complete");
+    assert!(before.missing_requests.is_empty());
+    assert!(
+        before.records.iter().any(|record| {
+            record.requested == requested
+            // 기존 일반 고딕 chain은 Regular 앞의 ExtraLight를 우선한다.
+            // 양쪽 프로그램을 명시 공급해 설치 환경에 의존하지 않는다.
+            && record.resolved == "Noto Sans KR ExtraLight"
+                && record.source == "custom"
+        }),
+        "Actual bounded observation: {before:?}"
+    );
+    assert_eq!(observed.render_page(&core, 0).unwrap(), observed_png);
+    let after = observed.font_fallback_report().unwrap();
+    assert_eq!(
+        before.records, after.records,
+        "cache 재생은 중복을 늘리지 않음"
+    );
+    assert!(
+        observed_native_exporter(true)
+            .font_fallback_report()
+            .unwrap()
+            .records
+            .is_empty(),
+        "새 내보내기는 이전 문서의 선택을 보유하지 않음"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_original_family_is_not_reported_as_a_generic_fallback() {
+    let mut core = document_with_face("Noto Sans KR");
+    core.insert_text_native(0, 0, 0, "가나다 ABC 123").unwrap();
+    let exporter = observed_native_exporter(true);
+    exporter.prepare_document(&mut core).unwrap();
+    exporter.render_page(&core, 0).unwrap();
+    let report = exporter.font_fallback_report().unwrap();
+    assert_eq!(report.state, "complete");
+    assert!(
+        report.records.is_empty(),
+        "명시 공급 원본은 일반 대체가 아님"
+    );
+    assert!(report.missing_requests.is_empty());
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_missing_glyph_is_reported_without_retaining_the_character() {
+    let requested = "RHWP Missing Glyph Face 9104";
+    let mut core = document_with_face(requested);
+    core.insert_text_native(0, 0, 0, "ABC \u{10ffff}").unwrap();
+    let exporter = observed_native_exporter(true);
+    exporter.prepare_document(&mut core).unwrap();
+    exporter.render_page(&core, 0).unwrap();
+    let report = exporter.font_fallback_report().unwrap();
+    assert!(report.missing_requests.iter().any(|name| name == requested));
+    assert!(
+        !serde_json::to_string(&report)
+            .unwrap()
+            .contains('\u{10ffff}'),
+        "보고서에 원문 문자·본문을 저장하지 않음"
+    );
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn actual_native_multipage_fallback_report_stays_bounded_and_marks_partial_results() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    for index in 0..270usize {
+        if index > 0 {
+            core.split_paragraph_native(0, index - 1, 3, None).unwrap();
+        }
+        core.insert_text_native(0, index, 0, "ABC").unwrap();
+        let id = core.find_or_create_font_id_native(&format!("RHWP Missing Face 9104 {index}"));
+        core.apply_char_format_native(
+            0,
+            index,
+            0,
+            3,
+            &serde_json::json!({"fontId":id}).to_string(),
+        )
+        .unwrap();
+    }
+    let exporter = observed_native_exporter(true);
+    exporter.prepare_document(&mut core).unwrap();
+    assert!(core.page_count() > 1);
+    for page in 0..core.page_count() as u32 {
+        exporter.render_page(&core, page).unwrap();
+    }
+    let report = exporter.font_fallback_report().unwrap();
+    assert_eq!(
+        report.state, "partial",
+        "보고 상한 초과를 완전 관측으로 표시하지 않음"
+    );
+    assert!(report.dropped_observations > 0);
+    assert!(report.records.len() + report.missing_requests.len() <= report.record_limit);
+    let bytes: usize = report
+        .records
+        .iter()
+        .map(|record| record.requested.len() + record.resolved.len())
+        .sum();
+    assert!(bytes <= report.name_byte_limit);
+}
 
 fn document_with_face(name: &str) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
@@ -87,6 +232,28 @@ fn local_face_wins_and_generic_fallback_does_not_claim_to_supply_the_unknown_ori
         supplied.mappings.is_empty() && supplied.generic_fallbacks.is_empty(),
         "설치된 문서 선언 대체는 일반 웹 대체로 덮어쓰지 않음"
     );
+}
+
+#[test]
+fn declared_local_substitute_precedes_a_registered_webfont() {
+    let core = document_with_face("Helvetica");
+    let mut declared = core.document().doc_info.clone();
+    for face in declared.font_faces.iter_mut().flatten() {
+        face.subst_font = Some(rhwp::model::style::SubstFont {
+            face: "NotoSansKR-Regular".into(),
+            font_type: 1,
+            ..Default::default()
+        });
+    }
+    let local = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("ttfs/opensource/NotoSansKR-Regular.ttf");
+    let supply = prepare(&declared, &[local]).unwrap();
+    assert!(supply.mappings.is_empty(), "문서의 실제 대체 선택을 보존");
+    assert!(
+        supply.paths.is_empty(),
+        "registry가 있어도 다운로드하지 않음"
+    );
+    assert!(supply.web_fonts.is_empty() && supply.generic_fallbacks.is_empty());
 }
 
 #[test]
@@ -358,4 +525,71 @@ fn declared_hft_substitute_keeps_its_own_punctuation_contract() {
         make("명조", false),
         "문서가 선언한 실제 HFT 대체는 임의 표시 치환과 구별해 같은 글리프 전진을 사용"
     );
+}
+
+#[test]
+fn verified_hft_round_markers_keep_source_advance_after_display_program_supply() {
+    // 기존 독립 Print: 평가결과서 U+2219와 로드맵 44쪽 U+2218은 1em.
+    // 공개 Noto Sans Symbols 2의 실제 hmtx는 각각 0.270/0.276em이다.
+    // 설치 글꼴 없이 표시 프로그램을 직접 공급해 후단 덮어쓰기를 재현한다.
+    let bytes = include_bytes!("../../ttfs/opensource/NotoSansSymbols2-Regular.ttf");
+    let public = ttf_parser::Face::parse(bytes, 0).unwrap();
+    let trace = |core: &DocumentCore, character: char| {
+        let value: serde_json::Value = serde_json::from_str(
+            &core
+                .get_font_decision_trace_native(0, r#"{"maxCharacters":32}"#)
+                .unwrap(),
+        )
+        .unwrap();
+        value["records"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|record| record["source"]["character"] == character.to_string())
+            .unwrap()["layoutMetric"]
+            .clone()
+    };
+    for character in ['\u{2218}', '\u{2219}'] {
+        let public_advance = f64::from(
+            public
+                .glyph_hor_advance(public.glyph_index(character).unwrap())
+                .unwrap(),
+        ) / f64::from(public.units_per_em());
+        assert!(public_advance < 0.5, "공개 프로그램은 전각과 다른 반례다");
+        let mut core = document_with_face("한양신명조");
+        core.insert_text_native(0, 0, 0, &format!("{character}가"))
+            .unwrap();
+        let mut document = core.document().clone();
+        document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+        for face in document.doc_info.font_faces.iter_mut().flatten() {
+            face.alt_type = 2;
+        }
+        core.set_document(document);
+        let before = trace(&core, character);
+        core.prepare_native_otf_fonts_with(|_| Some((bytes.to_vec(), 0)))
+            .unwrap();
+        let after = trace(&core, character);
+        assert_eq!(after["widthSource"], "measuredOriginalGlyph");
+        assert_eq!(
+            before["finalAdvanceHwpunit"], after["finalAdvanceHwpunit"],
+            "표시 프로그램의 반각 hmtx가 독립 원본 전각을 덮어쓰면 안 된다: {character}"
+        );
+
+        // 실제 TrueType 선언은 HFT의 부분 표로 승격하지 않는다.
+        let mut explicit = document_with_face("한양신명조");
+        explicit
+            .insert_text_native(0, 0, 0, &character.to_string())
+            .unwrap();
+        let mut document = explicit.document().clone();
+        document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+        for face in document.doc_info.font_faces.iter_mut().flatten() {
+            face.alt_type = 1;
+        }
+        explicit.set_document(document);
+        assert_ne!(
+            trace(&explicit, character)["widthSource"],
+            "measuredOriginalGlyph",
+            "같은 이름의 명시 TrueType은 원본 HFT 프로그램과 구분한다"
+        );
+    }
 }

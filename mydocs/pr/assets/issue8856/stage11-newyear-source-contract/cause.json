@@ -1,0 +1,118 @@
+{
+  "parent_head": "8e7867c4423613378c6cce6adb0f9c6215901f56",
+  "created": "2026-11-10T07:10:41.387640+09:00",
+  "input_sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+  "pdf_sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+  "source_serialization_scope": "Product HWPX diagnostic of original source; independent PDF remains original unchanged Print",
+  "source_attributes": {
+    "charPr10": "<ns0:charPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" id=\"10\" height=\"3500\" textColor=\"#000000\" shadeColor=\"none\" useFontSpace=\"1\" useKerning=\"0\" symMark=\"NONE\" borderFillIDRef=\"1\"><ns0:fontRef hangul=\"2\" latin=\"2\" hanja=\"2\" japanese=\"2\" other=\"2\" symbol=\"2\" user=\"2\" /><ns0:ratio hangul=\"90\" latin=\"90\" hanja=\"90\" japanese=\"90\" other=\"90\" symbol=\"90\" user=\"90\" /><ns0:spacing hangul=\"0\" latin=\"0\" hanja=\"0\" japanese=\"0\" other=\"0\" symbol=\"0\" user=\"0\" /><ns0:relSz hangul=\"100\" latin=\"100\" hanja=\"100\" japanese=\"100\" other=\"100\" symbol=\"100\" user=\"100\" /><ns0:offset hangul=\"0\" latin=\"0\" hanja=\"0\" japanese=\"0\" other=\"0\" symbol=\"0\" user=\"0\" /><ns0:bold /><ns0:underline type=\"NONE\" shape=\"SOLID\" color=\"#000000\" /><ns0:strikeout shape=\"NONE\" color=\"#000000\" /><ns0:outline type=\"NONE\" /><ns0:shadow type=\"NONE\" color=\"#B2B2B2\" offsetX=\"10\" offsetY=\"10\" /></ns0:charPr>",
+    "bullet1": "<ns0:bullet xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"1\" char=\"●\" useImage=\"1\"><ns1:img binaryItemIDRef=\"image3\" bright=\"0\" contrast=\"0\" effect=\"REAL_PIC\" alpha=\"0\" /><ns0:paraHead level=\"0\" align=\"LEFT\" useInstWidth=\"0\" autoIndent=\"1\" widthAdjust=\"0\" textOffsetType=\"PERCENT\" textOffset=\"50\" numFormat=\"DIGIT\" charPrIDRef=\"4294967295\" checkable=\"0\" /></ns0:bullet>",
+    "paraPr26": "<ns0:paraPr xmlns:ns0=\"http://www.hancom.co.kr/hwpml/2011/head\" xmlns:ns1=\"http://www.hancom.co.kr/hwpml/2011/paragraph\" xmlns:ns2=\"http://www.hancom.co.kr/hwpml/2011/core\" id=\"26\" tabPrIDRef=\"0\" condense=\"0\" fontLineHeight=\"0\" snapToGrid=\"1\" suppressLineNumbers=\"0\" checked=\"0\"><ns0:align horizontal=\"JUSTIFY\" vertical=\"BASELINE\" /><ns0:heading type=\"BULLET\" idRef=\"1\" level=\"0\" /><ns0:breakSetting breakLatinWord=\"KEEP_WORD\" breakNonLatinWord=\"KEEP_WORD\" widowOrphan=\"0\" keepWithNext=\"0\" keepLines=\"0\" pageBreakBefore=\"0\" lineWrap=\"BREAK\" /><ns0:autoSpacing eAsianEng=\"0\" eAsianNum=\"0\" /><ns1:switch><ns1:case ns1:required-namespace=\"http://www.hancom.co.kr/hwpml/2016/HwpUnitChar\"><ns0:margin><ns2:intent value=\"0\" unit=\"HWPUNIT\" /><ns2:left value=\"1500\" unit=\"HWPUNIT\" /><ns2:right value=\"1500\" unit=\"HWPUNIT\" /><ns2:prev value=\"400\" unit=\"HWPUNIT\" /><ns2:next value=\"400\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"140\" unit=\"HWPUNIT\" /></ns1:case><ns1:default><ns0:margin><ns2:intent value=\"0\" unit=\"HWPUNIT\" /><ns2:left value=\"3000\" unit=\"HWPUNIT\" /><ns2:right value=\"3000\" unit=\"HWPUNIT\" /><ns2:prev value=\"800\" unit=\"HWPUNIT\" /><ns2:next value=\"800\" unit=\"HWPUNIT\" /></ns0:margin><ns0:lineSpacing type=\"PERCENT\" value=\"140\" unit=\"HWPUNIT\" /></ns1:default></ns1:switch><ns0:border borderFillIDRef=\"1\" offsetLeft=\"0\" offsetRight=\"0\" offsetTop=\"0\" offsetBottom=\"0\" connect=\"0\" ignoreMargin=\"0\" /></ns0:paraPr>"
+  },
+  "independent_title_origins": [
+    {
+      "char": "설",
+      "origin_pdf_pt": [
+        85.08000183105469,
+        114.83999633789062
+      ],
+      "origin_css96": [
+        113.44000244140625,
+        153.1199951171875
+      ]
+    },
+    {
+      "char": " ",
+      "origin_pdf_pt": [
+        116.52041625976562,
+        114.83999633789062
+      ],
+      "origin_css96": [
+        155.36055501302084,
+        153.1199951171875
+      ]
+    },
+    {
+      "char": "차",
+      "origin_pdf_pt": [
+        127.07999420166016,
+        114.83999633789062
+      ],
+      "origin_css96": [
+        169.43999226888022,
+        153.1199951171875
+      ]
+    },
+    {
+      "char": "례",
+      "origin_pdf_pt": [
+        158.52040100097656,
+        114.83999633789062
+      ],
+      "origin_css96": [
+        211.36053466796875,
+        153.1199951171875
+      ]
+    },
+    {
+      "char": " ",
+      "origin_pdf_pt": [
+        190.0799102783203,
+        114.83999633789062
+      ],
+      "origin_css96": [
+        253.43988037109375,
+        153.1199951171875
+      ]
+    },
+    {
+      "char": "상",
+      "origin_pdf_pt": [
+        200.51998901367188,
+        114.83999633789062
+      ],
+      "origin_css96": [
+        267.3599853515625,
+        153.1199951171875
+      ]
+    }
+  ],
+  "independent_marker_image": {
+    "number": 12,
+    "bbox": [
+      115.01799774169922,
+      614.5679931640625,
+      124.01300048828125,
+      623.5579833984375
+    ],
+    "transform": [
+      8.994999885559082,
+      0.0,
+      -0.0,
+      8.989999771118164,
+      115.01799774169922,
+      614.5679931640625
+    ],
+    "width": 60,
+    "height": 60,
+    "colorspace": 3,
+    "cs-name": "DeviceRGB",
+    "xres": 96,
+    "yres": 96,
+    "bpc": 8,
+    "size": 1081,
+    "digest": "d0b7b355fd29b1078acb8695166df498",
+    "has-mask": true,
+    "xref": 25
+  },
+  "missing_marker_before_tree": true,
+  "violations": [
+    "useFontSpace=1 source requests its declared program space, but Korean name has no metric alias and falls back to half-cell",
+    "caption composition has no numbering_text; layout_caption calls layout_composed_paragraph without common apply_paragraph_numbering, omitting the image and its body advance"
+  ],
+  "producer_consumer_paths": [
+    "font rule metric alias -> style_resolver resolved_space_advance_em -> composer run advances -> TextRun/PaintOp backend origins",
+    "caption source bullet -> layout_caption composition -> common apply_paragraph_numbering -> list_marker_geometry -> picture_bullet::image + body origin"
+  ],
+  "scope": "Historical pre-correction cause record; stage11 correction and focused results are in validation.json; final full PR gates remain pending"
+}

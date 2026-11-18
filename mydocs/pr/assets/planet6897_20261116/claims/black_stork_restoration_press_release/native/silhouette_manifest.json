@@ -1,0 +1,153 @@
+{
+  "key": "black_stork_restoration_press_release",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "9ee752fac37933d9e817f73ca34076b1ae39aaa659c4c754c7ea4ce0087af68b",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/pdf_png/pdf-001.png",
+      "pdf_sha256": "54ca5df681fccd956b6b32285fbde7daa5a4804b35f1484f8084f42902f2cce6"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "82ba2327d64391be8295b95c06fff3c9ec7ad86dbdfe27dc0c161c56ff05e32d",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/pdf_png/pdf-002.png",
+      "pdf_sha256": "c4aa9b4a1da5be9351b29e685ee9f85ff7faa7aea13cfca2cdeff799abfecc33"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "9e05f8a414da47565733f1186d3ba9c4b835b9fb26cd482c7a37ca11aa81f6f6",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/pdf_png/pdf-003.png",
+      "pdf_sha256": "c337c88a01265aac21c67b382cffe5e7f6371f5fa7e76b8fa19ef3138367048f"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "e8afcb4180abe8f79ebdf47e028cab5430f81cb80ed82e3db8b88bac2d23ad14",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/pdf_png/pdf-004.png",
+      "pdf_sha256": "b356d47b5d35298c8b3a08e550842f4573cffc09305cc4c6b0946a6f7e6cc8c9"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "dc7423412da1cad319c404d0be2f2927c6a0502808943db71f22c055778d5f62",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/pdf_png/pdf-005.png",
+      "pdf_sha256": "fe292bab432e93604b8b6460627063ba14c40f53dae8b175d3903920a791266a"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "5126c1a646365bdb35bbccb23d5cc1c68f5347e7c312a4ea861587aea4629d1c",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/black_stork_restoration_press_release/black_stork_restoration_press_release/pdf_png/pdf-006.png",
+      "pdf_sha256": "fa82baa55d0121e302931d548720607268c6aa4e651285e4a2f8bca0ea2ec624"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99463,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93164,
+      "tolerant_content_match_percent": 99.99463
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99729,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73730,
+      "tolerant_content_match_percent": 99.99729
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99938,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 1,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 161652,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.25213,
+      "silhouette_raw_unmatched_pixels": 2079,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118945,
+      "tolerant_content_match_percent": 98.25213
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9943,
+      "silhouette_raw_unmatched_pixels": 9,
+      "silhouette_boundary_reconciled_pixels": 9,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 157894,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 428908,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 6,
+      "pdf": 6
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "canonical_full_manifest_sha256": "04738ab789873cad4e6388688c97fb192f56c209fd802af6e417549b5e1c5ff4",
+  "record_scope": "Compact canonical manifest: all page metrics and PNG hashes retained; full environment catalog retained locally and referenced by hash.",
+  "full_environment_provenance_sha256": "1550957541664f02a6f1fd5c72a8309b9bcb235956d7fedafc2aec6e819347e1"
+}

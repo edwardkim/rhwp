@@ -1,0 +1,19 @@
+{
+  "head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+  "path": "output/pr-review/planet6897-remaining39-integration-20261111/candidate-pkg",
+  "hashes": {
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "775f167badb99a1e54e34143719f90cfea383a943485dc0936bdf23e6c67c9c4"
+  },
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg",
+    "--no-opt"
+  ],
+  "build_log_sha256": "626661a1d94471fbb460b018bcb72ebab94de5a0d4ce61f6218fcaca6c24f13b",
+  "kind": "mac-local-locked-no-opt-alternative",
+  "built_at": "2026-11-11T11:55:32.582050+09:00"
+}

@@ -1,4 +1,8 @@
-//! [#7379] 분할 표·각주 경로에서 통과 중인 기존 대조군을 보존한다.
+//! 관계형·고정형: #7379 분할 표·각주의 원문 소유와 기존 경계 대조를 보존한다.
+//! 주석 갱신: 2026-11-07T16:55:33+09:00.
+//! 직전 파일 변경: d753f31aa835a972e068f729e48295229c991de9 (2026-11-07T16:50:39+09:00).
+//! 이번 helper 변경은 합성 예산 반례의 IR 본문과 자동 마커를 구분한다. 실물 좌표·골든의
+//! 기대값은 변경하지 않으며, 아래 미완료 실물의 시각 통과나 신규 px 핀을 주장하지 않는다.
 //!
 //! 원본 정책연구 문서의 시각 비교가 90% 미만이므로 실제 실패한
 //! 78개 함수는 사용자 지시에 따라 #7445에서 후속 검토한다.
@@ -1431,7 +1435,19 @@ fn captioned_closed_empty_host_frame_preserves_rows_and_caption_when_budget_requ
     ) {
         if let RenderNodeType::TextLine(line) = &node.node_type {
             let pi = line.para_index.expect("셀 문단 원본 소유");
-            out.entry((row, col, pi)).or_default().push_str(&text(node));
+            // 비교 대상은 원본 IR 문단의 문자다. 자동 마커는 char_start=None인
+            // 별도 paint 소유이므로 표시 Unicode(•/PUA)를 지워 구분하지 않는다.
+            fn source_text(node: &RenderNode, output: &mut String) {
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    if run.char_start.is_some() {
+                        output.push_str(&run.text);
+                    }
+                }
+                for child in &node.children {
+                    source_text(child, output);
+                }
+            }
+            source_text(node, out.entry((row, col, pi)).or_default());
             return;
         }
         for child in &node.children {

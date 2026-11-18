@@ -5,6 +5,10 @@
 #import <Metal/Metal.h>
 
 #include "MetalFrameLifetime.hpp"
+#include "TextureCloseRouting.hpp"
+#include "RhwpProducerReadyEvents.hpp"
+#include "../../common/gpu_cache_metrics.h"
+#include "../../common/cache_trim.h"
 #include <atomic>
 #include <condition_variable>
 #include <cstdio>
@@ -14,6 +18,7 @@
 #include <exception>
 #include <map>
 #include <set>
+#include <stdexcept>
 #include <string>
 #include <thread>
 
@@ -32,6 +37,7 @@ ImmutableFrameCredits& Credits() {
 std::atomic<int> activeProducers{0};
 std::atomic<uint64_t> nextDeviceGeneration{1};
 NSDictionary* StampValue(const Stamp& stamp);
+bool Unsigned(id value, uint64_t& output, uint64_t maximum);
 
 struct NativeApi {
   using Capabilities = char* (*)();
@@ -129,27 +135,60 @@ struct Job {
 struct PublishedFrame {
   std::shared_ptr<Job> job;
   std::shared_ptr<PixelResources> pixels;
+  rhwp::metrics::CacheMetrics cacheMetrics;
 };
 
+rhwp::metrics::CacheMetrics CaptureMetalCacheMetrics(const std::shared_ptr<NativeApi>& api, uint64_t presenter) noexcept {
+  try {
+    static const uint8_t command[] = "{\"op\":\"info\"}";
+    NSDictionary* response = api->read(api->request(presenter, command, sizeof(command) - 1));
+    NSDictionary* info = response[@"info"];
+    if (![response[@"ok"] boolValue] || ![info isKindOfClass:[NSDictionary class]]) return {};
+    return rhwp::metrics::capture([&](bool target, const char* key) -> std::optional<uint64_t> {
+      NSDictionary* values = info[target ? @"managedTargets" : @"tiles"];
+      if (![values isKindOfClass:[NSDictionary class]]) return {};
+      id value = values[[NSString stringWithUTF8String:key]];
+      if (![value isKindOfClass:[NSNumber class]] || CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID() ||
+          CFNumberIsFloatType((__bridge CFNumberRef)value) || [value longLongValue] < 0) return {};
+      return [value unsignedLongLongValue];
+    });
+  } catch (...) { return {}; }
+}
+
+NSDictionary* MetalCacheMetricsValue(const rhwp::metrics::CacheMetrics& sample, const Stamp& stamp) {
+  if (sample.empty()) return nil;
+  NSMutableDictionary* counters = [NSMutableDictionary dictionary];
+  for (size_t index = 0; index < rhwp::metrics::kCounters.size(); ++index) {
+    if (sample.values[index])
+      counters[[NSString stringWithUTF8String:rhwp::metrics::kCounters[index].name]] = @(*sample.values[index]);
+  }
+  return @{@"schemaVersion":@1,@"backend":@"metalGanesh",@"scope":@"publishedFramePostRenderSnapshot",
+    @"stamp":StampValue(stamp),@"counters":counters};
+}
+
 struct State {
-  State(uint64_t generation, std::string path, std::shared_ptr<int> slot)
-      : generation(generation), path(std::move(path)), slot(std::move(slot)), gate(generation) {}
+  State(uint64_t generation, std::string path, std::shared_ptr<int> slot, bool closeAckRequired = false)
+      : generation(generation), path(std::move(path)), slot(std::move(slot)), gate(generation),
+        closeAckRequired(closeAckRequired) {}
   std::mutex mutex;
   std::condition_variable changed;
   const uint64_t generation;
   const std::string path;
   std::shared_ptr<int> slot;
   GenerationGate gate;
+  const bool closeAckRequired;
   bool closed = false, ready = false, finished = false, inFlight = false, unregistered = false;
   uint64_t staleDrops = 0;
   std::string error;
   std::shared_ptr<NativeApi> api;
+  rhwp::cache::TrimMailbox cacheTrim;
   std::shared_ptr<Job> pending;
   std::shared_ptr<PublishedFrame> current;
   std::map<uint64_t, std::weak_ptr<SnapshotLease>> leases;
   Stamp acceptedStamp;
   std::vector<uint64_t> acceptedSnapshots;
   std::function<void()> notify;
+  std::function<void(uint64_t, const Stamp&)> producerReady;
 
   bool enqueue(const std::shared_ptr<Job>& job) {
     std::shared_ptr<Job> oldPending;
@@ -193,6 +232,7 @@ struct State {
     {
       std::lock_guard<std::mutex> lock(mutex);
       closed = true;
+      cacheTrim.cancel();
       ready = false;
       gate.close();
       oldPending = std::move(pending);
@@ -206,6 +246,23 @@ struct State {
     error = text ? std::string(text).substr(0, 2048) : "Metal producer failed";
   }
 };
+
+void RunCacheTrim(const std::shared_ptr<State>& state, const std::shared_ptr<NativeApi>& api,
+                  uint64_t presenter, const rhwp::cache::TrimReceipt& trim) {
+  try {
+    const std::string request = "{\"op\":\"trimCache\",\"targetBytes\":" + std::to_string(trim.target) + "}";
+    NSDictionary* result = api->read(api->request(presenter, reinterpret_cast<const uint8_t*>(request.data()), request.size()));
+    uint64_t before=0,after=0,trimmed=0,target=0;
+    id busy=result[@"busy"];
+    if (![result[@"ok"] boolValue] || !Unsigned(result[@"before"],before,rhwp::cache::kMaxTrimBytes) ||
+        !Unsigned(result[@"after"],after,rhwp::cache::kMaxTrimBytes) ||
+        !Unsigned(result[@"trimmed"],trimmed,rhwp::cache::kMaxTrimBytes) ||
+        !Unsigned(result[@"targetBytes"],target,rhwp::cache::kMaxTrimBytes) || target != trim.target ||
+        ![busy isKindOfClass:[NSNumber class]] || CFGetTypeID((__bridge CFTypeRef)busy) != CFBooleanGetTypeID())
+      throw std::runtime_error("invalid Native cache trim receipt");
+    state->cacheTrim.finish(trim.request,before,after,trimmed,[busy boolValue]);
+  } catch (...) {state->cacheTrim.fail(trim.request);}
+}
 
 std::shared_ptr<PixelResources> CreatePixels(id<MTLDevice> device, CVMetalTextureCacheRef cache,
                                           const Job& job) {
@@ -267,13 +324,15 @@ void RunProducer(const std::shared_ptr<State>& state) {
     }
     while (presenter) {
       std::shared_ptr<Job> job;
+      std::optional<rhwp::cache::TrimReceipt> trim;
       {
         std::unique_lock<std::mutex> lock(state->mutex);
-        state->changed.wait(lock, [&] {return state->closed || state->pending != nullptr;});
+        state->changed.wait(lock, [&] {return state->closed || state->pending != nullptr || state->cacheTrim.queued();});
         if (state->closed) break;
-        job = std::move(state->pending);
-        state->inFlight = true;
+        trim=state->cacheTrim.take();
+        if(!trim) {job = std::move(state->pending);state->inFlight = true;}
       }
+      if(trim) { @autoreleasepool {RunCacheTrim(state,api,presenter,*trim);} continue; }
       @autoreleasepool {
         auto pixels = CreatePixels(device, cache, *job);
         if (!pixels) {
@@ -304,11 +363,13 @@ void RunProducer(const std::shared_ptr<State>& state) {
             state->fail(@"Metal replay failed; target quarantined without GPU-completion evidence.");
             state->close();
           } else {
+            const auto measured = CaptureMetalCacheMetrics(api, presenter);
             std::lock_guard<std::mutex> lock(state->mutex);
             if (state->gate.current(job->sequence, job->stamp)) {
               auto frame = std::make_shared<PublishedFrame>();
               frame->job = job;
               frame->pixels = pixels;
+              frame->cacheMetrics = measured;
               job->credit->retain_until_process_exit(pixels);
               state->current = std::move(frame);
               state->error.clear();
@@ -320,10 +381,14 @@ void RunProducer(const std::shared_ptr<State>& state) {
       // Evict unused cache bindings after local unpublished resources drop;
       // published/quarantined CVMetalTexture references remain strongly held.
       CVMetalTextureCacheFlush(cache, 0);
+      bool published = false;
       {
         std::lock_guard<std::mutex> lock(state->mutex);
         state->inFlight = false;
+        published = !state->closed && state->current && state->current->job == job &&
+            state->gate.current(job->sequence, job->stamp);
       }
+      if (published && state->producerReady) state->producerReady(job->sequence, job->stamp);
       if (state->notify) state->notify();
     }
     if (presenter) {
@@ -348,19 +413,52 @@ bool Unsigned(id value, uint64_t& output, uint64_t maximum = INT64_MAX) {
   output = [value unsignedLongLongValue];
   return true;
 }
+NSDictionary* CacheTrimValue(uint64_t texture,uint64_t generation,const rhwp::cache::TrimReceipt& trim) {
+  return @{@"textureId":@(texture),@"deviceGeneration":@(generation),@"requestId":@(trim.request),
+    @"targetBytes":@(trim.target),@"before":@(trim.before),@"after":@(trim.after),@"trimmed":@(trim.trimmed),
+    @"pending":@(trim.pending),@"busy":@(trim.busy),@"reason":[NSString stringWithUTF8String:trim.reason],
+    @"scope":@"managedGpuTargets"};
+}
+NSDictionary* CacheTrimCall(const std::shared_ptr<State>& state,uint64_t texture,NSDictionary* args,bool poll) {
+  uint64_t generation=0,request=0,target=0;
+  if(!Unsigned(args[@"deviceGeneration"],generation,INT64_MAX) || generation!=state->generation ||
+     !Unsigned(args[@"requestId"],request,INT64_MAX) || !request ||
+     (!poll && args[@"targetBytes"] && !Unsigned(args[@"targetBytes"],target,rhwp::cache::kMaxTrimBytes)))
+    throw std::invalid_argument("cache trim needs matching device generation, positive request ID and bounded target bytes");
+  rhwp::cache::TrimReceipt receipt;
+  {
+    std::lock_guard<std::mutex> lock(state->mutex);
+    if(state->closed || !state->ready) throw std::invalid_argument("cache trim owner is closed or not ready");
+    receipt=poll ? state->cacheTrim.poll(request) : state->cacheTrim.enqueue(request,target);
+  }
+  if(!poll)state->changed.notify_one();
+  return CacheTrimValue(texture,generation,receipt);
+}
+NSDictionary* CacheTrimGroupValue(uint64_t group,uint64_t generation,NSArray* members) {
+  uint64_t before=0,after=0,trimmed=0;bool pending=false,busy=false;
+  for(NSDictionary* member in members) {
+    before += [member[@"before"] unsignedLongLongValue];after += [member[@"after"] unsignedLongLongValue];
+    trimmed += [member[@"trimmed"] unsignedLongLongValue];pending=pending||[member[@"pending"] boolValue];busy=busy||[member[@"busy"] boolValue];
+  }
+  NSDictionary* first=members[0];
+  return @{@"textureId":@(group),@"groupId":@(group),@"deviceGeneration":@(generation),
+    @"requestId":first[@"requestId"],@"targetBytes":first[@"targetBytes"],@"before":@(before),@"after":@(after),
+    @"trimmed":@(trimmed),@"pending":@(pending),@"busy":@(busy),@"members":members,
+    @"reason":pending?@"queued":busy?@"memberBusy":@"completed",@"scope":@"managedGpuTargets"};
+}
 bool Number(id value, double& output) {
   if (![value isKindOfClass:[NSNumber class]] || CFGetTypeID((__bridge CFTypeRef)value) == CFBooleanGetTypeID()) return false;
   output = [value doubleValue];
   return std::isfinite(output);
 }
-std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation) {
+std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation, bool reserveImmutable = true) {
   id stampValue = arguments[@"stamp"], placementsValue = arguments[@"placements"];
   if (![stampValue isKindOfClass:[NSDictionary class]] || ![placementsValue isKindOfClass:[NSArray class]]) return {};
   NSDictionary* stamp = stampValue;
   NSArray* placements = placementsValue;
   if (!placements.count || placements.count > 8) return {};
   auto job = std::make_shared<Job>();
-  uint64_t width, height, clear;
+  uint64_t width = 0, height = 0, clear = 0;
   if (!Unsigned(arguments[@"width"], width, 4096) || !Unsigned(arguments[@"height"], height, 4096) ||
       !width || !height || !Unsigned(arguments[@"clearColor"], clear, UINT32_MAX) ||
       !Unsigned(stamp[@"documentId"], job->stamp.document) || !Unsigned(stamp[@"revision"], job->stamp.revision) ||
@@ -375,8 +473,8 @@ std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation) {
   std::set<uint64_t> ids;
   for (id item in placements) {
     if (![item isKindOfClass:[NSDictionary class]]) return {};
-    uint64_t snapshot, background = 0;
-    double scale, x, y;
+    uint64_t snapshot = 0, background = 0;
+    double scale = 0, x = 0, y = 0;
     if (!Unsigned(item[@"snapshot"], snapshot) || !snapshot || !Number(item[@"scale"], scale) ||
         scale <= 0 || scale > 16 || !Number(item[@"originX"], x) || !Number(item[@"originY"], y) ||
         std::abs(x) > 16777216 || std::abs(y) > 16777216) return {};
@@ -401,7 +499,7 @@ std::shared_ptr<Job> ParseJob(NSDictionary* arguments, uint64_t generation) {
   data = [NSJSONSerialization dataWithJSONObject:@{@"stamp":request[@"stamp"],@"snapshots":snapshots} options:0 error:nullptr];
   if (!data || data.length > 64 * 1024) return {};
   job->frameCheck.assign(static_cast<const char*>(data.bytes), data.length);
-  job->credit = Credits().reserve(reserved);
+  if (reserveImmutable) job->credit = Credits().reserve(reserved);
   return job;
 }
 NSDictionary* StampValue(const Stamp& stamp) {
@@ -414,6 +512,50 @@ NSDictionary* CreditStatus() {
   return @{@"outstandingFrames":@(stats.outstanding_frames),@"pendingRetireFrames":@(stats.retained_pending_retire),
     @"reservedTargetBytes":@(stats.reserved_bytes),@"maxFrames":@4,@"maxTargetBytes":@(64*kMib),
     @"consumerRetirement":@NO,@"continuousPresentationSupported":@NO,@"cpuFallbackRequiredWhenSaturated":@YES};
+}
+}  // namespace
+
+#include "MetalNativeView.hpp"
+
+namespace {
+struct CVCloseState { uint64_t textureId; std::shared_ptr<State> state; };
+struct CVCloseReceipt { uint64_t textureId, generation; __strong NSDictionary* status; };
+NSDictionary* CVLimits(bool negotiated) {
+  NSMutableDictionary* limits = [CreditStatus() mutableCopy];
+  limits[@"closeAcknowledgementSupported"] = @YES;
+  limits[@"closeAcknowledgementRequired"] = @(negotiated);
+  limits[@"consumerGpuCompletionVerified"] = @NO;
+  limits[@"closeAckRefundsFrameCredit"] = @NO;
+  limits[@"cacheTrim"] = @YES;
+  if (negotiated) {
+    limits[@"maxRetainedCloseRecords"] = @2;
+    limits[@"maxClosedReceipts"] = @2;
+  }
+  return limits;
+}
+NSDictionary* CVStatus(uint64_t textureId, const std::shared_ptr<State>& state, bool registered) {
+  std::lock_guard<std::mutex> lock(state->mutex);
+  NSString* error = [[NSString alloc] initWithBytes:state->error.data() length:state->error.size() encoding:NSUTF8StringEncoding];
+  NSMutableArray* ids = [NSMutableArray arrayWithCapacity:state->acceptedSnapshots.size()];
+  for (const auto snapshot : state->acceptedSnapshots) [ids addObject:@(snapshot)];
+  return @{@"textureId":@(textureId),@"deviceGeneration":@(state->generation),
+    @"closeAcknowledgementRequired":@(state->closeAckRequired),@"registered":@(registered),
+    @"ready":@(state->ready),@"closed":@(state->closed),@"ownerFinished":@(state->finished),
+    @"pending":@(state->pending!=nullptr),@"inFlight":@(state->inFlight),@"hasFrame":@(state->current!=nullptr),
+    @"staleFramesDropped":@(state->staleDrops),@"textureUnregisteredNotification":@(state->unregistered),
+    @"error":error?:@"",@"acceptedStamp":StampValue(state->acceptedStamp),@"acceptedSnapshots":ids,
+    @"producerDiagnostics":state->current ? (MetalCacheMetricsValue(state->current->cacheMetrics, state->current->job->stamp) ?: (id)[NSNull null]) : (id)[NSNull null],
+    @"limits":CVLimits(state->closeAckRequired)};
+}
+NSDictionary* CVRetireAck(uint64_t textureId, uint64_t generation) {
+  return @{@"textureId":@(textureId),@"deviceGeneration":@(generation),@"acknowledged":@YES,
+    @"closeAcknowledgementRequired":@YES,@"closed":@YES,@"ownerFinished":@YES,@"registered":@NO};
+}
+NSDictionary* CVClosedStatus(const CVCloseReceipt& receipt) {
+  NSMutableDictionary* value = [receipt.status mutableCopy];
+  // Terminal owner facts are immutable; process-wide allocation counters are live.
+  value[@"limits"] = CVLimits(true);
+  return value;
 }
 }  // namespace
 
@@ -462,14 +604,19 @@ NSDictionary* CreditStatus() {
 
 @implementation RhwpMetalPlugin {
   id<FlutterTextureRegistry> _registry;
+  RhwpProducerReadyEvents* _readyEvents;
   NSMutableDictionary<NSNumber*, RhwpMetalTexture*>* _textures;
   std::shared_ptr<State> _lastClosed;
   uint64_t _lastClosedId;
+  rhwp::metal::RetirementRegistry<CVCloseState,CVCloseReceipt> _closeRecords;
 }
 + (void)registerWithRegistrar:(id<FlutterPluginRegistrar>)registrar {
+  [RhwpMetalViewPlugin registerWithRegistrar:registrar];
   RhwpMetalPlugin* plugin = [[RhwpMetalPlugin alloc] init];
   plugin->_registry = registrar.textures;
   plugin->_textures = [NSMutableDictionary dictionary];
+  plugin->_readyEvents = [[RhwpProducerReadyEvents alloc] initWithMessenger:registrar.messenger
+      name:@"rhwp_native/texture_macos/events"];
   FlutterMethodChannel* channel = [FlutterMethodChannel methodChannelWithName:@"rhwp_native/texture_macos"
       binaryMessenger:registrar.messenger];
   [registrar addMethodCallDelegate:plugin channel:channel];
@@ -477,6 +624,8 @@ NSDictionary* CreditStatus() {
 - (void)handleMethodCall:(FlutterMethodCall*)call result:(FlutterResult)result {
   try {
     [self handleCall:call result:result];
+  } catch (const std::invalid_argument& error) {
+    result([FlutterError errorWithCode:@"invalidArgument" message:[NSString stringWithUTF8String:error.what()] details:nil]);
   } catch (const std::exception&) {
     result([FlutterError errorWithCode:@"nativeAllocation" message:@"The bounded native request could not be allocated." details:nil]);
   }
@@ -486,15 +635,26 @@ NSDictionary* CreditStatus() {
     result([FlutterError errorWithCode:@"platformThread" message:@"Texture registration requires the platform thread." details:nil]);
     return;
   }
-  if ([call.method isEqualToString:@"capabilities"]) { result(CreditStatus()); return; }
+  if ([call.method isEqualToString:@"capabilities"]) { result(CVLimits(false)); return; }
   if (![call.arguments isKindOfClass:[NSDictionary class]]) {
     result([FlutterError errorWithCode:@"arguments" message:@"Expected a bounded argument map." details:nil]); return;
   }
   NSDictionary* arguments = call.arguments;
   if ([call.method isEqualToString:@"create"]) {
+    id requestedAck = arguments[@"closeAcknowledgementRequired"];
+    if (requestedAck && (![requestedAck isKindOfClass:[NSNumber class]] ||
+        CFGetTypeID((__bridge CFTypeRef)requestedAck) != CFBooleanGetTypeID())) {
+      result([FlutterError errorWithCode:@"arguments" message:@"closeAcknowledgementRequired must be a boolean." details:nil]);return;
+    }
+    const bool negotiated = [requestedAck boolValue];
+    size_t closing = 0;
+    for (const auto& record : _closeRecords.records()) if (record.second.closing) ++closing;
     NSString* input = arguments[@"libraryPath"];
-    if (![input isKindOfClass:[NSString class]] || !input.isAbsolutePath || input.length > 4096 || _textures.count >= 2) {
+    if (![input isKindOfClass:[NSString class]] || !input.isAbsolutePath || input.length > 4096) {
       result([FlutterError errorWithCode:@"arguments" message:@"Absolute libraryPath and at most two texture registrations are required." details:nil]); return;
+    }
+    if (_textures.count + closing >= 2) {
+      result([FlutterError errorWithCode:@"backpressure" message:@"Two active or unacknowledged texture close records are retained." details:nil]);return;
     }
     auto slot = std::shared_ptr<int>(new int(0), [](int* value) {if (*value) --activeProducers; delete value;});
     int active = activeProducers.load();
@@ -506,22 +666,26 @@ NSDictionary* CreditStatus() {
     if (!generation || generation > INT64_MAX) {result([FlutterError errorWithCode:@"generation" message:@"Device generation exhausted." details:nil]);return;}
     NSString* path = input.stringByResolvingSymlinksInPath;
     if (!path.UTF8String) {result([FlutterError errorWithCode:@"arguments" message:@"Library path is not UTF-8." details:nil]);return;}
-    auto state = std::make_shared<State>(generation, path.UTF8String, std::move(slot));
+    auto state = std::make_shared<State>(generation, path.UTF8String, std::move(slot), negotiated);
     RhwpMetalTexture* texture = [[RhwpMetalTexture alloc] initWithState:state];
     const int64_t textureId = [_registry registerTexture:texture];
     if (!textureId) {state->close();result([FlutterError errorWithCode:@"registration" message:@"Flutter rejected the texture registration." details:nil]);return;}
-    _textures[@(textureId)] = texture;
-    __weak id<FlutterTextureRegistry> weakRegistry = _registry;
-    std::weak_ptr<State> weakState = state;
-    state->notify = [weakRegistry, weakState, textureId] {
-      dispatch_async(dispatch_get_main_queue(), ^{
-        auto current = weakState.lock();
-        if (!current) return;
-        {std::lock_guard<std::mutex> lock(current->mutex);if (current->closed) return;}
-        [weakRegistry textureFrameAvailable:textureId];
-      });
-    };
     try {
+      state->producerReady = ProducerReadyCallback(_readyEvents, uint64_t(textureId));
+      if (negotiated && !_closeRecords.insert(generation,
+          std::make_shared<CVCloseState>(CVCloseState{static_cast<uint64_t>(textureId),state})))
+        throw std::runtime_error("bounded texture close registry is full");
+      _textures[@(textureId)] = texture;
+      __weak id<FlutterTextureRegistry> weakRegistry = _registry;
+      std::weak_ptr<State> weakState = state;
+      state->notify = [weakRegistry, weakState, textureId] {
+        dispatch_async(dispatch_get_main_queue(), ^{
+          auto current = weakState.lock();
+          if (!current) return;
+          {std::lock_guard<std::mutex> lock(current->mutex);if (current->closed) return;}
+          [weakRegistry textureFrameAvailable:textureId];
+        });
+      };
       std::thread([state] {
         try {RunProducer(state);} catch (const std::exception&) {
           state->fail(@"Native producer allocation failed; owner thread stopped.");
@@ -534,53 +698,103 @@ NSDictionary* CreditStatus() {
       }).detach();
     } catch (const std::exception&) {
       state->close();
+      if (negotiated) _closeRecords.erase_unstarted(generation);
       [_registry unregisterTexture:textureId];
       [_textures removeObjectForKey:@(textureId)];
       throw;
     }
-    result(@{@"textureId":@(textureId),@"deviceGeneration":@(generation),@"initializing":@YES,@"limits":CreditStatus()});
+    result(@{@"textureId":@(textureId),@"deviceGeneration":@(generation),@"initializing":@YES,
+      @"producerReadyEvents":@YES,
+      @"closeAcknowledgementRequired":@(negotiated),@"limits":CVLimits(negotiated)});
     return;
   }
-  uint64_t textureId;
+  uint64_t textureId = 0;
   if (!Unsigned(arguments[@"textureId"], textureId) || !textureId) {
     result([FlutterError errorWithCode:@"arguments" message:@"Invalid textureId." details:nil]);return;
   }
   RhwpMetalTexture* texture = _textures[@(textureId)];
-  auto state = texture ? [texture state] : (textureId == _lastClosedId ? _lastClosed : nullptr);
-  if (!state) {result([FlutterError errorWithCode:@"closed" message:@"Unknown texture or expired closed receipt." details:nil]);return;}
+  auto active = texture ? [texture state] : nullptr;
+  uint64_t requestedGeneration = 0;
+  if (arguments[@"deviceGeneration"] &&
+      (!Unsigned(arguments[@"deviceGeneration"], requestedGeneration) || !requestedGeneration)) {
+    result([FlutterError errorWithCode:@"invalidArgument" message:@"deviceGeneration must be a positive integer." details:nil]);return;
+  }
+  auto retained = requestedGeneration ? _closeRecords.lookup(requestedGeneration) : nullptr;
+  const auto* completed = requestedGeneration ? _closeRecords.receipt(requestedGeneration) : nullptr;
+  bool knownRetainedHandle = false;
+  for (const auto& record : _closeRecords.records())
+    if (record.second.value->textureId == textureId) knownRetainedHandle = true;
+  for (const auto& receipt : _closeRecords.receipts())
+    if (receipt.second.textureId == textureId) knownRetainedHandle = true;
+  using rhwp::metal::TextureCloseIdentity;
+  using rhwp::metal::TextureCloseRoute;
+  const auto route = rhwp::metal::ResolveTextureClose(textureId, requestedGeneration,
+    active ? TextureCloseIdentity{textureId,active->generation,active->closeAckRequired} : TextureCloseIdentity{},
+    retained ? TextureCloseIdentity{retained->textureId,retained->state->generation,true} : TextureCloseIdentity{},
+    completed ? TextureCloseIdentity{completed->textureId,completed->generation,true} : TextureCloseIdentity{},
+    _lastClosed ? TextureCloseIdentity{_lastClosedId,_lastClosed->generation,false} : TextureCloseIdentity{},
+    knownRetainedHandle);
+  if (route == TextureCloseRoute::requiresGeneration || route == TextureCloseRoute::stale) {
+    NSString* code = route == TextureCloseRoute::requiresGeneration ? @"invalidArgument" : @"contextChanged";
+    result([FlutterError errorWithCode:code message:@"Texture handle and deviceGeneration must match the negotiated owner." details:nil]);return;
+  }
+  if (route == TextureCloseRoute::completed) {
+    if ([call.method isEqualToString:@"status"] || [call.method isEqualToString:@"close"]) {result(CVClosedStatus(*completed));return;}
+    if ([call.method isEqualToString:@"retireAck"]) {result(CVRetireAck(textureId,requestedGeneration));return;}
+    result([FlutterError errorWithCode:@"closed" message:@"Texture retirement was already acknowledged." details:nil]);return;
+  }
+  std::shared_ptr<State> state;
+  if (route == TextureCloseRoute::negotiated) {
+    state = retained->state;
+    // A late close of generation A must never unregister a new B at the same address.
+    if (!active || active->generation != state->generation) texture = nil;
+  } else if (route == TextureCloseRoute::legacyActive) state = active;
+  else if (route == TextureCloseRoute::legacyClosed) {state = _lastClosed;texture = nil;}
+  if (!state) {result([FlutterError errorWithCode:@"closed" message:@"Unknown texture or expired acknowledged close receipt." details:nil]);return;}
+  const bool registered = texture && (!state->closeAckRequired || _closeRecords.registered(state->generation));
+  if ([call.method isEqualToString:@"trimCache"] || [call.method isEqualToString:@"trimCacheStatus"]) {
+    result(CacheTrimCall(state,textureId,arguments,[call.method isEqualToString:@"trimCacheStatus"]));return;
+  }
+  if ([call.method isEqualToString:@"retireAck"]) {
+    bool complete;
+    {std::lock_guard<std::mutex> lock(state->mutex);complete=state->closed&&state->finished&&!state->inFlight;}
+    if (!state->closeAckRequired || registered || !complete) {
+      result([FlutterError errorWithCode:@"retirePending" message:@"Negotiated producer close completion is required before acknowledgment." details:nil]);return;
+    }
+    NSDictionary* status = CVStatus(textureId,state,false);
+    if (!_closeRecords.acknowledge(state->generation,complete,CVCloseReceipt{textureId,state->generation,status})) {
+      result([FlutterError errorWithCode:@"retirePending" message:@"Texture close acknowledgment is not ready." details:nil]);return;
+    }
+    result(CVRetireAck(textureId,state->generation));return;
+  }
   if ([call.method isEqualToString:@"submit"]) {
-    if (!texture) {result(@{@"accepted":@NO,@"reason":@"closed",@"limits":CreditStatus()});return;}
+    if (!registered) {result(@{@"accepted":@NO,@"reason":@"closed",@"limits":CVLimits(state->closeAckRequired)});return;}
     auto job = ParseJob(arguments, state->generation);
     if (!job) {result([FlutterError errorWithCode:@"arguments" message:@"Invalid stamp, placements, or bounded target geometry." details:nil]);return;}
-    if (!job->credit) {result(@{@"accepted":@NO,@"reason":@"backpressure",@"limits":CreditStatus()});return;}
+    if (!job->credit) {result(@{@"accepted":@NO,@"reason":@"backpressure",@"limits":CVLimits(state->closeAckRequired)});return;}
     const bool accepted = state->enqueue(job);
     if (!accepted) job.reset();
     result(@{@"accepted":@(accepted),@"acceptedStamp":accepted?StampValue(job->stamp):@{},
-      @"reason":accepted?@"accepted":@"notReadyOrStale",@"limits":CreditStatus()});
+      @"reason":accepted?@"accepted":@"notReadyOrStale",@"limits":CVLimits(state->closeAckRequired)});
   } else if ([call.method isEqualToString:@"status"]) {
-    std::lock_guard<std::mutex> lock(state->mutex);
-    NSString* error = [[NSString alloc] initWithBytes:state->error.data() length:state->error.size() encoding:NSUTF8StringEncoding];
-    NSMutableArray* acceptedIds = [NSMutableArray arrayWithCapacity:state->acceptedSnapshots.size()];
-    for (const auto snapshot : state->acceptedSnapshots) [acceptedIds addObject:@(snapshot)];
-    result(@{@"ready":@(state->ready),@"closed":@(state->closed),@"ownerFinished":@(state->finished),
-      @"pending":@(state->pending!=nullptr),@"inFlight":@(state->inFlight),@"hasFrame":@(state->current!=nullptr),
-      @"staleFramesDropped":@(state->staleDrops),
-      @"textureUnregisteredNotification":@(state->unregistered),@"error":error?:@"",@"deviceGeneration":@(state->generation),
-      @"acceptedStamp":StampValue(state->acceptedStamp),@"acceptedSnapshots":acceptedIds,@"limits":CreditStatus()});
+    result(CVStatus(textureId,state,registered));
   } else if ([call.method isEqualToString:@"close"]) {
+    if (state->closeAckRequired) _closeRecords.close(state->generation);
     state->close();
     if (texture) {
       [_registry unregisterTexture:static_cast<int64_t>(textureId)];
       [_textures removeObjectForKey:@(textureId)];
-      _lastClosed = state;
-      _lastClosedId = textureId;
+      if (!state->closeAckRequired) {_lastClosed = state;_lastClosedId = textureId;}
     }
     bool finished;
     {std::lock_guard<std::mutex> lock(state->mutex);finished = state->finished;}
-    result(@{@"closed":@YES,@"ownerCompletionPending":@(!finished),@"limits":CreditStatus()});
+    result(@{@"textureId":@(textureId),@"deviceGeneration":@(state->generation),@"closed":@YES,
+      @"registered":@NO,@"ownerFinished":@(finished),@"ownerCompletionPending":@(!finished),
+      @"closeAcknowledgementRequired":@(state->closeAckRequired),@"limits":CVLimits(state->closeAckRequired)});
   } else {result(FlutterMethodNotImplemented);}
 }
 - (void)dealloc {
+  [_readyEvents shutdown];
   NSDictionary<NSNumber*, RhwpMetalTexture*>* textures = [_textures copy];
   id<FlutterTextureRegistry> registry = _registry;
   for (RhwpMetalTexture* texture in textures.allValues) ([texture state])->close();

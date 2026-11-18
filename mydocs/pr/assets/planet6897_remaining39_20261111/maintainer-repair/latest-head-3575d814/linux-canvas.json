@@ -1,0 +1,272 @@
+{
+  "runtime_head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "platform": "Linux ubuntu-ted; Mac-built fresh WASM",
+  "passed": 6,
+  "failed": 0,
+  "records": [
+    {
+      "scale": 1,
+      "exit": 0,
+      "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+      "source_script_sha256": "9f0d2f7a2083574d5f7b755182f49d4a8353d57a4545d2e707ffc132a3a214fe",
+      "relocated_script_sha256": "3d3e52564b2e2ce5c88b459abdb07d162d323cd07749a7c0a90b802ed7306759",
+      "path_changes_only": true,
+      "artifact_dir": "/home/tsjang/rhwp/output/latest-head-3575d814-20261111-215925-canvas-control/controls/scale-1",
+      "report": {
+        "config": {
+          "fixtures": [
+            "basic/KTX.hwp",
+            "biz_plan.hwp",
+            "tac-case-001.hwp"
+          ],
+          "scale": 1,
+          "maxPages": "1",
+          "channelTolerance": 1,
+          "maxDiffRatio": 0.0005,
+          "writeImages": true
+        },
+        "results": [
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": true,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              226,
+              226
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 1123,
+            "legacyHeight": 794,
+            "layerWidth": 1123,
+            "layerHeight": 794,
+            "width": 1123,
+            "height": 794,
+            "sameSize": true,
+            "diffPixels": 83,
+            "totalPixels": 891662,
+            "diffRatio": 9.308459932126748e-05,
+            "maxChannelDelta": 84,
+            "averageChannelDelta": 0.0016525320132516582,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-diff.png"
+            },
+            "fixture": "basic/KTX.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 794,
+            "legacyHeight": 1123,
+            "layerWidth": 794,
+            "layerHeight": 1123,
+            "width": 794,
+            "height": 1123,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 891662,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-diff.png"
+            },
+            "fixture": "biz_plan.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 794,
+            "legacyHeight": 1123,
+            "layerWidth": 794,
+            "layerHeight": 1123,
+            "width": 794,
+            "height": 1123,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 891662,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-diff.png"
+            },
+            "fixture": "tac-case-001.hwp"
+          }
+        ]
+      }
+    },
+    {
+      "scale": 1.25,
+      "exit": 0,
+      "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+      "source_script_sha256": "9f0d2f7a2083574d5f7b755182f49d4a8353d57a4545d2e707ffc132a3a214fe",
+      "relocated_script_sha256": "b9e0ebbd96be72047636e3d5868825166a966eb5adcac736d31c0169d18942cf",
+      "path_changes_only": true,
+      "artifact_dir": "/home/tsjang/rhwp/output/latest-head-3575d814-20261111-215925-canvas-control/controls/scale-1.25",
+      "report": {
+        "config": {
+          "fixtures": [
+            "basic/KTX.hwp",
+            "biz_plan.hwp",
+            "tac-case-001.hwp"
+          ],
+          "scale": 1.25,
+          "maxPages": "1",
+          "channelTolerance": 1,
+          "maxDiffRatio": 0.0005,
+          "writeImages": true
+        },
+        "results": [
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": true,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              226,
+              226
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 1404,
+            "legacyHeight": 993,
+            "layerWidth": 1404,
+            "layerHeight": 993,
+            "width": 1404,
+            "height": 993,
+            "sameSize": true,
+            "diffPixels": 133,
+            "totalPixels": 1394172,
+            "diffRatio": 9.539712460155562e-05,
+            "maxChannelDelta": 102,
+            "averageChannelDelta": 0.001872616865063995,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-diff.png"
+            },
+            "fixture": "basic/KTX.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 993,
+            "legacyHeight": 1404,
+            "layerWidth": 993,
+            "layerHeight": 1404,
+            "width": 993,
+            "height": 1404,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 1394172,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-diff.png"
+            },
+            "fixture": "biz_plan.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "paintOrderRequired": false,
+            "paintOrderMatched": true,
+            "paintOrderFirstMismatch": -1,
+            "fillCounts": [
+              2,
+              2
+            ],
+            "paintOrderMismatch": null,
+            "legacyWidth": 993,
+            "legacyHeight": 1404,
+            "layerWidth": 993,
+            "layerHeight": 1404,
+            "width": 993,
+            "height": 1404,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 1394172,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "artifactFiles": {
+              "legacy": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-legacy.png",
+              "layer": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-layer.png",
+              "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-diff.png"
+            },
+            "fixture": "tac-case-001.hwp"
+          }
+        ]
+      }
+    }
+  ],
+  "wasm_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+  "source_script_sha256": "9f0d2f7a2083574d5f7b755182f49d4a8353d57a4545d2e707ffc132a3a214fe",
+  "same_default_budget": true,
+  "actual_initialization_response_observations": [
+    {
+      "source_sha": "3575d814f44053483bb51f54b01dcf8044d0b575",
+      "profile": "release-no-opt-local-alternative",
+      "expected_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "page": "http://127.0.0.1:17764/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:17764/@fs/home/tsjang/rhwp/output/latest-head-3575d814-20261111-215925-canvas-control/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ]
+    },
+    {
+      "source_sha": "3575d814f44053483bb51f54b01dcf8044d0b575",
+      "profile": "release-no-opt-local-alternative",
+      "expected_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "page": "http://127.0.0.1:17764/",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:17764/@fs/home/tsjang/rhwp/output/latest-head-3575d814-20261111-215925-canvas-control/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ]
+    }
+  ],
+  "consumer_log_sha256": "eac21be36affb90a793516a24a52970055b08f3e3e8721c3eaf8134ee9fdbdb1"
+}

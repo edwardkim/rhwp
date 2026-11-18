@@ -873,6 +873,14 @@ fn section_has_unplaced_stored_rows(paragraphs: &[Paragraph]) -> bool {
     paragraphs.iter().all(|para| unplaced(para, &mut found)) && found
 }
 
+/// 같은 저장 프레임에서 이어지는 다음 문단의 첫 저장 줄 위치. 단·쪽 나눔이면 없다.
+fn next_frame_vpos(paragraphs: &[Paragraph], index: usize) -> Option<i32> {
+    let next = paragraphs.get(index.checked_add(1)?)?;
+    matches!(next.column_type, ColumnBreakType::None)
+        .then(|| next.line_segs.first().map(|line| line.vertical_pos))
+        .flatten()
+}
+
 fn discard_widthless_rows_for_render(para: &mut Paragraph) {
     if !para.line_segs.is_empty()
         && para.line_segs.iter().all(|seg| {
@@ -1099,11 +1107,6 @@ fn assign_master_pages_for_section(
         .filter(|(_, m)| !m.is_extension)
         .map(|(i, _)| i)
         .collect();
-    let single_base_mp = if base_mp_indices.len() == 1 {
-        base_mp_indices.first().copied()
-    } else {
-        None
-    };
     let mp_both = base_mp_indices
         .iter()
         .copied()
@@ -1132,6 +1135,8 @@ fn assign_master_pages_for_section(
             continue;
         }
 
+        // 한컴 12.30은 쪽 홀짝에 맞는 바탕쪽(없으면 양 쪽, 없으면 앞 구역에서 이어 온 것)만 그린다.
+        // 짝수 쪽 바탕쪽 하나만 둔 구역의 홀수 쪽에는 바탕쪽이 없다(한컴 인쇄로 확인).
         let selected = if page.page_number % 2 == 1 {
             mp_odd
                 .or(mp_both)
@@ -1140,12 +1145,6 @@ fn assign_master_pages_for_section(
                     master_page_index: mi,
                 })
                 .or_else(|| carry_master_odd.clone())
-                .or_else(|| {
-                    single_base_mp.map(|mi| MasterPageRef {
-                        section_index,
-                        master_page_index: mi,
-                    })
-                })
         } else {
             mp_even
                 .or(mp_both)
@@ -1154,75 +1153,31 @@ fn assign_master_pages_for_section(
                     master_page_index: mi,
                 })
                 .or_else(|| carry_master_even.clone())
-                .or_else(|| {
-                    single_base_mp.map(|mi| MasterPageRef {
-                        section_index,
-                        master_page_index: mi,
-                    })
-                })
         };
         page.active_master_page = selected;
 
-        // 임의 쪽과 마지막 쪽은 별도 범위다. 표시 쪽 번호의 재시작과 구분하여
-        // 구역 안 물리 위치로 지정 대상을 고르고 같은 대체/겹침 계약을 소비한다.
-        let applicable_ext_mp_indices: Vec<usize> = ext_mp_indices
-            .iter()
-            .copied()
-            .filter(|&index| {
-                mps[index].optional_page_number.map_or(is_last, |number| {
-                    usize::from(number) == page_idx_in_section + 1
-                })
-            })
-            .collect();
-        if !applicable_ext_mp_indices.is_empty() {
-            let replace_exts: Vec<usize> = applicable_ext_mp_indices
-                .iter()
-                .filter(|&&i| !mps[i].overlap || mps[i].replace_base)
-                .copied()
-                .collect();
-            let overlap_exts: Vec<usize> = applicable_ext_mp_indices
-                .iter()
-                .filter(|&&i| mps[i].overlap && !mps[i].replace_base)
-                .copied()
-                .collect();
-
-            if let Some(&replace_idx) = replace_exts.last() {
-                page.active_master_page = Some(MasterPageRef {
-                    section_index,
-                    master_page_index: replace_idx,
-                });
-            }
-
-            let active_apply = page
-                .active_master_page
-                .as_ref()
-                .and_then(|mp_ref| {
-                    if mp_ref.section_index == section_index {
-                        mps.get(mp_ref.master_page_index)
-                    } else {
-                        None
-                    }
-                })
-                .map(|m| m.apply_to);
-            let mut remaining_overlap_exts: Vec<usize> = Vec::new();
-            for &i in &overlap_exts {
-                if Some(mps[i].apply_to) == active_apply {
-                    page.active_master_page = Some(MasterPageRef {
-                        section_index,
-                        master_page_index: i,
-                    });
-                } else {
-                    remaining_overlap_exts.push(i);
+        // 임의 쪽과 마지막 쪽은 별도 범위다. 표시 쪽 번호의 재시작과 구분하여 구역 안 물리 위치로
+        // 지정 대상을 고른다. 한컴 12.30은 구역 마지막 쪽 바탕쪽이 있으면 그 쪽에 그것만 쓰고 같은 쪽을
+        // 지정한 임의 쪽 바탕쪽은 그리지 않는다. 겹치게 하기면 기본 바탕쪽 위에 더 그리고, 아니면
+        // 기본 바탕쪽 대신 그린다(한컴 12.30 인쇄로 확인).
+        let extension = |last: bool| {
+            ext_mp_indices.iter().rev().copied().find(|&index| {
+                match mps[index].optional_page_number {
+                    None => last,
+                    Some(number) => !last && usize::from(number) == page_idx_in_section + 1,
                 }
-            }
-            if !remaining_overlap_exts.is_empty() {
-                page.extra_master_pages = remaining_overlap_exts
-                    .iter()
-                    .map(|&mi| MasterPageRef {
-                        section_index,
-                        master_page_index: mi,
-                    })
-                    .collect();
+            })
+        };
+        let chosen = if is_last { extension(true) } else { None }.or_else(|| extension(false));
+        if let Some(index) = chosen {
+            let master_ref = MasterPageRef {
+                section_index,
+                master_page_index: index,
+            };
+            if !mps[index].overlap || mps[index].replace_base {
+                page.active_master_page = Some(master_ref);
+            } else {
+                page.extra_master_pages = vec![master_ref];
             }
         }
     }
@@ -1770,8 +1725,7 @@ impl DocumentCore {
                 .with_layout_dpi(self.dpi)
                 .with_metafile_fonts(&if profile == RenderProfile::Print
                     && (crate::paint::metafile::has_wmf(&tree.root)
-                        || (self.hangul2024_compat
-                            && crate::paint::text_shadow::needs_font_metrics(&tree.root))
+                        || crate::paint::text_shadow::needs_font_metrics(&tree.root)
                         || crate::paint::dot_leader::needs_font_program(&tree.root))
                 {
                     metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)
@@ -3661,7 +3615,7 @@ impl DocumentCore {
             "\"borderRight\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
             "\"borderTop\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
             "\"borderBottom\":{\"type\":0,\"width\":0,\"color\":\"#000000\"},",
-            "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":0"
+            "\"fillType\":\"none\",\"fillColor\":\"#ffffff\",\"patternColor\":\"#000000\",\"patternType\":-1"
         )
         .to_string();
 
@@ -6440,6 +6394,7 @@ impl DocumentCore {
                     storage,
                 )?;
             let text_metrics = if !profile.hwp3_layout() {
+                let owned_hwp5_cells = self.owns_section_line_cache(idx);
                 crate::renderer::render_normalization::stored_text_metrics::normalize_with_storage(
                     math_textboxes
                         .as_deref()
@@ -6448,6 +6403,7 @@ impl DocumentCore {
                     &self.styles,
                     self.dpi,
                     profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
+                    owned_hwp5_cells,
                     storage,
                 )?
             } else {
@@ -6553,7 +6509,21 @@ impl DocumentCore {
                     }
                 }
             }
+            // 자기 자리차지 표 띠에 걸친 저장 줄은 한컴이 띠 끝으로 내리고 같은 저장
+            // 프레임의 뒤 사다리를 함께 민다. 측정·배치가 같은 사다리를 소비하도록
+            // 렌더 사본의 저장 위치를 그 결과로 바꾼다.
+            let band_crossing = (profile.hwp5_stored_pagination_layout()
+                || profile.hwpx_stored_layout())
+                && !profile.session_edited()
+                && source_paragraphs.iter().enumerate().any(|(index, paragraph)| {
+                    crate::renderer::render_normalization::stored_band_crossing_line::band_crossing_line_shift(
+                        paragraph,
+                        next_frame_vpos(source_paragraphs, index),
+                    )
+                    .is_some()
+                });
             if matches.is_empty()
+                && !band_crossing
                 && !has_cell_stack
                 && widthless.is_empty()
                 && inline_frames.is_empty()
@@ -6623,6 +6593,46 @@ impl DocumentCore {
                         storage.push(&mut frame_changes, index)?;
                     }
                 }
+            }
+            if band_crossing {
+                // 원점 이동만 하므로 문자 축과 원본 태그는 보존한다(위 이동과 같은 계약).
+                // 쪽·단 리셋이나 단 나눔에서 저장 프레임이 끝나면 미는 양도 끝난다.
+                let mut shift_hu = 0i32;
+                let mut previous_source_end = None;
+                for (index, paragraph) in np.iter_mut().enumerate() {
+                    let source = &source_paragraphs[index];
+                    if !matches!(source.column_type, ColumnBreakType::None)
+                        || source.line_segs.first().is_some_and(|line| {
+                            previous_source_end.is_some_and(|end| line.vertical_pos < end)
+                        })
+                    {
+                        shift_hu = 0;
+                    }
+                    previous_source_end = source.line_segs.last().map(|line| line.vertical_pos);
+                    // 판정은 원본 사다리로 한다. 앞 문단을 민 양은 이 문단과 다음 문단에 같게 더해진다.
+                    let crossing = crate::renderer::render_normalization::stored_band_crossing_line::band_crossing_line_shift(
+                        source,
+                        next_frame_vpos(source_paragraphs, index),
+                    );
+                    if shift_hu == 0 && crossing.is_none() {
+                        continue;
+                    }
+                    let (first_shifted, line_shift, frame_shift) =
+                        crossing.map_or((0, 0, 0), |c| (c.first_line, c.line_shift, c.frame_shift));
+                    for (line_index, line) in paragraph.line_segs.iter_mut().enumerate() {
+                        let shift = if line_index >= first_shifted {
+                            shift_hu.saturating_add(line_shift)
+                        } else {
+                            shift_hu
+                        };
+                        line.vertical_pos = line.vertical_pos.saturating_add(shift);
+                    }
+                    shift_hu = shift_hu.saturating_add(frame_shift);
+                    paragraph.source_line_seg_vertical_pos = None;
+                    storage.push(&mut frame_changes, index)?;
+                }
+                frame_changes.sort_unstable();
+                frame_changes.dedup();
             }
             for &index in &widthless {
                 discard_widthless_rows_for_render(&mut np[index]);
@@ -7170,6 +7180,11 @@ impl DocumentCore {
             self.section_render_paragraphs(sec_idx),
             &self.styles,
             self.effective_layout_profile(),
+            self.document.sections.get(sec_idx).map_or(0, |section| {
+                crate::model::page::PageAreas::from_page_def(&section.section_def.page_def)
+                    .body_area
+                    .top
+            }),
         );
         typesetter
     }
@@ -8333,14 +8348,17 @@ impl DocumentCore {
     /// 실제 page tree cache와 섞지 않고 마지막 편집 target 한 건만 재사용한다. 선택
     /// 드래그는 hit-test와 selection geometry를 프레임마다 연속 조회하므로, 캐시가
     /// 없으면 같은 대표 페이지를 매번 full build하게 된다 (#6452).
-    pub(crate) fn build_header_footer_edit_preview_tree(
+    pub fn build_header_footer_edit_preview_tree(
         &self,
         page_num: u32,
         section_idx: usize,
         is_header: bool,
         apply_to: u8,
     ) -> Result<PageRenderTree, HwpError> {
-        if self.header_footer_preview_page_for_section(section_idx)? != page_num {
+        // 바탕쪽은 그 바탕쪽을 고치는 쪽 어디에서나 그 쪽 용지로 그린다.
+        if crate::document_core::master_page_slot(apply_to).is_none()
+            && self.header_footer_preview_page_for_section(section_idx)? != page_num
+        {
             return Err(HwpError::RenderError(format!(
                 "쪽 {}은 구역 {}의 대표 HF 편집 페이지가 아닙니다",
                 page_num, section_idx
@@ -8410,20 +8428,35 @@ impl DocumentCore {
                 )
             }));
         let (base_page_content, paragraphs, composed) = self.find_page(page_num)?;
-        let overridden_page_content =
-            if let Some((section_idx, is_header, apply_to)) = header_footer_override {
-                let mut page_content = base_page_content.clone();
-                let target =
-                    self.header_footer_ref_for_edit_target(section_idx, is_header, apply_to)?;
-                if is_header {
-                    page_content.active_header = Some(target);
-                } else {
-                    page_content.active_footer = Some(target);
-                }
-                Some(page_content)
+        let master_override = header_footer_override.and_then(|(section_idx, _, apply_to)| {
+            crate::document_core::master_page_slot(apply_to).map(|slot| (section_idx, slot))
+        });
+        let overridden_page_content = if let Some((section_idx, slot)) = master_override {
+            // 바탕쪽 편집 화면: 그 쪽 용지에 고칠 바탕쪽 하나만 그린다(아래에서 본문·머리말 등을 뺀다).
+            self.master_page_ref(section_idx, slot)?;
+            let mut page_content = base_page_content.clone();
+            page_content.active_master_page = Some(MasterPageRef {
+                section_index: section_idx,
+                master_page_index: slot,
+            });
+            page_content.extra_master_pages.clear();
+            if let Some(hide) = page_content.page_hide.as_mut() {
+                hide.hide_master_page = false;
+            }
+            Some(page_content)
+        } else if let Some((section_idx, is_header, apply_to)) = header_footer_override {
+            let mut page_content = base_page_content.clone();
+            let target =
+                self.header_footer_ref_for_edit_target(section_idx, is_header, apply_to)?;
+            if is_header {
+                page_content.active_header = Some(target);
             } else {
-                None
-            };
+                page_content.active_footer = Some(target);
+            }
+            Some(page_content)
+        } else {
+            None
+        };
         let page_content = overridden_page_content
             .as_ref()
             .unwrap_or(base_page_content);
@@ -8668,6 +8701,15 @@ impl DocumentCore {
                 page_content.page_number,
             );
         }
+        if master_override.is_some() {
+            use crate::renderer::render_tree::RenderNodeType;
+            tree.root.children.retain(|node| {
+                matches!(
+                    node.node_type,
+                    RenderNodeType::PageBackground(_) | RenderNodeType::MasterPage
+                )
+            });
+        }
         // Task #1154: 동일 bin_data_id Pic 컨트롤이 수직으로 인접 겹쳐 그려질 때
         // 두 그림의 미세한 세로 스케일 차이로 인한 잔상(이중 라인) 제거.
         // build 직후 1회만 적용 — 모든 렌더러(SVG/Canvas/Skia/HTML/Layer) 공통.
@@ -8730,8 +8772,13 @@ impl DocumentCore {
 
     /// 페이지에 렌더된 텍스트를 줄 단위로 추출한다.
     ///
-    /// TextLine 노드의 시각적 순서를 유지하며 TextRun/각주 마커/양식 텍스트를 합친다.
+    /// 렌더 트리 순서로 TextLine과 독립 TextRun/수식/각주 마커/양식 텍스트를 합친다.
     pub fn extract_page_text_native(&self, page_num: u32) -> Result<String, HwpError> {
+        let tree = self.build_page_tree(page_num)?;
+        Ok(Self::extract_render_tree_text(&tree.root))
+    }
+
+    fn extract_render_tree_text(root: &crate::renderer::render_tree::RenderNode) -> String {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         fn collect_line_text(node: &RenderNode, out: &mut String, has_token: &mut bool) {
@@ -8778,10 +8825,63 @@ impl DocumentCore {
             }
         }
 
+        struct Fragment<'a> {
+            node: &'a RenderNode,
+            owner: (Option<usize>, Option<usize>),
+            run: Option<&'a TextRunNode>,
+        }
+
+        impl<'a> Fragment<'a> {
+            fn from_node(node: &'a RenderNode) -> Option<Self> {
+                let (owner, run) = match &node.node_type {
+                    RenderNodeType::TextRun(run) => {
+                        ((run.section_index, run.para_index), Some(run))
+                    }
+                    RenderNodeType::FootnoteMarker(marker) => {
+                        ((Some(marker.section_index), Some(marker.para_index)), None)
+                    }
+                    RenderNodeType::FormObject(form) => {
+                        ((Some(form.section_index), Some(form.para_index)), None)
+                    }
+                    RenderNodeType::Equation(eq) => ((eq.section_index, eq.para_index), None),
+                    _ => return None,
+                };
+                Some(Self { node, owner, run })
+            }
+
+            fn same_line(&self, next: &Self) -> bool {
+                if self.owner != next.owner {
+                    return false;
+                }
+                if let (Some(a), Some(b)) = (self.run, next.run) {
+                    // 같은 줄의 런은 조판에서 공유한 원점·기준선을 보존한다.
+                    return a.cell_context == b.cell_context
+                        && a.is_vertical == b.is_vertical
+                        && if a.is_vertical {
+                            self.node.bbox.x == next.node.bbox.x
+                        } else {
+                            self.node.bbox.y + a.baseline == next.node.bbox.y + b.baseline
+                        };
+                }
+                // 기준선이 다른 위첨자 참조와 수식·양식은 같은 줄 상자 안에서 이어진다.
+                let a = self.node.bbox;
+                let b = next.node.bbox;
+                if self.run.or(next.run).is_some_and(|run| run.is_vertical) {
+                    a.x.max(b.x) < (a.x + a.width).min(b.x + b.width)
+                } else {
+                    a.y.max(b.y) < (a.y + a.height).min(b.y + b.height)
+                }
+            }
+        }
+
         fn collect_page_lines(node: &RenderNode, lines: &mut Vec<String>) {
             if matches!(
                 node.node_type,
-                RenderNodeType::TextLine(_) | RenderNodeType::Equation(_)
+                RenderNodeType::TextLine(_)
+                    | RenderNodeType::TextRun(_)
+                    | RenderNodeType::Equation(_)
+                    | RenderNodeType::FootnoteMarker(_)
+                    | RenderNodeType::FormObject(_)
             ) {
                 let mut line = String::new();
                 let mut has_token = false;
@@ -8794,15 +8894,57 @@ impl DocumentCore {
                 return;
             }
 
+            let mut line = String::new();
+            let mut has_token = false;
+            let mut anchor: Option<Fragment<'_>> = None;
+            let mut ended = false;
             for child in &node.children {
-                collect_page_lines(child, lines);
+                if let Some(fragment) = Fragment::from_node(child) {
+                    let new_line = ended
+                        || anchor
+                            .as_ref()
+                            .is_some_and(|prev| !prev.same_line(&fragment));
+                    if new_line {
+                        if has_token {
+                            lines.push(std::mem::take(&mut line));
+                            has_token = false;
+                        }
+                        anchor = None;
+                    }
+                    collect_line_text(child, &mut line, &mut has_token);
+                    ended = fragment
+                        .run
+                        .is_some_and(|run| run.is_para_end || run.is_line_break_end);
+                    // 첫 본문 런의 기준선을 유지해 큰 인라인 개체가 다음 줄까지 묶지 않게 한다.
+                    if anchor
+                        .as_ref()
+                        .is_none_or(|prev| prev.run.is_none() && fragment.run.is_some())
+                    {
+                        anchor = Some(fragment);
+                    }
+                } else {
+                    let mut child_lines = Vec::new();
+                    collect_page_lines(child, &mut child_lines);
+                    // 배경·테두리 같은 비텍스트 노드는 같은 줄의 런을 가르지 않는다.
+                    if !child_lines.is_empty() {
+                        if has_token {
+                            lines.push(std::mem::take(&mut line));
+                            has_token = false;
+                        }
+                        anchor = None;
+                        ended = false;
+                        lines.extend(child_lines);
+                    }
+                }
+            }
+            if has_token {
+                lines.push(line);
             }
         }
 
-        let tree = self.build_page_tree(page_num)?;
         let mut lines = Vec::new();
-        collect_page_lines(&tree.root, &mut lines);
-        Ok(lines.join("\n"))
+        collect_page_lines(root, &mut lines);
+        lines.join("\n")
     }
 
     /// 페이지를 Markdown으로 추출한다.
@@ -9230,6 +9372,7 @@ fn table_summary_json(
 /// 2. reset 발견: reset 직전 줄의 vpos + line_height (HWP 가 단을 끊은 위치)
 /// 3. reset 미발견: 단의 마지막 처리 줄 (FullParagraph: 마지막, PartialParagraph: end_line-1)
 /// 4. Table/Shape 만 있는 항목은 추정 불가 (None)
+/// 5. 단이 rhwp 임시 줄(bit 31, `TAG_IMPLEMENTATION_PROPERTY`)을 읽으면 한컴 근거가 아니므로 None
 fn compute_hwp_used_height(
     cc: &crate::renderer::pagination::ColumnContent,
     paragraphs: &[Paragraph],
@@ -9237,6 +9380,13 @@ fn compute_hwp_used_height(
 ) -> Option<f64> {
     use crate::renderer::hwpunit_to_px;
     use crate::renderer::pagination::PageItem;
+
+    // [Task #9142] rhwp 가 계산해 넣은 임시 줄(bit 31)은 한컴이 저장한 값이 아니다. 그런 줄을 근거로
+    // 추정하면 조판이 맞아도 가짜 diff 가 나오므로, 이 단은 추정 불가로 둔다.
+    // #8939 이후 IR 의 bit 31 은 rhwp 합성 표지만 뜻한다(한/글 저장 비트는 파서가 지움).
+    if column_reads_synthetic_lines(cc, paragraphs) {
+        return None;
+    }
 
     // [Task #1612] vpos 는 다페이지에서 누적값(예: page2 vpos≈66568~127587 HU)이므로, per-page
     // `used_height` 와 비교하려면 이 페이지 시작 오프셋을 빼야 한다. 차감하지 않으면 페이지마다
@@ -9335,6 +9485,35 @@ fn compute_hwp_used_height(
     let seg = p.line_segs.get(line_idx)?;
     let bottom_hwpu = seg.vertical_pos + seg.line_height + seg.line_spacing;
     Some(hwpunit_to_px((bottom_hwpu - base_top).max(0), dpi))
+}
+
+/// 단이 읽는 줄 가운데 rhwp 임시 줄(bit 31)이 하나라도 있는지.
+fn column_reads_synthetic_lines(
+    cc: &crate::renderer::pagination::ColumnContent,
+    paragraphs: &[Paragraph],
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+    use crate::renderer::pagination::PageItem;
+
+    cc.items.iter().any(|item| {
+        let (para_index, lines) = match item {
+            PageItem::FullParagraph { para_index } => (*para_index, 0..usize::MAX),
+            PageItem::PartialParagraph {
+                para_index,
+                start_line,
+                end_line,
+            } => (*para_index, *start_line..*end_line),
+            PageItem::Table { para_index, .. } | PageItem::PartialTable { para_index, .. } => {
+                (*para_index, 0..1)
+            }
+            _ => return false,
+        };
+        paragraphs.get(para_index).is_some_and(|p| {
+            p.line_segs.iter().enumerate().any(|(i, seg)| {
+                lines.contains(&i) && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+            })
+        })
+    })
 }
 
 /// [#3697] vpos 범위 분석 결과 — 텍스트(`format_vpos_range`)/JSON(`vpos_range_json`)
@@ -10448,7 +10627,11 @@ mod tests {
     }
 
     #[test]
-    fn single_base_master_page_applies_when_matching_parity_is_absent() {
+    /// 종전 기대(`single_base_master_page_applies_when_matching_parity_is_absent`)는 바탕쪽이 하나뿐이면
+    /// 홀짝이 맞지 않는 쪽에도 그렸다. 한컴 12.30은 앞 구역에 바탕쪽이 없고 이 구역에 홀수 쪽 바탕쪽만
+    /// 있는 문서를 인쇄하면 짝수 쪽(구역 첫 쪽 2쪽·4쪽)에 바탕쪽을 그리지 않고 홀수 쪽에만 그린다.
+    /// 짝수 쪽 바탕쪽 하나만 둔 한 구역 문서도 홀수 쪽에는 그리지 않는다.
+    fn single_parity_master_page_does_not_fill_the_other_parity() {
         use crate::model::document::{Document, Section, SectionDef};
         use crate::model::header_footer::{HeaderFooterApply, MasterPage};
         use crate::model::page::PageDef;
@@ -10481,14 +10664,19 @@ mod tests {
             page_def: page_def.clone(),
             ..Default::default()
         }));
-        document.sections.push(a4_section(SectionDef {
+        let mut section = a4_section(SectionDef {
             page_def,
             master_pages: vec![MasterPage {
                 apply_to: HeaderFooterApply::Odd,
                 ..Default::default()
             }],
             ..Default::default()
-        }));
+        });
+        section.paragraphs.push(Paragraph {
+            column_type: crate::model::paragraph::ColumnBreakType::Page,
+            ..Default::default()
+        });
+        document.sections.push(section);
 
         let mut core = DocumentCore::new_empty();
         core.set_document(document);
@@ -10500,11 +10688,22 @@ mod tests {
             .and_then(|result| result.pages.first())
             .expect("section 1 first page");
         assert_eq!(page.page_number, 2);
-        let active = page
-            .active_master_page
-            .as_ref()
-            .expect("single base master should apply to carried even page");
-        assert_eq!(active.master_page_index, 0);
+        assert!(
+            page.active_master_page.is_none(),
+            "홀수 쪽 바탕쪽은 짝수 쪽에 그리지 않는다"
+        );
+        let odd = core
+            .pagination
+            .get(1)
+            .and_then(|result| result.pages.get(1))
+            .expect("section 1 second page");
+        assert_eq!(odd.page_number, 3);
+        assert_eq!(
+            odd.active_master_page
+                .as_ref()
+                .map(|active| (active.section_index, active.master_page_index)),
+            Some((1, 0))
+        );
     }
 
     #[test]
@@ -10532,7 +10731,7 @@ mod tests {
                 "borderRight":{"type":1,"width":1,"color":"#000000"},
                 "borderTop":{"type":1,"width":1,"color":"#000000"},
                 "borderBottom":{"type":1,"width":1,"color":"#000000"},
-                "fillType":"solid","fillColor":"#ffffff","patternColor":"#000000","patternType":0,
+                "fillType":"solid","fillColor":"#ffffff","patternColor":"#000000","patternType":-1,
                 "fillArea":"paper","applyPage":"all"}"##,
             )
             .expect("page border fill should update");

@@ -20,6 +20,31 @@ pub(crate) fn number_text(number: u16, format: u8, user_symbol: char) -> String 
     }
 }
 
+/// 쪽 번호·총 쪽수 `AutoNumber`(표 144 종류 0·6)의 표시 문자열.
+///
+/// 번호 모양은 컨트롤 속성 bit 4~11(표 134)이고 앞·뒤 장식 문자를 붙인다. 본문 필드와
+/// 머리말·꼬리말이 같은 규칙을 쓴다. 숫자 외 모양은 16비트 번호 범위를 넘으면 `None` 이다.
+pub(crate) fn page_number_display(number: &AutoNumber, value: u32) -> Option<String> {
+    let digits = if number.format == 0 {
+        value.to_string()
+    } else {
+        number_text(
+            u16::try_from(value).ok()?,
+            number.format,
+            number.user_symbol,
+        )
+    };
+    let mut text = String::new();
+    if number.prefix_char != '\0' {
+        text.push(number.prefix_char);
+    }
+    text.push_str(&digits);
+    if number.suffix_char != '\0' {
+        text.push(number.suffix_char);
+    }
+    Some(text)
+}
+
 pub(crate) fn supported_format(format: u8) -> bool {
     format <= 16 || matches!(format, 0x80 | 0x81)
 }
@@ -47,14 +72,19 @@ pub(crate) fn leading(
     })
 }
 
-pub(crate) fn text(
+pub(crate) struct FormattedMarker {
+    pub text: String,
+    pub language_index: usize,
+}
+
+pub(crate) fn formatted(
     paragraphs: &[Paragraph],
     kind: AutoNumberType,
     number: u16,
     number_shape: u32,
     before: u16,
     after: u16,
-) -> String {
+) -> FormattedMarker {
     let (number_text, prefix, suffix) = if let Some((_, auto)) = leading(paragraphs, kind) {
         (
             number_text(number, auto.format, auto.user_symbol),
@@ -70,6 +100,12 @@ pub(crate) fn text(
                 .unwrap_or(')'),
         )
     };
+    // 장식 문자가 아니라 번호 서식이 생성한 문자군이 이 필드의 글꼴 슬롯을 소유한다.
+    let language_index = number_text
+        .chars()
+        .next()
+        .map(super::style_resolver::detect_lang_category)
+        .unwrap_or(0);
     let mut text = String::new();
     if prefix != '\0' {
         text.push(prefix);
@@ -78,5 +114,19 @@ pub(crate) fn text(
     if suffix != '\0' {
         text.push(suffix);
     }
-    text
+    FormattedMarker {
+        text,
+        language_index,
+    }
+}
+
+pub(crate) fn text(
+    paragraphs: &[Paragraph],
+    kind: AutoNumberType,
+    number: u16,
+    number_shape: u32,
+    before: u16,
+    after: u16,
+) -> String {
+    formatted(paragraphs, kind, number, number_shape, before, after).text
 }

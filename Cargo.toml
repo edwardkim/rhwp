@@ -2,7 +2,7 @@
 rust-version = "1.93.1"
 publish = ["crates-io"]
 name = "rhwp"
-version = "0.9.0"
+version = "0.9.1"
 edition = "2021"
 description = "HWP/HWPX document engine for Rust applications, WebAssembly, and CLI automation"
 license = "MIT"
@@ -273,15 +273,16 @@ path = "tests/overflow_cell_baseline.rs"
 
 [dependencies]
 chrono = "0.4"
+rhwp-codec-resource = { path = "vendor/rhwp-codec-resource", version = "=0.1.1" }
 rhwp-contracts = { path = "crates/rhwp-contracts", version = "0.1.0" }
-rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart", version = "0.1.0" }
+rhwp-ooxml-chart = { path = "crates/rhwp-ooxml-chart", version = "0.1.1" }
 rhwp-password-crypto = { path = "crates/rhwp-password-crypto", version = "0.1.0" }
-pdf_oxide = { package = "rhwp-pdf-import-backend", path = "vendor/rhwp-pdf-import-backend", version = "=0.3.78-rhwp.1", default-features = false, optional = true }
+pdf_oxide = { package = "rhwp-pdf-import-backend", path = "vendor/rhwp-pdf-import-backend", version = "=0.3.78-rhwp.2", default-features = false, optional = true }
 # pdf_oxide 0.3.78's DocumentIR initializer is incompatible with office_oxide 0.1.13.
 # Keep the compatibility constraint for library consumers that do not use our lockfile.
 office_oxide = { version = "=0.1.9", default-features = false, optional = true }
 wasm-bindgen = "0.2"
-cfb = "0.15"
+cfb = "0.16"
 crc32fast = "1"
 des = "0.9"
 flate2 = "1.0"
@@ -391,9 +392,9 @@ libc = "0.2"
 svg2pdf = { package = "rhwp-svg2pdf", path = "vendor/svg2pdf", version = "=0.13.0-rhwp.1" }
 usvg = "0.45"
 pdf-writer = "0.12"
-read-fonts = "0.46"
-skera = "0.9"
-skia-safe = { version = "0.156.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
+read-fonts = "0.47"
+skera = "0.10"
+skia-safe = { version = "0.157.0", optional = true, default-features = false, features = ["binary-cache", "embed-icudtl", "pdf", "textlayout"] }
 icy_sixel = { version = "=0.7.0", optional = true }
 ureq = "3.3.0"
 wuff = "0.2.9"
@@ -406,6 +407,7 @@ windows = { version = "=0.62.2", optional = true, default-features = false, feat
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 web-sys = { version = "0.3", features = [
     "CanvasRenderingContext2d",
+    "Path2d",
     "CanvasWindingRule",
     "DomMatrix",
     "CanvasGradient",
@@ -560,6 +562,18 @@ path = "tools/fixture_generators/build_issue_505_fixture.rs"
 [[example]]
 name = "build_issue_5800_fixture"
 path = "tools/fixture_generators/build_issue_5800_fixture.rs"
+
+[[example]]
+name = "build_photo_caption_rows_fixture"
+path = "tools/fixture_generators/build_photo_caption_rows_fixture.rs"
+
+[[example]]
+name = "build_square_floor_empty_lead_fixture"
+path = "tools/fixture_generators/build_square_floor_empty_lead_fixture.rs"
+
+[[example]]
+name = "build_square_stamp_cell_fixture"
+path = "tools/fixture_generators/build_square_stamp_cell_fixture.rs"
 
 [[example]]
 name = "font_metric_coverage_worker"

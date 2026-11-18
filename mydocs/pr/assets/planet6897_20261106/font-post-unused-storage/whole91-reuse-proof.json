@@ -1,0 +1,1471 @@
+{
+  "scope": "Actual successful WASM font-loading metadata checked against every program affected by unused-post-storage normalization.",
+  "affected_programs": [
+    {
+      "source": "/Users/tsjang/Library/Fonts/Spoqa Han Sans Bold.ttf",
+      "source_sha256": "5a6b9b258145e243dfd5f70cc869119c6af708843658e380304bdfe3d4f4eaef",
+      "program_sha256": "5a6b9b258145e243dfd5f70cc869119c6af708843658e380304bdfe3d4f4eaef",
+      "old_post_bytes": 474280,
+      "new_post_bytes": 370538,
+      "removed_bytes": 103742,
+      "families": [
+        "SpoqaHanSans",
+        "SpoqaHanSans-Bold"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/Spoqa Han Sans Regular.ttf",
+      "source_sha256": "1f56c8535b6592672ea7f540a67bb5792c34558d72875fc504166a3e2b28b4b1",
+      "program_sha256": "1f56c8535b6592672ea7f540a67bb5792c34558d72875fc504166a3e2b28b4b1",
+      "old_post_bytes": 474272,
+      "new_post_bytes": 370536,
+      "removed_bytes": 103736,
+      "families": [
+        "SpoqaHanSans",
+        "SpoqaHanSans-Regular"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/hankc.ttf",
+      "source_sha256": "86ef0563e50f815e9a6f0a409efbe580f6af06dc0b5de320e6d53755b7863bc1",
+      "program_sha256": "86ef0563e50f815e9a6f0a409efbe580f6af06dc0b5de320e6d53755b7863bc1",
+      "old_post_bytes": 116472,
+      "new_post_bytes": 58825,
+      "removed_bytes": 57647,
+      "families": [
+        "«—∞‹∑π∞·√º",
+        "한겨레결체",
+        "TSThgrgl"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/중나좋체 Light.ttf",
+      "source_sha256": "db8ccf4ade02e9c2da3b85ddcdd91e45dab77a45aba2c2d6f2773ad6d97300b3",
+      "program_sha256": "db8ccf4ade02e9c2da3b85ddcdd91e45dab77a45aba2c2d6f2773ad6d97300b3",
+      "old_post_bytes": 361529,
+      "new_post_bytes": 349320,
+      "removed_bytes": 12209,
+      "families": [
+        "Joongnajoche",
+        "Joongnajoche Light",
+        "중나좋체",
+        "중나좋체 Light",
+        "JoongnajocheL-KSCpc-EUC-H"
+      ]
+    },
+    {
+      "source": "/Users/tsjang/Library/Fonts/중나좋체 Medium.ttf",
+      "source_sha256": "17559246336d58ad2966e2792bb55befffd48fe00a5a6a4c5f6ea447f7febbd4",
+      "program_sha256": "17559246336d58ad2966e2792bb55befffd48fe00a5a6a4c5f6ea447f7febbd4",
+      "old_post_bytes": 361581,
+      "new_post_bytes": 349289,
+      "removed_bytes": 12292,
+      "families": [
+        "Joongnajoche",
+        "Joongnajoche Medium",
+        "중나좋체",
+        "중나좋체 Medium",
+        "JoongnajocheM-KSCpc-EUC-H"
+      ]
+    }
+  ],
+  "successful_conditions": 91,
+  "metadata_count": 270,
+  "affected_successful_conditions": [
+    {
+      "case": "nars-2021",
+      "affected_programs": [
+        "Spoqa Han Sans Bold.ttf"
+      ]
+    }
+  ],
+  "metadata": [
+    {
+      "case": "cover",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cover/cover/wasm-export-complete.json",
+      "sha256": "25b2eaf038992f067e110040055b6c619ea598789ba52559b19a2c0937ad7842"
+    },
+    {
+      "case": "cover",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cover/cover/silhouette-parts/p0002-0004/wasm-export-complete.json",
+      "sha256": "cbe2fcdcb24f47188cec104b3cb4216e28f5ac71388c8397ee331041ffbd9691"
+    },
+    {
+      "case": "cover",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cover/cover/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "30c1abeafa58d14ab3c9b5afb00acf0f3301277d87c69372f5c594fc0483d596"
+    },
+    {
+      "case": "family-register",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/family-register/family-register/wasm-export-complete.json",
+      "sha256": "eda823df571a7032e1f26192f2c1385c6232415dac23df71487543d88bb26fda"
+    },
+    {
+      "case": "family-register",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/family-register/family-register/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "57292ecbac85b0509c2c922359d1a4c24441da3227359ebf35eea5b70c07c7fb"
+    },
+    {
+      "case": "family-register",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/family-register/family-register/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "5805ae2519b3a9c8e98bd8fdb543659a0c46fc394befe9a8910f621264165661"
+    },
+    {
+      "case": "agenda-cover",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/agenda-cover/agenda-cover/wasm-export-complete.json",
+      "sha256": "503ca7b31fe7f115e13e74f5cd560dd4a5a3feb256ea2174a0e3bbc6923945ca"
+    },
+    {
+      "case": "agenda-cover",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/agenda-cover/agenda-cover/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "36a4cadea3b11fde0134522ad66bb8d9b092c51c65280b1309fb23b6ffd741ca"
+    },
+    {
+      "case": "trailing-space-2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2020/trailing-space-2020/wasm-export-complete.json",
+      "sha256": "b53e0c6045a5b6b0e9c155393264b1d01a3f1786d18f922f1aae6def80b73776"
+    },
+    {
+      "case": "trailing-space-2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2020/trailing-space-2020/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "825c4ec4e397bbfe95c1882b621595dc1fbfb3c2e64c4672ee90e4b2f3427c00"
+    },
+    {
+      "case": "trailing-space-2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2024/trailing-space-2024/wasm-export-complete.json",
+      "sha256": "12bdc570ae2cdab879b709ce06248044863ba8a1d7b08b65debd695777d896f4"
+    },
+    {
+      "case": "trailing-space-2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2024/trailing-space-2024/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "79f964c15257ab7d4d74f5813aa3fe8ea4b1c2f00fcf05b5c64fc83bde4729f8"
+    },
+    {
+      "case": "busan-form",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/busan-form/busan-form/wasm-export-complete.json",
+      "sha256": "24c0b4ef5bf9ac2c796b4a8ceeaf87046553d3fdbab92d310d7383026e449d26"
+    },
+    {
+      "case": "busan-form",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/busan-form/busan-form/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "c25cba0d346891745a98b958ca41739f77d1af04ed2ee30c154e581a86d303ab"
+    },
+    {
+      "case": "image-fill-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwpx/image-fill-hwpx/wasm-export-complete.json",
+      "sha256": "9f4e0dcd2dc95bdc1d1ab083404f8ac2679a8a5fd7e4dee2abec52118ab61b0b"
+    },
+    {
+      "case": "image-fill-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwpx/image-fill-hwpx/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "dd0f9d240d2686f0ce095f05a14a2549635461b81c6633249153b188c764e924"
+    },
+    {
+      "case": "image-fill-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwpx/image-fill-hwpx/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "f6741389bca9ce40156332b7c3e198fe0f8e10eaeccc059724b0ab4d8d298501"
+    },
+    {
+      "case": "image-fill-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwp/image-fill-hwp/wasm-export-complete.json",
+      "sha256": "f4bcbf81b810279260ef8522fc5028fa8f3a54b96ae1152ba43236cb0149a4b4"
+    },
+    {
+      "case": "image-fill-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwp/image-fill-hwp/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "349db45e60751fcf2973de3229c8cf9e2ab94d7dc674171a44045f2eac9763d5"
+    },
+    {
+      "case": "image-fill-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwp/image-fill-hwp/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "8d8e9d5a4cc516110fc62caed11fd7e3d7ea49eeacf527dedf643abc5d0f19af"
+    },
+    {
+      "case": "certificate",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/certificate/certificate/wasm-export-complete.json",
+      "sha256": "416235ad85e1b1d6377775a357f09d1cd994c1e03a2571a4e23e8013efb670bc"
+    },
+    {
+      "case": "certificate",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/certificate/certificate/silhouette-parts/p0002-0009/wasm-export-complete.json",
+      "sha256": "cf1c99176492a1fbee24330f2294acda9cb01f815ad8e86b422e6d5ebe81bd85"
+    },
+    {
+      "case": "certificate",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/certificate/certificate/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "65ba89b336eb10029c14bc12609532f7ba106f05687854584c2b30217e952269"
+    },
+    {
+      "case": "policy-agenda",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-agenda/policy-agenda/wasm-export-complete.json",
+      "sha256": "8d8005a04271f02c9462ebe909dd6d48b94143099285029803086899df292894"
+    },
+    {
+      "case": "policy-agenda",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-agenda/policy-agenda/silhouette-parts/p0002-0014/wasm-export-complete.json",
+      "sha256": "b1c6f398fc6a8dd9c3dad7a4f47baef7763ee17c249816c6af789ef4b7454ee8"
+    },
+    {
+      "case": "policy-agenda",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-agenda/policy-agenda/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "9e1f1810ca9d3eb3456b46b1fa847ba3de949ab01a3c9b27f56901d9c364bd1f"
+    },
+    {
+      "case": "idol-counterexample",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/idol-counterexample/idol-counterexample/wasm-export-complete.json",
+      "sha256": "da3c9973cbca84f6b7b90f71d2a976a7a5a527a0d184cf9a4e7988800c9421bd"
+    },
+    {
+      "case": "idol-counterexample",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/idol-counterexample/idol-counterexample/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "fda54fe8829814f8ab1153a7e67acccde632e733adb033c81eacde47fa5e8967"
+    },
+    {
+      "case": "idol-counterexample",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/idol-counterexample/idol-counterexample/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "ec4a3d03ce2631cab22950862d3cca7a1fa3cc8fa1bca9c479310ae7b3e8f234"
+    },
+    {
+      "case": "childcare",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/childcare/childcare/wasm-export-complete.json",
+      "sha256": "22eaeff475ec82214865483d977c703558a6fea57b4ead3085e44475b02cca21"
+    },
+    {
+      "case": "childcare",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/childcare/childcare/silhouette-parts/p0002-0025/wasm-export-complete.json",
+      "sha256": "66774cc2f0983be18fd6d37061b2170dfae3294ca208b5d1b0a03496199b6e7b"
+    },
+    {
+      "case": "childcare",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/childcare/childcare/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "532666ae0ef5a20dc8fef0a9ead1ee85f0dab4d89de3e1a16f1881e6485b5062"
+    },
+    {
+      "case": "delegation-trimmed",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/delegation-trimmed/delegation-trimmed/wasm-export-complete.json",
+      "sha256": "ed2cf75cf51d1041f4037c4b35663ba8bd6f520e58dd0555d4d0f1eef3a502c0"
+    },
+    {
+      "case": "delegation-trimmed",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0006/wasm-export-complete.json",
+      "sha256": "a713828ea6b8f5634b6767f8459989f479272d592b70a2a85757f9ff5d5fc4d8"
+    },
+    {
+      "case": "delegation-trimmed",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "13890734883595de9a08978c19da0250fd11b55de7420b852bbbe842c08999e4"
+    },
+    {
+      "case": "shortcut",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/shortcut/shortcut/wasm-export-complete.json",
+      "sha256": "42d15d18a3d81248a6549ba5a6717b657253400b3492aaf00806bf17508610e2"
+    },
+    {
+      "case": "shortcut",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/shortcut/shortcut/silhouette-parts/p0002-0007/wasm-export-complete.json",
+      "sha256": "f69491be2fbf98d4ec150b79dd140947717a6f25c51eb84560e80706ce7f8644"
+    },
+    {
+      "case": "shortcut",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/shortcut/shortcut/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "0826b5bbfe9cb4faffe71a0131b08b483ff00151586414a25eebb24646718396"
+    },
+    {
+      "case": "sungeo",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sungeo/sungeo/wasm-export-complete.json",
+      "sha256": "ead35d6ae94adb4796e32ade3dc9f1be2b29cd42fd881455d6f00ad0c6cb67a9"
+    },
+    {
+      "case": "sungeo",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sungeo/sungeo/silhouette-parts/p0066-0094/wasm-export-complete.json",
+      "sha256": "88a128f4803f4696f4fb92274505304ef3c95e78122d4f5352a4d9c2a6777605"
+    },
+    {
+      "case": "sungeo",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sungeo/sungeo/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "177239d18a553e7b291ebcbf03254d443a1d24c5d2094ba70cc97ccb3ad39852"
+    },
+    {
+      "case": "sungeo",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sungeo/sungeo/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "b22983c5360a907d4990bc37406e58aba7b2c9fadfd78893b07979fa40625f24"
+    },
+    {
+      "case": "bookreview",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/bookreview/bookreview/wasm-export-complete.json",
+      "sha256": "c83d76865e996e842b4504227436925b8c059d5a500e0ca3c1c788cb1794e4bf"
+    },
+    {
+      "case": "bookreview",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/bookreview/bookreview/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "d7474c8bf94715d7a968d428968dd09863d9959b96e718244da1866c4da7c6bc"
+    },
+    {
+      "case": "ktx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/ktx/ktx/wasm-export-complete.json",
+      "sha256": "b75e93ebb7307fc348eea20f6483488c0e231df0455418678b3c6d22d805c553"
+    },
+    {
+      "case": "ktx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/ktx/ktx/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "9a7fc46098bf568e08842cf3074096b08b8c20ec83081bc2117017cf945e6336"
+    },
+    {
+      "case": "interview",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/interview/interview/wasm-export-complete.json",
+      "sha256": "9fcd2b36fec236c594ecc944527c49cf06cb25cda29a50eaee9881aa79c43366"
+    },
+    {
+      "case": "interview",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/interview/interview/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "7eee67c4f24dad2b1b79fb492b161c139a2674860a581e930c558312ba1da997"
+    },
+    {
+      "case": "interview",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/interview/interview/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "51e8993d1f99a312cfab050fab733425808bf24bc437f56fba41e09be9df8df6"
+    },
+    {
+      "case": "request",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/request/request/wasm-export-complete.json",
+      "sha256": "6de725984fdd4ce491d0b7342ff83b5c768da65317e3e060a44a1891ad007c28"
+    },
+    {
+      "case": "request",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/request/request/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "fd132d7f26d521299f302047a656f5288647ff268c81bb9537fabe3e2ce9b3bc"
+    },
+    {
+      "case": "english",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/english/english/wasm-export-complete.json",
+      "sha256": "5885367ea3db31756a95ff26ae1e7ed666f50ccf3e31cf4d9fa34e0216db8e91"
+    },
+    {
+      "case": "english",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/english/english/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "23153bcf7fdd1e8ddf8027d41d5caedf7a7f3f1ccac7cbeac55714c0b216cac7"
+    },
+    {
+      "case": "newyear",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/newyear/newyear/wasm-export-complete.json",
+      "sha256": "f9f6872cae327f64c98333d6f6ac09aa1cdbd05972b460a3ee1a2b16b85fd83e"
+    },
+    {
+      "case": "newyear",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/newyear/newyear/silhouette-parts/p0002-0003/wasm-export-complete.json",
+      "sha256": "00c9d91d61355b7d97352b1280d33211cf3e5655a264991ad777883a5bc0e6ba"
+    },
+    {
+      "case": "newyear",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/newyear/newyear/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "bee4e0cd39784240c5659f03d16fc3d50a5a8aa8fbacc0cd6f97c4b016a6711e"
+    },
+    {
+      "case": "nars-2019",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2019/nars-2019/wasm-export-complete.json",
+      "sha256": "e3ddac22711711a3f6fad625e7c06a9513b75ec20526d8c8ff474a9a79e614ea"
+    },
+    {
+      "case": "nars-2019",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2019/nars-2019/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "595dcc5b32d9a284002d2fbb276a82b7c8729e866237e5e13f7f98767096b577"
+    },
+    {
+      "case": "nars-2021",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2021/nars-2021/wasm-export-complete.json",
+      "sha256": "07db7bf7188566795078d828ed9d3394b8115c8bff2a7e44080766bf4bddd28f"
+    },
+    {
+      "case": "nars-2021",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2021/nars-2021/silhouette-parts/p0002-0003/wasm-export-complete.json",
+      "sha256": "565b3cba39b8932cecfa6245a26ebfdd5de159be0a4f62336dd6f0047c052e84"
+    },
+    {
+      "case": "nars-2021",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2021/nars-2021/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "457effbf6466c654dd49e0cd2085a877e75f5623be5e7ff12f7499bfdee91d65"
+    },
+    {
+      "case": "footnote-captioned",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/footnote-captioned/footnote-captioned/wasm-export-complete.json",
+      "sha256": "1299d1054e5b422b0e6aaa5e29e821300b88b80f4c69c66576d4e3d1fa253497"
+    },
+    {
+      "case": "footnote-captioned",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/footnote-captioned/footnote-captioned/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "94d0f4418fccdaacdab1f2b99ca82e4e3052ef9b6e45b0c67d0460a7834c9869"
+    },
+    {
+      "case": "sample16",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16/sample16/wasm-export-complete.json",
+      "sha256": "8d4226498257d97a4a07a8478920da76f6c4d3ffb2f51e3aae09bf1b1a716e82"
+    },
+    {
+      "case": "sample16",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16/sample16/silhouette-parts/p0002-0064/wasm-export-complete.json",
+      "sha256": "1ba7b46fde7d0112a1f49233bfd0c79e3592f7b536148952cf3777bb5e51729e"
+    },
+    {
+      "case": "sample16",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16/sample16/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "8bf5a0b728cd54005c17bbb7b0882d0aa05a9f7b0cca8560f66a33196c38bba3"
+    },
+    {
+      "case": "summary-tail",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/summary-tail/summary-tail/wasm-export-complete.json",
+      "sha256": "dea18d55bfd346587ea6277027278d02db5f53970b399b3f3d288cd4af6804f8"
+    },
+    {
+      "case": "summary-tail",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/summary-tail/summary-tail/silhouette-parts/p0002-0003/wasm-export-complete.json",
+      "sha256": "1b6a536a43c69700a31f327e12f410cd6f6706fc9343ca6a27e6d3c4e7f929b3"
+    },
+    {
+      "case": "summary-tail",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/summary-tail/summary-tail/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "dfa4c95603835c1dd9977511e6d04c940fe738417299f18e92cb7e7c5f8bd5f7"
+    },
+    {
+      "case": "reserve-a10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a10/reserve-a10/wasm-export-complete.json",
+      "sha256": "f40bb2111e2ae09a396ad09e69055c0fd78e0ade605b4dcfaca574a5797a4259"
+    },
+    {
+      "case": "reserve-a10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a10/reserve-a10/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "6e568b73575eec953431ad543777413e43537ef9194638591ab1e20e8dffb897"
+    },
+    {
+      "case": "reserve-a10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a10/reserve-a10/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "d0f942fa55ae175f43963fefabd3cf132696dccee0e587d76899c60b9f0622a2"
+    },
+    {
+      "case": "reserve-a30",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a30/reserve-a30/wasm-export-complete.json",
+      "sha256": "eec86259e5d4797c55cbe6c4a011fa1f1429b729128c80b555bee635fb75413c"
+    },
+    {
+      "case": "reserve-a30",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a30/reserve-a30/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "bae2f27b2d26b99237611d186bfde111aa17a833230555577832910a5f27b142"
+    },
+    {
+      "case": "reserve-a30",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a30/reserve-a30/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "826b08e4abde04a7eb931df318e896bf8ac1d90272463158bfb8179cd83f1c59"
+    },
+    {
+      "case": "reserve-b4",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-b4/reserve-b4/wasm-export-complete.json",
+      "sha256": "a7fff603109dc436237a3e5d7a31029338ca71013d17f028f07ece6bfd271557"
+    },
+    {
+      "case": "reserve-b4",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-b4/reserve-b4/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "d544f88398ebc1863be56a8a3ee448d14497b1b26eeaa0409fb0fe1db55e9281"
+    },
+    {
+      "case": "reserve-b4",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-b4/reserve-b4/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "414fbe7f45c4a4c774f3d3fbf3f5e8a4f00ae9fa41ff1dd66ac18ab16c05bf5e"
+    },
+    {
+      "case": "reserve-a40",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a40/reserve-a40/wasm-export-complete.json",
+      "sha256": "d9e1ebde8952ad69488e1764fbcaf3566c8388d7503b8467612a082e7d3886a3"
+    },
+    {
+      "case": "reserve-a40",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a40/reserve-a40/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "42ba9f0fe30a65c139bb709bff599ddd127f3f1ec7ea20c7a572966aa64d86ae"
+    },
+    {
+      "case": "reserve-a40",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a40/reserve-a40/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "edaa05c4a1e2b05f687894728bbfb8e42976b758cb26c4fb3267409990023378"
+    },
+    {
+      "case": "reserve-a46",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a46/reserve-a46/wasm-export-complete.json",
+      "sha256": "e65959d15d5efeca5567301a81042d9cf7a331177b6aabee42e7b94df27651ee"
+    },
+    {
+      "case": "reserve-a46",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a46/reserve-a46/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "47938639018cee03bacd85134094fbabf773862d9fbb11d24020aece9a3a2024"
+    },
+    {
+      "case": "reserve-a46",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a46/reserve-a46/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "c02e5556d0dddc03d089ba0231ec77d91161c61f6239ad171158f3a6af6e687a"
+    },
+    {
+      "case": "p4g",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/p4g/p4g/wasm-export-complete.json",
+      "sha256": "d18b0300e37cf875f3da1ee16e1a3a6e78650729deac7f287bc998df704f51bc"
+    },
+    {
+      "case": "p4g",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/p4g/p4g/silhouette-parts/p0002-0008/wasm-export-complete.json",
+      "sha256": "80693d2e533c2da31ff56794e6ca6df7a3aca7c7233481484d9fa536a288fb18"
+    },
+    {
+      "case": "p4g",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/p4g/p4g/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "eba3fa53d932e4ef7472a45613d2f17e6d3f33045e30f86a188f710fc2ab5ce3"
+    },
+    {
+      "case": "leading-shape",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/leading-shape/leading-shape/wasm-export-complete.json",
+      "sha256": "3d20624e297ecc7e90f771097c20044057046b8e54900f907450d9417450b956"
+    },
+    {
+      "case": "leading-shape",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/leading-shape/leading-shape/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "35f8fc77abc9e2934dafa0e7e6047a49480db85d46cddd58d8e7d02aecfb81d3"
+    },
+    {
+      "case": "leading-shape",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/leading-shape/leading-shape/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "5430f838e6cefbc4cc4a91263448bbf978b67806dc8da2de7030d7df15919c40"
+    },
+    {
+      "case": "field-page-box",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/field-page-box/field-page-box/wasm-export-complete.json",
+      "sha256": "f9bb255ed7078842f687ee2a462251beb06991b140fcfd0b8016604d23828e42"
+    },
+    {
+      "case": "field-page-box",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/field-page-box/field-page-box/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "4e7dec237edb01c483824987bc95e5ca71b4e5369381e7b459b5be5dd8d86176"
+    },
+    {
+      "case": "tall-prefix",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/tall-prefix/tall-prefix/wasm-export-complete.json",
+      "sha256": "8b9793d3905dcf9704f2fe46f379514b5604e91d3f0f5f04651a3a605ba48aa8"
+    },
+    {
+      "case": "tall-prefix",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/tall-prefix/tall-prefix/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "5bf015fb46c59d4cb7b3fb2455de2448e67f92e4498b685610f35f8d32eb40bb"
+    },
+    {
+      "case": "sender-overlay",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sender-overlay/sender-overlay/wasm-export-complete.json",
+      "sha256": "417fec21afb63f7efcf9728ed244f40dbcfb79fd52e941a997caf26e9576890c"
+    },
+    {
+      "case": "sender-overlay",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sender-overlay/sender-overlay/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "f8f6d00e8575b6b20022822ae5fa09cfa4129f73e4e4e561b5b9242e6bfb1613"
+    },
+    {
+      "case": "refund-notice",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/refund-notice/refund-notice/wasm-export-complete.json",
+      "sha256": "fa98611c6353239e07abdc4d4d5a5f7caf9a6bc5cfb29fdb73bdf5495c2948f0"
+    },
+    {
+      "case": "refund-notice",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/refund-notice/refund-notice/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "20d788d474e1a2d5a849ce871a4175e423cafa6202ce74f8780849701b8f38f0"
+    },
+    {
+      "case": "stamp-a",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-a/stamp-a/wasm-export-complete.json",
+      "sha256": "713c21daa5a629459e86483fd13b390a314a399ecf38ce0060c89884cdd3408e"
+    },
+    {
+      "case": "stamp-a",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-a/stamp-a/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "409a2d6d00e6684714f93d6182bcec66117bfa76ea11627c6c6c57ec73c02e7a"
+    },
+    {
+      "case": "stamp-b",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-b/stamp-b/wasm-export-complete.json",
+      "sha256": "9a9a3fe2d2d53fb85ee55226e12b67c193e72467cfe294f05970dcbfd3a40353"
+    },
+    {
+      "case": "stamp-b",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-b/stamp-b/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "e07fa5f38076b56c19c0e61c4505b5c3c8f7b05644654d8b3ddd7fe37147b610"
+    },
+    {
+      "case": "labor-report",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/labor-report/labor-report/wasm-export-complete.json",
+      "sha256": "eeecc7bf82d80a15d80da69d8b08c29aef70d11602671b1153fa3906844e3760"
+    },
+    {
+      "case": "labor-report",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/labor-report/labor-report/silhouette-parts/p0002-0053/wasm-export-complete.json",
+      "sha256": "736dc9dba999d16a5dadd3b9d025af5cf347b9bf29213219e775bc30f5d9e8b9"
+    },
+    {
+      "case": "labor-report",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/labor-report/labor-report/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "9f81fd9652e3367c7700899866d4b851d1a824a8852a3cb8d4a298eaaec14544"
+    },
+    {
+      "case": "companion-baseline",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/companion-baseline/companion-baseline/wasm-export-complete.json",
+      "sha256": "4d5c7bf95349921509a84082745d4e802e1e635e6d4ba3635f0bd370e1880a95"
+    },
+    {
+      "case": "companion-baseline",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/companion-baseline/companion-baseline/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "9d1d513987164a2267c8e2870c3bda03d252a02cacc3472f88cfef99b2197e39"
+    },
+    {
+      "case": "sign-board-2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2020/sign-board-2020/wasm-export-complete.json",
+      "sha256": "c4ee4153ad44c99af74214091a0cf99064054c35e7b7fba6f6e5ebe77b8b8523"
+    },
+    {
+      "case": "sign-board-2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2020/sign-board-2020/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "b965bd18b1f6216eed9714f556338e8da391f2b8ece258eba91503017cb4b9c4"
+    },
+    {
+      "case": "sign-board-2022",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2022/sign-board-2022/wasm-export-complete.json",
+      "sha256": "9848eb9c930c040e1c3d3fe5a35c218637338e4979b4889e0c0feddceeeece2f"
+    },
+    {
+      "case": "sign-board-2022",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2022/sign-board-2022/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "bd802a3e533a0b24a6b57b4566051dba78b3ab2d68e6fcebf58b49278a2e7f3d"
+    },
+    {
+      "case": "policy-track2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2020/policy-track2020/wasm-export-complete.json",
+      "sha256": "9ad012341b79c1fabddf50a6e53f8aee46d8b8ab0bf89910e43b9d12625c3d62"
+    },
+    {
+      "case": "policy-track2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2020/policy-track2020/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "8acac92ee99b1a7b947b94598b5dada2e4a212c59f9e8371974fe38c466b8eca"
+    },
+    {
+      "case": "policy-track2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2024-compat2024-corrected/policy-track2024/wasm-export-complete.json",
+      "sha256": "46238dd448e360dac979d871e81b88700244748dfd724b6db8dde3fc39ca2b42"
+    },
+    {
+      "case": "policy-track2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2024-compat2024-corrected/policy-track2024/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "7a64ec0047281222ea458799065a78efe2fb07efae9354c0bfa5d782db7288fa"
+    },
+    {
+      "case": "policy-flags0",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-flags0/policy-flags0/wasm-export-complete.json",
+      "sha256": "fa3af987b448c66bdac1a63e8ec00885e5ff228b0b2ad85ce83f1a3746bb6b83"
+    },
+    {
+      "case": "policy-flags0",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-flags0/policy-flags0/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "2b9617ac22eb150702a8bdeba75a7c0995365ef6c1397f589dbf5680e7b85172"
+    },
+    {
+      "case": "overflow-space-2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2020/overflow-space-2020/wasm-export-complete.json",
+      "sha256": "b941924b678b0804e33576f2cc85c3d23e45cd4bff6172f359b6ae4ad027c2f2"
+    },
+    {
+      "case": "overflow-space-2020",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2020/overflow-space-2020/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "2e6a77eebc62e0d856285c49075876730df2a7ac05f2d33b83263903b01a3c38"
+    },
+    {
+      "case": "overflow-space-2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2024/overflow-space-2024/wasm-export-complete.json",
+      "sha256": "9ed8f7026ab5a34e15b8861e42ba6b546781efd142bfd020136495038394bb44"
+    },
+    {
+      "case": "overflow-space-2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2024/overflow-space-2024/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "69570e69adfacb52c0270f6e93121b2b003261e9896b2861b09fe3567a615269"
+    },
+    {
+      "case": "legislation-summary",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/legislation-summary/legislation-summary/wasm-export-complete.json",
+      "sha256": "14e9b75958326646e0927eb550d8256410a61352f927f92a0d50bc624abcce65"
+    },
+    {
+      "case": "legislation-summary",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/legislation-summary/legislation-summary/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "770c7b6454f01a533becefdfb77f9f4b3efae6862a6b3e9062b41c5b426ee0a9"
+    },
+    {
+      "case": "legislation-summary",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/legislation-summary/legislation-summary/silhouette-parts/p0002-0010/wasm-export-complete.json",
+      "sha256": "1c36713a23cc7f04434f2d32c54e19f6d4ad020dcd1dc9d9f2c39b7e34f18634"
+    },
+    {
+      "case": "cell-exclusion-36478532",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cell-exclusion-36478532/cell-exclusion-36478532/wasm-export-complete.json",
+      "sha256": "9f072f4a07ce6fbea2ea5d2e321c15d5c0f70344908aff5542d2d2515807b1ab"
+    },
+    {
+      "case": "cell-exclusion-36478532",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cell-exclusion-36478532/cell-exclusion-36478532/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "593f30bc655700ab4fbb03ba755c19280b7b75ef2429dd71aab8032bf202e34c"
+    },
+    {
+      "case": "cell-exclusion-36478532",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cell-exclusion-36478532/cell-exclusion-36478532/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "5bb41ee4198b4281ef83c3438dfb13fa4f25463e824277cfd718d03b1429a62d"
+    },
+    {
+      "case": "original-36493460",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36493460/original-36493460/wasm-export-complete.json",
+      "sha256": "60a99f5cffd488477f7d38e8f267a8f52d77e8980bc780ce1eb57215e0e98d3d"
+    },
+    {
+      "case": "original-36493460",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36493460/original-36493460/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "5993e5cd334cb09a3452a0f8235afa34364f3c7551cf84ed08d8d23e2a9a69c2"
+    },
+    {
+      "case": "original-36474334",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36474334/original-36474334/wasm-export-complete.json",
+      "sha256": "511da02b938b8bfea3ca0fc8c56885807b375d520db21c7027e259a6ef050d8f"
+    },
+    {
+      "case": "original-36474334",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36474334/original-36474334/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "c9ea1c1e85d07a4776959436223997b4298635b1b10d2640cee2d06635db68c4"
+    },
+    {
+      "case": "original-36474334",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36474334/original-36474334/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "2c968519e369f6985ce4b5e83532687abcc5daa197130624d4eaf212e47ee4bb"
+    },
+    {
+      "case": "evaluation-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/evaluation-original/evaluation-original/wasm-export-complete.json",
+      "sha256": "9ce5c3e225715095e0a30cedc9b449ca146ad931a419cb9b2f067233415bba3a"
+    },
+    {
+      "case": "evaluation-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/evaluation-original/evaluation-original/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "a2283bd3f283441d91b0cb31eb15f67a01177d96932549e08a731e0cf5a6fbcb"
+    },
+    {
+      "case": "evaluation-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/evaluation-original/evaluation-original/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "a105b88271aa59f18f2883860a2173e32d05be97bcf6c493d54cd0edadb5a960"
+    },
+    {
+      "case": "report-628",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/report-628/wasm-export-complete.json",
+      "sha256": "a289888c6081932a0c84115e848b533525affe274a9af97d3e1667fe2e680435"
+    },
+    {
+      "case": "report-628",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/report-628/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "ccc6f452b835bb0553ec174b9786809524d58aa24b8e1a33a76a47487eb9c29b"
+    },
+    {
+      "case": "report-628",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/report-628/silhouette-parts/p0194-0195/wasm-export-complete.json",
+      "sha256": "d484129d573ac525e2ff189780280fe30eddbe58ef120e2071122aeaa2494089"
+    },
+    {
+      "case": "report-628",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/report-628/silhouette-parts/p0130-0193/wasm-export-complete.json",
+      "sha256": "781061f79c45f09c141c3a303b7d762b389d671932b5aad4e18a5fa4532e78c0"
+    },
+    {
+      "case": "report-628",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/report-628/silhouette-parts/p0066-0129/wasm-export-complete.json",
+      "sha256": "6e223b8928f9dd77f0ec9708287415f0241528811130aefcf3badf1e3bcf2d13"
+    },
+    {
+      "case": "report-628",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/report-628/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "1ecb28453942cf7acf220c6d708e5dd941dc0b3b57e43d0865046b29acd2ab60"
+    },
+    {
+      "case": "report-838",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-838/report-838/wasm-export-complete.json",
+      "sha256": "0436dea1332aa9b91c03816fdaa77baceafbbfba2875efcf05ce94b9134dbc96"
+    },
+    {
+      "case": "report-838",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-838/report-838/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "b6b330881d062434d26ad68cb1251a3ce9b97f2838148ac69f5ce6de5debb82e"
+    },
+    {
+      "case": "report-838",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-838/report-838/silhouette-parts/p0066-0109/wasm-export-complete.json",
+      "sha256": "2fbdec59ec7048d2f9516275eeab760c84c38ecc3a64d5dce97e0078b45c0c4e"
+    },
+    {
+      "case": "report-838",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-838/report-838/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "11ade9fe4ae2d82caaef6fb1f65d910c9e5f931cd48acd51c5a16396ba7d9698"
+    },
+    {
+      "case": "stored-band",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stored-band/stored-band/wasm-export-complete.json",
+      "sha256": "fcdb0810293cabec9dd3c31494735fc38803439f4af42b79d28aee82bbef12a6"
+    },
+    {
+      "case": "stored-band",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stored-band/stored-band/silhouette-parts/p0002-0002/wasm-export-complete.json",
+      "sha256": "39f3c4cf0aa57e93fe15dc78cd7f56067bdce395ca4b3609855492bc5afbe091"
+    },
+    {
+      "case": "stored-band",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stored-band/stored-band/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "d6f080a3db9151b7ae766723973e1cfd419739cbc6fcbf5980423b1ba3d0525a"
+    },
+    {
+      "case": "sample16-hwp2022",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2022/sample16-hwp2022/wasm-export-complete.json",
+      "sha256": "8d46b2d830ef24ec341f9fee128c8d6262d1575380fe1be27805f33ff4d195b7"
+    },
+    {
+      "case": "sample16-hwp2022",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2022/sample16-hwp2022/silhouette-parts/p0002-0064/wasm-export-complete.json",
+      "sha256": "ddcf4765a7f6e9bb87cd5b7421786c6144688c4413c3347aa3621d5c3f8bbc35"
+    },
+    {
+      "case": "sample16-hwp2022",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2022/sample16-hwp2022/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "827fa6e447a9e272a2507aac18d3b59d9af3f2aa373cee931ca638a5ed573533"
+    },
+    {
+      "case": "sample16-hwp2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2024/sample16-hwp2024/wasm-export-complete.json",
+      "sha256": "55cdff8020a8746ffe765a61ff05aba9408de7fece86192206ef8a4724a1059e"
+    },
+    {
+      "case": "sample16-hwp2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2024/sample16-hwp2024/silhouette-parts/p0002-0064/wasm-export-complete.json",
+      "sha256": "a5b5c926d8af75bfa226bc88dc311ba11aad36b038b8020adae9566e247d48d6"
+    },
+    {
+      "case": "sample16-hwp2024",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2024/sample16-hwp2024/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "60d9a523236f912be3a5ab1be59fd02b6bfb7e1fd291f40383b175dc2b00a661"
+    },
+    {
+      "case": "sample16-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwpx/sample16-hwpx/wasm-export-complete.json",
+      "sha256": "c0f6ff85fe0ba2879801f0a55a6d62945e9b1150e12159c92a7abe0d723aa7c0"
+    },
+    {
+      "case": "sample16-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwpx/sample16-hwpx/silhouette-parts/p0002-0064/wasm-export-complete.json",
+      "sha256": "221779f158f8884286d351414ee0ad8d819fb165cb428f9e27b0f7c57d47f29d"
+    },
+    {
+      "case": "sample16-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwpx/sample16-hwpx/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "60d9a523236f912be3a5ab1be59fd02b6bfb7e1fd291f40383b175dc2b00a661"
+    },
+    {
+      "case": "issue7905",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue7905/issue7905/wasm-export-complete.json",
+      "sha256": "238cca924a5cf528fc632db43b78f346370213850494ffccb81344823592e8c3"
+    },
+    {
+      "case": "issue7905",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue7905/issue7905/silhouette-parts/p0002-0006/wasm-export-complete.json",
+      "sha256": "7e9490f9dc2eae7569e8f4cf4a53df92d42d6194f067fe2884deec97281ffc1c"
+    },
+    {
+      "case": "issue7905",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue7905/issue7905/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "25d9187a66f376681abeef6a97052cfa90ff3c28591481d7a092549c9316a602"
+    },
+    {
+      "case": "issue8040-insert",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert/issue8040-insert/wasm-export-complete.json",
+      "sha256": "c178d89915d2d4ba636cd777bb267b5d3e7954e51973bf5edf758902d3bb39ec"
+    },
+    {
+      "case": "issue8040-insert",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert/issue8040-insert/silhouette-parts/p0002-0004/wasm-export-complete.json",
+      "sha256": "8bc06421a87c1fe916f77d1ec88785b7d7eca495b001ab672b159001df2555b4"
+    },
+    {
+      "case": "issue8040-insert",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert/issue8040-insert/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "d3922a1e2220929ed3c75eb0ba6a4dd770a3ebf3f4986106bf9ab50144f9751c"
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert-delete/issue8040-insert-delete/wasm-export-complete.json",
+      "sha256": "9fd1574beb47809a09849af01134fb1c783b338d82d496023504ddd238c04c03"
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert-delete/issue8040-insert-delete/silhouette-parts/p0002-0004/wasm-export-complete.json",
+      "sha256": "221178476472461eab8824dc3ef452ad2614e0f8a6c2c62ad62afca632bd4402"
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert-delete/issue8040-insert-delete/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "d3922a1e2220929ed3c75eb0ba6a4dd770a3ebf3f4986106bf9ab50144f9751c"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/wasm-export-complete.json",
+      "sha256": "e696b6ac95ca7a5a36f24b6c046602d2b84a54889d9c41ef8d3e5745b9effb18"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "2b5217de6f0d4347d01d276833a2d1624ab393fd8244ce8e6f8d738ca88cf2e9"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette-parts/p0130-0193/wasm-export-complete.json",
+      "sha256": "93dc0784f1e59a7c9b7c7ac0d88542e8c9ccd7ef6d651eabe5189c5c6dc1f6df"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette-parts/p0194-0257/wasm-export-complete.json",
+      "sha256": "fdda5313bb7b3ba43ebf9cbf4836d6c75a03b2ce42a56894f114472430aa3507"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette-parts/p0258-0321/wasm-export-complete.json",
+      "sha256": "14183247c1c26281d923ed0553c6de1fc06863b89272bad8dac7f858267501ca"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette-parts/p0066-0129/wasm-export-complete.json",
+      "sha256": "b963beab27ea5fcd82f6252983c80a213ff8ae8c76062a396cd7be3d5f6de10a"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette-parts/p0322-0383/wasm-export-complete.json",
+      "sha256": "14408221adb98885ae8021702d5492e4777370e36fc6056e454b0c707cba2aed"
+    },
+    {
+      "case": "handbook-hwp",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "cc87e1cd8cd8b3c7f266b530fd9a5192d3bbc2f1b97e7e949b7e97ac52b53c17"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/wasm-export-complete.json",
+      "sha256": "4f5157e64819e38b872ca2a4f25dd0aec754ec6d04b2e8d90e3c3a2653e5ccd6"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "cb0cb35ba6702f4d4791e4f385ff02c856f637b28f6f955f899aeb6c86d70224"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette-parts/p0130-0193/wasm-export-complete.json",
+      "sha256": "21c1b4debfaa416101cdad59a9ff124bed45dbe6ff7266b374c3be54bf6ce0c2"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette-parts/p0194-0257/wasm-export-complete.json",
+      "sha256": "839cdb734c7c1962143531a311e595136219b0f03c1b6c645195fa442a962909"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette-parts/p0258-0321/wasm-export-complete.json",
+      "sha256": "baa86ce6cb78d71cf6e8fd285335be6774bde87c3a90b3ca9617fec7fc6bb680"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette-parts/p0066-0129/wasm-export-complete.json",
+      "sha256": "1d300692ee7e0e66e6069c5a2433423ad1a84f38a2448f3e936dce464d9c429b"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette-parts/p0322-0383/wasm-export-complete.json",
+      "sha256": "df819efa2eee0bf523d516ef43835081fa42363fd7b497303dd90d6e3a514861"
+    },
+    {
+      "case": "handbook-hwpx",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "87f1090c3a2aa4a9b708fee63811d654459a75e9e3f8712acc9145340ea25f78"
+    },
+    {
+      "case": "seo-body-list-typed",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-body-list-typed/seo-body-list-typed/wasm-export-complete.json",
+      "sha256": "0108802c2ec9374caa408d9b8e7607328d72607ee868107915410050b8cf04c6"
+    },
+    {
+      "case": "seo-body-list-typed",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-body-list-typed/seo-body-list-typed/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "9e3919f38eb05979d24a6210d4529ca14f694ec972805b653b1f4f7daa7f1b69"
+    },
+    {
+      "case": "seo-helvetica-styles",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-helvetica-styles/seo-helvetica-styles/wasm-export-complete.json",
+      "sha256": "a6cfda5de0fcefa5c90e0e77aac47cd551de94429774e81f9e493ca050628077"
+    },
+    {
+      "case": "seo-helvetica-styles",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-helvetica-styles/seo-helvetica-styles/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "0bea0bd12ba5b0b69f17e1df26c224b525d17809815c42addf8b3f5196fc0798"
+    },
+    {
+      "case": "seo-pic-crop-01",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-pic-crop-01/seo-pic-crop-01/wasm-export-complete.json",
+      "sha256": "966d2efe111f9c18384cd17c47b4e45b7f8b72feec8d2df9509b849320768bb0"
+    },
+    {
+      "case": "seo-pic-crop-01",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-pic-crop-01/seo-pic-crop-01/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "f9b63be816fa6e0c192dc544459efc41cb0da5bba9a83ebae35c406185001275"
+    },
+    {
+      "case": "seo-shape-group-02",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-shape-group-02/seo-shape-group-02/wasm-export-complete.json",
+      "sha256": "0cb78e2ad97c38929eadfc4672ea818d7bef4bf7480b31e39679542c532109f3"
+    },
+    {
+      "case": "seo-shape-group-02",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-shape-group-02/seo-shape-group-02/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "86bb002e2998cde42688ed745c1f95c16ba6e33d05cbfaef0a5b12ea9e9cc0ab"
+    },
+    {
+      "case": "seo-re-03-latin",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-re-03-latin/seo-re-03-latin/wasm-export-complete.json",
+      "sha256": "ba83c2f7d7110b4d63b4a6ea8b69bc40efd5ec2b23aa8d0b8718d1bcd4c21f7b"
+    },
+    {
+      "case": "seo-re-03-latin",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-re-03-latin/seo-re-03-latin/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "d2c8ae017ae85b5f33159f3270acc08e10e3f9bdfb10e34984e4e4c954f8244e"
+    },
+    {
+      "case": "yeongwol",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/yeongwol/yeongwol/wasm-export-complete.json",
+      "sha256": "089d29f170a1db7bf2a653179e60a875f296a195440e370d8731cc4f4bda8b35"
+    },
+    {
+      "case": "yeongwol",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/yeongwol/yeongwol/silhouette-parts/p0002-0004/wasm-export-complete.json",
+      "sha256": "45e59db55236bb243c84c48e91f4d87678ae2a5cbb2760850dfbdf6898f0d7cc"
+    },
+    {
+      "case": "yeongwol",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/yeongwol/yeongwol/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "6a42c8d653c0779d669fc9eca80fb3b58c33bc75d305dc13eea75e6534e70b43"
+    },
+    {
+      "case": "outline",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/outline/outline/wasm-export-complete.json",
+      "sha256": "c8d8c893d6f467df7438be4b3fc76604999f86cf6d90fa5c5d46fda9f117cf05"
+    },
+    {
+      "case": "outline",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/outline/outline/silhouette-parts/p0002-0009/wasm-export-complete.json",
+      "sha256": "81a06ca21fd0cd8231cc492c7489d99ebf585af172d4cfa5641d8e6ee55abec3"
+    },
+    {
+      "case": "outline",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/outline/outline/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "1928145a8b7ecc1acd0da86bde78ede7affb324e70c19b081c913630061ef2a2"
+    },
+    {
+      "case": "nested",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nested/nested/wasm-export-complete.json",
+      "sha256": "6ba09bfd11123f8bf6fedc05795b7d4004fbdf836985d16bc49c1020a6d5627e"
+    },
+    {
+      "case": "nested",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nested/nested/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "c94ca2e71444cc3247ba14ca2cb1efa6634c398076d5e364f44304a310c04b6f"
+    },
+    {
+      "case": "nested",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nested/nested/silhouette-parts/p0002-0017/wasm-export-complete.json",
+      "sha256": "7efa883972d405c89056d7dc6632b1aed9054f2b5644d34ce014789a7c3b801f"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/wasm-export-complete.json",
+      "sha256": "e911da56c167b1b098d6bd948fc8bb61440778c0f92b7f5cec18e54492c3c730"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0578-0641/wasm-export-complete.json",
+      "sha256": "d76bce2b425fca366b7b30bb1927cad76eda332d3c2d8f316887ffdd0a71fe93"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "5d897e6b07a3cf19ad6431f5f08a761ed6687c35a55a997893d1b70ab3c31eda"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0706-0763/wasm-export-complete.json",
+      "sha256": "97ec70155e1f510ce3ad9107f1a07407d6b1ca90e6059900470561945c771a1d"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0450-0513/wasm-export-complete.json",
+      "sha256": "7ea689716cb949c79ff45da4c05dc13ce75540bb625560465ba816f83d0149b2"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0130-0193/wasm-export-complete.json",
+      "sha256": "6a9c19cd426e85b4b2f8ad50026a629585a5664c40134b9dc00d1a701b7856f1"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0514-0577/wasm-export-complete.json",
+      "sha256": "ed10a1527bf4a3444424e22350c1f28bb41ce1e1099882b812ed2e669870e121"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0194-0257/wasm-export-complete.json",
+      "sha256": "0d535a1213559edb08f9fa693b540bf7209c98a51018350f5df54f5ebf29904e"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0642-0705/wasm-export-complete.json",
+      "sha256": "bed2a41a4598439885eaa5bb72fb7cd0606141b1a36a1fe3f9ebb914dff65b9b"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0258-0321/wasm-export-complete.json",
+      "sha256": "683611aef4f7e823a1fe54c7330c9d161ac3985759f9bc44011dc8782b14e364"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0322-0385/wasm-export-complete.json",
+      "sha256": "3cd9fbea202a428480ecd5920a32445606704b70a2fba5bea74bc3f133a960a2"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0066-0129/wasm-export-complete.json",
+      "sha256": "924e9ef53697d146295c3ab19e3a787878d0c3de11a08e3e8cbd0180a80b3053"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0386-0449/wasm-export-complete.json",
+      "sha256": "f5073821a761be0aa820160e74fdd916f1d5f20d196e99a5674bbad629a870e6"
+    },
+    {
+      "case": "sample10",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "335dabff073c8d889db863f88a55ebb1a23ae1048b1e4e1c373b71a0051cb78f"
+    },
+    {
+      "case": "incoming8754-delegation7700",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-delegation7700/incoming8754-delegation7700/wasm-export-complete.json",
+      "sha256": "62ff065734f9e9405f31a3dba2b0cf1296bfe035f808a116d8f558070b527967"
+    },
+    {
+      "case": "incoming8754-delegation7700",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-delegation7700/incoming8754-delegation7700/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "02890a184c265912df58b6d314cc2a0065a3118ab27aa1165f7c86b30e37ccb3"
+    },
+    {
+      "case": "incoming8754-delegation7700",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-delegation7700/incoming8754-delegation7700/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "ad3024abec2bd1b6107a420eaaab68d0cbfdc60deb41a3fbba355e288571d5f0"
+    },
+    {
+      "case": "incoming8754-delegation7700",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-delegation7700/incoming8754-delegation7700/silhouette-parts/p0066-0103/wasm-export-complete.json",
+      "sha256": "5120e0185130b4d434df0df3526a2f2eeab749a492bfffdd5a3950e92385aa07"
+    },
+    {
+      "case": "incoming8754-prime-width",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-prime-width/incoming8754-prime-width/wasm-export-complete.json",
+      "sha256": "f9303803536e83b7f3a7d0af6f89a7e13222e18b8e7f0a4e6d85d984dfde3e78"
+    },
+    {
+      "case": "incoming8754-prime-width",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-prime-width/incoming8754-prime-width/silhouette-parts/p0002-0003/wasm-export-complete.json",
+      "sha256": "8ce716e7bd7263e5709edfbc55fad7f263ae62df3245f431d837e954773a22e5"
+    },
+    {
+      "case": "incoming8754-prime-width",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-prime-width/incoming8754-prime-width/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "669a2618df490f1572cf034e9cb51b777f6775f0301c1263e1703da917c5fd19"
+    },
+    {
+      "case": "incoming8754-rowbreak8539",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rowbreak8539/incoming8754-rowbreak8539/wasm-export-complete.json",
+      "sha256": "4bc6339b7f3b1554944c911faa86f1eb1357864c80c06577443419b3ba9ac2f1"
+    },
+    {
+      "case": "incoming8754-rowbreak8539",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rowbreak8539/incoming8754-rowbreak8539/silhouette-parts/p0002-0003/wasm-export-complete.json",
+      "sha256": "6eb22816118d714dddffbdbb0d99853cd21204fb45858df12332976afe4c6fb7"
+    },
+    {
+      "case": "incoming8754-rowbreak8539",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rowbreak8539/incoming8754-rowbreak8539/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "7d825c87da4c41d87439bc9ec7d696dc16a2eb6e8cb6a56320449342b998774e"
+    },
+    {
+      "case": "incoming8754-nov-resaved",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-resaved/incoming8754-nov-resaved/wasm-export-complete.json",
+      "sha256": "1459d3a1bbd5c71448051ad16cec00485dd3f0ef784e314aa0070a2c8efcbc2d"
+    },
+    {
+      "case": "incoming8754-nov-resaved",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "11fd73c86a9f9bab415c379c6fa58a0f7f0ebfc62040f70ecf12e578c4bcb25c"
+    },
+    {
+      "case": "incoming8754-nov-resaved",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette-parts/p0002-0021/wasm-export-complete.json",
+      "sha256": "6082d9b834117142c887815f87a45bbdac0f1f8de66f6ae7a424fd6f247b4c13"
+    },
+    {
+      "case": "incoming8754-nov-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-original/incoming8754-nov-original/wasm-export-complete.json",
+      "sha256": "f1a52e076b41fc4f8df9d663ffedb244025c61608c034f0499a56c9de4653eef"
+    },
+    {
+      "case": "incoming8754-nov-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-original/incoming8754-nov-original/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "a9dbcada768b93db4da5336f07c949928ad4e74ceaf17545d5f0ef734c8394b1"
+    },
+    {
+      "case": "incoming8754-nov-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-original/incoming8754-nov-original/silhouette-parts/p0002-0021/wasm-export-complete.json",
+      "sha256": "4f97d8c1a63ceec29565f0dee566b1dbf327c6b475dffc24b4864b28df2a64f4"
+    },
+    {
+      "case": "incoming8754-rectangles",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rectangles/incoming8754-rectangles/wasm-export-complete.json",
+      "sha256": "9984b48d3bb978058166c060a2b1d419d872125cc08a65a1e9013d77b1a8fee0"
+    },
+    {
+      "case": "incoming8754-rectangles",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rectangles/incoming8754-rectangles/silhouette-parts/p0002-0050/wasm-export-complete.json",
+      "sha256": "4dc4cba4c0ed0568b60a7c738c20982b548ab738e4f5dee60069f5997f6100e8"
+    },
+    {
+      "case": "incoming8754-rectangles",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rectangles/incoming8754-rectangles/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "4e3c950b750cbd5be07093374f660ab79cc7dc44a838243d61e5e9c8cfd2087f"
+    },
+    {
+      "case": "incoming8754-staggered7",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-staggered7/incoming8754-staggered7/wasm-export-complete.json",
+      "sha256": "bb0c5aa63b6de9e2e83586525491133335704f44a5031584f962015e3c747570"
+    },
+    {
+      "case": "incoming8754-staggered7",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-staggered7/incoming8754-staggered7/silhouette-parts/p0002-0007/wasm-export-complete.json",
+      "sha256": "32cc1513e9c208217fa3f8f0b15cc1a7abaa6200f28ff73f4602765dcfc2f4f3"
+    },
+    {
+      "case": "incoming8754-staggered7",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-staggered7/incoming8754-staggered7/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "bf3d74987efeff6cdab8869824d04ad812ca5f84c8e0fcb271779bc481a45428"
+    },
+    {
+      "case": "incoming8754-electrical7728",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-electrical7728/incoming8754-electrical7728/wasm-export-complete.json",
+      "sha256": "b2caf519b75b774c1c27139701acdf8bd11d08f7334844d7c63d1f8a41dc33dd"
+    },
+    {
+      "case": "incoming8754-electrical7728",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-electrical7728/incoming8754-electrical7728/silhouette-parts/p0002-0018/wasm-export-complete.json",
+      "sha256": "fee3766fcd3e0e6bb746cdda3206b9d9bea5d5b5fd9e2a4c859c7260b43d82d0"
+    },
+    {
+      "case": "incoming8754-electrical7728",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-electrical7728/incoming8754-electrical7728/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "4e86d397369930bd8a79d8d64a1df2a3b0d2b291bfcc4c42be8657ac407f5f03"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/incoming8754-giant4138/wasm-export-complete.json",
+      "sha256": "73215a36fe15f39979b657492fb0d4077411270e0387149f4b8f3bd0b1c4d985"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/incoming8754-giant4138/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "0d7537f9b7e1d31cc632cf67fe14c5b0320e15b57800daf0dc3b52e26e84acbd"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/incoming8754-giant4138/silhouette-parts/p0130-0193/wasm-export-complete.json",
+      "sha256": "a71fbb2d239dc67205a26e531be92857271fa0cc5e095aa2b7c1e6bea7e48683"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/incoming8754-giant4138/silhouette-parts/p0194-0197/wasm-export-complete.json",
+      "sha256": "07eccab65958e9a8f49699bcdfb995a3671b828530ce7fbecf205192a34d43a4"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/incoming8754-giant4138/silhouette-parts/p0066-0129/wasm-export-complete.json",
+      "sha256": "f4e0f47934b700b9f6b6753a8e74f6447b8ec5778e0b78dacfd1157015210f0f"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/incoming8754-giant4138/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "37e2dac4bcc67b7592efaf720ba6926b39a09b7e6278ea3886d0f39ad5487029"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-pii5846/incoming8754-pii5846/wasm-export-complete.json",
+      "sha256": "4ea7ad587c98e1cb314ca71fea79cb2bb4fc351b914f13c0a3833cde616db338"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-pii5846/incoming8754-pii5846/silhouette-parts/p0066-0066/wasm-export-complete.json",
+      "sha256": "a65e78e8e9a0e50843c38a062fd3c3a02a7061cb74fc27d6198d2d51d22f4a57"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-pii5846/incoming8754-pii5846/silhouette-parts/p0002-0065/wasm-export-complete.json",
+      "sha256": "6a8493adc9e9e18f8b824751e489c7817f6e45182bea1e112713d4bc21d1def1"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-pii5846/incoming8754-pii5846/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "de1df97b4af3b28a001003f4ac6437e4f49a3d9642fe1d53496372e29f48b015"
+    },
+    {
+      "case": "incoming8754-lpg71352",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-lpg71352/incoming8754-lpg71352/wasm-export-complete.json",
+      "sha256": "9c6b053b2fb23d18b026dddc72dc027f3405a8873495ec3b0b10c8c1e62c478a"
+    },
+    {
+      "case": "incoming8754-lpg71352",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-lpg71352/incoming8754-lpg71352/silhouette-parts/p0002-0048/wasm-export-complete.json",
+      "sha256": "529b44cf57fafd1c9dc236807fc4f746dc185e16a66e5a4b01d35c48bdf56400"
+    },
+    {
+      "case": "incoming8754-lpg71352",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-lpg71352/incoming8754-lpg71352/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "c4320aa1f4a815dd734e8fbb88afbcd7e41ec875f685e9b1b21dfe5dcd485742"
+    },
+    {
+      "case": "incoming8754-textbox-control",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-control/incoming8754-textbox-control/wasm-export-complete.json",
+      "sha256": "2eb697fc061b4a9b748183e30a7024b2bb8800e05a419c6d5d6458bf5720aa01"
+    },
+    {
+      "case": "incoming8754-textbox-control",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-control/incoming8754-textbox-control/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "b3a1f78af0b9acc9952e5d1bf85d342fa0b3dfa82b445024b81f4f729378c9c0"
+    },
+    {
+      "case": "incoming8754-textbox-repro",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-repro/incoming8754-textbox-repro/wasm-export-complete.json",
+      "sha256": "601672af5041ed4b868f43df1332cd8e6c3e4533146c8d35173ec285f93e3135"
+    },
+    {
+      "case": "incoming8754-textbox-repro",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-repro/incoming8754-textbox-repro/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "c5159668a5e9ee15715e3972a85a1c13d1a333bc9989c8006f0e7d5ef9fd233b"
+    },
+    {
+      "case": "incoming8754-textbox-used",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-used/incoming8754-textbox-used/wasm-export-complete.json",
+      "sha256": "13f51a8a2c5cd332bf915a013bdad137ef4f4402a65f9a8761a290d54db92457"
+    },
+    {
+      "case": "incoming8754-textbox-used",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-used/incoming8754-textbox-used/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "bcd79f41047639d32d2a5bd5376db2709c65633e45879151749b3b703e64721f"
+    },
+    {
+      "case": "incoming8754-incoming-8555",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8555/incoming8754-incoming-8555/wasm-export-complete.json",
+      "sha256": "650332229127243dbc669fc49f5b9d07786cf5bc91c7bda55aa1798da0dc71bf"
+    },
+    {
+      "case": "incoming8754-incoming-8555",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8555/incoming8754-incoming-8555/silhouette-parts/p0002-0004/wasm-export-complete.json",
+      "sha256": "d08a641fcff3c90eefbbd7f1624dcfa8f5046c5d5ca0209fa53738075ac9c6b4"
+    },
+    {
+      "case": "incoming8754-incoming-8555",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8555/incoming8754-incoming-8555/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "1087bcba1c14ef9f99e9169072201d2560d4c2e8e29346dd19147f40c168f962"
+    },
+    {
+      "case": "incoming8754-incoming-8556",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8556/incoming8754-incoming-8556/wasm-export-complete.json",
+      "sha256": "44786266e86a588fcc6abf48de569a2cd6355bb54ae8b34cd44809f7eb39d1cf"
+    },
+    {
+      "case": "incoming8754-incoming-8556",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8556/incoming8754-incoming-8556/silhouette-parts/p0002-0005/wasm-export-complete.json",
+      "sha256": "b74dfaf105e7625053a697bf9ce23aad8648096d95862c43de61a4fcf588cf0c"
+    },
+    {
+      "case": "incoming8754-incoming-8556",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8556/incoming8754-incoming-8556/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "0afdd78ef74ed2ba9d93da4653ab4cc6a3212c625c9e2c344c62e52db34829c2"
+    },
+    {
+      "case": "incoming8754-incoming-8557",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8557/incoming8754-incoming-8557/wasm-export-complete.json",
+      "sha256": "32d2190ce5c63789b7bb73fbb2cc253e64fb320800a0e486c76298c8280dcc81"
+    },
+    {
+      "case": "incoming8754-incoming-8557",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8557/incoming8754-incoming-8557/silhouette-parts/p0002-0004/wasm-export-complete.json",
+      "sha256": "7479f7efa6c8353f90af50ca120d46104344d1c67eb9780ebb9f8bd0798aed35"
+    },
+    {
+      "case": "incoming8754-incoming-8557",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8557/incoming8754-incoming-8557/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "948fe206584feb1abbadc2a08567648024ee94d09fd4f9c41d6bf383762174db"
+    },
+    {
+      "case": "incoming8754-leading-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-leading-original/incoming8754-leading-original/wasm-export-complete.json",
+      "sha256": "bd8d332ce6a141bc35c0792bfe113a41bd2d64654ef50b47148053f85d70a63b"
+    },
+    {
+      "case": "incoming8754-leading-original",
+      "metadata": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-leading-original/incoming8754-leading-original/silhouette-parts/p0001-0001/wasm-export-complete.json",
+      "sha256": "c4f826005434d8e265aac9d5655d6efa58e0f7f2d3ce15fb2b7d456cf3eed973"
+    }
+  ],
+  "affected_condition_rerun": {
+    "result": {
+      "key": "nars-2021",
+      "prs": [
+        8615
+      ],
+      "finished": true,
+      "exit_code": 0,
+      "pages": 3,
+      "expected_pages": 3,
+      "page_set_matches": true,
+      "minimum": 99.97,
+      "below90": [],
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/post-repair-nars-control-wasm/nars-2021/nars-2021/silhouette.tsv",
+      "tsv_sha256": "978cc4b465233b5650d901d2e3c363563764f5b10e81e07b27d0ce44f4bfef3a",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/post-repair-nars-control-wasm/nars-2021/run.log",
+      "dpi": 96,
+      "compat": "2022"
+    },
+    "png_equality": [
+      {
+        "page": 1,
+        "before_sha256": "a764a9e43700411ea29919717299b57ea46b5d7424b0ddaacf2b7ff79550125a",
+        "after_sha256": "a764a9e43700411ea29919717299b57ea46b5d7424b0ddaacf2b7ff79550125a"
+      },
+      {
+        "page": 2,
+        "before_sha256": "9d911fe5339972387749495c2839a46a94ca5a71e657e4d6cdca4c4272ab00ec",
+        "after_sha256": "9d911fe5339972387749495c2839a46a94ca5a71e657e4d6cdca4c4272ab00ec"
+      },
+      {
+        "page": 3,
+        "before_sha256": "9becd8fbb22e2c08d49f0ccb33fdc451565919d07c8c25594bafa9a9b7b6f3e4",
+        "after_sha256": "9becd8fbb22e2c08d49f0ccb33fdc451565919d07c8c25594bafa9a9b7b6f3e4"
+      }
+    ]
+  }
+}

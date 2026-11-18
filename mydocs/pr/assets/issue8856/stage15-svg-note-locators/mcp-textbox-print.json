@@ -1,0 +1,40 @@
+{
+  "job_id": "862bcc93-c2db-420e-a285-a8bb5e044965",
+  "status": "succeeded",
+  "elapsed_seconds": 12,
+  "result": {
+    "job_id": "862bcc93-c2db-420e-a285-a8bb5e044965",
+    "status": "success",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "input_format": "hwpx",
+    "format": "pdf",
+    "bytes": 14529,
+    "pdf_page_count": 1,
+    "logical_page_count": null,
+    "elapsed_ms": 12097,
+    "worker_elapsed_ms": 11329,
+    "worker_bits": 32,
+    "font_scope": {
+      "mode": "session0",
+      "status": "verified",
+      "profile_source": "protected_config",
+      "session_id": 0,
+      "mapped_font_count": 2,
+      "registered_font_count": 2,
+      "failed_font_count": 0,
+      "parent_visibility": "verified",
+      "child_visibility": "verified"
+    },
+    "input_preprocess": "none",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+  },
+  "download_sha256": "846fb17709e22ac66fbc91efb2e0919fddb7513da67b18a0b3882d24cf539dc5",
+  "input_path": "samples/hwpx/footnote-tbox-01.hwpx",
+  "input_sha256": "e7e6d109beee222f01f089b014c42d8d0f540564b57c7dd47384c1b5ae19e2f7",
+  "pdf_path": "pdf/issue8856/issue8856-textbox-footnote-2020.pdf",
+  "pdf_sha256": "846fb17709e22ac66fbc91efb2e0919fddb7513da67b18a0b3882d24cf539dc5"
+}

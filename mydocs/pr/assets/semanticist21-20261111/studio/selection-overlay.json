@@ -1,0 +1,221 @@
+[
+  {
+    "case": "body-1",
+    "api": [
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 132.3,
+        "width": 87.8,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 153.6,
+        "width": 48.9,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 174.9,
+        "width": 3.3,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 196.3,
+        "width": 3.3,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 217.6,
+        "width": 32.6,
+        "height": 13.3
+      }
+    ],
+    "actual": [
+      {
+        "left": 133.55,
+        "top": 142.3,
+        "width": 87.8,
+        "height": 13.3
+      },
+      {
+        "left": 133.55,
+        "top": 163.6,
+        "width": 48.9,
+        "height": 13.3
+      },
+      {
+        "left": 133.55,
+        "top": 184.9,
+        "width": 3.3,
+        "height": 13.3
+      },
+      {
+        "left": 133.55,
+        "top": 206.3,
+        "width": 3.3,
+        "height": 13.3
+      },
+      {
+        "left": 133.55,
+        "top": 227.6,
+        "width": 32.6,
+        "height": 13.3
+      }
+    ],
+    "zoom": 1,
+    "markerWidths": [
+      3.3999999999999773,
+      3.4000000000000057,
+      3.299999999999997,
+      3.299999999999997
+    ]
+  },
+  {
+    "case": "body-0.66",
+    "api": [
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 132.3,
+        "width": 87.8,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 153.6,
+        "width": 48.9,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 174.9,
+        "width": 3.3,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 196.3,
+        "width": 3.3,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 113.4,
+        "y": 217.6,
+        "width": 32.6,
+        "height": 13.3
+      }
+    ],
+    "actual": [
+      {
+        "left": 94.92,
+        "top": 93.92,
+        "width": 57.95,
+        "height": 8.78
+      },
+      {
+        "left": 94.92,
+        "top": 107.98,
+        "width": 32.27,
+        "height": 8.78
+      },
+      {
+        "left": 94.92,
+        "top": 122.03,
+        "width": 2.18,
+        "height": 8.78
+      },
+      {
+        "left": 94.92,
+        "top": 136.16,
+        "width": 2.18,
+        "height": 8.78
+      },
+      {
+        "left": 94.92,
+        "top": 150.22,
+        "width": 21.52,
+        "height": 8.78
+      }
+    ],
+    "zoom": 0.66,
+    "markerWidths": [
+      3.3999999999999773,
+      3.4000000000000057,
+      3.299999999999997,
+      3.299999999999997
+    ]
+  },
+  {
+    "case": "cell",
+    "api": [
+      {
+        "pageIndex": 0,
+        "x": 124,
+        "y": 137.9,
+        "width": 48.9,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 124,
+        "y": 159.3,
+        "width": 3.3,
+        "height": 13.3
+      },
+      {
+        "pageIndex": 0,
+        "x": 124,
+        "y": 180.6,
+        "width": 32.6,
+        "height": 13.3
+      }
+    ],
+    "actual": [
+      {
+        "width": 32.27,
+        "height": 8.78
+      },
+      {
+        "width": 2.18,
+        "height": 8.78
+      },
+      {
+        "width": 21.52,
+        "height": 8.78
+      }
+    ],
+    "zoom": 0.66,
+    "selection": {
+      "anchor": {
+        "sectionIndex": 0,
+        "paragraphIndex": 0,
+        "parentParaIndex": 0,
+        "controlIndex": 2,
+        "cellIndex": 0,
+        "cellParaIndex": 0,
+        "charOffset": 0
+      },
+      "focus": {
+        "sectionIndex": 0,
+        "paragraphIndex": 0,
+        "parentParaIndex": 0,
+        "controlIndex": 2,
+        "cellIndex": 0,
+        "cellParaIndex": 2,
+        "charOffset": 3
+      }
+    }
+  }
+]

@@ -1,0 +1,40 @@
+{
+  "page": 27,
+  "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/candidate-native-visual/pr8689-1411000-201000007_final_report/rhwp_png/rhwp_027.png",
+  "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/candidate-native-visual/pr8689-1411000-201000007_final_report/pdf_png/pdf-027.png",
+  "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/claim-evidence/candidate-native/pr8689-1411000-201000007_final_report/overlay_027.png",
+  "width": 794,
+  "height": 1122,
+  "pixel_diff_threshold": 32,
+  "overlay_color_legend": {
+    "rhwp_only": "blue",
+    "pdf_only": "red",
+    "both_different": "orange",
+    "matching": "gray"
+  },
+  "total_pixels": 890868,
+  "diff_pixels": 70737,
+  "diff_ratio": 0.07940234,
+  "pixel_match_percent": 92.05977,
+  "ink_union_pixels": 90798,
+  "ink_diff_pixels": 70737,
+  "ink_diff_ratio": 0.77905901,
+  "ink_match_percent": 22.0941,
+  "visual_accuracy_proxy_percent": 22.0941,
+  "tolerant_content_match_radius_px": 2,
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "silhouette_raw_match_percent": 99.49008,
+  "silhouette_raw_unmatched_pixels": 463,
+  "silhouette_boundary_reconciled_pixels": 0,
+  "silhouette_color_tolerance": 32,
+  "silhouette_content_union_pixels": 90798,
+  "tolerant_content_match_percent": 99.49008,
+  "mean_abs_channel_delta": 9.573,
+  "max_channel_delta": 255,
+  "diff_bbox": [
+    113,
+    143,
+    678,
+    1044
+  ]
+}

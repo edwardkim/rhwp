@@ -1,0 +1,26 @@
+[
+  {
+    "pr": 9121,
+    "against_pr": 9116,
+    "file": "Cargo.toml",
+    "cause": "adjacent dependency versions",
+    "resolution": {
+      "read-fonts": "0.47",
+      "skera": "0.10"
+    }
+  },
+  {
+    "pr": 9125,
+    "against_prs": [
+      9116,
+      9121
+    ],
+    "file": "Cargo.toml",
+    "cause": "adjacent dependency versions",
+    "resolution": {
+      "read-fonts": "0.47",
+      "skera": "0.10",
+      "skia-safe": "0.157.0"
+    }
+  }
+]

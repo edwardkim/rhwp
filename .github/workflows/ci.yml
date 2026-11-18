@@ -95,6 +95,7 @@ jobs:
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
       rust_required: ${{ steps.impact.outputs.rust_required || 'true' }}
       frontend_mode: ${{ steps.impact.outputs.frontend_mode || 'package' }}
+      frontend_canvas_required: ${{ steps.impact.outputs.frontend_canvas_required || 'true' }}
       render_required: ${{ steps.impact.outputs.render_required || 'true' }}
       native_skia_required: ${{ steps.impact.outputs.native_skia_required || 'true' }}
       codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
@@ -265,6 +266,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/frontend-canvas-gates.mjs'
                 || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
@@ -302,7 +304,7 @@ jobs:
                   const fields = new Map(entries);
                   if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
-                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'fc', 'render', 'skia', 'ql', 'b',
                   ];
                   const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
                   if (
@@ -310,7 +312,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '8'
+                    && fields.get('v') === '9'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -410,6 +412,14 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = pr.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || prFiles.length !== expectedPrFileCount) {
+                setResult(false, 'pull-file-list-incomplete');
+                return;
+              }
               const hasCiExecutionSurfaceChange = prFiles.some((file) => (
                 isCiExecutionPath(file.filename)
                 || isCiExecutionPath(file.previous_filename || '')
@@ -734,6 +744,13 @@ jobs:
                   pull_number: context.payload.pull_request.number,
                   per_page: 100,
                 });
+                // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+                const expectedPrFileCount = context.payload.pull_request.changed_files;
+                if (!Number.isSafeInteger(expectedPrFileCount)
+                  || expectedPrFileCount < 0
+                  || files.length !== expectedPrFileCount) {
+                  throw new Error('Pull request file inventory incomplete');
+                }
                 writeInput({
                   eventName: context.eventName,
                   files: normalizedFiles(files),
@@ -806,6 +823,7 @@ jobs:
           IMPACT_AUTHORITY: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
           RUST_REQUIRED: ${{ steps.impact.outputs.rust_required || 'true' }}
           FRONTEND_MODE: ${{ steps.impact.outputs.frontend_mode || 'package' }}
+          FRONTEND_CANVAS_REQUIRED: ${{ steps.impact.outputs.frontend_canvas_required || 'true' }}
           RENDER_REQUIRED: ${{ steps.impact.outputs.render_required || 'true' }}
           NATIVE_SKIA_REQUIRED: ${{ steps.impact.outputs.native_skia_required || 'true' }}
           CODEQL_LANGUAGES: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
@@ -825,6 +843,7 @@ jobs:
             printf '| authority | %s |\n' "${IMPACT_AUTHORITY}"
             printf '| rust_required | %s |\n' "${RUST_REQUIRED}"
             printf '| frontend_mode | %s |\n' "${FRONTEND_MODE}"
+            printf '| frontend_canvas_required | %s |\n' "${FRONTEND_CANVAS_REQUIRED}"
             printf '| render_required | %s |\n' "${RENDER_REQUIRED}"
             printf '| native_skia_required | %s |\n' "${NATIVE_SKIA_REQUIRED}"
             printf '| codeql_languages | %s |\n' "${CODEQL_LANGUAGES}"
@@ -1001,7 +1020,7 @@ jobs:
 
   lint:
     name: Lint (fmt, clippy, WASM check)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     # [#8548] checkout·선행 계약 검사 뒤 Native/WASM/workspace 검사를 끝낼 여유를 포함한다.
     timeout-minutes: 45
@@ -1037,9 +1056,9 @@ jobs:
         run: df -h || true
 
       - name: Rust build cache
-        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
+        uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: lint
+          shared-key: ubuntu-24.04-lint
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Disk space after Rust build cache restore
@@ -1064,8 +1083,6 @@ jobs:
         run: |
           df -h || true
           trap 'df -h || true' EXIT
-          sudo apt-get update
-          sudo apt-get install --no-install-recommends -y poppler-utils
           rhwp_visual_contract_env="${RUNNER_TEMP}/rhwp-visual-sweep-contracts"
           python3 -m venv "$rhwp_visual_contract_env"
           "$rhwp_visual_contract_env/bin/python" -m pip install Pillow==12.3.0 fonttools==4.64.0 Brotli==1.1.0 pypdfium2==5.13.0
@@ -1301,9 +1318,10 @@ jobs:
 
   native-skia-tests:
     name: Native Skia tests
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
-    timeout-minutes: 30
+    # 차가운 캐시의 빌드와 정식 Native 검사 묶음을 끝까지 실행한다 (#8889 run 42744623533).
+    timeout-minutes: 45
     # [#5164 Stage 3] Native Skia는 독립 runner에서 실행되므로 lint·frontend를 기다리지 않는다.
     # 각 lane의 성공·skip 계약은 최종 Build & Test 집계 job이 함께 검증한다.
     needs: [preflight]
@@ -1356,17 +1374,32 @@ jobs:
       # Linux-cargo-* namespace 대신 Native Skia 전용 shared key를 사용한다.
       # PR은 restore-only, devel/main push만 save하는 신뢰 경계를 유지한다.
       - name: Rust build cache
-        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
+        uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: native-skia
+          shared-key: ubuntu-24.04-native-skia
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Install native Skia runtime packages
         id: native-skia-runtime
         run: |
-          # hosted runner의 APT mirror 지연·dpkg lock이 Native Skia lane 전체를
-          # 장시간 pending으로 남기지 않게 한다. 재시도 후에도 회복하지 못하면
-          # 3분 안에 APT 단계 실패로 원인을 드러낸다.
+          set -euo pipefail
+          # 실제 개발 라이브러리와 지정 글꼴이 있으면 APT만 생략한다.
+          # 필수 Native Skia 테스트는 생략하지 않는다.
+          native_skia_runtime_ready() {
+            command -v pkg-config >/dev/null && command -v fc-match >/dev/null || return 1
+            pkg-config --exists fontconfig freetype2 || return 1
+            local family font_file
+            family="$(fc-match --format='%{family[0]}' 'DejaVu Sans')" || return 1
+            font_file="$(fc-match --format='%{file}' 'DejaVu Sans')" || return 1
+            [[ "$family" == 'DejaVu Sans' && -r "$font_file" ]]
+          }
+          if native_skia_runtime_ready; then
+            echo "Native Skia dependencies are already available; APT is unnecessary."
+            pkg-config --modversion fontconfig freetype2
+            exit 0
+          fi
+
+          # 각 APT 명령은 180초로 제한하며 실패·초과를 job 실패로 전달한다.
           apt_options=(
             -o Acquire::Retries=3
             -o Acquire::http::Timeout=30
@@ -1381,28 +1414,30 @@ jobs:
             set -e
 
             if [[ "${status}" -eq 124 ]]; then
-              echo "::warning::Native Skia tests skipped: APT command exceeded 180 seconds."
-              echo "available=false" >> "$GITHUB_OUTPUT"
-              exit 0
+              echo "::error::Native Skia dependencies unavailable: APT command exceeded 180 seconds."
+              exit "${status}"
             fi
             return "${status}"
           }
 
           install_apt update
           install_apt install -y --no-install-recommends \
+            pkg-config \
+            fontconfig \
             fonts-dejavu-core \
             libfontconfig1-dev \
             libfreetype6-dev
-          echo "available=true" >> "$GITHUB_OUTPUT"
+          if ! native_skia_runtime_ready; then
+            echo "::error::Native Skia dependencies are still unavailable after installation."
+            exit 1
+          fi
 
       # Native Skia starts from a clean checkout but compiles generated
       # integration-test targets through Cargo, so prepare them locally first.
       - name: Prepare derived Rust test suites
-        if: steps.native-skia-runtime.outputs.available != 'false'
         run: node scripts/rust-test-suite-manifest.mjs --prepare
 
       - name: Native Skia tests
-        if: steps.native-skia-runtime.outputs.available != 'false'
         env:
           TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}
         run: |
@@ -1466,7 +1501,7 @@ jobs:
 
   frontend-unit-gates:
     name: Frontend unit gates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     # unit lane은 Studio 전체 TypeScript와 unit test를 검증하되 fresh WASM·extension build는 생략한다.
     needs: preflight
@@ -1496,7 +1531,7 @@ jobs:
 
   frontend-package-gates:
     name: Frontend package gates
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#6717] 직렬 package 설치가 지연돼도 회귀 gate를 실행할 여유를 두되 hang은 실패로 드러낸다.
     # [#8548] 실측 checkout 23분 49초와 fresh WASM·전체 package gate를 함께 수용한다.
     timeout-minutes: 60
@@ -1554,12 +1589,19 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-frontend-wasm-cargo-
+            ${{ runner.os }}-ubuntu-24.04-frontend-wasm-cargo-
 
       - name: Build fresh WASM package for frontend gates
+        if: ${{ needs.preflight.outputs.frontend_canvas_required != 'true' }}
         run: wasm-pack build --target web --dev
+
+      # #9097: Canvas 검증과 나머지 frontend gate가 같은 최적화 WASM을 소비한다.
+      # Native PDF가 필요한 입력은 별도의 기존 Render Diff도 계속 실행한다.
+      - name: Build optimized WASM for frontend Canvas gates
+        if: ${{ needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        run: python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard --output output/frontend-canvas-build
 
       - name: Set up Node.js
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -1585,6 +1627,7 @@ jobs:
         # 같은 fresh WASM을 재사용하며 별도 빌드나 job을 만들지 않는다.
         run: |
           node --test scripts/frontend-wasm-bindings.test.mjs scripts/frontend-editor-embed.test.mjs
+          node --test scripts/tests/frontend-canvas-gates.test.mjs
           node --test scripts/tests/font_decision_trace_contract.test.mjs scripts/tests/font_decision_trace_e2e.test.mjs
 
       - name: Verify build dependency compatibility
@@ -1629,6 +1672,35 @@ jobs:
       - name: Validate Visual Sweep Canvas font binding
         run: VISUAL_SWEEP_CHROME="$CHROME_PATH" node --test scripts/tests/visual-sweep-canvas-fonts.browser.mjs
 
+      - name: Install frontend Canvas Chromium
+        id: frontend-canvas-chromium
+        if: ${{ needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        working-directory: rhwp-studio
+        run: |
+          browser_path=$(npx @puppeteer/browsers install chromium@1660786 --path .cache/puppeteer --format '{{path}}' | tail -n 1)
+          echo "path=$(realpath "$browser_path")" >> "$GITHUB_OUTPUT"
+
+      - name: Run frontend Canvas gates
+        if: ${{ needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        env:
+          CHROME_PATH: ${{ steps.frontend-canvas-chromium.outputs.path }}
+          RHWP_WASM_BUILD_MANIFEST: ${{ github.workspace }}/output/frontend-canvas-build/build.json
+        run: node scripts/frontend-canvas-gates.mjs
+
+      - name: Upload frontend Canvas evidence
+        if: ${{ always() && needs.preflight.outputs.frontend_canvas_required == 'true' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: frontend-canvas-evidence
+          path: |
+            output/frontend-canvas-build/
+            output/frontend-canvas-gates/
+            output/e2e/
+            rhwp-studio/e2e/screenshots/render-diff/
+            rhwp-studio/e2e/screenshots/issue9077-canvas-font-alias.png
+          if-no-files-found: error
+          retention-days: 14
+
       # [#5959] 스냅샷 예산 축출 회귀 게이트(#5769) — 실 wasm 과 실 브라우저를
       # 구동해야 하므로 스텁 wasm 을 쓰는 unit 모드가 아닌 package 모드에서만 단다.
       - name: Run undo depth measurement gate (#5769)
@@ -1672,7 +1744,7 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-frontend-wasm-cargo-${{ hashFiles('**/Cargo.lock') }}
 
   test-archive-a-shard-1:
     uses: ./.github/workflows/run-nextest-archives.yml
@@ -2147,7 +2219,7 @@ jobs:
           exit "$failed"
   wasm-build:
     name: WASM Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 30
     permissions:
@@ -2181,9 +2253,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-wasm-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-wasm-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-wasm-
+            ${{ runner.os }}-ubuntu-24.04-wasm-
 
       - name: Build WASM
         run: wasm-pack build --target web --release

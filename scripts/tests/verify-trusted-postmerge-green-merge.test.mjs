@@ -44,6 +44,8 @@ async function preflight(name, options = {}) {
     started_at: "2026-09-10T10:01:00Z", status: "completed", conclusion: "success" }];
   const files = [source, docs];
   options.mutate?.({ commits, runs, jobs, checks, files, pr });
+  // 완전한 목록을 반환하는 API 표본이므로 정책 변경 반례에도 실제 변경 수를 제공한다.
+  pr.changed_files = files.length;
   const outputs = {};
   const requested = [];
   const github = { rest: {

@@ -1,0 +1,370 @@
+{
+  "status": "outline9-restored-other-integration-work-remains",
+  "case": {
+    "key": "outline",
+    "input": "samples/task3307/issue3307_outline_number.hwpx",
+    "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+    "compat": "2022",
+    "prs": [
+      8389,
+      8397
+    ],
+    "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+    "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+    "page_workers": 1,
+    "pdf_pages": 9,
+    "scope": "whole-document",
+    "state": "prepared-not-rendered"
+  },
+  "native_producer": {
+    "parent_head": "2db97cee036c398232b377c293cf2521fed8ae92",
+    "binary": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/rhwp-outline-justified-space",
+      "sha256": "30bc77089281156f2c6ce6cc9ccc919676cb0180180c8b7d48b215feb26c85b2"
+    },
+    "library": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/librhwp-outline-justified-space.rlib",
+      "sha256": "7f3d556e98d2b1184ab110a63d2e3478f390e52959ca14369a178424a78fa1e6",
+      "actual_cargo_output": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib"
+    },
+    "source": {
+      "path": "src/renderer/layout/paragraph_layout.rs",
+      "sha256": "d5821e42d672d893eecfcba1a89194be03c5169939799731fd50d3c75985d348"
+    },
+    "diff_sha256": "abf012fcb9f9fe1f512f782db8de4f5d453f4ac78fd8806a036989b60bf73b00",
+    "build_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-native-build.log",
+    "invalid_root_alias": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/librhwp-outline-justified-space.INVALID-root-alias.rlib",
+      "sha256": "f4ff0b4e4f191769d5cf10dc99bd77afa9bddd461d6fbd941f9ee262e5c6f1c0",
+      "reason": "cargo build --bin 갱신은 deps/librhwp.rlib에 반영됐고 release-test/librhwp.rlib는04:05 이전 파일로 남았다."
+    }
+  },
+  "wasm_producer": {
+    "state": "complete",
+    "pid": 17022,
+    "parent_head": "2db97cee036c398232b377c293cf2521fed8ae92",
+    "sources": {
+      "src/renderer/layout.rs": "072dbbf08907d4b2a4da1f501f9f0cd72bd6ad09a5c1458ee81625947b490bc1",
+      "src/renderer/composer/line_breaking.rs": "e3a44f6f3121f6ed27ee161905a437d4fd1aa4e5293c45d5e96d9bb827f6d3d3",
+      "src/renderer/layout/paragraph_layout.rs": "d5821e42d672d893eecfcba1a89194be03c5169939799731fd50d3c75985d348"
+    },
+    "diff_sha256": "abf012fcb9f9fe1f512f782db8de4f5d453f4ac78fd8806a036989b60bf73b00",
+    "exit_code": 0,
+    "seconds": 284.016983125126,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "d885a5ccd6bb824724d590a6efbef2eecd957dd9c60e201e4ae3aa8b4a122c4b",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "d885a5ccd6bb824724d590a6efbef2eecd957dd9c60e201e4ae3aa8b4a122c4b",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-wasm-pkg/rhwp_bg.wasm": "d885a5ccd6bb824724d590a6efbef2eecd957dd9c60e201e4ae3aa8b4a122c4b"
+      }
+    },
+    "browser_exit_code": 0
+  },
+  "scope": {
+    "native_pages": 9,
+    "wasm_pages": 9,
+    "native_minimum": 100.0,
+    "wasm_minimum": 100.0,
+    "protected_losses_each": 0
+  },
+  "files": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-native-9.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "bytes": 292,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-after-native-whole/outline/outline/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-native-p008-raw.png",
+      "sha256": "1abc1d5dbc0638c63e1bf3b16a4b12ea77b3adb124ff628cba9014321630d894",
+      "bytes": 116578,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-after-native-whole/outline/outline/rhwp_png/rhwp_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-native-p008-review.png",
+      "sha256": "117d76b4c1d73b7b80f83a522ab7ea5e1a9a783976abd1c86b3a337eb7b972d4",
+      "bytes": 343591,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-review/after-native/review/review_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-native-p008-overlay.png",
+      "sha256": "d9becbee1f6fc1840aea137a78b361b774394229dfc40f5374895b60fe2c216f",
+      "bytes": 127251,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-review/after-native/overlay/overlay_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-wasm-9.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "bytes": 292,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-after-wasm-whole/outline/outline/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-wasm-p008-raw.png",
+      "sha256": "d5d68f0beeef15bf4c782cce5362d40136cab542045a70a9787c6fe3ab74c0dc",
+      "bytes": 133665,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-after-wasm-whole/outline/outline/rhwp_png/rhwp_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-wasm-p008-review.png",
+      "sha256": "382c3aa4a78463a99b927898680231935facc31306fd94bad52500285427c5a9",
+      "bytes": 350468,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-review/after-wasm/review/review_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-wasm-p008-overlay.png",
+      "sha256": "6d753afddff724c223ea7a767b7fb1bb101b539e9bd33d7db015dcc5dac16f73",
+      "bytes": 121129,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-review/after-wasm/overlay/overlay_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/before-native-9.tsv",
+      "sha256": "e219037aa1355a4cda578b0e005394c3ced716505a5fa5ee038dac374e79cda2",
+      "bytes": 290,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-leader-space-before-native-whole/outline/outline/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/before-native-p008-review.png",
+      "sha256": "3775ca4e735bbb694ae1b4ac0d537257cd6082449705482b03e3760f9232e060",
+      "bytes": 343749,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-review/before-native/review/review_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/before-native-p008-overlay.png",
+      "sha256": "0fc2bb3bdce6293d9c59feed1296a5fe31cff7be62ce7335b1c347c35984509a",
+      "bytes": 127269,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-review/before-native/overlay/overlay_008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/independent-print-p008.png",
+      "sha256": "e5048324a0f975eb9dbff464061729d212373ffc0a5175b9ae67b96dc5ffb773",
+      "bytes": 120962,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-after-native-whole/outline/outline/pdf_png/pdf-008.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/independent-print-line-origins.json",
+      "sha256": "18c4f1cff9815a7defde84419d50a17205d1f22f89c3860dec1782f76f0f6313",
+      "bytes": 3382,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-row-pdf-char-origins.json"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/after-native-line-closeup.png",
+      "sha256": "e798088736c90c659478abd64d01ccc6e041b62378cda929e0674296f04503d6",
+      "bytes": 24239,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-native-line-closeup.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/independent-print-line-closeup.png",
+      "sha256": "3ca32582affb758eef3d3ec23e63ab0ed9837da0b6d5f29153c736bab01e1f90",
+      "bytes": 25099,
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-pdf-line-closeup.png"
+    }
+  ],
+  "tests": {
+    "before": "0 PASS / 2 FAIL",
+    "after_minimal_standalone": "2 PASS / 0 FAIL",
+    "canonical": {
+      "state": "complete",
+      "pid": 66839,
+      "cases": [
+        {
+          "case": "justified_dash_word_space_budget",
+          "target": "regression_suite_027"
+        },
+        {
+          "case": "hwp3_implicit_page_number_font",
+          "target": "regression_suite_005"
+        },
+        {
+          "case": "issue_7445_dash_leader_word_spacing",
+          "target": "regression_suite_009"
+        }
+      ],
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "-j",
+        "8",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(/(^|::)(justified_dash_word_space_budget|hwp3_implicit_page_number_font|issue_7445_dash_leader_word_spacing)::/)"
+      ],
+      "head": "2db97cee036c398232b377c293cf2521fed8ae92",
+      "sources": {
+        "src/renderer/layout/paragraph_layout.rs": "d5821e42d672d893eecfcba1a89194be03c5169939799731fd50d3c75985d348",
+        "tests/cases/justified_dash_word_space_budget.rs": "5416ed89054a2a5051055c3effc93e6c88fd9672b3f9b4c5707c81f0c08afac3",
+        "tests/cases/hwp3_implicit_page_number_font.rs": "008b22a2c6eb85c237147e875e8ac436e0e4e4d2e24f25b58b5870b9ac3f686e"
+      },
+      "child_pid": 66852,
+      "exit_code": 0,
+      "seconds": 179.84986904100515,
+      "summary": "7 PASS / 0 FAIL; 1015 selected-out",
+      "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-focused-nextest.log",
+      "log_sha256": "63bf4e209990f7d803d8be6b81f88eff7dc35d3f722315b1e69b56a8f3db74de"
+    }
+  },
+  "independent_origins_css96": {
+    "first_dash": 591.6786702473959,
+    "last_word_character": 564.9746907552084
+  },
+  "direct_review": "Native/fresh WASM 8쪽 review·overlay와 낱말/리더 확대 판독 완료. 위치 복원을 확인했고 얇은 획의 AA 차이를 raw100%와 구분했다.",
+  "invalid_diagnostics": {
+    "ineffective_last_line": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-last-line-candidate-not-accepted.json",
+    "stale_root_library": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-standalone-stale-library.INVALID.json",
+    "nonqualifying_legacy_control": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-legacy5830-control-nonqualification.json"
+  },
+  "logs": {
+    "outline-justified-contracts-before.log": {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-contracts-before.log",
+      "sha256": "11a14ca318c08ff8da59701fdf232cbdc21a7fde390c00a51619b2de4486d33b"
+    },
+    "outline-justified-contracts-after-minimal.log": {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-contracts-after-minimal.log",
+      "sha256": "fffd164c3895444bb9063cee1b952eac2d27a88717c4bba156babafc3a42d0aa"
+    },
+    "outline-justified-space-native-build.log": {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-native-build.log",
+      "sha256": "854ac97782c5fd770c52b0f1c723d52e9d8df2fd8122dbc1a739ebc4f6cdb515"
+    },
+    "outline-justified-space-wasm-build.log": {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-wasm-build.log",
+      "sha256": "941c2e89029eecfa2c77bef90ac84e1703101ba0de13c723309496cb831877e2"
+    },
+    "outline-justified-space-browser-after.log": {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-space-browser-after.log",
+      "sha256": "a45dfe40b2d3c44c80f6a3a477e0d3b531cd75e6d9d072fc58eb1435d6a16ef8"
+    }
+  },
+  "coupled_comparison": {
+    "path": "mydocs/pr/assets/planet6897_20261106/justified-dash-space-budget/coupled-native-and-sample10-wasm-comparison.json",
+    "sha256": "238c8d4ed86f5d86189ac7aa20805eaf63fe51337666b17d763c58cb80ad56f6"
+  },
+  "reference_png_provenance": {
+    "rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "reuse_index_path": "output/pr-review/planet6897-integration-20261106/transfer-from-ubuntu/r46-reference-png-cache-96.json",
+    "reuse_index_sha256": "3c325ee8ba6f5bbd88f5ffa940ce7cb0d69e87a21075d8d7291e7da909f70e67",
+    "pdf": {
+      "pdf": "/home/tsjang/rhwp/pdf/task3307/issue3307_outline_number-2020.pdf",
+      "pages": 9,
+      "source_manifest": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/silhouette_manifest.json",
+      "source_manifest_sha256": "52959532ece8a461095f436d0949457a596f8b9c143c0855abb2e5e4d224e574",
+      "images": {
+        "1": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-001.png",
+          "sha256": "a87d818724ee24f2acc3572f9a6f5898b0b39e98289be8ae1b241c94839df146",
+          "bytes": 159465
+        },
+        "2": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-002.png",
+          "sha256": "16a2ace33251038faf5d49aa1df829c955278c0ca755f83821fab8d5122671ae",
+          "bytes": 27407
+        },
+        "3": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-003.png",
+          "sha256": "1147fcd60a6d1e087796d03db1c8fbe167c030c7b17eb05ccfa3b355f2228600",
+          "bytes": 152025
+        },
+        "4": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-004.png",
+          "sha256": "5ff19442aa446d003aab0b4b74d38a6931b716125c5a1dae1d58a4ef5223ce08",
+          "bytes": 139691
+        },
+        "5": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-005.png",
+          "sha256": "070844cbe1be7fbf6be5776ff91c3ea07d6b91b22a90144269a8feb96f3dd273",
+          "bytes": 148842
+        },
+        "6": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-006.png",
+          "sha256": "effc597af48b42d93911626ee22c0b7b44639c205bff0bc34486ee2399587cbf",
+          "bytes": 36765
+        },
+        "7": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-007.png",
+          "sha256": "928b93cef9dd2e430f709eb87c4d22d889564e71c044790fba6e97ba6148da9a",
+          "bytes": 244676
+        },
+        "8": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-008.png",
+          "sha256": "e5048324a0f975eb9dbff464061729d212373ffc0a5175b9ae67b96dc5ffb773",
+          "bytes": 120962
+        },
+        "9": {
+          "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r41-candidate-native-protected/outline/outline/pdf_png/pdf-009.png",
+          "sha256": "8863b2dd430a6dbaa46dd3366b0b25a4a7b61df2500f3995e64dc2bf07e67399",
+          "bytes": 80194
+        }
+      },
+      "dpi": 96
+    }
+  },
+  "source_test": {
+    "path": "tests/cases/justified_dash_word_space_budget.rs",
+    "sha256": "5416ed89054a2a5051055c3effc93e6c88fd9672b3f9b4c5707c81f0c08afac3"
+  },
+  "checks": {
+    "outline-justified-fmt.log": {
+      "exit_code": 0,
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "outline-justified-clippy.log": {
+      "exit_code": 0,
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-clippy.log",
+      "sha256": "a5c806de2ed915139153e9e534c554e20bc5aa7a8eaa910bdbcd12d0d0acf094"
+    },
+    "outline-justified-manifest-check.log": {
+      "exit_code": 0,
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-manifest-check.log",
+      "sha256": "078ddff12542c94a9c936d2c40e80937605dc73988c93582ffb921eaacf23099"
+    },
+    "outline-justified-links.log": {
+      "exit_code": 0,
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/outline-justified-links.log",
+      "sha256": "3f41acfae4e4f84b0eb2c9612e351ec9c11edd408e3f8e5c99740e8c4b69af3b"
+    }
+  }
+}

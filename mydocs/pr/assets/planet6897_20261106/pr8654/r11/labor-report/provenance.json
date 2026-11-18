@@ -1,0 +1,111 @@
+{
+  "role": "R11 완료 측정과 직접 판독. 통합 최종 head 판정은 별도.",
+  "inspected_at": "2026-11-06T21:25:19.548107+00:00",
+  "rows": [
+    {
+      "key": "labor-report",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue8641/labor_standards_report.hwp",
+        "sha256": "119610eded2087fbb03c27e4e44065883b85dfb3c89ec7900d412abec69a92a3"
+      },
+      "pdf": {
+        "path": "pdf/issue8641/labor_standards_report-2020.pdf",
+        "sha256": "96cca3119aa09f8fd4976595a7a1c65fb8ad598c020b68e2dd69842e6c4843fe"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2022",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "native.tsv",
+          "sha256": "487c7fb2cc527dfdcedcecb881479939caed1a2424f26bc6aa2f6a507690e97a"
+        },
+        {
+          "path": "native-review-012.png",
+          "sha256": "8855b33ed4ef19fe5aceaf9f51bf95f570a592257386d0392297d1f56619e341"
+        },
+        {
+          "path": "native-overlay-012.png",
+          "sha256": "a0561cdf422f71d81bf99925c738a041569629298152665db739dcb1ec6b3bd9"
+        },
+        {
+          "path": "native-review-013.png",
+          "sha256": "eafeea5770a0bff4379c7b04bb275f86310f31f86688ab6ae5e36fe615f66eea"
+        },
+        {
+          "path": "native-overlay-013.png",
+          "sha256": "2168308ff1f9076720c71db538cad81f6ac70b99a647396ec165d3f40543c57d"
+        }
+      ]
+    },
+    {
+      "key": "labor-report",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue8641/labor_standards_report.hwp",
+        "sha256": "119610eded2087fbb03c27e4e44065883b85dfb3c89ec7900d412abec69a92a3"
+      },
+      "pdf": {
+        "path": "pdf/issue8641/labor_standards_report-2020.pdf",
+        "sha256": "96cca3119aa09f8fd4976595a7a1c65fb8ad598c020b68e2dd69842e6c4843fe"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2022",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "wasm.tsv",
+          "sha256": "81d3180befe1fd84bdcdd8d0e471dc315f212445e70c6bf9b27d4fabb28ad392"
+        },
+        {
+          "path": "wasm-review-012.png",
+          "sha256": "dfc00784fab9fbc604fcb2cb801260581aecd1ba02ead044defee6cd8d6eba81"
+        },
+        {
+          "path": "wasm-overlay-012.png",
+          "sha256": "bb484736e8858768fbe7f163906e1931439b7e487756f15a5a61309e3f6a7f75"
+        },
+        {
+          "path": "wasm-review-013.png",
+          "sha256": "64cfffae5b292d1450dc6374167a7e88b7493d6a1b1a073b7fa9d8e21de978ca"
+        },
+        {
+          "path": "wasm-overlay-013.png",
+          "sha256": "4550da83139526f6976250c1f2aa4de00740309f4e368d5a1072ae24ff662e84"
+        }
+      ],
+      "wasm": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp.js",
+            "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp_bg.wasm",
+            "sha256": "fb98b69311bc3ceeebfaa1052ed2098092aacb22f237ea7651cf4b7b6fe5ce5d"
+          }
+        ],
+        "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+        "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      }
+    }
+  ]
+}

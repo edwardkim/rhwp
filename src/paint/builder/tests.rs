@@ -290,6 +290,7 @@ fn lowers_all_leaf_variants_to_explicit_paint_ops() {
         ),
         (
             RenderNodeType::FootnoteMarker(FootnoteMarkerNode {
+                source_run: None,
                 number: 1,
                 text: "1)".to_string(),
                 base_font_size: 12.0,

@@ -1,0 +1,14 @@
+{
+  "source_sha": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+  "profile": "release-no-opt-local-alternative",
+  "expected_sha256": "775f167badb99a1e54e34143719f90cfea383a943485dc0936bdf23e6c67c9c4",
+  "page": "http://127.0.0.1:17763/?renderer=canvaskit&canvaskitMode=compat&renderProfile=print",
+  "matched": true,
+  "received": [
+    {
+      "url": "http://127.0.0.1:17763/@fsoutput/pr-review/planet6897-remaining39-integration-20261111/candidate-pkg/rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "775f167badb99a1e54e34143719f90cfea383a943485dc0936bdf23e6c67c9c4"
+    }
+  ]
+}

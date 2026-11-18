@@ -1,0 +1,38 @@
+{
+  "source": "tests/fixtures/gradient/radial-corner-print-contract.hwpx",
+  "source_sha256": "01884d8ea148e21fdb68194dd23c353c635903e4fc19d8b242e1efbe1d0aaf0d",
+  "derived_sha256": "577de5df35ff4d59330fda0402f9040b83a67218acfd85b47a763632c56abe36",
+  "cases": [
+    [
+      "#FFFFFF",
+      "#D7D7D7",
+      255
+    ],
+    [
+      "#D7D7D7",
+      "#FFFFFF",
+      255
+    ],
+    [
+      "#D26432",
+      "#2882C8",
+      7
+    ],
+    [
+      "#2882C8",
+      "#D26432",
+      7
+    ],
+    [
+      "#FFFFFF",
+      "#D7D7D7",
+      50
+    ],
+    [
+      "#D7D7D7",
+      "#FFFFFF",
+      50
+    ]
+  ],
+  "change": "six existing radial fills: only source colors, step and center; page/cell/text geometry retained"
+}

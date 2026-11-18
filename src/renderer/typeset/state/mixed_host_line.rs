@@ -63,6 +63,7 @@ impl TypesetState {
         }
         if plan.picture_page > plan.table_page {
             self.defer_stored_frame(super::super::DeferredStoredFrameControl {
+                target_page: None,
                 kind: super::super::DeferredStoredFrameKind::Picture,
                 para_index,
                 control_index: plan.picture_control,

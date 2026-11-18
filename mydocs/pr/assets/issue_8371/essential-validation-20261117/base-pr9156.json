@@ -1,0 +1,16 @@
+{
+  "pullRequest": "https://github.com/edwardkim/rhwp/pull/9156",
+  "mergedHead": "b13df498eff378b85bfc381fd2ca3465e2319f52",
+  "mergeCommit": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "priorProductProducer": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "priorRegressionProducer": "c2ec0621772bf802bc573dab7bdb1bf82a2e21e3",
+  "evidence": "mydocs/pr/assets/open_prs_20261117/README.md",
+  "reuse": "Merged base acceptance, original issue investigations, independent Hancom Print reference provenance, and the recorded 18-document protected baseline results.",
+  "currentCandidate": "fcf2e11b1727297743343446333132e1409737f1",
+  "additionalChanges": [
+    "HWP3 picture page ownership",
+    "Native empty-symbol SFNT recovery",
+    "Native original TTF/TTC/CFF ordering"
+  ],
+  "currentScope": "Mandatory changed-head checks plus affected documents and incoming-feature preservation; the 18-document protected sweep is not repeated. Prior results are not relabeled as current-candidate runs."
+}

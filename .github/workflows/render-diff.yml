@@ -203,6 +203,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/frontend-canvas-gates.mjs'
                 || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
@@ -240,7 +241,7 @@ jobs:
                   const fields = new Map(entries);
                   if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
-                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'fc', 'render', 'skia', 'ql', 'b',
                   ];
                   const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
                   if (
@@ -248,7 +249,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '8'
+                    && fields.get('v') === '9'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -377,6 +378,14 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = pr.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || prFiles.length !== expectedPrFileCount) {
+                setResult(false, 'pull-file-list-incomplete');
+                return;
+              }
               const hasCiExecutionSurfaceChange = prFiles.some((file) => (
                 isCiExecutionPath(file.filename)
                 || isCiExecutionPath(file.previous_filename || '')
@@ -670,6 +679,13 @@ jobs:
                 pull_number: context.payload.pull_request.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = context.payload.pull_request.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || files.length !== expectedPrFileCount) {
+                throw new Error('Pull request file inventory incomplete');
+              }
               writeInput({
                 eventName: context.eventName,
                 files: files.map((file) => ({
@@ -710,7 +726,7 @@ jobs:
 
   canvas-visual-diff:
     name: Canvas visual diff
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 45
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' && needs.preflight.outputs.render_required == 'true' }}
@@ -818,9 +834,9 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.toml', '**/Cargo.lock', '.cargo/config*', 'scripts/wasm-pack-locked.sh') }}
+          key: ${{ runner.os }}-ubuntu-24.04-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-${{ hashFiles('rust-toolchain.toml', '**/Cargo.toml', '**/Cargo.lock', '.cargo/config*', 'scripts/wasm-pack-locked.sh') }}
           restore-keys: |
-            ${{ runner.os }}-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-
+            ${{ runner.os }}-ubuntu-24.04-render-diff-cargo-v2-${{ steps.wasm_configuration.outputs.cache_variant }}-
 
       - name: Build WASM package
         if: ${{ steps.pdf-raster-runtime.outputs.available == 'true' }}

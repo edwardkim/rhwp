@@ -1,0 +1,105 @@
+{
+  "selected_program_identity_basis": "mydocs/pr/assets/planet6897_clean19_20261110/nested-original-approved-font-environment.json",
+  "found": [
+    {
+      "name": "명조",
+      "path": "$MAC_USER_FONTS/ENMJ.otf",
+      "index": 0,
+      "programId": "0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d",
+      "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+      "bytes": 201564,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/ec4de33ea3ed-ENMJ.otf"
+    },
+    {
+      "name": "HCI Hollyhock",
+      "path": "$MAC_USER_FONTS/HMEHL.otf",
+      "index": 0,
+      "programId": "7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e",
+      "sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+      "bytes": 7268,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/4aa75dc35958-HMEHL.otf"
+    },
+    {
+      "name": "HCI Poppy",
+      "path": "$MAC_USER_FONTS/HMEPO.otf",
+      "index": 0,
+      "programId": "16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a",
+      "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+      "bytes": 13664,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/3fb64d42c25d-HMEPO.otf"
+    },
+    {
+      "name": "Human Gothic",
+      "path": "$MAC_USER_FONTS/HMKMG.otf",
+      "index": 0,
+      "programId": "d1d1d8e02020ebe081cb0af257453477ca781ae9cda063e18c8f10cb46aa18c7",
+      "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9",
+      "bytes": 3671928,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/62514ec65a65-HMKMG.otf"
+    },
+    {
+      "name": "한양중고딕",
+      "path": "$MAC_USER_FONTS/JPJGT.otf",
+      "index": 0,
+      "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+      "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+      "bytes": 31900,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/dbe024359d0d-JPJGT.otf"
+    },
+    {
+      "name": "한양신명조",
+      "path": "$MAC_USER_FONTS/JPSMJ.otf",
+      "index": 0,
+      "programId": "016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59",
+      "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+      "bytes": 82328,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/683987bbc5ac-JPSMJ.otf"
+    },
+    {
+      "name": "신명 태그래픽",
+      "path": "$MAC_USER_FONTS/TETGRSP.otf",
+      "index": 0,
+      "programId": "5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb",
+      "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd",
+      "bytes": 132488,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/4d1cee6065fa-TETGRSP.otf"
+    },
+    {
+      "name": "신명 태고딕",
+      "path": "$MAC_USER_FONTS/TETGTJPV.otf",
+      "index": 0,
+      "programId": "9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31",
+      "sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c",
+      "bytes": 32884,
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/7853ab58b7a8-TETGTJPV.otf"
+    }
+  ],
+  "extra_true_type_programs": [
+    {
+      "path": "$MAC_USER_FONTS/HBATANG.TTF",
+      "index": 0,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "names": [
+        "한컴바탕"
+      ],
+      "bytes": 32483900,
+      "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/bef6371830a1-HBATANG.TTF"
+    },
+    {
+      "path": "$MAC_USER_FONTS/HMKMM.TTF",
+      "index": 0,
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "names": [
+        "휴먼명조"
+      ],
+      "bytes": 1820732,
+      "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+      "copy_path": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs/d033df71fa41-HMKMM.TTF"
+    }
+  ],
+  "missing": [],
+  "supply_dir": "output/pr-review/planet6897-remaining39-integration-20261111/protected-font-programs",
+  "total_bytes": 46896244,
+  "private_binaries_git": false
+}

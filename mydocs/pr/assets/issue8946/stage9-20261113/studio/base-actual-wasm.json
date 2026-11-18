@@ -1,0 +1,14 @@
+{
+  "source_sha": "47164eb67a8b3526fbba8cf3f3e017656de929ae",
+  "profile": "release wasm-opt",
+  "expected_sha256": "fabb6224b3953e00d60f5de29771cf26e781f7d039da03920a6cdb9e1b75a0ed",
+  "page": "http://127.0.0.1:7798/?pr-review=issue8946-stage9",
+  "matched": true,
+  "received": [
+    {
+      "url": "http://127.0.0.1:7798/@fs$T7/DeveloperArtifacts/rhwp/workspaces/issue8946-base9-1998858b/pkg/rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "fabb6224b3953e00d60f5de29771cf26e781f7d039da03920a6cdb9e1b75a0ed"
+    }
+  ]
+}

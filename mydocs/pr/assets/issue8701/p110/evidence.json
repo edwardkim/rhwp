@@ -1,0 +1,2744 @@
+{
+  "schema": "rhwp-macos-native-view-evidence-v1",
+  "sourceRevision": "ebd10e523d8f33b864791d3fdf893e00c29f87cd",
+  "evidencePreparedAgainstRevision": "0b67183ed3120a480ccbe87ca0a27db3d10b7f9b",
+  "p109FoundationRevision": "37a1d5fc7f81610a57f8633183c67baa4317e1f2",
+  "qualification": "macos-appkit-metal-view-passed",
+  "ci": {
+    "repository": "seo-rii/rhwp",
+    "runId": 42455059831,
+    "jobId": 128652215657,
+    "artifactId": 13607656144,
+    "runUrl": "https://github.com/seo-rii/rhwp/actions/runs/42455059831",
+    "runnerLabel": "macos-15"
+  },
+  "native": {
+    "declaredSourceRevision": "4f738e766ccbba8faf938f2421ca6b516e939019",
+    "sha256": "dbeafcf42729be197364c1502434e4eeb61a91e9966b938df2906aeca886dcad",
+    "bytes": 175659928,
+    "rebuilt": false,
+    "latestDevelRustRebuilt": false,
+    "sourceEquivalenceVerified": true,
+    "nativeInputEntries": 81672,
+    "sourceManifestSha256": "4c23b6eaca5a87cd7199a200905782885ddd531dbb086f0c5f9027dea45ee350",
+    "originalSdkBuild": "passed",
+    "nativeTarget": "aarch64-apple-darwin"
+  },
+  "toolchain": {
+    "architecture": "arm64",
+    "flutterRevision": "c197ca5199e9ee5661e865596c9c07294dfab51c",
+    "engineRevision": "89c39edfdfae2949f6806e4a315c0c08522238b7",
+    "frameworkSha256": "1379471f3ea8df879ee5c87ee6d03fbf9e1c71f2a230e693ff9131b4f1a787ae",
+    "xcode": "16.4",
+    "compiler": "Apple clang 17.0.0 (clang-1700.0.13.5)"
+  },
+  "sourceEquivalence": {
+    "kind": "git-mode-type-blob-or-gitlink-oid-and-path",
+    "flutterRuntimeModeAndBlobEqual": true,
+    "excludedForkCiFiles": [
+      "bindings/Flutter/test/platform_qualification_paths_test.py",
+      "bindings/Flutter/tool/platform_qualification_paths.py"
+    ],
+    "originalNativeReceiptSha256": "d9da394e788ca903d2b778bbb889374031d63414c0ff4d189a7521bef5c836c7",
+    "originalMetalProducerReceiptSha256": "6282e932763543837f39f5b89309e9f428186161de954949faedc869ae7a0c6f"
+  },
+  "actualContext": {
+    "metalDeviceName": "Apple Paravirtual device",
+    "captureSource": "WindowServer ScreenCaptureKit",
+    "colorSpace": "srgb",
+    "dynamicRange": "sdr",
+    "deviceScale": 1,
+    "nativePresentationKind": "nativeView",
+    "nativeBackend": "appkitMetalLayer",
+    "captureHelperActivationPolicy": "prohibited",
+    "actualCaptureWindowSize": {
+      "width": 640,
+      "height": 480
+    },
+    "physicalViewportOffset": [
+      16,
+      16
+    ]
+  },
+  "sdkQualification": {
+    "targetSdkCompileLinkVerified": true,
+    "metalProducerReadbackVerified": true,
+    "cvTerminalStatusVerified": true,
+    "allSdkStepExitCodes": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "producerCases": [
+      {
+        "name": "opaque",
+        "checks": {
+          "expectedBgra": [
+            48,
+            32,
+            16,
+            255
+          ],
+          "maxChannelDifference": 0
+        },
+        "hostVerificationReadbacks": 1
+      },
+      {
+        "name": "premultiplied-alpha",
+        "checks": {
+          "expectedBgra": [
+            8,
+            16,
+            32,
+            128
+          ],
+          "maxChannelDifference": 0
+        },
+        "hostVerificationReadbacks": 1
+      },
+      {
+        "name": "stale-preserves-target",
+        "checks": {
+          "staleRejected": true,
+          "targetPreserved": true
+        },
+        "hostVerificationReadbacks": 1
+      }
+    ],
+    "independentProducerSamplingIsFlutterConsumerSampling": false
+  },
+  "execution": {
+    "publications": 32,
+    "distinctViewGenerations": 32,
+    "documentRevisions": [
+      0,
+      1
+    ],
+    "subsequentMutation": "alternate viewport origin after one source edit and one resize",
+    "normalActualCaptureSamples": 67,
+    "normalExactConsecutivePairsVerified": 32,
+    "allRecordedSampleCpuComparisonsPassed": true,
+    "heldCoverVerified": true,
+    "heldCoverActualSamples": 2,
+    "buildExitCode": 0,
+    "runnerExitCode": 0,
+    "flutterNativeViewSamplingVerified": true,
+    "representativeSampleCpuComparisonsIndependentlyRerun": 8
+  },
+  "heldCover": {
+    "strategy": "nativeHideAndOpaqueFlutterCover",
+    "nativeViewMounted": true,
+    "nativeCovered": true,
+    "viewBound": true,
+    "layerReady": true,
+    "opaqueArgb": 4283783002,
+    "exactPair": true,
+    "displaySha256": "f85ac4a80b72b2834f8be96467134f9a41890dd098dabc123c92a1301a716061",
+    "flutterOverlayOccludesVisibleNativeViewVerified": false
+  },
+  "settlingContract": {
+    "maximumNormalSamples": 4,
+    "exactConsecutivePairRequired": true,
+    "everySampleRequiresOriginalIndependentCpuComparison": true,
+    "maximumWholeClusterRgbWidth": 1,
+    "alphaAndMetadataMustBeIdentical": true,
+    "anyCpuOrMetadataOrAlphaOrClusterViolationFailsImmediately": true,
+    "coverUsesExactlyTwoIdenticalSolidSamples": true,
+    "globalDeadlinePreserved": true,
+    "settledStages": [
+      15,
+      21,
+      24
+    ],
+    "settledStagesAllSelectedLastTwo": true
+  },
+  "resources": {
+    "maxNativeViews": 2,
+    "maximumDrawableCount": 3,
+    "maximumTargetBytes": 16777216,
+    "pluginWholeFrameReadbacks": 0,
+    "close": {
+      "closed": true,
+      "ownerFinished": true,
+      "registered": false,
+      "nativeViewLayerDetached": true,
+      "quarantined": false,
+      "inFlight": false,
+      "pending": false,
+      "frames": 32,
+      "drawableTimeouts": 0,
+      "sizeMismatches": 0,
+      "wholeFrameReadbacks": 0
+    },
+    "nativeStatsAfterClose": {
+      "frameBytes": 0,
+      "frameHandles": 0,
+      "inFlightReplays": 0,
+      "leases": 0,
+      "retainedFrames": 0,
+      "retainedSnapshots": 0,
+      "snapshotEstimatedBytes": 0,
+      "snapshotHandles": 0,
+      "sources": 0
+    }
+  },
+  "checks": {
+    "portableSdkTests": 19,
+    "portableAppHelperTests": 37,
+    "portableProvenanceTests": 26,
+    "portableAppHelperPassedWithoutThirdPartySitePackages": true,
+    "portableTestsAreActualTargetQualification": false
+  },
+  "scope": {
+    "continuousNativeViewPresentationVerified": true,
+    "consumerGpuCompletionVerified": false,
+    "hardwareAccelerationVerified": false,
+    "physicalMetalGpuVerified": false,
+    "legacyCvTextureContinuousPresentationVerified": false,
+    "flutterOverlayAloneOccludesVisibleAppKitViewVerified": false,
+    "hancomQualificationVerified": false,
+    "physicalImeOrAccessibilityVerified": false
+  },
+  "artifacts": {
+    "runner": {
+      "sha256": "6ffb90cc4b0f320c553eb0e0bdc081df3395bddaffa075635263c4c757758d18",
+      "bytes": 58176
+    },
+    "native": {
+      "sha256": "dbeafcf42729be197364c1502434e4eeb61a91e9966b938df2906aeca886dcad",
+      "bytes": 175659928
+    },
+    "dispatcher": {
+      "sha256": "652e0a14ba8e1133eb82ef6990fa86987d39a78fa189c3e5554edaa6374bea97",
+      "bytes": 52216
+    },
+    "fixture": {
+      "sha256": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+      "bytes": 8082
+    },
+    "capture": {
+      "sha256": "21fe3c41f6a6d1ecaf0e8361ae2af4b062a0392892c3171bcc5c6f1e4e081053",
+      "bytes": 122520
+    }
+  },
+  "receiptSha256": {
+    "sdk": "80e2cc07f187cd44145f336d82f9a4d9fae52152135e8a3a9f76779455077447",
+    "metalProducer": "3300c76f68f49ab3fe1daefc27b1023afa79e5de93033574e01b834b3c741193",
+    "appBuild": "0823c2521b2549b88007604bedafc142875433cc07e569a458dde38ed9ea4190",
+    "desktopCapture": "9fca1a77cf011fdb2e3c4df9522a8b584a96949fb9aaa8c5c5f8b6f3923bb1f6",
+    "nativeResult": "c7b8b69d365c621404b7bbbf42e72bc6b27a52e65b473c42a22609b0a39ccfe3"
+  },
+  "comparisonContract": "opaque-interiors-1-source-palette13-edge1px-zero-integer-shift",
+  "representativeFrames": [
+    {
+      "index": 1,
+      "stage": "initial",
+      "stamp": {
+        "documentId": 1,
+        "revision": 0,
+        "fontGeneration": 0,
+        "viewGeneration": 1,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 2,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-01.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "08b3861d373d32b1d01dd8b8ae4ae2a6865afb1a0d60f81f269e348f716f259d",
+          "pngSha256": "12b084e5bf184e536a0815503c72d29c4564835d0ee55f8a5aed098ed037b7e8"
+        },
+        "display": {
+          "file": "display-01.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "635a011f8773da7ed887d7b5e9d2ba2db09ed2965448625df33966b5f7579928",
+          "pngSha256": "d1224c191aa4a35ae63a85b689ec402ef61ebf7305ee2756ff9395ea42ed9283"
+        },
+        "reference": {
+          "file": "reference-01.png",
+          "width": 1280,
+          "height": 960,
+          "rgbaSha256": "b0a905a934dc80dd29cf8f59106a9fdd8ca8c5f7eaa3c98ba25c5f1eed1e099f",
+          "pngSha256": "455afd881123150d06939d48fba6775e7a44c7255327666d03f59fd24850b3f0"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 76124,
+        "aaEdgeDifferentPixels": 234,
+        "maxChannelDifference": 49,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "zeroShiftRgbError": 1510,
+        "nextBestIntegerShiftRgbError": 70840
+      }
+    },
+    {
+      "index": 2,
+      "stage": "revision",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 5,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 7,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-02.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "880220a9bdecbb3d9ff7791654c6eda3f9e0d821723980df781b34f29d50debc",
+          "pngSha256": "323e42f32e6ad3130becff3033eabe24fcffb20fbdbdbff413493d9274d2e68c"
+        },
+        "display": {
+          "file": "display-02.png",
+          "width": 320,
+          "height": 240,
+          "rgbaSha256": "a03a648ef978fca4bcac2a7325429e3bc7014b2ec37e55e37dd1e3a9f5014133",
+          "pngSha256": "4e8838df7e97d2101e74af2d1bb8d90b0b6de5b79516476c56e9de13e2b05138"
+        },
+        "reference": {
+          "file": "reference-02.png",
+          "width": 1280,
+          "height": 960,
+          "rgbaSha256": "5843102c68f8f3dc4ee036bcc3dda6a2bfc8f6905e28cf0dfabf47c865f054a7",
+          "pngSha256": "01b5eab3e40275a6c67ab7b6984c76980f5a83d147b563f131c21a9b94d85940"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 76132,
+        "aaEdgeDifferentPixels": 158,
+        "maxChannelDifference": 45,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "zeroShiftRgbError": 1096,
+        "nextBestIntegerShiftRgbError": 75886
+      }
+    },
+    {
+      "index": 3,
+      "stage": "resize",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 6,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 12,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-03.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "3391479c18d579a20cdd1bf08b827ad5277fa295638ba5d0130d9fa4e2bf8383",
+          "pngSha256": "395dd470d37a08980d1a1b7f44758f9c485c35eb82ff0a94c766217260c743f2"
+        },
+        "display": {
+          "file": "display-03.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "5a22a300298fb5affa6ca94cab907fa142095faaf6f84a6e62a1b7636f342026",
+          "pngSha256": "0fe1c87dd2f36b233082d7745fb483c4fedc6d91722608fd29d5bfdda3745c91"
+        },
+        "reference": {
+          "file": "reference-03.png",
+          "width": 1408,
+          "height": 1024,
+          "rgbaSha256": "2bf78d6ef1d9242c7bba0917fc88aea29980a7e48bb156a3070cdda91f82dc9a",
+          "pngSha256": "045dd6d67bbf5769093bd0b66cf939cf07ced6b39216a0651301443319691632"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 89346,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 79910
+      }
+    },
+    {
+      "index": 32,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 35,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 157,
+      "cpuReferenceScale": 4,
+      "images": {
+        "cpu": {
+          "file": "cpu-32.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+          "pngSha256": "d38fe8a74f1a452042a781ebbd6f4f94f932ed0aa6ed3b84518658a1f5add2cd"
+        },
+        "display": {
+          "file": "display-32.png",
+          "width": 352,
+          "height": 256,
+          "rgbaSha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "pngSha256": "1275cc0053bc7971b0fa4ac4c4dda9cfd24d7c2a15565f78b97e794824330631"
+        },
+        "reference": {
+          "file": "reference-32.png",
+          "width": 1408,
+          "height": 1024,
+          "rgbaSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+          "pngSha256": "58387373b4cba1fa16efd8ae92fb874fa0ceabbd610564b912e30ee3a14a8acb"
+        }
+      },
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      }
+    }
+  ],
+  "publicationProofs": [
+    {
+      "index": 1,
+      "stage": "initial",
+      "stamp": {
+        "documentId": 1,
+        "revision": 0,
+        "fontGeneration": 0,
+        "viewGeneration": 1,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 2,
+      "viewport": {
+        "width": 320,
+        "height": 240
+      },
+      "placement": {
+        "scale": 0.403171616718183,
+        "originX": 0.0,
+        "originY": 0.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "08b3861d373d32b1d01dd8b8ae4ae2a6865afb1a0d60f81f269e348f716f259d",
+      "sourceReferenceSha256": "b0a905a934dc80dd29cf8f59106a9fdd8ca8c5f7eaa3c98ba25c5f1eed1e099f",
+      "displaySha256": "635a011f8773da7ed887d7b5e9d2ba2db09ed2965448625df33966b5f7579928",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 76124,
+        "aaEdgeDifferentPixels": 234,
+        "maxChannelDifference": 49,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "zeroShiftRgbError": 1510,
+        "nextBestIntegerShiftRgbError": 70840
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "635a011f8773da7ed887d7b5e9d2ba2db09ed2965448625df33966b5f7579928",
+          "comparison": {
+            "uniformInteriorPixels": 76124,
+            "aaEdgeDifferentPixels": 234,
+            "maxChannelDifference": 49,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 4915200,
+            "zeroShiftRgbError": 1510,
+            "nextBestIntegerShiftRgbError": 70840
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "635a011f8773da7ed887d7b5e9d2ba2db09ed2965448625df33966b5f7579928",
+          "comparison": {
+            "uniformInteriorPixels": 76124,
+            "aaEdgeDifferentPixels": 234,
+            "maxChannelDifference": 49,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 4915200,
+            "zeroShiftRgbError": 1510,
+            "nextBestIntegerShiftRgbError": 70840
+          }
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "stage": "revision",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 5,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 7,
+      "viewport": {
+        "width": 320,
+        "height": 240
+      },
+      "placement": {
+        "scale": 0.403171616718183,
+        "originX": 0.0,
+        "originY": 0.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "880220a9bdecbb3d9ff7791654c6eda3f9e0d821723980df781b34f29d50debc",
+      "sourceReferenceSha256": "5843102c68f8f3dc4ee036bcc3dda6a2bfc8f6905e28cf0dfabf47c865f054a7",
+      "displaySha256": "a03a648ef978fca4bcac2a7325429e3bc7014b2ec37e55e37dd1e3a9f5014133",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 76132,
+        "aaEdgeDifferentPixels": 158,
+        "maxChannelDifference": 45,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 4915200,
+        "zeroShiftRgbError": 1096,
+        "nextBestIntegerShiftRgbError": 75886
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "a03a648ef978fca4bcac2a7325429e3bc7014b2ec37e55e37dd1e3a9f5014133",
+          "comparison": {
+            "uniformInteriorPixels": 76132,
+            "aaEdgeDifferentPixels": 158,
+            "maxChannelDifference": 45,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 4915200,
+            "zeroShiftRgbError": 1096,
+            "nextBestIntegerShiftRgbError": 75886
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "a03a648ef978fca4bcac2a7325429e3bc7014b2ec37e55e37dd1e3a9f5014133",
+          "comparison": {
+            "uniformInteriorPixels": 76132,
+            "aaEdgeDifferentPixels": 158,
+            "maxChannelDifference": 45,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 4915200,
+            "zeroShiftRgbError": 1096,
+            "nextBestIntegerShiftRgbError": 75886
+          }
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "stage": "resize",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 6,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 12,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 0.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "3391479c18d579a20cdd1bf08b827ad5277fa295638ba5d0130d9fa4e2bf8383",
+      "sourceReferenceSha256": "2bf78d6ef1d9242c7bba0917fc88aea29980a7e48bb156a3070cdda91f82dc9a",
+      "displaySha256": "5a22a300298fb5affa6ca94cab907fa142095faaf6f84a6e62a1b7636f342026",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 89346,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 79910
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "5a22a300298fb5affa6ca94cab907fa142095faaf6f84a6e62a1b7636f342026",
+          "comparison": {
+            "uniformInteriorPixels": 89346,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 79910
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "5a22a300298fb5affa6ca94cab907fa142095faaf6f84a6e62a1b7636f342026",
+          "comparison": {
+            "uniformInteriorPixels": 89346,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 79910
+          }
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 7,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 17,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 8,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 22,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 9,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 27,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 10,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 32,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 11,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 37,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 12,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 42,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 13,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 47,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 14,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 52,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 15,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 57,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 16,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 62,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 17,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 67,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 18,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 72,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 3,
+      "rgbClusterWidth": 1,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "b",
+        "c"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "81209967bf7e1348d5e822e6ec16619f02beb2927133e7000743b7d8a49f92ee",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 95,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 3198,
+            "nextBestIntegerShiftRgbError": 83066
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "c",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 19,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 77,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 20,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 82,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 21,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 87,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 22,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 92,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 23,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 97,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 24,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 102,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 3,
+      "rgbClusterWidth": 1,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "b",
+        "c"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "16043186b1a9e7aa55587f52cdb44c05a5079aed3692f26410fd4be96d69bdbc",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 3139,
+            "nextBestIntegerShiftRgbError": 83195
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "c",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 22,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 25,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 107,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 26,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 112,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 24,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 27,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 117,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 3,
+      "rgbClusterWidth": 1,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "b",
+        "c"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "5216350738b3db208db7b8134e373ad6b99b7f22031abf4a214cc29da3a910b0",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 95,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 3945,
+            "nextBestIntegerShiftRgbError": 210313
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "c",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 28,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 122,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 26,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 29,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 127,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 27,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 30,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 132,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 28,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 31,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 137,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 29,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 32,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 142,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 30,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 33,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 147,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 34,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 152,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 0.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "cb2b0710d1140d49798570b5ccc623f92283ff2d45572ae36433193cfb2ace78",
+      "sourceReferenceSha256": "1bb55eaa5e920f656baae4ea157cbfe29c66128fdb74e1ce550584cb088fad7f",
+      "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88642,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 81668
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "3f8646615de1eae01da04ddf5c00d6b62432e65b6cd495722d580720eb4d476b",
+          "comparison": {
+            "uniformInteriorPixels": 88642,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 81668
+          }
+        }
+      ]
+    },
+    {
+      "index": 32,
+      "stage": "continuous",
+      "stamp": {
+        "documentId": 1,
+        "revision": 1,
+        "fontGeneration": 0,
+        "viewGeneration": 35,
+        "deviceGeneration": 1,
+        "deviceScale": 1.0
+      },
+      "immutableSnapshot": 157,
+      "viewport": {
+        "width": 352,
+        "height": 256
+      },
+      "placement": {
+        "scale": 0.44348877839000134,
+        "originX": 4.0,
+        "originY": 2.0
+      },
+      "cpuReferenceScale": 4,
+      "cpuSha256": "572727cf64ace9c05f1a03cf7ad856202b90e65419334d357745a4de2ac07aa5",
+      "sourceReferenceSha256": "84380b2a6795814c25bc8ad5554ba413e36ff794e074e947d0ce44de533f7263",
+      "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+      "sampleCount": 2,
+      "rgbClusterWidth": 0,
+      "alphaUnchanged": true,
+      "metadataUnchanged": true,
+      "selectedExactPair": [
+        "a",
+        "b"
+      ],
+      "comparison": {
+        "uniformInteriorPixels": 88142,
+        "aaEdgeDifferentPixels": 94,
+        "maxChannelDifference": 51,
+        "sourceReferenceScale": 4,
+        "sourceReferenceBytes": 5767168,
+        "zeroShiftRgbError": 1224,
+        "nextBestIntegerShiftRgbError": 208927
+      },
+      "samples": [
+        {
+          "suffix": "a",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        },
+        {
+          "suffix": "b",
+          "displaySha256": "b9282bb2fc4922bce749d5fbba68d5c4ffbd73d4c5fe94e01c0354b14c047701",
+          "comparison": {
+            "uniformInteriorPixels": 88142,
+            "aaEdgeDifferentPixels": 94,
+            "maxChannelDifference": 51,
+            "sourceReferenceScale": 4,
+            "sourceReferenceBytes": 5767168,
+            "zeroShiftRgbError": 1224,
+            "nextBestIntegerShiftRgbError": 208927
+          }
+        }
+      ]
+    }
+  ],
+  "fixture": {
+    "file": "bindings/Flutter/test/fixtures/desktop-consumer.hwpx",
+    "bytes": 8082,
+    "sha256": "648dade82585fa2845b80ec510b5f55c67e8b6127688dd3748b9a2068d87a3d9",
+    "gitBlob": "7ce526035edffba12971fbcf469bb0249154fd20",
+    "page": 1,
+    "revisionControl": "insert six empty paragraphs before the picture in the live Native document"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "status": "stored_width_always_wins_hypothesis_rejected",
+  "finding": "같은 형식 안에서 저장 탭 폭만 바꾼 세 줄의 숫자 원점이 모두 같았다. HWPX와 저장 줄을 가진 HWP 양쪽의 독립 한컴2020 Print에서 확인했다. 형식 간 절대 원점을 같다고 주장하지 않는다.",
+  "product_change": "이 근거만으로 명시적 RIGHT 탭을 저장 폭 우선으로 바꾸지 않는다. CBTA2쪽의 실제 원인은 추가 분석한다.",
+  "invalid_initial_probe": {
+    "job": "162739ed-aa85-46a0-81cb-11aab78367eb",
+    "result": "opening_document에서900초 timeout. 인쇄/정렬 판정 근거로 사용하지 않는다."
+  },
+  "files": {
+    "tests/fixtures/issue7727/stored-right-tab-independent-probe.hwpx": {
+      "sha256": "0110fdfcdeaafe07c78e348c05e9f2263c67c6b798b224e26b36ba8fb70bd66d",
+      "bytes": 83217
+    },
+    "tests/fixtures/issue7727/stored-right-tab-with-lines-probe.hwp": {
+      "sha256": "ddbff80efb9536d003be31e0e56a683875c7ceca97b8c002cadc78fcfb2fd046",
+      "bytes": 84992
+    },
+    "pdf/issue7727/stored-right-tab-independent-probe-2020.pdf": {
+      "sha256": "af55a2b0dddea805413fe953f8a1f7707eea97f3a079b1898385e6fce4de3a2d",
+      "bytes": 14478
+    },
+    "pdf/issue7727/stored-right-tab-with-lines-probe-2020.pdf": {
+      "sha256": "cf81de5dd1a6e8c99088fda345e780a4aa8d3d31b7d7a735cf95b1078e42e173",
+      "bytes": 13063
+    }
+  }
+}

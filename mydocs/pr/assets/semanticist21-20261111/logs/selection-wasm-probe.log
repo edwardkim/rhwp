@@ -1,0 +1,9 @@
+base 5/11 failed [
+  'body includes both empty paragraphs and mark-only tails',
+  'last selected paragraph stops at requested character',
+  'selection starting at paragraph end contains mark',
+  'cell selection includes empty paragraph and marks',
+  'cell partial endpoint unchanged',
+  'wrapped final line receives paragraph mark only'
+]
+candidate 11/11 failed []

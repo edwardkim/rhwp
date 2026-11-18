@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-10-28
+last_verified: 2026-11-18
 ---
 
 # 배포 가이드
@@ -11,6 +11,10 @@ rhwp 프로젝트의 배포 대상과 절차를 정리한다.
 GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollback은
 [GitHub 저장소 운영 매뉴얼](github_operations.md)을 먼저 적용하고, 이 문서는 release·package·스토어별
 배포 절차를 담당한다.
+
+현재 준비 버전은 **0.9.1**이다. [준비 계획](../plans/release_0_9_1_20261118.md)과
+[국문](../release/release_notes_v0.9.1.md)·[영문](../release/release_notes_v0.9.1_EN.md) 안내를 따른다.
+0.9.0의 실제 게시·복구 기록은 당시 증거로 보존하며 새 후보의 완료 증거로 사용하지 않는다.
 
 ---
 
@@ -33,12 +37,16 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 
 ## crates.io 준비와 수동 게시
 
-본체 0.9.0과 13개 내부·보정 의존 패키지의 준비·소비 계약·초회 수동 절차는
+본체와 13개 내부·보정 의존 패키지의 준비·소비 계약·수동 절차는
 [crates.io 가이드](crates_io_guide.md)를 따른다. **0.9.0부터 crates.io 배포를 시작한다.**
-초회 게시와 공개 registry의 Rust·CLI·WASM 소비 확인을 이번 릴리즈의 완료 조건에 포함한다.
+0.9.1은 변경된 8개 새 버전을 의존 순서로 게시하고, 변경 없는 6개 공개 버전은 그대로 재사용한다.
+공개 registry의 Rust·CLI·WASM 소비 확인을 이번 릴리즈의 완료 조건에 포함한다.
 현재 tag workflow의 네 채널에 crates.io를 자동 연결하지 않는다.
 게시·보안 업데이트·부분 실패 복구 책임자는 edwardkim이다. 토큰 준비 여부와 실제 업로드
 승인은 구분하며, 아래 기존 npm/확장 배포 절차로 Cargo 게시를 실행하지 않는다.
+
+0.9.0의 실제 게시 결과, 패키지별 소스·체크섬과 공개 소비 검증은
+[배포 결과 보고서](../report/release_0_9_0_execution_report.md)에 기록했다.
 
 ## CI/CD 워크플로우 (GitHub Actions)
 
@@ -46,7 +54,7 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 
 | 파일 | 트리거 | 역할 |
 |------|--------|------|
-| `.github/workflows/ci.yml` | push/PR (main, devel) | cargo build + test + clippy 검증 |
+| `.github/workflows/ci.yml` | main/devel 대상 PR, `v*` 태그, 수동 실행 | 변경 범위에 따른 build·test·clippy 검증; main/devel push는 구독하지 않음 |
 | `.github/workflows/gym-release-gate.yml` | Gym 관련 PR, 수동 실행 | AI 에이전트 벤치마크 계약·전건 판별력 검증 |
 | `.github/workflows/deploy-pages.yml` | main push, 태그 | WASM 빌드 → rhwp-studio 빌드 → GitHub Pages 배포 |
 | `.github/workflows/release-binary.yml` | `v*` 태그, 수동 실행 | 5플랫폼 CLI → Release 첨부 → 같은 commit의 package workflow 직접 호출 |
@@ -57,7 +65,7 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 ```
 코드 작업 완료
   ↓
-devel 대상 PR merge → CI 자동 실행 (build + test + clippy)
+devel 대상 PR CI 성공·검토 → merge
   ↓
 main 대상 release PR merge → GitHub Pages 자동 배포
   ↓
@@ -160,14 +168,35 @@ GitHub Actions에서 사용하는 시크릿 (Settings → Secrets and variables 
 | `VSCE_PAT` | VS Code Marketplace 배포 인증 |
 | `OVSX_PAT` | Open VSX 배포 인증 |
 
-> npm 배포는 GitHub Actions OIDC 기반 Trusted Publishing을 사용한다.
-> `@rhwp/core`, `@rhwp/editor` 각각의 npm package settings에서
-> trusted publisher를 `edwardkim/rhwp`, workflow `npm-publish.yml`, allowed action `npm publish`로 등록해야 한다.
-> npm package settings의 Environment name을 지정했다면 GitHub Actions publish job의 `environment:`와
-> 정확히 같아야 한다. 현재 배포 환경명은 `NPM_TOKEN`이다.
-> 여기서 `NPM_TOKEN`은 GitHub Actions environment 이름이며, npm token secret 이름이 아니다.
-> npm publish job에는 장기 토큰(`NPM_TOKEN`, `NODE_AUTH_TOKEN`)을 주입하지 않는다.
-> `npm publish`는 GitHub Actions OIDC로 인증하며 provenance는 npm이 자동 생성한다.
+### npm Trusted Publisher 등록과 확인
+
+npm 배포는 GitHub Actions OIDC를 사용한다. npm은 재사용 workflow에서 게시하더라도
+**호출한 workflow의 이름**을 검증한다. 자동 배포는 `release-binary.yml`이
+`npm-publish.yml`을 호출하므로 `npm-publish.yml`만 등록하면 인증되지 않는다.
+[npm 공식 안내](https://docs.npmjs.com/trusted-publishers/#troubleshooting)를 따른다.
+
+`@rhwp/core`와 `@rhwp/editor` **각각**의 Settings → Trusted Publisher에 GitHub Actions를
+등록한다. 두 패키지 모두 Organization or user는 `edwardkim`, Repository는 `rhwp`,
+Environment name은 `NPM_TOKEN`, Allowed actions는 **Allow npm publish**로 설정한다.
+
+| 실행 경로 | 등록할 Workflow filename |
+| --- | --- |
+| 정식 태그 자동 배포 또는 `release-binary.yml` 수동 실행 → `npm-publish.yml` 호출 | `release-binary.yml` |
+| `npm-publish.yml` 자체를 독립 수동 실행해 exact-tag 복구 | `npm-publish.yml` |
+
+두 경로를 모두 사용하면 publisher를 별도로 등록한다. 파일명만 입력하며
+`.github/workflows/` 경로를 넣지 않는다. 기존 연결의 필수 필드는 수정할 수 없으므로,
+호출 경로를 추가할 때는 새 연결을 만들고 다른 배포 경로의 유효한 연결은 유지한다.
+
+`NPM_TOKEN`은 현재 GitHub Actions **environment 이름**이다. npm 설정과 publish job의
+`environment:`가 정확히 일치해야 하며, 같은 이름의 Secret을 갱신해도 publisher 등록을
+대신하지 못한다. 현재 publish job에는 장기 토큰(`NPM_TOKEN`, `NODE_AUTH_TOKEN`)을 주입하지
+않고 호출자·피호출자 양쪽의 `id-token: write`로 인증한다. provenance는 npm이 자동 생성한다.
+
+`ENEEDAUTH`가 발생하면 실패한 실행의 호출자, 두 패키지 각각의 저장된 publisher 필드,
+`Allow npm publish`와 OIDC 권한을 대조한다. 설정 저장만으로 인증 성공을 단정하지 않고,
+승인된 게시·복구 실행의 성공과 공개 버전·provenance를 확인한다.
+0.9.0의 복구 결과는 [배포 보고서](../report/release_0_9_0_execution_report.md#ci와-인증-복구)를 참고한다.
 
 ### 보안 원칙
 
@@ -257,7 +286,7 @@ Firefox AMO는 `rhwp-firefox` 빌드 산출물을 사용한다.
 
 ```bash
 # 저장소 루트에서 실행한다. 미게시 준비 산출물은 output/에만 둔다.
-release_version=0.9.0
+release_version=0.9.1
 release_out="$PWD/output/release-v${release_version}/packages"
 mkdir -p "$release_out"
 npm --prefix rhwp-chrome run build
@@ -266,7 +295,7 @@ cp "${release_out}/rhwp-chrome-${release_version}.zip" "${release_out}/rhwp-edge
 npm --prefix rhwp-firefox run build
 (cd rhwp-firefox/dist && zip -qr "${release_out}/rhwp-firefox-${release_version}.zip" .)
 
-git archive --format=zip --prefix=rhwp-source/ --output="${release_out}/rhwp-source-${release_version}-amo.zip" HEAD Cargo.toml Cargo.lock build.rs rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src crates vendor rhwp-studio rhwp-firefox rhwp-shared licenses assets/licenses assets/fonts assets/font-rules data/font-metrics packaging/crates-io assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf ttfs/opensource/NotoSansKR-OFL.txt scripts npm/README.md npm/editor npm/hwpctrl-ocx bindings/Native tools/rhwp-subsecond tools/batch-convert tools/llm_verifier/verdict_protocol tools/llm_verifier/claim_bind tools/llm_verifier/criteria_decomp mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes mydocs/manual/gym_optional_tool.md mydocs/tech/agent_roadmap/atlas_r1_r200.md mydocs/tech/agent_runtime/version_policy.md
+git archive --format=zip --prefix=rhwp-source/ --output="${release_out}/rhwp-source-${release_version}-amo.zip" HEAD Cargo.toml Cargo.lock build.rs rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src crates vendor rhwp-studio rhwp-firefox rhwp-shared licenses assets/licenses assets/fonts assets/font-rules data/font-metrics packaging/crates-io assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf ttfs/opensource/NotoSansKR-OFL.txt scripts npm/README.md npm/editor npm/hwpctrl-ocx bindings/Native tools/rhwp-subsecond tools/batch-convert tools/llm_verifier/verdict_protocol tools/llm_verifier/claim_bind tools/llm_verifier/criteria_decomp mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes mydocs/manual/gym_optional_tool.md mydocs/tech/agent_roadmap/atlas_r1_r200.md mydocs/tech/agent_runtime/version_policy.md mydocs/release/release_notes_v0.9.1.md mydocs/release/release_notes_v0.9.1_EN.md
 zip -d "${release_out}/rhwp-source-${release_version}-amo.zip" \
   "rhwp-source/rhwp-studio/public/samples/*" \
   "rhwp-source/tools/llm_verifier/*/fixtures/*" \
@@ -284,6 +313,13 @@ source zip은 확장 재빌드에 필요한 경로만 포함한다.
   `Cargo.lock`, build script와 production `include_str!`/`include_bytes!` 리소스
 - 제외: top-level `samples/`, `pdf/`, `output/`, `target/`, `node_modules/`, extension `dist/`
 
+Git archive의 과거 mtime과 공용 Cargo target을 함께 쓰면 이전 작업공간의 컴파일 결과를
+재사용할 수 있다. source ZIP 재빌드는 압축 안 파일과 추출 파일의 내용 해시를 먼저
+대조한 뒤 추출 소스의 mtime을 갱신하고, Cargo 로그에서 **추출 경로의 본체가 실제
+컴파일됐는지** 확인한다. registry 의존성 캐시는 사용할 수 있다. 기존 `pkg/` 복사나
+캐시 적중만으로 source 재빌드를 완료 처리하지 않는다. 표준 release·wasm-opt와 Firefox
+포장까지 완료하고 source SHA·ZIP hash·사용한 도구·실행 명령을 남긴다.
+
 #### 확장 스토어 제출 문서
 
 스토어 제출 문서는 `mydocs/feedback/`에 버전별로 보관한다.
@@ -295,9 +331,9 @@ source zip은 확장 재빌드에 필요한 경로만 포함한다.
 | `edge-{version}_reviewer_notes.md` | Microsoft Edge Add-ons 심사 노트 |
 | `firefox-{version}_amo_notes.md` | Firefox AMO 패키지·source ZIP·재빌드·심사 안내 |
 
-0.9.0 제출 후보: [Chrome 한국어](../feedback/chrome-0.9.0_kor.md),
-[Chrome 영어](../feedback/chrome-0.9.0_eng.md), [Edge](../feedback/edge-0.9.0_reviewer_notes.md),
-[Firefox AMO](../feedback/firefox-0.9.0_amo_notes.md).
+0.9.1 제출 후보: [Chrome 한국어](../feedback/chrome-0.9.1_kor.md),
+[Chrome 영어](../feedback/chrome-0.9.1_eng.md), [Edge](../feedback/edge-0.9.1_reviewer_notes.md),
+[Firefox AMO](../feedback/firefox-0.9.1_amo_notes.md).
 이전 버전 제출 기록을 덮어쓰지 않고 이번 버전의 파일을 사용한다.
 
 사용자·개발자 안내, CHANGELOG, 기여자 명단, 스토어 제출 초안은 **main 승격 전에 devel에
@@ -333,8 +369,10 @@ npm/editor/package.json:  0.6.1 → 0.6.2  (다른 파일 변경 없음)
 ### Git 태그
 
 - 태그는 `v{MAJOR}.{MINOR}.{PATCH}` 형식 (예: `v0.6.0`)
-- Cargo.toml 기준 MINOR 릴리즈마다 태그를 생성한다
-- PATCH 전용 릴리즈(npm README 등)는 태그를 생성하지 않는다
+- Cargo.toml 기준 제품 전체 릴리즈는 MINOR·PATCH 모두 stable 태그를 생성한다.
+  제품 전체 0.9.1도 `v0.9.1` 태그와 정규 main 승격·배포 경로를 사용한다.
+- 제품 버전을 바꾸지 않는 단일 npm 패키지 전용 PATCH(해당 패키지 README 등)는
+  제품 전체 태그를 새로 만들지 않고 해당 채널의 승인된 절차를 따른다.
 
 ---
 
@@ -343,8 +381,11 @@ npm/editor/package.json:  0.6.1 → 0.6.2  (다른 파일 변경 없음)
 ### 1단계: 코드 검증
 
 ```bash
-cargo build && cargo test        # 네이티브 빌드 + 테스트
-docker compose --env-file .env.docker run --rm wasm   # WASM 빌드
+cargo build --locked --target-dir target/pr-review
+cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast
+# 실제 릴리즈 WASM: 표준 혼합 산출물과 wasm-opt 검증을 생략하지 않는다.
+python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard \
+  --output output/release-wasm
 ```
 
 macOS 로컬에서 release 검증이 필요한 경우 `cargo test --release --tests` 대신
@@ -364,24 +405,24 @@ CHROME_CDP=http://localhost:19222 node e2e/edit-pipeline.test.mjs --mode=host
 
 **Cargo.toml** (Rust 패키지 + npm @rhwp/core 버전 원본):
 ```toml
-version = "0.9.0"
+version = "0.9.1"
 ```
 
 **rhwp-vscode/package.json**:
 ```json
-"version": "0.9.0"
+"version": "0.9.1"
 ```
 
 **rhwp-vscode/CHANGELOG.md** 새 버전 항목 추가.
 
 **npm/editor/package.json**:
 ```json
-"version": "0.9.0"
+"version": "0.9.1"
 ```
 
 **rhwp-studio/package.json** (제품정보 대화창 버전 자동 주입):
 ```json
-"version": "0.9.0"
+"version": "0.9.1"
 ```
 
 ### 3단계: README 점검
@@ -401,7 +442,7 @@ version = "0.9.0"
 ```bash
 # release 준비 변경은 작업 브랜치에서 커밋하고 devel 대상 PR로 통합
 git add -A
-git commit -m "v0.9.0 릴리즈 준비"
+git commit -m "v0.9.1 릴리즈 준비"
 
 # merge된 최신 devel 검증
 git fetch upstream
@@ -412,11 +453,12 @@ cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
-wasm-pack build --target web --out-dir pkg
+python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard \
+  --output output/release-wasm
 
 # release 시 devel → main PR 생성
 gh pr create --repo edwardkim/rhwp --base main --head devel \
-  --title "v0.7.3 릴리즈" --body-file <release-pr-body.md>
+  --title "v0.9.1 릴리즈" --body-file <release-pr-body.md>
 ```
 
 release 검증도 고정 thread 수를 복사하지 않는다. nextest 기본 동시성을 먼저 사용하고, release host의
@@ -440,15 +482,14 @@ promotion gate의 verify-only 실행이 성공해도 정식 tag에서 `Publish A
 > release 준비 변경도 `upstream/devel`에 직접 push하지 않는다. 작업 브랜치 PR과 CI를 거쳐 통합하고,
 > 검증된 `devel`을 `main` 대상 release PR로 올린다.
 >
-> main merge 시 CI/CD가 자동 실행된다:
-> - `ci.yml` → build + test + clippy 검증
-> - `deploy-pages.yml` → GitHub Pages 데모 사이트 자동 배포
+> main PR에서 `ci.yml` 검증을 마친 뒤 병합한다. main push는
+> `deploy-pages.yml`의 GitHub Pages 배포를 시작하며 `ci.yml`을 다시 기동하지 않는다.
 
 ### 5단계: stable tag push → Release·package 자동 배포
 
 ```bash
-git tag v0.7.3
-git push origin v0.7.3
+git tag v0.9.1
+git push origin v0.9.1
 ```
 
 tag push 직후 별도의 `gh release create`를 동시에 실행하지 않는다. `Release Binary`가 다섯 플랫폼을
@@ -466,9 +507,9 @@ v0.8.7의 기존 공식 archive에는 Native Skia가 빠져 있다. 해당 tag�
 asset 교체나 새 tag 배포는 별도 릴리즈 승인 범위에서 수행한다.
 
 ```bash
-gh release edit v0.7.3 \
+gh release edit v0.9.1 \
   --repo edwardkim/rhwp \
-  --title "v0.7.3 — 제목" \
+  --title "v0.9.1 — 제목" \
   --notes-file path/to/release-notes.md
 ```
 

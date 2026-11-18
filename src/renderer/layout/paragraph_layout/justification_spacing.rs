@@ -53,6 +53,31 @@ pub(super) fn compress(
     slack: f64,
     terminal_ink_overhang: f64,
 ) -> (f64, f64) {
+    compress_with_space_limit(
+        plan,
+        styles,
+        trailing_spaces,
+        tab_width,
+        slack,
+        terminal_ink_overhang,
+        20,
+    )
+}
+
+/// 자연 대시 복원은 원문이 명시한 더 큰 공백 축소 예산도 소비할 수 있다.
+/// 일반 음수 여백의 기본 20% 규칙과 필드·선두 공백의 소유는 바꾸지 않는다.
+pub(super) fn compress_with_space_limit(
+    plan: &LeadingSpacePlan<'_>,
+    styles: &ResolvedStyleSet,
+    trailing_spaces: usize,
+    tab_width: f64,
+    slack: f64,
+    terminal_ink_overhang: f64,
+    percent: u8,
+) -> (f64, f64) {
+    if percent == 0 || percent > 75 {
+        return (0.0, 0.0);
+    }
     let count = plan.spacing_chars().len();
     let end = count.saturating_sub(trailing_spaces);
     let mut position = 0;
@@ -89,17 +114,25 @@ pub(super) fn compress(
             let eligible = distributed
                 && !glyph
                     .chars()
-                    .any(|ch| ch.is_whitespace() || ch == '\u{fffc}')
+                    .any(|ch| ch == ' ' || ch.is_control() || ch == '\u{fffc}')
                 && estimate_text_width_exact(glyph, &style) > 0.0;
+            // 낱말 공백(' ')은 word 보정이 character 보정을 상쇄하지만,
+            // 묶음 빈칸 등은 character 전진만 소비한다. 이를 슬롯에서 빼면
+            // 측정 반복이 실제보다 작은 분모로 보정해 줄 끝을 과하게 압축한다.
             glyphs += usize::from(eligible);
-            last = Some((glyph.to_owned(), style.clone(), eligible));
+            // 빈칸의 전진은 압축 대상이어도 마지막 잉크의 돌출 복원은 아니다.
+            last = Some((
+                glyph.to_owned(),
+                style.clone(),
+                eligible && !glyph.chars().any(char::is_whitespace),
+            ));
         }
         runs.push((text, style, distributed));
     }
     if spaces == 0 || !smallest_space.is_finite() {
         return (0.0, 0.0);
     }
-    let word_delta = (slack / spaces as f64).max(-smallest_space * 0.2);
+    let word_delta = (slack / spaces as f64).max(-smallest_space * (percent as f64 / 100.0));
     let leftover = slack - word_delta * spaces as f64;
     let terminal = last.filter(|(_, _, eligible)| *eligible && !plan.terminal_inline_object);
     let slots = glyphs.saturating_sub(usize::from(terminal.is_some()));

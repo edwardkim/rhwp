@@ -38,7 +38,8 @@ impl DocumentCore {
                     .document
                     .find_or_create_char_shape(base, &parse_char_shape_mods(json));
                 if id == 0 {
-                    // 머리 모양의 0은 '참조 없음'으로 읽히므로 같은 모양을 0이 아닌 번호로 둔다.
+                    // 이 API의 기존 양수 ID 반환을 보존한다. 문서에서 읽은 0번은
+                    // 유효한 모양 참조이며, 참조 없음은 위의 u32::MAX로 구분한다.
                     let shapes = &mut self.document.doc_info.char_shapes;
                     match shapes[1..].iter().position(|shape| *shape == shapes[0]) {
                         Some(index) => index as u32 + 1,
@@ -88,19 +89,113 @@ impl DocumentCore {
 /// HWPX 원본 `paraHead` 구간에서 `level` 수준(1부터)의 `charPrIDRef`를 `id`로 바꾼다.
 /// 그 수준이나 속성을 찾지 못하면 `None`이라 저장은 모델의 수준 값으로 다시 쓴다.
 fn set_para_head_char_shape(raw: &str, level: usize, id: u32) -> Option<String> {
-    let level = format!(" level=\"{level}\"");
-    let key = " charPrIDRef=\"";
-    let mut from = 0;
-    while let Some(open) = raw[from..].find('<').map(|i| from + i) {
-        let close = open + raw[open..].find('>')?;
-        let tag = &raw[open..close];
-        let name = tag[1..].split(char::is_whitespace).next().unwrap_or("");
-        if name.rsplit(':').next() == Some("paraHead") && tag.contains(&level) {
-            let start = open + tag.find(key)? + key.len();
-            let end = start + raw[start..].find('"')?;
-            return Some(format!("{}{id}{}", &raw[..start], &raw[end..]));
+    let mut found = false;
+    let raw = map_para_head_char_refs(raw, |at, old| {
+        if at == level {
+            found = true;
+            Some(id)
+        } else {
+            Some(old)
         }
-        from = close + 1;
+    })?;
+    found.then_some(raw)
+}
+
+/// HWPX 원본 `paraHead` 구간의 `charPrIDRef`를 태그마다 `map(수준, 원래 값)`의 값으로 바꾼다.
+/// 수준은 `level` 속성(1부터)이고 없으면 0이다. `map`이 `None`을 돌려주거나 값을 읽지 못하면 `None`이다.
+pub(super) fn map_para_head_char_refs(
+    raw: &str,
+    mut map: impl FnMut(usize, u32) -> Option<u32>,
+) -> Option<String> {
+    use quick_xml::{events::Event, Reader, XmlVersion};
+
+    let mut reader = Reader::from_str(raw);
+    let mut out = String::with_capacity(raw.len());
+    let mut copied = 0;
+    loop {
+        let open = usize::try_from(reader.buffer_position()).ok()?;
+        match reader.read_event().ok()? {
+            Event::Start(tag) | Event::Empty(tag) if tag.local_name().as_ref() == "paraHead" => {
+                let mut level = 0;
+                let mut old = None;
+                for attribute in tag.attributes() {
+                    let attribute = attribute.ok()?;
+                    match attribute.key.as_ref() {
+                        "level" => {
+                            level = attribute
+                                .normalized_value(XmlVersion::Implicit1_0)
+                                .ok()?
+                                .parse()
+                                .ok()?;
+                        }
+                        "charPrIDRef" => {
+                            old = Some(
+                                attribute
+                                    .normalized_value(XmlVersion::Implicit1_0)
+                                    .ok()?
+                                    .parse()
+                                    .ok()?,
+                            );
+                        }
+                        _ => {}
+                    }
+                }
+                let Some(old) = old else {
+                    continue;
+                };
+                let id = map(level, old)?;
+                let close = usize::try_from(reader.buffer_position()).ok()?;
+                // 태그 경계·속성의 의미는 XML parser로 읽고, 해당 값의 원문 범위만
+                // 교체한다. 작은따옴표·공백과 알 수 없는 속성·본문은 그대로 남긴다.
+                let value = raw_attribute_value_range(&raw[open..close], "charPrIDRef")?;
+                out.push_str(&raw[copied..open + value.start]);
+                out.push_str(&id.to_string());
+                copied = open + value.end;
+            }
+            Event::Eof => break,
+            _ => {}
+        }
     }
-    None
+    out.push_str(&raw[copied..]);
+    Some(out)
+}
+
+/// 검증된 시작 태그에서 따옴표 안의 속성 값 범위를 찾는다. 다른 속성 값에 같은
+/// 이름이나 `>`가 있어도 그 값 전체를 건너뛰므로 문자열 치환으로 오인하지 않는다.
+fn raw_attribute_value_range(tag: &str, wanted: &str) -> Option<std::ops::Range<usize>> {
+    let bytes = tag.as_bytes();
+    let mut at = tag.find(char::is_whitespace)?;
+    loop {
+        while bytes.get(at).is_some_and(u8::is_ascii_whitespace) {
+            at += 1;
+        }
+        let key_start = at;
+        while bytes
+            .get(at)
+            .is_some_and(|b| !b.is_ascii_whitespace() && *b != b'=')
+        {
+            at += 1;
+        }
+        let key = &tag[key_start..at];
+        while bytes.get(at).is_some_and(u8::is_ascii_whitespace) {
+            at += 1;
+        }
+        if bytes.get(at) != Some(&b'=') {
+            return None;
+        }
+        at += 1;
+        while bytes.get(at).is_some_and(u8::is_ascii_whitespace) {
+            at += 1;
+        }
+        let quote = *bytes.get(at)?;
+        if quote != b'\'' && quote != b'"' {
+            return None;
+        }
+        let value_start = at + 1;
+        at = value_start + bytes[value_start..].iter().position(|b| *b == quote)?;
+        if key == wanted {
+            return Some(value_start..at);
+        }
+        at += 1;
+    }
 }

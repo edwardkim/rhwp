@@ -1,0 +1,18 @@
+{
+  "old_sessions": [
+    {
+      "session_id": 76506,
+      "exit_code": 143
+    },
+    {
+      "session_id": 49322,
+      "exit_code": 143
+    },
+    {
+      "session_id": 97802,
+      "exit_code": 143
+    }
+  ],
+  "reason": "parent execution sessions terminated; completed per-target manifests and PNGs retained",
+  "recovery": "Validate completed per-target provenance and artifact hashes; resume incomplete per-target batches. Shared output root target-plan mismatch is a harness bookkeeping failure, not product output failure."
+}

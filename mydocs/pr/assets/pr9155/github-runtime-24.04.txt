@@ -1,0 +1,7 @@
+{"ok": true, "mode": "blank-ime", "output": "/result/edited.hwpx", "render": {"width": 256, "height": 256, "stride": 1024, "revision": 0, "fontGeneration": 0, "originX": 0, "originY": 0, "sha256": "3b874d3ba46c638fc3094f8e92fb744ca974893873f8885f54e23760f9b6311b"}, "queries": {"hit": {"caret": {"cellBounds": null, "cellOverflowed": false, "height": 13.3, "page": 0, "x": 113.4, "y": 132.9}, "position": {"cellPath": [], "paragraph": 0, "scalarOffset": 0, "section": 0}}, "caret": {"cellBounds": null, "cellOverflowed": false, "height": 13.3, "page": 0, "x": 113.4, "y": 132.3}, "selectionRects": [{"bounds": {"height": 13.3, "width": 13.0, "x": 113.4, "y": 132.3}, "page": 0}]}, "save": {"revision": 5, "byteLength": 7391, "isDirty": false, "report": {"count": 0, "losses": [], "outputFormat": "hwpx", "schemaVersion": 1}, "caretSaved": false, "caretPreservedFromSource": false}, "reopenedPages": 1, "imeRoundtripVerified": true, "savedTextCharacters": 2}
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories
+Fontconfig error: No writable cache directories

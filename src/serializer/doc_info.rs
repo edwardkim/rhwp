@@ -724,6 +724,14 @@ fn write_serialize_border_fill<W: std::io::Write>(
             | (1 << 12)
             | (1 << 13));
         attr |= center_line.hwp_binary_attr_bits();
+    } else {
+        // 표 경계선 설정과 같은 비트를 쓰는 꺾인 BackSlash 문맥은 보존한다.
+        // HWPX의 독립 속성을 일반 대각선의 해제로 해석하지 않는다.
+        if bf.break_cell_separate_line {
+            attr |= 1 << 10;
+        } else if attr & (0x07 << 5) == 0 {
+            attr &= !(1 << 10);
+        }
     }
     w.write_u16(attr)?;
 

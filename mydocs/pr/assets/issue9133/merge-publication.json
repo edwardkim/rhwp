@@ -1,0 +1,12 @@
+{
+  "mergeSha": "8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7",
+  "image": {
+    "path": "mydocs/working/assets/issue9133/rebase/after-page-800x360.png",
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/8c3a0ee4f510afe12cb30b72e1d624bbe73a21d7/mydocs/working/assets/issue9133/rebase/after-page-800x360.png",
+    "httpStatus": 200,
+    "contentType": "image/png",
+    "sha256": "d5461c4a35cdc106d5ba12df1c7a36e5ad02c730b6e2d80844d5a098114f66c9",
+    "matchesCommittedAsset": true
+  },
+  "observedAt": "2026-11-16T10:21:07.434437+00:00"
+}

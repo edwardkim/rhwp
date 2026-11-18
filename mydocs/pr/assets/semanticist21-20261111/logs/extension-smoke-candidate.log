@@ -1,0 +1,3 @@
+Chrome extension packaged smoke 시작
+extension=iffpkhbobflkehbkaeaffomelpbepcoa worker=chrome-extension://iffpkhbobflkehbkaeaffomelpbepcoa/background.js
+PASS: viewer/options/print/service worker/content script

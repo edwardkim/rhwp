@@ -49,6 +49,26 @@ class Release090PreparationTests(unittest.TestCase):
                 block = text.split(start)[1].split(end)[0]
                 self.assertEqual(re.findall(r'^- @([^\s]+)$', block, re.M), handles)
 
+    def test_current_release_credits_match_the_resolved_ledger(self):
+        version = json.loads((ROOT / 'packaging/crates-io/source-policy.json').read_text())['product_release']
+        ledger = json.loads((ROOT / f'mydocs/tech/investigations/release-v{version}/contributor-ledger.json').read_text())
+        self.assertEqual(ledger['unresolvedNumbers'], [])
+        self.assertEqual(ledger['unresolvedGitIdentities'], [])
+        handles = [item['handle'] for item in ledger['contributors']]
+        self.assertEqual(len(handles), len(set(handle.casefold() for handle in handles)))
+        self.assertEqual(len(handles), ledger['counts']['people'])
+        paths = ('CHANGELOG.md', 'CHANGELOG_EN.md', f'mydocs/release/release_notes_v{version}.md',
+                 f'mydocs/release/release_notes_v{version}_EN.md')
+        for path in paths:
+            with self.subTest(path=path):
+                text = (ROOT / path).read_text()
+                start, end = f'<!-- release-contributors:v{version}:start -->', f'<!-- release-contributors:v{version}:end -->'
+                self.assertEqual(text.count(start), 1)
+                self.assertEqual(text.count(end), 1)
+                block = text.split(start)[1].split(end)[0]
+                self.assertEqual(re.findall(r'^- @([^\s]+)$', block, re.M), handles)
+                self.assertIn(ledger['range']['headSha'], text)
+
     def test_editor_package_retains_project_license_notice(self):
         self.assertEqual((ROOT / "npm/editor/LICENSE").read_bytes(), (ROOT / "LICENSE").read_bytes())
 
@@ -77,9 +97,11 @@ class Release090PreparationTests(unittest.TestCase):
 
     def test_product_manifests_and_lock_roots_match(self):
         cargo = tomllib.loads((ROOT / 'Cargo.toml').read_text())
-        self.assertEqual(cargo['package']['version'], '0.9.0')
+        version = json.loads((ROOT / 'packaging/crates-io/source-policy.json').read_text())['product_release']
+        self.assertRegex(version, r'^0\.9\.[0-9]+$')
+        self.assertEqual(cargo['package']['version'], version)
         lock = tomllib.loads((ROOT / 'Cargo.lock').read_text())
-        self.assertEqual([p['version'] for p in lock['package'] if p['name'] == 'rhwp'], ['0.9.0'])
+        self.assertEqual([p['version'] for p in lock['package'] if p['name'] == 'rhwp'], [version])
         for directory in ('rhwp-studio', 'rhwp-vscode', 'npm/editor', 'rhwp-chrome', 'rhwp-firefox'):
             for filename in ('package.json', 'package-lock.json'):
                 path = ROOT / directory / filename
@@ -87,12 +109,12 @@ class Release090PreparationTests(unittest.TestCase):
                     continue  # editor has no install-time dependencies or lockfile
                 with self.subTest(path=str(path)):
                     value = json.loads(path.read_text())
-                    self.assertEqual(value['version'], '0.9.0')
+                    self.assertEqual(value['version'], version)
                     if filename == 'package-lock.json':
-                        self.assertEqual(value['packages']['']['version'], '0.9.0')
+                        self.assertEqual(value['packages']['']['version'], version)
         for filename in ('rhwp-chrome/manifest.json', 'rhwp-firefox/manifest.json', 'rhwp-safari/src/manifest.json'):
             with self.subTest(filename=filename):
-                self.assertEqual(json.loads((ROOT / filename).read_text())['version'], '0.9.0')
+                self.assertEqual(json.loads((ROOT / filename).read_text())['version'], version)
 
 
 if __name__ == '__main__':

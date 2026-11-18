@@ -1,0 +1,58 @@
+{
+  "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "runtime_source_tree": "7c23d269b9faf902ecafd4cefd3c4ac5eec3a022",
+  "native_sha256": "81fadf459c8a58a85ff212222289b92d483d3bc6fa4d2faaadaeed4df369202e",
+  "wasm_files": {
+    "rhwp.js": {
+      "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "bytes": 581315,
+      "root_pkg_sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "studio_public_sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "bytes": 31795529,
+      "root_pkg_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "studio_public_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+    }
+  },
+  "build_results": [
+    {
+      "label": "native-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/native-build.log",
+      "log_sha256": "ea729841bc51f9369a11d97e3c95824211db754994b9141d065a103f25db5147"
+    },
+    {
+      "label": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "exit": 0,
+      "log": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/logs/fresh-wasm.log",
+      "log_sha256": "010fb09f6b685c3120be4c034bf32d60a55f4db03bd0bd924a4bd8b39ac99d5d"
+    }
+  ],
+  "build": "Mac locked wrapper web/no-opt local alternative, not Docker optimized",
+  "actual_initialization_evidence": "mydocs/pr/assets/planet6897_remaining39_20261111/maintainer-repair/latest-head-3575d814/app-initialization.json"
+}

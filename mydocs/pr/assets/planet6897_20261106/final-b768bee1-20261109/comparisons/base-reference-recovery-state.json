@@ -1,0 +1,1063 @@
+{
+  "state": "complete",
+  "pid": 94931,
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "results": [
+    {
+      "backend": "native",
+      "key": "certificate",
+      "document_page_counts": {
+        "rhwp": 8,
+        "pdf": 9
+      },
+      "source_result": {
+        "key": "certificate",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 8,
+        "expected_pages": 9,
+        "page_set_matches": false,
+        "minimum": 36.61,
+        "below90": [
+          {
+            "page": "2",
+            "raw": "83.23"
+          },
+          {
+            "page": "3",
+            "raw": "47.74"
+          },
+          {
+            "page": "4",
+            "raw": "46.27"
+          },
+          {
+            "page": "5",
+            "raw": "49.60"
+          },
+          {
+            "page": "6",
+            "raw": "36.93"
+          },
+          {
+            "page": "7",
+            "raw": "36.61"
+          },
+          {
+            "page": "8",
+            "raw": "49.08"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette.tsv",
+        "tsv_sha256": "4e66332a4a7c64bedf4c6ce540d950a5819967e9988321f7a1f8015d08373ada",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/run_manifest.json",
+          "sha256": "48333030c4a39ea2a0ea88fc2dfa6cdb67127942c7ce02c18507358cb8465516"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette-parts/p0002-0008/run_manifest.json",
+          "sha256": "f0f03ea0a33644673fa0308fc4c35b5554f2bc7683838aebfd90cc80d98cb4c0"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "de5a33e78547bb8162a22abb28c475fb96fa6bf42b1c9113e5c64abcdb35e053"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        9
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    },
+    {
+      "backend": "native",
+      "key": "policy-agenda",
+      "document_page_counts": {
+        "rhwp": 13,
+        "pdf": 14
+      },
+      "source_result": {
+        "key": "policy-agenda",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 13,
+        "expected_pages": 14,
+        "page_set_matches": false,
+        "minimum": 18.22,
+        "below90": [
+          {
+            "page": "10",
+            "raw": "68.45"
+          },
+          {
+            "page": "11",
+            "raw": "36.27"
+          },
+          {
+            "page": "12",
+            "raw": "27.06"
+          },
+          {
+            "page": "13",
+            "raw": "18.22"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette.tsv",
+        "tsv_sha256": "9cbdb50d2b71446a8ed68e1b624fa16cc983b4a64d6b31c7c9a390cb92b41cb7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/run_manifest.json",
+          "sha256": "1a743862167c9611aa53d9c75545dd20fc5eb3646c5b193cac0996f4753eda23"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette-parts/p0002-0013/run_manifest.json",
+          "sha256": "bea51b56244f7dc572cb8bb943a36f28b359ef51b3681bd30c000d8927345c72"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "e9a00ce8b9ad0c6e2e75a6cc3cdb13f4ae059b57a5fa355953a59cdbddf08af6"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        14
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    },
+    {
+      "backend": "native",
+      "key": "delegation-trimmed",
+      "document_page_counts": {
+        "rhwp": 7,
+        "pdf": 6
+      },
+      "source_result": {
+        "key": "delegation-trimmed",
+        "prs": [
+          8607
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 6,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/run_manifest.json",
+          "sha256": "2ae20f37441da5f92618941dd33c039e6f9248203e6cb974257ce125a7112a6c"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "403df72e7e9b1eaf7148d410c5dec1fb97bd54abeae31f78657ec67578f58f1e"
+        }
+      ],
+      "kind": "base-extra-pages-paired-recovery",
+      "paired_pages": 6,
+      "unmatched_product_pages": [
+        {
+          "page": 7,
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+          "sha256": "181f39dde727ad95544cdddd8de00ebe47d6b790e34d591c114353bef5aa3f84",
+          "reason": "독립 PDF 대응 쪽 없음"
+        }
+      ],
+      "recovered_result": {
+        "key": "delegation-trimmed",
+        "prs": [
+          8607
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 6,
+        "expected_pages": 6,
+        "page_set_matches": false,
+        "minimum": 6.42935,
+        "below90": [
+          {
+            "page": 1,
+            "raw": 6.42935
+          },
+          {
+            "page": 2,
+            "raw": 41.44832
+          },
+          {
+            "page": 3,
+            "raw": 47.55048
+          },
+          {
+            "page": 4,
+            "raw": 49.99569
+          },
+          {
+            "page": 5,
+            "raw": 47.67266
+          },
+          {
+            "page": 6,
+            "raw": 47.77714
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/delegation-trimmed/silhouette.tsv",
+        "tsv_sha256": "0316e4ef2d02bdcdfd0d08f0f5e33a03d54ed3a525d6aa4048b322d90f7dca71",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 7,
+          "pdf": 6
+        },
+        "unmatched_product_pages": [
+          {
+            "page": 7,
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+            "sha256": "181f39dde727ad95544cdddd8de00ebe47d6b790e34d591c114353bef5aa3f84",
+            "reason": "독립 PDF 대응 쪽 없음"
+          }
+        ],
+        "recovery_source_run_manifests": [
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/run_manifest.json",
+            "sha256": "2ae20f37441da5f92618941dd33c039e6f9248203e6cb974257ce125a7112a6c"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/run_manifest.json",
+            "sha256": "403df72e7e9b1eaf7148d410c5dec1fb97bd54abeae31f78657ec67578f58f1e"
+          }
+        ]
+      }
+    },
+    {
+      "backend": "native",
+      "key": "summary-tail",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 3
+      },
+      "source_result": {
+        "key": "summary-tail",
+        "prs": [
+          8625
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 3,
+        "page_set_matches": false,
+        "minimum": 0.0,
+        "below90": [
+          {
+            "page": "2",
+            "raw": "0.00"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette.tsv",
+        "tsv_sha256": "2a380c045eb5896d91e014fb574326f50127efb8cbec095d0920524492b89077",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/run_manifest.json",
+          "sha256": "f07cfad40dadfe60e0249ae068df8af80992f09b22cbc3bf4b59750e4afa6eca"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette-parts/p0002-0002/run_manifest.json",
+          "sha256": "b5913cb5869f34ffad702b9e21f5d12d36cbf22ddd379cf81f893c4d5d259e27"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "d550fd211c57f5bc31d159027bd14c729310e17fa3af5218999eb5294a610298"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        3
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    },
+    {
+      "backend": "native",
+      "key": "report-838",
+      "document_page_counts": {
+        "rhwp": 110,
+        "pdf": 109
+      },
+      "source_result": {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 109,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+          "sha256": "648c09e903d5762ec1d15d76fb22575d26992e89bdc40dabd765c62be2cdb35d"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+          "sha256": "753e03fc5e48e53599649d9c00b25ccbd151d49c535a43b9a8846f45bc8b6e4f"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "3f7ad6ef22da1e5961392e7c9288569402d37a0bde563c61b3550d16e1bd6c89"
+        }
+      ],
+      "kind": "existing-extra-page-pair-recovery",
+      "recovered_result": {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 109,
+        "expected_pages": 109,
+        "page_set_matches": false,
+        "minimum": 3.53561,
+        "below90": [
+          {
+            "page": 2,
+            "raw": 33.5362
+          },
+          {
+            "page": 3,
+            "raw": 55.46852
+          },
+          {
+            "page": 10,
+            "raw": 62.69374
+          },
+          {
+            "page": 24,
+            "raw": 88.61979
+          },
+          {
+            "page": 90,
+            "raw": 88.85717
+          },
+          {
+            "page": 91,
+            "raw": 21.06547
+          },
+          {
+            "page": 92,
+            "raw": 38.35815
+          },
+          {
+            "page": 93,
+            "raw": 36.78569
+          },
+          {
+            "page": 94,
+            "raw": 32.49636
+          },
+          {
+            "page": 95,
+            "raw": 14.18909
+          },
+          {
+            "page": 96,
+            "raw": 31.18752
+          },
+          {
+            "page": 97,
+            "raw": 28.62754
+          },
+          {
+            "page": 98,
+            "raw": 26.595
+          },
+          {
+            "page": 99,
+            "raw": 22.96307
+          },
+          {
+            "page": 100,
+            "raw": 27.87182
+          },
+          {
+            "page": 101,
+            "raw": 23.32362
+          },
+          {
+            "page": 102,
+            "raw": 21.0595
+          },
+          {
+            "page": 103,
+            "raw": 35.03675
+          },
+          {
+            "page": 104,
+            "raw": 40.25173
+          },
+          {
+            "page": 105,
+            "raw": 50.96506
+          },
+          {
+            "page": 106,
+            "raw": 33.37416
+          },
+          {
+            "page": 107,
+            "raw": 3.53561
+          },
+          {
+            "page": 108,
+            "raw": 5.27103
+          },
+          {
+            "page": 109,
+            "raw": 18.19333
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette.tsv",
+        "tsv_sha256": "0caae99737e3bf0188bfde67e8123289c80f4d4360cdb4c9e7d944d680d7ad85",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 110,
+          "pdf": 109
+        },
+        "unmatched_product_pages": [
+          {
+            "page": 110,
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/rhwp_png/rhwp_110.png",
+            "sha256": "2e6bceaec53036b8603b0f9173c462d6a3d71f22a00d3b6dc916c7075393a880",
+            "reason": "기준 PDF에는 대응 쪽이 없으므로 실루엣 점수를 만들지 않음"
+          }
+        ],
+        "recovery_source_run_manifests": [
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+            "sha256": "3f7ad6ef22da1e5961392e7c9288569402d37a0bde563c61b3550d16e1bd6c89"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+            "sha256": "648c09e903d5762ec1d15d76fb22575d26992e89bdc40dabd765c62be2cdb35d"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+            "sha256": "753e03fc5e48e53599649d9c00b25ccbd151d49c535a43b9a8846f45bc8b6e4f"
+          }
+        ]
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "report-838",
+      "document_page_counts": {
+        "rhwp": 110,
+        "pdf": 109
+      },
+      "source_result": {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 109,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+          "sha256": "13deb8caf9b375f4a915339460fac69211ba4a64ae8b7e43db641909d1e8ef55"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+          "sha256": "b0f377023de0fff32fde5bb5d5cf11bd33b73b6fd20bd6027ef698fb6b4c00d5"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "19818076c7db01180a5dbd1859534bb08e6c6e505861de33a7010287a4e75f2b"
+        }
+      ],
+      "kind": "existing-extra-page-pair-recovery",
+      "recovered_result": {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 109,
+        "expected_pages": 109,
+        "page_set_matches": false,
+        "minimum": 3.5776,
+        "below90": [
+          {
+            "page": 2,
+            "raw": 33.46613
+          },
+          {
+            "page": 3,
+            "raw": 55.46974
+          },
+          {
+            "page": 10,
+            "raw": 62.7485
+          },
+          {
+            "page": 24,
+            "raw": 88.69432
+          },
+          {
+            "page": 90,
+            "raw": 88.86789
+          },
+          {
+            "page": 91,
+            "raw": 21.06686
+          },
+          {
+            "page": 92,
+            "raw": 38.25471
+          },
+          {
+            "page": 93,
+            "raw": 36.75934
+          },
+          {
+            "page": 94,
+            "raw": 32.53903
+          },
+          {
+            "page": 95,
+            "raw": 14.18725
+          },
+          {
+            "page": 96,
+            "raw": 31.22661
+          },
+          {
+            "page": 97,
+            "raw": 28.65937
+          },
+          {
+            "page": 98,
+            "raw": 26.64065
+          },
+          {
+            "page": 99,
+            "raw": 22.81665
+          },
+          {
+            "page": 100,
+            "raw": 27.76424
+          },
+          {
+            "page": 101,
+            "raw": 23.18645
+          },
+          {
+            "page": 102,
+            "raw": 21.03484
+          },
+          {
+            "page": 103,
+            "raw": 34.90041
+          },
+          {
+            "page": 104,
+            "raw": 39.99957
+          },
+          {
+            "page": 105,
+            "raw": 50.95261
+          },
+          {
+            "page": 106,
+            "raw": 33.33607
+          },
+          {
+            "page": 107,
+            "raw": 3.5776
+          },
+          {
+            "page": 108,
+            "raw": 4.79266
+          },
+          {
+            "page": 109,
+            "raw": 17.29697
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-wasm/report-838/silhouette.tsv",
+        "tsv_sha256": "666442695fdd650259b1f64762128126bfd7d5b327883bbc010182a539d3efda",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 110,
+          "pdf": 109
+        },
+        "unmatched_product_pages": [
+          {
+            "page": 110,
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0066-0110/rhwp_png/rhwp_110.png",
+            "sha256": "e6d860aa3004e0df3e3d7cd5126d88899f11c66b93007cdfcac32a8f02b872b9",
+            "reason": "기준 PDF에는 대응 쪽이 없으므로 실루엣 점수를 만들지 않음"
+          }
+        ],
+        "recovery_source_run_manifests": [
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+            "sha256": "19818076c7db01180a5dbd1859534bb08e6c6e505861de33a7010287a4e75f2b"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+            "sha256": "13deb8caf9b375f4a915339460fac69211ba4a64ae8b7e43db641909d1e8ef55"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+            "sha256": "b0f377023de0fff32fde5bb5d5cf11bd33b73b6fd20bd6027ef698fb6b4c00d5"
+          }
+        ]
+      }
+    },
+    {
+      "backend": "native",
+      "key": "original-36474334",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 2
+      },
+      "source_result": {
+        "key": "original-36474334",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 2,
+        "page_set_matches": false,
+        "minimum": 35.0,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "35.00"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/silhouette.tsv",
+        "tsv_sha256": "1d7b519d7ad96a86996edc616b82b2c5e645252a419b13ecf71012b20f42f683",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/run_manifest.json",
+          "sha256": "f7bacccff7a989f8eed6a4e7405fba1c2b2faaf9f8af8faed60469e313c92aca"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "f66c4d385098072047b68143a131d5a1a6232c161f3673b96976da0d3a1a27c6"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        2
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    },
+    {
+      "backend": "wasm",
+      "key": "policy-agenda",
+      "document_page_counts": {
+        "rhwp": 13,
+        "pdf": 14
+      },
+      "source_result": {
+        "key": "policy-agenda",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 13,
+        "expected_pages": 14,
+        "page_set_matches": false,
+        "minimum": 17.99,
+        "below90": [
+          {
+            "page": "10",
+            "raw": "68.40"
+          },
+          {
+            "page": "11",
+            "raw": "36.26"
+          },
+          {
+            "page": "12",
+            "raw": "27.08"
+          },
+          {
+            "page": "13",
+            "raw": "17.99"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/policy-agenda/silhouette.tsv",
+        "tsv_sha256": "7a4ddf7458810c370746a0b610b2ddb8af8cc0c6b91bef25fde24d2a5caa4c39",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/policy-agenda/run_manifest.json",
+          "sha256": "e7c61de9b77eacd4d1c6d2b3a2146340ae9b2edecc0720a54f99f12e97894d4b"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/policy-agenda/silhouette-parts/p0002-0013/run_manifest.json",
+          "sha256": "baf8868fe218a7cb7157e551d4096992f0cebad43c3f518fa7120c1ad3e47c64"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/policy-agenda/policy-agenda/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "99cb092a33bd61df73627db9b6edeb3d75816e0f336876cf47448092a7005e24"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        14
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    },
+    {
+      "backend": "wasm",
+      "key": "certificate",
+      "document_page_counts": {
+        "rhwp": 8,
+        "pdf": 9
+      },
+      "source_result": {
+        "key": "certificate",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 8,
+        "expected_pages": 9,
+        "page_set_matches": false,
+        "minimum": 36.62,
+        "below90": [
+          {
+            "page": "2",
+            "raw": "83.23"
+          },
+          {
+            "page": "3",
+            "raw": "47.74"
+          },
+          {
+            "page": "4",
+            "raw": "46.27"
+          },
+          {
+            "page": "5",
+            "raw": "49.61"
+          },
+          {
+            "page": "6",
+            "raw": "36.92"
+          },
+          {
+            "page": "7",
+            "raw": "36.62"
+          },
+          {
+            "page": "8",
+            "raw": "49.07"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/certificate/silhouette.tsv",
+        "tsv_sha256": "d75a7334153ee8dfb60117c31f489f66551fde71c58db939b025abcfea92c7be",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/certificate/run_manifest.json",
+          "sha256": "306bf4ce8d97c7f6415c9fb2402ce1b68ef2bcd570560f972d496dba7c3461ad"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/certificate/silhouette-parts/p0002-0008/run_manifest.json",
+          "sha256": "ba6ec73d72ad622448e5c3bbfc1b1d153c541175e4d912873c440722f87fa17c"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/certificate/certificate/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "aa867d293749e7cd90e2ba5dbe60543fc1aaab1f9ea7710646184ba7c366ded6"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        9
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    },
+    {
+      "backend": "wasm",
+      "key": "delegation-trimmed",
+      "document_page_counts": {
+        "rhwp": 7,
+        "pdf": 6
+      },
+      "source_result": {
+        "key": "delegation-trimmed",
+        "prs": [
+          8607
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 6,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/delegation-trimmed/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/run_manifest.json",
+          "sha256": "204e848f8c7f842fd2e77d66f1a2b1ff681d29036471a53abe8f8bd66c4bfdcc"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "7a73c7014dc50f16b5609d0d93027b419c69432a0fc4e9ee68d863a17febe803"
+        }
+      ],
+      "kind": "base-extra-pages-paired-recovery",
+      "paired_pages": 6,
+      "unmatched_product_pages": [
+        {
+          "page": 7,
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+          "sha256": "dade3219260ec32bc74aa393c605d3e859f37cbacd605c76f879a0f723bff90e",
+          "reason": "독립 PDF 대응 쪽 없음"
+        }
+      ],
+      "recovered_result": {
+        "key": "delegation-trimmed",
+        "prs": [
+          8607
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 6,
+        "expected_pages": 6,
+        "page_set_matches": false,
+        "minimum": 6.5562,
+        "below90": [
+          {
+            "page": 1,
+            "raw": 6.5562
+          },
+          {
+            "page": 2,
+            "raw": 41.14563
+          },
+          {
+            "page": 3,
+            "raw": 47.46215
+          },
+          {
+            "page": 4,
+            "raw": 49.93816
+          },
+          {
+            "page": 5,
+            "raw": 47.46902
+          },
+          {
+            "page": 6,
+            "raw": 47.46533
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-wasm/delegation-trimmed/silhouette.tsv",
+        "tsv_sha256": "5cabdcb31b57ce85f48d8573b2bdaa2295da91c5f77a640591c7cc317c2c27b5",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 7,
+          "pdf": 6
+        },
+        "unmatched_product_pages": [
+          {
+            "page": 7,
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+            "sha256": "dade3219260ec32bc74aa393c605d3e859f37cbacd605c76f879a0f723bff90e",
+            "reason": "독립 PDF 대응 쪽 없음"
+          }
+        ],
+        "recovery_source_run_manifests": [
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/run_manifest.json",
+            "sha256": "204e848f8c7f842fd2e77d66f1a2b1ff681d29036471a53abe8f8bd66c4bfdcc"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/run_manifest.json",
+            "sha256": "7a73c7014dc50f16b5609d0d93027b419c69432a0fc4e9ee68d863a17febe803"
+          }
+        ]
+      }
+    },
+    {
+      "backend": "wasm",
+      "key": "summary-tail",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 3
+      },
+      "source_result": {
+        "key": "summary-tail",
+        "prs": [
+          8625
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 3,
+        "page_set_matches": false,
+        "minimum": 0.0,
+        "below90": [
+          {
+            "page": "2",
+            "raw": "0.00"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/summary-tail/silhouette.tsv",
+        "tsv_sha256": "2a380c045eb5896d91e014fb574326f50127efb8cbec095d0920524492b89077",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/summary-tail/run_manifest.json",
+          "sha256": "0034dcea68646c8a40b5969a518b48de5a54c5981ead1903968416f55a9ea526"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/summary-tail/silhouette-parts/p0002-0002/run_manifest.json",
+          "sha256": "c898e8d4b668cc3074cca8ae1b0f5082b6f4e5074fcebe400d4ec2d0cb619c5b"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/summary-tail/summary-tail/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "9df14539118ed1e69166ef11141a5732c55ef5adf2e29e8737ed1e991d4cc80e"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        3
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    },
+    {
+      "backend": "wasm",
+      "key": "original-36474334",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 2
+      },
+      "source_result": {
+        "key": "original-36474334",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 2,
+        "page_set_matches": false,
+        "minimum": 34.73,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "34.73"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/original-36474334/original-36474334/silhouette.tsv",
+        "tsv_sha256": "b4c682b8059aaeb37df7212e58bee9021a64bdeb0a9fa8b40bf03c0047c49b00",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/original-36474334/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      "source_run_manifests": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/original-36474334/original-36474334/run_manifest.json",
+          "sha256": "10d4df58c7b31a1ae48d59d3b78b5bf628eaa263e86670b3ea4ca5bed0f4c41c"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-wasm/original-36474334/original-36474334/silhouette-parts/p0001-0001/run_manifest.json",
+          "sha256": "40731d82c3cc9587dbe0c65fe748a671b8d0c62d71977b52a6bbf0831f10dc1b"
+        }
+      ],
+      "kind": "base-fewer-pages",
+      "missing_base_pages": [
+        2
+      ],
+      "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+    }
+  ],
+  "unresolved": [],
+  "finished_at": "2026-11-09T20:03:12.628610+09:00"
+}

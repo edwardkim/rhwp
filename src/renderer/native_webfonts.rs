@@ -7,6 +7,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use super::font_environment::FontEnvironment;
+use crate::error::HwpError;
 use crate::model::document::DocInfo;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -53,6 +54,79 @@ pub struct NativeWebfontResource {
 }
 
 impl NativeWebfontSupply {
+    /// 공급 결과를 문서 환경에 합쳐 쪽수·측정·paint가 쓸 환경 한 세대를 만든다.
+    ///
+    /// 공급 매핑이 덮어쓴 원본에는 문서 선택의 흔적(프로그램·문서 치환·선택 규칙)을
+    /// 남기지 않는다. 문자 대체는 원본과 다른 글꼴만 가리킨다.
+    pub fn merge_into_environment(
+        &self,
+        native: Option<FontEnvironment>,
+    ) -> Result<Option<FontEnvironment>, HwpError> {
+        let fallbacks = self.distinct_glyph_fallbacks();
+        if self.mappings.is_empty() && fallbacks.is_empty() {
+            return Ok(native);
+        }
+        let mut value =
+            serde_json::to_value(native).map_err(|e| HwpError::RenderError(e.to_string()))?;
+        if value.is_null() {
+            value = serde_json::json!({"id":"native-webfont-supply", "substitutions":{}, "preserveSourceMetrics":true});
+        }
+        let object = value
+            .as_object_mut()
+            .ok_or_else(|| HwpError::RenderError("글꼴 환경이 올바르지 않습니다".into()))?;
+        let mappings = object
+            .entry("substitutions")
+            .or_insert_with(|| serde_json::json!({}))
+            .as_object_mut()
+            .ok_or_else(|| HwpError::RenderError("글꼴 치환이 올바르지 않습니다".into()))?;
+        for (source, target) in &self.mappings {
+            mappings.insert(source.clone(), target.clone().into());
+        }
+        for field in ["selectedPrograms", "selectionRules"] {
+            if let Some(entries) = object.get_mut(field).and_then(|v| v.as_object_mut()) {
+                for source in self.mappings.keys() {
+                    entries.remove(source);
+                }
+            }
+        }
+        if let Some(entries) = object
+            .get_mut("documentSubstitutions")
+            .and_then(|v| v.as_array_mut())
+        {
+            entries.retain(|entry| {
+                !entry["source"]
+                    .as_str()
+                    .is_some_and(|source| self.mappings.contains_key(source))
+            });
+        }
+        if !fallbacks.is_empty() {
+            object.insert("documentGlyphFallbacks".into(), fallbacks.into());
+        }
+        let identity = serde_json::to_vec(&(&value, &self.resources))
+            .map_err(|e| HwpError::RenderError(e.to_string()))?;
+        let digest: String = Sha256::digest(identity)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        value["id"] = format!("native-webfont-{}", &digest[..24]).into();
+        FontEnvironment::from_json(&value.to_string()).map(Some)
+    }
+
+    /// 원본 자신은 대체가 아니다. 보조 공급이 문서 글꼴과 같은 프로그램이면
+    /// 해당 글꼴은 이미 원본으로 그려지므로 문자 대체 항목을 만들지 않는다.
+    fn distinct_glyph_fallbacks(&self) -> Vec<serde_json::Value> {
+        self.glyph_fallbacks
+            .iter()
+            .filter_map(|entry| {
+                let mut entry = entry.clone();
+                let source = entry["source"].as_str()?.to_owned();
+                let faces = entry["faces"].as_array_mut()?;
+                faces.retain(|face| face.as_str() != Some(source.as_str()));
+                (!faces.is_empty()).then_some(entry)
+            })
+            .collect()
+    }
+
     /// SVG를 여는 호스트에서도 같은 공급원을 읽도록 한다. 로컬 face가 우선한다.
     pub fn svg_style(&self) -> String {
         let mut css = String::new();
@@ -322,6 +396,7 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
             let _ = database.load_font_file(path);
         }
     }
+    super::font_paths::retain_fontdb_family_aliases(&mut database);
     let present = |name: &str| {
         let target = normalized(name);
         if database.faces().any(|face| {
@@ -378,13 +453,18 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
                 })
             });
         let generic = rule.is_none();
+        // 문서에 선언된 실제 로컬 대체는 registry의 웹 face보다 우선한다.
+        // 공급 원본이 없는 generic 진단은 유지하되 대체 프로그램은 덮어쓰지 않는다.
+        if substitute.iter().any(|face| present(face)) {
+            if generic {
+                result.unavailable.push(source.clone());
+            }
+            continue;
+        }
         let url = if generic {
             // 원 프로그램의 공급과 일반 문자 대체는 구분한다. 문서가 선언한
             // 설치 대체 글꼴은 유지하고, 그것도 없을 때 공개 Noto를 사용한다.
             result.unavailable.push(source.clone());
-            if substitute.iter().any(|face| present(face)) {
-                continue;
-            }
             if present("NotoSansKR-Regular") {
                 result.generic_fallbacks.push(source.clone());
                 result.mappings.insert(source, "NotoSansKR-Regular".into());
@@ -542,76 +622,29 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
     result.paths = priority_paths;
     let mut seen = BTreeSet::new();
     result.paths.retain(|path| seen.insert(path.clone()));
-    // Skia의 기존 공급 한도와 같은 상수를 사용한다. 제한 밖 프로그램을
-    // layout에만 넘겨 실제 paint도 공급됐다고 오인하지 않는다.
-    let limit = super::font_paths::MAX_NATIVE_CUSTOM_FONT_BYTES;
-    let mut used = 0u64;
-    let mut retained_bytes = 0u64;
-    let mut file_count = 0usize;
-    let mut source_files = BTreeSet::new();
-    for source in super::font_paths::custom_font_dirs(paths) {
-        let mut files = if source.is_file() {
-            vec![source]
-        } else {
-            std::fs::read_dir(source)
-                .into_iter()
-                .flatten()
-                .flatten()
-                .map(|entry| entry.path())
-                .collect()
-        };
-        files.sort();
-        for file in files {
-            if !source_files.insert(file.clone())
-                || !file.extension().and_then(|x| x.to_str()).is_some_and(|x| {
-                    matches!(x.to_ascii_lowercase().as_str(), "ttf" | "otf" | "ttc")
-                })
-            {
-                continue;
-            }
-            if let Ok(meta) = file.metadata() {
-                if file_count < 256
-                    && meta.is_file()
-                    && meta.len() <= MAX_FONT_BYTES as u64
-                    && used.saturating_add(meta.len()) <= limit
-                {
-                    used += meta.len();
-                    file_count += 1;
-                    if let Ok(data) = std::fs::read(&file) {
-                        // 컬렉션은 Skia가 face마다 원본의 복사본을 보유한다.
-                        // 파싱 가능한 face까지 보수적으로 예약해 공급을 과장하지 않는다.
-                        let faces = ttf_parser::fonts_in_collection(&data).unwrap_or(1).min(64);
-                        for index in 0..faces {
-                            if retained_bytes.saturating_add(data.len() as u64) > limit {
-                                break;
-                            }
-                            if ttf_parser::Face::parse(&data, index).is_ok() {
-                                retained_bytes += data.len() as u64;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+    // Skia 경로 적재와 같은 파일 선택 규칙으로 판정한다. 받아들이지 않는
+    // 프로그램을 layout에만 넘겨 실제 paint도 공급됐다고 오인하지 않는다.
+    // 렌더러는 호출자 경로 뒤에 이 공급 경로를 붙여 읽는다(#8597).
+    let loader_paths: Vec<PathBuf> = paths.iter().chain(&result.paths).cloned().collect();
+    let scan = super::font_paths::scan_native_custom_font_files(
+        &super::font_paths::custom_font_dirs(&loader_paths),
+    );
+    let accepted: BTreeSet<PathBuf> = scan.files.into_iter().flatten().collect();
     result.paths.retain(|path| {
-        let length = path
-            .join("font.otf")
-            .metadata()
-            .map(|meta| meta.len())
-            .unwrap_or(u64::MAX);
-        if file_count < 256
-            && used.saturating_add(length) <= limit
-            && retained_bytes.saturating_add(length) <= limit
-        {
-            used += length;
-            retained_bytes += length;
-            file_count += 1;
+        let program = path.join("font.otf");
+        if accepted.contains(&program) {
             true
         } else {
+            let reason = scan
+                .skipped
+                .iter()
+                .find(|skipped| skipped.path == program)
+                .map_or("Native 글꼴 공급 한도 초과", |skipped| {
+                    skipped.reason.as_str()
+                });
             result
                 .unavailable
-                .push(format!("{}: Native 글꼴 공급 한도 초과", path.display()));
+                .push(format!("{}: {reason}", path.display()));
             false
         }
     });

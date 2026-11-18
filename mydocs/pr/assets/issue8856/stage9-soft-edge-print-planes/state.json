@@ -1,0 +1,25 @@
+{
+  "started": "2026-11-10T06:10:09.874672+09:00",
+  "running": false,
+  "steps": [
+    {
+      "name": "native-clippy",
+      "exit": 0
+    },
+    {
+      "name": "native",
+      "exit": 0
+    },
+    {
+      "name": "wasm",
+      "exit": 0
+    },
+    {
+      "name": "http",
+      "exit": 0
+    }
+  ],
+  "current": "http",
+  "complete": true,
+  "ended": "2026-11-10T06:23:30.764144+09:00"
+}

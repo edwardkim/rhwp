@@ -182,6 +182,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/frontend-canvas-gates.mjs'
                 || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
@@ -219,7 +220,7 @@ jobs:
                   const fields = new Map(entries);
                   if (entries.length !== fields.size || entries.some(([key, value]) => !key || !value)) return false;
                   const expectedFields = [
-                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'fc', 'render', 'skia', 'ql', 'b',
                   ];
                   const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
                   if (
@@ -227,7 +228,7 @@ jobs:
                     && latest.creator?.login === 'github-actions[bot]'
                     && fields.size === expectedFields.length
                     && expectedFields.every((field) => fields.has(field))
-                    && fields.get('v') === '8'
+                    && fields.get('v') === '9'
                     && fields.get('rfp') === '1'
                     && fields.get('b') === pr.base.sha
                     && target
@@ -377,6 +378,14 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = pr.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || prFiles.length !== expectedPrFileCount) {
+                setResult(false, 'pull-file-list-incomplete');
+                return;
+              }
               const hasCiExecutionSurfaceChange = prFiles.some((file) => (
                 isCiExecutionPath(file.filename)
                 || isCiExecutionPath(file.previous_filename || '')
@@ -686,6 +695,13 @@ jobs:
                 pull_number: context.payload.pull_request.number,
                 per_page: 100,
               });
+              // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+              const expectedPrFileCount = context.payload.pull_request.changed_files;
+              if (!Number.isSafeInteger(expectedPrFileCount)
+                || expectedPrFileCount < 0
+                || files.length !== expectedPrFileCount) {
+                throw new Error('Pull request file inventory incomplete');
+              }
               writeInput({
                 eventName: context.eventName,
                 files: files.map((file) => ({
@@ -809,7 +825,7 @@ jobs:
 
   analyze:
     name: Analyze (${{ matrix.language }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # 대형 Rust PR은 추출과 보안 쿼리 평가가 45분을 넘을 수 있다.
     # 분석 범위를 줄이지 않고 실제 완료까지 허용한다.
     timeout-minutes: 90
@@ -844,13 +860,13 @@ jobs:
       # 포화·스톨) 및 task_m100_3289_report.md 거버넌스 절 참조.
       - name: Initialize CodeQL (non-Rust)
         if: ${{ matrix.language != 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: ${{ matrix.language }}
 
       - name: Initialize CodeQL (Rust)
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: rust
           build-mode: none
@@ -860,7 +876,7 @@ jobs:
       # #6877에서 제외한 내부 metric 3개만 생략한다. PR의 paths는 가져오지 않는다.
       - name: Initialize CodeQL (Rust post-merge)
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'push' && github.ref == 'refs/heads/devel' }}
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: rust
           build-mode: none
@@ -869,7 +885,7 @@ jobs:
       # main push, schedule, workflow_dispatch retain all paths and all queries.
       - name: Initialize CodeQL (Rust full scan)
         if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' && !(github.event_name == 'push' && github.ref == 'refs/heads/devel') }}
-        uses: github/codeql-action/init@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           languages: rust
           build-mode: none
@@ -882,4 +898,4 @@ jobs:
       # 추출 파일·SARIF 지표가 같았고, none 모드가 더 짧아 Rust 자동 빌드 의존을 제거한다.
       - name: Perform CodeQL Analysis
         if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
-        uses: github/codeql-action/analyze@9b3254085494b55a0f7c4c2b3d2d52cc712ce370 # v4.39.1 (2026-10-21)
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3

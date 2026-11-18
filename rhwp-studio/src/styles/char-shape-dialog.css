@@ -10,11 +10,21 @@
 /* 메인 레이아웃: 좌측(탭+컨텐츠) + 우측(버튼) */
 .cs-main-row {
   display: flex;
+  min-height: 0;
 }
 
 .cs-left-col {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
+  min-height: 0;
+}
+
+.cs-left-col > .dialog-body {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .cs-right-col {
@@ -95,9 +105,9 @@
   color: var(--color-text);
 }
 
-/* 탭 패널 고정 높이 — 탭 전환 시 다이얼로그 크기 변동 방지 */
+/* 기존 탭 본문 높이를 선호하되 작은 화면에서는 축소·스크롤한다. */
 .cs-dialog .dialog-body {
-  min-height: 380px;
+  flex-basis: 380px;
 }
 
 /* 확장 탭 라디오 라벨 */

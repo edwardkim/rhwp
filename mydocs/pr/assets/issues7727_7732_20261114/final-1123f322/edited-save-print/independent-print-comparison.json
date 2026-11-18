@@ -1,0 +1,22 @@
+{
+  "cases": [
+    {
+      "format": "hwp",
+      "pdf": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-current/issue7727-edited-small-hwp-2020.pdf",
+      "sha256": "2094532dafe0076645ae9e19f40396fb27133abee5e6f4815914ad5877aca88c",
+      "pages": 1,
+      "text": "xABC 10\r\nABC 10\r\nABC 10",
+      "pixel_sha256_96dpi": "9cef841a774376fb9909bbc285d0e883fb127452ee9777456d3452b74544220f"
+    },
+    {
+      "format": "hwpx",
+      "pdf": "output/pr-review/issues-7727-7732-20261114/stored-right-tab-repair/edited-small-canonical/issue7727-edited-small-canonical-hwpx-2020.pdf",
+      "sha256": "efeb872c274313e501b11073f979f0cf960b5adf836e18faff64af769770047e",
+      "pages": 1,
+      "text": "xABC 10\r\nABC 10\r\nABC 10",
+      "pixel_sha256_96dpi": "9cef841a774376fb9909bbc285d0e883fb127452ee9777456d3452b74544220f"
+    }
+  ],
+  "same_text": true,
+  "same_pixels_96dpi": true
+}

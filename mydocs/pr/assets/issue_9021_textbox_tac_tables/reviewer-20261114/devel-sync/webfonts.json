@@ -1,0 +1,14 @@
+[
+  {
+    "name": "HCRDotum",
+    "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.0/HCRDotum.woff",
+    "source_sha256": "49bf312aec309ba88c3eb612c591c2d8e28b765c156c808691850137431bb1bf",
+    "ttf_sha256": "4525b5ff67b49b1da1e9a2d9a2bada03fc638c044bf42f87b0cb5a3e9fae95bf"
+  },
+  {
+    "name": "HCRBatang",
+    "url": "https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.0/HANBatang.woff",
+    "source_sha256": "b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c",
+    "ttf_sha256": "3fd1a42ab9c84b6ff59a259e859edb2fd709d574bdece536c94c04cb10f8bb5a"
+  }
+]

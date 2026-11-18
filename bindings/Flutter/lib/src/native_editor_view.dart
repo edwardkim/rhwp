@@ -25,10 +25,25 @@ class NativeEditorView extends StatefulWidget {
     required this.document,
     this.page = 0,
     this.viewportBuilder,
+    this.onControllerChanged,
+
+    this.pageViewports,
+    this.backgroundBuilder,
+    this.onCaretChanged,
   });
   final NativeDocument document;
   final int page;
   final NativeEditorViewportBuilder? viewportBuilder;
+
+  /// Observe the view-owned editor to drain accepted input before host actions.
+  /// The host must not dispose it. Null means it is being detached or replaced.
+  final ValueChanged<NativeEditorController?>? onControllerChanged;
+
+  /// Placements supplied by one multi-page viewport owner. This widget owns
+  /// input only; [backgroundBuilder] must supply that owner's rendered pages.
+  final Map<int, NativePageViewport>? pageViewports;
+  final WidgetBuilder? backgroundBuilder;
+  final ValueChanged<Map<String, Object?>?>? onCaretChanged;
   @override
   State<NativeEditorView> createState() => _NativeEditorViewState();
 }
@@ -71,6 +86,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
     _dragLatest = null;
     _dragActive = false;
     final old = _editor;
+    if (old != null) widget.onControllerChanged?.call(null);
     old?.removeListener(_changed);
     old?.dispose();
     _editor = null;
@@ -83,6 +99,8 @@ class _NativeEditorViewState extends State<NativeEditorView>
     editor.addListener(_changed);
     try {
       await editor.initialize();
+      if (!mounted || binding != _binding) return;
+      widget.onControllerChanged?.call(editor);
       final page = await widget.document.pageSize(widget.page);
       if (!mounted || binding != _binding) return;
       setState(() {
@@ -109,7 +127,10 @@ class _NativeEditorViewState extends State<NativeEditorView>
       _openInput();
       if (editor!.pending == 0) _connection?.setEditingState(editor.value);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _inputGeometry();
+        if (mounted) {
+          if (editor.pending == 0) widget.onCaretChanged?.call(editor.caret);
+          _inputGeometry();
+        }
       });
     } else {
       _closeInput();
@@ -174,7 +195,11 @@ class _NativeEditorViewState extends State<NativeEditorView>
   }
 
   void _inputGeometry() {
-    final connection = _connection, geometry = _geometry;
+    final connection = _connection;
+    final caret = _editor?.caret;
+    final geometry = caret == null
+        ? _geometry
+        : _geometryFor(caret['page'] as int);
     final box = context.findRenderObject();
     if (connection == null ||
         !connection.attached ||
@@ -184,8 +209,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
       return;
     }
     connection.setEditableSizeAndTransform(box.size, box.getTransformTo(null));
-    final caret = _editor?.caret;
-    if (caret != null && caret['page'] == widget.page) {
+    if (caret != null) {
       final rect = geometry.caret(caret);
       connection.setCaretRect(rect);
       if (_editor!.value.composing.isValid) connection.setComposingRect(rect);
@@ -248,19 +272,28 @@ class _NativeEditorViewState extends State<NativeEditorView>
     return KeyEventResult.handled;
   }
 
-  void _point(Offset local, {bool extend = false}) {
-    final geometry = _geometry, editor = _editor;
-    if (geometry == null || editor == null) return;
-    final point = geometry.toNative(local);
-    if (point.dx < 0 ||
-        point.dy < 0 ||
-        point.dx > geometry.page.width ||
-        point.dy > geometry.page.height) {
-      return;
+  NativePageViewport? _geometryFor(int page) => widget.pageViewports == null
+      ? (page == widget.page ? _geometry : null)
+      : widget.pageViewports![page];
+
+  int? _pageAt(Offset local) {
+    final placements = widget.pageViewports;
+    if (placements != null) {
+      for (final entry in placements.entries) {
+        if (entry.value.pageBounds.contains(local)) return entry.key;
+      }
+      return null;
     }
-    _perform(
-      () => editor.point(widget.page, point.dx, point.dy, extend: extend),
-    );
+    return _geometry?.pageBounds.contains(local) == true ? widget.page : null;
+  }
+
+  void _point(Offset local, {bool extend = false}) {
+    final page = _pageAt(local), editor = _editor;
+    if (page == null || editor == null) return;
+    final geometry = _geometryFor(page);
+    if (geometry == null) return;
+    final point = geometry.toNative(local);
+    _perform(() => editor.point(page, point.dx, point.dy, extend: extend));
   }
 
   void _drag(Offset local) {
@@ -269,15 +302,17 @@ class _NativeEditorViewState extends State<NativeEditorView>
     final ticket = Object();
     _dragTicket = ticket;
     final binding = _binding;
-    final editor = _editor, geometry = _geometry;
-    if (editor == null || geometry == null) {
+    final editor = _editor;
+    final page = _pageAt(local);
+    final geometry = page == null ? null : _geometryFor(page);
+    if (editor == null || geometry == null || page == null) {
       _dragTicket = null;
       return;
     }
     final point = geometry.toNative(local);
     _perform(() async {
       try {
-        await editor.point(widget.page, point.dx, point.dy, extend: true);
+        await editor.point(page, point.dx, point.dy, extend: true);
       } finally {
         if (identical(_dragTicket, ticket)) {
           _dragTicket = null;
@@ -297,9 +332,17 @@ class _NativeEditorViewState extends State<NativeEditorView>
   @override
   Widget build(BuildContext context) => LayoutBuilder(
     builder: (context, constraints) {
+      if ((widget.pageViewports == null) !=
+          (widget.backgroundBuilder == null)) {
+        throw ArgumentError(
+          'A document viewport needs both placements and its background.',
+        );
+      }
       _size = Size(constraints.maxWidth, constraints.maxHeight);
       final page = _page;
-      final geometry = page == null || !_size.isFinite || _size.isEmpty
+      final geometry = widget.pageViewports != null
+          ? widget.pageViewports![widget.page]
+          : page == null || !_size.isFinite || _size.isEmpty
           ? null
           : NativePageViewport.fit(page, _size);
       _geometry = geometry;
@@ -373,7 +416,9 @@ class _NativeEditorViewState extends State<NativeEditorView>
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    if (geometry != null && widget.viewportBuilder != null)
+                    if (widget.backgroundBuilder != null)
+                      widget.backgroundBuilder!(context)
+                    else if (geometry != null && widget.viewportBuilder != null)
                       widget.viewportBuilder!(
                         context,
                         widget.document,
@@ -383,13 +428,13 @@ class _NativeEditorViewState extends State<NativeEditorView>
                       )
                     else
                       cpuFallback(context),
-                    if (_geometry != null && editor != null)
+                    if ((_geometry != null || widget.pageViewports != null) &&
+                        editor != null)
                       IgnorePointer(
                         child: CustomPaint(
                           painter: _Overlay(
                             editor,
-                            _geometry!,
-                            widget.page,
+                            widget.pageViewports ?? {widget.page: _geometry!},
                             _focus.hasFocus,
                           ),
                         ),
@@ -414,11 +459,23 @@ class _NativeEditorViewState extends State<NativeEditorView>
   @override
   void didUpdateWidget(NativeEditorView oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.onControllerChanged != oldWidget.onControllerChanged) {
+      oldWidget.onControllerChanged?.call(null);
+      if (identical(widget.document, oldWidget.document) &&
+          widget.page == oldWidget.page &&
+          _editor?.ready == true) {
+        widget.onControllerChanged?.call(_editor);
+      }
+    }
     if (!identical(widget.document, oldWidget.document)) {
       unawaited(_changes?.cancel());
       _listen();
     } else if (widget.page != oldWidget.page) {
       unawaited(_bind());
+    } else if (widget.pageViewports != oldWidget.pageViewports) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _inputGeometry();
+      });
     }
   }
 
@@ -488,6 +545,7 @@ class _NativeEditorViewState extends State<NativeEditorView>
   @override
   void dispose() {
     _binding++;
+    widget.onControllerChanged?.call(null);
     _closeInput();
     unawaited(_changes?.cancel());
     final editor = _editor;
@@ -511,16 +569,16 @@ class _NativeEditorViewState extends State<NativeEditorView>
 }
 
 class _Overlay extends CustomPainter {
-  _Overlay(this.editor, this.geometry, this.page, this.focused);
+  _Overlay(this.editor, this.geometries, this.focused);
   final NativeEditorController editor;
-  final NativePageViewport geometry;
-  final int page;
+  final Map<int, NativePageViewport> geometries;
   final bool focused;
   @override
   void paint(Canvas canvas, Size size) {
     canvas.clipRect(Offset.zero & size);
     for (final selection in editor.rectangles) {
-      if (selection['page'] == page) {
+      final geometry = geometries[selection['page']];
+      if (geometry != null) {
         canvas.drawRect(
           geometry.rectangle(selection['bounds']! as Map),
           Paint()..color = const Color(0x4d3278e6),
@@ -528,9 +586,10 @@ class _Overlay extends CustomPainter {
       }
     }
     final caret = editor.caret;
-    if (focused && caret != null && caret['page'] == page) {
+    final caretGeometry = caret == null ? null : geometries[caret['page']];
+    if (focused && caret != null && caretGeometry != null) {
       canvas.drawRect(
-        geometry.caret(caret),
+        caretGeometry.caret(caret),
         Paint()..color = const Color(0xff202020),
       );
     }

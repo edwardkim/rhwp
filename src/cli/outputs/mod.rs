@@ -12,6 +12,21 @@ pub(crate) mod tabular;
 pub(crate) mod text;
 pub(crate) mod vector;
 
+/// 파일 시스템 한 이름의 바이트 한도(ext4·APFS 255바이트, NTFS 255 UTF-16 단위 이하).
+pub(crate) const MAX_OUTPUT_FILE_NAME_BYTES: usize = 255;
+
+/// 원본 이름에서 만든 산출 파일·폴더 이름. `suffix`(쪽 번호·확장자 등)를 보존하고,
+/// 전체가 [`MAX_OUTPUT_FILE_NAME_BYTES`] 를 넘으면 `stem` 을 UTF-8 문자 경계에서 줄인다.
+/// 같은 입력이면 같은 이름이다(#9010).
+pub(crate) fn output_file_name(stem: &str, suffix: &str) -> String {
+    let budget = MAX_OUTPUT_FILE_NAME_BYTES.saturating_sub(suffix.len());
+    let mut end = stem.len().min(budget);
+    while !stem.is_char_boundary(end) {
+        end -= 1;
+    }
+    format!("{}{}", &stem[..end], suffix)
+}
+
 pub(crate) fn allows_implicit_sibling_resources(format: rhwp::parser::FileFormat) -> bool {
     // HML sibling paths are untrusted input and require an explicit resolver policy.
     !matches!(format, rhwp::parser::FileFormat::Hml)
@@ -59,67 +74,7 @@ pub(crate) fn apply_font_environment(
             )?;
             #[cfg(not(target_arch = "wasm32"))]
             {
-                if supply.mappings.is_empty() && supply.glyph_fallbacks.is_empty() {
-                    native
-                } else {
-                    let mut value = serde_json::to_value(native)
-                        .map_err(|e| rhwp::error::HwpError::RenderError(e.to_string()))?;
-                    if value.is_null() {
-                        value = serde_json::json!({"id":"native-webfont-supply", "substitutions":{}, "preserveSourceMetrics":true});
-                    }
-                    let object = value.as_object_mut().ok_or_else(|| {
-                        rhwp::error::HwpError::RenderError("글꼴 환경이 올바르지 않습니다".into())
-                    })?;
-                    let mappings = object
-                        .entry("substitutions")
-                        .or_insert_with(|| serde_json::json!({}))
-                        .as_object_mut()
-                        .ok_or_else(|| {
-                            rhwp::error::HwpError::RenderError(
-                                "글꼴 치환이 올바르지 않습니다".into(),
-                            )
-                        })?;
-                    for (source, target) in &supply.mappings {
-                        mappings.insert(source.clone(), target.clone().into());
-                    }
-                    if let Some(programs) = object
-                        .get_mut("selectedPrograms")
-                        .and_then(|v| v.as_object_mut())
-                    {
-                        for source in supply.mappings.keys() {
-                            programs.remove(source);
-                        }
-                    }
-                    if let Some(entries) = object
-                        .get_mut("documentSubstitutions")
-                        .and_then(|v| v.as_array_mut())
-                    {
-                        entries.retain(|entry| {
-                            !entry["source"]
-                                .as_str()
-                                .is_some_and(|source| supply.mappings.contains_key(source))
-                        });
-                    }
-                    if !supply.glyph_fallbacks.is_empty() {
-                        object.insert(
-                            "documentGlyphFallbacks".into(),
-                            supply.glyph_fallbacks.into(),
-                        );
-                    }
-                    use sha2::{Digest, Sha256};
-                    let identity = serde_json::to_vec(&(&value, &supply.resources))
-                        .map_err(|e| rhwp::error::HwpError::RenderError(e.to_string()))?;
-                    let digest: String = Sha256::digest(identity)
-                        .iter()
-                        .map(|byte| format!("{byte:02x}"))
-                        .collect();
-                    value["id"] = format!("native-webfont-{}", &digest[..24]).into();
-                    Some(
-                        rhwp::renderer::font_environment::FontEnvironment::from_json(
-                            &value.to_string(),
-                        )?,
-                    )
-                }
+                supply.merge_into_environment(native)?
             }
             #[cfg(target_arch = "wasm32")]
             {

@@ -1,0 +1,3519 @@
+{
+  "code_head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+  "base": "06181802e574dbd91e62375536751dea8c270fcd",
+  "native_cli_sha256": "6534446925737cc664911c0e2dfcb8b31a284e8015712c29016b720ee417c046",
+  "native_whole": {
+    "pid": 78392,
+    "state": "complete",
+    "backend": "native",
+    "producer": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/rhwp-nested-condense25",
+    "producer_identity": {
+      "binary_sha256": "6534446925737cc664911c0e2dfcb8b31a284e8015712c29016b720ee417c046",
+      "package_sha256": null,
+      "manifest_sha256": "1b5be91cd0dbd6474ec7b18b5efa0fb0bd029bb39e2f24482c367b20324b97c9"
+    },
+    "manifest": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-local-cases.json",
+    "target_count": 93,
+    "results": [
+      {
+        "key": "cover",
+        "prs": [
+          8550
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.87,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/cover/cover/silhouette.tsv",
+        "tsv_sha256": "b428fe49a97c0d754397cdc2495ebe6a0f1cad2b2c45cccf5c4aa164a273dc6b",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/cover/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "family-register",
+        "prs": [
+          8559
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.68,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/family-register/family-register/silhouette.tsv",
+        "tsv_sha256": "5a7f7367b59de7631b3ff75a549bb74b6eff6f59eede652b63c7874d743a38a8",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/family-register/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "agenda-cover",
+        "prs": [
+          8563
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.77,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/agenda-cover/agenda-cover/silhouette.tsv",
+        "tsv_sha256": "b2f2c0726bbc8d7b673bf352b0586ca8acb45e3fa5becb89b7f97ecf2a1fd335",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/agenda-cover/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "trailing-space-2020",
+        "prs": [
+          8581
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/trailing-space-2020/trailing-space-2020/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/trailing-space-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "trailing-space-2024",
+        "prs": [
+          8581
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/trailing-space-2024/trailing-space-2024/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/trailing-space-2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "busan-form",
+        "prs": [
+          8589
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/busan-form/busan-form/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/busan-form/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "image-fill-hwpx",
+        "prs": [
+          8600
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/image-fill-hwpx/image-fill-hwpx/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/image-fill-hwpx/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "image-fill-hwp",
+        "prs": [
+          8600
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/image-fill-hwp/image-fill-hwp/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/image-fill-hwp/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "certificate",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 9,
+        "expected_pages": 9,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/certificate/certificate/silhouette.tsv",
+        "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/certificate/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "policy-agenda",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 14,
+        "expected_pages": 14,
+        "page_set_matches": true,
+        "minimum": 98.4,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-agenda/policy-agenda/silhouette.tsv",
+        "tsv_sha256": "2e746e4b76febb96b10e905d53925de746a3475ac7bddb4877783a1080bf7449",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-agenda/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "idol-counterexample",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.76,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/idol-counterexample/idol-counterexample/silhouette.tsv",
+        "tsv_sha256": "4385955689fab54d2f325b4407c15349949933c988e9edc4adf1e6610a4f15f1",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/idol-counterexample/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "childcare",
+        "prs": [
+          8605
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 25,
+        "expected_pages": 25,
+        "page_set_matches": true,
+        "minimum": 98.72,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/childcare/childcare/silhouette.tsv",
+        "tsv_sha256": "858566872fefcc369c9b5274bcba413b94986f91e1bfe1b57121032b2a9edb00",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/childcare/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "delegation-trimmed",
+        "prs": [
+          8607
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 6,
+        "expected_pages": 6,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/delegation-trimmed/delegation-trimmed/silhouette.tsv",
+        "tsv_sha256": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/delegation-trimmed/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "shortcut",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 7,
+        "expected_pages": 7,
+        "page_set_matches": true,
+        "minimum": 97.12,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/shortcut/shortcut/silhouette.tsv",
+        "tsv_sha256": "e34b2eaf60919622cb85727742dfcc30475efef6d3693fc566f801ebb65c81d5",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/shortcut/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sungeo",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 94,
+        "expected_pages": 94,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sungeo/sungeo/silhouette.tsv",
+        "tsv_sha256": "8713dee90aecffd3d0b63e0ece6b970ac251e257116848e7dda3732ee859f166",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sungeo/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "bookreview",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/bookreview/bookreview/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/bookreview/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "ktx",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.85,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/ktx/ktx/silhouette.tsv",
+        "tsv_sha256": "c4edfc4c41c547a4e9d612162b60055916b4ceb4fe2299c4d7a803e3939465cb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/ktx/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "interview",
+        "prs": [
+          8611,
+          8617
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 97.52,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/interview/interview/silhouette.tsv",
+        "tsv_sha256": "c53158ff847f52d3594fbd8aab73fac9673f1a94626169990554674f6a84a8ea",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/interview/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "request",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 96.18,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/request/request/silhouette.tsv",
+        "tsv_sha256": "b86612a4265461f3ee8384faf3780cae3bd1063befc9fa68d199470475e8e05a",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/request/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "english",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/english/english/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/english/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "newyear",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 98.45,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/newyear/newyear/silhouette.tsv",
+        "tsv_sha256": "4238957eef4247d1c61e7fe64664307e5162ba690711ed29a391b6f433a04a35",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/newyear/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "nars-2019",
+        "prs": [
+          8615
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/nars-2019/nars-2019/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/nars-2019/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "nars-2021",
+        "prs": [
+          8615
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 99.97,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/nars-2021/nars-2021/silhouette.tsv",
+        "tsv_sha256": "978cc4b465233b5650d901d2e3c363563764f5b10e81e07b27d0ce44f4bfef3a",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/nars-2021/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "footnote-captioned",
+        "prs": [
+          8621
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/footnote-captioned/footnote-captioned/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/footnote-captioned/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample16",
+        "prs": [
+          8623
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 99.92,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16/sample16/silhouette.tsv",
+        "tsv_sha256": "3fb40781eea353a33a0d5cec564f314f710d7903a250b9cf7ba8e143c6aeab96",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "summary-tail",
+        "prs": [
+          8625
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/summary-tail/summary-tail/silhouette.tsv",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/summary-tail/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a10",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a10/reserve-a10/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a10/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a30",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a30/reserve-a30/silhouette.tsv",
+        "tsv_sha256": "2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a30/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-b4",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-b4/reserve-b4/silhouette.tsv",
+        "tsv_sha256": "2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-b4/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a40",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a40/reserve-a40/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a40/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a46",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a46/reserve-a46/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/reserve-a46/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "p4g",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 8,
+        "expected_pages": 8,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/p4g/p4g/silhouette.tsv",
+        "tsv_sha256": "cf674b8584e849ab00eea6be1a10b8a0281b42852f12f236f4209b035083a64e",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/p4g/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "leading-shape",
+        "prs": [
+          8644
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/leading-shape/leading-shape/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/leading-shape/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "field-page-box",
+        "prs": [
+          8645,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/field-page-box/field-page-box/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/field-page-box/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "tall-prefix",
+        "prs": [
+          8645,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/tall-prefix/tall-prefix/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/tall-prefix/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sender-overlay",
+        "prs": [
+          8649,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sender-overlay/sender-overlay/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sender-overlay/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "refund-notice",
+        "prs": [
+          8650
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/refund-notice/refund-notice/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/refund-notice/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "stamp-a",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/stamp-a/stamp-a/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/stamp-a/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "stamp-b",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/stamp-b/stamp-b/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/stamp-b/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "labor-report",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 53,
+        "expected_pages": 53,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/labor-report/labor-report/silhouette.tsv",
+        "tsv_sha256": "21be56400ada9f416a7739d13e15685a85184878095232fc79c724ae58498977",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/labor-report/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "companion-baseline",
+        "prs": [
+          8655
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/companion-baseline/companion-baseline/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/companion-baseline/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sign-board-2020",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sign-board-2020/sign-board-2020/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sign-board-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sign-board-2022",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sign-board-2022/sign-board-2022/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sign-board-2022/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "policy-track2020",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-track2020/policy-track2020/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-track2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "policy-track2024",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-track2024-compat2024-corrected/policy-track2024/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-track2024-compat2024-corrected/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "policy-flags0",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 97.75,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-flags0/policy-flags0/silhouette.tsv",
+        "tsv_sha256": "a22b96320b01e270723c7fb477b4289c12b025a44cae841987ccaee5ca2b7ec5",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/policy-flags0/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "overflow-space-2020",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/overflow-space-2020/overflow-space-2020/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/overflow-space-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "overflow-space-2024",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/overflow-space-2024/overflow-space-2024/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/overflow-space-2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "legislation-summary",
+        "prs": [
+          8663
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 10,
+        "expected_pages": 10,
+        "page_set_matches": true,
+        "minimum": 99.95,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/legislation-summary/legislation-summary/silhouette.tsv",
+        "tsv_sha256": "b2a249146a67b7283075331a81d04376fd45c99013001072f2d7b6069ad812b7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/legislation-summary/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "cell-exclusion-36478532",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/cell-exclusion-36478532/cell-exclusion-36478532/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/cell-exclusion-36478532/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "original-36493460",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/original-36493460/original-36493460/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/original-36493460/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "original-36474334",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/original-36474334/original-36474334/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/original-36474334/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "evaluation-original",
+        "prs": [
+          8638
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.7,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/evaluation-original/evaluation-original/silhouette.tsv",
+        "tsv_sha256": "3b21007f36819608a0e551d783addc473fc0f91410e67c0b1bc703a1f47c44cf",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/evaluation-original/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "report-628",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 195,
+        "expected_pages": 195,
+        "page_set_matches": true,
+        "minimum": 93.24,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/report-628/report-628/silhouette.tsv",
+        "tsv_sha256": "692cbb7b9debfe1c49bedba5b605fc517a228778fc730274dfe3b0bd42bb3095",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/report-628/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 109,
+        "expected_pages": 109,
+        "page_set_matches": true,
+        "minimum": 98.7,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/report-838/report-838/silhouette.tsv",
+        "tsv_sha256": "f123d7f2ae55289139a5c1abe13198057fbe3aa79da7cbbf154da4c43db34b24",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "stored-band",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/stored-band/stored-band/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/stored-band/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16-hwp2022/sample16-hwp2022/silhouette.tsv",
+        "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16-hwp2022/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample16-hwp2024",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16-hwp2024/sample16-hwp2024/silhouette.tsv",
+        "tsv_sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16-hwp2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "sample16-hwpx",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16-hwpx/sample16-hwpx/silhouette.tsv",
+        "tsv_sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample16-hwpx/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "issue7905",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 6,
+        "expected_pages": 6,
+        "page_set_matches": true,
+        "minimum": 98.86,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/issue7905/issue7905/silhouette.tsv",
+        "tsv_sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/issue7905/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "issue8040-insert",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/issue8040-insert/issue8040-insert/silhouette.tsv",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/issue8040-insert/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "issue8040-insert-delete",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/issue8040-insert-delete/issue8040-insert-delete/silhouette.tsv",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/issue8040-insert-delete/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "handbook-hwp",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 383,
+        "expected_pages": 383,
+        "page_set_matches": true,
+        "minimum": 99.96,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/handbook-hwp/handbook-hwp/silhouette.tsv",
+        "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/handbook-hwp/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "handbook-hwpx",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 383,
+        "expected_pages": 383,
+        "page_set_matches": true,
+        "minimum": 99.96,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/handbook-hwpx/handbook-hwpx/silhouette.tsv",
+        "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/handbook-hwpx/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "seo-body-list-typed",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-body-list-typed/seo-body-list-typed/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-body-list-typed/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.25,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-helvetica-styles/seo-helvetica-styles/silhouette.tsv",
+        "tsv_sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-helvetica-styles/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-pic-crop-01",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-pic-crop-01/seo-pic-crop-01/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-pic-crop-01/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-shape-group-02",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-shape-group-02/seo-shape-group-02/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-shape-group-02/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-re-03-latin",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-re-03-latin/seo-re-03-latin/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/seo-re-03-latin/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "yeongwol",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.97,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/yeongwol/yeongwol/silhouette.tsv",
+        "tsv_sha256": "5de108049ba0a379661528b9b79ccd368052aa5a886bb564aac4ca91afda75e7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/yeongwol/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "outline",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 9,
+        "expected_pages": 9,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/outline/outline/silhouette.tsv",
+        "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/outline/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "nested",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 17,
+        "expected_pages": 17,
+        "page_set_matches": true,
+        "minimum": 98.36,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/nested/nested/silhouette.tsv",
+        "tsv_sha256": "1a46fb04bdf6b39d19a387935c8765ab40b849fe6c8e107e7678c7a8d2b6a186",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/nested/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample10",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 763,
+        "expected_pages": 763,
+        "page_set_matches": true,
+        "minimum": 99.41,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample10/sample10/silhouette.tsv",
+        "tsv_sha256": "17306742b47985e2ce609259b8184ea4e66fa6c8ced9472acd0a965622c4500c",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/sample10/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-delegation7700",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 103,
+        "expected_pages": 103,
+        "page_set_matches": true,
+        "minimum": 99.21,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-delegation7700/incoming8754-delegation7700/silhouette.tsv",
+        "tsv_sha256": "13d63ae498186249f9d133c954826aa53fb163e010f0abb978b9346d61d4a670",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-delegation7700/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-prime-width",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 99.96,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-prime-width/incoming8754-prime-width/silhouette.tsv",
+        "tsv_sha256": "4df1442ab7fb96d5a87c082a5bd464b150564fd9ade88176f44bcbfb5d88e3df",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-prime-width/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-rowbreak8539",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-rowbreak8539/incoming8754-rowbreak8539/silhouette.tsv",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-rowbreak8539/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-science",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.19,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-science/incoming8754-science/silhouette.tsv",
+        "tsv_sha256": "9f797c6d3e8950fda1e2abff68b55513b30ac84e4ea63513c9ef407b5518f7d1",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-science/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-nov-resaved",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 21,
+        "expected_pages": 21,
+        "page_set_matches": true,
+        "minimum": 99.04,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette.tsv",
+        "tsv_sha256": "68db5fcbdfb3abb5475020312883d71d556f2965738f7eeb089ffddc055806a5",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-nov-resaved/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-nov-original",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 21,
+        "expected_pages": 21,
+        "page_set_matches": true,
+        "minimum": 98.79,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-nov-original/incoming8754-nov-original/silhouette.tsv",
+        "tsv_sha256": "ce28e8efdaea71f7e2b8b5ae7085c7fdf4bfab7b090993147d59605f1a23c990",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-nov-original/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-rectangles",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 50,
+        "expected_pages": 50,
+        "page_set_matches": true,
+        "minimum": 98.32,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-rectangles/incoming8754-rectangles/silhouette.tsv",
+        "tsv_sha256": "d33be332edfe93f3d4412e04ccdba6cfd402d97be6f24270d6f3fa1238bb1aa4",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-rectangles/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-staggered7",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 7,
+        "expected_pages": 7,
+        "page_set_matches": true,
+        "minimum": 99.61,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-staggered7/incoming8754-staggered7/silhouette.tsv",
+        "tsv_sha256": "a4e8d6ac48df539cffceab83ada8feeec4e1cb375acf9f22f5e4d1c7aeb5f512",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-staggered7/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-electrical7728",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 18,
+        "expected_pages": 18,
+        "page_set_matches": true,
+        "minimum": 98.88,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-electrical7728/incoming8754-electrical7728/silhouette.tsv",
+        "tsv_sha256": "35058779b461a83d8e9e929d7d791a2368f37623c5a1aab03f2e8d9182a4ad58",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-electrical7728/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-giant4138",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 197,
+        "expected_pages": 197,
+        "page_set_matches": true,
+        "minimum": 97.26,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-giant4138/incoming8754-giant4138/silhouette.tsv",
+        "tsv_sha256": "4e163c4c17f7883d7f84641393d5f9c187270f89a0a114fc7fd85e62b6e0d1f9",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-giant4138/run.log",
+        "dpi": 192,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-pii5846",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 66,
+        "expected_pages": 66,
+        "page_set_matches": true,
+        "minimum": 94.13,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-pii5846/incoming8754-pii5846/silhouette.tsv",
+        "tsv_sha256": "98d145649c6b08d8319883b4a6ddffea3fe7b7de24b4b4251948314211b54a71",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-pii5846/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-lpg71352",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 48,
+        "expected_pages": 48,
+        "page_set_matches": true,
+        "minimum": 99.51,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-lpg71352/incoming8754-lpg71352/silhouette.tsv",
+        "tsv_sha256": "edf2583302b4f7a28cb9f37458e698a66dea3d7257c07a3b31ba48dd2b1afe80",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-lpg71352/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-clip5587",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 92.24,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-clip5587/incoming8754-clip5587/silhouette.tsv",
+        "tsv_sha256": "d5d5f9a74c818bba55613b998f3173f0b4c376ba682f875f4f12f692942d1928",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-clip5587/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-textbox-control",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-textbox-control/incoming8754-textbox-control/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-textbox-control/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-textbox-repro",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-textbox-repro/incoming8754-textbox-repro/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-textbox-repro/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-textbox-used",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-textbox-used/incoming8754-textbox-used/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-textbox-used/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-incoming-8555",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.92,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-incoming-8555/incoming8754-incoming-8555/silhouette.tsv",
+        "tsv_sha256": "bbb3ec83a24acf31f4d1b30363a792b7c41807173bf7783534cbd26b8ea940c2",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-incoming-8555/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-incoming-8556",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 5,
+        "expected_pages": 5,
+        "page_set_matches": true,
+        "minimum": 99.93,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-incoming-8556/incoming8754-incoming-8556/silhouette.tsv",
+        "tsv_sha256": "4478c882040292468d0404f223d2ccb0c136481d22fd14758697f6e76aff4b46",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-incoming-8556/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-incoming-8557",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.92,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-incoming-8557/incoming8754-incoming-8557/silhouette.tsv",
+        "tsv_sha256": "bbb3ec83a24acf31f4d1b30363a792b7c41807173bf7783534cbd26b8ea940c2",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-incoming-8557/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-leading-original",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-leading-original/incoming8754-leading-original/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-native/incoming8754-leading-original/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    ],
+    "active": {},
+    "updated_at": "2026-11-08T21:47:59.805976+00:00",
+    "errors": []
+  },
+  "handbook_gate": {
+    "status": "passed",
+    "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+    "metric": "silhouette_raw_match_percent",
+    "backend": "native-skia",
+    "precision": "0.01 percentage points",
+    "pages": 383,
+    "regressions": [],
+    "webfont_fallback": [],
+    "manifest": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/required-handbook-native-final-0322/required-handbook-8153-native/silhouette_manifest.json",
+    "elapsed_seconds": 238.412
+  },
+  "handbook_environment": "일반 Mac의 로컬·공개 글꼴 공급 환경. 최소 글꼴 격리 검증으로 주장하지 않는다.",
+  "tsv_sha256": {
+    "wasm-whole93.tsv": "4aae646413da65e6135d32fcd7a7ee6444e674358a1928af630da67c3eac4112",
+    "native-whole93.tsv": "b80159ef4e5e83237c0e87d8b8ae52fafb9aa5f4348c5fc407d1adf04d06f001",
+    "required-handbook-native.tsv": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308"
+  },
+  "scope": "Native/fresh WASM whole93 complete including full reruns of original font-load failures; protected WASM10 declines unresolved, not PR ready",
+  "wasm_original_whole": {
+    "pid": 72384,
+    "state": "complete",
+    "backend": "wasm",
+    "producer": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-pkg",
+    "producer_identity": {
+      "binary_sha256": "6534446925737cc664911c0e2dfcb8b31a284e8015712c29016b720ee417c046",
+      "package_sha256": {
+        "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7"
+      },
+      "manifest_sha256": "1b5be91cd0dbd6474ec7b18b5efa0fb0bd029bb39e2f24482c367b20324b97c9"
+    },
+    "manifest": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-local-cases.json",
+    "target_count": 93,
+    "results": [
+      {
+        "key": "cover",
+        "prs": [
+          8550
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.87,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cover/cover/silhouette.tsv",
+        "tsv_sha256": "b428fe49a97c0d754397cdc2495ebe6a0f1cad2b2c45cccf5c4aa164a273dc6b",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cover/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "family-register",
+        "prs": [
+          8559
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.68,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/family-register/family-register/silhouette.tsv",
+        "tsv_sha256": "5a7f7367b59de7631b3ff75a549bb74b6eff6f59eede652b63c7874d743a38a8",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/family-register/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "agenda-cover",
+        "prs": [
+          8563
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.76,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/agenda-cover/agenda-cover/silhouette.tsv",
+        "tsv_sha256": "fb796e718829e1c58a5d357ed1baf2246a4d07b1e6c945903c6e9b41a3ae5f46",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/agenda-cover/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "trailing-space-2020",
+        "prs": [
+          8581
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2020/trailing-space-2020/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "trailing-space-2024",
+        "prs": [
+          8581
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2024/trailing-space-2024/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/trailing-space-2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "busan-form",
+        "prs": [
+          8589
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/busan-form/busan-form/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/busan-form/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "image-fill-hwpx",
+        "prs": [
+          8600
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwpx/image-fill-hwpx/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwpx/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "image-fill-hwp",
+        "prs": [
+          8600
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwp/image-fill-hwp/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/image-fill-hwp/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "certificate",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 9,
+        "expected_pages": 9,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/certificate/certificate/silhouette.tsv",
+        "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/certificate/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "policy-agenda",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 14,
+        "expected_pages": 14,
+        "page_set_matches": true,
+        "minimum": 98.4,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-agenda/policy-agenda/silhouette.tsv",
+        "tsv_sha256": "6c78b26cf173bafc4d7d8d60469687f97d979f584e1fcdbf68138101163cda3b",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-agenda/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "idol-counterexample",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.77,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/idol-counterexample/idol-counterexample/silhouette.tsv",
+        "tsv_sha256": "b82fb7402021ac0b8045f42c227a915f9d9e9a60eaf9c1f1458ee08c355fb843",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/idol-counterexample/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "childcare",
+        "prs": [
+          8605
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 25,
+        "expected_pages": 25,
+        "page_set_matches": true,
+        "minimum": 98.74,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/childcare/childcare/silhouette.tsv",
+        "tsv_sha256": "9123f76a03c0164843f51f9370fce2fff99b7439d0da56e618ad355ee0961b91",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/childcare/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "delegation-trimmed",
+        "prs": [
+          8607
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 6,
+        "expected_pages": 6,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/delegation-trimmed/delegation-trimmed/silhouette.tsv",
+        "tsv_sha256": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/delegation-trimmed/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "shortcut",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 7,
+        "expected_pages": 7,
+        "page_set_matches": true,
+        "minimum": 97.1,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/shortcut/shortcut/silhouette.tsv",
+        "tsv_sha256": "72241b5b13cfc42abfeb09936a571f6b7e1d0ece2f3fe94fd14d51b955a13a43",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/shortcut/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sungeo",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 94,
+        "expected_pages": 94,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sungeo/sungeo/silhouette.tsv",
+        "tsv_sha256": "153d56e73240605a4825e2d8a0d26d1af3583e3609a6ffb11f3da5c620f2c224",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sungeo/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "bookreview",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/bookreview/bookreview/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/bookreview/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "ktx",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.85,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/ktx/ktx/silhouette.tsv",
+        "tsv_sha256": "1e465d89fdb08f3450744c788c901e49eefa6fca755a3f005291114b7bc18023",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/ktx/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "interview",
+        "prs": [
+          8611,
+          8617
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 97.63,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/interview/interview/silhouette.tsv",
+        "tsv_sha256": "091bf2aca0c5325f0b6e7fe88551747b168868731afd852be50140ab77c882c7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/interview/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "request",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 96.12,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/request/request/silhouette.tsv",
+        "tsv_sha256": "93cfc0bca02655e107ee6793b53d1a047a6f629037b2f84c78049f1494b96dfd",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/request/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "english",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/english/english/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/english/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "newyear",
+        "prs": [
+          8611
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 98.45,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/newyear/newyear/silhouette.tsv",
+        "tsv_sha256": "4238957eef4247d1c61e7fe64664307e5162ba690711ed29a391b6f433a04a35",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/newyear/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "nars-2019",
+        "prs": [
+          8615
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2019/nars-2019/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2019/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "nars-2021",
+        "prs": [
+          8615
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 99.97,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2021/nars-2021/silhouette.tsv",
+        "tsv_sha256": "978cc4b465233b5650d901d2e3c363563764f5b10e81e07b27d0ce44f4bfef3a",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nars-2021/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "footnote-captioned",
+        "prs": [
+          8621
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/footnote-captioned/footnote-captioned/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/footnote-captioned/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample16",
+        "prs": [
+          8623
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 99.85,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16/sample16/silhouette.tsv",
+        "tsv_sha256": "f9628d70012eff3c932417fc4a08f10fc66e43155e20efbaf027b9f7024a8915",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "summary-tail",
+        "prs": [
+          8625
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/summary-tail/summary-tail/silhouette.tsv",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/summary-tail/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a10",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a10/reserve-a10/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a10/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a30",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a30/reserve-a30/silhouette.tsv",
+        "tsv_sha256": "2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a30/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-b4",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-b4/reserve-b4/silhouette.tsv",
+        "tsv_sha256": "2d96a69585f096e23614ca2a655493c63d9587b4bc0daa604409a6609f8ddfa7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-b4/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a40",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a40/reserve-a40/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a40/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "reserve-a46",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a46/reserve-a46/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/reserve-a46/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "p4g",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 8,
+        "expected_pages": 8,
+        "page_set_matches": true,
+        "minimum": 99.95,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/p4g/p4g/silhouette.tsv",
+        "tsv_sha256": "4c6b4ceda25532001755e4b1ce171053092c85cc9ae94dbbe3ee304a1d46e326",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/p4g/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "leading-shape",
+        "prs": [
+          8644
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/leading-shape/leading-shape/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/leading-shape/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "field-page-box",
+        "prs": [
+          8645,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/field-page-box/field-page-box/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/field-page-box/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "tall-prefix",
+        "prs": [
+          8645,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/tall-prefix/tall-prefix/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/tall-prefix/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sender-overlay",
+        "prs": [
+          8649,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sender-overlay/sender-overlay/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sender-overlay/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "refund-notice",
+        "prs": [
+          8650
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/refund-notice/refund-notice/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/refund-notice/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "stamp-a",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-a/stamp-a/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-a/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "stamp-b",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-b/stamp-b/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stamp-b/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "labor-report",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 53,
+        "expected_pages": 53,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/labor-report/labor-report/silhouette.tsv",
+        "tsv_sha256": "21be56400ada9f416a7739d13e15685a85184878095232fc79c724ae58498977",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/labor-report/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "companion-baseline",
+        "prs": [
+          8655
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/companion-baseline/companion-baseline/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/companion-baseline/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sign-board-2020",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2020/sign-board-2020/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sign-board-2022",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2022/sign-board-2022/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sign-board-2022/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "policy-track2020",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2020/policy-track2020/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "policy-track2024",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2024-compat2024-corrected/policy-track2024/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-track2024-compat2024-corrected/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "policy-flags0",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 97.77,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-flags0/policy-flags0/silhouette.tsv",
+        "tsv_sha256": "92471ce57264e6cca288da8d6e29d05554a5abc5ddbb4bb885fc412c35a9137a",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/policy-flags0/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "overflow-space-2020",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2020/overflow-space-2020/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "overflow-space-2024",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2024/overflow-space-2024/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/overflow-space-2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "legislation-summary",
+        "prs": [
+          8663
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 10,
+        "expected_pages": 10,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/legislation-summary/legislation-summary/silhouette.tsv",
+        "tsv_sha256": "cd69186771b706c9ee855490c9c46fc4471589a8658df8076b89a360b68ddd4e",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/legislation-summary/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "cell-exclusion-36478532",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cell-exclusion-36478532/cell-exclusion-36478532/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/cell-exclusion-36478532/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "original-36493460",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36493460/original-36493460/silhouette.tsv",
+        "tsv_sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36493460/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "original-36474334",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36474334/original-36474334/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/original-36474334/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "evaluation-original",
+        "prs": [
+          8638
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 99.69,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/evaluation-original/evaluation-original/silhouette.tsv",
+        "tsv_sha256": "4c91b7eb5315427e58239af0af4e9119358c3e81d296c9d11ebaec42962379ee",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/evaluation-original/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "report-628",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 195,
+        "expected_pages": 195,
+        "page_set_matches": true,
+        "minimum": 93.27,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/report-628/silhouette.tsv",
+        "tsv_sha256": "0df15770820bb6bb7afd86a401450a56ed25a1a9f0760374ec13071b5632c118",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-628/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 109,
+        "expected_pages": 109,
+        "page_set_matches": true,
+        "minimum": 98.69,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-838/report-838/silhouette.tsv",
+        "tsv_sha256": "670b05b0f1a382f3f2abfacdc361cd2cbc59fed559b48dd9f9c8095cee619701",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "stored-band",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stored-band/stored-band/silhouette.tsv",
+        "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/stored-band/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample16-hwp2022",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2022/sample16-hwp2022/silhouette.tsv",
+        "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2022/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample16-hwp2024",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2024/sample16-hwp2024/silhouette.tsv",
+        "tsv_sha256": "18474e1155afaef9605f4ba61e3795f23af2c601eb6fc423e4f537f2c5dc0c7c",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwp2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "sample16-hwpx",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 64,
+        "expected_pages": 64,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwpx/sample16-hwpx/silhouette.tsv",
+        "tsv_sha256": "18474e1155afaef9605f4ba61e3795f23af2c601eb6fc423e4f537f2c5dc0c7c",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample16-hwpx/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "issue7905",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 6,
+        "expected_pages": 6,
+        "page_set_matches": true,
+        "minimum": 98.7,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue7905/issue7905/silhouette.tsv",
+        "tsv_sha256": "6866404ab115dc8151630af0de3e8b28414d73409d0f2c7d23464f166258af21",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue7905/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "issue8040-insert",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert/issue8040-insert/silhouette.tsv",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "issue8040-insert-delete",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert-delete/issue8040-insert-delete/silhouette.tsv",
+        "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/issue8040-insert-delete/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "handbook-hwp",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 383,
+        "expected_pages": 383,
+        "page_set_matches": true,
+        "minimum": 99.96,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/handbook-hwp/silhouette.tsv",
+        "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwp/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "handbook-hwpx",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 383,
+        "expected_pages": 383,
+        "page_set_matches": true,
+        "minimum": 99.96,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/handbook-hwpx/silhouette.tsv",
+        "tsv_sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/handbook-hwpx/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "seo-body-list-typed",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-body-list-typed/seo-body-list-typed/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-body-list-typed/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-helvetica-styles/seo-helvetica-styles/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-helvetica-styles/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-pic-crop-01",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-pic-crop-01/seo-pic-crop-01/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-pic-crop-01/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-shape-group-02",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-shape-group-02/seo-shape-group-02/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-shape-group-02/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "seo-re-03-latin",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-re-03-latin/seo-re-03-latin/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/seo-re-03-latin/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "yeongwol",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.98,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/yeongwol/yeongwol/silhouette.tsv",
+        "tsv_sha256": "2c75da366ae71cf267bf7a0183884be22afb42e97edc25041479cde66751d575",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/yeongwol/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "outline",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 9,
+        "expected_pages": 9,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/outline/outline/silhouette.tsv",
+        "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/outline/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "nested",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 17,
+        "expected_pages": 17,
+        "page_set_matches": true,
+        "minimum": 98.37,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nested/nested/silhouette.tsv",
+        "tsv_sha256": "e40e85e5a7350ae3f58dd71626f0e0b3302c909efa1a6e04c05dfa351487f6ad",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/nested/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "sample10",
+        "prs": [
+          8389,
+          8397
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 763,
+        "expected_pages": 763,
+        "page_set_matches": true,
+        "minimum": 99.38,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/sample10/silhouette.tsv",
+        "tsv_sha256": "bde60c0226dea53440fee38673e8584ac03c0de924ca7a76a136b35e192a98e4",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/sample10/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-delegation7700",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 103,
+        "expected_pages": 103,
+        "page_set_matches": true,
+        "minimum": 99.21,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-delegation7700/incoming8754-delegation7700/silhouette.tsv",
+        "tsv_sha256": "1e1145303eb234ae2a4077e8ddb746cdbd9d888481a7ba8744a4f32ab0221171",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-delegation7700/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-prime-width",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 99.99,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-prime-width/incoming8754-prime-width/silhouette.tsv",
+        "tsv_sha256": "49d8e930c6a75ed4a4b8cbf9909313748f38f34f7802df8b35e96316dfb3a548",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-prime-width/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-rowbreak8539",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rowbreak8539/incoming8754-rowbreak8539/silhouette.tsv",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rowbreak8539/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-science",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 4,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-science/incoming8754-science/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-science/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-nov-resaved",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 21,
+        "expected_pages": 21,
+        "page_set_matches": true,
+        "minimum": 99.03,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette.tsv",
+        "tsv_sha256": "5e762e3aed30803540bfbe7eaa3339208d9be7ce8cda4c4dc80ef1f4b1601e5a",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-resaved/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-nov-original",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 21,
+        "expected_pages": 21,
+        "page_set_matches": true,
+        "minimum": 98.78,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-original/incoming8754-nov-original/silhouette.tsv",
+        "tsv_sha256": "06a16516bb1078e8c46c823ca94cb289f638d0839c4aa4161e42ba1ccb90d8f3",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-nov-original/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-rectangles",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 50,
+        "expected_pages": 50,
+        "page_set_matches": true,
+        "minimum": 98.33,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rectangles/incoming8754-rectangles/silhouette.tsv",
+        "tsv_sha256": "2b679cf77dffc3b7320fa9a8e5d3fe0c1963d99b32a72d30f31e4749473cdc07",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-rectangles/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-staggered7",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 7,
+        "expected_pages": 7,
+        "page_set_matches": true,
+        "minimum": 99.61,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-staggered7/incoming8754-staggered7/silhouette.tsv",
+        "tsv_sha256": "a9cc0698ad8f56d6804a8e141d8f21a42ae33080bfe3362bcf83e62cfe1cdf93",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-staggered7/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-electrical7728",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 18,
+        "expected_pages": 18,
+        "page_set_matches": true,
+        "minimum": 98.9,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-electrical7728/incoming8754-electrical7728/silhouette.tsv",
+        "tsv_sha256": "0c6a814cfb27874e69a51d4c56ff3ec06311b47363bc67b9882a067ffb61df93",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-electrical7728/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-giant4138",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 197,
+        "expected_pages": 197,
+        "page_set_matches": true,
+        "minimum": 97.86,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/incoming8754-giant4138/silhouette.tsv",
+        "tsv_sha256": "41004ada8a91721b73333b73fdc84c8cc22ce5a432f8f6820e6e2f7633fd76d5",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-giant4138/run.log",
+        "dpi": 192,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-pii5846",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 66,
+        "expected_pages": 66,
+        "page_set_matches": true,
+        "minimum": 94.13,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-pii5846/incoming8754-pii5846/silhouette.tsv",
+        "tsv_sha256": "1c8ed8b29260dd940a6ec732d0ef05e44393f6291a9a71d5edf1662d2d0d1490",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-pii5846/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-lpg71352",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 48,
+        "expected_pages": 48,
+        "page_set_matches": true,
+        "minimum": 99.52,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-lpg71352/incoming8754-lpg71352/silhouette.tsv",
+        "tsv_sha256": "abafc308adb5b2b140621134cf39aca31e34cd83666cdab7c2ca4ac2d484454e",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-lpg71352/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-clip5587",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 0,
+        "expected_pages": 4,
+        "page_set_matches": false,
+        "minimum": null,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-clip5587/incoming8754-clip5587/silhouette.tsv",
+        "tsv_sha256": null,
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-clip5587/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-textbox-control",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-control/incoming8754-textbox-control/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-control/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-textbox-repro",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-repro/incoming8754-textbox-repro/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-repro/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-textbox-used",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-used/incoming8754-textbox-used/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-textbox-used/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      },
+      {
+        "key": "incoming8754-incoming-8555",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.85,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8555/incoming8754-incoming-8555/silhouette.tsv",
+        "tsv_sha256": "545f10859185e6facc841bf6aab756efcab64af9b14cecf5ffd78371233b40da",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8555/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-incoming-8556",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 5,
+        "expected_pages": 5,
+        "page_set_matches": true,
+        "minimum": 99.86,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8556/incoming8754-incoming-8556/silhouette.tsv",
+        "tsv_sha256": "c5bdf9ba8dd187c9a21e2db66e8b5b79276e0e7df9b71886201f4b5175932121",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8556/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-incoming-8557",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.87,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8557/incoming8754-incoming-8557/silhouette.tsv",
+        "tsv_sha256": "fa3c8da2f52e386c964c2f235951ad30820431c3132d5959273fd84752f16cf0",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-incoming-8557/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-leading-original",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 100.0,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-leading-original/incoming8754-leading-original/silhouette.tsv",
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-full93-wasm/incoming8754-leading-original/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    ],
+    "active": {},
+    "updated_at": "2026-11-08T22:21:23.966440+00:00",
+    "errors": []
+  },
+  "wasm_failed_cases_rerun": {
+    "pid": 73906,
+    "state": "complete",
+    "backend": "wasm",
+    "producer": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-pkg",
+    "producer_identity": {
+      "binary_sha256": "6534446925737cc664911c0e2dfcb8b31a284e8015712c29016b720ee417c046",
+      "package_sha256": {
+        "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7"
+      },
+      "manifest_sha256": "2bb391804f44a15b602fad0209e60834ce7a224bcdcf4fcfe301600eac46e6d1"
+    },
+    "manifest": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hankc-repair-two-cases.json",
+    "target_count": 2,
+    "results": [
+      {
+        "key": "incoming8754-science",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 99.22,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-science/incoming8754-science/silhouette.tsv",
+        "tsv_sha256": "340842a7ab2a4ef5ce984b4b16b87514c4611bda63b53978e525ac8709fba1e4",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-science/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      },
+      {
+        "key": "incoming8754-clip5587",
+        "prs": [
+          8754
+        ],
+        "finished": true,
+        "exit_code": 0,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 92.29,
+        "below90": [],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-clip5587/incoming8754-clip5587/silhouette.tsv",
+        "tsv_sha256": "16006a69cfad9af6b56049508023df0496606e0192ed1de2d533794dfd003334",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-hankc-repair-wasm/incoming8754-clip5587/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    ],
+    "active": {},
+    "updated_at": "2026-11-08T22:26:25.677890+00:00",
+    "errors": []
+  },
+  "font_preparation_repair": {
+    "source_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "evidence": "../font-post-unused-storage/validation.json",
+    "reuse_proof": "../font-post-unused-storage/whole91-reuse-proof.json",
+    "commit": "d1698e9f32"
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "code_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+  "scope": "아래 실제 판독한 대표 쪽만; 전체 페이지 직접 판독 완료 아님",
+  "records": [
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 1,
+      "backend": "native",
+      "directly_read": true,
+      "conclusion": "제목이 들어가는 대조군: 두 쪽 base/candidate raw PNG 해시 동일. 기존 도장 차이를 신규 해결로 주장하지 않음.",
+      "raw_sha256": "1ec16788ad4f7630153e4b1e3b6ade958893da124eec59c31df723d1d5500ee5",
+      "base_png_identical": true
+    },
+    {
+      "key": "pr8895-title_line_fits",
+      "page": 2,
+      "backend": "native",
+      "directly_read": true,
+      "conclusion": "제목이 들어가는 대조군: 두 쪽 base/candidate raw PNG 해시 동일. 기존 도장 차이를 신규 해결로 주장하지 않음.",
+      "raw_sha256": "c0071562388dcbbafad3c63dcdafac6f33de5a433f6798720392d254ffe95a7d",
+      "base_png_identical": true
+    },
+    {
+      "key": "pr8900-bar_axis_floor",
+      "page": 1,
+      "backend": "native",
+      "directly_read": true,
+      "conclusion": "값축 4.1 시작·0.1 step과 막대 데이터 소속 복원 확인. 가로 차트의 높이·그리드·라벨 상하 차이는 기존 원 PR의 부분 수용 범위로 구분.",
+      "raw_sha256": "9962f771d49d2f25decbcc0531e6c8c95b13a85019d1f5fe4149992bf9b2e4f4"
+    },
+    {
+      "key": "pr8918-wingdings_pua_symbols",
+      "page": 1,
+      "backend": "native",
+      "directly_read": true,
+      "conclusion": "PUA 원문자 ①②③·영/반전 원문자·흰 원·체크 상자가 보이고 연속 기호 뒤 글자가 보존됨.",
+      "raw_sha256": "450bb32e82d26271c6cee18a1c8129a8e0109d07da621fb0f2c9eb2703cfa05c"
+    },
+    {
+      "key": "pr8916-zero_size_para_before_table",
+      "page": 1,
+      "backend": "native",
+      "directly_read": true,
+      "conclusion": "TOP 뒤의 표가 복원되고 AFTER가 표 아래에 남음. 137개 0 크기 글자를 가시 본문으로 만들지 않음.",
+      "raw_sha256": "44d7824904bea970fe3cde5ddb22c7ef53e1d34e6a7c6c4b560d842c2ee26c16"
+    },
+    {
+      "key": "pr8920-float_line_rowspan_infront_center",
+      "page": 1,
+      "backend": "native",
+      "directly_read": true,
+      "conclusion": "온전한 행·병합 칸의 화살표가 보임. 가운데 정렬의 상하 차이와 선 밝기 차이 잔여가 있어 완전 일치로 판단하지 않음.",
+      "raw_sha256": "961902e820a9669c0eb60905a3ec57aa63cf25dc7a8904d30c462d635fdfbcc4"
+    }
+  ]
+}

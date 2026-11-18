@@ -261,10 +261,42 @@ fn try_compose_paragraph_scoped<S: crate::storage::Storage>(
     )
 }
 
+fn try_compose_paragraph_with_table_owner<S: crate::storage::Storage>(
+    para: &Paragraph,
+    protect_metrics: bool,
+    metric_styles: Option<&ResolvedStyleSet>,
+    table_owner: caption_paragraph::BlockTableOwner,
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
+    try_compose_paragraph_with_owners(
+        para, protect_metrics, metric_styles, table_owner, &[], storage,
+    )
+}
+
 fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
     para: &Paragraph,
     protect_metrics: bool,
     metric_styles: Option<&ResolvedStyleSet>,
+    frame_tables: &[(usize, u32)],
+    storage: &S,
+) -> Result<ComposedParagraph, S::Error> {
+    try_compose_paragraph_with_owners(
+        para,
+        protect_metrics,
+        metric_styles,
+        caption_paragraph::BlockTableOwner::PageItems,
+        frame_tables,
+        storage,
+    )
+}
+
+// 캡션 문단의 소유권과 실제 프레임이 발행한 표 소속을 함께 소비한다.
+// 어느 경로도 선언 폭으로 다시 판정해 이미 배정한 표를 블록 줄로 옮기지 않는다.
+fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
+    para: &Paragraph,
+    protect_metrics: bool,
+    metric_styles: Option<&ResolvedStyleSet>,
+    table_owner: caption_paragraph::BlockTableOwner,
     frame_tables: &[(usize, u32)],
     storage: &S,
 ) -> Result<ComposedParagraph, S::Error> {
@@ -294,7 +326,7 @@ fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
                     Some((pos, inline_picture_size_hu(p).0, i))
                 }
                 Control::Shape(s) if s.common().treat_as_char => {
-                    Some((pos, s.common().width as i32, i))
+                    Some((pos, inline_shape_width_hu(s), i))
                 }
                 Control::Equation(eq) if eq.common.treat_as_char => {
                     // HWP 저장값을 사용 — 한컴 편집기가 실제 폰트로 계산한 정확한 너비
@@ -307,10 +339,11 @@ fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
                 Control::Form(f) if f.common.treat_as_char => Some((pos, f.width as i32, i)),
                 Control::Table(t)
                     if t.common.treat_as_char
-                        && (frame_tables.iter().any(|&(owner, _)| owner == i)
-                        || super::height_measurer::is_tac_table_inline_in_para(
-                            t, seg_width, para,
-                        )) =>
+                        && (table_owner == caption_paragraph::BlockTableOwner::Paragraph
+                            || frame_tables.iter().any(|&(owner, _)| owner == i)
+                            || super::height_measurer::is_tac_table_inline_in_para(
+                                t, seg_width, para,
+                            )) =>
                 {
                     // [#5785 후속] 선언 폭 우선.
                     let table_width: u32 = t.flow_width_hu();
@@ -433,10 +466,19 @@ fn try_compose_paragraph_scoped_with_frame_tables<S: crate::storage::Storage>(
     if let Some(styles) = metric_styles {
         equation_line_metrics::try_refresh_equation_rows(&mut composed, para, styles, storage)?;
         empty_line_metrics::refresh_with_storage(&mut composed, para, styles, storage)?;
-        inline_picture_metrics::refresh_picture_rows_with_storage(&mut composed, para, styles, storage)?;
+        inline_picture_metrics::refresh_picture_rows_with_storage(
+            &mut composed,
+            para,
+            styles,
+            storage,
+        )?;
     }
 
-    supplemental_clusters::preserve_literal_spaces_with_storage(&mut composed, &para.literal_figure_spaces, storage)?;
+    supplemental_clusters::preserve_literal_spaces_with_storage(
+        &mut composed,
+        &para.literal_figure_spaces,
+        storage,
+    )?;
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
     try_inject_char_overlap_text(&mut composed, para, metric_styles, storage)?;
@@ -592,8 +634,58 @@ pub(crate) fn tac_host_trailing_spacing(
 /// 다음 문단을 현재 프레임에서 재조판하면 저장 vpos가 간격의 나머지를
 /// 복원하지 않는다. 마지막 저장 TAC 줄은 후행 간격 전량을 흐름에 남긴다.
 fn successor_lacks_stored_text_axis(para: &Paragraph) -> bool {
-    para.stored_text_partition_is_dirty()
-        || crate::renderer::para_has_no_stored_line_segs(para)
+    para.stored_text_partition_is_dirty() || crate::renderer::para_has_no_stored_line_segs(para)
+}
+
+/// [#8544] 다음 문단의 첫 저장 줄이 이 TAC 줄의 `vpos + lh + ls` 에서 정확히 시작하면, 한/글은 표 줄
+/// 간격 전량을 흐름에 남긴 것이다(같은 문단 뒤 줄의 `stored_successor_owns_full_gap` 과 같은 증거를
+/// 문단 경계에서도 쓴다). #8543 합성 leading_shape_line(한/글 2020·2024 Print): 표 A 줄 3705+7812+600 = 표 B
+/// 문단 12117, 표 B 위끝 = 저장 vpos + 바깥 위 여백.
+fn stored_successor_closes_full_gap(seg: &LineSeg, next: &Paragraph) -> bool {
+    seg.line_spacing > 0
+        && !next.stored_text_partition_is_dirty()
+        && next.line_segs.first().is_some_and(|first| {
+            first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                && seg
+                    .vertical_pos
+                    .checked_add(seg.line_height)
+                    .and_then(|end| end.checked_add(seg.line_spacing))
+                    == Some(first.vertical_pos)
+        })
+}
+
+/// 완전한 TAC 저장 줄 뒤에서 후속 문단의 저장 축이 다시 시작하면,
+/// 그 새 축은 앞 줄의 나머지 반간격을 복원할 수 없다. 줄 상자와 바깥
+/// 여백의 소유가 확인된 원본 줄은 후행 간격 전량을 현재 흐름에 남긴다.
+/// 원점 0에서 다시 시작하는 저장 축과 실제 한 줄을 혼자 소유한 TAC 상자를 확인한다.
+/// 좌표 감소만으로 새 축을 추정하지 않는다. 양수 원점의 닫힘은 별도 공통 계약으로 검증한다.
+fn stored_successor_restarts_owned_tac_frame(
+    para: &Paragraph,
+    seg: &LineSeg,
+    next: &Paragraph,
+) -> bool {
+    if para.cell_format_vpos_dirty
+        || next.cell_format_vpos_dirty
+        || next.stored_text_partition_is_dirty()
+        || seg.vertical_pos < 0
+        || seg.line_spacing <= 0
+        || !para
+            .line_segs
+            .last()
+            .is_some_and(|last| std::ptr::eq(last, seg))
+    {
+        return false;
+    }
+    next.line_segs.first().is_some_and(|first| {
+        first.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && first.line_height > 0
+            // 원점에서 시작하는 새 저장 축만 이 경계의 독립 근거다.
+            // 양수 vpos의 단순 되감김은 앞 줄 간격의 소유를 증명하지 않는다.
+            && first.vertical_pos == 0
+    }) && para.controls.iter().enumerate().any(|(index, _)| {
+        stored_owned_tac_line(para, index)
+            .is_some_and(|(_, owner)| std::ptr::eq(owner, seg))
+    })
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -604,6 +696,10 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
     seg: &LineSeg,
     hwpx_stored_layout: bool,
     native_stored_layout: bool,
+    // [#8544] 다음 문단 저장 vpos 가 간격 전량을 닫을 때 전량을 남기는 규칙. 한/글 2020·2024
+    // (13.0.0.3901) Print 로 확인한 기본(2022 계열) 경로에서만 켠다. `--compat 2024` 는 #5524 Δ1
+    // 리비전(앞 앵커 줄 회수)을 모델링하며 그 리비전의 이 경계 동작은 아직 확인하지 못했다.
+    stored_successor_full_gap: bool,
     dpi: f64,
 ) -> f64 {
     if native_stored_layout
@@ -613,7 +709,11 @@ pub(crate) fn tac_host_trailing_spacing_at_boundary(
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && next_para.is_some_and(successor_lacks_stored_text_axis)
+        && next_para.is_some_and(|next| {
+            successor_lacks_stored_text_axis(next)
+                || (stored_successor_full_gap && stored_successor_closes_full_gap(seg, next))
+                || stored_successor_restarts_owned_tac_frame(para, seg, next)
+        })
     {
         crate::renderer::hwpunit_to_px(seg.line_spacing, dpi)
     } else {
@@ -644,9 +744,8 @@ pub(crate) fn tac_successor_uses_reflow_spacing(
             .line_segs
             .last()
             .is_some_and(|last| std::ptr::eq(last, seg))
-        && next_para.is_some_and(|next| {
-            next.controls.is_empty() && successor_lacks_stored_text_axis(next)
-        })
+        && next_para
+            .is_some_and(|next| next.controls.is_empty() && successor_lacks_stored_text_axis(next))
 }
 
 /// 재구성한 표 줄의 옛 vpos와 독립 후속 줄의 새 로컬 축을 구분한다.
@@ -751,6 +850,12 @@ pub(crate) fn tac_next_line_full_spacing(
         && !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0;
+    if stored_host
+        && next_para
+            .is_some_and(|next| stored_successor_restarts_owned_tac_frame(para, seg, next))
+    {
+        return true;
+    }
     // 다음 흐름 개체가 도형이어도 같은 문단의 저장 줄 간격을 소유한다.
     // 표 개수만 세어 마지막 표로 판단하면 두 줄 사이의 거리를 절반으로 줄인다.
     // 같은 vpos의 수평 조각과 편집/합성 사다리는 이 닫힘의 근거가 아니다.

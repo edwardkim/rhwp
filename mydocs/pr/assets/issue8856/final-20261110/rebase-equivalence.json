@@ -1,0 +1,21 @@
+{
+  "time": "2026-11-10T11:22:04.449339+09:00",
+  "old_head": "6cef8c1eec85705bcb62de344a19335cf2cac350",
+  "head": "e0ce30729e4d87d2a75376d17c6d351a29ef4345",
+  "old_base": "b5064fae1eefff92d60464c51844a38debec09f9",
+  "base": "3170fddc48cc4fcac0c18761d146b619d0f90c7b",
+  "incoming_paths": [
+    "mydocs/orders/20261110.md",
+    "mydocs/pr/archives/pr_8884_review.md",
+    "mydocs/pr/assets/code-scanning-closure-20261110/final-security-state.json",
+    "mydocs/pr/assets/code-scanning-closure-20261110/main-full-verification.json",
+    "mydocs/pr/assets/code-scanning-closure-20261110/main-trailing-success.json",
+    "mydocs/pr/assets/code-scanning-closure-20261110/remote-completion.json"
+  ],
+  "conflicts": false,
+  "runtime_files": 1782,
+  "runtime_bytes_unchanged": true,
+  "fixed_base_runtime_unchanged": true,
+  "reuse_reason": "incoming docs/security completion records only; runtime and all original fixed-base inputs unchanged",
+  "backup_ref": "backup/8856-before-doc-rebase-20261110"
+}

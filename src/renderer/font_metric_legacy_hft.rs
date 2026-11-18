@@ -1,4 +1,4 @@
-//! 한컴 Print에서 확인한 신명 HFT 프로그램의 고유 ASCII 전진폭.
+//! 한컴 Print에서 확인한 신명 HFT 프로그램의 고유 전진폭.
 //!
 //! Type3 /Widths와 ToUnicode를 읽은 값이며 글리프 윤곽선이나 글꼴 파일은 아니다.
 //! 근거: pdf/issue7642-hft-char-style-diagnostic/char-style-ascii-2020.pdf,
@@ -50,11 +50,41 @@ static ASCII_2: [u16; 95] = [
     769, 599, 362, 397, 352, 429, 500, 382, 509, 556, 485, 543, 482, 352, 588, 560, 277, 314, 557,
     274, 858, 564, 516, 534, 548, 405, 486, 351, 562, 581, 840, 590, 574, 474, 418, 280, 421, 500,
 ];
-static RANGES_2: [LatinRange; 1] = [LatinRange {
-    start: 0x0020,
-    end: 0x007e,
-    widths: &ASCII_2,
-}];
+// 독립 Print: issue8596_policy_committee_agenda-2020.pdf 11쪽 T6의
+// ToUnicode 04 → U+221A, CharProc HFT285의 d1 전진은 1000/1000 em이다.
+// 표시 family의 별칭과 무관하게 원 HFT의 확인된 폭을 사용한다.
+static SQUARE_ROOT_2: [u16; 1] = [1000];
+// report-628 독립 Print 110쪽: 원본 HFT의 U+2022 뒤 본문은 1em 전진한다.
+// 대체 paint의 Gulim 기호는 자연 폭0.375em이지만 그 폭으로 원본 전진을
+// 재지 않는다. 별도 HFT 프로그램 표를 선택해도 확인된 전각 계약을 보존한다.
+static BULLET_2: [u16; 1] = [1000];
+// nested 독립 Print T6의 U+2013: /Widths와 HFT376 d1은 모두 1000/1000em이다.
+// 일반 정체의 원 HFT 전진이며 다른 서식의 glyph 공급을 인증하지 않는다.
+// CBTA Print47쪽의 굵게는 HCI Poppy CID83의500/1000em을 소비한다.
+// 조회와 glyph-fit은 아래 서식 범위를 함께 확인하며 기존 대체 폭을 보존한다.
+static EN_DASH_2: [u16; 1] = [1000];
+static RANGES_2: [LatinRange; 4] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_2,
+    },
+    LatinRange {
+        start: 0x2013,
+        end: 0x2013,
+        widths: &EN_DASH_2,
+    },
+    LatinRange {
+        start: 0x2022,
+        end: 0x2022,
+        widths: &BULLET_2,
+    },
+    LatinRange {
+        start: 0x221a,
+        end: 0x221a,
+        widths: &SQUARE_ROOT_2,
+    },
+];
 
 // 명시적 대체 글꼴이 없는 한양중고딕의 Type3 프로그램 폭이다.
 // HWP5 법령의 명시적 HY중고딕 TrueType 대체 프로그램과 구분한다.
@@ -65,13 +95,137 @@ static ASCII_3: [u16; 95] = [
     619, 585, 253, 283, 253, 448, 500, 256, 534, 527, 483, 531, 532, 255, 529, 529, 195, 196, 473,
     195, 809, 529, 539, 535, 531, 310, 480, 255, 531, 479, 697, 470, 466, 485, 310, 237, 306, 500,
 ];
-static RANGES_3: [LatinRange; 1] = [LatinRange {
-    start: 0x0020,
-    end: 0x007e,
-    widths: &ASCII_3,
-}];
+// [#8697] 같은 프로그램의 ASCII 밖 Type3 /Widths. 탐침
+// samples/issue8697/hft-hanyang_junggothic-probe.hwpx(일곱 슬롯 모두 HFT 한양중고딕)의 독립
+// 한컴 2020 Print(pdf/issue8697/, 11.0.0.9136, Print method 0)에서 읽었다. 한/글이 이
+// 프로그램으로 그린 글자만 싣는다. 같은 탐침에서 바탕·돋움 TrueType 으로 대체된 글자
+// (U+3001 등)는 이 표의 근거가 아니므로 넣지 않는다.
+static RANGES_3: [LatinRange; 19] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_3,
+    },
+    single(0x00b7, &[381]),
+    single(0x2015, &[1000]),
+    LatinRange {
+        start: 0x2018,
+        end: 0x2019,
+        widths: &[225, 225],
+    },
+    LatinRange {
+        start: 0x201c,
+        end: 0x201d,
+        widths: &[375, 375],
+    },
+    LatinRange {
+        start: 0x2026,
+        end: 0x2027,
+        widths: &[1000, 500],
+    },
+    single(0x203b, &[1000]),
+    single(0x2192, &[1000]),
+    single(0x25a1, &[1000]),
+    single(0x25cb, &[1000]),
+    single(0x3000, &[1000]),
+    LatinRange {
+        start: 0x3004,
+        end: 0x3005,
+        widths: &[1000, 1000],
+    },
+    LatinRange {
+        start: 0x3007,
+        end: 0x3011,
+        widths: &[1000; 11],
+    },
+    LatinRange {
+        start: 0x3014,
+        end: 0x3015,
+        widths: &[1000, 1000],
+    },
+    LatinRange {
+        start: 0x301a,
+        end: 0x301c,
+        widths: &[1000, 1000, 1000],
+    },
+    single(0x302b, &[1000]),
+    single(0x338f, &[1000]),
+    single(0x339c, &[1000]),
+    single(0x33a1, &[1000]),
+];
 
-pub(super) static METRICS: [FontMetric; 6] = [
+// [#8697] 명시적 대체 글꼴이 없는 신명 중고딕 HFT 의 Type3 /Widths. 탐침
+// samples/issue8697/hft-sinmyeong_junggothic-probe.hwpx(일곱 슬롯 모두 HFT 신명 중고딕)의
+// 독립 한컴 2020 Print(pdf/issue8697/, 11.0.0.9136, Print method 0)에서 읽었다. 이
+// 프로그램으로 그린 글자만 싣는다. CJK 기호(U+3005 제외)·화살표 등은 한컴바탕으로 대체된다.
+static ASCII_4: [u16; 95] = [
+    400, 500, 400, 680, 680, 1000, 1000, 400, 500, 500, 500, 1000, 400, 500, 400, 500, 680, 680,
+    680, 680, 680, 680, 680, 680, 680, 680, 500, 500, 500, 1000, 500, 680, 1000, 816, 772, 775,
+    785, 714, 678, 889, 831, 319, 653, 786, 653, 1066, 895, 888, 714, 854, 775, 769, 719, 889, 779,
+    1149, 847, 731, 697, 500, 500, 500, 500, 500, 400, 644, 694, 584, 696, 643, 457, 699, 703, 323,
+    322, 598, 323, 1050, 700, 697, 693, 694, 458, 583, 382, 705, 634, 929, 651, 635, 527, 500, 500,
+    500, 1000,
+];
+static RANGES_4: [LatinRange; 5] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_4,
+    },
+    single(0x00b7, &[381]),
+    LatinRange {
+        start: 0x2018,
+        end: 0x2019,
+        widths: &[200, 200],
+    },
+    LatinRange {
+        start: 0x201c,
+        end: 0x201d,
+        widths: &[300, 300],
+    },
+    single(0x3005, &[1000]),
+];
+
+// [#9087] 명시적 대체 글꼴이 없는 신명 순명조 HFT 의 Type3 /Widths. 탐침
+// samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx(일곱 슬롯 모두 HFT 신명 순명조)의
+// 독립 한컴 2022 Print(pdf/issue9087/, 12.0.0.4547)에서 읽었다. 굵게 탐침의 /Widths 도 같다.
+// 이 프로그램으로 그린 글자만 싣는다. CJK 기호·화살표 등은 한컴바탕으로 대체된다.
+static ASCII_5: [u16; 95] = [
+    400, 500, 400, 600, 600, 1000, 1000, 400, 500, 500, 500, 1000, 400, 500, 400, 500, 600, 600,
+    600, 600, 600, 600, 600, 600, 600, 600, 500, 500, 500, 1000, 500, 600, 1000, 725, 798, 788,
+    846, 771, 692, 850, 847, 374, 654, 769, 646, 961, 792, 845, 659, 854, 753, 711, 671, 834, 742,
+    969, 768, 689, 683, 500, 500, 500, 500, 500, 400, 648, 705, 607, 708, 605, 389, 620, 745, 372,
+    371, 703, 372, 1027, 748, 644, 706, 663, 500, 607, 451, 768, 607, 859, 644, 698, 563, 500, 500,
+    500, 1000,
+];
+static RANGES_5: [LatinRange; 4] = [
+    LatinRange {
+        start: 0x0020,
+        end: 0x007e,
+        widths: &ASCII_5,
+    },
+    single(0x00b7, &[384]),
+    LatinRange {
+        start: 0x2018,
+        end: 0x2019,
+        widths: &[200, 200],
+    },
+    LatinRange {
+        start: 0x201c,
+        end: 0x201d,
+        widths: &[400, 400],
+    },
+];
+
+const fn single(code: u32, widths: &'static [u16]) -> LatinRange {
+    LatinRange {
+        start: code,
+        end: code,
+        widths,
+    }
+}
+
+pub(super) static METRICS: [FontMetric; 8] = [
     FontMetric {
         name: "신명 디나루 (HFT)",
         bold: false,
@@ -104,6 +258,22 @@ pub(super) static METRICS: [FontMetric; 6] = [
         latin_ranges: &RANGES_3,
         hangul: None,
     },
+    FontMetric {
+        name: "신명 중고딕 (HFT)",
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &RANGES_4,
+        hangul: None,
+    },
+    FontMetric {
+        name: "신명 순명조 (HFT)",
+        bold: false,
+        italic: false,
+        em_size: 1000,
+        latin_ranges: &RANGES_5,
+        hangul: None,
+    },
     konghan::METRIC,
     system::METRIC,
 ];
@@ -115,6 +285,8 @@ pub(crate) fn metric_face_name(requested: &str) -> Option<&'static str> {
         "한양중고딕" | "HanyangJungGothic" => Some("한양중고딕 (HFT)"),
         "신명 디나루" => Some("신명 디나루 (HFT)"),
         "신명 신그래픽" => Some("신명 신그래픽 (HFT)"),
+        "신명 중고딕" => Some("신명 중고딕 (HFT)"),
+        "신명 순명조" => Some("신명 순명조 (HFT)"),
         "중간공한" | "Konghan Normal" => Some("중간공한 (HFT)"),
         "시스템" => Some("시스템 (HFT)"),
         _ => None,
@@ -123,4 +295,38 @@ pub(crate) fn metric_face_name(requested: &str) -> Option<&'static str> {
 
 pub(crate) fn is_metric_face(name: &str) -> bool {
     METRICS.iter().any(|metric| metric.name == name)
+}
+
+fn owns_regular_bar(face: &str, character: char) -> bool {
+    let source = metric_face_name(face).unwrap_or(face);
+    character == '\u{2013}' && source == "한양신명조 (HFT)"
+}
+
+/// 부분 표의 일반 막대 근거를 확인하지 않은 서식으로 상속하지 않는다.
+/// 굵게의 독립 Print는 다른 공급자를 사용하므로 기존 표시 대체 조회를 유지한다.
+pub(crate) fn rejects_regular_bar_style(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> bool {
+    owns_regular_bar(face, character) && (bold || italic)
+}
+
+/// 독립 Print의 일반 막대가 소유하는 원 HFT 칸이다. 표시 glyph의 hmtx와 구분한다.
+/// 측정과 같은 프로그램·서식 범위에서만 1em 칸 가운데에 잉크를 둔다.
+pub(crate) fn centered_bar_advance_em(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> Option<f64> {
+    if !owns_regular_bar(face, character)
+        || rejects_regular_bar_style(face, bold, italic, character)
+    {
+        return None;
+    }
+    let source = metric_face_name(face).unwrap_or(face);
+    let metric = METRICS.iter().find(|metric| metric.name == source)?;
+    Some(f64::from(metric.get_width(character)?) / f64::from(metric.em_size))
 }

@@ -1,0 +1,131 @@
+{
+  "scope": "원 PR별 실제 제품 소비와 성공한 검사 연결; 다른 필수 게이트 완료로 확대하지 않음",
+  "rows": [
+    {
+      "pr": 9114,
+      "consumer_sources": [
+        "src/renderer/native_webfonts.rs:308"
+      ],
+      "actual_passed_tests": [
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::declared_hft_substitute_keeps_its_own_punctuation_contract",
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::display_replacement_preserves_existing_tables_and_latin_slot_metrics",
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::display_substitute_preserves_source_advance_while_selected_program_can_own_it",
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::svg_font_reference_preserves_local_priority_and_escapes_markup",
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::verified_hft_round_markers_keep_source_advance_after_display_program_supply",
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::woff2_decodes_to_a_readable_program_without_losing_korean_glyph_advance",
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::declared_local_substitute_precedes_a_registered_webfont",
+        "rhwp::regression_suite_026 issue_8533_native_webfont_supply::local_face_wins_and_generic_fallback_does_not_claim_to_supply_the_unknown_original"
+      ],
+      "full_nextest_evidence": "full-nextest-result.json",
+      "pending_other_required_gates": true,
+      "actual_native_http_and_offline_cache_evidence": "native-webfont-network-validation.json"
+    },
+    {
+      "pr": 9118,
+      "consumer_sources": [
+        "src/parser/cfb_reader.rs:1137",
+        "crates/rhwp-password-crypto/src/lib.rs:19"
+      ],
+      "actual_passed_tests": [
+        "rhwp parser::cfb_reader::tests::open_decompression_stream_readers_enforce_limit",
+        "rhwp parser::cfb_reader::tests::test_decompress_empty",
+        "rhwp parser::cfb_reader::tests::test_decompress_invalid_data",
+        "rhwp parser::cfb_reader::tests::test_decompress_real_data",
+        "rhwp parser::cfb_reader::tests::test_limited_decompression_rejects_compact_oversized_output",
+        "rhwp parser::crypto::tests::password_limit_rejects_expanded_stream"
+      ],
+      "full_nextest_evidence": "full-nextest-result.json",
+      "pending_other_required_gates": true
+    },
+    {
+      "pr": 9120,
+      "consumer_sources": [
+        "src/parser/hwpx/reader.rs:15",
+        "crates/rhwp-password-crypto/src/lib.rs:30"
+      ],
+      "actual_passed_tests": [
+        "rhwp parser::hwpx::reader::tests::test_compressed_entry_limited_read_rejects_before_materialization",
+        "rhwp parser::hwpx::reader::tests::test_detect_odf_encryption",
+        "rhwp parser::hwpx::reader::tests::test_invalid_utf8_entry_lossy_accepted",
+        "rhwp parser::hwpx::reader::tests::test_open_invalid_zip",
+        "rhwp parser::hwpx::reader::tests::test_read_limited_over_cap",
+        "rhwp parser::hwpx::reader::tests::test_read_limited_under_cap",
+        "rhwp parser::hwpx::reader::tests::test_read_limited_at_cap",
+        "rhwp parser::hwpx::reader::tests::test_large_legit_xml_entry_accepted",
+        "rhwp parser::hwpx::reader::tests::test_zip_bomb_xml_entry_rejected",
+        "rhwp::regression_suite_024 armor_cli_contract::encrypted_hwp3_and_hwpx_open_through_password_stdin"
+      ],
+      "full_nextest_evidence": "full-nextest-result.json",
+      "pending_other_required_gates": true
+    },
+    {
+      "pr": 9122,
+      "consumer_sources": [
+        "crates/rhwp-password-crypto/src/lib.rs:17",
+        "crates/rhwp-password-crypto/src/lib.rs:417"
+      ],
+      "actual_passed_tests": [
+        "rhwp::regression_suite_017 password_crypto_multiformat_contract::hwp3_common_module_reencrypts_the_actual_password_fixture",
+        "rhwp::regression_suite_017 password_crypto_multiformat_contract::hwpx_common_module_and_serializer_write_password_packages",
+        "rhwp::regression_suite_024 armor_cli_contract::encrypted_hwp3_and_hwpx_open_through_password_stdin",
+        "rhwp-password-crypto tests::hwp5_decrypt_matches_external_vector",
+        "rhwp-password-crypto tests::hwp5_stream_roundtrip_preserves_partial_block"
+      ],
+      "full_nextest_evidence": "full-nextest-result.json",
+      "pending_other_required_gates": true
+    },
+    {
+      "pr": 9124,
+      "consumer_sources": [
+        "src/parser/crypto.rs:6",
+        "crates/rhwp-password-crypto/src/lib.rs:10"
+      ],
+      "actual_passed_tests": [
+        "rhwp parser::crypto::tests::distribute_aes_matches_nist_vector",
+        "rhwp::regression_suite_024 armor_cli_contract::encrypted_hwpx_preserves_missing_and_wrong_password_failures",
+        "rhwp::regression_suite_024 armor_cli_contract::encrypted_hwp3_and_hwpx_open_through_password_stdin",
+        "rhwp-password-crypto tests::hwp5_decrypt_matches_external_vector"
+      ],
+      "full_nextest_evidence": "full-nextest-result.json",
+      "pending_other_required_gates": true
+    },
+    {
+      "pr": 9116,
+      "consumer_sources": [
+        "src/renderer/svg/webfont_subset.rs:5"
+      ],
+      "actual_passed_tests": [
+        "rhwp::regression_suite_013 issue_536_native_font_selection::native_and_browser_collection_contract_keeps_exact_faces_and_rejects_invalid_indexes",
+        "rhwp::regression_suite_013 issue_536_native_font_selection::native_and_browser_support_horizontal_synthetic_instances_with_digest_proof",
+        "rhwp::regression_suite_013 issue_536_native_font_selection::synthetic_instances_do_not_grant_bidi_or_generic_vertical_authority",
+        "rhwp::regression_suite_013 issue_536_native_font_selection::native_variation_contract_checks_exact_axes_ranges_duplicates_and_budget",
+        "rhwp::regression_suite_020 issue_6520_svg_layer_contract::subset_font_bytes_are_deterministic_for_multiple_codepoints"
+      ],
+      "full_nextest_evidence": "full-nextest-result.json",
+      "pending_other_required_gates": true
+    },
+    {
+      "pr": 9121,
+      "consumer_sources": [
+        "src/renderer/svg/webfont_subset.rs:51"
+      ],
+      "actual_passed_tests": [
+        "rhwp::regression_suite_013 issue_536_native_font_selection::native_and_browser_collection_contract_keeps_exact_faces_and_rejects_invalid_indexes",
+        "rhwp::regression_suite_013 issue_536_native_font_selection::native_and_browser_support_horizontal_synthetic_instances_with_digest_proof",
+        "rhwp::regression_suite_013 issue_536_native_font_selection::synthetic_instances_do_not_grant_bidi_or_generic_vertical_authority",
+        "rhwp::regression_suite_013 issue_536_native_font_selection::native_variation_contract_checks_exact_axes_ranges_duplicates_and_budget",
+        "rhwp::regression_suite_020 issue_6520_svg_layer_contract::subset_font_bytes_are_deterministic_for_multiple_codepoints"
+      ],
+      "full_nextest_evidence": "full-nextest-result.json",
+      "pending_other_required_gates": true
+    },
+    {
+      "pr": 9125,
+      "consumer_sources": [
+        "src/renderer/skia"
+      ],
+      "native_scope_evidence": "native-skia-validation.json",
+      "pending_whole_protected_and_actual_browser_gates": true
+    }
+  ]
+}

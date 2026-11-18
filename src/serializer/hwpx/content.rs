@@ -81,6 +81,25 @@ pub(super) fn write_content_hpf_with_scripts(
     original_content_hpf: Option<&[u8]>,
     additional_scripts: &[(&str, &str)],
 ) -> Result<Vec<u8>, SerializeError> {
+    write_content_hpf_with_parts(
+        section_hrefs,
+        bin_data,
+        master_items,
+        original_content_hpf,
+        additional_scripts,
+        false,
+    )
+}
+
+/// content.hpf. `memo_extended`면 한컴처럼 header 다음에 메모 댓글 관계 파트를 올린다.
+pub fn write_content_hpf_with_parts(
+    section_hrefs: &[String],
+    bin_data: &[BinDataEntry],
+    master_items: &[(usize, String, String)],
+    original_content_hpf: Option<&[u8]>,
+    additional_scripts: &[(&str, &str)],
+    memo_extended: bool,
+) -> Result<Vec<u8>, SerializeError> {
     // 원본 metadata 블록(있으면) — 본문과 무관한 저작자/일자/주제 보존용.
     let original_str = original_content_hpf.and_then(|b| std::str::from_utf8(b).ok());
     let original_metadata = original_str.and_then(extract_metadata_block);
@@ -170,6 +189,17 @@ pub(super) fn write_content_hpf_with_scripts(
             ("media-type", "application/xml"),
         ],
     )?;
+    if memo_extended {
+        empty_tag(
+            &mut w,
+            "opf:item",
+            &[
+                ("id", "memoextended"),
+                ("href", crate::model::memo_extended::HWPX_ENTRY),
+                ("media-type", "application/xml"),
+            ],
+        )?;
+    }
 
     // [#6907] 바탕쪽은 **그 소속 구역 바로 앞**에 놓는다 — 이 매니페스트 순서가
     // 곧 바탕쪽의 구역 소속이기 때문이다(파서는 `sectionN.xml` 항목을 만나면

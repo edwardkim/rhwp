@@ -162,7 +162,30 @@ impl TypesetEngine {
             composed_all,
         };
         let entry = self.prepare_block_table_entry(st, input)?;
-        let (context, source) = self.prepare_block_table_continuation(st, input, entry);
+        let (mut context, source) = self.prepare_block_table_continuation(st, input, entry);
+        if context.flow_state.take_block_table_restart(para_idx) {
+            *st = context.into_flow_state();
+            // [#8652] 호스트와 표를 다음 쪽에서 처음부터 다시 준비한다.
+            let start = st.current_height;
+            return self.typeset_block_table_inner(
+                st,
+                para_idx,
+                ctrl_idx,
+                para,
+                table,
+                ft,
+                fmt,
+                mt,
+                styles,
+                start,
+                start,
+                is_first_placed,
+                is_last_placed,
+                paragraphs_all,
+                composed_all,
+                suspend_before_drain,
+            );
+        }
         if suspend_before_drain {
             return Some(context);
         }

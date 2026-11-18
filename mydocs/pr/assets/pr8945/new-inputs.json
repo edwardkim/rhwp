@@ -1,0 +1,44 @@
+[
+  {
+    "path": "samples/issue7620/b-rowbreak-bottom-margin-overflow.hwp",
+    "temporary_base_input": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/inputs/b-rowbreak-bottom-margin-overflow.hwp",
+    "source_commit": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "bytes": 14336,
+    "sha256": "496d5653cee6205d13a070d3e1c7758459b120f4146a6e9dba05ee3122ce06b4"
+  },
+  {
+    "path": "pdf/issue7620/b-rowbreak-bottom-margin-overflow-hancomdocs.pdf",
+    "temporary_base_input": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/inputs/b-rowbreak-bottom-margin-overflow-hancomdocs.pdf",
+    "source_commit": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "bytes": 9568,
+    "sha256": "3d5aa0ec87b10af1bc584c7500cdc0d1cf93f5f3812c1ccf3a3585ebf6382387"
+  },
+  {
+    "path": "samples/issue7620/c-rowbreak-table-moves-next-page.hwp",
+    "temporary_base_input": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/inputs/c-rowbreak-table-moves-next-page.hwp",
+    "source_commit": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "bytes": 14336,
+    "sha256": "1a19df0ccf31676c411a576963cf322ec9e927fd8727390e94703cd95a297669"
+  },
+  {
+    "path": "pdf/issue7620/c-rowbreak-table-moves-next-page-hancomdocs.pdf",
+    "temporary_base_input": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/inputs/c-rowbreak-table-moves-next-page-hancomdocs.pdf",
+    "source_commit": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "bytes": 9589,
+    "sha256": "dfd39700bc26029a4bc148ab64640ad91243642c549fe6cfd9bfb0870cc61c4d"
+  },
+  {
+    "path": "samples/issue7620/d-rowbreak-splits-at-row-boundary.hwp",
+    "temporary_base_input": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/inputs/d-rowbreak-splits-at-row-boundary.hwp",
+    "source_commit": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "bytes": 14336,
+    "sha256": "1ac6b0c2f586b7e7c4a59cfc71834aff9e76e57bb73a846ff7a392c6489f6aee"
+  },
+  {
+    "path": "pdf/issue7620/d-rowbreak-splits-at-row-boundary-hancomdocs.pdf",
+    "temporary_base_input": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/inputs/d-rowbreak-splits-at-row-boundary-hancomdocs.pdf",
+    "source_commit": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "bytes": 10277,
+    "sha256": "80e1acd33c2a9b437e1ecd2020e46b113a953514c0eb4428ecd414f8bcb25347"
+  }
+]

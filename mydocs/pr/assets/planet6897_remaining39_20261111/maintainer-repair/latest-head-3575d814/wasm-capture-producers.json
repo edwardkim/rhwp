@@ -1,0 +1,712 @@
+{
+  "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "conditions": 44,
+  "pages": 88,
+  "records": [
+    {
+      "key": "pr8708-cell_float_offset_space",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "6dfbdbd3a9c86def227198e27ca53ecab3d68dcfd3831da92b5f6524ac138e19"
+    },
+    {
+      "key": "pr8717-scholarship_recommendation_form",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "f4713b69d5ebc5a4e15216b9e2b2f5226b4dc6184a1751d1a0a242a667d11cea"
+    },
+    {
+      "key": "pr8717-tax_source_ledger_form",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "0df7b29752c2b56ebda8476f41a34672d2573c5cb6570190299bc02c51bf91af"
+    },
+    {
+      "key": "pr8719-cell_float_inner_anchor",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "0c24fd301617e6a100cae5fa6f029cea2707aef7c5532398dc333390eb255d49"
+    },
+    {
+      "key": "pr8746-36345427_approval_body",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "2e47c4b2721f5690644831fb962d68204a038649184e24f6a4b16769677fe722"
+    },
+    {
+      "key": "pr8758-whitespace_host_approval_table",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "65c58b87691f2158ad91b6201d63c7083f5dcd372dd9f73c5d8347a8758a87d3"
+    },
+    {
+      "key": "pr8929-wide_tac_trailing_tail",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "219836234b7a4b7924f6772d5b2e23bcada4f36e2405695c779f44dd2c137140"
+    },
+    {
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "0b9d6512d5aaff65afd6da895f8d3a14eb6ca33356a6d4d1eea96ece06d5e101"
+    },
+    {
+      "key": "pr8775-field_led_wide_table",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "f142cf2343c1731e44c76899812f76c50123b46616b8f0f300a4bbdfd566f8bb"
+    },
+    {
+      "key": "pr8775-field_led_wide_table_nofield",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "f369a9b59c86ae7e2ed96ddfad08289b5e923770ac8d23f25ff63305e18e74a8"
+    },
+    {
+      "key": "pr8785-stored_field_line_table",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "70ab660627929858fcc6d8fc58828038ff70553e662cba2cd5162f5e800b0afa"
+    },
+    {
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "c1723333be4079f6d8ef3b21b06e23d773b88a9397d9a2662e2ad7be1ac964a2"
+    },
+    {
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "0193a0734ae718fbc801af3e31d6b95b71889181a847a496de7aee4ca626af80"
+    },
+    {
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "e7e06d7b0da6529b23f8f8928a9ab70b10fdce991cf63696565b588fbdd9f770"
+    },
+    {
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "25a7ed0fb45ea9eac4551869b52cf43711de0ba5b9db0cca2b1bba83f26eb6d0"
+    },
+    {
+      "key": "pr8861-36388005-host-below-header-table",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "9d075d9a019a540768ae3d9d5d509d2e0cb4714724594c7ebda755694cfe5b72"
+    },
+    {
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "f4063b5d7209b7709d06b40800be657b6ea946c1c9d061dfd2bf979bf712ba0e"
+    },
+    {
+      "key": "pr8881-36441289-tac-host-below-float",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "628a1bb9836fc16f1cfc7707d454c0f865fc21b3915d26729662872103d737e4"
+    },
+    {
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "c8d53fe3d0cc770072a7ed5fbd8dceae50a2b72fd3aa3a93f7071ede549cd2dc"
+    },
+    {
+      "key": "pr8744-nested_row_cell_cuts",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "0bb0e2b897b14e097208199421eca06cd139a1bfbcc7564e69cfb58a670bf817"
+    },
+    {
+      "key": "pr8785-stored_field_line_page_split",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "8b838b5376f9ba0d651cb24496c553b08c0cd237cac38e8445a19c064842a6b7"
+    },
+    {
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "12f435786508004b44a8ca7525938162b4dcb94ad91db5b8d31967a910d9cfb9"
+    },
+    {
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "e2866ac7718de09ed8eb52a818ac3800c399e5ed433115654566ab70fefb5cc4"
+    },
+    {
+      "key": "pr8921-1471000-group-bullet-column-top",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "86115bceadad23797126d0a667c18440278c82f430b57dad4fad91d09988906c"
+    },
+    {
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "b76cd3b75c27001102821a42ceae06993b318b59fc09e90bedf4b677d612d505"
+    },
+    {
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "7fd884deba204cd9b48fa01f9e2ad89caf262c227eafb66ddd16a6f1c0753865"
+    },
+    {
+      "key": "pr8729-hft-sinmyeong_junggothic-probe",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "95a584e189a0ceead52a7bca46dc8b4c6837d6196c9518aae68d0f5d56c3f348"
+    },
+    {
+      "key": "pr8794-156739836-float-prefix-row-reduced",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "f11c1b12988604886ecdfe3d64c3dba6fdd0f7ee9c3f61d2a6f4a88dbabb47db"
+    },
+    {
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "503a212669120138dd1426517d7c5cb8de77fc332889a6085d98ffcc7943eeba"
+    },
+    {
+      "key": "pr8921-44907-group-bullet-column-top",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "d70b2cfe46393e66e2c9577aa67fa6df7b3213fda0aad5c5bdfcd18fcecd4609"
+    },
+    {
+      "key": "pr8746-36453591_approval_body",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "066aea8c788250a3530545a83bbbbd4280aa964d60f1f82efe72dc7cd3628a60"
+    },
+    {
+      "key": "pr8746-36483048_approval_body",
+      "pages": 3,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "74262e6a0447f12d3468566bfb42a6eb010db0d2b6d0fd0e21e7946589a3e9cb"
+    },
+    {
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "pages": 3,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "06a7bc126397c84857501c174706178a17317b266f1fd6e067aa871e30419ea1"
+    },
+    {
+      "key": "pr8751-rowbreak-problem-pages",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "50cfe216964fe2128c39ed52975635df94a2a1cbdaada38a9bcabe567f47cb2e"
+    },
+    {
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "2611e338594bea4631a9eda6c218151b3d02455a0cefd719f9dc5cda14cdb8c0"
+    },
+    {
+      "key": "pr8751-75544_pii_bunseok",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "89018fe7fb5a7c650180eb206d15b18df7cef812a616305d1c2da8ec96830a3f"
+    },
+    {
+      "key": "pr8717-employment_service_interim_report",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "82cf8929609a44b3dc10c8355b5869489adfa1a00c808317d739e75f95d5a951"
+    },
+    {
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "pages": 9,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "78126bfa9abb37b4da7626fcdd56588dc681b59da9515b886e4fa6d1582295b3"
+    },
+    {
+      "key": "pr8689-1411000-201000007_final_report",
+      "pages": 4,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "121eb6029355aa9fff739158505b571859e5782a99298d162370202044fd3eaf"
+    },
+    {
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "pages": 2,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "cb1600071376a28b7e2ead6fe1e8ce6d7f6827befea2dc3b9a278d10294c41f8"
+    },
+    {
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "pages": 3,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "3cae6564aba3933397c571f16a943addc9e4ced099de1c76fe0abb8aadaed039"
+    },
+    {
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "pages": 8,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "2a326d2383643c3a25e32dc51a8f4e30c36d33cd9026d2f45b45430873062404"
+    },
+    {
+      "key": "pr8901-1480000-201900510_facility_pollution_study",
+      "pages": 1,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "9889c21beadd4f827c213907de2de81eb7428cef103b8497bd8c9396580e5538"
+    },
+    {
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "pages": 3,
+      "raster_backend": "wasm-canvas2d",
+      "wasm_files": [
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-pkg/rhwp_bg.wasm",
+          "sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7"
+        }
+      ],
+      "manifest_sha256": "f6abe6df55d013678e28f5465c8c7f210ca337194848dc792f0ee624fef565fd"
+    }
+  ],
+  "note": "실제 캡처 manifest의 WASM 프로그램 파일 해시를 이번 새 빌드와 대조했습니다. HTTP 초기화 응답의 별도 검증과는 구분합니다."
+}

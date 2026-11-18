@@ -79,9 +79,16 @@ fn issue_4898_plain_source_keeps_plain_margin_notation() {
             block.contains(&format!("<hc:left value=\"{stored_margin}\"")),
             "패키지 {version}의 평문 여백 단위 보존: {block}"
         );
+        // 평문 고정 줄간격도 여백과 같은 판본 규칙을 따른다(웹한글기안기 인쇄: 평문 FIXED 2000 은
+        // xmlVersion 1.4 에서 20pt, 1.2 에서 10pt).
+        let stored_line_spacing = if physical {
+            LINE_SPACING_FIXED / 2
+        } else {
+            LINE_SPACING_FIXED
+        };
         assert!(
-            block.contains(&format!("value=\"{LINE_SPACING_FIXED}\"")),
-            "고정 줄간격도 저장값 그대로여야 한다: {block}"
+            block.contains(&format!("value=\"{stored_line_spacing}\"")),
+            "패키지 {version}의 평문 고정 줄간격 단위 보존: {block}"
         );
         let parsed = rhwp::parser::parse_document(&bytes).expect("평문 여백 왕복 파싱");
         assert_eq!(parsed.doc_info.para_shapes[0].margin_left, MARGIN_LEFT);

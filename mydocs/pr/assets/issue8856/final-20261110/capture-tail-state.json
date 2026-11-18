@@ -1,0 +1,24 @@
+{
+  "running": false,
+  "current": "run-consumers-observed",
+  "steps": [
+    {
+      "name": "original-program-controls-final",
+      "exit": 0
+    },
+    {
+      "name": "strict-clip-whole",
+      "exit": 0
+    },
+    {
+      "name": "paired-legislation-whole",
+      "exit": 0
+    },
+    {
+      "name": "run-consumers-observed",
+      "exit": 0
+    }
+  ],
+  "complete": true,
+  "ended": "2026-11-10T11:37:54.601952+09:00"
+}

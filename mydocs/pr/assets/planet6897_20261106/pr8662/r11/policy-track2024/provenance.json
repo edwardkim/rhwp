@@ -1,0 +1,95 @@
+{
+  "role": "R11 완료 측정과 직접 판독. 통합 최종 head 판정은 별도.",
+  "inspected_at": "2026-11-06T21:41:28.785360+00:00",
+  "rows": [
+    {
+      "key": "policy-track2024",
+      "backend": "native",
+      "input": {
+        "path": "samples/issue8639/policy_research_review_request.hwp",
+        "sha256": "b1c72df57707accef2a8b2b83713e8574f2084b13416a2f78e7eecfadadadab2"
+      },
+      "pdf": {
+        "path": "pdf/issue8639/policy_research_review_request-print-2024.pdf",
+        "sha256": "4cea803c909b9f950588ed244317c0e4f7793802043b7f579000e9700af45061"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2024",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "native.tsv",
+          "sha256": "986a0b62cd22d43909fa3bca1257b95a11d7985707fa83f124d2703da8f149fb"
+        },
+        {
+          "path": "native-review-001.png",
+          "sha256": "3c1d2ba323622812384fd99e4f9787bef8849382cefb2a70cc7a072ae7e3d7b9"
+        },
+        {
+          "path": "native-overlay-001.png",
+          "sha256": "1fc9a7422cf2571916dc5912cd28dc67001b06082d93fff546d6b8ffafdd1e09"
+        }
+      ]
+    },
+    {
+      "key": "policy-track2024",
+      "backend": "wasm",
+      "input": {
+        "path": "samples/issue8639/policy_research_review_request.hwp",
+        "sha256": "b1c72df57707accef2a8b2b83713e8574f2084b13416a2f78e7eecfadadadab2"
+      },
+      "pdf": {
+        "path": "pdf/issue8639/policy_research_review_request-print-2024.pdf",
+        "sha256": "4cea803c909b9f950588ed244317c0e4f7793802043b7f579000e9700af45061"
+      },
+      "source_head": "048f44da99d83e186f3a9e139563d20545c8bdb4",
+      "producer": {
+        "configured": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "path": "output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r11",
+        "sha256": "dcc537203eba3fab75d592380c1b584310a97e1a2ec48a48e2e10898411386a4"
+      },
+      "dpi": 96,
+      "raw_method": "unreconciled-2px-content-silhouette",
+      "layout_generation": "2024",
+      "comparison_profile": "print",
+      "files": [
+        {
+          "path": "wasm.tsv",
+          "sha256": "40ae5eb9b736b898f0b3228acce8e5b69430c29444c82b3ae98e679e594e54e7"
+        },
+        {
+          "path": "wasm-review-001.png",
+          "sha256": "3f698c405fbd9e96e1a8ba6742ea17b1cad1a00cbf6fd10ff200b5f09c3627a8"
+        },
+        {
+          "path": "wasm-overlay-001.png",
+          "sha256": "9dec01f6013935e1115a5617214a4fdf3bff9bfbd9e3846361e2b0ab0ef96699"
+        }
+      ],
+      "wasm": {
+        "files": [
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp.js",
+            "sha256": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138"
+          },
+          {
+            "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-common-fixes-r11/rhwp_bg.wasm",
+            "sha256": "fb98b69311bc3ceeebfaa1052ed2098092aacb22f237ea7651cf4b7b6fe5ce5d"
+          }
+        ],
+        "exporter_sha256": "2d4cc3fbbdf4b4f528aa683649434221a783300e821fe68aaa2ae1e1b63220ee",
+        "font_registration_sha256": "5259038f8caad1f1c1a0dd9c2106589350a7d41ef8c5916c0108a1675951f9fe",
+        "comparison_profile": "print",
+        "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+        "render_tree": "WASM getPageRenderTree"
+      }
+    }
+  ]
+}

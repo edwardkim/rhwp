@@ -1,0 +1,50 @@
+[
+  {
+    "input": "samples/issue9073/proficiency_test_result_form.hwpx",
+    "reference_pdf": "pdf/issue9073/proficiency_test_result_form-print-2022.pdf",
+    "reference_sha256": "2a701f188ee646c4485550b6172905e87a3c9e6cc277315f06cd60c0934b0ffc",
+    "oracle_pages": 1,
+    "native_pages": 1,
+    "basis": "Direct Hancom 2022 Print attachment, independently verified exact source and whole output. No existing rows changed."
+  },
+  {
+    "input": "samples/issue9073/veterans_summer_support_press_release.hwpx",
+    "reference_pdf": "pdf/issue9073/veterans_summer_support_press_release-print-2022.pdf",
+    "reference_sha256": "19554002f6266f0137dd4287631e017a04c74d57262be09b32a420b375132a7f",
+    "oracle_pages": 2,
+    "native_pages": 2,
+    "basis": "Direct Hancom 2022 Print attachment, independently verified exact source and whole output. No existing rows changed."
+  },
+  {
+    "input": "samples/issue9079/black_stork_restoration_press_release.hwpx",
+    "reference_pdf": "pdf/issue9079/black_stork_restoration_press_release-print-2022.pdf",
+    "reference_sha256": "09f9f1272fa9088bc64e6adcbf4261a61f5aeffbea28736528a2789f82e17289",
+    "oracle_pages": 6,
+    "native_pages": 6,
+    "basis": "Direct Hancom 2022 Print attachment, independently verified exact source and whole output. No existing rows changed."
+  },
+  {
+    "input": "samples/issue9085/facility_fee_reduction_criteria.hwpx",
+    "reference_pdf": "pdf/issue9085/facility_fee_reduction_criteria-print-2022.pdf",
+    "reference_sha256": "42c2a8d94466516aad6af8c10e58400772c7863648e4fe63ed1673d7e3ef516d",
+    "oracle_pages": 1,
+    "native_pages": 1,
+    "basis": "Direct Hancom 2022 Print attachment, independently verified exact source and whole output. No existing rows changed."
+  },
+  {
+    "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
+    "reference_pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe-2022.pdf",
+    "reference_sha256": "cc5f80351a7ebdaf66bb3c25074cb72c8cc1be39dec577e598f7fe7049d090ff",
+    "oracle_pages": 4,
+    "native_pages": 4,
+    "basis": "Direct Hancom 2022 Print attachment, independently verified exact source and whole output. No existing rows changed."
+  },
+  {
+    "input": "samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
+    "reference_pdf": "pdf/issue9087/hft-sinmyeong_sunmyeongjo-probe-2022.pdf",
+    "reference_sha256": "452361f51b1a62832f9cf7175dcfcfd773b9799117ea015e6ddb113566083fd0",
+    "oracle_pages": 4,
+    "native_pages": 4,
+    "basis": "Direct Hancom 2022 Print attachment, independently verified exact source and whole output. No existing rows changed."
+  }
+]

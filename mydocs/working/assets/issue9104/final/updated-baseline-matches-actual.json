@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-11-17T03:14:04.473347+00:00",
+  "product_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "test_head": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "rows": 3542,
+  "equal_actual_official_rows": 3542,
+  "declines": [],
+  "missing": [],
+  "new_rendering_performed": false
+}

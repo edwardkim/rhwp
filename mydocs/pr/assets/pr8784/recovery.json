@@ -1,0 +1,84 @@
+{
+  "code_head": "4a765822988575099104c30081516b2bb7c4ddb5",
+  "reruns": [
+    {
+      "at": "2026-11-08T10:43:31.595694+00:00",
+      "target": "codeql",
+      "head": "4a765822988575099104c30081516b2bb7c4ddb5",
+      "run": 42471036101,
+      "attempt_before": 1,
+      "proof": [
+        {
+          "job": 128701654872,
+          "sha256": "c4112bf360354d888a963eddc0707327c17f192f595b3783115a4448db00f03f",
+          "failed_steps": [
+            "Initialize CodeQL (non-Rust)"
+          ]
+        },
+        {
+          "job": 128701654919,
+          "sha256": "687e83a7284b19d552caccf5983898100d4d4836ace98141274b7a777d7affc4",
+          "failed_steps": [
+            "Initialize CodeQL (non-Rust)"
+          ]
+        }
+      ],
+      "endpoint": "actions/runs/42471036101/rerun-failed-jobs",
+      "successful_jobs_preserved": [
+        128701580646,
+        128701615434,
+        128701654821,
+        128701654836
+      ],
+      "exit_code": 0
+    },
+    {
+      "at": "2026-11-08T11:06:00.769976+00:00",
+      "target": "crate-ci",
+      "head": "4a765822988575099104c30081516b2bb7c4ddb5",
+      "run": 42471035995,
+      "attempt_before": 1,
+      "proof": [
+        {
+          "job": 128701670709,
+          "sha256": "22f38eea074bb2ce68956e465ff8ac6a580a406bb395d7dd750ba3e854b1fac3",
+          "failed_steps": [
+            "Install wasm-pack"
+          ]
+        },
+        {
+          "job": 128701670481,
+          "sha256": "1387201e31bb11392b93d74fa89b3a69c59e4eff0d3af8927a9edeb3129be8e6",
+          "failed_steps": [
+            "Native Skia tests"
+          ]
+        }
+      ],
+      "endpoint": "actions/runs/42471035995/rerun-failed-jobs",
+      "successful_jobs_preserved": [
+        128701580742,
+        128701616800,
+        128701670472,
+        128701670486,
+        128701670621,
+        128701695572,
+        128701695630,
+        128701695631,
+        128701695641,
+        128704459911,
+        128704761870,
+        128705643851,
+        128706189388,
+        128709290676
+      ],
+      "exit_code": 0
+    }
+  ],
+  "final_results": {
+    "codeql": "success",
+    "CI": "success",
+    "codeql_attempt": 2,
+    "ci_attempt": 2,
+    "code_workflow_changes_during_recovery": false
+  }
+}

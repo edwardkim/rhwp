@@ -1,0 +1,243 @@
+{
+  "base": "a85d3265dd10b316d1a0ae029ca3f67245b38b77",
+  "head": "8af32b9d991ee6b6c7bf082aaf6cc6caac1b86ab",
+  "visual": {
+    "hwpx-native": [
+      {
+        "key": "sample10-hwpx",
+        "pages": 763,
+        "minimum_raw": 96.35,
+        "below90": [],
+        "page_counts": {
+          "rhwp": 763,
+          "pdf": 763
+        },
+        "tsv_sha256": "17fba16103dea0bdaac18be0afebbb2a568bd56bd6ad5144312f2424d1d3dc48"
+      }
+    ],
+    "hwpx-wasm": [
+      {
+        "key": "sample10-hwpx",
+        "pages": 763,
+        "minimum_raw": 99.56,
+        "below90": [],
+        "page_counts": {
+          "rhwp": 763,
+          "pdf": 763
+        },
+        "tsv_sha256": "425e7142b726cdea46d85764066edc7b0c372df161eed324f4f8aa508482b974"
+      }
+    ],
+    "hwp3-native": [
+      {
+        "key": "sample10",
+        "pages": 763,
+        "minimum_raw": 98.77,
+        "below90": [],
+        "page_counts": {
+          "rhwp": 763,
+          "pdf": 763
+        },
+        "tsv_sha256": "e59d4246ad74f0b0b7872b72361b40b0189ffa981c646a0c97a3c0c3b0b42fec"
+      }
+    ],
+    "hwp3-wasm": [
+      {
+        "key": "sample10",
+        "pages": 763,
+        "minimum_raw": 99.55,
+        "below90": [],
+        "page_counts": {
+          "rhwp": 763,
+          "pdf": 763
+        },
+        "tsv_sha256": "0b87f8935c12054190b95ad2d71bb049a052b2eb710041da99facbc97f02f8eb"
+      }
+    ],
+    "rowbreak-base-native": [],
+    "rowbreak-base-wasm": [],
+    "rowbreak-head-native": [],
+    "rowbreak-head-wasm": [],
+    "incoming-final-base-native": [],
+    "incoming-final-base-wasm": [],
+    "incoming-final-head-native": [],
+    "incoming-final-head-wasm": []
+  },
+  "default": {
+    "embedded/none": {
+      "measurement": "initial full-page pass",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "embedded/omitted": {
+      "measurement": "initial full-page pass",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "embedded/host": {
+      "measurement": "initial full-page pass",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "original/none": {
+      "measurement": "initial full-page pass",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "original/omitted": {
+      "measurement": "initial full-page pass",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "original/host": {
+      "measurement": "initial full-page pass",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "hwp3/none": {
+      "measurement": "initial full-page pass",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "hwp3/omitted": {
+      "measurement": "two identical passes after all-page font readiness",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "hwp3/host": {
+      "measurement": "two identical passes after all-page font readiness",
+      "background_canvas_png_identical": true,
+      "all_pages_same": true,
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    }
+  },
+  "incoming": {},
+  "previous": {
+    "hwpx-native": {
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      },
+      "tree": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "hwpx-wasm": {
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      },
+      "tree": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "hwp3-native": {
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      },
+      "tree": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    },
+    "hwp3-wasm": {
+      "png": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      },
+      "tree": {
+        "files_a": 763,
+        "files_b": 763,
+        "missing_a": [],
+        "missing_b": [],
+        "changed": []
+      }
+    }
+  }
+}

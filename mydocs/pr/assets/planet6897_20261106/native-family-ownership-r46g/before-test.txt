@@ -1,0 +1,33 @@
+
+running 1 test
+
+thread 'system_style_list_keeps_requested_family_before_other_truetype' (3564679) panicked at /home/tsjang/rhwp/tests/cases/native_system_font_family_ownership.rs:152:5:
+격리된 자식 검사 실패:
+
+running 1 test
+test system_style_list_keeps_requested_family_before_other_truetype ... FAILED
+
+failures:
+
+failures:
+    system_style_list_keeps_requested_family_before_other_truetype
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+
+
+thread 'system_style_list_keeps_requested_family_before_other_truetype' (3564681) panicked at /home/tsjang/rhwp/tests/cases/native_system_font_family_ownership.rs:98:17:
+assertion `left == right` failed: TTF 우선은 같은 계열 안에서만 적용하며 다른 계열의 요청도 보존한다
+  left: String("Rhwp Family Contract")
+ right: "Latin Modern Math"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test system_style_list_keeps_requested_family_before_other_truetype ... FAILED
+
+failures:
+
+failures:
+    system_style_list_keeps_requested_family_before_other_truetype
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s

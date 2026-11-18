@@ -1,0 +1,16 @@
+{
+  "featureBase": "197ce19e99438c2cba452c654ae1af504dab85ec",
+  "rustSource": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+  "frontendSource": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "chromeCallback": "get-settings lastError is read synchronously before optional UI activation",
+  "studioOpenOwnership": "begin aborts previous; finish only clears the matching operation; the signal is retained for failure restoration",
+  "studioCallerCoverage": [
+    "loadFile",
+    "loadBytes",
+    "createNewDocument",
+    "startup blank and autosave guards"
+  ],
+  "newLayoutAlgorithmChanges": false,
+  "testExpectationsWeakened": false,
+  "newFontsDistributed": "Only the two existing public test fonts introduced by upstream #9157; private validation programs are not packaged."
+}

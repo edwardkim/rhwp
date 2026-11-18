@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
-from fontTools.ttLib import TTCollection
+from fontTools.ttLib import TTCollection, TTFont
 
 
 ROOT = Path(__file__).resolve().parents[1] / "tests/fixtures/fonts"
@@ -43,6 +43,21 @@ def face(style, offset):
     return font
 
 
+def preferred_face():
+    """동일 family·style의 다른 프로그램을 구별하는 자체 생성 TTF다."""
+    font = TTFont(ROOT / "RHWPHostFixture-Regular.ttf", recalcTimestamp=False)
+    font["head"].unitsPerEm = 2000
+    font["head"].fontRevision = 20.0
+    # 이 fixture의 최초 생성 시각을 고정해 동일 바이트를 재생성한다.
+    font["head"].modified = 3876979939
+    for name in font["name"].names:
+        if name.nameID in (4, 6):
+            value = ("RHWPHostFixture-Preferred" if name.nameID == 6
+                     else "RHWP Host Fixture Preferred")
+            name.string = value.encode(name.getEncoding())
+    return font
+
+
 if __name__ == "__main__":
     collection = TTCollection()
     collection.fonts = [face("Regular", 0), face("Italic", 180), face("Oblique", 300)]
@@ -50,3 +65,5 @@ if __name__ == "__main__":
         # Standalone files are independent reference inputs for the TTC read path.
         font.save(ROOT / f"RHWPHostFixture-{style}.ttf")
     collection.save(ROOT / "RHWPHostFixture.ttc", shareTables=True)
+
+    preferred_face().save(ROOT / "RHWPHostFixture-Preferred.ttf")

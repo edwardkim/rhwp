@@ -1,0 +1,11 @@
+{
+  "checked_at": "2026-11-11T13:05:11.963958+09:00",
+  "source": "REST paginated open pulls; GraphQL 504 retained as failed query, not no-head-change evidence",
+  "changes": [],
+  "new_outside_frozen_scope": [
+    8932
+  ],
+  "frozen_scope_count": 39,
+  "author_open_count": 40,
+  "reviewer_missing": []
+}

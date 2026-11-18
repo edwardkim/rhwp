@@ -1,0 +1,23 @@
+[
+  {
+    "run": 42975873023,
+    "head": "95d1631bd81431b7c1639f0cc5f1e16fb9cfce76",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42975873023",
+    "result_log": [
+      "2026-11-11T06:58:51.6715937Z ##[notice]Duration candidate 42810525003: workers skipped; no measurements; checking earlier code CI",
+      "2026-11-11T06:58:51.6725762Z {\"ready\":false,\"reason\":\"no-verified-pr-duration-measurements\"}"
+    ]
+  },
+  {
+    "run": 42976018340,
+    "head": "243e6417278564228570cc1ccb879d5cc52f43f9",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/42976018340",
+    "result_log": [
+      "2026-11-11T07:01:57.7147022Z {\"ready\":true,\"reason\":\"successful-pr-worker-measurements\",\"pullNumber\":8913,\"finalHeadRunId\":42803126005,\"finalHeadRunAttempt\":1,\"finalHeadSha\":\"66141a6c485844e37cdd133f7ac92890e9d8a2c3\",\"reviewOnlyTail\":false,\"sourceRunId\":42803126005,\"latestRunAttempt\":1,\"measurementAttempts\":{\"b\":1,\"c\":1,\"d\":1,\"e\":1},\"testedMergeSha\":\"480abeeabc6a6c19b7cb7039dda3717615ca2ea1\",\"sourceHeadSha\":\"66141a6c485844e37cdd133f7ac92890e9d8a2c3\",\"artifactIds\":[13757949031,13758617061,13758458391,13759185702]}"
+    ]
+  }
+]

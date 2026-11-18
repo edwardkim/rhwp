@@ -7,7 +7,7 @@ include = [
     "/README.md"
 ]
 name = "rhwp-ooxml-chart"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "OOXML chart parsing and model support for rhwp"
 license = "MIT"

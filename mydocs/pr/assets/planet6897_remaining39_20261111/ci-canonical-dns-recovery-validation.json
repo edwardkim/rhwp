@@ -1,0 +1,41 @@
+{
+  "parent_head": "3797aa3b486075ccc48958760c1328f4e4366d99",
+  "checked_at": "2026-11-11T17:06:47.289555+00:00",
+  "official_source": "https://status.canonical.com/rss",
+  "http_status": 200,
+  "prior_dns_status": {
+    "title": "DNS - Major Outage",
+    "pubDate": "Wed, 11 Nov 2026 14:26:00 +0000",
+    "description": "DNS is Major Outage"
+  },
+  "current_dns_status": {
+    "title": "DNS - Operational",
+    "pubDate": "Wed, 11 Nov 2026 16:58:37 +0000",
+    "description": "DNS is Operational"
+  },
+  "github_failure": {
+    "run": 43061141369,
+    "job": 130664243357,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43061141369/job/130664243357",
+    "apt_timeout_seconds": 180,
+    "exit_code": 124,
+    "actual_skia_test_execution": false,
+    "accepted_as_pass": false,
+    "log_sha256": "8209db80d2ff35d2a8af2605dbfa016568d9c192f6d58d5db2f2ffbd04d95cf5"
+  },
+  "rerun_request": {
+    "result": "rejected",
+    "http_status": 403,
+    "message": "The workflow run containing this job is already running"
+  },
+  "user_requested_restart": "사용자의 명시 지시에 따라 장애·복구 검증 기록을 trailing commit으로 반영해 새 head의 Full CI를 재시작한다.",
+  "duplicate_prevention": "기존 head의 단일 job 재실행 대기 프로세스를 종료했다. 새 head의 CI와 중복 실행하지 않는다.",
+  "unchanged_sources": {
+    ".github/workflows/ci.yml": "866316455e7135eb6b623af7fc62117acf71d19fee6f56289262d180ee5cb89b",
+    "scripts/tests/test_ci_impact_workflow.py": "a7647aecb1a5edacc5366da3a57343336cde0895e05e779c6c9b94c85eb2953e"
+  },
+  "local_validation_reference": "ci-native-skia-execution-validation.json",
+  "evidence_reuse": "이 커밋은 문서·검증 기록만 바꾸며 renderer·Cargo·Rust 회귀·Studio·WASM·기준 PDF·시각 문턱은 바꾸지 않는다. runtime3575의 제품 빌드·시각 증거와 새 head의 CI 결과를 구분한다.",
+  "merge_gate": "새 head의 Full CI 및 정책 검증과 실제 Native Skia suite 준비·테스트 단계의 success를 모두 확인한다.",
+  "post_merge_route": "원 PR 병합 뒤 옵션 2의 별도 후속 기록 PR로 오늘할일·확정 CI·병합 정보를 반영한다. 별도 CI 이슈는 등록하지 않는다."
+}

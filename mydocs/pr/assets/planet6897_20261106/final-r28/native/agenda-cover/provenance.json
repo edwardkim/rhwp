@@ -1,0 +1,35 @@
+{
+  "key": "agenda-cover",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8563
+  ],
+  "input": "samples/issue8560/21138757-agenda-cover-form.hwp",
+  "input_sha256": "b3a068a6ee73a14f8ed89c03dce21ca09e759b44b3cc46c704395dc4603aba48",
+  "pdf": "pdf/issue8560/21138757-agenda-cover-form-2020.pdf",
+  "pdf_sha256": "e1a8e2d86382e5722394d8b697c540a9f8f5e2bab82e555abf6880e4ac4ab17a",
+  "pdf_pages": 1,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 99.74,
+  "below90": 0,
+  "full_tsv": "native/agenda-cover/full.tsv",
+  "full_tsv_sha256": "40ae5eb9b736b898f0b3228acce8e5b69430c29444c82b3ae98e679e594e54e7",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/final-r28-native-primary-remaining/agenda-cover/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 1,
+      "raw": "99.74",
+      "actual_png_sha256": "99be6ab0488185e433b0ef8d402eb2e69d2720f05c6e1d63d75098cd30368fd2",
+      "pdf_png_sha256": "a0e9f13f60a3f77b53fd55ac9f8179320c90ddca29709d219e81a159e068fb66",
+      "review": "native/agenda-cover/review-001.png",
+      "overlay": "native/agenda-cover/overlay-001.png"
+    }
+  ]
+}

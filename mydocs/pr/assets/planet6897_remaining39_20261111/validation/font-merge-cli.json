@@ -1,0 +1,134 @@
+[
+  {
+    "producer": "base-native",
+    "input": "scholarship_recommendation_form",
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+      "output/pr-review/planet6897-remaining39-integration-20261111/base-native",
+      "export-png",
+      "samples/issue8692/scholarship_recommendation_form.hwp",
+      "--metadata-only",
+      "--profile",
+      "print",
+      "--json",
+      "--compat",
+      "2022",
+      "--font-path",
+      "ttfs/opensource"
+    ],
+    "exit_code": 1,
+    "at": "2026-11-11T11:50:25.955386+09:00"
+  },
+  {
+    "producer": "base-native",
+    "input": "tax_source_ledger_form",
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+      "output/pr-review/planet6897-remaining39-integration-20261111/base-native",
+      "export-png",
+      "samples/issue8692/tax_source_ledger_form.hwp",
+      "--metadata-only",
+      "--profile",
+      "print",
+      "--json",
+      "--compat",
+      "2022",
+      "--font-path",
+      "ttfs/opensource"
+    ],
+    "exit_code": 1,
+    "at": "2026-11-11T11:50:30.448848+09:00"
+  },
+  {
+    "producer": "base-native",
+    "input": "employment_service_interim_report",
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+      "output/pr-review/planet6897-remaining39-integration-20261111/base-native",
+      "export-png",
+      "samples/issue8692/employment_service_interim_report.hwp",
+      "--metadata-only",
+      "--profile",
+      "print",
+      "--json",
+      "--compat",
+      "2022",
+      "--font-path",
+      "ttfs/opensource"
+    ],
+    "exit_code": 1,
+    "at": "2026-11-11T11:50:31.384010+09:00"
+  },
+  {
+    "producer": "candidate-native",
+    "input": "scholarship_recommendation_form",
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+      "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "export-png",
+      "samples/issue8692/scholarship_recommendation_form.hwp",
+      "--metadata-only",
+      "--profile",
+      "print",
+      "--json",
+      "--compat",
+      "2022",
+      "--font-path",
+      "ttfs/opensource"
+    ],
+    "exit_code": 0,
+    "at": "2026-11-11T11:50:33.351999+09:00"
+  },
+  {
+    "producer": "candidate-native",
+    "input": "tax_source_ledger_form",
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+      "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "export-png",
+      "samples/issue8692/tax_source_ledger_form.hwp",
+      "--metadata-only",
+      "--profile",
+      "print",
+      "--json",
+      "--compat",
+      "2022",
+      "--font-path",
+      "ttfs/opensource"
+    ],
+    "exit_code": 0,
+    "at": "2026-11-11T11:50:36.437756+09:00"
+  },
+  {
+    "producer": "candidate-native",
+    "input": "employment_service_interim_report",
+    "command": [
+      "sandbox-exec",
+      "-f",
+      "output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+      "output/pr-review/planet6897-remaining39-integration-20261111/candidate-native",
+      "export-png",
+      "samples/issue8692/employment_service_interim_report.hwp",
+      "--metadata-only",
+      "--profile",
+      "print",
+      "--json",
+      "--compat",
+      "2022",
+      "--font-path",
+      "ttfs/opensource"
+    ],
+    "exit_code": 0,
+    "at": "2026-11-11T11:50:37.582319+09:00"
+  }
+]

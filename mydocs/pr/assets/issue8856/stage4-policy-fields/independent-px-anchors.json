@@ -1,0 +1,45 @@
+{
+  "pdf": "pdf/issue8639/policy_research_review_request-trackchange0-print-2024.pdf",
+  "pdf_sha256": "ad8de57af837d16c45b0bd01f3c5e26e0fdf50f223d3d433e922e930a9e60eeb",
+  "page": 1,
+  "dpi": 96,
+  "read_at": "2026-11-10T02:19:23.823900+09:00",
+  "anchors": [
+    {
+      "character": "근",
+      "font": "KoPubDotumLight",
+      "origin_pt": [
+        163.95114135742188,
+        655.0841064453125
+      ],
+      "origin_px_96dpi": [
+        218.60152180989584,
+        873.4454752604166
+      ]
+    },
+    {
+      "character": "포",
+      "font": "KoPubDotumLight",
+      "origin_pt": [
+        502.76751708984375,
+        655.0841064453125
+      ],
+      "origin_px_96dpi": [
+        670.356689453125,
+        873.4454752604166
+      ]
+    },
+    {
+      "character": "지",
+      "font": "KoPubDotumLight",
+      "origin_pt": [
+        159.15374755859375,
+        668.1498413085938
+      ],
+      "origin_px_96dpi": [
+        212.20499674479166,
+        890.866455078125
+      ]
+    }
+  ]
+}

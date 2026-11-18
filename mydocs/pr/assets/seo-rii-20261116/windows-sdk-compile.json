@@ -1,0 +1,11 @@
+{
+  "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+  "units": [
+    "NativeApi.cpp",
+    "Producer.cpp",
+    "rhwp_d3d_plugin.cpp"
+  ],
+  "sdk": "C:\\Users\\edward\\AppData\\Local\\rhwp-tools\\flutter-c197ca5199e9\\bin\\cache\\artifacts\\engine\\windows-x64",
+  "exitCode": 0,
+  "elapsedSeconds": 8.334226559003582
+}

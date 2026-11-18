@@ -1,4 +1,4 @@
-# rhwp 0.9.0 — PDF quick start
+# rhwp 0.9.1 — PDF quick start
 
 This guide ships in the official CLI archives. [한국어](PDF_QUICKSTART.md).
 Run from the extracted directory, or add `rhwp` to PATH. On Windows use `.\rhwp.exe` instead of `./rhwp`.
@@ -29,13 +29,13 @@ PDF import creates an editable document. The default `fidelity` mode prioritizes
 - For `PDF_RESOURCE_LIMIT`, restore the default `standard` profile and split selected pages if needed. JSON overrides lower limits within the profile ceiling.
 - Raising limits does not fix unsupported PDF painting operations. Scanned text is not OCRed; inspect complex masks, rotated text and inferred tables in the destination editor.
 
-See the [PDF developer onboarding guide](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pdf_developer_onboarding_EN.md)
+See the [PDF developer onboarding guide](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/pdf_developer_onboarding_EN.md)
 for Rust/npm/WASM, Worker deployment, cancellation, page progress and embedded Studio.
 Keep JS, WASM, Worker and Studio on the same release. The repository Worker module is not automatically
 included in `@rhwp/core`; `@rhwp/editor` requires a separately hosted Studio.
 
-[CLI reference](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/cli_commands.md) ·
-[Support boundaries](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/security_feature_limits.md) ·
-[Release and contributors](https://github.com/edwardkim/rhwp/releases/tag/v0.9.0)
+[CLI reference](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/cli_commands.md) ·
+[Support boundaries](https://github.com/edwardkim/rhwp/blob/main/mydocs/manual/security_feature_limits.md) ·
+[Release and contributors](https://github.com/edwardkim/rhwp/releases/tag/v0.9.1)
 
 Third-party notices: `notices/THIRD_PARTY_LICENSES.md` and the original notice files under `notices/`.

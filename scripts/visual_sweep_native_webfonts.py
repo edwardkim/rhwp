@@ -215,7 +215,9 @@ def _resource(root, cache, url):
                 os.replace(temporary, original)
             finally:
                 temporary.unlink(missing_ok=True)
-        font = TTFont(original)
+        # 동일한 원본의 Native 프로그램 신원을 변환 시각으로 바꾸지 않는다.
+        # 매번 원본을 다시 읽어 캐시 변조를 검증하는 계약은 유지한다.
+        font = TTFont(original, recalcTimestamp=False)
         native = folder / ('native.otf' if font.sfntVersion == 'OTTO' else 'native.ttf')
         font.flavor = None
         with tempfile.NamedTemporaryFile(dir=folder, suffix='.ttf', delete=False) as out:
@@ -303,11 +305,15 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
             mappings[source] = next(iter(aliases))
             continue
         rule = next((rules[_normal(x)] for x in [source, *primary] if _normal(x) in rules), None)
+        # 문서가 선언한 실제 로컬 대체 프로그램은 웹 registry보다 우선한다.
+        # 예: Helvetica 부재 + Arial 공급을 Black Condensed 웹 face로 바꾸지 않는다.
+        if any(_normal(x) in installed for x in group['substitute']):
+            local_substitutes.append(source)
+            if rule is None:
+                unresolved.append(source)
+            continue
         if rule is None:
             unresolved.append(source)
-            if any(_normal(x) in installed for x in group['substitute']):
-                local_substitutes.append(source)
-                continue
             url = FALLBACK
         else:
             url = rule['supply']['sourceUrl']

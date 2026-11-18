@@ -1,0 +1,318 @@
+{
+  "status": "completed",
+  "source": "fab2d01ef0682cf3265daf43cd8c8e178b3bd048",
+  "product_source": "87c78424bc261f90e1167ecedc6a0f2106864d37",
+  "started_at": "2026-11-16T12:52:23.403973+09:00",
+  "resumed_at": "2026-11-16T13:33:35.079800+09:00",
+  "results": [
+    {
+      "name": "suite-prepare",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit": 0,
+      "seconds": 2.323,
+      "profile_sha256": "ecf7f95bd5c60f290f85d1acf33d8c09bf26c55b1346e2f85ec1097d627e68a7",
+      "profile_snapshot": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-before-redistributable.sb"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 13.969,
+      "profile_sha256": "ecf7f95bd5c60f290f85d1acf33d8c09bf26c55b1346e2f85ec1097d627e68a7",
+      "profile_snapshot": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-before-redistributable.sb"
+    },
+    {
+      "name": "release-build",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--release",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 1310.126,
+      "profile_sha256": "ecf7f95bd5c60f290f85d1acf33d8c09bf26c55b1346e2f85ec1097d627e68a7",
+      "profile_snapshot": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-before-redistributable.sb"
+    },
+    {
+      "name": "release-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--release",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--lib",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 676.315,
+      "profile_sha256": "ecf7f95bd5c60f290f85d1acf33d8c09bf26c55b1346e2f85ec1097d627e68a7",
+      "profile_snapshot": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-before-redistributable.sb"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "exit": 0,
+      "seconds": 725.538,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 198.863,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "native-placeholder",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 181.687,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "native-pdf",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "exit": 0,
+      "seconds": 17.347,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "native-clippy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 74.489,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 66.052,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 102.086,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "workspace-all-target-clippy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 77.841,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "native-skia-all-target-clippy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--all-targets",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 76.016,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "doc-tests",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "exit": 0,
+      "seconds": 89.854,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    },
+    {
+      "name": "suite-policy",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0"
+      ],
+      "exit": 0,
+      "seconds": 3.927,
+      "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c"
+    }
+  ],
+  "sandbox": "/Users/tsjang/rhwp/output/pr-review/dependabot-integration-20261116/minimal-font/profile-v3.sb",
+  "profile_sha256": "dab5a29efd05b091cf0308729b49d34c7922ea399dc823d70457cde0c1367e8c",
+  "previous_environment_failure": "rust-gates-attempt2-environment-failure.json",
+  "resume_reason": "기존 공개 Happiness Sans fixture만 허용; CoreText OS528/비공개183파일 차단 재확인; 제품·테스트 변경 없음",
+  "stage": "suite-policy",
+  "completed_at": "2026-11-16T14:00:28.793217+09:00",
+  "current_head_at_audit": "d544f949135b45fa66a202f4d8cb9decf61c86fa",
+  "product_and_tests_unchanged_since_runner_start": true
+}

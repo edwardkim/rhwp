@@ -718,15 +718,42 @@ impl ActiveHeaderFooter {
             if *para_idx > page_last_para {
                 continue;
             }
+            // 새 양쪽 선언은 이전 홀수·짝수 선언을 대체한다. 빈 머리말도
+            // 유효한 재정의이며, 복제 실패 전에 기존 선택을 지우지 않는다.
+            let reference = crate::storage::try_clone(hf_ref, storage)?;
+            // 같은 문단의 홀짝 선언은 양쪽 선언보다 구체적이다(#3234).
+            // 뒤 문단의 양쪽 재정의만 이전 선언을 닫는다. 같은 문단 안의
+            // 컨트롤 등장 순서는 우선순위를 바꾸지 않는다.
+            let same_paragraph_defines = |specific| {
+                entries.iter().any(|(owner, _, header, scope)| {
+                    owner == para_idx && header == is_header && *scope == specific
+                })
+            };
             let slot = match (is_header, apply_to) {
-                (true, HeaderFooterApply::Both) => &mut self.header_both,
+                (true, HeaderFooterApply::Both) => {
+                    if !same_paragraph_defines(HeaderFooterApply::Even) {
+                        self.header_even = None;
+                    }
+                    if !same_paragraph_defines(HeaderFooterApply::Odd) {
+                        self.header_odd = None;
+                    }
+                    &mut self.header_both
+                }
                 (true, HeaderFooterApply::Even) => &mut self.header_even,
                 (true, HeaderFooterApply::Odd) => &mut self.header_odd,
-                (false, HeaderFooterApply::Both) => &mut self.footer_both,
+                (false, HeaderFooterApply::Both) => {
+                    if !same_paragraph_defines(HeaderFooterApply::Even) {
+                        self.footer_even = None;
+                    }
+                    if !same_paragraph_defines(HeaderFooterApply::Odd) {
+                        self.footer_odd = None;
+                    }
+                    &mut self.footer_both
+                }
                 (false, HeaderFooterApply::Even) => &mut self.footer_even,
                 (false, HeaderFooterApply::Odd) => &mut self.footer_odd,
             };
-            *slot = Some(crate::storage::try_clone(hf_ref, storage)?);
+            *slot = Some(reference);
         }
         Ok(())
     }
@@ -1003,6 +1030,7 @@ pub struct ColumnContent {
     pub float_pushed_line_spacings:
         std::collections::HashMap<usize, super::float_placement::FloatPushedFirstLine>,
     /// [#7696] 쪽·종이 기준 자리차지 그림·도형의 밴드가 밀어 확정한 문단 시작(단 상대 px).
+    /// [#8753] 어울림 표 옆 차선에서 흡수 문단 뒤를 잇는 문단의 시작도 같은 계약이다.
     /// 측정(typeset)이 확정하고 배치(layout)가 그 문단의 시작으로 소비한다.
     pub page_band_flow_starts: std::collections::HashMap<usize, f64>,
     /// #6812: 텍스트와 TAC 표가 공유하는 확정 줄 결과(단 상대 좌표).
@@ -1122,21 +1150,16 @@ crate::storage::clone_fields!(WrapAroundPara, {para_index, table_para_index, has
 pub struct WrapAnchorRef {
     /// anchor 문단 인덱스 (그림/표 보유)
     pub anchor_para_index: usize,
-    /// anchor wrap zone column_start (HWPUNIT)
+    /// anchor wrap zone column_start (HWPUNIT). 그림 바깥 여백을 포함한 저장 글 시작이다.
     pub anchor_cs: i32,
     /// anchor wrap zone segment_width (HWPUNIT)
     pub anchor_sw: i32,
-    /// [Task #722] anchor image 의 outer margin_right (HWPUNIT).
-    /// 한컴 viewer 는 inter-image-text gap 으로 image margin_right 를 추가 적용.
-    /// paragraph_layout 의 wrap_anchor 처리에서 cs px 에 +margin_right_px,
-    /// sw px 에서 -margin_right_px 보정 (text 시작 위치와 가용 폭 정합).
-    pub anchor_image_margin_right: i32,
     /// 줄 단위 배제 밴드 — Some((top, bottom)) 이면 문단 시작 기준 상대 y(px)가
     /// 이 구간과 교차하는 줄에만 anchor cs/sw 를 적용한다(출석부 형상). None 이면
     /// 기존처럼 문단 전체에 적용.
     pub band_y_range: Option<(f64, f64)>,
 }
-crate::storage::clone_fields!(WrapAnchorRef, {anchor_para_index, anchor_cs, anchor_sw, anchor_image_margin_right, band_y_range});
+crate::storage::clone_fields!(WrapAnchorRef, {anchor_para_index, anchor_cs, anchor_sw, band_y_range});
 
 /// A spanning cell carries accepted content independently of page-end blank space.
 #[derive(Debug, Clone, PartialEq)]
@@ -1890,7 +1913,6 @@ impl PaginationResult {
                                             as usize,
                                         anchor_cs: v.anchor_cs,
                                         anchor_sw: v.anchor_sw,
-                                        anchor_image_margin_right: v.anchor_image_margin_right,
                                         band_y_range: v.band_y_range,
                                     },
                                 )

@@ -1,0 +1,711 @@
+{
+  "source_commit": "612b4053db0a09cd714aa85e9fefa045f7c4d193",
+  "results": [
+    {
+      "rule": "rust/cleartext-logging",
+      "message": "This operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](1) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](2) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](3) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](4) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](5) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](6) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](7) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](8) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](9) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](10) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](11) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](12) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](13) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](14) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](15) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](16) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](17) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](18) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](19) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](20) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](21) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](22) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](23) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](24) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](25) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](26) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](27) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](28) to a log file.\nThis operation writes [...::extract_pyclass_ref_trusted::<...>(...)](29) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](1) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](2) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](3) to a log file.\nThis operation writes [...::extract_pyclass_ref_mut_trusted::<...>(...)](4) to a log file.",
+      "locations": [
+        {
+          "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+          "region": {
+            "startLine": 18659,
+            "startColumn": 13,
+            "endLine": 18661,
+            "endColumn": 23
+          },
+          "message": null
+        }
+      ],
+      "flows": [
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 230,
+              "endColumn": 10
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 230,
+              "endColumn": 10
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 231,
+              "startColumn": 9,
+              "endLine": 231,
+              "endColumn": 20
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 246,
+              "startColumn": 25,
+              "endLine": 246,
+              "endColumn": 29
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16621,
+              "startColumn": 9,
+              "endLine": 16621,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16637,
+              "startColumn": 39,
+              "endLine": 16637,
+              "endColumn": 49
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 6158,
+              "startColumn": 9,
+              "endLine": 6158,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 6218,
+              "startColumn": 50,
+              "endLine": 6218,
+              "endColumn": 60
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18495,
+              "startColumn": 41,
+              "endLine": 18495,
+              "endColumn": 58
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18496,
+              "startColumn": 45,
+              "endLine": 18496,
+              "endColumn": 55
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18661,
+              "endColumn": 23
+            },
+            "message": "MacroExpr"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 347,
+              "endColumn": 21
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 347,
+              "endColumn": 21
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 347,
+              "startColumn": 31,
+              "endLine": 347,
+              "endColumn": 42
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 348,
+              "startColumn": 27,
+              "endLine": 348,
+              "endColumn": 31
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 337,
+              "startColumn": 32,
+              "endLine": 337,
+              "endColumn": 43
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 340,
+              "startColumn": 27,
+              "endLine": 340,
+              "endColumn": 31
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7692,
+              "startColumn": 32,
+              "endLine": 7692,
+              "endColumn": 49
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7693,
+              "startColumn": 38,
+              "endLine": 7693,
+              "endColumn": 48
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7725,
+              "startColumn": 39,
+              "endLine": 7725,
+              "endColumn": 56
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7732,
+              "startColumn": 40,
+              "endLine": 7732,
+              "endColumn": 50
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12736,
+              "startColumn": 33,
+              "endLine": 12736,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12740,
+              "startColumn": 76,
+              "endLine": 12740,
+              "endColumn": 86
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12743,
+              "startColumn": 44,
+              "endLine": 12743,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16436,
+              "startColumn": 33,
+              "endLine": 16436,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16438,
+              "startColumn": 13,
+              "endLine": 16438,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16450,
+              "startColumn": 9,
+              "endLine": 16450,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16453,
+              "startColumn": 33,
+              "endLine": 16453,
+              "endColumn": 43
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16473,
+              "startColumn": 9,
+              "endLine": 16473,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16480,
+              "startColumn": 13,
+              "endLine": 16480,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16491,
+              "startColumn": 9,
+              "endLine": 16491,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16514,
+              "startColumn": 59,
+              "endLine": 16514,
+              "endColumn": 69
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18661,
+              "endColumn": 23
+            },
+            "message": "MacroExpr"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 337,
+              "endColumn": 22
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 337,
+              "endColumn": 22
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 337,
+              "startColumn": 32,
+              "endLine": 337,
+              "endColumn": 43
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 340,
+              "startColumn": 27,
+              "endLine": 340,
+              "endColumn": 31
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7692,
+              "startColumn": 32,
+              "endLine": 7692,
+              "endColumn": 49
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7693,
+              "startColumn": 38,
+              "endLine": 7693,
+              "endColumn": 48
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7725,
+              "startColumn": 39,
+              "endLine": 7725,
+              "endColumn": 56
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 7732,
+              "startColumn": 40,
+              "endLine": 7732,
+              "endColumn": 50
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12736,
+              "startColumn": 33,
+              "endLine": 12736,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12740,
+              "startColumn": 76,
+              "endLine": 12740,
+              "endColumn": 86
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 12743,
+              "startColumn": 44,
+              "endLine": 12743,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16436,
+              "startColumn": 33,
+              "endLine": 16436,
+              "endColumn": 50
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16438,
+              "startColumn": 13,
+              "endLine": 16438,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16450,
+              "startColumn": 9,
+              "endLine": 16450,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16453,
+              "startColumn": 33,
+              "endLine": 16453,
+              "endColumn": 43
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16473,
+              "startColumn": 9,
+              "endLine": 16473,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16480,
+              "startColumn": 13,
+              "endLine": 16480,
+              "endColumn": 23
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16491,
+              "startColumn": 9,
+              "endLine": 16491,
+              "endColumn": 26
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 16514,
+              "startColumn": 59,
+              "endLine": 16514,
+              "endColumn": 69
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18661,
+              "endColumn": 23
+            },
+            "message": "MacroExpr"
+          }
+        ],
+        [
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 158,
+              "endColumn": 28
+            },
+            "message": "...::extract_pyclass_ref_mut_trusted::<...>(...)"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 58,
+              "startColumn": 6,
+              "endLine": 158,
+              "endColumn": 28
+            },
+            "message": "TryExpr"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 158,
+              "startColumn": 38,
+              "endLine": 158,
+              "endColumn": 49
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/python.rs",
+            "region": {
+              "startLine": 160,
+              "startColumn": 33,
+              "endLine": 160,
+              "endColumn": 37
+            },
+            "message": "page"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 17335,
+              "startColumn": 38,
+              "endLine": 17335,
+              "endColumn": 55
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 17337,
+              "startColumn": 53,
+              "endLine": 17337,
+              "endColumn": 63
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18548,
+              "startColumn": 35,
+              "endLine": 18548,
+              "endColumn": 52
+            },
+            "message": "...: usize"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18552,
+              "startColumn": 44,
+              "endLine": 18552,
+              "endColumn": 54
+            },
+            "message": "page_index"
+          },
+          {
+            "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+            "region": {
+              "startLine": 18659,
+              "startColumn": 13,
+              "endLine": 18661,
+              "endColumn": 23
+            },
+            "message": "MacroExpr"
+          }
+        ]
+      ]
+    }
+  ]
+}

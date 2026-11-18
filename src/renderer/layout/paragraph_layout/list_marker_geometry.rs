@@ -52,6 +52,7 @@ pub(super) fn marker_text_style(
 
 fn marker_lang(text: &str) -> usize {
     text.chars()
+        .map(super::map_pua_bullet_char)
         .find(|&ch| !crate::renderer::composer::is_lang_neutral(ch))
         .map(crate::renderer::style_resolver::detect_lang_category)
         // 독립 ASCII 구두점에는 따라갈 본문 언어가 없다. 마커 자체의 Latin 슬롯을 쓴다.
@@ -119,8 +120,7 @@ pub(super) fn nominal_marker_size(
     end_id: u32,
     fallback_size: f64,
 ) -> f64 {
-    let id = if head.char_shape_id != 0
-        && head.char_shape_id != u32::MAX
+    let id = if head.char_shape_id != u32::MAX
         && (head.char_shape_id as usize) < styles.char_styles.len()
     {
         if follows_body_size(styles, head.char_shape_id) {
@@ -160,7 +160,7 @@ pub(super) fn list_marker_geometry_for(
     } else {
         distance_font_size * head.text_distance as f64 / 100.0
     };
-    // 기본 개요에서 bit2가 꺼졌으면 형식의 예약 칸을 쓴다. 실제 글리프 폭은
+    // bit2가 꺼진 번호·개요는 형식의 예약 칸을 쓴다. 실제 글리프 폭은
     // 정렬과 paint에 계속 사용한다. 이 영역을 줄 나눔과 최종 배치가 함께 소비한다.
     let reference_px = if !bullet && head.attr & (1 << 2) == 0 {
         head.reference_width_em

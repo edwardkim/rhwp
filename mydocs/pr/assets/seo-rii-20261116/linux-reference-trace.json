@@ -1,0 +1,2676 @@
+[
+  {
+    "schemaVersion": 1,
+    "kind": "rhwp-gpu-producer-trace",
+    "clock": "monotonicMicroseconds",
+    "capacity": 128,
+    "retainedEvents": 78,
+    "droppedEvents": 0,
+    "lifetimeCounts": {
+      "configured": 3,
+      "invalidated": 4,
+      "resourceSampled": 38,
+      "statusPolled": 15,
+      "captureStarted": 3,
+      "captureCompleted": 3,
+      "submitStarted": 3,
+      "accepted": 3,
+      "producerReady": 3,
+      "superseded": 3
+    },
+    "requestToProducerReadyMicros": {
+      "scope": "retainedCompletedSamples",
+      "method": "nearestRank",
+      "retainedSamples": 3,
+      "lifetimeCompletedSamples": 3,
+      "droppedSamples": 0,
+      "p50": 368217,
+      "p95": 509439,
+      "p99": 509439
+    },
+    "instrumentationFailures": 0,
+    "observerFailures": 0,
+    "compositorDisplayVerified": false,
+    "consumerGpuCompletionVerified": false,
+    "events": [
+      {
+        "stage": "configured",
+        "generation": 1,
+        "elapsedMicros": 0,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 1,
+        "elapsedMicros": 474,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 5796,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 138964,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 141776,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 212426,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 212484,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 1,
+        "elapsedMicros": 212980,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 1,
+        "elapsedMicros": 224377,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 1,
+        "elapsedMicros": 224441,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 225628,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 292648,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 1,
+        "elapsedMicros": 293155,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 294410,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 296161,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 296198,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 339099,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 340754,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 340795,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 346763,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 348374,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 348408,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 364050,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 366328,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 366530,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 1,
+        "elapsedMicros": 368691,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 1,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 0,
+            "cacheMisses": 9,
+            "cacheEvictions": 0,
+            "cachedTiles": 9,
+            "cachedBytes": 5866552,
+            "managedTargets": 11,
+            "managedBytes": 17031352,
+            "canonicalReplays": 2,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 0,
+          "nativeGpuCacheMisses": 9,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 9,
+          "nativeGpuCachedBytes": 5866552,
+          "nativeGpuManagedTargets": 11,
+          "nativeGpuManagedBytes": 17031352,
+          "nativeGpuCanonicalReplays": 2,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 2,
+        "elapsedMicros": 4602132,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 2,
+        "elapsedMicros": 4635629,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 3,
+        "elapsedMicros": 4665300,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "configured",
+        "generation": 4,
+        "elapsedMicros": 4665328,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 4,
+        "elapsedMicros": 4665333,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4665524,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4670804,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 4670857,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 4,
+        "elapsedMicros": 4670895,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 4,
+        "elapsedMicros": 4682212,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 4,
+        "elapsedMicros": 4682238,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4682420,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4821907,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 4,
+        "elapsedMicros": 4821995,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4822277,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4937917,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 4937963,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 4,
+        "elapsedMicros": 4938210,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 3,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 6,
+            "cacheMisses": 12,
+            "cacheEvictions": 0,
+            "cachedTiles": 12,
+            "cachedBytes": 8166456,
+            "managedTargets": 16,
+            "managedBytes": 36777656,
+            "canonicalReplays": 3,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 6,
+          "nativeGpuCacheMisses": 12,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 12,
+          "nativeGpuCachedBytes": 8166456,
+          "nativeGpuManagedTargets": 16,
+          "nativeGpuManagedBytes": 36777656,
+          "nativeGpuCanonicalReplays": 3,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4938503,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 5051127,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 5051171,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 5051449,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 5161816,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 5161859,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 5,
+        "elapsedMicros": 8889481,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "configured",
+        "generation": 6,
+        "elapsedMicros": 8889541,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 6,
+        "elapsedMicros": 8889558,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 8889822,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9063294,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9063331,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 6,
+        "elapsedMicros": 9063355,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 6,
+        "elapsedMicros": 9086410,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 6,
+        "elapsedMicros": 9086446,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9086706,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9120386,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 6,
+        "elapsedMicros": 9120476,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9120662,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9224570,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9224629,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9239040,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9240747,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9240772,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9339045,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9398437,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9398517,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 6,
+        "elapsedMicros": 9398997,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 4,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 15,
+            "cacheMisses": 12,
+            "cacheEvictions": 0,
+            "cachedTiles": 12,
+            "cachedBytes": 8166456,
+            "managedTargets": 16,
+            "managedBytes": 43008056,
+            "canonicalReplays": 3,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 15,
+          "nativeGpuCacheMisses": 12,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 12,
+          "nativeGpuCachedBytes": 8166456,
+          "nativeGpuManagedTargets": 16,
+          "nativeGpuManagedBytes": 43008056,
+          "nativeGpuCanonicalReplays": 3,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9399501,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9430964,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9431004,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9431330,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9514985,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9515028,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      }
+    ]
+  },
+  {
+    "schemaVersion": 1,
+    "kind": "rhwp-gpu-producer-trace",
+    "clock": "monotonicMicroseconds",
+    "capacity": 128,
+    "retainedEvents": 128,
+    "droppedEvents": 2,
+    "lifetimeCounts": {
+      "configured": 5,
+      "invalidated": 6,
+      "resourceSampled": 64,
+      "statusPolled": 24,
+      "captureStarted": 5,
+      "captureCompleted": 5,
+      "submitStarted": 5,
+      "accepted": 5,
+      "producerReady": 5,
+      "superseded": 5,
+      "closeRequested": 1
+    },
+    "requestToProducerReadyMicros": {
+      "scope": "retainedCompletedSamples",
+      "method": "nearestRank",
+      "retainedSamples": 5,
+      "lifetimeCompletedSamples": 5,
+      "droppedSamples": 0,
+      "p50": 344929,
+      "p95": 509439,
+      "p99": 509439
+    },
+    "instrumentationFailures": 0,
+    "observerFailures": 0,
+    "compositorDisplayVerified": false,
+    "consumerGpuCompletionVerified": false,
+    "events": [
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 5796,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 138964,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 141776,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 212426,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 212484,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 1,
+        "elapsedMicros": 212980,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 1,
+        "elapsedMicros": 224377,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 1,
+        "elapsedMicros": 224441,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 225628,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 292648,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 1,
+        "elapsedMicros": 293155,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 294410,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 296161,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 296198,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 339099,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 340754,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 340795,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 346763,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 348374,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 348408,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 364050,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 1,
+        "elapsedMicros": 366328,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 1,
+        "elapsedMicros": 366530,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 1,
+        "elapsedMicros": 368691,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 1,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 0,
+            "cacheMisses": 9,
+            "cacheEvictions": 0,
+            "cachedTiles": 9,
+            "cachedBytes": 5866552,
+            "managedTargets": 11,
+            "managedBytes": 17031352,
+            "canonicalReplays": 2,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 0,
+          "nativeGpuCacheMisses": 9,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 9,
+          "nativeGpuCachedBytes": 5866552,
+          "nativeGpuManagedTargets": 11,
+          "nativeGpuManagedBytes": 17031352,
+          "nativeGpuCanonicalReplays": 2,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 2,
+        "elapsedMicros": 4602132,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 2,
+        "elapsedMicros": 4635629,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 3,
+        "elapsedMicros": 4665300,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "configured",
+        "generation": 4,
+        "elapsedMicros": 4665328,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 4,
+        "elapsedMicros": 4665333,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4665524,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4670804,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 4670857,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 4,
+        "elapsedMicros": 4670895,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 4,
+        "elapsedMicros": 4682212,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 4,
+        "elapsedMicros": 4682238,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4682420,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4821907,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 4,
+        "elapsedMicros": 4821995,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4822277,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4937917,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 4937963,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 4,
+        "elapsedMicros": 4938210,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 3,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 6,
+            "cacheMisses": 12,
+            "cacheEvictions": 0,
+            "cachedTiles": 12,
+            "cachedBytes": 8166456,
+            "managedTargets": 16,
+            "managedBytes": 36777656,
+            "canonicalReplays": 3,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 6,
+          "nativeGpuCacheMisses": 12,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 12,
+          "nativeGpuCachedBytes": 8166456,
+          "nativeGpuManagedTargets": 16,
+          "nativeGpuManagedBytes": 36777656,
+          "nativeGpuCanonicalReplays": 3,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 4938503,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 5051127,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 5051171,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 5051449,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 4,
+        "elapsedMicros": 5161816,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 4,
+        "elapsedMicros": 5161859,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 5,
+        "elapsedMicros": 8889481,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "configured",
+        "generation": 6,
+        "elapsedMicros": 8889541,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 6,
+        "elapsedMicros": 8889558,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 8889822,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9063294,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9063331,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 6,
+        "elapsedMicros": 9063355,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 6,
+        "elapsedMicros": 9086410,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 6,
+        "elapsedMicros": 9086446,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9086706,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9120386,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 6,
+        "elapsedMicros": 9120476,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9120662,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9224570,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9224629,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9239040,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9240747,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9240772,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9339045,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9398437,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9398517,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 6,
+        "elapsedMicros": 9398997,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 4,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 15,
+            "cacheMisses": 12,
+            "cacheEvictions": 0,
+            "cachedTiles": 12,
+            "cachedBytes": 8166456,
+            "managedTargets": 16,
+            "managedBytes": 43008056,
+            "canonicalReplays": 3,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 15,
+          "nativeGpuCacheMisses": 12,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 12,
+          "nativeGpuCachedBytes": 8166456,
+          "nativeGpuManagedTargets": 16,
+          "nativeGpuManagedBytes": 43008056,
+          "nativeGpuCanonicalReplays": 3,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9399501,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9430964,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9431004,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9431330,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 6,
+        "elapsedMicros": 9514985,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 6,
+        "elapsedMicros": 9515028,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 7,
+        "elapsedMicros": 11163614,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "configured",
+        "generation": 8,
+        "elapsedMicros": 11163667,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 8,
+        "elapsedMicros": 11163676,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11163911,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11175795,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 8,
+        "elapsedMicros": 11175858,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 8,
+        "elapsedMicros": 11175888,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 8,
+        "elapsedMicros": 11227898,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 8,
+        "elapsedMicros": 11227925,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11228136,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11325089,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 8,
+        "elapsedMicros": 11325199,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11325561,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11409274,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 8,
+        "elapsedMicros": 11409319,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 8,
+        "elapsedMicros": 11409560,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 5,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 24,
+            "cacheMisses": 12,
+            "cacheEvictions": 0,
+            "cachedTiles": 12,
+            "cachedBytes": 8166456,
+            "managedTargets": 16,
+            "managedBytes": 43008056,
+            "canonicalReplays": 3,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 24,
+          "nativeGpuCacheMisses": 12,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 12,
+          "nativeGpuCachedBytes": 8166456,
+          "nativeGpuManagedTargets": 16,
+          "nativeGpuManagedBytes": 43008056,
+          "nativeGpuCanonicalReplays": 3,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11410617,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11523019,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 8,
+        "elapsedMicros": 11523069,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11523455,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 8,
+        "elapsedMicros": 11619242,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 8,
+        "elapsedMicros": 11619283,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "superseded",
+        "generation": 9,
+        "elapsedMicros": 13301163,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "configured",
+        "generation": 10,
+        "elapsedMicros": 13301205,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "invalidated",
+        "generation": 10,
+        "elapsedMicros": 13301218,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13301388,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13457220,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 10,
+        "elapsedMicros": 13457259,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "captureStarted",
+        "generation": 10,
+        "elapsedMicros": 13457283,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "captureCompleted",
+        "generation": 10,
+        "elapsedMicros": 13466280,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "submitStarted",
+        "generation": 10,
+        "elapsedMicros": 13466309,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13466506,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13524734,
+        "counters": {
+          "dartOwnedSnapshots": 1,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "accepted",
+        "generation": 10,
+        "elapsedMicros": 13524805,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13525016,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13526840,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 10,
+        "elapsedMicros": 13526860,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13559476,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13645727,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 10,
+        "elapsedMicros": 13645792,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "producerReady",
+        "generation": 10,
+        "elapsedMicros": 13646147,
+        "producerDiagnostics": {
+          "schemaVersion": 1,
+          "backend": "openGlGanesh",
+          "scope": "publishedFramePostRenderSnapshot",
+          "stamp": {
+            "documentId": 1,
+            "revision": 0,
+            "fontGeneration": 0,
+            "viewGeneration": 6,
+            "deviceGeneration": 1,
+            "deviceScale": 1.0
+          },
+          "members": 2,
+          "counters": {
+            "cacheHits": 33,
+            "cacheMisses": 12,
+            "cacheEvictions": 0,
+            "cachedTiles": 12,
+            "cachedBytes": 8166456,
+            "managedTargets": 16,
+            "managedBytes": 43008056,
+            "canonicalReplays": 3,
+            "viewportFallbacks": 0,
+            "targetAdmissionFallbacks": 0
+          }
+        },
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0,
+          "nativeGpuCacheHits": 33,
+          "nativeGpuCacheMisses": 12,
+          "nativeGpuCacheEvictions": 0,
+          "nativeGpuCachedTiles": 12,
+          "nativeGpuCachedBytes": 8166456,
+          "nativeGpuManagedTargets": 16,
+          "nativeGpuManagedBytes": 43008056,
+          "nativeGpuCanonicalReplays": 3,
+          "nativeGpuViewportFallbacks": 0,
+          "nativeGpuTargetAdmissionFallbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13656400,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13770241,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 10,
+        "elapsedMicros": 13770282,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13770546,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 10,
+        "elapsedMicros": 13892441,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "statusPolled",
+        "generation": 10,
+        "elapsedMicros": 13892494,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1,
+          "pluginWholeFrameReadbacks": 0
+        }
+      },
+      {
+        "stage": "closeRequested",
+        "generation": 10,
+        "elapsedMicros": 15548143,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 11,
+        "elapsedMicros": 15549799,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 11,
+        "elapsedMicros": 15662863,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 11,
+        "elapsedMicros": 15753713,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 1,
+          "isolateRpc": 1,
+          "visiblePages": 1
+        }
+      },
+      {
+        "stage": "resourceSampled",
+        "generation": 11,
+        "elapsedMicros": 15778044,
+        "counters": {
+          "dartOwnedSnapshots": 0,
+          "controllerRpc": 0,
+          "isolateRpc": 0,
+          "visiblePages": 1
+        }
+      }
+    ]
+  }
+]

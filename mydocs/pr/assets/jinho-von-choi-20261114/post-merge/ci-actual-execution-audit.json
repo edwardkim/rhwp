@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "pr": 9096,
+  "head": "b6a91166761b212d8501faf70b4b13e19b26474e",
+  "base": "1805d8f08cb3a54bccda8dfa6647432b7799f074",
+  "checkedAt": "2026-11-15T13:46:09.623823+00:00",
+  "result": "pass",
+  "blockers": [],
+  "develDrift": false,
+  "snapshot": "ci-actual-execution-final-snapshot.json",
+  "logEvidence": "ci-actual-execution-log-evidence.json",
+  "detailEvidence": "ci-actual-execution-detail-evidence.json",
+  "renderArtifactEvidence": "ci-actual-execution-render-artifact.json",
+  "checkCounts": {
+    "total": 40,
+    "success": 34,
+    "skipped": 6,
+    "pending": 0,
+    "failed": 0
+  },
+  "policy": [
+    {
+      "context": "CI Impact Policy",
+      "state": "success",
+      "description": "v=8;cv=8;mode=full;rfp=0;wf=111;rust=1;fe=package;render=1;skia=1;ql=js,py,rs,ac;b=1805d8f08cb3a54bccda8dfa6647432b7799f074",
+      "target_url": "https://github.com/edwardkim/rhwp/actions/runs/43720629727"
+    }
+  ],
+  "executed": {
+    "defaultFeatureArchives": {
+      "passed": 13414,
+      "skipped": 45,
+      "perArchive": {
+        "A": 3796,
+        "B": 2130,
+        "C": 2654,
+        "D": 2629,
+        "E": 2205
+      },
+      "aggregate": "archive_total=13414 shard_total=13414",
+      "fastPass": false
+    },
+    "nativeSkia": {
+      "actualFocusedPassed": 245,
+      "note": "CI Native job의 실제 cargo test result 합계. 로컬 공식 Native 4073건과 별개 범위."
+    },
+    "lint": {
+      "fmt": "success",
+      "nativeClippy": "success",
+      "wasmClippy": "success",
+      "workspaceCheck": "success",
+      "wasmCheck": "success",
+      "operationalContracts": "success"
+    },
+    "frontend": {
+      "freshDevWasmBuild": "success",
+      "studio": {
+        "passed": 2798,
+        "skipped": 2,
+        "failed": 0
+      },
+      "canvasFontBrowserTests": 26,
+      "undoDepth": "success",
+      "responsive": "success",
+      "studioAndExtensionsBuild": "success",
+      "vscodeCompile": "success"
+    },
+    "adapter": {
+      "present": [
+        "svg",
+        "null",
+        "trace",
+        "png",
+        "skia"
+      ],
+      "missing": 0,
+      "unexported": 0,
+      "rustPassed": 7
+    },
+    "proptest": {
+      "actualRustCasesPassed": 63,
+      "suiteCommands": 9
+    },
+    "codeql": {
+      "languages": [
+        "javascript-typescript",
+        "python",
+        "rust",
+        "actions"
+      ],
+      "actualQueryAndSarifComplete": true,
+      "githubCodeScanningCheck": "success",
+      "initialMissingRustConfiguration": "resolved after Rust analysis"
+    },
+    "renderDiff": {
+      "legacyVsLayer": {
+        "compared": 3,
+        "passed": 3,
+        "diffPercent": [
+          0.01077,
+          0.0,
+          0.0
+        ]
+      },
+      "directPdf": {
+        "compared": 3,
+        "failed": 0,
+        "ratio": [
+          0.00757801,
+          0.00269187,
+          0.01883712
+        ],
+        "maximum": 0.02
+      },
+      "canvasKitReadiness": {
+        "evaluated": 8,
+        "passed": 8,
+        "failed": 0,
+        "missing": 0,
+        "hardGateViolations": 0
+      },
+      "browserPdfReportOnly": {
+        "pages": 4,
+        "warnings": 4,
+        "errors": 0,
+        "note": "기존 report-only 72dpi PDF 대 브라우저 출력 비교. 크기 차이와 픽셀 차이를 경고로 기록. 독립 한컴 raw 일치율이나 게이트 통과값으로 재해석하지 않음."
+      },
+      "servedWasmSha256": "9ff233a9db6a0222a8aad5b8ff5151a32377f0bc1bb98ad8f10aee1538ec7abd",
+      "chromiumBuildId": "1660786"
+    }
+  },
+  "skipReview": [
+    {
+      "job": "WASM Build",
+      "reason": "ci.yml:2186, workflow_dispatch 또는 v tag에서만 실행. PR의 fresh WASM은 Frontend package 및 Render Diff가 실제 빌드."
+    },
+    {
+      "job": "Frontend unit gates",
+      "reason": "ci.yml:1504, frontend_mode=unit 전용. 현재 package lane이 Studio 단위 검사와 실제 패키지 빌드를 실행."
+    },
+    {
+      "job": "Workflow promotion preflight",
+      "reason": "ci.yml:1825–1828, devel→main 승격 PR 전용. 현재 일반 devel 대상 수용 PR."
+    },
+    {
+      "job": "release-operations-contracts/native-host-package",
+      "reason": "ci.yml:857/865, workflow_dispatch 전용."
+    },
+    {
+      "job": "trusted postmerge / review-only alternative steps",
+      "reason": "FAST_PASS=false의 실제 전체 실행이며 postmerge 재사용·review-only 대체 단계가 비적용."
+    },
+    {
+      "job": "cache save / duration publication",
+      "reason": "검사 후 cache-hit 또는 PR/Archive별 artifact 조건. 테스트 본체는 모두 실제 실행."
+    }
+  ],
+  "scope": "읽기 전용 GitHub API·완료 job 로그·render artifact 감사. rerun, check 변경, merge 없음."
+}

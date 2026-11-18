@@ -1,0 +1,113 @@
+{
+  "state": "complete",
+  "results": [
+    {
+      "case": "incoming8754-clip5587",
+      "page": 4,
+      "backend": "native",
+      "measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "raw": 99.80186,
+      "assets": {
+        "raw": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/native/raw_004.png",
+          "sha256": "0f7fdf2fabe7e1057f5521659fb2b2fc16c9726aa1cfc633a41c24e23265b71d"
+        },
+        "pdf": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/native/pdf_004.png",
+          "sha256": "11817d8ecc323d924a5a94939995db1b78a33f7889be47ac4a78aca32f32d30c"
+        },
+        "overlay": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/native/overlay_004.png",
+          "sha256": "25d883f98372a5a7632b0b7f5ac3e44ec983efdfb0f973deb36c79d1d0fbfec1"
+        },
+        "review": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/native/review/review_004.png",
+          "sha256": "b8912df9113532d9c9c4e5fe67052232955f9d35151c1bfee21187b4d7e2ce36"
+        }
+      },
+      "direct_review": "완료",
+      "finding": "본문·표·글머리표 소속 및 줄바꿈 보존. 감사헌금·시 내부 글리프와 간격 잔여는 새 이슈에 보존한다."
+    },
+    {
+      "case": "handbook-hwp",
+      "page": 59,
+      "backend": "native",
+      "measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "raw": 100.0,
+      "assets": {
+        "raw": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/native/raw_059.png",
+          "sha256": "116e13d312e8f4d0f43188e01923d1a4c269f59b1259a62596436b804ce5c4ee"
+        },
+        "pdf": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/native/pdf_059.png",
+          "sha256": "fa56953b71e5cc6d4eb9b29785f3aad9d54cf7f741fb58e3d79f83ea444a4bed"
+        },
+        "overlay": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/native/overlay_059.png",
+          "sha256": "04cc200bb8dee7a6728659f4a0f24031f039775253bafb2597c8dc2d78678152"
+        },
+        "review": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/native/review/review_059.png",
+          "sha256": "15a23176ae585b5f27f86eb2b612dbbf896b37606adfc40c7102d59513ae8d02"
+        }
+      },
+      "direct_review": "완료",
+      "finding": "원문자·항목 기호·표 및 마지막 주의 문단을 직접 확인. 두 경로 raw 100.00%이며 RGB 동일성으로 주장하지 않는다."
+    },
+    {
+      "case": "incoming8754-clip5587",
+      "page": 4,
+      "backend": "wasm",
+      "measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "raw": 99.81731,
+      "assets": {
+        "raw": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/wasm/raw_004.png",
+          "sha256": "79cf61ecb99fe4fdde52aecba4baebeb6098df1479af495773a0636a69a0eb09"
+        },
+        "pdf": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/wasm/pdf_004.png",
+          "sha256": "11817d8ecc323d924a5a94939995db1b78a33f7889be47ac4a78aca32f32d30c"
+        },
+        "overlay": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/wasm/overlay_004.png",
+          "sha256": "f018055ff908f3f328a7bdb5953b9a32d87d2ac76a1239639fae839c9f4ba240"
+        },
+        "review": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/incoming8754-clip5587/wasm/review/review_004.png",
+          "sha256": "b3d1a01b10d92075f0f9d027927a43e36f342a5e4bc4ef3a35d46cbeccd79cc1"
+        }
+      },
+      "direct_review": "완료",
+      "finding": "본문·표·글머리표 소속 및 줄바꿈 보존. 감사헌금·시 내부 글리프와 간격 잔여는 새 이슈에 보존한다."
+    },
+    {
+      "case": "handbook-hwp",
+      "page": 59,
+      "backend": "wasm",
+      "measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "raw": 100.0,
+      "assets": {
+        "raw": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/wasm/raw_059.png",
+          "sha256": "c4ad2b06c03e157b369fc804caa53a038fefe439df7d292239b4790a0fc8a16a"
+        },
+        "pdf": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/wasm/pdf_059.png",
+          "sha256": "fa56953b71e5cc6d4eb9b29785f3aad9d54cf7f741fb58e3d79f83ea444a4bed"
+        },
+        "overlay": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/wasm/overlay_059.png",
+          "sha256": "0c7453210e9f32a8ebec7914f9f848cedbce9264587d9b671a573f462388ddc4"
+        },
+        "review": {
+          "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/current-reviews/handbook-hwp/wasm/review/review_059.png",
+          "sha256": "ca8f18b6ce8d4c537dbe1bf730e6483b1f90e24b486552a3e705641efd7f3680"
+        }
+      },
+      "direct_review": "완료",
+      "finding": "원문자·항목 기호·표 및 마지막 주의 문단을 직접 확인. 두 경로 raw 100.00%이며 RGB 동일성으로 주장하지 않는다."
+    }
+  ]
+}

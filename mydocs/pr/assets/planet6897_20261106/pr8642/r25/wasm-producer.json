@@ -1,0 +1,28 @@
+{
+  "state": "producer-ready",
+  "source_head": "0c2f57c4ad6ca45d915537cd1eafc70f49d7a8a8",
+  "pid": 2496593,
+  "started_at": "2026-11-06T21:08:44.553197+00:00",
+  "updated_at": "2026-11-06T21:17:34.927696+00:00",
+  "command": [
+    "bash",
+    "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/run-minimal-wasm-a7feb849.sh",
+    "env",
+    "CARGO_TARGET_DIR=/home/tsjang/rhwp/target/pr-review",
+    "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16",
+    "bash",
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/validation-rebase-source/output/wasm-implicit-r25"
+  ],
+  "build_exit": 0,
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/wasm-implicit-r25",
+    "sha256": {
+      "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+      "rhwp_bg.wasm": "40ee8389d4a4f4a78ea7c20e63a12bb8b1cd36ad59f7325734caf170570fbaab"
+    }
+  }
+}

@@ -1,0 +1,110 @@
+[
+  {
+    "url": "https://github.com/edwardkim/rhwp/blob/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/pr_8896_review.md",
+    "path": "mydocs/pr/pr_8896_review.md",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "bytes": 11981,
+    "sha256": "400a3d89e87a64db404ce6e4fd5064bfe7aa242be88db54452d52e4706311a5b",
+    "matches_git": true
+  },
+  {
+    "url": "https://github.com/edwardkim/rhwp/blob/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/README.md",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/README.md",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "bytes": 4325,
+    "sha256": "ddb2a1505ee07542400ca8b2239a58325095af9c201729c22532b85efb441e73",
+    "matches_git": true
+  },
+  {
+    "url": "https://github.com/edwardkim/rhwp/blob/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/completion-summary.json",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/completion-summary.json",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "bytes": 1036,
+    "sha256": "fe843c8de62088781ded708a94f7580a15cf0fba206673e5e4bafe8427ad14d5",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/native-protected-comparison.json",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/native-protected-comparison.json",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "bytes": 1011194,
+    "sha256": "65f77804d975011ccf53a11ec3d60667baeacfba55f4f17e68b5d9cc6592ab9d",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/wasm-protected-comparison.json",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/wasm-protected-comparison.json",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "bytes": 1004056,
+    "sha256": "71606a1c8f710612fb6d324938d6a033e1a86f025b7c231ca94851775b033463",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/input-inventory.json",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/input-inventory.json",
+    "status": 200,
+    "content_type": "text/plain; charset=utf-8",
+    "bytes": 38596,
+    "sha256": "3ff7ff29e84f15a7339ad4038723b2a901585f4237c2dea72ba7a19ca8b80822",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/samples/issue8693/table-end-row-clamp.hwp",
+    "path": "samples/issue8693/table-end-row-clamp.hwp",
+    "status": 200,
+    "content_type": "application/octet-stream",
+    "bytes": 14848,
+    "sha256": "8982493b412cf6ab0165ce234303786f994a6a870433101ce64aed1d82766aa0",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/pdf/issue8693/table-end-row-clamp-webhwp-print.pdf",
+    "path": "pdf/issue8693/table-end-row-clamp-webhwp-print.pdf",
+    "status": 200,
+    "content_type": "application/octet-stream",
+    "bytes": 5451,
+    "sha256": "2c0bd2817e86e5c9e4c01961852a0ceb0ef6a6ae9076fea0b45d4d0ec7506321",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/review/review_001.png",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/review/review_001.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 135400,
+    "sha256": "f1e09b98b550be3bbecb237d766fc2117f79b454e5d89f06a408f9e98eae5282",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/focus/native/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 56228,
+    "sha256": "2558231c2137aea7cd45f3a6fb02434a3b655c51b4a78b4ab8c7f6b0cd798a8d",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/review/review_001.png",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/review/review_001.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 141175,
+    "sha256": "d9b7e1910d31be5f8bb1f1ec5f91d0b79019ba389537b9d27201a06a57bad284",
+    "matches_git": true
+  },
+  {
+    "url": "https://raw.githubusercontent.com/edwardkim/rhwp/1343907a8340fc032423ce5adb6d248aa80534dd/mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+    "path": "mydocs/pr/assets/pr8896/latest-eb84/focus/wasm/issue8693-table-end-row-clamp/overlay/overlay_001.png",
+    "status": 200,
+    "content_type": "image/png",
+    "bytes": 59296,
+    "sha256": "25bd89b9de9ac326c5bb357af477ff57d8b0a160339e1966c36f9dd9b1e9538e",
+    "matches_git": true
+  }
+]

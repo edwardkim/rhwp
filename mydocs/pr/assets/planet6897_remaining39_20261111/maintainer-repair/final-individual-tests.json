@@ -1,0 +1,624 @@
+{
+  "runtime_head": "ab9116f48ff0c641fab4cc33c9f8c1bd5b6a5082",
+  "source_log_sha256": "fa7717a939955f7a1c5b93fed5a0a00cd8ff56efe871559e1ee453b8c49cb50f",
+  "modules": 42,
+  "unique_functions": 77,
+  "records": [
+    {
+      "pr": 8689,
+      "module": "issue_8677_sole_cell_para_nested_table",
+      "source": "tests/cases/issue_8677_sole_cell_para_nested_table.rs",
+      "functions": [
+        "sole_cell_paragraph_table_fills_its_cell_from_the_top"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.678s] ( 7100/13307) rhwp::regression_suite_010 issue_8677_sole_cell_para_nested_table::sole_cell_paragraph_table_fills_its_cell_from_the_top"
+      ]
+    },
+    {
+      "pr": 8708,
+      "module": "issue_8686_cell_float_offset_space",
+      "source": "tests/cases/issue_8686_cell_float_offset_space.rs",
+      "functions": [
+        "cell_float_table_leaves_offset_space_to_following_paragraph"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.030s] ( 7366/13307) rhwp::regression_suite_011 issue_8686_cell_float_offset_space::cell_float_table_leaves_offset_space_to_following_paragraph"
+      ]
+    },
+    {
+      "pr": 8710,
+      "module": "issue_8685_tac_table_cell_footnote_continuation",
+      "source": "tests/cases/issue_8685_tac_table_cell_footnote_continuation.rs",
+      "functions": [
+        "tac_table_cell_footnote_moves_whole_note_to_next_page",
+        "tac_table_cell_footnote_splits_at_stored_reset"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.630s] (12411/13307) rhwp::regression_suite_026 issue_8685_tac_table_cell_footnote_continuation::tac_table_cell_footnote_moves_whole_note_to_next_page",
+        "        PASS [   3.438s] (12461/13307) rhwp::regression_suite_026 issue_8685_tac_table_cell_footnote_continuation::tac_table_cell_footnote_splits_at_stored_reset"
+      ]
+    },
+    {
+      "pr": 8717,
+      "module": "issue_8692_font_supply_merge",
+      "source": "tests/cases/issue_8692_font_supply_merge.rs",
+      "functions": [
+        "glyph_fallback_to_its_own_source_is_not_a_fallback",
+        "distinct_glyph_fallback_survives_beside_a_self_reference",
+        "supply_mapping_removes_the_selection_rule_it_replaced",
+        "selection_rule_of_an_unmapped_source_is_kept",
+        "empty_supply_returns_the_document_environment_unchanged",
+        "document_with_more_than_256_supplied_names_is_accepted_up_to_the_bound",
+        "form_with_selection_rule_exports_through_the_cli",
+        "form_declaring_more_than_256_font_names_merges",
+        "report_whose_supply_names_its_own_face_merges"
+      ],
+      "passed": 9,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.069s] (12105/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::glyph_fallback_to_its_own_source_is_not_a_fallback",
+        "        PASS [   0.066s] (12100/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::distinct_glyph_fallback_survives_beside_a_self_reference",
+        "        PASS [   0.042s] (12108/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::supply_mapping_removes_the_selection_rule_it_replaced",
+        "        PASS [   0.050s] (12106/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::selection_rule_of_an_unmapped_source_is_kept",
+        "        PASS [   0.049s] (12103/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::empty_supply_returns_the_document_environment_unchanged",
+        "        PASS [   0.055s] (12102/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::document_with_more_than_256_supplied_names_is_accepted_up_to_the_bound",
+        "        PASS [   6.008s] (12179/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::form_with_selection_rule_exports_through_the_cli",
+        "        PASS [   0.062s] (12104/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::form_declaring_more_than_256_font_names_merges",
+        "        PASS [   0.084s] (12107/13307) rhwp::regression_suite_025 issue_8692_font_supply_merge::report_whose_supply_names_its_own_face_merges"
+      ]
+    },
+    {
+      "pr": 8719,
+      "module": "issue_8686_cell_float_inner_anchor",
+      "source": "tests/cases/issue_8686_cell_float_inner_anchor.rs",
+      "functions": [
+        "inner_control_float_table_sits_below_its_host_lines"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.035s] ( 9089/13307) rhwp::regression_suite_016 issue_8686_cell_float_inner_anchor::inner_control_float_table_sits_below_its_host_lines"
+      ]
+    },
+    {
+      "pr": 8729,
+      "module": "issue_8697_footer_page_number_format",
+      "source": "tests/cases/issue_8697_footer_page_number_format.rs",
+      "functions": [
+        "footer_page_number_follows_stored_number_format",
+        "toc_angle_bracket_takes_full_hft_advance"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.614s] (12412/13307) rhwp::regression_suite_026 issue_8697_footer_page_number_format::footer_page_number_follows_stored_number_format",
+        "        PASS [   1.016s] (12432/13307) rhwp::regression_suite_026 issue_8697_footer_page_number_format::toc_angle_bracket_takes_full_hft_advance"
+      ]
+    },
+    {
+      "pr": 8729,
+      "module": "issue_8697_hft_program_widths",
+      "source": "tests/cases/issue_8697_hft_program_widths.rs",
+      "functions": [
+        "hanyang_junggothic_hft_draws_cjk_brackets_full_width",
+        "sinmyeong_junggothic_hft_uses_its_own_latin_widths"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.078s] ( 5170/13307) rhwp::regression_suite_004 issue_8697_hft_program_widths::hanyang_junggothic_hft_draws_cjk_brackets_full_width",
+        "        PASS [   0.080s] ( 5171/13307) rhwp::regression_suite_004 issue_8697_hft_program_widths::sinmyeong_junggothic_hft_uses_its_own_latin_widths"
+      ]
+    },
+    {
+      "pr": 8736,
+      "module": "issue_8732_caption_picture_stored_deferral",
+      "source": "tests/cases/issue_8732_caption_picture_stored_deferral.rs",
+      "functions": [
+        "bottom_caption_picture_moves_to_next_page_top_with_its_stored_successor"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.557s] ( 6473/13307) rhwp::regression_suite_008 issue_8732_caption_picture_stored_deferral::bottom_caption_picture_moves_to_next_page_top_with_its_stored_successor"
+      ]
+    },
+    {
+      "pr": 8740,
+      "module": "issue_8737_cell_picture_pushed_own_line",
+      "source": "tests/cases/issue_8737_cell_picture_pushed_own_line.rs",
+      "functions": [
+        "cell_picture_that_pushed_its_own_line_starts_at_paragraph_origin"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.106s] ( 7096/13307) rhwp::regression_suite_010 issue_8737_cell_picture_pushed_own_line::cell_picture_that_pushed_its_own_line_starts_at_paragraph_origin"
+      ]
+    },
+    {
+      "pr": 8744,
+      "module": "issue_8715_nested_row_cell_cuts",
+      "source": "tests/cases/issue_8715_nested_row_cell_cuts.rs",
+      "functions": [
+        "text_hosted_nested_row_splits_per_cell_line_and_keeps_every_line"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.161s] ( 9452/13307) rhwp::regression_suite_017 issue_8715_nested_row_cell_cuts::text_hosted_nested_row_splits_per_cell_line_and_keeps_every_line"
+      ]
+    },
+    {
+      "pr": 8746,
+      "module": "issue_8742_stale_gap_measure",
+      "source": "tests/cases/issue_8742_stale_gap_measure.rs",
+      "functions": [
+        "page_bottom_sign_off_fits_once_gap_lines_stay_above_the_table",
+        "stale_ladder_does_not_change_pages_of_a_saved_gap_flow"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.069s] (13054/13307) rhwp::regression_suite_028 issue_8742_stale_gap_measure::page_bottom_sign_off_fits_once_gap_lines_stay_above_the_table",
+        "        PASS [   0.078s] (13055/13307) rhwp::regression_suite_028 issue_8742_stale_gap_measure::stale_ladder_does_not_change_pages_of_a_saved_gap_flow"
+      ]
+    },
+    {
+      "pr": 8751,
+      "module": "issue_8715_split_table_first_fragment_frame",
+      "source": "tests/cases/issue_8715_split_table_first_fragment_frame.rs",
+      "functions": [
+        "first_fragment_boxes_take_stored_object_height",
+        "continuation_fragment_keeps_content_height",
+        "flow_child_first_fragment_keeps_content_height"
+      ],
+      "passed": 3,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.168s] (11444/13307) rhwp::regression_suite_023 issue_8715_split_table_first_fragment_frame::first_fragment_boxes_take_stored_object_height",
+        "        PASS [   0.106s] (11441/13307) rhwp::regression_suite_023 issue_8715_split_table_first_fragment_frame::continuation_fragment_keeps_content_height",
+        "        PASS [   0.083s] (11440/13307) rhwp::regression_suite_023 issue_8715_split_table_first_fragment_frame::flow_child_first_fragment_keeps_content_height"
+      ]
+    },
+    {
+      "pr": 8758,
+      "module": "issue_8735_whitespace_host_para_float_table",
+      "source": "tests/cases/issue_8735_whitespace_host_para_float_table.rs",
+      "functions": [
+        "whitespace_host_para_float_table_sits_at_paragraph_top"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.271s] ( 7731/13307) rhwp::regression_suite_012 issue_8735_whitespace_host_para_float_table::whitespace_host_para_float_table_sits_at_paragraph_top"
+      ]
+    },
+    {
+      "pr": 8758,
+      "module": "issue_8735_whitespace_host_typeset_flow",
+      "source": "tests/cases/issue_8735_whitespace_host_typeset_flow.rs",
+      "functions": [
+        "whitespace_host_float_reserves_only_the_band_and_its_pushed_line"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.023s] ( 6157/13307) rhwp::regression_suite_007 issue_8735_whitespace_host_typeset_flow::whitespace_host_float_reserves_only_the_band_and_its_pushed_line"
+      ]
+    },
+    {
+      "pr": 8772,
+      "module": "issue_8755_rowspan_earliest_boundary",
+      "source": "tests/cases/issue_8755_rowspan_earliest_boundary.rs",
+      "functions": [
+        "rows_covered_only_by_span_cells_take_no_extra_height",
+        "cell_table_pushing_its_own_anchor_line_sits_at_paragraph_start"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.127s] (12745/13307) rhwp::regression_suite_027 issue_8755_rowspan_earliest_boundary::rows_covered_only_by_span_cells_take_no_extra_height",
+        "        PASS [   0.118s] (12744/13307) rhwp::regression_suite_027 issue_8755_rowspan_earliest_boundary::cell_table_pushing_its_own_anchor_line_sits_at_paragraph_start"
+      ]
+    },
+    {
+      "pr": 8775,
+      "module": "issue_8773_field_led_wide_tac_row",
+      "source": "tests/cases/issue_8773_field_led_wide_tac_row.rs",
+      "functions": [
+        "wide_table_after_a_field_start_begins_on_the_next_row",
+        "wide_table_without_a_leading_field_stays_on_the_first_row"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.031s] (10120/13307) rhwp::regression_suite_019 issue_8773_field_led_wide_tac_row::wide_table_after_a_field_start_begins_on_the_next_row",
+        "        PASS [   0.044s] (10122/13307) rhwp::regression_suite_019 issue_8773_field_led_wide_tac_row::wide_table_without_a_leading_field_stays_on_the_first_row"
+      ]
+    },
+    {
+      "pr": 8785,
+      "module": "issue_8782_stored_field_line_tac_prefix",
+      "source": "tests/cases/issue_8782_stored_field_line_tac_prefix.rs",
+      "functions": [
+        "table_starts_on_the_row_after_the_stored_field_line",
+        "stored_field_line_stays_on_the_page_where_it_fits"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.054s] ( 9449/13307) rhwp::regression_suite_017 issue_8782_stored_field_line_tac_prefix::table_starts_on_the_row_after_the_stored_field_line",
+        "        PASS [   0.052s] ( 9448/13307) rhwp::regression_suite_017 issue_8782_stored_field_line_tac_prefix::stored_field_line_stays_on_the_page_where_it_fits"
+      ]
+    },
+    {
+      "pr": 8788,
+      "module": "issue_8786_reflowed_gap_stored_rewind",
+      "source": "tests/cases/issue_8786_reflowed_gap_stored_rewind.rs",
+      "functions": [
+        "stale_rewind_after_reflowed_paragraphs_does_not_break_the_page"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.037s] ( 5441/13307) rhwp::regression_suite_005 issue_8786_reflowed_gap_stored_rewind::stale_rewind_after_reflowed_paragraphs_does_not_break_the_page"
+      ]
+    },
+    {
+      "pr": 8792,
+      "module": "issue_8759_page_band_own_anchor_line",
+      "source": "tests/cases/issue_8759_page_band_own_anchor_line.rs",
+      "functions": [
+        "page_band_pushes_table_paragraph_and_own_anchor_line"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   4.919s] (12169/13307) rhwp::regression_suite_025 issue_8759_page_band_own_anchor_line::page_band_pushes_table_paragraph_and_own_anchor_line"
+      ]
+    },
+    {
+      "pr": 8794,
+      "module": "issue_8778_split_row_segments",
+      "source": "tests/cases/issue_8778_split_row_segments.rs",
+      "functions": [
+        "split_row_segments_keep_the_review_table_on_the_header_page",
+        "field_only_stored_row_stays_above_the_title_table",
+        "full_width_paragraph_does_not_join_the_column_start_wrap_band",
+        "tac_table_after_a_float_prefix_row_does_not_pass_its_stored_row"
+      ],
+      "passed": 4,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.107s] ( 5834/13307) rhwp::regression_suite_006 issue_8778_split_row_segments::split_row_segments_keep_the_review_table_on_the_header_page",
+        "        PASS [   0.091s] ( 5832/13307) rhwp::regression_suite_006 issue_8778_split_row_segments::field_only_stored_row_stays_above_the_title_table",
+        "        PASS [   0.109s] ( 5833/13307) rhwp::regression_suite_006 issue_8778_split_row_segments::full_width_paragraph_does_not_join_the_column_start_wrap_band",
+        "        PASS [   0.142s] ( 5837/13307) rhwp::regression_suite_006 issue_8778_split_row_segments::tac_table_after_a_float_prefix_row_does_not_pass_its_stored_row"
+      ]
+    },
+    {
+      "pr": 8803,
+      "module": "issue_8795_picture_deferral_rewind_own_picture",
+      "source": "tests/cases/issue_8795_picture_deferral_rewind_own_picture.rs",
+      "functions": [
+        "deferred_picture_opens_next_page_above_rewinding_paragraph_picture"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.420s] ( 7739/13307) rhwp::regression_suite_012 issue_8795_picture_deferral_rewind_own_picture::deferred_picture_opens_next_page_above_rewinding_paragraph_picture"
+      ]
+    },
+    {
+      "pr": 8806,
+      "module": "issue_8805_tac_picture_overflow_stored_new_page",
+      "source": "tests/cases/issue_8805_tac_picture_overflow_stored_new_page.rs",
+      "functions": [
+        "stored_new_page_tac_picture_moves_instead_of_spilling_below_body"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.269s] ( 9090/13307) rhwp::regression_suite_016 issue_8805_tac_picture_overflow_stored_new_page::stored_new_page_tac_picture_moves_instead_of_spilling_below_body"
+      ]
+    },
+    {
+      "pr": 8830,
+      "module": "issue_8807_topbottom_pictures_prev_band_gap",
+      "source": "tests/cases/issue_8807_topbottom_pictures_prev_band_gap.rs",
+      "functions": [
+        "stacked_paragraph_topbottom_pictures_do_not_overlap"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.267s] ( 5173/13307) rhwp::regression_suite_004 issue_8807_topbottom_pictures_prev_band_gap::stacked_paragraph_topbottom_pictures_do_not_overlap"
+      ]
+    },
+    {
+      "pr": 8833,
+      "module": "issue_8808_float_band_gap_successors",
+      "source": "tests/cases/issue_8808_float_band_gap_successors.rs",
+      "functions": [
+        "successors_fill_the_gap_above_the_paragraph_float_table",
+        "continuation_page_keeps_the_schedule_table",
+        "float_band_successor_stored_below_band_stays_below",
+        "float_band_successor_stored_in_gap_stays_above_band"
+      ],
+      "passed": 4,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.069s] ( 9454/13307) rhwp::regression_suite_017 issue_8808_float_band_gap_successors::successors_fill_the_gap_above_the_paragraph_float_table",
+        "        PASS [   0.094s] ( 9451/13307) rhwp::regression_suite_017 issue_8808_float_band_gap_successors::continuation_page_keeps_the_schedule_table",
+        "        PASS [   0.064s] ( 9450/13307) rhwp::regression_suite_017 issue_8808_float_band_gap_successors::float_band_successor_stored_below_band_stays_below",
+        "        PASS [   0.056s] ( 9453/13307) rhwp::regression_suite_017 issue_8808_float_band_gap_successors::float_band_successor_stored_in_gap_stays_above_band"
+      ]
+    },
+    {
+      "pr": 8835,
+      "module": "issue_8810_stale_cell_ladder",
+      "source": "tests/cases/issue_8810_stale_cell_ladder.rs",
+      "functions": [
+        "page_relative_first_fragment_starts_at_its_stored_offset",
+        "successor_of_nested_table_host_follows_the_host_line_not_the_stale_ladder",
+        "stale_rewind_does_not_push_attachment_lines_to_the_next_page"
+      ],
+      "passed": 3,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.048s] ( 8399/13307) rhwp::regression_suite_014 issue_8810_stale_cell_ladder::page_relative_first_fragment_starts_at_its_stored_offset",
+        "        PASS [   0.047s] ( 8400/13307) rhwp::regression_suite_014 issue_8810_stale_cell_ladder::successor_of_nested_table_host_follows_the_host_line_not_the_stale_ladder",
+        "        PASS [   0.051s] ( 8401/13307) rhwp::regression_suite_014 issue_8810_stale_cell_ladder::stale_rewind_does_not_push_attachment_lines_to_the_next_page"
+      ]
+    },
+    {
+      "pr": 8838,
+      "module": "issue_8831_pushed_line_picture_anchor",
+      "source": "tests/cases/issue_8831_pushed_line_picture_anchor.rs",
+      "functions": [
+        "picture_above_its_pushed_line_stays_at_paragraph_anchor"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.372s] ( 5180/13307) rhwp::regression_suite_004 issue_8831_pushed_line_picture_anchor::picture_above_its_pushed_line_stays_at_paragraph_anchor"
+      ]
+    },
+    {
+      "pr": 8846,
+      "module": "issue_8843_synthetic_forward_tac_axis",
+      "source": "tests/cases/issue_8843_synthetic_forward_tac_axis.rs",
+      "functions": [
+        "tac_table_after_rejected_synthetic_gap_follows_the_flow"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.032s] ( 8403/13307) rhwp::regression_suite_014 issue_8843_synthetic_forward_tac_axis::tac_table_after_rejected_synthetic_gap_follows_the_flow"
+      ]
+    },
+    {
+      "pr": 8848,
+      "module": "issue_8845_unstored_rebase_tac",
+      "source": "tests/cases/issue_8845_unstored_rebase_tac.rs",
+      "functions": [
+        "tac_table_after_unstored_paragraph_follows_the_rebased_flow"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.085s] ( 9456/13307) rhwp::regression_suite_017 issue_8845_unstored_rebase_tac::tac_table_after_unstored_paragraph_follows_the_rebased_flow"
+      ]
+    },
+    {
+      "pr": 8849,
+      "module": "issue_8842_overlap_disallowed_pile_next_pages",
+      "source": "tests/cases/issue_8842_overlap_disallowed_pile_next_pages.rs",
+      "functions": [
+        "overlap_disallowed_pile_places_one_picture_per_following_page"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   1.111s] (12118/13307) rhwp::regression_suite_025 issue_8842_overlap_disallowed_pile_next_pages::overlap_disallowed_pile_places_one_picture_per_following_page"
+      ]
+    },
+    {
+      "pr": 8861,
+      "module": "issue_8855_host_below_header_table_origin",
+      "source": "tests/cases/issue_8855_host_below_header_table_origin.rs",
+      "functions": [
+        "first_body_line_follows_header_table_bottom_margin_and_host_line",
+        "text_after_full_width_square_picture_starts_below_it",
+        "page_bottom_footer_table_moves_to_second_page_like_hancom"
+      ],
+      "passed": 3,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.039s] ( 5442/13307) rhwp::regression_suite_005 issue_8855_host_below_header_table_origin::first_body_line_follows_header_table_bottom_margin_and_host_line",
+        "        PASS [   0.029s] ( 5444/13307) rhwp::regression_suite_005 issue_8855_host_below_header_table_origin::text_after_full_width_square_picture_starts_below_it",
+        "        PASS [   0.045s] ( 5443/13307) rhwp::regression_suite_005 issue_8855_host_below_header_table_origin::page_bottom_footer_table_moves_to_second_page_like_hancom"
+      ]
+    },
+    {
+      "pr": 8862,
+      "module": "issue_8852_para_topbottom_negative_offset",
+      "source": "tests/cases/issue_8852_para_topbottom_negative_offset.rs",
+      "functions": [
+        "restricted_para_topbottom_picture_ignores_negative_offset"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.598s] (12773/13307) rhwp::regression_suite_027 issue_8852_para_topbottom_negative_offset::restricted_para_topbottom_picture_ignores_negative_offset"
+      ]
+    },
+    {
+      "pr": 8876,
+      "module": "issue_8864_bottom_fixed_table_outer_margin",
+      "source": "tests/cases/issue_8864_bottom_fixed_table_outer_margin.rs",
+      "functions": [
+        "table_overlapping_body_end_through_its_bottom_margin_moves_to_next_page"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.033s] (10437/13307) rhwp::regression_suite_020 issue_8864_bottom_fixed_table_outer_margin::table_overlapping_body_end_through_its_bottom_margin_moves_to_next_page"
+      ]
+    },
+    {
+      "pr": 8879,
+      "module": "issue_8875_rowspan_opening_row_content_fit",
+      "source": "tests/cases/issue_8875_rowspan_opening_row_content_fit.rs",
+      "functions": [
+        "opening_row_closes_at_page_bottom_and_span_remainder_continues"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.977s] ( 9798/13307) rhwp::regression_suite_018 issue_8875_rowspan_opening_row_content_fit::opening_row_closes_at_page_bottom_and_span_remainder_continues"
+      ]
+    },
+    {
+      "pr": 8881,
+      "module": "issue_8878_tac_host_below_float",
+      "source": "tests/cases/issue_8878_tac_host_below_float.rs",
+      "functions": [
+        "inline_table_line_starts_after_header_table_box",
+        "page_bottom_table_moves_to_second_page_like_hancom",
+        "host_line_without_following_stored_advance_is_not_read_as_below_the_box"
+      ],
+      "passed": 3,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.038s] ( 8727/13307) rhwp::regression_suite_015 issue_8878_tac_host_below_float::inline_table_line_starts_after_header_table_box",
+        "        PASS [   0.037s] ( 8728/13307) rhwp::regression_suite_015 issue_8878_tac_host_below_float::page_bottom_table_moves_to_second_page_like_hancom",
+        "        PASS [   0.039s] ( 8726/13307) rhwp::regression_suite_015 issue_8878_tac_host_below_float::host_line_without_following_stored_advance_is_not_read_as_below_the_box"
+      ]
+    },
+    {
+      "pr": 8901,
+      "module": "issue_8891_span_open_row_stored_reset",
+      "source": "tests/cases/issue_8891_span_open_row_stored_reset.rs",
+      "functions": [
+        "span_cell_with_stored_page_reset_keeps_its_opening_row_on_the_page",
+        "span_cell_without_stored_reset_moves_its_opening_row_whole"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.565s] ( 8774/13307) rhwp::regression_suite_015 issue_8891_span_open_row_stored_reset::span_cell_with_stored_page_reset_keeps_its_opening_row_on_the_page",
+        "        PASS [   0.537s] ( 8773/13307) rhwp::regression_suite_015 issue_8891_span_open_row_stored_reset::span_cell_without_stored_reset_moves_its_opening_row_whole"
+      ]
+    },
+    {
+      "pr": 8903,
+      "module": "issue_8753_square_tac_same_paragraph",
+      "source": "tests/cases/issue_8753_square_tac_same_paragraph.rs",
+      "functions": [
+        "square_and_tac_tables_of_one_paragraph_share_the_side_lane",
+        "synthetic_paragraph_after_synthetic_tac_row_keeps_hancom_page"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.139s] ( 8019/13307) rhwp::regression_suite_013 issue_8753_square_tac_same_paragraph::square_and_tac_tables_of_one_paragraph_share_the_side_lane",
+        "        PASS [   0.112s] ( 8020/13307) rhwp::regression_suite_013 issue_8753_square_tac_same_paragraph::synthetic_paragraph_after_synthetic_tac_row_keeps_hancom_page"
+      ]
+    },
+    {
+      "pr": 8903,
+      "module": "issue_8894_unstored_tac_column_top_spacing",
+      "source": "tests/cases/issue_8894_unstored_tac_column_top_spacing.rs",
+      "functions": [
+        "unstored_tac_title_keeps_spacing_before_at_page_top",
+        "unstored_text_after_tac_title_takes_its_spacing_before_once"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.050s] ( 6750/13307) rhwp::regression_suite_009 issue_8894_unstored_tac_column_top_spacing::unstored_tac_title_keeps_spacing_before_at_page_top",
+        "        PASS [   0.054s] ( 6752/13307) rhwp::regression_suite_009 issue_8894_unstored_tac_column_top_spacing::unstored_text_after_tac_title_takes_its_spacing_before_once"
+      ]
+    },
+    {
+      "pr": 8909,
+      "module": "issue_8882_reflowed_cell_tac_row_floor",
+      "source": "tests/cases/issue_8882_reflowed_cell_tac_row_floor.rs",
+      "functions": [
+        "reflowed_cells_keep_their_rows_in_a_mixed_tac_table",
+        "tac_nested_table_in_unstored_cell_counts_once",
+        "reflowed_overflow_beyond_cap_is_not_uniformly_shrunk"
+      ],
+      "passed": 3,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.491s] ( 7099/13307) rhwp::regression_suite_010 issue_8882_reflowed_cell_tac_row_floor::reflowed_cells_keep_their_rows_in_a_mixed_tac_table",
+        "        PASS [   0.095s] ( 7098/13307) rhwp::regression_suite_010 issue_8882_reflowed_cell_tac_row_floor::tac_nested_table_in_unstored_cell_counts_once",
+        "        PASS [   0.325s] ( 7097/13307) rhwp::regression_suite_010 issue_8882_reflowed_cell_tac_row_floor::reflowed_overflow_beyond_cap_is_not_uniformly_shrunk"
+      ]
+    },
+    {
+      "pr": 8921,
+      "module": "issue_8917_group_bullet_column_top_spacing",
+      "source": "tests/cases/issue_8917_group_bullet_column_top_spacing.rs",
+      "functions": [
+        "hwp_group_bullet_keeps_stored_spacing_at_page_top",
+        "hwpx_group_bullet_keeps_stored_spacing_at_page_top"
+      ],
+      "passed": 2,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.073s] ( 7105/13307) rhwp::regression_suite_010 issue_8917_group_bullet_column_top_spacing::hwp_group_bullet_keeps_stored_spacing_at_page_top",
+        "        PASS [   0.051s] ( 7104/13307) rhwp::regression_suite_010 issue_8917_group_bullet_column_top_spacing::hwpx_group_bullet_keeps_stored_spacing_at_page_top"
+      ]
+    },
+    {
+      "pr": 8928,
+      "module": "issue_8925_page_break_tac_full_gap",
+      "source": "tests/cases/issue_8925_page_break_tac_full_gap.rs",
+      "functions": [
+        "table_line_opening_page_by_break_keeps_full_trailing_spacing"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.047s] ( 9091/13307) rhwp::regression_suite_016 issue_8925_page_break_tac_full_gap::table_line_opening_page_by_break_keeps_full_trailing_spacing"
+      ]
+    },
+    {
+      "pr": 8929,
+      "module": "issue_8924_wide_tac_trailing_tail",
+      "source": "tests/cases/issue_8924_wide_tac_trailing_tail.rs",
+      "functions": [
+        "zero_width_tail_after_overflowing_tac_table_stays_on_the_table_line"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.025s] ( 4828/13307) rhwp::regression_suite_003 issue_8924_wide_tac_trailing_tail::zero_width_tail_after_overflowing_tac_table_stays_on_the_table_line"
+      ]
+    },
+    {
+      "pr": 8930,
+      "module": "issue_8926_post_table_line_stored_page_reset",
+      "source": "tests/cases/issue_8926_post_table_line_stored_page_reset.rs",
+      "functions": [
+        "post_table_line_after_stored_page_reset_starts_the_next_page"
+      ],
+      "passed": 1,
+      "failed": 0,
+      "pass_lines": [
+        "        PASS [   0.041s] (12749/13307) rhwp::regression_suite_027 issue_8926_post_table_line_stored_page_reset::post_table_line_after_stored_page_reset_starts_the_next_page"
+      ]
+    }
+  ]
+}

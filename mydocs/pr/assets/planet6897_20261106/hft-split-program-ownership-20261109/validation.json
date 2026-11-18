@@ -1,0 +1,271 @@
+{
+  "scope": "현재 보정 단계의 집중 검증이며 전체 PR 완료 증거가 아니다",
+  "parent_head": "05c0f1f32ce4902a03c1779f501bab36e81448b9",
+  "wasm_measurement": {
+    "state": "complete",
+    "pid": 81389,
+    "parent_head": "05c0f1f32ce4902a03c1779f501bab36e81448b9",
+    "sources": {
+      "src/renderer/hft_outline.rs": "48ee6ca5d5e90943b7e565cd577f53037a894275e861392822bbc21d9e752d1d",
+      "src/document_core/commands/document/hft_outline_fonts.rs": "574f1fb376c10f85d286356b16f87be8a62cd55200a0367d7442c5f9073cc391",
+      "src/wasm_api.rs": "255329f45e7e1fe4ad9e9d7956169de7668c237c883fe759de9d924ed2125d26",
+      "scripts/export-wasm-png-for-sweep.mjs": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "rhwp-studio/src/core/host-canvas-fonts.ts": "0d1790a85b3dfa70911a3853487b4afa16b19cbb14246a0cbf89bb753ed6d0d4"
+    },
+    "diff_sha256": "6d72992b7eccb8dfb5666db0c1117322e65c1ab22459453f632c50aa48917d0e",
+    "exit_code": 0,
+    "seconds": 289.07630500011146,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-wasm-pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "c2ba79041d27aee8bb4d210eccdb0dd37dbb31be0b0b7becfc53bd9ddb698cfc",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "c2ba79041d27aee8bb4d210eccdb0dd37dbb31be0b0b7becfc53bd9ddb698cfc",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-wasm-pkg/rhwp_bg.wasm": "c2ba79041d27aee8bb4d210eccdb0dd37dbb31be0b0b7becfc53bd9ddb698cfc"
+      }
+    },
+    "browser_exit_code": 0
+  },
+  "raw_match_percent_p757": "99.41233",
+  "protected_display_p757": "99.40",
+  "restored_pages": 6,
+  "remaining_regressions": [
+    {
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "page": 35,
+      "protected_display": "100.00",
+      "candidate_display": "99.99",
+      "status": "regression",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b"
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "page": 35,
+      "protected_display": "100.00",
+      "candidate_display": "99.99",
+      "status": "regression",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+    },
+    {
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 251,
+      "protected_display": "99.83",
+      "candidate_display": "99.81",
+      "status": "regression",
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918"
+    },
+    {
+      "key": "sample10",
+      "backend": "wasm",
+      "page": 509,
+      "protected_display": "99.90",
+      "candidate_display": "99.89",
+      "status": "regression",
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918"
+    }
+  ],
+  "native_focused_minimal_fonts": {
+    "passed": 18,
+    "failed": 0,
+    "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-chain-v2-minimal-focused.log"
+  },
+  "studio": {
+    "passed": 2784,
+    "failed": 0,
+    "skip": 2,
+    "typecheck_exit": 0
+  },
+  "before_failure": {
+    "test": "source_hft_outline_follows_the_selected_environment_family_only",
+    "failed": 1,
+    "valid_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-selection-before.log",
+    "note": "초기 준비 오류 로그는 재현 근거에서 제외했다."
+  },
+  "source_followup": {
+    "file": "src/document_core/commands/document/hft_outline_fonts.rs",
+    "sha256": "031951bd077d5549528fce402aa3fb0b2f5507eab5b7f717a8abb8f6e0b7c1f6",
+    "description": "후속 Unicode family 대소문자 정규화 보존: 실제 1 FAIL 뒤 최소 글꼴 Native 18 PASS. 후속 소스의 fresh WASM 실제 브라우저 6 PASS와 10쪽 재출력은 완료했고, 전쪽·전체 회귀와 잔여 하락 보정은 아직 미완료다."
+  },
+  "artifacts": {
+    "sample10-wasm-p757-review.png": "4a70753e7ab3d0fce0d87101655bd552ce311fb8a18bb07689862a0e3959b1d6",
+    "sample10-wasm-p757-raw.png": "cfb6454c42fb7c4f149630305e58c81d64fcf728fc1f49529f2522ffbb583a97",
+    "focus-wasm-comparison.tsv": "9e164fc86dfa13240daad7393ae9d0356ba44ec4c9af466477bd2717a10068bc",
+    "sample10-wasm-p757-overlay.png": "4e71ffb1db56a3194d5ea35b5902f92239e13458bbce71cb121ad11ee13ba26a",
+    "sample16-hwp2024-focus-wasm.tsv": "3d89ad0ed4f9e7e4012949e7efb748d0d6adb1be58de6f0c46f0482b3188b17c",
+    "sample16-hwpx-focus-wasm.tsv": "3d89ad0ed4f9e7e4012949e7efb748d0d6adb1be58de6f0c46f0482b3188b17c",
+    "sample10-p757-pdf-raw.png": "a05e699e97007c06da0537ca52973fe712f5dd2a9ac0b6ccdfe7f3dcff0a2644",
+    "sample10-focus-wasm.tsv": "b78755e8fb54008fe096c059f4df43e6c18d3b132bf83bdb2d9c51e328a12acf"
+  },
+  "current_source_fresh_wasm": {
+    "product_head": "785194d2dfee3e837e400fd3021794f543633121",
+    "build": {
+      "state": "complete",
+      "pid": 42731,
+      "parent_head": "785194d2dfee3e837e400fd3021794f543633121",
+      "sources": {
+        "src/renderer/hft_outline.rs": "48ee6ca5d5e90943b7e565cd577f53037a894275e861392822bbc21d9e752d1d",
+        "src/document_core/commands/document/hft_outline_fonts.rs": "031951bd077d5549528fce402aa3fb0b2f5507eab5b7f717a8abb8f6e0b7c1f6",
+        "src/wasm_api.rs": "255329f45e7e1fe4ad9e9d7956169de7668c237c883fe759de9d924ed2125d26",
+        "scripts/export-wasm-png-for-sweep.mjs": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+        "rhwp-studio/src/core/host-canvas-fonts.ts": "0d1790a85b3dfa70911a3853487b4afa16b19cbb14246a0cbf89bb753ed6d0d4"
+      },
+      "diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "exit_code": 0,
+      "seconds": 280.9751576660201,
+      "files": {
+        "rhwp.js": {
+          "/Users/tsjang/rhwp/pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+          "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+          "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-wasm-pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d"
+        },
+        "rhwp_bg.wasm": {
+          "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "7c4b8dc9303c18a222cb12a87b25076587cb808b896f406f5c80f63c9ca6ab10",
+          "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "7c4b8dc9303c18a222cb12a87b25076587cb808b896f406f5c80f63c9ca6ab10",
+          "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-wasm-pkg/rhwp_bg.wasm": "7c4b8dc9303c18a222cb12a87b25076587cb808b896f406f5c80f63c9ca6ab10"
+        }
+      },
+      "browser_exit_code": 0
+    },
+    "focused_progress": {
+      "pid": 69612,
+      "state": "complete",
+      "backend": "wasm",
+      "producer": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-wasm-pkg",
+      "producer_identity": {
+        "binary_sha256": "122a1d3a515b22af541b603b51895c263ec0d4be0ad496b7959082e86fa85194",
+        "package_sha256": {
+          "rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+          "rhwp_bg.wasm": "7c4b8dc9303c18a222cb12a87b25076587cb808b896f406f5c80f63c9ca6ab10"
+        },
+        "manifest_sha256": "7b83d39236dcf6f67a17803334506e4514d580abddc5598e1fb47e6f33d2b92b"
+      },
+      "manifest": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-focus-cases.json",
+      "target_count": 3,
+      "results": [
+        {
+          "key": "sample16-hwp2024",
+          "prs": [
+            8389,
+            8397
+          ],
+          "finished": true,
+          "exit_code": 0,
+          "pages": 1,
+          "expected_pages": 1,
+          "page_set_matches": true,
+          "minimum": 99.99,
+          "below90": [],
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-focus-wasm/sample16-hwp2024/sample16-hwp2024/silhouette.tsv",
+          "tsv_sha256": "3d89ad0ed4f9e7e4012949e7efb748d0d6adb1be58de6f0c46f0482b3188b17c",
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-focus-wasm/sample16-hwp2024/run.log",
+          "dpi": 96,
+          "compat": "2024"
+        },
+        {
+          "key": "sample16-hwpx",
+          "prs": [
+            8389,
+            8397
+          ],
+          "finished": true,
+          "exit_code": 0,
+          "pages": 1,
+          "expected_pages": 1,
+          "page_set_matches": true,
+          "minimum": 99.99,
+          "below90": [],
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-focus-wasm/sample16-hwpx/sample16-hwpx/silhouette.tsv",
+          "tsv_sha256": "3d89ad0ed4f9e7e4012949e7efb748d0d6adb1be58de6f0c46f0482b3188b17c",
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-focus-wasm/sample16-hwpx/run.log",
+          "dpi": 96,
+          "compat": "2024"
+        },
+        {
+          "key": "sample10",
+          "prs": [
+            8389,
+            8397
+          ],
+          "finished": true,
+          "exit_code": 0,
+          "pages": 8,
+          "expected_pages": 8,
+          "page_set_matches": true,
+          "minimum": 99.41,
+          "below90": [],
+          "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-focus-wasm/sample10/sample10/silhouette.tsv",
+          "tsv_sha256": "b78755e8fb54008fe096c059f4df43e6c18d3b132bf83bdb2d9c51e328a12acf",
+          "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/hft-candidate-chain-v2-focus-wasm/sample10/run.log",
+          "dpi": 96,
+          "compat": "2022"
+        }
+      ],
+      "active": {},
+      "updated_at": "2026-11-08T23:35:43.718359+00:00",
+      "errors": []
+    },
+    "ten_page_png_identity": [
+      {
+        "key": "sample16-hwp2024",
+        "page": 35,
+        "sha256": "6378700b59766bdcd1142f4fde0a9078bc9bbc0438de868a7816e9737a5bcf7c"
+      },
+      {
+        "key": "sample16-hwpx",
+        "page": 35,
+        "sha256": "6378700b59766bdcd1142f4fde0a9078bc9bbc0438de868a7816e9737a5bcf7c"
+      },
+      {
+        "key": "sample10",
+        "page": 757,
+        "sha256": "cfb6454c42fb7c4f149630305e58c81d64fcf728fc1f49529f2522ffbb583a97"
+      },
+      {
+        "key": "sample10",
+        "page": 708,
+        "sha256": "44ce991e96ac3904964da67abecb8dd458b6c049ebf5fa70a589dc89ce8ba33c"
+      },
+      {
+        "key": "sample10",
+        "page": 133,
+        "sha256": "9d6a14ebcc07d68d3b2de62194876ac791412f1ebb5e6308089e42f8ee5d1886"
+      },
+      {
+        "key": "sample10",
+        "page": 251,
+        "sha256": "52b96c9dd86e46cdf30fe8a1dfb517c6186fcff4eeb810d402ab4e90a21f821a"
+      },
+      {
+        "key": "sample10",
+        "page": 509,
+        "sha256": "a1a629847fb75a29efe8d2b72469690ac28a9a506c4aae5153ae0ccdd2bda73e"
+      },
+      {
+        "key": "sample10",
+        "page": 660,
+        "sha256": "184db7f61743143fe7348dc1008e8a19b2c86ba6740480857f803078beb727b8"
+      },
+      {
+        "key": "sample10",
+        "page": 658,
+        "sha256": "54e3259f02832abfa8127396ae237b1ed8a585d012c5197494dd660d174b323f"
+      },
+      {
+        "key": "sample10",
+        "page": 659,
+        "sha256": "f14b958f8f99566f27e44435b3d542884453f2e45ae71920f9b95a5b1f78b7c3"
+      }
+    ],
+    "scope": "Unicode 정규화 후 소스의 fresh WASM 빌드·실제 브라우저 6 PASS·집중 10쪽 재산출. 전쪽/전체 회귀 완료는 아니다."
+  }
+}

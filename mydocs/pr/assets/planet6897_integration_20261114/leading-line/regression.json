@@ -1,0 +1,58 @@
+{
+  "before": {
+    "summary": "5 tests run: 4 passed, 1 failed",
+    "test_seconds": 0.056,
+    "assertion": "leading whitespace line must include source terminal font size",
+    "actual_height_px": 14.666666666666666,
+    "source_terminal_font_size_hu": 1200
+  },
+  "after": {
+    "exit": 0,
+    "head": "836615963eedfac9170d45c15cbba32d23e1b4d0",
+    "summary": "5 tests run: 5 passed, 323 skipped",
+    "test_seconds": 0.052,
+    "jobs": 8,
+    "test_threads": 8
+  },
+  "compile_and_argument_errors_are_not_test_results": true,
+  "temporary_trace_removed": true,
+  "focused_boundaries": [
+    {
+      "case": "issue_reflow_empty_float_host_line",
+      "run": 2,
+      "passed": 2,
+      "exit": 0
+    },
+    {
+      "case": "issue_8573_empty_host_square_beside_line",
+      "run": 4,
+      "passed": 4,
+      "exit": 0
+    },
+    {
+      "case": "issue_8160_terminal_style_cell_frame",
+      "run": 1,
+      "passed": 1,
+      "exit": 0
+    },
+    {
+      "case": "verified_computed_split_successor_spacing",
+      "run": 6,
+      "passed": 6,
+      "exit": 0
+    },
+    {
+      "case": "issue_8660_restricted_para_object_next_page",
+      "run": 12,
+      "passed": 12,
+      "exit": 0
+    },
+    {
+      "case": "tac_space_tail_hang_before_float_anchor",
+      "run": 4,
+      "passed": 4,
+      "exit": 0
+    }
+  ],
+  "focused_boundary_pass_count": 29
+}

@@ -1,0 +1,99 @@
+{
+  "font_transfer": "windows-probe-font-transfer.json",
+  "windows_font_result_raw_percent": 89.33464,
+  "source_font_result_raw_percent": 89.26348,
+  "rows": [
+    {
+      "codepoint": "U+3001",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3002",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3004",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3005",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3006",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3007",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 13.300000000000011,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 1.0000000000000009,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3008",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3010",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    },
+    {
+      "codepoint": "U+3024",
+      "pdf_font": "INPILL+Haansoft Batang",
+      "pdf_advance_pt": 9.954605102539062,
+      "pdf_advance_em": 1.0,
+      "rhwp_advance_px": 6.700000000000017,
+      "rhwp_font_size_px": 13.3,
+      "rhwp_advance_em": 0.5037593984962419,
+      "pdf_hangul_em_advance_pt": 9.954605102539062
+    }
+  ],
+  "finding": "독립 PDF의 Haansoft Batang 기호는 1em, 현재 트리는 대부분 0.5em 전진. 공급 원본 교체만으로 위치 차이가 해결되지 않음.",
+  "normalization": "PDFium 원점 간격을 같은 줄 선행 HFT 한글 가의 전각 전진으로 정규화. PDF Tf 원값에는 Tm 축소가 있어 유효 글자 크기로 사용하지 않음."
+}

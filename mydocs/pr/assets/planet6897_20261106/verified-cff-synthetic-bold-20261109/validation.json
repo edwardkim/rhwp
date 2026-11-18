@@ -1,0 +1,97 @@
+{
+  "parent_head": "a046bf864b0c3805a2a39871b721f5479fb5cb16",
+  "build": {
+    "state": "complete",
+    "pid": 42222,
+    "parent_head": "a046bf864b0c3805a2a39871b721f5479fb5cb16",
+    "sources": {
+      "src/renderer/mod.rs": "ee3dce49533ce966c251e82b89f817bfea84554c8a802aa0c63e1b2795dee650",
+      "src/renderer/skia/text_replay.rs": "f71594e76d00ff583913ff6f6eba3ee557e2224c6dcdfe5b39fc510b8e5424af",
+      "src/renderer/web_canvas/faux_bold_outline.rs": "d56536bea31ebe18f16334b422e5d9ead753401839fe334fa3fd3255fd795dc7",
+      "src/renderer/hft_outline.rs": "bccb8668e355ca270882891997b39c19016898e5cd0022ecd208ee659a787102",
+      "src/document_core/commands/document/hft_outline_fonts.rs": "4a3cda1c896baa24eed26c5b16572e4249ebdf3bbc4251614acb219d38dd6623",
+      "src/wasm_api.rs": "255329f45e7e1fe4ad9e9d7956169de7668c237c883fe759de9d924ed2125d26",
+      "scripts/export-wasm-png-for-sweep.mjs": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "rhwp-studio/src/core/host-canvas-fonts.ts": "0d1790a85b3dfa70911a3853487b4afa16b19cbb14246a0cbf89bb753ed6d0d4"
+    },
+    "diff_sha256": "f848d07dbcbbb72c0b847f078b167f25cd3800ee7c325f2ffd3d679adc137490",
+    "exit_code": 0,
+    "seconds": 288.45476091699675,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-synthetic-v3-wasm-pkg/rhwp.js": "dfc9f870bba0c297ac15a0a42b3440a6baeaef4d443b1763e4d9095fcc68df0d"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "93ecbf7683ff32e3fc3b72b0b9ab72a6dcb15f5c0a664562d0f0d4018f786b69",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "93ecbf7683ff32e3fc3b72b0b9ab72a6dcb15f5c0a664562d0f0d4018f786b69",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-synthetic-v3-wasm-pkg/rhwp_bg.wasm": "93ecbf7683ff32e3fc3b72b0b9ab72a6dcb15f5c0a664562d0f0d4018f786b69"
+      }
+    },
+    "browser_exit_code": 0
+  },
+  "focused_browser": {
+    "pass": 6,
+    "fail": 0,
+    "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-synthetic-v3-browser-final.log",
+    "log_sha256": "5a08311f157aa9da33711d5c7aca1d9498f86f7c2c8e23fd39407bd7a62bdc61"
+  },
+  "native_minimal_focused": {
+    "pass": 19,
+    "fail": 0,
+    "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-synthetic-minimal-focused.log",
+    "scope": "Native에 영향을 주는 소스는 동일하다. 이후 수정은 wasm32 Print 전용 조건과 Rust 포맷뿐이다."
+  },
+  "actual_bold_counterexample": {
+    "before": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-real-bold-before-v6.log",
+    "after": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-synthetic-v3-browser-after.log"
+  },
+  "page251": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 99.84315,
+    "silhouette_raw_unmatched_pixels": 93,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 59294,
+    "tolerant_content_match_percent": 99.84315
+  },
+  "artifacts": {
+    "sample10-p251-pdf-raw.png": "ce5c201f5c82d59dc3d8a540961dffb700286919534c71ed00422270b984fc13",
+    "sample10-wasm-p251-review.png": "49c6df8ece677df9209ee01162ab588aad450e432a31f099e21dcaa54ad3d363",
+    "focus-wasm.tsv": "780d62517d1641c8ebcc4eeacd2b25100903fab1e41974c019f24ba972a35f6a",
+    "sample10-wasm-p251-raw.png": "262683bd140c543240290674a3266ef237bd3c4ed752ee027885b9b1f530c8a7",
+    "sample10-wasm-p251-overlay.png": "e724e6b3d6cf2bd660786ea87e932abd2e36d74461802700d52457818b48f9ea"
+  },
+  "direct_review": {
+    "review_and_overlay_inspected": true,
+    "result": "제목의 합성 굵기를 복원했다. 원문·문단·행 소속·쪽 번호는 보존된다. 미세 래스터 차이는 남아 있다."
+  },
+  "source_equivalence": {
+    "faux_bold_outline_current_sha256": "22f48390bdc25382be5cf100c3b53dbe79f52310e1f398ba5e1c227f65705b70",
+    "build_after_change": "빌드 후 rustfmt가 요구한 줄바꿈·들여쓰기만 수정했다. 논리 토큰은 동일하다."
+  },
+  "checkpoint_full_nextest": {
+    "compiled_head": "c524d1e918d114188209baa94baa6cda12984a70",
+    "run": 13083,
+    "pass": 13082,
+    "fail": 1,
+    "skip": 45,
+    "execution_seconds": 307.294,
+    "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/verified-cff-full-nextest-v2.log",
+    "failure": "issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked",
+    "note": "실행 중 WMF 후보 3개 파일을 작업 트리에 적용했다. 새 후보의 전체 통과 근거가 아니며 최종 안정 소스에서 전체를 다시 실행한다."
+  },
+  "passthrough_classification_repair": {
+    "file": "tests/common/passthrough_exemptions.rs",
+    "classification": "SessionState",
+    "reason": "register_hft_outline_font_candidates_native는 paint 세션만 교체하며 문서 IR·raw stream을 편집하지 않는다. 공개 계약 검사가 저장 보존을 확인한다.",
+    "guard_after": {
+      "pass": 5,
+      "fail": 0,
+      "command": "CARGO_MANIFEST_DIR=/Users/tsjang/rhwp rustc --edition=2021 --test tests/issue_2724_passthrough_invalidation_guard.rs; generated guard binary --test-threads 8",
+      "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/passthrough-guard-after.log",
+      "log_sha256": "e3fa56bc76112ff25ab8eded6b07c55886a098e4e93e32aea4a0ef923cfc890e"
+    }
+  }
+}

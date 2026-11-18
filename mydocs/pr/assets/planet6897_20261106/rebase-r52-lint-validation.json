@@ -1,0 +1,100 @@
+{
+  "source": "4b5a4bc76752981ca5851036525e97f2406aa4a8",
+  "state": "complete",
+  "steps": [
+    {
+      "key": "fmt",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/run-minimal-r43.sh",
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-integration-20261106/logs/r52-final-fmt.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "terminal_lines": []
+    },
+    {
+      "key": "clippy-native-skia",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/run-minimal-r43.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--all-targets",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-integration-20261106/logs/r52-final-clippy-native-skia.log",
+      "log_sha256": "28634c9b86ae2d86b73f201d606713bf1212f39267b0b511976be70df1bc90f6",
+      "terminal_lines": [
+        "    Checking rhwp v0.9.0 (/home/tsjang/rhwp)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4m 00s"
+      ]
+    },
+    {
+      "key": "clippy-wasm",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/run-minimal-r43.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-integration-20261106/logs/r52-final-clippy-wasm.log",
+      "log_sha256": "e5578dcc992e45c368324aa44f1593d7fc620420f0ce863aa27b5cc474c79de7",
+      "terminal_lines": [
+        "    Checking rhwp v0.9.0 (/home/tsjang/rhwp)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 25s"
+      ]
+    },
+    {
+      "key": "clippy-workspace",
+      "command": [
+        "bash",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/run-minimal-r43.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log": "output/pr-review/planet6897-integration-20261106/logs/r52-final-clippy-workspace.log",
+      "log_sha256": "97507e8f47cdcbb8b0da388dfe1f2f1fe5655365ee8022bb59486a8ebc5eb129",
+      "terminal_lines": [
+        "    Checking rhwp-subsecond v0.0.0 (/home/tsjang/rhwp/tools/rhwp-subsecond)",
+        "    Checking rhwp-native-ffi v0.1.0 (/home/tsjang/rhwp/bindings/Native)",
+        "    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 23s"
+      ]
+    }
+  ],
+  "scope": "최종 format 및 Native Skia·WASM32·workspace Clippy. 전체 Rust/Studio 재실행이 아님."
+}

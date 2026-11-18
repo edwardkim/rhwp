@@ -1,0 +1,18 @@
+
+running 3 tests
+
+thread 'real_primary_program_does_not_inherit_inferred_hft_decoration' (3782797) panicked at /home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r52-primary-program-decoration-before.rs:45:9:
+assertion `left == right` failed: 실제 주 CFF의 합성 굵기는 전진을 바꾸지 않는다; 원본 자간 -10
+  left: [0.0, 17.066666666666666, 34.13333333333333]
+ right: [0.0, 16.213333333333335, 32.42666666666667]
+test original_hwp3_decoration_keeps_its_independent_ownership ... note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+ok
+test another_program_does_not_borrow_primary_selection_identity ... ok
+test real_primary_program_does_not_inherit_inferred_hft_decoration ... FAILED
+
+failures:
+
+failures:
+    real_primary_program_does_not_inherit_inferred_hft_decoration
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.45s

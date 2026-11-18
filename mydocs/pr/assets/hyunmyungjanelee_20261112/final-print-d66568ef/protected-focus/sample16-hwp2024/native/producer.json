@@ -1,0 +1,10 @@
+{
+  "source_head": "d66568ef247859a9c184546cad3ba42b06e806e1",
+  "dataset": "sample16-hwp2024",
+  "page": 51,
+  "source": "current whole Native capture; not selected-page replacement",
+  "raw_score": 100.0,
+  "raw_sha256": "dd6ed894dcd9b576ed4cc41b54ba763df16b834fe8a214c3d0948919dcc3a45d",
+  "pdf_sha256": "041266322ddeffa01e85640e9d07530db93a94fc257e4f6cb2a4dfcda6a3319e",
+  "sweep_sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+}

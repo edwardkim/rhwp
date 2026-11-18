@@ -163,6 +163,7 @@ fn op_from_matrix_row(row: &serde_json::Value) -> PaintOp {
         "footnoteMarker" => PaintOp::footnote_marker(
             bbox(),
             FootnoteMarkerNode {
+                source_run: None,
                 number: row["number"].as_u64().unwrap_or(1) as u16,
                 text: row["text"].as_str().unwrap_or("1)").to_string(),
                 base_font_size: row["fontSize"].as_f64().unwrap_or(7.0),
@@ -395,6 +396,7 @@ fn m07_pack_footnote_marker_stays_direct_with_declared_detail() {
     let tree = tree_with_ops(vec![PaintOp::footnote_marker(
         bbox(),
         FootnoteMarkerNode {
+            source_run: None,
             number: 12,
             text: "12)".to_string(),
             base_font_size: 8.0,

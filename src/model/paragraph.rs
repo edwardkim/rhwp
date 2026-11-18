@@ -983,6 +983,24 @@ impl Paragraph {
         &self.line_segs[..source_len]
     }
 
+    /// [#9005] 저장 줄이 미기입 누름틀 안내문까지 담아 나눈 사다리인가.
+    ///
+    /// 한/글은 미기입 누름틀의 안내문을 문단 글자로 저장하고, 저장 줄(LineSeg)도 그 글자를
+    /// 넣고 나눈다. 적재 정규화(`initial_fields::clear`)는 안내문을 값에서 빼고
+    /// `guide_residue` 로만 남긴다(저장할 때 되살리는 용도). 그러면 저장 줄의 문자 분할은
+    /// 지금 문단에 없는 글자를 기준으로 나뉜 것이다. 한/글 Print 도 안내문을 그리지 않고
+    /// 남은 글자로 다시 나눈다 — `issue-986-receipt` 의 「야간 □ 공휴일 □」 칸은 저장 줄이
+    /// 2줄(안내문 17자 포함)인데 한/글 PDF 는 1줄 행 높이로 인쇄한다.
+    ///
+    /// 저장 줄은 파일 데이터로 남긴다(저장할 때 안내문과 함께 그대로 쓴다). 배치만 다시 나눈다.
+    pub fn stored_rows_include_hidden_guide(&self) -> bool {
+        !self.line_segs.is_empty()
+            && self.controls.iter().any(|control| {
+                matches!(control, crate::model::control::Control::Field(field)
+                    if field.guide_residue.as_ref().is_some_and(|residue| !residue.text.is_empty()))
+            })
+    }
+
     /// Invalidate every layout result derived from text or CharShapeRef input.
     /// Existing rows remain as edit-reflow metric templates, but cannot be
     /// admitted or serialized as the current text partition.
@@ -1165,6 +1183,12 @@ impl Paragraph {
     /// 컨트롤 번호도 같은 이유로 민다. 새 컨트롤이 `controls[control_idx]` 에 들어가면 그
     /// 자리부터 뒤 컨트롤의 번호가 1씩 커진다. 누름틀 범위가 옛 번호에 남으면 앞에 넣은
     /// 개체를 가리켜, 누름틀이 조회와 저장에서 사라진다.
+    ///
+    /// [#8199] **글자 없는 문단**(조절 문자만 있는 문단)은 `char_offsets` 가 비어 있어
+    /// 글자 차례로는 넣는 자리를 셀 수 없다. 별도 누름틀 종료 표식이 없는 문단에서는
+    /// 새 컨트롤의 자리가 앞 컨트롤 수 × 8 이다. 이 자리를 쓰지 않고 건너뛰면 조절 문자는
+    /// 8칸씩 밀리는데 줄 시작은 그대로 남아, 한/글이 뒤 줄의 첫 개체를 앞 줄로 읽는다
+    /// (표 두 개 문단에 그림을 넣자 쪽이 하나 늘었다).
     pub(crate) fn shift_for_inline_control_insert(
         &mut self,
         control_idx: usize,
@@ -1174,6 +1198,15 @@ impl Paragraph {
             if range.control_idx >= control_idx {
                 range.control_idx += 1;
             }
+        }
+        // FIELD_END는 controls[] 밖의 8유닛이다. 짝이 있는 누름틀 문단에 컨트롤 수만
+        // 대입하면 실제 삽입점보다 앞을 가리켜 앞선 줄까지 민다. 이 경우 기존 경로를 유지한다.
+        if self.text.is_empty() && self.char_offsets.is_empty() && self.field_ranges.is_empty() {
+            let insert_pos = u32::try_from(control_idx)
+                .unwrap_or(u32::MAX)
+                .saturating_mul(CTRL_CHAR_CODE_UNITS);
+            self.shift_position_metadata_for_stream_insertion(insert_pos, CTRL_CHAR_CODE_UNITS);
+            return;
         }
         self.shift_for_control_slot_insert(char_offset);
     }
@@ -1944,6 +1977,23 @@ impl Paragraph {
             updated_offsets.push(offset - utf16_delta);
         }
         self.char_offsets = updated_offsets;
+
+        // [#8863] 원본부터 같은 위치인 ref는 char_shape_id_at과 같이 마지막
+        // ID가 유효하다. 삭제로 서로 다른 경계가 모이기 전에 이 의미를 보존한다.
+        // 첫 ref가 늦게 시작하면 그 앞에도 첫 ID가 유효하므로(#6788), 첫 중복
+        // 묶음을 합치기 전에 이 암묵적 앞 구간을 명시한다.
+        if let [first, second, ..] = self.char_shapes.as_mut_slice() {
+            if first.start_pos > 0 && first.start_pos == second.start_pos {
+                first.start_pos = 0;
+            }
+        }
+        self.char_shapes.dedup_by(|later, kept| {
+            let same = later.start_pos == kept.start_pos;
+            if same {
+                kept.char_shape_id = later.char_shape_id;
+            }
+            same
+        });
 
         // 3. char_shapes: 삭제 범위 이후 → utf16_delta만큼 감소
         for cs in &mut self.char_shapes {

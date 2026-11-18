@@ -2,6 +2,9 @@
   <img src="assets/logo/logo-256.png" alt="rhwp logo" width="128" />
 </p>
 
+> **0.9.1 release preparation:** see the [release notes](mydocs/release/release_notes_v0.9.1_EN.md) for changes, credits and support limits. Check each channel for publication status.
+
+
 <h1 align="center">rhwp</h1>
 
 <p align="center">
@@ -43,14 +46,14 @@ rhwp changes that. Built with Rust and compiled to WebAssembly, it renders HWP d
   <img src="assets/screenshots/render-example-1.png" alt="rhwp rendering example — KTX route map" width="700" />
 </p>
 
-## 0.9.0: PDF developer onboarding
+## 0.9.1: PDF developer onboarding
 
 Import PDF into editable HWP/HWPX through the CLI, Rust, WASM and Studio. Default codecs include
 JBIG2, JPEG 2000 and ICC, with password authentication, resource profiles and cancellable page progress.
 Follow the [PDF quick start](mydocs/manual/pdf_developer_onboarding_EN.md) for builds, conversion and Worker hosting.
-See [0.9.0 release notes and credits](mydocs/release/release_notes_v0.9.0_EN.md).
-**crates.io distribution starts with 0.9.0** for Rust library and CLI users. Once published, add
-`rhwp = "0.9.0"` or run `cargo install rhwp --version 0.9.0 --locked --bin rhwp`.
+See [0.9.1 release notes and credits](mydocs/release/release_notes_v0.9.1_EN.md).
+**crates.io distribution started with 0.9.0** for Rust library and CLI users. Once 0.9.1 is published, add
+`rhwp = "0.9.1"` or run `cargo install rhwp --version 0.9.1 --locked --bin rhwp`.
 See the [Rust API, features and CLI guide](packaging/crates-io/README_PACKAGE.md).
 Add `--features native-skia` for PNG/PDF export, Sixel or Kitty graphics.
 
@@ -58,7 +61,7 @@ Add `--features native-skia` for PNG/PDF export, Sixel or Kitty graphics.
 
 Build the skeleton solo, grow the muscle together, complete it as a public good.
 
-The project is currently **v0.9.0 — systematizing the v1.0 typesetting engine** while also
+The project is currently **v0.9.1 — systematizing the v1.0 typesetting engine** while also
 growing its v2.0 collaboration foundation with more than 40 external contributors and two
 collaborators. The single [project roadmap](ROADMAP.md) explains what each version aims to achieve,
 how overlapping work is tracked, how completion is judged, and where the detailed AI-agent roadmap
@@ -67,7 +70,7 @@ grow in downstream projects. It is maintained in Korean as the source of truth.
 
 ## Current Milestone
 
-### v0.5.0 ~ v0.8.x — Foundation (current)
+### v0.5.0 ~ v0.8.x — Foundation
 
 > Reverse-engineering complete, read/write foundation established
 

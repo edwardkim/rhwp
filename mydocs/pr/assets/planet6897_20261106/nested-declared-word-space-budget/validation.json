@@ -1,0 +1,500 @@
+{
+  "status": "nested3-and-outline-restored-other-integration-validation-remains",
+  "native_producer": {
+    "parent_head": "6785d48b0d91964e4678d755a46c3c0c35999403",
+    "sources": {
+      "src/renderer/layout/paragraph_layout.rs": "e506d006c5488e55241355957b6818d9e2a9cf654ed0f0e4579fa17bd54e1bda",
+      "src/renderer/layout/paragraph_layout/justification_spacing.rs": "f09b905009fddac7596ffcc10b1102974854a76a11fb411f5caf351d17f86901"
+    },
+    "diff_sha256": "d6bff7cdbf89403fcd38097a3f8ba93275180fbced5a877260b53180d200b69a",
+    "binary": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/rhwp-nested-condense25",
+      "sha256": "6534446925737cc664911c0e2dfcb8b31a284e8015712c29016b720ee417c046"
+    },
+    "library": {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/librhwp-nested-condense25.rlib",
+      "sha256": "3c1acc0c03c7c1ca390049df42eee56a23e12df7d9c5795a417cee5285b71275",
+      "actual_cargo_output": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib"
+    },
+    "build_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-native-build.log"
+  },
+  "wasm_producer": {
+    "state": "complete",
+    "pid": 96469,
+    "parent_head": "6785d48b0d91964e4678d755a46c3c0c35999403",
+    "sources": {
+      "src/renderer/layout.rs": "072dbbf08907d4b2a4da1f501f9f0cd72bd6ad09a5c1458ee81625947b490bc1",
+      "src/renderer/composer/line_breaking.rs": "e3a44f6f3121f6ed27ee161905a437d4fd1aa4e5293c45d5e96d9bb827f6d3d3",
+      "src/renderer/layout/paragraph_layout.rs": "e506d006c5488e55241355957b6818d9e2a9cf654ed0f0e4579fa17bd54e1bda",
+      "src/renderer/layout/paragraph_layout/justification_spacing.rs": "f09b905009fddac7596ffcc10b1102974854a76a11fb411f5caf351d17f86901"
+    },
+    "diff_sha256": "d6bff7cdbf89403fcd38097a3f8ba93275180fbced5a877260b53180d200b69a",
+    "exit_code": 0,
+    "seconds": 289.11085041589104,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-pkg/rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7"
+      }
+    },
+    "browser_exit_code": 0
+  },
+  "scope": {
+    "native_pages": 26,
+    "wasm_pages": 26,
+    "nested_native_minimum": 98.36,
+    "nested_wasm_minimum": 98.37,
+    "nested_page3_each": 100.0,
+    "outline9_each_minimum": 100.0,
+    "protected_declines": 0
+  },
+  "cases": [
+    {
+      "key": "nested",
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "compat": "2022",
+      "prs": [
+        8389,
+        8397
+      ],
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "page_workers": 1,
+      "pdf_pages": 17,
+      "font_environment": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r55-nested-print-gulim-preserved-environment.json",
+      "font_environment_sha256": "69d9e65b9ee3d8f6b7fa891e5b66791a62cc5a50771b9630feb7360e543a6722",
+      "scope": "whole-document",
+      "state": "prepared-not-rendered",
+      "font_paths": [
+        "/Users/tsjang/Library/Fonts",
+        "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/programs/c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45"
+      ]
+    },
+    {
+      "key": "outline",
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "compat": "2022",
+      "prs": [
+        8389,
+        8397
+      ],
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "page_workers": 1,
+      "pdf_pages": 9,
+      "scope": "whole-document",
+      "state": "prepared-not-rendered"
+    }
+  ],
+  "protected_baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "source_contract": {
+    "specification": "mydocs/tech/한글문서파일형식_5.0_revision1.3.md 표44 bit9~15 공백 최소값0~75%",
+    "paragraph_shape": 25,
+    "raw_attr1": 13248,
+    "declared_budget_percent": 25,
+    "independent_digit_origin_css": 563.5345865885416,
+    "before_origin_css": 567.9200000000001,
+    "after_origin_css": 563.44,
+    "default_budget_origin_css": 567.9200000000001
+  },
+  "direct_review": "Native/fresh WASM3쪽 review·overlay와 낱말·리더 확대 판독 완료. 16쪽 최저 대표도 같은 쪽 review·overlay로 확인. raw100%는 완전한 RGB 픽셀 일치를 의미하지 않는다.",
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-nested-17.tsv",
+      "sha256": "1a46fb04bdf6b39d19a387935c8765ab40b849fe6c8e107e7678c7a8d2b6a186",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-native-whole/nested/nested/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-outline-9.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-native-whole/outline/outline/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-p003-review.png",
+      "sha256": "88a089e88c52278248c300104c061fbc33aced0d7d4fff1cc4e11f74c629af7a",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-native/review/review_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-p003-overlay.png",
+      "sha256": "63fd7629f222a535306766c7844d73ed41d83a3f47678b566cd394dfd6abdc1a",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-native/overlay/overlay_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-p003-raw.png",
+      "sha256": "97f88c2d302fca47ad147e5010221a9af8433b7bfea883baaff0c612b7baca1b",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-native-whole/nested/nested/rhwp_png/rhwp_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-p016-review.png",
+      "sha256": "8cee8c5e390aa1d46728b8e6981ca42ac1d410fac62b2d1ec1705676e48d67b7",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-native/review/review_016.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-p016-overlay.png",
+      "sha256": "5ff7a1f5de02f642a3c34ec33afa70d4d5ca5ec6426489952700861c6e71f45c",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-native/overlay/overlay_016.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-p016-raw.png",
+      "sha256": "2fdb80a485ff3663b17d0eb8e731f4baf5f2ca6ac55b57299eaebaa46f01a631",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-native-whole/nested/nested/rhwp_png/rhwp_016.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-nested-17.tsv",
+      "sha256": "e40e85e5a7350ae3f58dd71626f0e0b3302c909efa1a6e04c05dfa351487f6ad",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-wasm-whole/nested/nested/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-outline-9.tsv",
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-wasm-whole/outline/outline/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-p003-review.png",
+      "sha256": "82b54d9c3943b26b6f99f757363d4962b0a93bbebd902ae3af2c0f9deca08195",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-wasm/review/review_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-p003-overlay.png",
+      "sha256": "353ffd0b580f0fc98dfc3118e23e9b2076ff797d7495a77253b49431718a6791",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-wasm/overlay/overlay_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-p003-raw.png",
+      "sha256": "6ca6b4da4254b8623479daa1b26b9f3e7643257a1c7f2730d8fb21759f60b1ad",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-wasm-whole/nested/nested/rhwp_png/rhwp_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-p016-review.png",
+      "sha256": "b9cad85122710b8977185dbbd5f40913a977b26cfc3ee1ba3b37c67171776a13",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-wasm/review/review_016.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-p016-overlay.png",
+      "sha256": "efe633eed2f93da2119750f38cb674952e0b5238a207046e7d9a1776e0e89657",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-wasm/overlay/overlay_016.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-wasm-p016-raw.png",
+      "sha256": "7c58943037d6de3d848960b5a8899d6ac3b1bbc207c613ebb11cd52061b3a104",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-wasm-whole/nested/nested/rhwp_png/rhwp_016.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/before-native-p003-review.png",
+      "sha256": "e22805f168f628e7342685d5b4ba9102171ebea1fa5187b7d3295766b4c47d74",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/before-native/review/review_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/before-native-p003-overlay.png",
+      "sha256": "8aed8f00201a011653a6f167f5ec9948c61b8d19bfea54ac65a18491c477ae56",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/before-native/overlay/overlay_003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/after-native-p003-row-closeup.png",
+      "sha256": "b5a45f902bf20e2da7c4ddc69f08a9860d8990caba4cd48ada6a8b597737d681",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-review/after-native/target-row-closeup.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/independent-print-p003.png",
+      "sha256": "0993dfc34f606c53d49fc2cfb2e8a443a2b6d5894b08e6200872f5c4bc795b19",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-after-native-whole/nested/nested/pdf_png/pdf-003.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/nested3-pdf-source-row-origins.json",
+      "sha256": "9d66ee33972d862a12b9e6984cf3a58551afa7865f0a7823e984a021d102e230",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested3-pdf-source-row-origins.json"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/nested-condense25-coupled-native-comparison.json",
+      "sha256": "40287727337147a8dbca8e4f3c65a62cbf0591bcf9882796885eb6d021ca162c",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-coupled-native-comparison.json"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/nested-declared-word-space-budget/nested-condense25-paired-protected-comparison.json",
+      "sha256": "833d21ee22e906711fd1ff527efadb33046ab844419b14baef15dd30e156a162",
+      "producer_artifact": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-paired-protected-comparison.json"
+    }
+  ],
+  "regression_test": {
+    "path": "tests/cases/nested_declared_word_space_budget.rs",
+    "sha256": "9e4dcb96195ff4b7bb9e50559a9335e86b760a585725deaf14278e456686e78f",
+    "draft_red_green": [
+      {
+        "stage": "before",
+        "exit_code": 101,
+        "library": "librhwp-outline-justified-space.rlib",
+        "library_sha256": "7f3d556e98d2b1184ab110a63d2e3478f390e52959ca14369a178424a78fa1e6",
+        "test_sha256": "cc918fd1c4df555b777ff6394b43d48d8ffff3b96e81bfcc2f20eff83a7f6147"
+      },
+      {
+        "stage": "after",
+        "exit_code": 0,
+        "library": "librhwp-nested-condense25.rlib",
+        "library_sha256": "3c1acc0c03c7c1ca390049df42eee56a23e12df7d9c5795a417cee5285b71275",
+        "test_sha256": "cc918fd1c4df555b777ff6394b43d48d8ffff3b96e81bfcc2f20eff83a7f6147"
+      }
+    ],
+    "canonical_minimal_native_nextest": {
+      "state": "complete",
+      "pid": 25134,
+      "cases": [
+        {
+          "case": "nested_declared_word_space_budget",
+          "target": "regression_suite_001"
+        },
+        {
+          "case": "justified_dash_word_space_budget",
+          "target": "regression_suite_027"
+        },
+        {
+          "case": "hwp3_implicit_page_number_font",
+          "target": "regression_suite_005"
+        },
+        {
+          "case": "issue_7445_dash_leader_word_spacing",
+          "target": "regression_suite_009"
+        }
+      ],
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "target/pr-review",
+        "--features",
+        "native-skia",
+        "-j",
+        "8",
+        "--test",
+        "regression_suite_001",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_009",
+        "--test",
+        "regression_suite_027",
+        "-E",
+        "test(/(^|::)(nested_declared_word_space_budget|justified_dash_word_space_budget|hwp3_implicit_page_number_font|issue_7445_dash_leader_word_spacing)::/)"
+      ],
+      "head": "6785d48b0d91964e4678d755a46c3c0c35999403",
+      "sources": {
+        "src/renderer/layout/paragraph_layout.rs": "e506d006c5488e55241355957b6818d9e2a9cf654ed0f0e4579fa17bd54e1bda",
+        "src/renderer/layout/paragraph_layout/justification_spacing.rs": "f09b905009fddac7596ffcc10b1102974854a76a11fb411f5caf351d17f86901",
+        "tests/cases/nested_declared_word_space_budget.rs": "9e4dcb96195ff4b7bb9e50559a9335e86b760a585725deaf14278e456686e78f",
+        "tests/cases/justified_dash_word_space_budget.rs": "5416ed89054a2a5051055c3effc93e6c88fd9672b3f9b4c5707c81f0c08afac3",
+        "tests/cases/hwp3_implicit_page_number_font.rs": "008b22a2c6eb85c237147e875e8ac436e0e4e4d2e24f25b58b5870b9ac3f686e"
+      },
+      "child_pid": 25273,
+      "exit_code": 0,
+      "seconds": 212.34825737494975,
+      "summary": "9 PASS / 0 FAIL; 1337 selected-out",
+      "log_sha256": "b41ffb52aca4cfcadcf9e6b77f6b655eb3e8cd9a666b7afbe167791ed39d82a4"
+    },
+    "red_green_body_matches_registered_test": true,
+    "runtime_source_excluding_doc_comments_sha256": "afd7d1690f41965d120126ae46e84e04aa7383f95de70616d23e82fec16d4f6b"
+  },
+  "reference_png_provenance": {
+    "index_path": "output/pr-review/planet6897-integration-20261106/transfer-from-ubuntu/r46-reference-png-cache-96.json",
+    "index_sha256": "3c325ee8ba6f5bbd88f5ffa940ce7cb0d69e87a21075d8d7291e7da909f70e67",
+    "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+    "reuse": "PDF SHA와 전쪽 PNG SHA를 검증한 독립 Linux PDFium 기준 PNG 재사용; TSV는 현재 Native/fresh WASM 전쪽에서 각각 새로 산출"
+  },
+  "remaining": "sample10 WASM 및 sample16의 미세 보호값 하락, 최신 source 전체 회귀·전체 통합 corpus·필수 편람 gate·실제 소비 검증·PR 및 후속 처리. 기존 증거를 새 head 전체 통과로 재인용하지 않는다.",
+  "local_logs": [
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-native-build.log",
+      "sha256": "a6facb758746fd4d1d702efd394f21a7c0afb1982e206bcca6c110e9b9d1f44a"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-build.log",
+      "sha256": "214513ce3abeb9a48b9a357f4923ca5aab874e2e3274dab1d1d5dc33f8171706"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-browser-after.log",
+      "sha256": "48ee33ffad2c39d4b6fbe7ffe6d116d78563a1a1ab1a572b224dc2b89ae9b6ee"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-formal-before.log",
+      "sha256": "4c4e5f3c2664c95ed4c45d8f2eb20c67c36d3e6b8ff03eb7a69f91826a1e4d8e"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-formal-after.log",
+      "sha256": "546f5f88e26798befc05f1a39be9c9242bf7c18af33352f2280f9808d1a79939"
+    }
+  ],
+  "upstream_readonly_check": {
+    "sha": "06181802e574dbd91e62375536751dea8c270fcd",
+    "result": "remote head unchanged",
+    "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-upstream-head.txt"
+  },
+  "checks": {
+    "state": "complete",
+    "pid": 43690,
+    "checks": [
+      {
+        "label": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-fmt.log",
+        "state": "complete",
+        "pid": 43700,
+        "exit_code": 0,
+        "seconds": 15.886314499890432,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "label": "native-lib",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/full-minimal-font.sb",
+          "cargo",
+          "test",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "-j",
+          "8",
+          "--lib",
+          "--",
+          "--test-threads",
+          "8"
+        ],
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-native-lib.log",
+        "state": "complete",
+        "pid": 44786,
+        "exit_code": 0,
+        "seconds": 191.4960220840294,
+        "sha256": "2d77485e0757610f5ca32f2c168e36b19cba441fab8daf0a98447cb4577c6c42"
+      },
+      {
+        "label": "native-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--bin",
+          "rhwp",
+          "--test",
+          "regression_suite_001",
+          "--test",
+          "regression_suite_005",
+          "--test",
+          "regression_suite_009",
+          "--test",
+          "regression_suite_027",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-native-clippy.log",
+        "state": "complete",
+        "pid": 58554,
+        "exit_code": 0,
+        "seconds": 40.81697395793162,
+        "sha256": "c1c0b177a996144f6ee856dd1c53f31343d6e3c5f61347d8714be017dbf5e72b"
+      },
+      {
+        "label": "wasm-clippy",
+        "command": [
+          "cargo",
+          "clippy",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "target/pr-review",
+          "--target",
+          "wasm32-unknown-unknown",
+          "--lib",
+          "--",
+          "-D",
+          "warnings"
+        ],
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-clippy.log",
+        "state": "complete",
+        "pid": 61500,
+        "exit_code": 0,
+        "seconds": 46.66989858401939,
+        "sha256": "ebe14ee3076814fb3bf2888a14877dc47f64036f863e237368920398bd87bc2d"
+      },
+      {
+        "label": "manifest",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--check"
+        ],
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-manifest.log",
+        "state": "complete",
+        "pid": 64746,
+        "exit_code": 0,
+        "seconds": 3.868302207905799,
+        "sha256": "1916b86a13bbcb6fbfa8ac79e6f697f4f5c5e1868517cc54359f8e234cee4a06"
+      }
+    ]
+  },
+  "native_library_summaries": [
+    "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 11.78s",
+    "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+    "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+  ],
+  "markdown_links": {
+    "exit_code": 0,
+    "log": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-links.log",
+    "sha256": "9356c6fa972decbf8cbc7e22f2d405799d916e95212afc02690570af76dbc6fb"
+  },
+  "committed_input_audit": [
+    {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "head_blob_matches": true
+    },
+    {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "head_blob_matches": true
+    },
+    {
+      "path": "samples/task3307/issue3307_outline_number.hwpx",
+      "sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "head_blob_matches": true
+    },
+    {
+      "path": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "head_blob_matches": true
+    }
+  ]
+}

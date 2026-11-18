@@ -1,0 +1,133 @@
+{
+  "hancom_version": "11.0.0.9166",
+  "pdf_driver": "Hancom PDF 1.3.0.550",
+  "method": "HAction.Execute(Print, HParameterSet.HPrint.HSet)",
+  "settings": {
+    "PrinterName": "Hancom PDF",
+    "PrintMethod": 0,
+    "ZoomX": 100,
+    "ZoomY": 100,
+    "Range": 0,
+    "PrintToFile": 1,
+    "UseThread": 0
+  },
+  "edit": [
+    "Open original.hwp local copy",
+    "EditMode=1",
+    "SetPos(0,4,13)",
+    "HAction.Run(DeleteBack) -> True",
+    "HAction.Run(DeleteBack) -> True",
+    "SaveAs hancom-edited-expected.hwp HWP",
+    "HAction.Execute(Print) -> True"
+  ],
+  "expected_paragraph": "제 1조(상호) 본 는 {{COMPANY_NAME}} 라 한다.",
+  "pages": [
+    19,
+    19
+  ],
+  "comparison_at_dpi": 72,
+  "page_comparison": [
+    {
+      "page": 1,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 2,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 3,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 4,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 5,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 6,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 7,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 8,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 9,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 10,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 11,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 12,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 13,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 14,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 15,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 16,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 17,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 18,
+      "same_raster": true,
+      "same_text": true
+    },
+    {
+      "page": 19,
+      "same_raster": true,
+      "same_text": true
+    }
+  ],
+  "hashes": {
+    "hancom-edited-expected.hwp": "ddaa57c6af58cc577fd5e5816c6aeff312aeb1e852a8b6e643ff5f322eecb366",
+    "hancom-edited-expected-2020.pdf": "17e1d14b6a6eeb1f654ccba9c984004fc16dd8d7e3fd29eed5bc944f0e98a47d",
+    "native-delete.hwp": "d72724f4f85027f85d2bbbb200f10965f9e57934d5d667d777a85b90c21efa53",
+    "native-delete-2020.pdf": "5d1740c75674fb6c70968924dde286418cdf899e0ce62f112f62c172e67a8fc7"
+  },
+  "excluded_attempts": "hancom-delete*, hancom-delete-verified*, hancom-delete-oracle* are invalid preliminary read-only attempts and must not be used."
+}

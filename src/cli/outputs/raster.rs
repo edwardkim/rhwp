@@ -254,9 +254,40 @@ fn png_font_environment_metadata(
     core: &rhwp::DocumentCore,
     source_data: &[u8],
     supply: &super::OutputFontSupply,
+    observed: Option<&rhwp::renderer::skia::NativeFontFallbackReport>,
+    render_complete: bool,
 ) -> serde_json::Value {
     if let Some(report) = &supply.report {
         metadata["nativeFontSupply"] = report.clone();
+    }
+    if let Some(observed) = observed {
+        let metadata_only = metadata["metadataOnly"].as_bool() == Some(true);
+        if !metadata["nativeFontSupply"].is_object() {
+            metadata["nativeFontSupply"] = serde_json::json!({});
+        }
+        let report = &mut metadata["nativeFontSupply"];
+        let mut local = serde_json::json!(observed);
+        if metadata_only {
+            local["state"] = "notRendered".into();
+        } else if !render_complete {
+            local["state"] = "partial".into();
+        }
+        report["localFallbacks"] = local;
+        // Output metadata only: never feed observed choices back into the
+        // supply mappings that own layout and paint selection.
+        let mut generic: std::collections::BTreeSet<String> = report["genericFallbacks"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter_map(|value| value.as_str().map(str::to_owned))
+            .collect();
+        generic.extend(
+            observed
+                .records
+                .iter()
+                .map(|record| record.requested.clone()),
+        );
+        report["genericFallbacks"] = serde_json::json!(generic);
     }
     if let Some(environment) = core.resolved_font_environment() {
         metadata["fontEnvironment"] = serde_json::json!(environment);
@@ -356,7 +387,8 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         )
     } else {
         rhwp::document_core::queries::png_export::NativePngExporter::system_defaults()
-    };
+    }
+    .with_font_fallback_reporting(json);
 
     if let Err(error) = exporter.prepare_document(&mut core) {
         eprintln!("오류: 실제 PUA 글꼴 공급 실패: {error}");
@@ -405,7 +437,9 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
                     }),
                     &core,
                     &data,
-                    &font_supply
+                    &font_supply,
+                    exporter.font_fallback_report().as_ref(),
+                    false,
                 ),
                 "export-png"
             )
@@ -434,9 +468,9 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         match result {
             Ok(png_bytes) => {
                 let png_filename = if total_pages == 1 {
-                    format!("{}.png", file_stem)
+                    super::output_file_name(&file_stem, ".png")
                 } else {
-                    format!("{}_{:03}.png", file_stem, page_num + 1)
+                    super::output_file_name(&file_stem, &format!("_{:03}.png", page_num + 1))
                 };
                 let png_path = output_path.join(&png_filename);
                 if let Err(e) = fs::write(&png_path, &png_bytes) {
@@ -505,7 +539,9 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
                     }),
                     &core,
                     &data,
-                    &font_supply
+                    &font_supply,
+                    exporter.font_fallback_report().as_ref(),
+                    success == total_pages,
                 ),
                 "export-png"
             )

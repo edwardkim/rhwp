@@ -50,7 +50,7 @@ fn expand_pua_old_hangul(text: &str) -> String {
     out
 }
 use super::layout::{is_halfwidth_cjk_quote, split_into_clusters};
-use crate::model::style::{ImageFillMode, UnderlineType};
+use crate::model::style::{HatchStyle, ImageFillMode, UnderlineType};
 use base64::Engine;
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -187,6 +187,9 @@ pub struct SvgRenderer {
     /// 372.520px 로 보는데 레이아웃은 다음 run 을 372.853px 에 놓아, 조각 사이에
     /// 0.333px(0.25pt) 실틈이 남았다. bbox 는 `101.9+271.0=372.9` 로 정확히 이어진다.
     active_decoration_width: Option<f64>,
+    /// 직교 장치 선에만 raster 힌트를 전달한다. 그룹 변환을 벗어나면 이전 상태로 복원한다.
+    axis_stroke_hint_allowed: bool,
+    axis_stroke_hint_stack: Vec<bool>,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -280,6 +283,8 @@ impl SvgRenderer {
             active_decoration_trim: 0,
             suppress_text_glyphs: false,
             active_decoration_width: None,
+            axis_stroke_hint_allowed: true,
+            axis_stroke_hint_stack: Vec::new(),
         }
     }
 
@@ -334,6 +339,9 @@ impl SvgRenderer {
 
     /// 공통 그룹의 좌표계만 직렬화한다. 자식의 논리 bbox는 다시 배치하지 않는다.
     pub(super) fn begin_layer_transform(&mut self, [a, b, c, d, e, f]: [f64; 6]) {
+        self.axis_stroke_hint_stack
+            .push(self.axis_stroke_hint_allowed);
+        self.axis_stroke_hint_allowed &= (b == 0.0 && c == 0.0) || (a == 0.0 && d == 0.0);
         self.output.push_str(&format!(
             "<g transform=\"matrix({a} {b} {c} {d} {e} {f})\">\n"
         ));
@@ -341,6 +349,7 @@ impl SvgRenderer {
 
     pub(super) fn end_layer_transform(&mut self) {
         self.output.push_str("</g>\n");
+        self.axis_stroke_hint_allowed = self.axis_stroke_hint_stack.pop().unwrap_or(true);
     }
 
     /// Closes the SVG document consumed by direct `PageLayerTree` replay.
@@ -705,7 +714,12 @@ impl SvgRenderer {
             return 0;
         }
         if matches!(&node.node_type, RenderNodeType::MasterPage) {
-            return 1;
+            // 맨 위로 보내기 바탕쪽은 본문과 글 앞 개체 위에 그린다.
+            return if node.layer.is_some_and(|layer| layer.master_front) {
+                5
+            } else {
+                1
+            };
         }
         if let Some(layer) = node.layer {
             if let Some(text_wrap) = layer.text_wrap {
@@ -987,13 +1001,21 @@ impl SvgRenderer {
                 }
             }
             RenderNodeType::FootnoteMarker(marker) => {
-                let sup_size =
-                    super::render_tree::FootnoteMarkerNode::font_size(marker.base_font_size);
-                let color = color_to_svg(marker.color);
-                let font_family = if marker.font_family.is_empty() {
+                if let Some(run) = marker.source_run.as_deref() {
+                    self.render_node(&RenderNode::new(
+                        node.id,
+                        RenderNodeType::TextRun(run.clone()),
+                        node.bbox,
+                    ));
+                    return;
+                }
+                let style = marker.paint_style();
+                let sup_size = style.font_size;
+                let color = color_to_svg(style.color);
+                let font_family = if style.font_family.is_empty() {
                     "sans-serif"
                 } else {
-                    &marker.font_family
+                    &style.font_family
                 };
                 let y = node.bbox.y + marker.baseline;
                 self.output.push_str(&format!(
@@ -1021,9 +1043,12 @@ impl SvgRenderer {
             }
             RenderNodeType::Line(line) => {
                 self.open_shape_transform(&line.transform, &node.bbox);
+                let axis_hint = self.axis_stroke_hint_allowed;
+                self.axis_stroke_hint_allowed &= !line.transform.has_transform();
                 for stroke in line.paint_strokes() {
                     self.draw_line(stroke.x1, stroke.y1, stroke.x2, stroke.y2, &stroke.style);
                 }
+                self.axis_stroke_hint_allowed = axis_hint;
             }
             RenderNodeType::Ellipse(ellipse) => {
                 self.open_shape_transform(&ellipse.transform, &node.bbox);
@@ -1594,19 +1619,19 @@ impl SvgRenderer {
         let fg = color_to_svg(info.pattern_color);
         let sz = info.tile_size;
         let stroke = sz / 8.0;
-        // 독립 Print의 1~6 hatch: 쪽 원점에 고정한 8-dot/100dpi 무늬.
+        // 독립 Print의 0~5 hatch: 쪽 원점에 고정한 8-dot/100dpi 무늬.
         let horizontal = format!("<path d=\"M0 0H{sz}M0 {sz}H{sz}\"/>");
         let vertical = format!("<path d=\"M0 0V{sz}M{sz} 0V{sz}\"/>");
-        let slash = format!("<path d=\"M{sz} 0L0 {sz}\"/>");
-        let backslash = format!("<path d=\"M0 0L{sz} {sz}\"/>");
-        let lines = match info.pattern_type {
-            1 => horizontal,
-            2 => vertical,
-            3 => slash,
-            4 => backslash,
-            5 => format!("{horizontal}{vertical}"),
-            6 => format!("{slash}{backslash}"),
-            _ => String::new(),
+        let rising = format!("<path d=\"M{sz} 0L0 {sz}\"/>");
+        let falling = format!("<path d=\"M0 0L{sz} {sz}\"/>");
+        let lines = match HatchStyle::from_pattern_type(info.pattern_type) {
+            Some(HatchStyle::Horizontal) => horizontal,
+            Some(HatchStyle::Vertical) => vertical,
+            Some(HatchStyle::Falling) => falling,
+            Some(HatchStyle::Rising) => rising,
+            Some(HatchStyle::Cross) => format!("{horizontal}{vertical}"),
+            Some(HatchStyle::DiagonalCross) => format!("{rising}{falling}"),
+            None => String::new(),
         };
         let def = format!(
             "<pattern id=\"{id}\" patternUnits=\"userSpaceOnUse\" width=\"{sz}\" height=\"{sz}\"><rect width=\"{sz}\" height=\"{sz}\" fill=\"{bg}\"/><g fill=\"none\" stroke=\"{fg}\" stroke-width=\"{stroke}\">{lines}</g></pattern>\n"
@@ -2105,6 +2130,10 @@ impl SvgRenderer {
     ) {
         // 저장 자르기 선택이 비었으면 프레임만 점유하며 원본을 그리지 않는다.
         if img.crop.is_some_and(|(l, t, r, b)| r <= l || b <= t) {
+            return;
+        }
+        // 공통 인쇄 계약: 그림 미지정과 미해결 연결 그림의 편집용 대체 표시는 생략.
+        if img.is_nonprinting_picture_placeholder() && !self.show_missing_picture_placeholder {
             return;
         }
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.
@@ -3373,6 +3402,8 @@ impl Renderer for SvgRenderer {
         self.overlay_skip_depth = 0;
         self.overlay_page_section = -1;
         self.metric_faces.clear();
+        self.axis_stroke_hint_allowed = true;
+        self.axis_stroke_hint_stack.clear();
         // xmlns:xlink 필수: SVG 가 <img> 로 로드될 때(예: blob URL 미리보기)
         // 엄격한 XML 파싱으로 인해 xmlns:xlink 미선언 시 <image xlink:href=...> 가 무시됨.
         self.output.push_str(&format!(
@@ -3581,6 +3612,7 @@ impl Renderer for SvgRenderer {
             )
         };
 
+        let symbol_sources = super::implicit_symbol::sources(&metric_source, text);
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
         let metric_text = super::composer::display_projection_metric_text(
             &metric_source,
@@ -3679,6 +3711,15 @@ impl Renderer for SvgRenderer {
                             y - ink.above_baseline + dy, ink.radius_x, ink.radius_y, shadow_color));
                             continue;
                         }
+                    }
+                    if let Some((cx, cy, rx, ry)) =
+                        super::implicit_symbol::ink(symbol_sources.as_deref(), *char_idx, style)
+                    {
+                        self.output.push_str(&format!(
+                            "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" fill=\"{shadow_color}\"/>\n",
+                            x + cluster_x(*char_idx, cluster_str) + cx + dx, y + cy + dy,
+                        ));
+                        continue;
                     }
                     if is_middle_dot(cluster_str) {
                         let adv = cluster_advance(*char_idx, cluster_str);
@@ -3784,6 +3825,41 @@ impl Renderer for SvgRenderer {
                         self.draw_enclosed_pua(glyph, char_x, y, style, font_size);
                         continue;
                     }
+                }
+                if let Some((cx, cy, rx, ry)) =
+                    super::implicit_symbol::ink(symbol_sources.as_deref(), *char_idx, style)
+                {
+                    let char_x = x + cluster_x(*char_idx, cluster_str);
+                    if style.emboss || style.engrave {
+                        let offset = (font_size / 20.0).max(1.0);
+                        let (upper, lower) = if style.emboss {
+                            ("#ffffff", "#808080")
+                        } else {
+                            ("#808080", "#ffffff")
+                        };
+                        for (delta, fill) in [(-offset, upper), (offset, lower)] {
+                            self.output.push_str(&format!(
+                                "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" fill=\"{fill}\"/>\n",
+                                char_x + cx + delta, y + cy + delta,
+                            ));
+                        }
+                    }
+                    let fill = if outline_attrs.is_some() {
+                        "none"
+                    } else {
+                        &color
+                    };
+                    let attrs = attrs_for_cluster(cluster_str, fill);
+                    let outline = outline_attrs.as_deref().unwrap_or("");
+                    self.output.push_str(&format!(
+                        "<ellipse cx=\"{:.4}\" cy=\"{:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" {attrs}{outline}/>\n",
+                        char_x + cx, y + cy,
+                    ));
+                    self.output.push_str(&format!(
+                        "<text x=\"{char_x:.4}\" y=\"{y:.4}\" fill-opacity=\"0\">{}</text>\n",
+                        escape_xml(cluster_str),
+                    ));
+                    continue;
                 }
                 if let Some((cx, cy, rx, ry)) =
                     super::legacy_hft_bullet_geometry(cluster_str, style)
@@ -4209,6 +4285,23 @@ impl Renderer for SvgRenderer {
             "x1=\"{}\" y1=\"{}\" x2=\"{}\" y2=\"{}\" stroke=\"{}\" stroke-width=\"{}\"",
             lx1, ly1, lx2, ly2, color, width,
         );
+        if self.axis_stroke_hint_allowed
+            && !style.preserve_fractional_position
+            && style.dash_pattern.is_none()
+        {
+            let source = super::render_tree::LineNode::new(x1, y1, x2, y2, style.clone());
+            let raster = super::raster_stroke::raster_line_geometry(
+                &source,
+                [1.0, 0.0, 0.0, 1.0, 0.0, 0.0],
+                self.profile,
+                width,
+            );
+            if raster.4 > width {
+                // 원본 벡터 좌표·선폭은 그대로 두고 Print의 가는 직교선에만
+                // 브라우저의 장치 픽셀 coverage 처리를 요청한다.
+                attrs.push_str(" shape-rendering=\"crispEdges\"");
+            }
+        }
         if let Some(intervals) = &style.dash_pattern {
             attrs.push_str(&format!(
                 " stroke-dasharray=\"{}\"",
@@ -4598,6 +4691,9 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         "한컴 윤고딕 240" | "Haan YGodic 240" => {
             vec!["한컴 윤고딕 240", "Haan YGodic 240"]
         }
+        "한컴 윤고딕 250" | "Haan YGodic 250" => {
+            vec!["한컴 윤고딕 250", "Haan YGodic 250"]
+        }
         "맑은 고딕" => vec!["맑은 고딕", "Malgun Gothic"],
         "바탕" => vec!["바탕", "Batang"],
         "돋움" => vec!["돋움", "Dotum"],
@@ -4766,6 +4862,7 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         // 연결한다. 실제 face를 공급해도 영문 파일명 때문에 대체 글꼴을 고르면 안 된다.
         "한컴 윤고딕 230" | "Haan YGodic 230" => vec!["HANYGO230.ttf"],
         "한컴 윤고딕 240" | "Haan YGodic 240" => vec!["HANYGO240.ttf"],
+        "한컴 윤고딕 250" | "Haan YGodic 250" => vec!["HANYGO250.ttf"],
         // local()와 Full embed는 같은 원본 프로그램 우선순위를 사용한다.
         "한양중고딕" => vec!["H2GTRM.TTF", "HANDotum.ttf", "HDOTUM.TTF"],
         // [#6171] 한컴 Windows 설치본의 실제 파일명은 형제 항목(H2GTRM/H2MJSM)과 같은

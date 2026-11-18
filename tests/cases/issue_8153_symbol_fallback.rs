@@ -78,3 +78,84 @@ fn mapped_empty_symbols_use_real_fallback_without_changing_source_or_positions()
         "공급 정책은 원문/글꼴 선언/저장본을 바꾸지 않는다"
     );
 }
+
+// 관계형: 같은 주 프로그램의 결측 기호는 파일의 유형 선언 유무와 무관하게 같은 반각 칸에 그린다.
+// 주석 갱신: 2026-11-09T01:08:28+09:00. 실물 좌표를 고정하지 않는 합성 Native paint 검사다.
+// 관련 편람 HWP 198쪽 보정 전 raw: Native 99.71%, fresh WASM 99.68%. 독립 Print와 직접 판독 후 추가.
+// MIT 합성 TTF·CFF를 메모리에서만 공급하며 한컴·개인 글꼴이나 OS 설치에 의존하지 않는다.
+#[test]
+fn missing_primary_symbol_keeps_the_same_slot_with_unclassified_font_type() {
+    use rhwp::paint::{LayerNode, PageLayerTree, PaintOp};
+    use rhwp::renderer::native_pua_fonts::NativePuaFonts;
+    use rhwp::renderer::render_tree::{BoundingBox, TextRunNode};
+    use rhwp::renderer::TextStyle;
+
+    let primary = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
+    let fallback = symbol_font_program::mapped_program(
+        include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
+        &[('∙', 1)],
+    );
+    let renderer = SkiaLayerRenderer::new()
+        .try_with_font_data(&[primary.clone(), fallback.clone()])
+        .unwrap();
+    let family = "RHWP Equation Contract,RHWP HFT Outline Fixture";
+    let mut fonts = NativePuaFonts::default();
+    for declared_ttf in [false, true] {
+        fonts
+            .register_otf_for_source(family, false, false, declared_ttf, &primary, 0)
+            .unwrap();
+    }
+    // 유형 미상 공급은 실제 표시 후보도 적재한다. 뒤 CFF의 coverage는 주 TTF의 coverage가 아니다.
+    fonts
+        .register_otf_for_source(family, false, false, false, &fallback, 0)
+        .unwrap();
+    let render = |declared_ttf| {
+        let run = TextRunNode {
+            text: "∙".into(),
+            style: TextStyle {
+                font_family: family.into(),
+                font_size: 12.0,
+                color: 0,
+                letter_spacing: -0.4,
+                source_font_is_ttf: declared_ttf,
+                native_otf_metrics: fonts.get_otf_for_source(family, false, false, declared_ttf),
+                ..Default::default()
+            },
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 12.0,
+            field_marker: Default::default(),
+            layout_positions: Some(vec![0.0, 6.0]),
+            display_text: None,
+        };
+        let tree = PageLayerTree::new(
+            48.0,
+            32.0,
+            LayerNode::leaf(
+                BoundingBox::new(0.0, 0.0, 48.0, 32.0),
+                None,
+                vec![PaintOp::text_run(
+                    BoundingBox::new(20.0, 4.0, 6.0, 12.0),
+                    run,
+                )],
+            ),
+        );
+        renderer.render_png(&tree).unwrap()
+    };
+    let explicit = render(true);
+    let unclassified = render(false);
+    assert!(
+        unclassified == explicit,
+        "같은 실제 TTF 결측과 같은 fallback 잉크는 유형 선언만으로 원점이 달라지지 않는다"
+    );
+}

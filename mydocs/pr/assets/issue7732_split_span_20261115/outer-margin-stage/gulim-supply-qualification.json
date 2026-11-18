@@ -1,0 +1,46 @@
+{
+  "scope": "비교 진단만 수행. 대상 PDF의 FontFile2를 표시 프로그램 생성이나 렌더링 입력으로 사용하지 않는다. 실제 공급 파일은 win10-ted C:/Windows/Fonts/gulim.ttc의 원본이다.",
+  "pdf_revision": 5.029998779296875,
+  "windows_file_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+  "records": [
+    {
+      "source": "mac-previous-2.21",
+      "revision": 2.2100067138671875,
+      "checked": 366,
+      "same_outline_and_advance": 366,
+      "differences": [],
+      "missing": []
+    },
+    {
+      "source": "windows-original-5.03",
+      "revision": 5.029998779296875,
+      "checked": 366,
+      "same_outline_and_advance": 366,
+      "differences": [],
+      "missing": []
+    }
+  ],
+  "decision": "사용자 지시에 따라 추가 위치 질문을 중단했다. Native는 독립 Print의 366개 글리프 윤곽·전진폭과 revision이 일치하는 Windows 원본 5.03을 명시 공급했다. WASM은 기존 공급 TTF 2.21의 실제 선택을 기록하며, 이 프로그램도 같은 366개 글리프 대조에서 모두 일치한다.",
+  "unavailable_original_file_sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+  "file_identity": "기록된 원 TTC와 전체 파일 SHA가 같다고 주장하지 않는다. PDF 사용 글리프의 동일성·실제 공급 파일의 신원·최종 출력 판정은 별도 항목이다.",
+  "actual_supply": {
+    "native_file_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "source_host": "win10-ted",
+    "source_path": "C:/Windows/Fonts/gulim.ttc",
+    "font_binary_committed": false,
+    "wasm_selected_file_sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+    "wasm_selected_revision": "2.21",
+    "wasm_observation": "wasm-export-complete.json의 fontEnvironment와 worker 등록 기록에서 sweep-6ff0f495… 선택을 확인했다. 원 TTC 파일의 동일성이나 Native 5.03과 같은 버전을 선택했다고 주장하지 않는다."
+  },
+  "current_source": "2749e491e843ec851de12467751ec200ab551014",
+  "current_scope": {
+    "native_pages": 17,
+    "wasm_pages": 17,
+    "protected_decreases": 0,
+    "minimum_display_native": "99.86",
+    "minimum_display_wasm": "99.86",
+    "native_evidence": "native-after-result.json",
+    "wasm_evidence": "wasm-after-result.json"
+  },
+  "limits": "원본/PDF/문자/쪽수/보호 하한/계산법을 변경하지 않는다. 중첩 표17쪽의 증거이며 나머지3542행·실제 Studio·전체 회귀 통과를 대신하지 않는다."
+}

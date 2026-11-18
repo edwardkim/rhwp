@@ -180,6 +180,24 @@ impl TypesetEngine {
                     || (required.is_finite()
                         && avail_for_rows.is_finite()
                         && required - avail_for_rows <= roundoff);
+                // 이월 게이트가 첫 rowspan 묶음을 0행 뒤에서 자르기로 정했고 0행 칸들의
+                // 내용과 안 여백이 남은 공간에 들면, 0행은 선언이 넘쳐도 쪽 바닥에서 닫힌다
+                // (#8105 행 수용 규칙과 같은 계약). 걸친 병합 칸의 남은 선언은 다음 조각이
+                // 잇는다(한/글 2020: HPV 코호트 보고서 18쪽 9×9 표 0행 2500HU 가 2229HU 로
+                // 닫히고, 19쪽 첫 행은 병합 칸 5000HU 의 나머지 2771HU 다).
+                let opening_rest = (avail_for_rows - consumed - cs_before).max(0.0);
+                if !fits
+                    && r == 0
+                    && r == cursor_row
+                    && v.opening_block_cuts_after_first_row
+                    && mt.row_cells_content_fit(r, opening_rest)
+                {
+                    consumed += cs_before + opening_rest;
+                    r += 1;
+                    end_row = r;
+                    end_row_height_override = Some(opening_rest);
+                    return true;
+                }
                 if r == cursor_row || fits {
                     consumed += cs_before + h;
                     r += 1;
@@ -353,6 +371,65 @@ impl TypesetEngine {
                             r - 1, rest, visible_height, h
                         );
                         }
+                        return false;
+                    }
+                }
+                // [#8891] 표 중간에서 병합 칸이 **시작하는** 행. 그 칸의 저장 글줄이 칸 안에서 쪽
+                // 프레임을 다시 시작했다면(vpos 되감김) 저장본은 그 칸을 이 쪽 경계에서 나눴다.
+                // 이 행에서 닫히는 일반 칸 내용이 남은 공간에 들면 행을 쪽 바닥에서 닫고, 병합
+                // 칸의 나머지는 걸침 셀 원장이 다음 조각에 잇는다(한/글 2020: HPV 코호트 보고서
+                // 77쪽 구역 2 표 20행 선언 1650HU → 1560HU, 병합 칸 첫 줄만 77쪽). 되감김 기록이
+                // 없으면 내용이 들어도 행을 통째로 넘긴다(1480000-201900510 113쪽 27행).
+                if mt.allows_row_break_split()
+                    && can_intra_split
+                    && r > cursor_row
+                    && !has_prior_rowspan_cover
+                    && !row_has_nested
+                    && rest > 0.0
+                    && row_start_cut.is_empty()
+                    && table
+                        .cells
+                        .iter()
+                        .any(|cell| cell.row as usize == r && cell.row_span > 1)
+                {
+                    let table::scan::row::RowBandProbe {
+                        probe,
+                        visible_height,
+                    } = row_query.probe_band(row_start_cut, rest);
+                    let ordinary_fit = table
+                        .cells
+                        .iter()
+                        .filter(|cell| cell.row as usize == r && cell.row_span <= 1)
+                        .all(|cell| {
+                            mt.cells
+                                .iter()
+                                .find(|m| m.row == cell.row as usize && m.col == cell.col as usize)
+                                .is_some_and(|m| {
+                                    m.total_content_height + m.padding_top + m.padding_bottom < rest
+                                })
+                        });
+                    let span_records_page_reset = table
+                        .cells
+                        .iter()
+                        .filter(|cell| cell.row as usize == r && cell.row_span > 1)
+                        .any(|cell| {
+                            layout_engine.cell_records_internal_page_reset(cell, table, styles)
+                        });
+                    if std::env::var("RHWP_DIAG_SCAN").is_ok() {
+                        eprintln!(
+                            "DIAG_SCAN SPAN_OPEN_BAND r={r} h={h:.1} rest={rest:.1} visible={visible_height:.1} fully={} ordinary_fit={ordinary_fit} reset={span_records_page_reset}",
+                            probe.fully_consumed
+                        );
+                    }
+                    if span_records_page_reset
+                        && ordinary_fit
+                        && probe.fully_consumed
+                        && visible_height <= rest + 0.5
+                    {
+                        consumed += cs_before + rest;
+                        r += 1;
+                        end_row = r;
+                        end_row_height_override = Some(rest);
                         return false;
                     }
                 }

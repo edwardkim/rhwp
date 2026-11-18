@@ -1,0 +1,46 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "artifacts": [
+    {
+      "name": "rhwp-chrome-0.9.1.zip",
+      "bytes": 52191634,
+      "sha256": "e20d3ec0dc906d4381f612fb52dab06aeb27f6878cf4ccc76cb2bf6fcca957aa"
+    },
+    {
+      "name": "rhwp-core-0.9.1.tgz",
+      "bytes": 11869109,
+      "sha256": "f3171161e053da57ebda8b22763a2ae4233d421a2c99a0bf8f3db44c43c92798"
+    },
+    {
+      "name": "rhwp-edge-0.9.1.zip",
+      "bytes": 52191634,
+      "sha256": "e20d3ec0dc906d4381f612fb52dab06aeb27f6878cf4ccc76cb2bf6fcca957aa"
+    },
+    {
+      "name": "rhwp-editor-0.9.1.tgz",
+      "bytes": 26588,
+      "sha256": "27bd37112c7a12b99d068e360fb7ea8ffc08da875f38c25b9ce97459ae596b24"
+    },
+    {
+      "name": "rhwp-firefox-0.9.1.zip",
+      "bytes": 52187410,
+      "sha256": "302085a3fb7829b83f08ef70aa78280b9f4d2a29b3f07570271262e8e3f5a245"
+    },
+    {
+      "name": "rhwp-source-0.9.1-amo.zip",
+      "bytes": 52935796,
+      "sha256": "22410c6ae05d2f008c9d70c319279e2b14e694d10d08162cf63e7e490337d7dd"
+    },
+    {
+      "name": "rhwp-v0.9.1-linux-x86_64.tar.gz",
+      "bytes": 32625258,
+      "sha256": "295314771f9faa14c57a53f9c160f5029ba02ad93528e44aadeda200ff44181e"
+    },
+    {
+      "name": "rhwp-vscode-0.9.1.vsix",
+      "bytes": 26698974,
+      "sha256": "6a06c0c58d7f93cbf7dd286dde3f8baa4e6d251530b76e0d5cddcc48c985957e"
+    }
+  ],
+  "published": false
+}

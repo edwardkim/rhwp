@@ -1,0 +1,58 @@
+{
+  "scope": "two focus pages only, not full 64-page acceptance",
+  "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+  "base": "1e2488ebd432deb7c326be532f8a91945f260231",
+  "font": {
+    "source": "/Users/tsjang/Library/Fonts/gulim.TTC",
+    "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+    "reason": "source WMF LOGFONT16 families are System and 굴림체; narrow reconstructed pool lacks the original collection supplied to prior accepted WASM"
+  },
+  "records": [
+    {
+      "phase": "sample16-base-focus",
+      "pages": [
+        {
+          "page": 18,
+          "raw_match_percent": 77.59066,
+          "png_sha256": "a57d57d86e697ac65ee41e24f1e29d151a6e1ce3f681dd56e66a8ea37cba433e"
+        },
+        {
+          "page": 35,
+          "raw_match_percent": 82.46843,
+          "png_sha256": "1515e7f1ccee60d3a9da15c1a07d40cabe84a60354053f6386c11e3748b65dae"
+        }
+      ]
+    },
+    {
+      "phase": "sample16-gulim-focus",
+      "pages": [
+        {
+          "page": 18,
+          "raw_match_percent": 99.99065,
+          "png_sha256": "03420457f6116f803360578db9c1d85b45691ec5306fe8de2850bf7ea9430b11"
+        },
+        {
+          "page": 35,
+          "raw_match_percent": 100.0,
+          "png_sha256": "1a09c3d67e5308ba31560eb8b9ed83edfc3411cfb7c72e739e7e17c8b779676b"
+        }
+      ]
+    },
+    {
+      "phase": "sample16-base-gulim-focus",
+      "pages": [
+        {
+          "page": 18,
+          "raw_match_percent": 99.99065,
+          "png_sha256": "03420457f6116f803360578db9c1d85b45691ec5306fe8de2850bf7ea9430b11"
+        },
+        {
+          "page": 35,
+          "raw_match_percent": 100.0,
+          "png_sha256": "1a09c3d67e5308ba31560eb8b9ed83edfc3411cfb7c72e739e7e17c8b779676b"
+        }
+      ]
+    }
+  ],
+  "fixed_baseline_unchanged": true
+}

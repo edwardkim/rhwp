@@ -50,9 +50,15 @@ impl TypesetEngine {
         force_page_break: bool,
         storage: &S,
     ) -> Result<bool, S::Error> {
-        // 이 단계에서는 이미 확정한 각주 영역의 기존 빈 줄 이월만 준비한다.
-        // 새 물리 예약은 뒤의 실제 문단 원점 선택 후 paragraph::flow에서 조회한다.
-        st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi, |_| None);
+        // 조기 흡수 전에 실제 paint와 같은 각주 경계를 조회한다.
+        // 원본 프레임의 소속과 현재 fit을 분리하며 뒤 flow도 같은 예약을 소비한다.
+        st.prepare_saved_empty_run(para_idx, paragraphs, self.dpi, |st| {
+            crate::renderer::typeset::notes::footnotes::measure::BodyFootnoteMeasure {
+                engine: self,
+                styles,
+            }
+            .stored_current_area_height(st, paragraphs)
+        });
         if st.saved_empty_run_contains(para_idx) {
             // 실제 줄 상자를 fit/이월한다. 저장 reset 앞이라는 이유로
             // 줄의 물리 점유를 감추지 않는다.
@@ -286,10 +292,12 @@ impl TypesetEngine {
                 // 페이지 하단 vpos 를 가진 빈 문단이 다음 vpos=0 본문을 잇는 경우.
                 // fit 가능으로 emit 하더라도 뒤쪽 overflow 방어에서 빈 문단 단독 페이지로
                 // 이동할 수 있으므로, fit 판정 전에 0-높이로 흡수한다.
+                // 쪽 하단이라는 근거는 문서가 적어 둔 줄 위치다. 저장 줄이 없어 합성한
+                // 줄의 위치는 그 근거가 아니므로 실제 줄 상자로 fit 을 판정한다.
                 let page_bottom_empty_reset_bridge = para.line_segs.first().is_some_and(|seg| {
                     let body_h_hu =
                         crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
-                    seg.vertical_pos > body_h_hu * 70 / 100
+                    !is_synthetic_line_seg(seg) && seg.vertical_pos > body_h_hu * 70 / 100
                 });
                 if page_bottom_empty_reset_bridge {
                     st.hide_empty_paragraph_with_storage(para_idx, storage)?;

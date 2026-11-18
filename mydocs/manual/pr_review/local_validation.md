@@ -2,24 +2,47 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-18
+last_verified: 2026-11-16
 ---
 
 # 로컬 사전 검증
 
 이 가이드는 PR의 코드·sample·frontend 변경을 로컬에서 확인하는 절차다. **PR 제출 전에 4.3의
-변경 범위별 필수 검증과 해당 보조 절차를 빠짐없이 완료한다.** 기여자·메인터너·콜라보레이터 모두
-같은 기준을 적용한다. 실행 head·base SHA, 명령·환경·실제 결과와 증적을 PR 본문 또는 기존 검증
+변경 범위별 필수 검증과 해당 역할의 보조 절차를 빠짐없이 완료한다.** 일반 기여자의 제출 검증과
+통합 담당 collaborator·maintainer의 추가 검증을 구분한다. 실행 head·base SHA, 명령·환경·실제 결과와 증적을 PR 본문 또는 기존 검증
 기록에 연결한다. 비해당 항목은 변경 범위와 소비 경로를 근거로 구분하며, 실패·미실행 항목을
 비해당으로 바꾸거나 새 PR의 CI에 넘겨 제출 전 검증을 대신하지 않는다. 정본에서 허용한 동일
 code head의 기존 CI·증적 재사용은 그 조건을 확인해 기록한다.
 
-**조판에 영향을 주는 변경이 포함된 PR은 제출 전 최종 head에서 행정업무운영 편람 HWPX의
-Native 383쪽 검사를 실행하고 통과해야 한다.** 저장소 루트에서
+| 적용 역할 | 검증 책임 |
+| --- | --- |
+| 일반 사용자·외부 contributor | 변경 범위에 따른 일반 검증과 Native/fresh WASM 시각 증적 제출. 조판 영향 PR의 `--handbook-gate` 실행·통과도 포함한다. 비공개 원본 OTF 보유나 정본 보호 TSV 전체의 특별 하락 금지 검증은 제출 조건이 아니다. |
+| 통합 담당 collaborator·maintainer | 위 일반 검증에 더해 조판·렌더링 영향 PR의 정본 보호 TSV 전체에 대한 특별 하락 금지 검증을 완료한다. 이 특별 검증의 원본 글꼴 확보·환경 정합·보정·재검증도 통합 담당자의 책임이다. |
+
+**조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전 최종 head에서
+행정업무운영 편람 HWPX Native 383쪽 `--handbook-gate`를 실행하고 통과해야 한다.**
+필요한 글꼴은 지원 웹폰트 공급 경로를 사용할 수 있으므로 비공개 원본 OTF 보유를 요구하지 않는다. 저장소 루트에서
 `venv/bin/python scripts/visual_sweep.py --handbook-gate --out output/pr-review/<검증명>`을
-실행한다. 다른 Visual Sweep 실행에 같은 옵션을 추가해도 된다. 90% 미달, #8389의
-페이지별 기준 하락, 미실행·실패·누락·쪽수 불일치는 제출 보류다. 실행 head·명령·결과와
+실행한다. 다른 Visual Sweep 실행에 같은 옵션을 추가해도 된다. gate의 90%·페이지별 기준 하락
+검사 실패, 미실행·누락·쪽수 불일치는 제출 보류다. 실행 head·명령·결과와
 전체 TSV를 기록한다. 일반 Visual Sweep은 이 검사를 자동으로 반복하지 않는다.
+편람 gate와 별도로, [정본 보호 TSV 전체의 특별 하락 금지 검증](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)은
+통합 담당 collaborator·maintainer만 수행한다. 일반 기여자에게 비공개 원본 OTF 설치나 이 특별 검증의 재현을 요구하지 않는다.
+일반 시각 검증의 90%·쪽수·내용 보존과 페이지별 98% px 회귀 조건은 계속 적용한다.
+
+조판 영향 PR은 편람 검사와 함께 **기여자 공통 보호 검사**도 제출 전 최종 head에서 실행한다.
+공개 웹폰트로 재현을 확인한 4개 문서의 Native/fresh WASM을 한 번에 검사하며,
+입력·기존 Print PDF·측정 조건을 자동 선택한다. 한컴 설치·MCP·비공개 OTF는 필요하지 않다.
+[공통 검사 명령과 제출물](../verification/visual_sweep_guide.md#기여자-공통-보호-검사)을 따른다.
+두 경로의 전쪽 TSV와 대표 review·overlay를 제출하고, 실행 실패·누락·쪽수 불일치 또는
+해당 문서의 정본 raw 표시값 하락이면 제출을 보류한다. 이 검사는 변경 대상 문서 자체의
+시각 검증과 통합 담당자의 정본 전체 특별 검증을 대체하지 않는다.
+
+Mac에서 다른 호스트의 보호 결과를 비교할 때는
+[정본 글꼴 공급 재현 절차](../verification/visual_sweep_guide.md#macos에서-정본-보호-문서의-글꼴-공급-재현)에
+따라 누락된 기준 글꼴을 확보하고 SHA·face·대체 설정을 맞춘다. 보호 문서 Visual Sweep은
+필요한 기준 글꼴을 공급한 일반 환경에서, Rust 회귀는 아래 최소 글꼴 환경에서 실행한다.
+같은 Mac의 base에서도 하락이 재현된다는 사실만으로 보호 검증을 통과 처리하지 않는다.
 
 일반 제출은 **검증을 완료한 Open PR**로 한다. Draft는 미완성 설계·WIP의 조기 논의처럼 특별한
 목적을 명시한 경우에만 사용하며, 에이전트는 작업지시자의 명시적 Draft 지시가 있어야 생성한다.
@@ -130,6 +153,28 @@ find "${rhwp_review_source_dir:?기본 작업공간 경로를 먼저 고정하�
 pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
 ~~~
 
+### 편람 130쪽의 WMF 렌더링 차이
+
+여기서 130쪽은 TSV의 `page=130`, 즉 PDF의 130번째 쪽이며 지면에 인쇄된 쪽 번호는
+122다. 2026-11-07 완료한 전쪽 검증(96 DPI, 색상 경계 보정 전 2px 실루엣)의 실제 값은
+다음과 같다.
+
+| 원본 | Native raw | fresh WASM raw | 경계 보정 후 보조값 |
+| --- | ---: | ---: | ---: |
+| 편람 HWP | 99.96% | 99.96% | 양쪽 99.97% |
+| 편람 HWPX | 99.96% | 99.96% | 양쪽 99.97% |
+
+HWP/HWPX의 Native·fresh WASM 네 결과 모두 **나머지 382쪽은 raw 100.00%**다.
+일반 기여자를 포함한 편람 `--handbook-gate`는 이 중 HWPX Native의 383쪽을 선택하여
+나머지 382쪽의 100.00%와 130쪽의 raw 99.96% 대비 하락이 없는지 확인한다. 필요한 글꼴은
+지원 웹폰트 공급 경로를 사용할 수 있다. HWP·fresh WASM 및 다른 문서까지 정본 전체를
+대조하는 특별 하락 금지 검증은 통합 담당 collaborator·maintainer가 별도로 수행한다.
+
+행정업무운영 편람의 이 쪽에는 알려진 WMF 렌더링 차이가 있다. 이 WMF 영역을 독립 한컴
+Print와 100% 일치시키는 보정을 이번 PR 검증의 완료 조건으로 요구하지 않으며, 100%를
+강제하는 회귀 기대값도 추가하지 않는다. 130쪽은 전쪽 TSV에 포함하고 실제 raw와
+review·overlay에서 확인한 WMF 차이를 그대로 기록한다.
+
 ### 리베이스로 반영한 PR의 기능 보존 검증
 
 리베이스 뒤에는 현재 작업의 개선과 **새 기준에서 들어온 PR의 기능 유지·개선**을 함께 확인한다.
@@ -156,6 +201,12 @@ pgrep -alf '(^|/)(cargo|rustc|wasm-pack)( |$)' || true
    유지/개선/후퇴/미검증 → 보정·재검증 결과`를 연결한다. 리베이스 전 실행은 출처 기록이며 새
    후보의 검증으로 표시하지 않는다. 실행으로 확인한 후퇴와 필수 증거 부족을 구분하고, 어느 쪽이든
    해소 전에는 준비 완료·새 PR 생성·승인·통합을 보류한다. 별도 보고서 파일을 중복 작성할 필요는 없다.
+
+collaborator·maintainer는 이 기능 보존 검증에
+[정본 보호 TSV의 공식 두 자리 표시값 보존](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도
+적용한다. 일반 사용자·외부 contributor에게 원본 OTF 설치나 이 특별 보호 검증의 재현을 요구하지 않는다.
+수용한 최종 전쪽 검증에서 공식 표시값이 상승하면 위 정본 절차에 따라 보호 하한도 상향하고,
+이후 검증에 갱신한 TSV와 manifest를 사용한다.
 
 ### 고정 review target과 실행 환경
 
@@ -448,14 +499,50 @@ git status --short --branch
 
 ## 4.2 merge simulation
 
+새 PR 제출 후보는 최신 base와의 병합뿐 아니라 **리뷰어가 지정되지 않은 본인 계정의 기존
+열린 PR 전체와의 병합도 생성 전에 시뮬레이션한다.** 이미 리뷰어가 지정된 PR은 작업 중이므로
+제외하고 근거를 기록한다. 리뷰어 미지정 Draft는 포함하며 각 대상 PR의 최신 head를 fetch해
+고정하고 후보와 개별 비교한다. 함께 통합할 대상 PR은 예정 순서의 누적 결과도 확인한다.
+대상 조회·갱신·제출 보류 조건은
+[제출 전 병합 시뮬레이션](../codex/docs_and_git_workflow.md#4-제출-후보와-본인-열린-pr의-병합-시뮬레이션)을 따른다.
+
+현재 작업 트리와 원 PR branch를 건드리지 않는 기본 경로는 다음과 같다. `head SHA`가
+가리키는 정확한 commit을 사용하며, 기존 PR을 실제로 merge하거나 push하는 명령이 아니다.
+
+~~~bash
+# 후보와 최신 base, 각 기존 PR의 fetch·SHA 확인 후 실행한다.
+rhwp_merge_log_dir="output/pr-review/<review-id>/logs"
+mkdir -p "$rhwp_merge_log_dir"
+git merge-tree --write-tree \
+  "${rhwp_review_base_sha:?최신 base SHA를 먼저 고정하세요}" \
+  "${rhwp_review_candidate_sha:?제출 후보 SHA를 먼저 고정하세요}" \
+  > "$rhwp_merge_log_dir/candidate-base-merge-tree.log" 2>&1
+
+# 본인의 리뷰어 미지정 열린 PR마다 반복한다. 각 실행의 종료 코드를 확인하고 기록한다.
+git merge-tree --write-tree \
+  "$rhwp_review_candidate_sha" \
+  "${rhwp_existing_pr_head_sha:?기존 PR 최신 head SHA를 먼저 고정하세요}" \
+  > "$rhwp_merge_log_dir/pr-${rhwp_existing_pr_number:?기존 PR 번호를 먼저 지정하세요}-merge-tree.log" 2>&1
+~~~
+
+종료 코드 0은 충돌 없음, 1은 병합 충돌이며 그 밖의 실패도 제출을 막는다. 첫 검사부터
+결과를 판정하고 실패한 상태에서 다음 명령으로 덮어쓰지 않는다. 로그에 기록된 tree SHA만
+보고 성공으로 처리하지 않는다. PR별 SHA·명령·종료 코드·충돌 파일·로그를 기존 검토 기록에
+남기고, 생성 직전 목록이나 SHA가 바뀌면 영향을 받는 검사를 다시 실행한다.
+
+실제 merge 상태와 결과 tree를 더 조사해야 할 때만 작업 전용 임시 worktree에서 다음 경로를
+사용한다. 현재 구현·검증 작업 트리에서 직접 실행하지 않는다.
+
 ~~~bash
 git switch -c prN-merge-test upstream/devel
 git merge local/prN --no-commit --no-ff
 git status
 ~~~
 
-devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict 해결 방침은 작업지시자 결정이
-필요하다. 여러 PR의 누적 검토는 [다수 PR과 update branch](multi_pr_update_branch.md)를 따른다.
+devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. 승인된 보정 범위에서는 양쪽 기능을
+보존해 충돌을 해소하고 영향 검증과 시뮬레이션을 다시 수행한다. 원격 변경과 범위 밖의 추가
+조치는 기존 승인 절차를 따른다. 여러 PR의 누적 검토는
+[다수 PR과 update branch](multi_pr_update_branch.md)를 따른다.
 
 ## 4.3 변경 범위별 기본 검증
 
@@ -541,6 +628,26 @@ python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'
 이 묶음은 archive consumer, CI impact, CodeQL, adapter, proptest, reusable workflow의
 상호 계약을 함께 검사한다. 따라서 새 archive label이나 reusable input을 추가한 PR은
 GitHub CI에서가 아니라 PR을 열기 전에 누락된 consumer를 발견해야 한다.
+
+### 편집·저장·열기 기능의 실제 경로와 반복 저장 검증
+
+이 절은 **일반 기여자·메인터너·콜라보레이터 모두에게, 리베이스 여부와 관계없이 적용한다.**
+새 기능과 기존 기능 보정 모두 변경한 제품 진입점에서 실제 동작을 검증한다. 내부 helper나 모델 값,
+컴파일·전체 CI 통과만으로 편집·저장·열기 경로의 검증을 대신하지 않는다.
+
+- 저장 결과에 영향을 주는 API·파서·직렬화·편집 변경은 대표 입력에서
+  **편집 → 저장 → 다시 열기 → 재저장 → 다시 열기**를 실행한다. 최초 저장의 재로드뿐 아니라
+  재로드한 모델을 다시 저장한 뒤에도 변경한 속성·내용과 기존 개체·목록·참조 관계가 보존되어야 한다.
+- 지원하는 HWP/HWPX 저장 형식을 각각 확인한다. 형식 간 저장 경로를 변경했다면 해당 교차 저장도
+  포함한다. 같은 저장 영역이나 자원을 공유하는 기능은 함께 사용한 입력과 정상 대조군을 확인한다.
+- 중요한 경계는 실제 공개 API·저장기·파서를 호출하는 자동 회귀 검사로 남긴다. 기대값은 독립 형식
+  계약이나 유효한 저장본에서 정하며, 구현의 현재 출력을 그대로 기대값으로 복사하지 않는다.
+- PR 본문 또는 기존 검증 기록에 입력·실행 경로·source SHA·명령·결과와 내용 보존 판정을 적는다.
+  일반 기여자에게 별도 내부 review 문서 작성을 요구하지 않는다. 저장에 영향이 없는 변경은 실제
+  소비 경로를 근거로 비해당 사유를 기록한다. 조판 영향이 있으면 기존 시각 검증도 함께 완료한다.
+
+[리베이스로 반영한 PR의 기능 보존 검증](#리베이스로-반영한-pr의-기능-보존-검증)은 여기에 더해
+새 devel에서 들어온 기능과 현재 변경의 공존을 확인하는 추가 절차다.
 
 ### 4.3.0.0 상수·정책·호출 경로 변경의 동작 기반 회귀 검증
 

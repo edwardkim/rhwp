@@ -1,0 +1,189 @@
+{
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "complete": true,
+  "documents": 18,
+  "pages": 1771,
+  "baseline_sha256": "ee41455cf7f05585487d92961ccb9fd8160d5d1e15c3567019ea89e2b7bf2aeb",
+  "records": [
+    {
+      "document_id": "941fe0c3549c0017",
+      "key": "pr8787-handbook",
+      "pages": 383,
+      "minimum": 99.96,
+      "protected_regressions": [],
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-native-handbook/required-handbook-8153-native"
+    },
+    {
+      "document_id": "0b7e7d0538284271",
+      "key": "protected-yeongwol",
+      "pages": 4,
+      "minimum": 99.97,
+      "protected_regressions": [],
+      "sha256": "5de108049ba0a379661528b9b79ccd368052aa5a886bb564aac4ca91afda75e7",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-yeongwol"
+    },
+    {
+      "document_id": "2b43ec3782a748e1",
+      "key": "protected-seo-body-list-typed",
+      "pages": 1,
+      "minimum": 100.0,
+      "protected_regressions": [],
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-seo-body-list-typed"
+    },
+    {
+      "document_id": "2fb2575d58042dcf",
+      "key": "protected-handbook-hwp",
+      "pages": 383,
+      "minimum": 99.96,
+      "protected_regressions": [],
+      "sha256": "d5006cd9110c1247282aa5627f1728d9c751c3212925204582b9b40f39900308",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-handbook-hwp"
+    },
+    {
+      "document_id": "4314830495cfde87",
+      "key": "protected-seo-helvetica-styles",
+      "pages": 1,
+      "minimum": 99.25,
+      "protected_regressions": [],
+      "sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-seo-helvetica-styles"
+    },
+    {
+      "document_id": "43c0a207f6daa0bb",
+      "key": "protected-sample16-hwpx",
+      "pages": 64,
+      "minimum": 99.99,
+      "protected_regressions": [],
+      "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-sample16-hwpx"
+    },
+    {
+      "document_id": "4bac5a5d1702df5f",
+      "key": "protected-sample16-hwp2022",
+      "pages": 64,
+      "minimum": 100.0,
+      "protected_regressions": [],
+      "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-sample16-hwp2022"
+    },
+    {
+      "document_id": "52ee61fe7201e36b",
+      "key": "protected-seo-re-03-latin",
+      "pages": 1,
+      "minimum": 100.0,
+      "protected_regressions": [],
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-seo-re-03-latin"
+    },
+    {
+      "document_id": "59f6ab1155623bda",
+      "key": "protected-angle-narrow",
+      "pages": 1,
+      "minimum": 100.0,
+      "protected_regressions": [],
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-angle-narrow"
+    },
+    {
+      "document_id": "69bcf084e2ae31a5",
+      "key": "protected-outline",
+      "pages": 9,
+      "minimum": 100.0,
+      "protected_regressions": [],
+      "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-outline"
+    },
+    {
+      "document_id": "71f98206e45c354a",
+      "key": "protected-issue8040-insert",
+      "pages": 4,
+      "minimum": 99.99,
+      "protected_regressions": [],
+      "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-issue8040-insert"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "protected-nested",
+      "pages": 17,
+      "minimum": 98.36,
+      "protected_regressions": [],
+      "sha256": "6a6875506e6e2ba55840603a4853f7aa19547813c2b2d2ddf4047d3bff4cf40d",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-nested"
+    },
+    {
+      "document_id": "7df4af8174abd82a",
+      "key": "protected-sample16-hwp2024",
+      "pages": 64,
+      "minimum": 99.99,
+      "protected_regressions": [],
+      "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-sample16-hwp2024"
+    },
+    {
+      "document_id": "a8e95b4accc79fa8",
+      "key": "protected-issue7905",
+      "pages": 6,
+      "minimum": 98.86,
+      "protected_regressions": [],
+      "sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-issue7905"
+    },
+    {
+      "document_id": "b1a9055c4c7e6f09",
+      "key": "protected-sample10",
+      "pages": 763,
+      "minimum": 99.56,
+      "protected_regressions": [],
+      "sha256": "712a287536ded13276b98665341c1ca0e5420a81a82310f5d9cdf7de30f94363",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-sample10"
+    },
+    {
+      "document_id": "ccd0cd0b7e76fe2f",
+      "key": "protected-issue8040-insert-delete",
+      "pages": 4,
+      "minimum": 99.99,
+      "protected_regressions": [],
+      "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-issue8040-insert-delete"
+    },
+    {
+      "document_id": "cdacd874b6e6ac66",
+      "key": "protected-seo-pic-crop-01",
+      "pages": 1,
+      "minimum": 100.0,
+      "protected_regressions": [],
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-seo-pic-crop-01"
+    },
+    {
+      "document_id": "d03a9dde3d5dc7ac",
+      "key": "protected-seo-shape-group-02",
+      "pages": 1,
+      "minimum": 100.0,
+      "protected_regressions": [],
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "producer": "../../code-source-association.json",
+      "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-native/protected-seo-shape-group-02"
+    }
+  ]
+}

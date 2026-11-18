@@ -99,6 +99,7 @@ pub(super) fn edited_picture_requires_transition(
     current_height: f64,
     dpi: f64,
     available_height: impl Fn() -> f64,
+    object_has_separate_page: impl Fn(&Control) -> bool,
 ) -> bool {
     // [편집 세션] vert=Para 자리차지 그림의 하단 요구를 문단 fit 에 반영한다.
     // 그림은 문단 y + vertical_offset + 높이까지 차지하는데, 줄 기반 fit 은
@@ -109,6 +110,10 @@ pub(super) fn edited_picture_requires_transition(
         let para_float_bottom_req = para
             .controls
             .iter()
+            // 쪽 영역 제한에 따라 개체만 다음 쪽을 소유하는 경우에는 호스트
+            // 글줄의 fit에 그 개체 높이를 다시 더하지 않는다. 실제 control
+            // 배치와 같은 이월 계획으로 판단한다(#8660).
+            .filter(|control| !object_has_separate_page(control))
             .filter_map(|c| match c {
                 Control::Picture(p)
                     if !p.common.treat_as_char

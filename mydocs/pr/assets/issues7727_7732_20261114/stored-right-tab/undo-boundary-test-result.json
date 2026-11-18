@@ -1,0 +1,26 @@
+[
+  {
+    "key": "undo-boundary-after",
+    "source": "tests/cases/issue_7727_stored_right_tab_advance.rs",
+    "source_sha256": "fc888de6f539dada636d7e3c56cdeea637a31aead11fa673416ab08680bc4c13",
+    "library_sha256": "9766cf31c2ef0279215750cbc51de1d5b58952a358c367fb4ec12fb8a12a12ea",
+    "exit_code": 0,
+    "seconds": 5.419
+  },
+  {
+    "key": "legacy-2342-after",
+    "source": "tests/issue_2342_cell_merge_para_meta.rs",
+    "source_sha256": "1ccbc6455839fdc0459c680a65c40595fc391833bcd9f1daf86b646cf0ed214f",
+    "library_sha256": "9766cf31c2ef0279215750cbc51de1d5b58952a358c367fb4ec12fb8a12a12ea",
+    "exit_code": 0,
+    "seconds": 0.563
+  },
+  {
+    "key": "6844-owned-bbox-undo-after",
+    "source": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+    "source_sha256": "baa7e1411fc749c1083bc0fd5c5fb96dc2ec239a62e1580da98057a9ee0085bf",
+    "library_sha256": "9766cf31c2ef0279215750cbc51de1d5b58952a358c367fb4ec12fb8a12a12ea",
+    "exit_code": 0,
+    "seconds": 0.687
+  }
+]

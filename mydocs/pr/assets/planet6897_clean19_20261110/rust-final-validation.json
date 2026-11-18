@@ -1,0 +1,433 @@
+{
+  "complete": true,
+  "phase": "complete",
+  "runs": [
+    {
+      "name": "native-skia-lib",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/minimal-font/minimal-font.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "-j",
+        "8",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "started_at": "2026-11-11T01:05:52.427564+09:00",
+      "pid": 39370,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:10:24.157847+09:00"
+    },
+    {
+      "name": "native-skia-missing-picture",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/minimal-font/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "started_at": "2026-11-11T01:10:24.158351+09:00",
+      "pid": 56831,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:10:48.381391+09:00"
+    },
+    {
+      "name": "native-skia-direct-pdf",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/minimal-font/minimal-font.sb",
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "started_at": "2026-11-11T01:10:48.381626+09:00",
+      "pid": 58658,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:11:08.790226+09:00"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "started_at": "2026-11-11T01:11:08.790465+09:00",
+      "pid": 60127,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:11:28.612857+09:00"
+    },
+    {
+      "name": "diff",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-11-11T01:11:28.613232+09:00",
+      "pid": 61558,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:11:28.904532+09:00"
+    },
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-11T01:11:28.904824+09:00",
+      "pid": 61561,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:12:06.954071+09:00"
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-11T01:12:06.954663+09:00",
+      "pid": 63813,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:12:37.365641+09:00"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "started_at": "2026-11-11T01:12:37.366172+09:00",
+      "pid": 65809,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:13:41.504087+09:00"
+    },
+    {
+      "name": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "started_at": "2026-11-11T01:13:41.504889+09:00",
+      "pid": 70176,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:15:02.992016+09:00",
+      "log": "output/pr-review/planet6897-clean20-integration-20261110/logs/final-v5-clippy-all-targets-before-regeneration.log",
+      "attempt": 1
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "5ea1227505978156082121f1601cb03044a0583f"
+      ],
+      "started_at": "2026-11-11T01:15:02.994548+09:00",
+      "pid": 75207,
+      "exit_code": 1,
+      "finished_at": "2026-11-11T01:15:15.273193+09:00",
+      "log": "output/pr-review/planet6897-clean20-integration-20261110/logs/final-v5-manifest-before-regeneration.log",
+      "attempt": 1
+    },
+    {
+      "name": "clippy-all-targets",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "log": "output/pr-review/planet6897-clean20-integration-20261110/logs/final-v5-clippy-all-targets.log",
+      "attempt": 2,
+      "started_at": "2026-11-11T01:17:49.199591+09:00",
+      "pid": 86188,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:18:17.445611+09:00"
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "5ea1227505978156082121f1601cb03044a0583f"
+      ],
+      "log": "output/pr-review/planet6897-clean20-integration-20261110/logs/final-v5-manifest.log",
+      "attempt": 2,
+      "started_at": "2026-11-11T01:18:17.446221+09:00",
+      "pid": 88128,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:18:19.615494+09:00"
+    },
+    {
+      "name": "unit-tiers",
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "5ea1227505978156082121f1601cb03044a0583f"
+      ],
+      "log": "output/pr-review/planet6897-clean20-integration-20261110/logs/final-v5-unit-tiers.log",
+      "attempt": 1,
+      "started_at": "2026-11-11T01:18:19.616047+09:00",
+      "pid": 88212,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:18:51.507141+09:00"
+    },
+    {
+      "name": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/minimal-font/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--tests",
+        "--build-jobs",
+        "8",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "log": "output/pr-review/planet6897-clean20-integration-20261110/logs/final-v5-full-nextest.log",
+      "attempt": 1,
+      "started_at": "2026-11-11T01:18:51.508289+09:00",
+      "pid": 92037,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:42:01.633796+09:00"
+    },
+    {
+      "name": "doc-tests",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/minimal-font/minimal-font.sb",
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "log": "output/pr-review/planet6897-clean20-integration-20261110/logs/final-v5-doc-tests.log",
+      "attempt": 1,
+      "started_at": "2026-11-11T01:42:01.670059+09:00",
+      "pid": 96097,
+      "exit_code": 0,
+      "finished_at": "2026-11-11T01:43:09.615043+09:00"
+    }
+  ],
+  "parent_head": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "source_hashes": {
+    "src/document_core/queries/rendering.rs": "c1b43a62d9a6aa730c9dfddd17145b798018b46a34fb4cdf28e19b004a74fe42",
+    "src/paint/builder.rs": "966701b7a6fb94b546aa33c9cf49d5057c215d56d24b76da775f20b468fc95ac",
+    "src/parser/hwp3/mod.rs": "eecb17a72eaba544d2afbaa7b1aa21c736fbefb5c54fe52bf4d4ac1a920eea84",
+    "src/renderer/composer/line_breaking.rs": "6e6f2c7ba5f795e83f8643d4bf7c282f1c020b0556eac77664480a3b1fb701cf",
+    "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8",
+    "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+    "src/renderer/float_placement.rs": "836ab234a5035f093d218cdfc296f7e6d7bcf047f15e23557687dd8009cbeee8",
+    "src/renderer/float_placement/square_lane.rs": "2d29eb142a8adf351bc00d7bef132b56b8dd3560b56d595f94fb481f0cd0834b",
+    "src/renderer/float_placement/stored_square_top_band.rs": "55f1353be64100d0edaf9894d4e85a8c08b01dd11da619bd0af2e4a2b6d5db5c",
+    "src/renderer/height_measurer.rs": "8ad30b462ac0e7ec4e81e7a1cf46cd950edd25a301aaa17b147749bc363580db",
+    "src/renderer/layout.rs": "7723e9e3508d13e2cfbf645679c4e99d6902e2aed28b94058ac2fb459342f202",
+    "src/renderer/layout/paragraph_layout.rs": "b9a757e5bd258c134075202598a9eb3408e61df7313560c52c9809854082124f",
+    "src/renderer/layout/shape_layout.rs": "afc8da8da519faa674b2b6b36d530edd21b0d6648be0f10b2687f4754f93018d",
+    "src/renderer/layout/stored_tac_frame.rs": "325f0a1ed57eda8e61f3b3fbefac9ceb99c40be013f54909b7c1dc28d9ded5ea",
+    "src/renderer/layout/table_layout.rs": "60e94b774ff8ae5738d68d298aefd7f968e13a78ffe720c07c65e2c7615e626d",
+    "src/renderer/mod.rs": "259a54bef6781c60476ba7e6b46492a2e9ed508615107cd63fc609f9b55eb603",
+    "src/renderer/pagination.rs": "c3cb2acda1f75ad9a9538c8d3686394593de08df7e3dd279a5f00191204c03ea",
+    "src/renderer/render_tree.rs": "f5adc25d468bec605aa7f3d917d46d307b2a6ac1abf62ca2f7917b7e215bef1e",
+    "src/renderer/svg.rs": "4de706badd8164210757f5bb5f5077edbb47cb50e2174197403c1903563052bc",
+    "src/renderer/typeset.rs": "e3d513b8acfead7e5fd2d4e36eab65de6159b54f96b92a8df510d584803d137c",
+    "src/renderer/typeset/controls/deferred_picture.rs": "44f6fbbd5d54f8e5be275c881a9ada93b4fb1e0d82592b3571176448f05ce710",
+    "src/renderer/typeset/controls/host_wrap.rs": "fb80c43d2b01717e53b2c44cf9ccebd62afcfd98c86be50cf96396b11a5bd677",
+    "src/renderer/typeset/controls/stored_tac.rs": "b08e2c2501abc268d7647f299129f4b93d110dcf597855e7e16f2e5a17f806f6",
+    "src/renderer/typeset/controls/tac_fit.rs": "efec0181ba25c2f2ccc9a8629d1bfe268dac9251d2105824042840e721d1fed6",
+    "src/renderer/typeset/controls/wrap_absorption.rs": "1aa0fdd8a8366b8387c9a7d90eda9a75a7704f46a241524f00e55ea55c227ee3",
+    "src/renderer/typeset/controls/wrap_flow.rs": "175fd74ff3491c7dfe6a0ffd6e85195c11079c6b51c418d1445fe70cf85bed78",
+    "src/renderer/typeset/controls/wrap_match.rs": "6d0a6f49c0f26f53fbb321a6ba69c124a9f1ad051b5b416d8a608ec6f80819a7",
+    "src/renderer/typeset/paragraph.rs": "cbc38ba38a69b2ede303ca1ce9df7a65b44b37b5f71d7d6442d48ba668c0e385",
+    "src/renderer/typeset/paragraph/content.rs": "894dd06bb33acd4151e1c44e187b6f12103870c24eac14d9e38e36999523c5fc",
+    "src/renderer/typeset/paragraph/format.rs": "c95b71c449b9a08f028fbc9890cbba15c2d94d4a63a07f4a766a6230597a698a",
+    "src/renderer/typeset/paragraph/placement.rs": "564d2459e485735a05b871d5695a33a4cb10eba81eefc29122168447e4aa6670",
+    "src/renderer/typeset/section.rs": "25caa0b783ce499d1887e1ad8c45ffd11906dd3db3b86ac1134900b543c5f450",
+    "src/renderer/typeset/section/controls.rs": "a896e9f643f8db70cf5d1c3b7d014cb491e16265f35c4cc0cbb4273d5287ac4c",
+    "src/renderer/typeset/section/flow.rs": "ae3ede44081d412e9d7fa10da9c03cca1d3b3d16222cf3a2272301cb0b78e852",
+    "src/renderer/typeset/section/post_flow.rs": "579b189656d839f11795c6643f3a35692a266412d37e7af5ee076d8a70e86b78",
+    "src/renderer/typeset/state.rs": "3ac568f6d7e4b724ac0febe8d4c4136c92832513a23dc7cea0a9c94b5762dfc7",
+    "src/renderer/typeset/state/commands.rs": "55ed99145004bca61817457f58f45f8cb1a8f257950ff6559f9de8e7af46468b",
+    "src/renderer/typeset/state/data.rs": "5e5dc6c299f2aed57b64adda922c1961938e0a0b1d490ae358fb67f75c150e89",
+    "src/renderer/typeset/state/transition.rs": "5ed3a9f1d0e0a68fc6db91d8df563ca987d1a4687e4a8dc70defb9bbb37113f7",
+    "src/renderer/typeset/table/block/entry.rs": "873230a1e73286cef074fb2eaf4331697250af22835cb913324989f086aa4617"
+  },
+  "started_at": "2026-11-11T01:05:52.425001+09:00",
+  "success": true,
+  "resolved_failures": [
+    {
+      "name": "manifest",
+      "attempt": 1,
+      "resolution": "Regenerated derived suites after test source comment update; current source/test inventory and base-ref policy check passed. No tests or thresholds removed."
+    }
+  ],
+  "finished_at": "2026-11-11T01:43:09.690680+09:00",
+  "full_nextest_summary": "Summary [ 545.222s] 13227 tests run: 13227 passed (2 slow), 45 skipped",
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "minimal_font_sandbox_sha256": "a2afbf75da3baa1a4ff7c2c6046ca5a636893b432dd5fcb6dba0e586d264be0a",
+  "focused_tests": {
+    "passed": 19,
+    "failed": 0,
+    "source_state_sha256": "9871e9b309d5133d1bb3ba5f8cb1bb3fb55bd6c8ea01a51c7ad4be9f14d78b0f"
+  },
+  "test_source_sha256": "384bd112fd90cc4bfb6573c26b7929926362b07a801389144c1b0de47fa7ded9",
+  "final_gate_results": {
+    "native-skia-lib": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "native-skia-missing-picture": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "native-skia-direct-pdf": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "fmt": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "diff": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "clippy-native": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "clippy-wasm": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "workspace-build": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "clippy-all-targets": {
+      "exit_code": 0,
+      "attempt": 2
+    },
+    "manifest": {
+      "exit_code": 0,
+      "attempt": 2
+    },
+    "unit-tiers": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "full-nextest": {
+      "exit_code": 0,
+      "attempt": 1
+    },
+    "doc-tests": {
+      "exit_code": 0,
+      "attempt": 1
+    }
+  }
+}

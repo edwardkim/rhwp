@@ -1,0 +1,26 @@
+{
+  "head": "e0ce30729e4d87d2a75376d17c6d351a29ef4345",
+  "running": false,
+  "current": "studio-canvas2d-canvaskit",
+  "started": "2026-11-10T11:33:28.315346+09:00",
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/issue8856/start/minimal-font.sb",
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "scripts/renderer_baseline.py",
+    "--manifest",
+    "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/consumer-manifest.json",
+    "--skip-native",
+    "--profiles",
+    "screen,print",
+    "--browser-mode",
+    "headless",
+    "--canvaskit-surface",
+    "software",
+    "--output",
+    "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/final-source/actual-consumers-observed"
+  ],
+  "exit": 0,
+  "ended": "2026-11-10T11:37:54.597443+09:00"
+}

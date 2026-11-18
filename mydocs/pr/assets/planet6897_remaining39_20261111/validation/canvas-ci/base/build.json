@@ -1,0 +1,14 @@
+{
+  "success": true,
+  "source_sha": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "profile": "release-no-opt-local-alternative",
+  "artifacts": {
+    "rhwp_bg.wasm": {
+      "sha256": "bf23f3629528d45cdc6a223d148e1aa37e1887a6fb4d25b40b41560369b9a851",
+      "bytes": 31714440
+    },
+    "rhwp.js": {
+      "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+    }
+  }
+}

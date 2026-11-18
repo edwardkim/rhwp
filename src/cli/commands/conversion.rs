@@ -577,7 +577,7 @@ pub(crate) fn export_hwpx(args: &[String]) -> i32 {
                         // 다시 생긴다.
                         let expected =
                             rhwp::serializer::hwpx::roundtrip::hwpx_export_expected_document(
-                                doc.document(),
+                                &doc.hwpx_export_expected_document(),
                             );
                         let reloaded_comparable =
                             rhwp::serializer::hwpx::roundtrip::hwpx_export_expected_document(

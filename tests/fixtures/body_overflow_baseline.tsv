@@ -26,6 +26,7 @@
 # 값으로 올려 적는다.
 #
 # 0 행은 그대로 둔다 — 값 0 과 행 삭제는 이 게이트에서 같은 판정(증가 / 신규 발생)이다.
+# #9073: issue9073/proficiency_test_result_form.hwpx 1건 — 글자처럼 취급 표가 저장 줄을 혼자 소유해 1쪽에 통째로 놓인다(한컴 2022 Print 1쪽). 맨 아래 「210mm×297mm…」 줄은 한컴 PDF 에서도 아래끝 1049.97px 로 본문 바닥 1046.9px 를 넘는다.
 issue3637/press_release_split_cell_nested_table.hwpx	0
 issue6133/156483831_poster_title_above_offset_float.hwp	1
 issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	0
@@ -136,6 +137,8 @@ issue6882/synth_cell_enter_table_growth.hwp	0
 issue6888/156730935-marine-mobility-expo.hwpx	1
 issue6896/156564340-ip-dispute-mediation.hwpx	1
 issue6946/44529-logistics-policy-rule-amendment.hwp	1
+issue8755/46551_road_traffic_rule_amendment.hwp	11
+issue9073/proficiency_test_result_form.hwpx	1
 issues/2809/jubo_20260104.hwp	3
 kps-ai.hwp	2
 loading-fail-01.hwp	0
@@ -189,12 +192,10 @@ issue7216/tall_table_after.hwpx	0
 # off-canvas 1 -> 0, overlap 1 -> 0, LAYOUT_OVERFLOW_CELL 40여건 -> 0 이다. 노드 수만 1 로 같다.
 issue7336/nested_table_fragment_cut.hwp	1
 issue7336/stored_frame_page_larger_rowbreak.hwpx	1
-# #7620 기존 결손 1행 — 이 PR 이 위치를 한컴과 맞추면서 드러났다. 11쪽 표(구역 1 문단 1,
-# RowBreak, 빈 앵커 sw=0)의 시작이 122.9px -> 126.7px 로 내려가 한컴 저장 위치와 같아졌다
-# (저장 vpos 3548 + 바깥 위 283 + 표 68736 + 바깥 아래 283 = 72850HU, 본문 높이 72852HU 안 — 한컴은 쪽을 꽉 채운다).
-# 남는 초과 4.5px 은 rhwp 가 이 표를 선언 높이 916.5px(68736HU)보다 8.3px 큰 924.8px 로
-# 그리는 기존 결손이다. 수정 전에는 초과가 0.8px 이라 공차 2.0px 아래에 숨어 있었다.
-issue6465/press_release_footer_logos.hwpx	1
+# #7620 후속: issue6465/press_release_footer_logos.hwpx 1행(#7644 때 11쪽 표 924.8px, 선언 916.5px)을 내렸다.
+# 지금 11쪽 표는 y=126.7 h=916.5px 로 끝 1043.2px 이 본문 바닥 1047.0px 안이다(layout-anomaly 공차 1px 에서도 0).
+# devel 99b9d7ec5 실측 0 — 이 게이트의 RHWP_BODY_OVERFLOW_DUMP 가 Windows·WSL Ubuntu 22.04 에서 같고(16/16 PASS),
+# 11쪽 raw Native 98.19 / fresh WASM 98.32%, 전13쪽 최저 96.14 / 94.94%(pr6485 2020 PDF). 증가·신규 0 이라 완화가 아니다.
 # #7816 새 시험 고정본 1행 — 이 PR 의 변경과 무관한 기존 결손이 드러났다. 저장 줄 없는 HWPX 에서
 # rhwp 가 load 시 합성한 줄 사다리(vpos)는 문단 위 간격을 빼고 쌓이며, 쪽 나눔이 그 사다리를 믿어
 # 마지막 문단(위 간격 133.3px)을 1쪽에 둔다(한/글 정본은 2쪽). 수정 전 devel 에서도 같은 문서를 짝수
@@ -227,3 +228,43 @@ issue8501/child_product_safety_rule.hwp	2
 # #7700: 같은 원본의 Native/fresh WASM 전103쪽90% 이상 확인 뒤 활성 복원.
 # 최소 글꼴 Mac 전쪽 실제 진단: 본문 넘침1·글자 겹침1. 기존 이관 전 허용2/1보다 늘리지 않는다.
 issue5679/10857_delegation_rules.hwp	1
+# #8596 새 fixture 1행 — 이 PR 이 만든 결손이 아니다. 정책심의 안건 10쪽 문단 110 의 TAC 표 마지막
+# 칸(테두리 없는 "※ 심의 착안사항" 2줄, 행 13)이 본문 바닥 1009.1px 아래 1013.5px 까지 칸 상자를
+# 차지한다(+4.4px). 한컴 2022 Print PDF 10쪽도 같은 글줄 잉크가 y=1009 까지 내려가 rhwp 와 같다
+# (pdf/issue8596_policy_committee_agenda-2020.pdf, 10쪽 raw Native 97.85 / WASM 99.95).
+issue8596/policy_committee_agenda.hwp	1
+
+# #8677 신규 공개 샘플(연구용역 최종보고서 1411000-201000007, 111쪽): 수정 전(devel 5716a226b5)과 수정 후의
+# 값이 같다 — 85쪽 표(Table0)가 본문 바닥 아래로 9.3px 넘치는 기존 형상이며 이 PR(89쪽 셀 유일 문단 표) 범위 밖이다.
+issue8677/1411000-201000007_final_report.hwp	1
+
+# #8732 신규 공개 샘플(2차 중간보고서 1741000-202200045, 한/글 2022 Print 138쪽): 수정 전(devel b8dd67c500)과
+# 수정 후의 값이 같다 — 68쪽 본문 줄이 바닥 아래로 18.6px 넘치는 기존 형상이며 표 분할 축(#8735) 범위다.
+issue8732/1741000-202200045_second_interim_report.hwp	1
+issue8786/reflowed_gap_stored_rewind.hwpx	1
+# #8778 신규 공개 샘플(결재문서 36495398 축소본, 한/글 2020 저장): 1쪽 결재 표(첫 구역, 이 PR 이 바꾸지 않는 쪽)가 본문 바닥 아래로 47.6px 넘는다 — 수정 전후 값이 같고, 같은 쪽 한컴 engine 2020 Print 대조 silhouette 100.00%(한/글도 아래 여백까지 그린다).
+issue8778/36495398-split-row-segments-reduced.hwpx	1
+# #8732 신규 공개 샘플(2차 중간보고서 1741000-202200045, 한/글 2022 Print 138쪽): 수정 전(devel b8dd67c500)과
+# 수정 후의 값이 같다 — 68쪽 본문 줄이 바닥 아래로 18.6px 넘치는 기존 형상이며 표 분할 축(#8735) 범위다.
+issue8732/1741000-202200045_second_interim_report.hwp	1
+
+# #8795 신규 공개 샘플(부정맥 연차실적계획서 1351000-201500141, 한/글 2020 Print 101쪽). #8805 가 34·45쪽
+# 저장 쪽 시작(vpos 0) 문단의 글자처럼 취급한 그림을 다음 쪽 첫머리로 넘겨 넘침 2 → 0. 값 0 은 행 삭제와
+# 같은 판정이라 행을 남겨 이후 증가를 막는다.
+issue8795/1351000-201500141_arrhythmia_research_plan.hwp	0
+# #8842 신규 공개 샘플(HPV 코호트 최종결과보고서 1351000-201800239, 한/글 2020 Print 235쪽): 수정 전(devel 024d610633)과
+# 수정 후의 값이 같다 — 본문 넘침은 76~172쪽 표 쪽 나눔 어긋남 축이며 이 수정(211~234쪽 그림 무리) 범위 밖이다.
+issue8842/1351000-201800239_hpv_cohort_final_report.hwp	1
+# #8882 새 fixture 1행 — 이 PR 이 만든 결손이 아니다(수정 전 devel 3170fddc48 과 값·위치가 같다).
+# 공개 결재문서 36404364 1쪽 표지는 쪽 전체를 차지하는 테두리 없는 TAC 표이고, 그 상자가 본문 바닥
+# 1026.5px 아래 1035.3px 까지 내려간다(+8.8px). 보이는 글자(남부도로사업소·기전과)의 위치는 한컴 Print
+# PDF 1쪽과 겹친다(pdf/issue8882/36404364-reflowed-cell-tac-row-floor-2020.pdf, 1쪽 raw Native 97.72).
+issue8882/36404364-reflowed-cell-tac-row-floor.hwpx	1
+# #8993 새 fixture 31675: 17·19쪽 TAC 표(pi=211 919.5px·pi=215 961.7px)가 본문 914.6px 보다 커 아래로 넘친다.
+# 한/글 engine 2020 Print 도 같은 자리까지 그린다(pdf/issue8993/31675-rowbreak-overflowing-frame-2020.pdf
+# 17쪽 표 아래끝 1035px·19쪽 1077px = rhwp 1034.8·1076.9px, 두 쪽 raw Native 99.64·99.63). 수정 전후 같다.
+issue8993/31675-rowbreak-overflowing-frame.hwp	2
+# #8660 대조군: 쪽 영역 안으로 제한하지 않은 문단 기준 그림은 한컴도 본문 아래 끝을 넘겨 같은 쪽에 그린다
+# (pdf/issue8660/picture_unrestricted_over_12px-hwp-2020.pdf, 데스크톱 한컴 2020 Print 1쪽).
+# Native/fresh WASM 전쪽 raw 100.00%로 같은 배치를 확인했다. 의도된 넘침 1건.
+issue8660/picture_unrestricted_over_12px.hwp	1

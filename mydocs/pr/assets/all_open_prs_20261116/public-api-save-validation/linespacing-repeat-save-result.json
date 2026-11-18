@@ -1,0 +1,4336 @@
+{
+  "status": "passed",
+  "source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "wasm_sha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+  "runtime": "Node WASM public API, structural edit-save-reopen-resave-reopen; desktop Print geometry was measured separately",
+  "cases": [
+    {
+      "input": "samples/issue8676/plain_fixed_v12.hwpx",
+      "input_sha256": "61c4419b4937bac8495c18cd72b29d727ccd4baef5c9aef736ed4f80042c77d7",
+      "format": "hwp",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 13.299999999999997,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 13.299999999999997,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 11776,
+          "sha256": "e224850f16a0629377cb5feb38cd4794440b4fb0aa64ec4b0d0ed5f448ab6042",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 13.299999999999997,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 11776,
+          "sha256": "62847647245409a5705eddbf982e54e58aeef68e9b59c59e65cf836215988cb6",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 13.299999999999997,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue8676/plain_fixed_v12.hwpx",
+      "input_sha256": "61c4419b4937bac8495c18cd72b29d727ccd4baef5c9aef736ed4f80042c77d7",
+      "format": "hwpx",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 13.299999999999997,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 13.3,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 13.299999999999997,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 5327,
+          "sha256": "b19627c3ba2010b9cab9e99be935b3146a4284751640829e7c271e65430a2f54",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 13.299999999999997,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 5327,
+          "sha256": "b19627c3ba2010b9cab9e99be935b3146a4284751640829e7c271e65430a2f54",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 13.3,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 13.299999999999997,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue8676/plain_fixed_v14.hwpx",
+      "input_sha256": "f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "format": "hwp",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 26.700000000000003,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 26.700000000000003,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 11776,
+          "sha256": "65f89689daf094b34ba3a293bbfe88d7f2c4b7c009cf19bfd9c6de36b8a13be8",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 26.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 11776,
+          "sha256": "f89bcc4012c329187f9f2764b128011e5c5e6ea1c4f48b07192481b4937ca68a",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 26.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue8676/plain_fixed_v14.hwpx",
+      "input_sha256": "f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "format": "hwpx",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 26.700000000000003,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 26.7,
+            "lineSpacingType": "Fixed",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 26.700000000000003,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 5329,
+          "sha256": "56cbc5d05dbe94a7e792080de666df8e6ceda3164e056230c908e18e61b69652",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 26.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 5329,
+          "sha256": "56cbc5d05dbe94a7e792080de666df8e6ceda3164e056230c908e18e61b69652",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 26.7,
+                "lineSpacingType": "Fixed",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 26.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue8676/plain_between_v12.hwpx",
+      "input_sha256": "c9e283b83fd4ea9d16fb577e8fe117a983dac6a1b8a4b2587564d49d4332300b",
+      "format": "hwp",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 16.700000000000003,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 16.700000000000003,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 11776,
+          "sha256": "714fa2265c926dd56e3665bb921971fe7cdcda24335ec1c09e2b3a37350e109e",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 16.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 11776,
+          "sha256": "42634525d23e860a3b499b0c7763dde7a19f39819571edd7e50d5ec225446d0f",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 16.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue8676/plain_between_v12.hwpx",
+      "input_sha256": "c9e283b83fd4ea9d16fb577e8fe117a983dac6a1b8a4b2587564d49d4332300b",
+      "format": "hwpx",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 16.700000000000003,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 3.3,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 16.700000000000003,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 5332,
+          "sha256": "a7a1ecf6f1e94123facf21e151cb8b704834052925e0d49078901a19a2f87049",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 16.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 5332,
+          "sha256": "a7a1ecf6f1e94123facf21e151cb8b704834052925e0d49078901a19a2f87049",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 3.3,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 16.700000000000003,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue8676/plain_between_v14.hwpx",
+      "input_sha256": "ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "format": "hwp",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 20.000000000000014,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 20.000000000000014,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 11776,
+          "sha256": "59e91916da73703c00f3f54f243d2aa281247d5e51b8a8ac5c4c5e86d47197b8",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 20.000000000000014,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 11776,
+          "sha256": "9f6d0194aaa4ed4fb19992e9dc27f9e2bf847beb8c968d294a7cd9c946176932",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 20.000000000000014,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    },
+    {
+      "input": "samples/issue8676/plain_between_v14.hwpx",
+      "input_sha256": "ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "format": "hwpx",
+      "before": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 20.000000000000014,
+        "text": "TOPAONEATWOEND",
+        "pages": 1
+      },
+      "edited": {
+        "props": [
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          },
+          {
+            "alignment": "justify",
+            "lineSpacing": 6.7,
+            "lineSpacingType": "SpaceOnly",
+            "marginLeft": 0,
+            "marginRight": 0,
+            "indent": 0,
+            "spacingBefore": 0,
+            "spacingAfter": 0,
+            "paraShapeId": 1,
+            "headType": "None",
+            "paraLevel": 0,
+            "numberingId": 0,
+            "widowOrphan": false,
+            "keepWithNext": false,
+            "keepLines": false,
+            "pageBreakBefore": false,
+            "fontLineHeight": false,
+            "singleLine": false,
+            "autoSpaceKrEn": false,
+            "autoSpaceKrNum": false,
+            "verticalAlign": 0,
+            "englishBreakUnit": 0,
+            "koreanBreakUnit": 1,
+            "tabAutoLeft": false,
+            "tabAutoRight": false,
+            "tabStops": [],
+            "defaultTabSpacing": 8000,
+            "borderFillId": 1,
+            "borderLeft": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderRight": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderTop": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "borderBottom": {
+              "type": 0,
+              "width": 0,
+              "color": "#000000"
+            },
+            "fillType": "none",
+            "fillColor": "#ffffff",
+            "patternColor": "#000000",
+            "patternType": -1,
+            "borderSpacing": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "borderConnect": false,
+            "borderIgnoreMargin": false
+          }
+        ],
+        "pitch": 20.000000000000014,
+        "text": "XTOPAONEATWOEND",
+        "pages": 1
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "bytes": 5334,
+          "sha256": "f10ac19c9837e11e2b8183e6fccb5aa1e9b675e85436735d4a671960a7a54577",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 20.000000000000014,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        },
+        {
+          "round": 2,
+          "bytes": 5334,
+          "sha256": "f10ac19c9837e11e2b8183e6fccb5aa1e9b675e85436735d4a671960a7a54577",
+          "state": {
+            "props": [
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              },
+              {
+                "alignment": "justify",
+                "lineSpacing": 6.7,
+                "lineSpacingType": "SpaceOnly",
+                "marginLeft": 0,
+                "marginRight": 0,
+                "indent": 0,
+                "spacingBefore": 0,
+                "spacingAfter": 0,
+                "paraShapeId": 1,
+                "headType": "None",
+                "paraLevel": 0,
+                "numberingId": 0,
+                "widowOrphan": false,
+                "keepWithNext": false,
+                "keepLines": false,
+                "pageBreakBefore": false,
+                "fontLineHeight": false,
+                "singleLine": false,
+                "autoSpaceKrEn": false,
+                "autoSpaceKrNum": false,
+                "verticalAlign": 0,
+                "englishBreakUnit": 0,
+                "koreanBreakUnit": 1,
+                "tabAutoLeft": false,
+                "tabAutoRight": false,
+                "tabStops": [],
+                "defaultTabSpacing": 8000,
+                "borderFillId": 1,
+                "borderLeft": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderRight": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderTop": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "borderBottom": {
+                  "type": 0,
+                  "width": 0,
+                  "color": "#000000"
+                },
+                "fillType": "none",
+                "fillColor": "#ffffff",
+                "patternColor": "#000000",
+                "patternType": -1,
+                "borderSpacing": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "borderConnect": false,
+                "borderIgnoreMargin": false
+              }
+            ],
+            "pitch": 20.000000000000014,
+            "text": "XTOPAONEATWOEND",
+            "pages": 1
+          }
+        }
+      ]
+    }
+  ]
+}

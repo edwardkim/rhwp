@@ -22,6 +22,11 @@ export interface HostFontData {
   faceIndex?: number;
 }
 
+export interface HostFontOptions {
+  /** Opt in to Canvas2D document font selection for this connection. */
+  layout?: boolean;
+}
+
 export interface HostFontProvider {
   getSnapshot(signal: AbortSignal): Promise<HostFontSnapshot>;
   readFace(id: string, revision: string, signal: AbortSignal): Promise<HostFontData>;
@@ -76,6 +81,7 @@ export class HostFontSource {
   private controller = new AbortController();
   private epoch = 0;
   private connection = 0;
+  private layout = false;
   private snapshot: HostFontSnapshot | null = null;
   private refs: readonly HostFontReference[] = [];
   private pendingSnapshot: Promise<void> | null = null;
@@ -83,6 +89,7 @@ export class HostFontSource {
   private readonly listeners = new Set<() => void>();
   private error: string | null = null;
 
+  get layoutEnabled(): boolean { return this.active && this.layout; }
   get active(): boolean { return this.provider !== null; }
   get generation(): number { return this.epoch; }
   get lastError(): string | null { return this.error; }
@@ -107,7 +114,8 @@ export class HostFontSource {
     this.error = null;
   }
 
-  async setProvider(provider: HostFontProvider | null): Promise<void> {
+  async setProvider(provider: HostFontProvider | null, options: HostFontOptions = {}): Promise<void> {
+    this.layout = provider !== null && options.layout === true;
     const connection = ++this.connection;
     const off = this.off;
     this.off = null;
@@ -158,6 +166,10 @@ export class HostFontSource {
     return pending;
   }
 
+  releaseLayoutPrograms(): void {
+    if (this.layoutEnabled) this.pendingBytes.clear();
+  }
+
   references(): readonly HostFontReference[] {
     return this.refs;
   }
@@ -178,7 +190,9 @@ export class HostFontSource {
         // Consumers may transfer/detach buffers. Keep ownership at the API boundary explicit.
         return { bytes: data.bytes.slice(0), faceIndex: data.faceIndex ?? 0 };
       }, () => null).finally(() => {
-        if (this.pendingBytes.get(reference.key) === pending) this.pendingBytes.delete(reference.key);
+        if (!this.layoutEnabled && this.pendingBytes.get(reference.key) === pending) {
+          this.pendingBytes.delete(reference.key);
+        }
       });
     this.pendingBytes.set(reference.key, pending);
     return pending;

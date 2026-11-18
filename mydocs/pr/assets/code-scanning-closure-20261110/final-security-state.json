@@ -1,0 +1,817 @@
+{
+  "at": "2026-11-10T10:13:45.330083+09:00",
+  "main_merge": "7213ed1f96266b95e22cd5645a07851c9c18298e",
+  "main_full_run": 42728536362,
+  "main_rust_analysis": 2131629953,
+  "devel_full_run": 42714977872,
+  "devel_rust_analysis": 2131136443,
+  "alert623": {
+    "number": 623,
+    "state": "dismissed",
+    "reason": "false positive",
+    "comment": "Approved by maintainer after full main analysis 2131629953 (7213ed1f96) and devel 2131136443. All 4 flows end at page_index: usize; no decoded body or password is logged. Numeric-only #623 is a false positive; original #597 and #616-622 are fixed.",
+    "dismissed_by": "edwardkim",
+    "dismissed_at": "2026-11-10T01:13:41Z",
+    "action": "classified false positive under explicit approval"
+  },
+  "open_alerts": {
+    "default": [],
+    "refs/heads/main": [],
+    "refs/heads/devel": []
+  },
+  "default_counts": {
+    "open": 0,
+    "dismissed": 184,
+    "fixed": 48
+  },
+  "prior_dismissed_preserved": 183,
+  "dismissed_ids": [
+    {
+      "number": 623,
+      "reason": "false positive"
+    },
+    {
+      "number": 615,
+      "reason": "won't fix"
+    },
+    {
+      "number": 614,
+      "reason": "false positive"
+    },
+    {
+      "number": 613,
+      "reason": "false positive"
+    },
+    {
+      "number": 612,
+      "reason": "false positive"
+    },
+    {
+      "number": 611,
+      "reason": "false positive"
+    },
+    {
+      "number": 610,
+      "reason": "false positive"
+    },
+    {
+      "number": 609,
+      "reason": "false positive"
+    },
+    {
+      "number": 608,
+      "reason": "false positive"
+    },
+    {
+      "number": 607,
+      "reason": "false positive"
+    },
+    {
+      "number": 606,
+      "reason": "false positive"
+    },
+    {
+      "number": 605,
+      "reason": "false positive"
+    },
+    {
+      "number": 604,
+      "reason": "false positive"
+    },
+    {
+      "number": 603,
+      "reason": "false positive"
+    },
+    {
+      "number": 602,
+      "reason": "false positive"
+    },
+    {
+      "number": 601,
+      "reason": "false positive"
+    },
+    {
+      "number": 600,
+      "reason": "false positive"
+    },
+    {
+      "number": 599,
+      "reason": "false positive"
+    },
+    {
+      "number": 598,
+      "reason": "false positive"
+    },
+    {
+      "number": 596,
+      "reason": "false positive"
+    },
+    {
+      "number": 595,
+      "reason": "false positive"
+    },
+    {
+      "number": 594,
+      "reason": "false positive"
+    },
+    {
+      "number": 593,
+      "reason": "false positive"
+    },
+    {
+      "number": 592,
+      "reason": "false positive"
+    },
+    {
+      "number": 591,
+      "reason": "false positive"
+    },
+    {
+      "number": 590,
+      "reason": "false positive"
+    },
+    {
+      "number": 589,
+      "reason": "false positive"
+    },
+    {
+      "number": 588,
+      "reason": "false positive"
+    },
+    {
+      "number": 587,
+      "reason": "false positive"
+    },
+    {
+      "number": 586,
+      "reason": "false positive"
+    },
+    {
+      "number": 585,
+      "reason": "false positive"
+    },
+    {
+      "number": 584,
+      "reason": "false positive"
+    },
+    {
+      "number": 583,
+      "reason": "false positive"
+    },
+    {
+      "number": 582,
+      "reason": "false positive"
+    },
+    {
+      "number": 581,
+      "reason": "false positive"
+    },
+    {
+      "number": 580,
+      "reason": "false positive"
+    },
+    {
+      "number": 579,
+      "reason": "false positive"
+    },
+    {
+      "number": 578,
+      "reason": "false positive"
+    },
+    {
+      "number": 577,
+      "reason": "used in tests"
+    },
+    {
+      "number": 576,
+      "reason": "used in tests"
+    },
+    {
+      "number": 575,
+      "reason": "used in tests"
+    },
+    {
+      "number": 574,
+      "reason": "used in tests"
+    },
+    {
+      "number": 573,
+      "reason": "used in tests"
+    },
+    {
+      "number": 572,
+      "reason": "used in tests"
+    },
+    {
+      "number": 571,
+      "reason": "used in tests"
+    },
+    {
+      "number": 570,
+      "reason": "false positive"
+    },
+    {
+      "number": 569,
+      "reason": "false positive"
+    },
+    {
+      "number": 568,
+      "reason": "false positive"
+    },
+    {
+      "number": 567,
+      "reason": "false positive"
+    },
+    {
+      "number": 566,
+      "reason": "used in tests"
+    },
+    {
+      "number": 565,
+      "reason": "used in tests"
+    },
+    {
+      "number": 564,
+      "reason": "used in tests"
+    },
+    {
+      "number": 563,
+      "reason": "used in tests"
+    },
+    {
+      "number": 562,
+      "reason": "used in tests"
+    },
+    {
+      "number": 561,
+      "reason": "used in tests"
+    },
+    {
+      "number": 560,
+      "reason": "used in tests"
+    },
+    {
+      "number": 559,
+      "reason": "used in tests"
+    },
+    {
+      "number": 558,
+      "reason": "used in tests"
+    },
+    {
+      "number": 557,
+      "reason": "used in tests"
+    },
+    {
+      "number": 556,
+      "reason": "used in tests"
+    },
+    {
+      "number": 555,
+      "reason": "used in tests"
+    },
+    {
+      "number": 554,
+      "reason": "false positive"
+    },
+    {
+      "number": 553,
+      "reason": "used in tests"
+    },
+    {
+      "number": 552,
+      "reason": "used in tests"
+    },
+    {
+      "number": 551,
+      "reason": "used in tests"
+    },
+    {
+      "number": 550,
+      "reason": "used in tests"
+    },
+    {
+      "number": 549,
+      "reason": "used in tests"
+    },
+    {
+      "number": 548,
+      "reason": "used in tests"
+    },
+    {
+      "number": 547,
+      "reason": "used in tests"
+    },
+    {
+      "number": 546,
+      "reason": "used in tests"
+    },
+    {
+      "number": 545,
+      "reason": "false positive"
+    },
+    {
+      "number": 544,
+      "reason": "false positive"
+    },
+    {
+      "number": 543,
+      "reason": "used in tests"
+    },
+    {
+      "number": 542,
+      "reason": "used in tests"
+    },
+    {
+      "number": 541,
+      "reason": "used in tests"
+    },
+    {
+      "number": 540,
+      "reason": "used in tests"
+    },
+    {
+      "number": 539,
+      "reason": "used in tests"
+    },
+    {
+      "number": 538,
+      "reason": "used in tests"
+    },
+    {
+      "number": 537,
+      "reason": "used in tests"
+    },
+    {
+      "number": 536,
+      "reason": "used in tests"
+    },
+    {
+      "number": 535,
+      "reason": "used in tests"
+    },
+    {
+      "number": 534,
+      "reason": "used in tests"
+    },
+    {
+      "number": 533,
+      "reason": "used in tests"
+    },
+    {
+      "number": 532,
+      "reason": "used in tests"
+    },
+    {
+      "number": 531,
+      "reason": "used in tests"
+    },
+    {
+      "number": 530,
+      "reason": "used in tests"
+    },
+    {
+      "number": 529,
+      "reason": "used in tests"
+    },
+    {
+      "number": 528,
+      "reason": "used in tests"
+    },
+    {
+      "number": 527,
+      "reason": "used in tests"
+    },
+    {
+      "number": 526,
+      "reason": "used in tests"
+    },
+    {
+      "number": 525,
+      "reason": "used in tests"
+    },
+    {
+      "number": 524,
+      "reason": "used in tests"
+    },
+    {
+      "number": 523,
+      "reason": "used in tests"
+    },
+    {
+      "number": 522,
+      "reason": "used in tests"
+    },
+    {
+      "number": 521,
+      "reason": "used in tests"
+    },
+    {
+      "number": 520,
+      "reason": "used in tests"
+    },
+    {
+      "number": 519,
+      "reason": "used in tests"
+    },
+    {
+      "number": 518,
+      "reason": "used in tests"
+    },
+    {
+      "number": 517,
+      "reason": "used in tests"
+    },
+    {
+      "number": 516,
+      "reason": "used in tests"
+    },
+    {
+      "number": 515,
+      "reason": "used in tests"
+    },
+    {
+      "number": 514,
+      "reason": "used in tests"
+    },
+    {
+      "number": 513,
+      "reason": "used in tests"
+    },
+    {
+      "number": 512,
+      "reason": "used in tests"
+    },
+    {
+      "number": 511,
+      "reason": "used in tests"
+    },
+    {
+      "number": 510,
+      "reason": "used in tests"
+    },
+    {
+      "number": 509,
+      "reason": "used in tests"
+    },
+    {
+      "number": 508,
+      "reason": "used in tests"
+    },
+    {
+      "number": 507,
+      "reason": "used in tests"
+    },
+    {
+      "number": 506,
+      "reason": "used in tests"
+    },
+    {
+      "number": 505,
+      "reason": "false positive"
+    },
+    {
+      "number": 504,
+      "reason": "used in tests"
+    },
+    {
+      "number": 503,
+      "reason": "false positive"
+    },
+    {
+      "number": 502,
+      "reason": "false positive"
+    },
+    {
+      "number": 501,
+      "reason": "used in tests"
+    },
+    {
+      "number": 282,
+      "reason": "won't fix"
+    },
+    {
+      "number": 281,
+      "reason": "won't fix"
+    },
+    {
+      "number": 280,
+      "reason": "won't fix"
+    },
+    {
+      "number": 279,
+      "reason": "won't fix"
+    },
+    {
+      "number": 278,
+      "reason": "won't fix"
+    },
+    {
+      "number": 205,
+      "reason": "false positive"
+    },
+    {
+      "number": 203,
+      "reason": "false positive"
+    },
+    {
+      "number": 190,
+      "reason": "used in tests"
+    },
+    {
+      "number": 189,
+      "reason": "used in tests"
+    },
+    {
+      "number": 186,
+      "reason": "used in tests"
+    },
+    {
+      "number": 181,
+      "reason": "false positive"
+    },
+    {
+      "number": 180,
+      "reason": "false positive"
+    },
+    {
+      "number": 179,
+      "reason": "false positive"
+    },
+    {
+      "number": 178,
+      "reason": "used in tests"
+    },
+    {
+      "number": 177,
+      "reason": "used in tests"
+    },
+    {
+      "number": 176,
+      "reason": "used in tests"
+    },
+    {
+      "number": 175,
+      "reason": "used in tests"
+    },
+    {
+      "number": 174,
+      "reason": "used in tests"
+    },
+    {
+      "number": 173,
+      "reason": "used in tests"
+    },
+    {
+      "number": 151,
+      "reason": "false positive"
+    },
+    {
+      "number": 143,
+      "reason": "won't fix"
+    },
+    {
+      "number": 139,
+      "reason": "false positive"
+    },
+    {
+      "number": 138,
+      "reason": "false positive"
+    },
+    {
+      "number": 136,
+      "reason": "used in tests"
+    },
+    {
+      "number": 135,
+      "reason": "false positive"
+    },
+    {
+      "number": 134,
+      "reason": "false positive"
+    },
+    {
+      "number": 133,
+      "reason": "used in tests"
+    },
+    {
+      "number": 132,
+      "reason": "used in tests"
+    },
+    {
+      "number": 131,
+      "reason": "used in tests"
+    },
+    {
+      "number": 130,
+      "reason": "used in tests"
+    },
+    {
+      "number": 129,
+      "reason": "used in tests"
+    },
+    {
+      "number": 128,
+      "reason": "used in tests"
+    },
+    {
+      "number": 127,
+      "reason": "used in tests"
+    },
+    {
+      "number": 126,
+      "reason": "used in tests"
+    },
+    {
+      "number": 125,
+      "reason": "used in tests"
+    },
+    {
+      "number": 124,
+      "reason": "used in tests"
+    },
+    {
+      "number": 123,
+      "reason": "false positive"
+    },
+    {
+      "number": 111,
+      "reason": "false positive"
+    },
+    {
+      "number": 108,
+      "reason": "false positive"
+    },
+    {
+      "number": 107,
+      "reason": "used in tests"
+    },
+    {
+      "number": 106,
+      "reason": "used in tests"
+    },
+    {
+      "number": 105,
+      "reason": "used in tests"
+    },
+    {
+      "number": 104,
+      "reason": "used in tests"
+    },
+    {
+      "number": 103,
+      "reason": "used in tests"
+    },
+    {
+      "number": 99,
+      "reason": "used in tests"
+    },
+    {
+      "number": 98,
+      "reason": "used in tests"
+    },
+    {
+      "number": 97,
+      "reason": "used in tests"
+    },
+    {
+      "number": 89,
+      "reason": "used in tests"
+    },
+    {
+      "number": 86,
+      "reason": "used in tests"
+    },
+    {
+      "number": 85,
+      "reason": "used in tests"
+    },
+    {
+      "number": 42,
+      "reason": "used in tests"
+    },
+    {
+      "number": 41,
+      "reason": "used in tests"
+    },
+    {
+      "number": 40,
+      "reason": "used in tests"
+    },
+    {
+      "number": 39,
+      "reason": "used in tests"
+    },
+    {
+      "number": 38,
+      "reason": "used in tests"
+    },
+    {
+      "number": 37,
+      "reason": "used in tests"
+    },
+    {
+      "number": 27,
+      "reason": "used in tests"
+    },
+    {
+      "number": 13,
+      "reason": "false positive"
+    },
+    {
+      "number": 12,
+      "reason": "won't fix"
+    },
+    {
+      "number": 11,
+      "reason": "used in tests"
+    },
+    {
+      "number": 10,
+      "reason": "used in tests"
+    },
+    {
+      "number": 9,
+      "reason": "false positive"
+    },
+    {
+      "number": 7,
+      "reason": "false positive"
+    },
+    {
+      "number": 6,
+      "reason": "false positive"
+    },
+    {
+      "number": 5,
+      "reason": "false positive"
+    },
+    {
+      "number": 4,
+      "reason": "false positive"
+    },
+    {
+      "number": 3,
+      "reason": "false positive"
+    },
+    {
+      "number": 2,
+      "reason": "false positive"
+    },
+    {
+      "number": 1,
+      "reason": "false positive"
+    }
+  ],
+  "fixed_ids": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    14,
+    16,
+    17,
+    85,
+    86,
+    89,
+    97,
+    103,
+    104,
+    107,
+    108,
+    111,
+    123,
+    126,
+    127,
+    128,
+    129,
+    130,
+    131,
+    132,
+    133,
+    134,
+    135,
+    138,
+    139,
+    143,
+    186,
+    189,
+    190,
+    191,
+    192,
+    193,
+    194,
+    195,
+    196,
+    597,
+    616,
+    617,
+    618,
+    619,
+    620,
+    621,
+    622
+  ],
+  "new_query_or_path_exclusions": false
+}

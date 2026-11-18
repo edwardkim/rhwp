@@ -1,0 +1,350 @@
+[
+  {
+    "key": "base",
+    "checks": [
+      {
+        "name": "body includes both empty paragraphs and mark-only tails",
+        "pass": false,
+        "detail": {
+          "body": [
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 132.3,
+              "width": 566.9,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 153.6,
+              "width": 566.9,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 217.6,
+              "width": 32.6,
+              "height": 13.3
+            }
+          ],
+          "markWidths": [
+            482.49999999999994,
+            521.4,
+            32.599999999999994
+          ]
+        }
+      },
+      {
+        "name": "last selected paragraph stops at requested character",
+        "pass": false,
+        "detail": {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 217.6,
+          "width": 32.6,
+          "height": 13.3
+        }
+      },
+      {
+        "name": "selection starting at paragraph end contains mark",
+        "pass": false,
+        "detail": []
+      },
+      {
+        "name": "same-paragraph partial range has no extra mark",
+        "pass": true,
+        "detail": [
+          {
+            "pageIndex": 0,
+            "x": 126.3,
+            "y": 217.6,
+            "width": 19.6,
+            "height": 13.3
+          }
+        ]
+      },
+      {
+        "name": "collapsed selection is empty",
+        "pass": true,
+        "detail": {}
+      },
+      {
+        "name": "selection queries do not mutate page SVG",
+        "pass": true,
+        "detail": {}
+      },
+      {
+        "name": "cell selection includes empty paragraph and marks",
+        "pass": false,
+        "detail": {
+          "cell": [
+            {
+              "pageIndex": 0,
+              "x": 124,
+              "y": 137.9,
+              "width": 45.5,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 124,
+              "y": 180.6,
+              "width": 32.6,
+              "height": 13.3
+            }
+          ],
+          "cellMarkWidths": [
+            0,
+            32.599999999999994
+          ]
+        }
+      },
+      {
+        "name": "cell partial endpoint unchanged",
+        "pass": false,
+        "detail": {
+          "pageIndex": 0,
+          "x": 124,
+          "y": 180.6,
+          "width": 32.6,
+          "height": 13.3
+        }
+      },
+      {
+        "name": "cell selection queries do not mutate page SVG",
+        "pass": true,
+        "detail": {}
+      },
+      {
+        "name": "automatic wrap retains full-column fill",
+        "pass": true,
+        "detail": {
+          "rects": [
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 132.3,
+              "width": 566.9,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 153.6,
+              "width": 566.9,
+              "height": 13.3
+            }
+          ],
+          "columnRight": 680.3
+        }
+      },
+      {
+        "name": "wrapped final line receives paragraph mark only",
+        "pass": false,
+        "detail": {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 153.6,
+          "width": 566.9,
+          "height": 13.3
+        }
+      }
+    ],
+    "rendered": {
+      "body": "8fa821b6ecb81ea7b16050bf151346d4a9f4fa5627ba128ed4cdd878c8f17ea8",
+      "cell": "f55a2e53a6ffe4997d5f4d3582e3034844531e312c91d2e3b6614dafb2222f6f"
+    },
+    "wasm_sha256": "d04aa82f7a395e6576d8d9af6f9ebbdb752ef742cd9c9c7ffc58e1a4918a5f02"
+  },
+  {
+    "key": "candidate",
+    "checks": [
+      {
+        "name": "body includes both empty paragraphs and mark-only tails",
+        "pass": true,
+        "detail": {
+          "body": [
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 132.3,
+              "width": 87.8,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 153.6,
+              "width": 48.9,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 174.9,
+              "width": 3.3,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 196.3,
+              "width": 3.3,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 217.6,
+              "width": 32.6,
+              "height": 13.3
+            }
+          ],
+          "markWidths": [
+            3.3999999999999773,
+            3.4000000000000057,
+            3.299999999999997,
+            3.299999999999997
+          ]
+        }
+      },
+      {
+        "name": "last selected paragraph stops at requested character",
+        "pass": true,
+        "detail": {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 217.6,
+          "width": 32.6,
+          "height": 13.3
+        }
+      },
+      {
+        "name": "selection starting at paragraph end contains mark",
+        "pass": true,
+        "detail": [
+          {
+            "pageIndex": 0,
+            "x": 197.8,
+            "y": 132.3,
+            "width": 3.3,
+            "height": 13.3
+          }
+        ]
+      },
+      {
+        "name": "same-paragraph partial range has no extra mark",
+        "pass": true,
+        "detail": [
+          {
+            "pageIndex": 0,
+            "x": 126.3,
+            "y": 217.6,
+            "width": 19.6,
+            "height": 13.3
+          }
+        ]
+      },
+      {
+        "name": "collapsed selection is empty",
+        "pass": true,
+        "detail": {}
+      },
+      {
+        "name": "selection queries do not mutate page SVG",
+        "pass": true,
+        "detail": {}
+      },
+      {
+        "name": "cell selection includes empty paragraph and marks",
+        "pass": true,
+        "detail": {
+          "cell": [
+            {
+              "pageIndex": 0,
+              "x": 124,
+              "y": 137.9,
+              "width": 48.9,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 124,
+              "y": 159.3,
+              "width": 3.3,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 124,
+              "y": 180.6,
+              "width": 32.6,
+              "height": 13.3
+            }
+          ],
+          "cellMarkWidths": [
+            3.4000000000000057,
+            3.299999999999997
+          ]
+        }
+      },
+      {
+        "name": "cell partial endpoint unchanged",
+        "pass": true,
+        "detail": {
+          "pageIndex": 0,
+          "x": 124,
+          "y": 180.6,
+          "width": 32.6,
+          "height": 13.3
+        }
+      },
+      {
+        "name": "cell selection queries do not mutate page SVG",
+        "pass": true,
+        "detail": {}
+      },
+      {
+        "name": "automatic wrap retains full-column fill",
+        "pass": true,
+        "detail": {
+          "rects": [
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 132.3,
+              "width": 566.9,
+              "height": 13.3
+            },
+            {
+              "pageIndex": 0,
+              "x": 113.4,
+              "y": 153.6,
+              "width": 498.9,
+              "height": 13.3
+            }
+          ],
+          "columnRight": 680.3
+        }
+      },
+      {
+        "name": "wrapped final line receives paragraph mark only",
+        "pass": true,
+        "detail": {
+          "pageIndex": 0,
+          "x": 113.4,
+          "y": 153.6,
+          "width": 498.9,
+          "height": 13.3
+        }
+      }
+    ],
+    "rendered": {
+      "body": "8fa821b6ecb81ea7b16050bf151346d4a9f4fa5627ba128ed4cdd878c8f17ea8",
+      "cell": "f55a2e53a6ffe4997d5f4d3582e3034844531e312c91d2e3b6614dafb2222f6f"
+    },
+    "wasm_sha256": "4b4af2ac2a6a40c3878b528e0ee176de0740a8af695c7a12c36d3cd07a79b7d0"
+  }
+]

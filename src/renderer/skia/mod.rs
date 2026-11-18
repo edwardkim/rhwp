@@ -12,6 +12,8 @@ mod fill;
 mod fill_shader;
 mod font_catalog;
 mod font_lookup;
+mod font_observation;
+mod font_program;
 mod glyph_replay;
 mod hft_outline;
 mod image_cache;
@@ -34,6 +36,7 @@ mod text_shaping;
 mod tiled_region;
 
 pub use cache::{NativeSkiaCacheStats, NativeSkiaCacheUsage};
+pub use font_observation::{NativeFontFallbackRecord, NativeFontFallbackReport};
 pub use prepared_page::PreparedSkiaPage;
 pub use region_plan::SkiaRegionPlan;
 pub use renderer::{

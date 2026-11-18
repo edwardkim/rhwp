@@ -28,6 +28,7 @@ pub(crate) fn capabilities() -> Value {
     json!({
         "abiVersion":1,"available":available,"hostFboRendering":available,
         "externalTextureExport":false,"crossThreadHandles":false,"tileCache":available,"clearCaches":available,
+        "cacheTrim":available,
         "maxPresentersPerThread":4,"limits":limits,"typedFailures":available,
         "recreate":available,"retire":available,"contextCredits":credits,
     })
@@ -292,9 +293,13 @@ mod enabled {
                 "matching host GL context is not current",
             ));
         }
-        let id = NEXT_ID
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |id| id.checked_add(1))
-            .map_err(|_| NativeHostError::LimitExceeded("GL handle space exhausted".into()))?;
+        let id = rhwp_codec_resource::atomic::try_update_u64(
+            &NEXT_ID,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |id| id.checked_add(1),
+        )
+        .map_err(|_| NativeHostError::LimitExceeded("GL handle space exhausted".into()))?;
         let presenter = unsafe {
             NativeGlPresenter::new(context_id, device_generation, config, |name| {
                 loader(user_data, name.as_ptr())
@@ -338,6 +343,12 @@ mod enabled {
             context_id: u64,
             device_generation: u64,
         },
+        TrimCache {
+            context_id: u64,
+            device_generation: u64,
+            #[serde(default)]
+            target_bytes: usize,
+        },
         Retire {
             context_id: u64,
             device_generation: u64,
@@ -379,6 +390,21 @@ mod enabled {
                         )?
                     };
                     Ok(json!({"ok":true,"frame":frame,"info":owner.presenter.info()?}))
+                }
+                Request::TrimCache {
+                    context_id,
+                    device_generation,
+                    target_bytes,
+                } => {
+                    owner
+                        .presenter
+                        .check_context(context_id, device_generation)?;
+                    owner.current()?;
+                    unsafe {
+                        owner
+                            .presenter
+                            .trim_cache(context_id, device_generation, target_bytes)
+                    }
                 }
                 Request::ClearCaches {
                     context_id,

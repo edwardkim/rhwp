@@ -1,5 +1,9 @@
 # P100 macOS Metal 참조 브리지 — Draft/WIP
 
+AppKit/CAMetalLayer의 선택적 연속 경로와 두 타일 확장은 각각
+[native view](NATIVE_VIEW_PRESENTATION.md), [P117 두 타일](TILE_GROUPS.md)을 참고합니다.
+아래의 네 개 불변 프레임 제한과 consumer 완료 미확인은 기존 CVPixelBuffer 경로의 계약입니다.
+
 선택 피처 `native-skia-metal`의 Ganesh renderer와 공식 `FlutterTexture` 기반 macOS plugin이다.
 문서의 immutable P89 snapshot을 GPU scratch에 strict replay한 뒤 새 BGRA `CVPixelBuffer`의
 `CVMetalTexture`로 그린다. 프로듀서 GPU 완료를 기다리는 전용 native thread를 사용하며,
@@ -40,6 +44,49 @@ source가 GPU wait 도중 바뀌면 성공 프레임을 전달하지 않는다. 
 폐기하고 크레딧을 환급한다. GPU 완료가 불명확한 실패 target도
 같은 bounded 보관 한도에 격리하고 CPU 경로로 돌아가야 한다.
 
+## 내부 GPU 타일 캐시
+
+Metal presenter는 GL과 같은 `native_host::gpu_tiles`의 키·LRU·할당량 정책을 사용한다.
+처음에는 제한된 전체 페이지를 canonical GPU surface에 strict replay하고, 화면에 필요한
+영역만 GPU tile surface로 복사한다. 같은 문서·리비전·글꼴·페이지·출력 프로필·장치·DPR·배율·
+정확한 f32 픽셀 위상이면 정수 단위 스크롤에서 타일을 재사용한다. view generation은 키에서
+제외하지만, 타일 사용과 외부 target 복사 전후에 원래 full stamp를 다시 검사한다.
+Flutter/AppKit의 두 외부 타일과 이 내부 renderer 캐시는 별개다.
+
+| Native presenter config | 기본값 | 허용 범위 |
+| --- | --- | --- |
+| `tileSize` | 512 px | 128 / 256 / 512 / 1024 |
+| `maxCachedTiles` | 64 | 0–64; 0이면 기존 strict viewport replay |
+| `maxTileBytes` | 16 MiB | 0–64 MiB |
+| `maxManagedTargets` | 66 | 1–66 |
+| `maxManagedTargetBytes` | 48 MiB | 1 byte–96 MiB |
+
+managed 예산에는 scratch·canonical staging·보관 타일과 진행 중 frame pin을 함께 계산한다.
+캐시만의 count/byte 한도도 별도로 적용하고, pin이 없는 LRU 항목만 퇴출한다. 전체 페이지가
+기존 4096 px / 4 MP / 16 MiB 상한을 넘거나, 투명 배경·할당량 부족으로 캐시를 사용할 수
+없으면 기존 strict viewport replay를 수행한다. 큰 페이지를 무제한 canonical surface로
+만들거나 고배율 전체 페이지를 조각별로 새로 replay하는 기능은 포함하지 않는다.
+
+`info.tiles`에 hit/miss·canonical replay·퇴출·fallback 횟수,
+`info.managedTargets`에 현재/최대 target count·추정 byte를 노출한다. 완료 확인 전에는
+surface와 snapshot을 presenter에 보존한다. submit 실패나 panic으로 완료가 불명확하면
+캐시·할당 크레딧·외부 복사 표면도 보존하고 재사용을 거부한다. 정상 release에서는 모두
+해제한다. 이 변경은 외부 texture 재활용이나 consumer 완료 권한을 추가하지 않는다.
+
+공통 정책 검사는 `tests/cases/issue_8701_native_gpu_tiles.rs`의 정식 integration suite에
+포함되며 `native-skia` 또는 `native-skia-gl` 피처로 Linux에서도 실행할 수 있다. 타일 수명
+검사는 raster surface로 실제 캐시의 할당량을 검사하며 GPU 실행 증거가 아니다.
+`rustc --test tests/cases/issue_8701_gpu_frame_resources.rs`는 실제 production holder를
+직접 포함하여 정상 반환·pin·격리·panic 수명을 확인한다.
+
+기존 `tool/check_macos_metal_sdk.py` 경로는 같은 Native Metal presenter에서 8회 연속 replay한
+결과를 cache 비활성 strict replay와 비교한다. 정수 스크롤 hit, 위상·배율·배경 변경 miss,
+LRU 퇴출, managed target 한도로 인한 fallback, producer release를 검사한다.
+`tests/sdk_qualification_contract.py`는 이 결과의 잘못된 pixel·stamp·count/byte·완료 증거를
+거부하는 portable 검사다. 실제 Apple SDK 컴파일과 Metal readback은 macOS에서 별도로
+실행해야 하며, Linux의 portable 통과로 이를 대신하지 않는다. 한컴 기준 출력과 실제 앱의
+consumer 검증도 이 작은 producer probe의 범위에 포함되지 않는다.
+
 ## Flutter channel
 
 Plugin class는 `RhwpMetalPlugin`, channel은 `rhwp_native/texture_macos`다. macOS podspec과 source만
@@ -47,13 +94,49 @@ Plugin class는 `RhwpMetalPlugin`, channel은 `rhwp_native/texture_macos`다. ma
 별도 runner의 generated registrant 또는 `registerWithRegistrar:`로 등록한다. 이 디렉터리를
 `flutter create .`로 덮어쓰지 않는다. macOS deployment target은 12.0이다.
 
+이 ObjC++ CocoaPods target은 `FlutterMacOS`를 명시적으로 framework link한다.
+Flutter 3.47의 SwiftPM host와 CocoaPods plugin을 함께 쓰는 경우에도 필요하다.
+`s.dependency 'FlutterMacOS'`는 Flutter의 placeholder pod와 framework 검색 경로를
+설정하지만, 순수 ObjC++ pod의 dynamic link를 Swift import의 autolink로 대신할 수
+없다. engine의 실제 framework 배치는 Flutter tooling에 맡기고, unresolved symbol을
+허용하거나 자체 Flutter runtime을 중복해서 배포하지 않는다.
+
 | Method | 인자 / 결과 |
 | --- | --- |
 | `capabilities` | 인자 없음. 프레임 크레딧과 `consumerRetirement:false`, `continuousPresentationSupported:false`, `cpuFallbackRequiredWhenSaturated:true` 반환 |
-| `create` | `{libraryPath:absolute}` → `{textureId,deviceGeneration,initializing:true,limits}`. dylib load·Metal device/context 생성은 producer thread에서 실행한다. `status.ready` 전 submit은 거절한다. |
+| `create` | `{libraryPath:absolute,closeAcknowledgementRequired?:bool}` → `{textureId,deviceGeneration,initializing:true,closeAcknowledgementRequired,limits}`. dylib load·Metal device/context 생성은 producer thread에서 실행한다. `status.ready` 전 submit은 거절한다. |
 | `submit` | `{textureId,stamp,width,height,placements,clearColor}` → `{accepted,acceptedStamp,reason,limits}`. stamp는 P89의 document/revision/font/view/device/deviceScale 전부다. deviceGeneration은 create 결과를 사용한다. placements는 `{snapshot,scale,originX,originY,backgroundColor?}` 최대 8개다. |
 | `status` | `{textureId}` → ready/closed/ownerFinished/pending/inFlight/hasFrame/staleFramesDropped/error/deviceGeneration/acceptedStamp/acceptedSnapshots/limits. 결과는 단일 bounded 상태다. |
 | `close` | `{textureId}` → 즉시 `{closed:true,ownerCompletionPending,limits}`. platform thread에서 unregister하고, producer thread는 실행 중 GPU 작업과 Native presenter 정리를 마친 후 종료한다. 최근 closed ID 하나는 status/idempotent close를 위한 bounded receipt로 남긴다. |
+
+새 클라이언트는 create에 `closeAcknowledgementRequired: true`를 요청하고 응답의
+top level과 `limits`에 같은 true가 있을 때만 종료 확인 계약을 활성화한다.
+협상한 모든 `submit`·`status`·`close`·`retireAck` 요청에는 `textureId`와
+`deviceGeneration`을 함께 보낸다. Flutter texture ID는 객체 주소여서 재사용될 수
+있으므로 이전 세대의 늦은 요청이 새 texture를 닫거나 그 상태로 응답하지 않는다.
+누락되거나 형식이 잘못된 세대는 `invalidArgument`, 서로 다른 ID·세대는
+`contextChanged`로 enqueue 전에 거절한다. 공통 Dart 클라이언트는 이 명확한
+사전 거절에서 아직 전달하지 않은 snapshot을 한 번 해제할 수 있다.
+
+협상 경로는 활성 texture와 아직 확인하지 않은 close record를 합쳐 최대 두 개
+보존한다. 두 close가 겹쳐도 handle·세대별 미완료 상태를 덮어쓰지 않는다.
+`closed: true`, `ownerFinished: true`, `registered: false`를 확인한 다음
+`retireAck {textureId,deviceGeneration}`를 보내야 record를 해제한다. 응답은 동일
+ID·세대와 `acknowledged: true`, `closed: true`, `ownerFinished: true`,
+`registered: false`다. 미완료 ack는 `retirePending`이며 상태와 한도를 보존한다.
+그 뒤에는 Native owner 참조가 없는 완료 metadata를 최근 ack 순서로 두 개만
+남겨 반복 status·close·ack에 응답한다. 협상하지 않은 기존 호출 형식은 유지한다.
+완료된 owner 정보는 고정하지만, cached status·close 응답의 `limits`는 조회 시점의
+전역 credit 값으로 갱신한다. 다른 texture의 새 예약을 이전 0 값으로 숨기지 않는다.
+
+이 확인은 plugin registration 종료와 producer thread 종료만 다룬다. 공개 macOS
+registrar의 unregister는 consumer GPU fence나 `onTextureUnregistered` 호출을
+보장하지 않으므로 `textureUnregisteredNotification`을 완료의 필수 조건으로 삼지
+않는다. 기존의 네 immutable CV frame·64 MiB credit은 ack 뒤에도 환급하지 않으며
+`consumerGpuCompletionVerified`와 `continuousPresentationSupported`는 false다.
+`tests/texture_close_routing_test.cc`는 실제 production identity router와 retirement
+registry를 사용해 동시 종료, ID 재사용, 늦은 이전 세대 요청, 기존 클라이언트,
+400회 ack와 immutable credit의 미환급을 portable 환경에서 검사한다.
 
 배치의 scale에는 deviceScale을 포함하고, origin은 target pixel 좌표다. 96-DPI 문서 좌표를
 사용하는 UI는 `pixelScale = zoom * deviceScale`, `pixelOrigin = logicalOrigin * deviceScale`로

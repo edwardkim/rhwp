@@ -12,7 +12,7 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     // 실제 요청 face/설치 별칭은 호출자의 체인 앞에 유지한다. 부재할 때만
     // 기존 한컴 돋움 밀도 측정에 근거한 가벼운 대체 face를 우선한다.
     if matches!(font_family, "돋움" | "Dotum" | "굴림" | "Gulim") {
-        return "'Noto Sans KR ExtraLight','Noto Sans KR','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif";
+        return "'Noto Sans KR ExtraLight','Noto Sans KR','Noto Sans CJK KR','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif";
     }
     // 일반 고딕은 플랫폼 face 다음에 같은 계열의 함초롬돋움을 둔다.
     // 원 face의 일부 문자가 없을 때 범용 Noto보다 먼저 그 문자를 공급한다.
@@ -46,14 +46,14 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
         // 굵게 렌더됨. 한컴 돋움 획 두께(페이지 밀도 0.265)에 근접한
         // 'Noto Sans KR ExtraLight'(rsvg 페이지 밀도 0.277)를 무거운 Noto 직전에 삽입 —
         // 시스템 고딕 렌더는 무영향, Noto 폴백만 가볍게 교체.
-        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif";
+        return "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Noto Sans KR ExtraLight','Noto Sans KR','Noto Sans CJK KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif";
     }
     // 고정폭 키워드
     let lower = font_family.to_ascii_lowercase();
     if (font_family.contains("KoPub돋움체") || lower.contains("kopub dotum"))
         && (font_family.contains("Light") || lower.contains("light"))
     {
-        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif";
+        return "'Noto Sans KR ExtraLight','Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Noto Sans KR','Noto Sans CJK KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif";
     }
     // BatangChe is fixed-width serif. Its stored glyph advances are replayed
     // independently of the paint fallback; choosing a sans coding face here
@@ -100,7 +100,10 @@ pub fn generic_fallback(font_family: &str) -> &'static str {
     // 'RHWP Old Hangul' (Task #528): unicode-range 옛한글 자모 영역 한정
     // 'Noto Sans KR ExtraLight' (Task #1224): 무거운 Noto CJK Regular 폴백 직전에 삽입해
     // 한컴 돋움 획 두께에 근접시킴. 시스템 고딕 우선 → 부재 시에만 ExtraLight 매칭.
-    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Noto Sans KR ExtraLight','Noto Sans KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif"
+    // 'Noto Sans CJK KR' (#9104): 리눅스 fonts-noto-cjk는 같은 Noto 한글을 이 family
+    // 이름으로만 등록한다. 명조의 'Noto Serif CJK KR'과 같은 자리에 둔다. 빠지면
+    // 웹폰트를 받지 못한 Native PNG에서 고딕 한글이 그려지지 않는다.
+    "'Malgun Gothic','맑은 고딕','Apple SD Gothic Neo','HCR Dotum','함초롬돋움','Noto Sans KR ExtraLight','Noto Sans KR','Noto Sans CJK KR','Pretendard','HCR Batang','함초롬바탕','HCR Batang Ext','함초롬바탕 확장','HCR Batang ExtB','함초롬바탕 확장B','RHWP Old Hangul','Segoe UI Emoji','Noto Emoji','Noto Color Emoji',sans-serif"
 }
 
 /// `generic_fallback` 에 굵기 힌트를 얹는다. bold 는 ExtraLight 를 제거한다 (#3772).

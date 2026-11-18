@@ -839,6 +839,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
               repo: { owner: 'edwardkim', repo: 'rhwp' },
               payload: {
                 pull_request: {
+                  changed_files: fixture.files.length,
                   number: 5772,
                   created_at: '2026-08-20T00:00:00Z',
                   base: { ref: 'devel', sha: %(base_sha)s },
@@ -979,6 +980,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
               repo: { owner: 'edwardkim', repo: 'rhwp' },
               payload: {
                 pull_request: {
+                  changed_files: fixture.files.length,
                   number: 5772,
                   created_at: '2026-08-20T00:00:00Z',
                   base: { ref: 'devel', sha: %(base_sha)s },

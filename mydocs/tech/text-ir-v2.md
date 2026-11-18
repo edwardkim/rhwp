@@ -561,3 +561,38 @@ builder는100000개까지 처리하므로 준비 입구에도 `has_portable_geom
 private Native preparation 검사는 source unit-test 정책에 따라 후보 패치에 보존했다.
 P47 cache는 거부된 준비 결과를 저장하지 않으며 실제 선택 결과로 진단을 갱신해야 한다.
 새 검사는 아직 실행하지 않았으며, source unit-test 정책과 변경 파일의 rustfmt·diff를 확인한다.
+
+## Canvas2D strict-outline 개발 미리보기 (2026-11-07)
+
+구형 `skia@8ffd556e`의 개발·테스트용 strict-outline opt-in을 현재 Rust
+`WebCanvasRenderer`로 이관한다. `set_strict_glyph_outline_replay(true)` 또는 WASM의
+`renderPageToCanvasStrictOutlineWithProfile(page, canvas, scale, profile)`로 명시적으로
+선택한다. 일반 페이지·부분 재도색 API와 새 renderer의 기본값은 기존 TextRun을 사용한다.
+
+공통 selector의 `canvas2d_strict_outline()`은 monochrome fill/fill-stroke, resolved
+COLRv0, bounded COLRv1 solid/linear/radial/full-circle sweep·transform·source-over·clip,
+bitmap, static SVG를 검사한다. GlyphRun과 Q3 variable-outline projection은 이 capability의
+범위 밖이다. 공통 producer proof를 통과해도 모든 part의 path·gradient·decoded resource를
+준비하기 전에는 TextRun을 숨기지 않는다. 한 part의 준비가 실패하면 해당 variant의 준비물을
+모두 버리고 source에 묶인 TextRun을 재생한다. SVG 배치는 producer의 `font_em_box`와
+viewBox·payload transform을 사용한다.
+
+페이지당 준비 자원은 32 MiB, part는 4096개, 선택 진단은 256개로 제한한다. 잘린 진단 수는
+별도로 반환한다. 준비물은 한 번의 동기 재생 후 해제하며, 그림을 비동기로 불러온 뒤 원래
+TextRun 위에 덧그리지 않는다. CTM·clip·alpha·composite·sampling 상태는 각 outline 범위에서
+복구한다. 반환 JSON의 `reports`는 준비 결과까지 반영한 실제 선택이며 layout authority가 아니다.
+
+현재 entrypoint는 문서가 만든 typed `PageLayerTree`를 소비한다. 구형 TS renderer의 임의
+JSON tree 주입 API를 복원하지 않는다. schema-v1 sidecar와 v2 envelope·slot 정합성은 기존
+normalizer/checked-export 계약으로 검증하고, Canvas2D 준비·선택·픽셀은 typed tree를 만드는
+Chromium `wasm-bindgen-test`로 검증한다. 두 입력 경로의 차이를 raw JSON API 호환으로
+표시하지 않는다.
+
+브라우저 회귀 실행은 `node scripts/run-web-canvas-outline-tests.mjs`를 사용한다. 이 runner는
+같은 test source를 별도 harness에서 컴파일하며 root의 host-only 테스트 의존성을 제외한다.
+해석된 모든 의존성의 name/version/source가 root `Cargo.lock`과 같은지 확인하고 `--locked
+--offline`으로 실행한다. 저장소의 Rust toolchain, `Cargo.lock`의 wasm-bindgen과 같은 버전의 runner,
+실제 Chromium에 맞는 WebDriver가 필요하다. runner 경로는
+`CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUNNER`, driver는 `CHROMEDRIVER`, Chromium의
+binary·인수는 `WASM_BINDGEN_TEST_WEBDRIVER_JSON`이 가리키는 capability JSON에 지정한다.
+`CARGO_TARGET_DIR`는 해당 물리적 source 전용 경로로 고정한다.

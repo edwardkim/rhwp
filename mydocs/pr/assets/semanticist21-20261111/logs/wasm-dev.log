@@ -1,0 +1,121 @@
+[INFO]: 🎯  Checking for the Wasm target...
+[INFO]: 🌀  Compiling to Wasm...
+   Compiling ctutils v0.4.8
+   Compiling log v0.4.35
+   Compiling bytemuck v1.25.2
+   Compiling crc32fast v1.5.4
+   Compiling wasm-bindgen-shared v0.2.127
+   Compiling num-traits v0.2.19
+   Compiling flate2 v1.1.10
+   Compiling wasm-bindgen v0.2.127
+   Compiling hybrid-array v0.4.14
+   Compiling libm v0.2.16
+   Compiling crossbeam-utils v0.8.22
+   Compiling serde_core v1.0.229
+   Compiling crossbeam-epoch v0.9.20
+   Compiling zopfli v0.8.3
+   Compiling crossbeam-deque v0.8.7
+   Compiling crypto-common v0.2.2
+   Compiling block-buffer v0.12.1
+   Compiling block-padding v0.4.2
+   Compiling inout v0.2.2
+   Compiling core_maths v0.1.1
+   Compiling ttf-parser v0.25.1
+   Compiling js-sys v0.3.104
+   Compiling slotmap v1.1.1
+   Compiling font-types v0.11.3
+   Compiling digest v0.11.3
+   Compiling cipher v0.5.2
+   Compiling rhwp-codec-resource v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-codec-resource)
+   Compiling unicode-properties v0.1.5
+   Compiling tiny-skia-path v0.12.0
+   Compiling png v0.18.1
+   Compiling zerocopy v0.8.56
+   Compiling read-fonts v0.39.2
+   Compiling zmij v1.0.23
+   Compiling rayon-core v1.13.0
+   Compiling encoding_rs v0.8.44
+   Compiling serde_json v1.0.154
+   Compiling rayon v1.12.0
+   Compiling serde v1.0.229
+   Compiling getrandom v0.4.3
+   Compiling signature v3.0.0
+   Compiling sha2 v0.11.1
+   Compiling rustybuzz v0.20.1
+   Compiling half v2.7.1
+   Compiling tiff v0.11.3
+   Compiling zip v8.6.0
+   Compiling atoi_simd v0.18.1
+   Compiling moxcms v0.8.1
+   Compiling aes v0.9.3
+   Compiling thiserror v2.0.20
+   Compiling env_filter v2.0.0
+   Compiling quick-xml v0.41.0
+   Compiling libc v0.2.191
+   Compiling shake v0.1.0
+   Compiling fontdb v0.23.0
+   Compiling tiny-skia v0.12.0
+   Compiling rhwp-hayro-ccitt v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-hayro-ccitt)
+   Compiling write-fonts v0.48.1
+   Compiling skrifa v0.42.1
+   Compiling cbc v0.2.1
+   Compiling hmac v0.13.0
+   Compiling universal-hash v0.6.1
+   Compiling uuid v1.28.0
+   Compiling module-lattice v0.2.4
+   Compiling svgtypes v0.16.2
+   Compiling simplecss v0.2.2
+   Compiling curve25519-dalek v5.0.0
+   Compiling usvg v0.47.0
+   Compiling office_oxide v0.1.9
+   Compiling zip v9.4.0
+   Compiling stringprep v0.1.5
+   Compiling phf v0.14.0
+   Compiling poly1305 v0.9.1
+   Compiling pbkdf2 v0.13.0
+   Compiling web-time v1.1.0
+   Compiling chrono v0.4.45
+   Compiling image v0.25.10
+   Compiling subsetter v0.2.6
+   Compiling rhwp-hayro-jbig2 v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-hayro-jbig2)
+   Compiling env_logger v0.11.11
+   Compiling jpeg-decoder v0.3.2
+   Compiling rhwp-jpeg-decoder v0.3.2-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-jpeg-decoder)
+   Compiling ed25519 v3.0.0
+   Compiling sha3 v0.12.0
+   Compiling rhwp-qcms v0.3.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-qcms)
+   Compiling rhwp-hayro-jpeg2000 v0.4.0-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-hayro-jpeg2000)
+   Compiling chacha20 v0.10.2
+   Compiling des v0.9.0
+   Compiling blake2 v0.11.0
+   Compiling sha1 v0.11.0
+   Compiling md-5 v0.11.0
+   Compiling taffy v0.14.0
+   Compiling kem v0.3.0
+   Compiling aead v0.6.1
+   Compiling rhwp-zune-jpeg v0.5.15-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-zune-jpeg)
+   Compiling rgb v0.8.53
+   Compiling rhwp v0.9.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui)
+   Compiling argon2 v0.6.0
+   Compiling cfb v0.16.0
+   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-pdf-import-backend)
+   Compiling blake3 v1.8.7
+   Compiling resvg v0.47.0
+   Compiling chacha20poly1305 v0.11.0
+   Compiling ml-kem v0.3.4
+   Compiling rhwp-password-crypto v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/crates/rhwp-password-crypto)
+   Compiling strum v0.28.0
+   Compiling snafu v0.9.2
+   Compiling ed25519-dalek v3.0.0
+   Compiling ml-dsa v0.1.2
+   Compiling web-sys v0.3.104
+   Compiling rhwp-ooxml-chart v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/crates/rhwp-ooxml-chart)
+   Compiling rhwp-contracts v0.1.0 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/crates/rhwp-contracts)
+   Compiling codepage v0.1.3
+   Compiling console_error_panic_hook v0.1.7
+   Compiling rhwp-jpeg-encoder v0.7.1-rhwp.1 (/home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/vendor/rhwp-jpeg-encoder)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 39s
+[INFO]: ⬇️  Installing wasm-bindgen...
+[INFO]: ✨   Done in 3m 02s
+[INFO]: 📦   Your wasm pkg is ready to publish at /home/edward/mygithub/rhwp-worktrees/review-integration-20261111-semanticist21-ui/pkg.
+[WARN]: ⚠️   There's a newer version of wasm-pack available, the new version is: 0.15.1, you are using: 0.15.0. To update, navigate to: https://wasm-bindgen.github.io/wasm-pack/installer/

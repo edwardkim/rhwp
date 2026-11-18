@@ -85,6 +85,12 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
+              if (isProptestExecutionPath(filename)
+                || isSuiteManifestPath(filename)
+                || isProptestExecutionPath(file.previous_filename || '')
+                || isSuiteManifestPath(file.previous_filename || '')) {
+                return false;
+              }
               if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
                 return !file.previous_filename
                   && (file.status === 'added' || file.status === 'modified');
@@ -133,8 +139,42 @@ jobs:
               return filename === '.github/workflows/proptest-roundtrip.yml'
                 || filename === 'scripts/run-prop-roundtrip.mjs'
                 || filename === 'scripts/tests/run-prop-roundtrip.test.mjs'
-                || filename === 'scripts/rust-test-suite-manifest.mjs'
                 || filename.startsWith('tools/proptest_roundtrip/');
+            }
+
+            function isSuiteManifestPath(filename) {
+              return filename === 'scripts/rust-test-suite-manifest.mjs';
+            }
+
+            // 목록 변경도 코드다. workflow 녹색만으로 skip된 worker를 검증 증거로 삼지 않는다.
+            async function candidateWorkerState(run, workerName) {
+              if (!Number.isSafeInteger(run.id) || run.id <= 0
+                || !Number.isSafeInteger(run.run_attempt) || run.run_attempt <= 0) {
+                return 'unavailable';
+              }
+              let jobs;
+              try {
+                jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id,
+                  filter: 'latest',
+                  per_page: 100,
+                });
+              } catch (error) {
+                core.warning('candidate worker evidence unavailable');
+                return 'unavailable';
+              }
+              const workers = jobs.filter((job) => job.name === workerName);
+              if (workers.length !== 1) return 'unavailable';
+              const job = workers[0];
+              if (job.run_id !== run.id || job.run_attempt !== run.run_attempt
+                || job.head_sha !== run.head_sha || job.status !== 'completed') {
+                return 'unavailable';
+              }
+              if (job.conclusion === 'success') return 'success';
+              // 문서 후보의 skip은 더 앞선 실제 성공을 찾게 한다. 실패·불명은 재사용하지 않는다.
+              return job.conclusion === 'skipped' ? 'skipped' : 'unavailable';
             }
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
@@ -143,6 +183,14 @@ jobs:
               pull_number: pr.number,
               per_page: 100,
             });
+            // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+            const expectedPrFileCount = pr.changed_files;
+            if (!Number.isSafeInteger(expectedPrFileCount)
+              || expectedPrFileCount < 0
+              || files.length !== expectedPrFileCount) {
+              setResult(false, 'pull-file-list-incomplete');
+              return;
+            }
             if (files.length > 0 && files.every((file) => isAllowedReviewPath(file))) {
               setResult(true, 'review-only-devel-pr');
               return;
@@ -150,10 +198,14 @@ jobs:
             if (files.some((file) => (
               isProptestExecutionPath(file.filename)
               || isProptestExecutionPath(file.previous_filename || '')
+              || isSuiteManifestPath(file.previous_filename || '')
             ))) {
               setResult(false, 'proptest-execution-surface-change');
               return;
             }
+
+            // 이미 검증된 테스트 목록 입력만 별도 증거로 재사용한다. 실행 정의 가드는 유지한다.
+            const requiresWorkerEvidence = files.some((file) => isSuiteManifestPath(file.filename));
 
             const commits = await github.paginate(github.rest.pulls.listCommits, {
               owner: context.repo.owner,
@@ -268,6 +320,17 @@ jobs:
                 setResult(false, 'review-tail-candidate-run-unavailable');
                 return;
               }
+              if (requiresWorkerEvidence) {
+                const state = await candidateWorkerState(latestCandidateRun, 'prop roundtrip');
+                if (state === 'skipped') {
+                  core.info(`candidate worker skipped; searching earlier success: ${candidateSha}`);
+                  continue;
+                }
+                if (state !== 'success') {
+                  setResult(false, 'review-tail-candidate-worker-unavailable');
+                  return;
+                }
+              }
               if (baseMergeBridge && !candidatesContainingBase.has(candidateSha)) {
                 setPendingBaseMergeResult(
                   `proptest-run-green:${latestCandidateRun.conclusion}`,
@@ -375,7 +438,7 @@ jobs:
 
   proptest-roundtrip:
     name: prop roundtrip
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # [#8548] 실측 checkout 약 18분 뒤 property build·실행까지 포함하는 유한 상한이다.
     timeout-minutes: 45
     needs: preflight
@@ -389,9 +452,9 @@ jobs:
           toolchain: 1.93.1
 
       - name: Rust build cache
-        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
+        uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: proptest-roundtrip
+          shared-key: ubuntu-24.04-proptest-roundtrip
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Check property runner contract

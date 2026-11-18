@@ -187,7 +187,14 @@ export async function closeBrowser(browser) {
     }
     browser.disconnect();
   } else {
+    const child = browser.process?.();
     await browser.close();
+    // 종료된 검증 브라우저의 updater/crashpad가 상속한 stdio 때문에
+    // Puppeteer 로그 수집기가 Node를 계속 붙잡지 않도록 자체 파이프만 닫는다.
+    if (child && (child.exitCode !== null || child.signalCode !== null)) {
+      child.stdout?.destroy();
+      child.stderr?.destroy();
+    }
   }
 }
 

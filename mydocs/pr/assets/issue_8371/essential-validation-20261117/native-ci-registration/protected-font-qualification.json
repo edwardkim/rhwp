@@ -1,0 +1,436 @@
+{
+  "status": "incomplete-user-directed-merge",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baselineSha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "conditionEvidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+  "declaredSupplierProgramCount": 309,
+  "exactSupplierHashesLocated": 286,
+  "declaredSupplierEntriesUnmatched": [
+    {
+      "name": "HYHWPEQ.TTF",
+      "sha256": "c4f768c176ce26de91d6115bfb30c2d87c43c03d054f79e909fd340b1e46740a",
+      "datasets": [
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "arial.ttf",
+      "sha256": "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "arialbd.ttf",
+      "sha256": "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "arialbi.ttf",
+      "sha256": "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "ariali.ttf",
+      "sha256": "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "batang.ttc",
+      "sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8",
+      "datasets": [
+        "issue7905",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "cour.ttf",
+      "sha256": "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "courbd.ttf",
+      "sha256": "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "courbi.ttf",
+      "sha256": "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "couri.ttf",
+      "sha256": "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "gulim.ttc",
+      "sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "malgun.ttf",
+      "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+      "datasets": [
+        "handbook-hwp",
+        "handbook-hwpx",
+        "nested",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "malgunbd.ttf",
+      "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082",
+      "datasets": [
+        "handbook-hwp",
+        "handbook-hwpx",
+        "nested",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "malgunsl.ttf",
+      "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e",
+      "datasets": [
+        "handbook-hwp",
+        "handbook-hwpx",
+        "nested",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "times.ttf",
+      "sha256": "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "timesbd.ttf",
+      "sha256": "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "timesbi.ttf",
+      "sha256": "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "timesi.ttf",
+      "sha256": "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89",
+      "datasets": [
+        "angle-narrow",
+        "handbook-hwp",
+        "handbook-hwpx",
+        "issue7905",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "nested",
+        "outline",
+        "sample10",
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02",
+        "yeongwol"
+      ]
+    },
+    {
+      "name": "hamchob-r.ttf",
+      "sha256": "ba2ac8f2b1b9f45c310637565ac46c2a39982241f9c78d4a2668678a4f88ee85",
+      "datasets": [
+        "angle-narrow",
+        "issue8040-insert",
+        "issue8040-insert-delete",
+        "outline",
+        "seo-body-list-typed",
+        "seo-helvetica-styles",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02"
+      ]
+    },
+    {
+      "name": "정부상징 부처명_16040911.ttf",
+      "sha256": "9ff914274d89c97abe3c22934c1f5f049d5c82de3cf0a3bc6053ac139b8a111a",
+      "datasets": [
+        "handbook-hwp",
+        "handbook-hwpx"
+      ]
+    },
+    {
+      "name": "legacy-equation.otf",
+      "sha256": "9366877ba5d2cad2ed97963b0f127ce4c9bb72c09764783e60c6cf5c2301c375",
+      "datasets": [
+        "sample16-hwp2022",
+        "sample16-hwp2024",
+        "sample16-hwpx"
+      ]
+    },
+    {
+      "name": "hamchod-r.ttf",
+      "sha256": "ddbf97ce7e4c19accd208354369d77d89947bf48446a61ed1cbb28a23c1c0f43",
+      "datasets": [
+        "angle-narrow",
+        "seo-pic-crop-01",
+        "seo-re-03-latin",
+        "seo-shape-group-02"
+      ]
+    },
+    {
+      "name": "RHWPIndependentHFTSymbols.otf",
+      "sha256": "71a1a1827048cd71cd23bfbd2f04e3403980ac723c1859723a6c6a0d354ed642",
+      "datasets": [
+        "nested"
+      ]
+    }
+  ],
+  "note": "Read-only inventory of historical declared supply: 286 of 309 exact hashes located, 23 entries unmatched. This does not establish that every declared program is selected or required. #9156 passed its own 18-document Native/fresh-WASM 1771-page checks and remains valid accepted-base evidence. Current candidate whole-protection qualification is incomplete; no private font programs are published.",
+  "conditionEvidenceCommit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
+  "conditionEvidenceSha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+  "capturedAt": "2026-11-17T18:38:51.968359+00:00",
+  "mergeDirective": {
+    "date": "2026-11-18",
+    "scope": "all operating systems",
+    "merge": "af54158960ec91504d42faf842b0cb3229366236",
+    "protected18Verified": false,
+    "instruction": "작업지시자가 미완료 상태를 유지한 채 먼저 병합하고 후속 처리하도록 명시함. 일반 검증 정책과 보호 하한은 변경하지 않음."
+  }
+}

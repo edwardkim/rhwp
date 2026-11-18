@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "head": "3e9ce11f9c3111c4faa217f6e3db202e41914561",
+  "product_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "base": "53774cc1508591b6ac794950f0063452fbaf6e87",
+  "environment": "validated macOS minimum-font sandbox",
+  "summary": "Summary [ 888.636s] 13696 tests run: 13696 passed (4 slow), 45 skipped",
+  "run": 13696,
+  "passed": 13696,
+  "failed": 0,
+  "skipped": 45,
+  "test_seconds": 888.636,
+  "command_seconds": 1244.867,
+  "log_sha256": "60ef1868a5f4f73c5005d3916568ea75dceae899c713d2ebc0512adc54fd4f4d",
+  "previous_test_head": "21950b8ab84777fb5642036e5dea9bb0dbf6eac7",
+  "previous_test_log_sha256": "29c0f022d5a7276890332c3ca1e5717ebb154e9326d03f35bc837c6fc9faac31",
+  "after_relation_test_change": true,
+  "other_gates_status": "9 current test-head gates passed; 4 unaffected feature/doc gates reused with explicit source identity in rust-gates-final.json"
+}

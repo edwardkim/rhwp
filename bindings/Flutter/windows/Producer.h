@@ -1,7 +1,11 @@
 #ifndef RHWP_WINDOWS_D3D_PRODUCER_H_
 #define RHWP_WINDOWS_D3D_PRODUCER_H_
 #include "FrameLifetime.h"
+#include "PrivateTargetPool.h"
+#include "../common/cache_trim.h"
+#include "SurfaceImportTickets.h"
 #include "NativeApi.h"
+#include "../common/gpu_cache_metrics.h"
 #include <flutter_texture_registrar.h>
 #include <d3d11_1.h>
 #include <d3d12.h>
@@ -9,6 +13,7 @@
 #include <wrl/client.h>
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <map>
 #include <vector>
 
@@ -29,27 +34,41 @@ struct Job {
   std::vector<std::shared_ptr<SnapshotLease>> snapshots;
   std::shared_ptr<ImmutableFrames::Reservation> credit;
 };
-struct Pixels {
-  std::shared_ptr<NativeApi> api;
+struct PrivatePixels {
   ComPtr<ID3D12Device> device12;
   ComPtr<ID3D12CommandQueue> queue12;
   ComPtr<ID3D12Resource> resource12;
   ComPtr<ID3D11Device1> device11;
   ComPtr<ID3D11DeviceContext> context11;
-  ComPtr<ID3D11Texture2D> opened11, legacy11;
+  ComPtr<ID3D11Texture2D> opened11;
   ComPtr<ID3D11Query> completion11;
   HANDLE nt_handle = nullptr;
+  ~PrivatePixels() { if (nt_handle) CloseHandle(nt_handle); }
+};
+struct Pixels {
+  std::shared_ptr<NativeApi> api;
+  std::shared_ptr<PrivateTarget<PrivatePixels>> producer;
+  ComPtr<ID3D11Device1> device11;
+  ComPtr<ID3D11DeviceContext> context11;
+  ComPtr<ID3D11Texture2D> legacy11;
   HANDLE legacy_handle = nullptr;  // Borrowed GetSharedHandle value: never CloseHandle.
   FlutterDesktopGpuSurfaceDescriptor descriptor{};
   std::atomic<uint64_t> opened_notifications{0};
-  ~Pixels() { if (nt_handle) CloseHandle(nt_handle); }
 };
-struct Published { std::shared_ptr<Job> job; std::shared_ptr<Pixels> pixels; };
+struct Published {
+  std::shared_ptr<Job> job;
+  std::shared_ptr<Pixels> pixels;
+  rhwp::metrics::CacheMetrics cache_metrics;
+};
+using SurfaceImports = SurfaceImportTickets<FlutterDesktopGpuSurfaceDescriptor>;
 struct State : std::enable_shared_from_this<State> {
   State(uint64_t generation, std::string path, ComPtr<IDXGIAdapter1> adapter,
-        FlutterDesktopTextureRegistrarRef registrar, std::shared_ptr<int> producer_slot)
+        FlutterDesktopTextureRegistrarRef registrar, std::shared_ptr<int> producer_slot,
+        PublicationMode publication_mode = PublicationMode::LegacyImmutable, bool close_ack_required = false, uint64_t import_owner = 0)
       : generation(generation), path(std::move(path)), adapter(std::move(adapter)),
-        registrar(registrar), producer_slot(std::move(producer_slot)), gate(generation) {}
+        registrar(registrar), producer_slot(std::move(producer_slot)), gate(generation),
+        publication_mode(publication_mode), close_ack_required(close_ack_required),
+        import_owner(import_owner ? import_owner : generation) {}
   std::mutex mutex;
   std::condition_variable changed;
   const uint64_t generation;
@@ -58,25 +77,35 @@ struct State : std::enable_shared_from_this<State> {
   FlutterDesktopTextureRegistrarRef registrar;
   std::shared_ptr<int> producer_slot;
   GenerationGate gate;
+  const PublicationMode publication_mode;
+  const bool close_ack_required;
+  const uint64_t import_owner; // Distinct per registrar even when a tile pair shares a Native stamp.
   bool ready = false, closed = false, finished = false, in_flight = false, unregistered = false;
   int64_t texture_id = -1;
   std::string error;
   std::string error_code;
   bool device_failure = false;
   std::shared_ptr<NativeApi> api;
+  rhwp::cache::TrimMailbox cache_trim;
   std::shared_ptr<Job> pending;
   std::shared_ptr<Published> current;
   std::map<uint64_t, std::weak_ptr<SnapshotLease>> leases;
   Stamp accepted_stamp;
   std::vector<uint64_t> accepted_ids;
   uint64_t accepted_serial = 0, stale_drops = 0;
+  // Installed before starting the owner; invoked only after a current publish.
+  std::function<void(uint64_t, const Stamp&)> producer_ready;
   bool accept(const std::shared_ptr<Job>& job);
+  static bool accept_group(const std::shared_ptr<State>& first, const std::shared_ptr<State>& second,
+                           const std::shared_ptr<Job>& a, const std::shared_ptr<Job>& b);
   void close();
   void fail(const std::string& message, const std::string& code = "backendUnavailable");
 };
 ImmutableFrames& frames();
 std::shared_ptr<int> reserve_producer();
 uint64_t descriptor_opened_notifications();
+void register_surface_imports(const std::shared_ptr<State>& state);
+void retire_surface_imports(const std::shared_ptr<State>& state) noexcept;
 void run_producer(const std::shared_ptr<State>& state) noexcept;
 const FlutterDesktopGpuSurfaceDescriptor* surface_callback(size_t, size_t, void* user);
 struct Registration { std::shared_ptr<State> state; std::shared_ptr<int> credit; };

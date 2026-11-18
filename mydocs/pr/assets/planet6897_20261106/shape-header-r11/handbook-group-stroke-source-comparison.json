@@ -1,0 +1,246 @@
+[
+  {
+    "section": "Contents/section0.xml",
+    "text": "이 편람은 1991년 ｢사무관리규정｣(현 ｢행정업무의 운영 및 혁신에 관한 규정｣) 제정 시 처음 발간된 이후, 위 규정 및 관련 법령의 최근 개정 내용과 그 밖의 제도 개선 사항",
+    "attrs": {
+      "id": "0",
+      "zOrder": "0",
+      "numberingType": "NONE",
+      "textWrap": "TOP_AND_BOTTOM",
+      "textFlow": "BOTH_SIDES",
+      "lock": "0",
+      "dropcapstyle": "None",
+      "href": "",
+      "groupLevel": "1",
+      "instid": "925496790",
+      "ratio": "0"
+    },
+    "line": [
+      {
+        "color": "#000000",
+        "width": "33",
+        "style": "NONE",
+        "endCap": "FLAT",
+        "headStyle": "NORMAL",
+        "tailStyle": "NORMAL",
+        "headfill": "1",
+        "tailfill": "1",
+        "headSz": "SMALL_SMALL",
+        "tailSz": "SMALL_SMALL",
+        "outlineStyle": "NORMAL",
+        "alpha": "0"
+      }
+    ],
+    "children": [
+      "offset",
+      "orgSz",
+      "curSz",
+      "flip",
+      "rotationInfo",
+      "renderingInfo",
+      "lineShape",
+      "shadow",
+      "drawText",
+      "pt0",
+      "pt1",
+      "pt2",
+      "pt3"
+    ]
+  },
+  {
+    "section": "Contents/section0.xml",
+    "text": "본 편람에서 ‘영’은 ｢행정업무의 운영 및 혁신에 관한 규정｣을, ‘규칙’은 ｢행정업무의 운영 및 혁신에 관한 규정 시행규칙｣을 의미함",
+    "attrs": {
+      "id": "1937907592",
+      "zOrder": "497",
+      "numberingType": "PICTURE",
+      "textWrap": "IN_FRONT_OF_TEXT",
+      "textFlow": "BOTH_SIDES",
+      "lock": "0",
+      "dropcapstyle": "None",
+      "href": "",
+      "groupLevel": "0",
+      "instid": "864165769",
+      "ratio": "5"
+    },
+    "line": [
+      {
+        "color": "#000000",
+        "width": "33",
+        "style": "NONE",
+        "endCap": "FLAT",
+        "headStyle": "NORMAL",
+        "tailStyle": "NORMAL",
+        "headfill": "1",
+        "tailfill": "1",
+        "headSz": "MEDIUM_MEDIUM",
+        "tailSz": "MEDIUM_MEDIUM",
+        "outlineStyle": "NORMAL",
+        "alpha": "0"
+      }
+    ],
+    "children": [
+      "offset",
+      "orgSz",
+      "curSz",
+      "flip",
+      "rotationInfo",
+      "renderingInfo",
+      "lineShape",
+      "fillBrush",
+      "shadow",
+      "drawText",
+      "pt0",
+      "pt1",
+      "pt2",
+      "pt3",
+      "sz",
+      "pos",
+      "outMargin"
+    ]
+  },
+  {
+    "section": "Contents/section1.xml",
+    "text": "행정업무 운영 개요",
+    "attrs": {
+      "id": "0",
+      "zOrder": "0",
+      "numberingType": "NONE",
+      "textWrap": "TOP_AND_BOTTOM",
+      "textFlow": "BOTH_SIDES",
+      "lock": "0",
+      "dropcapstyle": "None",
+      "href": "",
+      "groupLevel": "3",
+      "instid": "925544725",
+      "ratio": "0"
+    },
+    "line": [
+      {
+        "color": "#000000",
+        "width": "33",
+        "style": "NONE",
+        "endCap": "FLAT",
+        "headStyle": "NORMAL",
+        "tailStyle": "NORMAL",
+        "headfill": "1",
+        "tailfill": "1",
+        "headSz": "SMALL_SMALL",
+        "tailSz": "SMALL_SMALL",
+        "outlineStyle": "NORMAL",
+        "alpha": "0"
+      }
+    ],
+    "children": [
+      "offset",
+      "orgSz",
+      "curSz",
+      "flip",
+      "rotationInfo",
+      "renderingInfo",
+      "lineShape",
+      "shadow",
+      "drawText",
+      "pt0",
+      "pt1",
+      "pt2",
+      "pt3"
+    ]
+  },
+  {
+    "section": "Contents/section1.xml",
+    "text": "제1장. 행정업무 운영 개요",
+    "attrs": {
+      "id": "0",
+      "zOrder": "0",
+      "numberingType": "NONE",
+      "textWrap": "TOP_AND_BOTTOM",
+      "textFlow": "BOTH_SIDES",
+      "lock": "0",
+      "dropcapstyle": "None",
+      "href": "",
+      "groupLevel": "1",
+      "instid": "919461643",
+      "ratio": "0"
+    },
+    "line": [
+      {
+        "color": "#000000",
+        "width": "33",
+        "style": "NONE",
+        "endCap": "FLAT",
+        "headStyle": "NORMAL",
+        "tailStyle": "NORMAL",
+        "headfill": "1",
+        "tailfill": "1",
+        "headSz": "MEDIUM_MEDIUM",
+        "tailSz": "MEDIUM_MEDIUM",
+        "outlineStyle": "NORMAL",
+        "alpha": "0"
+      }
+    ],
+    "children": [
+      "offset",
+      "orgSz",
+      "curSz",
+      "flip",
+      "rotationInfo",
+      "renderingInfo",
+      "lineShape",
+      "shadow",
+      "drawText",
+      "pt0",
+      "pt1",
+      "pt2",
+      "pt3"
+    ]
+  },
+  {
+    "section": "Contents/section11.xml",
+    "text": "행정업무의 운영 및 혁신에 관한 규정·시행규칙",
+    "attrs": {
+      "id": "0",
+      "zOrder": "0",
+      "numberingType": "NONE",
+      "textWrap": "TOP_AND_BOTTOM",
+      "textFlow": "BOTH_SIDES",
+      "lock": "0",
+      "dropcapstyle": "None",
+      "href": "",
+      "groupLevel": "1",
+      "instid": "928083674",
+      "ratio": "0"
+    },
+    "line": [
+      {
+        "color": "#000000",
+        "width": "33",
+        "style": "NONE",
+        "endCap": "FLAT",
+        "headStyle": "NORMAL",
+        "tailStyle": "NORMAL",
+        "headfill": "1",
+        "tailfill": "1",
+        "headSz": "MEDIUM_MEDIUM",
+        "tailSz": "MEDIUM_MEDIUM",
+        "outlineStyle": "NORMAL",
+        "alpha": "0"
+      }
+    ],
+    "children": [
+      "offset",
+      "orgSz",
+      "curSz",
+      "flip",
+      "rotationInfo",
+      "renderingInfo",
+      "lineShape",
+      "shadow",
+      "drawText",
+      "pt0",
+      "pt1",
+      "pt2",
+      "pt3"
+    ]
+  }
+]

@@ -80,10 +80,15 @@ fn cap_master_page_plane(
     plane: PaintReplayPlane,
     layer: Option<RenderLayerInfo>,
 ) -> PaintReplayPlane {
-    if plane != PaintReplayPlane::Background && layer.is_some_and(|layer| layer.master_page) {
-        PaintReplayPlane::BehindText
-    } else {
-        plane
+    match layer {
+        // 맨 위로 보내기 바탕쪽은 본문 위에 그린다(한컴 도움말: 본문이 바탕쪽에 가려질 수 있다).
+        Some(layer) if plane != PaintReplayPlane::Background && layer.master_front => {
+            PaintReplayPlane::InFrontOfText
+        }
+        Some(layer) if plane != PaintReplayPlane::Background && layer.master_page => {
+            PaintReplayPlane::BehindText
+        }
+        _ => plane,
     }
 }
 

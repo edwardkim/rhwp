@@ -1,0 +1,39 @@
+{
+  "base": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "viewer": "edwardkim",
+  "permissions": {
+    "admin": true,
+    "maintain": true,
+    "push": true,
+    "triage": true,
+    "pull": true
+  },
+  "prs": [
+    {
+      "number": 8915,
+      "title": "fix(chrome): 일반 SSR 페이지에서 설치 감지용 DOM 주입 방지 (#8914)",
+      "state": "open",
+      "head": "61198fcf3f4d185c8f78eac5b3259d99303b8845",
+      "base": "5ea1227505978156082121f1601cb03044a0583f",
+      "mergeable": true,
+      "mergeable_state": "clean",
+      "head_repo": "semanticist21/rhwp",
+      "head_ref": "task/8914-chrome-hydration",
+      "checks": 36,
+      "failed_or_incomplete": []
+    },
+    {
+      "number": 8913,
+      "title": "fix(selection): 문단 끝 줄은 문단 부호까지만 칠한다 (#8908)",
+      "state": "open",
+      "head": "66141a6c485844e37cdd133f7ac92890e9d8a2c3",
+      "base": "5ea1227505978156082121f1601cb03044a0583f",
+      "mergeable": true,
+      "mergeable_state": "clean",
+      "head_repo": "semanticist21/rhwp",
+      "head_ref": "task/8908-selection-paragraph-mark",
+      "checks": 36,
+      "failed_or_incomplete": []
+    }
+  ]
+}

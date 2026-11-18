@@ -35,6 +35,14 @@ use super::utils::{
 use super::LayoutEngine;
 use super::{CellContext, CellPathEntry};
 
+/// 여러 단 걸침 개체의 원본 자리차지 높이와 실제 Square 배제 상자(HU).
+/// Square는 폭/높이만 재추정하지 않고 조판이 사용하는 ObjectPlacementFrame 결과를 소비한다.
+#[derive(Default)]
+pub(crate) struct PageSpanningFloatFrames {
+    pub(crate) topbottom_heights: Vec<i32>,
+    pub(crate) square_exclusions: Vec<crate::renderer::layout_frame::FrameExclusion>,
+}
+
 /// 묶음의 자식별 글상자 번호를 모든 편집 소비 지점에 같은 원문 순서로 전달한다.
 /// 좌표·clip·paint는 변경하지 않는다. 중첩 묶음에서 이미 구분한 자식 번호에는 바깥 오프셋만 더한다.
 fn offset_group_textbox_sources(node: &mut RenderNode, depth: usize, offset: usize) {
@@ -113,11 +121,21 @@ fn connector_line_style(
 }
 
 /// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
-fn textbox_has_visible_text(text_box: &TextBox) -> bool {
-    text_box
-        .paragraphs
-        .iter()
-        .any(|para| para.text.chars().any(|ch| !ch.is_whitespace()))
+/// 그림을 원래 크기로 상자 안 한 자리에 놓는 채우기 모드.
+fn is_placement_fill_mode(mode: crate::model::style::ImageFillMode) -> bool {
+    use crate::model::style::ImageFillMode as M;
+    matches!(
+        mode,
+        M::Center
+            | M::CenterTop
+            | M::CenterBottom
+            | M::LeftCenter
+            | M::LeftTop
+            | M::LeftBottom
+            | M::RightCenter
+            | M::RightTop
+            | M::RightBottom
+    )
 }
 
 fn textbox_contains_non_tac_picture(text_box: &TextBox) -> bool {
@@ -155,15 +173,13 @@ fn textbox_vpos_px(vertical_pos: i32, origin_hu: Option<i32>, dpi: f64) -> f64 {
     hwpunit_to_px(normalize_textbox_vpos_hu(vertical_pos, origin_hu), dpi)
 }
 
-/// #1681 편람 글상자에 도입된 경험적 보정을 텍스트가 있는 글상자에만 유지한다.
-/// 글상자 포함 여부와 비인쇄 여부는 별개이며 이 조건은 포맷의 일반 비인쇄 규칙이 아니다.
-/// #6852: 일반 도형의 흰색 채우기를 마스크로 추정하면 명시된 실선까지 소실된다.
 /// 글상자 안 글앞으로/글뒤로 표의 (가로, 세로) 오프셋(px). 오프셋에 표 바깥 여백(왼쪽·위)을 더한다.
 /// 가로 단·문단 기준 왼쪽 정렬, 세로 문단 기준만 다룬다. 그 밖의 배치는 None 이며 기존처럼 문단 정렬로 놓는다.
 fn textbox_floating_table_offset_px(
     common: &CommonObjAttr,
     outer_margin_left: i16,
     outer_margin_top: i16,
+    unstored: bool,
     dpi: f64,
 ) -> Option<(f64, f64)> {
     let floating = matches!(
@@ -174,38 +190,158 @@ fn textbox_floating_table_offset_px(
         && common.horz_align == HorzAlign::Left;
     let vert = common.vert_rel_to == VertRelTo::Para && common.vert_align == VertAlign::Top;
     (!common.treat_as_char && floating && horz && vert).then(|| {
+        // 저장 줄 없는 자유 배치 표는 정렬할 글 흐름·바깥 여백을 소유하지 않는다.
+        let free = unstored && !common.flow_with_text;
+        let margin_left = if free {
+            0.0
+        } else {
+            f64::from(outer_margin_left)
+        };
+        let margin_top = if free {
+            0.0
+        } else {
+            f64::from(outer_margin_top)
+        };
         (
             // 부호 있는 저장 오프셋과 여백은 합계가 i32 범위를 넘을 수 있다.
             // f64는 이 정수 범위를 정확히 표현하므로 좌표를 자르거나 감싸지 않는다.
-            (common.horizontal_offset as i32 as f64 + f64::from(outer_margin_left)) * dpi
-                / HWPUNIT_PER_INCH,
-            (common.vertical_offset as i32 as f64 + f64::from(outer_margin_top)) * dpi
+            (common.horizontal_offset as i32 as f64 + margin_left) * dpi / HWPUNIT_PER_INCH,
+            (if unstored && common.flow_with_text {
+                // 글상자 안 영역 제한은 음수 문단 오프셋을 내용 위끝에서 제한한다.
+                f64::from((common.vertical_offset as i32).max(0))
+            } else {
+                common.vertical_offset as i32 as f64
+            } + margin_top)
+                * dpi
                 / HWPUNIT_PER_INCH,
         )
     })
 }
 
-fn should_suppress_group_textbox_construction_stroke(drawing: &DrawingObjAttr) -> bool {
-    let Some(text_box) = drawing.text_box.as_ref() else {
-        return false;
+/// [PK-40987] 저장 줄 없는 글상자 문단에 놓인 문단 기준 자리차지(위아래) 표의 띠.
+///
+/// 한컴(웹한글기안기 인쇄·화면 실측)은 이 표를 `문단 위끝 + 세로 오프셋 + 바깥 위 여백` 에 놓고, 다음
+/// 문단을 `표 바닥 + 바깥 아래 여백` 에서 시작한다. 빈 앵커 문단의 자기 줄은 그 띠에 흡수되고,
+/// 글 있는 앵커 문단은 띠에 걸리는 줄만 띠 아래로 간다(띠 위의 줄은 제자리).
+/// 가로·세로 정렬은 단·문단 기준 왼쪽, 문단 기준 위만 다룬다. 앵커 문단의 컨트롤은 이런 표뿐이어야 한다.
+/// 돌려주는 값은 문단 위끝 기준 (가로 오프셋, 표 위 오프셋, 띠 아래끝) px 이며, 해당하지 않으면 `None` 이다.
+fn textbox_topbottom_table_band_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> Option<(f64, f64, f64)> {
+    let common = &table.common;
+    if !textbox_topbottom_table_shape(table)
+        || !crate::renderer::para_has_no_stored_line_segs(para)
+        || !para.controls.iter().all(|control| match control {
+            Control::Table(other) => textbox_topbottom_table_shape(other),
+            _ => false,
+        })
+    {
+        return None;
+    }
+    let px = |hu: f64| hu * dpi / HWPUNIT_PER_INCH;
+    let top = common.vertical_offset as i32 as f64 + f64::from(table.outer_margin_top);
+    let bottom = top + f64::from(common.height) + f64::from(table.outer_margin_bottom);
+    Some((
+        px(common.horizontal_offset as i32 as f64 + f64::from(table.outer_margin_left)),
+        px(top),
+        px(bottom),
+    ))
+}
+
+/// [PK-40987] 띠 계약이 다루는 표 형상(글자처럼 아님, 자리차지, 문단 기준 위, 단·문단 기준 왼쪽).
+fn textbox_topbottom_table_shape(table: &crate::model::table::Table) -> bool {
+    let common = &table.common;
+    !common.treat_as_char
+        && common.text_wrap == TextWrap::TopAndBottom
+        && common.vert_rel_to == VertRelTo::Para
+        && common.vert_align == VertAlign::Top
+        && matches!(common.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
+        && common.horz_align == HorzAlign::Left
+}
+
+/// [PK-40987] 문단이 가진 띠 표들의 (가장 위 표 위, 가장 아래 띠 끝)(문단 위끝 기준 px).
+fn textbox_topbottom_table_band_extent_px(para: &Paragraph, dpi: f64) -> Option<(f64, f64)> {
+    para.controls
+        .iter()
+        .filter_map(|control| match control {
+            Control::Table(table) => textbox_topbottom_table_band_px(para, table, dpi),
+            _ => None,
+        })
+        .map(|(_, top, bottom)| (top, bottom))
+        .reduce(|(t0, b0), (t1, b1)| (t0.min(t1), b0.max(b1)))
+}
+
+/// [PK-40987] 저장 줄 있는 글상자의 세로 정렬 높이에 드는 비글자처럼 표의 바닥(문단 저장 vpos 기준 HU).
+/// 문단 기준 위 정렬의 글 앞으로·글 뒤로·자리차지 표만 다룬다: 세로 오프셋 + 바깥 위 + 높이 + 바깥 아래.
+fn textbox_stored_table_bottom_hu(table: &crate::model::table::Table) -> Option<i32> {
+    let common = &table.common;
+    (!common.treat_as_char
+        && matches!(
+            common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText | TextWrap::TopAndBottom
+        )
+        && common.vert_rel_to == VertRelTo::Para
+        && common.vert_align == VertAlign::Top)
+        .then(|| {
+            (common.vertical_offset as i32)
+                .saturating_add(i32::from(table.outer_margin_top))
+                .saturating_add(common.height as i32)
+                .saturating_add(i32::from(table.outer_margin_bottom))
+        })
+}
+
+/// [PK-40987] 저장 줄 있는 글상자 문단의 앵커 위끝이 첫 저장 줄보다 위에 있는 양(HU, 0 이상).
+///
+/// 한컴은 자리차지 표 띠가 앵커 문단의 줄을 밀면 그 줄을 띠 아래에 저장한다(실문서: 앞 문단 끝
+/// 44967 + 오프셋 164 + 바깥 위 283 + 높이 11650 + 바깥 아래 283 = 앵커 줄 57347). 표 자리와 내용
+/// 높이는 줄이 아니라 앞 문단 끝(앞 문단 마지막 줄 vpos + 줄 높이 + 줄 간격)을 문단 위끝으로 쓴다.
+/// 앞 문단이 없거나 줄이 밀리지 않았으면 0 이다.
+fn textbox_stored_anchor_lift_hu(paragraphs: &[Paragraph], index: usize) -> i32 {
+    let Some(own) = paragraphs
+        .get(index)
+        .and_then(|para| para.line_segs.first())
+        .map(|line| line.vertical_pos)
+    else {
+        return 0;
     };
-    if drawing.caption.is_some() {
-        return false;
-    }
-    let sa = &drawing.shape_attr;
-    let has_rotation_or_shear = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
-    if sa.group_level == 0 || has_rotation_or_shear {
-        return false;
-    }
-    let line = &drawing.border_line;
-    let line_type = line.attr & 0x3f;
-    if line_type != 1 || line.color != 0 || line.width <= 0 || line.width > 40 {
-        return false;
-    }
-    textbox_has_visible_text(text_box)
-        && drawing.fill.fill_type == FillType::None
-        && drawing.fill.gradient.is_none()
-        && drawing.fill.image.is_none()
+    let Some(previous_end) = index
+        .checked_sub(1)
+        .and_then(|prev| paragraphs.get(prev))
+        .and_then(|para| para.line_segs.last())
+        .map(|line| {
+            line.vertical_pos
+                .saturating_add(line.line_height)
+                .saturating_add(line.line_spacing)
+        })
+    else {
+        return 0;
+    };
+    own.saturating_sub(previous_end).max(0)
+}
+
+/// [PK-40987] 저장 줄 있는 글상자 문단의 자리차지 표 자리(가로·세로 오프셋 + 바깥 여백, px).
+/// 저장 줄이 뒤 흐름을 이미 담으므로 표 자리만 글 앞으로 표와 같은 오프셋에 놓는다. 띠가 앵커 줄을
+/// 민 문단은 앞 문단 끝을 문단 위끝으로 쓴다(`anchor_lift_hu`).
+fn textbox_stored_topbottom_table_offset_px(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    anchor_lift_hu: i32,
+    dpi: f64,
+) -> Option<(f64, f64)> {
+    let common = &table.common;
+    (textbox_topbottom_table_shape(table) && !crate::renderer::para_has_no_stored_line_segs(para))
+        .then(|| {
+            (
+                (common.horizontal_offset as i32 as f64 + f64::from(table.outer_margin_left)) * dpi
+                    / HWPUNIT_PER_INCH,
+                (common.vertical_offset as i32 as f64 + f64::from(table.outer_margin_top)
+                    - f64::from(anchor_lift_hu))
+                    * dpi
+                    / HWPUNIT_PER_INCH,
+            )
+        })
 }
 
 fn push_placeholder_render_node(
@@ -506,6 +642,19 @@ fn matrix_textbox_lines_need_reflow(para: &Paragraph) -> bool {
         && !para.text.is_empty()
         && !para.text.contains('\n')
         && para.line_segs.len() > 1
+}
+
+/// [#9076] 글자 없는 문단의 저장 줄이 미기입 누름틀 안내문을 넣고 나눈 사다리이고, 그 문단에
+/// 글자처럼 취급 개체가 있는가.
+///
+/// 한/글은 안내문을 문단 글자로 저장하고 인쇄에서는 안내문 없이 줄을 다시 나눈다(#9005).
+/// 안내문만 있던 줄이 사라지고 개체가 앞 줄로 올라오므로 저장 줄로는 개체의 줄을 정할 수 없다.
+/// 개체 줄은 높이가 개체에서 나와, 다시 나눈 사다리가 안내문 없는 한/글 저장값과 같다.
+/// 글자가 있는 문단은 다시 나누면 한/글의 글자 줄 높이를 잃으므로 저장 줄을 그대로 쓴다.
+fn hidden_guide_object_rows_need_reflow(para: &Paragraph) -> bool {
+    para.text.is_empty()
+        && para.stored_rows_include_hidden_guide()
+        && para.controls.iter().any(Control::is_treat_as_char_object)
 }
 
 /// A content-grown, unprotected inline textbox may retain a wrapped cache after
@@ -1054,6 +1203,9 @@ impl LayoutEngine {
 
         let (mut shape_w, mut shape_h) =
             self.resolve_object_size(common, col_area, body_area, paper_area);
+        if let Some(required) = shape.restricted_textbox_table_height_hu() {
+            shape_h = shape_h.max(hwpunit_to_px(required, self.dpi));
+        }
 
         if shape
             .drawing()
@@ -1334,7 +1486,6 @@ impl LayoutEngine {
                 cap_x,
                 cap_w,
                 cap_y,
-                &mut self.auto_counter.borrow_mut(),
                 bin_data_content,
                 None,
                 CaptionOwner::new(
@@ -1795,12 +1946,9 @@ impl LayoutEngine {
 
         match shape {
             ShapeObject::Rectangle(rect) => {
-                let (mut style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
-                // 기존 글상자 보정만 적용한다. 일반 사각형의 선은 원본 스타일을 따른다.
-                if should_suppress_group_textbox_construction_stroke(&rect.drawing) {
-                    style.stroke_color = None;
-                    style.stroke_width = 0.0;
-                }
+                // 글상자의 텍스트·채우기와 선의 가시성은 별개다.
+                // 그룹 자식도 원본의 명시된 SOLID/NONE을 그대로 소비한다.
+                let (style, gradient) = drawing_to_shape_style(&rect.drawing, self.dpi);
                 let round_px = if rect.round_rate > 0 {
                     // 한컴 곡률 50%는 반원이다. 짧은 변의 절반이 반지름이며,
                     // 백분율을 적용한 뒤 다시 2로 나누면 50%도 둥근 모서리에 그친다.
@@ -2594,6 +2742,7 @@ impl LayoutEngine {
                         transform,
                         crop,
                         original_size_hu,
+                        soft_edge_radius_hu: pic.effects.soft_edge_radius,
                         effect: pic.image_attr.effect,
                         brightness: pic.image_attr.brightness,
                         contrast: pic.image_attr.contrast,
@@ -3156,8 +3305,25 @@ impl LayoutEngine {
             if let Some(ref img_fill) = drawing.fill.image {
                 let bin_data_id = img_fill.bin_data_id;
                 let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
+                // [#8575] 배치 모드(가운데로·왼쪽 아래로 등)의 그림 크기는 그림 자체의
+                // 픽셀 크기(1px = 1/96in, 그림의 DPI 정보는 쓰지 않음)를 축마다 도형
+                // 상자로 줄인 값이다. 도형의 원래 크기·배율과는 무관하다 — 한/글 2020
+                // Print 로 확인(`samples/issue8575/shape_image_fill.hwpx` 사례 A~F).
+                // 바둑판·크기에 맞추어 등 나머지 모드는 종전 값을 유지한다.
+                let placement_size = is_placement_fill_mode(img_fill.fill_mode)
+                    .then(|| {
+                        image_data
+                            .as_deref()
+                            .and_then(crate::renderer::svg::parse_image_dimensions)
+                    })
+                    .flatten()
+                    .filter(|(nw, nh)| *nw > 0 && *nh > 0)
+                    .map(|(nw, nh)| {
+                        let scale = self.dpi / 96.0;
+                        ((nw as f64 * scale).min(w), (nh as f64 * scale).min(h))
+                    });
                 // 이미지 원본 크기: shape_attr의 original_width/height (HWPUNIT)
-                let original_size = {
+                let original_size = placement_size.or_else(|| {
                     let ow = drawing.shape_attr.original_width;
                     let oh = drawing.shape_attr.original_height;
                     if ow > 0 && oh > 0 {
@@ -3168,7 +3334,7 @@ impl LayoutEngine {
                     } else {
                         None
                     }
-                };
+                });
 
                 let img_id = tree.next_id();
                 // [#6895] `ImageNode` 는 화면 순서를, `ImageFill` 은 이진 순서를 담는다.
@@ -3434,7 +3600,7 @@ impl LayoutEngine {
         // (0=가로, 1=영문 눕힘, 2=영문 세움)
         // 주의: 테이블 셀은 bit 16~18이지만 글상자 LIST_HEADER는 bit 0~2
         let text_direction = (text_box.list_attr & 0x07) as u8;
-        let reflowed_textbox_paragraphs = if should_reflow_matrix_textbox_lines(
+        let reflows_matrix_lines = should_reflow_matrix_textbox_lines(
             matrix_positioned,
             drawing,
             text_box,
@@ -3442,20 +3608,41 @@ impl LayoutEngine {
             inner_area.width,
             inner_area.height,
             self.dpi,
-        ) {
+        );
+        // [#9076] 안내문을 넣고 나눈 개체 줄도 같은 사전 단계에서 이 글상자 폭으로 다시 나눈다.
+        let reflows_hidden_guide_rows = text_direction == 0
+            && inner_area.width > 0.0
+            && text_box
+                .paragraphs
+                .iter()
+                .any(hidden_guide_object_rows_need_reflow);
+        let reflowed_textbox_paragraphs = if reflows_matrix_lines || reflows_hidden_guide_rows {
             let mut paragraphs = text_box.paragraphs.clone();
             for index in 0..paragraphs.len() {
-                if !matrix_textbox_lines_need_reflow(&paragraphs[index]) {
+                let matrix_lines =
+                    reflows_matrix_lines && matrix_textbox_lines_need_reflow(&paragraphs[index]);
+                let hidden_guide_rows = reflows_hidden_guide_rows
+                    && hidden_guide_object_rows_need_reflow(&paragraphs[index]);
+                if !matrix_lines && !hidden_guide_rows {
                     continue;
                 }
                 let previous_end =
                     crate::renderer::composer::paragraph_flow_end(&paragraphs[index]);
-                reflow_matrix_textbox_para(
-                    &mut paragraphs[index],
-                    inner_area.width,
-                    styles,
-                    self.dpi,
-                );
+                if matrix_lines {
+                    reflow_matrix_textbox_para(
+                        &mut paragraphs[index],
+                        inner_area.width,
+                        styles,
+                        self.dpi,
+                    );
+                } else {
+                    textbox_reflow::in_frame(
+                        &mut paragraphs[index],
+                        inner_area.width,
+                        styles,
+                        self.dpi,
+                    );
+                }
                 // 줄 수가 바뀌면 뒤 문단도 새 흐름 끝에서 이어진다. 저장 쪽/글상자
                 // 리셋은 공통 vpos 재계산기가 보존하며 이전 줄의 끝과 구분한다.
                 if crate::renderer::composer::paragraph_flow_end(&paragraphs[index]) != previous_end
@@ -3764,7 +3951,7 @@ impl LayoutEngine {
                         .last()
                         .unwrap_or(0.0);
 
-                    for para in &textbox_paragraphs[..para_count] {
+                    for (para_idx, para) in textbox_paragraphs[..para_count].iter().enumerate() {
                         let para_vpos = para
                             .line_segs
                             .first()
@@ -3788,6 +3975,30 @@ impl LayoutEngine {
                                 let bottom = top.saturating_add(common.height as i32);
                                 total_content_height =
                                     total_content_height.max(hwpunit_to_px(bottom, self.dpi));
+                            }
+                            // 저장 줄 경로는 저장 표 프레임을 쓴다. 저장 줄 없는 제한 표는
+                            // 실제 행 하한과 두 바깥 여백을 포함하며 프레임 확장과 같은 값을 쓴다.
+                            if let Control::Table(table) = ctrl {
+                                let bottom = if align_by_laid_out_flow {
+                                    ShapeObject::restricted_textbox_table_bottom_hu(table)
+                                } else {
+                                    textbox_stored_table_bottom_hu(table)
+                                };
+                                if let Some(bottom) = bottom {
+                                    // 띠가 앵커 줄을 민 자리차지 표는 앞 문단 끝이 문단 위끝이다.
+                                    let lift = if table.common.text_wrap == TextWrap::TopAndBottom {
+                                        textbox_stored_anchor_lift_hu(
+                                            &textbox_paragraphs[..para_count],
+                                            para_idx,
+                                        )
+                                    } else {
+                                        0
+                                    };
+                                    total_content_height = total_content_height.max(hwpunit_to_px(
+                                        para_vpos.saturating_sub(lift).saturating_add(bottom),
+                                        self.dpi,
+                                    ));
+                                }
                             }
                         }
                         // [#5820 축2] 저장 lineseg 가 없는 문단(기계생성 로고 줄)은
@@ -3844,6 +4055,8 @@ impl LayoutEngine {
         let flow_first_border_range = self.para_border_ranges.borrow().len();
         let mut paragraph_origins = Vec::with_capacity(composed_paras.len());
         let mut para_y = inner_area.y + vert_offset;
+        // [PK-40987] 빈 앵커 문단의 자리차지 표 띠가 차지한 흐름의 가장 아래끝(글상자 글 영역 기준).
+        let mut topbottom_band_bottom = 0.0f64;
         for (tb_para_idx, composed) in composed_paras.iter().enumerate() {
             // vpos 기반 수직 위치: 원본 HWP 파일에서는 vertical_pos가 누적 절대값,
             // 편집 후 reflow된 문단은 vertical_pos=0이므로 incremental para_y와 비교하여
@@ -3881,6 +4094,7 @@ impl LayoutEngine {
                 },
             };
             let is_last_para = tb_para_idx + 1 == composed_paras.len();
+            let para_first_child = textbox_node.children.len();
             para_y = self.layout_composed_paragraph(
                 tree,
                 &mut textbox_node,
@@ -3901,13 +4115,42 @@ impl LayoutEngine {
                 None,
                 None, // 도형 컨텍스트 — wrap zone 무관
             );
+            // [PK-40987] 빈 앵커 문단의 자리차지 표는 흐름을 차지한다. 다음 문단은 표 띠 아래에서
+            // 시작하고 앵커 문단의 빈 줄은 띠에 흡수된다(띠가 줄보다 짧으면 줄을 지킨다).
+            if let Some((band_top, band)) = textbox_topbottom_table_band_extent_px(para, self.dpi) {
+                let para_start = paragraph_origins[tb_para_idx];
+                let anchor_has_text = !para
+                    .text
+                    .chars()
+                    .all(|c| c.is_whitespace() || c == '\u{FFFC}');
+                if anchor_has_text {
+                    // 글 있는 앵커: 띠에 걸리는 첫 줄부터 이 문단의 뒤 줄을 띠 아래로 민다.
+                    let (top, bottom) = (para_start + band_top, para_start + band);
+                    let mut shift = 0.0f64;
+                    for node in &mut textbox_node.children[para_first_child..] {
+                        if shift == 0.0
+                            && matches!(node.node_type, RenderNodeType::TextLine(_))
+                            && node.bbox.y < bottom
+                            && node.bbox.y + node.bbox.height > top
+                        {
+                            shift = bottom - node.bbox.y;
+                        }
+                        if shift > 0.0 {
+                            Self::translate_subtree_y(node, shift);
+                        }
+                    }
+                    para_y += shift;
+                }
+                para_y = para_y.max(para_start + band);
+                topbottom_band_bottom = topbottom_band_bottom.max(para_start + band - inner_area.y);
+            }
         }
 
         if align_by_laid_out_flow {
             let flow_bottom = textbox_node.children[flow_first_child..]
                 .iter()
                 .map(|node| node.bbox.y + node.bbox.height - inner_area.y)
-                .fold(0.0f64, f64::max);
+                .fold(topbottom_band_bottom, f64::max);
             let free_space =
                 (inner_area.height - content_height_for_align.max(flow_bottom)).max(0.0);
             vert_offset = match text_box.vertical_align {
@@ -4183,14 +4426,27 @@ impl LayoutEngine {
                         _ => None,
                     }
                 };
-                let line_of = |pos: usize| {
-                    comp.lines
-                        .iter()
-                        .enumerate()
-                        .rev()
-                        .find(|(_, line)| line.char_start <= pos)
-                        .map(|(idx, _)| idx)
-                        .unwrap_or(0)
+                // 개체의 줄은 표 셀 배치와 같은 공통 결과로 정한다. 저장 줄과 현재 프레임의 줄은
+                // 원시 제어 슬롯(PARA_TEXT) 경계로 소속을 정한다. 글자 번호로 투영하면 글자 없는
+                // 문단의 줄 시작이 모두 0 으로 겹쳐, 뒤 줄 개체가 첫 줄 끝에 이어 붙는다(#9021).
+                // 공통 결과가 없는 문단(인라인이 아닌 컨트롤이 섞인 합성 줄)은 글자 번호로 판정한다.
+                let owner_lines = comp
+                    .control_line_indices(para)
+                    .filter(|lines| lines.iter().all(|line| *line < comp.lines.len()));
+                let line_of = |ci: usize| -> Option<usize> {
+                    if let Some(lines) = owner_lines.as_ref() {
+                        return lines.get(ci).copied();
+                    }
+                    let pos = control_text_positions.get(ci).copied()?;
+                    Some(
+                        comp.lines
+                            .iter()
+                            .enumerate()
+                            .rev()
+                            .find(|(_, line)| line.char_start <= pos)
+                            .map(|(idx, _)| idx)
+                            .unwrap_or(0),
+                    )
                 };
                 let ctrl_line: Vec<Option<usize>> = para
                     .controls
@@ -4198,7 +4454,7 @@ impl LayoutEngine {
                     .enumerate()
                     .map(|(ci, ctrl)| {
                         tac_width(ctrl)?;
-                        Some(line_of(control_text_positions.get(ci).copied()?))
+                        line_of(ci)
                     })
                     .collect();
                 let lines_used: std::collections::BTreeSet<usize> =
@@ -4611,12 +4867,30 @@ impl LayoutEngine {
                             .unwrap_or(Alignment::Left);
                         // 글상자 안에서 글앞으로/글뒤로 떠 있는 표는 자기 가로·세로 오프셋 자리에 놓는다.
                         // 글상자 안의 단·문단 기준은 글상자 글 영역이다.
+                        // [PK-40987] 빈 앵커 문단의 자리차지 표도 자기 오프셋 자리에 놓는다(흐름 전진은
+                        // 문단 단계가 같은 띠로 이미 반영했다).
                         let floating_offset = textbox_floating_table_offset_px(
                             &table.common,
                             table.outer_margin_left,
                             table.outer_margin_top,
+                            align_by_laid_out_flow,
                             self.dpi,
-                        );
+                        )
+                        .or_else(|| {
+                            textbox_topbottom_table_band_px(para, table, self.dpi)
+                                .map(|(dx, dy, _)| (dx, dy))
+                        })
+                        .or_else(|| {
+                            textbox_stored_topbottom_table_offset_px(
+                                para,
+                                table,
+                                textbox_stored_anchor_lift_hu(
+                                    &textbox_paragraphs[..para_count],
+                                    pi,
+                                ),
+                                self.dpi,
+                            )
+                        });
                         let table_ctx = CellContext {
                             in_textbox: true,
                             parent_para_index: para_index,
@@ -4647,9 +4921,74 @@ impl LayoutEngine {
                         };
                         let dy = floating_offset.map_or(0.0, |(_, dy)| dy);
                         let fallback_y = if table.common.treat_as_char {
-                            inline_obj_y + hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
+                            // 같은 저장 줄에 글자처럼 취급 표가 둘 이상이면 표 셀·글줄 경로와 같은
+                            // 공유 기준선에 앉힌다. 줄 높이가 바깥 상자와 같은 표가 줄 소유자이고
+                            // 나머지는 자기 높이의 85% 를 그 기준선 위에 둔다(#7049·#7150). 모두 줄
+                            // 상단에 붙이면 낮은 표가 높이 차만큼 위로 뜬다(#9021).
+                            let owner_line = |ci: usize| {
+                                tac_line_plan
+                                    .as_ref()
+                                    .and_then(|(ctrl_line, ..)| {
+                                        ctrl_line.get(ci).copied().flatten()
+                                    })
+                                    .unwrap_or(inline_line_idx)
+                            };
+                            let table_line = owner_line(ctrl_idx_in_para);
+                            let line_tables = || {
+                                para.controls
+                                    .iter()
+                                    .enumerate()
+                                    .filter_map(|(ci, ctrl)| match ctrl {
+                                        Control::Table(other)
+                                            if other.common.treat_as_char
+                                                && owner_line(ci) == table_line =>
+                                        {
+                                            Some(other.as_ref())
+                                        }
+                                        _ => None,
+                                    })
+                            };
+                            para.line_segs
+                                .get(table_line)
+                                .filter(|line| {
+                                    !para.stored_text_partition_is_dirty()
+                                        && !para.cell_format_vpos_dirty
+                                        && line.tag
+                                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                            == 0
+                                        && line.line_height > 0
+                                        && line_tables().count() >= 2
+                                })
+                                .and_then(|line| {
+                                    super::stored_tac_frame::line_table_owner(
+                                        line_tables(),
+                                        hwpunit_to_px(line.line_height, self.dpi),
+                                        styles,
+                                        self.dpi,
+                                    )
+                                })
+                                .map_or(
+                                    inline_obj_y
+                                        + hwpunit_to_px(table.outer_margin_top as i32, self.dpi),
+                                    |(owner_h, owner_om_top)| {
+                                        super::stored_tac_frame::companion_table_top(
+                                            inline_obj_y,
+                                            owner_h,
+                                            owner_om_top,
+                                            hwpunit_to_px(table.common.height as i32, self.dpi),
+                                        )
+                                    },
+                                )
                         } else {
-                            para_start_y + dy
+                            // 자유 배치 표는 글자의 가운데/아래 정렬 전 문단 원점을 유지한다.
+                            let free_table = align_by_laid_out_flow
+                                && !table.common.flow_with_text
+                                && floating_offset.is_some()
+                                && matches!(
+                                    table.common.text_wrap,
+                                    TextWrap::InFrontOfText | TextWrap::BehindText
+                                );
+                            para_start_y + dy - if free_table { vert_offset } else { 0.0 }
                         };
                         let table_y = inline_origin.map_or(fallback_y, |(_, y)| y);
                         let table_bottom = self.layout_embedded_table(
@@ -5242,6 +5581,135 @@ impl LayoutEngine {
 
     /// 다단 레이아웃에서 body_area 전체에 걸치는 TopAndBottom 개체의 예약 높이 계산
     /// 모든 단의 items를 순회하여 body_area 너비와 동일하거나 큰 개체만 반환
+    /// [#7282] 쪽의 모든 단 항목에서, 가로 범위가 둘 이상의 단에 걸치는 비-TAC
+    /// 자리차지(TopAndBottom) 개체의 틀 높이(높이 + 바깥 위·아래 여백, HU)를 모은다.
+    /// 앵커 단을 가리지 않는다 — 한/글은 이 틀이 지나는 모든 단의 줄을 틀 아래로 밀어
+    /// LINE_SEG.vertical_pos 에 저장한다. 문단 배치는 줄 사이 저장 점프가 이 높이와
+    /// 같을 때만 그 저장 위치를 쓴다.
+    pub(crate) fn collect_page_spanning_float_frames(
+        &self,
+        paragraphs: &[Paragraph],
+        page_content: &super::super::pagination::PageContent,
+        layout: &super::super::page_layout::PageLayoutInfo,
+        styles: &ResolvedStyleSet,
+    ) -> PageSpanningFloatFrames {
+        let mut frames = PageSpanningFloatFrames::default();
+        for col_content in &page_content.column_contents {
+            let zone_layout = col_content.zone_layout.as_ref().unwrap_or(layout);
+            if zone_layout.column_areas.len() < 2 {
+                continue;
+            }
+            let col_idx = col_content.column_index as usize;
+            let Some(col_area) = zone_layout.column_areas.get(col_idx) else {
+                continue;
+            };
+            for item in &col_content.items {
+                let (para_index, control_index) = match item {
+                    PageItem::Shape {
+                        para_index,
+                        control_index,
+                    }
+                    | PageItem::Table {
+                        para_index,
+                        control_index,
+                    } => (*para_index, *control_index),
+                    _ => continue,
+                };
+                let Some(ctrl) = paragraphs
+                    .get(para_index)
+                    .and_then(|p| p.controls.get(control_index))
+                else {
+                    continue;
+                };
+                let (common, margin_top, margin_bottom) = match ctrl {
+                    Control::Table(t) => (
+                        &t.common,
+                        i32::from(t.outer_margin_top),
+                        i32::from(t.outer_margin_bottom),
+                    ),
+                    Control::Picture(p) => (
+                        &p.common,
+                        i32::from(p.common.margin.top),
+                        i32::from(p.common.margin.bottom),
+                    ),
+                    Control::Shape(s) => (
+                        s.common(),
+                        i32::from(s.common().margin.top),
+                        i32::from(s.common().margin.bottom),
+                    ),
+                    _ => continue,
+                };
+                if common.treat_as_char {
+                    continue;
+                }
+                if let Control::Picture(picture) = ctrl {
+                    if matches!(common.vert_rel_to, VertRelTo::Paper | VertRelTo::Page) {
+                        let paper = LayoutRect {
+                            x: 0.0,
+                            y: 0.0,
+                            width: layout.page_width,
+                            height: layout.page_height,
+                        };
+                        let placement = crate::renderer::float_placement::ObjectPlacementFrame {
+                            container: col_area,
+                            column: col_area,
+                            body: &zone_layout.body_area,
+                            paper: &paper,
+                            paragraph_y: col_area.y,
+                            alignment: Alignment::Left,
+                            dpi: self.dpi,
+                        };
+                        if let Some(exclusion) = placement.picture_exclusion(
+                            picture,
+                            &paragraphs[para_index],
+                            control_index,
+                            styles,
+                        ) {
+                            let spanned = zone_layout
+                                .column_areas
+                                .iter()
+                                .filter(|area| {
+                                    let left = px_to_hwpunit(area.x, self.dpi);
+                                    let right = px_to_hwpunit(area.x + area.width, self.dpi);
+                                    exclusion.horizontal.start < right
+                                        && left < exclusion.horizontal.end
+                                })
+                                .count();
+                            if spanned > 1 && !frames.square_exclusions.contains(&exclusion) {
+                                frames.square_exclusions.push(exclusion);
+                            }
+                        }
+                    }
+                }
+                if common.text_wrap != TextWrap::TopAndBottom {
+                    continue;
+                }
+                let width_px = hwpunit_to_px(common.width as i32, self.dpi);
+                let ctx = crate::renderer::float_placement::FloatPlacementContext::new(*col_area)
+                    .with_body_area(zone_layout.body_area)
+                    .with_paper_width(layout.page_width);
+                let (left, right) = crate::renderer::float_placement::horizontal_range(
+                    common, width_px, ctx, self.dpi,
+                );
+                let spanned = zone_layout
+                    .column_areas
+                    .iter()
+                    .filter(|area| right > area.x + 0.5 && left < area.x + area.width - 0.5)
+                    .count();
+                if spanned < 2 {
+                    continue;
+                }
+                let frame = (common.height as i32)
+                    .saturating_add(margin_top)
+                    .saturating_add(margin_bottom);
+                if frame > 0 && !frames.topbottom_heights.contains(&frame) {
+                    frames.topbottom_heights.push(frame);
+                }
+            }
+        }
+        frames
+    }
+
     pub(crate) fn calculate_body_wide_shape_reserved(
         &self,
         paragraphs: &[Paragraph],

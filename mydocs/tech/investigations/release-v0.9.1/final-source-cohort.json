@@ -1,0 +1,15 @@
+{
+  "rustValidationSource": "c0f9ea46f4a5693323e51c6be2cd9a9368f3311d",
+  "frontendCodeSource": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "changedPaths": [
+    "CHANGELOG.md",
+    "CHANGELOG_EN.md",
+    "mydocs/plans/release_0_9_1_20261118.md",
+    "mydocs/release/release_notes_v0.9.1.md",
+    "mydocs/release/release_notes_v0.9.1_EN.md",
+    "rhwp-studio/src/core/document-open-session.ts",
+    "rhwp-studio/src/main.ts",
+    "rhwp-studio/tests/document-open-session.test.ts"
+  ],
+  "rustCargoAssetDifferences": []
+}

@@ -1,0 +1,24 @@
+[
+  {
+    "key": "receipt-saved",
+    "source_code_head": "676e3900c6490657229f9781e34f89c65c7126da",
+    "input": "mydocs/pr/assets/planet6897_clean20_20261113/serialized-inputs/receipt-saved.hwpx",
+    "bytes": 18804,
+    "sha256": "21fc0d7ffe6f3644a84b7ca45e5b93d1a54af4e43189bd05d63e1db60f6b1dc1",
+    "second_save_equal": true,
+    "pdf": "pdf/issue8998/issue-986-receipt-rhwp-hwpx-2020.pdf",
+    "pdf_sha256": "37e312be6724837f1929eef0ea7a52dfb315240ba6e097f9d9b8240f85e062dd",
+    "producer_record": "원본 통합 후보의 실제 CLI save→재열기→resave, generated-inputs와 각 actual-cli 로그에 대응. 두 저장 결과가 동일하므로 한 사본만 커밋한다."
+  },
+  {
+    "key": "pr9003-saved",
+    "source_code_head": "676e3900c6490657229f9781e34f89c65c7126da",
+    "input": "mydocs/pr/assets/planet6897_clean20_20261113/serialized-inputs/pr9003-saved.hwpx",
+    "bytes": 169015,
+    "sha256": "511bb5b430d2ede35c7c0dfc617f7a4f29ee5ee24d24615efbb4fe4b1ed1c15d",
+    "second_save_equal": true,
+    "pdf": "pdf/issue8996/80168-rhwp-hwpx-2020.pdf",
+    "pdf_sha256": "ede3439ae8981b952b4d68e301a499f85a9c56d688068aeaf21cef96911d460b",
+    "producer_record": "원본 통합 후보의 실제 CLI save→재열기→resave, generated-inputs와 각 actual-cli 로그에 대응. 두 저장 결과가 동일하므로 한 사본만 커밋한다."
+  }
+]

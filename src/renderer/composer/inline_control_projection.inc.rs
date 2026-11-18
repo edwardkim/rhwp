@@ -172,8 +172,7 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
             .char_shape_ids
             .iter()
             .find(|&&id| id != 0xFFFFFFFF)
-            .copied()
-            .unwrap_or(0);
+            .copied();
         let text_pos = control_positions.get(*ctrl_idx).copied().unwrap_or(0);
         // 제어 슬롯 뒤 글자의 스타일이 아니라, 원문 슬롯 자체를 소유한 run을 찾는다.
         let stream_pos = stream_positions.get(*ctrl_idx).copied().unwrap_or(0);
@@ -190,7 +189,10 @@ fn try_inject_char_overlap_text<S: crate::storage::Storage>(
         let char_style_id = if composition.is_some() {
             host_style_id
         } else {
-            stored_char_style_id
+            // 짧은 HWP tcps payload에는 내부 ID 자체가 없을 수 있다.
+            // PUA 별도 해독도 그 경우 제어 슬롯의 서식을 상속한다.
+            // 명시적 0번은 누락과 구분하며 저장한 참조를 그대로 유지한다.
+            stored_char_style_id.unwrap_or(host_style_id)
         };
         storage.push(
             &mut insertions,

@@ -1,0 +1,470 @@
+[
+  {
+    "pr": 8689,
+    "review": "mydocs/pr/archives/pr_8689_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8689,
+      "key": "pr8689-1411000-201000007_final_report",
+      "page": 89
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8708,
+    "review": "mydocs/pr/archives/pr_8708_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8708,
+      "key": "pr8708-cell_float_offset_space",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8710,
+    "review": "mydocs/pr/archives/pr_8710_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8710,
+      "key": "pr8710-1311000-201100125_saemaul_oda_pilot_report",
+      "page": 16
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8717,
+    "review": "mydocs/pr/archives/pr_8717_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8717,
+      "key": "pr8717-tax_source_ledger_form",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8719,
+    "review": "mydocs/pr/archives/pr_8719_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8719,
+      "key": "pr8719-cell_float_inner_anchor",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8729,
+    "review": "mydocs/pr/archives/pr_8729_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8729,
+      "key": "pr8729-hft-hanyang_junggothic-probe",
+      "page": 3
+    },
+    "specific_reason": "보호 TSV 미충족. HFT 표본 CanvasKit glyphMapping 실패는 동일 조건 base에도 재현."
+  },
+  {
+    "pr": 8736,
+    "review": "mydocs/pr/archives/pr_8736_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8736,
+      "key": "pr8736-1741000-202200045_second_interim_report",
+      "page": 17
+    },
+    "specific_reason": "주장 16·17쪽의 개선과 별개로 전 138쪽에서 Native 8쪽·fresh WASM 10쪽이 90% 미만입니다."
+  },
+  {
+    "pr": 8740,
+    "review": "mydocs/pr/archives/pr_8740_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8740,
+      "key": "pr8740-156667654_saemangeum_press_release",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8744,
+    "review": "mydocs/pr/archives/pr_8744_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8744,
+      "key": "pr8744-nested_row_cell_cuts",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8746,
+    "review": "mydocs/pr/archives/pr_8746_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8746,
+      "key": "pr8746-36483048_approval_body",
+      "page": 5
+    },
+    "specific_reason": "결재문서 36483048의 5쪽이 Native 79.65043%·fresh WASM 78.51980%이며, 36453591의 fresh WASM 5쪽도 88.81582%입니다."
+  },
+  {
+    "pr": 8751,
+    "review": "mydocs/pr/archives/pr_8751_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8751,
+      "key": "pr8751-75544_pii_bunseok",
+      "page": 59
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8758,
+    "review": "mydocs/pr/archives/pr_8758_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8758,
+      "key": "pr8758-whitespace_host_approval_table",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8772,
+    "review": "mydocs/pr/archives/pr_8772_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8772,
+      "key": "pr8772-46551_road_traffic_rule_amendment",
+      "page": 13
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8775,
+    "review": "mydocs/pr/archives/pr_8775_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8775,
+      "key": "pr8775-field_led_wide_table",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8785,
+    "review": "mydocs/pr/archives/pr_8785_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8785,
+      "key": "pr8785-stored_field_line_page_split",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8788,
+    "review": "mydocs/pr/archives/pr_8788_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8788,
+      "key": "pr8788-reflowed_gap_stored_rewind",
+      "page": 2
+    },
+    "specific_reason": "저장 되감김 문서의 fresh WASM 3쪽이 77.73117%로 미달입니다."
+  },
+  {
+    "pr": 8792,
+    "review": "mydocs/pr/archives/pr_8792_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8792,
+      "key": "pr8792-6500000-201700118_jeju_tourism_education_plan",
+      "page": 55
+    },
+    "specific_reason": "주장 페이지의 그림 배치는 개선됐지만 전 313쪽에서 Native·fresh WASM 각각 10쪽이 90% 미만입니다."
+  },
+  {
+    "pr": 8794,
+    "review": "mydocs/pr/archives/pr_8794_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8794,
+      "key": "pr8794-36495398-split-row-segments-reduced",
+      "page": 3
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8803,
+    "review": "mydocs/pr/archives/pr_8803_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8803,
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 80
+    },
+    "specific_reason": "HPV 보고서 159쪽이 같은 base 대비 Native 9.77412%p · fresh WASM 9.79218%p 하락했습니다."
+  },
+  {
+    "pr": 8806,
+    "review": "mydocs/pr/archives/pr_8806_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8806,
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 35
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8830,
+    "review": "mydocs/pr/archives/pr_8830_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8830,
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 54
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8833,
+    "review": "mydocs/pr/archives/pr_8833_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8833,
+      "key": "pr8833-36341965-float-band-gap-reduced",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8835,
+    "review": "mydocs/pr/archives/pr_8835_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8835,
+      "key": "pr8835-36400259-stale-cell-ladder",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8838,
+    "review": "mydocs/pr/archives/pr_8838_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8838,
+      "key": "pr8803-1351000-201500141_arrhythmia_research_plan",
+      "page": 58
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8846,
+    "review": "mydocs/pr/archives/pr_8846_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8846,
+      "key": "pr8846-synthetic_forward_tac_axis",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8848,
+    "review": "mydocs/pr/archives/pr_8848_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8848,
+      "key": "pr8848-36355707-unstored-rebase-tac",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8849,
+    "review": "mydocs/pr/archives/pr_8849_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8849,
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 212
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8861,
+    "review": "mydocs/pr/archives/pr_8861_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8861,
+      "key": "pr8861-36388005-host-below-header-table",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8862,
+    "review": "mydocs/pr/archives/pr_8862_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8862,
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 56
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8876,
+    "review": "mydocs/pr/archives/pr_8876_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8876,
+      "key": "pr8876-36338125-bottom-fixed-table-margin",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8879,
+    "review": "mydocs/pr/archives/pr_8879_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8879,
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 18
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8881,
+    "review": "mydocs/pr/archives/pr_8881_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8881,
+      "key": "pr8881-36441289-tac-host-below-float",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8901,
+    "review": "mydocs/pr/archives/pr_8901_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8901,
+      "key": "pr8849-1351000-201800239_hpv_cohort_final_report",
+      "page": 77
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8903,
+    "review": "mydocs/pr/archives/pr_8903_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8903,
+      "key": "pr8903-36340478-unstored-tac-column-top-spacing",
+      "page": 6
+    },
+    "specific_reason": "같은 문단 어울림/TAC 대조군의 fresh WASM 6쪽이 88.56802%로 미달입니다."
+  },
+  {
+    "pr": 8909,
+    "review": "mydocs/pr/archives/pr_8909_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8909,
+      "key": "pr8909-36404364-reflowed-cell-tac-row-floor",
+      "page": 3
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8921,
+    "review": "mydocs/pr/archives/pr_8921_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8921,
+      "key": "pr8921-44907-group-bullet-column-top",
+      "page": 2
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8928,
+    "review": "mydocs/pr/archives/pr_8928_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8928,
+      "key": "pr8928-36415413-page-break-tac-full-gap",
+      "page": 2
+    },
+    "specific_reason": "명시적 쪽 나눔 뒤 간격 문서의 fresh WASM 3쪽이 89.31429%로 미달입니다."
+  },
+  {
+    "pr": 8929,
+    "review": "mydocs/pr/archives/pr_8929_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8929,
+      "key": "pr8929-wide_tac_trailing_tail",
+      "page": 1
+    },
+    "specific_reason": "통합 후보의 공통 보호 TSV 비교를 충족하지 못해 이 head의 수용을 보류합니다."
+  },
+  {
+    "pr": 8930,
+    "review": "mydocs/pr/archives/pr_8930_review.md",
+    "verdict": "머지 보류",
+    "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+    "representative": {
+      "pr": 8930,
+      "key": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "page": 2
+    },
+    "specific_reason": "원 PR의 Linux Canvas render diff CI 실패가 남아 있습니다. Mac의 같은 기본 문턱 대조군 PASS를 Linux 통과로 대신하지 않습니다."
+  }
+]

@@ -1,0 +1,407 @@
+{
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "complete": true,
+  "conditions": 8,
+  "records": [
+    {
+      "key": "svg-spanning-topbottom",
+      "page": 1,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-spanning-topbottom",
+        "--hwp",
+        "samples/issue7282/wide_paper_table_two_columns.hwp",
+        "--pdf",
+        "pdf/issue7282/wide_paper_table_two_columns-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "1",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "92.84",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "92.84",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "raw_sha256": "bf57475f43d985f5c81a98057903ee8c818c51cd55f87d3b7eda7a28c73f0570",
+      "pdf_sha256": "2f2a825465e7230415b4b981383e6ea06f6f9da9af4f43a0bee311353023b401",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-spanning-topbottom",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.328320+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "1쪽 걸침 표의 전후 두 단 본문을 보존한다. 오른쪽 마지막 문단의 기존 수직 위치와 표 내부의 미세 차이는 남는다.92.84%.",
+        "review_sha256": "fc266cfd65f060569ad73e33f5391d9bb3960bbd9b45a96c69469f913814dd49"
+      }
+    },
+    {
+      "key": "svg-employment-picture",
+      "page": 79,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-employment-picture",
+        "--hwp",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/source-controls/issue8692/employment_service_interim_report.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/source-controls/issue8692/employment_service_interim_report-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "79",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "79",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "raw_sha256": "8eb64bf25c2f0d10a9e7679427474865cc1a90dd619cd232ddeb2012d1e091df",
+      "pdf_sha256": "19ae760afee5a642536ac688077a7daf66ea0001aabda5c9af42532ab8b3915d",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-employment-picture",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.328895+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "9줄·2줄 본문이 실제 그림 왼쪽에 남고 그림·캡션과 겹치지 않는다. 머리말·표·각주 소속 보존. 기존 SVG 문자 굵기와 영상 프린지는 내용 실루엣100%와 구분한다.",
+        "review_sha256": "d816024590e70c3379f1337bffd8d15c2653d4036a4235f24034d3a205c6a157"
+      }
+    },
+    {
+      "key": "svg-missing-picture",
+      "page": 1,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-missing-picture",
+        "--hwp",
+        "samples/issue8858/missing_picture_print.hwpx",
+        "--pdf",
+        "pdf/issue8858/missing_picture_print-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "1",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "raw_sha256": "696ce87981f264c100e54d273bc46119a703d2b69bc86486d29f35cb314068d9",
+      "pdf_sha256": "037d4bb0e36b67d246f532a3efbf07a1c42e8ed931c781a934ce0f4da9762097",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-missing-picture",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.329267+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "결재 표·제목·날짜·부서 보존. 누락 그림의 편집 표시를 Print에 노출하지 않는다.100%.",
+        "review_sha256": "6bb24266c6f8528f71b2e296fe70dacb8d6aa3585d8165d72fca3d17c04e73e5"
+      }
+    },
+    {
+      "key": "svg-mount",
+      "page": 27,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-mount",
+        "--hwp",
+        "samples/hwp3-sample5-hwpx.hwpx",
+        "--pdf",
+        "pdf/hwp3-sample5-hwpx-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "27",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "27",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "raw_sha256": "0d15e87b3063ca2ddc907c368736b494ea0ede2675ae8f47540be35b915f4c09",
+      "pdf_sha256": "e0a3511a5fbdcda7388f59e29c450e71c287b43eea05d3e19c5dbc060e636a7f",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-mount",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.329397+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "그림 옆 /home 명령 다음 줄과 캡션·그림 아래 본문의 소속이 맞고 겹침이 없다.100%.",
+        "review_sha256": "f8ad25e2976902d3ce3f496b541b6d3285952c28b87810bc496070233637dc0f"
+      }
+    },
+    {
+      "key": "svg-spanning-square",
+      "page": 2,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-spanning-square",
+        "--hwp",
+        "samples/issue7282/wide_paper_table_two_columns.hwp",
+        "--pdf",
+        "pdf/issue7282/wide_paper_table_two_columns-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "2",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "2",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "2"
+        }
+      ],
+      "raw_sha256": "747efb3cf8643a0d8393413126aedadc1f8c8a8b88491f9c8e7b21efe4615c2d",
+      "pdf_sha256": "eefcb545f78d5b74e325b6e02147106a2afbe8e1edea885d3b2a8e5e92349ef8",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-spanning-square",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.329756+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "큰 꽃 그림 전후 두 단의 저장 줄이 가려지지 않으며 같은 줄바꿈과 쪽 소속을 보존한다.100%.",
+        "review_sha256": "ede809632a4f86fdf4ebbe3ba6d306cfc2cf050b9daae53fee712066355d65e0"
+      }
+    },
+    {
+      "key": "svg-customer",
+      "page": 1,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-customer",
+        "--hwp",
+        "/Users/tsjang/Downloads/korea_downloads/samples/서울아리수본부 본부 요금관리부 전산정보과/36387608_결재문서본문_고객지원시스템 운영 성과측정 관련 성과지표 달성도 측정결과 보고.hwpx",
+        "--pdf",
+        "pdf/issue8834/issue8834-36387608-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "1",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "1",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "raw_sha256": "5e3e1bf01421e07dfc091eebd1056d2fe0a27237c8230faeab342b1fa61e17e1",
+      "pdf_sha256": "10732cc3d5007e27662ce77ffaab3f019c8fad5be29a4e5f0f9084f9867a4e67",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-customer",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.330253+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "첫 줄·가/나 항목·두 TAC 표·붙임·결재 소속과 간격이 맞는다.100%.",
+        "review_sha256": "1c456efb3afa10d2ed448b6e5727ef9fbb0b5d60bd1af0008e0b6cb732c7baee"
+      }
+    },
+    {
+      "key": "svg-side-wrap",
+      "page": 16,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-side-wrap",
+        "--hwp",
+        "samples/hwp3-sample5-hwpx.hwpx",
+        "--pdf",
+        "pdf/hwp3-sample5-hwpx-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "16",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "16",
+          "tolerant_content_match_percent": "99.41",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.41",
+          "silhouette_boundary_reconciled_pixels": "2"
+        }
+      ],
+      "raw_sha256": "5f764b77a9ec2a4fc71d9369d73bdf3c1a794fae18f56ac16e4e7368cd71b39e",
+      "pdf_sha256": "53e309a7cc36f6d5c6a04dafc7d8a41061546e1d41945a8a24aa6d507fecad3a",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-side-wrap",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.330436+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "그림 옆 좁은 줄과 아래 넓은 줄은 보존된다. SVG WMF 내부의 끊긴 가는 선·텍스트 재현 차이는 남아99.41%이며 Native Skia 및 WASM Canvas2D 결과와 구분한다.",
+        "review_sha256": "ac4aad57ceb855f541ab920e6ed7d7e276fcb6f50f59597c8cde9fccdae86ca9"
+      }
+    },
+    {
+      "key": "svg-square-tac",
+      "page": 4,
+      "backend": "native SVG → browser webfont raster",
+      "command": [
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/visual-venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--key",
+        "svg-square-tac",
+        "--hwp",
+        "samples/issue8753/36458608-square-tac-same-paragraph.hwpx",
+        "--pdf",
+        "pdf/issue8753/36458608-square-tac-same-paragraph-2020.pdf",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons",
+        "--page",
+        "4",
+        "--rasterizer",
+        "svg",
+        "--svg-rasterizer",
+        "webfont"
+      ],
+      "rows": [
+        {
+          "page": "4",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0"
+        }
+      ],
+      "raw_sha256": "fa20e2f43162b52e868c8af0f694c1693790a705acf0d67b1cdcfbcd52bfdcae",
+      "pdf_sha256": "2e132c405d3289cd556cbf362467cfa6de90af04d34155d2c7f8f9921dda7e81",
+      "directory": "mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-square-tac",
+      "direct_reading": {
+        "read_at": "2026-11-11T02:29:33.330823+09:00",
+        "panels": "same-page review with overlay column",
+        "note": "같은 문단의 TAC 표와 다음 본문·표가 제 위치를 보존한다. 빈 개체 영역을 본문으로 채우지 않으며100%.",
+        "review_sha256": "c2c668e88807cc9014fdf289961e712c300bfa95245048f324bcbfb30ee01d35"
+      }
+    }
+  ]
+}

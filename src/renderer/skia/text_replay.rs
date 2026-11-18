@@ -27,6 +27,7 @@ mod overlap;
 
 pub(super) struct SkiaTextReplay<'a> {
     pub(super) canvas: &'a Canvas,
+    pub(super) font_fallback_observer: Option<&'a super::font_observation::FontFallbackObserver>,
     pub(super) raster_target: bool,
     pub(super) geometric_text: bool,
     pub(super) hft_outline_enabled: bool,
@@ -152,6 +153,7 @@ impl SkiaTextReplay<'_> {
                             style,
                             self.font_mgr,
                             self.geometric_text,
+                            self.font_fallback_observer,
                         );
                     }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
@@ -165,6 +167,7 @@ impl SkiaTextReplay<'_> {
                                     style,
                                     self.font_mgr,
                                     self.geometric_text,
+                                    self.font_fallback_observer,
                                 );
                             }
                         }
@@ -176,6 +179,7 @@ impl SkiaTextReplay<'_> {
                         style,
                         self.font_mgr,
                         self.geometric_text,
+                        self.font_fallback_observer,
                     )
                 };
                 let baseline_y = if baseline > 0.0 {
@@ -346,6 +350,7 @@ impl SkiaTextReplay<'_> {
                 let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
+                let symbol_sources = crate::renderer::implicit_symbol::sources(metric_source, text);
                 let metric_text = crate::renderer::composer::display_projection_metric_text(
                     metric_source,
                     text,
@@ -548,6 +553,24 @@ impl SkiaTextReplay<'_> {
                         }) {
                             continue;
                         }
+                        if let Some((cx, cy, rx, ry)) = crate::renderer::implicit_symbol::ink(
+                            symbol_sources.as_deref(),
+                            *char_idx,
+                            style,
+                        ) {
+                            let cx = f64::from(char_x) + cx;
+                            let cy = y + f64::from(dy) + cy;
+                            canvas.draw_oval(
+                                skia_safe::Rect::from_xywh(
+                                    (cx - rx) as f32,
+                                    (cy - ry) as f32,
+                                    (2.0 * rx) as f32,
+                                    (2.0 * ry) as f32,
+                                ),
+                                &text_paint,
+                            );
+                            continue;
+                        }
                         if let Some((cx, cy, rx, ry)) =
                             crate::renderer::legacy_hft_bullet_geometry(cluster, style)
                         {
@@ -723,7 +746,9 @@ impl SkiaTextReplay<'_> {
                                 font.set_embolden(false);
                                 let mut paint = text_paint.clone();
                                 paint.set_style(paint::Style::StrokeAndFill);
-                                paint.set_stroke_width(font_size * 0.02);
+                                paint.set_stroke_width(
+                                    font_size * crate::renderer::HANCOM_FAUX_BOLD_STROKE_EM as f32,
+                                );
                                 paint.set_stroke_miter(10.0);
                                 paint
                             });
@@ -1013,6 +1038,7 @@ impl SkiaTextReplay<'_> {
                         &mark_style,
                         self.font_mgr,
                         self.geometric_text,
+                        self.font_fallback_observer,
                     ) {
                         font.set_scale_x(geometry.ratio as f32);
                         font.set_skew_x((geometry.skew_x * geometry.ratio) as f32);

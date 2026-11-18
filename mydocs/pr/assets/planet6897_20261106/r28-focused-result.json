@@ -1,0 +1,20 @@
+{
+  "state": "focused-passed",
+  "tests": 27,
+  "passed": 27,
+  "failed": 0,
+  "nextest_summary_skipped": 2419,
+  "exit_code": 0,
+  "elapsed_test_seconds": 4.782,
+  "font_environment": "공개 글꼴 5개 최소 환경",
+  "source_parent": "9d058bbf95",
+  "source_change": {
+    "path": "src/renderer/layout/table_layout.rs",
+    "sha256": "267d28d85de6858e14855589edeb1c5a5f8dc9535f3082dc4c064f5b743e06c6"
+  },
+  "original_failed_tests_included": 11,
+  "expectations_changed": false,
+  "source_receipt": "r28-batch-source-receipt.json",
+  "measured_at": "2026-11-06T23:23:04.777301+00:00",
+  "role": "집중 실행의 실제 결과. 미실행 검사를 통과로 합산하지 않고 최종 전체·시각 검증과 구분한다."
+}

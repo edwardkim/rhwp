@@ -1,0 +1,40 @@
+{
+  "page": 271,
+  "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/candidate-wasm-visual/pr8792-6500000-201700118_jeju_tourism_education_plan/rhwp_png/rhwp_271.png",
+  "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/candidate-wasm-visual/pr8792-6500000-201700118_jeju_tourism_education_plan/pdf_png/pdf-271.png",
+  "overlay_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/claim-evidence/candidate-wasm/pr8792-6500000-201700118_jeju_tourism_education_plan/overlay_271.png",
+  "width": 794,
+  "height": 1122,
+  "pixel_diff_threshold": 32,
+  "overlay_color_legend": {
+    "rhwp_only": "blue",
+    "pdf_only": "red",
+    "both_different": "orange",
+    "matching": "gray"
+  },
+  "total_pixels": 890868,
+  "diff_pixels": 82348,
+  "diff_ratio": 0.09243569,
+  "pixel_match_percent": 90.75643,
+  "ink_union_pixels": 106814,
+  "ink_diff_pixels": 82348,
+  "ink_diff_ratio": 0.77094763,
+  "ink_match_percent": 22.90524,
+  "visual_accuracy_proxy_percent": 22.90524,
+  "tolerant_content_match_radius_px": 2,
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "silhouette_raw_match_percent": 99.9794,
+  "silhouette_raw_unmatched_pixels": 22,
+  "silhouette_boundary_reconciled_pixels": 8,
+  "silhouette_color_tolerance": 32,
+  "silhouette_content_union_pixels": 106814,
+  "tolerant_content_match_percent": 99.98689,
+  "mean_abs_channel_delta": 9.169,
+  "max_channel_delta": 255,
+  "diff_bbox": [
+    94,
+    142,
+    698,
+    1044
+  ]
+}

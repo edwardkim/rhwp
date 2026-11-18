@@ -1,0 +1,56 @@
+{
+  "failed_pr_head": "5dd73f65d7215f4cb5ab0ab863458bc4557dd56b",
+  "corrected_test_head": "8beab3f5677d985f07866ffbc61fde2fca6b7cfe",
+  "failed_ci_job": "https://github.com/edwardkim/rhwp/actions/runs/42785982420/job/129736312467",
+  "origin_pr": 8269,
+  "origin_merge": "ccc2453261f777a1c12662d8d5ff6dafda174071",
+  "origin_time_contract_commit": "cbd4508f5a2d5d5b3ff0a65ea6fef84ff5bdf244",
+  "cause": "KST 저장 HWPX의 리터럴 Z 날짜와 FILETIME에서 현지 시각으로 변환한 HWP 날짜를 같은 UTC 문자열로 가정한 통합 검사 오류",
+  "correction": "제품 변경 없이 같은 입력·저장 형식의 무편집 대조군과 날짜를 포함한 메모 조회 전체를 비교; 바탕쪽 변경 직후 전체 메모 보존도 검사",
+  "minimum_font_before_utc": {
+    "run": 2,
+    "passed": 1,
+    "failed": 1
+  },
+  "minimum_font_after": [
+    {
+      "timezone": "UTC",
+      "run": 27,
+      "passed": 27,
+      "failed": 0,
+      "exit_code": 0
+    },
+    {
+      "timezone": "Asia/Seoul",
+      "run": 27,
+      "passed": 27,
+      "failed": 0,
+      "exit_code": 0
+    }
+  ],
+  "changed_files": [
+    "tests/cases/master_page_memo_section_slots.rs"
+  ],
+  "runtime_changes": false,
+  "fmt": true,
+  "suite_manifest": true,
+  "unit_tiers": true,
+  "diff_check": true,
+  "logs": {
+    "memo-timezone-before-utc.log": {
+      "sha256": "12f961164373ac4269287c4656d663db7b511662ecf5873d7848ba5f4fa61572",
+      "bytes": 5752,
+      "location": "ignored output; 종료 정리 대상, 로그 자체는 Git에 제출하지 않음"
+    },
+    "memo-timezone-final-UTC.log": {
+      "sha256": "1f3c51a54f22dff747e5352d3485cd4a14b6b51c1b928140b4b9cddb9a215aa7",
+      "bytes": 4900,
+      "location": "ignored output; 종료 정리 대상, 로그 자체는 Git에 제출하지 않음"
+    },
+    "memo-timezone-final-Asia-Seoul.log": {
+      "sha256": "3ad686f79f79d59aca53073a0d8d78a123c3f579a299226d5f8344485300062a",
+      "bytes": 4860,
+      "location": "ignored output; 종료 정리 대상, 로그 자체는 Git에 제출하지 않음"
+    }
+  }
+}

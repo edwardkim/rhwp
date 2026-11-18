@@ -1,0 +1,122 @@
+[
+  {
+    "name": "desktop_qualification_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/desktop_qualification_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.516
+  },
+  {
+    "name": "gpu_cache_benchmark_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/gpu_cache_benchmark_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.215
+  },
+  {
+    "name": "hosted_platform_runner_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/hosted_platform_runner_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.315
+  },
+  {
+    "name": "linux_qualification_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/linux_qualification_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.215
+  },
+  {
+    "name": "native_artifact_provenance_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/native_artifact_provenance_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 3.173
+  },
+  {
+    "name": "native_gpu_tile_qualification_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/native_gpu_tile_qualification_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.115
+  },
+  {
+    "name": "reference_app_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/reference_app_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.767
+  },
+  {
+    "name": "runtime_bundle_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/runtime_bundle_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 1.067
+  },
+  {
+    "name": "windows_continuous_qualification_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/windows_continuous_qualification_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 1.669
+  },
+  {
+    "name": "windows_tile_group_qualification_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/test/windows_tile_group_qualification_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.666
+  },
+  {
+    "name": "metal_tile_cache_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/macos/tests/metal_tile_cache_contract.py"
+    ],
+    "exitCode": 0,
+    "elapsedSeconds": 0.032
+  },
+  {
+    "name": "native_metal_sdk_contract.py",
+    "command": [
+      "python3",
+      "-B",
+      "/home/edward/mygithub/rhwp-worktrees/review-integration-8701-seo-rii-gpu-cache-lifecycle/bindings/Flutter/macos/tests/native_metal_sdk_contract.py"
+    ],
+    "exitCode": 2,
+    "elapsedSeconds": 0.065
+  }
+]

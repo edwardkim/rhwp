@@ -38,6 +38,25 @@ fn repo(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
 }
 
+/// `samples/` 아래(하위 폴더 포함)에서 파일 이름이 `name` 인 첫 표본.
+fn find_sample(name: &str) -> Option<PathBuf> {
+    let mut stack = vec![repo("samples")];
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() {
+                stack.push(path);
+            } else if path.file_name().is_some_and(|file| file == name) {
+                return Some(path);
+            }
+        }
+    }
+    None
+}
+
 fn rhwp_bin() -> String {
     env!("CARGO_BIN_EXE_rhwp").to_string()
 }
@@ -270,14 +289,49 @@ fn positive_corpus_unicode_vector_is_caught() {
 ///   `translate(592.07, 914.47)` 이고 그 점을 덮는 도형은 표 테두리 `<rect>` 둘
 ///   (둘 다 `fill` 속성 없음)과 흰 쪽 바탕 `<rect fill="#ffffff">` 뿐이며 그 쪽의
 ///   `<image>` 는 0개다. 즉 흰 종이 위 흰 글자로 **사람 눈에 보이지 않는다**.
+/// - `1351000-201800239_hpv_cohort_final_report.hwp`(#8842) 117쪽 흰 글자 5자 "(  )%".
+///   구역 2 문단 401 표 셀[28] r=7,c=0 `"부 가 가 치 세 (  )%"` 에서 빈칸 괄호와 `%` 만
+///   `text=#FFFFFF` 다. 셀 `border_fill_id=11` 에 배경 채우기가 없어 탐지기가 쪽
+///   바탕까지 내려가고(`backgroundSource: "page"`), 그 쪽 SVG 의 `<image>` 는 0개, 채움
+///   `<rect>` 는 흰색(`#ffffff`)뿐이다. 서식에서 채울 칸을 지운 흔적으로 **보이지 않는다**.
+/// - `36338125-bottom-fixed-table-margin.hwpx`(`samples/issue8864/`) 1쪽 흰 글자 8자
+///   "상수도사업본부장". 공문 서식의 끝 표 셀 이름 `각안발신명의`(`editable="0"`)에
+///   기안 시스템이 넣은 값으로, 글자모양 `charPr id=24` 가 `height="100"`(1pt)·
+///   `textColor="#FFFFFF"` 다. 셀의 `borderFillIDRef=6` 에는 채우기가 없고 구역 XML 에
+///   `<hp:pic>`·`<hp:rect>` 가 0개라 탐지기가 쪽 바탕까지 내려간다(`backgroundSource: "page"`).
+///   눈에 보이는 발신 명의는 옆 칸의 다른 글이다. 흰 종이 위 1pt 흰 글자로 **사람 눈에 보이지 않는다**.
+/// - `36439173-empty-tac-line-baseline.hwpx`(#8960) 1·2쪽 흰 글자 12자씩
+///   「5. 주        」. 후보자 등록 신청서·사퇴서 서식에서 「4. 후보자성명」 아래
+///   독립 문단(0.10·0.38, 글자 모양 id=20 `text=#FFFFFF`)으로 남은 옛 항목이다.
+///   표·글상자 밖 본문 문단이라 탐지기가 쪽 바탕까지 내려간다(`backgroundSource:
+///   "page"`). 한/글 engine 2020 Print PDF 1쪽은 「6. 주 소」(y 369~384px) 와
+///   「상기 본인은」(y 434px) 사이 이 줄 자리(약 y 405~422px)가 비어 있다 — 흰 종이
+///   위 흰 글자로 **사람 눈에 보이지 않는다**.
 ///
-/// 그래서 **규칙을 느슨하게 하지 않고** 이 세 문서만 스윕에서 뺀다. 여기에 항목을
+/// - `issue8664/zero_size_para_before_table.hwp` 1쪽 문단 1 의 크기 0 글자 137자
+///   (`kind: zero_size`, `effectivePt: 0.0`). #8664 재현물로, 보이지 않는 글을 크기 0
+///   글자로 숨겨 둔 서식 문서의 형상을 일부러 만든 것이다. 이 문단이 줄 높이를
+///   만들지 않는지가 회귀 가드의 대상이므로 **보이지 않는 글자가 있다**는 탐지는 옳다.
+///
+/// - `36400485-owned-tac-lines.hwpx`(`samples/issue8969/`, #8969) 1쪽 흰 글자 4자 "방침번호".
+///   결재 서식 머리 표에 "방침번호" 가 세 번 나온다. 둘은 검은 글자(`charPr id=261`)인 보이는
+///   라벨이고, 탐지된 셋째는 `charPr id=253`(`height="1300"`·`textColor="#FFFFFF"`)이다. 그 칸
+///   (`editable="0"`)의 `borderFillIDRef=65` 에는 채우기가 없고, 구역 XML 에 `<hp:pic>` 이 0개라
+///   탐지기가 쪽 바탕까지 내려간다(`backgroundSource: "page"`). 기안 시스템이 남긴 감춘 라벨이며,
+///   흰 종이 위 흰 글자로 **사람 눈에 보이지 않는다**.
+///
+/// 그래서 **규칙을 느슨하게 하지 않고** 이 여덟 문서만 스윕에서 뺀다. 여기에 항목을
 /// 추가할 때는 반드시 위와 같은 개별 근거를 함께 남긴다 — 근거 없이 이름만 늘리면
 /// 이 목록이 오탐을 숨기는 서랍이 된다.
 const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
     "synam-001.hwp",
     "issue1892_hwp3_tab_roundtrip.hwp",
     "30098_float_host_split_lineseg.hwp",
+    "1351000-201800239_hpv_cohort_final_report.hwp",
+    "36338125-bottom-fixed-table-margin.hwpx",
+    "zero_size_para_before_table.hwp",
+    "36439173-empty-tac-line-baseline.hwpx",
+    "36400485-owned-tac-lines.hwpx",
 ];
 
 /// 제로폭 축의 같은 성격 목록 — **탐지가 맞았는데 표본이 실제로 그렇다**는 선언.
@@ -289,12 +343,40 @@ const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
 /// 흔적으로 보이며, **문서에 보이지 않는 문자가 실제로 있다**는 탐지 자체는 옳다.
 /// `.hwp`·`.hwpx` 는 같은 문서의 두 포맷이라 같은 1건이 두 번 잡힌다.
 ///
+/// `samples/issue8692/employment_service_interim_report.hwp` 도 같은 흔적이다. 0구역
+/// 277·284·290 문단은 문장 끝(`… 되어 있다.<U+200B><U+200B>`, `… 이루어져야 한다.<U+200B><U+200B> 개선은`,
+/// `… 조치할 것<U+200B><U+200B>`), 285 문단은 첫머리(`<U+200B>○ 진술문`)에 U+200B 이 있다.
+/// 낱자 사이가 아니고 숨은 문구도 없다.
+/// `1351000-201800239_hpv_cohort_final_report.hwp`(#8842) 구역 0 문단 159 의 참고문헌
+/// 제목 `… Cervical Cells in Liquid-based Pap Tests<U+FEFF> ` 에 U+FEFF 1개가 있다(문자
+/// 92, 앞 `s`·뒤 공백). 영문 제목을 웹에서 옮겨 붙인 흔적이며 탐지 자체는 옳다.
+///
+/// `1480000-201900510_facility_pollution_study.hwp`(#8891) 구역 0 문단 772 표 셀[0:4]
+/// 문단 3 에 U+200B 2개가 잇달아 있다(문자 29, `… 배출을 제어하는 <U+200B><U+200B> 경우, …`,
+/// 앞 공백·뒤 공백). 다른 문서에서 옮겨 붙인 흔적으로 보이며 탐지 자체는 옳다.
+///
+/// `press_release_orphan_hidden_end.hwpx`(#9026) 구역 0 문단 19 의 인용문 닫는 따옴표 뒤에
+/// U+200B 이 2개 있다(문자 85 `… 이어져야 한다”<U+200B>라며, …`, 문자 176
+/// `… 발전해야 한다”<U+200B>라고 밝혔다.`, 앞 `”`·뒤 한글 음절). 배포 원문에 든 줄 나눔
+/// 허용 표지이며 숨은 문구는 없다. 탐지 자체는 옳다.
+///
 /// 규칙을 느슨하게 하지 않고 이 문서만 뺀다. 제로폭 탐지의 감도를 낮추면
 /// 낱자 사이에 끼워 넣는 진짜 회피(`비밀<U+200B>번호`)까지 함께 놓친다.
 /// 항목을 추가할 때는 반드시 위와 같은 개별 근거(문단·코드포인트·앞뒤 문자)를 남긴다.
 const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+    "employment_service_interim_report.hwp",
+    "1351000-201800239_hpv_cohort_final_report.hwp",
+    "1480000-201900510_facility_pollution_study.hwp",
+    "press_release_orphan_hidden_end.hwpx",
+];
+
+/// `samples/` 바로 아래가 아닌 허용목록 문서. 자기검증이 조용히 건너뛰지 않게 경로를 둔다.
+const KNOWN_GENUINE_ZERO_WIDTH_SUBDIR: &[&str] = &[
+    "samples/issue8692/employment_service_interim_report.hwp",
+    "samples/issue8842/1351000-201800239_hpv_cohort_final_report.hwp",
+    "samples/issue9026/press_release_orphan_hidden_end.hwpx",
 ];
 
 const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";
@@ -543,10 +625,11 @@ fn all_three_envelopes_share_a_consistent_clean_and_array_contract() {
 #[test]
 fn allowlisted_documents_still_actually_trigger_detection() {
     for name in KNOWN_GENUINE_HIDDEN_TEXT {
-        let path = repo("samples").join(name);
-        if !path.exists() {
+        // 이슈별 fixture 는 `samples/issueNNNN/` 아래에 있다 — 바로 아래만 보면
+        // 그 항목의 자기검증이 조용히 빠진다.
+        let Some(path) = find_sample(name) else {
             continue; // 표본이 사라졌다면 이 시험의 관심사가 아니다.
-        }
+        };
         let v = inspect_hidden_text(&path);
         assert_eq!(
             v["clean"], false,
@@ -556,11 +639,15 @@ fn allowlisted_documents_still_actually_trigger_detection() {
     }
 
     // 제로폭 축도 같은 규칙으로 지킨다 — 허용목록은 어느 축에서든 자기검증돼야 한다.
-    for name in KNOWN_GENUINE_ZERO_WIDTH {
-        let path = repo("samples").join(name);
+    let subdir = KNOWN_GENUINE_ZERO_WIDTH_SUBDIR.iter().map(|rel| repo(rel));
+    let top_level = KNOWN_GENUINE_ZERO_WIDTH
+        .iter()
+        .map(|name| repo("samples").join(name));
+    for path in top_level.chain(subdir) {
         if !path.exists() {
             continue;
         }
+        let name = path.display();
         let v = inspect_unicode(&path);
         assert_eq!(
             v["clean"], false,

@@ -156,6 +156,10 @@ export class CanvasView {
   }>();
   private autoRendererReselectionTimer: ReturnType<typeof setTimeout> | null = null;
   private documentLoadPrepared = false;
+  private initialLoadGeneration = 0;
+  private initialLoad: { document: number; ready: Promise<void> } | null = null;
+  private notifyInitialSelection: (() => void) | null = null;
+  private initialPaintRecoveries: Promise<unknown>[] | null = null;
   private layoutViewportSize = { width: 0, height: 0 };
   private blankPagePlaceholder: HTMLElement | null = null;
   /**
@@ -257,26 +261,39 @@ export class CanvasView {
   /** 문서 로드 후 호출 — 페이지 정보 수집 및 가상 스크롤 초기화 */
   async loadDocument(): Promise<void> {
     if (this.disposed) return;
+    if (this.initialLoad?.document === this.wasm.documentGeneration) return this.initialLoad.ready;
     if (!this.documentLoadPrepared) this.prepareDocumentLoad();
+    const load = { document: this.wasm.documentGeneration, ready: this.loadPreparedDocument() };
+    this.initialLoad = load;
+    try {
+      await load.ready;
+    } finally {
+      if (this.initialLoad === load) this.initialLoad = null;
+    }
+  }
+
+  private async loadPreparedDocument(): Promise<void> {
     const epoch = this.rendererSelectionEpoch;
     this.documentLoadPrepared = false;
-    if (this.disposed) return;
-    const selected = await this.prepareRendererRevision(epoch, () => this.rendererSession.resolve(this.wasm));
-    if (!selected) return;
+    const generation = this.initialLoadGeneration;
+    const current = () => !this.disposed && generation === this.initialLoadGeneration;
+    // 글꼴 갱신이 최초 선택을 추월해도 이 문서의 현재 선택이 준비될 때까지 기다린다.
+    // 교체된 선택의 metrics 응답은 무기한 늦어질 수 있다.
+    await new Promise<void>((resolve, reject) => {
+      this.notifyInitialSelection = resolve;
+      void this.prepareRendererRevision(epoch, () => this.rendererSession.resolve(this.wasm)).catch(reject);
+    });
+    while (current() && this.rendererSelectionPending) {
+      await new Promise<void>(resolve => { this.notifyInitialSelection = resolve; });
+    }
+    if (!current()) return;
+    this.notifyInitialSelection = null;
 
     const pageCount = this.wasm.pageCount;
-    this.pages = [];
-    for (let i = 0; i < pageCount; i++) {
-      try {
-        this.pages.push(this.wasm.getPageInfo(i));
-      } catch (e) {
-        console.error(`[CanvasView] 페이지 ${i} 정보 조회 실패:`, e);
-      }
-    }
+    this.pages = Array.from({ length: pageCount }, (_, i) => this.wasm.getPageInfo(i));
 
     if (this.pages.length === 0) {
-      console.error('[CanvasView] 로드된 페이지가 없습니다');
-      return;
+      throw new Error('로드된 페이지가 없습니다.');
     }
 
     // 모바일: 문서 로드 시 폭 맞춤 줌 자동 적용
@@ -298,10 +315,19 @@ export class CanvasView {
     // [#6902] 이 대입 직후 스크롤바 출현이 리사이즈를 부른다 — 그 한 번은 앵커를 끈다.
     this.suppressResizeScrollAnchor = true;
     this.lastPageSize = { width: this.pages[0].width, height: this.pages[0].height };
-    this.updateVisiblePages('initial');
+    const recoveries: Promise<unknown>[] = [];
+    this.initialPaintRecoveries = recoveries;
+    try {
+      this.updateVisiblePages('initial');
+      for (const recovery of recoveries) await recovery;
+    } finally {
+      if (this.initialPaintRecoveries === recoveries) this.initialPaintRecoveries = null;
+    }
+    if (!current()) return;
+    if (!this.currentVisiblePages.length || this.currentVisiblePages.some(page => !this.canvasPool.has(page))) {
+      throw new Error('첫 화면의 페이지를 그리지 못했습니다.');
+    }
     this.clearBlankPagePlaceholder();
-    // 초기 replay가 예약한 document fallback을 load 완료 전에 확정한다.
-    await Promise.resolve();
 
     console.log(`[CanvasView] ${this.pages.length}/${pageCount}페이지 로드, 총 높이: ${this.virtualScroll.getTotalHeight()}px`);
 
@@ -431,7 +457,11 @@ export class CanvasView {
   }
 
   private async refreshInvalidatedPageForMutation(payload: unknown): Promise<void> {
-    const selected = await this.selectMutationRevision();
+    // A superseded render may still owe font discovery for a different page.
+    const editedPage = !this.rendererSelectionPending && typeof payload === 'object'
+      && payload !== null && 'reason' in payload && payload.reason === 'text-edit'
+      ? this.pageIndexFromPayload(payload) : null;
+    const selected = await this.selectMutationRevision(editedPage);
     if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
     if (selected.backendChanged) {
       this.refreshPages();
@@ -440,7 +470,7 @@ export class CanvasView {
     this.refreshInvalidatedPage(payload);
   }
 
-  private async selectMutationRevision(): Promise<{
+  private async selectMutationRevision(editedPage: number | null = null): Promise<{
     selection: RendererSessionSelection;
     backendChanged: boolean;
   } | null> {
@@ -449,10 +479,10 @@ export class CanvasView {
     this.cancelAutoRendererReselection();
     this.rendererSelectionPending = true;
     const pinned = this.rendererSession.pinAutoMutationRevision();
-    if (!pinned) return this.selectNextDocumentRevision();
+    if (!pinned) return this.selectNextDocumentRevision(true, editedPage);
 
     const epoch = ++this.rendererSelectionEpoch;
-    const selected = await this.prepareRendererRevision(epoch, () => Promise.resolve(pinned));
+    const selected = await this.prepareRendererRevision(epoch, () => Promise.resolve(pinned), editedPage);
     if (!selected) return null;
     this.scheduleAutoRendererReselection();
     return selected;
@@ -478,7 +508,7 @@ export class CanvasView {
     this.autoRendererReselectionTimer = null;
   }
 
-  private async selectNextDocumentRevision(resetResources = true): Promise<{
+  private async selectNextDocumentRevision(resetResources = true, editedPage: number | null = null): Promise<{
     selection: RendererSessionSelection;
     backendChanged: boolean;
   } | null> {
@@ -490,13 +520,14 @@ export class CanvasView {
       await Promise.resolve();
       if (this.disposed || epoch !== this.rendererSelectionEpoch) return null;
       return this.rendererSession.resolve(this.wasm);
-    });
+    }, editedPage);
   }
 
   /** 성공·실패 모두 현재 revision만 준비 상태를 확정한다. */
   private async prepareRendererRevision(
     epoch: number,
     resolve: () => Promise<RendererSessionSelection | null>,
+    editedPage: number | null = null,
   ): Promise<{ selection: RendererSessionSelection; backendChanged: boolean } | null> {
     this.rendererSelectionPending = true;
     const current = () => !this.disposed && epoch === this.rendererSelectionEpoch;
@@ -507,7 +538,7 @@ export class CanvasView {
       if (!selection || !current() || !this.rendererSession.isCurrent(selection)) return null;
       const preparedSelection = selection;
       metricsChanged = await this.wasm.prepareCanvasMetrics(selection.backend,
-        () => current() && this.rendererSession.isCurrent(preparedSelection));
+        () => current() && this.rendererSession.isCurrent(preparedSelection), editedPage);
       if (!current() || !this.rendererSession.isCurrent(selection)) return null;
     } catch (error) {
       if (!current()) return null;
@@ -544,6 +575,7 @@ export class CanvasView {
     if (decisionChanged && !changed) this.pageRenderer.invalidateDocumentRevision();
     this.activeRendererDecisionKey = selection.diagnostics.decisionKey;
     this.rendererSelectionPending = false;
+    this.notifyInitialSelection?.();
     const deferred = this.rendererRefreshDeferred;
     this.rendererRefreshDeferred = false;
     this.eventBus.emit('renderer-selection-changed', selection.diagnostics);
@@ -1795,7 +1827,7 @@ export class CanvasView {
       && documentGeneration === this.wasm.documentGeneration
       && fontGeneration === this.wasm.canvasMetricFontGeneration
       && this.pageRenderer.getBackend() === 'canvas2d';
-    void this.canvasMetricRecovery.recover(error, {
+    const recovery = this.canvasMetricRecovery.recover(error, {
       key: `${documentGeneration}:${fontGeneration}`,
       isCurrent,
       invalidate: () => this.wasm.invalidateCanvasMetrics(),
@@ -1807,6 +1839,7 @@ export class CanvasView {
       },
       report: failure => console.error('[CanvasView] Canvas metrics 재준비 실패:', failure),
     });
+    this.initialPaintRecoveries?.push(recovery);
   }
 
   private scheduleCanvasKitFallback(
@@ -1820,7 +1853,7 @@ export class CanvasView {
       : this.rendererSession.fallbackFromRuntimeFailure(error, expectedDecisionKey);
     if (!selection) return;
     this.rendererFallbackScheduled = true;
-    queueMicrotask(async () => {
+    const recovery = Promise.resolve().then(async () => {
       if (this.disposed || !this.rendererSession.isCurrent(selection)) {
         this.rendererFallbackScheduled = false;
         return;
@@ -1836,6 +1869,7 @@ export class CanvasView {
       this.pageRenderer.cancelAll();
       this.updateVisiblePages('strict');
     });
+    this.initialPaintRecoveries?.push(recovery);
   }
 
   /** 뷰포트 리사이즈 처리 */
@@ -2220,6 +2254,11 @@ export class CanvasView {
 
   /** 리소스를 정리한다 */
   private reset(): void {
+    this.initialLoadGeneration++;
+    this.initialPaintRecoveries = null;
+    this.initialLoad = null;
+    this.notifyInitialSelection?.();
+    this.notifyInitialSelection = null;
     this.viewportManager.cancelPendingZoomRaster();
     this.zoomRefreshRequired = false;
     const hadActivePage = this.activePageSnapshot !== null;

@@ -24,11 +24,14 @@ mod formatting;
 mod formatting_runs;
 mod header_footer_ops;
 mod html_import;
+mod master_page_ops;
 mod numbering_char_shape;
 mod object_ops;
 pub(crate) mod paragraph_block;
 mod paragraph_format_path;
-pub use object_ops::{TableColumnWidths, TableCreationOptions};
+pub use object_ops::{
+    check_picture_props, check_shape_props, TableColumnWidths, TableCreationOptions,
+};
 pub(crate) mod picture_transform_journal;
 // [#3565] 대형 문서 결함을 이분법으로 좁히기 위한 쪽 범위 추출.
 pub mod page_extract;

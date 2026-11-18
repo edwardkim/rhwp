@@ -18,15 +18,16 @@ pub(crate) fn projects_current_marker_geometry(
             .is_some_and(|marker| marker.marker_visible)
 }
 
-/// 실제 번호·글머리표를 담지 못하는 저장 줄은 현재 공통 채움으로 갱신한다.
-/// 줄 수가 그대로여도 마커의 크기는 본문 흐름과 후속 원점에 참여한다.
-pub(crate) fn project_current_marker_height_rows(
+/// 현재 번호·글머리표의 크기와 본문 시작을 공통 채움에 함께 반영한다.
+/// 줄 수가 같아도 마커 뒤의 문자 소속은 바뀔 수 있다. 가로 캐시만 갱신할
+/// 때에는 같은 높이의 원본 물리 줄 슬롯을 보존한다.
+pub(crate) fn project_current_marker_geometry_rows(
     para: &Paragraph,
     box_: &ParagraphBox,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)> {
-    match project_current_marker_height_rows_with_storage(
+    match project_current_marker_geometry_rows_with_storage(
         para,
         box_,
         styles,
@@ -37,7 +38,7 @@ pub(crate) fn project_current_marker_height_rows(
         Err(never) => match never {},
     }
 }
-pub(crate) fn project_current_marker_height_rows_with_storage<S: crate::storage::Storage>(
+pub(crate) fn project_current_marker_geometry_rows_with_storage<S: crate::storage::Storage>(
     para: &Paragraph,
     box_: &ParagraphBox,
     styles: &ResolvedStyleSet,
@@ -60,16 +61,39 @@ pub(crate) fn project_current_marker_height_rows_with_storage<S: crate::storage:
         let marker = crate::renderer::layout::list_marker_geometry(para, styles)?;
         let minimum_height = (marker.line_font_size_px * 7200.0 / dpi).round() as i32;
         let first = para.line_segs.first()?;
-        if first.line_height >= minimum_height {
+        let marker_changes_height = first.line_height < minimum_height;
+        if !marker_changes_height && para.line_segs.len() < 2 {
             return None;
         }
         let mut frame = box_.frame(first.vertical_pos);
-        let rows = crate::storage::optional(
+        let mut rows = crate::storage::optional(
             line_breaking::layout_paragraph_in_frame_with_storage(
                 para, &mut frame, styles, dpi, storage,
             ),
             failure,
         )??;
+        let changed_partition = rows.len() == para.line_segs.len()
+            && rows
+                .iter()
+                .zip(&para.line_segs)
+                .any(|(fresh, stored)| fresh.text_start != stored.text_start);
+        if !marker_changes_height {
+            if !changed_partition
+                || rows.iter().zip(&para.line_segs).any(|(fresh, stored)| {
+                    fresh.line_height != stored.line_height
+                        || fresh.line_spacing != stored.line_spacing
+                })
+            {
+                return None;
+            }
+            // 같은 수·높이의 슬롯에서 문자 경계만 새 마커 기하로 옮긴다.
+            // 원본 프레임 원점과 명시적 쪽/단 경계를 재래핑의 부산물로 바꾸지 않는다.
+            for (fresh, stored) in rows.iter_mut().zip(&para.line_segs) {
+                let text_start = fresh.text_start;
+                *fresh = stored.clone();
+                fresh.text_start = text_start;
+            }
+        }
         if rows
             .first()
             .is_some_and(|row| row.line_height >= minimum_height)
@@ -255,7 +279,21 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
                     &run.text,
                 )
             {
-                return None;
+                let actual_style = crate::storage::optional(
+                    crate::renderer::layout::try_resolved_to_text_style(
+                        styles,
+                        run.char_style_id,
+                        run.lang_index,
+                        storage,
+                    ),
+                    failure,
+                )?;
+                if !crate::renderer::layout::verified_source_projection_text_with_fallback(
+                    &actual_style,
+                    &run.text,
+                ) {
+                    return None;
+                }
             }
             crate::storage::optional(
                 storage.push(&mut fallbacks, (run.char_style_id, fallback)),

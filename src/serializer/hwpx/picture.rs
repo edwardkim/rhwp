@@ -492,6 +492,14 @@ where
     if let Some(shadow) = &pic.effects.shadow {
         write_shadow_with_storage(w, shadow, storage)?;
     }
+    if let Some(radius) = pic
+        .effects
+        .soft_edge_radius
+        .filter(|radius| radius.is_finite() && *radius >= 0.0)
+    {
+        let radius = xml_value(storage, radius)?;
+        empty_tag_with_storage(w, "hp:softEdge", &[("radius", radius.as_str())], storage)?;
+    }
     end_tag_with_storage(w, "hp:effects", storage)?;
     Ok(())
 }
@@ -1171,6 +1179,7 @@ mod tests {
         let mut ctx = SerializeContext::collect_from_document(&doc);
         let mut pic = make_picture(1);
         pic.effects = PictureEffects {
+            soft_edge_radius: None,
             shadow: Some(PictureShadow {
                 style: Some("OUTSIDE".to_string()),
                 alpha: Some("0.8".to_string()),

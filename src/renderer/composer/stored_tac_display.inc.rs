@@ -42,13 +42,85 @@ pub(crate) fn stored_first_tac_line(para: &Paragraph) -> Option<&LineSeg> {
         .then_some(first)
 }
 
+/// 가시 텍스트 없는 문단에서 TAC 표 하나가 혼자 차지한 저장 줄과 그 번호다.
+/// [`stored_first_tac_line`]과 같은 원본 조건을 쓰되, 여러 표가 각자의 저장 줄을
+/// 소유한 문단의 둘째 이후 줄(쪽을 넘겨 vpos 를 되감은 줄 포함)도 수용한다.
+/// 같은 줄의 다른 글자 취급 개체가 있으면 그 줄은 이 표 혼자의 상자가 아니다.
+pub(crate) fn stored_owned_tac_line(
+    para: &Paragraph,
+    control_index: usize,
+) -> Option<(usize, &LineSeg)> {
+    if para.stored_text_partition_dirty
+        || para
+            .line_segs
+            .iter()
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        || para
+            .text
+            .chars()
+            .any(|c| !c.is_whitespace() && c > '\u{001f}' && c != '\u{fffc}')
+    {
+        return None;
+    }
+    let Control::Table(table) = para.controls.get(control_index)? else {
+        return None;
+    };
+    if !table.common.treat_as_char || table.caption.is_some() {
+        return None;
+    }
+    let owner = control_line_seg_index(para, control_index)?;
+    let line = para.line_segs.get(owner)?;
+    let shares_line = para.controls.iter().enumerate().any(|(index, control)| {
+        index != control_index
+            && match control {
+                Control::Table(other) => other.common.treat_as_char,
+                Control::Picture(picture) => picture.common.treat_as_char,
+                Control::Shape(shape) => shape.common().treat_as_char,
+                _ => false,
+            }
+            && control_line_seg_index(para, index) == Some(owner)
+    });
+    (!shares_line
+        && i64::from(line.line_height)
+            == i64::from(table.common.height)
+                + i64::from(table.outer_margin_top)
+                + i64::from(table.outer_margin_bottom))
+    .then_some((owner, line))
+}
+
 /// Ordinary whitespace rows before an object in the same stored fragment.
 /// A vpos reset has a different continuation owner; its prefix cannot be
 /// emitted again beside the object after that owner advances the page.
 pub(crate) fn ordinary_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
     !para.text.is_empty()
         && para.text.chars().all(char::is_whitespace)
-        && owner > 0
+        && stored_prefix_rows_are_text_rows(para, owner)
+}
+
+/// 개체 줄 앞의 저장 줄이 이 문단이 실제로 쌓는 줄인가 — 공백 줄
+/// ([`ordinary_tac_prefix_rows`]) 또는 글자 없는 host 의 필드 시작 줄.
+///
+/// [#8782] 필드 시작(누름틀 등)은 폭이 없어도 줄의 내용이라, 그 뒤 남은 폭에 들지 않는
+/// 개체는 다음 줄에서 시작하고 필드 시작은 글자 높이의 빈 줄로 남는다(#8507, #8684).
+/// 글자가 없어도 그 줄은 이 문단이 쌓는 줄이다(36368775 2쪽: ts 0 vpos 1652 필드 줄,
+/// ts 8 vpos 3304 표 줄). 쪽을 넘길 때도 그 줄은 이 쪽에 남고 개체 줄만 넘어간다
+/// (36454509 1→2쪽). 저장 줄 없는 재조판 줄은
+/// [`crate::renderer::para_has_composed_object_rows`] 계약이 맡으므로 한/글 저장 줄만 받는다.
+pub(crate) fn owned_tac_prefix_rows(para: &Paragraph, owner: usize) -> bool {
+    ordinary_tac_prefix_rows(para, owner)
+        || (para.text.is_empty()
+            && !crate::renderer::para_has_no_stored_line_segs(para)
+            && para
+                .controls
+                .iter()
+                .take_while(|control| !control.is_treat_as_char_object())
+                .any(|control| matches!(control, Control::Field(_)))
+            && stored_prefix_rows_are_text_rows(para, owner))
+}
+
+/// 개체 줄 앞 저장 줄들이 같은 조각 안에서 앞으로만 진행하는 글자 높이 줄인지.
+fn stored_prefix_rows_are_text_rows(para: &Paragraph, owner: usize) -> bool {
+    owner > 0
         && para.line_segs.get(owner).is_some_and(|row| {
             row.vertical_pos >= para.line_segs[0].vertical_pos
                 && para.line_segs[..=owner]
@@ -265,7 +337,7 @@ pub(crate) fn caption_height_px_in_context_with_storage<S: crate::storage::Stora
             line_seg_height = line_seg_height.max(hwpunit_to_px(para_bottom - para_top, dpi));
         }
 
-        let composed = try_compose_paragraph_scoped(para, false, None, storage)?;
+        let composed = compose_caption_paragraph_with_storage(para, styles, storage)?;
         if composed.lines.is_empty() {
             let own_font_size = styles
                 .filter(|_| para.line_segs.is_empty())
@@ -296,6 +368,27 @@ pub(crate) fn caption_height_px_in_context_with_storage<S: crate::storage::Stora
 }
 
 /// 도형 캡션 선택은 실제 배치와 흐름 측정이 같은 속성을 소비한다.
+/// 글줄이 예약하는 글자처럼 취급 도형의 가로 폭.
+///
+/// 왼쪽·오른쪽 캡션은 개체 옆에 자기 상자(폭 + 개체와의 간격)를 갖고, 한/글은 개체와 캡션을
+/// 합친 폭을 한 글자처럼 줄에 놓는다. 위·아래 캡션은 가로 폭을 늘리지 않는다.
+pub(crate) fn inline_shape_width_hu(shape: &ShapeObject) -> i32 {
+    let width = shape.common().width as i32;
+    match shape_caption_for_layout(shape) {
+        Some(caption)
+            if matches!(
+                caption.direction,
+                CaptionDirection::Left | CaptionDirection::Right
+            ) =>
+        {
+            width
+                .saturating_add(caption.width as i32)
+                .saturating_add(i32::from(caption.spacing))
+        }
+        _ => width,
+    }
+}
+
 pub(crate) fn shape_caption_for_layout(shape: &ShapeObject) -> Option<Caption> {
     match shape {
         ShapeObject::Line(s) => s.drawing.caption.clone(),

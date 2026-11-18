@@ -339,6 +339,7 @@ pub(crate) fn picture_digest(p: &Picture, resources: &mut Resources<'_>) -> Opti
         || p.reverse
         || p.caption.is_some()
         || p.effects.shadow.is_some()
+        || p.effects.soft_edge_radius.is_some()
         || p.href.is_some()
         || p.image_attr.brightness != 0
         || p.image_attr.contrast != 0

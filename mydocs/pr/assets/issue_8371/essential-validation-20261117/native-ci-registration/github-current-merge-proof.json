@@ -1,0 +1,270 @@
+{
+  "status": "passed-exact-github-merge-tree",
+  "base": "fbf8081db57c0c6abc9bad418290c5018193e24f",
+  "head": "0b54ec2b3f4fcb416c215f3c152c37b299202443",
+  "mergeTree": "df2f4f09a0808be4f3e22d488a1de1895b968196",
+  "markdownSources": [
+    {
+      "path": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "sha256": "5691a36ffff9e93f438e974a62609967f53bde2e96e41161d949bb2dd3f11d2c"
+    },
+    {
+      "path": "mydocs/pr/assets/issue_8371/sample4-source-layout-20261117/validation.md",
+      "sha256": "324a5024fa5800b4b100170456f5e7bd36ee65f446bfcf02292989cee378767e"
+    },
+    {
+      "path": "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md",
+      "sha256": "03fdf72f68de8009c8ef4a2501beee026eff93cd8bdf0d73ffdc7fd706d1c2a1"
+    }
+  ],
+  "links": [
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 11,
+      "destination": "source-identity.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/source-identity.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 11,
+      "destination": "build-provenance.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/build-provenance.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 12,
+      "destination": "direct-inspection.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/direct-inspection.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 24,
+      "destination": "../../../../../tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md",
+      "target": "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 40,
+      "destination": "rust-validation.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/rust-validation.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 40,
+      "destination": "windows-lint.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/windows-lint.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 40,
+      "destination": "windows-symbol200.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/windows-symbol200.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 51,
+      "destination": "visual/native/candidate/sample4.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/native/candidate/sample4.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 51,
+      "destination": "visual/wasm/candidate/sample4.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/wasm/candidate/sample4.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 52,
+      "destination": "visual/native/candidate/handbook.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/native/candidate/handbook.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 52,
+      "destination": "visual/wasm/candidate/handbook.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/wasm/candidate/handbook.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 53,
+      "destination": "visual/native/candidate/band.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/native/candidate/band.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 53,
+      "destination": "visual/wasm/candidate/band.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/wasm/candidate/band.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 54,
+      "destination": "visual/native/candidate/tab.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/native/candidate/tab.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 54,
+      "destination": "visual/wasm/candidate/tab.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/wasm/candidate/tab.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 56,
+      "destination": "visual/native-summary.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/native-summary.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 56,
+      "destination": "visual/wasm-summary.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/wasm-summary.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 56,
+      "destination": "visual/index.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/visual/index.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 58,
+      "destination": "images/native/source-layout-enlarged.png",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/images/native/source-layout-enlarged.png"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 58,
+      "destination": "images/wasm/source-layout-enlarged.png",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/images/wasm/source-layout-enlarged.png"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 61,
+      "destination": "contributor/summary.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/contributor/summary.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 66,
+      "destination": "browser/original-fonts/silhouette.tsv",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/browser/original-fonts/silhouette.tsv"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 70,
+      "destination": "browser/original-fonts/report.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/browser/original-fonts/report.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 71,
+      "destination": "browser/supported-ttf-paint-control/report.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/browser/supported-ttf-paint-control/report.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 73,
+      "destination": "browser/summary.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/browser/summary.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 75,
+      "destination": "svg-validation.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/svg-validation.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 78,
+      "destination": "browser/exploratory-control-base-comparison.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/browser/exploratory-control-base-comparison.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 83,
+      "destination": "../../open_prs_20261117/README.md",
+      "target": "mydocs/pr/assets/open_prs_20261117/README.md"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 85,
+      "destination": "base-pr9156.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/base-pr9156.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 85,
+      "destination": "font-supply.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/font-supply.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 93,
+      "destination": "native-ci-registration/routing-and-equivalence.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/routing-and-equivalence.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 95,
+      "destination": "native-ci-registration/tests.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/tests.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 96,
+      "destination": "native-ci-registration/windows-lint.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/windows-lint.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 97,
+      "destination": "native-ci-registration/minimum-font-runtime-probes.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/minimum-font-runtime-probes.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 97,
+      "destination": "native-ci-registration/fixture-identity.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/fixture-identity.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 98,
+      "destination": "native-ci-registration/input-commit-audit.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/input-commit-audit.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 99,
+      "destination": "native-ci-registration/base-advance.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/base-advance.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 101,
+      "destination": "native-ci-registration/previous-head-ci.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/previous-head-ci.json"
+    },
+    {
+      "source": "mydocs/pr/assets/issue_8371/essential-validation-20261117/README.md",
+      "line": 104,
+      "destination": "native-ci-registration/protected-font-qualification.json",
+      "target": "mydocs/pr/assets/issue_8371/essential-validation-20261117/native-ci-registration/protected-font-qualification.json"
+    },
+    {
+      "source": "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md",
+      "line": 7,
+      "destination": "RHWPEquationFonts.OFL.txt",
+      "target": "tests/fixtures/fonts/RHWPEquationFonts.OFL.txt"
+    },
+    {
+      "source": "tests/fixtures/fonts/RHWPNativeContainer.LICENSE.md",
+      "line": 8,
+      "destination": "RHWPEquationFonts.LICENSE.md",
+      "target": "tests/fixtures/fonts/RHWPEquationFonts.LICENSE.md"
+    }
+  ],
+  "whitespace": "passed",
+  "githubMergeCommit": "371190ca3d995ca6a27ae6965625526bd33387dd"
+}

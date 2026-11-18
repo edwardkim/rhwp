@@ -129,6 +129,15 @@ impl DocumentCore {
             })
             .collect();
 
+        // 첫 서식 구간 앞의 평문에도 구간을 연다. 안 열면 문단의 첫 CharShapeRef 가 0 에서
+        // 시작하지 않아, 그 서식(굵게 등)이 앞 평문까지 덮는다.
+        if let Some(&(first_start, _, _)) = style_runs.first() {
+            if first_start > 0 {
+                let char_shape_id = self.css_to_char_shape_id("");
+                style_runs.insert(0, (0, first_start, char_shape_id));
+            }
+        }
+
         // 스타일 범위를 CharShapeRef로 변환
         for (start, _end, char_shape_id) in &style_runs {
             // char index → UTF-16 위치
@@ -466,7 +475,7 @@ impl DocumentCore {
     /// 🔴 언어 슬롯마다 **글꼴 목록이 다르다**(실측한 문서: HANGUL·LATIN 8개, OTHER·USER 7개.
     /// 같은 index 가 슬롯마다 다른 글꼴을 가리킨다).
     /// 그래서 하나의 ID 를 7칸에 복사하면 안 되고, **슬롯마다 찾거나 넣어서 각자의 index** 를 쓴다.
-    fn find_or_register_font_ids(&mut self, name: &str) -> Option<[u16; 7]> {
+    pub(crate) fn find_or_register_font_ids(&mut self, name: &str) -> Option<[u16; 7]> {
         let trimmed = name.trim();
         // 총칭 글꼴은 등록하지 않는다 — 이름이 아니라 분류다.
         const GENERIC: [&str; 8] = [
@@ -488,6 +497,15 @@ impl DocumentCore {
         let name_lower = trimmed.to_lowercase();
         let faces = &mut self.document.doc_info.font_faces;
         if faces.is_empty() {
+            return None;
+        }
+        // 모든 슬롯이 등록 가능한지 먼저 확인한다. 뒤 슬롯의 상한 오류로
+        // 앞 슬롯에만 새 글꼴이 남는 부분 변경을 만들지 않는다.
+        if faces.iter().take(7).any(|slot| {
+            slot.iter()
+                .position(|font| font.name.to_lowercase() == name_lower)
+                .map_or(slot.len() >= 256, |index| u16::try_from(index).is_err())
+        }) {
             return None;
         }
         let slot_count = faces.len().min(7);

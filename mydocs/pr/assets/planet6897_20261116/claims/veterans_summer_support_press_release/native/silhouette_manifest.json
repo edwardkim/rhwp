@@ -1,0 +1,77 @@
+{
+  "key": "veterans_summer_support_press_release",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2
+  ],
+  "completed_pages": [
+    1,
+    2
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/veterans_summer_support_press_release/veterans_summer_support_press_release/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/veterans_summer_support_press_release/veterans_summer_support_press_release/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "fce0b070037509d77848725ba26eff03e74cbe9e3ffbd26381aff095292856fe",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/veterans_summer_support_press_release/veterans_summer_support_press_release/pdf_png/pdf-001.png",
+      "pdf_sha256": "f6cb02f8048aaa2d66fdf0ee41253554164602feda996261b15852f9643b3acd"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/veterans_summer_support_press_release/veterans_summer_support_press_release/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "d2f038f7febdeb44fdc7ae6ee20b9a45764697a386649c1c718b77e72d8e978f",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/veterans_summer_support_press_release/veterans_summer_support_press_release/pdf_png/pdf-002.png",
+      "pdf_sha256": "8fa759f143bfade4825e44d9bc959006c62a54b850afb158899b08830a15bd74"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 102983,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9887,
+      "silhouette_raw_unmatched_pixels": 7,
+      "silhouette_boundary_reconciled_pixels": 5,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61949,
+      "tolerant_content_match_percent": 99.99677
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 2,
+      "pdf": 2
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "canonical_full_manifest_sha256": "ca59d88852649aa2aa9bf407b92eb13fdcdb5bd88845d3a4e7180a8e3db40adc",
+  "record_scope": "Compact canonical manifest: all page metrics and PNG hashes retained; full environment catalog retained locally and referenced by hash.",
+  "full_environment_provenance_sha256": "c4db6a3a937700e8a8911c4136f06b352b90972273eca97dbeca295e9569d8f3"
+}

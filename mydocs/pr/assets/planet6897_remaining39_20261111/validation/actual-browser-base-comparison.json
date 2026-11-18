@@ -1,0 +1,279 @@
+{
+  "code_head": "e6261fd4ecd4ed2c5b0039d7526915c8c7837408",
+  "fixed_base": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "source_reports": {
+    "base": "b081239d414c836ec7ae3ee46b97a7f790340e01a770a52ba950134900723328",
+    "candidate": "fc8b7b9c5152dcec802c0f445adbc5fcf87cadfb08524d9380241660f2d8623c"
+  },
+  "paired_captures": [
+    {
+      "sample": "pr8708-cell_float_offset_space",
+      "page_zero_based": 0,
+      "backend": "canvas2d",
+      "base_actual_backend": "canvas2d",
+      "head_actual_backend": "canvas2d",
+      "base_png_sha256": "51df8fd24310149626d4b8f0e46622752b498f9fdafb4193589730368ffe1f90",
+      "head_png_sha256": "b8b5eb3608c060e16463fc1274820da30fc309ade4860208dfb05413eeae6128",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": null,
+      "head_runtime_readiness": null
+    },
+    {
+      "sample": "pr8708-cell_float_offset_space",
+      "page_zero_based": 0,
+      "backend": "canvaskit-compat",
+      "base_actual_backend": "canvaskit-compat",
+      "head_actual_backend": "canvaskit-compat",
+      "base_png_sha256": "aca0013f2a0c0cc008b079f5d7399588ecad930c47247d48952728e69ba479ff",
+      "head_png_sha256": "01b1dd115bd6c482841c7a5c714d05dd5e1d85b67cf1a24f3148f8d024534b9f",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": true,
+      "head_runtime_readiness": true
+    },
+    {
+      "sample": "pr8708-cell_float_offset_space",
+      "page_zero_based": 0,
+      "backend": "canvaskit-default",
+      "base_actual_backend": "canvaskit-default",
+      "head_actual_backend": "canvaskit-default",
+      "base_png_sha256": "aca0013f2a0c0cc008b079f5d7399588ecad930c47247d48952728e69ba479ff",
+      "head_png_sha256": "01b1dd115bd6c482841c7a5c714d05dd5e1d85b67cf1a24f3148f8d024534b9f",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": true,
+      "head_runtime_readiness": true
+    },
+    {
+      "sample": "pr8729-hft-hanyang_junggothic-probe",
+      "page_zero_based": 2,
+      "backend": "canvas2d",
+      "base_actual_backend": "canvas2d",
+      "head_actual_backend": "canvas2d",
+      "base_png_sha256": "c18e1c49c81b4f61da40b32f56259a775f96ef9dd18f8aa8c73d6a6eaa4ce199",
+      "head_png_sha256": "4bba8667c7e14f45e6389cdbd912c74f46bd1cc6aba42a21958b919b3ef36632",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": null,
+      "head_runtime_readiness": null
+    },
+    {
+      "sample": "pr8729-hft-hanyang_junggothic-probe",
+      "page_zero_based": 2,
+      "backend": "canvaskit-compat",
+      "base_actual_backend": "canvaskit-compat",
+      "head_actual_backend": "canvaskit-compat",
+      "base_png_sha256": "fd25558bc665d930f82f9939c6b07814925224ddf80187b4c8fd617b11cf1807",
+      "head_png_sha256": "36eff1d176ce44261e30ad326212709fccdc3990e0206fd13a8d4f8fcd48f72f",
+      "identical_png": false,
+      "base_unexpected_ops": [
+        "textRun:glyphMapping"
+      ],
+      "head_unexpected_ops": [
+        "textRun:glyphMapping"
+      ],
+      "base_runtime_readiness": false,
+      "head_runtime_readiness": false
+    },
+    {
+      "sample": "pr8729-hft-hanyang_junggothic-probe",
+      "page_zero_based": 2,
+      "backend": "canvaskit-default",
+      "base_actual_backend": "canvaskit-default",
+      "head_actual_backend": "canvaskit-default",
+      "base_png_sha256": "fd25558bc665d930f82f9939c6b07814925224ddf80187b4c8fd617b11cf1807",
+      "head_png_sha256": "36eff1d176ce44261e30ad326212709fccdc3990e0206fd13a8d4f8fcd48f72f",
+      "identical_png": false,
+      "base_unexpected_ops": [
+        "textRun:glyphMapping"
+      ],
+      "head_unexpected_ops": [
+        "textRun:glyphMapping"
+      ],
+      "base_runtime_readiness": false,
+      "head_runtime_readiness": false
+    },
+    {
+      "sample": "pr8928-36415413-page-break-tac-full-gap",
+      "page_zero_based": 1,
+      "backend": "canvas2d",
+      "base_actual_backend": "canvas2d",
+      "head_actual_backend": "canvas2d",
+      "base_png_sha256": "3abc735ba21c6787b66d1b0af822e1ecff0f51b59ad972fb3c96054ff8fd9122",
+      "head_png_sha256": "794584521d6f06cd8a940e1c2151140b7f200ab494ac73ef5a5114d92a3e1b1d",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": null,
+      "head_runtime_readiness": null
+    },
+    {
+      "sample": "pr8928-36415413-page-break-tac-full-gap",
+      "page_zero_based": 1,
+      "backend": "canvaskit-compat",
+      "base_actual_backend": "canvaskit-compat",
+      "head_actual_backend": "canvaskit-compat",
+      "base_png_sha256": "89cc95f1d85de7974acf7f1c1de339dc3a8814d886543347251c4568718eb220",
+      "head_png_sha256": "42ecbcb31bc4b7025fafb90ced65e2cb66038209478429e25834497c00b3b636",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": true,
+      "head_runtime_readiness": true
+    },
+    {
+      "sample": "pr8928-36415413-page-break-tac-full-gap",
+      "page_zero_based": 1,
+      "backend": "canvaskit-default",
+      "base_actual_backend": "canvaskit-default",
+      "head_actual_backend": "canvaskit-default",
+      "base_png_sha256": "89cc95f1d85de7974acf7f1c1de339dc3a8814d886543347251c4568718eb220",
+      "head_png_sha256": "42ecbcb31bc4b7025fafb90ced65e2cb66038209478429e25834497c00b3b636",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": true,
+      "head_runtime_readiness": true
+    },
+    {
+      "sample": "pr8929-wide_tac_trailing_tail",
+      "page_zero_based": 0,
+      "backend": "canvas2d",
+      "base_actual_backend": "canvas2d",
+      "head_actual_backend": "canvas2d",
+      "base_png_sha256": "4be622c120c6b13944af4ae935d8c0b23aae6923870dad9f4c802fdba9620eaf",
+      "head_png_sha256": "c03f7db441746a7829c686f594a28fc0b8dfbaa58374d4b46dace14fd2e311e2",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": null,
+      "head_runtime_readiness": null
+    },
+    {
+      "sample": "pr8929-wide_tac_trailing_tail",
+      "page_zero_based": 0,
+      "backend": "canvaskit-compat",
+      "base_actual_backend": "canvas2d",
+      "head_actual_backend": "canvas2d",
+      "base_png_sha256": "4be622c120c6b13944af4ae935d8c0b23aae6923870dad9f4c802fdba9620eaf",
+      "head_png_sha256": "c03f7db441746a7829c686f594a28fc0b8dfbaa58374d4b46dace14fd2e311e2",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": null,
+      "head_runtime_readiness": null
+    },
+    {
+      "sample": "pr8929-wide_tac_trailing_tail",
+      "page_zero_based": 0,
+      "backend": "canvaskit-default",
+      "base_actual_backend": "canvas2d",
+      "head_actual_backend": "canvas2d",
+      "base_png_sha256": "4be622c120c6b13944af4ae935d8c0b23aae6923870dad9f4c802fdba9620eaf",
+      "head_png_sha256": "c03f7db441746a7829c686f594a28fc0b8dfbaa58374d4b46dace14fd2e311e2",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": null,
+      "head_runtime_readiness": null
+    },
+    {
+      "sample": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "page_zero_based": 0,
+      "backend": "canvas2d",
+      "base_actual_backend": "canvas2d",
+      "head_actual_backend": "canvas2d",
+      "base_png_sha256": "0222fcbf945bb5c47161554c3a160c1088c4d1980c89409a2c1e725b302b65c9",
+      "head_png_sha256": "cda423e58907c924c9ebacf9f90eaee3a940e0a6767533c07aae78c8c65acf68",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": null,
+      "head_runtime_readiness": null
+    },
+    {
+      "sample": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "page_zero_based": 0,
+      "backend": "canvaskit-compat",
+      "base_actual_backend": "canvaskit-compat",
+      "head_actual_backend": "canvaskit-compat",
+      "base_png_sha256": "f142820d37b753b684d66285fcaa670b2101ab801710ef930bdd05772ab73e75",
+      "head_png_sha256": "1461caae63fe5de3bdb379b7dbd51a1936e7165442624fb2b15624671f813dcf",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": true,
+      "head_runtime_readiness": true
+    },
+    {
+      "sample": "pr8930-6540000-202500049-post-table-line-stored-page-reset",
+      "page_zero_based": 0,
+      "backend": "canvaskit-default",
+      "base_actual_backend": "canvaskit-default",
+      "head_actual_backend": "canvaskit-default",
+      "base_png_sha256": "f142820d37b753b684d66285fcaa670b2101ab801710ef930bdd05772ab73e75",
+      "head_png_sha256": "1461caae63fe5de3bdb379b7dbd51a1936e7165442624fb2b15624671f813dcf",
+      "identical_png": false,
+      "base_unexpected_ops": [],
+      "head_unexpected_ops": [],
+      "base_runtime_readiness": true,
+      "head_runtime_readiness": true
+    }
+  ],
+  "base_parity": {
+    "total": 8,
+    "compared": 8,
+    "passed": 0,
+    "failed": 8,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "candidate_parity": {
+    "total": 8,
+    "compared": 8,
+    "passed": 0,
+    "failed": 8,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "base_contract_failures": [
+    {
+      "sampleId": "pr8729-hft-hanyang_junggothic-probe",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    },
+    {
+      "sampleId": "pr8729-hft-hanyang_junggothic-probe",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    }
+  ],
+  "candidate_contract_failures": [
+    {
+      "sampleId": "pr8729-hft-hanyang_junggothic-probe",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    },
+    {
+      "sampleId": "pr8729-hft-hanyang_junggothic-probe",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "code": "runtimeUnexpectedUnsupportedOps",
+      "detail": "[\"textRun:glyphMapping\"]"
+    }
+  ],
+  "interpretation": "The same glyphMapping contract failures and backend parity failures occur in the fixed base under these browser/font conditions. Capture completion or historical failure does not waive runtime readiness or visual parity gates."
+}

@@ -1,0 +1,148 @@
+{
+  "state": "native-producer-ready",
+  "pid": 2499481,
+  "source_head": "0c2f57c4ad6ca45d915537cd1eafc70f49d7a8a8",
+  "prepared_at": "2026-11-06T21:21:36.527282+00:00",
+  "changes": [
+    {
+      "path": "src/document_core/commands/object_ops/table.rs",
+      "sha256": "ace3f209cced455fe5d885f8a1dfe7e842dd298b5dbda5f62bae75c64ef288c6"
+    },
+    {
+      "path": "src/document_core/html_table_import.rs",
+      "sha256": "074af80c939bd19f44cde8ca3f96d8e27d2e593cd433e91ffb43442b81222740"
+    },
+    {
+      "path": "src/model/style.rs",
+      "sha256": "74d6ce8fa33fa3891cc3f77866da921ae22ad1fc07d765268f7b99a48c300adb"
+    },
+    {
+      "path": "src/parser/doc_info.rs",
+      "sha256": "16d76584cc2bbf96c9c264fdddc0ffb31fdff5fb226fc35ed1b9fd12c7b9f7c9"
+    },
+    {
+      "path": "src/parser/hwpx/header.rs",
+      "sha256": "f7121c8712df72a535ce55bff679ddc0bec2679582a2db514f79a13c3790a68b"
+    },
+    {
+      "path": "src/renderer/layout.rs",
+      "sha256": "c0de77f26d63170bb62ff916ef82d58003ee76bae4b08a0b628161ea3ff31bf8"
+    },
+    {
+      "path": "src/renderer/layout/border_rendering.rs",
+      "sha256": "b245cbcce1ad9c346619b806d2f77d3fd0eada5a84a22d4da883d4a0d7cb06bc"
+    },
+    {
+      "path": "src/renderer/layout/integration_tests.rs",
+      "sha256": "35f4c81628d181753158c9f6961c8dad8459e73e8deb893173c99474ac81ef22"
+    },
+    {
+      "path": "src/renderer/layout/table_cell_content.rs",
+      "sha256": "878acc2dddfd468d5ee016587cf98ce37ccf9587c4beb15e7cf4147fbb256252"
+    },
+    {
+      "path": "src/renderer/layout/table_layout.rs",
+      "sha256": "56d69204db82a7729b38d6153d849930b2fc45749adfc109b0f2301b10565797"
+    },
+    {
+      "path": "src/renderer/layout/table_partial.rs",
+      "sha256": "a2d72d791b333241009893e77c3f35f6d88092bcb735b39acae231cfe2a9ec76"
+    },
+    {
+      "path": "src/renderer/style_resolver.rs",
+      "sha256": "cfe69b74ae8ef28225db6444f36c6a2566fe0d328c4b6339041448c2bd831796"
+    },
+    {
+      "path": "src/renderer/style_resolver/resolved.rs",
+      "sha256": "93318166309d4e1d4b1df07d8e3e5d678fb7f1e41fedc0f648bbdf3afa23e029"
+    },
+    {
+      "path": "src/serializer/doc_info.rs",
+      "sha256": "5e634ec1d6709c75edb447178ae34aa38eea337ed407b9096682bebc296bddc2"
+    },
+    {
+      "path": "src/serializer/doc_info/tests.rs",
+      "sha256": "b9c013032eb7380994dea867a2af4a1371ea82e5d9edb3358e896b7894dda4f8"
+    },
+    {
+      "path": "src/serializer/hwpx/header.rs",
+      "sha256": "4f1345af7634f9c4d810810fc9e660a81927944154013899347469b993a33d0e"
+    },
+    {
+      "path": "src/wasm_api/tests.rs",
+      "sha256": "db49a88d3ad631095c5c24fbf2a1189089a8d13b72f7600f26837e4a7e07e76d"
+    },
+    {
+      "path": "src/renderer/layout/table_break_border.rs",
+      "sha256": "fc14198e8b5007bb74256f7ad77a7d525c987deaef464b0e40654c1ac7f4dbb0"
+    },
+    {
+      "path": "rhwp-studio/src/core/host-font-requests.ts",
+      "sha256": "2a319436c129156e3556cf38d3461eea066ad29729e7c7546df251de42b05f33"
+    },
+    {
+      "path": "rhwp-studio/src/view/canvaskit/positioned-equation-glyphs.ts",
+      "sha256": "218d1853c0ae9f62dcad15da22f9ade91a305ffdecceb155ffde5c42932ecbc9"
+    },
+    {
+      "path": "rhwp-studio/src/view/canvaskit-renderer.ts",
+      "sha256": "1986a86af253e1943e5c392b3ab4ad7a01574bea50d85a4887ae953b41b3fdc3"
+    },
+    {
+      "path": "mydocs/pr/pr_8615_review_impl.md",
+      "sha256": "a76f21a120105e776d66417127469f7d4aeb92606725862793b5db02e97211fe"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/equation-implicit-fields-plan.md",
+      "sha256": "e3b59853add603f3d5a0c7244b3851956c98f53024f6d82635a09f9eb70ea900"
+    },
+    {
+      "path": "mydocs/tech/hwp_spec_errata.md",
+      "sha256": "f1dca71838af986a6a72b9cc7c3ccddc0cc089cf2fdda59045e4c9a47f853176"
+    },
+    {
+      "path": "mydocs/tech/한글문서파일형식_5.0_revision1.3.md",
+      "sha256": "ad57aa94e96e442b9ee76b17a8410fe64789d30ae4e501ac45228fd10aa17f48"
+    }
+  ],
+  "build_exit": 0,
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-separate-border-r26b",
+    "sha256": "86ecc0b5ebb64ff0aa4c6fd928799f3b7724c88d0a5548ff11071a969a1d8d0c"
+  },
+  "role": "R26b Native 보정·직접 판독. 뒤의 저장 전용 serializer 델타와 fresh WASM 최종 판정은 별도.",
+  "evidence_files": [
+    {
+      "path": "native.tsv",
+      "sha256": "4b9f9f3b34e88b7ab5d02e6baa1375c155757cd0a57c7c836634422616430078"
+    },
+    {
+      "path": "before-native.tsv",
+      "sha256": "ef6c67b8b2acddb05d67ce21d3c3ef4db10ecfe071356e749f4cfbae3cc39702"
+    },
+    {
+      "path": "native-review-001.png",
+      "sha256": "4ef677e6e3133e79417db027b289b24e928cb6f58f7a308ff84b9e90718fa994"
+    },
+    {
+      "path": "native-overlay-001.png",
+      "sha256": "be6f35336b42d7271de3ed948c3806b83d71ca17305d6625101b32c0f4af8f8d"
+    },
+    {
+      "path": "native-review-002.png",
+      "sha256": "5985a7656c07d3e96fa6289f5ab730678253db7912102129466c1b128724d9fd"
+    },
+    {
+      "path": "native-overlay-002.png",
+      "sha256": "c29eaff01e9bc0a34ff0aac81e7436b3c2e0c80712d1089ee08c87a0061284d8"
+    },
+    {
+      "path": "native-review-003.png",
+      "sha256": "57ac02ea2953a5ca955dc58933970306fc352a95ea7499c8e72e2a1d1614217c"
+    },
+    {
+      "path": "native-overlay-003.png",
+      "sha256": "b641574a96285553aec7187b1f80ccfd97d396435e0885b5d4bda4d09e7275bd"
+    }
+  ]
+}

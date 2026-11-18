@@ -59,7 +59,9 @@ impl TypesetEngine {
         // [#6175] 용지/쪽 기준 어울림 개체의 폭과 세로 band - 구역당 한 번.
         *self.float_carve_evidence.borrow_mut() =
             crate::renderer::float_placement::paper_or_page_float_carve_evidence_with_storage(
-                paragraphs, storage,
+                paragraphs,
+                crate::renderer::px_to_hwpunit(layout.body_area.y, self.dpi),
+                storage,
             )?;
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = FootnoteShape::default();
@@ -355,7 +357,13 @@ impl TypesetEngine {
                 &mut st, para_idx, para, paragraphs, storage,
             )?;
 
-            let picture_host_origin = (st.pages.len(), st.current_column, st.current_height);
+            let picture_host_origin = (
+                st.pages.len(),
+                st.current_column,
+                st.current_height,
+                !st.profile.session_edited()
+                    && st.stored_wrap_rows_start_at_flow_pen(para, self.dpi),
+            );
             let native_hwp5_footnote_break = self.place_paragraph_flow_with_storage(
                 &mut st,
                 para_idx,
@@ -416,6 +424,12 @@ impl TypesetEngine {
         {
             st.force_new_page();
         }
+        while !st.deferred_next_page_stored_frames.is_empty() {
+            st.force_new_page();
+        }
+        // 뒤 흐름이 만든 쪽이 모자라 남은 무리 그림은 현재 쪽에 둔다. 그림만을 위해
+        // 새 쪽을 여는지는 독립 출력으로 확인하지 않았으므로 종전 배치를 유지한다.
+        st.place_remaining_pile_pictures_on_current_page();
 
         // [미주 배치 — Hancom EndnoteEndOfSection/EndnoteEndOfDocument]
         let issue2424_endnote_started = issue2424_ts_enabled.then(std::time::Instant::now);

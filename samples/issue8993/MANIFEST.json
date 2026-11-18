@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 8993,
+  "title": "저장 프레임이 본문을 넘는 RowBreak 표를 저장 근거로 통째 이월해 앞 쪽이 빈다",
+  "entries": [
+    {
+      "path": "samples/issue8993/31675-rowbreak-overflowing-frame.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/8993",
+      "originalFilename": "31675_지방자치단체 회계기준에 관한 규칙(부령 제124호, 2009.12.31).hwp",
+      "bytes": 728576,
+      "sha256": "03c35242f6d88dd33bde907b64b31b061e600f54ee5e66758e3b5a8c18d84a84",
+      "lastSavedWith": {
+        "product": null,
+        "version": "7.5.8.527"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue8993/31675-rowbreak-overflowing-frame-2020.pdf",
+      "referencePdfSha256": "abad2bc7b5691e5bd6c4b3a5fbaae0eb95b21662f6bc5a3a7472d9027acbb73d",
+      "referencePdfPageCount": 19,
+      "contract": "14쪽 [별지 제1호 서식] 재정상태보고서 표(52행×13열, 비-TAC 자리차지, RowBreak)는 14쪽에서 시작해 「Ⅱ. 장기차입부채」 묶음까지 14쪽, 「Ⅲ. 기타비유동부채」부터 표 끝까지 15쪽에 둔다. 전체 19쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}

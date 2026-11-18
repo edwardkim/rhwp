@@ -33,14 +33,24 @@ impl Drop for TempDir {
 }
 
 pub(super) fn rendered_pages(input: &Path) -> Vec<Value> {
+    rendered_pages_in_environment(input, None)
+}
+
+pub(super) fn rendered_pages_in_environment(
+    input: &Path,
+    font_environment: Option<&Path>,
+) -> Vec<Value> {
     let dir = TempDir::new();
-    let output = Command::new(rhwp_bin())
-        .args(["export-render-tree"])
+    let mut command = Command::new(rhwp_bin());
+    command
+        .arg("export-render-tree")
         .arg(input)
         .arg("-o")
-        .arg(&dir.0)
-        .output()
-        .expect("run actual renderer");
+        .arg(&dir.0);
+    if let Some(path) = font_environment {
+        command.arg("--font-environment").arg(path);
+    }
+    let output = command.output().expect("run actual renderer");
     assert!(output.status.success(), "{output:?}");
     let mut paths: Vec<_> = std::fs::read_dir(&dir.0)
         .unwrap()

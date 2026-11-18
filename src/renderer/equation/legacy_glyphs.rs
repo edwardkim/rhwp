@@ -59,8 +59,22 @@ fn advance(character: char, role: Role) -> Option<u16> {
     }
 }
 
+/// 같은 표시 face를 재사용해도 선택 문자열 생략과 원본 CHAR의 전진 계약은 다르다.
+#[derive(Clone, Copy)]
+pub(super) enum AdvanceFrame {
+    OriginalChar,
+    ImplicitLegacy,
+}
+
 /// 논리 전진의 누적 원점과 자연 표시 크기를 함께 보존한다. 저장 너비로 글리프를 늘리지 않는다.
-pub(super) fn measure(text: &str, role: Role, fs: f64, dpi: f64, pad: f64) -> Option<GlyphRun> {
+pub(super) fn measure(
+    text: &str,
+    role: Role,
+    fs: f64,
+    dpi: f64,
+    pad: f64,
+    frame: AdvanceFrame,
+) -> Option<GlyphRun> {
     if text.is_empty()
         || !fs.is_finite()
         || fs <= 0.0
@@ -75,7 +89,17 @@ pub(super) fn measure(text: &str, role: Role, fs: f64, dpi: f64, pad: f64) -> Op
     let mut shears = Vec::with_capacity(text.len());
     let mut width = pad;
     for character in text.chars() {
-        let units = advance(character, role)?;
+        let advance_role = match (frame, role) {
+            // 생략 표시의 기울임은 정체 전진과 별도의 shear다.
+            (AdvanceFrame::ImplicitLegacy, Role::Variable { .. }) => {
+                Role::Variable { italic: false }
+            }
+            // 원 CHAR의 추가 문자 수용으로 생략 표시의 기존 fallback을 바꾸지 않는다.
+            (AdvanceFrame::ImplicitLegacy, Role::Number) if character == '.' => return None,
+            (AdvanceFrame::ImplicitLegacy, Role::Operator) if character == '⋅' => return None,
+            _ => role,
+        };
+        let units = advance(character, advance_role)?;
         positions.push(width);
         shears.push(if matches!(role, Role::Variable { italic: true }) {
             // 원본의 대·소문자는 같은 정체 윤곽에 이 행렬을 적용한다.
@@ -83,8 +107,13 @@ pub(super) fn measure(text: &str, role: Role, fs: f64, dpi: f64, pad: f64) -> Op
         } else {
             0.0
         });
-        let logical_font_pixels = (fs * 96.0 / dpi).round();
-        width += (f64::from(units) * logical_font_pixels / 1000.0).round() * dpi / 96.0;
+        width += match frame {
+            AdvanceFrame::OriginalChar => {
+                let logical_font_pixels = (fs * 96.0 / dpi).round();
+                (f64::from(units) * logical_font_pixels / 1000.0).round() * dpi / 96.0
+            }
+            AdvanceFrame::ImplicitLegacy => f64::from(units) * fs / 1000.0,
+        };
     }
     Some(GlyphRun {
         font_family: FONT_FAMILY,

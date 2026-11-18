@@ -41,6 +41,10 @@ pub struct Equation {
     pub version_info: String,
     /// 수식 글꼴명
     pub font_name: String,
+    /// HWP5 EQEDIT에서 버전·글꼴 선택 문자열이 아예 생략된 입력 출처.
+    /// 명시한 빈 HWPX 속성과 구분하며, HWP 저장 시 같은 생략을 보존한다.
+    #[serde(skip)]
+    pub implicit_legacy_font: bool,
     /// 라운드트립용 원본 ctrl_data
     pub raw_ctrl_data: Vec<u8>,
     /// [#4495] raw_ctrl_data 출처 봉인 — 봉인 시점 `common` 의 다이제스트.
@@ -57,12 +61,17 @@ pub struct Equation {
 }
 
 impl Equation {
+    pub(crate) fn uses_implicit_legacy_font(&self) -> bool {
+        self.implicit_legacy_font && self.font_name.is_empty() && self.version_info.is_empty()
+    }
+
     /// 색·호스트 이동과 분리된 수식 내용 및 선언 프레임의 서명.
     pub(crate) fn declared_frame_signature(&self) -> [u8; 32] {
         crate::model::raw_provenance::record_digest(&(
             &self.script,
             &self.font_name,
             &self.version_info,
+            self.implicit_legacy_font,
             self.font_size,
             self.attr,
             self.eqedit,

@@ -1,0 +1,16 @@
+{
+  "pr": 8915,
+  "head": "61198fcf3f4d185c8f78eac5b3259d99303b8845",
+  "base": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "check_runs": 36,
+  "commit_statuses": [
+    {
+      "context": "CI Impact Policy",
+      "state": "success",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42813001592"
+    }
+  ],
+  "merge_tree": "1d9cbdbde75ec6932e904a9f6284f82b6f1b6552",
+  "mergeable_state": "clean",
+  "checked_at": "2026-11-11T15:55:44+09:00"
+}

@@ -133,8 +133,8 @@ async function runOnce(prefix) {
     viewerUrl.searchParams.set('url', `${fixture.origin}/smoke.hwp`);
     viewerUrl.searchParams.set('filename', 'extension-smoke.hwp');
     await guard(page.goto(viewerUrl.href, { waitUntil: 'domcontentloaded' }));
-    await guard(page.waitForSelector('#scroll-container canvas', { visible: true }));
     // #1328/#1454 requires an explicit font choice even in an isolated profile.
+    // Font choice precedes document initialization and canvas creation.
     // Exercise the real consent button; do not preseed storage or disable the dialog.
     await guard(page.waitForFunction(() =>
       /extension-smoke\.hwp/.test(document.getElementById('sb-message')?.textContent ?? '')
@@ -146,6 +146,7 @@ async function runOnce(prefix) {
       button?.click();
       return button ? 'substitute-font-button' : 'not-required';
     }));
+    await guard(page.waitForSelector('#scroll-container canvas', { visible: true }));
     await guard(page.waitForFunction(() => {
       const message = document.getElementById('sb-message')?.textContent?.trim() ?? '';
       return /extension-smoke\.hwp/.test(message);
@@ -251,19 +252,62 @@ async function runOnce(prefix) {
     assertNoSurfaceErrors(diagnostics, 'options');
 
     diagnostics.surface = 'content-script';
+    await guard(page.evaluateOnNewDocument(() => {
+      window.addEventListener('hwp-extension-ready', event => {
+        window.hwpExtensionReady = event.detail;
+      });
+      new MutationObserver(mutations => {
+        for (const mutation of mutations) {
+          for (const node of mutation.addedNodes) {
+            if (node instanceof HTMLScriptElement && node.src.endsWith('/dev-tools-inject.js')) {
+              window.rhwpDevScriptInjected = true;
+            }
+          }
+        }
+      }).observe(document, { childList: true, subtree: true });
+    }));
+
     await guard(page.goto(`${fixture.origin}/fixture.html`, { waitUntil: 'domcontentloaded' }));
-    await guard(page.waitForFunction(() => document.documentElement.dataset.hwpExtension === 'rhwp'));
+    await guard(page.evaluate(() => {
+      const link = document.createElement('a');
+      link.href = '/smoke.hwp';
+      link.textContent = 'smoke.hwp';
+      document.body.appendChild(link);
+    }));
+    // 동적으로 추가한 링크의 배지가 표시되면 content script가 실행된 상태다.
+    await guard(page.waitForSelector('a + .rhwp-badge'));
+    const ordinaryPage = await guard(page.evaluate(() => ({
+      htmlAttributes: document.documentElement.getAttributeNames(),
+      ready: Boolean(window.hwpExtensionReady),
+      scriptInjected: Boolean(window.rhwpDevScriptInjected),
+      badgeCount: document.querySelectorAll('.rhwp-badge').length,
+    })));
+    assert.deepEqual(ordinaryPage, {
+      htmlAttributes: ['lang'],
+      ready: false,
+      scriptInjected: false,
+      badgeCount: 1,
+    });
+
+    await guard(page.goto(`${fixture.origin}/fixture.html?integration=enabled`, { waitUntil: 'domcontentloaded' }));
+    await guard(page.waitForFunction(() => Boolean(window.rhwpDev)));
     await guard(page.waitForSelector('.rhwp-badge'));
     const contentState = await guard(page.evaluate(() => ({
       marker: document.documentElement.dataset.hwpExtension,
       version: document.documentElement.dataset.hwpExtensionVersion,
+      ready: window.hwpExtensionReady,
+      devToolsVersion: window.rhwpDev.version,
       badgeCount: document.querySelectorAll('.rhwp-badge').length,
-      processedCount: document.querySelectorAll('a[data-rhwp-processed="true"]').length,
     })));
     assert.equal(contentState.marker, 'rhwp');
     assert.match(contentState.version ?? '', /^\d+\.\d+\.\d+$/);
+    assert.deepEqual(contentState.ready, {
+      name: 'rhwp',
+      version: contentState.version,
+      capabilities: ['preview', 'edit', 'print'],
+    });
+    assert.equal(contentState.devToolsVersion, contentState.version);
     assert.equal(contentState.badgeCount, 1);
-    assert.equal(contentState.processedCount, 1);
     await guard(assertPageBudget(browser, page, diagnostics));
     assertNoSurfaceErrors(diagnostics, 'content-script');
 
@@ -334,10 +378,12 @@ async function startFixtureServer(diagnostics) {
         'cache-control': 'no-store',
         'content-type': 'text/html; charset=utf-8',
       });
+      const integration = requestUrl.searchParams.get('integration') === 'enabled';
       response.end(`<!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><link rel="icon" href="data:,"><title>rhwp extension smoke fixture</title></head>
-<body><a id="document-link" href="/smoke.hwp">smoke.hwp</a></body>
+<head><meta charset="utf-8"><link rel="icon" href="data:,"><title>rhwp extension smoke fixture</title>
+${integration ? '<meta name="hwp:integration" content="enabled">' : ''}</head>
+<body>${integration ? '<a href="/smoke.hwp">smoke.hwp</a>' : '<main>일반 페이지</main>'}</body>
 </html>`);
       return;
     }

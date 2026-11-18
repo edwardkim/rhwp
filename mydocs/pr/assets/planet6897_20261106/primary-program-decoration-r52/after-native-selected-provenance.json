@@ -1,0 +1,115 @@
+{
+  "source": "e2ca9b0c52ce705cddaf34dd67bbf5c787f9e445",
+  "binary_sha256": "884eaa86dbc294a14fb5577a791c54dfdab76946345e652c59828db832852c96",
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+  "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+  "independent_print": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+  "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+  "font_environment": "/home/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/353bba9c326833f6b9a127d8974727eda31878e8e20aeb4b9a913d01dc53110f.json",
+  "font_environment_sha256": "353bba9c326833f6b9a127d8974727eda31878e8e20aeb4b9a913d01dc53110f",
+  "compat": "2022",
+  "dpi": 96,
+  "pages": [
+    4,
+    6,
+    8,
+    11,
+    13,
+    21,
+    27,
+    28
+  ],
+  "pdf_total_pages": 195,
+  "native_scope": "하락 8쪽의 실제 새 Native 측정. 전195쪽 또는 fresh WASM 완료가 아니다.",
+  "measurements": [
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99346,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61207,
+      "tolerant_content_match_percent": 99.99346
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90613,
+      "silhouette_raw_unmatched_pixels": 68,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 72444,
+      "tolerant_content_match_percent": 99.90613
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 57264,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95661,
+      "silhouette_raw_unmatched_pixels": 32,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73749,
+      "tolerant_content_match_percent": 99.95661
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98966,
+      "silhouette_raw_unmatched_pixels": 7,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 67684,
+      "tolerant_content_match_percent": 99.98966
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.90585,
+      "silhouette_raw_unmatched_pixels": 53,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56291,
+      "tolerant_content_match_percent": 99.90585
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99623,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 106237,
+      "tolerant_content_match_percent": 99.99623
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.93024,
+      "silhouette_raw_unmatched_pixels": 38,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 54473,
+      "tolerant_content_match_percent": 99.93024
+    }
+  ],
+  "readings": [
+    {
+      "page": 4,
+      "review": "after-native-p004-review.png",
+      "overlay": "after-native-p004-overlay.png",
+      "inspected_at": "2026-11-08T10:02:42.047946+00:00",
+      "observation": "제2장·제1절 제목과 1·2번 굵은 소제목의 한글/숫자 전진, 뒤 본문·표제 사이 간격과 줄바꿈을 같은 Print와 대조했다. 5% 추가 전진에 따른 제목 끝의 누적 어긋남이 없어졌다. RGB 완전 일치로 표현하지 않는다."
+    }
+  ]
+}

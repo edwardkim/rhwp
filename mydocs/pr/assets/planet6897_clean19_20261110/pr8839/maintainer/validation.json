@@ -1,0 +1,123 @@
+{
+  "source_pr": 8839,
+  "issue": 8834,
+  "before_source_head": "f8eded34f970e0d13e15f8406f6a2d61475ae7a2",
+  "after_parent_head": "4e74b39e5ba9237d06a8f8b79ad3617b1797d46c",
+  "after_source_hashes": {
+    "src/renderer/layout/paragraph_layout.rs": "6b2466debb9eb97d7691018b9853438b238d56f580f1d3323ffe2e26b6a970d2",
+    "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799"
+  },
+  "native_binary_sha256": "7e103655aa3c5064a423ab5d83f67b502a3a574537c90566fa23980186202418",
+  "fresh_wasm_files": {
+    "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+    "rhwp_bg.wasm": "f64f6f0b827d6692170efbdb2054aeca7ed52c8308a6c6c4bf2e91e5b91d823a"
+  },
+  "fresh_wasm_method": "Mac locked wrapper local no-opt alternative; not Docker optimization",
+  "input": "tests/fixtures/issue8834/36387608-approval-original.hwpx",
+  "input_sha256": "e2a0f181a74eff21dbc13b122923730355cc75282a1566e0d417ea0d89374458",
+  "reference_pdf": "pdf/issue8834/issue8834-36387608-2020.pdf",
+  "reference_pdf_sha256": "2559496e2e361db8a59e36222615b4996e0098189701ab1a27149612bd64db36",
+  "print_job": "649f5643-1435-4932-85c1-5128c377f8e1",
+  "print_engine": "2020",
+  "hancom_version": "11.0.0.9136",
+  "pdf_print_method": 0,
+  "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+  "compat": "2022",
+  "dpi": 96,
+  "metric": "silhouette_raw_match_percent",
+  "radius_px": 2,
+  "before_native": 82.08,
+  "after_native": 100.0,
+  "after_fresh_wasm": 100.0,
+  "independent_pdf_table_origins_px": {
+    "paragraph_4": [
+      114.9787,
+      440.1587
+    ],
+    "paragraph_6": [
+      113.6987,
+      605.2573
+    ]
+  },
+  "pdf_coordinate_method": "pypdf content path CTM ×96/72; exact PDF reference hash above",
+  "direct_review": "Native/fresh WASM both same-page review and overlay inspected. Both TAC table frames, following paragraphs and page/footer ownership preserved.",
+  "assets": [
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8839-original/rhwp_png/rhwp_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/before-native-raw-001.png",
+      "sha256": "bec26bc1422774b8a40b051771fe89ecef8814c8837091f26189b02310fd1aef"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8839-original/pdf_png/pdf-001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/before-native-pdf-001.png",
+      "sha256": "10732cc3d5007e27662ce77ffaab3f019c8fad5be29a4e5f0f9084f9867a4e67"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8839-original/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/before-native-review-001.png",
+      "sha256": "5e076b8ecf0f323855e81f0834d1e22e78d9212a000278876b80adc9902f4333"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8839-original/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/before-native-overlay-001.png",
+      "sha256": "37c6de3d6facbc49dce09887962c9afa1ad70579e17bbfacc518fe9109078aab"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after/original/rhwp_png/rhwp_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-native-raw-001.png",
+      "sha256": "47d918feaa3f9de2c7f63746de590f6147225511a3edb3cb89f42736d27e94dd"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after/original/pdf_png/pdf-001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-native-pdf-001.png",
+      "sha256": "10732cc3d5007e27662ce77ffaab3f019c8fad5be29a4e5f0f9084f9867a4e67"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after/original/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-native-review-001.png",
+      "sha256": "52d5b5ce2d6534366327236dbf1225e061bd14ac006122d6da79a15ca83cbbdb"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after/original/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-native-overlay-001.png",
+      "sha256": "e36b6575760bbc0b4b6af766437eee05bc891f450cd8015b354c732203d4ef0a"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after-wasm/original/rhwp_png/rhwp_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-wasm-raw-001.png",
+      "sha256": "7717b7bd53585924fb9aace07e02d455cb73e5bee7a780deb4de19caf0ff496e"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after-wasm/original/pdf_png/pdf-001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-wasm-pdf-001.png",
+      "sha256": "10732cc3d5007e27662ce77ffaab3f019c8fad5be29a4e5f0f9084f9867a4e67"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after-wasm/original/review/review_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-wasm-review-001.png",
+      "sha256": "c9c84b7844661a1894dc3ba957022651782880ed274b2e82aeec48e05a7cb57d"
+    },
+    {
+      "source_output": "output/pr-review/planet6897-clean20-integration-20261110/pr8839-owned-row-v2-after-wasm/original/overlay/overlay_001.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8839/maintainer/after-wasm-overlay-001.png",
+      "sha256": "5cf350529aadfe064612ccbbd2c5fff89f429aac1c20e0144662320fd5e58266"
+    }
+  ],
+  "recorded_at": "2026-11-10T21:50:51.559666+09:00",
+  "regression_tests": {
+    "environment": "macOS verified minimum fonts sandbox; native-skia; jobs8 threads8",
+    "test_file": "tests/cases/issue_8834_page_front_table_in_frame_cell.rs",
+    "test_sha256": "8acc979d8f786c516cce554e43826362953c21372e87a69e0fd8adb3ee1d6883",
+    "before": {
+      "passed": 1,
+      "failed": 2,
+      "exit_code": 100
+    },
+    "after": {
+      "passed": 3,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "source_hashes_verified": true
+  }
+}

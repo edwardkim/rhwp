@@ -1,0 +1,53 @@
+{
+  "acceptance_PR": 9017,
+  "head": "62a3fe4e2982961f9356a890395dc056eca85570",
+  "base": "1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
+  "merge": "dbb0dfcdaf7aebe68e712807da3ca700774fd39b",
+  "merge_tree": "721ccfdffb245cccd7100e3c5736b735c1784e58",
+  "merged_at": "2026-11-12T13:25:43Z",
+  "original_PRs": {
+    "8982": {
+      "state": "closed",
+      "merged": true,
+      "head": "db88c6180c9ae66a1270937a181e749ce48a0f7d",
+      "merge_commit_sha": "19e0ab89f77fdc00bea2b6ee34f82ffb1c265036"
+    },
+    "8983": {
+      "state": "closed",
+      "merged": true,
+      "head": "9d1f6248c4ffd9365c9a0aab79d949fabde5c567",
+      "merge_commit_sha": "cc6103f1a82149f2d3ae1b49d86a81698df1841a"
+    }
+  },
+  "issues_before_completion_comments": {
+    "8942": {
+      "state": "closed",
+      "closed_at": "2026-11-12T13:26:22Z"
+    },
+    "8943": {
+      "state": "closed",
+      "closed_at": "2026-11-12T13:26:24Z"
+    },
+    "7992": {
+      "state": "open",
+      "closed_at": null
+    }
+  },
+  "archive_passed": 13151,
+  "archive_focused_passed": 27,
+  "duration": {
+    "observed_complete": true,
+    "workflow_run": 43227236387,
+    "workflow_url": "https://github.com/edwardkim/rhwp/actions/runs/43227236387",
+    "workflow_status": "completed",
+    "workflow_conclusion": "success",
+    "updated": false,
+    "ready": false,
+    "reason": "no-verified-pr-duration-measurements",
+    "existing_metrics_ref": "31cc018ef314a3c09a065755eef4f76d89e0d98c",
+    "log_sha256": "2d71d676f8da26666f77bdf32efd639c96ebf43947fc26dfc21648e6f5c763d6",
+    "description": "[duration workflow](https://github.com/edwardkim/rhwp/actions/runs/43227236387)는 success로 끝났지만 `ready:false, reason:no-verified-pr-duration-measurements`로 갱신을 보류했다. 제품 검증 CI를 재실행하지 않았다."
+  },
+  "record_method": "Maintainer Option M: operational mydocs only; no source/test/workflow/baseline changes",
+  "follow_up_order": "records push; devel sync; issue completion comments; original PR gratitude comments; cleanup"
+}

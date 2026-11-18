@@ -1,0 +1,58 @@
+{
+  "state": "focused-failed",
+  "executed": 27,
+  "passed": 25,
+  "failed": 2,
+  "filtered": 2419,
+  "exit_code": 100,
+  "font_environment": "공개 글꼴 5개만 노출",
+  "source_snapshot": "r27-batch-source-receipt.json",
+  "source_changes": [
+    {
+      "path": "src/renderer/font_metrics_overlays.rs",
+      "sha256": "3868e17945415c2397e8436811ed61fc1d41e3ca92c50fcb64093effb771f76f"
+    },
+    {
+      "path": "src/renderer/layout/picture_footnote.rs",
+      "sha256": "ee2c0acc0a2eb3a634960eba2c30456d307e58eea132b1b9b1f0442f1f2be605"
+    },
+    {
+      "path": "src/renderer/layout/shape_layout.rs",
+      "sha256": "842e5f1b3103b1cd7cfcda579c91e23a83ce0f820dea4d67d5ae4dc1ea7f87d9"
+    },
+    {
+      "path": "src/renderer/layout/table_layout.rs",
+      "sha256": "da58d9a2ad6139adec700a762f987bfaa0ea9b88e0b062078a970e91401c8562"
+    },
+    {
+      "path": "src/renderer/layout/table_partial.rs",
+      "sha256": "7f6bbfaf2c5c661ef6c769dc9946ce0476c2e956039085f663458a6b520be610"
+    },
+    {
+      "path": "src/renderer/layout/tac_picture_item.inc.rs",
+      "sha256": "42344a5b0020dbe8f458601c7b713ba97ffe7f2245287390b89719e96ba9832d"
+    },
+    {
+      "path": "src/renderer/pagination.rs",
+      "sha256": "c10eb94425523414cb821383b9b7b3277362909b53bd77ce689e83306d514ce5"
+    },
+    {
+      "path": "src/renderer/typeset/state/empty_run.rs",
+      "sha256": "d3a12110d40fca1692f1da2e40259a3d745e4353444f979e27af8644b1b5883e"
+    },
+    {
+      "path": "tests/cases/apply_char_format_contract.rs",
+      "sha256": "de3d598f266f30b99b2620b75240402cd190941386cd5a340baf077c323a72ab"
+    },
+    {
+      "path": "tests/cases/issue_8533_native_webfont_supply.rs",
+      "sha256": "5ec783d106fbd09187d75420e3d60547dad28c4b687282fbdd807d83515a578d"
+    }
+  ],
+  "failures": [
+    "issue_7872_nested_tac_second_table_rows::original_gist_preserves_second_row_ownership_and_independent_print_positions",
+    "issue_7872_nested_tac_second_table_rows::second_nested_tac_table_keeps_its_second_row_when_outer_cell_is_short"
+  ],
+  "measured_at": "2026-11-06T23:10:29.985929+00:00",
+  "role": "실제 집중 회귀 실행 기록. Native/fresh WASM 시각 완료·전체 Rust 통과를 뜻하지 않는다."
+}

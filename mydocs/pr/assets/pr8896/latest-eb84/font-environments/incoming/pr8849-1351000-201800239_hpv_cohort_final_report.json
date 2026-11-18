@@ -1,0 +1,38 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-1bf511a8e11e5a07ce0087aa",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "05431e66ef394384694c35739bcff3bd67242cc74aca1f13b54c7a92822f0fde",
+      "query": "Times New Roman",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HY견고딕": "NotoSansKRThin-Bold",
+    "Times New Roman": "Times New Roman",
+    "고딕": "NotoSansKRExtraLight",
+    "굴림": "NotoSansKRExtraLight",
+    "굴림체": "D2Coding",
+    "돋움": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "바탕체": "NotoSerifKRExtraLight-Regular",
+    "신명 신명조": "NotoSerifKRExtraLight-Regular",
+    "신명 신문명조": "NotoSerifKRExtraLight-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang",
+    "함초롬바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  },
+  "trueTypeFaces": [
+    "HCR Batang",
+    "Times New Roman"
+  ]
+}

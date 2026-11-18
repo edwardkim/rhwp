@@ -1,0 +1,50 @@
+{
+  "started_at": "2026-11-08T15:05:59.849311+00:00",
+  "state": "completed",
+  "devel_before": "2a9a88a0ddc59eb6757ee73e03eee42b4e3ac497",
+  "devel_after": "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3",
+  "upstream_devel": "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3",
+  "branch_deleted": {
+    "local": "release/0.9.0-crates-metadata",
+    "remote": "upstream/release/0.9.0-crates-metadata",
+    "expected_head": "9a9c6256ec926179e4745a8b780f5a780ae407fa",
+    "merged_pr": 8784,
+    "remote_lease_used": true
+  },
+  "targets": {
+    "/home/edward/mygithub/rhwp/output": 4804100096,
+    "/home/edward/mygithub/rhwp/target/pr-review/debug": 32594817024
+  },
+  "free_bytes_before": 165697003520,
+  "active_references": [],
+  "idle_shell_cwd_only": [],
+  "retained_worktree": "/home/edward/mygithub/rhwp-worktrees/pr-8296-seal-pua",
+  "retained_local_kit_hashes": {
+    "local/crates-io-consumption/README.md": "bae0080d47dea59e5a1c63edbe790cce9e05779bfbbb6928ad3fe4a531acc678",
+    "local/crates-io-consumption/AGENT_RUNBOOK.md": "60256f376292f64767009e15e417f46c6468b0e13eae1489af93e6d268cb758d",
+    "local/crates-io-consumption/VALIDATION-0.9.0.md": "f133ce5a0bb18cceafd0884df81504ac31e37f1ba57b0b27c9055415f767917b",
+    "local/crates-io-consumption/fixtures-manifest.json": "a61389282e44e8ad9982b6c1069d2e2d70cfc9737f8f5b337f3cd8adf62ed534",
+    "local/crates-io-consumption/runs/0.9.0/20261108T141825Z-bootstrap-full/results/pipeline.json": "007afd17b416588280c4862922d27fbe5d9f6a7f641469db6b7ff45e19c990b4"
+  },
+  "notes": [
+    "Only exact output and target/pr-review/debug are deleted.",
+    "Final evidence was incorporated into the release report; no backup of temporary contents.",
+    "Tracked release report and evidence are local pending remote documentation follow-up."
+  ],
+  "free_bytes_after": 203095891968,
+  "freed_bytes_observed": 37398888448,
+  "removed_allocated_bytes": 37398917120,
+  "completed_at": "2026-11-08T15:06:29.394760+00:00",
+  "remaining_target_profiles": [
+    "doc",
+    "package",
+    "release",
+    "release-test",
+    "tmp",
+    "wasm32-unknown-unknown",
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-gnu"
+  ],
+  "remote_branch_absent": true,
+  "local_branch_absent": true
+}

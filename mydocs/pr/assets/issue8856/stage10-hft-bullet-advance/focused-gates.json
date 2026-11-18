@@ -1,0 +1,51 @@
+{
+  "running": false,
+  "current": "wasm-clippy",
+  "steps": [
+    {
+      "name": "native-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--bin",
+        "rhwp",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "log_sha256": "06b3a644f049ead1b7c42a875dc89077b608b869972d13453707c2c645896fe9"
+    },
+    {
+      "name": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "log_sha256": "6929e5d736497d3d5eddfb6e68abf2358d18d8f802247dc127229bc2bafb2c42"
+    }
+  ],
+  "started": "2026-11-10T06:49:25.448594+09:00",
+  "complete": true,
+  "ended": "2026-11-10T06:50:30.455388+09:00"
+}

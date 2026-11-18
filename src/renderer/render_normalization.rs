@@ -16,6 +16,7 @@ use std::sync::Arc;
 
 pub(crate) mod math_table;
 pub(crate) mod math_textbox;
+pub(crate) mod stored_band_crossing_line;
 pub(crate) mod stored_text_metrics;
 pub(crate) mod stored_word_tail;
 
@@ -409,8 +410,8 @@ impl RenderNormalizationOverlay {
         Ok(())
     }
 
-    /// render-only 재조판으로 문자 줄 소속이 달라진 표는 원본 물리 컷의
-    /// 캐시를 다시 인증할 수 없다. 같은 결과를 쓰는 원본·파생 포인터와
+    /// render-only 재조판이 물리 슬롯도 바꾼 표는 원본 쪽 컷을 다시 인증할 수 없다.
+    /// 같은 물리 슬롯 안의 문자 경계만 갱신한 경우는 구분한다. 원본·파생 포인터와
     /// 그 조각을 포함한 조상 표를 함께 갱신한다. 편집 IR은 변경하지 않는다.
     pub(crate) fn register_rendered_text_partitions(
         &mut self,
@@ -447,10 +448,38 @@ impl RenderNormalizationOverlay {
             {
                 upstream_flow_changed = false;
             }
-            changed |= original.line_segs.len() != current.line_segs.len()
+            let partition_changed = original.line_segs.len() != current.line_segs.len()
                 || (0..original.line_segs.len()).any(|index| {
                     original.line_seg_text_start(index) != current.line_seg_text_start(index)
                 });
+            // 같은 번호 프레임에서 문자 소속만 옮겨도 물리 쪽 컷까지 버리면,
+            // 인접 셀의 저장 재시작과 완료 행을 다시 용량 컷으로 바꾸게 된다.
+            // 원본의 모든 슬롯 속성과 세로 좌표 출처가 같을 때만 보존한다.
+            // 새 줄·높이·폭·기준선·태그 또는 편집 재조판은 이 인증을 갖지 않는다.
+            let physical_slots_preserved = partition_changed
+                && !original.line_segs.is_empty()
+                && original.line_segs.len() == current.line_segs.len()
+                && original.source_line_seg_vertical_pos == current.source_line_seg_vertical_pos
+                && !original.stored_text_partition_is_dirty()
+                && !current.stored_text_partition_is_dirty()
+                && !original.cell_format_vpos_dirty
+                && !current.cell_format_vpos_dirty
+                && original
+                    .line_segs
+                    .iter()
+                    .zip(&current.line_segs)
+                    .all(|(source, rendered)| {
+                        if source.tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            != 0
+                        {
+                            return false;
+                        }
+                        let mut same_slot = source.clone();
+                        same_slot.text_start = rendered.text_start;
+                        same_slot == *rendered
+                    });
+            changed |= partition_changed && !physical_slots_preserved;
             let extent = |paragraph: &crate::model::paragraph::Paragraph| {
                 paragraph
                     .line_segs

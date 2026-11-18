@@ -1,0 +1,47 @@
+[
+  {
+    "file": "samples/issue7816/odd_spacing_prev.hwpx",
+    "items": [
+      {
+        "path": "BinData/image1.jpg",
+        "sha256": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "bytes": 67
+      },
+      {
+        "path": "BinData/image2.jpg",
+        "sha256": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "bytes": 67
+      }
+    ]
+  },
+  {
+    "file": "output/pr-review/bongseop-integration-20261113/base-probe-v2/unreferenced-round1.hwpx",
+    "items": [
+      {
+        "path": "BinData/image1.jpg",
+        "sha256": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "bytes": 67
+      },
+      {
+        "path": "BinData/image2.jpg",
+        "sha256": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "bytes": 67
+      }
+    ]
+  },
+  {
+    "file": "output/pr-review/bongseop-integration-20261113/base-probe-v2/unreferenced-round2.hwpx",
+    "items": [
+      {
+        "path": "BinData/image1.jpg",
+        "sha256": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "bytes": 67
+      },
+      {
+        "path": "BinData/image2.jpg",
+        "sha256": "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "bytes": 67
+      }
+    ]
+  }
+]

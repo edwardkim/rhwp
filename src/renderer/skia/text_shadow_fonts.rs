@@ -9,6 +9,23 @@ impl SkiaLayerRenderer {
         let requests: Vec<crate::paint::metafile_fonts::FontRequest> =
             serde_json::from_str(&core.get_text_shadow_font_requests_native()?)
                 .map_err(|e| HwpError::RenderError(e.to_string()))?;
+        self.prepare_requested_paint_fonts(core, requests)
+    }
+
+    /// 본문에서 사용하지 않은 WMF 내부 가족도 같은 renderer snapshot에서 공급한다.
+    /// 요청·등록은 기존 공통 메타파일 자원 한도와 paint cache 무효화를 사용한다.
+    pub fn prepare_metafile_fonts(&self, core: &mut DocumentCore) -> Result<bool, HwpError> {
+        let requests: Vec<crate::paint::metafile_fonts::FontRequest> =
+            serde_json::from_str(&core.get_metafile_font_requests_native()?)
+                .map_err(|e| HwpError::RenderError(e.to_string()))?;
+        self.prepare_requested_paint_fonts(core, requests)
+    }
+
+    fn prepare_requested_paint_fonts(
+        &self,
+        core: &mut DocumentCore,
+        requests: Vec<crate::paint::metafile_fonts::FontRequest>,
+    ) -> Result<bool, HwpError> {
         let mut changed = false;
         for request in requests {
             let mut remaining = request.text.clone();

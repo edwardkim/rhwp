@@ -72,7 +72,10 @@ pub(crate) fn square_successor_starts_beside_table(
             && i64::from(next.column_start) + i64::from(next.segment_width)
                 <= i64::from(line.column_start) + i64::from(line.segment_width)
     };
-    if (host_first.segment_width as i32) < next.full_width && contains_successor(host_first) {
+    if ((host_first.segment_width as i32) < next.full_width
+        || host_line_clears_table_box(host_first, table))
+        && contains_successor(host_first)
+    {
         return true;
     }
     // 첫 줄이 전폭이어도 뒤 줄부터 개체 옆을 흐를 수 있다. 유효한 저장
@@ -109,4 +112,42 @@ pub(crate) fn square_successor_starts_beside_table(
         );
     }
     continuous_lane
+}
+
+/// host 저장 첫 줄이 같은 문단 기준 어울림 표의 바깥 상자와 세로로 겹치면서 가로로는
+/// 비켜 있는가. 그렇다면 그 줄 자체가 표 옆 차선이다.
+///
+/// 다음 문단도 차선 폭의 줄만 가지면 "다음 문단의 가장 넓은 줄"로는 전폭을 알 수
+/// 없다(36458608 pi=8: host·다음 문단 모두 cs=0 sw=31014, 표 가로 오프셋 31014).
+/// 표 상자는 가로 오프셋에서 시작해 좌우 바깥 여백과 폭을 더한 곳에서 끝난다
+/// (`stored_empty_square_successor_strip` 과 같은 단·문단 좌표).
+fn host_line_clears_table_box(line: &crate::model::paragraph::LineSeg, table: &Table) -> bool {
+    use crate::model::shape::{HorzRelTo, VertRelTo};
+    use crate::renderer::float_placement::signed_hwpunit;
+    if table.common.vert_rel_to != VertRelTo::Para
+        || !matches!(
+            table.common.horz_rel_to,
+            HorzRelTo::Para | HorzRelTo::Column
+        )
+        || line.segment_width <= 0
+        || line.line_height <= 0
+    {
+        return false;
+    }
+    let left = i64::from(signed_hwpunit(table.common.horizontal_offset));
+    let right = left
+        + i64::from(table.outer_margin_left)
+        + i64::from(table.common.width)
+        + i64::from(table.outer_margin_right);
+    let line_left = i64::from(line.column_start);
+    let line_right = line_left + i64::from(line.segment_width);
+    let beside = line_right <= left || line_left >= right;
+    // 표 위끝은 host 줄 원점 + 세로 오프셋, 아래끝은 바깥 여백까지다.
+    let top = i64::from(signed_hwpunit(table.common.vertical_offset));
+    let bottom = top
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + i64::from(table.outer_margin_bottom);
+    let overlaps_vertically = top < i64::from(line.line_height) && bottom > 0;
+    beside && overlaps_vertically
 }

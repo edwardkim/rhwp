@@ -28,10 +28,120 @@ fn temp_out(tag: &str) -> PathBuf {
 }
 
 fn run(args: &[&str]) -> Output {
-    Command::new(env!("CARGO_BIN_EXE_rhwp"))
-        .args(args)
-        .output()
-        .expect("rhwp 실행 실패")
+    Command::new(
+        std::env::var("CARGO_BIN_EXE_rhwp")
+            .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned()),
+    )
+    .args(args)
+    .output()
+    .expect("rhwp 실행 실패")
+}
+
+#[test]
+fn occurrence_help_and_usage_share_zero_based_contract() {
+    for sub in ["replace-text", "insert-text", "set-cell"] {
+        let out = run(&["edit", sub, "--help"]);
+        assert!(out.status.success(), "{out:?}");
+        assert!(out.stderr.is_empty());
+        let text = String::from_utf8(out.stdout).unwrap();
+        let (structured, detail) = text.split_once("세부 설명:").expect("상세 도움말");
+        let options = structured
+            .split_once("옵션:")
+            .unwrap()
+            .1
+            .split_once("예시:")
+            .unwrap()
+            .0;
+        let detail_options: Vec<_> = detail
+            .lines()
+            .map(str::trim)
+            .filter(|s| s.starts_with('-'))
+            .collect();
+        let actual: Vec<_> = options
+            .lines()
+            .map(str::trim)
+            .filter(|s| s.starts_with('-') && !s.starts_with("-h,"))
+            .collect();
+        assert_eq!(actual, detail_options, "{sub}: {text}");
+        if sub == "replace-text" {
+            for block in [options, detail] {
+                let line = block
+                    .lines()
+                    .find(|s| s.trim().starts_with("--occurrence"))
+                    .unwrap();
+                assert!(
+                    line.contains("<k>") && line.contains("0부터") && line.contains("생략 시 전체"),
+                    "{line}"
+                );
+            }
+            let usage = structured
+                .lines()
+                .find(|s| s.trim().starts_with("rhwp edit replace-text "))
+                .unwrap()
+                .trim();
+            let error = run(&["edit", "replace-text"]);
+            assert_eq!(error.status.code(), Some(2));
+            assert!(String::from_utf8_lossy(&error.stderr).contains(usage));
+        }
+    }
+    let edit_help = run(&["edit", "--help"]);
+    let text = String::from_utf8(edit_help.stdout).unwrap();
+    assert!(text
+        .lines()
+        .filter(|s| s.contains("replace-text"))
+        .all(|s| s.contains("0부터") && s.contains("생략 시 전체")));
+    let caps: serde_json::Value = serde_json::from_slice(&run(&["capabilities"]).stdout).unwrap();
+    let edit = caps["commands"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["name"] == "edit")
+        .unwrap();
+    assert!(edit["summary"].as_str().unwrap().contains("0부터"));
+    let replace = edit["subcommands"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|c| c["name"] == "replace-text")
+        .unwrap();
+    assert!(replace["summary"].as_str().unwrap().contains("0부터"));
+}
+
+#[test]
+fn occurrence_zero_and_one_replace_only_the_selected_match() {
+    let input = temp_out("occurrence-input");
+    let mut core = rhwp::document_core::DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "앞 목표 뒤 목표 끝")
+        .unwrap();
+    std::fs::write(&input, core.export_hwp_native().unwrap()).unwrap();
+    for (occurrence, expected) in [("0", "앞 선택 뒤 목표 끝"), ("1", "앞 목표 뒤 선택 끝")]
+    {
+        let output_path = temp_out(occurrence);
+        let output = run(&[
+            "edit",
+            "replace-text",
+            input.to_str().unwrap(),
+            "--find",
+            "목표",
+            "--replace",
+            "선택",
+            "--occurrence",
+            occurrence,
+            "-o",
+            output_path.to_str().unwrap(),
+            "--json",
+        ]);
+        assert!(output.status.success(), "{output:?}");
+        let value: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+        assert_eq!(value["replacedCount"], 1);
+        let saved =
+            rhwp::document_core::DocumentCore::from_bytes(&std::fs::read(&output_path).unwrap())
+                .unwrap();
+        assert_eq!(saved.document().sections[0].paragraphs[0].text, expected);
+        std::fs::remove_file(output_path).unwrap();
+    }
+    std::fs::remove_file(input).unwrap();
 }
 
 fn describe(args: &[&str], output: &Output) -> String {

@@ -1,0 +1,18 @@
+[
+  {
+    "page": 474,
+    "backend": "wasm",
+    "raw_sha256": "526d8b504b7a07e4dc15806b9adeea2252d13a6ea1acf115225d584cf25076ab",
+    "pdf_png_sha256": "f04465ea253960834560974819f4215029c5acb3937efa8813b6cf78e9a24d9e",
+    "review": "mydocs/pr/assets/all_open_prs_20261116/sample10-original-supply-pages/wasm/review/review_474.png",
+    "overlay": "mydocs/pr/assets/all_open_prs_20261116/sample10-original-supply-pages/wasm/overlay/overlay_474.png"
+  },
+  {
+    "page": 757,
+    "backend": "wasm",
+    "raw_sha256": "e2c4a3f98fe2ef6ac05b92240772b9a965bd41339bcc8fcfe55ec96720709081",
+    "pdf_png_sha256": "5cc81bef8fe49d264fc3273a166a03a0bfef2fd2709020eb2307ac12b52c41d5",
+    "review": "mydocs/pr/assets/all_open_prs_20261116/sample10-original-supply-pages/wasm/review/review_757.png",
+    "overlay": "mydocs/pr/assets/all_open_prs_20261116/sample10-original-supply-pages/wasm/overlay/overlay_757.png"
+  }
+]

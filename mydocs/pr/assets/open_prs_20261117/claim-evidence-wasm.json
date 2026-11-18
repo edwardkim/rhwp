@@ -1,0 +1,74 @@
+[
+  {
+    "key": "band",
+    "backend": "wasm",
+    "phase": "base",
+    "source": "1e2488ebd432deb7c326be532f8a91945f260231",
+    "producer": "output/pr-review/all-open-pr-integration-20261117/claims/base-wasm/band",
+    "files": {
+      "raw-001.png": "1e7f9658e71ca71978a888f7c87830eaa47cb3300d3feec17967255c18c9fe8a",
+      "pdf-001.png": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+      "review-001.png": "47474a7cc6c855ce20de8c950ea97000895cb9bea049e67dd7b2bd9b6f8b9d46",
+      "overlay-001.png": "02470eeb3a3201afa74487c4e52931f6df9de9158e0ebc927fe7a9ac77784ccd",
+      "silhouette.tsv": "8827fbdbba3efe9e1db31b4e648e2fd193b20e44c47f025dfb2907d6ed7ddcdf",
+      "silhouette-manifest.json": "1261e267ee189993e25f0c974c61dc43df73d6d60c8d68e5d6d01b8fc39c740b",
+      "render-tree.json": "786dbc0f9e57814268769cd7881214c4c30003e90f2385cde685059e2a61bf11",
+      "export.json": "02ef7520c6bb6c8d927628fe22d35bab43e6e2335d11595f6e016485879a5772",
+      "run-manifest.json": "6bc6d2d803c09818dbadaf3eceaa3d6035352be5f418f6f9b14be5871fa6fb90"
+    }
+  },
+  {
+    "key": "tab",
+    "backend": "wasm",
+    "phase": "base",
+    "source": "1e2488ebd432deb7c326be532f8a91945f260231",
+    "producer": "output/pr-review/all-open-pr-integration-20261117/claims/base-wasm/tab",
+    "files": {
+      "raw-001.png": "3bbeae3ac08337607b08fc3aa8f94851c2f3c9c573d13f7eb57b0318aa09822a",
+      "pdf-001.png": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+      "review-001.png": "d59e2ffa9d0e78b8850252ae427ac90e9f5d40b39d2f150adbc2409a47909ca0",
+      "overlay-001.png": "077dffacd6414336caf055fecaee095082942b582ac9d91fedabc537e8a225cc",
+      "silhouette.tsv": "b8ca0435454d19016268dc9b7441c379e8dd48e594cc78aeba7f0bda61f1cb7f",
+      "silhouette-manifest.json": "9731204edf6956bf98461d3649a04cf313b4f270b4775679f038bc49ece62a93",
+      "render-tree.json": "8dd93541c19fde2c848f6f2c7e272d10be8d5c2d0aee0f7ce094944b9661c6af",
+      "export.json": "1d2fe7a56d66bd821d8252e182b4790e3ecb764fb74edb81efc3770f10d137cd",
+      "run-manifest.json": "813ad8911d74f74ffa8b914094156e77455e7a971e2dbad16cb673fd7a3dab00"
+    }
+  },
+  {
+    "key": "band",
+    "backend": "wasm",
+    "phase": "candidate",
+    "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+    "producer": "output/pr-review/all-open-pr-integration-20261117/claims/candidate-wasm/band",
+    "files": {
+      "raw-001.png": "44cebc63bb18772504791aba3dcc24b886ec3ac74c27c335be034b2a9fd41710",
+      "pdf-001.png": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1",
+      "review-001.png": "da84227ac89db6945c557f00f066f5f17bd0d886b5430ef6276c55f1628bb502",
+      "overlay-001.png": "260ddafd61732d1d8195c918bc0222b61a1d6a12a07ba77de27a6a7b8fcbef4e",
+      "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "silhouette-manifest.json": "d27929fe7afcbd801360c4fec9a586d1482ccd3491293bb8955e7cfc2b895915",
+      "render-tree.json": "0c4c5aaccdcdaff3cfb16edff3251357c59da54c2573573e7946e121e2fe757a",
+      "export.json": "e639538d5e748846b01e36703c766c2e9ac9d72310891fb833b2694fd2a7005e",
+      "run-manifest.json": "a171dc1ecdf90ce92e60d853e06470bc08df984989ffe825097749eb7b3625a0"
+    }
+  },
+  {
+    "key": "tab",
+    "backend": "wasm",
+    "phase": "candidate",
+    "source": "2c5e3fe38726d23bec1c970ba3f92a49e15cae34",
+    "producer": "output/pr-review/all-open-pr-integration-20261117/claims/candidate-wasm/tab",
+    "files": {
+      "raw-001.png": "2e2e54e687d42b582f88148a72deab1c5602f30225e45deb4c7d45c9257fd9fa",
+      "pdf-001.png": "4eecd0ff8474f98453c896a89511ff5ee0d84274c2a9f0783fae8a9263e4ddfe",
+      "review-001.png": "9d0e81386f4236a51f18d9dc8d53dd1d4f44b72715462055213131dd33541302",
+      "overlay-001.png": "8fb7a3659ed93ec01d72e9803122b36db6af501032669f373f7fd420001bca70",
+      "silhouette.tsv": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "silhouette-manifest.json": "501e96bd237d1c4f2302f5cdc66ce0d4d5dd1882b45642902498c45ea68c3bf9",
+      "render-tree.json": "0f39ca47fbc247d994ac56a18c71c6290c8eeb95daf06866594729941f403113",
+      "export.json": "2ae95d7b9440e255380123e03294e5dcc981e35038b804fb29ff1917ac28a8f6",
+      "run-manifest.json": "b82e9640698a204c1df7aca6e07d2e408b9fabf4a3be0433fa11cbd88fb21966"
+    }
+  }
+]

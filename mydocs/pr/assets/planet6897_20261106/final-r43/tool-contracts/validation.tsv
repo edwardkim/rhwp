@@ -1,0 +1,3 @@
+검사	source	passed	failed	exit_code	로그_SHA256	실행_로그
+visual-font-unit	0261687265f3a10a64e51809d006b2305a36d950	72	0	0	6a650f981ec093282b4415083a362706aaa34b0a18024034f008858715696829	output/pr-review/planet6897-integration-20261106/logs/r43-visual-font-unit.log
+font-rule-generation	0261687265f3a10a64e51809d006b2305a36d950	16	0	0	aec8f6e9e1509296f5a55ee1d6ebd8fcc7f10fe1c8092898b769e7026922e4fb	output/pr-review/planet6897-integration-20261106/logs/r43-font-rule-generation.log

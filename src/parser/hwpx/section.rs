@@ -362,8 +362,8 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
                 master_page.overlap = duplicate;
             }
             b"pageNumber" => master_page.hwpx_page_number = Some(parse_u16(&attr)),
-            // 표지(첫 쪽) 전용 바탕쪽. serializer 는 방출하나 종전엔 미독 →
-            // pageFront="1" 바탕쪽이 왕복 시 "0" 으로 적용 범위가 바뀌었다.
+            // 인쇄할 때 바탕쪽 맨 위로 보내기(한컴 12.30 저장본). serializer 는 방출하나 종전엔 미독 →
+            // pageFront="1" 바탕쪽이 왕복 시 "0" 으로 바뀌었다.
             b"pageFront" => master_page.page_front = attr_str(&attr) != "0",
             _ => {}
         }
@@ -417,12 +417,12 @@ fn build_hwpx_master_page_list_header(master_page: &MasterPage) -> Vec<u8> {
     bytes.extend_from_slice(&master_page.text_height.to_le_bytes());
     bytes.push(master_page.text_ref);
     bytes.push(master_page.num_ref);
-    let kind = master_page
-        .optional_page_number
-        .and_then(|number| number.checked_add(3))
-        .unwrap_or(master_page.ext_flags);
+    // 한컴 12.30 HWP 저장본과 같은 종류 값과 속성(겹치게 하기·맨 위로 보내기)을 둔다.
+    let (kind, attr) = crate::serializer::control::master_page_list_kind(master_page);
     bytes.extend_from_slice(&kind.to_le_bytes());
-    bytes.extend_from_slice(&[0u8; 14]);
+    bytes.extend_from_slice(&[0u8; 2]);
+    bytes.extend_from_slice(&attr.to_le_bytes());
+    bytes.extend_from_slice(&[0u8; 8]);
     bytes
 }
 
@@ -2686,9 +2686,9 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     // [#2697·#8335] 번호 범주 비트는 `pack_hwpx_common_obj_attr` 가 numberingType 에서 만든다.
     table.common.attr = pack_hwpx_common_obj_attr(&table.common);
     // HWPX keeps semantic placement in hp:pos, while legacy layout code still reads
-    // table.attr bit0 for some inline-table decisions. Only mirror the minimum
-    // renderer compatibility bit here; the HWP5 storage attr is packed later by
-    // the HWP adapter.
+    // table.attr bit0 for some inline-table decisions. The property API also reads
+    // bits 13/14 for restrictInPage/allowOverlap. The complete HWP5 storage attr
+    // is packed later by the HWP adapter.
     //
     // 순수 HWPX 의 TAC 판정은 `treatAsChar && flowWithText` (#3930) 다. HWP5 원본은
     // CTRL_HEADER bit0 = treatAsChar 만으로 TAC 이다. HWP5-origin HWPX 가 후자
@@ -2705,6 +2705,7 @@ fn materialize_hwpx_table_attrs(table: &mut Table, table_record_flags: u32) {
     } else {
         0
     };
+    table.attr |= table.common.attr & ((1 << 13) | (1 << 14));
     let mut record_attr = match table.page_break {
         TablePageBreak::CellBreak => 0x01,
         TablePageBreak::RowBreak => 0x02,
@@ -3538,6 +3539,18 @@ fn parse_picture_effects(reader: &mut Reader<&[u8]>) -> Result<PictureEffects, H
             }
             Ok(Event::Empty(ref e)) if local_name(e.name().as_ref()) == b"shadow" => {
                 effects.shadow = Some(parse_picture_shadow_attrs(e));
+            }
+            Ok(Event::Empty(ref e) | Event::Start(ref e))
+                if local_name(e.name().as_ref()) == b"softEdge" =>
+            {
+                for attr in e.attributes().flatten() {
+                    if attr.key.as_ref() == "radius" {
+                        effects.soft_edge_radius = attr_str(&attr)
+                            .parse::<f64>()
+                            .ok()
+                            .filter(|radius| radius.is_finite() && *radius >= 0.0);
+                    }
+                }
             }
             Ok(Event::End(ref e)) if local_name(e.name().as_ref()) == b"effects" => break,
             Ok(Event::Eof) => break,
@@ -7030,6 +7043,7 @@ fn parse_equation(
         eqedit,
         font_name,
         version_info,
+        implicit_legacy_font: false,
         raw_ctrl_data: Vec::new(),
         raw_ctrl_seal: None,
         unpositioned_host_frame_seal: None,
@@ -9174,7 +9188,7 @@ mod tests {
         assert_eq!(table.common.text_wrap, TextWrap::TopAndBottom);
         assert_eq!(table.common.vertical_offset as i32, -2000);
         assert_eq!(table.common.attr, 0x082a_2211);
-        assert_eq!(table.attr, 0x01);
+        assert_eq!(table.attr, 0x2001); // treatAsChar + flowWithText(쪽 영역 제한)
         assert_eq!(table.raw_table_record_attr, 0x0400_000e);
     }
 

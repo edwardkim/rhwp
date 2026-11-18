@@ -1,0 +1,50 @@
+{
+  "status": "completed",
+  "results": [
+    {
+      "name": "actionlint-syntax",
+      "command": [
+        "actionlint",
+        "-shellcheck=",
+        ".github/workflows/adapter-diff.yml",
+        ".github/workflows/build-nextest-archives.yml",
+        ".github/workflows/ci.yml",
+        ".github/workflows/fuzz-smoke.yml",
+        ".github/workflows/layout-anomaly-advisory.yml",
+        ".github/workflows/oracle-public-advisory.yml",
+        ".github/workflows/proptest-roundtrip.yml",
+        ".github/workflows/run-nextest-archives.yml"
+      ],
+      "exit": 0,
+      "seconds": 0.019
+    },
+    {
+      "name": "node-ci-contracts",
+      "command": [
+        "node",
+        "--test",
+        "scripts/tests/ci-impact-classifier.test.cjs",
+        "scripts/tests/ci-impact-policy.test.cjs",
+        "scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs",
+        "scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs"
+      ],
+      "exit": 0,
+      "seconds": 18.339
+    },
+    {
+      "name": "python-workflows",
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "scripts/tests",
+        "-p",
+        "test_*workflow.py"
+      ],
+      "exit": 0,
+      "seconds": 11.725
+    }
+  ]
+}

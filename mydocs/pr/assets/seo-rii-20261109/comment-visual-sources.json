@@ -1,0 +1,56 @@
+[
+  {
+    "file": "platform-visual/windows-p106-01.png",
+    "stage": 1,
+    "archive": "windows-platform.zip",
+    "member": "_temp/rhwp-windows-qualification/p106-exact-review/desktop-capture/compositor-1.rgba",
+    "raw_sha256": "5205eb34fde149ea0aa1ab26e90091411d01885ac653e6b13aed76b098cd0d8b",
+    "png_sha256": "531d1aad825303abac0436ee0c37340449362f8833ebfc8e2a3988ff6fd85812"
+  },
+  {
+    "file": "platform-visual/windows-p106-02.png",
+    "stage": 2,
+    "archive": "windows-platform.zip",
+    "member": "_temp/rhwp-windows-qualification/p106-exact-review/desktop-capture/compositor-2.rgba",
+    "raw_sha256": "e6d24492a0f9f48852924618db4e9c290d565d708f7ccea23930bf4175ef952d",
+    "png_sha256": "70996a27f0815bbfa4ed3a217cbfbaacf9aef5070c5d20c3d591beaaf027c966"
+  },
+  {
+    "file": "platform-visual/windows-p106-03.png",
+    "stage": 3,
+    "archive": "windows-platform.zip",
+    "member": "_temp/rhwp-windows-qualification/p106-exact-review/desktop-capture/compositor-3.rgba",
+    "raw_sha256": "562bb1fbb90dc3048a812e9e366f8b5d733d0818d40d46d9c90bbff5d991ba9c",
+    "png_sha256": "8ee3e04f72ff4f011cd048be447f4090132d76eeb81b8b5887cc1f78e5ddc626"
+  },
+  {
+    "file": "platform-visual/windows-continuous-02.png",
+    "stage": 2,
+    "archive": "windows-platform.zip",
+    "member": "_temp/rhwp-windows-qualification/continuous-capture/compositor-2.rgba",
+    "raw_sha256": "e6d24492a0f9f48852924618db4e9c290d565d708f7ccea23930bf4175ef952d",
+    "png_sha256": "70996a27f0815bbfa4ed3a217cbfbaacf9aef5070c5d20c3d591beaaf027c966"
+  },
+  {
+    "file": "platform-visual/windows-continuous-03.png",
+    "stage": 3,
+    "archive": "windows-platform.zip",
+    "member": "_temp/rhwp-windows-qualification/continuous-capture/compositor-3.rgba",
+    "raw_sha256": "562bb1fbb90dc3048a812e9e366f8b5d733d0818d40d46d9c90bbff5d991ba9c",
+    "png_sha256": "8ee3e04f72ff4f011cd048be447f4090132d76eeb81b8b5887cc1f78e5ddc626"
+  },
+  {
+    "file": "platform-visual/macos-p110-02.png",
+    "stage": 2,
+    "archive": "macos-platform.zip",
+    "member": "_temp/rhwp-macos-qualification/desktop-capture/window-2-a.png",
+    "png_sha256": "03ce15b3b5e4a4a216b933ed1f3cc13b84a3fbb1e16c4c51095f7cb996c644a4"
+  },
+  {
+    "file": "platform-visual/macos-p110-03.png",
+    "stage": 3,
+    "archive": "macos-platform.zip",
+    "member": "_temp/rhwp-macos-qualification/desktop-capture/window-3-a.png",
+    "png_sha256": "5fa563d3abb62f1c17eee21b36aa95deaaf1c2a038ad6fd9d61b3e3136a1dcf2"
+  }
+]

@@ -1,0 +1,248 @@
+{
+  "documentSubstitutions": [],
+  "id": "issue8856-independent-print-gulim-reference-control",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "-윤고딕120": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    },
+    "HCI Poppy": {
+      "collectionFace": true,
+      "family": "Gulim",
+      "openTypeCff": false,
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "query": "굴림",
+      "trueType": true
+    },
+    "HY견고딕": {
+      "family": "HYgtrE",
+      "openTypeCff": false,
+      "programId": "aff8acc8a05e3ed68965ff1ca4557d9b7521b9da0e586890d466dcf483429489",
+      "query": "HY견고딕",
+      "trueType": true
+    },
+    "HY견명조": {
+      "family": "HYmjrE",
+      "openTypeCff": false,
+      "programId": "1b37538c8099d34299f1c5a769ff6f1caf9aee26595675070887af77f9a69d96",
+      "query": "HY견명조",
+      "trueType": true
+    },
+    "HY목판L": {
+      "family": "HYmprL",
+      "openTypeCff": false,
+      "programId": "d319b275350dedaae1ac48fe25d054cf928b84cb90f4589cdbad43c3355dd598",
+      "query": "HY목판L",
+      "trueType": true
+    },
+    "HY울릉도M": {
+      "family": "HYwulM",
+      "openTypeCff": false,
+      "programId": "2bfc4b9a2aec38799eccacf078d5b1194071806c8c285821da4bb9e176095352",
+      "query": "HY울릉도M",
+      "trueType": true
+    },
+    "HY태백B": {
+      "family": "HYtbrB",
+      "openTypeCff": false,
+      "programId": "ac366c524ef10adbcdf868e939face414987211498fd559f3f4da7b3f3fb567b",
+      "query": "HY태백B",
+      "trueType": true
+    },
+    "HY헤드라인M": {
+      "family": "HYHeadLine-Medium",
+      "openTypeCff": false,
+      "programId": "ac1b909a6c44c48abc008484ee604de3031269067fedfd1e3e9786c3175e1dbb",
+      "query": "HY헤드라인M",
+      "trueType": true
+    },
+    "Times New Roman": {
+      "family": "Times New Roman",
+      "openTypeCff": false,
+      "programId": "85445be8f7a2360edbe4aaa777941648654534500f06ee579a4f1d8ff8204c99",
+      "query": "Times New Roman",
+      "trueType": true
+    },
+    "굴림": {
+      "collectionFace": true,
+      "family": "Gulim",
+      "openTypeCff": false,
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "query": "굴림",
+      "trueType": true
+    },
+    "굴림체": {
+      "collectionFace": true,
+      "family": "GulimChe",
+      "openTypeCff": false,
+      "programId": "a4e5fe205f75574ea2d4fa6a8c31e2ed26d674c5fbb84a3a89f07ca575982edd",
+      "query": "굴림체",
+      "trueType": true
+    },
+    "돋움": {
+      "collectionFace": true,
+      "family": "Dotum",
+      "openTypeCff": false,
+      "programId": "8b227d162052d30a43bfb3fe8f9f2dd63b7b99c9f0a0a043e95dd5000bcf589f",
+      "query": "돋움",
+      "trueType": true
+    },
+    "력옓": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    },
+    "명조": {
+      "family": "Myeongjo",
+      "openTypeCff": true,
+      "programId": "c844e18302b686388e572f670a312c2f2c639500582e371bb150097d040af10c",
+      "query": "명조",
+      "trueType": false
+    },
+    "바탕": {
+      "collectionFace": true,
+      "family": "Batang",
+      "openTypeCff": false,
+      "programId": "a475bfaf18779ebc2cda4f275e678fda3680c253e6ff93a89aafff258af308b0",
+      "query": "바탕",
+      "trueType": true
+    },
+    "바탕체": {
+      "collectionFace": true,
+      "family": "BatangChe",
+      "openTypeCff": false,
+      "programId": "3d56206a82c78ae9f5356141bbe8cf777ba2fc1f6fc03455531d0ac453b5b6bb",
+      "query": "바탕체",
+      "trueType": true
+    },
+    "산세리프": {
+      "family": "Sans Serif",
+      "openTypeCff": true,
+      "programId": "33248d3522785d355049abe499a9c7d11b26824be2d5584efe3cf95c8c995c99",
+      "query": "산세리프",
+      "trueType": false
+    },
+    "신명 중고딕": {
+      "family": "Sinmyeong Junggothic",
+      "openTypeCff": true,
+      "programId": "6fa4da0c59ab99a58ffd6d0a0f985b41dc24b12afc531741591ea5c4b3de52ca",
+      "query": "신명 중고딕",
+      "trueType": false
+    },
+    "양재 다운명조M": {
+      "family": "YJ Daun Myeongjo M",
+      "openTypeCff": true,
+      "programId": "935586537db6c34be1e9ad80aa64b449fc32385e4c7284ad26eb9009cb890488",
+      "query": "양재 다운명조M",
+      "trueType": false
+    },
+    "양재 튼튼B": {
+      "family": "YJ Teunteun B",
+      "openTypeCff": true,
+      "programId": "29a3d37fd64624cbee976f628ab4098f8168f7f9d3d1bdc99f067fa74d1858b8",
+      "query": "양재 튼튼B",
+      "trueType": false
+    },
+    "한양견고딕": {
+      "family": "HY Gyeongothic",
+      "openTypeCff": true,
+      "programId": "cd8c166268de7779d7835d5b18447bcd62123fff2f7927f94b15d644f1690d67",
+      "query": "한양견고딕",
+      "trueType": false
+    },
+    "한양견명조": {
+      "family": "HY Gyeonmyeongjo",
+      "openTypeCff": true,
+      "programId": "9fd0073ddcdd93644d720c7517a7ccb421225cdb510b28bf059a6eab3dd39bb9",
+      "query": "한양견명조",
+      "trueType": false
+    },
+    "한양신명조": {
+      "family": "HY Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "c20485a292d437a1f4fd2ac1def811401b8e8bff598449416656fa9b97d8e4e8",
+      "query": "한양신명조",
+      "trueType": false
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "openTypeCff": true,
+      "programId": "61bd7778da3d3dc16654dc311a7850c885d59167deb754df0fec42c020c204ad",
+      "query": "한양중고딕",
+      "trueType": false
+    },
+    "한컴바탕": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    },
+    "휴먼명조": {
+      "family": "휴먼명조",
+      "openTypeCff": false,
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "query": "휴먼명조",
+      "trueType": true
+    },
+    "�쌱삃력옓": {
+      "family": "Haansoft Batang",
+      "openTypeCff": false,
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "query": "한컴바탕",
+      "trueType": true
+    }
+  },
+  "substitutions": {
+    "-윤고딕120": "Haansoft Batang",
+    "HCI Poppy": "Gulim",
+    "HY견고딕": "HYgtrE",
+    "HY견명조": "HYmjrE",
+    "HY목판L": "HYmprL",
+    "HY울릉도M": "HYwulM",
+    "HY태백B": "HYtbrB",
+    "HY헤드라인M": "HYHeadLine-Medium",
+    "PMingLiU": "NotoSansKR-Regular",
+    "Times New Roman": "Times New Roman",
+    "굴림": "Gulim",
+    "굴림체": "GulimChe",
+    "돋움": "Dotum",
+    "력옓": "Haansoft Batang",
+    "명조": "Myeongjo",
+    "바탕": "Batang",
+    "바탕체": "BatangChe",
+    "산세리프": "Sans Serif",
+    "신명 중고딕": "Sinmyeong Junggothic",
+    "양재 다운명조M": "YJ Daun Myeongjo M",
+    "양재 튼튼B": "YJ Teunteun B",
+    "한양견고딕": "HY Gyeongothic",
+    "한양견명조": "HY Gyeonmyeongjo",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "한컴바탕": "Haansoft Batang",
+    "휴먼명조": "휴먼명조",
+    "�쌱삃력옓": "Haansoft Batang"
+  },
+  "trueTypeFaces": [
+    "Batang",
+    "BatangChe",
+    "Dotum",
+    "Gulim",
+    "GulimChe",
+    "HYHeadLine-Medium",
+    "HYgtrE",
+    "HYmjrE",
+    "HYmprL",
+    "HYtbrB",
+    "HYwulM",
+    "Haansoft Batang",
+    "Times New Roman",
+    "휴먼명조"
+  ]
+}

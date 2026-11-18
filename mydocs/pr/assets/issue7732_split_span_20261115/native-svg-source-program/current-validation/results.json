@@ -1,0 +1,105 @@
+{
+  "source_product_commit": "8472674645",
+  "common_renderer_and_wasm_producer": "2749e491e843ec851de12467751ec200ab551014",
+  "rust_minimal_font_validation": {
+    "status": "passed",
+    "source_commit": "8472674645",
+    "results": [
+      {
+        "name": "fmt",
+        "exit": 0,
+        "seconds": 20.715008020401,
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ]
+      },
+      {
+        "name": "native-skia-all-target-clippy",
+        "exit": 0,
+        "seconds": 126.33756184577942,
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+          "cargo",
+          "clippy",
+          "--locked",
+          "--all-targets",
+          "--features",
+          "native-skia",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--",
+          "-D",
+          "warnings"
+        ]
+      },
+      {
+        "name": "full-nextest",
+        "exit": 0,
+        "seconds": 1281.4136371612549,
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/issue7732-p037-residual-20261115/rebase-9088/minimal-font.sb",
+          "cargo",
+          "nextest",
+          "run",
+          "--locked",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--tests",
+          "--test-threads",
+          "8",
+          "--no-fail-fast"
+        ]
+      }
+    ]
+  },
+  "full_nextest_summary": "Summary [ 561.270s] 13617 tests run: 13617 passed (3 slow), 45 skipped",
+  "studio_validation": {
+    "status": "passed",
+    "results": [
+      {
+        "name": "unit",
+        "exit": 0,
+        "seconds": 48.009
+      },
+      {
+        "name": "typescript",
+        "exit": 0,
+        "seconds": 1.465
+      }
+    ]
+  },
+  "studio_unit_summary": {
+    "tests": 2800,
+    "pass": 2798,
+    "fail": 0,
+    "skip": 2
+  },
+  "logs_local_only": {
+    "output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/native-svg-program-repair/rust-gates/full-nextest.log": {
+      "sha256": "5cac1930129210ed0fb696a09afd75d16b93e3bd3d752187db82fc36046fd099",
+      "bytes": 1903410
+    },
+    "output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/post-rebase-studio-gates/unit.log": {
+      "sha256": "3853b6696fc427fd30f2ccb39cc8b37f0f06d60049b2c1cae0f99a7d4fc84fd9",
+      "bytes": 308298
+    },
+    "output/pr-review/issue7732-p037-residual-20261115/rebase-9088/svg-print-final/post-rebase-4e0b20d2/margin-controls/post-rebase-studio-gates/typescript.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "scope": "Native SVG CLI 보완 후 전체 회귀 및 현재 리베이스 Studio 검사. feature-gated 새 Native SVG 검사는 별도 focused 1PASS 기록을 따른다."
+}

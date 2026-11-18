@@ -126,8 +126,8 @@ impl DocumentCore {
     }
 
     /// 문단 머리(번호 수준·글머리표)가 가리킬 글자 모양 ID. `json`은 applyCharFormat의 글자 속성과
-    /// 바탕 글자 모양 `baseCharShapeId`(없으면 0)다. 머리 모양의 0은 '참조 없음'으로 읽히므로
-    /// 0번과 같은 모양은 0이 아닌 번호로 둔다.
+    /// 바탕 글자 모양 `baseCharShapeId`(없으면 0)다. 이 API의 기존 양수 ID 반환을
+    /// 보존하므로 0번과 같은 모양도 양수 ID로 둔다. 저장 문서의 0번 참조는 유효하다.
     pub(super) fn head_char_shape_id(&mut self, json: &str) -> u32 {
         let base = json_i32(json, "baseCharShapeId")
             .and_then(|id| u32::try_from(id).ok())

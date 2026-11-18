@@ -37,9 +37,11 @@ use crate::renderer::render_tree::{
 };
 
 mod picture_adjustments;
+mod picture_soft_edge;
 pub(crate) use picture_adjustments::{
     adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
 };
+pub(crate) use picture_soft_edge::prepare_picture_soft_edge;
 mod wmf_picture;
 pub(crate) use wmf_picture::adjust_pixels as adjust_wmf_device_pixels;
 /// 명시된 crop 좌표 범위는 보존한다. 원본 WMF의 범위가 없으면 한컴의
@@ -124,6 +126,15 @@ const MAX_MEMO_ENTRIES: usize = 64;
 /// 변환 종류. 같은 바이트라도 어떤 변환을 거쳤느냐에 따라 결과가 다르다.
 #[derive(Clone, Copy, Hash)]
 enum Conversion {
+    PictureSoftEdge {
+        radius: u64,
+        width: u32,
+        height: u32,
+        color_width: u32,
+        color_height: u32,
+        print_planes: bool,
+        crop: [u64; 4],
+    },
     Bmp,
     CmykJpeg,
     Pcx,

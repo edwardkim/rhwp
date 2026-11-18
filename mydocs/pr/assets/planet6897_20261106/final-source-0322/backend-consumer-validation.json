@@ -1,0 +1,236 @@
+{
+  "sourceTest": "rhwp-studio/e2e/canvaskit-font-preparation-issue7688.test.mjs",
+  "scope": "current product0322 actual Studio CanvasKit software resource consumption and expected Canvas2D failure fallback; synthetic controls are not independent PDF fidelity scores",
+  "backend": "canvaskit",
+  "diagnostics": {
+    "surfaceCreated": 1,
+    "surfaceReused": 0,
+    "staticPictureCacheEntries": 8,
+    "staticPictureCacheBytes": 4480,
+    "staticPictureCacheHits": 0,
+    "staticPictureCacheMisses": 8,
+    "staticPictureCacheEvictions": 0,
+    "textBlobCacheEntries": 19,
+    "textBlobCacheBytes": 8854,
+    "textBlobCacheHits": 23,
+    "textBlobCacheMisses": 19,
+    "fallbackFamilyCacheEntries": 20,
+    "paragraphFontEntries": 4,
+    "paragraphFontBytes": 13900744,
+    "paragraphProviderBuilds": 0,
+    "paragraphFontRejections": 0,
+    "pendingImageLoads": 0,
+    "mode": "default",
+    "surfacePreference": "software",
+    "surfaceBackend": "software",
+    "surfaceFallbackReason": null,
+    "lastRenderCompleted": true,
+    "lastUnsupportedOps": [],
+    "lastExpectedUnsupportedOps": [],
+    "lastUnexpectedUnsupportedOps": [],
+    "lastRenderError": null,
+    "passesRuntimeReadinessGate": true,
+    "readinessBlockers": [],
+    "hiddenCanvas2dOverlayUsed": false,
+    "lastRenderDurationMs": 133.5,
+    "renderCount": 1,
+    "imageCacheEntries": 0,
+    "imageCacheLimit": 128,
+    "imageCachePixels": 0,
+    "imageCachePixelLimit": 67108864,
+    "imageCacheHits": 0,
+    "imageCacheMisses": 0,
+    "imageCacheEvictions": 0,
+    "mipmapCacheEntries": 0,
+    "mipmapCacheBytes": 0,
+    "mipmapCacheHits": 0,
+    "mipmapCacheMisses": 0,
+    "imageFailureCacheHits": 0,
+    "imageFailures": [],
+    "localTypefaceCount": 0,
+    "localTypefaceLoadFailureCount": 0,
+    "localTypefacePendingCount": 0,
+    "bundledTypefaceCount": 1,
+    "bundledTypefaceLoadFailureCount": 0,
+    "glyphRunFontBlobCount": 0,
+    "glyphRunFontBlobBytes": 0,
+    "glyphRunTypefaceCount": 0,
+    "glyphRunFontCount": 0,
+    "fontSubstitutionLimit": 4096,
+    "unregisteredFontFallbacks": 0,
+    "fontSubstitutions": [],
+    "replayFeatureCounts": {
+      "dashedStrokes": 0,
+      "glyphRuns": 0,
+      "tabLeaders": 0,
+      "charOverlaps": 0,
+      "verticalPresentationPunctuation": 0,
+      "verticalTextRuns": 0
+    },
+    "textVariantDiagnosticGroups": 0,
+    "textVariantDiagnosticParts": 0,
+    "replayDiagnosticsDropped": 0
+  },
+  "styles": [
+    {
+      "profile": "screen",
+      "regularAndBoldDiffer": true,
+      "bothLoadOrdersMatchDirectFaceControls": true,
+      "syntheticItalicPreserved": true
+    },
+    {
+      "profile": "print",
+      "regularAndBoldDiffer": true,
+      "bothLoadOrdersMatchDirectFaceControls": true,
+      "syntheticItalicPreserved": true
+    }
+  ],
+  "expected": {
+    "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+    "rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7"
+  },
+  "initialization": [
+    {
+      "url": "http://127.0.0.1:7739/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 200,
+      "sha256": "e17abff4781e8e602631db1583a1b226e6992f2b8471f038843a9ad48b8132e5"
+    }
+  ],
+  "wasmInitialization": [
+    {
+      "url": "http://127.0.0.1:7739/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+      "status": 200,
+      "sha256": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7",
+      "byteLength": 31149674,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    },
+    {
+      "url": "http://127.0.0.1:7739/node_modules/canvaskit-wasm/bin/canvaskit.wasm",
+      "status": 200,
+      "sha256": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "byteLength": 7317345,
+      "stage": "actual instantiateStreaming input"
+    }
+  ],
+  "transformedJsSha256": "e17abff4781e8e602631db1583a1b226e6992f2b8471f038843a9ad48b8132e5",
+  "lateChoiceCount": 1,
+  "vite_source_equivalence": {
+    "served_sha256": "e17abff4781e8e602631db1583a1b226e6992f2b8471f038843a9ad48b8132e5",
+    "source_sha256": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+    "source_map_files": [
+      "rhwp.js"
+    ],
+    "non_map_diff": [
+      "--- \n",
+      "+++ \n",
+      "@@ -15095,7 +15095,7 @@\n",
+      "     }",
+      " ",
+      "     if (module_or_path === undefined) {",
+      "-        module_or_path = new URL('rhwp_bg.wasm', import.meta.url);",
+      "+        module_or_path = new URL(\"/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm\", '' + import.meta.url);",
+      "     }",
+      "     const imports = __wbg_get_imports();",
+      " ",
+      "@@ -15109,3 +15109,4 @@\n",
+      " }",
+      " ",
+      " export { initSync, __wbg_init as default };",
+      "+"
+    ],
+    "same_after_single_vite_asset_url_rewrite_and_trailing_newline": true,
+    "source_map_embedded_content_sha256": [
+      "f6f0a8443d6a84c8d9a6ca1f2bb360d10d584adb7cb9dbcd8f530d9d5199b9e7"
+    ],
+    "source_map_note": "Vite 자원 URL 재작성 이후의 내장 sourcesContent다. 루트 원본 JS hash와 별개다."
+  },
+  "actual_log_sha256": "24aa974d02cd31a852e6d846f420f7e58bfcb5bed2921cf054041ea4dce9ec0b",
+  "exit_code": 0,
+  "wasm_browser_contracts": {
+    "passed": 24,
+    "failed": 0,
+    "log_sha256": "7ae48ae726d7ced72844736ba6bb20b29647e142aa392a8d1b44e28b5626c1bb"
+  },
+  "font_projection_contracts": {
+    "passed": 16,
+    "failed": 0
+  },
+  "package_hashes": {
+    "pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+    "pkg/rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7",
+    "rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+    "rhwp-studio/public/rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7",
+    "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+    "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nested-condense25-wasm-pkg/rhwp_bg.wasm": "63fbfbb9af3d12e4977b4216cc97c83fb9bbb1b29e562289c78af0462f8017e7"
+  }
+}

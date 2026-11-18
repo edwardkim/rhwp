@@ -32,11 +32,7 @@ impl SkiaLayerRenderer {
                         return None;
                     }
                     let (bytes, index) =
-                        if let Some((data, index)) = selected.typeface.to_existing_font_data() {
-                            (data.as_bytes().to_vec(), index)
-                        } else {
-                            selected.typeface.to_font_bytes()?
-                        };
+                        super::super::font_program::typeface_program_bytes(&selected.typeface)?;
                     if !matches!(
                         bytes.get(..4),
                         Some(b"OTTO" | b"\0\x01\0\0" | b"true" | b"ttcf")
@@ -115,15 +111,7 @@ impl SkiaLayerRenderer {
             {
                 return None;
             }
-            if let Some((data, index)) = selected.typeface.to_existing_font_data() {
-                return (data.size() <= 32 * 1024 * 1024)
-                    .then(|| (data.as_bytes().to_vec(), index));
-            }
-            // CoreText의 실제 system face는 재사용할 Data가 없을 수 있다.
-            // 다른 face를 추정하지 않고 동일 Typeface의 SFNT stream을 읽는다.
-            selected
-                .typeface
-                .to_font_bytes()
+            super::super::font_program::typeface_program_bytes(&selected.typeface)
                 .filter(|(bytes, _)| bytes.len() <= 32 * 1024 * 1024)
         })
     }

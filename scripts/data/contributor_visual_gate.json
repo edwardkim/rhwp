@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "qualification_source": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
+  "documents": [
+    {
+      "id": "52ee61fe7201e36b",
+      "input": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "pages": 1,
+      "compat": "2022"
+    },
+    {
+      "id": "59f6ab1155623bda",
+      "input": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "pages": 1,
+      "compat": "2022"
+    },
+    {
+      "id": "cdacd874b6e6ac66",
+      "input": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "pages": 1,
+      "compat": "2022"
+    },
+    {
+      "id": "d03a9dde3d5dc7ac",
+      "input": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "pages": 1,
+      "compat": "2022"
+    }
+  ]
+}

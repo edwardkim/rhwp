@@ -1,0 +1,35 @@
+{
+  "state": "complete",
+  "head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+  "base": "509c4c987eb6351d821c4d7739e59f5d0e9725db",
+  "results": [
+    {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/comparisons/latest-base-native-comparison.json",
+      "sha256": "2e6d196d0328b2d0d9985237cb2465bf7d8da72ae2833f789ca86b72e47c2c39",
+      "paired_pages": 2991,
+      "current_measured_paired_pages": 18,
+      "reused_paired_pages": 2973
+    },
+    {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/comparisons/before-rebase-native-comparison.json",
+      "sha256": "c90966961280af3059219541ddccb22ae70a295c6a1cbb3518883394b239cbd7",
+      "paired_pages": 2995,
+      "current_measured_paired_pages": 18,
+      "reused_paired_pages": 2977
+    },
+    {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/comparisons/latest-base-wasm-comparison.json",
+      "sha256": "d55af105407d3d84146d6b1775e8730d93de8ae8197118689644fbe2b66d6217",
+      "paired_pages": 2991,
+      "current_measured_paired_pages": 18,
+      "reused_paired_pages": 2973
+    },
+    {
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/comparisons/before-rebase-wasm-comparison.json",
+      "sha256": "c3be975b166b3742a44f440e2e472072f77d4057e385f46f79cc1f06e7f6d0fb",
+      "paired_pages": 2995,
+      "current_measured_paired_pages": 18,
+      "reused_paired_pages": 2977
+    }
+  ]
+}

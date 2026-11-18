@@ -1,0 +1,949 @@
+{
+  "parent_head": "856ed61e8c1a6827c117f23f6ff9336cc8545155",
+  "base_native_source": "4aa8f5fc2b550145a724155cdb7cdd0b0a2576f3",
+  "new_base_product_equivalent": "06181802e574dbd91e62375536751dea8c270fcd",
+  "scope": "원본·재저장본 각21쪽 Native/fresh WASM. 전체 통합 PR 완료 아님.",
+  "inputs": [
+    {
+      "key": "incoming8754-nov-resaved",
+      "input": "tests/fixtures/pr7600-equation-font-frame/nov-original-resaved-2020.hwp",
+      "pdf": "pdf/pr7600-equation-font-frame-diagnostic/nov-original-resaved-print-2020.pdf",
+      "pdf_pages": 21,
+      "compat": "2022",
+      "dpi": 96,
+      "prs": [
+        8754
+      ],
+      "input_sha256": "1392d5dab6350d232f39a06aa813f1797aec399e41a9e632ffd93e421916f72b",
+      "pdf_sha256": "9c737bf4a8700c5e31d0eb05bba16ea8e6bad4a3bfed7c3bf88334053abcbd79",
+      "scope": "whole-document",
+      "state": "prepared-not-rendered"
+    },
+    {
+      "key": "incoming8754-nov-original",
+      "input": "samples/3-11월_실전_통합_2022.hwp",
+      "pdf": "mydocs/pr/assets/pr_7600_control_print_20261006/input-09-3-11월_실전_통합_2022-2020.pdf",
+      "pdf_pages": 21,
+      "compat": "2022",
+      "dpi": 96,
+      "prs": [
+        8754
+      ],
+      "input_sha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+      "pdf_sha256": "b5dc3580c0c3716963c9686ec62fd779cedfea97f50d8f49eb98a2ec8fae369a",
+      "scope": "whole-document",
+      "state": "prepared-not-rendered"
+    }
+  ],
+  "native": {
+    "head": "856ed61e8c1a6827c117f23f6ff9336cc8545155",
+    "binary": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/rhwp-nov-continuation",
+    "binary_sha256": "3221fe41b997415a49a15a79d2eebc7161c34c6328fa0a280615dac4f35136d2",
+    "sources": {
+      "src/renderer/composer/line_breaking.rs": "e3a44f6f3121f6ed27ee161905a437d4fd1aa4e5293c45d5e96d9bb827f6d3d3",
+      "src/renderer/layout/paragraph_layout.rs": "c8c1d46161d0f96357914d42d5610c3a423f0d52a52047b01d9734c8dab86308"
+    },
+    "diff_sha256": "5f743f75197b79dba090389008a4af6821156df321e63aa2535943a0213656ba",
+    "build_log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-native-build.log"
+  },
+  "wasm_build": {
+    "state": "complete",
+    "pid": 6168,
+    "parent_head": "856ed61e8c1a6827c117f23f6ff9336cc8545155",
+    "sources": {
+      "src/renderer/composer/line_breaking.rs": "e3a44f6f3121f6ed27ee161905a437d4fd1aa4e5293c45d5e96d9bb827f6d3d3",
+      "src/renderer/layout/paragraph_layout.rs": "c8c1d46161d0f96357914d42d5610c3a423f0d52a52047b01d9734c8dab86308"
+    },
+    "diff_sha256": "5f743f75197b79dba090389008a4af6821156df321e63aa2535943a0213656ba",
+    "exit_code": 0,
+    "seconds": 297.54511670884676,
+    "files": {
+      "rhwp.js": {
+        "/Users/tsjang/rhwp/pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-wasm-pkg/rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      "rhwp_bg.wasm": {
+        "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "773b3b3b7411434c4f9a528805cc5c9a98dc65fd2f3deb8241c51337cd10684b",
+        "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "773b3b3b7411434c4f9a528805cc5c9a98dc65fd2f3deb8241c51337cd10684b",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-wasm-pkg/rhwp_bg.wasm": "773b3b3b7411434c4f9a528805cc5c9a98dc65fd2f3deb8241c51337cd10684b"
+      }
+    },
+    "browser_exit_code": 0
+  },
+  "runs": [
+    {
+      "stage": "base",
+      "backend": "native",
+      "input_key": "incoming8754-nov-resaved",
+      "pages": 21,
+      "minimum_raw": 99.03786,
+      "page17_raw": 99.1598,
+      "tsv": "base-native-resaved-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "ef1399515baa9d5bc46f53ad44cc8a3b2775b8f3411bc1ecba8e1d44f235ec19",
+        "package_sha256": null,
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "e54240c193fa9f0874df34a877035b9845dab38b0541370128fb4080cc8aba64"
+    },
+    {
+      "stage": "base",
+      "backend": "native",
+      "input_key": "incoming8754-nov-original",
+      "pages": 21,
+      "minimum_raw": 98.78575,
+      "page17_raw": 99.15705,
+      "tsv": "base-native-original-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "ef1399515baa9d5bc46f53ad44cc8a3b2775b8f3411bc1ecba8e1d44f235ec19",
+        "package_sha256": null,
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "369690dd6b85d47ce0c319cb752812cceb7f13d5c7fe66b79479025c607bac52"
+    },
+    {
+      "stage": "before",
+      "backend": "native",
+      "input_key": "incoming8754-nov-resaved",
+      "pages": 21,
+      "minimum_raw": 42.4198,
+      "page17_raw": 86.88111,
+      "tsv": "before-native-resaved-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "b4260205db6622f147eeb757d694d2f4ae0a1ac692fe1ddb2fc11e85fa534c9f",
+        "package_sha256": null,
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "3c0037d2d791611396b5e4cea57a9990f134e225beb55593f38989fa8aeb776a"
+    },
+    {
+      "stage": "before",
+      "backend": "native",
+      "input_key": "incoming8754-nov-original",
+      "pages": 21,
+      "minimum_raw": 42.43375,
+      "page17_raw": 86.88422,
+      "tsv": "before-native-original-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "b4260205db6622f147eeb757d694d2f4ae0a1ac692fe1ddb2fc11e85fa534c9f",
+        "package_sha256": null,
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "aaf246d3b52a58ab43c7a7636140e8dd1aec93d7bb18cbe7f567297705211357"
+    },
+    {
+      "stage": "after",
+      "backend": "native",
+      "input_key": "incoming8754-nov-resaved",
+      "pages": 21,
+      "minimum_raw": 99.03786,
+      "page17_raw": 99.1598,
+      "tsv": "after-native-resaved-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "3221fe41b997415a49a15a79d2eebc7161c34c6328fa0a280615dac4f35136d2",
+        "package_sha256": null,
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "290c43155b4481042f8adf2b452ac95595af584be1cf58bba09bdebb29d2914d"
+    },
+    {
+      "stage": "after",
+      "backend": "native",
+      "input_key": "incoming8754-nov-original",
+      "pages": 21,
+      "minimum_raw": 98.78583,
+      "page17_raw": 99.15706,
+      "tsv": "after-native-original-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "3221fe41b997415a49a15a79d2eebc7161c34c6328fa0a280615dac4f35136d2",
+        "package_sha256": null,
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "1ae34ac64a63f2c4f2af3229364bdcf65d35f60c7336bb2bf0e1d50246075808"
+    },
+    {
+      "stage": "before",
+      "backend": "wasm",
+      "input_key": "incoming8754-nov-resaved",
+      "pages": 21,
+      "minimum_raw": 42.58914,
+      "page17_raw": 86.69244,
+      "tsv": "before-wasm-resaved-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "b4260205db6622f147eeb757d694d2f4ae0a1ac692fe1ddb2fc11e85fa534c9f",
+        "package_sha256": {
+          "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+          "rhwp_bg.wasm": "18601fb2dfe087d02f8c8c5cd171d882a12fa82e91825d9588618536f10660e2"
+        },
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "43f73b1a4ec92789b780332db672921f887aa641bc93e248b8cee03d0f3c8eae"
+    },
+    {
+      "stage": "before",
+      "backend": "wasm",
+      "input_key": "incoming8754-nov-original",
+      "pages": 21,
+      "minimum_raw": 42.59214,
+      "page17_raw": 86.68846,
+      "tsv": "before-wasm-original-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "b4260205db6622f147eeb757d694d2f4ae0a1ac692fe1ddb2fc11e85fa534c9f",
+        "package_sha256": {
+          "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+          "rhwp_bg.wasm": "18601fb2dfe087d02f8c8c5cd171d882a12fa82e91825d9588618536f10660e2"
+        },
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "1eced61159bc04d6b780b860987d69f448c2d4107997c4c59fbc714583279966"
+    },
+    {
+      "stage": "after",
+      "backend": "wasm",
+      "input_key": "incoming8754-nov-resaved",
+      "pages": 21,
+      "minimum_raw": 99.02612,
+      "page17_raw": 99.22122,
+      "tsv": "after-wasm-resaved-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "3221fe41b997415a49a15a79d2eebc7161c34c6328fa0a280615dac4f35136d2",
+        "package_sha256": {
+          "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+          "rhwp_bg.wasm": "773b3b3b7411434c4f9a528805cc5c9a98dc65fd2f3deb8241c51337cd10684b"
+        },
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "c4d060619c31f1ecd9f855f63bbb5e7d898caea0d5d14c494655c55eb176c887"
+    },
+    {
+      "stage": "after",
+      "backend": "wasm",
+      "input_key": "incoming8754-nov-original",
+      "pages": 21,
+      "minimum_raw": 98.77947,
+      "page17_raw": 99.2215,
+      "tsv": "after-wasm-original-21-silhouette.tsv",
+      "producer": {
+        "binary_sha256": "3221fe41b997415a49a15a79d2eebc7161c34c6328fa0a280615dac4f35136d2",
+        "package_sha256": {
+          "rhwp.js": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+          "rhwp_bg.wasm": "773b3b3b7411434c4f9a528805cc5c9a98dc65fd2f3deb8241c51337cd10684b"
+        },
+        "manifest_sha256": "d33352168c93c23002888b59391c0ecc45358be832e5f404c4cd325e81175877"
+      },
+      "source_manifest_sha256": "9013436c7298d447db4d0ad8f9c2c635063cfe78039d2bb3beb9ebe20a5f74b1"
+    }
+  ],
+  "native_base_comparison": [
+    {
+      "key": "incoming8754-nov-resaved",
+      "pages": 21,
+      "minimum": 99.04,
+      "below90": [],
+      "changes": [
+        {
+          "page": 17,
+          "base": "99.16",
+          "before": "86.88",
+          "after": "99.16"
+        },
+        {
+          "page": 18,
+          "base": "99.04",
+          "before": "42.42",
+          "after": "99.04"
+        },
+        {
+          "page": 19,
+          "base": "99.48",
+          "before": "62.83",
+          "after": "99.48"
+        }
+      ],
+      "remaining_base_display_declines": [
+        {
+          "page": 2,
+          "base": "99.68",
+          "after": "99.66"
+        }
+      ]
+    },
+    {
+      "key": "incoming8754-nov-original",
+      "pages": 21,
+      "minimum": 98.79,
+      "below90": [],
+      "changes": [
+        {
+          "page": 12,
+          "base": "99.88",
+          "before": "96.51",
+          "after": "99.88"
+        },
+        {
+          "page": 17,
+          "base": "99.16",
+          "before": "86.88",
+          "after": "99.16"
+        },
+        {
+          "page": 18,
+          "base": "98.79",
+          "before": "42.43",
+          "after": "98.79"
+        },
+        {
+          "page": 19,
+          "base": "99.37",
+          "before": "62.92",
+          "after": "99.37"
+        }
+      ],
+      "remaining_base_display_declines": []
+    }
+  ],
+  "regression": {
+    "before": "nov-prefix-test-before.log: 2 FAIL; 앞줄 높이/기준선 복구 후에도 마지막 등식 원점403.266 vs505.6",
+    "after": "nov-continuation-test-after.log: 2 PASS",
+    "no_personal_font_file_access": "nov-continuation-test-after-no-personal-fonts.log: 2 PASS; 전체 CoreText 격리 검증은 아님",
+    "canonical_log": "nov-regression-focused-corrected.log",
+    "canonical_summary": "9 passed; 0 failed; 309 selected out",
+    "canonical_font_file_denied": "nov-regression-no-personal-fonts-direct.log: same compiled suite binary; 9 passed; 0 failed",
+    "test_kind": [
+      "관계형: 동일 원본 수식의 소유·점유·내어쓰기",
+      "고정형: 독립 Print17쪽 수식 원점·기준선 ±2 CSSpx"
+    ],
+    "canonical_font_file_denied_binary": {
+      "binary": "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_023-b67fb2855559bc17",
+      "sha256": "54c2088f9908cda2323cde3aa923352e6af2365ab4b108ee5c9c70d3701b7b95",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-focused-no-personal-fonts.sb",
+        "/Users/tsjang/rhwp/target/pr-review/release-test/deps/regression_suite_023-b67fb2855559bc17",
+        "issue_7640_resaved_endnote_frame::",
+        "--test-threads=8"
+      ],
+      "exit_code": 0
+    }
+  },
+  "independent_anchors": [
+    {
+      "text": "lim",
+      "font": "HyhwpEQ",
+      "bbox": [
+        303.7200012207031,
+        530.871337890625,
+        318.9566345214844,
+        541.6713256835938
+      ],
+      "origin": [
+        303.7200012207031,
+        539.5199584960938
+      ],
+      "size": 10.800000190734863
+    },
+    {
+      "text": "→",
+      "font": "HyhwpEQ",
+      "bbox": [
+        302.5199890136719,
+        540.859130859375,
+        320.1091003417969,
+        547.2191162109375
+      ],
+      "origin": [
+        302.5199890136719,
+        546.0
+      ],
+      "size": 6.119999885559082
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        320.7599792480469,
+        516.0662231445312,
+        376.5362854003906,
+        547.751708984375
+      ],
+      "origin": [
+        320.7599792480469,
+        541.4400024414062
+      ],
+      "size": 31.685543060302734
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        345.239990234375,
+        538.7927856445312,
+        349.4519958496094,
+        547.7927856445312
+      ],
+      "origin": [
+        345.239990234375,
+        546.0
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        349.67999267578125,
+        537.2590942382812,
+        352.739990234375,
+        543.3790893554688
+      ],
+      "origin": [
+        349.67999267578125,
+        542.1599731445312
+      ],
+      "size": 6.119999885559082
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        322.0799865722656,
+        525.2327880859375,
+        386.1839904785156,
+        539.9927978515625
+      ],
+      "origin": [
+        322.0799865722656,
+        532.7999877929688
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "lim",
+      "font": "HyhwpEQ",
+      "bbox": [
+        389.03997802734375,
+        530.871337890625,
+        404.276611328125,
+        541.6713256835938
+      ],
+      "origin": [
+        389.03997802734375,
+        539.5199584960938
+      ],
+      "size": 10.800000190734863
+    },
+    {
+      "text": "→",
+      "font": "HyhwpEQ",
+      "bbox": [
+        387.8399963378906,
+        540.859130859375,
+        405.4291076660156,
+        547.2191162109375
+      ],
+      "origin": [
+        387.8399963378906,
+        546.0
+      ],
+      "size": 6.119999885559082
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        452.1600036621094,
+        538.7927856445312,
+        456.37200927734375,
+        547.7927856445312
+      ],
+      "origin": [
+        452.1600036621094,
+        546.0
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        456.5999755859375,
+        537.2590942382812,
+        459.65997314453125,
+        543.3790893554688
+      ],
+      "origin": [
+        456.5999755859375,
+        542.1599731445312
+      ],
+      "size": 6.119999885559082
+    },
+    {
+      "text": "sincostantan",
+      "font": "HyhwpEQ",
+      "bbox": [
+        407.5199890136719,
+        524.9927978515625,
+        504.0119934082031,
+        534.5927734375
+      ],
+      "origin": [
+        407.5199890136719,
+        532.2000122070312
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        379.1999816894531,
+        557.7527465820312,
+        386.1839904785156,
+        566.7527465820312
+      ],
+      "origin": [
+        379.1999816894531,
+        564.9599609375
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "lim",
+      "font": "HyhwpEQ",
+      "bbox": [
+        389.03997802734375,
+        557.5113525390625,
+        404.276611328125,
+        568.3113403320312
+      ],
+      "origin": [
+        389.03997802734375,
+        566.1599731445312
+      ],
+      "size": 10.800000190734863
+    },
+    {
+      "text": "→",
+      "font": "HyhwpEQ",
+      "bbox": [
+        387.8399963378906,
+        567.4990844726562,
+        405.4291076660156,
+        573.9791259765625
+      ],
+      "origin": [
+        387.8399963378906,
+        572.760009765625
+      ],
+      "size": 6.119999885559082
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        406.0799865722656,
+        553.0164184570312,
+        425.7378845214844,
+        571.8270874023438
+      ],
+      "origin": [
+        406.0799865722656,
+        568.0800170898438
+      ],
+      "size": 18.810691833496094
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        413.8800048828125,
+        564.11279296875,
+        418.0920104980469,
+        573.11279296875
+      ],
+      "origin": [
+        413.8800048828125,
+        571.3200073242188
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "sin",
+      "font": "HyhwpEQ",
+      "bbox": [
+        407.5199890136719,
+        551.7527465820312,
+        424.4519958496094,
+        561.352783203125
+      ],
+      "origin": [
+        407.5199890136719,
+        558.9599609375
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "lim",
+      "font": "HyhwpEQ",
+      "bbox": [
+        428.1600036621094,
+        557.5113525390625,
+        443.3966369628906,
+        568.3113403320312
+      ],
+      "origin": [
+        428.1600036621094,
+        566.1599731445312
+      ],
+      "size": 10.800000190734863
+    },
+    {
+      "text": "→",
+      "font": "HyhwpEQ",
+      "bbox": [
+        426.9599914550781,
+        567.4990844726562,
+        444.5491027832031,
+        573.9791259765625
+      ],
+      "origin": [
+        426.9599914550781,
+        572.760009765625
+      ],
+      "size": 6.119999885559082
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        445.1999816894531,
+        552.7020874023438,
+        465.68682861328125,
+        571.9052734375
+      ],
+      "origin": [
+        445.1999816894531,
+        568.0800170898438
+      ],
+      "size": 19.20320701599121
+    },
+    {
+      "text": "",
+      "font": "HyhwpEQ",
+      "bbox": [
+        453.3599853515625,
+        564.11279296875,
+        457.5719909667969,
+        573.11279296875
+      ],
+      "origin": [
+        453.3599853515625,
+        571.3200073242188
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "tan",
+      "font": "HyhwpEQ",
+      "bbox": [
+        446.5199890136719,
+        551.7527465820312,
+        464.2919921875,
+        561.352783203125
+      ],
+      "origin": [
+        446.5199890136719,
+        558.9599609375
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "lim",
+      "font": "HyhwpEQ",
+      "bbox": [
+        468.0,
+        557.5113525390625,
+        483.23663330078125,
+        568.3113403320312
+      ],
+      "origin": [
+        468.0,
+        566.1599731445312
+      ],
+      "size": 10.800000190734863
+    },
+    {
+      "text": "→",
+      "font": "HyhwpEQ",
+      "bbox": [
+        466.79998779296875,
+        567.4990844726562,
+        484.38909912109375,
+        573.9791259765625
+      ],
+      "origin": [
+        466.79998779296875,
+        572.760009765625
+      ],
+      "size": 6.119999885559082
+    },
+    {
+      "text": "costan",
+      "font": "HyhwpEQ",
+      "bbox": [
+        484.1999816894531,
+        557.6327514648438,
+        543.1320190429688,
+        567.2327880859375
+      ],
+      "origin": [
+        484.1999816894531,
+        564.8399658203125
+      ],
+      "size": 9.0
+    },
+    {
+      "text": "× × ",
+      "font": "HyhwpEQ",
+      "bbox": [
+        379.1999816894531,
+        578.0327758789062,
+        463.5,
+        587.5127563476562
+      ],
+      "origin": [
+        379.1999816894531,
+        585.239990234375
+      ],
+      "size": 9.0
+    }
+  ],
+  "canvas_browser_contracts": {
+    "pass_count": 17,
+    "fail_count": 0,
+    "log": "nov-continuation-canvas-contracts.log"
+  },
+  "assets": [
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/base-native-resaved-21-silhouette.tsv",
+      "sha256": "51604357d787e42752b1ded35fd41ddb4bb10ba2dc944982f7647141ec9aedee",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-fixed-base-native-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/base-native-original-21-silhouette.tsv",
+      "sha256": "ce28e8efdaea71f7e2b8b5ae7085c7fdf4bfab7b090993147d59605f1a23c990",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-fixed-base-native-whole/incoming8754-nov-original/incoming8754-nov-original/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/before-native-resaved-21-silhouette.tsv",
+      "sha256": "724cb744c4ec85cb32086b2a4f448ace2bdf2997df8a92d2986a5f735b31e9de",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-current-856ed-native-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/before-native-original-21-silhouette.tsv",
+      "sha256": "52f6326f9300a7c3479dae402acce16cdaa2e8f9615c9a5d908f43caf4d5fa03",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-current-856ed-native-whole/incoming8754-nov-original/incoming8754-nov-original/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-native-resaved-21-silhouette.tsv",
+      "sha256": "68db5fcbdfb3abb5475020312883d71d556f2965738f7eeb089ffddc055806a5",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-native-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-native-original-21-silhouette.tsv",
+      "sha256": "ce28e8efdaea71f7e2b8b5ae7085c7fdf4bfab7b090993147d59605f1a23c990",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-native-whole/incoming8754-nov-original/incoming8754-nov-original/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/before-wasm-resaved-21-silhouette.tsv",
+      "sha256": "92234b35e7a16b1828a380f6ef3e36eff9ae8f61812bdb043db9d2e56a32807a",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-before-owner-wasm-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/before-wasm-original-21-silhouette.tsv",
+      "sha256": "5265caa04bc6ff60227b41de69c5d0f3015eb206497b9b74f095d04d663521f2",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-before-owner-wasm-whole/incoming8754-nov-original/incoming8754-nov-original/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-wasm-resaved-21-silhouette.tsv",
+      "sha256": "5e762e3aed30803540bfbe7eaa3339208d9be7ce8cda4c4dc80ef1f4b1601e5a",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-wasm-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-wasm-original-21-silhouette.tsv",
+      "sha256": "06a16516bb1078e8c46c823ca94cb289f638d0839c4aa4161e42ba1ccb90d8f3",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-wasm-whole/incoming8754-nov-original/incoming8754-nov-original/silhouette.tsv"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/before-native-p017-review.png",
+      "sha256": "b0b63aff5e90893c45842b94c2b647c604809ca26ecfc9d28b2d5deb0a36d591",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-review/before/review/review_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/before-native-p017-overlay.png",
+      "sha256": "98bc22bb101cc338954c9fd6a4e7324d9eababc14eb8b71fe80c2633acc550f1",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-review/before/overlay/overlay_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-native-p017-review.png",
+      "sha256": "43c0af80f1715832d9eb336d5f4cc22a7527e31158be613c88bdc80fe7037d2e",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-review/after/review/review_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-native-p017-overlay.png",
+      "sha256": "6ac45cde46b74dd1dde6d43fc872740442a0845332d76833800da9319a9d7666",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-review/after/overlay/overlay_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-wasm-p017-review.png",
+      "sha256": "e1496fdabaeeba3effe842eb2abadc374143a2e1882a1c009bee7dab095df83a",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-review/wasm-after/review/review_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-wasm-p017-overlay.png",
+      "sha256": "b94cf57dfa5410e7d5aa9c912194d2f084e242f062670e642f7aac500d074e20",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-review/wasm-after/overlay/overlay_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/before-native-p017-raw.png",
+      "sha256": "b0ef9b6039e4f499cd7fcef063e7a16143c290063475dcc3d2951a3aea2cab91",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-current-856ed-native-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/rhwp_png/rhwp_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-native-p017-raw.png",
+      "sha256": "0b20adcd621e12b5192e173792cb97bad33d669519879eb43efab5d7d9e9360d",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-native-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/rhwp_png/rhwp_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/after-wasm-p017-raw.png",
+      "sha256": "11110a0ff95844a614e21f9f0f9a8235b1a297ddf1c20b0e88ea1075196ef11f",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-wasm-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/rhwp_png/rhwp_017.png"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_20261106/partial-equation-frame-repair/independent-print-p017.png",
+      "sha256": "55c69bcfd20a6d179dba0a590bc6b98ebf93aff92c292bbcf714e7e2810c7c3b",
+      "source": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-native-whole/incoming8754-nov-resaved/incoming8754-nov-resaved/pdf_png/pdf-017.png"
+    }
+  ],
+  "remaining": "보호 문서의 미세 하락·재저장본2쪽의 base 대비0.02%p 차이·전체 회귀/범위 게이트·전체 통합 검증/PR 단계는 별도 계속",
+  "local_logs": [
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-prefix-test-before.log",
+      "sha256": "c2d6397032cf570047e5bec35637f8eaf4c87b4d4c1cf0a4679883b8799fb93f"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-test-after.log",
+      "sha256": "a3a0d2cf88a28ac0d95008b6f290693a6dfe9b354dea76233d5eef3226d45232"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-test-after-no-personal-fonts.log",
+      "sha256": "edb746c872dd46a4492b2c009b56048646c532bc2f8da4c5d3f8e822934fad4d"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-native-build.log",
+      "sha256": "cea515270119439aa38998a8af72ed918591aecacc5f0d075e83ccfe4d042377"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-wasm-build.log",
+      "sha256": "0fdc5e007919f4a41b8aa150201861a1e1d04c02a466e2beda34d0e0dc76a702"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-continuation-canvas-contracts.log",
+      "sha256": "b76a09a8d09b614ba689d4ab431902ed402ec8b39d4e3a531cf08cf626fbb88e"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-regression-focused-corrected.log",
+      "sha256": "32623d037e0cada8e18e81e0866d4e9749cce590f58d78c0544c1033e5c3138b"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-regression-no-personal-fonts-direct.log",
+      "sha256": "34f86ba96500877db0ff258bc10723383db0b03c32d1ce44bac4bb586e6a9ce4"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-native-clippy.log",
+      "sha256": "6d538579436b4a93da374ebe95fca0df094fc3c49867c05afcdbf77d8d75945b"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-final-fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-manifest-check.log",
+      "sha256": "e8a1f0e2b0f8221704ae5e1508f3d5bc293f81f1ce5630fea894c38fdd2848ad"
+    },
+    {
+      "path": "output/pr-review/native-program-resume-20261108/device-mipmap-hft-repair/nov-evidence-links.log",
+      "sha256": "c229e3b3dd8f86ec00ae184c8deed96c8565a475f48564e7fe2eddf8c2a0f6fa"
+    }
+  ],
+  "protected_impact_focus": [
+    {
+      "key": "sample16-hwp2022",
+      "pages": 3,
+      "before": {
+        "17": "100.00",
+        "35": "100.00",
+        "38": "100.00"
+      },
+      "after": {
+        "17": "100.00",
+        "35": "100.00",
+        "38": "100.00"
+      },
+      "changed": []
+    },
+    {
+      "key": "sample16-hwp2024",
+      "pages": 3,
+      "before": {
+        "17": "100.00",
+        "35": "99.99",
+        "38": "100.00"
+      },
+      "after": {
+        "17": "100.00",
+        "35": "99.99",
+        "38": "100.00"
+      },
+      "changed": []
+    },
+    {
+      "key": "sample16-hwpx",
+      "pages": 3,
+      "before": {
+        "17": "100.00",
+        "35": "99.99",
+        "38": "100.00"
+      },
+      "after": {
+        "17": "100.00",
+        "35": "99.99",
+        "38": "100.00"
+      },
+      "changed": []
+    },
+    {
+      "key": "nested",
+      "pages": 3,
+      "before": {
+        "3": "99.75",
+        "8": "99.49",
+        "17": "99.98"
+      },
+      "after": {
+        "3": "99.75",
+        "8": "99.49",
+        "17": "99.98"
+      },
+      "changed": []
+    }
+  ],
+  "stage_checks": {
+    "fmt": "passed",
+    "native_skia_lib_clippy": "passed; -D warnings",
+    "manifest": "passed; base06181802; 48/48 targets",
+    "markdown_links": "2 documents; no errors"
+  }
+}

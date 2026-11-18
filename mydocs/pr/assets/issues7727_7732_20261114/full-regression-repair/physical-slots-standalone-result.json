@@ -1,0 +1,68 @@
+[
+  {
+    "case": "margin",
+    "source": "tests/cases/issue_8797_first_margin_page_origin.rs",
+    "test": "",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.292,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/physical-slots-margin-after.log",
+    "log_sha256": "61bb6d8f72bfed3a87404e2c0f7c89256d798c445fc4d0406e9bfae18f22437c",
+    "rlib_sha256": "73a784b43fa46eb0167fac41dbdbc541f76d19ca476b8bdc1f51bdd713322ab6"
+  },
+  {
+    "case": "toc",
+    "source": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+    "test": "",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.185,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/physical-slots-toc-after.log",
+    "log_sha256": "7f27b849c325438e3ba04709acbce43ac2fdde947de9b7eb8aee9dfa7390cc2a",
+    "rlib_sha256": "73a784b43fa46eb0167fac41dbdbc541f76d19ca476b8bdc1f51bdd713322ab6"
+  },
+  {
+    "case": "regulatory",
+    "source": "tests/issue_1921_59043_pagination_pin.rs",
+    "test": "",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.195,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/physical-slots-regulatory-after.log",
+    "log_sha256": "43abe5e62cc5fd636674b20c7d93556e3409d539f297320eb1922e27608f1ae1",
+    "rlib_sha256": "73a784b43fa46eb0167fac41dbdbc541f76d19ca476b8bdc1f51bdd713322ab6"
+  },
+  {
+    "case": "edu",
+    "source": "tests/cases/rowbreak_short_row_whole_carry.rs",
+    "test": "",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 3.332,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/physical-slots-edu-after.log",
+    "log_sha256": "dbb297383e4c59eda766bf0cc88330d06d1ad9f3fd5f4af6aa6575b18d34ae8c",
+    "rlib_sha256": "73a784b43fa46eb0167fac41dbdbc541f76d19ca476b8bdc1f51bdd713322ab6"
+  },
+  {
+    "case": "note",
+    "source": "tests/cases/issue_7732_note_only_line_ownership.rs",
+    "test": "",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.309,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/physical-slots-note-after.log",
+    "log_sha256": "9d370f04dd8e1155576780c66d94ce694171b0c31a751551077e09cf4540e766",
+    "rlib_sha256": "73a784b43fa46eb0167fac41dbdbc541f76d19ca476b8bdc1f51bdd713322ab6"
+  },
+  {
+    "case": "marker",
+    "source": "tests/cases/issue_7727_numbered_stored_partition.rs",
+    "test": "",
+    "compile_exit": 0,
+    "run_exit": 0,
+    "seconds": 1.456,
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/logs/physical-slots-marker-after.log",
+    "log_sha256": "9f52d004281849fa170059f05e6a3d7a951d853f9d745ce32964c615a78e94e9",
+    "rlib_sha256": "73a784b43fa46eb0167fac41dbdbc541f76d19ca476b8bdc1f51bdd713322ab6"
+  }
+]

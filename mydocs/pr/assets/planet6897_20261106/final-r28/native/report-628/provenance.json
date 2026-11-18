@@ -1,0 +1,107 @@
+{
+  "key": "report-628",
+  "backend": "native",
+  "state": "measured-not-final-review",
+  "prs": [
+    8642
+  ],
+  "input": "mydocs/pr/assets/planet6897_20261106/pr8642/report-628-original.hwp",
+  "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+  "pdf": "pdf/planet6897-20261106/pr8642/report-628-original-2020.pdf",
+  "pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+  "pdf_pages": 195,
+  "compat": "2022",
+  "font_environment": null,
+  "linked_images": [],
+  "minimum": 92.99,
+  "below90": 0,
+  "full_tsv": "native/report-628/full.tsv",
+  "full_tsv_sha256": "f6d5b24044dbb25c23802c8a4c1b3576bcd78058705eb5d33fc4b19494428f84",
+  "measurement_log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r28-direction-native/report-628/run.log",
+  "producer": {
+    "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-batch-corrections-r28",
+    "sha256": "3addcb1c0f4f15d1702cf9d2686a1946d5931f14e69eaa7d24131500fd399190"
+  },
+  "panels": [
+    {
+      "page": 16,
+      "raw": "96.88",
+      "actual_png_sha256": "97f010e0dc8cf5c6a916ec1615f8f2889f794c9a299663a0ec58ba9200caaa04",
+      "pdf_png_sha256": "d2bc3ca4b9029b2b5deb77a2c443e601be81730447045c253c7eab2c2cefc568",
+      "review": "native/report-628/review-016.png",
+      "overlay": "native/report-628/overlay-016.png"
+    },
+    {
+      "page": 18,
+      "raw": "99.72",
+      "actual_png_sha256": "056f083cb740810757c728785bd3af9021b56be764b47047d1ee177f8a70ab91",
+      "pdf_png_sha256": "1f96fe51611a6a0edb40bc772d15d0f59ef4579e9e266a7f227dd6108fe3a461",
+      "review": "native/report-628/review-018.png",
+      "overlay": "native/report-628/overlay-018.png"
+    },
+    {
+      "page": 67,
+      "raw": "99.99",
+      "actual_png_sha256": "70fd1350439f677810f60159c474a43d005f85e78af8dd33a74575a68358911f",
+      "pdf_png_sha256": "0f10bbdd067da1631553c6336b1e4cea6b61f3a391ee849d906b1f190b862a58",
+      "review": "native/report-628/review-067.png",
+      "overlay": "native/report-628/overlay-067.png"
+    },
+    {
+      "page": 95,
+      "raw": "99.20",
+      "actual_png_sha256": "339bff796a37c5cec090214b418a7b68296b03da7aa0e5510e956adaaea3a8d8",
+      "pdf_png_sha256": "9439b3050d26ee4b81a3cabfc24b8bc9b02a5e7a3ede11f3a784ec7b1708fba1",
+      "review": "native/report-628/review-095.png",
+      "overlay": "native/report-628/overlay-095.png"
+    },
+    {
+      "page": 96,
+      "raw": "99.26",
+      "actual_png_sha256": "21cb2718741b0fbeec1c765c49a9a1f56b1ad4bedf82b23c5ae48207f7700faa",
+      "pdf_png_sha256": "08c7c013e8e2a2c327874c28346be0a53e9dead5f2887abb8f977898698e952d",
+      "review": "native/report-628/review-096.png",
+      "overlay": "native/report-628/overlay-096.png"
+    },
+    {
+      "page": 120,
+      "raw": "96.55",
+      "actual_png_sha256": "f948eadb048ad518caa19a858314a148e7c5a8506cd16f0fe9c5164407b3603c",
+      "pdf_png_sha256": "e9c79b74642fb23cce934039343e219a5a74dc448331bbf45bbd44ffb6023c6b",
+      "review": "native/report-628/review-120.png",
+      "overlay": "native/report-628/overlay-120.png"
+    },
+    {
+      "page": 122,
+      "raw": "99.58",
+      "actual_png_sha256": "d87417e2442eb2b4bd76c03b928ab6c71bfe31a335be113937453f73a69f18e8",
+      "pdf_png_sha256": "62e99661f6d6800ea99cd7948a6470c665abe0d6faeb68be4930f4f35b769d06",
+      "review": "native/report-628/review-122.png",
+      "overlay": "native/report-628/overlay-122.png"
+    },
+    {
+      "page": 123,
+      "raw": "99.77",
+      "actual_png_sha256": "c526fb4adf4b112abd95bd0cf87c350463af09447fa485b9e62b560787c51790",
+      "pdf_png_sha256": "5261ccf78089a98855eb1c0c9d4b629e5016cca878fafe21dd232d79858456c7",
+      "review": "native/report-628/review-123.png",
+      "overlay": "native/report-628/overlay-123.png"
+    },
+    {
+      "page": 124,
+      "raw": "99.92",
+      "actual_png_sha256": "dd375569eb419f4b89e95530846f3afe99162b7eb580e1f918b8eba0d3491a1c",
+      "pdf_png_sha256": "988dc728920c41f1dc8197409fbcb3e67f6e16b808a49c0f54c5d9dd5884f724",
+      "review": "native/report-628/review-124.png",
+      "overlay": "native/report-628/overlay-124.png"
+    },
+    {
+      "page": 125,
+      "raw": "99.81",
+      "actual_png_sha256": "ee0aba7118d420cff01336c64344205408d9512c8cb58d6eecf30b8e6840148c",
+      "pdf_png_sha256": "4040c4a9242fe97ed4650a4a1beb4f90a16617c1550b139ba311591a3d36466e",
+      "review": "native/report-628/review-125.png",
+      "overlay": "native/report-628/overlay-125.png"
+    }
+  ]
+}

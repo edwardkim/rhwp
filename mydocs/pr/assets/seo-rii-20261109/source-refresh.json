@@ -1,0 +1,127 @@
+{
+  "checked_at": "2026-11-08T23:52:59.788724+00:00",
+  "base": "06181802e574dbd91e62375536751dea8c270fcd",
+  "remote_devel": "06181802e574dbd91e62375536751dea8c270fcd",
+  "original_heads_unchanged": true,
+  "open_ready_count": 9,
+  "own_open_prs": [],
+  "prs": [
+    {
+      "createdAt": "2026-11-08T07:42:52Z",
+      "headRefOid": "99732cf8ca32f2835ddd6f486e7b8a0c12346b3e",
+      "isDraft": false,
+      "number": 8781,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "feat(flutter): add continuous AppKit Metal presentation (P110)"
+    },
+    {
+      "createdAt": "2026-11-08T07:12:15Z",
+      "headRefOid": "96a1b3b044cd3e979d24759526e5a0cc6ceaff40",
+      "isDraft": false,
+      "number": 8779,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "feat(flutter): add continuous Windows ownership transfer (P109)"
+    },
+    {
+      "createdAt": "2026-11-08T06:42:34Z",
+      "headRefOid": "def466097d790671247e30c1ec412931ad606e6a",
+      "isDraft": false,
+      "number": 8777,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "test(flutter): qualify actual Linux consumer and continuous GL frames (P108)"
+    },
+    {
+      "createdAt": "2026-11-08T02:26:23Z",
+      "headRefOid": "40e1301ddabb6290a4ed06c5791e8fd4960403f5",
+      "isDraft": false,
+      "number": 8769,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "test(flutter): add actual Apple SDK Metal producer probe (P107)"
+    },
+    {
+      "createdAt": "2026-11-08T01:52:26Z",
+      "headRefOid": "2e6268c8187ed5eda59f19ca4cb729371c1776da",
+      "isDraft": false,
+      "number": 8767,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "test(flutter): qualify actual Windows texture consumer (P106)"
+    },
+    {
+      "createdAt": "2026-11-08T01:23:04Z",
+      "headRefOid": "dd62a95be83474ebbb9635f8c1bb8840c32ab3c9",
+      "isDraft": false,
+      "number": 8765,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "feat(flutter): add bounded multi-page CPU viewport (P105)"
+    },
+    {
+      "createdAt": "2026-11-08T00:50:54Z",
+      "headRefOid": "97e532e8031b1dcc777923120a618f76c13cb2c8",
+      "isDraft": false,
+      "number": 8764,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "feat(flutter): guard reference document lifecycle (P104)"
+    },
+    {
+      "createdAt": "2026-11-08T00:10:33Z",
+      "headRefOid": "b8c948e7fb4d7bdf9c20e20e7551aa879151a810",
+      "isDraft": false,
+      "number": 8761,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "feat(flutter): connect safe worker saves and recovery (P103)"
+    },
+    {
+      "createdAt": "2026-11-07T14:51:11Z",
+      "headRefOid": "0c8de92939ada977d96e9d3608f13f4fdd707cf3",
+      "isDraft": false,
+      "number": 8749,
+      "reviewRequests": [
+        {
+          "__typename": "User",
+          "login": "edwardkim"
+        }
+      ],
+      "title": "feat(renderer): Canvas2D strict-outline 미리보기 이관"
+    }
+  ]
+}

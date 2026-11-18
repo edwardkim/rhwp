@@ -1,0 +1,34 @@
+{
+  "source": "0275f9c3bb69b216c96146e98506271eead9a601",
+  "measured_at": "2026-11-08T03:09:39.862824+00:00",
+  "scope": "같은 입력 report-838의 PDF 24·49쪽 Native 사전 확인. 전쪽 검증은 별도 수행한다.",
+  "font_rule": "같은 family의 실제 선언만 TTF 우선 후보로 수용. 시스템 등록·Fontconfig 규칙은 변경하지 않음.",
+  "ink_diagnostic_only": {
+    "before": {
+      "title": 1043.078431372549,
+      "caption": 1035.1411764705883
+    },
+    "after": {
+      "title": 1553.4627450980392,
+      "caption": 1277.2039215686275
+    },
+    "print": {
+      "title": 1735.5803921568627,
+      "caption": 1475.137254901961
+    }
+  },
+  "images": {
+    "before": {
+      "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r46f-candidate-native-current-pr/report-838/report-838/rhwp_png/rhwp_024.png",
+      "sha256": "2a8ed8c5c28ee981ec8158e649d7a88b11b9d98fb1b1b46929d72cb5cf2ce61c"
+    },
+    "after": {
+      "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r47-critical-native/report-838/report-838/rhwp_png/rhwp_024.png",
+      "sha256": "2bb760458371aaec04c1076a578c5735bd68f38635964e4db30b02a7d0b276be"
+    },
+    "print": {
+      "path": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/r47-critical-native/report-838/report-838/pdf_png/pdf-024.png",
+      "sha256": "5b17ecb99e7cdec11ce88c91315cf2047c937612738e348fd75603b7f60f2817"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+  ➜  Local:   http://127.0.0.1:7700/
+=== E2E: Issue #9133 공통 대화창 viewport·본문 스크롤·조작 보존 ===
+
+  [browser] headless Chrome 실행
+  case: page-800x360
+  case: page-768x320
+  case: page-767x320
+  case: page-320x240
+  case: page-360x640
+  case: page-1280x900
+  case: options-800x360
+  case: options-768x320
+  case: options-767x320
+  case: options-320x240
+  case: options-360x640
+  case: options-1280x900
+  case: about-800x360
+  case: about-768x320
+  case: about-767x320
+  case: about-320x240
+  case: about-360x640
+  case: about-1280x900
+  case: char-800x360
+  case: char-768x320
+  case: char-767x320
+  case: char-320x240
+  case: char-360x640
+  case: char-1280x900
+  case: para-800x360
+  case: para-768x320
+  case: para-767x320
+  case: para-320x240
+  case: para-360x640
+  case: para-1280x900
+  case: fonts-800x360
+  case: fonts-768x320
+  case: fonts-767x320
+  case: fonts-320x240
+  case: fonts-360x640
+  case: fonts-1280x900
+  case: style-800x360
+  case: style-768x320
+  case: style-767x320
+  case: style-320x240
+  case: style-360x640
+  case: style-1280x900
+  case: recovery-800x360
+  case: recovery-768x320
+  case: recovery-767x320
+  case: recovery-320x240
+  case: recovery-360x640
+  case: recovery-1280x900
+  case: pdf-800x360
+  case: pdf-768x320
+  case: pdf-767x320
+  case: pdf-320x240
+  case: pdf-360x640
+  case: pdf-1280x900
+  case: table-800x360
+  case: table-768x320
+  case: table-767x320
+  case: table-320x240
+  case: table-360x640
+  case: table-1280x900
+  case: picture-800x360
+  case: picture-768x320
+  case: picture-767x320
+  case: picture-320x240
+  case: picture-360x640
+  case: picture-1280x900
+  PASS: 66개 실제 창·화면 조합과 resize/취소 계약:
+
+📋 HTML 보고서: ../output/e2e/dialog-viewport-issue9133-report.html

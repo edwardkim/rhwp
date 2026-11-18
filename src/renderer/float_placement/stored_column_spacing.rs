@@ -20,10 +20,10 @@ pub(super) fn source_line_position(para: &Paragraph, index: usize) -> Option<i32
     }
 }
 
-/// 텍스트가 없는 단일 인라인 개체가 저장 줄 상자 전체를 소유하는지 확인한다.
-/// 선언 높이만 같다는 이유로 본문 혼합 줄이나 여러 개체의 원점을 추측하지 않는다.
+/// 텍스트가 없는 인라인 개체들이 한 저장 줄 상자 전체를 소유하는지 확인한다.
+/// 같은 줄의 개체 높이는 합산하지 않고 바깥 상자의 최대 높이로 닫는다.
 pub(super) fn closed_inline_object_line(para: &Paragraph) -> bool {
-    let ([control], [line]) = (para.controls.as_slice(), para.line_segs.as_slice()) else {
+    let [line] = para.line_segs.as_slice() else {
         return false;
     };
     if !para
@@ -33,25 +33,32 @@ pub(super) fn closed_inline_object_line(para: &Paragraph) -> bool {
     {
         return false;
     }
-    let (inline, height, top, bottom) = match control {
-        Control::Table(table) => (
-            table.common.treat_as_char,
-            i64::from(table.common.height),
-            i64::from(table.outer_margin_top),
-            i64::from(table.outer_margin_bottom),
-        ),
-        Control::Shape(shape) => (
-            shape.common().treat_as_char,
-            i64::from(shape.flow_height_hu()),
-            i64::from(shape.common().margin.top),
-            i64::from(shape.common().margin.bottom),
-        ),
-        _ => return false,
-    };
-    inline
-        && height > 0
-        && height < 0x8000_0000
-        && i64::from(line.line_height) == height + top + bottom
+    let mut maximum = 0;
+    for control in &para.controls {
+        if crate::renderer::control_is_body_flow_neutral_marker(control) {
+            continue;
+        }
+        let (inline, height, top, bottom) = match control {
+            Control::Table(table) => (
+                table.common.treat_as_char,
+                i64::from(table.common.height),
+                i64::from(table.outer_margin_top),
+                i64::from(table.outer_margin_bottom),
+            ),
+            Control::Shape(shape) => (
+                shape.common().treat_as_char,
+                i64::from(shape.flow_height_hu()),
+                i64::from(shape.common().margin.top),
+                i64::from(shape.common().margin.bottom),
+            ),
+            _ => return false,
+        };
+        if !inline || height <= 0 || height >= 0x8000_0000 {
+            return false;
+        }
+        maximum = maximum.max(height + top + bottom);
+    }
+    maximum > 0 && i64::from(line.line_height) == maximum
 }
 
 /// Resolve a saved first-line before-space without confusing a continuous
@@ -65,8 +72,21 @@ pub(crate) fn stored_column_top_spacing_before(
     dpi: f64,
 ) -> Option<StoredColumnTopSpacing> {
     let current = paragraphs.get(index)?;
+    // 작은 글자처럼 도형이 저장 글줄 상자 안에 들어가면 그 줄의 원점과 간격은 글줄과 같다.
+    // 적재 경로의 저장 사다리 연결과 같은 판정을 쓴다.
     let valid = |para: &Paragraph| {
-        (para.controls.is_empty() || closed_inline_object_line(para))
+        (para
+            .controls
+            .iter()
+            .all(crate::renderer::control_is_body_flow_neutral_marker)
+            || closed_inline_object_line(para)
+            || crate::renderer::stored_frame_boundary::inline_graphics_fit_saved_text_line(
+                para,
+                styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map_or(0, |style| style.vertical_alignment),
+            ))
             && !para.stored_text_partition_is_dirty()
             && !para.cell_format_vpos_dirty
             && !para.line_segs.is_empty()
@@ -86,7 +106,13 @@ pub(crate) fn stored_column_top_spacing_before(
     let one_source_unit = dpi / 7200.0;
     let frame = StoredColumnTopSpacing {
         before: spacing_before,
-        source_origin_hu: first.checked_sub(crate::renderer::px_to_hwpunit(spacing_before, dpi))?,
+        // 원본 사다리로 간격을 인증하되, 소비자에게는 현재 줄 좌표계의 원점을 준다.
+        // 재구성 전 원시 vpos를 돌려주면 이미 이동한 뒤 문단만 그 차이만큼 당겨진다.
+        source_origin_hu: current
+            .line_segs
+            .first()?
+            .vertical_pos
+            .checked_sub(crate::renderer::px_to_hwpunit(spacing_before, dpi))?,
     };
     if (hwpunit_to_px(first, dpi) - spacing_before).abs() <= one_source_unit {
         return Some(frame);

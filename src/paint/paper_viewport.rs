@@ -94,6 +94,73 @@ impl PagePaintContext {
         self
     }
 
+    /// 독립 한컴 2020 Print의 600dpi 정수 em을 표시 크기에만 적용한다.
+    /// 먼저 원본 문자 원점을 고정하여 재생 중 폭을 다시 계산하지 않는다.
+    pub(crate) fn publish_text_ink_em(
+        self,
+        node: &mut LayerNode,
+        shaped_sources: &std::collections::HashSet<u32>,
+    ) {
+        if !self.print || self.print_paper.is_some() {
+            return;
+        }
+        match &mut node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    self.publish_text_ink_em(child, shaped_sources);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                self.publish_text_ink_em(child, shaped_sources);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    // 원문과 장식의 정본 run은 같은 표시 크기와 원점을 소비한다.
+                    let (run, source) = match op {
+                        PaintOp::TextRun { run, source, .. }
+                        | PaintOp::TextDecoration { run, source, .. }
+                        | PaintOp::TabLeader { run, source, .. }
+                        | PaintOp::TextControlMark { run, source, .. } => (run, source),
+                        _ => continue,
+                    };
+                    // 겹침·shaping은 별도로 확정한 글리프 투영의 크기를 유지한다.
+                    if run.char_overlap.is_some()
+                        || source
+                            .as_ref()
+                            .is_some_and(|s| shaped_sources.contains(&s.id.0))
+                    {
+                        continue;
+                    }
+                    let style = &run.style;
+                    if run.is_vertical
+                        || style.superscript
+                        || style.subscript
+                        || style.font_position.is_some_and(|position| position != 0)
+                        || style.preserve_glyph_ink
+                        || style.text_paint.is_some()
+                        || !style
+                            .native_otf_metrics
+                            .as_ref()
+                            .is_some_and(|font| font.has_static_truetype_paint_programs())
+                    {
+                        continue;
+                    }
+                    let size = style.effective_font_size();
+                    if !size.is_finite() || size <= 0.0 {
+                        continue;
+                    }
+                    let ink_size = (size * 600.0 / 96.0).round() * 96.0 / 600.0;
+                    if ink_size <= 0.0 {
+                        continue;
+                    }
+                    let positions = run.replay_positions_for(run.display_or_text()).into_owned();
+                    run.layout_positions = Some(positions);
+                    run.style.print_ink_font_size = Some(ink_size);
+                }
+            }
+        }
+    }
+
     /// 표 괘선은 논리 조판 상자를 유지하되 물리 Print 종이의 정밀 CTM을 쓴다.
     /// 독립 Print의 가로·세로 괘선에서 확인한 공통 프레임이며, 장치 정수
     /// 반올림이나 끝점의 pen 확장은 이 좌표 변환으로 추측하지 않는다.
@@ -119,7 +186,8 @@ impl PagePaintContext {
         {
             return;
         }
-        fn publish(node: &mut LayerNode, table_owned: bool, sx: f64, sy: f64) {
+        /// 표가 직접 발행한 괘선을 물리 프레임으로 옮기고, 옮긴 괘선이 하나라도 있으면 `true`.
+        fn publish(node: &mut LayerNode, table_owned: bool, sx: f64, sy: f64) -> bool {
             match &mut node.kind {
                 LayerNodeKind::Group {
                     children,
@@ -129,14 +197,35 @@ impl PagePaintContext {
                     // 소유를 모든 자손에 상속하면 셀 본문의 도형까지 표 괘선으로
                     // 바뀐다. 표가 직접 발행한 선만 같은 물리 프레임을 소비한다.
                     let table = matches!(group_kind, crate::paint::layer_tree::GroupKind::Table(_));
+                    let mut moved = false;
                     for child in children {
-                        publish(child, table, sx, sy);
+                        moved |= publish(child, table, sx, sy);
                     }
+                    moved
                 }
-                LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
-                    publish(child, table_owned, sx, sy)
+                LayerNodeKind::ClipRect {
+                    clip,
+                    child,
+                    clip_kind,
+                } => {
+                    let moved = publish(child, table_owned, sx, sy);
+                    // 칸 clip 은 논리 조판 프레임이다. 그 안에서 물리 프레임으로 옮긴 괘선(중첩
+                    // 표 테두리)이 있으면 clip 도 그 괘선을 담아야 한다 — 괘선만 옮기면 칸
+                    // 위끝에 걸친 중첩 표 테두리가 clip 밖으로 밀려 잘린다(#8986, 36325899 2쪽 —
+                    // 한컴 PDF 는 clip 과 선이 같은 좌표). 칸 본문 글자는 논리 프레임에 남으므로
+                    // 두 프레임의 합을 쓰고, 옮긴 괘선이 없는 칸 clip 은 그대로 둔다.
+                    if moved && *clip_kind == crate::paint::layer_tree::ClipKind::TableCell {
+                        let left = clip.x.min(clip.x * sx);
+                        let top = clip.y.min(clip.y * sy);
+                        let right = (clip.x + clip.width).max((clip.x + clip.width) * sx);
+                        let bottom = (clip.y + clip.height).max((clip.y + clip.height) * sy);
+                        *clip = BoundingBox::new(left, top, right - left, bottom - top);
+                    }
+                    moved
                 }
+                LayerNodeKind::ClipPath { child, .. } => publish(child, table_owned, sx, sy),
                 LayerNodeKind::Leaf { ops } if table_owned => {
+                    let mut moved = false;
                     for op in ops {
                         if let PaintOp::Line { bbox, line } = op {
                             line.x1 *= sx;
@@ -144,10 +233,12 @@ impl PagePaintContext {
                             line.y1 *= sy;
                             line.y2 *= sy;
                             *bbox = line.ink_bbox();
+                            moved = true;
                         }
                     }
+                    moved
                 }
-                LayerNodeKind::Leaf { .. } => {}
+                LayerNodeKind::Leaf { .. } => false,
             }
         }
         publish(node, false, sx, sy);
@@ -157,7 +248,7 @@ impl PagePaintContext {
     /// 출력을 6→3자리로 바꾼다. 2020의 BorderFill 배경은 바꾸지 않지만
     /// 2024의 같은 셀 배경은 바꾼다(동일 입력 C308/C311).
     /// 이 상태는 q/Q와 쪽 경계를 넘어 유지된다(C275/C307/C308 대조).
-    /// 원본 HFT의 논리 좌표는 fill 전의 정밀 CTM만 물리 종이에 투영한다.
+    /// 원본 비내장 TTF/HFT의 논리 좌표는 fill 전의 정밀 CTM으로 물리 종이에 투영한다.
     /// Source bbox·run·clip은 그대로 두고 모든 glyph 대안에 같은 결정을 전달한다.
     pub(crate) fn publish_glyph_geometry(
         self,
@@ -251,7 +342,19 @@ impl PagePaintContext {
                             ..
                         } = op
                         {
-                            if run.style.hft_print_frame && !*rounded {
+                            // 원본 TTF의 text device 좌표는 도형 fill의 Type3
+                            // 그래픽 CTM 상태에 종속되지 않는다. HFT의 기존
+                            // fill 전/후 경계와 명시적 자연 프로그램 해제는 유지한다.
+                            let supplied_truetype =
+                                !run.style.preserve_glyph_ink
+                                    && run.style.text_paint.is_none()
+                                    && run.style.native_otf_metrics.as_ref().is_some_and(|font| {
+                                        font.has_static_truetype_paint_programs()
+                                    });
+                            if run.style.print_text_device_frame
+                                || supplied_truetype
+                                || (run.style.hft_print_frame && !*rounded)
+                            {
                                 sources.insert(source.id.0);
                             }
                         }
@@ -489,9 +592,10 @@ impl PagePaintContext {
                         {
                             continue;
                         }
-                        let (font_size, baseline) = run
-                            .style
-                            .script_draw_metrics(run.style.font_size, run.baseline);
+                        // 아래 밑줄의 종이 프레임도 장식 재생과 같은 줄 기준선이다.
+                        // 위의 guard로 첨자는 제외했으며 글자 위치는 글리프에만 적용한다.
+                        let font_size = run.style.font_size;
+                        let baseline = run.baseline;
                         let underline_y = bbox.y
                             + baseline
                             + font_size
@@ -736,8 +840,6 @@ impl PagePaintContext {
         image: &ImageNode,
         _device_pixel: Option<f64>,
     ) -> BoundingBox {
-        let bbox = node.bbox;
-        let is_master = node.layer.as_ref().is_some_and(|layer| layer.master_page);
         let raster = image.data.as_deref().is_some_and(|bytes| {
             matches!(
                 detect_image_mime_type(bytes),
@@ -750,7 +852,19 @@ impl PagePaintContext {
                     | "image/x-pcx"
             )
         });
-        if !self.print || !raster {
+        if raster {
+            self.raster_image_frame(node, image)
+        } else {
+            node.bbox
+        }
+    }
+
+    /// 원본 PNG 또는 실제 준비가 끝난 메타파일 PNG의 같은 물리 Print 프레임이다.
+    /// 준비 전 WMF·중간 표면·이미 장치 격자에 합성된 표면의 판정은 호출자가 소유한다.
+    pub(crate) fn raster_image_frame(self, node: &RenderNode, image: &ImageNode) -> BoundingBox {
+        let bbox = node.bbox;
+        let is_master = node.layer.as_ref().is_some_and(|layer| layer.master_page);
+        if !self.print {
             return bbox;
         }
         let (width, height) = self.logical_size;

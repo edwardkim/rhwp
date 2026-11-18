@@ -1,5 +1,5 @@
 """관계형: Native 글꼴 공급 우선순위와 실제 웹폰트 대체 계약을 검증한다."""
-# 주석 갱신: 2026-11-04 17:13 KST
+# 주석 갱신: 2026-11-15T09:43:19+09:00 (Asia/Seoul); 직전 파일 커밋: 2026-11-09T21:27:26+09:00 (72216ada1c5015ccc4d9e23c5d5e50f322194bfb)
 # 합성 요청·응답을 사용하는 공급 경로 관계 검사이며 시각 일치율을 고정하지 않는다.
 import json
 import tempfile
@@ -11,6 +11,30 @@ from scripts import visual_sweep_native_webfonts as web
 
 
 class NativeWebfontTests(unittest.TestCase):
+    def test_verified_woff_conversion_keeps_program_identity_across_clock_changes(self):
+        from fontTools.ttLib import TTFont
+
+        source = self.root / 'assets/fonts/stable.woff2'
+        source.parent.mkdir(parents=True)
+        fixture = (Path(__file__).resolve().parents[2]
+                   / 'tests/fixtures/native_font_family_names/family-contract.ttf')
+        with TTFont(fixture, recalcTimestamp=False) as font:
+            font.flavor = 'woff2'
+            font.save(source)
+        cache = self.root / 'cache'
+        with patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_000):
+            first = web._resource(self.root, cache, 'fonts/stable.woff2')
+        first_bytes = Path(first['native_path']).read_bytes()
+        with patch('fontTools.ttLib.tables._h_e_a_d.timestampNow', return_value=3_900_000_060):
+            second = web._resource(self.root, cache, 'fonts/stable.woff2')
+        self.assertEqual(first['source_sha256'], second['source_sha256'])
+        self.assertEqual(first['native_sha256'], second['native_sha256'])
+        self.assertEqual(first_bytes, Path(second['native_path']).read_bytes())
+        with TTFont(source) as original, TTFont(second['native_path']) as converted:
+            self.assertEqual(original['head'].modified, converted['head'].modified)
+            self.assertEqual(original.getBestCmap(), converted.getBestCmap())
+            self.assertEqual(original['hmtx'].metrics, converted['hmtx'].metrics)
+
     def test_fontconfig_names_require_readable_source_program(self):
         from types import SimpleNamespace
         with tempfile.TemporaryDirectory() as temp:
@@ -94,6 +118,19 @@ class NativeWebfontTests(unittest.TestCase):
         self.assertEqual(run.call_count, 1)
         self.assertEqual(result['font_environment'], path)
         self.assertEqual(result['evidence']['mappings'], {})
+
+    def test_declared_local_substitute_precedes_a_registered_webfont(self):
+        plan = {'embeddedFamilies': [], 'requests': [
+            {'source': 'Missing', 'primary': ['Missing'], 'substitute': ['LocalSub']},
+        ]}
+        with patch.object(web, '_installed_names', return_value={'localsub'}), \
+                patch.object(web, '_resource', side_effect=self.resource) as resource, \
+                patch.object(web, '_run', return_value=plan):
+            result = web.prepare(self.root, self.hwp, 'rhwp', [], None, '2022', 96)
+        resource.assert_not_called()
+        self.assertEqual(result['evidence']['mappings'], {})
+        self.assertEqual(result['evidence']['local_document_substitutes'], ['Missing'])
+        self.assertIsNone(result['font_environment'])
 
     def test_supplied_postscript_alias_wins_document_substitute(self):
         plan = {'embeddedFamilies': [], 'requests': [

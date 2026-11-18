@@ -44,21 +44,38 @@ fn single_flow_table(para: &Paragraph) -> bool {
 /// 아래 1984). 저장 줄이 모두 한컴이 쓴 줄일 때만 그 높이를 읽는다. 위·왼쪽·오른쪽 캡션은
 /// 표 본체 원점이나 폭을 바꾸는 다른 기하라 이 상자로 대체하지 않는다.
 pub(crate) fn stored_bottom_caption_hu(table: &Table) -> Option<i64> {
+    if table
+        .caption
+        .as_ref()
+        .is_some_and(|caption| caption.direction != crate::model::shape::CaptionDirection::Bottom)
+    {
+        return None;
+    }
+    stored_vertical_caption_hu(table)
+}
+
+/// 위·아래 캡션이 원본 외곽 줄 상자에 포함한 높이와 본체 사이 간격.
+/// 본체 원점의 방향은 caller가 유지하며 좌우 캡션으로 넓히지 않는다.
+pub(crate) fn stored_vertical_caption_hu(table: &Table) -> Option<i64> {
     let Some(caption) = table.caption.as_ref() else {
         return Some(0);
     };
-    if caption.direction != crate::model::shape::CaptionDirection::Bottom
-        || caption.paragraphs.is_empty()
+    if !matches!(
+        caption.direction,
+        crate::model::shape::CaptionDirection::Top | crate::model::shape::CaptionDirection::Bottom
+    ) || caption.paragraphs.is_empty()
     {
         return None;
     }
     let mut height = 0i64;
     for para in &caption.paragraphs {
         let (first, last) = (para.line_segs.first()?, para.line_segs.last()?);
-        if para
-            .line_segs
-            .iter()
-            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        if para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+            || para
+                .line_segs
+                .iter()
+                .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
         {
             return None;
         }
@@ -445,4 +462,84 @@ fn from_ladder(
         table_top,
         occupied_bottom,
     })
+}
+
+impl ParagraphFloatPlacement {
+    /// 앞 문단과 다음 문단이 표 외곽과 표 뒤의 빈 호스트 줄을 각각 닫는다.
+    /// 호스트의 저장 위치를 표 앞 원점으로 읽지 않고 현재 pen에서 같은 상대 상자를 쓴다.
+    pub(crate) fn from_stored_tail_host(
+        previous: &Paragraph,
+        host: &Paragraph,
+        next: &Paragraph,
+        table: &Table,
+        origin: f64,
+        measured_height: f64,
+        dpi: f64,
+    ) -> Option<Self> {
+        if !single_flow_table(host)
+            || host
+                .text
+                .chars()
+                .any(|c| !c.is_whitespace() && !c.is_control() && c != '\u{FFFC}')
+            || !is_para_topbottom_float(&table.common)
+            || table.common.vert_align != VertAlign::Top
+            || signed_hwpunit(table.common.vertical_offset) < 0
+            || table.common.height == 0
+            || table.common.height > i32::MAX as u32
+            || table.outer_margin_top < 0
+            || table.outer_margin_bottom < 0
+            || host.line_segs.len() != 1
+            || previous
+                .controls
+                .iter()
+                .any(|control| !crate::renderer::composer::control_is_width_neutral_marker(control))
+            || [previous, host, next].iter().any(|para| {
+                para.stored_text_partition_is_dirty()
+                    || para.cell_format_vpos_dirty
+                    || para.line_segs.is_empty()
+                    || para.line_segs.iter().any(|line| {
+                        line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                            || line.line_height <= 0
+                            || line.line_spacing < 0
+                    })
+            })
+            || ![origin, measured_height, dpi]
+                .iter()
+                .all(|value| value.is_finite())
+            || origin < 0.0
+            || dpi <= 0.0
+        {
+            return None;
+        }
+        let caption = stored_vertical_caption_hu(table)?;
+        let declared = i64::from(table.common.height) + caption;
+        if (measured_height - declared as f64 * dpi / 7200.0).abs() > dpi / 7200.0 {
+            return None;
+        }
+        let previous = previous.line_segs.last()?;
+        let previous_end = i64::from(previous.vertical_pos)
+            + i64::from(previous.line_height)
+            + i64::from(previous.line_spacing);
+        let offset = i64::from(signed_hwpunit(table.common.vertical_offset));
+        let physical = offset
+            + i64::from(table.outer_margin_top)
+            + declared
+            + i64::from(table.outer_margin_bottom);
+        let line = &host.line_segs[0];
+        let tail = i64::from(line.line_height) + i64::from(line.line_spacing);
+        if i64::from(line.vertical_pos) - previous_end != physical
+            || i64::from(next.line_segs[0].vertical_pos) - i64::from(line.vertical_pos) != tail
+        {
+            return None;
+        }
+        Some(Self {
+            flow: ParagraphFloatFlow::Exclusion,
+            anchor_y: origin,
+            stored_host_origin: None,
+            stored_successor_line_origin: Some(origin + (physical + tail) as f64 * dpi / 7200.0),
+            table_left: None,
+            table_top: origin + (offset + i64::from(table.outer_margin_top)) as f64 * dpi / 7200.0,
+            occupied_bottom: origin + (physical + tail) as f64 * dpi / 7200.0,
+        })
+    }
 }

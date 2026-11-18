@@ -1,5 +1,5 @@
 import type { LayerEquationLayoutBox, LayerNode, LayerTextStyle, PageLayerTree } from './types.ts';
-import { resolveRendererLocalFont, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
+import { resolveRendererLocalFont, resolveRendererLocalFontCandidates, localFontFaceKey, type LocalFontRecord } from './local-fonts.ts';
 import { enclosedPua, enclosedPuaHasMetrics, enclosedPuaMetrics } from './enclosed-pua.ts';
 import { ordinaryTextFontFamilies, parseCssFontFamilyList } from './font-substitution.ts';
 
@@ -37,7 +37,7 @@ export function collectDocumentCanvasKitFontUsage(trees: Iterable<PageLayerTree>
       else if (node.kind === 'clipRect' || node.kind === 'clipPath') stack.push(node.child);
       else for (const op of node.ops) {
         if (op.type !== 'textRun' && op.type !== 'charOverlap' && op.type !== 'footnoteMarker') continue;
-        const style = op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style;
+        const style = op.type === 'footnoteMarker' ? (op.style ?? { fontFamily: op.fontFamily }) : op.style;
         const family = style?.fontFamily;
         if (!family) continue;
         const usage = { family, bold: style?.bold === true, italic: style?.italic === true };
@@ -123,7 +123,13 @@ function hancomEquationFamilies(root: LayerEquationLayoutBox | undefined): Set<s
 /** 실제 text/수식 face 소비자를 준비한다. glyph ID나 자원 내용은 다시 쓰지 않는다. */
 export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] {
   const selected = new Map<string, LocalFontRecord>();
+  const textFamilies = new Set<string>();
+  const equationFamilies = new Set<string>();
+  let checkedEnclosedFace = false;
   const selectTextFaces = (family: string, style?: LayerTextStyle) => {
+    const key = JSON.stringify([family, !!style?.bold, !!style?.italic]);
+    if (textFamilies.has(key)) return;
+    textFamilies.add(key);
     for (const candidate of ordinaryTextFontFamilies(family)) {
       const record = resolveRendererLocalFont(candidate, hostFontStyle(style));
       if (record?.hostReference) selected.set(localFontFaceKey(record), record);
@@ -137,8 +143,13 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
     else for (const op of node.ops) {
       if (op.type === 'equation') {
         for (const family of hancomEquationFamilies(op.layoutBox)) {
-          const record = resolveRendererLocalFont(family, { weight: 400, slant: 'normal' });
-          if (record?.hostReference) selected.set(localFontFaceKey(record), record);
+          if (equationFamilies.has(family)) continue;
+          equationFamilies.add(family);
+          for (const candidate of parseCssFontFamilyList(family)) {
+            for (const record of resolveRendererLocalFontCandidates(candidate, { weight: 400, slant: 'normal' })) {
+              if (record.hostReference) selected.set(localFontFaceKey(record), record);
+            }
+          }
         }
         continue;
       }
@@ -148,7 +159,7 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         continue;
       }
       if (op.type !== 'textRun' && op.type !== 'charOverlap' && op.type !== 'footnoteMarker') continue;
-      const styles = [op.type === 'footnoteMarker' ? { fontFamily: op.fontFamily } : op.style];
+      const styles = [op.type === 'footnoteMarker' ? (op.style ?? { fontFamily: op.fontFamily }) : op.style];
       if (op.type === 'charOverlap' && op.composition && Array.isArray(op.composition.interior)) {
         if (op.composition.border) styles.push(op.composition.border.style);
         styles.push(...op.composition.interior.slice(0, 9).map(glyph => glyph.style));
@@ -158,10 +169,11 @@ export function collectHostFontRequests(tree: PageLayerTree): LocalFontRecord[] 
         if (!family) continue;
         selectTextFaces(family, style);
       }
-      if ([...op.text].some(character => {
+      if (!checkedEnclosedFace && [...op.text].some(character => {
         const glyph = enclosedPua(character.codePointAt(0) ?? 0);
         return glyph !== null && enclosedPuaHasMetrics(glyph);
       })) {
+        checkedEnclosedFace = true;
         const innerFace = resolveRendererLocalFont(enclosedPuaMetrics.innerFace,
           { weight: 400, slant: 'normal' });
         if (innerFace?.hostReference) selected.set(localFontFaceKey(innerFace), innerFace);

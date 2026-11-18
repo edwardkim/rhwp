@@ -1,0 +1,119 @@
+[
+  {
+    "name": "lint",
+    "exit": 0,
+    "command": [
+      "python3",
+      "<local>/run-lint.py"
+    ]
+  },
+  {
+    "name": "candidate-native-build",
+    "exit": 0,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp"
+    ]
+  },
+  {
+    "name": "candidate-wasm-build",
+    "exit": 0,
+    "command": [
+      "sh",
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "<local>/latest88170/candidate-pkg"
+    ]
+  },
+  {
+    "name": "base-package-clean-native",
+    "exit": 0,
+    "command": [
+      "cargo",
+      "clean",
+      "--manifest-path",
+      "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210/Cargo.toml",
+      "-p",
+      "rhwp",
+      "--profile",
+      "release-test"
+    ],
+    "cwd": "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210"
+  },
+  {
+    "name": "base-native-build",
+    "exit": 0,
+    "command": [
+      "cargo",
+      "build",
+      "--manifest-path",
+      "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210/Cargo.toml",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib",
+      "--bin",
+      "rhwp"
+    ],
+    "cwd": "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210"
+  },
+  {
+    "name": "base-package-clean-wasm",
+    "exit": 0,
+    "command": [
+      "cargo",
+      "clean",
+      "--manifest-path",
+      "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210/Cargo.toml",
+      "-p",
+      "rhwp",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--release"
+    ],
+    "cwd": "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210"
+  },
+  {
+    "name": "base-wasm-build",
+    "exit": 0,
+    "command": [
+      "sh",
+      "scripts/wasm-pack-locked.sh",
+      "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210",
+      "--target",
+      "web",
+      "--out-dir",
+      "<local>/latest88170/base-pkg"
+    ],
+    "cwd": "<local>/DeveloperArtifacts/rhwp/workspaces/main/output/pr9057-base-a210"
+  },
+  {
+    "name": "visual",
+    "exit": 0,
+    "command": [
+      "python3",
+      "<local>/latest88170/visual.py"
+    ],
+    "cwd": "<local>"
+  },
+  {
+    "name": "extras",
+    "exit": 0,
+    "command": [
+      "python3",
+      "<local>/latest88170/extras.py"
+    ],
+    "cwd": "<local>"
+  }
+]

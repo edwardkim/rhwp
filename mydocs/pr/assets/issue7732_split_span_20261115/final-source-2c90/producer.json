@@ -1,0 +1,13 @@
+{
+  "head": "2c90fa288bb4d48764eb82dbb025df4a12637ea9",
+  "source_files": {
+    "src/paint/builder.rs": "b8e405e656be4f180e52c268487bccb9ceb3d75e045f627b7ad19967f45c4846",
+    "tests/cases/issue_6117_layer_decoration_trim.rs": "7d10e803c14a75ea2735d96d718b2fc64ece1c747f93d81e7d4e8789e4153d52"
+  },
+  "source_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "native_sha256": "7eb3f86f50a55fdb8ca62d577a9303424c4da051ea1da075904ed75d32217124",
+  "wasm_sha256": "1167056b5d0729000a47c46fb6dd617d6bf284df41ad5a0f6ae811b31d36200e",
+  "javascript_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+  "wasm_build": "Mac locked wrapper --target web --out-dir pkg --no-opt; local substitute",
+  "root_public_equal": true
+}

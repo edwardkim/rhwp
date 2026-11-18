@@ -687,42 +687,10 @@ impl TypesetEngine {
             }
         }
 
-        // Refit has finished: only now can a complete continuation reserve its
-        // remaining physical band without changing content ownership.
-        if is_continuation
-            && start_cut.is_empty()
-            && end_row > cursor_row
-            && end_row < row_count
-            && split_block_start.is_none()
-            && split_end_cut.is_empty()
-            && split_end_limit <= 0.0
-            // A minimum extension still owns the complete row. Only a
-            // compressed band prevents the saved frame from consuming its tail.
-            && end_row_height_override
-                .is_none_or(|height| height >= whole_row_fit_h[end_row - 1])
-            && self.stored_header_physical_rows(st, input.source)
-            && row_geometry_table.cells.iter().any(|cell| {
-                let first = cell.row as usize;
-                first < end_row && first + cell.row_span as usize > end_row
-            })
-        {
-            let whole_rows = whole_row_fit_h[cursor_row..end_row].iter().sum::<f64>()
-                + cs * (end_row - cursor_row).saturating_sub(1) as f64;
-            // Logical line advances selected the content cut above. Only its
-            // unused physical tail uses the same closing boundary as paint;
-            // subtracting that band before scanning would move valid units.
-            let physical_rows_available = self.stored_header_fragment_row_budget(
-                st,
-                input,
-                budget.page_avail,
-                budget.host_before_overhead,
-            ) - header_overhead;
-            if physical_rows_available > consumed && (whole_rows - consumed).abs() <= 0.5 {
-                let before_last = whole_rows - whole_row_fit_h[end_row - 1];
-                end_row_height_override = Some(physical_rows_available - before_last);
-                consumed = physical_rows_available;
-            }
-        }
+        // 온전한 행의 쪽 끝 빈 띠는 emit의 crossing_span_page_end_band가
+        // 원본 선언·내용에서 앞서 수용한 실제 행 상자를 뺀 소유 몫으로 정한다.
+        // 여기서 남은 쪽 공간을 먼저 끝 행에 합치면, 잔여 몫이 없는 병합 칸도
+        // 상자를 늘린 뒤 소유 판정을 받게 되어 그 증가분을 되돌릴 수 없다.
 
         if split_block_start.is_none()
             && !split_end_cut.is_empty()

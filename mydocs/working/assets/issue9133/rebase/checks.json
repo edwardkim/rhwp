@@ -1,0 +1,116 @@
+[
+  {
+    "name": "tsc",
+    "command": [
+      "npx",
+      "tsc",
+      "--noEmit"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 1.18,
+    "finishedAt": "2026-11-16T09:08:52.355766+00:00"
+  },
+  {
+    "name": "tsc-ci",
+    "command": [
+      "npx",
+      "tsc",
+      "-p",
+      "tsconfig.ci-unit.json"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 1.08,
+    "finishedAt": "2026-11-16T09:08:53.435390+00:00"
+  },
+  {
+    "name": "npm-test",
+    "command": [
+      "npm",
+      "test"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 19.33,
+    "finishedAt": "2026-11-16T09:09:12.764405+00:00"
+  },
+  {
+    "name": "build",
+    "command": [
+      "npm",
+      "run",
+      "build"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 4.32,
+    "finishedAt": "2026-11-16T09:27:47.724547+00:00"
+  },
+  {
+    "name": "dialog-viewport-issue9133",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "e2e/dialog-viewport-issue9133.test.mjs",
+      "--mode=headless"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 17.07,
+    "finishedAt": "2026-11-16T09:28:04.792269+00:00"
+  },
+  {
+    "name": "about-dialog-issue8905",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "e2e/about-dialog-issue8905.test.mjs",
+      "--mode=headless"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 3.67,
+    "finishedAt": "2026-11-16T09:28:08.463854+00:00"
+  },
+  {
+    "name": "pdf-import-dialog-issue8411",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "e2e/pdf-import-dialog-issue8411.test.mjs",
+      "--mode=headless"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 6.72,
+    "finishedAt": "2026-11-16T09:28:15.183215+00:00"
+  },
+  {
+    "name": "autosave-recovery",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "e2e/autosave-recovery.test.mjs",
+      "--mode=headless"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 14.51,
+    "finishedAt": "2026-11-16T09:28:29.696473+00:00"
+  },
+  {
+    "name": "responsive",
+    "command": [
+      "node",
+      "e2e/run-with-vite.mjs",
+      "--",
+      "node",
+      "e2e/responsive.test.mjs",
+      "--mode=headless"
+    ],
+    "exitCode": 0,
+    "durationSeconds": 144.32,
+    "finishedAt": "2026-11-16T09:30:54.014761+00:00"
+  }
+]

@@ -1,0 +1,138 @@
+{
+  "producer_source": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
+  "reviewed_at": "2026-11-17T02:20:46.157275+00:00",
+  "all_five_regions_reviewed_native_and_wasm": true,
+  "nested10": "Compared independent Print, exact-base Native, candidate Native/fresh WASM at same 1.5x crop: full body origins, period/space, authored underline and following numbered content preserved",
+  "handbook60": "All three source fields, complete authored spaces and underline preserved; repeated lower title field glyph origins improved toward independent Print. No deletion of source decoration.",
+  "handbook63": "Independent larger-font 43-space title field keeps full width and continuous underline; following form boundaries/body preserved",
+  "hwp_hwpx_focus_crops_byte_identical": true,
+  "preexisting_canvas_source_color_difference": "Upper grey-box white guide/underline pixels differ from independent Print and Native but exactly equal current devel in the focused ROI; this is preserved pre-existing paint color, not evidence of a new geometry regression or a claim of color matching.",
+  "figures": [
+    {
+      "key": "handbook-hwp",
+      "page": 60,
+      "crop": [
+        130,
+        160,
+        730,
+        400
+      ],
+      "scale": 1.5,
+      "figure": "/home/edward/mygithub/rhwp/output/issue9104/figures/handbook-hwp-60-direct-review.png",
+      "figure_sha256": "068f8d6c52b4f13caaa910fd6644d042a4b15e24a7b71960010ef4931444ab17",
+      "sources": [
+        {
+          "role": "PDF",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwp/handbook-hwp/pdf_png/pdf-060.png",
+          "sha256": "d7d8818b03e04b1bad852a65e5963410cdfb2b8a52bca4a7e528361d070305c9"
+        },
+        {
+          "role": "Native",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwp/handbook-hwp/rhwp_png/rhwp_060.png",
+          "sha256": "aa4c89e8c95a018bbbb6194beb98951536d4129251a81b451eec85ee12294b15"
+        },
+        {
+          "role": "WASM",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-wasm-qualified/handbook-hwp/handbook-hwp/rhwp_png/rhwp_060.png",
+          "sha256": "1c47ca6afab8995f739cdd0195e893b3cf4fcd4a8084a3e9add8ea7c12401965"
+        }
+      ]
+    },
+    {
+      "key": "handbook-hwp",
+      "page": 63,
+      "crop": [
+        130,
+        140,
+        730,
+        460
+      ],
+      "scale": 1.5,
+      "figure": "/home/edward/mygithub/rhwp/output/issue9104/figures/handbook-hwp-63-direct-review.png",
+      "figure_sha256": "021f5f1507735c758a3459bcf705c8e89907abf2b121e473bbf1e12e1e64b004",
+      "sources": [
+        {
+          "role": "PDF",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwp/handbook-hwp/pdf_png/pdf-063.png",
+          "sha256": "2132498c7f0414a7d101586eb46f50c48899acbd40e60f99e25076af066f271f"
+        },
+        {
+          "role": "Native",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwp/handbook-hwp/rhwp_png/rhwp_063.png",
+          "sha256": "5f83f424c3b0c451fc03c6d01fbde3d225939444e8a9c772279fb06e376e0988"
+        },
+        {
+          "role": "WASM",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-wasm-qualified/handbook-hwp/handbook-hwp/rhwp_png/rhwp_063.png",
+          "sha256": "184cd15cdb8c2e5cd8c6877f3a74ef258786a58d6d3ad522db20457997abcb4b"
+        }
+      ]
+    },
+    {
+      "key": "handbook-hwpx",
+      "page": 60,
+      "crop": [
+        130,
+        160,
+        730,
+        400
+      ],
+      "scale": 1.5,
+      "figure": "/home/edward/mygithub/rhwp/output/issue9104/figures/handbook-hwpx-60-direct-review.png",
+      "figure_sha256": "068f8d6c52b4f13caaa910fd6644d042a4b15e24a7b71960010ef4931444ab17",
+      "sources": [
+        {
+          "role": "PDF",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwpx/handbook-hwpx/pdf_png/pdf-060.png",
+          "sha256": "d7d8818b03e04b1bad852a65e5963410cdfb2b8a52bca4a7e528361d070305c9"
+        },
+        {
+          "role": "Native",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwpx/handbook-hwpx/rhwp_png/rhwp_060.png",
+          "sha256": "aa4c89e8c95a018bbbb6194beb98951536d4129251a81b451eec85ee12294b15"
+        },
+        {
+          "role": "WASM",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-wasm-qualified/handbook-hwpx/handbook-hwpx/rhwp_png/rhwp_060.png",
+          "sha256": "1c47ca6afab8995f739cdd0195e893b3cf4fcd4a8084a3e9add8ea7c12401965"
+        }
+      ]
+    },
+    {
+      "key": "handbook-hwpx",
+      "page": 63,
+      "crop": [
+        130,
+        140,
+        730,
+        460
+      ],
+      "scale": 1.5,
+      "figure": "/home/edward/mygithub/rhwp/output/issue9104/figures/handbook-hwpx-63-direct-review.png",
+      "figure_sha256": "021f5f1507735c758a3459bcf705c8e89907abf2b121e473bbf1e12e1e64b004",
+      "sources": [
+        {
+          "role": "PDF",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwpx/handbook-hwpx/pdf_png/pdf-063.png",
+          "sha256": "2132498c7f0414a7d101586eb46f50c48899acbd40e60f99e25076af066f271f"
+        },
+        {
+          "role": "Native",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-native-qualified/handbook-hwpx/handbook-hwpx/rhwp_png/rhwp_063.png",
+          "sha256": "5f83f424c3b0c451fc03c6d01fbde3d225939444e8a9c772279fb06e376e0988"
+        },
+        {
+          "role": "WASM",
+          "path": "/home/edward/mygithub/rhwp/output/issue9104/protected/candidate-wasm-qualified/handbook-hwpx/handbook-hwpx/rhwp_png/rhwp_063.png",
+          "sha256": "184cd15cdb8c2e5cd8c6877f3a74ef258786a58d6d3ad522db20457997abcb4b"
+        }
+      ]
+    }
+  ],
+  "extra_figures": [
+    "nested10-direct-review.png",
+    "figures/handbook60-ink-detail.png",
+    "figures/handbook60-base-candidate.png",
+    "figures/handbook60-changed-body-detail.png"
+  ]
+}

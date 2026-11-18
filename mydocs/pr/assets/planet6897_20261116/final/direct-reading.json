@@ -1,0 +1,19 @@
+{
+  "status": "completed_scoped_representative_review",
+  "at": "2026-11-16T13:29:44.481984+00:00",
+  "main_raw_images": 16,
+  "raw_identity_audit": "main-representative-reuse-audit.json",
+  "claim_findings": {
+    "9078": "Exam form fits one page including last fee row; press release following text follows sole-table stored advance.",
+    "9080": "Map, bird and three caption lines preserve side ownership without overlap; following source images and text remain.",
+    "9086": "SQUEEZE items remain one line in declared cells, including numbered prefixes also present in Print; table fits one page.",
+    "9098": "Latin and numerals preserve Type3 widths; missing-metric CJK advances restored to full em; CJK substitutions and page4 glyph differences remain explicitly below100%, not hidden."
+  },
+  "protected_findings": {
+    "sample10_p1": "Linked Oracle/server/illustration images appear, title and footer ownership preserved; minor raster differences remain.",
+    "handbook_hwpx_p130": "Body, WMF panel, labels and footer remain with known minor raster differences, no new content shift.",
+    "issue7905_p1": "QR, title, numbered paragraphs and footer remain; software-browser result uses same base/head condition.",
+    "nested_p5": "H2GTRM original TTF is consumed, two ※ markers and following paragraphs preserve source ownership."
+  },
+  "actual_scope": "Seven representative pages in screen/print with three actual backends; no claim of whole-document Studio parity. All 42 selected consumers are available in actual/; cross-backend pixel parity is separately reported and not PASS."
+}

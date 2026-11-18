@@ -20,9 +20,9 @@ dependencies = [
 
 [[package]]
 name = "aes"
-version = "0.9.3"
+version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "35f0f96ce78e38c3dc6d8948aa8163d06385be74000f3c7a95bf1eef35d3ea32"
+checksum = "fc0fc36d7440d015b45468ba08a21e80e056ebbd014c611c6298bb7503e04bd1"
 dependencies = [
  "cipher",
  "cpubits",
@@ -289,7 +289,7 @@ dependencies = [
  "arrayvec",
  "cc",
  "cfg-if",
- "constant_time_eq",
+ "constant_time_eq 0.4.2",
  "cpufeatures",
 ]
 
@@ -451,9 +451,9 @@ dependencies = [
 
 [[package]]
 name = "cfb"
-version = "0.15.0"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f13298d9178622b7916ec5d01d470425c04273c8ed07e87b1c38b34c4f4612b"
+checksum = "fef29b910ef2b9dbecc60168d1568d643c633b0518af970c17e83bd5f6e2c94f"
 dependencies = [
  "fnv",
  "uuid",
@@ -621,6 +621,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3d52eff69cd5e647efe296129160853a42795992097e8af39800e1060caeea9b"
 
 [[package]]
+name = "constant_time_eq"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9eb6feb175df65d0a3ccd3e73484e940d0ac664e8034f0519fd49a93db3071d9"
+dependencies = [
+ "rustversion",
+]
+
+[[package]]
 name = "core-foundation-sys"
 version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -658,9 +667,9 @@ dependencies = [
 
 [[package]]
 name = "crc32fast"
-version = "1.5.3"
+version = "1.5.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0ba106e844045ddc02c20768ac4b0b7cb45f2cc2ecbd833ac9f5dacb183c2055"
+checksum = "2b929dd2a135771f40afabd1073f85eed59c800b7c61901e5c254270497dad64"
 dependencies = [
  "cfg-if",
 ]
@@ -708,9 +717,9 @@ dependencies = [
 
 [[package]]
 name = "ctutils"
-version = "0.4.2"
+version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d5515a3834141de9eafb9717ad39eea8247b5674e6066c404e8c4b365d2a29e"
+checksum = "261af4dc7a06ea8a527a8717d8cbba3417530d6ea14e1edb3de6b67806be474f"
 dependencies = [
  "cmov",
 ]
@@ -852,9 +861,9 @@ checksum = "9eb1aa714776b75c7e67e1da744b81a129b3ff919c8712b5e1b32252c1f07cc7"
 
 [[package]]
 name = "encoding_rs"
-version = "0.8.42"
+version = "0.8.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e985e0451871ad22fb8d2b6b076e2028a502a0d3950998c2c5c0a4f9b5d9679"
+checksum = "89253175e704ab869b04f9db224d38630e0211a53841a79181deae0889e169f5"
 dependencies = [
  "cfg-if",
  "core_detect",
@@ -969,9 +978,9 @@ checksum = "d45db016d36b838f563236e9193d0ee6ce38f3f68b6c94e914b4929c96bbb890"
 
 [[package]]
 name = "flate2"
-version = "1.1.10"
+version = "1.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e634e2e0ebac1ee034020da1ca582e17ffe4e0f5e985823721e168928136dcb"
+checksum = "626d4928326b646e70f65ed36fc7cf9f206bdb68a0019ee7c6b4709da4e084c4"
 dependencies = [
  "crc32fast",
  "miniz_oxide 0.9.1",
@@ -1435,9 +1444,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.34"
+version = "0.4.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f9f8bd3e56ce4dfc153cf470fffbfa98c7620958b312ca5c3a4b8d5181fd13c6"
+checksum = "5d15f86d12da44cd8d4ec3c73984537eb7f4cadcb9776a575a0a8a05ca11005c"
 
 [[package]]
 name = "md-5"
@@ -1511,9 +1520,9 @@ dependencies = [
 
 [[package]]
 name = "ml-dsa"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "add6b9d92e496f16f4526d68ff29da1483aba4b119baeab8bed3b9e3544a6f3d"
+checksum = "6f6d49c3f3f0e10e18ca975ffda66f8da0ec36521c1d911adcbc521bf0743f5c"
 dependencies = [
  "crypto-common",
  "ctutils",
@@ -1526,9 +1535,9 @@ dependencies = [
 
 [[package]]
 name = "ml-kem"
-version = "0.3.3"
+version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a9ba01ebcf90f6aff8e9b9f55bb69b19e6250e4ade5787d0040eaa27dd226238"
+checksum = "84ca78b66f46050d49fa21693ae8adab2081d8101b65d8067316b6b70b64a0d1"
 dependencies = [
  "hybrid-array",
  "kem",
@@ -1541,9 +1550,9 @@ dependencies = [
 
 [[package]]
 name = "module-lattice"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c61b87c9683ab7cb1c6871d261ad5479b6b10ceb52c4352aaca3b5d35a8febe"
+checksum = "c4a1e412c8ee83a1c678f427806219c49c96b2511b9f07497514f0e43fb26155"
 dependencies = [
  "ctutils",
  "hybrid-array",
@@ -2077,9 +2086,9 @@ dependencies = [
 
 [[package]]
 name = "read-fonts"
-version = "0.46.0"
+version = "0.47.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdaa4fffe9ff3ca2c353fa9729792805b9b3e324695ff5a081f860612e81b330"
+checksum = "a39d2f8f681030a7bcbbcf3e8568775ac2393afd51401a2e2133ee89e3953897"
 dependencies = [
  "bytemuck",
  "foldhash",
@@ -2166,7 +2175,7 @@ dependencies = [
  "log",
  "pico-args",
  "rgb",
- "svgtypes 0.16.1",
+ "svgtypes 0.16.2",
  "tiny-skia 0.12.0",
  "usvg 0.47.0",
  "zune-jpeg 0.5.15",
@@ -2183,7 +2192,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "aes",
  "argon2",
@@ -2220,8 +2229,9 @@ dependencies = [
  "proptest",
  "quick-xml 0.42.0",
  "rand_core",
- "read-fonts 0.46.0",
+ "read-fonts 0.47.0",
  "resvg 0.47.0",
+ "rhwp-codec-resource",
  "rhwp-contracts",
  "rhwp-jpeg-encoder",
  "rhwp-ooxml-chart",
@@ -2240,7 +2250,7 @@ dependencies = [
  "snafu",
  "strum",
  "subsecond",
- "svgtypes 0.16.1",
+ "svgtypes 0.16.2",
  "tiny-skia 0.12.0",
  "ttf-parser",
  "unicode-bidi",
@@ -2256,12 +2266,12 @@ dependencies = [
  "windows",
  "wuff",
  "zeroize",
- "zip 9.1.3",
+ "zip 9.5.1",
 ]
 
 [[package]]
 name = "rhwp-codec-resource"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "rhwp-contracts"
@@ -2272,14 +2282,14 @@ dependencies = [
 
 [[package]]
 name = "rhwp-hayro-ccitt"
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
 ]
 
 [[package]]
 name = "rhwp-hayro-jbig2"
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
  "rhwp-hayro-ccitt",
@@ -2287,7 +2297,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp-hayro-jpeg2000"
-version = "0.4.0-rhwp.1"
+version = "0.4.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
 ]
@@ -2308,13 +2318,14 @@ name = "rhwp-native-ffi"
 version = "0.1.0"
 dependencies = [
  "rhwp",
+ "rhwp-codec-resource",
  "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "rhwp-ooxml-chart"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "quick-xml 0.42.0",
 ]
@@ -2336,12 +2347,12 @@ dependencies = [
  "roxmltree 0.21.2",
  "sha1",
  "sha2",
- "zip 9.1.3",
+ "zip 9.5.1",
 ]
 
 [[package]]
 name = "rhwp-pdf-import-backend"
-version = "0.3.78-rhwp.1"
+version = "0.3.78-rhwp.2"
 dependencies = [
  "aes",
  "base64 0.23.1",
@@ -2395,7 +2406,7 @@ dependencies = [
 
 [[package]]
 name = "rhwp-qcms"
-version = "0.3.0-rhwp.1"
+version = "0.3.0-rhwp.2"
 dependencies = [
  "rhwp-codec-resource",
 ]
@@ -2736,23 +2747,23 @@ checksum = "8ee5873ec9cce0195efcb7a4e9507a04cd49aec9c83d0389df45b1ef7ba2e649"
 
 [[package]]
 name = "skera"
-version = "0.9.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1304685b8b275337200c0c138d8ca1b0b19be6185e4eb4013aebc9a1c270d761"
+checksum = "02fa4a4dc04b2d2326e4cfdcf890234a58419d00953e512fbf2823d33965d26b"
 dependencies = [
  "foldhash",
  "hashbrown",
- "read-fonts 0.46.0",
- "skrifa 0.49.0",
+ "read-fonts 0.47.0",
+ "skrifa 0.50.0",
  "thiserror",
- "write-fonts 0.55.0",
+ "write-fonts 0.56.0",
 ]
 
 [[package]]
 name = "skia-bindings"
-version = "0.156.0"
+version = "0.157.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fdac65e59d2ee3d2307397cc0a6a5156e4364debf3db465af1a8fd8252781f1"
+checksum = "3930c7f5e8d813364d74c3b17b227f3bb3a84504f93bb1f8c222d8fd5a7d9c6f"
 dependencies = [
  "bindgen",
  "cc",
@@ -2767,9 +2778,9 @@ dependencies = [
 
 [[package]]
 name = "skia-safe"
-version = "0.156.0"
+version = "0.157.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38c60bc899f4b9e23eba0223187ff572b25d26155d0176b26e9b3a743f1e75b1"
+checksum = "dc1c946dbc1a10b6b1ace7e368ea71f96c81448bbf55effcad0a9a3a392358eb"
 dependencies = [
  "bitflags 2.13.1",
  "skia-bindings",
@@ -2788,13 +2799,13 @@ dependencies = [
 
 [[package]]
 name = "skrifa"
-version = "0.49.0"
+version = "0.50.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7459fb60888ad9a5f367dd293fa2fb9df142cb451aa6bfd6cd66a7d6a9b739d"
+checksum = "e85ba678a6023a063d0a78c8770f1c166674ef46af13523d05eff67430f79dfe"
 dependencies = [
  "bytemuck",
  "once_cell",
- "read-fonts 0.46.0",
+ "read-fonts 0.47.0",
  "smallvec",
  "yoke",
 ]
@@ -2968,9 +2979,9 @@ dependencies = [
 
 [[package]]
 name = "svgtypes"
-version = "0.16.1"
+version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "695b5790b3131dafa99b3bbfd25a216edb3d216dad9ca208d4657bfb8f2abc3d"
+checksum = "9f12b12995e3638c70618c1facb1ce65302f6a6f706b675f07c58a5d7391120e"
 dependencies = [
  "kurbo 0.13.1",
  "siphasher",
@@ -3277,9 +3288,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-properties"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7df058c713841ad818f1dc5d3fd88063241cc61f49f5fbea4b951e8cf5a8d71d"
+checksum = "993ad287eb20e8ba755312801cfe1413e0f25d604075863acaddca10b04c1833"
 
 [[package]]
 name = "unicode-script"
@@ -3323,9 +3334,9 @@ checksum = "8ecb6da28b8a351d773b68d5825ac39017e680750f980f3a1a85cd8dd28a47c1"
 
 [[package]]
 name = "ureq"
-version = "3.4.0"
+version = "3.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "972d7902c8735f2695410b8aed7df6ed12a47394aa1c8d7af49f0497b731a94d"
+checksum = "3ac5cecf619ca81f66a96482db09687c9f7465af65f4300a8c30cca05bd5a59d"
 dependencies = [
  "base64 0.23.1",
  "flate2",
@@ -3340,9 +3351,9 @@ dependencies = [
 
 [[package]]
 name = "ureq-proto"
-version = "0.6.5"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "841583fc36089d7d59419568ae157f43a5a03a2e5a81ba87c77d1596ef46e922"
+checksum = "622dce33c252115466d83f63e9744a18f12b4406aae51a01c15ad8fcf1185eb3"
 dependencies = [
  "base64 0.23.1",
  "http",
@@ -3396,7 +3407,7 @@ dependencies = [
  "simplecss",
  "siphasher",
  "strict-num",
- "svgtypes 0.16.1",
+ "svgtypes 0.16.2",
  "tiny-skia-path 0.12.0",
  "ttf-parser",
  "unicode-bidi",
@@ -3838,13 +3849,13 @@ dependencies = [
 
 [[package]]
 name = "write-fonts"
-version = "0.55.0"
+version = "0.56.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3e91ad74b39f48f456560ed1ccc75959efa19bf6f0817d1560751bb49db84f6c"
+checksum = "944049531d52f9002812ea9de23ec8aa4e9577a7bee6869a1d0f297c679817ea"
 dependencies = [
  "font-types 0.12.7",
  "log",
- "read-fonts 0.46.0",
+ "read-fonts 0.47.0",
 ]
 
 [[package]]
@@ -3952,6 +3963,20 @@ name = "zeroize"
 version = "1.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e13084392c5e4bc371903e2935a5eaeed24905a7511356b883835e18a78f6879"
+dependencies = [
+ "zeroize_derive",
+]
+
+[[package]]
+name = "zeroize_derive"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3c50655cbb0fe3fc43170059e702f1ce5e19b84cec58dc87b037a09935c2f328"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.119",
+]
 
 [[package]]
 name = "zip"
@@ -3969,18 +3994,21 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "9.1.3"
+version = "9.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1156b39d142a34b999c2310a50455e0cb3760bf7efad0122f796d813bee26ccb"
+checksum = "e3476fd497ac8af5b1ec7b51acab7bef380f7e8dd8e0487595bafd839417a302"
 dependencies = [
+ "constant_time_eq 0.6.1",
  "crc32fast",
  "flate2",
  "getrandom 0.4.3",
  "indexmap",
+ "libc",
  "memchr",
  "nix",
  "typed-path 0.13.0",
  "windows-sys 0.61.2",
+ "zeroize",
  "zopfli",
 ]
 

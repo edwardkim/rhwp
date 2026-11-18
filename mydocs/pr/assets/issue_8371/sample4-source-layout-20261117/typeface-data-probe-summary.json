@@ -1,0 +1,50 @@
+{
+  "role": "Historical standalone Windows Skia API diagnostic; final-head validation is recorded separately",
+  "rawLogSha256": "92314b57af91d24e8f3cba4be16bbc2cabb7992769e969a9aee8e0f1893c6d93",
+  "observations": [
+    {
+      "label": "HBATANG.TTF",
+      "family": "Haansoft Batang",
+      "glyph": 60425,
+      "hasOutlinePath": false,
+      "existingDataAvailable": false,
+      "copiedBytes": 32361044,
+      "copiedFaceIndex": 0,
+      "copiedGlyph": 60425,
+      "copiedGlyphBounds": "None"
+    },
+    {
+      "label": "system",
+      "family": "Haansoft Batang",
+      "glyph": 60425,
+      "hasOutlinePath": false,
+      "existingDataAvailable": false,
+      "copiedBytes": 32361044,
+      "copiedFaceIndex": 0,
+      "copiedGlyph": 60425,
+      "copiedGlyphBounds": "None"
+    },
+    {
+      "label": "HANBatang.ttf",
+      "family": "HCR Batang",
+      "glyph": 7661,
+      "hasOutlinePath": true,
+      "existingDataAvailable": false,
+      "copiedBytes": 28412796,
+      "copiedFaceIndex": 0,
+      "copiedGlyph": 7661,
+      "copiedGlyphBounds": "Some(Rect { x_min: 266, y_min: 126, x_max: 704, y_max: 564 })"
+    },
+    {
+      "label": "system",
+      "family": "HCR Batang",
+      "glyph": 7661,
+      "hasOutlinePath": true,
+      "existingDataAvailable": false,
+      "copiedBytes": 28412796,
+      "copiedFaceIndex": 0,
+      "copiedGlyph": 7661,
+      "copiedGlyphBounds": "Some(Rect { x_min: 266, y_min: 126, x_max: 704, y_max: 564 })"
+    }
+  ]
+}

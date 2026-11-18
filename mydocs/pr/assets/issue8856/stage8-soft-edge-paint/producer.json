@@ -1,0 +1,14 @@
+{
+  "time": "2026-11-10T04:53:53.620998+09:00",
+  "local_head": "17800f1496791eae81413d380c5c4b8407e78e1d",
+  "host": "win10-ted",
+  "shell": "PowerShell -NoProfile",
+  "remote_worktree": "clean devel before probe; source files unchanged",
+  "scope": "independent GDI+ blur contract only; not Hancom internal API proof or Mac regression pass",
+  "sources": {
+    "probe.ps1": "b53a2fcbc3b6e733644a9e6217395ce352f7989cff8d9a329bf8c474f9f8c717",
+    "probe-fractional.ps1": "f5bb40b4652effd086759cccda88da3727aeea103f839030d7ad40c11cd9063e",
+    "probe-gray.ps1": "2b75530f38501db0a6747cf36fb194887d8192bc5399dc55cec722c4db88388e",
+    "probe-radii.ps1": "aadbd1666144fada6da959ad314427baafc6b03c5213e620e81d22621ad0e632"
+  }
+}

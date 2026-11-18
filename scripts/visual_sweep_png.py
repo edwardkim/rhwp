@@ -172,6 +172,10 @@ def cached_font_faces(vs, directory: Path, source: Path, digest: str):
                     or not valid_font_repairs(entry.get('repairs'))):
                 return None
             aliases = entry.get('postScriptNames')
+            if isinstance(aliases, list) and any(
+                    name.strip() != name for name in names if name not in aliases):
+                # family 이름을 정규화하기 전에 만든 캐시다(#8612).
+                return None
             if (not isinstance(aliases, list)
                     or any(not isinstance(name, str) or not name or name not in names for name in aliases)
                     or entry.get('primaryFamily') not in names):
@@ -228,7 +232,7 @@ def font_source_files(directory: Path):
 def valid_font_repairs(repairs) -> bool:
     """공급본에 허용한 수정만 캐시에서 수용한다. 다른 손상은 숨기지 않는다."""
     allowed = {'cmap-format4-terminal-notdef', 'drop-embedded-bitmap-strikes',
-               'post-format2-glyph-count',
+               'post-format2-glyph-count', 'post-format2-unused-strings',
                'woff-to-sfnt', 'woff2-to-sfnt'} | {f'empty-vtt-source-table:TSI{i}' for i in range(6)}
     return (isinstance(repairs, list) and all(isinstance(value, str) for value in repairs)
             and len(repairs) == len(set(repairs)) and set(repairs) <= allowed)
@@ -285,7 +289,11 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     terminal_cmap = repair_terminal_cmap(length_cmap or raw_cmap, font['maxp'].numGlyphs) if raw_cmap is not None else None
                     repaired_cmap = terminal_cmap or length_cmap
                     repaired_maxp = repair_true_type_zone_count(font.reader['maxp']) if 'maxp' in font and 'glyf' in font else None
-                    repaired_post = repair_post_format2_glyph_count(font)
+                    repaired_post_count = repair_post_format2_glyph_count(font)
+                    repaired_post_unused = repair_post_format2_unused_strings(
+                        repaired_post_count or font.reader['post'], font['maxp'].numGlyphs
+                    ) if 'post' in font else None
+                    repaired_post = repaired_post_unused or repaired_post_count
                     vtt_tables = empty_vtt_tables(font)
                     dropped = embedded_bitmap_strike_tags(font.reader.keys())
                     excluded_tables = sorted(set(vtt_tables) | dropped)
@@ -304,7 +312,8 @@ def font_catalog(vs, root: Path, font_paths, base: Path) -> Path:
                     misaligned_sfnt = font.flavor is None and any(
                         table.offset % 4 for table in font.reader.tables.values())
                     repairs += ['sfnt-table-alignment'] if misaligned_sfnt else []
-                    repairs += ['post-format2-glyph-count'] if repaired_post is not None else []
+                    repairs += ['post-format2-glyph-count'] if repaired_post_count is not None else []
+                    repairs += ['post-format2-unused-strings'] if repaired_post_unused is not None else []
                     if collection or repaired_cmap is not None or excluded_tables or misaligned_sfnt or repaired_maxp is not None or repaired_post is not None or web_font:
                         resource_dir.mkdir(parents=True, exist_ok=True)
                         path = resource_dir / f'{digest}-{index}.ttf'
@@ -360,6 +369,9 @@ def font_family_names(font) -> tuple[list[str], list[dict]]:
                            'rawSha256': hashlib.sha256(entry.string).hexdigest(),
                            'reason': str(error)})
         else:
+            # Native 카탈로그(`TypefaceCatalog::insert_face`)는 family 이름의 앞뒤 공백을
+            # 지우고 조회한다. 같은 이름으로 공급해야 WASM 글꼴 환경이 거부하지 않는다(#8612).
+            value = value.strip()
             if value:
                 names.add(value)
     if errors and not names:
@@ -383,6 +395,10 @@ def font_program_identity(font) -> tuple[dict, list[dict]]:
                                'rawSha256': hashlib.sha256(entry.string).hexdigest(),
                                'reason': str(error)})
             continue
+        if entry.nameID == 1:
+            # 위 font_family_names 와 같은 Native family 정규화(#8612). PostScript 이름은
+            # Native 도 정확히 일치할 때만 찾으므로 바꾸지 않는다.
+            value = value.strip()
         if not value:
             continue
         if entry.nameID == 6:
@@ -413,6 +429,30 @@ def write_font_face(font, path: Path, repaired_cmap: bytes | None, excluded_tabl
             else:
                 writer[tag] = font.reader[tag]
         writer.close()
+
+
+def repair_post_format2_unused_strings(data: bytes, glyph_count: int) -> bytes | None:
+    """모든 글리프가 참조한 이름은 보존하고 참조 밖의 이름 저장소만 제거한다.
+
+    일부 원본은 필요한 Pascal 문자열 뒤에 잘린 문자열을 남긴다. Native가 읽는
+    윤곽·문자맵·폭과 무관하지만 Chrome OTS는 그 꼬리 때문에 글꼴 전체를 거부한다.
+    참조된 문자열 자체가 잘렸으면 이름을 추측하거나 복구하지 않는다.
+    """
+    if len(data) < 34 or data[:4] != b'\x00\x02\x00\x00':
+        return None
+    count = int.from_bytes(data[32:34], 'big')
+    end = 34 + count * 2
+    if count != glyph_count or end > len(data):
+        return None
+    indices = struct.unpack_from(f'>{count}H', data, 34) if count else ()
+    custom_count = max(0, max(indices, default=0) - 257)
+    for _ in range(custom_count):
+        if end >= len(data):
+            return None
+        end += 1 + data[end]
+        if end > len(data):
+            return None
+    return data[:end] if end < len(data) else None
 
 
 def repair_post_format2_glyph_count(font) -> bytes | None:

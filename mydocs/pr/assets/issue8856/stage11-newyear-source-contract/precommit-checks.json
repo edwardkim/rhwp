@@ -1,0 +1,36 @@
+[
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "projection",
+    "command": [
+      "node",
+      "scripts/font_rule_projection_gen.mjs",
+      "check"
+    ],
+    "exit": 0,
+    "log_sha256": "bbd3c6a37fffe86beb712d80ceadab826f6a84ccfcc781ddaaa17bd847e13b55"
+  },
+  {
+    "name": "manifest",
+    "command": [
+      "node",
+      "scripts/rust-test-suite-manifest.mjs",
+      "--check",
+      "--base-ref",
+      "b5064fae1eefff92d60464c51844a38debec09f9"
+    ],
+    "exit": 0,
+    "log_sha256": "091e4f20e56d09438f6fb7cc19b99729865af47336b89176bdbe96d19269fc14"
+  }
+]

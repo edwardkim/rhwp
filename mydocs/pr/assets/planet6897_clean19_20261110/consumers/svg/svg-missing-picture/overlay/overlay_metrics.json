@@ -1,0 +1,61 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "average_silhouette_raw_match_percent": 100.0,
+    "worst_silhouette_raw_match_percent": 100.0,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 97.94874,
+    "worst_pixel_match_percent": 97.94874,
+    "average_ink_match_percent": 52.75961,
+    "worst_ink_match_percent": 52.75961,
+    "average_visual_accuracy_proxy_percent": 52.75961,
+    "worst_visual_accuracy_proxy_percent": 52.75961,
+    "average_tolerant_content_match_percent": 100.0,
+    "worst_tolerant_content_match_percent": 100.0,
+    "worst_pages": [
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons/svg-missing-picture/rhwp_png/rhwp_001.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/added-v5-consumer-comparisons/svg-missing-picture/pdf_png/pdf-001.png",
+      "overlay_png": "/Users/tsjang/rhwp/mydocs/pr/assets/planet6897_clean19_20261110/consumers/svg/svg-missing-picture/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1122,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 890868,
+      "diff_pixels": 18274,
+      "diff_ratio": 0.02051258,
+      "pixel_match_percent": 97.94874,
+      "ink_union_pixels": 38683,
+      "ink_diff_pixels": 18274,
+      "ink_diff_ratio": 0.4724039,
+      "ink_match_percent": 52.75961,
+      "visual_accuracy_proxy_percent": 52.75961,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 38683,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 1.856,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        74,
+        102,
+        708,
+        969
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "file": ".github/workflows/layout-anomaly-advisory.yml",
+    "only_action_sha_changed": true,
+    "info": "Existing single-quoted echo deliberately prints Markdown backticks literally; unchanged script, not an expansion defect."
+  },
+  {
+    "file": ".github/workflows/oracle-public-advisory.yml",
+    "only_action_sha_changed": true,
+    "info": "Existing single-quoted echo deliberately prints Markdown backticks literally; unchanged script, not an expansion defect."
+  }
+]

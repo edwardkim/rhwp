@@ -39,7 +39,8 @@ jobs:
     name: adapter inter-diff preflight
     runs-on: ubuntu-latest
     needs: [trusted_postmerge_reuse]
-    timeout-minutes: 3
+    # 전체 이력 checkout도 포함한 상한이다. 느린 fetch가 본 검증까지 취소하지 않게 한다.
+    timeout-minutes: 10
     outputs:
       adapter_required: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'false' || steps.finalize.outputs.adapter_required || 'true' }}
       reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
@@ -78,6 +79,12 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
+              if (isAdapterExecutionPath(filename)
+                || isSuiteManifestPath(filename)
+                || isAdapterExecutionPath(file.previous_filename || '')
+                || isSuiteManifestPath(file.previous_filename || '')) {
+                return false;
+              }
               if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
                 return !file.previous_filename
                   && (file.status === 'added' || file.status === 'modified');
@@ -126,8 +133,42 @@ jobs:
               return filename === '.github/workflows/adapter-diff.yml'
                 || filename === 'scripts/run-adapter-diff.mjs'
                 || filename === 'scripts/tests/run-adapter-diff.test.mjs'
-                || filename === 'scripts/rust-test-suite-manifest.mjs'
                 || filename.startsWith('tools/adapter_diff/');
+            }
+
+            function isSuiteManifestPath(filename) {
+              return filename === 'scripts/rust-test-suite-manifest.mjs';
+            }
+
+            // 목록 변경도 코드다. workflow 녹색만으로 skip된 worker를 검증 증거로 삼지 않는다.
+            async function candidateWorkerState(run, workerName) {
+              if (!Number.isSafeInteger(run.id) || run.id <= 0
+                || !Number.isSafeInteger(run.run_attempt) || run.run_attempt <= 0) {
+                return 'unavailable';
+              }
+              let jobs;
+              try {
+                jobs = await github.paginate(github.rest.actions.listJobsForWorkflowRun, {
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  run_id: run.id,
+                  filter: 'latest',
+                  per_page: 100,
+                });
+              } catch (error) {
+                core.warning('candidate worker evidence unavailable');
+                return 'unavailable';
+              }
+              const workers = jobs.filter((job) => job.name === workerName);
+              if (workers.length !== 1) return 'unavailable';
+              const job = workers[0];
+              if (job.run_id !== run.id || job.run_attempt !== run.run_attempt
+                || job.head_sha !== run.head_sha || job.status !== 'completed') {
+                return 'unavailable';
+              }
+              if (job.conclusion === 'success') return 'success';
+              // 문서 후보의 skip은 더 앞선 실제 성공을 찾게 한다. 실패·불명은 재사용하지 않는다.
+              return job.conclusion === 'skipped' ? 'skipped' : 'unavailable';
             }
 
             const files = await github.paginate(github.rest.pulls.listFiles, {
@@ -136,6 +177,14 @@ jobs:
               pull_number: pr.number,
               per_page: 100,
             });
+            // REST 목록은 최대 3,000개이므로 전체 변경 수와 맞을 때만 좁게 판정한다.
+            const expectedPrFileCount = pr.changed_files;
+            if (!Number.isSafeInteger(expectedPrFileCount)
+              || expectedPrFileCount < 0
+              || files.length !== expectedPrFileCount) {
+              setResult(true, 'pull-file-list-incomplete');
+              return;
+            }
             if (files.length > 0 && files.every((file) => isAllowedReviewPath(file))) {
               setResult(false, 'skip-review-only-pr');
               return;
@@ -143,10 +192,14 @@ jobs:
             if (files.some((file) => (
               isAdapterExecutionPath(file.filename)
               || isAdapterExecutionPath(file.previous_filename || '')
+              || isSuiteManifestPath(file.previous_filename || '')
             ))) {
               setResult(true, 'adapter-execution-surface-change');
               return;
             }
+
+            // 이미 검증된 테스트 목록 입력만 별도 증거로 재사용한다. 실행 정의 가드는 유지한다.
+            const requiresWorkerEvidence = files.some((file) => isSuiteManifestPath(file.filename));
 
             const commits = await github.paginate(github.rest.pulls.listCommits, {
               owner: context.repo.owner,
@@ -261,6 +314,17 @@ jobs:
                 setResult(true, 'review-tail-candidate-run-unavailable');
                 return;
               }
+              if (requiresWorkerEvidence) {
+                const state = await candidateWorkerState(latestCandidateRun, 'adapter inter-diff');
+                if (state === 'skipped') {
+                  core.info(`candidate worker skipped; searching earlier success: ${candidateSha}`);
+                  continue;
+                }
+                if (state !== 'success') {
+                  setResult(true, 'review-tail-candidate-worker-unavailable');
+                  return;
+                }
+              }
               if (baseMergeBridge && !candidatesContainingBase.has(candidateSha)) {
                 setPendingBaseMergeResult(
                   `adapter-run-green:${latestCandidateRun.conclusion}`,
@@ -281,6 +345,8 @@ jobs:
       - name: Check out current-base merge tree inputs
         id: checkout-base-merge-tree
         if: ${{ steps.classify.outputs.adapter_required == 'pending-base-merge-tree' }}
+        # 전체 10분 중 판정·실패 시 full fallback·정리용 시간을 2분 남긴다.
+        timeout-minutes: 8
         continue-on-error: true
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -369,7 +435,7 @@ jobs:
 
   adapter-diff:
     name: adapter inter-diff
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     needs: adapter-impact
     if: ${{ always() && needs.adapter-impact.result == 'success' && needs.adapter-impact.outputs.adapter_required == 'true' }}
@@ -382,9 +448,9 @@ jobs:
           toolchain: 1.93.1
 
       - name: Rust build cache
-        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
+        uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
-          shared-key: adapter-diff
+          shared-key: ubuntu-24.04-adapter-diff
           save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
 
       - name: Check adapter-diff runner contract

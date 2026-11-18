@@ -1,0 +1,148 @@
+{
+  "created_at": "2026-11-16T14:45:42.495400+09:00",
+  "validation_base": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+  "current_devel": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+  "candidate_head": "1541fd6b2b7a306fea4d418e4d2ba4d4dbd3d291",
+  "merge_simulation_exit": 0,
+  "merge_tree": "2266384b2938d997ea1c323ccfbec849ae1d3f72",
+  "incoming_product_paths": [
+    "src/renderer/layout/shape_layout.rs",
+    "src/serializer/body_text.rs"
+  ],
+  "predicate_source": "hidden_guide_object_rows_need_reflow: text empty && stored_rows_include_hidden_guide && treat_as_char object; scanned textboxes in all owned nested trees and master pages",
+  "audit_source_sha256": "ca4ad39c10a9e78102c2b8e60d8ea8ad177e9b87d1788ee2c69c5e0cf365f09a",
+  "source": "use rhwp::{DocumentCore, model::{paragraph::Paragraph, control::Control, shape::ShapeObject}};\n#[derive(Default)]struct Counts{paras:usize,textboxes:usize,matches:usize}\nfn shape(s:&ShapeObject,n:&mut Counts){\n if let Some(d)=s.drawing(){\n  if let Some(tb)=&d.text_box{n.textboxes+=1;for p in &tb.paragraphs{if p.text.is_empty()&&p.stored_rows_include_hidden_guide()&&p.controls.iter().any(Control::is_treat_as_char_object){n.matches+=1;}}visit(&tb.paragraphs,n);}\n  if let Some(c)=&d.caption{visit(&c.paragraphs,n);}\n }\n if let ShapeObject::Group(g)=s{if let Some(c)=&g.caption{visit(&c.paragraphs,n);}for c in &g.children{shape(c,n);}}\n if let ShapeObject::Picture(p)=s{if let Some(c)=&p.caption{visit(&c.paragraphs,n);}}\n}\nfn visit(ps:&[Paragraph],n:&mut Counts){for p in ps{n.paras+=1;for c in &p.controls{match c{\n Control::Table(t)=>{for c in &t.cells{visit(&c.paragraphs,n);}if let Some(c)=&t.caption{visit(&c.paragraphs,n);}},\n Control::Shape(s)=>shape(s,n),Control::Picture(p)=>if let Some(c)=&p.caption{visit(&c.paragraphs,n);},\n Control::Header(h)=>visit(&h.paragraphs,n),Control::Footer(h)=>visit(&h.paragraphs,n),Control::Footnote(h)=>visit(&h.paragraphs,n),Control::Endnote(h)=>visit(&h.paragraphs,n),Control::HiddenComment(h)=>visit(&h.paragraphs,n),Control::Field(f)=>visit(&f.memo_paragraphs,n),_=>{}\n }}}}\nfn main(){for path in std::env::args().skip(1){let bytes=std::fs::read(&path).unwrap();let doc=DocumentCore::from_bytes(&bytes).unwrap();let mut n=Counts::default();for s in &doc.document().sections{visit(&s.paragraphs,&mut n);for m in &s.section_def.master_pages{visit(&m.paragraphs,&mut n);}}println!(\"{}\\t{}\\t{}\\t{}\",path,n.paras,n.textboxes,n.matches);}}\n",
+  "audit_exit": 0,
+  "datasets": [
+    {
+      "input": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "paragraphs": "894",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "paragraphs": "3",
+      "textboxes": "1",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/2025 행정업무운영 편람(최종).hwp",
+      "paragraphs": "10514",
+      "textboxes": "179",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "paragraphs": "5",
+      "textboxes": "1",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/hwp3-sample16-hwp5.hwpx",
+      "paragraphs": "4282",
+      "textboxes": "10",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "paragraphs": "4282",
+      "textboxes": "10",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "paragraphs": "1",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "paragraphs": "1",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "paragraphs": "203",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/pr8040/exam-social-insert.hwp",
+      "paragraphs": "574",
+      "textboxes": "4",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "paragraphs": "552",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "paragraphs": "4282",
+      "textboxes": "10",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "paragraphs": "10514",
+      "textboxes": "179",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "paragraphs": "166",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/hwp3-sample10.hwp",
+      "paragraphs": "26939",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/pr8040/exam-social-insert-delete.hwp",
+      "paragraphs": "574",
+      "textboxes": "4",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "paragraphs": "2",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "paragraphs": "1",
+      "textboxes": "0",
+      "new_predicate_matches": "0"
+    }
+  ],
+  "serializer_not_used_by_print_capture": true,
+  "baseline_files_changed": [],
+  "decision": "자동 병합 충돌 없음·정본 기준 변경 없음·새 조판 분기의 보호18종 해당 문단0. 지침에 따라 단순 devel 전진만으로 반복 리베이스하지 않고 검증된 source/producer를 유지. PR 직전 head·base·merge simulation 재확인; exact merge CI에서 새 필드 기능의 회귀도 확인. 현행 devel 전체 기능을 후보 자체가 이미 포함한다고 주장하지 않음.",
+  "audit_binary_sha256": "309025aadb01355d6e38cb8c2f702989c8371ff5c23d03dbac6198aaaa860934",
+  "audit_linked_rlib_sha256": "093001681b83ad490207d51ea57e4f1949bc0320f0fe2afd9cc50e8710e07de6",
+  "positive_and_negative_control": [
+    {
+      "upstream_path": "samples/issue9076/textbox_unfilled_field_tac_tables.hwp",
+      "sha256": "cbab3774fedc4d9944cccf6b3e365ed147c8624375f6cffd3f301967f6f6570b",
+      "paragraphs": 33,
+      "textboxes": 1,
+      "new_predicate_matches": 1
+    },
+    {
+      "upstream_path": "samples/issue9076/textbox_unfilled_field_tac_tables_nofield.hwp",
+      "sha256": "055629eea0baa5ffe5090cf682357fc6278b34304c02cd8daefa12bd160099f9",
+      "paragraphs": 33,
+      "textboxes": 1,
+      "new_predicate_matches": 0
+    }
+  ],
+  "audit_program_is_sensitive_to_new_predicate": true
+}

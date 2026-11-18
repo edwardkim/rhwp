@@ -1,0 +1,2110 @@
+key	source_pr	backend	page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhouette_boundary_reconciled_pixels
+pr8691-ai_procurement_appendix	8691	wasm	1	99.99	0	99.99	0
+pr8691-ai_procurement_appendix	8691	wasm	2	99.62	0	99.62	0
+pr8691-ai_procurement_appendix	8691	wasm	3	97.46	0	97.46	0
+pr8691-ai_procurement_appendix	8691	wasm	4	100.00	0	100.00	0
+pr8691-artifact_loan_form	8691	wasm	1	100.00	0	100.00	0
+pr8691-rental_approval_form	8691	wasm	1	100.00	0	100.00	0
+pr8747-156641865_press_release_band	8747	wasm	1	99.99	0	99.99	0
+pr8747-156641865_press_release_band	8747	wasm	2	100.00	0	100.00	0
+pr8747-156713639_press_release_band	8747	wasm	1	100.00	0	100.00	0
+pr8747-156713639_press_release_band	8747	wasm	2	100.00	0	100.00	0
+pr8752-wide_paper_table_two_columns	8752	wasm	1	93.08	0	93.08	0
+pr8752-wide_paper_table_two_columns	8752	wasm	2	100.00	0	100.00	4
+pr8762-36458608-square-tac-same-paragraph	8762	wasm	1	100.00	0	100.00	0
+pr8762-36458608-square-tac-same-paragraph	8762	wasm	2	100.00	0	100.00	0
+pr8762-36458608-square-tac-same-paragraph	8762	wasm	3	98.88	0	98.88	0
+pr8762-36458608-square-tac-same-paragraph	8762	wasm	4	100.00	0	100.00	0
+pr8762-36458608-square-tac-same-paragraph	8762	wasm	5	100.00	0	100.00	0
+pr8762-36458608-square-tac-same-paragraph	8762	wasm	6	100.00	0	100.00	0
+pr8774-4680000-202100038_research_review_request	8774	wasm	1	99.98	0	99.98	4
+pr8774-4680000-202100038_research_review_request	8774	wasm	2	98.53	0	98.53	0
+pr8774-4680000-202100038_research_review_request	8774	wasm	3	100.00	0	100.00	0
+pr8774-4680000-202100038_research_review_request	8774	wasm	4	99.98	0	99.98	0
+pr8774-4680000-202100038_research_review_request	8774	wasm	5	100.00	0	100.00	0
+pr8774-4680000-202100038_research_review_request	8774	wasm	6	99.48	0	99.42	59
+pr8796-successor_flow_axis	8796	wasm	1	100.00	0	100.00	0
+pr8796-successor_flow_axis	8796	wasm	2	100.00	0	100.00	0
+pr8802-first_margin_page_origin	8802	wasm	1	100.00	0	100.00	0
+pr8837-page_float_host_spacing	8837	wasm	1	99.99	0	99.99	0
+pr8847-36414883-negative-tac-line-spacing	8847	wasm	1	100.00	0	100.00	0
+pr8865-missing_picture_print	8865	wasm	1	100.00	0	100.00	0
+pr8865-missing_picture_print	8865	wasm	2	99.84	0	99.84	0
+pr8868-36379333-stored-text-above-offset-float	8868	wasm	1	100.00	0	100.00	0
+pr8868-36379333-stored-text-above-offset-float	8868	wasm	2	99.92	0	99.92	0
+pr8886-36317264_approval	8886	wasm	1	100.00	0	100.00	0
+pr8886-36317264_approval	8886	wasm	2	100.00	0	100.00	0
+pr8886-36317264_approval	8886	wasm	3	100.00	0	100.00	0
+pr8886-36317264_approval	8886	wasm	4	100.00	0	100.00	0
+pr8887-36421178-long-word-first-char	8887	wasm	1	100.00	0	100.00	0
+pr8887-36421178-long-word-first-char	8887	wasm	2	100.00	0	100.00	0
+pr8892-36384898-unstored-next-float-bottom-margin	8892	wasm	1	100.00	0	100.00	0
+pr8892-36384898-unstored-next-float-bottom-margin	8892	wasm	2	100.00	0	100.00	0
+pr8898-36400288_approval	8898	wasm	1	92.78	0	92.78	0
+pr8898-36400288_approval	8898	wasm	2	100.00	0	100.00	0
+pr8911-36376635-synthetic-tail-saved-reset	8911	wasm	1	100.00	0	100.00	0
+pr8911-36376635-synthetic-tail-saved-reset	8911	wasm	2	100.00	0	100.00	0
+pr8911-36376635-synthetic-tail-saved-reset	8911	wasm	3	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	1	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	2	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	3	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	4	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	5	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	6	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	7	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	8	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	9	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	10	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	11	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	12	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	13	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	14	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	15	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	16	95.48	0	95.48	0
+pr8734-sample5	8734	wasm	17	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	18	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	19	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	20	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	21	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	22	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	23	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	24	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	25	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	26	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	27	95.65	0	95.65	0
+pr8734-sample5	8734	wasm	28	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	29	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	30	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	31	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	32	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	33	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	34	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	35	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	36	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	37	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	38	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	39	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	40	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	41	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	42	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	43	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	44	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	45	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	46	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	47	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	48	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	49	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	50	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	51	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	52	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	53	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	54	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	55	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	56	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	57	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	58	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	59	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	60	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	61	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	62	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	63	100.00	0	100.00	0
+pr8734-sample5	8734	wasm	64	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	1	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	2	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	3	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	4	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	5	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	6	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	7	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	8	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	9	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	10	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	11	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	12	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	13	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	14	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	15	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	16	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	17	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	18	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	19	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	20	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	21	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	22	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	23	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	24	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	25	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	26	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	27	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	28	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	29	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	30	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	31	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	32	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	33	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	34	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	35	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	36	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	37	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	38	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	39	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	40	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	41	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	42	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	43	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	44	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	45	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	46	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	47	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	48	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	49	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	50	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	51	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	52	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	53	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	54	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	55	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	56	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	57	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	58	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	59	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	60	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	61	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	62	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	63	100.00	0	100.00	0
+pr8734-sample5-hwp5	8734	wasm	64	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	1	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	2	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	3	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	4	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	5	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	6	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	7	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	8	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	9	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	10	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	11	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	12	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	13	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	14	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	15	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	16	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	17	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	18	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	19	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	20	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	21	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	22	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	23	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	24	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	25	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	26	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	27	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	28	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	29	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	30	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	31	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	32	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	33	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	34	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	35	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	36	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	37	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	38	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	39	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	40	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	41	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	42	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	43	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	44	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	45	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	46	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	47	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	48	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	49	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	50	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	51	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	52	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	53	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	54	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	55	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	56	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	57	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	58	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	59	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	60	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	61	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	62	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	63	100.00	0	100.00	0
+pr8734-sample5-hwpx	8734	wasm	64	100.00	0	100.00	0
+pr8734-square-right	8734	wasm	1	93.02	0	93.02	0
+pr8734-employment	8734	wasm	1	99.28	0	99.28	0
+pr8734-employment	8734	wasm	2	100.00	0	100.00	0
+pr8734-employment	8734	wasm	3	99.97	0	99.97	0
+pr8734-employment	8734	wasm	4	99.32	0	99.32	0
+pr8734-employment	8734	wasm	5	98.89	0	98.89	0
+pr8734-employment	8734	wasm	6	99.38	0	99.38	0
+pr8734-employment	8734	wasm	7	99.41	0	99.41	0
+pr8734-employment	8734	wasm	8	99.85	0	99.85	0
+pr8734-employment	8734	wasm	9	99.99	0	99.99	0
+pr8734-employment	8734	wasm	10	100.00	0	100.00	0
+pr8734-employment	8734	wasm	11	99.89	0	99.89	0
+pr8734-employment	8734	wasm	12	100.00	0	100.00	0
+pr8734-employment	8734	wasm	13	100.00	0	100.00	0
+pr8734-employment	8734	wasm	14	99.90	0	99.90	0
+pr8734-employment	8734	wasm	15	99.99	0	99.99	0
+pr8734-employment	8734	wasm	16	99.90	0	99.90	0
+pr8734-employment	8734	wasm	17	98.52	0	98.52	0
+pr8734-employment	8734	wasm	18	99.51	0	99.51	0
+pr8734-employment	8734	wasm	19	100.00	0	100.00	0
+pr8734-employment	8734	wasm	20	99.98	0	99.98	1
+pr8734-employment	8734	wasm	21	100.00	0	100.00	0
+pr8734-employment	8734	wasm	22	99.91	0	99.91	0
+pr8734-employment	8734	wasm	23	99.96	0	99.96	0
+pr8734-employment	8734	wasm	24	99.45	0	99.45	0
+pr8734-employment	8734	wasm	25	99.59	0	99.59	0
+pr8734-employment	8734	wasm	26	99.97	0	99.75	206
+pr8734-employment	8734	wasm	27	99.75	0	99.75	0
+pr8734-employment	8734	wasm	28	99.97	0	99.97	0
+pr8734-employment	8734	wasm	29	99.98	0	99.98	0
+pr8734-employment	8734	wasm	30	99.99	0	99.99	0
+pr8734-employment	8734	wasm	31	100.00	0	100.00	0
+pr8734-employment	8734	wasm	32	99.99	0	99.99	0
+pr8734-employment	8734	wasm	33	99.99	0	99.99	0
+pr8734-employment	8734	wasm	34	99.99	0	99.99	0
+pr8734-employment	8734	wasm	35	99.95	0	99.95	0
+pr8734-employment	8734	wasm	36	99.99	0	99.99	0
+pr8734-employment	8734	wasm	37	99.81	0	99.81	0
+pr8734-employment	8734	wasm	38	99.82	0	99.82	0
+pr8734-employment	8734	wasm	39	99.92	0	99.87	50
+pr8734-employment	8734	wasm	40	99.99	0	99.99	0
+pr8734-employment	8734	wasm	41	100.00	0	100.00	0
+pr8734-employment	8734	wasm	42	99.94	0	99.94	0
+pr8734-employment	8734	wasm	43	99.98	0	99.98	0
+pr8734-employment	8734	wasm	44	99.98	0	99.98	0
+pr8734-employment	8734	wasm	45	99.99	0	99.99	0
+pr8734-employment	8734	wasm	46	100.00	0	100.00	0
+pr8734-employment	8734	wasm	47	99.96	0	99.96	0
+pr8734-employment	8734	wasm	48	99.07	0	99.07	0
+pr8734-employment	8734	wasm	49	99.84	0	99.84	0
+pr8734-employment	8734	wasm	50	100.00	0	100.00	0
+pr8734-employment	8734	wasm	51	96.72	0	96.72	0
+pr8734-employment	8734	wasm	52	99.99	0	99.99	0
+pr8734-employment	8734	wasm	53	100.00	0	100.00	0
+pr8734-employment	8734	wasm	54	99.96	0	99.96	0
+pr8734-employment	8734	wasm	55	99.82	0	99.82	0
+pr8734-employment	8734	wasm	56	99.96	0	99.96	0
+pr8734-employment	8734	wasm	57	99.98	0	99.98	0
+pr8734-employment	8734	wasm	58	99.91	0	99.91	0
+pr8734-employment	8734	wasm	59	99.87	0	99.87	0
+pr8734-employment	8734	wasm	60	99.97	0	99.97	0
+pr8734-employment	8734	wasm	61	99.99	0	99.99	0
+pr8734-employment	8734	wasm	62	99.36	0	99.36	0
+pr8734-employment	8734	wasm	63	99.99	0	99.99	0
+pr8734-employment	8734	wasm	64	99.85	0	99.85	0
+pr8734-employment	8734	wasm	65	99.97	0	99.97	0
+pr8734-employment	8734	wasm	66	99.98	0	99.98	0
+pr8734-employment	8734	wasm	67	99.96	0	99.96	0
+pr8734-employment	8734	wasm	68	99.99	0	99.99	0
+pr8734-employment	8734	wasm	69	100.00	0	100.00	0
+pr8734-employment	8734	wasm	70	99.40	0	99.40	0
+pr8734-employment	8734	wasm	71	99.36	0	99.36	0
+pr8734-employment	8734	wasm	72	99.97	0	99.97	0
+pr8734-employment	8734	wasm	73	99.47	0	99.47	0
+pr8734-employment	8734	wasm	74	99.92	0	99.92	0
+pr8734-employment	8734	wasm	75	99.98	0	99.98	0
+pr8734-employment	8734	wasm	76	99.99	0	99.98	11
+pr8734-employment	8734	wasm	77	99.97	0	99.97	0
+pr8734-employment	8734	wasm	78	100.00	0	100.00	0
+pr8734-employment	8734	wasm	79	100.00	0	100.00	0
+pr8734-employment	8734	wasm	80	100.00	0	100.00	0
+pr8734-employment	8734	wasm	81	100.00	0	100.00	0
+pr8734-employment	8734	wasm	82	100.00	0	100.00	0
+pr8734-employment	8734	wasm	83	100.00	0	100.00	0
+pr8734-employment	8734	wasm	84	100.00	0	100.00	0
+pr8734-employment	8734	wasm	85	100.00	0	100.00	0
+pr8734-employment	8734	wasm	86	100.00	0	100.00	0
+pr8734-employment	8734	wasm	87	100.00	0	100.00	0
+pr8734-employment	8734	wasm	88	100.00	0	100.00	0
+pr8734-employment	8734	wasm	89	100.00	0	100.00	0
+pr8734-employment	8734	wasm	90	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	1	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	2	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	3	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	4	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	5	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	6	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	7	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	8	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	9	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	10	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	11	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	12	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	13	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	14	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	15	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	16	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	17	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	18	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	19	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	20	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	21	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	22	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	23	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	24	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	25	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	26	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	27	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	28	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	29	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	30	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	31	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	32	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	33	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	34	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	35	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	36	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	37	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	38	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	39	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	40	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	41	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	42	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	43	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	44	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	45	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	46	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	47	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	48	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	49	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	50	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	51	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	52	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	53	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	54	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	55	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	56	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	57	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	58	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	59	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	60	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	61	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	62	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	63	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	64	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	65	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	66	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	67	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	68	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	69	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	70	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	71	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	72	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	73	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	74	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	75	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	76	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	77	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	78	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	79	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	80	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	81	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	82	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	83	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	84	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	85	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	86	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	87	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	88	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	89	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	90	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	91	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	92	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	93	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	94	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	95	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	96	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	97	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	98	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	99	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	100	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	101	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	102	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	103	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	104	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	105	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	106	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	107	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	108	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	109	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	110	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	111	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	112	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	113	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	114	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	115	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	116	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	117	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	118	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	119	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	120	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	121	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	122	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	123	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	124	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	125	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	126	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	127	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	128	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	129	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	130	99.97	0	99.96	5
+pr8787-handbook	8787	wasm	131	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	132	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	133	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	134	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	135	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	136	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	137	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	138	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	139	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	140	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	141	100.00	0	100.00	1
+pr8787-handbook	8787	wasm	142	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	143	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	144	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	145	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	146	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	147	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	148	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	149	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	150	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	151	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	152	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	153	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	154	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	155	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	156	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	157	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	158	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	159	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	160	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	161	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	162	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	163	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	164	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	165	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	166	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	167	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	168	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	169	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	170	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	171	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	172	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	173	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	174	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	175	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	176	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	177	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	178	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	179	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	180	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	181	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	182	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	183	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	184	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	185	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	186	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	187	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	188	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	189	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	190	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	191	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	192	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	193	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	194	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	195	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	196	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	197	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	198	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	199	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	200	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	201	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	202	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	203	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	204	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	205	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	206	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	207	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	208	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	209	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	210	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	211	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	212	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	213	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	214	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	215	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	216	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	217	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	218	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	219	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	220	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	221	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	222	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	223	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	224	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	225	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	226	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	227	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	228	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	229	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	230	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	231	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	232	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	233	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	234	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	235	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	236	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	237	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	238	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	239	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	240	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	241	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	242	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	243	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	244	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	245	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	246	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	247	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	248	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	249	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	250	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	251	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	252	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	253	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	254	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	255	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	256	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	257	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	258	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	259	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	260	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	261	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	262	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	263	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	264	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	265	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	266	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	267	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	268	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	269	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	270	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	271	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	272	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	273	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	274	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	275	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	276	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	277	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	278	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	279	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	280	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	281	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	282	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	283	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	284	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	285	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	286	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	287	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	288	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	289	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	290	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	291	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	292	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	293	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	294	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	295	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	296	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	297	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	298	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	299	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	300	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	301	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	302	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	303	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	304	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	305	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	306	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	307	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	308	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	309	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	310	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	311	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	312	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	313	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	314	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	315	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	316	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	317	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	318	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	319	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	320	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	321	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	322	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	323	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	324	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	325	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	326	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	327	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	328	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	329	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	330	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	331	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	332	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	333	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	334	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	335	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	336	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	337	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	338	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	339	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	340	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	341	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	342	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	343	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	344	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	345	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	346	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	347	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	348	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	349	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	350	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	351	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	352	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	353	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	354	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	355	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	356	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	357	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	358	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	359	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	360	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	361	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	362	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	363	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	364	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	365	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	366	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	367	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	368	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	369	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	370	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	371	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	372	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	373	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	374	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	375	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	376	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	377	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	378	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	379	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	380	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	381	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	382	100.00	0	100.00	0
+pr8787-handbook	8787	wasm	383	100.00	0	100.00	0
+pr8839-original	8839	wasm	1	100.00	0	100.00	0
+pr8839-3190263	8839	wasm	1	100.00	0	100.00	0
+pr8839-3190263	8839	wasm	2	99.06	0	99.06	0
+pr8839-3190263	8839	wasm	3	100.00	0	100.00	0
+pr8839-3190263	8839	wasm	4	100.00	0	100.00	0
+pr8839-3190263	8839	wasm	5	98.88	0	98.88	0
+pr8839-3190263	8839	wasm	6	100.00	0	100.00	0
+pr8839-3190263	8839	wasm	7	100.00	0	100.00	0
+pr8839-3190263	8839	wasm	8	99.11	0	99.11	0
+protected-yeongwol		wasm	1	100.00	0	100.00	0
+protected-yeongwol		wasm	2	100.00	0	100.00	0
+protected-yeongwol		wasm	3	99.98	0	99.98	0
+protected-yeongwol		wasm	4	100.00	0	100.00	0
+protected-seo-body-list-typed		wasm	1	100.00	0	100.00	0
+protected-handbook-hwp		wasm	1	100.00	0	100.00	0
+protected-handbook-hwp		wasm	2	100.00	0	100.00	0
+protected-handbook-hwp		wasm	3	100.00	0	100.00	0
+protected-handbook-hwp		wasm	4	100.00	0	100.00	0
+protected-handbook-hwp		wasm	5	100.00	0	100.00	0
+protected-handbook-hwp		wasm	6	100.00	0	100.00	0
+protected-handbook-hwp		wasm	7	100.00	0	100.00	0
+protected-handbook-hwp		wasm	8	100.00	0	100.00	0
+protected-handbook-hwp		wasm	9	100.00	0	100.00	0
+protected-handbook-hwp		wasm	10	100.00	0	100.00	0
+protected-handbook-hwp		wasm	11	100.00	0	100.00	0
+protected-handbook-hwp		wasm	12	100.00	0	100.00	0
+protected-handbook-hwp		wasm	13	100.00	0	100.00	0
+protected-handbook-hwp		wasm	14	100.00	0	100.00	0
+protected-handbook-hwp		wasm	15	100.00	0	100.00	0
+protected-handbook-hwp		wasm	16	100.00	0	100.00	0
+protected-handbook-hwp		wasm	17	100.00	0	100.00	0
+protected-handbook-hwp		wasm	18	100.00	0	100.00	0
+protected-handbook-hwp		wasm	19	100.00	0	100.00	0
+protected-handbook-hwp		wasm	20	100.00	0	100.00	0
+protected-handbook-hwp		wasm	21	100.00	0	100.00	0
+protected-handbook-hwp		wasm	22	100.00	0	100.00	0
+protected-handbook-hwp		wasm	23	100.00	0	100.00	0
+protected-handbook-hwp		wasm	24	100.00	0	100.00	0
+protected-handbook-hwp		wasm	25	100.00	0	100.00	0
+protected-handbook-hwp		wasm	26	100.00	0	100.00	0
+protected-handbook-hwp		wasm	27	100.00	0	100.00	0
+protected-handbook-hwp		wasm	28	100.00	0	100.00	0
+protected-handbook-hwp		wasm	29	100.00	0	100.00	0
+protected-handbook-hwp		wasm	30	100.00	0	100.00	0
+protected-handbook-hwp		wasm	31	100.00	0	100.00	0
+protected-handbook-hwp		wasm	32	100.00	0	100.00	0
+protected-handbook-hwp		wasm	33	100.00	0	100.00	0
+protected-handbook-hwp		wasm	34	100.00	0	100.00	0
+protected-handbook-hwp		wasm	35	100.00	0	100.00	0
+protected-handbook-hwp		wasm	36	100.00	0	100.00	0
+protected-handbook-hwp		wasm	37	100.00	0	100.00	0
+protected-handbook-hwp		wasm	38	100.00	0	100.00	0
+protected-handbook-hwp		wasm	39	100.00	0	100.00	0
+protected-handbook-hwp		wasm	40	100.00	0	100.00	0
+protected-handbook-hwp		wasm	41	100.00	0	100.00	0
+protected-handbook-hwp		wasm	42	100.00	0	100.00	0
+protected-handbook-hwp		wasm	43	100.00	0	100.00	0
+protected-handbook-hwp		wasm	44	100.00	0	100.00	0
+protected-handbook-hwp		wasm	45	100.00	0	100.00	0
+protected-handbook-hwp		wasm	46	100.00	0	100.00	0
+protected-handbook-hwp		wasm	47	100.00	0	100.00	0
+protected-handbook-hwp		wasm	48	100.00	0	100.00	0
+protected-handbook-hwp		wasm	49	100.00	0	100.00	0
+protected-handbook-hwp		wasm	50	100.00	0	100.00	0
+protected-handbook-hwp		wasm	51	100.00	0	100.00	0
+protected-handbook-hwp		wasm	52	100.00	0	100.00	0
+protected-handbook-hwp		wasm	53	100.00	0	100.00	0
+protected-handbook-hwp		wasm	54	100.00	0	100.00	0
+protected-handbook-hwp		wasm	55	100.00	0	100.00	0
+protected-handbook-hwp		wasm	56	100.00	0	100.00	0
+protected-handbook-hwp		wasm	57	100.00	0	100.00	0
+protected-handbook-hwp		wasm	58	100.00	0	100.00	0
+protected-handbook-hwp		wasm	59	100.00	0	100.00	0
+protected-handbook-hwp		wasm	60	100.00	0	100.00	0
+protected-handbook-hwp		wasm	61	100.00	0	100.00	0
+protected-handbook-hwp		wasm	62	100.00	0	100.00	0
+protected-handbook-hwp		wasm	63	100.00	0	100.00	0
+protected-handbook-hwp		wasm	64	100.00	0	100.00	0
+protected-handbook-hwp		wasm	65	100.00	0	100.00	0
+protected-handbook-hwp		wasm	66	100.00	0	100.00	0
+protected-handbook-hwp		wasm	67	100.00	0	100.00	0
+protected-handbook-hwp		wasm	68	100.00	0	100.00	0
+protected-handbook-hwp		wasm	69	100.00	0	100.00	0
+protected-handbook-hwp		wasm	70	100.00	0	100.00	0
+protected-handbook-hwp		wasm	71	100.00	0	100.00	0
+protected-handbook-hwp		wasm	72	100.00	0	100.00	0
+protected-handbook-hwp		wasm	73	100.00	0	100.00	0
+protected-handbook-hwp		wasm	74	100.00	0	100.00	0
+protected-handbook-hwp		wasm	75	100.00	0	100.00	0
+protected-handbook-hwp		wasm	76	100.00	0	100.00	0
+protected-handbook-hwp		wasm	77	100.00	0	100.00	0
+protected-handbook-hwp		wasm	78	100.00	0	100.00	0
+protected-handbook-hwp		wasm	79	100.00	0	100.00	0
+protected-handbook-hwp		wasm	80	100.00	0	100.00	0
+protected-handbook-hwp		wasm	81	100.00	0	100.00	0
+protected-handbook-hwp		wasm	82	100.00	0	100.00	0
+protected-handbook-hwp		wasm	83	100.00	0	100.00	0
+protected-handbook-hwp		wasm	84	100.00	0	100.00	0
+protected-handbook-hwp		wasm	85	100.00	0	100.00	0
+protected-handbook-hwp		wasm	86	100.00	0	100.00	0
+protected-handbook-hwp		wasm	87	100.00	0	100.00	0
+protected-handbook-hwp		wasm	88	100.00	0	100.00	0
+protected-handbook-hwp		wasm	89	100.00	0	100.00	0
+protected-handbook-hwp		wasm	90	100.00	0	100.00	0
+protected-handbook-hwp		wasm	91	100.00	0	100.00	0
+protected-handbook-hwp		wasm	92	100.00	0	100.00	0
+protected-handbook-hwp		wasm	93	100.00	0	100.00	0
+protected-handbook-hwp		wasm	94	100.00	0	100.00	0
+protected-handbook-hwp		wasm	95	100.00	0	100.00	0
+protected-handbook-hwp		wasm	96	100.00	0	100.00	0
+protected-handbook-hwp		wasm	97	100.00	0	100.00	0
+protected-handbook-hwp		wasm	98	100.00	0	100.00	0
+protected-handbook-hwp		wasm	99	100.00	0	100.00	0
+protected-handbook-hwp		wasm	100	100.00	0	100.00	0
+protected-handbook-hwp		wasm	101	100.00	0	100.00	0
+protected-handbook-hwp		wasm	102	100.00	0	100.00	0
+protected-handbook-hwp		wasm	103	100.00	0	100.00	0
+protected-handbook-hwp		wasm	104	100.00	0	100.00	0
+protected-handbook-hwp		wasm	105	100.00	0	100.00	0
+protected-handbook-hwp		wasm	106	100.00	0	100.00	0
+protected-handbook-hwp		wasm	107	100.00	0	100.00	0
+protected-handbook-hwp		wasm	108	100.00	0	100.00	0
+protected-handbook-hwp		wasm	109	100.00	0	100.00	0
+protected-handbook-hwp		wasm	110	100.00	0	100.00	0
+protected-handbook-hwp		wasm	111	100.00	0	100.00	0
+protected-handbook-hwp		wasm	112	100.00	0	100.00	0
+protected-handbook-hwp		wasm	113	100.00	0	100.00	0
+protected-handbook-hwp		wasm	114	100.00	0	100.00	0
+protected-handbook-hwp		wasm	115	100.00	0	100.00	0
+protected-handbook-hwp		wasm	116	100.00	0	100.00	0
+protected-handbook-hwp		wasm	117	100.00	0	100.00	0
+protected-handbook-hwp		wasm	118	100.00	0	100.00	0
+protected-handbook-hwp		wasm	119	100.00	0	100.00	0
+protected-handbook-hwp		wasm	120	100.00	0	100.00	0
+protected-handbook-hwp		wasm	121	100.00	0	100.00	0
+protected-handbook-hwp		wasm	122	100.00	0	100.00	0
+protected-handbook-hwp		wasm	123	100.00	0	100.00	0
+protected-handbook-hwp		wasm	124	100.00	0	100.00	0
+protected-handbook-hwp		wasm	125	100.00	0	100.00	0
+protected-handbook-hwp		wasm	126	100.00	0	100.00	0
+protected-handbook-hwp		wasm	127	100.00	0	100.00	0
+protected-handbook-hwp		wasm	128	100.00	0	100.00	0
+protected-handbook-hwp		wasm	129	100.00	0	100.00	0
+protected-handbook-hwp		wasm	130	99.97	0	99.96	5
+protected-handbook-hwp		wasm	131	100.00	0	100.00	0
+protected-handbook-hwp		wasm	132	100.00	0	100.00	0
+protected-handbook-hwp		wasm	133	100.00	0	100.00	0
+protected-handbook-hwp		wasm	134	100.00	0	100.00	0
+protected-handbook-hwp		wasm	135	100.00	0	100.00	0
+protected-handbook-hwp		wasm	136	100.00	0	100.00	0
+protected-handbook-hwp		wasm	137	100.00	0	100.00	0
+protected-handbook-hwp		wasm	138	100.00	0	100.00	0
+protected-handbook-hwp		wasm	139	100.00	0	100.00	0
+protected-handbook-hwp		wasm	140	100.00	0	100.00	0
+protected-handbook-hwp		wasm	141	100.00	0	100.00	1
+protected-handbook-hwp		wasm	142	100.00	0	100.00	0
+protected-handbook-hwp		wasm	143	100.00	0	100.00	0
+protected-handbook-hwp		wasm	144	100.00	0	100.00	0
+protected-handbook-hwp		wasm	145	100.00	0	100.00	0
+protected-handbook-hwp		wasm	146	100.00	0	100.00	0
+protected-handbook-hwp		wasm	147	100.00	0	100.00	0
+protected-handbook-hwp		wasm	148	100.00	0	100.00	0
+protected-handbook-hwp		wasm	149	100.00	0	100.00	0
+protected-handbook-hwp		wasm	150	100.00	0	100.00	0
+protected-handbook-hwp		wasm	151	100.00	0	100.00	0
+protected-handbook-hwp		wasm	152	100.00	0	100.00	0
+protected-handbook-hwp		wasm	153	100.00	0	100.00	0
+protected-handbook-hwp		wasm	154	100.00	0	100.00	0
+protected-handbook-hwp		wasm	155	100.00	0	100.00	0
+protected-handbook-hwp		wasm	156	100.00	0	100.00	0
+protected-handbook-hwp		wasm	157	100.00	0	100.00	0
+protected-handbook-hwp		wasm	158	100.00	0	100.00	0
+protected-handbook-hwp		wasm	159	100.00	0	100.00	0
+protected-handbook-hwp		wasm	160	100.00	0	100.00	0
+protected-handbook-hwp		wasm	161	100.00	0	100.00	0
+protected-handbook-hwp		wasm	162	100.00	0	100.00	0
+protected-handbook-hwp		wasm	163	100.00	0	100.00	0
+protected-handbook-hwp		wasm	164	100.00	0	100.00	0
+protected-handbook-hwp		wasm	165	100.00	0	100.00	0
+protected-handbook-hwp		wasm	166	100.00	0	100.00	0
+protected-handbook-hwp		wasm	167	100.00	0	100.00	0
+protected-handbook-hwp		wasm	168	100.00	0	100.00	0
+protected-handbook-hwp		wasm	169	100.00	0	100.00	0
+protected-handbook-hwp		wasm	170	100.00	0	100.00	0
+protected-handbook-hwp		wasm	171	100.00	0	100.00	0
+protected-handbook-hwp		wasm	172	100.00	0	100.00	0
+protected-handbook-hwp		wasm	173	100.00	0	100.00	0
+protected-handbook-hwp		wasm	174	100.00	0	100.00	0
+protected-handbook-hwp		wasm	175	100.00	0	100.00	0
+protected-handbook-hwp		wasm	176	100.00	0	100.00	0
+protected-handbook-hwp		wasm	177	100.00	0	100.00	0
+protected-handbook-hwp		wasm	178	100.00	0	100.00	0
+protected-handbook-hwp		wasm	179	100.00	0	100.00	0
+protected-handbook-hwp		wasm	180	100.00	0	100.00	0
+protected-handbook-hwp		wasm	181	100.00	0	100.00	0
+protected-handbook-hwp		wasm	182	100.00	0	100.00	0
+protected-handbook-hwp		wasm	183	100.00	0	100.00	0
+protected-handbook-hwp		wasm	184	100.00	0	100.00	0
+protected-handbook-hwp		wasm	185	100.00	0	100.00	0
+protected-handbook-hwp		wasm	186	100.00	0	100.00	0
+protected-handbook-hwp		wasm	187	100.00	0	100.00	0
+protected-handbook-hwp		wasm	188	100.00	0	100.00	0
+protected-handbook-hwp		wasm	189	100.00	0	100.00	0
+protected-handbook-hwp		wasm	190	100.00	0	100.00	0
+protected-handbook-hwp		wasm	191	100.00	0	100.00	0
+protected-handbook-hwp		wasm	192	100.00	0	100.00	0
+protected-handbook-hwp		wasm	193	100.00	0	100.00	0
+protected-handbook-hwp		wasm	194	100.00	0	100.00	0
+protected-handbook-hwp		wasm	195	100.00	0	100.00	0
+protected-handbook-hwp		wasm	196	100.00	0	100.00	0
+protected-handbook-hwp		wasm	197	100.00	0	100.00	0
+protected-handbook-hwp		wasm	198	100.00	0	100.00	0
+protected-handbook-hwp		wasm	199	100.00	0	100.00	0
+protected-handbook-hwp		wasm	200	100.00	0	100.00	0
+protected-handbook-hwp		wasm	201	100.00	0	100.00	0
+protected-handbook-hwp		wasm	202	100.00	0	100.00	0
+protected-handbook-hwp		wasm	203	100.00	0	100.00	0
+protected-handbook-hwp		wasm	204	100.00	0	100.00	0
+protected-handbook-hwp		wasm	205	100.00	0	100.00	0
+protected-handbook-hwp		wasm	206	100.00	0	100.00	0
+protected-handbook-hwp		wasm	207	100.00	0	100.00	0
+protected-handbook-hwp		wasm	208	100.00	0	100.00	0
+protected-handbook-hwp		wasm	209	100.00	0	100.00	0
+protected-handbook-hwp		wasm	210	100.00	0	100.00	0
+protected-handbook-hwp		wasm	211	100.00	0	100.00	0
+protected-handbook-hwp		wasm	212	100.00	0	100.00	0
+protected-handbook-hwp		wasm	213	100.00	0	100.00	0
+protected-handbook-hwp		wasm	214	100.00	0	100.00	0
+protected-handbook-hwp		wasm	215	100.00	0	100.00	0
+protected-handbook-hwp		wasm	216	100.00	0	100.00	0
+protected-handbook-hwp		wasm	217	100.00	0	100.00	0
+protected-handbook-hwp		wasm	218	100.00	0	100.00	0
+protected-handbook-hwp		wasm	219	100.00	0	100.00	0
+protected-handbook-hwp		wasm	220	100.00	0	100.00	0
+protected-handbook-hwp		wasm	221	100.00	0	100.00	0
+protected-handbook-hwp		wasm	222	100.00	0	100.00	0
+protected-handbook-hwp		wasm	223	100.00	0	100.00	0
+protected-handbook-hwp		wasm	224	100.00	0	100.00	0
+protected-handbook-hwp		wasm	225	100.00	0	100.00	0
+protected-handbook-hwp		wasm	226	100.00	0	100.00	0
+protected-handbook-hwp		wasm	227	100.00	0	100.00	0
+protected-handbook-hwp		wasm	228	100.00	0	100.00	0
+protected-handbook-hwp		wasm	229	100.00	0	100.00	0
+protected-handbook-hwp		wasm	230	100.00	0	100.00	0
+protected-handbook-hwp		wasm	231	100.00	0	100.00	0
+protected-handbook-hwp		wasm	232	100.00	0	100.00	0
+protected-handbook-hwp		wasm	233	100.00	0	100.00	0
+protected-handbook-hwp		wasm	234	100.00	0	100.00	0
+protected-handbook-hwp		wasm	235	100.00	0	100.00	0
+protected-handbook-hwp		wasm	236	100.00	0	100.00	0
+protected-handbook-hwp		wasm	237	100.00	0	100.00	0
+protected-handbook-hwp		wasm	238	100.00	0	100.00	0
+protected-handbook-hwp		wasm	239	100.00	0	100.00	0
+protected-handbook-hwp		wasm	240	100.00	0	100.00	0
+protected-handbook-hwp		wasm	241	100.00	0	100.00	0
+protected-handbook-hwp		wasm	242	100.00	0	100.00	0
+protected-handbook-hwp		wasm	243	100.00	0	100.00	0
+protected-handbook-hwp		wasm	244	100.00	0	100.00	0
+protected-handbook-hwp		wasm	245	100.00	0	100.00	0
+protected-handbook-hwp		wasm	246	100.00	0	100.00	0
+protected-handbook-hwp		wasm	247	100.00	0	100.00	0
+protected-handbook-hwp		wasm	248	100.00	0	100.00	0
+protected-handbook-hwp		wasm	249	100.00	0	100.00	0
+protected-handbook-hwp		wasm	250	100.00	0	100.00	0
+protected-handbook-hwp		wasm	251	100.00	0	100.00	0
+protected-handbook-hwp		wasm	252	100.00	0	100.00	0
+protected-handbook-hwp		wasm	253	100.00	0	100.00	0
+protected-handbook-hwp		wasm	254	100.00	0	100.00	0
+protected-handbook-hwp		wasm	255	100.00	0	100.00	0
+protected-handbook-hwp		wasm	256	100.00	0	100.00	0
+protected-handbook-hwp		wasm	257	100.00	0	100.00	0
+protected-handbook-hwp		wasm	258	100.00	0	100.00	0
+protected-handbook-hwp		wasm	259	100.00	0	100.00	0
+protected-handbook-hwp		wasm	260	100.00	0	100.00	0
+protected-handbook-hwp		wasm	261	100.00	0	100.00	0
+protected-handbook-hwp		wasm	262	100.00	0	100.00	0
+protected-handbook-hwp		wasm	263	100.00	0	100.00	0
+protected-handbook-hwp		wasm	264	100.00	0	100.00	0
+protected-handbook-hwp		wasm	265	100.00	0	100.00	0
+protected-handbook-hwp		wasm	266	100.00	0	100.00	0
+protected-handbook-hwp		wasm	267	100.00	0	100.00	0
+protected-handbook-hwp		wasm	268	100.00	0	100.00	0
+protected-handbook-hwp		wasm	269	100.00	0	100.00	0
+protected-handbook-hwp		wasm	270	100.00	0	100.00	0
+protected-handbook-hwp		wasm	271	100.00	0	100.00	0
+protected-handbook-hwp		wasm	272	100.00	0	100.00	0
+protected-handbook-hwp		wasm	273	100.00	0	100.00	0
+protected-handbook-hwp		wasm	274	100.00	0	100.00	0
+protected-handbook-hwp		wasm	275	100.00	0	100.00	0
+protected-handbook-hwp		wasm	276	100.00	0	100.00	0
+protected-handbook-hwp		wasm	277	100.00	0	100.00	0
+protected-handbook-hwp		wasm	278	100.00	0	100.00	0
+protected-handbook-hwp		wasm	279	100.00	0	100.00	0
+protected-handbook-hwp		wasm	280	100.00	0	100.00	0
+protected-handbook-hwp		wasm	281	100.00	0	100.00	0
+protected-handbook-hwp		wasm	282	100.00	0	100.00	0
+protected-handbook-hwp		wasm	283	100.00	0	100.00	0
+protected-handbook-hwp		wasm	284	100.00	0	100.00	0
+protected-handbook-hwp		wasm	285	100.00	0	100.00	0
+protected-handbook-hwp		wasm	286	100.00	0	100.00	0
+protected-handbook-hwp		wasm	287	100.00	0	100.00	0
+protected-handbook-hwp		wasm	288	100.00	0	100.00	0
+protected-handbook-hwp		wasm	289	100.00	0	100.00	0
+protected-handbook-hwp		wasm	290	100.00	0	100.00	0
+protected-handbook-hwp		wasm	291	100.00	0	100.00	0
+protected-handbook-hwp		wasm	292	100.00	0	100.00	0
+protected-handbook-hwp		wasm	293	100.00	0	100.00	0
+protected-handbook-hwp		wasm	294	100.00	0	100.00	0
+protected-handbook-hwp		wasm	295	100.00	0	100.00	0
+protected-handbook-hwp		wasm	296	100.00	0	100.00	0
+protected-handbook-hwp		wasm	297	100.00	0	100.00	0
+protected-handbook-hwp		wasm	298	100.00	0	100.00	0
+protected-handbook-hwp		wasm	299	100.00	0	100.00	0
+protected-handbook-hwp		wasm	300	100.00	0	100.00	0
+protected-handbook-hwp		wasm	301	100.00	0	100.00	0
+protected-handbook-hwp		wasm	302	100.00	0	100.00	0
+protected-handbook-hwp		wasm	303	100.00	0	100.00	0
+protected-handbook-hwp		wasm	304	100.00	0	100.00	0
+protected-handbook-hwp		wasm	305	100.00	0	100.00	0
+protected-handbook-hwp		wasm	306	100.00	0	100.00	0
+protected-handbook-hwp		wasm	307	100.00	0	100.00	0
+protected-handbook-hwp		wasm	308	100.00	0	100.00	0
+protected-handbook-hwp		wasm	309	100.00	0	100.00	0
+protected-handbook-hwp		wasm	310	100.00	0	100.00	0
+protected-handbook-hwp		wasm	311	100.00	0	100.00	0
+protected-handbook-hwp		wasm	312	100.00	0	100.00	0
+protected-handbook-hwp		wasm	313	100.00	0	100.00	0
+protected-handbook-hwp		wasm	314	100.00	0	100.00	0
+protected-handbook-hwp		wasm	315	100.00	0	100.00	0
+protected-handbook-hwp		wasm	316	100.00	0	100.00	0
+protected-handbook-hwp		wasm	317	100.00	0	100.00	0
+protected-handbook-hwp		wasm	318	100.00	0	100.00	0
+protected-handbook-hwp		wasm	319	100.00	0	100.00	0
+protected-handbook-hwp		wasm	320	100.00	0	100.00	0
+protected-handbook-hwp		wasm	321	100.00	0	100.00	0
+protected-handbook-hwp		wasm	322	100.00	0	100.00	0
+protected-handbook-hwp		wasm	323	100.00	0	100.00	0
+protected-handbook-hwp		wasm	324	100.00	0	100.00	0
+protected-handbook-hwp		wasm	325	100.00	0	100.00	0
+protected-handbook-hwp		wasm	326	100.00	0	100.00	0
+protected-handbook-hwp		wasm	327	100.00	0	100.00	0
+protected-handbook-hwp		wasm	328	100.00	0	100.00	0
+protected-handbook-hwp		wasm	329	100.00	0	100.00	0
+protected-handbook-hwp		wasm	330	100.00	0	100.00	0
+protected-handbook-hwp		wasm	331	100.00	0	100.00	0
+protected-handbook-hwp		wasm	332	100.00	0	100.00	0
+protected-handbook-hwp		wasm	333	100.00	0	100.00	0
+protected-handbook-hwp		wasm	334	100.00	0	100.00	0
+protected-handbook-hwp		wasm	335	100.00	0	100.00	0
+protected-handbook-hwp		wasm	336	100.00	0	100.00	0
+protected-handbook-hwp		wasm	337	100.00	0	100.00	0
+protected-handbook-hwp		wasm	338	100.00	0	100.00	0
+protected-handbook-hwp		wasm	339	100.00	0	100.00	0
+protected-handbook-hwp		wasm	340	100.00	0	100.00	0
+protected-handbook-hwp		wasm	341	100.00	0	100.00	0
+protected-handbook-hwp		wasm	342	100.00	0	100.00	0
+protected-handbook-hwp		wasm	343	100.00	0	100.00	0
+protected-handbook-hwp		wasm	344	100.00	0	100.00	0
+protected-handbook-hwp		wasm	345	100.00	0	100.00	0
+protected-handbook-hwp		wasm	346	100.00	0	100.00	0
+protected-handbook-hwp		wasm	347	100.00	0	100.00	0
+protected-handbook-hwp		wasm	348	100.00	0	100.00	0
+protected-handbook-hwp		wasm	349	100.00	0	100.00	0
+protected-handbook-hwp		wasm	350	100.00	0	100.00	0
+protected-handbook-hwp		wasm	351	100.00	0	100.00	0
+protected-handbook-hwp		wasm	352	100.00	0	100.00	0
+protected-handbook-hwp		wasm	353	100.00	0	100.00	0
+protected-handbook-hwp		wasm	354	100.00	0	100.00	0
+protected-handbook-hwp		wasm	355	100.00	0	100.00	0
+protected-handbook-hwp		wasm	356	100.00	0	100.00	0
+protected-handbook-hwp		wasm	357	100.00	0	100.00	0
+protected-handbook-hwp		wasm	358	100.00	0	100.00	0
+protected-handbook-hwp		wasm	359	100.00	0	100.00	0
+protected-handbook-hwp		wasm	360	100.00	0	100.00	0
+protected-handbook-hwp		wasm	361	100.00	0	100.00	0
+protected-handbook-hwp		wasm	362	100.00	0	100.00	0
+protected-handbook-hwp		wasm	363	100.00	0	100.00	0
+protected-handbook-hwp		wasm	364	100.00	0	100.00	0
+protected-handbook-hwp		wasm	365	100.00	0	100.00	0
+protected-handbook-hwp		wasm	366	100.00	0	100.00	0
+protected-handbook-hwp		wasm	367	100.00	0	100.00	0
+protected-handbook-hwp		wasm	368	100.00	0	100.00	0
+protected-handbook-hwp		wasm	369	100.00	0	100.00	0
+protected-handbook-hwp		wasm	370	100.00	0	100.00	0
+protected-handbook-hwp		wasm	371	100.00	0	100.00	0
+protected-handbook-hwp		wasm	372	100.00	0	100.00	0
+protected-handbook-hwp		wasm	373	100.00	0	100.00	0
+protected-handbook-hwp		wasm	374	100.00	0	100.00	0
+protected-handbook-hwp		wasm	375	100.00	0	100.00	0
+protected-handbook-hwp		wasm	376	100.00	0	100.00	0
+protected-handbook-hwp		wasm	377	100.00	0	100.00	0
+protected-handbook-hwp		wasm	378	100.00	0	100.00	0
+protected-handbook-hwp		wasm	379	100.00	0	100.00	0
+protected-handbook-hwp		wasm	380	100.00	0	100.00	0
+protected-handbook-hwp		wasm	381	100.00	0	100.00	0
+protected-handbook-hwp		wasm	382	100.00	0	100.00	0
+protected-handbook-hwp		wasm	383	100.00	0	100.00	0
+protected-seo-helvetica-styles		wasm	1	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	1	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	2	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	3	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	4	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	5	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	6	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	7	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	8	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	9	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	10	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	11	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	12	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	13	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	14	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	15	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	16	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	17	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	18	100.00	0	99.99	18
+protected-sample16-hwpx		wasm	19	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	20	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	21	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	22	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	23	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	24	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	25	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	26	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	27	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	28	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	29	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	30	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	31	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	32	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	33	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	34	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	35	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	36	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	37	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	38	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	39	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	40	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	41	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	42	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	43	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	44	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	45	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	46	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	47	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	48	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	49	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	50	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	51	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	52	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	53	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	54	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	55	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	56	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	57	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	58	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	59	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	60	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	61	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	62	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	63	100.00	0	100.00	0
+protected-sample16-hwpx		wasm	64	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	1	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	2	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	3	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	4	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	5	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	6	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	7	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	8	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	9	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	10	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	11	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	12	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	13	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	14	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	15	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	16	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	17	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	18	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	19	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	20	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	21	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	22	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	23	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	24	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	25	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	26	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	27	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	28	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	29	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	30	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	31	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	32	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	33	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	34	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	35	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	36	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	37	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	38	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	39	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	40	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	41	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	42	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	43	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	44	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	45	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	46	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	47	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	48	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	49	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	50	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	51	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	52	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	53	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	54	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	55	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	56	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	57	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	58	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	59	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	60	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	61	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	62	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	63	100.00	0	100.00	0
+protected-sample16-hwp2022		wasm	64	100.00	0	100.00	0
+protected-seo-re-03-latin		wasm	1	100.00	0	100.00	0
+protected-angle-narrow		wasm	1	100.00	0	100.00	0
+protected-outline		wasm	1	100.00	0	100.00	0
+protected-outline		wasm	2	100.00	0	100.00	0
+protected-outline		wasm	3	100.00	0	100.00	0
+protected-outline		wasm	4	100.00	0	100.00	0
+protected-outline		wasm	5	100.00	0	100.00	0
+protected-outline		wasm	6	100.00	0	100.00	0
+protected-outline		wasm	7	100.00	0	100.00	0
+protected-outline		wasm	8	100.00	0	100.00	0
+protected-outline		wasm	9	100.00	0	100.00	0
+protected-issue8040-insert		wasm	1	100.00	0	100.00	0
+protected-issue8040-insert		wasm	2	100.00	0	100.00	0
+protected-issue8040-insert		wasm	3	100.00	0	100.00	0
+protected-issue8040-insert		wasm	4	99.99	0	99.99	0
+protected-nested		wasm	1	98.45	0	98.45	0
+protected-nested		wasm	2	99.98	0	99.98	0
+protected-nested		wasm	3	100.00	0	100.00	0
+protected-nested		wasm	4	99.95	0	99.95	0
+protected-nested		wasm	5	99.98	0	99.98	0
+protected-nested		wasm	6	99.98	0	99.98	0
+protected-nested		wasm	7	99.98	0	99.98	0
+protected-nested		wasm	8	99.56	0	99.56	0
+protected-nested		wasm	9	99.98	0	99.98	0
+protected-nested		wasm	10	98.76	0	98.76	0
+protected-nested		wasm	11	99.05	0	99.05	0
+protected-nested		wasm	12	99.84	0	99.84	0
+protected-nested		wasm	13	99.63	0	99.63	0
+protected-nested		wasm	14	98.59	0	98.59	0
+protected-nested		wasm	15	99.12	0	99.12	0
+protected-nested		wasm	16	98.37	0	98.37	0
+protected-nested		wasm	17	99.98	0	99.98	0
+protected-sample16-hwp2024		wasm	1	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	2	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	3	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	4	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	5	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	6	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	7	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	8	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	9	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	10	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	11	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	12	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	13	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	14	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	15	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	16	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	17	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	18	100.00	0	99.99	18
+protected-sample16-hwp2024		wasm	19	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	20	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	21	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	22	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	23	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	24	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	25	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	26	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	27	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	28	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	29	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	30	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	31	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	32	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	33	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	34	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	35	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	36	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	37	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	38	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	39	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	40	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	41	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	42	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	43	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	44	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	45	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	46	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	47	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	48	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	49	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	50	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	51	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	52	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	53	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	54	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	55	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	56	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	57	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	58	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	59	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	60	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	61	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	62	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	63	100.00	0	100.00	0
+protected-sample16-hwp2024		wasm	64	100.00	0	100.00	0
+protected-issue7905		wasm	1	99.97	0	99.97	0
+protected-issue7905		wasm	2	98.86	0	98.86	0
+protected-issue7905		wasm	3	100.00	0	100.00	0
+protected-issue7905		wasm	4	100.00	0	100.00	0
+protected-issue7905		wasm	5	100.00	0	100.00	0
+protected-issue7905		wasm	6	100.00	0	100.00	0
+protected-sample10		wasm	1	99.97	0	99.96	1
+protected-sample10		wasm	2	100.00	0	100.00	0
+protected-sample10		wasm	3	100.00	0	100.00	0
+protected-sample10		wasm	4	100.00	0	100.00	0
+protected-sample10		wasm	5	100.00	0	100.00	0
+protected-sample10		wasm	6	100.00	0	100.00	0
+protected-sample10		wasm	7	100.00	0	100.00	0
+protected-sample10		wasm	8	100.00	0	100.00	0
+protected-sample10		wasm	9	100.00	0	100.00	0
+protected-sample10		wasm	10	100.00	0	100.00	0
+protected-sample10		wasm	11	100.00	0	100.00	0
+protected-sample10		wasm	12	100.00	0	100.00	0
+protected-sample10		wasm	13	100.00	0	100.00	0
+protected-sample10		wasm	14	100.00	0	100.00	0
+protected-sample10		wasm	15	100.00	0	100.00	0
+protected-sample10		wasm	16	100.00	0	100.00	0
+protected-sample10		wasm	17	100.00	0	100.00	0
+protected-sample10		wasm	18	100.00	0	100.00	0
+protected-sample10		wasm	19	100.00	0	100.00	0
+protected-sample10		wasm	20	100.00	0	100.00	0
+protected-sample10		wasm	21	100.00	0	100.00	0
+protected-sample10		wasm	22	100.00	0	100.00	0
+protected-sample10		wasm	23	100.00	0	100.00	0
+protected-sample10		wasm	24	100.00	0	100.00	0
+protected-sample10		wasm	25	100.00	0	100.00	0
+protected-sample10		wasm	26	100.00	0	100.00	0
+protected-sample10		wasm	27	100.00	0	100.00	0
+protected-sample10		wasm	28	100.00	0	100.00	0
+protected-sample10		wasm	29	100.00	0	100.00	0
+protected-sample10		wasm	30	100.00	0	100.00	0
+protected-sample10		wasm	31	100.00	0	100.00	0
+protected-sample10		wasm	32	100.00	0	100.00	0
+protected-sample10		wasm	33	100.00	0	100.00	0
+protected-sample10		wasm	34	100.00	0	100.00	0
+protected-sample10		wasm	35	100.00	0	100.00	0
+protected-sample10		wasm	36	100.00	0	100.00	0
+protected-sample10		wasm	37	100.00	0	100.00	0
+protected-sample10		wasm	38	100.00	0	100.00	0
+protected-sample10		wasm	39	100.00	0	100.00	0
+protected-sample10		wasm	40	100.00	0	100.00	0
+protected-sample10		wasm	41	100.00	0	100.00	0
+protected-sample10		wasm	42	100.00	0	100.00	0
+protected-sample10		wasm	43	100.00	0	100.00	0
+protected-sample10		wasm	44	100.00	0	100.00	0
+protected-sample10		wasm	45	100.00	0	100.00	0
+protected-sample10		wasm	46	100.00	0	100.00	0
+protected-sample10		wasm	47	100.00	0	100.00	0
+protected-sample10		wasm	48	100.00	0	100.00	0
+protected-sample10		wasm	49	100.00	0	100.00	0
+protected-sample10		wasm	50	100.00	0	100.00	0
+protected-sample10		wasm	51	100.00	0	100.00	0
+protected-sample10		wasm	52	100.00	0	100.00	0
+protected-sample10		wasm	53	100.00	0	100.00	0
+protected-sample10		wasm	54	100.00	0	100.00	0
+protected-sample10		wasm	55	100.00	0	100.00	0
+protected-sample10		wasm	56	100.00	0	100.00	0
+protected-sample10		wasm	57	100.00	0	100.00	0
+protected-sample10		wasm	58	100.00	0	100.00	0
+protected-sample10		wasm	59	100.00	0	100.00	0
+protected-sample10		wasm	60	100.00	0	100.00	0
+protected-sample10		wasm	61	100.00	0	100.00	0
+protected-sample10		wasm	62	100.00	0	100.00	0
+protected-sample10		wasm	63	100.00	0	100.00	0
+protected-sample10		wasm	64	100.00	0	100.00	0
+protected-sample10		wasm	65	100.00	0	100.00	0
+protected-sample10		wasm	66	100.00	0	100.00	0
+protected-sample10		wasm	67	100.00	0	100.00	0
+protected-sample10		wasm	68	100.00	0	100.00	0
+protected-sample10		wasm	69	100.00	0	100.00	0
+protected-sample10		wasm	70	100.00	0	100.00	0
+protected-sample10		wasm	71	100.00	0	100.00	0
+protected-sample10		wasm	72	100.00	0	100.00	0
+protected-sample10		wasm	73	100.00	0	100.00	0
+protected-sample10		wasm	74	100.00	0	100.00	0
+protected-sample10		wasm	75	100.00	0	100.00	0
+protected-sample10		wasm	76	100.00	0	100.00	0
+protected-sample10		wasm	77	100.00	0	100.00	0
+protected-sample10		wasm	78	100.00	0	100.00	0
+protected-sample10		wasm	79	100.00	0	100.00	0
+protected-sample10		wasm	80	100.00	0	100.00	0
+protected-sample10		wasm	81	100.00	0	100.00	0
+protected-sample10		wasm	82	100.00	0	100.00	0
+protected-sample10		wasm	83	100.00	0	100.00	0
+protected-sample10		wasm	84	100.00	0	100.00	0
+protected-sample10		wasm	85	100.00	0	100.00	0
+protected-sample10		wasm	86	100.00	0	100.00	0
+protected-sample10		wasm	87	100.00	0	100.00	0
+protected-sample10		wasm	88	100.00	0	100.00	0
+protected-sample10		wasm	89	100.00	0	100.00	0
+protected-sample10		wasm	90	100.00	0	100.00	0
+protected-sample10		wasm	91	100.00	0	100.00	0
+protected-sample10		wasm	92	100.00	0	100.00	0
+protected-sample10		wasm	93	100.00	0	100.00	0
+protected-sample10		wasm	94	100.00	0	100.00	0
+protected-sample10		wasm	95	100.00	0	100.00	0
+protected-sample10		wasm	96	100.00	0	100.00	0
+protected-sample10		wasm	97	100.00	0	100.00	0
+protected-sample10		wasm	98	100.00	0	100.00	0
+protected-sample10		wasm	99	100.00	0	100.00	0
+protected-sample10		wasm	100	100.00	0	100.00	0
+protected-sample10		wasm	101	100.00	0	100.00	0
+protected-sample10		wasm	102	100.00	0	100.00	0
+protected-sample10		wasm	103	100.00	0	100.00	0
+protected-sample10		wasm	104	100.00	0	100.00	0
+protected-sample10		wasm	105	100.00	0	100.00	0
+protected-sample10		wasm	106	100.00	0	100.00	0
+protected-sample10		wasm	107	100.00	0	100.00	0
+protected-sample10		wasm	108	100.00	0	100.00	0
+protected-sample10		wasm	109	100.00	0	100.00	0
+protected-sample10		wasm	110	100.00	0	100.00	0
+protected-sample10		wasm	111	100.00	0	100.00	0
+protected-sample10		wasm	112	100.00	0	100.00	0
+protected-sample10		wasm	113	100.00	0	100.00	0
+protected-sample10		wasm	114	100.00	0	100.00	0
+protected-sample10		wasm	115	100.00	0	100.00	0
+protected-sample10		wasm	116	100.00	0	100.00	0
+protected-sample10		wasm	117	100.00	0	100.00	0
+protected-sample10		wasm	118	100.00	0	100.00	0
+protected-sample10		wasm	119	100.00	0	100.00	0
+protected-sample10		wasm	120	100.00	0	100.00	0
+protected-sample10		wasm	121	100.00	0	100.00	0
+protected-sample10		wasm	122	100.00	0	100.00	0
+protected-sample10		wasm	123	100.00	0	100.00	0
+protected-sample10		wasm	124	100.00	0	100.00	0
+protected-sample10		wasm	125	100.00	0	100.00	0
+protected-sample10		wasm	126	100.00	0	100.00	0
+protected-sample10		wasm	127	100.00	0	100.00	0
+protected-sample10		wasm	128	100.00	0	100.00	0
+protected-sample10		wasm	129	100.00	0	100.00	0
+protected-sample10		wasm	130	100.00	0	100.00	0
+protected-sample10		wasm	131	100.00	0	100.00	0
+protected-sample10		wasm	132	100.00	0	100.00	0
+protected-sample10		wasm	133	100.00	0	100.00	0
+protected-sample10		wasm	134	100.00	0	100.00	0
+protected-sample10		wasm	135	100.00	0	100.00	0
+protected-sample10		wasm	136	100.00	0	100.00	0
+protected-sample10		wasm	137	100.00	0	100.00	0
+protected-sample10		wasm	138	100.00	0	100.00	0
+protected-sample10		wasm	139	100.00	0	100.00	0
+protected-sample10		wasm	140	100.00	0	100.00	0
+protected-sample10		wasm	141	100.00	0	100.00	0
+protected-sample10		wasm	142	100.00	0	100.00	0
+protected-sample10		wasm	143	100.00	0	100.00	0
+protected-sample10		wasm	144	100.00	0	100.00	0
+protected-sample10		wasm	145	100.00	0	100.00	0
+protected-sample10		wasm	146	100.00	0	100.00	0
+protected-sample10		wasm	147	100.00	0	100.00	0
+protected-sample10		wasm	148	100.00	0	100.00	0
+protected-sample10		wasm	149	100.00	0	100.00	0
+protected-sample10		wasm	150	100.00	0	100.00	0
+protected-sample10		wasm	151	100.00	0	100.00	0
+protected-sample10		wasm	152	100.00	0	100.00	0
+protected-sample10		wasm	153	100.00	0	100.00	0
+protected-sample10		wasm	154	100.00	0	100.00	0
+protected-sample10		wasm	155	100.00	0	100.00	0
+protected-sample10		wasm	156	100.00	0	100.00	0
+protected-sample10		wasm	157	100.00	0	100.00	0
+protected-sample10		wasm	158	100.00	0	100.00	0
+protected-sample10		wasm	159	100.00	0	100.00	0
+protected-sample10		wasm	160	100.00	0	100.00	0
+protected-sample10		wasm	161	100.00	0	100.00	0
+protected-sample10		wasm	162	100.00	0	100.00	0
+protected-sample10		wasm	163	100.00	0	100.00	0
+protected-sample10		wasm	164	100.00	0	100.00	0
+protected-sample10		wasm	165	100.00	0	100.00	0
+protected-sample10		wasm	166	100.00	0	100.00	0
+protected-sample10		wasm	167	100.00	0	100.00	0
+protected-sample10		wasm	168	100.00	0	100.00	0
+protected-sample10		wasm	169	100.00	0	100.00	0
+protected-sample10		wasm	170	100.00	0	100.00	0
+protected-sample10		wasm	171	100.00	0	100.00	0
+protected-sample10		wasm	172	100.00	0	100.00	0
+protected-sample10		wasm	173	100.00	0	100.00	0
+protected-sample10		wasm	174	100.00	0	100.00	0
+protected-sample10		wasm	175	100.00	0	100.00	0
+protected-sample10		wasm	176	100.00	0	100.00	0
+protected-sample10		wasm	177	100.00	0	100.00	0
+protected-sample10		wasm	178	100.00	0	100.00	0
+protected-sample10		wasm	179	100.00	0	100.00	0
+protected-sample10		wasm	180	100.00	0	100.00	0
+protected-sample10		wasm	181	100.00	0	100.00	0
+protected-sample10		wasm	182	100.00	0	100.00	0
+protected-sample10		wasm	183	100.00	0	100.00	0
+protected-sample10		wasm	184	100.00	0	100.00	0
+protected-sample10		wasm	185	100.00	0	100.00	0
+protected-sample10		wasm	186	100.00	0	100.00	0
+protected-sample10		wasm	187	100.00	0	100.00	0
+protected-sample10		wasm	188	100.00	0	100.00	0
+protected-sample10		wasm	189	100.00	0	100.00	0
+protected-sample10		wasm	190	100.00	0	100.00	0
+protected-sample10		wasm	191	100.00	0	100.00	0
+protected-sample10		wasm	192	100.00	0	100.00	0
+protected-sample10		wasm	193	100.00	0	100.00	0
+protected-sample10		wasm	194	100.00	0	100.00	0
+protected-sample10		wasm	195	100.00	0	100.00	0
+protected-sample10		wasm	196	100.00	0	100.00	0
+protected-sample10		wasm	197	100.00	0	100.00	0
+protected-sample10		wasm	198	100.00	0	100.00	0
+protected-sample10		wasm	199	100.00	0	100.00	0
+protected-sample10		wasm	200	100.00	0	100.00	0
+protected-sample10		wasm	201	100.00	0	100.00	0
+protected-sample10		wasm	202	100.00	0	100.00	0
+protected-sample10		wasm	203	100.00	0	100.00	0
+protected-sample10		wasm	204	100.00	0	100.00	0
+protected-sample10		wasm	205	100.00	0	100.00	0
+protected-sample10		wasm	206	100.00	0	100.00	0
+protected-sample10		wasm	207	100.00	0	100.00	0
+protected-sample10		wasm	208	100.00	0	100.00	0
+protected-sample10		wasm	209	100.00	0	100.00	0
+protected-sample10		wasm	210	100.00	0	100.00	0
+protected-sample10		wasm	211	100.00	0	100.00	0
+protected-sample10		wasm	212	100.00	0	100.00	0
+protected-sample10		wasm	213	100.00	0	100.00	0
+protected-sample10		wasm	214	100.00	0	100.00	0
+protected-sample10		wasm	215	100.00	0	100.00	0
+protected-sample10		wasm	216	100.00	0	100.00	0
+protected-sample10		wasm	217	100.00	0	100.00	0
+protected-sample10		wasm	218	100.00	0	100.00	0
+protected-sample10		wasm	219	100.00	0	100.00	0
+protected-sample10		wasm	220	100.00	0	100.00	0
+protected-sample10		wasm	221	100.00	0	100.00	0
+protected-sample10		wasm	222	100.00	0	100.00	0
+protected-sample10		wasm	223	100.00	0	100.00	0
+protected-sample10		wasm	224	100.00	0	100.00	0
+protected-sample10		wasm	225	100.00	0	100.00	0
+protected-sample10		wasm	226	100.00	0	100.00	0
+protected-sample10		wasm	227	100.00	0	100.00	0
+protected-sample10		wasm	228	100.00	0	100.00	0
+protected-sample10		wasm	229	100.00	0	100.00	0
+protected-sample10		wasm	230	100.00	0	100.00	0
+protected-sample10		wasm	231	100.00	0	100.00	0
+protected-sample10		wasm	232	100.00	0	100.00	0
+protected-sample10		wasm	233	100.00	0	100.00	0
+protected-sample10		wasm	234	100.00	0	100.00	0
+protected-sample10		wasm	235	100.00	0	100.00	0
+protected-sample10		wasm	236	100.00	0	100.00	0
+protected-sample10		wasm	237	100.00	0	100.00	0
+protected-sample10		wasm	238	100.00	0	100.00	0
+protected-sample10		wasm	239	100.00	0	100.00	0
+protected-sample10		wasm	240	100.00	0	100.00	0
+protected-sample10		wasm	241	100.00	0	100.00	0
+protected-sample10		wasm	242	100.00	0	100.00	0
+protected-sample10		wasm	243	100.00	0	100.00	0
+protected-sample10		wasm	244	100.00	0	100.00	0
+protected-sample10		wasm	245	100.00	0	100.00	0
+protected-sample10		wasm	246	100.00	0	100.00	0
+protected-sample10		wasm	247	100.00	0	100.00	0
+protected-sample10		wasm	248	100.00	0	100.00	0
+protected-sample10		wasm	249	100.00	0	100.00	0
+protected-sample10		wasm	250	100.00	0	100.00	0
+protected-sample10		wasm	251	99.86	0	99.86	0
+protected-sample10		wasm	252	100.00	0	100.00	0
+protected-sample10		wasm	253	100.00	0	100.00	0
+protected-sample10		wasm	254	100.00	0	100.00	0
+protected-sample10		wasm	255	100.00	0	100.00	0
+protected-sample10		wasm	256	100.00	0	100.00	0
+protected-sample10		wasm	257	100.00	0	100.00	0
+protected-sample10		wasm	258	100.00	0	100.00	0
+protected-sample10		wasm	259	100.00	0	100.00	0
+protected-sample10		wasm	260	100.00	0	100.00	0
+protected-sample10		wasm	261	100.00	0	100.00	0
+protected-sample10		wasm	262	100.00	0	100.00	0
+protected-sample10		wasm	263	100.00	0	100.00	0
+protected-sample10		wasm	264	100.00	0	100.00	0
+protected-sample10		wasm	265	100.00	0	100.00	0
+protected-sample10		wasm	266	100.00	0	100.00	0
+protected-sample10		wasm	267	100.00	0	100.00	0
+protected-sample10		wasm	268	100.00	0	100.00	0
+protected-sample10		wasm	269	100.00	0	100.00	0
+protected-sample10		wasm	270	100.00	0	100.00	0
+protected-sample10		wasm	271	100.00	0	100.00	0
+protected-sample10		wasm	272	100.00	0	100.00	0
+protected-sample10		wasm	273	100.00	0	100.00	0
+protected-sample10		wasm	274	100.00	0	100.00	0
+protected-sample10		wasm	275	100.00	0	100.00	0
+protected-sample10		wasm	276	100.00	0	100.00	0
+protected-sample10		wasm	277	100.00	0	100.00	0
+protected-sample10		wasm	278	100.00	0	100.00	0
+protected-sample10		wasm	279	100.00	0	100.00	0
+protected-sample10		wasm	280	100.00	0	100.00	0
+protected-sample10		wasm	281	100.00	0	100.00	0
+protected-sample10		wasm	282	100.00	0	100.00	0
+protected-sample10		wasm	283	100.00	0	100.00	0
+protected-sample10		wasm	284	100.00	0	100.00	0
+protected-sample10		wasm	285	100.00	0	100.00	0
+protected-sample10		wasm	286	100.00	0	100.00	0
+protected-sample10		wasm	287	100.00	0	100.00	0
+protected-sample10		wasm	288	100.00	0	100.00	0
+protected-sample10		wasm	289	100.00	0	100.00	0
+protected-sample10		wasm	290	100.00	0	100.00	0
+protected-sample10		wasm	291	100.00	0	100.00	0
+protected-sample10		wasm	292	100.00	0	100.00	0
+protected-sample10		wasm	293	100.00	0	100.00	0
+protected-sample10		wasm	294	100.00	0	100.00	0
+protected-sample10		wasm	295	100.00	0	100.00	0
+protected-sample10		wasm	296	100.00	0	100.00	0
+protected-sample10		wasm	297	100.00	0	100.00	0
+protected-sample10		wasm	298	100.00	0	100.00	0
+protected-sample10		wasm	299	100.00	0	100.00	0
+protected-sample10		wasm	300	100.00	0	100.00	0
+protected-sample10		wasm	301	100.00	0	100.00	0
+protected-sample10		wasm	302	100.00	0	100.00	0
+protected-sample10		wasm	303	100.00	0	100.00	0
+protected-sample10		wasm	304	100.00	0	100.00	0
+protected-sample10		wasm	305	100.00	0	100.00	0
+protected-sample10		wasm	306	100.00	0	100.00	0
+protected-sample10		wasm	307	100.00	0	100.00	0
+protected-sample10		wasm	308	100.00	0	100.00	0
+protected-sample10		wasm	309	100.00	0	100.00	0
+protected-sample10		wasm	310	100.00	0	100.00	0
+protected-sample10		wasm	311	100.00	0	100.00	0
+protected-sample10		wasm	312	100.00	0	100.00	0
+protected-sample10		wasm	313	100.00	0	100.00	0
+protected-sample10		wasm	314	100.00	0	100.00	0
+protected-sample10		wasm	315	100.00	0	100.00	0
+protected-sample10		wasm	316	100.00	0	100.00	0
+protected-sample10		wasm	317	100.00	0	100.00	0
+protected-sample10		wasm	318	100.00	0	100.00	0
+protected-sample10		wasm	319	100.00	0	100.00	0
+protected-sample10		wasm	320	100.00	0	100.00	0
+protected-sample10		wasm	321	100.00	0	100.00	0
+protected-sample10		wasm	322	100.00	0	100.00	0
+protected-sample10		wasm	323	100.00	0	100.00	0
+protected-sample10		wasm	324	100.00	0	100.00	0
+protected-sample10		wasm	325	100.00	0	100.00	0
+protected-sample10		wasm	326	100.00	0	100.00	0
+protected-sample10		wasm	327	100.00	0	100.00	0
+protected-sample10		wasm	328	100.00	0	100.00	0
+protected-sample10		wasm	329	100.00	0	100.00	0
+protected-sample10		wasm	330	100.00	0	100.00	0
+protected-sample10		wasm	331	100.00	0	100.00	0
+protected-sample10		wasm	332	100.00	0	100.00	0
+protected-sample10		wasm	333	100.00	0	100.00	0
+protected-sample10		wasm	334	100.00	0	100.00	0
+protected-sample10		wasm	335	100.00	0	100.00	0
+protected-sample10		wasm	336	100.00	0	100.00	0
+protected-sample10		wasm	337	100.00	0	100.00	0
+protected-sample10		wasm	338	100.00	0	100.00	0
+protected-sample10		wasm	339	100.00	0	100.00	0
+protected-sample10		wasm	340	100.00	0	100.00	0
+protected-sample10		wasm	341	100.00	0	100.00	0
+protected-sample10		wasm	342	100.00	0	100.00	0
+protected-sample10		wasm	343	100.00	0	100.00	0
+protected-sample10		wasm	344	100.00	0	100.00	0
+protected-sample10		wasm	345	100.00	0	100.00	0
+protected-sample10		wasm	346	100.00	0	100.00	0
+protected-sample10		wasm	347	100.00	0	100.00	0
+protected-sample10		wasm	348	100.00	0	100.00	0
+protected-sample10		wasm	349	100.00	0	100.00	0
+protected-sample10		wasm	350	100.00	0	100.00	0
+protected-sample10		wasm	351	100.00	0	100.00	0
+protected-sample10		wasm	352	100.00	0	100.00	0
+protected-sample10		wasm	353	100.00	0	100.00	0
+protected-sample10		wasm	354	100.00	0	100.00	0
+protected-sample10		wasm	355	100.00	0	100.00	0
+protected-sample10		wasm	356	100.00	0	100.00	0
+protected-sample10		wasm	357	100.00	0	100.00	0
+protected-sample10		wasm	358	100.00	0	100.00	0
+protected-sample10		wasm	359	100.00	0	100.00	0
+protected-sample10		wasm	360	100.00	0	100.00	0
+protected-sample10		wasm	361	100.00	0	100.00	0
+protected-sample10		wasm	362	100.00	0	100.00	0
+protected-sample10		wasm	363	100.00	0	100.00	0
+protected-sample10		wasm	364	100.00	0	100.00	0
+protected-sample10		wasm	365	100.00	0	100.00	0
+protected-sample10		wasm	366	100.00	0	100.00	0
+protected-sample10		wasm	367	100.00	0	100.00	0
+protected-sample10		wasm	368	100.00	0	100.00	0
+protected-sample10		wasm	369	100.00	0	100.00	0
+protected-sample10		wasm	370	100.00	0	100.00	0
+protected-sample10		wasm	371	100.00	0	100.00	0
+protected-sample10		wasm	372	100.00	0	100.00	0
+protected-sample10		wasm	373	100.00	0	100.00	0
+protected-sample10		wasm	374	100.00	0	100.00	0
+protected-sample10		wasm	375	100.00	0	100.00	0
+protected-sample10		wasm	376	100.00	0	100.00	0
+protected-sample10		wasm	377	100.00	0	100.00	0
+protected-sample10		wasm	378	100.00	0	100.00	0
+protected-sample10		wasm	379	100.00	0	100.00	0
+protected-sample10		wasm	380	100.00	0	100.00	0
+protected-sample10		wasm	381	100.00	0	100.00	0
+protected-sample10		wasm	382	100.00	0	100.00	0
+protected-sample10		wasm	383	100.00	0	100.00	0
+protected-sample10		wasm	384	100.00	0	100.00	0
+protected-sample10		wasm	385	100.00	0	100.00	0
+protected-sample10		wasm	386	100.00	0	100.00	0
+protected-sample10		wasm	387	100.00	0	100.00	0
+protected-sample10		wasm	388	100.00	0	100.00	0
+protected-sample10		wasm	389	100.00	0	100.00	0
+protected-sample10		wasm	390	100.00	0	100.00	0
+protected-sample10		wasm	391	100.00	0	100.00	0
+protected-sample10		wasm	392	100.00	0	100.00	0
+protected-sample10		wasm	393	100.00	0	100.00	0
+protected-sample10		wasm	394	100.00	0	100.00	0
+protected-sample10		wasm	395	100.00	0	100.00	0
+protected-sample10		wasm	396	100.00	0	100.00	0
+protected-sample10		wasm	397	100.00	0	100.00	0
+protected-sample10		wasm	398	100.00	0	100.00	0
+protected-sample10		wasm	399	100.00	0	100.00	0
+protected-sample10		wasm	400	100.00	0	100.00	0
+protected-sample10		wasm	401	100.00	0	100.00	0
+protected-sample10		wasm	402	100.00	0	100.00	0
+protected-sample10		wasm	403	100.00	0	100.00	0
+protected-sample10		wasm	404	100.00	0	100.00	0
+protected-sample10		wasm	405	100.00	0	100.00	0
+protected-sample10		wasm	406	100.00	0	100.00	0
+protected-sample10		wasm	407	100.00	0	100.00	0
+protected-sample10		wasm	408	100.00	0	100.00	0
+protected-sample10		wasm	409	100.00	0	100.00	0
+protected-sample10		wasm	410	100.00	0	100.00	0
+protected-sample10		wasm	411	100.00	0	100.00	0
+protected-sample10		wasm	412	100.00	0	100.00	0
+protected-sample10		wasm	413	100.00	0	100.00	0
+protected-sample10		wasm	414	100.00	0	100.00	0
+protected-sample10		wasm	415	100.00	0	100.00	0
+protected-sample10		wasm	416	100.00	0	100.00	0
+protected-sample10		wasm	417	100.00	0	100.00	0
+protected-sample10		wasm	418	100.00	0	100.00	0
+protected-sample10		wasm	419	100.00	0	100.00	0
+protected-sample10		wasm	420	100.00	0	100.00	0
+protected-sample10		wasm	421	100.00	0	100.00	0
+protected-sample10		wasm	422	100.00	0	100.00	0
+protected-sample10		wasm	423	100.00	0	100.00	0
+protected-sample10		wasm	424	100.00	0	100.00	0
+protected-sample10		wasm	425	100.00	0	100.00	0
+protected-sample10		wasm	426	100.00	0	100.00	0
+protected-sample10		wasm	427	100.00	0	100.00	0
+protected-sample10		wasm	428	100.00	0	100.00	0
+protected-sample10		wasm	429	100.00	0	100.00	0
+protected-sample10		wasm	430	100.00	0	100.00	0
+protected-sample10		wasm	431	100.00	0	100.00	0
+protected-sample10		wasm	432	100.00	0	100.00	0
+protected-sample10		wasm	433	100.00	0	100.00	0
+protected-sample10		wasm	434	100.00	0	100.00	0
+protected-sample10		wasm	435	100.00	0	100.00	0
+protected-sample10		wasm	436	100.00	0	100.00	0
+protected-sample10		wasm	437	100.00	0	100.00	0
+protected-sample10		wasm	438	100.00	0	100.00	0
+protected-sample10		wasm	439	100.00	0	100.00	0
+protected-sample10		wasm	440	100.00	0	100.00	0
+protected-sample10		wasm	441	100.00	0	100.00	0
+protected-sample10		wasm	442	100.00	0	100.00	0
+protected-sample10		wasm	443	100.00	0	100.00	0
+protected-sample10		wasm	444	100.00	0	100.00	0
+protected-sample10		wasm	445	100.00	0	100.00	0
+protected-sample10		wasm	446	100.00	0	100.00	0
+protected-sample10		wasm	447	100.00	0	100.00	0
+protected-sample10		wasm	448	100.00	0	100.00	0
+protected-sample10		wasm	449	100.00	0	100.00	0
+protected-sample10		wasm	450	100.00	0	100.00	0
+protected-sample10		wasm	451	100.00	0	100.00	0
+protected-sample10		wasm	452	100.00	0	100.00	0
+protected-sample10		wasm	453	100.00	0	100.00	0
+protected-sample10		wasm	454	100.00	0	100.00	0
+protected-sample10		wasm	455	100.00	0	100.00	0
+protected-sample10		wasm	456	100.00	0	100.00	0
+protected-sample10		wasm	457	100.00	0	100.00	0
+protected-sample10		wasm	458	100.00	0	100.00	0
+protected-sample10		wasm	459	100.00	0	100.00	0
+protected-sample10		wasm	460	100.00	0	100.00	0
+protected-sample10		wasm	461	100.00	0	100.00	0
+protected-sample10		wasm	462	100.00	0	100.00	0
+protected-sample10		wasm	463	100.00	0	100.00	0
+protected-sample10		wasm	464	100.00	0	100.00	0
+protected-sample10		wasm	465	100.00	0	100.00	0
+protected-sample10		wasm	466	100.00	0	100.00	0
+protected-sample10		wasm	467	100.00	0	100.00	0
+protected-sample10		wasm	468	100.00	0	100.00	0
+protected-sample10		wasm	469	100.00	0	100.00	0
+protected-sample10		wasm	470	100.00	0	100.00	0
+protected-sample10		wasm	471	100.00	0	100.00	0
+protected-sample10		wasm	472	100.00	0	100.00	0
+protected-sample10		wasm	473	100.00	0	100.00	0
+protected-sample10		wasm	474	100.00	0	100.00	0
+protected-sample10		wasm	475	100.00	0	100.00	0
+protected-sample10		wasm	476	100.00	0	100.00	0
+protected-sample10		wasm	477	100.00	0	100.00	0
+protected-sample10		wasm	478	100.00	0	100.00	0
+protected-sample10		wasm	479	100.00	0	100.00	0
+protected-sample10		wasm	480	100.00	0	100.00	0
+protected-sample10		wasm	481	100.00	0	100.00	0
+protected-sample10		wasm	482	100.00	0	100.00	0
+protected-sample10		wasm	483	100.00	0	100.00	0
+protected-sample10		wasm	484	100.00	0	100.00	0
+protected-sample10		wasm	485	100.00	0	100.00	0
+protected-sample10		wasm	486	100.00	0	100.00	0
+protected-sample10		wasm	487	100.00	0	100.00	0
+protected-sample10		wasm	488	100.00	0	100.00	0
+protected-sample10		wasm	489	100.00	0	100.00	0
+protected-sample10		wasm	490	100.00	0	100.00	0
+protected-sample10		wasm	491	100.00	0	100.00	0
+protected-sample10		wasm	492	100.00	0	100.00	0
+protected-sample10		wasm	493	100.00	0	100.00	0
+protected-sample10		wasm	494	100.00	0	100.00	0
+protected-sample10		wasm	495	100.00	0	100.00	0
+protected-sample10		wasm	496	100.00	0	100.00	0
+protected-sample10		wasm	497	100.00	0	100.00	0
+protected-sample10		wasm	498	100.00	0	100.00	0
+protected-sample10		wasm	499	100.00	0	100.00	0
+protected-sample10		wasm	500	100.00	0	100.00	0
+protected-sample10		wasm	501	100.00	0	100.00	0
+protected-sample10		wasm	502	100.00	0	100.00	0
+protected-sample10		wasm	503	100.00	0	100.00	0
+protected-sample10		wasm	504	100.00	0	100.00	0
+protected-sample10		wasm	505	100.00	0	100.00	0
+protected-sample10		wasm	506	100.00	0	100.00	0
+protected-sample10		wasm	507	100.00	0	100.00	0
+protected-sample10		wasm	508	99.99	0	99.99	0
+protected-sample10		wasm	509	99.91	0	99.91	0
+protected-sample10		wasm	510	100.00	0	100.00	0
+protected-sample10		wasm	511	100.00	0	100.00	0
+protected-sample10		wasm	512	100.00	0	100.00	0
+protected-sample10		wasm	513	100.00	0	100.00	0
+protected-sample10		wasm	514	100.00	0	100.00	0
+protected-sample10		wasm	515	100.00	0	100.00	0
+protected-sample10		wasm	516	100.00	0	100.00	0
+protected-sample10		wasm	517	100.00	0	100.00	0
+protected-sample10		wasm	518	100.00	0	100.00	0
+protected-sample10		wasm	519	100.00	0	100.00	0
+protected-sample10		wasm	520	100.00	0	100.00	0
+protected-sample10		wasm	521	100.00	0	100.00	0
+protected-sample10		wasm	522	100.00	0	100.00	0
+protected-sample10		wasm	523	100.00	0	100.00	0
+protected-sample10		wasm	524	100.00	0	100.00	0
+protected-sample10		wasm	525	100.00	0	100.00	0
+protected-sample10		wasm	526	100.00	0	100.00	0
+protected-sample10		wasm	527	100.00	0	100.00	0
+protected-sample10		wasm	528	100.00	0	100.00	0
+protected-sample10		wasm	529	100.00	0	100.00	0
+protected-sample10		wasm	530	100.00	0	100.00	0
+protected-sample10		wasm	531	100.00	0	100.00	0
+protected-sample10		wasm	532	100.00	0	100.00	0
+protected-sample10		wasm	533	100.00	0	100.00	0
+protected-sample10		wasm	534	100.00	0	100.00	0
+protected-sample10		wasm	535	100.00	0	100.00	0
+protected-sample10		wasm	536	100.00	0	100.00	0
+protected-sample10		wasm	537	100.00	0	100.00	0
+protected-sample10		wasm	538	100.00	0	100.00	0
+protected-sample10		wasm	539	100.00	0	100.00	0
+protected-sample10		wasm	540	100.00	0	100.00	0
+protected-sample10		wasm	541	100.00	0	100.00	0
+protected-sample10		wasm	542	100.00	0	100.00	0
+protected-sample10		wasm	543	100.00	0	100.00	0
+protected-sample10		wasm	544	100.00	0	100.00	0
+protected-sample10		wasm	545	100.00	0	100.00	0
+protected-sample10		wasm	546	100.00	0	100.00	0
+protected-sample10		wasm	547	100.00	0	100.00	0
+protected-sample10		wasm	548	100.00	0	100.00	0
+protected-sample10		wasm	549	100.00	0	100.00	0
+protected-sample10		wasm	550	100.00	0	100.00	0
+protected-sample10		wasm	551	100.00	0	100.00	0
+protected-sample10		wasm	552	99.99	0	99.99	0
+protected-sample10		wasm	553	100.00	0	100.00	0
+protected-sample10		wasm	554	100.00	0	100.00	0
+protected-sample10		wasm	555	100.00	0	100.00	0
+protected-sample10		wasm	556	100.00	0	100.00	0
+protected-sample10		wasm	557	100.00	0	100.00	0
+protected-sample10		wasm	558	99.96	0	99.96	0
+protected-sample10		wasm	559	100.00	0	100.00	0
+protected-sample10		wasm	560	100.00	0	100.00	0
+protected-sample10		wasm	561	100.00	0	100.00	0
+protected-sample10		wasm	562	100.00	0	100.00	0
+protected-sample10		wasm	563	100.00	0	100.00	0
+protected-sample10		wasm	564	100.00	0	100.00	0
+protected-sample10		wasm	565	100.00	0	100.00	0
+protected-sample10		wasm	566	100.00	0	100.00	0
+protected-sample10		wasm	567	100.00	0	100.00	0
+protected-sample10		wasm	568	100.00	0	100.00	0
+protected-sample10		wasm	569	100.00	0	100.00	0
+protected-sample10		wasm	570	100.00	0	100.00	0
+protected-sample10		wasm	571	100.00	0	100.00	0
+protected-sample10		wasm	572	100.00	0	100.00	0
+protected-sample10		wasm	573	100.00	0	100.00	0
+protected-sample10		wasm	574	100.00	0	100.00	0
+protected-sample10		wasm	575	100.00	0	100.00	0
+protected-sample10		wasm	576	100.00	0	100.00	0
+protected-sample10		wasm	577	100.00	0	100.00	0
+protected-sample10		wasm	578	100.00	0	100.00	0
+protected-sample10		wasm	579	100.00	0	100.00	0
+protected-sample10		wasm	580	100.00	0	100.00	0
+protected-sample10		wasm	581	100.00	0	100.00	0
+protected-sample10		wasm	582	100.00	0	100.00	0
+protected-sample10		wasm	583	100.00	0	100.00	0
+protected-sample10		wasm	584	100.00	0	100.00	0
+protected-sample10		wasm	585	100.00	0	100.00	0
+protected-sample10		wasm	586	100.00	0	100.00	0
+protected-sample10		wasm	587	100.00	0	100.00	0
+protected-sample10		wasm	588	100.00	0	100.00	0
+protected-sample10		wasm	589	100.00	0	100.00	0
+protected-sample10		wasm	590	100.00	0	100.00	0
+protected-sample10		wasm	591	100.00	0	100.00	0
+protected-sample10		wasm	592	100.00	0	100.00	0
+protected-sample10		wasm	593	100.00	0	100.00	0
+protected-sample10		wasm	594	100.00	0	100.00	0
+protected-sample10		wasm	595	100.00	0	100.00	0
+protected-sample10		wasm	596	100.00	0	100.00	0
+protected-sample10		wasm	597	100.00	0	100.00	0
+protected-sample10		wasm	598	100.00	0	100.00	0
+protected-sample10		wasm	599	100.00	0	100.00	0
+protected-sample10		wasm	600	100.00	0	100.00	0
+protected-sample10		wasm	601	100.00	0	100.00	0
+protected-sample10		wasm	602	100.00	0	100.00	0
+protected-sample10		wasm	603	100.00	0	100.00	0
+protected-sample10		wasm	604	100.00	0	100.00	0
+protected-sample10		wasm	605	100.00	0	100.00	0
+protected-sample10		wasm	606	100.00	0	100.00	0
+protected-sample10		wasm	607	100.00	0	100.00	0
+protected-sample10		wasm	608	100.00	0	100.00	0
+protected-sample10		wasm	609	100.00	0	100.00	0
+protected-sample10		wasm	610	100.00	0	100.00	0
+protected-sample10		wasm	611	100.00	0	100.00	0
+protected-sample10		wasm	612	100.00	0	100.00	0
+protected-sample10		wasm	613	100.00	0	100.00	0
+protected-sample10		wasm	614	100.00	0	100.00	0
+protected-sample10		wasm	615	100.00	0	100.00	0
+protected-sample10		wasm	616	100.00	0	100.00	0
+protected-sample10		wasm	617	100.00	0	100.00	0
+protected-sample10		wasm	618	100.00	0	100.00	0
+protected-sample10		wasm	619	100.00	0	100.00	0
+protected-sample10		wasm	620	100.00	0	100.00	0
+protected-sample10		wasm	621	100.00	0	100.00	0
+protected-sample10		wasm	622	100.00	0	100.00	0
+protected-sample10		wasm	623	100.00	0	100.00	0
+protected-sample10		wasm	624	100.00	0	100.00	0
+protected-sample10		wasm	625	100.00	0	100.00	0
+protected-sample10		wasm	626	100.00	0	100.00	0
+protected-sample10		wasm	627	100.00	0	100.00	0
+protected-sample10		wasm	628	100.00	0	100.00	0
+protected-sample10		wasm	629	100.00	0	100.00	0
+protected-sample10		wasm	630	100.00	0	100.00	0
+protected-sample10		wasm	631	100.00	0	100.00	0
+protected-sample10		wasm	632	100.00	0	100.00	0
+protected-sample10		wasm	633	100.00	0	100.00	0
+protected-sample10		wasm	634	100.00	0	100.00	0
+protected-sample10		wasm	635	100.00	0	100.00	0
+protected-sample10		wasm	636	100.00	0	100.00	0
+protected-sample10		wasm	637	100.00	0	100.00	0
+protected-sample10		wasm	638	100.00	0	100.00	0
+protected-sample10		wasm	639	100.00	0	100.00	0
+protected-sample10		wasm	640	100.00	0	100.00	0
+protected-sample10		wasm	641	100.00	0	100.00	0
+protected-sample10		wasm	642	100.00	0	100.00	0
+protected-sample10		wasm	643	100.00	0	100.00	0
+protected-sample10		wasm	644	100.00	0	100.00	0
+protected-sample10		wasm	645	100.00	0	100.00	0
+protected-sample10		wasm	646	100.00	0	100.00	0
+protected-sample10		wasm	647	100.00	0	100.00	0
+protected-sample10		wasm	648	100.00	0	100.00	0
+protected-sample10		wasm	649	100.00	0	100.00	0
+protected-sample10		wasm	650	100.00	0	100.00	0
+protected-sample10		wasm	651	100.00	0	100.00	0
+protected-sample10		wasm	652	100.00	0	100.00	0
+protected-sample10		wasm	653	100.00	0	100.00	0
+protected-sample10		wasm	654	100.00	0	100.00	0
+protected-sample10		wasm	655	100.00	0	100.00	0
+protected-sample10		wasm	656	100.00	0	100.00	0
+protected-sample10		wasm	657	99.99	0	99.99	0
+protected-sample10		wasm	658	99.99	0	99.99	0
+protected-sample10		wasm	659	99.99	0	99.99	0
+protected-sample10		wasm	660	99.98	0	99.98	0
+protected-sample10		wasm	661	100.00	0	100.00	0
+protected-sample10		wasm	662	100.00	0	100.00	0
+protected-sample10		wasm	663	100.00	0	100.00	0
+protected-sample10		wasm	664	100.00	0	100.00	0
+protected-sample10		wasm	665	100.00	0	100.00	0
+protected-sample10		wasm	666	100.00	0	100.00	0
+protected-sample10		wasm	667	100.00	0	100.00	0
+protected-sample10		wasm	668	100.00	0	100.00	0
+protected-sample10		wasm	669	100.00	0	100.00	0
+protected-sample10		wasm	670	100.00	0	100.00	0
+protected-sample10		wasm	671	100.00	0	100.00	0
+protected-sample10		wasm	672	100.00	0	100.00	0
+protected-sample10		wasm	673	100.00	0	100.00	0
+protected-sample10		wasm	674	100.00	0	100.00	0
+protected-sample10		wasm	675	100.00	0	100.00	0
+protected-sample10		wasm	676	100.00	0	100.00	0
+protected-sample10		wasm	677	100.00	0	100.00	0
+protected-sample10		wasm	678	100.00	0	100.00	0
+protected-sample10		wasm	679	100.00	0	100.00	0
+protected-sample10		wasm	680	100.00	0	100.00	0
+protected-sample10		wasm	681	100.00	0	100.00	0
+protected-sample10		wasm	682	100.00	0	100.00	0
+protected-sample10		wasm	683	100.00	0	100.00	0
+protected-sample10		wasm	684	100.00	0	100.00	0
+protected-sample10		wasm	685	100.00	0	100.00	0
+protected-sample10		wasm	686	100.00	0	100.00	0
+protected-sample10		wasm	687	100.00	0	100.00	0
+protected-sample10		wasm	688	100.00	0	100.00	0
+protected-sample10		wasm	689	100.00	0	100.00	0
+protected-sample10		wasm	690	99.94	0	99.94	0
+protected-sample10		wasm	691	100.00	0	100.00	0
+protected-sample10		wasm	692	99.99	0	99.99	0
+protected-sample10		wasm	693	99.97	0	99.97	0
+protected-sample10		wasm	694	100.00	0	100.00	0
+protected-sample10		wasm	695	100.00	0	100.00	0
+protected-sample10		wasm	696	100.00	0	100.00	0
+protected-sample10		wasm	697	100.00	0	100.00	0
+protected-sample10		wasm	698	100.00	0	100.00	0
+protected-sample10		wasm	699	100.00	0	100.00	0
+protected-sample10		wasm	700	100.00	0	100.00	0
+protected-sample10		wasm	701	100.00	0	100.00	0
+protected-sample10		wasm	702	100.00	0	100.00	0
+protected-sample10		wasm	703	100.00	0	100.00	0
+protected-sample10		wasm	704	99.99	0	99.99	0
+protected-sample10		wasm	705	99.99	0	99.99	0
+protected-sample10		wasm	706	99.95	0	99.95	0
+protected-sample10		wasm	707	100.00	0	100.00	0
+protected-sample10		wasm	708	99.88	0	99.88	0
+protected-sample10		wasm	709	100.00	0	100.00	0
+protected-sample10		wasm	710	100.00	0	100.00	0
+protected-sample10		wasm	711	100.00	0	100.00	0
+protected-sample10		wasm	712	100.00	0	100.00	0
+protected-sample10		wasm	713	100.00	0	100.00	0
+protected-sample10		wasm	714	100.00	0	100.00	0
+protected-sample10		wasm	715	100.00	0	100.00	0
+protected-sample10		wasm	716	100.00	0	100.00	0
+protected-sample10		wasm	717	100.00	0	100.00	0
+protected-sample10		wasm	718	100.00	0	100.00	0
+protected-sample10		wasm	719	100.00	0	100.00	0
+protected-sample10		wasm	720	100.00	0	100.00	0
+protected-sample10		wasm	721	100.00	0	100.00	0
+protected-sample10		wasm	722	100.00	0	100.00	0
+protected-sample10		wasm	723	100.00	0	100.00	0
+protected-sample10		wasm	724	100.00	0	100.00	0
+protected-sample10		wasm	725	100.00	0	100.00	0
+protected-sample10		wasm	726	100.00	0	100.00	0
+protected-sample10		wasm	727	100.00	0	100.00	0
+protected-sample10		wasm	728	100.00	0	100.00	0
+protected-sample10		wasm	729	100.00	0	100.00	0
+protected-sample10		wasm	730	100.00	0	100.00	0
+protected-sample10		wasm	731	100.00	0	100.00	0
+protected-sample10		wasm	732	100.00	0	100.00	0
+protected-sample10		wasm	733	100.00	0	100.00	0
+protected-sample10		wasm	734	100.00	0	100.00	0
+protected-sample10		wasm	735	100.00	0	100.00	0
+protected-sample10		wasm	736	100.00	0	100.00	0
+protected-sample10		wasm	737	100.00	0	100.00	0
+protected-sample10		wasm	738	100.00	0	100.00	0
+protected-sample10		wasm	739	100.00	0	100.00	0
+protected-sample10		wasm	740	100.00	0	100.00	0
+protected-sample10		wasm	741	100.00	0	100.00	0
+protected-sample10		wasm	742	100.00	0	100.00	0
+protected-sample10		wasm	743	100.00	0	100.00	0
+protected-sample10		wasm	744	100.00	0	100.00	0
+protected-sample10		wasm	745	100.00	0	100.00	0
+protected-sample10		wasm	746	100.00	0	100.00	0
+protected-sample10		wasm	747	100.00	0	100.00	0
+protected-sample10		wasm	748	100.00	0	100.00	0
+protected-sample10		wasm	749	100.00	0	100.00	0
+protected-sample10		wasm	750	100.00	0	100.00	0
+protected-sample10		wasm	751	100.00	0	100.00	0
+protected-sample10		wasm	752	100.00	0	100.00	0
+protected-sample10		wasm	753	100.00	0	100.00	0
+protected-sample10		wasm	754	100.00	0	100.00	0
+protected-sample10		wasm	755	100.00	0	100.00	0
+protected-sample10		wasm	756	100.00	0	100.00	0
+protected-sample10		wasm	757	99.56	0	99.56	0
+protected-sample10		wasm	758	100.00	0	100.00	0
+protected-sample10		wasm	759	100.00	0	100.00	0
+protected-sample10		wasm	760	100.00	0	100.00	0
+protected-sample10		wasm	761	100.00	0	100.00	0
+protected-sample10		wasm	762	100.00	0	100.00	0
+protected-sample10		wasm	763	100.00	0	100.00	0
+protected-issue8040-insert-delete		wasm	1	100.00	0	100.00	0
+protected-issue8040-insert-delete		wasm	2	100.00	0	100.00	0
+protected-issue8040-insert-delete		wasm	3	100.00	0	100.00	0
+protected-issue8040-insert-delete		wasm	4	99.99	0	99.99	0
+protected-seo-pic-crop-01		wasm	1	100.00	0	100.00	0
+protected-seo-shape-group-02		wasm	1	100.00	0	100.00	0

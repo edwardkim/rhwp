@@ -1,0 +1,25 @@
+{
+  "source": "samples/hwp3-sample10.hwp",
+  "source_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+  "native_contract": "DocumentCore::populate_external_images_from_dir(input.parent); same original files delivered by existing WASM injectExternalImage API",
+  "assets": [
+    {
+      "name": "oracle.gif",
+      "path": "/Users/tsjang/rhwp/samples/oracle.gif",
+      "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761",
+      "bytes": 1813
+    },
+    {
+      "name": "rdb02.gif",
+      "path": "/Users/tsjang/rhwp/samples/rdb02.gif",
+      "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf",
+      "bytes": 6098
+    },
+    {
+      "name": "s1.jpg",
+      "path": "/Users/tsjang/rhwp/samples/s1.jpg",
+      "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514",
+      "bytes": 16744
+    }
+  ]
+}

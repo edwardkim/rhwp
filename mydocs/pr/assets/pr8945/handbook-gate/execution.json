@@ -1,0 +1,30 @@
+{
+  "command": [
+    "/home/edward/mygithub/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--handbook-gate",
+    "--rhwp-bin",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/head/rhwp",
+    "--page-workers",
+    "2",
+    "--out",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-gate",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-fonts/b7438d61595fe9584706ab2cb3c9aa2acdc486d61c8299374a30b3e77bc2045f",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-fonts/7a798592beb0d35bb557b010c2794cbcc988e89fcbcee0eb5edbb35161141ab4",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-fonts/94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-fonts/018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-fonts/d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-fonts/967efe18063dd971c63dde3e8fcb247e0fcf16486a24ba2e284a716e44b90275",
+    "--font-path",
+    "/home/edward/mygithub/rhwp/output/pr-review/pr8945/handbook-fonts/b3192018e3bd4da76b29b0530f71c79fb6f465a2b7cd41308bc38f9a4ae09a6c"
+  ],
+  "source": "e98d884fc35295c8b612ceb0ac86437fb8108fee",
+  "returncode": 0,
+  "seconds": 475.118
+}

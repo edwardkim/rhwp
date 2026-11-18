@@ -1,0 +1,56 @@
+{
+  "code_head": "e9b3114b3506483b423541349639d18b3731e6ac",
+  "ci_run": 43649004508,
+  "archive_summaries": [
+    {
+      "archive": "A",
+      "summary": "2026-11-14T23:01:00.7303472Z      Summary [  36.285s] 3796 tests run: 3796 passed, 12 skipped"
+    },
+    {
+      "archive": "B",
+      "summary": "2026-11-14T23:02:26.7075748Z      Summary [ 325.450s] 2378 tests run: 2378 passed (2 slow), 0 skipped"
+    },
+    {
+      "archive": "C",
+      "summary": "2026-11-14T23:05:25.6507742Z      Summary [ 161.173s] 2938 tests run: 2938 passed, 13 skipped"
+    },
+    {
+      "archive": "D",
+      "summary": "2026-11-14T23:00:01.9982907Z      Summary [ 145.107s] 2397 tests run: 2397 passed, 7 skipped"
+    },
+    {
+      "archive": "E",
+      "summary": "2026-11-14T23:07:49.6382740Z      Summary [ 318.056s] 1871 tests run: 1871 passed (2 slow), 13 skipped"
+    }
+  ],
+  "native_skia_job": 132613392035,
+  "native_skia_summaries": [
+    "2026-11-14T22:56:48.9022611Z test result: ok. 58 passed; 0 failed; 0 ignored; 0 measured; 3807 filtered out; finished in 2.76s",
+    "2026-11-14T22:56:48.9099001Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 15 filtered out; finished in 0.00s",
+    "2026-11-14T22:56:48.9113383Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 165 filtered out; finished in 0.00s",
+    "2026-11-14T22:56:48.9136836Z test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s",
+    "2026-11-14T23:03:58.4615526Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.94s",
+    "2026-11-14T23:04:01.2856688Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s",
+    "2026-11-14T23:04:32.4551864Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 354 filtered out; finished in 0.66s",
+    "2026-11-14T23:04:59.8988573Z test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 297 filtered out; finished in 0.55s",
+    "2026-11-14T23:05:27.3303164Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 312 filtered out; finished in 0.60s",
+    "2026-11-14T23:05:49.3254325Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.19s",
+    "2026-11-14T23:06:10.1890485Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 347 filtered out; finished in 0.10s",
+    "2026-11-14T23:06:38.3628405Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 320 filtered out; finished in 1.21s",
+    "2026-11-14T23:06:39.2117310Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 337 filtered out; finished in 0.04s",
+    "2026-11-14T23:06:40.0395003Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 340 filtered out; finished in 0.04s",
+    "2026-11-14T23:07:07.2065652Z test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 336 filtered out; finished in 0.96s",
+    "2026-11-14T23:07:14.7531333Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 341 filtered out; finished in 6.75s",
+    "2026-11-14T23:07:42.5970481Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 353 filtered out; finished in 0.76s",
+    "2026-11-14T23:08:03.3314341Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 336 filtered out; finished in 0.23s",
+    "2026-11-14T23:08:26.0068357Z test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 318 filtered out; finished in 0.52s",
+    "2026-11-14T23:08:50.1673897Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 333 filtered out; finished in 2.68s",
+    "2026-11-14T23:09:17.4757626Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.03s",
+    "2026-11-14T23:09:42.7007897Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 333 filtered out; finished in 0.11s",
+    "2026-11-14T23:10:17.8013345Z test result: ok. 39 passed; 0 failed; 0 ignored; 0 measured; 294 filtered out; finished in 0.43s",
+    "2026-11-14T23:10:39.6848224Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 327 filtered out; finished in 0.01s",
+    "2026-11-14T23:11:07.8944465Z test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 334 filtered out; finished in 0.03s"
+  ],
+  "ci_default_total_passed": 13380,
+  "ci_default_skipped": 55
+}

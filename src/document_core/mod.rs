@@ -47,7 +47,9 @@ pub use commands::paragraph_block::{
     TemplateFillTarget, TemplateOperation, TemplateOperationResult, TemplateScope,
     TEMPLATE_REQUEST_MAX_BYTES,
 };
-pub use commands::{ComposeHost, TableColumnWidths, TableCreationOptions};
+pub use commands::{
+    check_picture_props, check_shape_props, ComposeHost, TableColumnWidths, TableCreationOptions,
+};
 pub mod converters;
 pub(crate) mod html_table_import;
 mod html_table_width;
@@ -94,6 +96,19 @@ pub(crate) fn header_footer_apply_from_u8(value: u8) -> HeaderFooterApply {
         2 => HeaderFooterApply::Odd,
         _ => HeaderFooterApply::Both,
     }
+}
+
+/// 머리말·꼬리말 편집 API의 `applyTo`가 이 값 이상이면 구역의 `applyTo - 16`번째 바탕쪽을 가리킨다.
+///
+/// 바탕쪽 문단도 머리말처럼 쪽 하나에 그리는 독립 문단 목록이라, 글 입력·지우기·문단 나누기·
+/// 서식·캐럿·선택 질의를 같은 API로 편집한다.
+pub const MASTER_PAGE_APPLY_BASE: u8 = 16;
+
+/// `applyTo`가 바탕쪽을 가리키면 그 바탕쪽 번호.
+pub(crate) fn master_page_slot(apply_to: u8) -> Option<usize> {
+    apply_to
+        .checked_sub(MASTER_PAGE_APPLY_BASE)
+        .map(usize::from)
 }
 
 /// core 열거형을 Studio/WASM의 `applyTo` 숫자로 변환한다.
@@ -247,6 +262,8 @@ pub struct DocumentCore {
     pub(crate) show_control_codes: bool,
     /// 투명선 표시 여부
     pub(crate) show_transparent_borders: bool,
+    /// 편집 화면의 바탕쪽을 흐리게 그릴지(한컴: 편집 화면에서는 본문보다 흐리게, 인쇄는 본래 모양)
+    pub(crate) dim_master_pages: bool,
     /// 잘림 보기 (body/셀 클리핑 활성화 여부)
     pub(crate) clip_enabled: bool,
     /// 디버그 오버레이 표시 여부 (문단/표 경계 + pi/ci 라벨)
@@ -300,6 +317,10 @@ pub struct DocumentCore {
     /// 복원은 문서를 통째로 갈아끼워 같은 id 가 다른 바이트를 가리키게 만들 수 있다.
     /// 그래서 그림을 새로 등록할 때와 스냅샷을 되돌릴 때 세대를 올린다.
     pub(crate) bin_data_epoch: u32,
+    /// [#8941] 불러온 원본이 처음부터 참조 없이 지니고 있던 `BinData` 의 storage id.
+    ///
+    /// HWPX 저장은 편집으로 참조가 끊긴 그림만 버리고, 이 항목들은 원본 그대로 옮긴다.
+    pub(crate) loaded_unreferenced_bin_data: std::collections::BTreeSet<u16>,
     /// Batch 모드 플래그 — true이면 paginate() 스킵
     pub(crate) batch_mode: bool,
     /// 셀 문단 서식으로 무효화된 vpos. RowBreak 조각별 첫 변경부터 한 번만 갱신한다.
@@ -605,6 +626,7 @@ impl DocumentCore {
             annotate_metric_font: false,
             show_control_codes: false,
             show_transparent_borders: false,
+            dim_master_pages: false,
             clip_enabled: true,
             debug_overlay: false,
             respect_vpos_reset: false,
@@ -622,6 +644,7 @@ impl DocumentCore {
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
+            loaded_unreferenced_bin_data: std::collections::BTreeSet::new(),
             batch_mode: false,
             pending_cell_format_vpos: false,
             event_log: Vec::new(),

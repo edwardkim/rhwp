@@ -2,7 +2,19 @@
 
 ## 최종 판정
 
-**승인.** exact code head `9558a0b0213f56181f2a98646d472d41f1fca52f`의 필수 로컬 검증·devel 전체 CodeQL·main PR CI가 모두 통과했다. main의 필수 승인 리뷰 1건과 문서-only trailing head의 실제 CI·fast-pass를 확인하기 전까지 병합은 보류한다. [보안 경고 #623](https://github.com/edwardkim/rhwp/security/code-scanning/623)의 추가 분류도 별도 명시 승인 대상이다.
+**승인·병합 완료.** code head와 문서-only trailing head의 CI·self-review를 확인하고, 승인된 리뷰 개수 요건의 이번 PR 한정 예외로 main에 병합했다. main·devel 전체 CodeQL에서 원 경고 8건이 fixed가 됐으며, 별도 승인된 숫자-only 경고 #623 분류 후 두 보호 브랜치의 OPEN은 모두 0건이다. 아래 최종 종료 확인이 병합 전 조건 기록보다 우선한다.
+
+## 최종 종료 확인 — 2026-11-10T10:13:45.330083+09:00
+
+- 작업지시자가 이번 PR의 승인 리뷰 1건 요건만 명시적으로 예외 승인했다. 최종 head `e44630a7b1b08e2433a96e95b8d5068aedd64da9`의 CI와 self-review·최신 main 병합 시뮬레이션이 통과한 뒤 정확한 head를 지정한 admin merge를 수행했다. 보호 설정·CI 기준은 변경하지 않았다.
+- 실제 main merge는 `7213ed1f96266b95e22cd5645a07851c9c18298e`이며 병합 시각은 `2026-11-10T00:27:50Z`다. [trailing head CI 원장](../assets/code-scanning-closure-20261110/main-trailing-success.json)의 모든 workflow가 성공했고 실제 fast-pass를 확인했다.
+- 별도로 승인된 [main 전체 CodeQL](https://github.com/edwardkim/rhwp/actions/runs/42728536362)은 같은 merge source의 네 언어 모두 성공했다. Rust analysis `2131629953`의 full 초기화·규칙 26개와 query pack이 유지됐다. SARIF 144→137건, qcms invalid-pointer 7→0건이다.
+- 기존 [보안 경고 #597](https://github.com/edwardkim/rhwp/security/code-scanning/597)과 [#616](https://github.com/edwardkim/rhwp/security/code-scanning/616)–[#622](https://github.com/edwardkim/rhwp/security/code-scanning/622)는 main·devel에서 모두 fixed다. 원래 경고를 오탐 분류로 대신 닫지 않았다.
+- 새 [보안 경고 #623](https://github.com/edwardkim/rhwp/security/code-scanning/623)의 4개 flow는 main 전체 분석에서도 `page_index: usize` 숫자 진단으로만 이어지며 devel의 전체 topology와 같았다. 이 조건을 확인한 뒤 승인 범위에 따라 해당 번호 한 건만 `false positive`로 분류했다. [실제 source·flow](../assets/code-scanning-closure-20261110/main-full-verification.json).
+- 최종 조회의 OPEN은 default·main·devel 모두 0건이다. default 분류 수는 dismissed 184건·fixed 48건이며, 기존 dismissed 183건의 번호·사유가 그대로다. [분류 후 API 검증](../assets/code-scanning-closure-20261110/final-security-state.json).
+- #8745의 기존 CLOSED 상태를 유지했다. main push의 [Pages](https://github.com/edwardkim/rhwp/actions/runs/42728493675)는 `success`다. duration 갱신 workflow는 devel 전용이므로 main 대상에는 적용되지 않는다. 별도 제품 CI를 중복 실행하지 않았다.
+- 최종 기록은 maintainer 직접 반영 범위인 archive·asset·오늘할일만 devel에 남긴다. source·test·workflow·golden·기존 sample은 포함하지 않는다. [원격 완료·source 동일성](../assets/code-scanning-closure-20261110/remote-completion.json).
+- 전용 branch/worktree·루트 output·공유 debug의 실제 종료 정리는 `target/pr-review/cleanup-security-closure-20261110.json`에서 확인한다. 다른 작업 #8863의 공유 target 사용이 끝나지 않았으면 해당 사용 근거를 남기고 debug를 보존하며, 이를 정리 완료로 표시하지 않는다.
 
 ## 대상과 승인
 
@@ -27,7 +39,7 @@ Rust 보정 코드와 qcms·PDF backend 전체 tree, codec-resource·toolchain�
 - qcms 선택 기능 30 PASS는 동일 standalone source·manifest, 자원 crate·toolchain의 독립 실행을 재사용한다. 이번 main에서 새로 실행한 30건으로 표시하지 않는다.
 - 입력 커밋 확인: 충족. 공개 PDF 2개와 HWPX 2개의 실제 bytes가 Git bytes와 같고 LFS pointer가 아님을 확인했다. 동작만 합성한 공개 PDF는 source에 보존됐다.
 
-근거: [새 검증 원장](../../tech/investigations/code-scanning-closure-20261110/README.md), [명령·시각·결과](../../tech/investigations/code-scanning-closure-20261110/main-local-validation.json), [소스·입력 동일성](../../tech/investigations/code-scanning-closure-20261110/main-source-identity.json).
+근거: [새 검증 원장](https://github.com/edwardkim/rhwp/blob/7213ed1f96266b95e22cd5645a07851c9c18298e/mydocs/tech/investigations/code-scanning-closure-20261110/README.md), [명령·시각·결과](https://github.com/edwardkim/rhwp/blob/7213ed1f96266b95e22cd5645a07851c9c18298e/mydocs/tech/investigations/code-scanning-closure-20261110/main-local-validation.json), [소스·입력 동일성](https://github.com/edwardkim/rhwp/blob/7213ed1f96266b95e22cd5645a07851c9c18298e/mydocs/tech/investigations/code-scanning-closure-20261110/main-source-identity.json).
 
 ## devel 전체 CodeQL과 실제 경고 번호
 
@@ -35,7 +47,7 @@ Rust 보정 코드와 qcms·PDF backend 전체 tree, codec-resource·toolchain�
 
 숫자-only 진단 4개 flow는 GitHub가 새 **[보안 경고 #623](https://github.com/edwardkim/rhwp/security/code-scanning/623)**으로 등록했다. 모든 끝점이 `page_index: usize`를 거쳐 길이·쪽 번호 로그로 이어진다. 현재 [보안 경고 #623](https://github.com/edwardkim/rhwp/security/code-scanning/623)은 OPEN이며 이전 번호별 분류 승인과 구분한다. main full scan과 새 번호의 명시 분류 승인 뒤에만 후속 상태를 확정한다. PR Rust CodeQL은 vendor 전체를 검사하지 않으므로 이 PR check 성공을 protected ref 전체 종료로 표시하지 않는다.
 
-[전체 결과와 ref별 instance·flow](../../tech/investigations/code-scanning-closure-20261110/devel-closure-verification.json)를 보존했다. 원문 SARIF는 임시 자료이며 정규화된 판단 근거만 커밋했다. query·path·language·severity와 sanitizer는 바꾸지 않았다.
+[전체 결과와 ref별 instance·flow](https://github.com/edwardkim/rhwp/blob/7213ed1f96266b95e22cd5645a07851c9c18298e/mydocs/tech/investigations/code-scanning-closure-20261110/devel-closure-verification.json)를 보존했다. 원문 SARIF는 임시 자료이며 정규화된 판단 근거만 커밋했다. query·path·language·severity와 sanitizer는 바꾸지 않았다.
 
 ## 조판 원칙 준수 검토
 
@@ -61,7 +73,7 @@ Rust 보정 코드와 qcms·PDF backend 전체 tree, codec-resource·toolchain�
 | [CI](https://github.com/edwardkim/rhwp/actions/runs/42722522512) | `42722522512` | success |
 | [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/42722522457) | `42722522457` | success |
 
-[실제 check 원장](../../tech/investigations/code-scanning-closure-20261110/main-code-ci.json)에 적용되지 않은 조건부 skip과 실행한 제품 검사를 구분했다. main은 CI Impact Policy의 게시 대상이 아니므로 존재하지 않는 legacy status를 성공으로 가정하지 않았다.
+[실제 check 원장](https://github.com/edwardkim/rhwp/blob/7213ed1f96266b95e22cd5645a07851c9c18298e/mydocs/tech/investigations/code-scanning-closure-20261110/main-code-ci.json)에 적용되지 않은 조건부 skip과 실행한 제품 검사를 구분했다. main은 CI Impact Policy의 게시 대상이 아니므로 존재하지 않는 legacy status를 성공으로 가정하지 않았다.
 
 ## 병합과 후속 조건
 

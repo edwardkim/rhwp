@@ -1,0 +1,107 @@
+[
+  {
+    "index": 0,
+    "family": "HCR Batang",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 0
+  },
+  {
+    "index": 1,
+    "family": "HCR Batang",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 0
+  },
+  {
+    "index": 2,
+    "family": "Haansoft Batang",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 0
+  },
+  {
+    "index": 3,
+    "family": "HCR Batang",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 0
+  },
+  {
+    "index": 4,
+    "family": "Haansoft Batang",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 0
+  },
+  {
+    "index": 5,
+    "family": "HCR Batang",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 0
+  },
+  {
+    "index": 6,
+    "family": "Noto Serif CJK KR",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 7
+  },
+  {
+    "index": 7,
+    "family": "HCR Batang Ext",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 10
+  },
+  {
+    "index": 8,
+    "family": "HCR Batang Ext",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 10
+  },
+  {
+    "index": 9,
+    "family": "HCR Batang ExtB",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 12
+  },
+  {
+    "index": 10,
+    "family": "HCR Batang ExtB",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 12
+  },
+  {
+    "index": 11,
+    "family": "RHWP Old Hangul",
+    "style": "0x50190",
+    "source": "bundled",
+    "family_order": 14
+  },
+  {
+    "index": 12,
+    "family": "Segoe UI Emoji",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 15
+  },
+  {
+    "index": 13,
+    "family": "Noto Color Emoji",
+    "style": "0x50190",
+    "source": "system",
+    "family_order": 17
+  },
+  {
+    "index": 14,
+    "family": "Noto Sans",
+    "style": "0x50190",
+    "source": "legacy",
+    "family_order": 19
+  }
+]

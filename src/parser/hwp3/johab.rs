@@ -214,6 +214,14 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         return char::from_u32(0xF03EF + (ch - 0x37C0) as u32);
     }
     let codepoint: u32 = match ch {
+        // [#8912] 사적 기호 코드. ∼는 KS 기호행의 ～ 보정과 별개다.
+        0x2051 => 0x00B1, // ±
+        0x2053 => 0x00D7, // ×
+        0x048A => 0x02DA, // ˚
+        0x223C => 0x223C, // ∼
+        0x3151 => 0x2027, // ‧
+        0x2F66 => 0x25B6, // ▶
+        0x2191 => 0x2191, // ↑
         0x0081 => 0x201C, // 왼쪽 큰따옴표
         0x0082 => 0x201D, // 오른쪽 큰따옴표
         // [#5860] 작은따옴표 짝 — 큰따옴표(0x0081/0x0082) 바로 다음 코드다.
@@ -254,6 +262,19 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         // HWPX 재저장본에서 U+2015(―)로 그대로 남는다. 미지원 문자로
         // 버리면 화살표 양쪽의 가로선과 그 전진폭이 함께 사라진다.
         0x2015 => 0x2015,
+        // SO-SUEOP 사적 문장부호 — `samples/SO-SUEOP.hwp` 를 같은 문서의 한컴 변환본
+        // `samples/SO-SUEOP.hwpx` 와 문자 멀티셋·문맥으로 대조했다. 이 값을 넣으면 두 문서의 문자
+        // 개수가 같아진다(“ 31·” 32·‧ 4·— 1·∣ 6·↳ 18·책괄호 3·3). 0x3062·0x3063·0x3066 은 사적 코드,
+        // 0x2014·0x2223·0x21B3 은 유니코드 값 그대로다.
+        // 책괄호 두 코드는 변환본이 한컴 PUA(흰 겹낫표 반각, #6057)로 저장하므로 그 PUA를 보존한다.
+        0x3062 => 0x201C,  // “
+        0x3063 => 0x201D,  // ”
+        0x3066 => 0x2027,  // ‧
+        0x30BB => 0xF0854, // 한컴 PUA - 흰 겹낫표 반각 여는 쪽
+        0x30BD => 0xF0855, // 한컴 PUA - 흰 겹낫표 반각 닫는 쪽
+        0x2014 => 0x2014,  // —
+        0x2223 => 0x2223,  // ∣
+        0x21B3 => 0x21B3,  // ↳
         // [#5860] 아래는 s36 load/save 전수(한글 2022 오라클)에서 **버려지던** 코드를
         // 계측으로 모으고 오라클 추출 텍스트와 위치 정렬해 짝지은 값이다. 코퍼스
         // HWP3 38문서 중 15문서에서 479자가 이 경로로 사라졌다(07270 은 40쪽→52쪽,
@@ -349,7 +370,15 @@ fn decode_hwp3_extra(ch: u16) -> Option<char> {
         // 하드코딩에 없으면 완성형 좌표 규칙으로 넘어간다. 종전에는 여기서 None →
         // decode_johab 가 '?' → HWP3 파서가 그 문자를 **조용히 버렸다**(10k 스윕
         // A-개체치환 17문서: `채권(債權)조서` → `채권()조서`, ※·○·□ 등 전량 소실).
-        _ => return decode_hwp3_ksc_symbol(ch).or_else(|| decode_hwp3_ksc_hanja(ch)),
+        _ => {
+            // [#8912] 실측된 PUA 매핑이 우선이다. 나머지 괘선은 공개 문자표의
+            // Unicode 대응을 사용하며, 확인되지 않은 한컴 PUA 오프셋을 추정하지 않는다.
+            if (0x3013..=0x305F).contains(&ch) {
+                let index = (ch - 0x3013) as usize;
+                return Some(johab_map::HWP3_LINE_CHARS[index / 11][index % 11]);
+            }
+            return decode_hwp3_ksc_symbol(ch).or_else(|| decode_hwp3_ksc_hanja(ch));
+        }
     };
     char::from_u32(codepoint)
 }

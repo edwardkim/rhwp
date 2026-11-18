@@ -1,15 +1,171 @@
 //! 검사 유형: 관계형. 합성 글꼴 프로그램의 선택·대체 계약을 검증한다.
-//! 주석 갱신: 2026-10-31T07:12:47+09:00; 직전 파일 커밋: 2026-10-31T03:34:36+09:00 (`f3a88f72646d7682ae48804e78332f5dea1f34f4`).
+//! 주석 갱신: 2026-11-15T11:40:50+09:00; 직전 파일 커밋: 2026-11-14T05:31:54+09:00 (9e2794796787b46815462fcecd1536ab74ac8528).
+//! 추가 검사는 MIT 합성 프로그램 또는 내부 글자모양 소유 관계이며 설치 글꼴·절대 배치를 가정하지 않는다.
+//! 주석 갱신: 2026-11-12T01:00:43+09:00; 직전 변경: 2026-11-09T21:28:38+09:00, 89ef796bf5e72418d7ad9a120bf1be5435d934a3.
 //! 실제 입력 `samples/hwp3-sample10.hwp`, 한컴 2020 Print, 96 DPI, 2px 이웃 raw.
 //! 2026-10-30 측정: 1쪽 Native/fresh WASM 각 99.96%; 전 763쪽 최저 각 99.41% / 99.40%.
 //! 근거: `mydocs/pr/assets/issue_8371/sample10-native.tsv`, `sample10-wasm.tsv`, `sample10-validation.md`.
+//! #8946 HWPX: 2026-11-12, 같은 외부 그림의 한컴 2024 Print, 96 DPI, 2px raw.
+//! 전 763쪽 Native/fresh WASM 최저 96.34886%/99.56218%, 표지 각 100.00%.
+//! 문장부호 350·608·686쪽 각 100.00%; 근거: mydocs/pr/assets/issue8946/stage4-20261112/
+//! native-full.tsv·wasm-full.tsv, stage3-20261111/punctuation-before-after-native-300dpi.png.
 //! 합성 fixture의 계약 검사와 실제 문서의 한컴 출력 판독은 별도다.
+//! Linux Fontconfig의 합성 Bold 재현은 유지하며, Mac·Windows도 명시 공급한 분할 CFF의
+//! 글리프 소유를 실제 Native backend에서 검사한다. 이 합성 계약의 raw·독립 PDF는 비해당이다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::style::Font;
 
 const FAMILY: &str = "RHWP HFT Outline Fixture";
 const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+
+#[test]
+fn source_hft_outline_follows_the_selected_environment_family_only() {
+    // 관계형: 저장된 HFT 이름과 실제 공급 family가 달라도 같은 선택을 소비한다.
+    // 비 HFT 원본은 실제 프로그램 신원 없이 허용하지 않으며 미선택 family도 거부한다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![
+        Font {
+            name: "원본 HFT".into(),
+            alt_type: 2,
+            ..Default::default()
+        },
+        Font {
+            name: "원본 TTF".into(),
+            ..Default::default()
+        },
+    ]];
+    core.set_document(document);
+    let before = rhwp::serializer::serialize_document(core.document()).unwrap();
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"outline-selection","substitutions":{"원본 HFT":"Selected CFF","원본 TTF":"Other CFF"}}"#,
+    ).unwrap())).unwrap();
+    assert!(!core
+        .register_hft_outline_font_native("Other CFF", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("Unselected CFF", CFF, 0)
+        .unwrap());
+    assert!(
+        core.register_hft_outline_font_native("Selected CFF", CFF, 0)
+            .unwrap(),
+        "실제 HFT 선택 family가 paint 윤곽을 공급해야 한다"
+    );
+    assert_eq!(
+        rhwp::serializer::serialize_document(core.document()).unwrap(),
+        before,
+        "선택된 paint 프로그램은 저장 IR을 바꾸지 않는다"
+    );
+}
+
+#[test]
+fn verified_cff_query_alias_accepts_only_the_selected_program() {
+    // 관계형: 원본 유형이 미정이어도 실제 선택된 CFF 신원·조회 이름을 함께 확인한다.
+    // 원본을 HFT로 재분류하거나 확인하지 않은 별칭·프로그램을 허용하지 않는다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: "원본 미정 글꼴".into(),
+        alt_type: 0,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"verified-cff-query","substitutions":{"원본 미정 글꼴":"RHWP HFT Outline Fixture"},"selectedPrograms":{"원본 미정 글꼴":{"query":"실제 조회 별칭","family":"RHWP HFT Outline Fixture","trueType":false,"openTypeCff":true,"programId":"sweep-c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda"}}}"#,
+    ).unwrap())).unwrap();
+    assert!(!core
+        .register_hft_outline_font_native("임의 별칭", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("실제 조회 별칭", &synthetic_cff_for('나'), 0)
+        .unwrap());
+    assert!(
+        core.register_hft_outline_font_native("실제 조회 별칭", CFF, 0)
+            .unwrap(),
+        "선택 프로그램의 실제 조회 별칭도 같은 윤곽을 공급한다"
+    );
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, CFF, 0)
+        .unwrap());
+}
+
+#[test]
+fn hft_outline_registration_preserves_unicode_family_case_folding() {
+    // 관계형: 같은 family의 유니코드 대소문자 정규화는 기존 등록 계약을 보존한다.
+    use rhwp::renderer::font_environment::FontEnvironment;
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: "원본 HFT".into(),
+        alt_type: 2,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(
+            r#"{"id":"unicode-hft-family","substitutions":{"원본 HFT":"Σ Display"}}"#,
+        )
+        .unwrap(),
+    ))
+    .unwrap();
+    assert!(core
+        .register_hft_outline_font_native("σ display", CFF, 0)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_native("Σ Display", CFF, 0)
+        .unwrap());
+}
+
+#[test]
+fn split_hft_outline_candidates_replace_atomically_and_retain_order() {
+    // 관계형: 공개 합성 CFF 두 조각을 실제 후보 순서로 교체한다.
+    let mut core = DocumentCore::new_empty();
+    let mut document = core.document().clone();
+    document.doc_info.font_faces = vec![vec![Font {
+        name: FAMILY.into(),
+        alt_type: 2,
+        ..Default::default()
+    }]];
+    core.set_document(document);
+    let second = synthetic_cff_for('나');
+    let first_order = [(CFF, 0), (second.as_slice(), 0)];
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+        .unwrap());
+    assert!(!core
+        .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+        .unwrap());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[])
+        .is_err());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0); 65])
+        .is_err());
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0), (&[], 0)])
+        .is_err());
+    assert!(
+        !core
+            .register_hft_outline_font_candidates_native(FAMILY, &first_order)
+            .unwrap(),
+        "한도 오류로 기존 후보를 일부만 교체하지 않는다"
+    );
+    assert!(core
+        .register_hft_outline_font_candidates_native(FAMILY, &[(second.as_slice(), 0), (CFF, 0)])
+        .unwrap());
+    let ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    assert!(
+        core.register_hft_outline_font_candidates_native(FAMILY, &[(CFF, 0), (ttf, 0)])
+            .unwrap(),
+        "혼합 형식은 기존 Canvas 소유 판단으로 되돌린다"
+    );
+    assert!(core
+        .register_hft_outline_font_native(FAMILY, CFF, 0)
+        .unwrap());
+}
 
 #[test]
 fn romanized_myeongjo_names_keep_serif_fallback() {
@@ -63,6 +219,52 @@ fn verified_hft_advance_survives_a_supplied_display_otf() {
         measure(&style),
         source_width,
         "명시 OTF는 해당 프로그램의 전진을 사용한다"
+    );
+}
+
+#[test]
+fn declared_hft_hyphenation_point_keeps_its_half_em_before_display_fallback() {
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    use rhwp::renderer::native_pua_fonts::NativePuaFonts;
+    use rhwp::renderer::TextStyle;
+
+    // 관계형·원본 전진 계약: worklife Print의 Type3 Widths=500/1000과
+    // nested 17쪽의 구분점→뒤 글자 원점을 대조했다. 실물 좌표를 고정하지 않는다.
+    // MIT 합성 CFF는 표시 글꼴만 공급하며 비공개 HFT 설치를 요구하지 않는다.
+    let mut fonts = NativePuaFonts::default();
+    fonts
+        .register_otf("synthetic", false, false, CFF, 0)
+        .unwrap();
+    let mut style = TextStyle {
+        font_family: "HY Sinmyeongjo".into(),
+        original_glyph_metric_family: Some(std::sync::Arc::new("한양신명조".into())),
+        source_font_is_hft: true,
+        font_size: 20.0,
+        native_otf_metrics: fonts.get_otf("synthetic", false, false),
+        ..Default::default()
+    };
+    let measure = |style: &TextStyle| {
+        EmbeddedTextMeasurer.compute_char_positions("‧", style)[1] / style.font_size
+    };
+    // 실제 전진은 독립 Print로 확인한 4HU 장치 격자에서 반올림된다.
+    // 자연 전진 0.5em을 검사하되 그 반 격자인 2HU를 계산에서 구분한다.
+    let half_device_unit = |style: &TextStyle| 2.0 / 75.0 / style.font_size;
+    assert!(
+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,
+        "표시용 결측 폭으로 원본 전진을 바꾸지 않는다: {}",
+        measure(&style)
+    );
+    style.font_size *= 2.0;
+    assert!(
+        (measure(&style) - 0.5).abs() <= half_device_unit(&style) + f64::EPSILON,
+        "원본 반각 계약은 장치 반올림 범위에서 크기에 비례한다"
+    );
+    style.source_font_is_hft = false;
+    style.original_glyph_metric_family = None;
+    assert_ne!(
+        measure(&style),
+        0.5,
+        "원본 HFT 소유가 없는 명시 OTF에는 확장하지 않는다"
     );
 }
 
@@ -210,6 +412,139 @@ fn hwp3_punctuation_uses_the_latin_program_only_when_its_glyph_is_needed() {
     }
 }
 
+#[test]
+fn hwpx_supplied_cff_punctuation_keeps_glyph_owner_and_content_order() {
+    use rhwp::model::paragraph::{CharShapeRef, LineSeg};
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn families(node: &RenderNode, character: char, out: &mut Vec<String>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text.contains(character) {
+                out.push(run.style.font_family.clone());
+            }
+        }
+        for child in &node.children {
+            families(child, character, out);
+        }
+    }
+    let input = include_bytes!("../../mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx");
+    let mut core = DocumentCore::from_bytes(input).unwrap();
+    let mut document = core.document().clone();
+    document.sections.truncate(1);
+    document.sections[0].paragraphs.truncate(1);
+    let para = &mut document.sections[0].paragraphs[0];
+    para.text = "가(가".into();
+    para.char_count = 4;
+    para.char_offsets = vec![0, 1, 2];
+    para.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id: 0,
+    }];
+    para.line_segs = vec![LineSeg {
+        text_start: 0,
+        line_height: 1000,
+        text_height: 1000,
+        baseline_distance: 800,
+        ..Default::default()
+    }];
+    para.controls.clear();
+    for (slot, faces) in document.doc_info.font_faces.iter_mut().enumerate() {
+        if let Some(face) = faces.first_mut() {
+            face.name = if slot == 1 {
+                "fixture-latin"
+            } else {
+                "fixture-korean"
+            }
+            .into();
+            face.alt_type = 2;
+        }
+    }
+    for shape in &mut document.doc_info.char_shapes {
+        shape.font_ids = [0; 7];
+        shape.ratios = [100; 7];
+        shape.spacings = [0; 7];
+        shape.relative_sizes = [100; 7];
+    }
+    // 원본에서 파생한 합성 경계: 글꼴은 MIT fixture만 공급한다.
+    // 저장 줄 경로와 저장 줄을 제거한 재조판 경로에 같은 소유 계약을 적용한다.
+    let latin_cff = synthetic_cff_for('(');
+    let latin_ttf = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf");
+    let korean_ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    for reflow in [false, true] {
+        for (korean, latin, source_hft, expected) in [
+            (CFF, Some(latin_cff.as_slice()), true, "fixture-latin"),
+            (CFF, None, true, "fixture-korean"),
+            (
+                latin_cff.as_slice(),
+                Some(latin_cff.as_slice()),
+                true,
+                "fixture-korean",
+            ),
+            (CFF, Some(latin_ttf.as_slice()), true, "fixture-korean"),
+            (
+                korean_ttf.as_slice(),
+                Some(latin_cff.as_slice()),
+                true,
+                "fixture-korean",
+            ),
+            (CFF, Some(latin_cff.as_slice()), false, "fixture-korean"),
+        ] {
+            let mut input = document.clone();
+            if reflow {
+                input.sections[0].paragraphs[0].line_segs.clear();
+            }
+            if !source_hft {
+                for faces in &mut input.doc_info.font_faces {
+                    for face in faces {
+                        face.alt_type = 0;
+                    }
+                }
+            }
+            core.set_document(input);
+            core.prepare_native_otf_fonts_with(|request| match request.family.as_str() {
+                "fixture-korean" => Some((korean.to_vec(), 0)),
+                "fixture-latin" => latin.map(|bytes| (bytes.to_vec(), 0)),
+                _ => None,
+            })
+            .unwrap();
+            let tree = core.build_page_render_tree(0).unwrap();
+            let mut punctuation = Vec::new();
+            families(&tree.root, '(', &mut punctuation);
+            assert_eq!(punctuation.len(), 1, "구두점은 한 번 표시된다");
+            assert!(
+                punctuation[0].contains(expected),
+                "reflow={reflow}: {punctuation:?}, expected={expected}"
+            );
+            fn ordered_runs(node: &RenderNode, output: &mut Vec<(String, f64, f64)>) {
+                if let RenderNodeType::TextRun(run) = &node.node_type {
+                    output.push((run.text.clone(), node.bbox.x, node.bbox.x + node.bbox.width));
+                }
+                for child in &node.children {
+                    ordered_runs(child, output);
+                }
+            }
+            let mut runs = Vec::new();
+            ordered_runs(&tree.root, &mut runs);
+            assert_eq!(
+                runs.iter().map(|run| run.0.as_str()).collect::<String>(),
+                "가(가"
+            );
+            for pair in runs.windows(2) {
+                assert!(
+                    pair[0].2 <= pair[1].1 + 0.02,
+                    "같은 줄의 앞뒤 run이 겹치지 않는다: {pair:?}"
+                );
+            }
+            let mut hangul = Vec::new();
+            families(&tree.root, '가', &mut hangul);
+            assert!(!hangul.is_empty());
+            assert!(hangul
+                .iter()
+                .all(|family| family.contains("fixture-korean")));
+        }
+    }
+}
+
 #[cfg(all(
     not(target_arch = "wasm32"),
     feature = "native-skia",
@@ -257,6 +592,11 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
         );
         return;
     }
+    assert_split_family_glyphs(&SkiaLayerRenderer::new(), "system");
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+fn assert_split_family_glyphs(renderer: &rhwp::renderer::skia::SkiaLayerRenderer, source: &str) {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "가나").unwrap();
@@ -270,7 +610,6 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
         shape.bold = true;
     }
     core.set_document(document);
-    let renderer = SkiaLayerRenderer::new();
     let trace: serde_json::Value = serde_json::from_str(
         &renderer
             .get_font_decision_trace(&core, 0, r#"{"maxCharacters":16}"#)
@@ -284,12 +623,21 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
             .iter()
             .find(|record| record["source"]["character"] == character)
             .expect("입력 글자마다 글꼴 선택 기록");
-        assert_eq!(record["paint"]["native"]["source"], "system");
+        assert_eq!(record["paint"]["native"]["source"], source);
         assert_eq!(
             record["paint"]["native"]["resolved"], FAMILY,
             "각 글리프를 같은 분할 family에서 선택한다"
         );
     }
+}
+
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+#[test]
+fn supplied_synthetic_bold_keeps_both_split_glyphs_on_each_native_os() {
+    let renderer = rhwp::renderer::skia::SkiaLayerRenderer::new()
+        .try_with_font_data(&[CFF.to_vec(), synthetic_cff_for('나')])
+        .unwrap();
+    assert_split_family_glyphs(&renderer, "custom");
 }
 
 #[test]
@@ -878,4 +1226,214 @@ mod native_otf_program_contract {
             .advance_em('A')
             .is_some());
     }
+}
+
+/// MIT fixture의 name 표만 메모리에서 바꾼다. 실제 상용 글꼴은 배포하지 않는다.
+fn cff_named(family: &str) -> Vec<u8> {
+    let mut data = CFF.to_vec();
+    let count = u16::from_be_bytes([data[4], data[5]]) as usize;
+    let name = (0..count)
+        .find_map(|i| {
+            let pos = 12 + i * 16;
+            (data.get(pos..pos + 4) == Some(b"name"))
+                .then(|| u32::from_be_bytes(data[pos + 8..pos + 12].try_into().unwrap()) as usize)
+        })
+        .unwrap();
+    let count = u16::from_be_bytes([data[name + 2], data[name + 3]]) as usize;
+    let strings = name + u16::from_be_bytes([data[name + 4], data[name + 5]]) as usize;
+    for i in 0..count {
+        let pos = name + 6 + 12 * i;
+        let id = u16::from_be_bytes([data[pos + 6], data[pos + 7]]);
+        if !matches!(id, 1 | 16) {
+            continue;
+        }
+        let length = u16::from_be_bytes([data[pos + 8], data[pos + 9]]) as usize;
+        let start = strings + u16::from_be_bytes([data[pos + 10], data[pos + 11]]) as usize;
+        let platform = u16::from_be_bytes([data[pos], data[pos + 1]]);
+        let replacement = if matches!(platform, 0 | 3) {
+            family
+                .encode_utf16()
+                .chain(std::iter::repeat(32))
+                .take(length / 2)
+                .flat_map(u16::to_be_bytes)
+                .collect::<Vec<_>>()
+        } else {
+            family
+                .bytes()
+                .chain(std::iter::repeat(b' '))
+                .take(length)
+                .collect::<Vec<_>>()
+        };
+        data[start..start + length].copy_from_slice(&replacement);
+    }
+    data
+}
+
+#[test]
+fn verified_hwpx_hft_bold_tracking_reaches_the_final_run() {
+    use rhwp::model::paragraph::CharShapeRef;
+    use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+    use rhwp::renderer::TextStyle;
+    fn run_styles(node: &RenderNode, result: &mut Vec<TextStyle>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text == "가" {
+                result.push(run.style.clone());
+            }
+        }
+        for child in &node.children {
+            run_styles(child, result);
+        }
+    }
+    let input = include_bytes!("../../mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.hwpx");
+    let source = DocumentCore::from_bytes(input).unwrap().document().clone();
+    // 같은 source 유형이거나 조회 이름만 같다는 이유로 다른 프로그램에 꾸밈을 빌려주지 않는다.
+    for family in ["Senaru", "Kidney bean", "Strawberry"] {
+        for (source_hft, embedded, program_family, verified) in [
+            (true, false, family, true),
+            (false, false, family, false),
+            (true, true, family, false),
+            (true, false, "Unverified Fixture", false),
+        ] {
+            let mut document = source.clone();
+            document.sections.truncate(1);
+            document.sections[0].paragraphs.truncate(1);
+            let para = &mut document.sections[0].paragraphs[0];
+            para.text = "가".into();
+            para.char_count = 2;
+            para.char_offsets = vec![0];
+            para.char_shapes = vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }];
+            para.line_segs.clear();
+            para.controls.clear();
+            for faces in &mut document.doc_info.font_faces {
+                if let Some(face) = faces.first_mut() {
+                    face.name = family.into();
+                    face.alt_type = if source_hft { 2 } else { 0 };
+                    face.is_embedded = embedded;
+                }
+            }
+            let shape = &mut document.doc_info.char_shapes[0];
+            shape.font_ids = [0; 7];
+            shape.ratios = [100; 7];
+            shape.spacings = [0; 7];
+            shape.relative_sizes = [100; 7];
+            shape.base_size = 2000;
+            shape.bold = true;
+            let mut core = DocumentCore::new_empty();
+            core.set_document(document);
+            let program = cff_named(program_family);
+            core.prepare_native_otf_fonts_with(|request| {
+                (request.family == family).then(|| (program.clone(), 0))
+            })
+            .unwrap();
+            let tree = core.build_page_render_tree(0).unwrap();
+            let mut runs = Vec::new();
+            run_styles(&tree.root, &mut runs);
+            assert_eq!(runs.len(), 1, "내용을 누락·중복하지 않는다");
+            let style = &runs[0];
+            let program_verified = style
+                .native_otf_metrics
+                .as_ref()
+                .is_some_and(|font| font.has_verified_hft_bold_tracking('가'));
+            assert_eq!(style.source_verified_hft_bold_tracking && program_verified, verified,
+                "source/program 양쪽의 독립 소유: {family}/{program_family}/{source_hft}/{embedded}");
+            if verified {
+                let mut regular = style.clone();
+                regular.bold = false;
+                let measure =
+                    |style: &TextStyle| EmbeddedTextMeasurer.compute_char_positions("가", style)[1];
+                let extra = measure(style) - measure(&regular);
+                // 한컴 2024 Print의 별도 TJ: 50/1000 em. 4HU 반올림의 양쪽 오차만 허용한다.
+                assert!(
+                    (extra - style.font_size * 0.05).abs() <= 4.0 / 75.0,
+                    "최종 run의 굵기 전진: {family}, {extra}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn static_cff_registration_preserves_source_cmap_and_advances() {
+    use rhwp::renderer::native_pua_fonts::NativePuaFonts;
+    let source = ttf_parser::Face::parse(CFF, 0).unwrap();
+    let mut fonts = NativePuaFonts::default();
+    fonts.register_otf(FAMILY, false, false, CFF, 0).unwrap();
+    let metrics = fonts.get_otf(FAMILY, false, false).unwrap();
+    // 원본 cmap의 모든 지원 문자와 결측 대조군을 공개 등록·측정 경로로 대조한다.
+    let mut characters = vec!['A', ' ', '?'];
+    for subtable in source.tables().cmap.unwrap().subtables {
+        if subtable.is_unicode() {
+            subtable.codepoints(|code| {
+                if let Some(ch) = char::from_u32(code) {
+                    characters.push(ch);
+                }
+            });
+        }
+    }
+    for ch in characters {
+        let glyph = source.glyph_index(ch);
+        assert_eq!(metrics.has_glyph(ch), glyph.is_some());
+        let expected = glyph
+            .and_then(|id| source.glyph_hor_advance(id))
+            .map(|width| f64::from(width) / f64::from(source.units_per_em()));
+        assert_eq!(metrics.advance_em(ch), expected, "원본 cmap/hmtx: {ch:?}");
+    }
+}
+
+#[cfg(feature = "native-skia")]
+#[test]
+fn original_hft_latin_punctuation_precedes_a_hangul_slots_display_ttf_fallback() {
+    use rhwp::renderer::{
+        font_environment::FontEnvironment,
+        render_tree::{RenderNode, RenderNodeType},
+        skia::SkiaLayerRenderer,
+    };
+    fn punctuation(node: &RenderNode, output: &mut Vec<String>) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            if run.text.contains('(') {
+                output.push(run.style.font_family.clone());
+            }
+        }
+        for child in &node.children {
+            punctuation(child, output);
+        }
+    }
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가(가").unwrap();
+    let mut document = core.document().clone();
+    document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
+    for (lang, faces) in document.doc_info.font_faces.iter_mut().enumerate() {
+        faces[0].name = if lang == 1 { FAMILY } else { "fixture-korean" }.into();
+        faces[0].alt_type = 2;
+    }
+    for style in &mut document.doc_info.char_shapes {
+        style.font_ids = [0; 7];
+        style.relative_sizes = [100; 7];
+        style.ratios = [100; 7];
+        style.spacings = [0; 7];
+    }
+    core.set_document(document);
+    core.set_font_environment(Some(FontEnvironment::from_json(
+        r#"{"id":"primary-cff-with-ttf-fallback","substitutions":{},"preserveSourceMetrics":true,"glyphFallbacks":{"fixture-korean":["RHWP Equation Contract"]}}"#
+    ).unwrap())).unwrap();
+    let korean = cff_named("fixture-korean");
+    let latin = synthetic_cff_for('(');
+    let ttf = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
+    let renderer = SkiaLayerRenderer::new()
+        .try_with_font_data(&[korean, latin, ttf])
+        .unwrap();
+    renderer.prepare_native_otf_fonts(&mut core).unwrap();
+    let mut owners = Vec::new();
+    punctuation(&core.build_page_render_tree(0).unwrap().root, &mut owners);
+    assert_eq!(owners.len(), 1, "원문의 구두점 누락·중복 금지");
+    assert!(
+        owners[0].starts_with(FAMILY),
+        "원 HFT 영문 프로그램이 괄호를 소유한다: {owners:?}"
+    );
+    assert_eq!(core.document().sections[0].paragraphs[0].text, "가(가");
 }

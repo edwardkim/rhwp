@@ -1,0 +1,45 @@
+{
+  "runtime_head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "observed_at": "2026-11-11T14:40:50.329Z",
+  "method": "CDP captured response body from the first real app initialization; isolated browser, no second fetch",
+  "records": [
+    {
+      "name": "rhwp.js",
+      "url": "http://127.0.0.1:17765/@fs/Users/tsjang/rhwp/pkg/rhwp.js",
+      "status": 200,
+      "bytes": 3255250,
+      "received_sha256": "6b3107802dc5509ff35ed55f1d8939a37eac2de2bbf911201276238efaf5d512",
+      "frozen_source_sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "exact_match": false,
+      "complete_source_prefix_matches": false,
+      "source_map_contents": [
+        {
+          "source": "rhwp.js",
+          "sha256": "d6a326d758d4a88dff3b4cfc8cfd325ae2e295ea2f7c0156c7f7538921a5f566"
+        }
+      ],
+      "mapped_source_matches_frozen": false,
+      "verified_vite_transformation": {
+        "before": "module_or_path = new URL('rhwp_bg.wasm', import.meta.url);",
+        "after": "module_or_path = new URL(\"/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm\", '' + import.meta.url);",
+        "only_source_change": true,
+        "source_map_content_matches_after_single_url_rewrite": true,
+        "frozen_source_sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+      }
+    },
+    {
+      "name": "rhwp_bg.wasm",
+      "url": "http://127.0.0.1:17765/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+      "status": 200,
+      "bytes": 31795529,
+      "received_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "frozen_source_sha256": "707dbf515a0ac6c523f4423df1da9e87f95dabef8d19fc18faaee7acda7be2e7",
+      "exact_match": true,
+      "complete_source_prefix_matches": false,
+      "source_map_contents": [],
+      "mapped_source_matches_frozen": false
+    }
+  ],
+  "verified": true,
+  "scope_note": "JS의 실제 응답은 Vite URL 재작성·source map 때문에 파일 해시와 다르다. 초기화 응답 해시를 별도로 보존하고, source map 원문의 차이가 WASM URL 한 줄뿐임을 대조했다. WASM 초기화 응답은 frozen/root/Studio 파일과 바이트·해시가 같다. 별도 진단 fetch는 최초 수신 JS와 해시가 같음을 확인하는 데만 사용했으며 최초 응답 기록을 대신하지 않는다."
+}

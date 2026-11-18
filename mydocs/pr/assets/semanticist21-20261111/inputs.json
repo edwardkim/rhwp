@@ -1,0 +1,53 @@
+{
+  "kind": "programmatic synthetic documents, no HWP/HWPX/PDF file was loaded for new selection probes",
+  "body": {
+    "lines": [
+      "첫째 줄입니다",
+      "둘째 줄",
+      "",
+      "",
+      "셋째 줄 글자"
+    ],
+    "creation": "HwpDocument.createEmpty/createBlankDocument, insertText, splitParagraph",
+    "selection_args": [
+      0,
+      0,
+      0,
+      4,
+      3
+    ],
+    "mark_only_start": "first paragraph end to next paragraph offset0",
+    "partial_selection_args": [
+      0,
+      4,
+      1,
+      4,
+      3
+    ]
+  },
+  "cell": {
+    "table_creation_args": [
+      0,
+      0,
+      0,
+      1,
+      3
+    ],
+    "lines": [
+      "첫째 줄",
+      "",
+      "셋째 줄 글자"
+    ],
+    "selection": "first cell paragraph0 offset0 to paragraph2 offset3"
+  },
+  "wrap": {
+    "text": "Extraordinarily long words like internationalization and characterization wrap unevenly across ragged lines so the right edge stays uneven everywhere.",
+    "following_paragraph": "END",
+    "alignment": "left",
+    "selection": "paragraph0 offset0 to paragraph1 offset0"
+  },
+  "formal_native_test_source": "tests/cases/body_selection_tree_reuse.rs",
+  "extension_fixture": "samples/hwp3-pagedef-1915.hwp",
+  "extension_source_and_reference": "rhwp-chrome/e2e/extension-smoke.test.mjs",
+  "independent_gui_reference": "mydocs/pr/assets/issue_8908_selection_paragraph_mark/hancom-*.png; Hancom12.30 Mac screenshots, no Print selection overlay reference exists"
+}

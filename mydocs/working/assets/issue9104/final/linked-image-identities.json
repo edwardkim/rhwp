@@ -1,0 +1,17 @@
+[
+  {
+    "path": "samples/oracle.gif",
+    "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  },
+  {
+    "path": "samples/rdb02.gif",
+    "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  },
+  {
+    "path": "samples/s1.jpg",
+    "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514",
+    "verified_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842"
+  }
+]

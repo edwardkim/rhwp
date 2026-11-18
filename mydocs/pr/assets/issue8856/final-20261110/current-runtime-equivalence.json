@@ -1,0 +1,11 @@
+{
+  "head": "e0ce30729e4d87d2a75376d17c6d351a29ef4345",
+  "base": "3170fddc48cc4fcac0c18761d146b619d0f90c7b",
+  "build_runtime_files": 2634,
+  "all_equal": true,
+  "source_provenance_sha256": "2dbad85ce99f07087751dc28f2f3b2c7433ffd3a93b966963b716a76aebbc60c",
+  "validated_svg_tests": {
+    "tests/cases/inline_note_page_field_source_ownership.rs": "9c4ae08bc62886e9caf4d0699595f4d94963a815bd6caf7c77b83218fdee7756",
+    "tests/issue_1052_footnote_in_textbox.rs": "dcff6982b43b50397e057baca9c8e4c693e7a7700fb2d3230d65d0786c11d79e"
+  }
+}

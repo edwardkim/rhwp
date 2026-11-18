@@ -1,0 +1,41 @@
+{
+  "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+  "new_base": "4c876654d86d071d342fc78706c51cfff6ddbde4",
+  "passed": 7,
+  "failed": 0,
+  "new_functions_from_rebase": 5,
+  "retained_functions": 2,
+  "records": [
+    {
+      "module": "body_selection_tree_reuse",
+      "functions": [
+        "body_selection_keeps_uncached_pages_local",
+        "body_selection_observes_edits_that_invalidate_a_warm_tree",
+        "body_selection_ends_lines_at_the_paragraph_mark",
+        "cell_selection_ends_lines_at_the_paragraph_mark"
+      ],
+      "passed": 4,
+      "pass_lines": [
+        "        PASS [   0.303s] ( 5927/13312) rhwp::regression_suite_007 body_selection_tree_reuse::body_selection_keeps_uncached_pages_local",
+        "        PASS [   0.021s] ( 5918/13312) rhwp::regression_suite_007 body_selection_tree_reuse::body_selection_observes_edits_that_invalidate_a_warm_tree",
+        "        PASS [   0.028s] ( 5917/13312) rhwp::regression_suite_007 body_selection_tree_reuse::body_selection_ends_lines_at_the_paragraph_mark",
+        "        PASS [   0.019s] ( 5919/13312) rhwp::regression_suite_007 body_selection_tree_reuse::cell_selection_ends_lines_at_the_paragraph_mark"
+      ]
+    },
+    {
+      "module": "issue_7620_rowbreak_float_bottom_margin_budget",
+      "functions": [
+        "issue_7620_rowbreak_without_first_row_moves_table_and_keeps_text",
+        "issue_7620_rowbreak_moved_table_reserves_box_on_next_page",
+        "issue_7620_rowbreak_splits_when_rows_fit_with_bottom_margin"
+      ],
+      "passed": 3,
+      "pass_lines": [
+        "        PASS [   0.030s] (13001/13312) rhwp::regression_suite_028 issue_7620_rowbreak_float_bottom_margin_budget::issue_7620_rowbreak_without_first_row_moves_table_and_keeps_text",
+        "        PASS [   0.033s] (12999/13312) rhwp::regression_suite_028 issue_7620_rowbreak_float_bottom_margin_budget::issue_7620_rowbreak_moved_table_reserves_box_on_next_page",
+        "        PASS [   0.041s] (13002/13312) rhwp::regression_suite_028 issue_7620_rowbreak_float_bottom_margin_budget::issue_7620_rowbreak_splits_when_rows_fit_with_bottom_margin"
+      ]
+    }
+  ],
+  "source_log_sha256": "48b4698b02d68474caa3d0d573007709410073aade9a80581b898524f78e9bdf"
+}

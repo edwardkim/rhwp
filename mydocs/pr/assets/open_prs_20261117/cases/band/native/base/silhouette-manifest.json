@@ -1,0 +1,56 @@
+{
+  "key": "png-pair",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1
+  ],
+  "completed_pages": [
+    1
+  ],
+  "missing_pages": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/claims/base-native/band/canonical-tsv/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/claims/base-native/band/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "7719ada7cde2c08e21f25a27ec76f9553f5472f40aee9351464efc0476a476ca",
+      "pdf_png": "/Users/tsjang/rhwp/output/pr-review/all-open-pr-integration-20261117/claims/base-native/band/pdf_png/pdf-001.png",
+      "pdf_sha256": "1558768d2fdf632222b338ad769e9b4959d348113d61d851abd04550dc2c9fa1"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 36.37336,
+      "silhouette_raw_unmatched_pixels": 5951,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 9353,
+      "tolerant_content_match_percent": 36.37336
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 1,
+        "silhouette_raw_match_percent": 36.37336
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": null,
+    "page_count_mismatch": false
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "record": {
+    "path": "/Users/tsjang/rhwp/output/pr-review/font-catalog-cache/f1dcf5c973345feda0ddfa0a7bf8418c9efddde178d8e788e23407d643001ea3/86ef0563e50f815e9a6f0a409efbe580f6af06dc0b5de320e6d53755b7863bc1-0.ttf",
+    "source": "/Users/tsjang/Library/Fonts/hankc.ttf",
+    "sourceSha256": "86ef0563e50f815e9a6f0a409efbe580f6af06dc0b5de320e6d53755b7863bc1",
+    "sha256": "04c0b57b96776813fd0bb225baaa25b96b41e4bd1645329338d2054ed06d6645",
+    "faceIndex": 0,
+    "families": [
+      "«—∞‹∑π∞·√º",
+      "한겨레결체",
+      "TSThgrgl"
+    ],
+    "weight": 400,
+    "primaryFamily": "한겨레결체",
+    "postScriptNames": [
+      "TSThgrgl"
+    ],
+    "nameDecodeWarnings": [],
+    "style": "normal",
+    "nameRecordErrors": [],
+    "repairs": [
+      "post-format2-unused-strings"
+    ],
+    "openTypeCff": false,
+    "collectionFace": false
+  },
+  "unchanged_tables": [
+    "hhea",
+    "maxp",
+    "OS/2",
+    "hmtx",
+    "LTSH",
+    "hdmx",
+    "cmap",
+    "fpgm",
+    "prep",
+    "cvt ",
+    "glyf",
+    "loca",
+    "name",
+    "VDMX"
+  ],
+  "glyph_order_equal": true,
+  "post_prefix_preserved": true,
+  "original_post_bytes": 116472,
+  "prepared_post_bytes": 58825
+}

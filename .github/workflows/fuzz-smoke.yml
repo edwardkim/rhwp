@@ -14,6 +14,14 @@ on:
     - cron: "41 2 * * *"
   workflow_dispatch:
     inputs:
+      runner_image:
+        description: 'Linux baseline (26.04 is an explicit compatibility run)'
+        required: true
+        default: ubuntu-24.04
+        type: choice
+        options:
+          - ubuntu-24.04
+          - ubuntu-26.04
       max_total_time:
         description: 타깃당 libFuzzer 실행 초 (nightly 기본 60)
         required: false
@@ -28,13 +36,14 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  RHWP_RUNNER_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.runner_image == 'ubuntu-26.04' && 'ubuntu-26.04' || 'ubuntu-24.04' }}
 
 jobs:
   fuzz-smoke:
     name: fuzz ${{ matrix.target }}
-    runs-on: ubuntu-latest
-    # 컴파일(sanitizer) + 60초 런. hang 상한이지 성능 목표가 아니다.
-    timeout-minutes: 45
+    runs-on: ${{ github.event_name == 'workflow_dispatch' && inputs.runner_image == 'ubuntu-26.04' && 'ubuntu-26.04' || 'ubuntu-24.04' }}
+    # Sanitizer cold build와 퍼징을 구분한다. 입력별 제한·실행 시간은 아래에서 유지한다.
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -46,6 +55,20 @@ jobs:
           - parse_wmf
           - parse_ooxml_chart
     steps:
+      - name: Validate runner selection
+        env:
+          REQUESTED_RUNNER_IMAGE: ${{ github.event_name == 'workflow_dispatch' && inputs.runner_image || 'ubuntu-24.04' }}
+        run: |
+          set -euo pipefail
+          case "${REQUESTED_RUNNER_IMAGE}" in
+            ubuntu-24.04|ubuntu-26.04) ;;
+            *) echo "::error::Unsupported runner_image" >&2; exit 1 ;;
+          esac
+          if [[ "${REQUESTED_RUNNER_IMAGE}" != "${RHWP_RUNNER_IMAGE}" ]]; then
+            echo "::error::Runner selection does not match the requested baseline" >&2
+            exit 1
+          fi
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install nightly toolchain
@@ -54,13 +77,24 @@ jobs:
           toolchain: nightly
 
       - name: Cache cargo-fuzz + sanitizer build
-        uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2.9.3 이후 workspace root key 보정
+        uses: Swatinem/rust-cache@eedcf2fb1c22f010a0eb66b92f378c110977f266 # v2.9.3 이후 workspace root key 보정
         with:
           workspaces: fuzz
-          shared-key: fuzz-smoke-${{ matrix.target }}
+          shared-key: fuzz-smoke-${{ matrix.target }}-${{ env.RHWP_RUNNER_IMAGE }}
 
       - name: Install cargo-fuzz
         run: cargo install cargo-fuzz
+
+      # 기본 단일 codegen unit의 실측 peak는 16.6 GiB였다 (#9154).
+      # build/run이 같은 분할을 사용하며 ASan·coverage·overflow 검사는 유지한다.
+      - name: Build sanitizer target ${{ matrix.target }}
+        env:
+          TARGET: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+          free -m
+          nproc
+          /usr/bin/time -v cargo +nightly fuzz build --codegen-units 16 "${TARGET}"
 
       - name: Smoke-run ${{ matrix.target }} (60s)
         env:
@@ -68,7 +102,7 @@ jobs:
           MAX_TOTAL_TIME: ${{ github.event_name == 'workflow_dispatch' && inputs.max_total_time || '60' }}
         run: |
           set -euo pipefail
-          cargo +nightly fuzz run "${TARGET}" -- \
+          cargo +nightly fuzz run --codegen-units 16 "${TARGET}" -- \
             -max_total_time="${MAX_TOTAL_TIME}" \
             -rss_limit_mb=2048 \
             -timeout=30 \

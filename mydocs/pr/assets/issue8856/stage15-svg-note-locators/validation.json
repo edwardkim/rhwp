@@ -1,0 +1,306 @@
+{
+  "product_runtime_head": "c88877ee5a9795f050cf8066f572bcb3feed9b5f",
+  "runtime_changed_in_this_step": false,
+  "before_full_summary": {
+    "run": 13153,
+    "pass": 13151,
+    "fail": 2,
+    "skip": 45,
+    "seconds": 622.412,
+    "log_sha256": "5ae8aed1038f18d6a26a4fd92cc3f8be8938c87ee4bb90f4502f045a81855687"
+  },
+  "focused_after": {
+    "pass": 6,
+    "fail": 0,
+    "seconds": 9.069,
+    "log_sha256": "4f07278e662c03476ed1dd53b372d48e915f0eebcf71fd31882cc2e40f83cf7d"
+  },
+  "original_contracts": {
+    "inline_note_source_commit": "8c738f54343d6d09cbe299f6ccd6349c8ff31465",
+    "integration_pr": 8319,
+    "integration_merge": "af6bb05b26887135fb9da0fa4e54ca7205564fca",
+    "textbox_source_commit": "8f007066df",
+    "retained_inline_fixed_origins": {
+      "reference_device": [
+        4198,
+        1947
+      ],
+      "page_field_device": [
+        709,
+        2098
+      ],
+      "ctm": [
+        0.119935,
+        0.119869
+      ],
+      "dpi_scale": "96/72",
+      "tolerance_css_px": 2
+    },
+    "textbox": "Existing SVG text-sequence helper now also used for number presence; existing footer text assertions retained"
+  },
+  "producer": {
+    "native_sha256": "47203f928bac9f3c8d27293edf6a87351fa51d3342c326016190303d51328219",
+    "wasm_sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121"
+  },
+  "rows": [
+    {
+      "key": "endnote-boundary",
+      "backend": "native",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 13662,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 13640,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 3584,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "input": {
+        "path": "tests/fixtures/semanticist21_20261022/inline_note_page_fields/endnote-forced-break-field-90.hwpx",
+        "sha256": "f15ebe7c843116783d70f29f39617f1277df780d5319f5fe3759d3d63c36dadc"
+      },
+      "pdf": {
+        "path": "pdf/semanticist21-20261022/inline_note_page_fields/endnote-forced-break-field-90-2020.pdf",
+        "sha256": "c5fe01beb4534e2b4dae2cf104e54635876122f0392a9926f67ea6ffd5ce7f3e"
+      },
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "sha256": "5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5"
+      },
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "key": "endnote-boundary",
+      "backend": "wasm",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 13662,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 13640,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 3583,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "input": {
+        "path": "tests/fixtures/semanticist21_20261022/inline_note_page_fields/endnote-forced-break-field-90.hwpx",
+        "sha256": "f15ebe7c843116783d70f29f39617f1277df780d5319f5fe3759d3d63c36dadc"
+      },
+      "pdf": {
+        "path": "pdf/semanticist21-20261022/inline_note_page_fields/endnote-forced-break-field-90-2020.pdf",
+        "sha256": "c5fe01beb4534e2b4dae2cf104e54635876122f0392a9926f67ea6ffd5ce7f3e"
+      },
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "sha256": "5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5"
+      },
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "key": "textbox-footnote",
+      "backend": "native",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 4796,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "input": {
+        "path": "samples/hwpx/footnote-tbox-01.hwpx",
+        "sha256": "e7e6d109beee222f01f089b014c42d8d0f540564b57c7dd47384c1b5ae19e2f7"
+      },
+      "pdf": {
+        "path": "pdf/issue8856/issue8856-textbox-footnote-2020.pdf",
+        "sha256": "846fb17709e22ac66fbc91efb2e0919fddb7513da67b18a0b3882d24cf539dc5"
+      },
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "sha256": "5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5"
+      },
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "key": "textbox-footnote",
+      "backend": "wasm",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 4798,
+          "tolerant_content_match_percent": 100.0
+        }
+      ],
+      "input": {
+        "path": "samples/hwpx/footnote-tbox-01.hwpx",
+        "sha256": "e7e6d109beee222f01f089b014c42d8d0f540564b57c7dd47384c1b5ae19e2f7"
+      },
+      "pdf": {
+        "path": "pdf/issue8856/issue8856-textbox-footnote-2020.pdf",
+        "sha256": "846fb17709e22ac66fbc91efb2e0919fddb7513da67b18a0b3882d24cf539dc5"
+      },
+      "font_environment": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-webfont-cache/environments/5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5.json",
+        "sha256": "5fbcf3e65349c804ee9da2ec15c402501c0418c2cd8632d35a4506224eba46c5"
+      },
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    }
+  ],
+  "direct_review": "Reference1), PAGE3 and next-line ownership; textbox1)/body2) and both visible footer bodies preserved. Same-page review+overlay read. Raw2px100% is not RGB identity.",
+  "remaining": "Remaining Rust/Skia/browser gates and maintainer protected/actual-consumer capture pending.",
+  "old_pdf_cross_check": {
+    "pdf_sha256": "7f10f3040fb3c18ddca21925b8a8ad074a886743478dd002d02ebfca5d1f6b97",
+    "same_native_wasm_pngs_as_new_print_check": true,
+    "results": [
+      {
+        "backend": "native",
+        "metrics": {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/textbox1052-visual/native/textbox-footnote/rhwp_png/rhwp_001.png",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/textbox-old-pdf/pdf-001.png",
+          "overlay_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/textbox-old-pdf/native-overlay_001.png",
+          "width": 794,
+          "height": 1122,
+          "pixel_diff_threshold": 32,
+          "overlay_color_legend": {
+            "rhwp_only": "blue",
+            "pdf_only": "red",
+            "both_different": "orange",
+            "matching": "gray"
+          },
+          "total_pixels": 890868,
+          "diff_pixels": 2812,
+          "diff_ratio": 0.00315647,
+          "pixel_match_percent": 99.68435,
+          "ink_union_pixels": 4796,
+          "ink_diff_pixels": 2812,
+          "ink_diff_ratio": 0.58632193,
+          "ink_match_percent": 41.36781,
+          "visual_accuracy_proxy_percent": 41.36781,
+          "tolerant_content_match_radius_px": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 4796,
+          "tolerant_content_match_percent": 100.0,
+          "mean_abs_channel_delta": 0.32,
+          "max_channel_delta": 223,
+          "diff_bbox": [
+            113,
+            133,
+            307,
+            1008
+          ]
+        }
+      },
+      {
+        "backend": "wasm",
+        "metrics": {
+          "page": 1,
+          "rhwp_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/textbox1052-visual/wasm/textbox-footnote/rhwp_png/rhwp_001.png",
+          "pdf_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/textbox-old-pdf/pdf-001.png",
+          "overlay_png": "/Users/tsjang/rhwp/output/issue8856/note-reference-source-style/textbox-old-pdf/wasm-overlay_001.png",
+          "width": 794,
+          "height": 1122,
+          "pixel_diff_threshold": 32,
+          "overlay_color_legend": {
+            "rhwp_only": "blue",
+            "pdf_only": "red",
+            "both_different": "orange",
+            "matching": "gray"
+          },
+          "total_pixels": 890868,
+          "diff_pixels": 2801,
+          "diff_ratio": 0.00314412,
+          "pixel_match_percent": 99.68559,
+          "ink_union_pixels": 4798,
+          "ink_diff_pixels": 2801,
+          "ink_diff_ratio": 0.58378491,
+          "ink_match_percent": 41.62151,
+          "visual_accuracy_proxy_percent": 41.62151,
+          "tolerant_content_match_radius_px": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 4798,
+          "tolerant_content_match_percent": 100.0,
+          "mean_abs_channel_delta": 0.319,
+          "max_channel_delta": 223,
+          "diff_bbox": [
+            113,
+            133,
+            307,
+            1008
+          ]
+        }
+      }
+    ]
+  },
+  "after_full_summary": {
+    "run": 13153,
+    "pass": 13153,
+    "fail": 0,
+    "skip": 45,
+    "seconds": 334.65,
+    "log_sha256": "6c06e429e46dbb66c0efdfed67b1ddb2753716f7c6d313d4901dfb47356b7d9c",
+    "test_input_snapshot_sha256": "52af06bd37361edd7b1e20722a59f028c059a624eaca00adf1f42516fa7c9475"
+  }
+}

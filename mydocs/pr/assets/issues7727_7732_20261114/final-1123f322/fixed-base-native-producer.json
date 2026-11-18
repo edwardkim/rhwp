@@ -1,0 +1,10 @@
+{
+  "source": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "branch": "task/7727-related-fidelity",
+  "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/base-native",
+  "sha256": "89e7b37ddddf27e9605695bb8d31fed2ef23c0d68f7a3f5b32dd7cddd07878ce",
+  "build_command": "CARGO_BUILD_JOBS=8 cargo build --locked --profile release-test --target-dir target/pr-review --features native-skia --bin rhwp -j 8",
+  "build_log_sha256": "cf1faf9a0980f01a2ca011dbf4212c6d2be66b27815cb2fd9b583d5b40d9fdf2",
+  "dirty": [],
+  "visual_fonts": "normal macOS installed fonts; explicit ~/Library/Fonts, not minimum-font isolation"
+}

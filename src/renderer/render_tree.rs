@@ -161,6 +161,9 @@ pub struct RenderLayerInfo {
     /// 분류는 이 플래그로 BehindText 상한을 적용한다 (#2318, SVG node_z_plane 계약).
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub master_page: bool,
+    /// 한컴 "인쇄할 때 바탕쪽 맨 위로 보내기"(HWPX pageFront) 바탕쪽 유래. 본문 위에 그린다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub master_front: bool,
 }
 
 impl RenderLayerInfo {
@@ -171,6 +174,7 @@ impl RenderLayerInfo {
             z_order,
             stable_index,
             master_page: false,
+            master_front: false,
         }
     }
 
@@ -716,6 +720,9 @@ impl PlaceholderNode {
 /// 각주/미주 마커 렌더 노드
 #[derive(Debug, Clone, Serialize)]
 pub struct FootnoteMarkerNode {
+    /// 번호 서식·언어 슬롯에서 해소한 공통 paint. 논리 소유는 이 마커에 남긴다.
+    #[serde(skip)]
+    pub source_run: Option<Box<TextRunNode>>,
     /// 각주 번호
     pub number: u16,
     /// 위첨자 텍스트 ("1)" 등)
@@ -736,6 +743,24 @@ pub struct FootnoteMarkerNode {
 }
 
 impl FootnoteMarkerNode {
+    /// 참조 번호는 본문 run의 양쪽 정렬·탭·자간을 소비하지 않는 독립 paint다.
+    /// 폭 측정과 모든 backend가 같은 스타일을 사용해 뒤 본문과 겹치지 않게 한다.
+    pub(crate) fn reference_style(base: f64, family: &str, color: u32) -> TextStyle {
+        TextStyle {
+            font_family: family.to_owned(),
+            font_size: Self::font_size(base),
+            color,
+            ..Default::default()
+        }
+    }
+
+    pub(crate) fn paint_style(&self) -> TextStyle {
+        self.source_run.as_ref().map_or_else(
+            || Self::reference_style(self.base_font_size, &self.font_family, self.color),
+            |run| run.style.clone(),
+        )
+    }
+
     /// 독립 한컴 Print에서 8/10/20pt 본문 번호는 본문 크기의 3/4이다.
     pub fn font_size(base: f64) -> f64 {
         base * 0.75
@@ -1700,6 +1725,10 @@ pub struct ImageNode {
     pub contrast: i8,
     /// 그림 개체 전체 불투명도. 1.0=불투명, 0.0=완전 투명.
     pub opacity: f64,
+    /// 원본 그림의 부드러운 가장자리 반경(HWPUNIT). 자르기·화면 DPI와 별개다.
+    /// None은 효과 없음, Some(0)은 명시적인 0 반경이며 무효과 노드의 JSON은 유지한다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub soft_edge_radius_hu: Option<f64>,
     /// 텍스트 흐름 wrap 모드 (Task #516, 다층 레이어 분리용).
     /// `None` 또는 `Some(Square/TopAndBottom/Tight/Through)` 는 본문 layer 에 포함되고,
     /// `Some(BehindText)` / `Some(InFrontOfText)` 는 overlay layer 로 분리 후보.
@@ -1768,6 +1797,31 @@ pub enum HeaderFooterKind {
 }
 
 impl ImageNode {
+    /// 인쇄할 원본이 없는 그림의 편집용 대체 표시다.
+    /// #8957의 한컴 2024 Print는 정상 그림과 같은 페이지의 미해결 연결 그림만 비운다.
+    /// 경로·배치 공간은 보존하고, 실제 바이트가 공급되면 연결 그림도 정상 인쇄한다.
+    /// 외부 데이터의 디코딩 실패나 채우기 이미지까지 이 계약으로 확대하지 않는다.
+    pub(crate) fn is_nonprinting_picture_placeholder(&self) -> bool {
+        self.is_missing_picture()
+            || (self.fill_mode.is_none()
+                && self.external_path.is_some()
+                && self.data.as_deref().is_none_or(<[u8]>::is_empty))
+    }
+
+    /// [#8858] 그림 컨트롤인데 원본 데이터가 없거나 표시할 수 없고 외부 경로도 없으면 `#2225`
+    /// 의 「그림 미지정」이다. 그림 배치 경로 일부(`picture_footnote`)만 이 형상을
+    /// `PlaceholderKind::MissingPicture` 노드로 바꾸고, 문단·칸·도형·TAC 그림 경로는 데이터
+    /// 없는 이미지 노드를 그대로 낸다. 백엔드는 같은 술어로 인쇄 등가 출력에서 생략한다.
+    /// 채우기 이미지(`fill_mode`)와 외부 경로 그림(`#741` 표시)은 해당하지 않는다.
+    pub fn is_missing_picture(&self) -> bool {
+        self.fill_mode.is_none()
+            && self.external_path.is_none()
+            && self.data.as_deref().is_none_or(|bytes| {
+                bytes.is_empty()
+                    || !crate::renderer::image_resolver::is_displayable_image_data(bytes)
+            })
+    }
+
     /// 워터마크 효과 적용 여부 (Issue #1156).
     /// 밝기·대비가 둘 다 0 이 아닌 경우 워터마크 (한쪽이라도 0 이면 아님, effect 무관).
     /// HWP/HWPX 에 워터마크 비트는 없으며 한컴은 해제 시 밝기·대비를 0/0 으로 되돌린다.
@@ -1797,6 +1851,7 @@ impl ImageNode {
             brightness: 0,
             contrast: 0,
             opacity: 1.0,
+            soft_edge_radius_hu: None,
             text_wrap: None,
             external_path: None,
             header_footer_ref: None,

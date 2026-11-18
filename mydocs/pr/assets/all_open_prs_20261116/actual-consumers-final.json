@@ -1,0 +1,3416 @@
+{
+  "status": "captured_supported_consumers_no_runtime_fallback",
+  "candidate_source": "167921b3c52d78d3da180b746b22d91af9b3d3cc",
+  "browser_version": "HeadlessChrome/146.0.7680.76",
+  "screen_print_browser_captures": 48,
+  "native_png_exports": 16,
+  "runtime_replay_hard_violations": 0,
+  "native_canvaskit_parity": {
+    "total": 16,
+    "compared": 16,
+    "passed": 16,
+    "failed": 0,
+    "missing": 0,
+    "errors": 0,
+    "identityMismatches": 0
+  },
+  "report_only_browser_parity": {
+    "summary": {
+      "total": 32,
+      "compared": 32,
+      "passed": 0,
+      "failed": 32,
+      "missing": 0,
+      "errors": 0,
+      "identityMismatches": 0
+    },
+    "not_passed": [
+      {
+        "sample": "stacked-picture-hosts",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2152,
+        "actual_ink": 2020,
+        "tolerant_diff_ratio": 0.0015162696178596822
+      },
+      {
+        "sample": "stacked-picture-hosts",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2152,
+        "actual_ink": 1907,
+        "tolerant_diff_ratio": 0.0010721551439895386
+      },
+      {
+        "sample": "stacked-picture-hosts",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 1538,
+        "actual_ink": 1531,
+        "tolerant_diff_ratio": 0.0014671084829626837
+      },
+      {
+        "sample": "stacked-picture-hosts",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 1538,
+        "actual_ink": 1531,
+        "tolerant_diff_ratio": 0.0014671084829626837
+      },
+      {
+        "sample": "blank-picture-host",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2116,
+        "actual_ink": 1978,
+        "tolerant_diff_ratio": 0.0014669235652074442
+      },
+      {
+        "sample": "blank-picture-host",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2116,
+        "actual_ink": 1893,
+        "tolerant_diff_ratio": 0.0010216875901406586
+      },
+      {
+        "sample": "blank-picture-host",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 1502,
+        "actual_ink": 1495,
+        "tolerant_diff_ratio": 0.0013907784318215493
+      },
+      {
+        "sample": "blank-picture-host",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 1502,
+        "actual_ink": 1495,
+        "tolerant_diff_ratio": 0.0013907784318215493
+      },
+      {
+        "sample": "title-photo-last-anchor",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 4734,
+        "actual_ink": 4654,
+        "tolerant_diff_ratio": 0.0022295443789238523
+      },
+      {
+        "sample": "title-photo-last-anchor",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 4734,
+        "actual_ink": 4432,
+        "tolerant_diff_ratio": 0.0017663643847107985
+      },
+      {
+        "sample": "title-photo-last-anchor",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 3220,
+        "actual_ink": 3046,
+        "tolerant_diff_ratio": 0.0018319212273872224
+      },
+      {
+        "sample": "title-photo-last-anchor",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 3220,
+        "actual_ink": 3046,
+        "tolerant_diff_ratio": 0.0018319212273872224
+      },
+      {
+        "sample": "restricted-textbox-header",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 3326,
+        "actual_ink": 3087,
+        "tolerant_diff_ratio": 0.0009196309812462569
+      },
+      {
+        "sample": "restricted-textbox-header",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 3326,
+        "actual_ink": 3087,
+        "tolerant_diff_ratio": 0.0009196309812462569
+      },
+      {
+        "sample": "restricted-textbox-header",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2865,
+        "actual_ink": 2799,
+        "tolerant_diff_ratio": 0.0006387029279309617
+      },
+      {
+        "sample": "restricted-textbox-header",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2865,
+        "actual_ink": 2799,
+        "tolerant_diff_ratio": 0.0006387029279309617
+      },
+      {
+        "sample": "free-textbox-header",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2990,
+        "actual_ink": 2756,
+        "tolerant_diff_ratio": 0.0009229954848361823
+      },
+      {
+        "sample": "free-textbox-header",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2990,
+        "actual_ink": 2756,
+        "tolerant_diff_ratio": 0.0009229954848361823
+      },
+      {
+        "sample": "free-textbox-header",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2671,
+        "actual_ink": 2609,
+        "tolerant_diff_ratio": 0.0006431929309392637
+      },
+      {
+        "sample": "free-textbox-header",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 2671,
+        "actual_ink": 2609,
+        "tolerant_diff_ratio": 0.0006431929309392637
+      },
+      {
+        "sample": "line-spacing-between-v14",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 813,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0011069216810854338
+      },
+      {
+        "sample": "line-spacing-between-v14",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 813,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0011069216810854338
+      },
+      {
+        "sample": "line-spacing-between-v14",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 597,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0008138130452547403
+      },
+      {
+        "sample": "line-spacing-between-v14",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 597,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0008138130452547403
+      },
+      {
+        "sample": "line-spacing-fixed-v14",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 813,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0011069216810854338
+      },
+      {
+        "sample": "line-spacing-fixed-v14",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 813,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0011069216810854338
+      },
+      {
+        "sample": "line-spacing-fixed-v14",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 597,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0008138130452547403
+      },
+      {
+        "sample": "line-spacing-fixed-v14",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 5000,
+        "reference_ink": 597,
+        "actual_ink": 510,
+        "tolerant_diff_ratio": 0.0008138130452547403
+      },
+      {
+        "sample": "field-end-following-tables",
+        "profile": "screen",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 13073,
+        "actual_ink": 12877,
+        "tolerant_diff_ratio": 0.0003824319080548459
+      },
+      {
+        "sample": "field-end-following-tables",
+        "profile": "screen",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 13073,
+        "actual_ink": 12877,
+        "tolerant_diff_ratio": 0.0003824319080548459
+      },
+      {
+        "sample": "field-end-following-tables",
+        "profile": "print",
+        "backend": "canvaskit-compat",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 10545,
+        "actual_ink": 10524,
+        "tolerant_diff_ratio": 0.00010102506768679535
+      },
+      {
+        "sample": "field-end-following-tables",
+        "profile": "print",
+        "backend": "canvaskit-default",
+        "reason": [
+          "minimumInkBudgetPassed"
+        ],
+        "configured_minimum_ink": 30000,
+        "reference_ink": 10545,
+        "actual_ink": 10524,
+        "tolerant_diff_ratio": 0.00010102506768679535
+      }
+    ],
+    "interpretation": "32 comparisons fail the copied minimumInkPixels qualification because these small fixtures contain fewer pixels; all configured difference budgets pass. Do not call them parity PASS, do not lower the threshold, and do not claim the automatic auto/readiness gate was run."
+  },
+  "auto_readiness_gate": {
+    "total": 0,
+    "evaluated": 0,
+    "passed": 0,
+    "failed": 0,
+    "missing": 0
+  },
+  "packages": {
+    "rhwp.js": {
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "paths": [
+        "pkg/rhwp.js",
+        "rhwp-studio/public/rhwp.js",
+        "output/pr-review/all-open-pr-integration-20261116/header-v4/pkg/rhwp.js"
+      ]
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+      "paths": [
+        "pkg/rhwp_bg.wasm",
+        "rhwp-studio/public/rhwp_bg.wasm",
+        "output/pr-review/all-open-pr-integration-20261116/header-v4/pkg/rhwp_bg.wasm"
+      ]
+    }
+  },
+  "initialization_identity_reprobe": {
+    "browser_version": "Chrome/157.0.8103.51",
+    "reason": "Original 48 captures had CDP WASM response eviction; fresh actual consumer invocation retained the response with larger observation buffers. Source and rendering settings were unchanged; separate Chrome version is recorded.",
+    "responses": [
+      {
+        "file": "rhwp.js",
+        "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp.js?t=1794845263559",
+        "status": 200,
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "expected": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "sourceMapOriginalSha256": "59734a71da6ed6c581c7fe366ecf864577c616d96e976cad0ccb6486bff6a24b",
+        "sourceMapEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "transformations": [
+          "Vite rewrote only the local WASM asset URL",
+          "removed non-executable inline source map"
+        ],
+        "matches": true,
+        "browserVersion": "Chrome/157.0.8103.51",
+        "at": "2026-11-16T19:26:37.918Z"
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "status": 200,
+        "sha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "expected": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "sourceEquivalentSha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "sourceMapOriginalSha256": null,
+        "sourceMapEquivalentSha256": null,
+        "transformations": [],
+        "matches": true,
+        "browserVersion": "Chrome/157.0.8103.51",
+        "at": "2026-11-16T19:26:38.985Z"
+      },
+      {
+        "file": "rhwp.js",
+        "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp.js?t=1794845263559",
+        "status": 304,
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "expected": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "sourceMapOriginalSha256": "59734a71da6ed6c581c7fe366ecf864577c616d96e976cad0ccb6486bff6a24b",
+        "sourceMapEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "transformations": [
+          "Vite rewrote only the local WASM asset URL",
+          "removed non-executable inline source map"
+        ],
+        "matches": true,
+        "browserVersion": "Chrome/157.0.8103.51",
+        "at": "2026-11-16T19:26:43.496Z"
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "status": 304,
+        "sha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "expected": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "sourceEquivalentSha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "sourceMapOriginalSha256": null,
+        "sourceMapEquivalentSha256": null,
+        "transformations": [],
+        "matches": true,
+        "browserVersion": "Chrome/157.0.8103.51",
+        "at": "2026-11-16T19:26:44.262Z"
+      },
+      {
+        "file": "rhwp.js",
+        "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp.js?t=1794845263559",
+        "status": 304,
+        "sha256": "8324b3d4e9e495d639f68982d5d65d369ca5fcd7e3bb75e338ece4cd310b1cc1",
+        "expected": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "sourceEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "sourceMapOriginalSha256": "59734a71da6ed6c581c7fe366ecf864577c616d96e976cad0ccb6486bff6a24b",
+        "sourceMapEquivalentSha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "transformations": [
+          "Vite rewrote only the local WASM asset URL",
+          "removed non-executable inline source map"
+        ],
+        "matches": true,
+        "browserVersion": "Chrome/157.0.8103.51",
+        "at": "2026-11-16T19:26:49.750Z"
+      },
+      {
+        "file": "rhwp_bg.wasm",
+        "url": "http://localhost:7700/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+        "status": 304,
+        "sha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "expected": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "sourceEquivalentSha256": "eac7b3815766a8c5f6d7a01285e50fbbb1e31f15dedd6ec3ff8badafc3e0481c",
+        "sourceMapOriginalSha256": null,
+        "sourceMapEquivalentSha256": null,
+        "transformations": [],
+        "matches": true,
+        "browserVersion": "Chrome/157.0.8103.51",
+        "at": "2026-11-16T19:26:51.341Z"
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "sample": "stacked-picture-hosts",
+      "input": "issue8695/cell-two-square-picture-hosts.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/canvas2d-screen.png",
+        "sha256": "138bbb8161d3a9283c194bed5ad40b32a89ad9fcfad0d5a3786163620ab02219"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3",
+          "decisionKey": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "stacked-picture-hosts",
+      "input": "issue8695/cell-two-square-picture-hosts.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/canvaskit-compat-screen.png",
+        "sha256": "443ab6b3efb7e1cd69eab3626cdf2a063c6584ac597c1d2f359ece6fde57b85d"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3",
+          "decisionKey": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3|revision:2|profile:screen|resources:2|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "stacked-picture-hosts",
+      "input": "issue8695/cell-two-square-picture-hosts.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/canvaskit-default-screen.png",
+        "sha256": "b322dec82ea60d1738c37e6c7f231e3ae1f2cbd04b1c635e328493e0bcdfd9f1"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3",
+          "decisionKey": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "stacked-picture-hosts",
+      "input": "issue8695/cell-two-square-picture-hosts.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/canvas2d-print.png",
+        "sha256": "1b82ea7717f1d6d2423a968c6ec8fbaee89a74167d7cfa31333f26bba5420738"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3",
+          "decisionKey": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "stacked-picture-hosts",
+      "input": "issue8695/cell-two-square-picture-hosts.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/canvaskit-compat-print.png",
+        "sha256": "90e32ba2b6a17b61cc73b6b7dd00f5460d7c2b305539d6c79841013a1088b7ec"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3",
+          "decisionKey": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "stacked-picture-hosts",
+      "input": "issue8695/cell-two-square-picture-hosts.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/canvaskit-default-print.png",
+        "sha256": "90e32ba2b6a17b61cc73b6b7dd00f5460d7c2b305539d6c79841013a1088b7ec"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3",
+          "decisionKey": "blake3:3cae06511799366cd0a0cf7d8b512e3da2431465af1182ec495b5c3490e2b3f3|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "blank-picture-host",
+      "input": "issue8695/cell-second-host-without-picture.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/canvas2d-screen.png",
+        "sha256": "898f4546ea82b117f3dd036ccda5a2d5ed0a4a6a863afa5f28794572e77bf517"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8",
+          "decisionKey": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "blank-picture-host",
+      "input": "issue8695/cell-second-host-without-picture.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/canvaskit-compat-screen.png",
+        "sha256": "770a4b3f2390d3bb284be2708e27ddf63bff5df8fa52278a2fbe411cd175aa25"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8",
+          "decisionKey": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "blank-picture-host",
+      "input": "issue8695/cell-second-host-without-picture.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/canvaskit-default-screen.png",
+        "sha256": "a7f3453e58b8c675d8b253a8bc6d6490539882e1aa9403c4a90f4d3adc8af107"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8",
+          "decisionKey": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "blank-picture-host",
+      "input": "issue8695/cell-second-host-without-picture.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/canvas2d-print.png",
+        "sha256": "a20aa9985981fa588ebc8afb9df516681190bfa1e0e08b5e5f5b7cf7a7ae8296"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8",
+          "decisionKey": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "blank-picture-host",
+      "input": "issue8695/cell-second-host-without-picture.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/canvaskit-compat-print.png",
+        "sha256": "5b9a7f10677147b53c6b9b50e6a37413d69208949aa5a0a6e7243d2036a33950"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8",
+          "decisionKey": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "blank-picture-host",
+      "input": "issue8695/cell-second-host-without-picture.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/canvaskit-default-print.png",
+        "sha256": "5b9a7f10677147b53c6b9b50e6a37413d69208949aa5a0a6e7243d2036a33950"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8",
+          "decisionKey": "blake3:e95d1e4a0eee2e0742bd9a22e4e25ee50bbcbe61ac74031722e7c73276ae13d8|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "input": "title_flow_photo/title-flow-photo-row.hwp",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/canvas2d-screen.png",
+        "sha256": "f73855b50f9c93a3a1ff1be18a27da1f8952bc9301091c32e29c12395b2631c4"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356",
+          "decisionKey": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "input": "title_flow_photo/title-flow-photo-row.hwp",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/canvaskit-compat-screen.png",
+        "sha256": "0124dffee139aafd9bc86ca6e5bad417fab10aeac6d339f4e654a35cf4b032f9"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356",
+          "decisionKey": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "input": "title_flow_photo/title-flow-photo-row.hwp",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/canvaskit-default-screen.png",
+        "sha256": "a00de69ae277cb8c2cdca33d095d441463079f06f4d8a59bad233927e49f0377"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356",
+          "decisionKey": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "input": "title_flow_photo/title-flow-photo-row.hwp",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/canvas2d-print.png",
+        "sha256": "c1459450b11000dca658ea49840e40b21e0e9991ca5936acbbc4d4ae1e82d205"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356",
+          "decisionKey": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "input": "title_flow_photo/title-flow-photo-row.hwp",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/canvaskit-compat-print.png",
+        "sha256": "fc65d77e4ef4453298a94a6d8fbb08868e5d483496a1692a9cc856c18cde0968"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356",
+          "decisionKey": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "input": "title_flow_photo/title-flow-photo-row.hwp",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/canvaskit-default-print.png",
+        "sha256": "fc65d77e4ef4453298a94a6d8fbb08868e5d483496a1692a9cc856c18cde0968"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356",
+          "decisionKey": "blake3:8279978fd4460ca47d7835ea98deae8173d725bf8eac0d5ccfeee561f6adf356|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_tall.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/canvas2d-screen.png",
+        "sha256": "f33471d914b5faab2b8d33e86b3cd148213f88e78c17cc6629f31fac4dd3361d"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c",
+          "decisionKey": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_tall.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/canvaskit-compat-screen.png",
+        "sha256": "db539060da3e802c47965a75c7fa3112ee9e7692f134b26239f86d8dc59f1d12"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c",
+          "decisionKey": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_tall.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/canvaskit-default-screen.png",
+        "sha256": "db539060da3e802c47965a75c7fa3112ee9e7692f134b26239f86d8dc59f1d12"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c",
+          "decisionKey": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_tall.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/canvas2d-print.png",
+        "sha256": "9abada1c79596544df1ad0cfff4120dcedd506fe52e4579b7aee66eac1f58217"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c",
+          "decisionKey": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_tall.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/canvaskit-compat-print.png",
+        "sha256": "b6c73190f6fd3b1de557bdbb400d5b4d241dc3f290af175ca6c497d039dab442"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c",
+          "decisionKey": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_tall.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/canvaskit-default-print.png",
+        "sha256": "b6c73190f6fd3b1de557bdbb400d5b4d241dc3f290af175ca6c497d039dab442"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c",
+          "decisionKey": "blake3:ebf077e44da7e48d8d04a08be162ac3ec4dd0602ea4c274834681e11f9abc14c|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "free-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/canvas2d-screen.png",
+        "sha256": "249c8b847041264b0cc02e2e9a7712b86b58e8e8af8660e063c3e6e4634bf2ce"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41",
+          "decisionKey": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "free-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/canvaskit-compat-screen.png",
+        "sha256": "f52f194887dcfea15c97742db413a58116736e0cdb0828393d8b309fdf46b9ab"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41",
+          "decisionKey": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "free-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/canvaskit-default-screen.png",
+        "sha256": "f52f194887dcfea15c97742db413a58116736e0cdb0828393d8b309fdf46b9ab"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41",
+          "decisionKey": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "free-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/canvas2d-print.png",
+        "sha256": "57fe051c40c14c30feccf662c37f74926484f747c1cad203896b772e1740a45c"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41",
+          "decisionKey": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "free-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/canvaskit-compat-print.png",
+        "sha256": "a45a9b8f05b33a83a3c29e68d6aec24dfe52f3fb5710c173ad32c8eb5ac98dd2"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41",
+          "decisionKey": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "free-textbox-header",
+      "input": "textbox_stored_table/textbox_nostored_header_front_unrestricted.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/canvaskit-default-print.png",
+        "sha256": "a45a9b8f05b33a83a3c29e68d6aec24dfe52f3fb5710c173ad32c8eb5ac98dd2"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41",
+          "decisionKey": "blake3:b30e315a705b8689992b856b10db77c981e0f4d8d5dd2e3e9a4a15b30675bf41|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "input": "issue8676/plain_between_v14.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/canvas2d-screen.png",
+        "sha256": "127668670111292a52bd4d8868dc040415f71a17221d7946875f63e087b7d10a"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5",
+          "decisionKey": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "input": "issue8676/plain_between_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/canvaskit-compat-screen.png",
+        "sha256": "1d035b66196cd3d1d58e444f3214ee0b26b7b56e4ff782d62a66794616d1fcdf"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5",
+          "decisionKey": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "input": "issue8676/plain_between_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/canvaskit-default-screen.png",
+        "sha256": "1d035b66196cd3d1d58e444f3214ee0b26b7b56e4ff782d62a66794616d1fcdf"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5",
+          "decisionKey": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "input": "issue8676/plain_between_v14.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/canvas2d-print.png",
+        "sha256": "f10a094b677367fa4a5b266b97c06b3698ead40cea56c23bd2fc7f2d46a7c89e"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5",
+          "decisionKey": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "input": "issue8676/plain_between_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/canvaskit-compat-print.png",
+        "sha256": "11a6a855dce97d85fffd139d0f8c9c59a5979748df24711fd434269d2623782f"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5",
+          "decisionKey": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "input": "issue8676/plain_between_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/canvaskit-default-print.png",
+        "sha256": "11a6a855dce97d85fffd139d0f8c9c59a5979748df24711fd434269d2623782f"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5",
+          "decisionKey": "blake3:671c19081f8a5b9ef377b7c3be6d4204f79c3fbd4e1664f32d8c361ecf3429b5|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "input": "issue8676/plain_fixed_v14.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/canvas2d-screen.png",
+        "sha256": "1c672d140d339627dda3f0d7bedcdbe683b0495b0c2389a2af998cfb347d2e35"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7",
+          "decisionKey": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "input": "issue8676/plain_fixed_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/canvaskit-compat-screen.png",
+        "sha256": "3a3cf18c4b05e8acb6ba09d9439bb23b9621576fa6fa6fba156f356fe2492d41"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7",
+          "decisionKey": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "input": "issue8676/plain_fixed_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/canvaskit-default-screen.png",
+        "sha256": "3a3cf18c4b05e8acb6ba09d9439bb23b9621576fa6fa6fba156f356fe2492d41"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7",
+          "decisionKey": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "input": "issue8676/plain_fixed_v14.hwpx",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/canvas2d-print.png",
+        "sha256": "cbeb5edb9cb86521a0f8e34202fbba93fd9a1d08f5db0d1cd58461cc806987aa"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7",
+          "decisionKey": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "input": "issue8676/plain_fixed_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/canvaskit-compat-print.png",
+        "sha256": "cd1695477b195afbc163051e77853e788a4367bf38d8238bae74378a17705b3b"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7",
+          "decisionKey": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "input": "issue8676/plain_fixed_v14.hwpx",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/canvaskit-default-print.png",
+        "sha256": "cd1695477b195afbc163051e77853e788a4367bf38d8238bae74378a17705b3b"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7",
+          "decisionKey": "blake3:290bbdfdef21764f953671cb21ba41c75cd6bc5e6d88994cff99906c4bbff1e7|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "field-end-following-tables",
+      "input": "issue9082/textbox_filled_field_tac_tables.hwp",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "screen",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/canvas2d-screen.png",
+        "sha256": "10c7d8d397f721af903f8f073ddadb0d03e92467ce742e05983726961464bc28"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc",
+          "decisionKey": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc|revision:2|profile:screen|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "field-end-following-tables",
+      "input": "issue9082/textbox_filled_field_tac_tables.hwp",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "screen",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/canvaskit-compat-screen.png",
+        "sha256": "cec4c103cd083237b6bc7b45d83991a6314d5da9aaa7a941365e7a644bf333b7"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc",
+          "decisionKey": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc|revision:3|profile:screen|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "field-end-following-tables",
+      "input": "issue9082/textbox_filled_field_tac_tables.hwp",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "screen",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/canvaskit-default-screen.png",
+        "sha256": "cec4c103cd083237b6bc7b45d83991a6314d5da9aaa7a941365e7a644bf333b7"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "screen"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "screen",
+          "documentDigest": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc",
+          "decisionKey": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc|revision:3|profile:screen|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "field-end-following-tables",
+      "input": "issue9082/textbox_filled_field_tac_tables.hwp",
+      "page": 0,
+      "backend": "canvas2d",
+      "actual_backend": "canvas2d",
+      "profile": "print",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/canvas2d-print.png",
+        "sha256": "97731ec90e21f1bba033eca6c8ccad1a7435d17903d9f907aea6e2638985119b"
+      },
+      "runtime": {
+        "activeBackend": "canvas2d",
+        "request": {
+          "backend": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "auto",
+            "requested": "auto"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvas2d",
+            "source": "url",
+            "requested": "canvas2d"
+          },
+          "requestedBackend": "canvas2d",
+          "effectiveBackend": "canvas2d",
+          "selectionReason": "explicitCanvas2d",
+          "fallbackReason": null,
+          "documentRevision": 2,
+          "resourceGeneration": 2,
+          "renderProfile": "print",
+          "documentDigest": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc",
+          "decisionKey": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc|revision:2|profile:print|resources:2|request:canvas2d|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": null
+    },
+    {
+      "sample": "field-end-following-tables",
+      "input": "issue9082/textbox_filled_field_tac_tables.hwp",
+      "page": 0,
+      "backend": "canvaskit-compat",
+      "actual_backend": "canvaskit-compat",
+      "profile": "print",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/canvaskit-compat-print.png",
+        "sha256": "e4b4c2c2daa97896542e1572d4d1a850eb09c721fe21c31a068f14611d90df5a"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "compat",
+            "source": "url",
+            "requested": "compat"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc",
+          "decisionKey": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc|revision:3|profile:print|resources:3|request:canvaskit|mode:compat",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "field-end-following-tables",
+      "input": "issue9082/textbox_filled_field_tac_tables.hwp",
+      "page": 0,
+      "backend": "canvaskit-default",
+      "actual_backend": "canvaskit-default",
+      "profile": "print",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/canvaskit-default-print.png",
+        "sha256": "e4b4c2c2daa97896542e1572d4d1a850eb09c721fe21c31a068f14611d90df5a"
+      },
+      "runtime": {
+        "activeBackend": "canvaskit",
+        "request": {
+          "backend": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "canvaskitMode": {
+            "mode": "default",
+            "source": "url",
+            "requested": "default"
+          },
+          "canvaskitSurface": {
+            "preference": "software",
+            "requested": "software"
+          },
+          "renderProfile": "print"
+        },
+        "backendFallbackReason": null,
+        "selection": {
+          "schemaVersion": 1,
+          "request": {
+            "backend": "canvaskit",
+            "source": "url",
+            "requested": "canvaskit"
+          },
+          "requestedBackend": "canvaskit",
+          "effectiveBackend": "canvaskit",
+          "selectionReason": "explicitCanvasKit",
+          "fallbackReason": null,
+          "documentRevision": 3,
+          "resourceGeneration": 3,
+          "renderProfile": "print",
+          "documentDigest": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc",
+          "decisionKey": "blake3:8581203378498d2e41c4605c3de1aa097dc1b8792c0da4894db9d5f16a298dcc|revision:3|profile:print|resources:3|request:canvaskit|mode:default",
+          "preflight": null,
+          "initializationError": null,
+          "selectionError": null
+        },
+        "canvasOwnershipTracked": true
+      },
+      "surface": "software"
+    },
+    {
+      "sample": "stacked-picture-hosts",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/native-screen.png",
+        "sha256": "16d590daf1f55f89c3cb9151596bcc9637ea077324bcad3519bec08daf14ca6e"
+      }
+    },
+    {
+      "sample": "stacked-picture-hosts",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:f9a54247bc0588c07b2fc4e03a48292c885568e93a5890743a15287267d25fbd",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/stacked-picture-hosts/native-print.png",
+        "sha256": "dc4557dc2203a35cb9cd46d3dd39ce5062a66e96da9d69c45eee3a43d9bee30a"
+      }
+    },
+    {
+      "sample": "blank-picture-host",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/native-screen.png",
+        "sha256": "4225038761518e97e341b7b2058bf4911f724f9e397f2a509481d072985a15cb"
+      }
+    },
+    {
+      "sample": "blank-picture-host",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:8c53a7c32a0fe70b3215c5d5f1e69368e6db318d5e988602d66b84e8c5024c9d",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/blank-picture-host/native-print.png",
+        "sha256": "a1c058e9ca0c80de3fe4634504b80bc62e5d6d0661e43e5f3f1dd0614427cd28"
+      }
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/native-screen.png",
+        "sha256": "e0cbcadbf65f668cce8a03ba41832071ab52e16a0b2a609be62b9e41ad62c8be"
+      }
+    },
+    {
+      "sample": "title-photo-last-anchor",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:99ceb9a5c4f7551b366964da6c0ba82eec3dbc054aef7caaec267b9c33ecc104",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/title-photo-last-anchor/native-print.png",
+        "sha256": "fc0bc129a21c3b1a20d2d04934c0b783695e33b37bced2b00d5d847e3a9ea7db"
+      }
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/native-screen.png",
+        "sha256": "3b4dc2836ab8d61ab9cd243ea146e13dbdf03ba7f470afc56a01fb6dbfae2e64"
+      }
+    },
+    {
+      "sample": "restricted-textbox-header",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:b37aa2ee6f77e6528658e33c10db52784e0e7e92ffd4bdd57cbc94e441e37a80",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/restricted-textbox-header/native-print.png",
+        "sha256": "8cfc0304083b1dd62ae90a97297111ce9044b5d79da05efc71f1bf50c594d453"
+      }
+    },
+    {
+      "sample": "free-textbox-header",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/native-screen.png",
+        "sha256": "a21345beeca775d7059eb90125b6eef6821c49fad0e2b78dd67703a28114b9f1"
+      }
+    },
+    {
+      "sample": "free-textbox-header",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:2b921fbc833ad8544988c2cd68385d940e1a691661c8e5dfc3e65a280ed3d571",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/free-textbox-header/native-print.png",
+        "sha256": "952c693ab547e06ccfc986dcfbe914b92123ed5802454c3b3e3fd30b49fd653c"
+      }
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/native-screen.png",
+        "sha256": "fbcacb384fd645cb7edea42e4ec82fe8a7cf57e93f7f95c48234e47d581007c5"
+      }
+    },
+    {
+      "sample": "line-spacing-between-v14",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:ddd4d0c1ccc2881d96a888fc961cb3f18771e223f078240567f235c3d087c578",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-between-v14/native-print.png",
+        "sha256": "b496e0143b348d0c09fbf7351c8051467e2737512413e8b92c5e36b353e1c27f"
+      }
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/native-screen.png",
+        "sha256": "47093413d2edb4066f2354bfed6bb784564e064f403f0f759fe398f03707a9b0"
+      }
+    },
+    {
+      "sample": "line-spacing-fixed-v14",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:f0b14aaf49102931bb671f537a7edbb0af9695a7d813fd601ddd96d0642e1bf9",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/line-spacing-fixed-v14/native-print.png",
+        "sha256": "8f8e298260eb8dc8f69a2d6ec498e7cfd1dcd0d42d9bcca1204f05d786e2224f"
+      }
+    },
+    {
+      "sample": "field-end-following-tables",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "screen",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/native-screen.png",
+        "sha256": "66438c48bb71efe61f7cc4fc300460898eaad18003004e8cce44a4d1590de3be"
+      }
+    },
+    {
+      "sample": "field-end-following-tables",
+      "page": 0,
+      "backend": "native-skia",
+      "profile": "print",
+      "document_digest": "sha256:a4dd2bd52c02ca3d25414e63e8c8af7cefc96d53b00e49fa635ed6f1610cb069",
+      "artifact": {
+        "path": "mydocs/pr/assets/all_open_prs_20261116/actual-consumers/field-end-following-tables/native-print.png",
+        "sha256": "b59fcef8960fc8df7cc80e787793a1d71209b616c35ef151c422707809ae0ceb"
+      }
+    }
+  ],
+  "direct_reading": {
+    "profile": "print",
+    "samples": [
+      "stacked-picture-hosts",
+      "blank-picture-host",
+      "restricted-textbox-header",
+      "free-textbox-header",
+      "title-photo-last-anchor",
+      "line-spacing-between-v14",
+      "line-spacing-fixed-v14",
+      "field-end-following-tables"
+    ],
+    "backends": [
+      "native-skia",
+      "canvas2d",
+      "canvaskit-compat",
+      "canvaskit-default"
+    ],
+    "observations": [
+      "연속/빈 그림 호스트의 그림·한글·END가 같은 표 영역에 유지된다.",
+      "제한·비제한 글상자의 TITLE/BOX와 BODY 경계가 같은 관계를 보존한다.",
+      "제목/사진 행 두 개와 결재 셀이 겹치거나 누락되지 않는다.",
+      "FIXED/BETWEEN의 TOP/AONE/ATWO/END 순서와 줄 피치가 유지된다.",
+      "한컴 저장 값과 FIELD_END 뒤 두 표는 세로 소속·행/열을 유지한다."
+    ],
+    "limitation": "래스터 미세 차이를 픽셀 동일성으로 주장하지 않는다. report-only minimumInk 검사 32 FAIL과 자동 readiness 미실행은 별도 기록했다."
+  }
+}

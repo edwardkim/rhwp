@@ -1,0 +1,35 @@
+{
+  "started": "2026-11-09T23:21:37.753394+09:00",
+  "finished": "2026-11-09T23:21:43.602300+09:00",
+  "deleted": [
+    "output/",
+    "target/pr-review/debug"
+  ],
+  "temporary_snapshots_removed": 2,
+  "before_bytes": {
+    "output": 18422501376,
+    "target/pr-review/debug": 11631177728
+  },
+  "disk_free_before": 149939838976,
+  "disk_free_after": 180173619200,
+  "freed_bytes": 30233780224,
+  "active_builds_or_file_references_before_delete": [],
+  "preserved_branch": "task/8745-code-scanning-followup",
+  "worktree_reason": "Unsubmitted source correction; PR/push/merge not authorized.",
+  "preserved_profiles": [
+    "web-canvas-outline-harness-70df0d7a3c7c",
+    "package",
+    "release-test",
+    "wasm32-unknown-unknown",
+    "doc",
+    "tmp",
+    "release",
+    "x86_64-unknown-linux-gnu",
+    "x86_64-pc-windows-msvc"
+  ],
+  "verified_absent": [
+    "output/",
+    "target/pr-review/debug"
+  ],
+  "no_backup_archive_or_temporary_content_relocation": true
+}

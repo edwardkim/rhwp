@@ -1,0 +1,1318 @@
+{
+  "manifest": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-manifest.json",
+  "browserVersion": "Chrome/157.0.8103.78",
+  "chromiumBuildId": null,
+  "captureError": null,
+  "scope": "representative",
+  "sampleCount": 3,
+  "profiles": [
+    "print"
+  ],
+  "canvaskitSurface": "software",
+  "browserBackendParity": {
+    "mode": "reportOnly",
+    "backendPairs": [
+      [
+        "canvas2d",
+        "canvaskit-compat"
+      ],
+      [
+        "canvas2d",
+        "canvaskit-default"
+      ]
+    ],
+    "thresholds": {
+      "ignoreChannelDelta": 8,
+      "maxDiffRatio": 0.005
+    },
+    "summary": {
+      "total": 0,
+      "compared": 0,
+      "passed": 0,
+      "failed": 0,
+      "missing": 0,
+      "errors": 0,
+      "identityMismatches": 0
+    },
+    "summaryByTargetBackend": [],
+    "summaryByProfile": [],
+    "summaryByCategory": [],
+    "summaryByDiagnosticAxis": [],
+    "worstComparisons": [],
+    "comparisons": []
+  },
+  "fontFallbackGate": {
+    "total": 6,
+    "passed": 6,
+    "failed": 0,
+    "checks": [
+      {
+        "sampleId": "sample4-p021",
+        "page": 20,
+        "profile": "print",
+        "requestedBackend": "canvaskit-compat",
+        "actualBackend": "canvas2d",
+        "evidence": {
+          "reason": "canvaskitResourcePreparationFailed",
+          "missingFonts": [
+            "샘물",
+            "중간공한",
+            "Reference-Gothic",
+            "Reference-SansSerif"
+          ],
+          "actualBackend": "canvas2d"
+        },
+        "baselinePath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvas2d-print.png",
+        "targetPath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-compat-print-software.png",
+        "passed": true,
+        "diff": {
+          "exactDiffPixels": 0,
+          "expectedInkPixels": 127319,
+          "actualInkPixels": 127319,
+          "minimumInkBudgetPassed": true
+        }
+      },
+      {
+        "sampleId": "sample4-p021",
+        "page": 20,
+        "profile": "print",
+        "requestedBackend": "canvaskit-default",
+        "actualBackend": "canvas2d",
+        "evidence": {
+          "reason": "canvaskitResourcePreparationFailed",
+          "missingFonts": [
+            "샘물",
+            "중간공한",
+            "Reference-Gothic",
+            "Reference-SansSerif"
+          ],
+          "actualBackend": "canvas2d"
+        },
+        "baselinePath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvas2d-print.png",
+        "targetPath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-default-print-software.png",
+        "passed": true,
+        "diff": {
+          "exactDiffPixels": 0,
+          "expectedInkPixels": 127319,
+          "actualInkPixels": 127319,
+          "minimumInkBudgetPassed": true
+        }
+      },
+      {
+        "sampleId": "sample4-p025",
+        "page": 24,
+        "profile": "print",
+        "requestedBackend": "canvaskit-compat",
+        "actualBackend": "canvas2d",
+        "evidence": {
+          "reason": "canvaskitResourcePreparationFailed",
+          "missingFonts": [
+            "샘물",
+            "중간공한",
+            "Reference-Gothic",
+            "Reference-SansSerif"
+          ],
+          "actualBackend": "canvas2d"
+        },
+        "baselinePath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvas2d-print.png",
+        "targetPath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-compat-print-software.png",
+        "passed": true,
+        "diff": {
+          "exactDiffPixels": 0,
+          "expectedInkPixels": 210079,
+          "actualInkPixels": 210079,
+          "minimumInkBudgetPassed": true
+        }
+      },
+      {
+        "sampleId": "sample4-p025",
+        "page": 24,
+        "profile": "print",
+        "requestedBackend": "canvaskit-default",
+        "actualBackend": "canvas2d",
+        "evidence": {
+          "reason": "canvaskitResourcePreparationFailed",
+          "missingFonts": [
+            "샘물",
+            "중간공한",
+            "Reference-Gothic",
+            "Reference-SansSerif"
+          ],
+          "actualBackend": "canvas2d"
+        },
+        "baselinePath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvas2d-print.png",
+        "targetPath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-default-print-software.png",
+        "passed": true,
+        "diff": {
+          "exactDiffPixels": 0,
+          "expectedInkPixels": 210079,
+          "actualInkPixels": 210079,
+          "minimumInkBudgetPassed": true
+        }
+      },
+      {
+        "sampleId": "sample4-p026",
+        "page": 25,
+        "profile": "print",
+        "requestedBackend": "canvaskit-compat",
+        "actualBackend": "canvas2d",
+        "evidence": {
+          "reason": "canvaskitResourcePreparationFailed",
+          "missingFonts": [
+            "샘물",
+            "중간공한",
+            "Reference-Gothic",
+            "Reference-SansSerif"
+          ],
+          "actualBackend": "canvas2d"
+        },
+        "baselinePath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvas2d-print.png",
+        "targetPath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-compat-print-software.png",
+        "passed": true,
+        "diff": {
+          "exactDiffPixels": 0,
+          "expectedInkPixels": 348484,
+          "actualInkPixels": 348484,
+          "minimumInkBudgetPassed": true
+        }
+      },
+      {
+        "sampleId": "sample4-p026",
+        "page": 25,
+        "profile": "print",
+        "requestedBackend": "canvaskit-default",
+        "actualBackend": "canvas2d",
+        "evidence": {
+          "reason": "canvaskitResourcePreparationFailed",
+          "missingFonts": [
+            "샘물",
+            "중간공한",
+            "Reference-Gothic",
+            "Reference-SansSerif"
+          ],
+          "actualBackend": "canvas2d"
+        },
+        "baselinePath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvas2d-print.png",
+        "targetPath": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-default-print-software.png",
+        "passed": true,
+        "diff": {
+          "exactDiffPixels": 0,
+          "expectedInkPixels": 348484,
+          "actualInkPixels": 348484,
+          "minimumInkBudgetPassed": true
+        }
+      }
+    ]
+  },
+  "canvaskitReplayDiagnostics": {
+    "mode": "contractGateAndReportInventory",
+    "hardGateViolationCount": 0,
+    "hardGateViolations": [],
+    "summaryByBackendProfile": []
+  },
+  "canvaskitReadinessGate": {
+    "mode": "selectedCorpus",
+    "criteria": {
+      "sampleFlag": "canvaskitReadinessGate",
+      "profile": "screen",
+      "targetBackend": "canvaskit-default (explicit auto request)",
+      "canvaskitSurface": "auto",
+      "requireActiveBackend": true,
+      "requireRuntimeReadiness": true,
+      "requireNoImageReplayFailures": true,
+      "requireVisualParity": true,
+      "requireColdAndWarmPerformanceBudget": true
+    },
+    "summary": {
+      "total": 0,
+      "evaluated": 0,
+      "passed": 0,
+      "failed": 0,
+      "missing": 0
+    },
+    "captureError": null,
+    "checks": []
+  },
+  "results": [
+    {
+      "sampleId": "sample4-p021",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 20,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvas2d-print.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p021",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 20,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+        "sizeBytes": 46602,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 4745.426800000001,
+        "documentLoadAndInitialRenderMs": 16660.5433,
+        "selectedPageRenderMs": 315.47260000000097,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 102.82900000000154,
+        "totalMs": 21847.6946
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": null
+    },
+    {
+      "sampleId": "sample4-p021",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 20,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "샘물",
+          "중간공한",
+          "Reference-Gothic",
+          "Reference-SansSerif"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-compat-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p021",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 20,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+        "sizeBytes": 46602,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 3097.9735,
+        "documentLoadAndInitialRenderMs": 19442.644800000002,
+        "selectedPageRenderMs": 322.3905999999988,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 138.7025999999969,
+        "totalMs": 23388.7455
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 샘물, 중간공한, Reference-Gothic, Reference-SansSerif"
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": {
+        "totalItems": 117,
+        "directItems": 116,
+        "directRequiredItems": 1,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 1
+      }
+    },
+    {
+      "sampleId": "sample4-p021",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 20,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "샘물",
+          "중간공한",
+          "Reference-Gothic",
+          "Reference-SansSerif"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p021\\canvaskit-default-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p021",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 20,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "f190ed48bd25b9c58cf36c13ff8b9f6b2c3c91f979915318aaad5e3220a40bee",
+        "sizeBytes": 46602,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 4600.7746999999945,
+        "documentLoadAndInitialRenderMs": 18544.542700000005,
+        "selectedPageRenderMs": 279.22149999999965,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 112.7609999999986,
+        "totalMs": 23819.324799999995
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 샘물, 중간공한, Reference-Gothic, Reference-SansSerif"
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": {
+        "totalItems": 117,
+        "directItems": 116,
+        "directRequiredItems": 1,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 1
+      }
+    },
+    {
+      "sampleId": "sample4-p025",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 24,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvas2d-print.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p025",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 24,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+        "sizeBytes": 56702,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 2981.708899999998,
+        "documentLoadAndInitialRenderMs": 15161.223800000007,
+        "selectedPageRenderMs": 261.7838000000047,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 115.70940000000701,
+        "totalMs": 18536.668399999995
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": null
+    },
+    {
+      "sampleId": "sample4-p025",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 24,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "샘물",
+          "중간공한",
+          "Reference-Gothic",
+          "Reference-SansSerif"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-compat-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p025",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 24,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+        "sizeBytes": 56702,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 3005.3062999999966,
+        "documentLoadAndInitialRenderMs": 19018.49639999999,
+        "selectedPageRenderMs": 242.2771999999968,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 114.51389999999083,
+        "totalMs": 22691.162299999996
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 샘물, 중간공한, Reference-Gothic, Reference-SansSerif"
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": {
+        "totalItems": 114,
+        "directItems": 114,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      }
+    },
+    {
+      "sampleId": "sample4-p025",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 24,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "샘물",
+          "중간공한",
+          "Reference-Gothic",
+          "Reference-SansSerif"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p025\\canvaskit-default-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p025",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 24,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "80d1cea637d0b2b768e7096b00b28aadb0aedc04ce80bf08ea03c8626f1fe280",
+        "sizeBytes": 56702,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 2672.709799999997,
+        "documentLoadAndInitialRenderMs": 18941.38070000001,
+        "selectedPageRenderMs": 234.31110000002082,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 103.79460000002291,
+        "totalMs": 22220.410600000003
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 샘물, 중간공한, Reference-Gothic, Reference-SansSerif"
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": {
+        "totalItems": 114,
+        "directItems": 114,
+        "directRequiredItems": 0,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 0
+      }
+    },
+    {
+      "sampleId": "sample4-p026",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 25,
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "fontFallback": null,
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": null,
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvas2d-print.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p026",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 25,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+        "sizeBytes": 71360,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 2904.263399999996,
+        "documentLoadAndInitialRenderMs": 15646.631800000003,
+        "selectedPageRenderMs": 320.16870000000927,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 102.49520000000484,
+        "totalMs": 18988.532999999996
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "auto",
+              "requested": "auto"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": null,
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvas2d",
+              "source": "url",
+              "requested": "canvas2d"
+            },
+            "requestedBackend": "canvas2d",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "explicitCanvas2d",
+            "fallbackReason": null,
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvas2d|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": null
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": null
+    },
+    {
+      "sampleId": "sample4-p026",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 25,
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "샘물",
+          "중간공한",
+          "Reference-Gothic",
+          "Reference-SansSerif"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-compat-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p026",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 25,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+        "sizeBytes": 71360,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 2977.3774000000267,
+        "documentLoadAndInitialRenderMs": 19034.698700000008,
+        "selectedPageRenderMs": 288.1184999999823,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 105.76430000000983,
+        "totalMs": 22678.37460000001
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "compat",
+              "source": "url",
+              "requested": "compat"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvaskit|mode:compat",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 샘물, 중간공한, Reference-Gothic, Reference-SansSerif"
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": {
+        "totalItems": 147,
+        "directItems": 146,
+        "directRequiredItems": 1,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 1
+      }
+    },
+    {
+      "sampleId": "sample4-p026",
+      "file": "hwp3-sample4.hwp",
+      "category": "picture",
+      "diagnosticAxes": [
+        "layout",
+        "image",
+        "page-ownership"
+      ],
+      "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+      "page": 25,
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "샘물",
+          "중간공한",
+          "Reference-Gothic",
+          "Reference-SansSerif"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "profile": "print",
+      "actualProfile": "print",
+      "canvaskitSurface": "software",
+      "readinessGateRequired": false,
+      "path": "$WORKSPACE\\output\\pr-review\\hwp3-essential-pr-rebased-20261117\\studio-host-consumers\\sample4-p026\\canvaskit-default-print-software.png",
+      "comparisonIdentity": {
+        "schemaVersion": 1,
+        "sampleId": "sample4-p026",
+        "documentDigest": "sha256:f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4",
+        "page": 25,
+        "profile": "print",
+        "backend": "canvas2d",
+        "surface": "canvas2d"
+      },
+      "artifact": {
+        "sha256": "608f20fcd593d0a2b5a8ecdc55a75264359b1322c17ca7c28d4756de2284f6e7",
+        "sizeBytes": 71360,
+        "width": 794,
+        "height": 1122
+      },
+      "timings": {
+        "appLoadMs": 2866.094000000012,
+        "documentLoadAndInitialRenderMs": 18307.81170000002,
+        "selectedPageRenderMs": 340.04270000002,
+        "warmReplayMs": null,
+        "warmRendererDurationMs": null,
+        "screenshotMs": 104.9380999999994,
+        "totalMs": 21885.390799999994
+      },
+      "layerFeatureProbe": null,
+      "warmReplay": null,
+      "diagnostics": {
+        "runtime": {
+          "activeBackend": "canvas2d",
+          "request": {
+            "backend": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "canvaskitMode": {
+              "mode": "default",
+              "source": "url",
+              "requested": "default"
+            },
+            "canvaskitSurface": {
+              "preference": "software",
+              "requested": "software"
+            },
+            "renderProfile": "print"
+          },
+          "backendFallbackReason": "canvaskitResourcePreparationFailed",
+          "selection": {
+            "schemaVersion": 1,
+            "request": {
+              "backend": "canvaskit",
+              "source": "url",
+              "requested": "canvaskit"
+            },
+            "requestedBackend": "canvaskit",
+            "effectiveBackend": "canvas2d",
+            "selectionReason": "canvaskitResourcePreparationFailed",
+            "fallbackReason": "canvaskitResourcePreparationFailed",
+            "documentRevision": 4,
+            "resourceGeneration": 4,
+            "renderProfile": "print",
+            "documentDigest": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf",
+            "decisionKey": "blake3:9ce757d972f6e6e8d8469bc6e9aa2408b82904955cdc9fe49104ec16ad4946cf|revision:4|profile:print|resources:4|request:canvaskit|mode:default",
+            "preflight": null,
+            "initializationError": null,
+            "selectionError": "CanvasKit font family가 준비되지 않았습니다: 샘물, 중간공한, Reference-Gothic, Reference-SansSerif"
+          },
+          "canvasOwnershipTracked": false
+        },
+        "imageEffects": {
+          "canvas2d": null,
+          "canvaskit": null
+        },
+        "surfaceDiagnostics": null,
+        "canvaskitRender": null,
+        "replayPlanError": null,
+        "capture": {
+          "width": 794,
+          "height": 1122,
+          "imageReadiness": null,
+          "domImageReadiness": {
+            "total": 0,
+            "loaded": 0,
+            "failed": 0,
+            "pending": 0
+          }
+        }
+      },
+      "replaySummary": {
+        "totalItems": 147,
+        "directItems": 146,
+        "directRequiredItems": 1,
+        "compatOverlayItems": 0,
+        "textFallbackItems": 0,
+        "unsupportedItems": 0,
+        "hiddenOverlayViolations": 1
+      }
+    }
+  ]
+}

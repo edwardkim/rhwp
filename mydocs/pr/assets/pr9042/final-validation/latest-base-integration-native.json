@@ -1,0 +1,142 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "prior_source": "1506a1c34672931c4f5aa5cb6363fba776225949",
+  "base": "959300e66c",
+  "rgb_identical": 40,
+  "results": [
+    {
+      "key": "original",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "unchanged",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "empty-header",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "empty-footer",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "hancom-saved",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "nested-single-line",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "nested-margins",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "nested-two-paragraphs",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "rental_approval_form",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "artifact_loan_form",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "ai_procurement_appendix",
+      "pages": 4,
+      "identical_rgb": 4,
+      "different": []
+    },
+    {
+      "key": "new-base-8960",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "new-base-9027",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "new-base-9029",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "new-base-9032",
+      "pages": 4,
+      "identical_rgb": 4,
+      "different": []
+    },
+    {
+      "key": "new-base-9035",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "new-base-8957-cover-linked",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "new-base-8957-cover-mixed-images",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "new-base-8957-cover-regular",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "new-base-8957-strawberry-tracking",
+      "pages": 1,
+      "identical_rgb": 1,
+      "different": []
+    },
+    {
+      "key": "new-base-8199-original",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    },
+    {
+      "key": "new-base-8199-edited",
+      "pages": 2,
+      "identical_rgb": 2,
+      "different": []
+    }
+  ],
+  "prior_actual_devel_base_comparison": "rebase-preservation-native.json",
+  "note": "The prior actual devel producer is 5cbcc9b. New 959300e #9054 changes serialization and non-printing caret queries; its functional preservation is checked separately, not reported as an actual 959300e image baseline."
+}

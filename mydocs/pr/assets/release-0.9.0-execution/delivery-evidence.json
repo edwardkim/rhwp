@@ -1,0 +1,3225 @@
+{
+  "crates_packages": {
+    "packages": [
+      {
+        "source_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+        "name": "rhwp-codec-resource",
+        "version": "0.1.0",
+        "bytes": 5327,
+        "sha256": "2bf436913acde45fbb0a6cce70d9c6d1121ba5ec3006d3967dd5febefef6adbf"
+      },
+      {
+        "source_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+        "name": "rhwp-contracts",
+        "version": "0.1.0",
+        "bytes": 32411,
+        "sha256": "562667a1d3cd9fe4e24f7845211024fe098f327d8db925fcb9be91945c823362"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-jpeg-decoder",
+        "version": "0.3.2-rhwp.1",
+        "bytes": 53293,
+        "sha256": "1f2bd23d396ee20440f3909fe3248dc749272f0952b7387b11eababecf9ec9af"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-jpeg-encoder",
+        "version": "0.7.1-rhwp.1",
+        "bytes": 44570,
+        "sha256": "509f50d0ff86268e903fb0d1c076fed846565c294406071456fde1cf9b57e64a"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-ooxml-chart",
+        "version": "0.1.0",
+        "bytes": 111707,
+        "sha256": "8dd67a4a79127b0657d83a768fa0eb98ddf324fafc6b5d7382c6bb802e005522"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-password-crypto",
+        "version": "0.1.0",
+        "bytes": 16234,
+        "sha256": "c83ab2ebe4fb177da61ebd73ce1c36ff226e244417ed80b3e78341fe3c63c676"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-svg2pdf",
+        "version": "0.13.0-rhwp.1",
+        "bytes": 59102,
+        "sha256": "74e743c35b8291f385f83f29b8f86ab37b3c289e1e5d165702b76751cec12a00"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-zune-jpeg",
+        "version": "0.5.15-rhwp.1",
+        "bytes": 103383,
+        "sha256": "81405ea92f5547ef9568bd5970ef4e033a1e0a99462c4873b9adcce0880eba43"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-hayro-ccitt",
+        "version": "0.3.0-rhwp.1",
+        "bytes": 16768,
+        "sha256": "17d00bd1df14c6c7ed9033ec50642be9d851574e8a5f5ce165263d692ad5d188"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-hayro-jpeg2000",
+        "version": "0.4.0-rhwp.1",
+        "bytes": 96179,
+        "sha256": "c39fd555a5024503bfd113fe14a3fcdcc4d4e17d11150ff55a1cb3ab0989ffa8"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-qcms",
+        "version": "0.3.0-rhwp.1",
+        "bytes": 56537,
+        "sha256": "4ba957532f7ab014dab32446c77b135536c0418a0d048618e2628cd4604f8152"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-hayro-jbig2",
+        "version": "0.3.0-rhwp.1",
+        "bytes": 70543,
+        "sha256": "ded7171b8dffea67baf68bc0dd38dc6bff0bb66cea6c30b9b9855b8e59d29f6c"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp-pdf-import-backend",
+        "version": "0.3.78-rhwp.1",
+        "bytes": 6981593,
+        "sha256": "a288aae6ed37f58961549688d7f616f0e06c55aa0699bb622f3ddb01d9266162"
+      },
+      {
+        "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "name": "rhwp",
+        "version": "0.9.0",
+        "bytes": 9544151,
+        "sha256": "a1e228d3bf78bf79dfa4fd305d03d7a8abd917687e98ae87e733d7d6a014ce36"
+      }
+    ]
+  },
+  "host_public_consumer": {
+    "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+    "state": "all-public-consumers-passed",
+    "steps": [
+      {
+        "command": [
+          "python3",
+          "-u",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/consume_public_registry_recovery.py",
+          "--resume"
+        ],
+        "exitCode": 0,
+        "seconds": 3173.78
+      },
+      {
+        "command": [
+          "python3",
+          "-u",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/cli_consumer_public_recovery.py"
+        ],
+        "exitCode": 0,
+        "seconds": 1.57
+      },
+      {
+        "command": [
+          "node",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/browser_consumer_public_recovery.mjs"
+        ],
+        "exitCode": 0,
+        "seconds": 610.48
+      }
+    ],
+    "updatedAt": "2026-11-08T14:09:02.517830+00:00"
+  },
+  "host_cli": {
+    "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+    "checks": [
+      {
+        "name": "default-pdf-import",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-default/bin/rhwp",
+          "import-pdf",
+          "/home/edward/mygithub/rhwp/pdf/issue8174/features/icc-rgb.pdf",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/default-icc.hwpx",
+          "--resource-profile",
+          "constrained",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "8b8ef24e2772cfe6b7e7e8f17c1d96fa12f644c04dbe91103cae5337f97cb060"
+      },
+      {
+        "name": "default-save-reopen",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-default/bin/rhwp",
+          "convert",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/default-icc.hwpx",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/default-icc.hwp"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "7d47077f957a7b163449851aa963183a837672e49dc8b356d12581c5a3faca9e"
+      },
+      {
+        "name": "native-pdf-import",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-native/bin/rhwp",
+          "import-pdf",
+          "/home/edward/mygithub/rhwp/pdf/issue8174/features/icc-rgb.pdf",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/native-icc.hwpx",
+          "--resource-profile",
+          "constrained",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "82e7e3a6631ef0f5c69832f85f18cfee207cb643a4a72712f63264865563cd81"
+      },
+      {
+        "name": "native-save-reopen",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-native/bin/rhwp",
+          "convert",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/native-icc.hwpx",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/native-icc.hwp"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "ff39a314e5260fa5d93db09f66bdd8c7b9b9e530f20cf62f177b404a1d60a6d1"
+      },
+      {
+        "name": "native-png",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-native/bin/rhwp",
+          "export-png",
+          "/home/edward/mygithub/rhwp/samples/hwp_table_test.hwp",
+          "-p",
+          "0",
+          "--profile",
+          "print",
+          "--font-path",
+          "/home/edward/mygithub/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf",
+          "-o",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/native-png",
+          "--json"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "9d0a593e49bb9f0d10f53fb3c490488a9388b88420fe0a88af74614329aa2cf5"
+      },
+      {
+        "name": "no-pdf-failure-atomicity",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-no-pdf/bin/rhwp",
+          "import-pdf",
+          "/home/edward/mygithub/rhwp/pdf/issue8174/features/icc-rgb.pdf",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/disabled.hwpx",
+          "--json"
+        ],
+        "exit_code": 1,
+        "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "no-pdf-hwpx-to-hwp",
+        "command": [
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-no-pdf/bin/rhwp",
+          "convert",
+          "/home/edward/mygithub/rhwp/samples/hwpx/blank_hwpx.hwpx",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/package-public-recovery/cli-smoke/no-pdf.hwp"
+        ],
+        "exit_code": 0,
+        "stdout_sha256": "a45eb3d91f85c6a7b132633348edf506bcf2d2babbbc6d830e4606e6b484ea5c"
+      }
+    ],
+    "png_sha256": {
+      "hwp_table_test.png": "b95b027ef0e72dbce8d2f636b5437f9b002cef1cd16a2f4576f3defde6dad641"
+    }
+  },
+  "host_wasm_browser": {
+    "source_sha": "4a765822988575099104c30081516b2bb7c4ddb5",
+    "browser": "Chrome/156.0.8078.80",
+    "checks": [
+      "core-only WASM preserves the application start and HWP/HWPX roundtrip",
+      "facade WASM preserves page ownership on save/reopen",
+      "default packaged WASM enables PDF codecs, ICC and bounded xref recovery",
+      "jbig2: PDF import, save/reopen and resource boundary",
+      "jp2k: PDF import, save/reopen and resource boundary",
+      "icc: PDF import, save/reopen and resource boundary",
+      "xref: PDF import, save/reopen and resource boundary",
+      "actual product Worker preserves active input and recovers after failure",
+      "Worker enforces input limits and deadline termination",
+      "no uncaught browser errors"
+    ],
+    "off": {
+      "version": "0.9.0",
+      "start": true,
+      "facade": false,
+      "saved": 14016
+    },
+    "on": {
+      "version": "0.9.0",
+      "start": false,
+      "pages": 3,
+      "reopened": 3,
+      "offPages": 3,
+      "support": {
+        "enabled": true,
+        "jbig2": true,
+        "jpeg2000": true,
+        "icc": true,
+        "boundedXrefRecovery": true
+      }
+    },
+    "pdf": [
+      {
+        "name": "jbig2",
+        "pages": 1,
+        "reopened": 1,
+        "bytes": 14847,
+        "diagnostics": {
+          "pdfImportSupport": {
+            "enabled": true,
+            "jbig2": true,
+            "jpeg2000": true,
+            "icc": true,
+            "boundedXrefRecovery": true
+          },
+          "sourcePageCount": 1,
+          "pages": [
+            {
+              "sourcePage": 0,
+              "outputSection": 0,
+              "mediaBox": [
+                0,
+                0,
+                595,
+                842
+              ],
+              "sourceSpans": [],
+              "semanticTables": 0,
+              "nestedTables": 0,
+              "deferredTables": 0,
+              "unsupportedPaths": 0,
+              "tableInference": {
+                "bodyParagraphMapping": {
+                  "frames": [],
+                  "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                  "semanticParagraphs": 0
+                },
+                "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+                "candidateCount": 0,
+                "clipCount": 0,
+                "coordinateSystem": "page-local top-left points; source geometry in page user space",
+                "detectionDeferredReason": null,
+                "executionState": "EXPORTED",
+                "externalBoundaryPaint": {
+                  "owner": "unchanged page source control outside logical table frame",
+                  "sourcePathIndices": []
+                },
+                "glyphCount": 0,
+                "idScope": "source page and deterministic extraction order",
+                "imageCount": 1,
+                "incompleteReasons": [],
+                "initialBlockCount": 0,
+                "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+                "loweringDeferred": [],
+                "nativeBorderCells": 0,
+                "nativeBorderPaintFragments": 0,
+                "nativeCellBackgrounds": {
+                  "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                  "sources": []
+                },
+                "paintPathCount": 0,
+                "paragraphMappingPolicy": {
+                  "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                  "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                  "deferred": "line frames retained; paragraph grouping unverified",
+                  "lineJoins": "inferred wrap connections; original whitespace retained"
+                },
+                "policy": {
+                  "axisTolerancePt": 0.5,
+                  "inlineGapEm": 0.5,
+                  "lineBaselineEm": 0.2,
+                  "maxCandidates": 128,
+                  "maxClipRegions": 512,
+                  "maxGlyphs": 32768,
+                  "maxTiles": 4096,
+                  "maxWork": 1000000
+                },
+                "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+                "rejectedComponents": [],
+                "ruleVersion": "tsg-observations-v1",
+                "schemaVersion": 1,
+                "semanticTables": 0,
+                "status": "observed"
+              }
+            }
+          ],
+          "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+          "layout": "fidelity",
+          "parserAllocationBoundsProven": false,
+          "warnings": [
+            "Experimental PDF frontend; upstream allocation bounds remain unproven",
+            "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+            "Deferred table families retain positional content; inspect page diagnostics"
+          ],
+          "resourcePolicy": {
+            "schemaVersion": 1,
+            "maxSourcePages": 100000,
+            "maxSelectedPages": 1024,
+            "maxPathOperations": 20000,
+            "maxDocumentPathOperations": 1000000,
+            "maxDocumentImagePlacements": 4000000,
+            "maxImagePixels": 64000000,
+            "maxDocumentImagePixels": 2000000000,
+            "maxTextBytes": 2097152,
+            "backend": {
+              "inputBytes": 67108864,
+              "streamBytes": 268435456,
+              "codecAllocationBytes": 268435456,
+              "codecWorkUnits": 2000000000,
+              "decodedBytes": 8589934592,
+              "filters": 8,
+              "nesting": 16,
+              "objects": 200000,
+              "entries": 400000,
+              "operators": 8000000,
+              "graphicsStack": 128,
+              "stringBytes": 65536,
+              "textBytes": 2097152,
+              "spans": 40000,
+              "cmapBytes": 1048576,
+              "cmapEntries": 100000,
+              "cmapScanBytes": 67108864,
+              "fontEntries": 1000000,
+              "referenceDepth": 32,
+              "referenceVisits": 250000,
+              "formDepth": 16,
+              "xobjectVisits": 250000
+            }
+          },
+          "resourceUsage": {
+            "decodedBytes": 1522065,
+            "codecAllocatedBytes": 1389146,
+            "codecWorkUnits": 2924508,
+            "parsedObjects": 34,
+            "collectionEntries": 45,
+            "operators": 4,
+            "textBytes": 0,
+            "spans": 0,
+            "referenceVisits": 14,
+            "xobjectVisits": 3,
+            "contentParseCalls": 1,
+            "pageOperatorCacheHits": 2,
+            "pageStreamCacheHits": 2,
+            "formStreamCacheHits": 0,
+            "failure": null
+          }
+        }
+      },
+      {
+        "name": "jp2k",
+        "pages": 1,
+        "reopened": 1,
+        "bytes": 6522,
+        "diagnostics": {
+          "pdfImportSupport": {
+            "enabled": true,
+            "jbig2": true,
+            "jpeg2000": true,
+            "icc": true,
+            "boundedXrefRecovery": true
+          },
+          "sourcePageCount": 1,
+          "pages": [
+            {
+              "sourcePage": 0,
+              "outputSection": 0,
+              "mediaBox": [
+                0,
+                0,
+                160,
+                80
+              ],
+              "sourceSpans": [],
+              "semanticTables": 0,
+              "nestedTables": 0,
+              "deferredTables": 0,
+              "unsupportedPaths": 0,
+              "tableInference": {
+                "bodyParagraphMapping": {
+                  "frames": [],
+                  "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                  "semanticParagraphs": 0
+                },
+                "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+                "candidateCount": 0,
+                "clipCount": 0,
+                "coordinateSystem": "page-local top-left points; source geometry in page user space",
+                "detectionDeferredReason": null,
+                "executionState": "EXPORTED",
+                "externalBoundaryPaint": {
+                  "owner": "unchanged page source control outside logical table frame",
+                  "sourcePathIndices": []
+                },
+                "glyphCount": 0,
+                "idScope": "source page and deterministic extraction order",
+                "imageCount": 1,
+                "incompleteReasons": [],
+                "initialBlockCount": 0,
+                "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+                "loweringDeferred": [],
+                "nativeBorderCells": 0,
+                "nativeBorderPaintFragments": 0,
+                "nativeCellBackgrounds": {
+                  "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                  "sources": []
+                },
+                "paintPathCount": 0,
+                "paragraphMappingPolicy": {
+                  "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                  "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                  "deferred": "line frames retained; paragraph grouping unverified",
+                  "lineJoins": "inferred wrap connections; original whitespace retained"
+                },
+                "policy": {
+                  "axisTolerancePt": 0.5,
+                  "inlineGapEm": 0.5,
+                  "lineBaselineEm": 0.2,
+                  "maxCandidates": 128,
+                  "maxClipRegions": 512,
+                  "maxGlyphs": 32768,
+                  "maxTiles": 4096,
+                  "maxWork": 1000000
+                },
+                "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+                "rejectedComponents": [],
+                "ruleVersion": "tsg-observations-v1",
+                "schemaVersion": 1,
+                "semanticTables": 0,
+                "status": "observed"
+              }
+            }
+          ],
+          "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+          "layout": "fidelity",
+          "parserAllocationBoundsProven": false,
+          "warnings": [
+            "Experimental PDF frontend; upstream allocation bounds remain unproven",
+            "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+            "Deferred table families retain positional content; inspect page diagnostics"
+          ],
+          "resourcePolicy": {
+            "schemaVersion": 1,
+            "maxSourcePages": 100000,
+            "maxSelectedPages": 1024,
+            "maxPathOperations": 20000,
+            "maxDocumentPathOperations": 1000000,
+            "maxDocumentImagePlacements": 4000000,
+            "maxImagePixels": 64000000,
+            "maxDocumentImagePixels": 2000000000,
+            "maxTextBytes": 2097152,
+            "backend": {
+              "inputBytes": 67108864,
+              "streamBytes": 268435456,
+              "codecAllocationBytes": 268435456,
+              "codecWorkUnits": 2000000000,
+              "decodedBytes": 8589934592,
+              "filters": 8,
+              "nesting": 16,
+              "objects": 200000,
+              "entries": 400000,
+              "operators": 8000000,
+              "graphicsStack": 128,
+              "stringBytes": 65536,
+              "textBytes": 2097152,
+              "spans": 40000,
+              "cmapBytes": 1048576,
+              "cmapEntries": 100000,
+              "cmapScanBytes": 67108864,
+              "fontEntries": 1000000,
+              "referenceDepth": 32,
+              "referenceVisits": 250000,
+              "formDepth": 16,
+              "xobjectVisits": 250000
+            }
+          },
+          "resourceUsage": {
+            "decodedBytes": 478691,
+            "codecAllocatedBytes": 385456,
+            "codecWorkUnits": 4068,
+            "parsedObjects": 34,
+            "collectionEntries": 45,
+            "operators": 4,
+            "textBytes": 0,
+            "spans": 0,
+            "referenceVisits": 14,
+            "xobjectVisits": 3,
+            "contentParseCalls": 1,
+            "pageOperatorCacheHits": 2,
+            "pageStreamCacheHits": 2,
+            "formStreamCacheHits": 0,
+            "failure": null
+          }
+        }
+      },
+      {
+        "name": "icc",
+        "pages": 1,
+        "reopened": 1,
+        "bytes": 6513,
+        "diagnostics": {
+          "pdfImportSupport": {
+            "enabled": true,
+            "jbig2": true,
+            "jpeg2000": true,
+            "icc": true,
+            "boundedXrefRecovery": true
+          },
+          "sourcePageCount": 1,
+          "pages": [
+            {
+              "sourcePage": 0,
+              "outputSection": 0,
+              "mediaBox": [
+                0,
+                0,
+                160,
+                160
+              ],
+              "sourceSpans": [],
+              "semanticTables": 0,
+              "nestedTables": 0,
+              "deferredTables": 0,
+              "unsupportedPaths": 0,
+              "tableInference": {
+                "bodyParagraphMapping": {
+                  "frames": [],
+                  "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                  "semanticParagraphs": 0
+                },
+                "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+                "candidateCount": 0,
+                "clipCount": 0,
+                "coordinateSystem": "page-local top-left points; source geometry in page user space",
+                "detectionDeferredReason": null,
+                "executionState": "EXPORTED",
+                "externalBoundaryPaint": {
+                  "owner": "unchanged page source control outside logical table frame",
+                  "sourcePathIndices": []
+                },
+                "glyphCount": 0,
+                "idScope": "source page and deterministic extraction order",
+                "imageCount": 1,
+                "incompleteReasons": [],
+                "initialBlockCount": 0,
+                "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+                "loweringDeferred": [],
+                "nativeBorderCells": 0,
+                "nativeBorderPaintFragments": 0,
+                "nativeCellBackgrounds": {
+                  "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                  "sources": []
+                },
+                "paintPathCount": 0,
+                "paragraphMappingPolicy": {
+                  "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                  "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                  "deferred": "line frames retained; paragraph grouping unverified",
+                  "lineJoins": "inferred wrap connections; original whitespace retained"
+                },
+                "policy": {
+                  "axisTolerancePt": 0.5,
+                  "inlineGapEm": 0.5,
+                  "lineBaselineEm": 0.2,
+                  "maxCandidates": 128,
+                  "maxClipRegions": 512,
+                  "maxGlyphs": 32768,
+                  "maxTiles": 4096,
+                  "maxWork": 1000000
+                },
+                "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+                "rejectedComponents": [],
+                "ruleVersion": "tsg-observations-v1",
+                "schemaVersion": 1,
+                "semanticTables": 0,
+                "status": "observed"
+              }
+            }
+          ],
+          "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+          "layout": "fidelity",
+          "parserAllocationBoundsProven": false,
+          "warnings": [
+            "Experimental PDF frontend; upstream allocation bounds remain unproven",
+            "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+            "Deferred table families retain positional content; inspect page diagnostics"
+          ],
+          "resourcePolicy": {
+            "schemaVersion": 1,
+            "maxSourcePages": 100000,
+            "maxSelectedPages": 1024,
+            "maxPathOperations": 20000,
+            "maxDocumentPathOperations": 1000000,
+            "maxDocumentImagePlacements": 4000000,
+            "maxImagePixels": 64000000,
+            "maxDocumentImagePixels": 2000000000,
+            "maxTextBytes": 2097152,
+            "backend": {
+              "inputBytes": 67108864,
+              "streamBytes": 268435456,
+              "codecAllocationBytes": 268435456,
+              "codecWorkUnits": 2000000000,
+              "decodedBytes": 8589934592,
+              "filters": 8,
+              "nesting": 16,
+              "objects": 200000,
+              "entries": 400000,
+              "operators": 8000000,
+              "graphicsStack": 128,
+              "stringBytes": 65536,
+              "textBytes": 2097152,
+              "spans": 40000,
+              "cmapBytes": 1048576,
+              "cmapEntries": 100000,
+              "cmapScanBytes": 67108864,
+              "fontEntries": 1000000,
+              "referenceDepth": 32,
+              "referenceVisits": 250000,
+              "formDepth": 16,
+              "xobjectVisits": 250000
+            }
+          },
+          "resourceUsage": {
+            "decodedBytes": 487634,
+            "codecAllocatedBytes": 392693,
+            "codecWorkUnits": 6388,
+            "parsedObjects": 38,
+            "collectionEntries": 50,
+            "operators": 4,
+            "textBytes": 0,
+            "spans": 0,
+            "referenceVisits": 16,
+            "xobjectVisits": 3,
+            "contentParseCalls": 1,
+            "pageOperatorCacheHits": 2,
+            "pageStreamCacheHits": 2,
+            "formStreamCacheHits": 0,
+            "failure": null
+          }
+        }
+      },
+      {
+        "name": "xref",
+        "pages": 1,
+        "reopened": 1,
+        "bytes": 6269,
+        "diagnostics": {
+          "pdfImportSupport": {
+            "enabled": true,
+            "jbig2": true,
+            "jpeg2000": true,
+            "icc": true,
+            "boundedXrefRecovery": true
+          },
+          "sourcePageCount": 1,
+          "pages": [
+            {
+              "sourcePage": 0,
+              "outputSection": 0,
+              "mediaBox": [
+                0,
+                0,
+                160,
+                160
+              ],
+              "sourceSpans": [],
+              "semanticTables": 0,
+              "nestedTables": 0,
+              "deferredTables": 0,
+              "unsupportedPaths": 0,
+              "tableInference": {
+                "bodyParagraphMapping": {
+                  "frames": [],
+                  "policy": "owner-local representable proposals; original scalars/joins; cumulative frame LineSegs; ambiguous metrics and interleaved paint retained",
+                  "semanticParagraphs": 0
+                },
+                "boundaryPaintPolicy": "standard borders or source paint partitioned into cell-owned drawings; no page-level duplicate",
+                "candidateCount": 0,
+                "clipCount": 0,
+                "coordinateSystem": "page-local top-left points; source geometry in page user space",
+                "detectionDeferredReason": null,
+                "executionState": "EXPORTED",
+                "externalBoundaryPaint": {
+                  "owner": "unchanged page source control outside logical table frame",
+                  "sourcePathIndices": []
+                },
+                "glyphCount": 0,
+                "idScope": "source page and deterministic extraction order",
+                "imageCount": 0,
+                "incompleteReasons": [],
+                "initialBlockCount": 0,
+                "interpretation": "observations and competing hypotheses, not authored Excel/HWP objects",
+                "loweringDeferred": [],
+                "nativeBorderCells": 0,
+                "nativeBorderPaintFragments": 0,
+                "nativeCellBackgrounds": {
+                  "policy": "single opaque rectangle behind all owned content becomes standard full-cell fill; source inset is normalized; ambiguous or partial highlights retain source paint",
+                  "sources": []
+                },
+                "paintPathCount": 1,
+                "paragraphMappingPolicy": {
+                  "bodyRegions": "confirmed owner-local paragraphs share the cell paragraph adapter; ambiguous source spans retained",
+                  "confirmed": "one proposal becomes one Paragraph with multiple source LineSegs",
+                  "deferred": "line frames retained; paragraph grouping unverified",
+                  "lineJoins": "inferred wrap connections; original whitespace retained"
+                },
+                "policy": {
+                  "axisTolerancePt": 0.5,
+                  "inlineGapEm": 0.5,
+                  "lineBaselineEm": 0.2,
+                  "maxCandidates": 128,
+                  "maxClipRegions": 512,
+                  "maxGlyphs": 32768,
+                  "maxTiles": 4096,
+                  "maxWork": 1000000
+                },
+                "regionGeometry": "declared clip paths; effective visibility also depends on parent intersections",
+                "rejectedComponents": [],
+                "ruleVersion": "tsg-observations-v1",
+                "schemaVersion": 1,
+                "semanticTables": 0,
+                "status": "observed"
+              }
+            }
+          ],
+          "paragraphPolicy": "observed-lines; authored paragraph boundaries are not recovered",
+          "layout": "fidelity",
+          "parserAllocationBoundsProven": false,
+          "warnings": [
+            "Experimental PDF frontend; upstream allocation bounds remain unproven",
+            "Clipping, transparency, embedded fonts and complex paint are not fully reconstructed",
+            "Deferred table families retain positional content; inspect page diagnostics"
+          ],
+          "resourcePolicy": {
+            "schemaVersion": 1,
+            "maxSourcePages": 100000,
+            "maxSelectedPages": 1024,
+            "maxPathOperations": 20000,
+            "maxDocumentPathOperations": 1000000,
+            "maxDocumentImagePlacements": 4000000,
+            "maxImagePixels": 64000000,
+            "maxDocumentImagePixels": 2000000000,
+            "maxTextBytes": 2097152,
+            "backend": {
+              "inputBytes": 67108864,
+              "streamBytes": 268435456,
+              "codecAllocationBytes": 268435456,
+              "codecWorkUnits": 2000000000,
+              "decodedBytes": 8589934592,
+              "filters": 8,
+              "nesting": 16,
+              "objects": 200000,
+              "entries": 400000,
+              "operators": 8000000,
+              "graphicsStack": 128,
+              "stringBytes": 65536,
+              "textBytes": 2097152,
+              "spans": 40000,
+              "cmapBytes": 1048576,
+              "cmapEntries": 100000,
+              "cmapScanBytes": 67108864,
+              "fontEntries": 1000000,
+              "referenceDepth": 32,
+              "referenceVisits": 250000,
+              "formDepth": 16,
+              "xobjectVisits": 250000
+            }
+          },
+          "resourceUsage": {
+            "decodedBytes": 82506,
+            "codecAllocatedBytes": 0,
+            "codecWorkUnits": 738,
+            "parsedObjects": 55,
+            "collectionEntries": 59,
+            "operators": 3,
+            "textBytes": 0,
+            "spans": 0,
+            "referenceVisits": 11,
+            "xobjectVisits": 0,
+            "contentParseCalls": 1,
+            "pageOperatorCacheHits": 1,
+            "pageStreamCacheHits": 2,
+            "formStreamCacheHits": 0,
+            "failure": null
+          }
+        }
+      }
+    ],
+    "worker": {
+      "first": 1,
+      "retained": 1,
+      "next": 1,
+      "limited": "Error: PDF_RESOURCE_LIMIT: input exceeds 1 bytes",
+      "timeout": "Error: PDF_IMPORT_TIMEOUT: request completed after cancellation/deadline",
+      "bytes": 6513,
+      "progress": [
+        "initializing",
+        "importing",
+        "importing",
+        "importing",
+        "ready"
+      ]
+    },
+    "hashes": {
+      "/on/rhwp.js": "e4db9d885185635a43b382c80daba3264f982937f2cb13997f81d4e307880174",
+      "/on/rhwp_bg.wasm": "b8907bfa1de5b220d7274d7ff82b4db50ade80b08026d910a078660d5d808523",
+      "/off/rhwp.js": "884f75ef5bb98c0263245738b5df10d167efb80a2bbb19daf2adf7baae87a070",
+      "/off/rhwp_bg.wasm": "e4aca004a29e853a18c8ac529db73f13dc424a5a26418c1d68574303ed0ef255",
+      "/pkg/rhwp.js": "e4db9d885185635a43b382c80daba3264f982937f2cb13997f81d4e307880174",
+      "/pkg/rhwp_bg.wasm": "b8907bfa1de5b220d7274d7ff82b4db50ade80b08026d910a078660d5d808523",
+      "/rhwp-shared/pdf/import-session.js": "2ce3d6e394f3745bbc9892afd72959589c12f16c1c7ee6672be83555d532869d",
+      "/rhwp-shared/pdf/import-worker.js": "f8dac0680b93f35b8e301e5fadea13674e9c611a8187b430ae636f547e517639"
+    },
+    "errors": []
+  },
+  "docs_rs": {
+    "observedAt": "2026-11-08T13:24:50.554762+00:00",
+    "total": 14,
+    "success": 14,
+    "packages": [
+      {
+        "name": "rhwp-codec-resource",
+        "version": "0.1.0",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-codec-resource/0.1.0/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-codec-resource/0.1.0/builds/5212219",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-contracts",
+        "version": "0.1.0",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-contracts/0.1.0/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-contracts/0.1.0/builds/5212220",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-jpeg-decoder",
+        "version": "0.3.2-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-jpeg-decoder/0.3.2-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-jpeg-decoder/0.3.2-rhwp.1/builds/5213197",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-jpeg-encoder",
+        "version": "0.7.1-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-jpeg-encoder/0.7.1-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-jpeg-encoder/0.7.1-rhwp.1/builds/5213199",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-ooxml-chart",
+        "version": "0.1.0",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-ooxml-chart/0.1.0/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-ooxml-chart/0.1.0/builds/5213200",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-password-crypto",
+        "version": "0.1.0",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-password-crypto/0.1.0/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-password-crypto/0.1.0/builds/5213201",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-svg2pdf",
+        "version": "0.13.0-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-svg2pdf/0.13.0-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-svg2pdf/0.13.0-rhwp.1/builds/5213202",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-zune-jpeg",
+        "version": "0.5.15-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-zune-jpeg/0.5.15-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-zune-jpeg/0.5.15-rhwp.1/builds/5213251",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-hayro-ccitt",
+        "version": "0.3.0-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-hayro-ccitt/0.3.0-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-hayro-ccitt/0.3.0-rhwp.1/builds/5213308",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-hayro-jpeg2000",
+        "version": "0.4.0-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-hayro-jpeg2000/0.4.0-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-hayro-jpeg2000/0.4.0-rhwp.1/builds/5213364",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-qcms",
+        "version": "0.3.0-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-qcms/0.3.0-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-qcms/0.3.0-rhwp.1/builds/5213459",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-hayro-jbig2",
+        "version": "0.3.0-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-hayro-jbig2/0.3.0-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-hayro-jbig2/0.3.0-rhwp.1/builds/5213642",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp-pdf-import-backend",
+        "version": "0.3.78-rhwp.1",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp-pdf-import-backend/0.3.78-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-pdf-import-backend/0.3.78-rhwp.1/builds/5213705",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      },
+      {
+        "name": "rhwp",
+        "version": "0.9.0",
+        "httpStatus": 200,
+        "url": "https://docs.rs/crate/rhwp/0.9.0/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp/0.9.0/builds/5213769",
+            "result": "All builds succeeded"
+          }
+        ],
+        "success": true
+      }
+    ]
+  },
+  "npm_public_pipeline": {
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "steps": [
+      {
+        "name": "install",
+        "command": [
+          "npm",
+          "install",
+          "--ignore-scripts",
+          "--save-exact",
+          "--registry=https://registry.npmjs.org/",
+          "@rhwp/core@0.9.0",
+          "@rhwp/editor@0.9.0"
+        ],
+        "exitCode": 0,
+        "logSha256": "0678ad36122ef0d7d86177bb42d236b1f1cf18fd23de027e0c7877f2ad7709bc"
+      },
+      {
+        "name": "signatures",
+        "command": [
+          "npm",
+          "audit",
+          "signatures",
+          "--registry=https://registry.npmjs.org/"
+        ],
+        "exitCode": 0,
+        "logSha256": "5de8cf0b31442a701c8aa6568a5a46eba8a904a86abc004f774a6494488a4964"
+      },
+      {
+        "name": "browser",
+        "command": [
+          "node",
+          "/home/edward/mygithub/rhwp/output/release-v0.9.0-execution/verify_public_npm.mjs"
+        ],
+        "exitCode": 0,
+        "logSha256": "78a2f7f3ffd73f2434657793d84c7ecf193943ae7b90a69dc48205f5d8f8520b"
+      }
+    ],
+    "state": "completed",
+    "updatedAt": "2026-11-08T12:32:36.818191+00:00"
+  },
+  "npm_public_browser": {
+    "at": "2026-11-08T12:32:36.755Z",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "browser": "Chrome/156.0.8078.80",
+    "checks": [
+      "Installed npm core JS/WASM match tested release bytes",
+      "Public npm core opens HWP and saves/reopens HWPX; PDF defaults and ICC import pass",
+      "Public npm editor connects to deployed Studio, loads/saves/reopens and destroys iframe",
+      "No uncaught browser errors"
+    ],
+    "core": {
+      "pages": 3,
+      "reopened": 3,
+      "bytes": 14161,
+      "pdfPages": 1,
+      "support": {
+        "enabled": true,
+        "jbig2": true,
+        "jpeg2000": true,
+        "icc": true,
+        "boundedXrefRecovery": true
+      }
+    },
+    "editor": {
+      "pages": 3,
+      "reopened": 3,
+      "bytes": 14161,
+      "iframeCount": 0
+    },
+    "errors": []
+  },
+  "npm_provenance": {
+    "at": "2026-11-08T12:33:12.169384+00:00",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "packages": [
+      {
+        "package": "@rhwp/core",
+        "version": "0.9.0",
+        "integrity": "sha512-dEe9gtEM5QXAoJjX+fwgbN5KIo0a6X/wgwEg0LDcq9oY1ga5lD5vNkediFSSX4Xxs8VfFk//dbk71aMQ8J1uAQ==",
+        "subject": [
+          {
+            "name": "pkg:npm/%40rhwp/core@0.9.0",
+            "digest": {
+              "sha512": "7447bd82d10ce505c0a098d7f9fc206cde4a228d1ae97ff0830120d0b0dcabda18d606b9943e6f36479d8854925f85f1b3c55f164fff75b93bd5a310f09d6e01"
+            }
+          }
+        ],
+        "workflow": {
+          "ref": "refs/tags/v0.9.0",
+          "repository": "https://github.com/edwardkim/rhwp",
+          "path": ".github/workflows/release-binary.yml"
+        },
+        "resolvedDependencies": [
+          {
+            "uri": "git+https://github.com/edwardkim/rhwp@refs/tags/v0.9.0",
+            "digest": {
+              "gitCommit": "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+            }
+          }
+        ],
+        "runDetails": {
+          "builder": {
+            "id": "https://github.com/actions/runner/github-hosted"
+          },
+          "metadata": {
+            "invocationId": "https://github.com/edwardkim/rhwp/actions/runs/42470324565/attempts/4"
+          }
+        },
+        "cryptographicVerification": "npm audit signatures passed for both registry signatures and attestations"
+      },
+      {
+        "package": "@rhwp/editor",
+        "version": "0.9.0",
+        "integrity": "sha512-EHgjXO/ZFzgQGrX+CfzCoauOJ9Y0+xsI8yjpYFccxsPct7scqZrcOkibOLk7Sh5vzOiCZL+fhqro4Fmv+5V8TA==",
+        "subject": [
+          {
+            "name": "pkg:npm/%40rhwp/editor@0.9.0",
+            "digest": {
+              "sha512": "1078235cefd91738101ab5fe09fcc2a1ab8e27d634fb1b08f328e960571cc6c3dcb7bb1ca99adc3a489b38b93b4a1e6fcce88264bf9f86aae8e059affb957c4c"
+            }
+          }
+        ],
+        "workflow": {
+          "ref": "refs/tags/v0.9.0",
+          "repository": "https://github.com/edwardkim/rhwp",
+          "path": ".github/workflows/release-binary.yml"
+        },
+        "resolvedDependencies": [
+          {
+            "uri": "git+https://github.com/edwardkim/rhwp@refs/tags/v0.9.0",
+            "digest": {
+              "gitCommit": "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+            }
+          }
+        ],
+        "runDetails": {
+          "builder": {
+            "id": "https://github.com/actions/runner/github-hosted"
+          },
+          "metadata": {
+            "invocationId": "https://github.com/edwardkim/rhwp/actions/runs/42470324565/attempts/4"
+          }
+        },
+        "cryptographicVerification": "npm audit signatures passed for both registry signatures and attestations"
+      }
+    ]
+  },
+  "vscode_public": {
+    "at": "2026-11-08T11:53:59.953676+00:00",
+    "channel": "vscode-marketplace",
+    "version": "0.9.0",
+    "url": "https://edwardkim.gallerycdn.vsassets.io/extensions/edwardkim/rhwp-vscode/0.9.0/1794138111605/Microsoft.VisualStudio.Services.VSIXPackage",
+    "bytes": 26233834,
+    "sha256": "ad505a0753539efd3c3d1d698ca033af5699821cca2d8d68915e5938fb52a5ed",
+    "ciArchiveIdentical": true,
+    "allCIPayloadFilesIdentical": true,
+    "additionalFiles": [],
+    "wasmSha256": "c3b0632b84881f81f2c80be7c2f9e44a4086cb01e05a6a9107a3b3c6350abc1d"
+  },
+  "open_vsx_public": {
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "version": "0.9.0",
+    "vsix_sha256": "ad505a0753539efd3c3d1d698ca033af5699821cca2d8d68915e5938fb52a5ed",
+    "bytes": 26233834,
+    "open_vsx_public_exact_CI_bytes": true,
+    "embedded_wasm_matches_tested_build": {
+      "path": "extension/dist/media/rhwp_bg.wasm",
+      "sha256": "c3b0632b84881f81f2c80be7c2f9e44a4086cb01e05a6a9107a3b3c6350abc1d"
+    },
+    "javascript": "bundled by extension build; no standalone rhwp.js byte comparison claimed",
+    "note": "Initial inspection assumed two standalone JS/WASM files; corrected to actual bundle structure, without product changes."
+  },
+  "pages_bytes": {
+    "at": "2026-11-08T10:58:28.331787+00:00",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "source_dirty": false,
+    "run": 42470246397,
+    "attempt": 2,
+    "index_http": 200,
+    "index_sha256": "7515a615123f48772f1b55e8cc33a2e58b5d33f4aaef2bc74372c8c08a8fea3b",
+    "assets": [
+      {
+        "url": "https://edwardkim.github.io/rhwp/rhwp.js",
+        "http": 200,
+        "bytes": 570533,
+        "sha256": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568"
+      },
+      {
+        "url": "https://edwardkim.github.io/rhwp/rhwp_bg.wasm",
+        "http": 200,
+        "bytes": 26835494,
+        "sha256": "9b10e79dfc65bf9943b575f89c1ae3b98bc4790c90bc781bee2fa0a29957486a"
+      }
+    ],
+    "tested_and_public_bytes_match": true
+  },
+  "pages_browser": {
+    "at": "2026-11-08T11:02:39.748Z",
+    "url": "https://edwardkim.github.io/rhwp/",
+    "browser": "Chrome/156.0.8078.80",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "scope": "public Pages shell and actual public module HWP open, HWPX save/reopen, PDF support flags; no complete editing journey claim",
+    "result": {
+      "title": "새 문서.hwp - rhwp-studio",
+      "bodyPresent": true,
+      "pages": 3,
+      "reopened": 3,
+      "savedBytes": 14161,
+      "pdfSupport": {
+        "enabled": true,
+        "jbig2": true,
+        "jpeg2000": true,
+        "icc": true,
+        "boundedXrefRecovery": true
+      }
+    },
+    "errors": []
+  },
+  "firefox_public": {
+    "observedAt": "2026-11-08T13:19:13.544338+00:00",
+    "publicVersion": "0.9.0",
+    "publicSha256": "083151cc105f0b81f508d91ff18bd44c6a70473bcd5117f183f3286cb393b3e5",
+    "expectedFileCount": 108,
+    "publicFileCount": 113,
+    "missing": [],
+    "changed": [
+      "manifest.json"
+    ],
+    "added": [
+      "META-INF/cose.manifest",
+      "META-INF/cose.sig",
+      "META-INF/manifest.mf",
+      "META-INF/mozilla.rsa",
+      "META-INF/mozilla.sf"
+    ],
+    "matchingPayload": false,
+    "manifestJsonSemanticallyIdentical": true,
+    "manifestDifference": "JSON whitespace and indentation only",
+    "identicalNonManifestFiles": 107,
+    "verifiedPayloadEquivalent": true,
+    "signedArchiveBytesEqualUnsignedZip": false
+  },
+  "contributors": {
+    "at": "2026-11-08T10:34:37.793598+00:00",
+    "tag": "v0.9.0",
+    "tag_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "new_contributor_identities": [],
+    "people_total": 33
+  },
+  "main_merge_exception": {
+    "observed_at": "2026-11-08T10:00:30.775722+00:00",
+    "pr": 8783,
+    "head": "2a9a88a0ddc59eb6757ee73e03eee42b4e3ac497",
+    "base": "1a76570e833917d15817415a53c09ad61ab3203f",
+    "tree": "2602e8ea112ce1f205b5a89e9545128f035b9a0a",
+    "reused_render_run": {
+      "id": 42458258345,
+      "head_sha": "2a9a88a0ddc59eb6757ee73e03eee42b4e3ac497",
+      "event": "workflow_dispatch",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/42458258345"
+    },
+    "reused_render_proof": {
+      "run": 42458258345,
+      "artifactId": 13609555684,
+      "artifactSha256": "85d69ee5f484c6063eaf4bb919387cf1da076450b0c3734aed52d72a9d29b809",
+      "sourceCommit": "2a9a88a0ddc59eb6757ee73e03eee42b4e3ac497",
+      "mergeParents": [
+        "9409e7f6ebd26daaef8e68a73ecf9d102cce0e20",
+        "9e7a3f16b12eb693ea011841f4d1f2422ad48630"
+      ],
+      "mergeTree": "2602e8ea112ce1f205b5a89e9545128f035b9a0a",
+      "build": {
+        "source_sha": "2a9a88a0ddc59eb6757ee73e03eee42b4e3ac497",
+        "source_dirty": false,
+        "profile": "release",
+        "build_configuration": {
+          "profile": "release",
+          "build_mode": "standard",
+          "cdylib_only": "0",
+          "crate_types": "rlib+cdylib",
+          "lto_policy": "manifest",
+          "cache_variant": "release-rlib-cdylib-lto-manifest"
+        },
+        "command": [
+          "sh",
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--release"
+        ],
+        "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+        "wasm_pack": "wasm-pack 0.15.0",
+        "cargo_cache_hit": "true",
+        "cargo_cache_matched_key": "Linux-render-diff-cargo-v2-release-rlib-cdylib-lto-manifest-d02e32ebe68c86336a1255b407ed080e5baf8aa88b856dbc4b86b791dd853310",
+        "cargo_lock_sha256": "6184ebd0c4d86f71314b11e756f1e910001b8eac7f4fc7d4cbd2acfac393c86f",
+        "cargo_manifest_sha256": "f9b27a36d6feb82f66e456489398b6406b48e6ebbe1c8d2dc4c7f960edb5c505",
+        "wrapper_sha256": "556e5cc3e62ac8f3adb69b1419e8078c61d0a85615f59317103f10e3fda6e37c",
+        "runner": {
+          "platform": "Linux-7.0.0-1019-azure-x86_64-with-glibc2.43",
+          "logical_cpus": 4,
+          "image": "ubuntu26",
+          "image_version": "20261101.186.1",
+          "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+        },
+        "cargo_target_dir": "target",
+        "cargo_build_jobs": "default",
+        "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+        "success": true,
+        "wall_seconds": 1051.773,
+        "returncode": 0,
+        "events_seconds": {
+          "cargo_start": 0.3905451279999852,
+          "bindgen_start": 712.0499935869999,
+          "opt_start": 721.242556322,
+          "package_done": 1051.7540170010002
+        },
+        "phase_seconds_approx": {
+          "preparation": 0.391,
+          "cargo": 711.659,
+          "bindgen_setup_and_run": 9.193,
+          "wasm_opt_and_finalize": 330.511,
+          "after_package": 0.019
+        },
+        "tool_commands": {
+          "wasm-bindgen": [
+            "/home/runner/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+            "/home/runner/work/rhwp/rhwp/target/wasm32-unknown-unknown/release/rhwp.wasm",
+            "--out-dir",
+            "/home/runner/work/rhwp/rhwp/pkg",
+            "--typescript",
+            "--target",
+            "web"
+          ],
+          "wasm-opt": [
+            "/home/runner/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm",
+            "-o",
+            "/home/runner/work/rhwp/rhwp/pkg/rhwp_bg.wasm-opt.wasm",
+            "-O"
+          ]
+        },
+        "tools": {
+          "wasm-bindgen": {
+            "version": "wasm-bindgen 0.2.127",
+            "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+          },
+          "wasm-opt": {
+            "version": "wasm-opt version 117 (version_117)",
+            "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+          }
+        },
+        "artifacts": {
+          "rhwp.js": {
+            "sha256": "02dcb4a17782f65814129c7971c81c05237e93e67327b205cfdb00b3a3ac0568",
+            "bytes": 570533
+          },
+          "rhwp_bg.wasm": {
+            "sha256": "9b10e79dfc65bf9943b575f89c1ae3b98bc4790c90bc781bee2fa0a29957486a",
+            "bytes": 26835494
+          }
+        }
+      },
+      "wasmInitializationResponses": {
+        "count": 18,
+        "allMatched": true
+      },
+      "canvas": {
+        "config": {
+          "fixtures": [
+            "basic/KTX.hwp",
+            "biz_plan.hwp",
+            "tac-case-001.hwp"
+          ],
+          "scale": 1,
+          "maxPages": "1",
+          "channelTolerance": 1,
+          "maxDiffRatio": 0.0005,
+          "writeImages": false
+        },
+        "results": [
+          {
+            "pageIndex": 0,
+            "legacyWidth": 1123,
+            "legacyHeight": 794,
+            "layerWidth": 1123,
+            "layerHeight": 794,
+            "width": 1123,
+            "height": 794,
+            "sameSize": true,
+            "diffPixels": 96,
+            "totalPixels": 891662,
+            "diffRatio": 0.00010766411487761058,
+            "maxChannelDelta": 84,
+            "averageChannelDelta": 0.0017531867456502576,
+            "pass": true,
+            "fixture": "basic/KTX.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "legacyWidth": 794,
+            "legacyHeight": 1123,
+            "layerWidth": 794,
+            "layerHeight": 1123,
+            "width": 794,
+            "height": 1123,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 891662,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "fixture": "biz_plan.hwp"
+          },
+          {
+            "pageIndex": 0,
+            "legacyWidth": 794,
+            "legacyHeight": 1123,
+            "layerWidth": 794,
+            "layerHeight": 1123,
+            "width": 794,
+            "height": 1123,
+            "sameSize": true,
+            "diffPixels": 0,
+            "totalPixels": 891662,
+            "diffRatio": 0,
+            "maxChannelDelta": 0,
+            "averageChannelDelta": 0,
+            "pass": true,
+            "fixture": "tac-case-001.hwp"
+          }
+        ]
+      },
+      "readiness": {
+        "mode": "selectedCorpus",
+        "criteria": {
+          "sampleFlag": "canvaskitReadinessGate",
+          "profile": "screen",
+          "targetBackend": "canvaskit-default (explicit auto request)",
+          "canvaskitSurface": "auto",
+          "requireActiveBackend": true,
+          "requireRuntimeReadiness": true,
+          "requireNoImageReplayFailures": true,
+          "requireVisualParity": true,
+          "requireColdAndWarmPerformanceBudget": true
+        },
+        "summary": {
+          "total": 8,
+          "evaluated": 8,
+          "passed": 8,
+          "failed": 0,
+          "missing": 0
+        },
+        "captureError": null,
+        "checks": [
+          {
+            "sampleId": "paragraph-line-basic",
+            "category": "paragraph",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 3,
+              "resourceGeneration": 3,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:4c33f45c0c5200a4f5e6e90cfc3ba3a0dd771a31da8955c72f2d388cc858ec60",
+              "decisionKey": "blake3:4c33f45c0c5200a4f5e6e90cfc3ba3a0dd771a31da8955c72f2d388cc858ec60|revision:3|profile:screen|resources:3|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 1,
+                "scannedPages": 1,
+                "scannedWorkUnits": 214,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 9,
+                  "directItems": 9,
+                  "directRequiredItems": 0,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [
+                  "바탕체"
+                ],
+                "capabilityDigest": "blake3:cee69786e8eaa5df4944712399c696a137e31bb25892e00cb7747cdfd797a953"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.014060260502297956,
+            "expectedInkPixels": 8683,
+            "actualInkPixels": 8403,
+            "minimumInkPixels": 5000,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": null,
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 0,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 0,
+                "verticalTextRuns": 0
+              },
+              "glyphOutlinePayloadCounts": {}
+            },
+            "coldDocumentLoadAndInitialRenderMs": 551.2999999998137,
+            "warmReplay": {
+              "replayMs": 48.200000000186265,
+              "rerendered": true,
+              "rendererDurationMs": 46.800000000046566,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 0,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 0
+            }
+          },
+          {
+            "sampleId": "paragraph-text-marks",
+            "category": "paragraph",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 4,
+              "resourceGeneration": 4,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:2e88b5b3edc88c7b4e2503b0982d79991a70372db017a62896ccbcf15b0f9098",
+              "decisionKey": "blake3:2e88b5b3edc88c7b4e2503b0982d79991a70372db017a62896ccbcf15b0f9098|revision:4|profile:screen|resources:4|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 1,
+                "scannedPages": 1,
+                "scannedWorkUnits": 1566,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 42,
+                  "directItems": 42,
+                  "directRequiredItems": 0,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [
+                  "바탕체"
+                ],
+                "capabilityDigest": "blake3:46f5038e93cd106aad1f27ec7886979a5d98a793d8e1652cd6fe911deba61ebb"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.006032554936736117,
+            "expectedInkPixels": 35300,
+            "actualInkPixels": 34513,
+            "minimumInkPixels": 1000,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": null,
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 0,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 0,
+                "verticalTextRuns": 0
+              },
+              "glyphOutlinePayloadCounts": {}
+            },
+            "coldDocumentLoadAndInitialRenderMs": 690.3000000000466,
+            "warmReplay": {
+              "replayMs": 150.39999999990687,
+              "rerendered": true,
+              "rendererDurationMs": 145.5,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 0,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 0
+            }
+          },
+          {
+            "sampleId": "pua-special-glyphs",
+            "category": "font",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 3,
+              "resourceGeneration": 3,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:c221688d49232b7bfb5468af022f96126701cd6439acedb64aa8e9af5d52724c",
+              "decisionKey": "blake3:c221688d49232b7bfb5468af022f96126701cd6439acedb64aa8e9af5d52724c|revision:3|profile:screen|resources:3|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 1,
+                "scannedPages": 1,
+                "scannedWorkUnits": 1412,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 130,
+                  "directItems": 130,
+                  "directRequiredItems": 0,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [
+                  "RHWP Old Hangul",
+                  "함초롬바탕"
+                ],
+                "capabilityDigest": "blake3:4ede2ef20ba9094ac77f1c869a37d56a99bbd65e7293cbe17566d45d582d1888"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.004307686096301065,
+            "expectedInkPixels": 26200,
+            "actualInkPixels": 24627,
+            "minimumInkPixels": 20000,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": null,
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 0,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 0,
+                "verticalTextRuns": 0
+              },
+              "glyphOutlinePayloadCounts": {}
+            },
+            "coldDocumentLoadAndInitialRenderMs": 1058,
+            "warmReplay": {
+              "replayMs": 235.80000000004657,
+              "rerendered": true,
+              "rendererDurationMs": 229.5,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 0,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 0
+            }
+          },
+          {
+            "sampleId": "font-batang-hancom",
+            "category": "font",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 3,
+              "resourceGeneration": 3,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:f512a39fe05937652c97758efcda35919d71c8f2ccd4d95144287ea578986e19",
+              "decisionKey": "blake3:f512a39fe05937652c97758efcda35919d71c8f2ccd4d95144287ea578986e19|revision:3|profile:screen|resources:3|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 1,
+                "scannedPages": 1,
+                "scannedWorkUnits": 127,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 14,
+                  "directItems": 14,
+                  "directRequiredItems": 0,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [
+                  "함초롬바탕"
+                ],
+                "capabilityDigest": "blake3:7ec6b442975b75a65a8624271c917a7d996cff350343384f31268966b05092f1"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.0007794433316660349,
+            "expectedInkPixels": 3128,
+            "actualInkPixels": 2647,
+            "minimumInkPixels": 1000,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": null,
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 0,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 0,
+                "verticalTextRuns": 0
+              },
+              "glyphOutlinePayloadCounts": {}
+            },
+            "coldDocumentLoadAndInitialRenderMs": 927.0999999998603,
+            "warmReplay": {
+              "replayMs": 37.5999999998603,
+              "rerendered": true,
+              "rendererDurationMs": 36.5,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 0,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 0
+            }
+          },
+          {
+            "sampleId": "font-native-bitmap",
+            "category": "font-native-glyph",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 3,
+              "resourceGeneration": 3,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:52048de7407688f2aca852c47df8e24adbaa4f0484ffa1eeb04fd820ebc9da2e",
+              "decisionKey": "blake3:52048de7407688f2aca852c47df8e24adbaa4f0484ffa1eeb04fd820ebc9da2e|revision:3|profile:screen|resources:3|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 1,
+                "scannedPages": 1,
+                "scannedWorkUnits": 19,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 6,
+                  "directItems": 5,
+                  "directRequiredItems": 1,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [],
+                "capabilityDigest": "blake3:38de25cabbf2eb5ff14b1e06469b546029e24833e5ca7058f5238f9cc59ea373"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.0004968250301123072,
+            "expectedInkPixels": 220,
+            "actualInkPixels": 110,
+            "minimumInkPixels": 40,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": {
+              "glyphOutlinePayloadKinds": [
+                "bitmapGlyph"
+              ],
+              "minLayerFeatureCounts": {},
+              "minWarmImageCacheHits": 1
+            },
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 0,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 0,
+                "verticalTextRuns": 0
+              },
+              "glyphOutlinePayloadCounts": {
+                "bitmapGlyph": 1
+              }
+            },
+            "coldDocumentLoadAndInitialRenderMs": 97.4000000001397,
+            "warmReplay": {
+              "replayMs": 19.199999999953434,
+              "rerendered": true,
+              "rendererDurationMs": 18.5,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 3,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 256
+            }
+          },
+          {
+            "sampleId": "table-core",
+            "category": "table",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 3,
+              "resourceGeneration": 3,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:ef075058b2780d0c0afd71c9448466b0fcef2b0b51afc8f3b9f4f10fdb01b7ad",
+              "decisionKey": "blake3:ef075058b2780d0c0afd71c9448466b0fcef2b0b51afc8f3b9f4f10fdb01b7ad|revision:3|profile:screen|resources:3|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 3,
+                "scannedPages": 3,
+                "scannedWorkUnits": 2035,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 357,
+                  "directItems": 357,
+                  "directRequiredItems": 0,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [
+                  "한컴 윤고딕 230",
+                  "함초롬바탕"
+                ],
+                "capabilityDigest": "blake3:9d602c480285337e49e24a3f7abf2f017e6fe47d8dc4400a6363a3d025473b21"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.028788935717794412,
+            "expectedInkPixels": 61548,
+            "actualInkPixels": 60146,
+            "minimumInkPixels": 30000,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": null,
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 0,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 0,
+                "verticalTextRuns": 0
+              },
+              "glyphOutlinePayloadCounts": {}
+            },
+            "coldDocumentLoadAndInitialRenderMs": 1298.3999999999069,
+            "warmReplay": {
+              "replayMs": 96.39999999990687,
+              "rerendered": true,
+              "rendererDurationMs": 93.5,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 0,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 0
+            }
+          },
+          {
+            "sampleId": "table-border-style",
+            "category": "table",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 3,
+              "resourceGeneration": 3,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:671e1e8ab253f31b52395a3cd7832ff06ee7b370ff79a0795db0ef33d4b7e559",
+              "decisionKey": "blake3:671e1e8ab253f31b52395a3cd7832ff06ee7b370ff79a0795db0ef33d4b7e559|revision:3|profile:screen|resources:3|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 1,
+                "scannedPages": 1,
+                "scannedWorkUnits": 1693,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 293,
+                  "directItems": 293,
+                  "directRequiredItems": 0,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [
+                  "한양중고딕"
+                ],
+                "capabilityDigest": "blake3:324c295dd51e36354cc173ebaf5128af4b6b0ea013c24db4c15596ea0e56ef87"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.004811240133593223,
+            "expectedInkPixels": 66097,
+            "actualInkPixels": 64952,
+            "minimumInkPixels": 50000,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": {
+              "glyphOutlinePayloadKinds": [],
+              "minLayerFeatureCounts": {
+                "dashedStrokes": 12,
+                "verticalPresentationPunctuation": 2,
+                "verticalTextRuns": 14
+              },
+              "minWarmImageCacheHits": 0
+            },
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 12,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 2,
+                "verticalTextRuns": 14
+              },
+              "glyphOutlinePayloadCounts": {}
+            },
+            "coldDocumentLoadAndInitialRenderMs": 435.19999999995343,
+            "warmReplay": {
+              "replayMs": 238.30000000004657,
+              "rerendered": true,
+              "rendererDurationMs": 232.10000000009313,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 0,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 0
+            }
+          },
+          {
+            "sampleId": "image-crop",
+            "category": "image",
+            "profile": "screen",
+            "targetBackend": "canvaskit-default",
+            "canvaskitSurface": "auto",
+            "passed": true,
+            "blockers": [],
+            "activeBackend": "canvaskit",
+            "canvasOwnershipTracked": true,
+            "request": {
+              "backend": {
+                "backend": "canvas2d",
+                "source": "url",
+                "requested": "auto"
+              },
+              "canvaskitMode": {
+                "mode": "default",
+                "source": "url",
+                "requested": "default"
+              },
+              "canvaskitSurface": {
+                "preference": "auto",
+                "requested": "auto"
+              },
+              "renderProfile": "screen"
+            },
+            "selection": {
+              "schemaVersion": 1,
+              "request": {
+                "backend": "auto",
+                "source": "url",
+                "requested": "auto"
+              },
+              "requestedBackend": "auto",
+              "effectiveBackend": "canvaskit",
+              "selectionReason": "autoEligible",
+              "fallbackReason": null,
+              "documentRevision": 3,
+              "resourceGeneration": 3,
+              "renderProfile": "screen",
+              "documentDigest": "blake3:a1916cd259cb6357ab1e7cb882ff98d403698df0369218d1c5fb913d08cb3bb7",
+              "decisionKey": "blake3:a1916cd259cb6357ab1e7cb882ff98d403698df0369218d1c5fb913d08cb3bb7|revision:3|profile:screen|resources:3|request:auto|mode:default",
+              "preflight": {
+                "schemaVersion": 1,
+                "mode": "default",
+                "profile": "screen",
+                "status": "eligible",
+                "eligible": true,
+                "complete": true,
+                "pageCount": 1,
+                "scannedPages": 1,
+                "scannedWorkUnits": 121,
+                "limits": {
+                  "maxPages": 128,
+                  "maxWorkUnits": 50000,
+                  "maxBlockers": 32,
+                  "maxRequiredFontFamilies": 256
+                },
+                "summary": {
+                  "totalItems": 9,
+                  "directItems": 9,
+                  "directRequiredItems": 0,
+                  "compatOverlayItems": 0,
+                  "textFallbackItems": 0,
+                  "unsupportedItems": 0,
+                  "hiddenOverlayViolations": 0
+                },
+                "blockers": [],
+                "requiredFontFamilies": [
+                  "함초롬바탕"
+                ],
+                "capabilityDigest": "blake3:fe85ff5735f1248ab4646f17333621a7032de0e4aad22389204a75a918e469ba"
+              },
+              "initializationError": null,
+              "selectionError": null
+            },
+            "backendFallbackReason": null,
+            "expectedUnsupportedOps": [],
+            "unexpectedUnsupportedOps": [],
+            "imageFailures": [],
+            "renderError": null,
+            "surfaceBackend": "default",
+            "surfaceFallbackReason": null,
+            "visualComparisonStatus": "compared",
+            "visualComparisonPassed": true,
+            "selectedDiffRatio": 0.015440828475363983,
+            "expectedInkPixels": 36358,
+            "actualInkPixels": 34407,
+            "minimumInkPixels": 20000,
+            "minimumInkBudgetPassed": true,
+            "performanceBudget": {
+              "maxColdDocumentLoadAndInitialRenderMs": 30000,
+              "maxWarmReplayMs": 5000,
+              "maxWarmRendererDurationMs": 4000,
+              "maxImageCachePixels": 67108864
+            },
+            "readinessExpectations": null,
+            "layerFeatureProbe": {
+              "featureCounts": {
+                "dashedStrokes": 0,
+                "glyphRuns": 0,
+                "tabLeaders": 0,
+                "charOverlaps": 0,
+                "verticalPresentationPunctuation": 0,
+                "verticalTextRuns": 0
+              },
+              "glyphOutlinePayloadCounts": {}
+            },
+            "coldDocumentLoadAndInitialRenderMs": 741.8000000000466,
+            "warmReplay": {
+              "replayMs": 40.5,
+              "rerendered": true,
+              "rendererDurationMs": 33.5999999998603,
+              "renderCountDelta": 1,
+              "imageCacheHitDelta": 4,
+              "imageCacheMissDelta": 0,
+              "imageCachePixels": 44730
+            }
+          }
+        ]
+      },
+      "backendParitySummary": {
+        "total": 8,
+        "compared": 8,
+        "passed": 8,
+        "failed": 0,
+        "missing": 0,
+        "errors": 0,
+        "identityMismatches": 0
+      },
+      "pdf": {
+        "config": {
+          "fixtures": [
+            "basic/KTX.hwp",
+            "biz_plan.hwp",
+            "tac-case-001.hwp",
+            "kps-ai.hwp"
+          ],
+          "requestedFixtures": [
+            "basic/KTX.hwp",
+            "biz_plan.hwp",
+            "tac-case-001.hwp"
+          ],
+          "scale": 1,
+          "maxPages": "1",
+          "channelTolerance": 8,
+          "maxDiffRatio": null,
+          "commandTimeoutMs": 120000,
+          "writeImages": true,
+          "directPdfEnabled": true,
+          "directPdfGate": true,
+          "directPdfFixtures": [
+            "biz_plan.hwp",
+            "kps-ai.hwp",
+            "tac-case-001.hwp"
+          ],
+          "directFallbackRasterDpi": 144,
+          "directMaxDiffRatio": 0.02,
+          "rasterDpi": 72
+        },
+        "results": [
+          {
+            "fixture": "basic/KTX.hwp",
+            "pageIndex": 0,
+            "directExpected": false,
+            "rhwpMode": "binary",
+            "reportStage": "complete",
+            "reportError": null,
+            "reportComparison": {
+              "referenceWidth": 1123,
+              "referenceHeight": 794,
+              "pdfWidth": 841,
+              "pdfHeight": 595,
+              "width": 1123,
+              "height": 794,
+              "sameSize": false,
+              "majorSizeMismatch": true,
+              "sizeNormalization": null,
+              "diffPixels": 507993,
+              "totalPixels": 891662,
+              "diffRatio": 0.5697147573856461,
+              "maxChannelDelta": 255,
+              "averageChannelDelta": 25.764801759710146
+            },
+            "exceedsReportThreshold": true,
+            "directStage": null,
+            "directError": null,
+            "directComparison": null,
+            "directGateFailed": false,
+            "artifactFiles": {
+              "reference": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-reference.png",
+              "pdf": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01.pdf",
+              "pdfRaster": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-raster.png",
+              "diff": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-diff.png"
+            },
+            "directArtifactFiles": {
+              "compatibilityPdf": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01.pdf",
+              "compatibilityRaster": "e2e/screenshots/render-diff/basic_KTX.hwp-ce76d1d6-p01-pdf-raster.png"
+            },
+            "referenceWidth": 1123,
+            "referenceHeight": 794,
+            "pdfWidth": 841,
+            "pdfHeight": 595,
+            "width": 1123,
+            "height": 794,
+            "sameSize": false,
+            "majorSizeMismatch": true,
+            "sizeNormalization": null,
+            "diffPixels": 507993,
+            "totalPixels": 891662,
+            "diffRatio": 0.5697147573856461,
+            "maxChannelDelta": 255,
+            "averageChannelDelta": 25.764801759710146
+          },
+          {
+            "fixture": "biz_plan.hwp",
+            "pageIndex": 0,
+            "directExpected": true,
+            "rhwpMode": "binary",
+            "reportStage": "complete",
+            "reportError": null,
+            "reportComparison": {
+              "referenceWidth": 794,
+              "referenceHeight": 1123,
+              "pdfWidth": 595,
+              "pdfHeight": 841,
+              "width": 794,
+              "height": 1123,
+              "sameSize": false,
+              "majorSizeMismatch": true,
+              "sizeNormalization": null,
+              "diffPixels": 21575,
+              "totalPixels": 891662,
+              "diffRatio": 0.024196388317546336,
+              "maxChannelDelta": 255,
+              "averageChannelDelta": 4.149705830236121
+            },
+            "exceedsReportThreshold": true,
+            "directStage": "complete",
+            "directError": null,
+            "directComparison": {
+              "referenceWidth": 595,
+              "referenceHeight": 841,
+              "pdfWidth": 595,
+              "pdfHeight": 841,
+              "width": 595,
+              "height": 841,
+              "sameSize": true,
+              "majorSizeMismatch": false,
+              "sizeNormalization": null,
+              "diffPixels": 3792,
+              "totalPixels": 500395,
+              "diffRatio": 0.007578013369438144,
+              "maxChannelDelta": 255,
+              "averageChannelDelta": 0.9753694581280788
+            },
+            "directGateFailed": false,
+            "artifactFiles": {
+              "reference": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-reference.png",
+              "pdf": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01.pdf",
+              "pdfRaster": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-raster.png",
+              "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-diff.png"
+            },
+            "directArtifactFiles": {
+              "compatibilityPdf": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01.pdf",
+              "compatibilityRaster": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-pdf-raster.png",
+              "directPdf": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-direct.pdf",
+              "directRaster": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-direct-raster.png",
+              "diff": "e2e/screenshots/render-diff/biz_plan.hwp-618f6a38-p01-direct-vs-compat-diff.png"
+            },
+            "referenceWidth": 794,
+            "referenceHeight": 1123,
+            "pdfWidth": 595,
+            "pdfHeight": 841,
+            "width": 794,
+            "height": 1123,
+            "sameSize": false,
+            "majorSizeMismatch": true,
+            "sizeNormalization": null,
+            "diffPixels": 21575,
+            "totalPixels": 891662,
+            "diffRatio": 0.024196388317546336,
+            "maxChannelDelta": 255,
+            "averageChannelDelta": 4.149705830236121
+          },
+          {
+            "fixture": "tac-case-001.hwp",
+            "pageIndex": 0,
+            "directExpected": true,
+            "rhwpMode": "binary",
+            "reportStage": "complete",
+            "reportError": null,
+            "reportComparison": {
+              "referenceWidth": 794,
+              "referenceHeight": 1123,
+              "pdfWidth": 595,
+              "pdfHeight": 841,
+              "width": 794,
+              "height": 1123,
+              "sameSize": false,
+              "majorSizeMismatch": true,
+              "sizeNormalization": null,
+              "diffPixels": 4911,
+              "totalPixels": 891662,
+              "diffRatio": 0.005507692376707766,
+              "maxChannelDelta": 255,
+              "averageChannelDelta": 0.7249585605307841
+            },
+            "exceedsReportThreshold": true,
+            "directStage": "complete",
+            "directError": null,
+            "directComparison": {
+              "referenceWidth": 595,
+              "referenceHeight": 841,
+              "pdfWidth": 595,
+              "pdfHeight": 841,
+              "width": 595,
+              "height": 841,
+              "sameSize": true,
+              "majorSizeMismatch": false,
+              "sizeNormalization": null,
+              "diffPixels": 1347,
+              "totalPixels": 500395,
+              "diffRatio": 0.0026918734199982016,
+              "maxChannelDelta": 255,
+              "averageChannelDelta": 0.4860160473226151
+            },
+            "directGateFailed": false,
+            "artifactFiles": {
+              "reference": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-reference.png",
+              "pdf": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01.pdf",
+              "pdfRaster": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-raster.png",
+              "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-diff.png"
+            },
+            "directArtifactFiles": {
+              "compatibilityPdf": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01.pdf",
+              "compatibilityRaster": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-pdf-raster.png",
+              "directPdf": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-direct.pdf",
+              "directRaster": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-direct-raster.png",
+              "diff": "e2e/screenshots/render-diff/tac-case-001.hwp-097ee39c-p01-direct-vs-compat-diff.png"
+            },
+            "referenceWidth": 794,
+            "referenceHeight": 1123,
+            "pdfWidth": 595,
+            "pdfHeight": 841,
+            "width": 794,
+            "height": 1123,
+            "sameSize": false,
+            "majorSizeMismatch": true,
+            "sizeNormalization": null,
+            "diffPixels": 4911,
+            "totalPixels": 891662,
+            "diffRatio": 0.005507692376707766,
+            "maxChannelDelta": 255,
+            "averageChannelDelta": 0.7249585605307841
+          },
+          {
+            "fixture": "kps-ai.hwp",
+            "pageIndex": 0,
+            "directExpected": true,
+            "rhwpMode": "binary",
+            "reportStage": "complete",
+            "reportError": null,
+            "reportComparison": {
+              "referenceWidth": 794,
+              "referenceHeight": 1123,
+              "pdfWidth": 595,
+              "pdfHeight": 841,
+              "width": 794,
+              "height": 1123,
+              "sameSize": false,
+              "majorSizeMismatch": true,
+              "sizeNormalization": null,
+              "diffPixels": 52706,
+              "totalPixels": 891662,
+              "diffRatio": 0.059109842070201486,
+              "maxChannelDelta": 255,
+              "averageChannelDelta": 7.756439099120518
+            },
+            "exceedsReportThreshold": true,
+            "directStage": "complete",
+            "directError": null,
+            "directComparison": {
+              "referenceWidth": 595,
+              "referenceHeight": 841,
+              "pdfWidth": 595,
+              "pdfHeight": 841,
+              "width": 595,
+              "height": 841,
+              "sameSize": true,
+              "majorSizeMismatch": false,
+              "sizeNormalization": null,
+              "diffPixels": 9426,
+              "totalPixels": 500395,
+              "diffRatio": 0.018837118676245764,
+              "maxChannelDelta": 255,
+              "averageChannelDelta": 1.8169952404267296
+            },
+            "directGateFailed": false,
+            "artifactFiles": {
+              "reference": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-reference.png",
+              "pdf": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01.pdf",
+              "pdfRaster": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-raster.png",
+              "diff": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-diff.png"
+            },
+            "directArtifactFiles": {
+              "compatibilityPdf": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01.pdf",
+              "compatibilityRaster": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-pdf-raster.png",
+              "directPdf": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-direct.pdf",
+              "directRaster": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-direct-raster.png",
+              "diff": "e2e/screenshots/render-diff/kps-ai.hwp-1f4dbe57-p01-direct-vs-compat-diff.png"
+            },
+            "referenceWidth": 794,
+            "referenceHeight": 1123,
+            "pdfWidth": 595,
+            "pdfHeight": 841,
+            "width": 794,
+            "height": 1123,
+            "sameSize": false,
+            "majorSizeMismatch": true,
+            "sizeNormalization": null,
+            "diffPixels": 52706,
+            "totalPixels": 891662,
+            "diffRatio": 0.059109842070201486,
+            "maxChannelDelta": 255,
+            "averageChannelDelta": 7.756439099120518
+          }
+        ]
+      },
+      "scope": "Canvas 3 pages and CanvasKit readiness 8 checks passed; direct-PDF required checks passed. PDF report-only comparisons exceed advisory threshold and are not counted as visual PASS."
+    }
+  },
+  "binary_linux-x86_64-verification": {
+    "at": "2026-11-08T10:40:54.676534+00:00",
+    "metadata": {
+      "id": 13614550023,
+      "node_id": "MDg6QXJ0aWZhY3QxMzYxNDU1MDAyMw==",
+      "name": "rhwp-v0.9.0-linux-x86_64.tar.gz",
+      "size_in_bytes": 31951231,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614550023",
+      "archive_download_url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614550023/zip",
+      "expired": false,
+      "digest": "sha256:0c83ed693671aa8c157d046f8fd2d5928b5a069afd76c77cb5142a9724e69484",
+      "created_at": "2026-11-08T10:39:46Z",
+      "updated_at": "2026-11-08T10:39:46Z",
+      "expires_at": "2026-11-15T10:39:44Z",
+      "workflow_run": {
+        "id": 42470324565,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "v0.9.0",
+        "head_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+      }
+    },
+    "archive_sha256": "837910d858162537f3f04b35ae8f5ad65fb42cc8e3582b1e174ce605b6ac7952",
+    "members": 119,
+    "required_guides_and_license": true,
+    "exit_code": 0,
+    "stdout": "{\"archive\": \"rhwp-v0.9.0-linux-x86_64.tar.gz\", \"version\": \"rhwp v0.9.0\", \"exportPngAvailable\": true, \"pngWidth\": 794, \"pngHeight\": 1123}\n",
+    "stderr": ""
+  },
+  "binary_linux-aarch64-artifact-audit": {
+    "at": "2026-11-08T10:45:33.643139+00:00",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "artifact": {
+      "id": 13614425730,
+      "node_id": "MDg6QXJ0aWZhY3QxMzYxNDQyNTczMA==",
+      "name": "rhwp-v0.9.0-linux-aarch64.tar.gz",
+      "size_in_bytes": 30019842,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614425730",
+      "archive_download_url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614425730/zip",
+      "expired": false,
+      "digest": "sha256:cee572fafb49262840e82ea1de955766e444dd7c562755d54e306293b5495392",
+      "created_at": "2026-11-08T10:41:49Z",
+      "updated_at": "2026-11-08T10:41:49Z",
+      "expires_at": "2026-11-15T10:41:47Z",
+      "workflow_run": {
+        "id": 42470324565,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "v0.9.0",
+        "head_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+      }
+    },
+    "job_id": 128699338025,
+    "job_url": "https://github.com/edwardkim/rhwp/actions/runs/42470324565/job/128699338025",
+    "archive_sha256": "11b19a5e060621e517525b7818dc44d69dbf1cc16355fdf85f7e5a57f2e2c3ee",
+    "archive_members": 119,
+    "required_guides_and_license": true,
+    "archive_integrity": true,
+    "log_sha256": "d872537c6e2efed37ce17ec71d04325351bc4bbac3848a660bdd21f362eee02d",
+    "target_runner_smoke": [
+      {
+        "archive": "rhwp-v0.9.0-linux-aarch64.tar.gz",
+        "version": "rhwp v0.9.0",
+        "exportPngAvailable": true,
+        "pngWidth": 794,
+        "pngHeight": 1123
+      }
+    ]
+  },
+  "binary_macos-x86_64-artifact-audit": {
+    "at": "2026-11-08T11:04:03.426366+00:00",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "artifact": {
+      "id": 13614736250,
+      "node_id": "MDg6QXJ0aWZhY3QxMzYxNDczNjI1MA==",
+      "name": "rhwp-v0.9.0-macos-x86_64.tar.gz",
+      "size_in_bytes": 31013134,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614736250",
+      "archive_download_url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614736250/zip",
+      "expired": false,
+      "digest": "sha256:09da73fb55341e21657670ec4289e1d2b1dff397a50c327689ac704eed5da1fd",
+      "created_at": "2026-11-08T11:01:04Z",
+      "updated_at": "2026-11-08T11:01:04Z",
+      "expires_at": "2026-11-15T11:01:01Z",
+      "workflow_run": {
+        "id": 42470324565,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "v0.9.0",
+        "head_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+      }
+    },
+    "job_id": 128699337978,
+    "job_url": "https://github.com/edwardkim/rhwp/actions/runs/42470324565/job/128699337978",
+    "archive_sha256": "488ccd4d93950101ed52e8b297872e3de839ebb6804ba8f75cbcd59f7b64f91f",
+    "archive_members": 119,
+    "required_guides_and_license": true,
+    "archive_integrity": true,
+    "log_sha256": "6f18151eaa2aa58485064bb6636a8cb95738f0f260390fef59575deef1a171bc",
+    "target_runner_smoke": [
+      {
+        "archive": "rhwp-v0.9.0-macos-x86_64.tar.gz",
+        "version": "rhwp v0.9.0",
+        "exportPngAvailable": true,
+        "pngWidth": 794,
+        "pngHeight": 1123
+      }
+    ]
+  },
+  "binary_macos-aarch64-artifact-audit": {
+    "at": "2026-11-08T10:59:23.692160+00:00",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "artifact": {
+      "id": 13613999335,
+      "node_id": "MDg6QXJ0aWZhY3QxMzYxMzk5OTMzNQ==",
+      "name": "rhwp-v0.9.0-macos-aarch64.tar.gz",
+      "size_in_bytes": 28931380,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13613999335",
+      "archive_download_url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13613999335/zip",
+      "expired": false,
+      "digest": "sha256:0a3d8a859b8c92b89ddc82ec3b5655eaa40b45d5132262f4e8ca6510d11faa19",
+      "created_at": "2026-11-08T10:57:37Z",
+      "updated_at": "2026-11-08T10:57:37Z",
+      "expires_at": "2026-11-15T10:57:35Z",
+      "workflow_run": {
+        "id": 42470324565,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "v0.9.0",
+        "head_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+      }
+    },
+    "job_id": 128699337725,
+    "job_url": "https://github.com/edwardkim/rhwp/actions/runs/42470324565/job/128699337725",
+    "archive_sha256": "5993462a26878b1e8c39cd93c2515d9c373d10e617d9e3ff7e8b9336efb11974",
+    "archive_members": 119,
+    "required_guides_and_license": true,
+    "archive_integrity": true,
+    "log_sha256": "213623c54c347e867ff9c16617f5caf333f1562f37562545f939660f21a09f44",
+    "target_runner_smoke": [
+      {
+        "archive": "rhwp-v0.9.0-macos-aarch64.tar.gz",
+        "version": "rhwp v0.9.0",
+        "exportPngAvailable": true,
+        "pngWidth": 794,
+        "pngHeight": 1123
+      }
+    ]
+  },
+  "binary_windows-x86_64-artifact-audit": {
+    "at": "2026-11-08T10:50:30.723417+00:00",
+    "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "artifact": {
+      "id": 13614396774,
+      "node_id": "MDg6QXJ0aWZhY3QxMzYxNDM5Njc3NA==",
+      "name": "rhwp-v0.9.0-windows-x86_64.zip",
+      "size_in_bytes": 31972155,
+      "url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614396774",
+      "archive_download_url": "https://api.github.com/repos/edwardkim/rhwp/actions/artifacts/13614396774/zip",
+      "expired": false,
+      "digest": "sha256:a76c32bae1e6fc95301fef373d7530c47694b3e3f9a54561470a5a83a1a604cd",
+      "created_at": "2026-11-08T10:49:12Z",
+      "updated_at": "2026-11-08T10:49:12Z",
+      "expires_at": "2026-11-15T10:49:10Z",
+      "workflow_run": {
+        "id": 42470324565,
+        "repository_id": 1193345564,
+        "head_repository_id": 1193345564,
+        "head_branch": "v0.9.0",
+        "head_sha": "c9095c5f67632e6721e800ccc7fb43ea49d26682"
+      }
+    },
+    "job_id": 128699338087,
+    "job_url": "https://github.com/edwardkim/rhwp/actions/runs/42470324565/job/128699338087",
+    "archive_sha256": "72a0c7122a07c46bd67872688057f99ff60c5240333c72ca8b4c5c5b6884ef6f",
+    "archive_members": 98,
+    "required_guides_and_license": true,
+    "archive_integrity": true,
+    "log_sha256": "ccd26ed7a04e50aa035d8cd0b000106c091681eef7dc14edaa09fe66ccb55b02",
+    "target_runner_smoke": [
+      {
+        "archive": "rhwp-v0.9.0-windows-x86_64.zip",
+        "version": "rhwp v0.9.0",
+        "exportPngAvailable": true,
+        "pngWidth": 794,
+        "pngHeight": 1123
+      }
+    ]
+  },
+  "issue8745_flow_comparison": {
+    "logging_sink_sets_equal_to_reviewed_local_full": true,
+    "old_logging_count": 36,
+    "new_logging_count": 36,
+    "old_only": [],
+    "new_only": [],
+    "new_nonlogging_sink_locations": [
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3340,
+            33
+          ]
+        ]
+      ],
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3514,
+            53
+          ]
+        ]
+      ],
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3644,
+            54
+          ]
+        ]
+      ],
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3580,
+            33
+          ]
+        ]
+      ],
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3565,
+            54
+          ]
+        ]
+      ],
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3501,
+            64
+          ]
+        ]
+      ],
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3523,
+            33
+          ]
+        ]
+      ],
+      [
+        "rust/hard-coded-cryptographic-value",
+        [
+          [
+            "src/parser/mod.rs",
+            3540,
+            33
+          ]
+        ]
+      ],
+      [
+        "rust/access-invalid-pointer",
+        [
+          [
+            "vendor/rhwp-qcms/src/gtest.rs",
+            608,
+            19
+          ]
+        ]
+      ]
+    ],
+    "main_tree_equals_analyzed_devel": true,
+    "root_logging_results": 0,
+    "vendor_flow_topology_equal": true,
+    "old_vendor_flows": 140,
+    "current_vendor_flows": 140
+  },
+  "docker_consumption": {
+    "record": "local/crates-io-consumption/VALIDATION-0.9.0.md",
+    "public_packages": 14,
+    "full_commands": 32,
+    "extra_font_check": "passed",
+    "png_explicit_auto_sha256": "b95b027ef0e72dbce8d2f636b5437f9b002cef1cd16a2f4576f3defde6dad641",
+    "state": "all-passed",
+    "retention": "Maintainer explicitly requested local ignored persistence."
+  },
+  "tag_ci": {
+    "run_id": 42470324547,
+    "attempt": 2,
+    "status": "completed",
+    "conclusion": "failure",
+    "remaining": [
+      "WASM Binaryen download failure",
+      "Native 30 minute compile timeout",
+      "Archive B 60 minute compile timeout"
+    ],
+    "retry_or_exception_not_executed": true
+  },
+  "release_binary": {
+    "run_id": 42470324565,
+    "attempt": 4,
+    "status": "completed",
+    "conclusion": "success"
+  },
+  "retention_note": "Final verification records selected for the release report before removing temporary output; not a backup of intermediate files. Original command paths are historical execution evidence.",
+  "source_record_hashes": [
+    {
+      "source_record": "package-recovery/packages.json",
+      "sha256": "61b04c7add986ebb53f00e521a8c63704b18bbdda8e0c1bb6a5608d38f19f1a9"
+    },
+    {
+      "source_record": "package-public-recovery/pipeline.json",
+      "sha256": "d3b034db3af120a9d0325f775a1f403986061f0fba4b2190992562e0cd94ca66"
+    },
+    {
+      "source_record": "package-public-recovery/cli-smoke/results.json",
+      "sha256": "5003da03b978a36b5b68f391dca1a64a733aa2abe1c6a03352e9e979a2fcfe1c"
+    },
+    {
+      "source_record": "package-public-recovery/browser-consumer.json",
+      "sha256": "82b6fd89a8b273a426bf7ab5d1227edccd4dec05f432a7f7d6dd79d98d51bac4"
+    },
+    {
+      "source_record": "postmerge-records/docsrs-public-build-verification.json",
+      "sha256": "9c65995d8b56e8a6f3b11fcb5cd6d75b583015f08a1cddd9bba997d27f50ecab"
+    },
+    {
+      "source_record": "npm-public-consumer/pipeline.json",
+      "sha256": "1b2f1f846a54d9917505eab2580f1be3dd4062803c24bc61011fbbb467376221"
+    },
+    {
+      "source_record": "npm-public-consumer/browser-result.json",
+      "sha256": "ae7d530f7c458ac64989b6db36a2dc3978970bb5dce28f47ec21e3d5cb46a208"
+    },
+    {
+      "source_record": "npm-public-consumer/provenance-verification.json",
+      "sha256": "67e11cafccb7640966d41dd1017258c667c9cb1222e88740cf82ff033cd549b7"
+    },
+    {
+      "source_record": "package-release/vscode-public-verification.json",
+      "sha256": "5d8b7566b3e02bc57a51acdabfc070a8c52efeb2e672ef06cd3a56f52f2e0b6a"
+    },
+    {
+      "source_record": "package-release/vsix-public-verification.json",
+      "sha256": "b01d70c8068422dec6bfe2671b7018b78e97aa72a056dc4da9f40e869bfd4745"
+    },
+    {
+      "source_record": "pages-production/public-site-verification.json",
+      "sha256": "0dfa57aad25ab9875422901d7eac30b24969a64729d630b7ce6df4c9a3cf4ead"
+    },
+    {
+      "source_record": "pages-production/public-browser-smoke.json",
+      "sha256": "4fb95e307846a7a5592ee5bd475d20e42026de25bbe129589b1f284a177cb2ee"
+    },
+    {
+      "source_record": "browser-final/firefox-public-payload-verification.json",
+      "sha256": "4b47060b1daf7b84dcd0ffdf959ea6b44a492b7a06623cfca62b0d1538c50f76"
+    },
+    {
+      "source_record": "postmerge-records/final-tag-contributors.json",
+      "sha256": "e9492d4bc2588a092320e868928391a608c8116bbd32552139bd4a561573b557"
+    },
+    {
+      "source_record": "postmerge-records/pr8783-ci-evidence.json",
+      "sha256": "30312c299ee9eeea0b74b2fb28314b8d50004d6527b3148d124482076efc05b1"
+    },
+    {
+      "source_record": "final-tag-binaries/linux-x86_64-verification.json",
+      "sha256": "34ff39ab6f01071ffe04713b23a0ceb83f4f6cbfb8a574ae6190999beac3c30c"
+    },
+    {
+      "source_record": "final-tag-binaries/linux-aarch64-artifact-audit.json",
+      "sha256": "8c7469e569f788761739fe06efb55dec9139af2b7731fadf5132160193ce33df"
+    },
+    {
+      "source_record": "final-tag-binaries/macos-x86_64-artifact-audit.json",
+      "sha256": "6d563ecdb6744f8d79039c068cb8fb405b432691112068dea5d4b8c2e438d8d7"
+    },
+    {
+      "source_record": "final-tag-binaries/macos-aarch64-artifact-audit.json",
+      "sha256": "27d8ab644f682dab942518df5fc5288dff5293206a99d1fe3039465e8e768ef5"
+    },
+    {
+      "source_record": "final-tag-binaries/windows-x86_64-artifact-audit.json",
+      "sha256": "7afc2784c16cf544b56752c0330ff04aab1415dbbb3e99440c9109adecb086c0"
+    }
+  ]
+}

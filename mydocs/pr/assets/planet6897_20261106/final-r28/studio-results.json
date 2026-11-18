@@ -1,0 +1,40 @@
+{
+  "state": "complete",
+  "pid": 2588791,
+  "steps": [
+    {
+      "key": "production-build",
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "exit_code": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/logs/r28-final-production-build.log"
+    },
+    {
+      "key": "studio-node",
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit_code": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/logs/r28-final-studio-node.log"
+    },
+    {
+      "key": "canvaskit-browser",
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/canvaskit-r28-equation-browser.mjs"
+      ],
+      "exit_code": 0,
+      "log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/logs/r28-final-canvaskit-browser.log"
+    }
+  ],
+  "updated_at": "2026-11-06T23:40:17.927859+00:00",
+  "synchronized_sha256": {
+    "rhwp.js": "2a099009a9582a9b34cccb3d61f41a1e4d21085eefd85b0ad8df466b18766138",
+    "rhwp_bg.wasm": "63b74db31592ee2b83c562155a4906694209f45eb9416aeb253d2347f67ee0bc"
+  },
+  "current": "canvaskit-browser"
+}

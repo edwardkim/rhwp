@@ -15,6 +15,9 @@
 export CARGO_TARGET_DIR="$PWD/target/pr-review"
 cargo build --locked --release -p rhwp-native-ffi --features native-skia
 
+python3 scripts/verify-linux-abi.py \
+  --artifact "$CARGO_TARGET_DIR/release/librhwp_native_ffi.so" \
+  --max-glibc 2.39
 python3 scripts/package-native-host.py \
   --probe-library "$CARGO_TARGET_DIR/release/librhwp_native_ffi.so"
 mkdir -p dist
@@ -29,6 +32,18 @@ macOS의 라이브러리 이름은 `librhwp_native_ffi.dylib`, Windows는
 명시한다. **패키징은 라이브러리가 실행되는 동일 OS·아키텍처에서 수행한다.**
 패키저는 라이브러리를 검색하거나 빌드하지 않으며, 잘못된 바이너리에 다른 라이브러리를
 대신 사용하지 않는다. 기본 feature로 빌드한 라이브러리는 거절한다.
+
+Linux x86_64 패키지의 빌드 기준은 Ubuntu 24.04이며 glibc 요구 버전 상한은 2.39다.
+위 ABI 검사는 Linux의 `binutils`에 포함된 `readelf`를 사용한다. 실제 ELF가 요구하는
+`GLIBC_*` 버전만 확인하며, 라이브러리가 내보내는 버전을 요구 버전으로 세지 않는다.
+상한 초과·잘못된 ELF·분석 실패는 패키징 전에 실패한다. macOS·Windows에서는 이 명령을
+실행하지 않는다. ABI 검사 통과만으로 실행 가능성을 보장하지 않으므로 capability 조회와
+headless 편집·저장·재열기도 실행한다. libstdc++·fontconfig·FreeType 등의 동적 의존성과
+실제 사용할 글꼴은 소비 환경에서 별도로 공급한다.
+
+Ubuntu 26.04 호환성 대조는 24.04에서 만든 **같은 라이브러리와 패키지**를 옮겨 실행한다.
+26.04에서 다시 빌드한 파일로 24.04 소비 검증을 대신하지 않는다. headless 성공을
+Qt 창·GPU·macOS·Windows 실행 검증으로 확대 해석하지 않는다.
 
 라이브러리는 신뢰하는 빌드 산출물이어야 한다. capability 조회도 해당 바이너리 코드를
 실행한다. 별도 Python 프로세스에서 로드하고 종료를 기다려 Windows DLL 잠금을 해제하며,

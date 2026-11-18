@@ -1,0 +1,30 @@
+{
+  "kind": "실제 Native export 영수증의 선택 계약 대조",
+  "rust_before_run": "invalid suite collection attempt, not counted",
+  "results": [
+    {
+      "label": "before",
+      "receipt": "output/pr-review/planet6897-integration-20261116/repair-v2-font-order/pr9096-visual/native/nested-auto-no-json/nested-auto-no-json/silhouette-parts/p0001-0001/native-png/0.log",
+      "selected": {
+        "family": "HY Junggothic",
+        "openTypeCff": true,
+        "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+        "query": "한양중고딕",
+        "trueType": false
+      },
+      "h2gtrm_contract": "FAIL"
+    },
+    {
+      "label": "after",
+      "receipt": "output/pr-review/planet6897-integration-20261116/repair-v3-original-alias/visual/native/nested-auto-no-json/nested-auto-no-json/silhouette-parts/p0001-0001/native-png/0.log",
+      "selected": {
+        "family": "HYGothic-Medium",
+        "openTypeCff": false,
+        "programId": "f19bd4435ac004182cf09af592a7353c03155fc41620d3cf8b76e556c857cfe4",
+        "query": "HY중고딕",
+        "trueType": true
+      },
+      "h2gtrm_contract": "PASS"
+    }
+  ]
+}

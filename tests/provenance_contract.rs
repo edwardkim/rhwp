@@ -404,6 +404,29 @@ fn static_path_metadata_does_not_hide_document_values_or_forged_paths() {
     );
 }
 
+#[test]
+fn actual_native_fallback_names_keep_the_document_provenance_boundary() {
+    let envelope = rhwp::provenance::marked(
+        serde_json::json!({
+            "nativeFontSupply": {
+                "localFallbacks": {
+                    "state": "complete",
+                    "scope": "nativeTextTypefaceSelection",
+                    "records": [{"requested":"Document Font 9104","resolved":"Installed Face"}],
+                    "missingRequests":["Missing Document Font"]
+                }
+            }
+        }),
+        "export-png",
+    );
+    assert_eq!(envelope["untrustedContent"], true);
+    assert!(envelope["untrustedFields"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|field| field.as_str() == Some("nativeFontSupply")));
+}
+
 // ── 호출 레시피 ────────────────────────────────────────────────────────────
 
 /// 한 명령을 실제로 실행해 봉투를 얻는 방법.

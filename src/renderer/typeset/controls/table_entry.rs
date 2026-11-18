@@ -40,12 +40,7 @@ pub(super) fn needs_stored_line_advance(
             dpi,
         );
         let reset_line = para.line_segs.windows(2).any(|w| {
-            let stored = (w[0].tag | w[1].tag)
-                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                == 0;
-            stored
-                && w[1].vertical_pos <= 0
-                && w[0].vertical_pos > 5000
+            crate::renderer::typeset::stored_line_restarts_page(&w[0], &w[1])
                 && (hwpunit_to_px(w[1].line_height, dpi) - tbl_line_h).abs() < 2.0
         });
         return reset_line;

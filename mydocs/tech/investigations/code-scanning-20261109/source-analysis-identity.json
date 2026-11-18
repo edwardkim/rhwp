@@ -1,0 +1,246 @@
+{
+  "comparison": {
+    "initial_analysis": 2120100961,
+    "latest_analysis": 2124551567,
+    "tool": "CodeQL 2.27.4",
+    "initial_sha256": "ae53a731c43554f3504c843f267db234c4b59fa8820dff08de2e6bc3e629cbaa",
+    "latest_sha256": "f7b21e9310875678d7327b1f6df73c3b39395b713c9e653640f647f8f9fb3705",
+    "initial_results": 144,
+    "latest_results": 144,
+    "equal_normalized_results": true,
+    "initial_only": 0,
+    "latest_only": 0
+  },
+  "files": {
+    "main": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+    "devel": "e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4",
+    "files": [
+      {
+        "path": "src/parser/pdf/mod.rs",
+        "main_blob": "fe4cd0bb7b87ff6adbd02f0f8f7208f4a72ee18a",
+        "devel_blob": "fe4cd0bb7b87ff6adbd02f0f8f7208f4a72ee18a",
+        "same": true
+      },
+      {
+        "path": "tests/cases/issue_8160_hwp5_password.rs",
+        "main_blob": "748afd6c7926965b5026e2403acee516bc5d0bac",
+        "devel_blob": "748afd6c7926965b5026e2403acee516bc5d0bac",
+        "same": true
+      },
+      {
+        "path": "tests/cases/issue_8303_hwp3_hwpx_textpos_idempotent.rs",
+        "main_blob": "4b53d24e2ad590a821e633f871db154639b6a6c4",
+        "devel_blob": "4b53d24e2ad590a821e633f871db154639b6a6c4",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/crypto/aws_lc_provider.rs",
+        "main_blob": "6ff695ec0a32c0192517ce258692cc18a187779c",
+        "devel_blob": "6ff695ec0a32c0192517ce258692cc18a187779c",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/crypto/rust_provider.rs",
+        "main_blob": "b2c75df2d39c3038cdd8640eaa749fa5f62e062b",
+        "devel_blob": "b2c75df2d39c3038cdd8640eaa749fa5f62e062b",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+        "main_blob": "3041a44c909dd49eb1f2c978e3fd445125f8a38b",
+        "devel_blob": "3041a44c909dd49eb1f2c978e3fd445125f8a38b",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/encryption/aes.rs",
+        "main_blob": "4bb1826fd08a2904395823f1c716d2b2af3d7548",
+        "devel_blob": "4bb1826fd08a2904395823f1c716d2b2af3d7548",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+        "main_blob": "93a29fb34ccb550bd875dc24858021c6b5a213b5",
+        "devel_blob": "93a29fb34ccb550bd875dc24858021c6b5a213b5",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/encryption/handler.rs",
+        "main_blob": "f62fbf8319dcd6112139f2567bacd144a09d4f3a",
+        "devel_blob": "f62fbf8319dcd6112139f2567bacd144a09d4f3a",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/encryption/mod.rs",
+        "main_blob": "a1d3fcdac19effb1a523bb1cc80662fee2ae8936",
+        "devel_blob": "a1d3fcdac19effb1a523bb1cc80662fee2ae8936",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/encryption/rc4.rs",
+        "main_blob": "0e32de83ff12999ffa4223048f5de0c1f0168102",
+        "devel_blob": "0e32de83ff12999ffa4223048f5de0c1f0168102",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/encryption/write_handler.rs",
+        "main_blob": "0d6ba0631c69dacffbc26ce8ad3092207c6a2cd3",
+        "devel_blob": "0d6ba0631c69dacffbc26ce8ad3092207c6a2cd3",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/extractors/auto.rs",
+        "main_blob": "e08c5765d5e1fbc386fa22e8ebc60f409a3626d1",
+        "devel_blob": "e08c5765d5e1fbc386fa22e8ebc60f409a3626d1",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/ffi.rs",
+        "main_blob": "37a2c10695ee0058309d3cd2831bf85cec713b49",
+        "devel_blob": "37a2c10695ee0058309d3cd2831bf85cec713b49",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/pipeline/page_order.rs",
+        "main_blob": "72f3dcf770bff121f7e2ab7c8aa1e6cd63935e72",
+        "devel_blob": "72f3dcf770bff121f7e2ab7c8aa1e6cd63935e72",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/rendering/sidecar.rs",
+        "main_blob": "1f0cf458982a69faad7fddcfeecbd79a235f9657",
+        "devel_blob": "1f0cf458982a69faad7fddcfeecbd79a235f9657",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/signatures/signer.rs",
+        "main_blob": "5d606ea2e44d6b09776cb0057cae3746ff9de199",
+        "devel_blob": "5d606ea2e44d6b09776cb0057cae3746ff9de199",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/signatures/types.rs",
+        "main_blob": "f56337f024cf2b5d59a85e4441e8281a0100f97b",
+        "devel_blob": "f56337f024cf2b5d59a85e4441e8281a0100f97b",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-pdf-import-backend/src/wasm.rs",
+        "main_blob": "d13948a7571a03abb8b346ea3c19b3941b5e5313",
+        "devel_blob": "d13948a7571a03abb8b346ea3c19b3941b5e5313",
+        "same": true
+      },
+      {
+        "path": "vendor/rhwp-qcms/src/gtest.rs",
+        "main_blob": "04e9a1aa42c746cd96ec0ae72bc96bdda1f017f2",
+        "devel_blob": "04e9a1aa42c746cd96ec0ae72bc96bdda1f017f2",
+        "same": true
+      }
+    ]
+  },
+  "source_history": [
+    {
+      "path": "src/parser/pdf/mod.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "45405d26503893cb2508648b4cfcdcee3c7f462a26d3753ebb96b62b45f91ca8"
+    },
+    {
+      "path": "tests/cases/issue_8160_hwp5_password.rs",
+      "introduced": "df85dd5967fd1a7e6eefc928ad553837af0d5288 2026-10-25T20:20:40+09:00 test: sample16 회귀를 #8160으로 통합하고 누락된 보호 복원",
+      "sha256": "91b8592f1e79b7b7db54a77cee2246d77f82572be3a62b53f7b4b9f33d04f912"
+    },
+    {
+      "path": "tests/cases/issue_8303_hwp3_hwpx_textpos_idempotent.rs",
+      "introduced": "745901788fa95da0354ff67b197127aaf7b4a0da 2026-10-29T12:59:53+09:00 fix(hwpx): HWP3 출처 HWPX의 줄 시작을 한컴과 같은 문단 축으로 저장한다 (#8303)",
+      "sha256": "23e39616d70fd93b04d0adb0edf805f515243a25e628d4754f5451b0032345aa"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/crypto/aws_lc_provider.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "27707f86dd648a2d9779a42626e653fc4a4f76b72207584e78a2ed107af2573f"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/crypto/rust_provider.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "f3b204ccdccbb0e1ce50c78df41b0fcc892202be7e4bde56184c9eb8862c67cb"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/document.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "9710f596cb9597799e0384bf93f5ccec2e0bfb9c658ddd0737d9b179fbb68141"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/encryption/aes.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "b97ff19198f0c5860ffb29af66f0178d46dd153e4f8f88ebb08cd2f5ea81d02f"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/encryption/algorithms.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "74071d114a38c10404f25856320c28ea259d81bed3196469448c34c561e898dc"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/encryption/handler.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "d06b561a52c72aedee435380c867494a6408308cb9e5eefcb57250336a318ce1"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/encryption/mod.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "be21126ed3abfd273a1a0837954fd4936d71b7ea6e2487c7405858e4d7ddb326"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/encryption/rc4.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "2af071f9d8245e47373ba731d24a528640fae67da2f4256046485b93f6105033"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/encryption/write_handler.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "a3d482020a677fd68658c99516817ff0d7fe409a6db65bde4e7bd338467fcf92"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/extractors/auto.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "50f74e39645e6f61bdc58577b8f2445e23bc4d1ec56e5d6c7889a67043a316d0"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/ffi.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "852c02e644181c60ce9061130068efa5b99c458e351f22cd05bd6e8d58a76084"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/pipeline/page_order.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "501556ffcf3d863781b60a778aaa460948b67e1b6208d7f21978638df57489af"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/rendering/sidecar.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "13c83dd5a25fd7b231a3a03b4d7648e6734c2ac82712da1fb050af4ba8b657ce"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/signatures/signer.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "e763ce81b00f73b9ad5fda7343816d173bb6ac60991299c42e87a496ff46858e"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/signatures/types.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "a61a966208a111d8e426540bdc4b19998b2d1e939dd07b7494b2016d7fcc7236"
+    },
+    {
+      "path": "vendor/rhwp-pdf-import-backend/src/wasm.rs",
+      "introduced": "4662c069e557e928ed7968d061121fde90b1f027 2026-10-16T15:17:54+09:00 feat(pdf): 선택적 PDF 가져오기 제품 경로와 HWP/HWPX 저장 연결 (#7913)",
+      "sha256": "63c90cfccaa5629db9a9944ee5759ef67817932605476a6ba9c33fc49748432e"
+    },
+    {
+      "path": "vendor/rhwp-qcms/src/gtest.rs",
+      "introduced": "f125c735c7d2d44eaa44b78c70465bc89af45fb1 2026-10-29T15:34:34+09:00 feat: prepare crates.io packages and bounded PDF workflows (#8174) (#8360)",
+      "sha256": "3b37ac4c775c6ef306958fed0752dadc09c3c05abdab42ba89790d9c93bb93fc"
+    }
+  ],
+  "tool": {
+    "version": "2.27.4",
+    "archive_sha256": "1c2f867094b80e43c9a0e511090e57e0ea3bf107600b4b3763c52b9020b4ec4b"
+  }
+}

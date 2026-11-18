@@ -1,0 +1,68 @@
+{
+  "recorded_at": "2026-11-11T21:00:49.839446+09:00",
+  "pr": 8945,
+  "state": "MERGED",
+  "head": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+  "merge_sha": "4ab860651b857bfe6d28b22b4565b2855bebb042",
+  "merged_at": "2026-11-11T11:53:24Z",
+  "approval_review": {
+    "id": 5858273982,
+    "url": "https://github.com/edwardkim/rhwp/pull/8945#pullrequestreview-5858273982",
+    "commit_id": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "state": "APPROVED",
+    "body_sha256": "829013461d98d61c995cf751fd845e4bbc98f4e1a568fb5bb33c5f3e46b7f2f3"
+  },
+  "user_authorization": "PR 승인, 머지, 후속 처리까지 진행하세요.",
+  "existing_difference_exception": {
+    "scope": "PR #8945 only; unchanged current devel/candidate outputs",
+    "protected_rows": 911,
+    "native_rows": 862,
+    "wasm_rows": 49,
+    "protected_baseline_changed": false,
+    "new_regressions_or_missing_evidence_excluded": true
+  },
+  "post_merge_document_mode": "maintainer direct records, one devel commit; no product/workflow/baseline changes",
+  "issue7620": "OPEN; partial bottom-budget improvement only",
+  "head_repository": "sacru2red/rhwp",
+  "head_ref": "task/7620-rowbreak-margin-budget",
+  "fork_branch_deletion_attempted": false,
+  "duration": {
+    "run_id": 43015665339,
+    "url": "https://github.com/edwardkim/rhwp/actions/runs/43015665339",
+    "conclusion": "success",
+    "collection": {
+      "ready": true,
+      "reason": "successful-pr-worker-measurements",
+      "pullNumber": 8945,
+      "finalHeadRunId": 42991534935,
+      "finalHeadRunAttempt": 1,
+      "finalHeadSha": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+      "reviewOnlyTail": false,
+      "sourceRunId": 42991534935,
+      "latestRunAttempt": 1,
+      "measurementAttempts": {
+        "b": 1,
+        "c": 1,
+        "d": 1,
+        "e": 1
+      },
+      "testedMergeSha": "ec8affce4344c7a4cd2d5d75b0faee72a159beae",
+      "sourceHeadSha": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+      "artifactIds": [
+        13843956516,
+        13842379425,
+        13842983146,
+        13842599022
+      ]
+    },
+    "publication": {
+      "published": true,
+      "reason": "published",
+      "previousSha": "883c40fa6ce1bc17557819048eb431ddd3fe04a5",
+      "commitSha": "8f761d8b7903705dcdcdda42ce8dd2f95c3ab731",
+      "blobSha": "b1d6e2d9e591959da7ad93f01e6aa1d2e8ad0df0",
+      "sourceMergeSha": "4ab860651b857bfe6d28b22b4565b2855bebb042"
+    }
+  },
+  "cleanup_and_comment_receipt": "~/.local/state/rhwp/cleanup/pr8945-20261111.json"
+}

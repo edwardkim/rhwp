@@ -1244,7 +1244,9 @@ impl DocumentCore {
                         .or(self.marker_end_x)
                         .unwrap_or(self.line_x)
                 } else {
-                    self.line_x
+                    // 빈 문단도 레이아웃이 문단 끝 TextRun을 정렬 앵커에 둔다.
+                    // 줄 왼쪽 끝을 쓰면 가운데·오른쪽 정렬이 사라진다 (#8944).
+                    self.first_body_x.unwrap_or(self.line_x)
                 }
             }
         }
@@ -4272,13 +4274,15 @@ impl DocumentCore {
     }
 
     /// 경로 기반 표 차원 조회 (네이티브).
-    pub(crate) fn get_table_dimensions_by_path_native(
+    ///
+    /// 경로의 마지막 단계는 표 컨트롤만 가리키며 `cellIndex`·`cellParaIndex`를 생략할 수 있다.
+    pub fn get_table_dimensions_by_path_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
         path_json: &str,
     ) -> Result<String, HwpError> {
-        let path = Self::parse_cell_path(path_json)?;
+        let path = Self::parse_table_path(path_json)?;
         let table = self.resolve_table_by_path(section_idx, parent_para_idx, &path)?;
 
         Ok(format!(
@@ -4290,7 +4294,9 @@ impl DocumentCore {
     }
 
     /// 경로 기반 표 셀 바운딩박스 조회 (네이티브).
-    pub(crate) fn get_table_cell_bboxes_by_path_native(
+    ///
+    /// 경로의 마지막 단계는 표 컨트롤만 가리키며 `cellIndex`·`cellParaIndex`를 생략할 수 있다.
+    pub fn get_table_cell_bboxes_by_path_native(
         &self,
         section_idx: usize,
         parent_para_idx: usize,
@@ -4298,7 +4304,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let path = Self::parse_cell_path(path_json)?;
+        let path = Self::parse_table_path(path_json)?;
         // 표가 존재하는지 검증
         let _table = self.resolve_table_by_path(section_idx, parent_para_idx, &path)?;
 
@@ -4752,14 +4758,9 @@ impl DocumentCore {
         // layout_header_footer_paragraphs에서 para_index = usize::MAX - i 로 설정됨
         let marker_para_idx = usize::MAX - hf_para_idx;
 
-        // Header/Footer 노드 타입 판별
-        let is_target_node = |nt: &RenderNodeType| -> bool {
-            if is_header {
-                matches!(nt, RenderNodeType::Header)
-            } else {
-                matches!(nt, RenderNodeType::Footer)
-            }
-        };
+        // Header/Footer(바탕쪽이면 MasterPage) 노드 타입 판별
+        let is_target_node =
+            |nt: &RenderNodeType| -> bool { header_footer_edit_node(nt, is_header, apply_to) };
 
         struct CursorHit {
             page_index: u32,
@@ -4851,24 +4852,37 @@ impl DocumentCore {
                 (0..total_pages).collect()
             };
         for page_num in page_order {
-            let actual_target = self.resolve_header_footer_target(page_num, is_header);
-            let is_preview_page = preview_page_hint >= 0
-                && page_num == preview_page_hint as u32
-                && self
-                    .header_footer_preview_page_for_section(section_idx)
-                    .is_ok_and(|preview| preview == page_num);
-            if actual_target != (section_idx, apply_to) && !is_preview_page {
-                continue;
-            }
-            let tree = if actual_target == (section_idx, apply_to) {
-                self.build_page_tree_cached(page_num)?
-            } else {
+            let tree = if crate::document_core::master_page_slot(apply_to).is_some() {
+                // 바탕쪽은 고치는 쪽(힌트)의 바탕쪽 편집 화면에서만 잰다.
+                if preview_page_hint < 0 || page_num != preview_page_hint as u32 {
+                    continue;
+                }
                 self.build_header_footer_edit_preview_tree(
                     page_num,
                     section_idx,
                     is_header,
                     apply_to,
                 )?
+            } else {
+                let actual_target = self.resolve_header_footer_target(page_num, is_header);
+                let is_preview_page = preview_page_hint >= 0
+                    && page_num == preview_page_hint as u32
+                    && self
+                        .header_footer_preview_page_for_section(section_idx)
+                        .is_ok_and(|preview| preview == page_num);
+                if actual_target != (section_idx, apply_to) && !is_preview_page {
+                    continue;
+                }
+                if actual_target == (section_idx, apply_to) {
+                    self.build_page_tree_cached(page_num)?
+                } else {
+                    self.build_header_footer_edit_preview_tree(
+                        page_num,
+                        section_idx,
+                        is_header,
+                        apply_to,
+                    )?
+                }
             };
             // 루트의 자식에서 Header/Footer 노드 찾기
             for child in &tree.root.children {
@@ -4965,6 +4979,36 @@ impl DocumentCore {
     ) -> (usize, u8) {
         self.get_active_hf_info(page_num, is_header)
             .unwrap_or_else(|| (self.find_section_for_page(page_num).0, 0))
+    }
+
+    /// 머리말·꼬리말·바탕쪽 편집 대상을 그린 쪽의 렌더 트리. 그 쪽에서 고칠 수 없으면 None.
+    ///
+    /// 머리말·꼬리말은 실제로 적용된 쪽이나 구역 대표 쪽에서, 바탕쪽은 고치는 쪽 어디서나
+    /// 바탕쪽 편집 화면(그 바탕쪽만 그린 쪽)으로 잰다.
+    fn header_footer_edit_tree(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<Option<crate::renderer::render_tree::PageRenderTree>, HwpError> {
+        if crate::document_core::master_page_slot(apply_to).is_some() {
+            return self
+                .build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)
+                .map(Some);
+        }
+        let actual_target = self.resolve_header_footer_target(page_num, is_header);
+        let is_preview_page = self
+            .header_footer_preview_page_for_section(section_idx)
+            .is_ok_and(|preview| preview == page_num);
+        if actual_target != (section_idx, apply_to) && !is_preview_page {
+            return Ok(None);
+        }
+        Ok(Some(if actual_target == (section_idx, apply_to) {
+            self.build_page_tree_cached(page_num)?
+        } else {
+            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
+        }))
     }
 
     /// 셀 경로의 첫 마디가 머리말·꼬리말이고 그 안의 표를 가리키면 (머리말 여부, 적용 쪽).
@@ -5264,42 +5308,40 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let actual_target = self.resolve_header_footer_target(page_num, is_header);
-        let is_preview_page = self
-            .header_footer_preview_page_for_section(section_idx)
-            .is_ok_and(|preview| preview == page_num);
-        if actual_target != (section_idx, apply_to) && !is_preview_page {
+        let Some(tree) =
+            self.header_footer_edit_tree(page_num, section_idx, is_header, apply_to)?
+        else {
             return Ok("{\"hit\":false}".to_string());
-        }
-        let tree = if actual_target == (section_idx, apply_to) {
-            self.build_page_tree_cached(page_num)?
-        } else {
-            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
         };
         let resolved_section_idx = section_idx;
         let resolved_apply_to = apply_to;
+        let is_master = crate::document_core::master_page_slot(apply_to).is_some();
 
-        // Header/Footer 서브트리 찾기
-        let hf_node = tree.root.children.iter().find(|child| {
-            if is_header {
-                matches!(child.node_type, RenderNodeType::Header)
-            } else {
-                matches!(child.node_type, RenderNodeType::Footer)
-            }
-        });
+        // Header/Footer(바탕쪽이면 MasterPage) 서브트리 찾기
+        let hf_node = tree
+            .root
+            .children
+            .iter()
+            .find(|child| header_footer_edit_node(&child.node_type, is_header, apply_to));
         let hf_node = match hf_node {
             Some(n) => n,
             None => return Ok("{\"hit\":false}".to_string()),
         };
-        if let Some(hit) = self.header_footer_table_cell_hit(
-            hf_node,
-            page_num,
-            section_idx,
-            is_header,
-            apply_to,
-            x,
-            y,
-        ) {
+        // 바탕쪽 안 표 칸 편집은 아직 없다. 머리말 표 칸 경로로 해석하지 않는다.
+        if let Some(hit) = (!is_master)
+            .then(|| {
+                self.header_footer_table_cell_hit(
+                    hf_node,
+                    page_num,
+                    section_idx,
+                    is_header,
+                    apply_to,
+                    x,
+                    y,
+                )
+            })
+            .flatten()
+        {
             return Ok(hit);
         }
 
@@ -5374,13 +5416,14 @@ impl DocumentCore {
                         return 0;
                     }
                 } else {
+                    // positions[0]은 run 시작(0)이라 i번째 경계 앞은 i - 1번째 글자 뒤다.
                     let mid = (positions[i - 1] + px) / 2.0;
                     if local_x < mid {
-                        return i;
+                        return i - 1;
                     }
                 }
             }
-            positions.len()
+            positions.len().saturating_sub(1)
         }
 
         /// 표시 인덱스를 모델 인덱스로 옮긴다.
@@ -5557,13 +5600,11 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let actual_target = self.resolve_header_footer_target(page_num, is_header);
-        let is_preview_page = self
-            .header_footer_preview_page_for_section(section_idx)
-            .is_ok_and(|preview| preview == page_num);
-        if actual_target != (section_idx, apply_to) && !is_preview_page {
+        let Some(tree) =
+            self.header_footer_edit_tree(page_num, section_idx, is_header, apply_to)?
+        else {
             return Ok("[]".to_string());
-        }
+        };
 
         {
             let paragraphs = self.get_hf_paragraphs_ref(section_idx, is_header, apply_to)?;
@@ -5585,18 +5626,12 @@ impl DocumentCore {
             }
         }
 
-        let tree = if actual_target == (section_idx, apply_to) {
-            self.build_page_tree_cached(page_num)?
-        } else {
-            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
-        };
-        let Some(hf_node) = tree.root.children.iter().find(|child| {
-            if is_header {
-                matches!(child.node_type, RenderNodeType::Header)
-            } else {
-                matches!(child.node_type, RenderNodeType::Footer)
-            }
-        }) else {
+        let Some(hf_node) = tree
+            .root
+            .children
+            .iter()
+            .find(|child| header_footer_edit_node(&child.node_type, is_header, apply_to))
+        else {
             return Ok("[]".to_string());
         };
 
@@ -6766,6 +6801,22 @@ impl DocumentCore {
             "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\"}}",
             section_idx, para_idx, control_idx, source_type
         ))
+    }
+}
+
+/// 편집 대상(머리말·꼬리말, `applyTo`가 바탕쪽이면 바탕쪽)을 담은 렌더 노드인지.
+fn header_footer_edit_node(
+    node_type: &crate::renderer::render_tree::RenderNodeType,
+    is_header: bool,
+    apply_to: u8,
+) -> bool {
+    use crate::renderer::render_tree::RenderNodeType;
+    if crate::document_core::master_page_slot(apply_to).is_some() {
+        matches!(node_type, RenderNodeType::MasterPage)
+    } else if is_header {
+        matches!(node_type, RenderNodeType::Header)
+    } else {
+        matches!(node_type, RenderNodeType::Footer)
     }
 }
 

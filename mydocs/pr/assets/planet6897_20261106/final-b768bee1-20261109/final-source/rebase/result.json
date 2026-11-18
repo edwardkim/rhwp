@@ -1,0 +1,38 @@
+{
+  "time": "2026-11-09T21:25:43.671789+09:00",
+  "fetch_exit": 0,
+  "head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+  "old_base": "509c4c987eb6351d821c4d7739e59f5d0e9725db",
+  "new_base": "e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4",
+  "dirty": "",
+  "incoming_files": [
+    "mydocs/orders/20261109.md",
+    "mydocs/pr/archives/pr_8789_review.md",
+    "mydocs/pr/archives/pr_8791_review.md",
+    "mydocs/pr/archives/pr_8851_review.md",
+    "mydocs/pr/assets/chrisryugj-20261109/remote-completion.md",
+    "mydocs/pr/assets/chrisryugj-20261109/so-sueop-visual-hold.md"
+  ],
+  "rebase_exit": 0,
+  "after_head": "2e262d0d4b2885b130e2db917b86e894710425e4",
+  "backup_ref": "backup/integration-before-e00f9b7e-20261109",
+  "conflicts": [],
+  "finished_at": "2026-11-09T21:28:47.768103+09:00",
+  "head_tree_difference": [
+    "mydocs/orders/20261109.md",
+    "mydocs/pr/archives/pr_8789_review.md",
+    "mydocs/pr/archives/pr_8791_review.md",
+    "mydocs/pr/archives/pr_8851_review.md",
+    "mydocs/pr/assets/chrisryugj-20261109/remote-completion.md",
+    "mydocs/pr/assets/chrisryugj-20261109/so-sueop-visual-hold.md"
+  ],
+  "runtime_tree_identical": true,
+  "rebase_patch_equivalence_exit": 0,
+  "validation_reuse": {
+    "authorized_by": "리베이스 후 충돌없으면 기존 자료 재활용",
+    "original_validation_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+    "validation_state_sha256": "c7b65c4f5b29d231b92cb51185bdb32269aa2528437eb00df95bc3ed3fb21d10",
+    "runtime_source_changed": false,
+    "fresh_reexecution_claimed": false
+  }
+}

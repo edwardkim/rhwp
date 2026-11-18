@@ -52,6 +52,8 @@ impl DocumentCore {
                 else {
                     continue;
                 };
+                // 환경 이름 계약을 어기는 원본 이름은 관측 치환의 키가 될 수 없다.
+                // #8597과 새 base #8687의 같은 검사를 한 번만 적용한다.
                 if !FontEnvironment::valid_name(&font.name)
                     || font.is_embedded
                     || font.alt_type != 1

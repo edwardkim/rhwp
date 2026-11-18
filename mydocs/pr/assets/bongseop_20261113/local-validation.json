@@ -1,0 +1,188 @@
+{
+  "head": "89701eb34af54502e94afa6319240596e98a1367",
+  "base": "5cbcc9b451cf286e1b7c680426c857dc802e50f3",
+  "driver_pid": 6431,
+  "stages": [
+    {
+      "name": "full-nextest",
+      "command": [
+        "sandbox-exec",
+        "-f",
+        "/Users/tsjang/rhwp/mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "--build-jobs",
+        "8",
+        "--tests",
+        "--test-threads",
+        "8",
+        "--no-fail-fast"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:46:49.530940+00:00",
+      "pid": 6482,
+      "exit": 0,
+      "seconds": 556.2706267081667,
+      "log_sha256": "999e72ddc5cc8829906edceb11cbbe9049b2ea1ce032852faa5f93fad5f85b61"
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:56:05.830141+00:00",
+      "pid": 60548,
+      "exit": 0,
+      "seconds": 15.403535041026771,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "clippy-all",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:56:21.240825+00:00",
+      "pid": 61714,
+      "exit": 0,
+      "seconds": 11.44380895816721,
+      "log_sha256": "9ba42ad5b2dc728d3e206fe98c7293c97bf3405704a7b2559adcfaaec58cd7c6"
+    },
+    {
+      "name": "manifest",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "5cbcc9b451cf286e1b7c680426c857dc802e50f3"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:56:32.691698+00:00",
+      "pid": 62460,
+      "exit": 0,
+      "seconds": 2.2690971670672297,
+      "log_sha256": "a4b0ca860a07f9e96209ec5a54dec5f1c02a595ae828d1a70787e9cc478c7447"
+    },
+    {
+      "name": "fresh-wasm",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "pkg",
+        "--no-opt"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:56:34.967619+00:00",
+      "pid": 62532,
+      "exit": 0,
+      "seconds": 310.8928018750157,
+      "log_sha256": "010fb09f6b685c3120be4c034bf32d60a55f4db03bd0bd924a4bd8b39ac99d5d"
+    }
+  ],
+  "status": "passed",
+  "environment": {
+    "minimal_font_sandbox": "mydocs/pr/assets/issue8856/final-20261110/minimal-font.sb",
+    "XDG_CACHE_HOME": "/Users/tsjang/rhwp/output/pr-review/bongseop-integration-20261113/minimal-cache",
+    "RHWP_WEBFONT_CACHE": "/Users/tsjang/rhwp/output/pr-review/bongseop-integration-20261113/minimal-cache/rhwp/webfonts",
+    "jobs": 8,
+    "threads": 8
+  },
+  "retained_passes_same_head": [
+    {
+      "name": "clippy-native",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:38:25.675688+00:00",
+      "pid": 71505,
+      "exit": 0,
+      "seconds": 75.72866525012068,
+      "log_sha256": "81512a26347beee33fc4de871e67213a266389d5144150c8045c5a71959b89ab"
+    },
+    {
+      "name": "clippy-wasm",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:39:41.413450+00:00",
+      "pid": 77860,
+      "exit": 0,
+      "seconds": 43.56308312504552,
+      "log_sha256": "d7ff2426e2c4975a1b5b0231518ac0cc2c52f67bea868b334c1d129eca0dfaab"
+    },
+    {
+      "name": "workspace-build",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/Users/tsjang/rhwp/target/pr-review",
+        "-j",
+        "8"
+      ],
+      "status": "passed",
+      "started_at": "2026-11-13T12:40:24.985775+00:00",
+      "pid": 81588,
+      "exit": 0,
+      "seconds": 105.08824883401394,
+      "log_sha256": "d23967c07858a5dd270ad13863d6f74f00e94ebd1d5a0c36ba24898fc0459fa1"
+    }
+  ],
+  "prepare_correction": "generated-routing-correction.json",
+  "package": {
+    "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "rhwp_bg.wasm": "5b1d5ca7c637602dad34df1b3593500ee08111465299987cb70038f6d088e801"
+  }
+}

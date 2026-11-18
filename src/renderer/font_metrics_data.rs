@@ -53,6 +53,7 @@ mod symbol_slot_chars;
 mod nimbus_roman;
 
 pub(crate) use legacy_hft::{
+    centered_bar_advance_em as original_hft_centered_bar_advance_em,
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
 
@@ -194,7 +195,8 @@ pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [
         }
         // Gulim U+2024의 측정도 아래 verified_missing_glyph_supplier가
         // HDOTUM에 맡긴다. 같은 공급자를 실제 paint 후보에도 전달한다.
-        Some("Gulim") => &["Haansoft Dotum"],
+        // [#8619] Dotum 도 같은 gulim.ttc 의 U+2024 결측이며 독립 Print 는 HDOTUM 으로 그린다.
+        Some("Gulim" | "Dotum") => &["Haansoft Dotum"],
         _ => &[],
     }
 }
@@ -224,6 +226,10 @@ pub(crate) fn verified_missing_glyph_supplier(
         ("Batang", 1024, false, false, '\u{2024}') => Some("Haansoft Batang"),
         // 법원 서식 Print의 Haansoft Dotum CID 3과 HDOTUM hmtx의 대응.
         ("Gulim", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Dotum"),
+        // [#8619] gulim.ttc(SHA 05a38ff2…ee12)의 Dotum cmap에도 U+2024가 없다.
+        // 평가결과서(docs#648)의 독립 한컴2022 Print는 돋움 사이의 `․`만 Haansoft
+        // Dotum CID 글꼴의 0.173em으로 출력한다. U+2027과 다른 weight/style은 바꾸지 않는다.
+        ("Dotum", 1024, false, false, '\u{2024}') => Some("Haansoft Dotum"),
         // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은
         // HBATANG이다. HFT 한양신명조의 전진은 해당 overlay가 보존한다.
         ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {
@@ -501,6 +507,13 @@ pub(crate) fn find_metric_decision_for_character<'a>(
     character: char,
 ) -> Option<MetricLookupDecision<'a>> {
     let mut decision = find_metric_decision(name, bold, italic)?;
+    // 부분 HFT 표에 새로 확인한 일반 glyph를 굵게·기울임의 공급 근거로
+    // 상속하지 않는다. 확인하지 않은 서식은 기존 표시 대체 조회가 폭을 소유한다.
+    if legacy_hft::is_metric_face(decision.metric.name)
+        && legacy_hft::rejects_regular_bar_style(decision.metric.name, bold, italic, character)
+    {
+        return None;
+    }
     if character.is_whitespace() {
         return Some(decision);
     }

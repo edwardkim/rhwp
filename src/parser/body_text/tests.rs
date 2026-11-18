@@ -39,8 +39,27 @@ fn hancom_single_odd_master_flag_is_not_parsed_as_both() {
         master_page_apply_to(0x8008_0000, 1, 0),
         Some(HeaderFooterApply::Odd)
     );
-    assert_eq!(master_page_apply_to(0x2008_0000, 1, 0), None);
-    assert_eq!(master_page_apply_to(0xc008_0000, 2, 0), None);
+    // 한컴 12.30 저장본: bit 29·30·31이 양 쪽·짝수 쪽·홀수 쪽이고 목록은 그 차례다
+    // (짝수 쪽+홀수 쪽 0xc0000000은 짝수 쪽 목록이 먼저, 셋 0xe0000000은 양 쪽·짝수 쪽·홀수 쪽).
+    assert_eq!(
+        master_page_apply_to(0x2008_0000, 1, 0),
+        Some(HeaderFooterApply::Both)
+    );
+    assert_eq!(
+        master_page_apply_to(0xc008_0000, 2, 0),
+        Some(HeaderFooterApply::Even)
+    );
+    assert_eq!(
+        master_page_apply_to(0xc008_0000, 2, 1),
+        Some(HeaderFooterApply::Odd)
+    );
+    assert_eq!(
+        master_page_apply_to(0xe008_0000, 3, 1),
+        Some(HeaderFooterApply::Even)
+    );
+    // 비트 수와 목록 수가 다르면 목록 차례로 정한다.
+    assert_eq!(master_page_apply_to(0x2008_0000, 2, 0), None);
+    assert_eq!(master_page_apply_to(0x0008_0000, 1, 0), None);
 }
 
 #[test]

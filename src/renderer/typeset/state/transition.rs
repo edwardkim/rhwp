@@ -32,6 +32,7 @@ impl TypesetState {
                 stored_ladder_spacing_omitted: false,
                 omit_fresh_recalc_doc: false,
                 ladder_band_floor: 0.0,
+                block_table_growth_page: None,
                 current_ladder_band_tables: Vec::new(),
                 current_column: 0,
                 col_count,
@@ -39,6 +40,7 @@ impl TypesetState {
                 section_index,
                 square_band_bottom: 0.0,
                 square_band_top: None,
+                square_band_source_pen: None,
                 current_footnote_height: 0.0,
                 footnote_placement: Default::default(),
                 footnote_frames: Vec::new(),
@@ -62,6 +64,7 @@ impl TypesetState {
                 visible_float_exclusions: Vec::new(),
                 page_anchored_bands: Vec::new(),
                 page_band_flow_starts: std::collections::HashMap::new(),
+                unstored_square_boxes: Vec::new(),
                 side_wrap_exclusions: std::collections::BTreeMap::new(),
                 unwitnessed_side_wraps: std::collections::BTreeSet::new(),
                 inline_placements: std::collections::HashMap::new(),
@@ -78,9 +81,12 @@ impl TypesetState {
                 deferred_table_controls: Vec::new(),
                 deferred_column_shapes: Vec::new(),
                 deferred_table_successor_start: None,
+                page_band_host_line: None,
                 pending_table_terminal_gap: None,
                 deferred_next_page_square_pictures: Vec::new(),
                 page_start_square_pictures: Vec::new(),
+                cascaded_pile_pictures: std::collections::VecDeque::new(),
+                page_start_pile_pictures: Vec::new(),
                 deferred_next_page_stored_frames: Vec::new(),
                 stored_reset_note_fragments: Vec::new(),
                 deferred_next_column_stored_frames: Vec::new(),
@@ -91,6 +97,7 @@ impl TypesetState {
                 prefilled_paras: std::collections::HashSet::new(),
                 prefilled_line_prefixes: std::collections::HashMap::new(),
                 pre_emitted_host_paras: std::collections::HashSet::new(),
+                restart_block_table_para: None,
                 pre_emitted_host_heights: std::collections::HashMap::new(),
                 pre_emitted_host_content_heights: std::collections::HashMap::new(),
                 skip_safety_margin_once: false,
@@ -142,7 +149,11 @@ impl TypesetState {
                 vpos_ladder_dirty: false,
                 vpos_compacted_stored_delta: 0.0,
                 vpos_snapped_flow_start: None,
+                vpos_snapped_flow_page: None,
                 rejected_stored_forward_origin: None,
+                vpos_rejected_gap_hu: 0,
+                synthetic_forward_rejected_hu: 0,
+                vpos_rebased_after_unstored_forward: false,
                 vpos_prev_layout_para: None,
                 vpos_prev_partial_table: false,
                 vpos_col_anchor: 0.0,
@@ -178,9 +189,67 @@ impl TypesetState {
         self.data.vpos_ladder_dirty = false;
         self.data.vpos_compacted_stored_delta = 0.0;
         self.data.rejected_stored_forward_origin = None;
+        self.data.vpos_rejected_gap_hu = 0;
+        self.data.synthetic_forward_rejected_hu = 0;
+        self.data.vpos_rebased_after_unstored_forward = false;
         self.data.vpos_prev_layout_para = None;
         self.data.vpos_prev_partial_table = false;
         self.data.vpos_col_anchor = self.data.current_height;
+    }
+
+    /// [#8660] 쪽 영역 안 제한 개체의 다음 쪽 이월 판정에 쓸 기준 문단 위 끝 y.
+    ///
+    /// 한컴이 저장한 첫 줄 위치(`vertical_pos`)가 있으면 흐름 누적과 저장 위치 중 작은
+    /// 쪽을 쓴다. 어울림 표 옆 글줄처럼 흐름 누적이 한컴보다 커지는 경우가 있다(실측 33px).
+    /// 저장 줄이 없는 문서는 rhwp 가 다시 조판한 흐름 위치를 쓰되, 이 단에서 기준 문단
+    /// 앞에 놓인 항목이 모두 문단 항목(글줄·글자처럼 개체)일 때만 쓴다. 앞에 떠 있는
+    /// 표·개체 항목이 있으면 그 둘레 글 흐름 재계산이 한컴과 어긋날 수 있어(실측 14~70px)
+    /// 이월을 판정하지 않고 기존 같은 쪽 하단 끌어올림을 유지한다.
+    pub(in crate::renderer::typeset) fn restricted_object_host_top(
+        &self,
+        para_index: usize,
+        para: &Paragraph,
+        flow_y: f64,
+        dpi: f64,
+    ) -> Option<f64> {
+        let profile = &self.data.profile;
+        if profile.session_edited() {
+            // 편집 후에는 앞 문단의 변경으로 저장 vpos가 더 이상 현재 쪽 원점이
+            // 아니다. 보통 문단과 표 호스트가 수용한 같은 조판 흐름 원점을 쓴다.
+            // 개체의 쪽 영역 제한 속성 자체는 편집 여부로 해제되지 않는다.
+            return flow_y.is_finite().then_some(flow_y);
+        }
+        let stored_layout = profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout();
+        // 저장기가 편집 줄에 붙인 구현용 LineSeg의 vpos는 문단 내부 좌표다.
+        // 이를 실제 저장 쪽 좌표로 재사용하면 재열기 때 앵커가 쪽 위로 이동한다.
+        let stored_line = para
+            .line_segs
+            .iter()
+            .find(|line| !crate::renderer::typeset::is_synthetic_line_seg(line));
+        if let (true, Some(seg)) = (stored_layout, stored_line) {
+            let stored_y = crate::renderer::hwpunit_to_px(
+                seg.vertical_pos
+                    .saturating_sub(self.data.vpos_page_base.unwrap_or(0)),
+                dpi,
+            );
+            return (stored_y.is_finite() && stored_y >= 0.0).then(|| flow_y.min(stored_y));
+        }
+        if stored_line.is_some() {
+            return None;
+        }
+        let text_only_before = self
+            .data
+            .current_items
+            .iter()
+            .filter(|item| item.para_index() < para_index)
+            .all(|item| {
+                matches!(
+                    item,
+                    crate::renderer::pagination::PageItem::FullParagraph { .. }
+                        | crate::renderer::pagination::PageItem::PartialParagraph { .. }
+                )
+            });
+        text_only_before.then_some(flow_y)
     }
 
     /// 사용 가능한 본문 높이 (각주, 존 오프셋 차감)
@@ -289,6 +358,7 @@ impl TypesetState {
             self.data.current_height = self.data.current_height.max(self.data.square_band_bottom);
             self.data.square_band_bottom = 0.0;
             self.data.square_band_top = None;
+            self.data.square_band_source_pen = None;
         }
     }
 
@@ -365,6 +435,90 @@ impl TypesetState {
         }
     }
 
+    /// 같은 쪽/단에 실제로 배치한 그림 프레임이 후속 문단의 저장 차선을 소유하는가.
+    /// 원본 줄 전체가 같은 차선을 쓰고 실제 배제 상자의 세로 밴드와 교차할 때만
+    /// 기존 wrap-anchor 경로로 전달한다. 폭만 같은 다른 그림·다른 쪽의 그림은 제외한다.
+    pub(in crate::renderer::typeset) fn register_stored_side_wrap_anchor_with_storage<
+        S: crate::storage::Storage,
+    >(
+        &mut self,
+        para_index: usize,
+        para: &Paragraph,
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        use crate::model::paragraph::LineSeg;
+        let rows = &para.line_segs;
+        let Some(first) = rows.first() else {
+            return Ok(());
+        };
+        if self
+            .data
+            .current_column_wrap_anchors
+            .contains_key(&para_index)
+            || rows.iter().any(|row| {
+                row.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                    || !row.is_first_segment()
+                    || !row.is_last_segment()
+                    || row.column_start != first.column_start
+                    || row.segment_width != first.segment_width
+            })
+            || rows
+                .windows(2)
+                .any(|pair| pair[0].vertical_pos >= pair[1].vertical_pos)
+        {
+            return Ok(());
+        }
+        let Some(base) = self.data.vpos_page_base.or(self.data.vpos_lazy_base) else {
+            return Ok(());
+        };
+        let column = self.inline_flow_column();
+        let hu = |px| crate::renderer::px_to_hwpunit(px, self.data.layout.dpi);
+        let column_left = hu(column.x);
+        let column_width = hu(column.width);
+        let origin = hu(column.y) + hu(self.data.vpos_col_anchor);
+        let Some(end) = first.column_start.checked_add(first.segment_width) else {
+            return Ok(());
+        };
+        if first.column_start < 0 || first.segment_width <= 0 || end > column_width {
+            return Ok(());
+        }
+        let anchor = self
+            .data
+            .side_wrap_exclusions
+            .iter()
+            .find_map(|(&(host, control), frame)| {
+                if self.data.unwitnessed_side_wraps.contains(&(host, control)) {
+                    return None;
+                }
+                // 같은 물리 경계의 HU 변환에서 생기는 1HU 정수 반올림만 허용한다.
+                let left_lane = first.column_start == 0
+                    && (column_left + end).abs_diff(frame.horizontal.start) <= 1;
+                let right_lane = end == column_width
+                    && (column_left + first.column_start).abs_diff(frame.horizontal.end) <= 1;
+                let shares_band = rows.iter().all(|row| {
+                    let top = origin.saturating_add(row.vertical_pos.saturating_sub(base));
+                    top < frame.vertical.end
+                        && frame.vertical.start < top.saturating_add(row.line_height.max(1))
+                });
+                ((left_lane || right_lane) && shares_band).then_some(
+                    crate::renderer::pagination::WrapAnchorRef {
+                        anchor_para_index: host,
+                        anchor_cs: first.column_start,
+                        anchor_sw: first.segment_width,
+                        band_y_range: None,
+                    },
+                )
+            });
+        if let Some(anchor) = anchor {
+            storage.insert_map(
+                &mut self.data.current_column_wrap_anchors,
+                para_index,
+                anchor,
+            )?;
+        }
+        Ok(())
+    }
+
     /// [#7696] 쪽·종이 기준 자리차지(TopAndBottom) 그림·도형의 바깥 여백 포함 세로 밴드를
     /// 현재 단의 흐름 배제 구간으로 등록한다.
     ///
@@ -420,6 +574,55 @@ impl TypesetState {
                 top,
                 bottom,
             });
+    }
+
+    /// 문단 자기 쪽·종이 기준 자리차지 개체의 밴드도 그 문단의 첫 줄을 민다. 개체는 문단
+    /// 흐름 뒤에 방출되므로(`place_paragraph_controls`) 방출 전 첫 줄 시작 판정에 먼저
+    /// 싣는다. 위치가 문단 흐름과 무관해 지금 쪽의 상자가 그대로 확정 상자다. 한/글 저장
+    /// 사다리: 6500000-201700118 부록 앵커 빈 문단의 첫 줄 vpos 57964 = 종이 오프셋
+    /// 10684 + 높이 57200 − 본문 위 9920, 같은 형상 다음 그림 58100 = 10620 + 57400 − 9920.
+    pub(in crate::renderer::typeset) fn register_own_page_anchored_topbottom_bands(
+        &mut self,
+        para_index: usize,
+        para: &Paragraph,
+    ) {
+        let column = self.inline_flow_column();
+        let paper = crate::renderer::page_layout::LayoutRect {
+            x: 0.0,
+            y: 0.0,
+            width: self.data.layout.page_width,
+            height: self.data.layout.page_height,
+        };
+        let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+            container: &column,
+            column: &column,
+            body: &self.data.layout.body_area,
+            paper: &paper,
+            paragraph_y: column.y,
+            alignment: crate::model::style::Alignment::Left,
+            dpi: self.data.layout.dpi,
+        };
+        let current_height = self.data.current_height;
+        // 떠나는 쪽 말미에 남긴 개체(#7696 spill)는 이 쪽에 밴드가 없다.
+        let spilled = &self.data.page_tail_spilled_floats;
+        let bands: Vec<_> = para
+            .controls
+            .iter()
+            .enumerate()
+            .filter(|(ci, _)| !spilled.contains(&(para_index, *ci)))
+            .filter_map(|(_, control)| frame.page_anchored_topbottom_band(control))
+            .map(|(top, bottom)| (top - column.y, bottom - column.y))
+            .filter(|(_, bottom)| *bottom > current_height + 0.5)
+            .collect();
+        for (top, bottom) in bands {
+            self.data
+                .page_anchored_bands
+                .push(crate::renderer::typeset::VisibleFloatExclusion {
+                    para_index,
+                    top,
+                    bottom,
+                });
+        }
     }
 
     /// [#7548] 저장 줄이 없는 host 의 쪽·종이 기준 어울림 표를 뒤 재조판 문단의 배제
@@ -502,6 +705,7 @@ impl TypesetState {
             || !self.data.current_column_wrap_around_paras.is_empty()
             || !self.data.page_start_square_pictures.is_empty()
             || !self.data.page_start_stored_frames.is_empty()
+            || !self.data.page_start_pile_pictures.is_empty()
     }
 
     /// 현재 항목을 ColumnContent로 만들어 마지막 페이지에 push
@@ -596,6 +800,15 @@ impl TypesetState {
         storage: &S,
     ) -> Result<Vec<PageItem>, S::Error> {
         let mut items = storage.collect(
+            std::mem::take(&mut self.data.page_start_pile_pictures)
+                .into_iter()
+                .map(|(para_index, control_index)| PageItem::Shape {
+                    para_index,
+                    control_index,
+                }),
+        )?;
+        storage.extend(
+            &mut items,
             std::mem::take(&mut self.data.page_start_square_pictures)
                 .into_iter()
                 .map(|deferred| PageItem::Shape {
@@ -755,7 +968,13 @@ impl TypesetState {
                         .page_anchored_topbottom_band(ctrl)
                         .is_some_and(|(top, bottom)| {
                             let (top, bottom) = (top - column.y, bottom - column.y);
-                            line_top < bottom && line_top + first_line > top + 0.5
+                            // 밴드가 떠나는 쪽에 이미 놓인 내용 위에서 시작하면 그 쪽에는 이
+                            // 개체가 있을 수 없다 — 있었다면 앞 내용이 밴드 아래로 밀렸어야
+                            // 한다. 그런 개체는 앵커 문단과 함께 다음 쪽으로 간다(6500000-201700118
+                            // 부록: 쪽을 거의 채우는 종이 기준 그림 둘이 한 쪽에 겹치던 것).
+                            top + 0.5 >= line_top
+                                && line_top < bottom
+                                && line_top + first_line > top + 0.5
                         });
                 if pushed_by_own_band {
                     self.data.current_items.push(PageItem::Shape {
@@ -955,6 +1174,15 @@ impl TypesetState {
         }
         // 저장 그림과 첫 본문이 같은 상단 프레임을 소비한다. 실제 출력도 이 계획을 쓴다.
         for deferred in std::mem::take(&mut self.data.deferred_next_page_stored_frames) {
+            // 호스트가 같은 앞 쪽에 남아도 그림마다 자기 저장 재시작 쪽을 가진다.
+            // 뒤 그림까지 첫 전환에 모두 꺼내 같은 상단에 겹치지 않는다.
+            if deferred
+                .target_page
+                .is_some_and(|page| page > self.data.pages.len())
+            {
+                storage.push(&mut self.data.deferred_next_page_stored_frames, deferred)?;
+                continue;
+            }
             let next_flow_y = match deferred.placement.flow {
                 crate::renderer::float_placement::ParagraphFloatFlow::StoredPicture {
                     next_flow_y,
@@ -975,6 +1203,10 @@ impl TypesetState {
                 deferred.placement,
             )?;
             storage.push(&mut self.data.page_start_stored_frames, deferred)?;
+        }
+        // 겹침 불허 그림 무리의 다음 그림은 새 쪽 맨 위로 간다(쪽당 하나).
+        if let Some(picture) = self.data.cascaded_pile_pictures.pop_front() {
+            storage.push(&mut self.data.page_start_pile_pictures, picture)?;
         }
         // Task #321: 새 페이지에서는 body-wide top reserve 초기화
         self.data.pending_body_wide_top_reserve = 0.0;
@@ -1093,7 +1325,11 @@ impl TypesetState {
         if page_bands {
             for zone in &self.data.page_anchored_bands {
                 if hits(jump_to, zone.top, zone.bottom) {
-                    jump_to = jump_to.max(zone.bottom);
+                    // 밴드 아래로 보낸 첫 줄은 앞 간격을 밴드 안에서 흡수한다 — 위 문단 기준 띠와
+                    // 같은 계약. 저장 사다리: 1351000-201600227 6쪽 「표 목차」(앞 간격 3400)의
+                    // 첫 줄 vpos 3668 ≈ 종이 기준 제목 상자 밴드 아래끝 3665.
+                    let target = (zone.bottom - absorbed_spacing_before.max(0.0)).max(zone.top);
+                    jump_to = jump_to.max(target);
                     pushed_by_page_band = true;
                 }
             }
@@ -1101,9 +1337,14 @@ impl TypesetState {
 
         if jump_to > current_height + 0.5 {
             self.data.current_height = jump_to;
-            if let Some(para_index) = para_index.filter(|_| pushed_by_page_band) {
-                self.data.page_band_flow_starts.insert(para_index, jump_to);
-            }
+        }
+        // 밴드가 시작을 확정했으면 흐름이 이미 그 자리에 있어도(저장 vpos 스냅이 앞 간격을
+        // 뺀 문단 상단에 둔 경우) 배치에 같은 원점을 넘긴다. 배치는 밴드를 따로 판정하지
+        // 않는다(6500000-201700118 15쪽 pi319: 저장 줄 38653 = 밴드 아래끝, 상단 511.4).
+        if let Some(para_index) = para_index.filter(|_| pushed_by_page_band) {
+            self.data
+                .page_band_flow_starts
+                .insert(para_index, jump_to.max(current_height));
         }
     }
 

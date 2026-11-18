@@ -1,0 +1,123 @@
+[
+  {
+    "name": "focused-admission",
+    "command": [
+      "/home/edward/.nvm/versions/node/v24.15.0/bin/node",
+      "scripts/run-rust-test.mjs",
+      "issue_8701_metal_context_admission",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "started": "2026-11-16T11:52:13.864430+00:00",
+    "elapsedSeconds": 1.11,
+    "exitCode": 0
+  },
+  {
+    "name": "focused-resources",
+    "command": [
+      "/home/edward/.nvm/versions/node/v24.15.0/bin/node",
+      "scripts/run-rust-test.mjs",
+      "issue_8701_gpu_frame_resources",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "started": "2026-11-16T11:52:14.975744+00:00",
+    "elapsedSeconds": 15.1,
+    "exitCode": 0
+  },
+  {
+    "name": "focused-tiles",
+    "command": [
+      "/home/edward/.nvm/versions/node/v24.15.0/bin/node",
+      "scripts/run-rust-test.mjs",
+      "issue_8701_native_gpu_tiles",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--features",
+      "native-skia"
+    ],
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "started": "2026-11-16T11:52:51.583535+00:00",
+    "elapsedSeconds": 275.26,
+    "exitCode": 0
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "started": "2026-11-16T11:57:26.843551+00:00",
+    "elapsedSeconds": 26.79,
+    "exitCode": 0
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "started": "2026-11-16T11:57:53.631253+00:00",
+    "elapsedSeconds": 125.04,
+    "exitCode": 0
+  },
+  {
+    "name": "wasm-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "started": "2026-11-16T11:59:58.671174+00:00",
+    "elapsedSeconds": 119.05,
+    "exitCode": 0
+  },
+  {
+    "name": "workspace-build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/edward/mygithub/rhwp/target/pr-review"
+    ],
+    "source": "4f6fdb689c2fe45964080074c7a230d2023b4e53",
+    "started": "2026-11-16T12:01:57.717776+00:00",
+    "elapsedSeconds": 152.8,
+    "exitCode": -15
+  }
+]

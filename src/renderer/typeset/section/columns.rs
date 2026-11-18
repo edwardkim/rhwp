@@ -26,20 +26,21 @@ impl TypesetEngine {
             closing_column_type,
             styles,
         );
-        // 저장 줄의 내용 하단을 인증한 경우에만 영역 간격과 겹치는 문단 꼬리 여백을 제외한다.
+        // 수용한 줄의 내용 하단을 인증한 경우에만 영역 간격과 겹치는 문단 꼬리 여백을 제외한다.
         let closing_text_bounds = (st.col_count == 1 && plain_text_zone)
             .then(|| {
                 let PageItem::FullParagraph { para_index } = st.current_items.last()? else {
                     return None;
                 };
                 let paragraph = paragraphs.get(*para_index)?;
-                if !paragraph.controls.is_empty() {
-                    return None;
-                }
+                let (end_line, trailing) = crate::renderer::closing_text_zone_line_metrics(
+                    paragraph,
+                    st.computed_paragraphs.get(para_index),
+                    self.dpi,
+                )?;
                 let bounds = *st
                     .paragraph_fragment_content_bottoms
-                    .get(&(*para_index, paragraph.line_segs.len()))?;
-                let trailing = hwpunit_to_px(paragraph.line_segs.last()?.line_spacing, self.dpi);
+                    .get(&(*para_index, end_line))?;
                 let after = styles
                     .para_styles
                     .get(paragraph.para_shape_id as usize)?

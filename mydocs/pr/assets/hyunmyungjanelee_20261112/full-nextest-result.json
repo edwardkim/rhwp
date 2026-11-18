@@ -1,0 +1,12 @@
+{
+  "code_head": "0c9819d698bcbe3e3d83f563a0154ccb00eb6f07",
+  "profile": "release-test",
+  "minimal_font": true,
+  "seconds": 401.23,
+  "run": 13347,
+  "passed": 13347,
+  "failed": 0,
+  "skipped": 45,
+  "new_samples_explicitly_passed": 28,
+  "state_source": "serial-gates-state.json/full-nextest exit 0"
+}

@@ -1,0 +1,7 @@
+{
+  "id": "pr7518-independent-print-legacy-latin",
+  "substitutions": {
+    "HCI Poppy": "Palatino Linotype"
+  },
+  "preserveSourceMetrics": false
+}

@@ -1,0 +1,24 @@
+{
+  "baseline": "v0.9.0",
+  "candidate": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "manifests": [
+    {
+      "file": "rhwp-chrome/manifest.json",
+      "previousVersion": "0.9.0",
+      "candidateVersion": "0.9.1",
+      "allFieldsExceptVersionIdentical": true
+    },
+    {
+      "file": "rhwp-firefox/manifest.json",
+      "previousVersion": "0.9.0",
+      "candidateVersion": "0.9.1",
+      "allFieldsExceptVersionIdentical": true
+    },
+    {
+      "file": "rhwp-safari/src/manifest.json",
+      "previousVersion": "0.9.0",
+      "candidateVersion": "0.9.1",
+      "allFieldsExceptVersionIdentical": true
+    }
+  ]
+}

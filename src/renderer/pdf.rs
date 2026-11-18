@@ -1148,7 +1148,10 @@ mod direct_pdf_validation {
                 }
             }
             PaintOp::FootnoteMarker { marker, .. } => {
-                if !is_valid_skia_scalar(marker.base_font_size) {
+                let style = marker.paint_style();
+                if !is_valid_skia_scalar(marker.base_font_size)
+                    || !is_valid_skia_scalar(style.font_size)
+                {
                     inspection.reject(failure(
                         Reason::InvalidFootnoteFontSize,
                         format!(
@@ -1156,6 +1159,21 @@ mod direct_pdf_validation {
                             page_index + 1
                         ),
                     ));
+                }
+                if let Some(run) = marker.source_run.as_deref() {
+                    if [run.style.ratio, run.style.letter_spacing, run.baseline]
+                        .into_iter()
+                        .any(|value| !is_valid_skia_scalar(value))
+                        || run.validated_layout_positions_for(&marker.text).is_none()
+                    {
+                        inspection.reject(failure(
+                            Reason::InvalidTextGeometry,
+                            format!(
+                                "direct PDF page {} has invalid footnote source geometry",
+                                page_index + 1
+                            ),
+                        ));
+                    }
                 }
             }
             PaintOp::Equation { equation, .. } => {

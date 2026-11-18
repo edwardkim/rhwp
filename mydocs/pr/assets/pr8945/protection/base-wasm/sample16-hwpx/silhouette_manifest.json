@@ -1,0 +1,1336 @@
+{
+  "key": "sample16-hwpx",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46,
+    47,
+    48,
+    49,
+    50,
+    51,
+    52,
+    53,
+    54,
+    55,
+    56,
+    57,
+    58,
+    59,
+    60,
+    61,
+    62,
+    63,
+    64
+  ],
+  "missing_pages": [],
+  "tsv": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/silhouette.tsv",
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "2d8c1fadb394d047e58344d156792d161367188b928d47e7601ad6d0c7103348",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-001.png",
+      "pdf_sha256": "95a3f45819abbc33b4ca64d400c96f685a754dd34fcb583ca0afc25d78dcb50e"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "5adc45c9da491072f4ac358f3df8a2fee86cc0f6be807cb59dac9b505ac09979",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-002.png",
+      "pdf_sha256": "b68a3e61d131c1a2a9199d3436850b365d906eae2c492bce706521bed195759f"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "d9850a2d7181cdbf57d1744dd507bf67f55fd3c88fb1416830be23a934b488b0",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-003.png",
+      "pdf_sha256": "3664e245bde4197bf96a5a3f3d744e4d3ba2b4667cc5331607fdfcbe6bdcbc11"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "52ecf1d9ce74060e4c3d99f5a89e305860683a61d1fe3c63cad81174009ea78c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-004.png",
+      "pdf_sha256": "f26ba83f7d950d6c5211aa9d06293e96a7332a6576301ff783d0b7f0949fe68e"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "52b174231988fa782e042d12772a72ed64c186598fcde3f0077dfa92adaabf34",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-005.png",
+      "pdf_sha256": "26819c9c50219aff1fdb478046c588d39ad9da11f5a2404d7fc205285f77eab0"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "0aec6edf37d245e137dfe670d6a0bdfb3014c9fe86afc2864c5e285e91fde1cc",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-006.png",
+      "pdf_sha256": "9a7d95f9cd534e7f31e3dfe36627fe8ffb626c7956659212975e180442ae38de"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "cd57b1b5ed40419e3cd453c7b4140f5ae1bccf9d946fa4f1dccc58ce05e9d9b6",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-007.png",
+      "pdf_sha256": "0e8cbd6f60880085768ea5a5753cd9ddf052d1cb4c7a4ea7aae3813ea8b9b23f"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "97e707cd385612c9635cad13c7e20c85f7cfcb5d39062003b923720a4f23b26e",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-008.png",
+      "pdf_sha256": "1d7745e253af54f41fefce8f31fe9415dcab5b1333609b570bfa9a4757fd9146"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "66c993e35e7da5dd07ad3c36680af74b84054f9d5fcdc705b3fde71cd7a63aaa",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-009.png",
+      "pdf_sha256": "f4dc94b14ab070bc3f1937032eae2ab07ce51ecfb01ee388891d83efa60c2b8b"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "40076e48afb16de870614231b51706cf4a483f5547c9989dccd8e398aa340d5c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-010.png",
+      "pdf_sha256": "290c242156cc1e58ae27b430d6829424561e14d91a6c8fc3f8dacc01d0924eef"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "69ba7a37325664299ad08f0af205c9dc73e5db3fa4c80e1d74ac4bb4f9696679",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-011.png",
+      "pdf_sha256": "ba86c1cf406e46a881669f104fda879b276e4860e5ed949a8fe2f19a755f7075"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "eb2292ae1fabf7a2a3cef1f179dad159c3031e0af965bb73bfe675a2fe69ea20",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-012.png",
+      "pdf_sha256": "c5a3376b785539dfa392fdeaa2797f299a6c6db266e5865b92dab07f471e7635"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "81069c56751f6fa4ef3fc539ac29cf640987c330f0b36ae177da9d736432fb7c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-013.png",
+      "pdf_sha256": "0145a321f2bbf879a7a6d2b255d85dde467eb98fcbb714a97a49da17013a826d"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "6cc88f60d78d6624ccbd3eac251e5ce78c7bba9d38b8f67ff5aa6841d0445716",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-014.png",
+      "pdf_sha256": "23975fe57977bd1af8ba31010fb519fe4bd1cfbde66b5b4cc4a9816ef58ea7a3"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "5e03736ea1fc72be813ad7a69e2b14c6136f1f85cce0f943a5db64287bb39046",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-015.png",
+      "pdf_sha256": "d578aab97699aebe68a8d3b3a5b075aba9e75357215f4d8938207d4d7ae8c9a6"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "36c6facadcd480093a8057ae4105595e283e6ae4b8aacb615dbb148bdbb743bb",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-016.png",
+      "pdf_sha256": "70109fa509138eaf1785d3419c4f66409343fbe3c820d9369a9972356139ab18"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "1187b1afd9230cecf630f5ff020243275def4ca66b11ca8d8346bf021c0deb86",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-017.png",
+      "pdf_sha256": "31327412ec133ffcaa8c114f2c70dbf69a0bce23aa7e11d74526aa963f2c79b8"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "432b43f41ff03e50f7df5c7f08678a54198ec4216185230dea26e09bb8db5d9e",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-018.png",
+      "pdf_sha256": "0ee3e9f214f801ec506da00aef255bc5fe5f4bd544918a110028fff59bb18d99"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "d9eaf8806d94657bbf95fbf120a7afe374a0406c22881e4cdb0e7ccfd95654f6",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-019.png",
+      "pdf_sha256": "af2b47b31279840c2cc71861f65cedd20f84935f4ab528e31a71029f0cb22d44"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "b25d25bd9bdf0df92af3fed64b220f42b8bf0a8a6c42925ff33157b676293da5",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-020.png",
+      "pdf_sha256": "d7a5d2f83f211ddc7073471bebae88d91471ee27893c3c456aebadf009489f91"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "a2d72c3a4d16d830d78ce0d44ad4d8f143aee9e277c0d53d51dfd31bc070af53",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-021.png",
+      "pdf_sha256": "cb5fa2bf787d312b2b8daf6bebd5610dbbbc96e335030e823da23a57cc031b9e"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "7c031842d4a82896d0bf73809a64564c8621fac4f3c9fb5cb509204a0bf5a7da",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-022.png",
+      "pdf_sha256": "fe8655b1fb132e460e3554efeae7fcd7674816b2f6739c58c6d180363512c53f"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "e6e28f1ac68c45ea60513a8eb0b7eda648c0326b397414896663ec9ff143c172",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-023.png",
+      "pdf_sha256": "ce9576a95a6c3863fa991fabb51ff7aab3dba92c883bd5a9248b894f174782b0"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "86593247338f14da919e4e2df67aa7a8ce68444ae7351246f943251a27f60856",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-024.png",
+      "pdf_sha256": "864512a4b0b2966aa4f644a6d40c7c68ba52eb0b28715115a31a5e1bc2b031b4"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "104d8576fbd3c7c06ee9c0c90c61f56c59cf5f63918ecc4fe6a095e45b9e8daf",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-025.png",
+      "pdf_sha256": "725d081967d18662f5f16043fa11a6f226eb542295f0bcea90940cfc9c87c856"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "3c84c2e4aacffce192aa6aec32ddf0242f9e89d1b78f3d5c0242dcfd2c049086",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-026.png",
+      "pdf_sha256": "c999a2ff622acfe736f149bfd992e9dd1acdb690edab921e42c0c5b13b91b268"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "7573a50b075c31e4d71073af6a42434c1c70aa50c795a0aedfb3ca111e5e3e6b",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-027.png",
+      "pdf_sha256": "283791bae3c41dc9645e547032755e8b12ea7972cd5fcd0dc4301f9055212c35"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "091bb6d2ec4f90f45d566e72ef568daf37d4e056e482d7eaaff6b4ae30d79be4",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-028.png",
+      "pdf_sha256": "58ea8698989ac0d35922d2cf9b68e3f195b7caff21aa344d17267f985a0166a1"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "f5979416c1bd72c013c5e3bc1af2e022f157fe8edf9e8e582d3b5bc06e09a642",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-029.png",
+      "pdf_sha256": "8bce7c7a2612d2699f5df4f0cd2486cde0cfb6b1279d7931e3d283113f8c16d4"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "78c209a05b7c63b70a00b5d051cf63aef2e8ed3f93ac67aa5f53fc04b5c76a25",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-030.png",
+      "pdf_sha256": "40da3e15039e23175d362a5a11191f3913a6d372c8861462adcaf2faa7dd4286"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "e2aee3892165d484f0b6e1d2b44f6cc8646c86416e8bc52ebea4da288f137c4c",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-031.png",
+      "pdf_sha256": "e8d7e53f25f7f48503be02fc279830b8bb81bacada42906d1f4a940d9b1f5df7"
+    },
+    {
+      "page": 32,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_032.png",
+      "rhwp_sha256": "da3f7876dab95d1b8b2eb03dfbfa028a85f587403371f18b18607ff88e166287",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-032.png",
+      "pdf_sha256": "8dc1349281cf1bbd657f58671a9dfa1a1fedc31d0f549b51f0c036074bde63c3"
+    },
+    {
+      "page": 33,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_033.png",
+      "rhwp_sha256": "0cb72e2e8f84ee60e17c38ae6b6f655d8df721225b52662cefc518f2f6032e98",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-033.png",
+      "pdf_sha256": "d10c358e735bb641b23dd8e3b824d5e091fd44af231fc34a60f6090ba0bfe089"
+    },
+    {
+      "page": 34,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_034.png",
+      "rhwp_sha256": "94e0eb78ce710f9b28467a2e54bb71b0ce779f61123987385c75b97023732b4e",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-034.png",
+      "pdf_sha256": "98135d80959d461953613a4ee70c2e2837563dda2bf8b3fddf98f41b025dfd47"
+    },
+    {
+      "page": 35,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_035.png",
+      "rhwp_sha256": "81bb8fae872ef93be280060dfbc9d9ac862d26b1f7e09063512b1bf93af649bd",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-035.png",
+      "pdf_sha256": "266df1e79290ac4eab4040732c7fea42064fd878093bf5989064ff080e1cdb65"
+    },
+    {
+      "page": 36,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_036.png",
+      "rhwp_sha256": "5d85833d4c0b5ec58bce7267aeb7db6fa526167026bb77bc537a801e6f24a8e1",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-036.png",
+      "pdf_sha256": "8eeaaa1e663d0b31ae24205c9b7a9e44dc6060569c8ffbe7b776fe1ca8fa4f33"
+    },
+    {
+      "page": 37,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_037.png",
+      "rhwp_sha256": "7f7f1c275c6c35c0ab3834dd07bfe30bb4ba369c2fe0af18c16b8d2e69ee004f",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-037.png",
+      "pdf_sha256": "39e17d2f2422e6b251f268a94618609207e0a2b3053108f88dc3e3ec53d9d647"
+    },
+    {
+      "page": 38,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_038.png",
+      "rhwp_sha256": "742149708baab00faa6508c9e57339a80263a939503343f8c465dba0b1de4c21",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-038.png",
+      "pdf_sha256": "9a53285dc7918fda9e979cdc5ff7c935b6fceb6463e47a2ab008cec84663e898"
+    },
+    {
+      "page": 39,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_039.png",
+      "rhwp_sha256": "eaed658dae0c642818154e9825c4018851841b3d91c3a244359380074d3d1937",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-039.png",
+      "pdf_sha256": "1eb6812f0f2932ace166f0d1c91a9bc4ed5bc0f0eca956a19f0cf38d5135f216"
+    },
+    {
+      "page": 40,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_040.png",
+      "rhwp_sha256": "f974ec5013bf36330812cc021c8111f126de0a35690c0d94b002d5e6a7ee04cf",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-040.png",
+      "pdf_sha256": "31f701bd8195bb1f78ec5a6343e9e2d3aa90a8b4fe7148f63cbad60439532fcd"
+    },
+    {
+      "page": 41,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_041.png",
+      "rhwp_sha256": "7210a52e38fd488fac1ed566797054a4361888f57cbdd66970f9a04ce263f947",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-041.png",
+      "pdf_sha256": "4ddb2e3882debeaa364ddd7dc5844ad61c2f9b62dd332f334e131dfe14ed3525"
+    },
+    {
+      "page": 42,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_042.png",
+      "rhwp_sha256": "527a79824ffc97eddfe162a992d759b945a6a079b033dccf112167b09ea50abc",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-042.png",
+      "pdf_sha256": "a29d3ec7402e316b8ca5a161a2ffc3a5044bd4e21fda24e3aa5b77d217fa17ca"
+    },
+    {
+      "page": 43,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_043.png",
+      "rhwp_sha256": "789738f77a76db98019172139ab68c0d1854721f5fe4a3bb429751e5775e048e",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-043.png",
+      "pdf_sha256": "e6ddc1245f093f3e2c2986c5d536c92b6e6a1b71f3e4cad74a256aa09abbf34c"
+    },
+    {
+      "page": 44,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_044.png",
+      "rhwp_sha256": "780237d35c78f1dedea70dc3ddc33532c725e554c76ae63eda90f2ab9e2103eb",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-044.png",
+      "pdf_sha256": "4ee230f98dff994ab0389cac52e5892c9744bbfbbd501b8a4509a7cd4695f714"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "878617710f8b3620343ec249d0ca08eda1c896f44f600ea62885ff53a591e7c1",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-045.png",
+      "pdf_sha256": "e5f3a0bef77d80291529374b13c668624eed2c6eb4c03e382d035ef2e38399da"
+    },
+    {
+      "page": 46,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_046.png",
+      "rhwp_sha256": "9b3677eb387778ad927dccc2415f5f25ee2bca4225471ce769ccdf39f123162e",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-046.png",
+      "pdf_sha256": "b12aa94dd43aad77a5816995543eb5d47980e7b2ac2ed4bb84e664b7dbc07958"
+    },
+    {
+      "page": 47,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_047.png",
+      "rhwp_sha256": "4dee3bf803f2345042aebaf527d895431f912f64b51ca6726fb7fdcd3e46f3d0",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-047.png",
+      "pdf_sha256": "72a7333bde98ad9cba58ffc10e742b3b36dfc8543512daddcbc790cd2530b912"
+    },
+    {
+      "page": 48,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_048.png",
+      "rhwp_sha256": "3a6f930923a80ccb98b999bb02dbe8b17c4ab6d3b2351e349af585d050b8e040",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-048.png",
+      "pdf_sha256": "1d31e3264704f03e63931cd98d0b3445ac4553a308e88686866a18387b1fda66"
+    },
+    {
+      "page": 49,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_049.png",
+      "rhwp_sha256": "e218ad15bbdb32a9e5f103d475c9703a5749442f532ba4528a12e122ed4ff4e7",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-049.png",
+      "pdf_sha256": "33b56dcd4fb456e1128301aec0e283c981e07588f53a93ffa60763ba1400f1ac"
+    },
+    {
+      "page": 50,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_050.png",
+      "rhwp_sha256": "a1132febad456df85aed3362a4339b2db52c6ac2bf6db536ca388bd1dc005336",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-050.png",
+      "pdf_sha256": "5c285bbe928ef919d60c7a374d32c219f25ebf484f900d28f123a7435e263670"
+    },
+    {
+      "page": 51,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_051.png",
+      "rhwp_sha256": "32a5a6dbb805142f7c66670b9fad5af22c11548e2cd61c46009c9c066624d0ac",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-051.png",
+      "pdf_sha256": "06518225062f0f72b1b6c27dfed0e36ca01cab8ffb44672c32029774e7cb05c8"
+    },
+    {
+      "page": 52,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_052.png",
+      "rhwp_sha256": "a62d0b7d5b767d84244b1411bc5615860c076f673bea434e1ee928d8e6020ef6",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-052.png",
+      "pdf_sha256": "b8ad8cdf40a0902d3e86db13d564ab8f26cd1e242bc00c279abf967079ebe7f3"
+    },
+    {
+      "page": 53,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_053.png",
+      "rhwp_sha256": "6b0b8e73a35727e68b94deffcb754d328e40a01fc4124d32f2fc14462973e194",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-053.png",
+      "pdf_sha256": "c3432cfc8e3b9f942bc4e7df9e28faa94dc84efcb34a8cd9f4c400a2fdf3b574"
+    },
+    {
+      "page": 54,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_054.png",
+      "rhwp_sha256": "0347c35f86ab83a207e2172577713a4ecd8cb5cfd7df89cf3fde632b18e870fb",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-054.png",
+      "pdf_sha256": "08308589d62bd5faac91fb89f606fc7eed72b088a7a664d6383fdb112291c7dc"
+    },
+    {
+      "page": 55,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_055.png",
+      "rhwp_sha256": "0e368ab579a902ac2c044260d889a67f3c9c8037e492e87225ffbf5027c980bd",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-055.png",
+      "pdf_sha256": "ad325a6fb1e9259ec30ebcd33283cb6ddaa87fc3b341b75181d4eb1aeee9edf8"
+    },
+    {
+      "page": 56,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_056.png",
+      "rhwp_sha256": "60b9cc7425253c79fe2b51c11d3a47b9d1e8aac352bbe247d5ab76d11661d925",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-056.png",
+      "pdf_sha256": "7eee29fdf092cff91797c0770b77ddbfb034e081fa31fddf7e87b51790620fee"
+    },
+    {
+      "page": 57,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_057.png",
+      "rhwp_sha256": "6a83d090916d113b9bb0c2d5ef9e7c617c9df6ab9103f215c85b7618647ad44a",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-057.png",
+      "pdf_sha256": "916d0faf2eae95512333f965b0e12489da0239fd1428ac29aacdbdb387076bf5"
+    },
+    {
+      "page": 58,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_058.png",
+      "rhwp_sha256": "45128bb171353f0765258c0c4bca374d321d9d240f5ea225d647322cd20d23c2",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-058.png",
+      "pdf_sha256": "a52138464c682d5171b811d350165b6c8e7a38cb90a6e76b5074df00edfddae8"
+    },
+    {
+      "page": 59,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_059.png",
+      "rhwp_sha256": "a4ecac25f5a71d98feae5afbcde922c03a32dd79c62ad8b0e92df55d619ad357",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-059.png",
+      "pdf_sha256": "513d94cde85251e59c45366244da5e653696c3b9c792d99e7b3f7a9962c64655"
+    },
+    {
+      "page": 60,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_060.png",
+      "rhwp_sha256": "cfbe64ca0572cc87c07aba988ab3351415db5d012bad55babcdada6feb2dbd97",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-060.png",
+      "pdf_sha256": "b32e9077981aa03e8dea3b951679b0a5658c1d2d6b8d1721359fd878e59eabe3"
+    },
+    {
+      "page": 61,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_061.png",
+      "rhwp_sha256": "f9f0e2a652df6b7dd7ed0bb73dc37920f71126e1ed2cb85ecfb939c4f89b9652",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-061.png",
+      "pdf_sha256": "1173c6698f55ffd6b878efbef45f772c1b9ca5abe1a99e011f92c3124207d411"
+    },
+    {
+      "page": 62,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_062.png",
+      "rhwp_sha256": "43613b6da4bd0ee4a7f0c48ccae519275cd18d912c3f4499c7fdc88d1f721361",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-062.png",
+      "pdf_sha256": "2cd18058e3385c9cb23515ed4f775bcfb438ef6f55fa1ad7150c47330d85993d"
+    },
+    {
+      "page": 63,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_063.png",
+      "rhwp_sha256": "08f1d7454bc6a6ddd10ba2a39b60f6d8cc15b73ac07ce0b783b807d15214f9c0",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-063.png",
+      "pdf_sha256": "71d8cd80643c6c0e1231914e8f4424552e54bbd47ff2c5772ea92980908aec21"
+    },
+    {
+      "page": 64,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/rhwp_png/rhwp_064.png",
+      "rhwp_sha256": "ee0b0a8015c19f3d0f09ef8dd26caa80a740f341095d22a9556c9fb6f3adc8b5",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/pdf_png/pdf-064.png",
+      "pdf_sha256": "d44460c190302cbff435fde7b5deeb002b0ef61c6048dac34b4dc2f24cbf7bd9"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 62666,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 63250,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122218,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92864,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99884,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95977,
+      "silhouette_raw_unmatched_pixels": 42,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104404,
+      "tolerant_content_match_percent": 99.95977
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74118,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 116075,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56476,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99871,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77680,
+      "tolerant_content_match_percent": 99.99871
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79839,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 96063,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99514,
+      "silhouette_raw_unmatched_pixels": 6,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123429,
+      "tolerant_content_match_percent": 99.99514
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 92472,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90719,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71855,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 86517,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99065,
+      "silhouette_raw_unmatched_pixels": 19,
+      "silhouette_boundary_reconciled_pixels": 18,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 203102,
+      "tolerant_content_match_percent": 99.99951
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 214619,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 285922,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122102,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 110828,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104660,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 103608,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 91112,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 126975,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 155899,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 150220,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 105663,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117758,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 130096,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 32,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 165068,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 33,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 134456,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 34,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56080,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 35,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 122240,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 36,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 147739,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 37,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 131340,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 38,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 74289,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 39,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 94238,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 40,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 104682,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 41,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44670,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 42,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 136194,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 43,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 117459,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 44,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90506,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 149715,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 46,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 164013,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 47,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 184695,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 48,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 176694,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 49,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 149157,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 50,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 200297,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 51,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.85889,
+      "silhouette_raw_unmatched_pixels": 70,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49606,
+      "tolerant_content_match_percent": 99.85889
+    },
+    {
+      "page": 52,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 112206,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 53,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 118119,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 54,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48763,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 55,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90873,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 56,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90256,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 57,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 127684,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 58,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 50552,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 59,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 142895,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 60,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60331,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 61,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49008,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 62,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71500,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 63,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 22273,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 64,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 32089,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 64,
+      "pdf": 64
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/hwp3-sample16-hwp5.hwpx",
+      "sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c"
+    },
+    "pdf": {
+      "path": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee"
+    },
+    "git_head": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "da339c8483c6a2623ba6559298748a49be67ab1a99f79da0d27930c0360f70e8"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/edward/mygithub/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/rhwp",
+      "path": "output/pr-review/pr8945/producers/base/rhwp",
+      "sha256": "faeb10ad2a321d805bf02d97b5749a768d1641d23672d42a1f52f9ebd797f9eb"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2024",
+    "font_environment": {
+      "path": "/home/edward/mygithub/rhwp/mydocs/pr/assets/planet6897_integration_final/pr8389_8397/hwp3-2024-font-environment.json",
+      "sha256": "53a7cff101203c61080a59769730f6f7050e5af22870b8a9d233bff7a95ec64c"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/wasm/rhwp.js",
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429"
+        },
+        {
+          "path": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/producers/base/wasm/rhwp_bg.wasm",
+          "sha256": "60ebe8dc7175bab113a69c3e8fdae8ad78c55c8c19ff36033a49ed18c2d583d3"
+        }
+      ],
+      "exporter_sha256": "566b5a00e4a9c7bdff788990d348885774af2cb016ced97ecfddfb02e6e00792",
+      "font_registration_sha256": "69989dd931a2bcb313661bf265b8885411e6f9295e167d335f8f9e429351dbb2",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files_receipt": {
+        "path": "../../font-inventories/9efe965c75781bb1e41556a3ba1de11c6402316e989e81e45f8f34cb88757dbe.json",
+        "sha256": "6573c8e0309a47ebe80b5bc7db812173e4d89f74d777cf3ffb3bd7e99fa70422",
+        "count": 1055
+      }
+    }
+  },
+  "checkpoint": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/protected-canonical/base-wasm/sample16-hwpx/silhouette-checkpoint.json"
+}

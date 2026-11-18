@@ -1,0 +1,49 @@
+{
+  "wanted": [
+    "016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59",
+    "0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d",
+    "16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a",
+    "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+    "5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb",
+    "7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e",
+    "9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31"
+  ],
+  "program_id_algorithm": "SHA256(font bytes || u32 big-endian face index), src/renderer/font_environment.rs",
+  "matched_program_ids": {
+    "5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb": {
+      "path": "/home/edward/mygithub/ttfs/hft/TETGRSP.otf",
+      "file_sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd",
+      "face_index": 0
+    },
+    "9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31": {
+      "path": "/home/edward/mygithub/ttfs/hft/TETGTJPV.otf",
+      "file_sha256": "7853ab58b7a8dfab3159e28b1ad8ab157fe534c2c5bcfdd2246a8a547bdac75c",
+      "face_index": 0
+    },
+    "7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e": {
+      "path": "/home/edward/mygithub/ttfs/hft/HMEHL.otf",
+      "file_sha256": "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+      "face_index": 0
+    },
+    "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842": {
+      "path": "/home/edward/mygithub/ttfs/hft/JPJGT.otf",
+      "file_sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63",
+      "face_index": 0
+    },
+    "16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a": {
+      "path": "/home/edward/mygithub/ttfs/hft/HMEPO.otf",
+      "file_sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+      "face_index": 0
+    },
+    "016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59": {
+      "path": "/home/edward/mygithub/ttfs/hft/JPSMJ.otf",
+      "file_sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a",
+      "face_index": 0
+    },
+    "0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d": {
+      "path": "/home/edward/mygithub/ttfs/hft/ENMJ.otf",
+      "file_sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+      "face_index": 0
+    }
+  }
+}

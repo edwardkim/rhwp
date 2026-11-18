@@ -75,3 +75,35 @@ pub(crate) fn border_circle(width: u8) -> (f64, f64) {
         f64::from(pitch) * 96.0 / 600.0,
     )
 }
+
+/// 표 셀 경계의 원형 점은 문단 BorderFill과 다른 Print pen을 쓴다.
+/// 같은 16개 선언 굵기의 2020/2024 독립 표 Print 벡터를 대조했다.
+/// 열은 외곽 지름·중심 간격이며 단위는 1/600 inch다.
+/// 근거: mydocs/pr/assets/issue8856/stage2-table-circles/independent-geometry.json.
+pub(crate) fn table_border_circle(width: u8) -> (f64, f64) {
+    const TABLE_CIRCLES: [[u16; 2]; 16] = [
+        [2, 4],
+        [4, 6],
+        [4, 8],
+        [6, 10],
+        [6, 12],
+        [8, 14],
+        [10, 18],
+        [12, 24],
+        [14, 28],
+        [18, 34],
+        [24, 48],
+        [36, 70],
+        [48, 94],
+        [72, 142],
+        [96, 190],
+        [118, 236],
+    ];
+    let &[diameter, pitch] = TABLE_CIRCLES
+        .get(usize::from(width))
+        .unwrap_or(&TABLE_CIRCLES[0]);
+    (
+        f64::from(diameter) * 96.0 / 600.0,
+        f64::from(pitch) * 96.0 / 600.0,
+    )
+}

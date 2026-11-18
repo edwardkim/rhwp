@@ -1,3 +1,10 @@
+//! 관계형(대체 선택·원본 보존) 및 고정형(독립 Print 제목의 ±2CSSpx 좌표).
+//! 주석 갱신: 2026-11-08T09:59:39+09:00. 직전 파일 변경 7f76cee60e38fceb63feacaff706cf984b19c427 (Git 커밋 시각 2026-11-08T06:19:56+09:00).
+//! 실측 source: 65195e9730f35bdbd7ea0c9a393e07e66125202e. 96 DPI·print·보정 전 2px raw 실루엣.
+//! HWP 전 46쪽 최저 Native 94.65% / fresh WASM 94.55%; 46쪽 각각 99.78% / 100.00%.
+//! HWPX 전 46쪽 최저 Native 94.62% / fresh WASM 94.43%; 46쪽 각각 100.00% / 100.00%.
+//! 측정 시각·TSV·독립 Print와 직접 판독 PNG: mydocs/pr/assets/planet6897_20261106/substitute-lookup-r46/README.md.
+//! Rust 검사는 mock 프로그램 계획을 공급하며 실제 설치 글꼴에 의존하지 않는다. 아래 주석은 이전 이력이다.
 //! 한컴 2020/2024 독립 Print의 문서 대체 필드 선택 계약.
 //! 검사 구분: 앞의 API 2개는 관계형(선택·원본 보존)이며 설치 글꼴에 의존하지 않는다.
 //! `document_substitute_preserves_the_print_heading_owner_and_width`는 별도 실물 고정형이다.
@@ -314,9 +321,13 @@ fn document_substitute_preserves_the_print_heading_owner_and_width() {
             "독립 Print 닫는 괄호 끝 ±2CSSpx: {right}"
         );
         assert!(
-            group
-                .iter()
-                .all(|r| r["style"]["fontFamily"] == "Haansoft Batang"),
+            group.iter().all(|r| {
+                r["style"]["fontFamily"]
+                    .as_str()
+                    .and_then(|families| families.split(',').next())
+                    .map(str::trim)
+                    == Some("Haansoft Batang")
+            }),
             "독립 Print의 선택 프로그램"
         );
         assert_eq!(

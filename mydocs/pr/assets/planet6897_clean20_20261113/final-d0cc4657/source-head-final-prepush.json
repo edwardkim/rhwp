@@ -1,0 +1,186 @@
+{
+  "checked_at": "2026-11-12T20:43:32.277Z",
+  "prs": [
+    {
+      "pr": 8932,
+      "head": "c7b69ca0b8c466a89a4beae14628392e5fe2a2ff",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix: 칸 안 어울림 그림 옆에 들어가지 못하는 TAC 표 줄은 그림 아래에서 시작한다 (#8931)"
+    },
+    {
+      "pr": 8936,
+      "head": "65f8d022396de34fcf36184e9b11765a93e6d5b4",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix: 저장 줄 없는 칸이 재조판으로 자란 행 높이는 TAC 표 비례 축소로 흡수하지 않는다 (#8935)"
+    },
+    {
+      "pr": 8938,
+      "head": "aeac6ca0c6a9200e5a0a9da2f2c1236048a6f359",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(typeset): 앞 글자가 있는 어울림 표 host 도 Square 띠를 등록해 표 옆 차선의 저장 끝을 지킨다 (#8934)"
+    },
+    {
+      "pr": 8949,
+      "head": "32669ca0e531e001d16f5c9b7d9b9d6d3c464e8e",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix: 한 줄로 입력(SQUEEZE) 칸 과밀 저장 줄과 측정 높이로 자란 블록 표 뒤 쪽 흐름 (#8947, #8948)"
+    },
+    {
+      "pr": 8955,
+      "head": "efbe57a5d2dc5d22d59e65f44290ceb976448771",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(composer): #8950 긴 ASCII 낱말 앞 줄머리 금칙 묶음의 앞 글자를 다음 줄로 보낸다"
+    },
+    {
+      "pr": 8959,
+      "head": "1f5878dfd4a19ceb3652bdeef46806f3e07fcc34",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix: 한/글 저장 줄의 LineSeg tag bit 31 을 rhwp 합성 표지와 구별 (#8939)"
+    },
+    {
+      "pr": 8974,
+      "head": "4f9d4f55cf41a1ad34e9a0e604fc4e18582378bf",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(layout): 측정 행이 칸 선언과 같으면 저장 줄 없는 칸이 있어도 표를 개체 크기로 늘리지 않는다 (#8968)"
+    },
+    {
+      "pr": 8980,
+      "head": "602feeae50c6978ae0723563bf4a9536850f3d6c",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(equation): 문서 수식 괄호 경계를 입력 끝으로 보아 그룹 루프 무한 반복·수십 GB 할당 차단 (#8979)"
+    },
+    {
+      "pr": 8987,
+      "head": "4fadcc92fc5b8a913a71ab370f23e914fbc84adf",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(measure): 저장 줄 없는 그림 칸의 빈 문단은 합성한 자리 줄 값을 그대로 뺀다 (#8971)"
+    },
+    {
+      "pr": 8990,
+      "head": "20e8ebacbe0bacf4f69770677aeea153c794f186",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(model): #8985 평문 command 누름틀의 미기입 안내문을 인쇄하지 않는다"
+    },
+    {
+      "pr": 8991,
+      "head": "31adda0be0ef92df240fe4205fa09f26b6705fbd",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(cli): search·extract-data 가 표 안의 표 칸 경로(cellPath)를 주고 중첩 칸 값을 뽑는다 (#8989)"
+    },
+    {
+      "pr": 8994,
+      "head": "5b0e9969dd8b0cdd183696dcf2b0c9a784dda4e9",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(layout): 겹침 걸음 사다리의 빈 줄 전진에서 문단 간격 띠를 분리한다 (#8981)"
+    },
+    {
+      "pr": 8999,
+      "head": "bb5bda615db0715a5bede34b6f57149d7b880df2",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(paint): #8986 표 괘선과 칸 clip 을 같은 Print 프레임에 두고 장치 clip 을 세대 무관으로 쓴다"
+    },
+    {
+      "pr": 9001,
+      "head": "f2447f15a87e71852366d72bad43191a000f42e4",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(typeset): 저장 프레임이 본문을 넘는 RowBreak 표는 첫 행이 들어가면 그 자리에서 나눈다 (#8993)"
+    },
+    {
+      "pr": 9003,
+      "head": "9b76f50f541a9bc38a64763304410a12398b3441",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(save): #8996 편집하지 않은 표는 HWPX 저장에서 높이를 키우지 않는다"
+    },
+    {
+      "pr": 9004,
+      "head": "f536efeac1123c931af086597155ffa78a30a8af",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(layout): 저장 줄 없는 문단의 TAC 표가 배치된 줄의 펜·위끝·줄 소속을 쓴다 (#8995)"
+    },
+    {
+      "pr": 9006,
+      "head": "5b66f0df1a16c7ae50e1cf46698db95bfdcfcfef",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(hwpx): #8998 안내문 잔재 뒤에도 글자 모양 경계를 원본 IR 위치에서 연다"
+    },
+    {
+      "pr": 9013,
+      "head": "ae83180d8a4fda861e6307f2727e7916929b4490",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(cli): 원본 파일명이 길어도 쪽별 산출 이름을 255바이트 안에 맞춘다 (#9010)"
+    },
+    {
+      "pr": 9015,
+      "head": "79e9ac90ce8da3d0265b3f17b7f2e25d16fbe329",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(typeset): 앞 쪽에서 이어진 표 조각만 있는 단의 단 나누기는 새 단을 열지 않는다 (#9009)"
+    },
+    {
+      "pr": 9023,
+      "head": "08fa291d82f3d28a1a826f044b15e18b439146a3",
+      "state": "open",
+      "reviewers": [
+        "jangster77"
+      ],
+      "title": "fix(layout): #9005 숨긴 누름틀 안내문을 담아 잰 저장 줄·표 높이로 칸을 배치하지 않는다"
+    }
+  ],
+  "all_source_heads_equal_applied_intake": true
+}

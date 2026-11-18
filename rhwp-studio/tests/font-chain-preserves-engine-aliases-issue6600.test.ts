@@ -1,3 +1,6 @@
+// 관계형: CSS 후보 순서와 예약 별칭의 투명성을 검사하며 실물 페이지 좌표를 고정하지 않는다.
+// 주석 갱신: 2026-11-15 20:29 KST. 직전 변경: af0fe858c69db244fb44064a3646ae2f6b99163b
+// (2026-09-11T18:29:40+09:00). #9077은 문서 없이 재현되는 CSS font 선택 계약이다.
 /**
  * [Issue #6600] 캔버스 font 치환이 엔진이 준 체인을 버리지 않는다.
  *
@@ -12,10 +15,13 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { registerLoadedLocalFontFace, clearLoadedLocalFontFaces } from '../src/core/font-loader.ts';
 
 import {
   parseCssFontFamilyList,
   formatCssFontFamilyList,
+  substituteCssFontFamily,
+  setDocumentFontSubstitutions,
 } from '../src/core/font-substitution.ts';
 
 const ENGINE_FAMILY_PART =
@@ -53,4 +59,69 @@ test('이스케이프와 쉼표 포함 이름을 깨뜨리지 않는다 (#6600)'
   assert.deepEqual(parseCssFontFamilyList('"A, B", C'), ['A, B', 'C']);
   assert.deepEqual(parseCssFontFamilyList(String.raw`"He said \"hi\"", serif`), ['He said "hi"', 'serif']);
   assert.deepEqual(parseCssFontFamilyList(''), []);
+});
+
+test('예약 별칭 뒤의 실제 웹 글꼴을 기준으로 표시 정책을 계산한다 (#9077)', () => {
+  for (const family of ['함초롬바탕', '함초롬돋움', 'KoPub바탕체 Medium']) {
+    const ordinary = `italic bold 14.667px "${family}", Batang, sans-serif`;
+    const expected = substituteCssFontFamily(ordinary);
+    for (const aliases of [
+      [`__rhwp_ttf__${family}`],
+      [`__rhwp_intrinsic__${family}`],
+      [`__rhwp_intrinsic__${family}`, `__rhwp_ttf__${family}`],
+    ]) {
+      const actual = substituteCssFontFamily(
+        ordinary.replace('px ', `px ${formatCssFontFamilyList(aliases)}, `),
+      );
+      assert.ok(actual.startsWith('italic bold 14.667px '));
+      const names = parseCssFontFamilyList(actual.split('px ')[1]);
+      assert.deepEqual(names.slice(0, aliases.length), aliases);
+      assert.deepEqual(names.slice(aliases.length), parseCssFontFamilyList(expected.split('px ')[1]));
+      assert.equal(names[aliases.length], family);
+    }
+  }
+});
+
+test('예약 별칭은 문서 대체와 미승인 원본 제외 정책을 바꾸지 않는다 (#9077)', () => {
+  setDocumentFontSubstitutions([['없는 문서 글꼴', '함초롬바탕']]);
+  try {
+    for (const family of ['휴먼명조', '없는 문서 글꼴']) {
+      const ordinary = `12px "${family}", "HY신명조", "함초롬바탕", serif`;
+      const aliases = [`__rhwp_ttf__${family}`];
+      const actual = substituteCssFontFamily(ordinary.replace('px ', `px "${aliases[0]}", `));
+      const names = parseCssFontFamilyList(actual.slice(5));
+      assert.equal(names[0], aliases[0]);
+      assert.deepEqual(names.slice(1), parseCssFontFamilyList(substituteCssFontFamily(ordinary).slice(5)));
+      assert.ok(!names.includes(family), '미승인 원본을 다시 넣지 않는다');
+    }
+  } finally {
+    setDocumentFontSubstitutions(undefined);
+  }
+});
+
+test('실제 이름 없는 예약 별칭과 px 없는 descriptor는 그대로 둔다 (#9077)', () => {
+  for (const descriptor of ['12px "__rhwp_ttf__Only"', 'bold 1em "함초롬바탕"', '']) {
+    assert.equal(substituteCssFontFamily(descriptor), descriptor);
+  }
+});
+
+test('로드된 실제 로컬 face도 예약 별칭 뒤에서 시스템 대체보다 먼저 선택한다 (#9077)', () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'document');
+  const faces = new Set<FontFace>();
+  Object.defineProperty(globalThis, 'document', { configurable: true, value: { fonts: faces } });
+  try {
+    for (const family of ['궁서', 'Arial', 'Comic Sans MS', 'A, B']) {
+      // 설치 글꼴에 의존하지 않는 공급 계약 검사. 실제 paint는 브라우저에서 별도 확인한다.
+      registerLoadedLocalFontFace({ family, status: 'loaded' } as FontFace);
+      const aliases = [`__rhwp_intrinsic__${family}`, `__rhwp_ttf__${family}`];
+      const descriptor = '16px ' + formatCssFontFamilyList([...aliases, family, 'Malgun Gothic', 'serif']);
+      const names = parseCssFontFamilyList(substituteCssFontFamily(descriptor).slice(5));
+      assert.deepEqual(names.slice(0, 3), [...aliases, family]);
+      assert.equal(new Set(names.map(name => name.toLowerCase())).size, names.length);
+    }
+  } finally {
+    clearLoadedLocalFontFaces();
+    if (previous) Object.defineProperty(globalThis, 'document', previous);
+    else Reflect.deleteProperty(globalThis, 'document');
+  }
 });

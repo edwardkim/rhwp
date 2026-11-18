@@ -12,7 +12,8 @@ pub(in crate::renderer::typeset) struct WrapAbsorption {
     pub paragraph: WrapAroundPara,
 }
 
-/// 매칭된 표 anchor의 전체 문단 흡수 후보. 빈 문단은 저장 끝점으로 밴드를 늘리지 않는다.
+/// 매칭된 표 anchor의 전체 문단 흡수 후보. 빈 문단도 표 옆 차선에서 자기 저장 줄을
+/// 차지하므로 같은 저장 끝점으로 밴드를 늘린다.
 pub(in crate::renderer::typeset) fn whole_paragraph(
     para: &Paragraph,
     paragraphs: &[Paragraph],
@@ -27,27 +28,7 @@ pub(in crate::renderer::typeset) fn whole_paragraph(
         .map(|s| s.column_start == band.cs && s.segment_width as i32 == band.sw)
         .unwrap_or(false);
     if last_seg_match || is_empty_para {
-        let source_offset_to_text_bottom = (!is_empty_para)
-            .then(|| {
-                let anchor_top = paragraphs
-                    .get(band.anchor_para)?
-                    .line_segs
-                    .iter()
-                    .find(|seg| !is_synthetic_line_seg(seg))?
-                    .vertical_pos;
-                let text_bottom = para
-                    .line_segs
-                    .iter()
-                    .filter(|seg| !is_synthetic_line_seg(seg))
-                    .map(|seg| {
-                        seg.vertical_pos
-                            .saturating_add(seg.line_height)
-                            .saturating_add(seg.line_spacing)
-                    })
-                    .max()?;
-                (text_bottom > anchor_top).then(|| hwpunit_to_px(text_bottom - anchor_top, dpi))
-            })
-            .flatten();
+        let source_offset_to_text_bottom = source_offset_to_bottom(paragraphs, para, band, dpi);
         return Some(WrapAbsorption {
             source_offset_px: source_offset_to_text_bottom,
             paragraph: WrapAroundPara {
@@ -100,4 +81,30 @@ pub(in crate::renderer::typeset) fn prefix(
             end_line: wrap_prefix_len,
         },
     }
+}
+
+/// 흡수 문단의 원본 저장 줄 끝을 표 host 원점에서 잰 거리(px). 빈 문단도 차선의 줄을 차지한다.
+fn source_offset_to_bottom(
+    paragraphs: &[Paragraph],
+    para: &Paragraph,
+    band: WrapBand,
+    dpi: f64,
+) -> Option<f64> {
+    let anchor_top = paragraphs
+        .get(band.anchor_para)?
+        .line_segs
+        .iter()
+        .find(|seg| !is_synthetic_line_seg(seg))?
+        .vertical_pos;
+    let text_bottom = para
+        .line_segs
+        .iter()
+        .filter(|seg| !is_synthetic_line_seg(seg))
+        .map(|seg| {
+            seg.vertical_pos
+                .saturating_add(seg.line_height)
+                .saturating_add(seg.line_spacing)
+        })
+        .max()?;
+    (text_bottom > anchor_top).then(|| hwpunit_to_px(text_bottom - anchor_top, dpi))
 }

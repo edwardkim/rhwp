@@ -1,0 +1,2144 @@
+[
+  {
+    "key": "report-838",
+    "page": 1,
+    "before": 99.99705,
+    "after": 99.99705,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 2,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 3,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 4,
+    "before": 99.9897,
+    "after": 99.9897,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 5,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 6,
+    "before": 99.99843,
+    "after": 99.99843,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 7,
+    "before": 99.9703,
+    "after": 99.9703,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 8,
+    "before": 99.99411,
+    "after": 99.99411,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 9,
+    "before": 99.99798,
+    "after": 99.99798,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 10,
+    "before": 99.99878,
+    "after": 99.99878,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 11,
+    "before": 99.99622,
+    "after": 99.99622,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 12,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 13,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 14,
+    "before": 99.99677,
+    "after": 99.99677,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 15,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 16,
+    "before": 99.99781,
+    "after": 99.99781,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 17,
+    "before": 99.99755,
+    "after": 99.99755,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 18,
+    "before": 99.9986,
+    "after": 99.9986,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 19,
+    "before": 99.99712,
+    "after": 99.99712,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 20,
+    "before": 99.98149,
+    "after": 99.98149,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 21,
+    "before": 99.98635,
+    "after": 99.98635,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 22,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 23,
+    "before": 99.99534,
+    "after": 99.99534,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 24,
+    "before": 99.99764,
+    "after": 99.99764,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 25,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 26,
+    "before": 99.99714,
+    "after": 99.99714,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 27,
+    "before": 99.99724,
+    "after": 99.99724,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 28,
+    "before": 99.99872,
+    "after": 99.99872,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 29,
+    "before": 99.99693,
+    "after": 99.99693,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 30,
+    "before": 99.99617,
+    "after": 99.99617,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 31,
+    "before": 99.99465,
+    "after": 99.99465,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 32,
+    "before": 99.99715,
+    "after": 99.99715,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 33,
+    "before": 99.86836,
+    "after": 99.86836,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 34,
+    "before": 99.95049,
+    "after": 99.95049,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 35,
+    "before": 99.99724,
+    "after": 99.99724,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 36,
+    "before": 99.9928,
+    "after": 99.9928,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 37,
+    "before": 99.9935,
+    "after": 99.9935,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 38,
+    "before": 99.99462,
+    "after": 99.99462,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 39,
+    "before": 99.99339,
+    "after": 99.99339,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 40,
+    "before": 99.99489,
+    "after": 99.99489,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 41,
+    "before": 99.99587,
+    "after": 99.99587,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 42,
+    "before": 99.93979,
+    "after": 99.93979,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 43,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 44,
+    "before": 99.99796,
+    "after": 99.99796,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 45,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 46,
+    "before": 99.99718,
+    "after": 99.99718,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 47,
+    "before": 99.99791,
+    "after": 99.99791,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 48,
+    "before": 99.99096,
+    "after": 99.99096,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 49,
+    "before": 94.99379,
+    "after": 94.99379,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 50,
+    "before": 99.74749,
+    "after": 99.74749,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 51,
+    "before": 99.99403,
+    "after": 99.99403,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 52,
+    "before": 99.97665,
+    "after": 99.97665,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 53,
+    "before": 99.99757,
+    "after": 99.99757,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 54,
+    "before": 99.99473,
+    "after": 99.99473,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 55,
+    "before": 99.99719,
+    "after": 99.99719,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 56,
+    "before": 99.99429,
+    "after": 99.99429,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 57,
+    "before": 99.99429,
+    "after": 99.99429,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 58,
+    "before": 99.99568,
+    "after": 99.99568,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 59,
+    "before": 99.99426,
+    "after": 99.99426,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 60,
+    "before": 99.99432,
+    "after": 99.99432,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 61,
+    "before": 99.96579,
+    "after": 99.96579,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 62,
+    "before": 99.99865,
+    "after": 99.99865,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 63,
+    "before": 98.73069,
+    "after": 98.73069,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 64,
+    "before": 99.99578,
+    "after": 99.99578,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 65,
+    "before": 99.99885,
+    "after": 99.99885,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 66,
+    "before": 99.99611,
+    "after": 99.99611,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 67,
+    "before": 99.57655,
+    "after": 99.57655,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 68,
+    "before": 99.99659,
+    "after": 99.99659,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 69,
+    "before": 99.99583,
+    "after": 99.99583,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 70,
+    "before": 99.99492,
+    "after": 99.99492,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 71,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 72,
+    "before": 99.99878,
+    "after": 99.99878,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 73,
+    "before": 99.99839,
+    "after": 99.99839,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 74,
+    "before": 99.99625,
+    "after": 99.99625,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 75,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 76,
+    "before": 99.99614,
+    "after": 99.99614,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 77,
+    "before": 99.99538,
+    "after": 99.99538,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 78,
+    "before": 99.99733,
+    "after": 99.99733,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 79,
+    "before": 99.99571,
+    "after": 99.99571,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 80,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 81,
+    "before": 99.99408,
+    "after": 99.99408,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 82,
+    "before": 99.99461,
+    "after": 99.99461,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 83,
+    "before": 99.99179,
+    "after": 99.99179,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 84,
+    "before": 99.99455,
+    "after": 99.99455,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 85,
+    "before": 99.99697,
+    "after": 99.99697,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 86,
+    "before": 99.99521,
+    "after": 99.99521,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 87,
+    "before": 99.99427,
+    "after": 99.99427,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 88,
+    "before": 99.99599,
+    "after": 99.99599,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 89,
+    "before": 99.99549,
+    "after": 99.99549,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 90,
+    "before": 99.99569,
+    "after": 99.99569,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 91,
+    "before": 99.99681,
+    "after": 99.99681,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 92,
+    "before": 99.99858,
+    "after": 99.99858,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 93,
+    "before": 99.95475,
+    "after": 99.95475,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 94,
+    "before": 99.99147,
+    "after": 99.99147,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 95,
+    "before": 99.99872,
+    "after": 99.99872,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 96,
+    "before": 99.99639,
+    "after": 99.99639,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 97,
+    "before": 99.9965,
+    "after": 99.9965,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 98,
+    "before": 99.84909,
+    "after": 99.84909,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 99,
+    "before": 99.99589,
+    "after": 99.99589,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 100,
+    "before": 99.99583,
+    "after": 99.99583,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 101,
+    "before": 99.99667,
+    "after": 99.99667,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 102,
+    "before": 99.99872,
+    "after": 99.99872,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 103,
+    "before": 99.99877,
+    "after": 99.99877,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 104,
+    "before": 99.99677,
+    "after": 99.99677,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 105,
+    "before": 99.99865,
+    "after": 99.99865,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 106,
+    "before": 99.99643,
+    "after": 99.99643,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 107,
+    "before": 99.94083,
+    "after": 99.94083,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 108,
+    "before": 99.9872,
+    "after": 99.9872,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-838",
+    "page": 109,
+    "before": 99.97137,
+    "after": 99.97137,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "stored-band",
+    "page": 1,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "stored-band",
+    "page": 2,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 1,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 2,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 3,
+    "before": 99.9923,
+    "after": 99.9923,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 4,
+    "before": 99.99346,
+    "after": 99.99346,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 5,
+    "before": 99.82407,
+    "after": 99.82407,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 6,
+    "before": 99.90613,
+    "after": 99.90613,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 7,
+    "before": 99.97161,
+    "after": 99.97161,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 8,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 9,
+    "before": 99.8136,
+    "after": 99.8136,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 10,
+    "before": 99.98628,
+    "after": 99.98628,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 11,
+    "before": 99.95661,
+    "after": 99.95661,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 12,
+    "before": 99.95876,
+    "after": 99.95876,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 13,
+    "before": 99.98966,
+    "after": 99.98966,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 14,
+    "before": 99.9739,
+    "after": 99.9739,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 15,
+    "before": 99.67861,
+    "after": 99.67861,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 16,
+    "before": 88.48158,
+    "after": 88.48158,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 17,
+    "before": 99.83937,
+    "after": 99.83937,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 18,
+    "before": 58.90219,
+    "after": 58.90219,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 19,
+    "before": 99.87698,
+    "after": 99.87698,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 20,
+    "before": 99.786,
+    "after": 99.786,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 21,
+    "before": 99.90585,
+    "after": 99.90585,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 22,
+    "before": 99.8838,
+    "after": 99.8838,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 23,
+    "before": 99.93511,
+    "after": 99.93511,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 24,
+    "before": 99.98634,
+    "after": 99.98634,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 25,
+    "before": 83.09084,
+    "after": 99.32528,
+    "delta_pp": 16.234440000000006
+  },
+  {
+    "key": "report-628",
+    "page": 26,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 27,
+    "before": 99.99623,
+    "after": 99.99623,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 28,
+    "before": 99.93024,
+    "after": 99.93024,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 29,
+    "before": 99.96599,
+    "after": 99.96599,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 30,
+    "before": 99.98667,
+    "after": 99.98667,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 31,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 32,
+    "before": 99.95368,
+    "after": 99.95368,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 33,
+    "before": 99.99884,
+    "after": 99.99884,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 34,
+    "before": 99.99668,
+    "after": 99.99668,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 35,
+    "before": 99.23942,
+    "after": 99.23942,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 36,
+    "before": 99.32915,
+    "after": 99.32915,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 37,
+    "before": 98.86014,
+    "after": 98.86014,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 38,
+    "before": 99.94358,
+    "after": 99.94358,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 39,
+    "before": 99.99402,
+    "after": 99.99402,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 40,
+    "before": 99.17449,
+    "after": 99.17449,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 41,
+    "before": 99.50751,
+    "after": 99.50751,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 42,
+    "before": 99.81959,
+    "after": 99.81959,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 43,
+    "before": 99.55758,
+    "after": 99.55758,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 44,
+    "before": 99.9973,
+    "after": 99.9973,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 45,
+    "before": 99.82306,
+    "after": 99.82306,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 46,
+    "before": 99.24941,
+    "after": 99.24941,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 47,
+    "before": 99.98966,
+    "after": 99.98966,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 48,
+    "before": 98.07791,
+    "after": 98.07791,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 49,
+    "before": 99.64502,
+    "after": 99.64502,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 50,
+    "before": 99.94766,
+    "after": 99.94766,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 51,
+    "before": 99.97128,
+    "after": 99.97128,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 52,
+    "before": 99.98976,
+    "after": 99.98976,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 53,
+    "before": 99.90023,
+    "after": 99.90023,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 54,
+    "before": 99.99165,
+    "after": 99.99165,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 55,
+    "before": 99.10388,
+    "after": 99.10388,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 56,
+    "before": 99.99554,
+    "after": 99.99554,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 57,
+    "before": 99.98578,
+    "after": 99.98578,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 58,
+    "before": 99.99325,
+    "after": 99.99325,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 59,
+    "before": 99.85984,
+    "after": 99.85984,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 60,
+    "before": 99.9917,
+    "after": 99.9917,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 61,
+    "before": 99.1969,
+    "after": 99.1969,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 62,
+    "before": 99.98868,
+    "after": 99.98868,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 63,
+    "before": 99.91525,
+    "after": 99.91525,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 64,
+    "before": 98.57472,
+    "after": 98.57472,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 65,
+    "before": 99.94866,
+    "after": 99.94866,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 66,
+    "before": 99.37352,
+    "after": 99.37352,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 67,
+    "before": 99.98729,
+    "after": 99.98729,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 68,
+    "before": 99.96614,
+    "after": 99.96614,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 69,
+    "before": 99.92657,
+    "after": 99.92657,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 70,
+    "before": 99.82038,
+    "after": 99.82038,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 71,
+    "before": 99.88295,
+    "after": 99.88295,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 72,
+    "before": 99.99513,
+    "after": 99.99513,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 73,
+    "before": 99.92403,
+    "after": 99.92403,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 74,
+    "before": 99.99674,
+    "after": 99.99674,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 75,
+    "before": 99.96747,
+    "after": 99.96747,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 76,
+    "before": 99.98136,
+    "after": 99.98136,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 77,
+    "before": 99.98426,
+    "after": 99.98426,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 78,
+    "before": 99.54562,
+    "after": 99.54562,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 79,
+    "before": 97.12756,
+    "after": 97.12756,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 80,
+    "before": 97.43229,
+    "after": 97.43229,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 81,
+    "before": 99.17346,
+    "after": 99.17346,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 82,
+    "before": 97.3431,
+    "after": 97.3431,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 83,
+    "before": 99.08412,
+    "after": 99.08412,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 84,
+    "before": 98.30787,
+    "after": 98.30787,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 85,
+    "before": 97.364,
+    "after": 97.364,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 86,
+    "before": 98.18206,
+    "after": 98.18206,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 87,
+    "before": 99.99765,
+    "after": 99.99765,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 88,
+    "before": 99.48852,
+    "after": 99.48852,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 89,
+    "before": 98.27779,
+    "after": 98.27779,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 90,
+    "before": 99.92182,
+    "after": 99.92182,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 91,
+    "before": 97.06243,
+    "after": 97.06243,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 92,
+    "before": 96.26678,
+    "after": 96.26678,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 93,
+    "before": 96.14434,
+    "after": 96.14434,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 94,
+    "before": 97.68576,
+    "after": 97.68576,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 95,
+    "before": 99.20314,
+    "after": 99.20314,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 96,
+    "before": 99.26111,
+    "after": 99.26111,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 97,
+    "before": 99.06964,
+    "after": 99.06964,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 98,
+    "before": 99.06859,
+    "after": 99.06859,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 99,
+    "before": 97.71546,
+    "after": 97.71546,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 100,
+    "before": 99.08217,
+    "after": 99.08217,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 101,
+    "before": 99.47111,
+    "after": 99.47111,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 102,
+    "before": 98.45618,
+    "after": 98.45618,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 103,
+    "before": 99.99604,
+    "after": 99.99604,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 104,
+    "before": 98.41847,
+    "after": 98.41847,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 105,
+    "before": 99.99486,
+    "after": 99.99486,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 106,
+    "before": 99.3177,
+    "after": 99.3177,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 107,
+    "before": 99.99797,
+    "after": 99.99797,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 108,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 109,
+    "before": 99.40626,
+    "after": 99.40626,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 110,
+    "before": 92.98575,
+    "after": 92.98575,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 111,
+    "before": 98.14356,
+    "after": 98.14356,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 112,
+    "before": 99.20923,
+    "after": 99.20923,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 113,
+    "before": 99.98386,
+    "after": 99.98386,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 114,
+    "before": 99.37766,
+    "after": 99.37766,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 115,
+    "before": 99.43308,
+    "after": 99.43308,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 116,
+    "before": 99.73966,
+    "after": 99.73966,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 117,
+    "before": 99.98567,
+    "after": 99.98567,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 118,
+    "before": 99.99007,
+    "after": 99.99007,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 119,
+    "before": 99.356,
+    "after": 99.356,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 120,
+    "before": 85.11331,
+    "after": 85.11331,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 121,
+    "before": 99.90585,
+    "after": 99.90585,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 122,
+    "before": 54.14019,
+    "after": 54.14019,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 123,
+    "before": 68.02335,
+    "after": 68.02335,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 124,
+    "before": 57.86916,
+    "after": 57.86916,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 125,
+    "before": 33.38902,
+    "after": 33.38902,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 126,
+    "before": 99.84338,
+    "after": 99.84338,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 127,
+    "before": 99.90245,
+    "after": 99.90245,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 128,
+    "before": 99.99782,
+    "after": 99.99782,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 129,
+    "before": 99.97672,
+    "after": 99.97672,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 130,
+    "before": 99.99113,
+    "after": 99.99113,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 131,
+    "before": 99.66441,
+    "after": 99.66441,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 132,
+    "before": 99.89196,
+    "after": 99.89196,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 133,
+    "before": 99.72103,
+    "after": 99.72103,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 134,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 135,
+    "before": 99.98535,
+    "after": 99.98535,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 136,
+    "before": 87.19402,
+    "after": 99.44898,
+    "delta_pp": 12.254960000000011
+  },
+  {
+    "key": "report-628",
+    "page": 137,
+    "before": 99.99269,
+    "after": 99.99269,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 138,
+    "before": 99.97948,
+    "after": 99.97948,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 139,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 140,
+    "before": 100.0,
+    "after": 100.0,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 141,
+    "before": 99.13093,
+    "after": 99.13093,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 142,
+    "before": 98.85553,
+    "after": 98.85553,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 143,
+    "before": 99.17022,
+    "after": 99.17022,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 144,
+    "before": 99.06095,
+    "after": 99.06095,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 145,
+    "before": 98.11786,
+    "after": 98.11786,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 146,
+    "before": 99.99353,
+    "after": 99.99353,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 147,
+    "before": 99.92129,
+    "after": 99.92129,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 148,
+    "before": 99.19671,
+    "after": 99.19671,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 149,
+    "before": 99.9769,
+    "after": 99.9769,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 150,
+    "before": 99.531,
+    "after": 99.531,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 151,
+    "before": 99.17562,
+    "after": 99.17562,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 152,
+    "before": 99.99191,
+    "after": 99.99191,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 153,
+    "before": 99.99869,
+    "after": 99.99869,
+    "delta_pp": 0.0
+  },
+  {
+    "key": "report-628",
+    "page": 154,
+    "before": 98.33969,
+    "after": 99.99129,
+    "delta_pp": 1.651600000000002
+  },
+  {
+    "key": "report-628",
+    "page": 155,
+    "before": 89.13498,
+    "after": 99.94833,
+    "delta_pp": 10.81335
+  },
+  {
+    "key": "report-628",
+    "page": 156,
+    "before": 97.37774,
+    "after": 99.98611,
+    "delta_pp": 2.6083699999999936
+  },
+  {
+    "key": "report-628",
+    "page": 157,
+    "before": 94.1384,
+    "after": 100.0,
+    "delta_pp": 5.861599999999996
+  },
+  {
+    "key": "report-628",
+    "page": 158,
+    "before": 97.43879,
+    "after": 100.0,
+    "delta_pp": 2.5612100000000027
+  },
+  {
+    "key": "report-628",
+    "page": 159,
+    "before": 94.08425,
+    "after": 100.0,
+    "delta_pp": 5.915750000000003
+  },
+  {
+    "key": "report-628",
+    "page": 160,
+    "before": 97.01827,
+    "after": 100.0,
+    "delta_pp": 2.981729999999999
+  },
+  {
+    "key": "report-628",
+    "page": 161,
+    "before": 93.973,
+    "after": 100.0,
+    "delta_pp": 6.027000000000001
+  },
+  {
+    "key": "report-628",
+    "page": 162,
+    "before": 98.13261,
+    "after": 100.0,
+    "delta_pp": 1.8673900000000003
+  },
+  {
+    "key": "report-628",
+    "page": 163,
+    "before": 92.24827,
+    "after": 100.0,
+    "delta_pp": 7.751729999999995
+  },
+  {
+    "key": "report-628",
+    "page": 164,
+    "before": 97.98042,
+    "after": 100.0,
+    "delta_pp": 2.019580000000005
+  },
+  {
+    "key": "report-628",
+    "page": 165,
+    "before": 94.72691,
+    "after": 100.0,
+    "delta_pp": 5.273089999999996
+  },
+  {
+    "key": "report-628",
+    "page": 166,
+    "before": 98.33001,
+    "after": 100.0,
+    "delta_pp": 1.6699899999999985
+  },
+  {
+    "key": "report-628",
+    "page": 167,
+    "before": 94.03577,
+    "after": 100.0,
+    "delta_pp": 5.964230000000001
+  },
+  {
+    "key": "report-628",
+    "page": 168,
+    "before": 98.33244,
+    "after": 100.0,
+    "delta_pp": 1.6675599999999946
+  },
+  {
+    "key": "report-628",
+    "page": 169,
+    "before": 94.8459,
+    "after": 100.0,
+    "delta_pp": 5.1541
+  },
+  {
+    "key": "report-628",
+    "page": 170,
+    "before": 96.72887,
+    "after": 100.0,
+    "delta_pp": 3.2711299999999994
+  },
+  {
+    "key": "report-628",
+    "page": 171,
+    "before": 95.5746,
+    "after": 100.0,
+    "delta_pp": 4.425399999999996
+  },
+  {
+    "key": "report-628",
+    "page": 172,
+    "before": 98.36856,
+    "after": 100.0,
+    "delta_pp": 1.6314399999999978
+  },
+  {
+    "key": "report-628",
+    "page": 173,
+    "before": 94.96022,
+    "after": 100.0,
+    "delta_pp": 5.039779999999993
+  },
+  {
+    "key": "report-628",
+    "page": 174,
+    "before": 98.68623,
+    "after": 100.0,
+    "delta_pp": 1.3137700000000052
+  },
+  {
+    "key": "report-628",
+    "page": 175,
+    "before": 93.64902,
+    "after": 98.7528,
+    "delta_pp": 5.10378
+  },
+  {
+    "key": "report-628",
+    "page": 176,
+    "before": 98.42218,
+    "after": 100.0,
+    "delta_pp": 1.5778200000000027
+  },
+  {
+    "key": "report-628",
+    "page": 177,
+    "before": 95.59455,
+    "after": 99.78706,
+    "delta_pp": 4.192509999999999
+  },
+  {
+    "key": "report-628",
+    "page": 178,
+    "before": 97.75997,
+    "after": 99.40618,
+    "delta_pp": 1.6462100000000106
+  },
+  {
+    "key": "report-628",
+    "page": 179,
+    "before": 95.62962,
+    "after": 100.0,
+    "delta_pp": 4.370379999999997
+  },
+  {
+    "key": "report-628",
+    "page": 180,
+    "before": 96.8021,
+    "after": 98.25924,
+    "delta_pp": 1.4571400000000096
+  },
+  {
+    "key": "report-628",
+    "page": 181,
+    "before": 93.41128,
+    "after": 100.0,
+    "delta_pp": 6.588719999999995
+  },
+  {
+    "key": "report-628",
+    "page": 182,
+    "before": 97.44094,
+    "after": 100.0,
+    "delta_pp": 2.5590600000000023
+  },
+  {
+    "key": "report-628",
+    "page": 183,
+    "before": 92.39165,
+    "after": 98.19921,
+    "delta_pp": 5.807559999999995
+  },
+  {
+    "key": "report-628",
+    "page": 184,
+    "before": 97.87011,
+    "after": 100.0,
+    "delta_pp": 2.129890000000003
+  },
+  {
+    "key": "report-628",
+    "page": 185,
+    "before": 94.99511,
+    "after": 99.70441,
+    "delta_pp": 4.709299999999999
+  },
+  {
+    "key": "report-628",
+    "page": 186,
+    "before": 96.66647,
+    "after": 100.0,
+    "delta_pp": 3.333529999999996
+  },
+  {
+    "key": "report-628",
+    "page": 187,
+    "before": 94.7609,
+    "after": 99.39957,
+    "delta_pp": 4.6386699999999905
+  },
+  {
+    "key": "report-628",
+    "page": 188,
+    "before": 96.66647,
+    "after": 100.0,
+    "delta_pp": 3.333529999999996
+  },
+  {
+    "key": "report-628",
+    "page": 189,
+    "before": 94.76312,
+    "after": 99.39984,
+    "delta_pp": 4.636719999999997
+  },
+  {
+    "key": "report-628",
+    "page": 190,
+    "before": 96.66647,
+    "after": 100.0,
+    "delta_pp": 3.333529999999996
+  },
+  {
+    "key": "report-628",
+    "page": 191,
+    "before": 94.46134,
+    "after": 99.36607,
+    "delta_pp": 4.9047299999999865
+  },
+  {
+    "key": "report-628",
+    "page": 192,
+    "before": 97.00964,
+    "after": 100.0,
+    "delta_pp": 2.9903599999999955
+  },
+  {
+    "key": "report-628",
+    "page": 193,
+    "before": 88.92012,
+    "after": 97.98535,
+    "delta_pp": 9.06523
+  },
+  {
+    "key": "report-628",
+    "page": 194,
+    "before": 97.51653,
+    "after": 100.0,
+    "delta_pp": 2.483469999999997
+  },
+  {
+    "key": "report-628",
+    "page": 195,
+    "before": 91.45146,
+    "after": 100.0,
+    "delta_pp": 8.548540000000003
+  }
+]

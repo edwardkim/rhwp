@@ -1,0 +1,95 @@
+{
+  "backend": "wasm",
+  "key": "d-rowbreak-splits-at-row-boundary",
+  "pages": 2,
+  "metrics": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/pr8945/focus/complete-visual/wasm/d-rowbreak-splits-at-row-boundary/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 34550,
+      "diff_ratio": 0.03874787,
+      "pixel_match_percent": 96.12521,
+      "ink_union_pixels": 39177,
+      "ink_diff_pixels": 34550,
+      "ink_diff_ratio": 0.88189499,
+      "ink_match_percent": 11.8105,
+      "visual_accuracy_proxy_percent": 11.8105,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 39177,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 5.774,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        114,
+        132,
+        676,
+        955
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/rhwp_png/rhwp_002.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/d-rowbreak-splits-at-row-boundary/pdf_png/pdf-002.png",
+      "overlay_png": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/pr8945/focus/complete-visual/wasm/d-rowbreak-splits-at-row-boundary/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 21519,
+      "diff_ratio": 0.02413358,
+      "pixel_match_percent": 97.58664,
+      "ink_union_pixels": 28288,
+      "ink_diff_pixels": 21519,
+      "ink_diff_ratio": 0.76071126,
+      "ink_match_percent": 23.92887,
+      "visual_accuracy_proxy_percent": 23.92887,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28288,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 2.594,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        113,
+        169,
+        676,
+        566
+      ]
+    }
+  ],
+  "reviews": [
+    "mydocs/pr/assets/pr8945/focus/complete-visual/wasm/d-rowbreak-splits-at-row-boundary/review/review_001.png",
+    "mydocs/pr/assets/pr8945/focus/complete-visual/wasm/d-rowbreak-splits-at-row-boundary/review/review_002.png"
+  ],
+  "overlays": [
+    "mydocs/pr/assets/pr8945/focus/complete-visual/wasm/d-rowbreak-splits-at-row-boundary/overlay/overlay_001.png",
+    "mydocs/pr/assets/pr8945/focus/complete-visual/wasm/d-rowbreak-splits-at-row-boundary/overlay/overlay_002.png"
+  ]
+}

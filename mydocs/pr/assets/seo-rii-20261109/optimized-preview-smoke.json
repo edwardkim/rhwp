@@ -1,0 +1,50 @@
+{
+  "report": {
+    "backend": "canvas2d",
+    "reports": [
+      {
+        "backend": "canvas2d",
+        "equivalenceGroup": "text-0",
+        "fallbackRequired": false,
+        "rejectedVariants": [],
+        "selectedReason": "glyphOutlineStrictProfile",
+        "selectedVariantId": "glyphOutline",
+        "selectedVariantKind": "glyphOutline"
+      }
+    ],
+    "reportsDropped": 0,
+    "strictGlyphOutlineReplay": true
+  },
+  "printReport": {
+    "backend": "canvas2d",
+    "reports": [
+      {
+        "backend": "canvas2d",
+        "equivalenceGroup": "text-0",
+        "fallbackRequired": false,
+        "rejectedVariants": [],
+        "selectedReason": "glyphOutlineStrictProfile",
+        "selectedVariantId": "glyphOutline",
+        "selectedVariantKind": "glyphOutline"
+      }
+    ],
+    "reportsDropped": 0,
+    "strictGlyphOutlineReplay": true
+  },
+  "width": 794,
+  "height": 1123,
+  "printDimensions": [
+    794,
+    1122
+  ],
+  "defaultPreserved": true,
+  "invalidRequestsPreserveCanvas": true,
+  "normalizedScales": 4,
+  "wasmSha256": "d56069d793f99980b480669e6e24053aed9faf36f23250773e687a42e233ef89",
+  "fixture": "samples/render-p35-font-native-bitmap.hwpx",
+  "browser": "Chrome/156.0.8078.47",
+  "source": "be778bae9b3803050146dcc47a896940587a612e",
+  "scope": "Optimized public document API behavior; not independent Hancom fidelity evidence.",
+  "font_isolation": "bwrap: hidden user home/system font directories, explicit project opensource fontconfig; readonly Chrome/Node tools binds",
+  "profile_extent_check": "Each profile compared with its existing Canvas API. Screen and Print are not assumed to share identical pixel rounding."
+}

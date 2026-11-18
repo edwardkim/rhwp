@@ -1099,6 +1099,7 @@ impl LayoutEngine {
                         styles,
                     ))
                     .max(self.calc_nested_controls_bottom_height(
+                        table,
                         &composed_paras,
                         &cell.paragraphs,
                         styles,
@@ -1313,6 +1314,7 @@ impl LayoutEngine {
                                     ),
                                     crop,
                                     original_size_hu,
+                                    soft_edge_radius_hu: pic.effects.soft_edge_radius,
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,
@@ -1478,6 +1480,7 @@ impl LayoutEngine {
                 styles,
                 &table_node.children,
                 None,
+                super::table_break_border::AutomaticBreakEdges::default(),
                 self.show_transparent_borders.get(),
             );
             table_node.children.extend(borders);

@@ -1,0 +1,10 @@
+{
+  "source": "0275f9c3bb69b216c96146e98506271eead9a601",
+  "test": "tests/cases/native_system_font_family_ownership.rs",
+  "test_sha256": "03ad8bf490324e542b9dd0a5c8f30282d79f36ec581fc3d097e210d3f27219d2",
+  "result": "1 passed / 0 failed, 선택 밖 308건은 focused 제외",
+  "exit_code": 0,
+  "log_sha256": "f0a137e0785188710ce4aea13ed172cd9511f6cd8c1e726f8518213a3972c738",
+  "font_environment": "최소 공개 글꼴 5개 wrapper에서 두 라이선스 확인 프로그램만 자식 Fontconfig에 공급",
+  "recorded_at": "2026-11-08T03:22:06.550129+00:00"
+}

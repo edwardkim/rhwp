@@ -1,0 +1,41 @@
+{
+  "status": "completed",
+  "build_started": true,
+  "source": "c47698bb7bdc07c84e674c587256759543053727",
+  "command": [
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg",
+    "--no-opt"
+  ],
+  "local_alternative_no_docker": true,
+  "started_at": "2026-11-16T14:10:56.818815+09:00",
+  "exit": 0,
+  "seconds": 402.568,
+  "artifacts": {
+    "rhwp.js": {
+      "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "bytes": 587539
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "dd58a4fa7680674379adb94f874123029c39001a94600e7d1a369aec823a11bb",
+      "bytes": 32134247
+    },
+    "rhwp.d.ts": {
+      "sha256": "d2d9be4be0fdebfdd0f203b797ee99247c92fd0d3dba6143e9431e9ea78e9441",
+      "bytes": 237121
+    },
+    "rhwp_bg.wasm.d.ts": {
+      "sha256": "f8c2a955e57a9a5d5c1c02c5147abf8cf033cae56e139bc8c9b28adf3bc093bd",
+      "bytes": 81230
+    },
+    "package.json": {
+      "sha256": "5dd1526473c7d0b8e59067ca464a926ef651dd15d5e3258465af863400ec0a19",
+      "bytes": 429
+    }
+  },
+  "root_public_hash_equal": true,
+  "optimization_note": "Mac 사용자 지정 locked --target web --out-dir pkg --no-opt 로컬 대체 빌드; Docker/wasm-opt 통과 주장이 아님"
+}

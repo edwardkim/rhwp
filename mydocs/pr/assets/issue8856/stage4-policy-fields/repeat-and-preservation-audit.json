@@ -1,0 +1,10 @@
+{
+  "repeat_glyph_origins_identical": true,
+  "glyph_count": 665,
+  "baseline_trace_sha256": "0562520aff0ba5db22a4030521c1d9f4567e3772a6e2685a5eb83c46d9282604",
+  "repeat_trace_sha256": "0562520aff0ba5db22a4030521c1d9f4567e3772a6e2685a5eb83c46d9282604",
+  "probe_glyph_counts_equal": {
+    "policy-cut40-flags0-2024.pdf": true,
+    "policy-cut40-flags8-2024.pdf": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "source": "ada4fdffaac0b9a7491a3f2cfb09994303380c40",
+  "executable": "/home/tsjang/rhwp/target/pr-review/release-test/r52-primary-program-decoration-before",
+  "executable_sha256": "f55fa87f037cf7d3cfd55876d65eb33e7ea754e7ae50a9f574c6daf57383416f",
+  "program_id": "4230c3d72718e5bfa9255509a7650a558b64c5b0472c478ed827ced82630aa65",
+  "identity_algorithm": "sha256(SFNT bytes || u32 face index big endian)",
+  "exit_code": 101,
+  "log": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/logs/r54-primary-program-native-identity-before.log"
+}

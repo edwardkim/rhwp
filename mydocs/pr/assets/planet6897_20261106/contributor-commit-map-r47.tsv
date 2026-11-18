@@ -1,0 +1,57 @@
+original_commit	previous_applied_commit	applied_commit	author	title
+48b1c5c8fed6c8a6dcb7ff0a3a1c28648558d8eb	3f9c7c3727388e8e9e8a084b37ba178e47b0b569	11a28749d454dae3ce128613496fd5b8e0e20449	Jaeook Ryu	fix: 글자 없는 host 의 나란한 양수 오프셋 자리차지 표를 자기 오프셋에 배치 (#8516)
+423b369e9d81cbfd6f31ec527d53cbea5d43d5e1	b88ac4e2a13d3f609dbad7ef7aa9c01244f83241	796a6dfbf6f30162f1a31edd0c2b96bab29eeeea	Jaeook Ryu	feat(edit): 글자 서식 props 에 글꼴 이름 fontName 을 받는다
+2be042208ee670b545a4c55dc9f0b667e9dcf7fb	2ff31676702b4cf34b73158b0c8951d940286472	b0e9c4f8a7cf11b4d25f5aecc1e98d50f8daa39b	Jaeook Ryu	fix(layout): 쪽·용지 기준 자리차지 표 띠에 밀린 빈 host 줄은 줄높이와 줄간격을 모두 전진 (#8554)
+efa20ac2eafe1137b370d270f459eac54109b5ca	a347e456fb529f22c6e6ac7c39cc8279aeaad371	936090a34702b00ac1d5e65a60b3057d7b9806bd	Jaeook Ryu	docs: #8554 i39 Native 한자 누락 원인 문구를 #8590 확인 결과로 정정
+f3148d52472745de33fff5ae8feb33a1e9805943	502812f0371d01830b3dc04ef01a98c2c192005f	172c6d2a2e0d5e3144b51220e747749f7a230d09	Jaeook Ryu	fix(typeset): 빈 host 자리차지 표 뒤 다음 문단이 빈 자리차지 표 host 여도 저장 host 줄 프레임을 받는다 (#8560)
+bc8a04e056ccfbbe371b21239ecfd13696cea0b2	1b884ac6882ff65aaadd41640f8a33832a5faa37	51f9182d647d3f37e037f9a950ab3f014b23fcdb	Jaeook Ryu	test: #8560 측정 근거·검증 증거와 새 원본 IR 왕복 baseline 등록
+f25efcf2c9dba5793f78a5e5d9c845944c562dfb	584325e60ea47f2fa53369d04ac99344a13f35f7	61f7f1c785c62f1b0652e6824981030dc28074a8	Jaeook Ryu	fix(renderer): 줄 머리 TAC 표 뒤 문단 끝 공백에 줄을 주지 않는다 (#8574)
+0a63dba9bb1d43172add7bb1905cd86ce79a6fd4	18fae812a00c31841191861936e270d646d25257	c2f2fe229f3e231dc69665f9698209c44b8854fc	Jaeook Ryu	fix(layout): 어울림 표가 뒤 문단을 띠로 흡수하면 흐름상 다음 문단으로 host 뒤 사다리 일치를 판정 (#8567)
+a68704a019cf56f4dca8db0ee5ff8ae5103febb8	2571ad0ab36cf523f14931d252dcea4a0806f8a5	3df89b247c96aa1643958ece9dfb1ecee2567340	Jaeook Ryu	test: #8567 측정 근거와 검증 증거 등록
+983933bc448e5ed4f7c8d15be97d894e129a5b9b	e6a98b92ae3f999a6e41fc5da63c10bf556b9094	40011ee9942db90e7a861c82d6739934eed59ed0	Jaeook Ryu	fix(renderer): 도형 그림 채우기 크기와 한컴 윤고딕 250 연결 (#8575)
+032dcb80e3de44b3ed4a7ca09549a197b6a18067	ee30a141ca4ca0240307dde2f7ba8bd0d3aec808	180a8100bbe888e5df124aad1bb3ba467f810163	Jaeook Ryu	fix(typeset): #8596 앞 TAC 표 host 줄 안에 저장된 자리차지 표 프레임은 다음 쪽에서 시작한다
+e74368c345437ca63591ea064c4b972ade999ee7	29726b7a601ddc9181c530f22bdabca7a54d619a	67f5ae317aca041e26f35c2e24bc347e3dd09a74	Jaeook Ryu	docs(#8596): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일
+013459bff4ff5313af53ece5646e79c48647a3aa	11c00e736de9d8d5023ad35b09521ca8b78e6b81	6e4348dfb7e4803ee6823842d3fabb45b6ded152	Jaeook Ryu	docs(#8596): 최신 devel rebase head 재측정 — base·head 전쪽 TSV, 대표 PNG, 편람 gate
+4f8570309e925468552036f4c20d099011d55a35	30a367540bbc8cf747ed9323c8cd9595799e2747	85f5c3a8a1e07279f55fc27b329b46eaf6d31a6e	Jaeook Ryu	fix(render): WASM Canvas 합성 굵기를 실제 face 윤곽의 fill+stroke로 그린다 (#8430)
+3d0b4420dbee220253189fc149c48125cc0e2dc4	1c73d258a0b751afc9802f5dcf4546c314128e07	e972519dbb78d406c0e1ecb13697a5828fef5afe	Jaeook Ryu	docs(#8430): 30396 권고문 Native/fresh WASM 전쪽 TSV·확대 판독·글꼴 예외 증적
+5d37286267136c9978d7ac2f804913730ab6becf	a179a9df3e8b6755e3b0f2b37d3c1e0edcbd4770	e2db3b69deccbc1bb8f8929b6e17f730bd4a0415	Jaeook Ryu	docs(#8430): 최신 devel rebase head 재측정과 글꼴 예외 source SHA 갱신
+d8ded0cc7171d54e3b76be63ed7125b97aae9d67	42ca1ee142050c3d9411b4a59df6cffcc80a003a	3931b43fc03f6013609e23f318f416ed2e29bd50	Jaeook Ryu	fix(typeset): #8606 빈 host 의 자기 오프셋 자리차지 본표는 머리 표에 밀린 표가 아니다
+8ee296b76e33e79a8b225385e252b12f35c81a65	eff860e663642d737fd627e545212166bedaadaf	c2afdaa722fe9a96a53b1b820de6231d155bface	Jaeook Ryu	docs(#8606): 필수 편람 Native 383쪽 TSV — devel 7fdd5441ff 와 바이트 동일
+b7b93df883ef0eed535d1e80b5c45ea6d60ce3a9	b73690850b40a8507dad75f5a841656a86f6ceb8	08b9917631cd6b70db115c42ea9615a907003ef8	Jaeook Ryu	ci: Canvas visual diff 의 Chrome 시작 시간 초과 재실행 (#8607)
+84aa570a64e3cc5265fab5dd08b2e7fefa5d35d5	fcb98d26e4b5942f8a8883410c421cbcdd430e26	c4b5ec109281efc0c643775f57cb7eb6aa34765f	Jaeook Ryu	fix(renderer): Native 경로 글꼴을 매핑으로 공유해 64MiB 넘는 파일도 싣기 (#8597)
+0cbe6a9ae5ee4ef8d994d21c170682f95f4bf236	1bba220498378d38b89da137e44a48d3243c6826	46b8e0b00d95fe237e29cb3a012aca5c1ad3696d	Jaeook Ryu	fix(font): 환경 이름 계약을 어기는 원본 글꼴 이름은 관측 대체 요청에서 뺀다 (#8597)
+7d1d9b51f2f2cc9f92aef46eefe101a6d4b433a5	370f7b90976e1309b1fc70e41fa04b6be0ba5b16	b6f2961686746acb2f13dc3368c32e93080c9618	Jaeook Ryu	fix(layout): 칸 안 빈 host 의 글 위아래 표 띠가 뒤 문단 앞 간격을 흡수한다 (#8610)
+0fd746a87d28cd70fe7297149882cacd84074475	3c8594e092f8f6ba374d5baea73c5ec706d1725d	bb93a0aa8f3a1de956dcc536e2580f67ab3a1de8	Jaeook Ryu	fix(visual-sweep): 글꼴 catalog family 이름의 앞뒤 공백을 Native 와 같이 정규화 (#8612)
+afab535863b77d59b1f8686d1ca8a85852dae2ec	5134e51b57c6ceb62453f67ace9f94b72ed3f741	e4d4802f63333eaeb1181fd0cbde3442be416485	Jaeook Ryu	fix(renderer): 각주 안에서 줄을 통째로 차지하는 TAC 표를 소유 줄에 그린다 (#8551)
+da01e3a73a29a3bc03f1e8ac403f95f1d4792210	a41669b45f0afcd3e97d17c9354156acc40a9a15	ccfb0b7c8411515270139be16cda48f3625c2141	Jaeook Ryu	docs: #8551 각주 캡션 표 paint 시각 증적
+7057aaccfaa0a5bd9bc80304d4ccdd07f220beff	c106327a84c6e476733b03aadb59f5ec2ca5ae54	5155d8b681350ae3fbe926b74c3592d43ccd0278	Jaeook Ryu	docs: #8551 최신 devel rebase head 재측정 기록
+169b5cd2d0bb7d0a25c755477e60dad9c96228e7	c54d2452a5b97f9f0af316db9b721d06fc1bda5d	26411c2d6f16b2b821210b4d7508459515f6ed08	Jaeook Ryu	fix(native-skia): 최소 글꼴 환경의 native-skia 회귀 4건 — 완결 SVG 문서 예산·저장소 글꼴 공급 (#8613)
+693de034cb8edef9bd57c5689a5090a4b161a500	330b652cae986d3b3e236658d8ffee1dd1da3144	9c9e1f53ac9935335c77ee79d915ac45ee8aa218	Jaeook Ryu	fix(typeset): #8620 글자처럼 취급 표 host 의 컨트롤 전용 꼬리 줄은 쪽을 넘으면 다음 쪽에 놓는다
+39ceb92ace1a6ad2ca9578c5b72b6940bb096281	253572faee856566afcd810ffc083383471540cf	b626614e8e19dc70f72a4f2ba367e38b32846a01	Jaeook Ryu	docs(#8620): 필수 편람 Native 383쪽 TSV — devel 과 바이트 동일
+5554a192b7a62836fc7f9a460623b5da205cf151	a7c4883a5022132f33d44c89043e7c2d1bcdcfd0	10508938da5c1e5d8f16de81e4c26501a889e022	Jaeook Ryu	fix(renderer): Dotum U+2024 은 Haansoft Dotum 이 공급 (#8619)
+71bd8abf48dbad4afa09d66803f6011546add734	81cb88edd21bf1a4478ed477fa0978b60f221e09	0727a01796e5cedc4b9288fd51eeb308195b5cb4	Jaeook Ryu	docs: #8619 rebase 뒤 Native/fresh WASM sweep 증거 갱신
+aceb89c6d3f47c8790c22929e2615b75c3ef3465	1f62c7acf9d6ad10a9bc5d0841a6d61666c2b29c	1de2ce561e57c2a339fafafed54f19f0a9cabc1e	Jaeook Ryu	fix(typeset): 다 들어가지 않는 각주는 들어가는 앞 조각만 비용으로 잡고 넘어온 각주를 이어받는 쪽 예산에서 뺀다 (#8468)
+8ece4b20852a56cf2523faebb87ea24d7339a5ac	87e3cca5f90ebb46888755f08a01bd1379b69f3a	d3664339fa4dd96cc47fafc87c5c1e40487c8441	Jaeook Ryu	test: #8468 앞부분만 들어간 각주의 표 줄 — 뒤 본문 줄이 각주 글 줄 위를 채운다
+595099ca975b231117f86bd2e9794ba05c1ce0e8	57b0f6c2524dbdd4fdbe98f6ca35ed549b5e2d19	d87d05d698a73dbcbe2ebf80529a07e855a4c25d	Jaeook Ryu	test: #8468 T20 측정 주석을 실제 값으로 채우고 fmt 적용
+d9b846cafab496a3d72f9953a743be17e23a7071	94f7ceeb05d2a59bd64e5e573462bba6b204f9cf	aef8a6e227860ba5df9706247e4815bdf2c93737	Jaeook Ryu	fix(typeset): 블록 표가 든 각주의 조각 높이를 paint 조각 측정으로 잰다 (#8468)
+2211d9e95698007c53788aadd15e9cd3d17df6ab	d998f76423960ba0fd2295d9fa66e2154732f869	8c4e428c0e3f935c8d29a5026ca431825461636b	Jaeook Ryu	test: #8468 후속 측정 근거와 Native·fresh WASM TSV·대표 PNG 증적
+7d40345bc014f3cb4eca4235783afcfb670899f9	32f6428c39900902361c0573ab06976eec487a4e	ff42c376aa9766ae077e261dee038479d9074a79	Jaeook Ryu	ci: #8642 CI 재실행 (runner 디스크 부족으로 실패한 adapter inter-diff·prop roundtrip)
+ab4cddea86fde59dbfdea3122d1eb579888951bc	6586c80723e060c8b9eb0170fabb33b655432e80	f94ddf554ca723553ab2d14e40846bbbc321849a	Jaeook Ryu	fix(composer): 다음 문단 저장 vpos 가 간격 전량을 닫으면 TAC 표 줄 뒤 간격을 전량 남긴다 (#8544)
+1ea144e29c04613c5e7170fc74e622bb03fbd9a0	ef011d4595be7d87b3a4e4511aade9d29a876781	7e21e9c2d337efe3d7a3544cd4edef76bf3b6fc0	Jaeook Ryu	test: #8544 측정 근거와 Native·fresh WASM TSV·코퍼스 A/B·대표 PNG 증적
+3e813cb33670dffbf0a495c87b31e9b016581576	4850a4e8eb04b7cd6c45a122e678c0a83ed48add	3756f010bb0d240d9e05b97613ed7d320c81e062	Jaeook Ryu	fix(layout): TAC 표 앞 저장 줄을 흐름 표가 내보내고 그린 줄 전진으로 원점을 맞춘다 (#8641)
+2aedb2a8580da9bb1b2d97643d3a97defa4f1660	c764c308443bf71fdb2a5bec81193b7a7062dbe7	b8f0ec8dda4eee92f04f2fe9cab0c5b5030bc032	Jaeook Ryu	test(#8641): 새 공개 샘플 겹침 원장과 Native·fresh WASM TSV·대표 PNG
+5fdbd2b17faef122ada2f7aecedda5e3894678f3	0081e69069a6daf3d6a290afe837ded59049a48c	890fb34fbd300354c61148de45ef24a8bc92f182	Jaeook Ryu	fix(layout): 칸 안의 쪽 기준 글 앞으로 표를 칸 흐름에 쌓지 않는다 (#8648)
+c546460f55cd9cf94d8106cde271750e0a131c0c	ff9be58438304437e3fcdb4d578f4196cd7cb8c7	7b00723bc94b3c2179ce3e3e9cb3d8e2b43985a5	Jaeook Ryu	test(#8648): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG
+068250c0e8bc9b07b8a25911ab8002d5504f63eb	bbb5b3ebd52b0219c79358428862c676bbfd32cd	4e50a26b632b0c1d7966a26207eebacadf025332	Jaeook Ryu	fix(layout): 한 줄의 TAC 표 여러 개는 선언 폭만큼 전진한다 (#8647)
+7f85c9f4fa5ee95a9d58eeb569794ad89c9e1dc5	0501341cd512c3c709826f1e828806156c3d566b	e08d1fd5e099863fa29f2dc3dea99c9f49f57070	Jaeook Ryu	fix(layout): 같은 줄 TAC 표 공유 기준선과 rowspan 초과분이 받는 행 (#8641)
+d971025c2bb85ebcd2453578800e6130445b81b8	8b4781d6847d2b2c062e6579a95d14f054f9c7f8	c7f3047a9fb2dc5499967ad37393f1dbd6605033	Jaeook Ryu	docs(evidence): #8641 공유 기준선·rowspan Native/fresh WASM TSV와 대표 PNG
+8406b522616e2d51e4e88124b5721bf25e9239dd	5b4bd3caf9c5348c7e3ca3757093ca1be01b373b	0fa6736dc2d14980545e9a96f73a1c174f467573	Jaeook Ryu	fix(layout): TAC 표만 담은 문단의 동반 표를 줄 소유자 기준선에 앉힌다 (#8653)
+cd4cc992f30fdc50478217d3b954c9fd9e1d34e7	8cd0e59d4a4d9c30e2cfa6422c8a5dcb3fe70d0e	32f9e5e170722a42e09a4b2975be13fabc8a6271	Jaeook Ryu	test(#8653): 축소본·코퍼스 Native·fresh WASM TSV와 대표 PNG
+cb1ab1d5af6ce0a4614365c6ca7d6a8b5fc0ba77	c7a2fe6e33b29a4c45e28f1693816aa35adaddf5	dede2530f11430861e177b336b5fd6a41239b2d2	Jaeook Ryu	fix(renderer): 저장 줄 없는 HWP5 TAC 표의 행 높이와 넘친 공백의 줄 끝 처리 (#8639)
+c1db11718bbc5319ac78507e7cabb8cc0fe3f8b3	c09ad1c12921ab8983b82d84a838b3f3a7cbffa0	5d409d6f956880bca36e7a299abaa640b44fe679	Jaeook Ryu	fix(renderer): 변경 추적 0x08 문서는 원본 프로그램으로 저장 줄을 다시 짜지 않는다 (#8639)
+f84e0f3ffe3b154d286bc878fc90facdb7ced153	4fff20f940ed0d23df849e8edf639df0acf959ee	af8ccc3ca68872e3fa687f1aefbbc8d25768358b	Jaeook Ryu	docs: #8639 Native/fresh WASM sweep 증거 (행 높이·끝 공백·변경 추적 0x08)
+e3db55a6f16b57c2ef73a3aaaf22f5298ccc8bfc	27d8df37ca09c2be4cfd972d00776fed33497904	2d2785113b124959e74217f8dac71227142ff6eb	Jaeook Ryu	fix(typeset): 저장 vpos 가 되감긴 보이는 호스트 글줄을 표와 함께 다음 쪽에서 시작한다 (#8652)
+fbcdbf58e0d1b55bdfec9bb6623b3f0a773b9c20	4937cd2641446e76bab0b8064127ebb71be67c98	90c61dbea31d00c73f6e6ef317624408cb54971b	Jaeook Ryu	fix(footnote): 각주 번호와 같은 문단의 글자처럼 취급 표를 번호 뒤에 그린다 (#8657)
+a0f7203d788415f378f3ea61d3679a9107983666	68410fa9c7b0bbf9302155f05f32cd47703ef969	a6ae92a6469dd85c02c5ea082e8853f0f293fe97	Jaeook Ryu	docs: #8652·#8657 Visual Sweep TSV 와 대표 review·overlay PNG
+e40b399facab3886646e6f6fb77a85cab6bdebb0	fb0ee16123f748823f04b462c9dfec2b53761d53	c8645b4cd469c1019f2ff96af4ac53de2e8a8885	Jaeook Ryu	fix(layout): 자기 자리차지 표 띠 위끝에 걸친 저장 줄을 띠 끝으로 내린다 (#8679)
+3cc76d84d41b40f47304b62ff2b8b5010828b86b	ac6d5726c836f2774be7591602690c35b8f5b03b	62ea8b49e8b9cfc4fddeb887df74d5ea3fd6a345	Jaeook Ryu	docs(pr): #8679 Native·fresh WASM TSV와 비교 PNG 증적

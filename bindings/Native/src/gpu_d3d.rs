@@ -19,7 +19,7 @@ pub extern "C" fn rhwp_d3d_capabilities() -> *mut c_char {
     }
     #[cfg(not(all(feature = "native-skia-d3d", target_os = "windows")))]
     {
-        CString::new(r#"{"ok":true,"abiVersion":1,"available":false,"producerApi":"d3d12Ganesh","consumerBridge":"d3d11GpuCopyToLegacyDxgiHandle","typedPointers":true,"ownerThreadHandles":true,"consumerGpuCompletion":false,"wholeFrameReadbacks":0}"#).expect("constant JSON").into_raw()
+        CString::new(r#"{"ok":true,"abiVersion":1,"available":false,"cacheTrim":false,"producerApi":"d3d12Ganesh","consumerBridge":"d3d11GpuCopyToLegacyDxgiHandle","typedPointers":true,"ownerThreadHandles":true,"consumerGpuCompletion":false,"wholeFrameReadbacks":0}"#).expect("constant JSON").into_raw()
     }
 }
 
@@ -148,6 +148,7 @@ mod enabled {
             "pixelFormat":"bgra8UnormPremultiplied","origin":"topLeft","colorSpace":"srgb",
             "producerGpuCompletion":"checkedQueueFence","consumerGpuCompletion":false,
             "wholeFrameReadbacks":0,"maxPresentersPerThread":2,"maxTargetBytes":16777216,"maxPages":8,
+            "cacheTrim":true,
             "contextCredits":rhwp_core::native_host::gpu_d3d::context_credits()}),
         )
     }
@@ -197,9 +198,13 @@ mod enabled {
                 Ok(())
             }
         })?;
-        let id = NEXT_ID
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |v| v.checked_add(1))
-            .map_err(|_| NativeHostError::LimitExceeded("D3D12 handle space exhausted".into()))?;
+        let id = rhwp_codec_resource::atomic::try_update_u64(
+            &NEXT_ID,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |v| v.checked_add(1),
+        )
+        .map_err(|_| NativeHostError::LimitExceeded("D3D12 handle space exhausted".into()))?;
         let presenter =
             unsafe { NativeD3dPresenter::new(adapter, device, queue, generation, config)? };
         let info = presenter.info()?;
@@ -244,6 +249,10 @@ mod enabled {
     #[serde(tag = "op", rename_all = "camelCase", deny_unknown_fields)]
     enum Request {
         Info {},
+        TrimCache {
+            #[serde(default, rename = "targetBytes")]
+            target_bytes: usize,
+        },
         Release {},
         Abandon {},
     }
@@ -261,6 +270,7 @@ mod enabled {
             let presenter = owners.get_mut(&id).ok_or_else(invalid_handle)?;
             match request {
                 Request::Info {} => Ok(json!({"ok":true,"info":presenter.info()?})),
+                Request::TrimCache { target_bytes } => presenter.trim_cache(target_bytes),
                 Request::Release {} => {
                     presenter.release()?;
                     owners.remove(&id);

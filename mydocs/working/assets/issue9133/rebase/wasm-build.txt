@@ -1,0 +1,31 @@
+ Container rhwp-wasm-run-7ceb49b6d54a Creating
+ Container rhwp-wasm-run-7ceb49b6d54a Created
+[INFO]: Checking for the Wasm target...
+[INFO]: Compiling to Wasm...
+   Compiling crc32fast v1.5.5
+   Compiling zeroize_derive v1.5.0
+   Compiling constant_time_eq v0.6.1
+   Compiling aes v0.9.4
+   Compiling flate2 v1.1.11
+   Compiling zopfli v0.8.3
+   Compiling zeroize v1.9.1
+   Compiling curve25519-dalek v5.0.0
+   Compiling png v0.18.1
+   Compiling tiff v0.11.3
+   Compiling usvg v0.47.0
+   Compiling zip v8.6.0
+   Compiling zip v9.5.1
+   Compiling ed25519-dalek v3.0.0
+   Compiling tiny-skia v0.12.0
+   Compiling image v0.25.10
+   Compiling office_oxide v0.1.9
+   Compiling rhwp-password-crypto v0.1.0 (/app/crates/rhwp-password-crypto)
+   Compiling resvg v0.47.0
+   Compiling rhwp-pdf-import-backend v0.3.78-rhwp.1 (/app/vendor/rhwp-pdf-import-backend)
+   Compiling rhwp v0.9.0 (/app)
+    Finished `release` profile [optimized] target(s) in 11m 37s
+[INFO]: Installing wasm-bindgen...
+[INFO]: Optimizing wasm binaries with `wasm-opt`...
+[INFO]: :-) Done in 18m 10s
+[INFO]: :-) Your wasm pkg is ready to publish at /app/pkg.
+[WARN]: :-) There's a newer version of wasm-pack available, the new version is: 0.15.1, you are using: 0.15.0. To update, navigate to: https://wasm-bindgen.github.io/wasm-pack/installer/

@@ -1,0 +1,178 @@
+[
+  {
+    "number": 8962,
+    "title": "fix(flutter): stabilize Linux reference app resize (P120)",
+    "head": "469ca8c04f5fab5a9a87bec1c8a09873032d4720",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p120-linux-resize",
+    "base": "devel",
+    "baseSha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:37.266282+00:00"
+  },
+  {
+    "number": 8963,
+    "title": "feat(flutter): notify GPU producer readiness (P121)",
+    "head": "05d303178b0c8f14be8e3f6d1edf78892a66cd98",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p121-gpu-ready-events",
+    "base": "devel",
+    "baseSha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:40.469168+00:00"
+  },
+  {
+    "number": 8964,
+    "title": "feat(flutter): await document retirement on window exit (P122)",
+    "head": "d8251257d53c365de873fcab61b03f52ecdb67ff",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p122-window-close",
+    "base": "devel",
+    "baseSha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:43.617498+00:00"
+  },
+  {
+    "number": 8965,
+    "title": "feat(native): cache bounded Metal replay tiles (P123)",
+    "head": "2023cd3d2715a5eda2cadf30801ffcacefb4aab8",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p123-metal-tile-cache",
+    "base": "devel",
+    "baseSha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:46.466594+00:00"
+  },
+  {
+    "number": 8966,
+    "title": "feat(native): cache bounded D3D replay tiles (P124)",
+    "head": "80062f4d0d11b69bfc1849d116150b96e7d7e899",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p124-d3d-tile-cache",
+    "base": "devel",
+    "baseSha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:49.425307+00:00"
+  },
+  {
+    "number": 8967,
+    "title": "feat(flutter): reuse completed private D3D producer targets (P125)",
+    "head": "41e8618fdff2a55a16ab60fc8c667f9255692179",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p125-windows-producer-pool",
+    "base": "devel",
+    "baseSha": "6c1d134d42213ce0fb5f66b5ad2bf343b7b64fe0",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:52.415565+00:00"
+  },
+  {
+    "number": 9128,
+    "title": "feat(native): bound Metal context admission across owner threads (P126)",
+    "head": "207476213889668e17b2ea6f64eb80c735632f46",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p126-metal-admission",
+    "base": "devel",
+    "baseSha": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:55.210355+00:00"
+  },
+  {
+    "number": 9129,
+    "title": "perf(flutter): suspend healthy idle GPU status polling (P127)",
+    "head": "720c161b9b961b862f6834ab045f6ff599279de3",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p127-idle-gpu-polling",
+    "base": "devel",
+    "baseSha": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:43:57.890012+00:00"
+  },
+  {
+    "number": 9130,
+    "title": "feat(native): trim idle GPU caches on producer owner threads (P128)",
+    "head": "c1d53287a6991c6195840c71927502dbc22f8907",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p128-gpu-cache-trim",
+    "base": "devel",
+    "baseSha": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:44:00.715273+00:00"
+  },
+  {
+    "number": 9131,
+    "title": "feat(flutter): trim GPU caches on memory pressure (P129)",
+    "head": "3798dd236733ed41cf547e15c73b622ff44a5b04",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p129-flutter-memory-pressure",
+    "base": "devel",
+    "baseSha": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:44:03.673852+00:00"
+  },
+  {
+    "number": 9132,
+    "title": "feat(flutter): expose stamped GPU cache metrics and comparisons (P130)",
+    "head": "4379aa080b01a5da26f03f154287057ff6fb8269",
+    "headRepository": "seo-rii/rhwp",
+    "branch": "task/8701-p130-gpu-cache-metrics",
+    "base": "devel",
+    "baseSha": "6269cb0f1707a1c5afcae4840ac875f928c4a03d",
+    "reviewersBefore": [],
+    "teamsBefore": [],
+    "action": "assigned",
+    "reviewersAfter": [
+      "edwardkim"
+    ],
+    "checkedAt": "2026-11-16T10:44:06.469224+00:00"
+  }
+]

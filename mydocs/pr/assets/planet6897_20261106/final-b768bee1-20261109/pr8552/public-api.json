@@ -1,0 +1,229 @@
+{
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "browser": "Chrome/156.0.8078.80",
+  "scope": "최종 Mac no-opt package의 fontName 공개 API 상태·HWP/HWPX 재열기. PNG나 설치 글꼴 모양 검증과 구분.",
+  "package_sha256": {
+    "rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+    "rhwp_bg.wasm": "edfcfbe4005bb48fd475d4ddef2403a8dbda6e3b53dd969d5afb5f391a609ef6"
+  },
+  "face": "검토용등록글꼴",
+  "rows": [
+    {
+      "key": "body",
+      "error": null,
+      "expectedError": false,
+      "before_sha256": "325b027d4bab052ddda4aeced2e74a959818efaaba67778adc19139b6d30f89d",
+      "after_sha256": "32959adeff607107a8c8bb232083514ff6f8dd8359d2913b311ed583fb58510d",
+      "bytes_unchanged": false,
+      "hwpx_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/body-hwpx_reopen.hwpx",
+        "sha256": "32959adeff607107a8c8bb232083514ff6f8dd8359d2913b311ed583fb58510d"
+      },
+      "hwp_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/body-hwp_reopen.hwpx",
+        "sha256": "32959adeff607107a8c8bb232083514ff6f8dd8359d2913b311ed583fb58510d"
+      },
+      "hwpx": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/body-hwpx.hwpx",
+        "sha256": "32959adeff607107a8c8bb232083514ff6f8dd8359d2913b311ed583fb58510d"
+      },
+      "context": {}
+    },
+    {
+      "key": "cell",
+      "error": null,
+      "expectedError": false,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5",
+      "bytes_unchanged": false,
+      "hwpx_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-hwpx_reopen.hwpx",
+        "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5"
+      },
+      "hwp_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-hwp_reopen.hwpx",
+        "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5"
+      },
+      "hwpx": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-hwpx.hwpx",
+        "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5"
+      },
+      "context": {
+        "t": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2
+        },
+        "path": [
+          {
+            "controlIndex": 2,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    },
+    {
+      "key": "cell-by-path",
+      "error": null,
+      "expectedError": false,
+      "before_sha256": "2f17fea1e25fa6d59f319c805bd26ff53e9927d69cc1f32244cb03122adcfbc8",
+      "after_sha256": "fa84466225b82277964b6a5bf915d6d47130af9bc1b8a428e972941907cf7b06",
+      "bytes_unchanged": false,
+      "hwpx_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-by-path-hwpx_reopen.hwpx",
+        "sha256": "fa84466225b82277964b6a5bf915d6d47130af9bc1b8a428e972941907cf7b06"
+      },
+      "hwp_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-by-path-hwp_reopen.hwpx",
+        "sha256": "fa84466225b82277964b6a5bf915d6d47130af9bc1b8a428e972941907cf7b06"
+      },
+      "hwpx": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-by-path-hwpx.hwpx",
+        "sha256": "fa84466225b82277964b6a5bf915d6d47130af9bc1b8a428e972941907cf7b06"
+      },
+      "context": {
+        "t": {
+          "ok": true,
+          "paraIdx": 0,
+          "controlIdx": 2
+        },
+        "path": [
+          {
+            "controlIndex": 2,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          },
+          {
+            "controlIndex": 0,
+            "cellIndex": 0,
+            "cellParaIndex": 0
+          }
+        ]
+      }
+    },
+    {
+      "key": "header",
+      "error": null,
+      "expectedError": false,
+      "before_sha256": "ec6400fc2f7ccb97c46f5d5ea7e42ae035277347d34b86ff9a2a2348d0d61fb8",
+      "after_sha256": "7ed988344409eba4fd1cb9dab93de92143ee6c1becec4cb3d2195d8389b7613f",
+      "bytes_unchanged": false,
+      "hwpx_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/header-hwpx_reopen.hwpx",
+        "sha256": "7ed988344409eba4fd1cb9dab93de92143ee6c1becec4cb3d2195d8389b7613f"
+      },
+      "hwp_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/header-hwp_reopen.hwpx",
+        "sha256": "7ed988344409eba4fd1cb9dab93de92143ee6c1becec4cb3d2195d8389b7613f"
+      },
+      "hwpx": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/header-hwpx.hwpx",
+        "sha256": "7ed988344409eba4fd1cb9dab93de92143ee6c1becec4cb3d2195d8389b7613f"
+      },
+      "context": {}
+    },
+    {
+      "key": "footer",
+      "error": null,
+      "expectedError": false,
+      "before_sha256": "4677429663c492965180dc115dd6b0c5e865774fc438721488d59deef249c47f",
+      "after_sha256": "8275b90807163d03ba04d975285c4e1e91f665b0f1c09fbcf5cf4b6a8ea1b6d1",
+      "bytes_unchanged": false,
+      "hwpx_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/footer-hwpx_reopen.hwpx",
+        "sha256": "8275b90807163d03ba04d975285c4e1e91f665b0f1c09fbcf5cf4b6a8ea1b6d1"
+      },
+      "hwp_reopen": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/footer-hwp_reopen.hwpx",
+        "sha256": "8275b90807163d03ba04d975285c4e1e91f665b0f1c09fbcf5cf4b6a8ea1b6d1"
+      },
+      "hwpx": {
+        "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/footer-hwpx.hwpx",
+        "sha256": "8275b90807163d03ba04d975285c4e1e91f665b0f1c09fbcf5cf4b6a8ea1b6d1"
+      },
+      "context": {}
+    },
+    {
+      "key": "bad-body",
+      "error": "렌더링 오류: 문단 999 범위 초과",
+      "expectedError": true,
+      "before_sha256": "325b027d4bab052ddda4aeced2e74a959818efaaba67778adc19139b6d30f89d",
+      "after_sha256": "325b027d4bab052ddda4aeced2e74a959818efaaba67778adc19139b6d30f89d",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "bad-cell-section",
+      "error": "렌더링 오류: 셀 문단을 찾을 수 없음",
+      "expectedError": true,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "bad-cell-parent",
+      "error": "렌더링 오류: 셀 문단을 찾을 수 없음",
+      "expectedError": true,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "bad-cell-control",
+      "error": "렌더링 오류: 셀 문단을 찾을 수 없음",
+      "expectedError": true,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "bad-cell-index",
+      "error": "렌더링 오류: 셀 문단을 찾을 수 없음",
+      "expectedError": true,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "bad-cell-paragraph",
+      "error": "렌더링 오류: 셀 문단을 찾을 수 없음",
+      "expectedError": true,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "bad-path",
+      "error": "렌더링 오류: 경로[1]: controls[999]가 표/글상자/그림 캡션이 아닙니다",
+      "expectedError": true,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "empty-path",
+      "error": "렌더링 오류: 경로가 비어있습니다",
+      "expectedError": true,
+      "before_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "after_sha256": "a8b70f43a1791e017a52d5acc2d6dcedd37b9183a012bfe9ff9ea63373d0e36b",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "missing-header",
+      "error": "렌더링 오류: 머리말/꼬리말 정의를 찾을 수 없음",
+      "expectedError": true,
+      "before_sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341",
+      "after_sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341",
+      "bytes_unchanged": true
+    },
+    {
+      "key": "conflicting-font-ids",
+      "error": "렌더링 오류: fontName 은 fontId·fontIds 와 함께 쓸 수 없음",
+      "expectedError": true,
+      "before_sha256": "325b027d4bab052ddda4aeced2e74a959818efaaba67778adc19139b6d30f89d",
+      "after_sha256": "325b027d4bab052ddda4aeced2e74a959818efaaba67778adc19139b6d30f89d",
+      "bytes_unchanged": true
+    }
+  ]
+}

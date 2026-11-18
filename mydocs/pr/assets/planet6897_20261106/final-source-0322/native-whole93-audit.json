@@ -1,0 +1,293 @@
+{
+  "code_head": "0322cfe65b99c24685e5a30f67ae49c7e7f11272",
+  "conditions": 93,
+  "pages": 2994,
+  "below90": 0,
+  "minimum": "92.24",
+  "protected_pages": 1771,
+  "supplemental": [
+    {
+      "case": "protected-angle",
+      "page": "1",
+      "silhouette_raw_match_percent": "100.00"
+    }
+  ],
+  "missing": [],
+  "changes": [
+    {
+      "case": "issue7905",
+      "page": 3,
+      "before": "99.80",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 1,
+      "before": "96.58",
+      "after": "98.44",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 2,
+      "before": "98.31",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 3,
+      "before": "99.76",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 4,
+      "before": "99.91",
+      "after": "99.95",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 5,
+      "before": "99.04",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 6,
+      "before": "98.11",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 7,
+      "before": "97.74",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 9,
+      "before": "99.79",
+      "after": "99.97",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 10,
+      "before": "97.99",
+      "after": "98.77",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 11,
+      "before": "98.74",
+      "after": "99.05",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 12,
+      "before": "99.54",
+      "after": "99.87",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 13,
+      "before": "99.35",
+      "after": "99.68",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 14,
+      "before": "98.01",
+      "after": "98.60",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 15,
+      "before": "98.41",
+      "after": "99.12",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 16,
+      "before": "96.00",
+      "after": "98.36",
+      "decline": false
+    },
+    {
+      "case": "nested",
+      "page": 17,
+      "before": "94.96",
+      "after": "99.98",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 12,
+      "before": "99.98",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 13,
+      "before": "99.98",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 14,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 15,
+      "before": "99.98",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 16,
+      "before": "99.98",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 17,
+      "before": "99.98",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 18,
+      "before": "99.98",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 20,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 81,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 351,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "sample10",
+      "page": 708,
+      "before": "99.81",
+      "after": "99.82",
+      "decline": false
+    },
+    {
+      "case": "yeongwol",
+      "page": 1,
+      "before": "99.60",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "yeongwol",
+      "page": 2,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "page": 1,
+      "before": "99.96",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "page": 3,
+      "before": "99.81",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert-delete",
+      "page": 4,
+      "before": "99.72",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert",
+      "page": 1,
+      "before": "99.96",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert",
+      "page": 3,
+      "before": "99.81",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "issue8040-insert",
+      "page": 4,
+      "before": "99.72",
+      "after": "99.99",
+      "decline": false
+    },
+    {
+      "case": "outline",
+      "page": 7,
+      "before": "97.89",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "outline",
+      "page": 8,
+      "before": "99.99",
+      "after": "100.00",
+      "decline": false
+    },
+    {
+      "case": "seo-helvetica-styles",
+      "page": 1,
+      "before": "98.93",
+      "after": "99.25",
+      "decline": false
+    }
+  ],
+  "regressions": [],
+  "scope": "native current whole93; other backend is separate"
+}

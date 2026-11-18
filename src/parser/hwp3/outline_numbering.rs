@@ -38,6 +38,8 @@ pub(super) fn custom_numbering(custom: &str) -> Option<crate::model::style::Numb
         }
         numbering.heads[level] = NumberingHead {
             number_format,
+            // HWP3의 이 형식에는 별도 머리 글자 모양 참조가 없다.
+            char_shape_id: u32::MAX,
             ..Default::default()
         };
         numbering.level_formats[level] = format!("{before}^{}{after}", level + 1);

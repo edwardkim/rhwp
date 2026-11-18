@@ -1,0 +1,255 @@
+{
+  "reviewed_at": "2026-11-11T19:32:34.841056+09:00",
+  "pr": 8945,
+  "author": "sacru2red",
+  "original_head": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+  "current_base": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+  "original_head_base": "e118de8abadd2dffb2798036b9ffd381b96ed7d5",
+  "review_code_source": "e98d884fc35295c8b612ceb0ac86437fb8108fee",
+  "maintainer_source_or_test_correction": false,
+  "original_contribution_preserved": true,
+  "broad_suite_reuse": {
+    "authority": "mydocs/manual/pr_review_workflow.md#322-녹색-github-code-head의-중복-로컬-전체-회귀-생략",
+    "head": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "ci": "https://github.com/edwardkim/rhwp/actions/runs/42991534935",
+    "render_diff": "https://github.com/edwardkim/rhwp/actions/runs/42991534852",
+    "current_base_merge_conflicts": false,
+    "actual_focused_and_visual_validation_separate": true
+  },
+  "issue_disposition": {
+    "7620": "OPEN; partial bottom-budget scope, footer/CellBreak residuals retained"
+  },
+  "native": {
+    "base": {
+      "source": "0d1f7291cc2e69a7495f3f69912eb54ed376b494",
+      "product_base": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+      "profile": "release-test",
+      "features": "native-skia",
+      "build_jobs": 14,
+      "returncode": 0,
+      "binary_sha256": "faeb10ad2a321d805bf02d97b5749a768d1641d23672d42a1f52f9ebd797f9eb",
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)"
+    },
+    "head": {
+      "source": "e98d884fc35295c8b612ceb0ac86437fb8108fee",
+      "reviewed_pr_head": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+      "base": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+      "profile": "release-test",
+      "features": "native-skia",
+      "returncode": 0,
+      "binary_sha256": "29224ba9a454123d5d435b987da46c226732ad76203cb301729d45434b3bde1d"
+    }
+  },
+  "wasm": {
+    "base": {
+      "source_sha": "0d1f7291cc2e69a7495f3f69912eb54ed376b494",
+      "source_dirty": false,
+      "profile": "release",
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "command": [
+        "sh",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--release"
+      ],
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+      "wasm_pack": "wasm-pack 0.15.0",
+      "cargo_cache_hit": "unknown",
+      "cargo_cache_matched_key": "unknown",
+      "cargo_lock_sha256": "448b40a5ef01b4a730e21f1bbc31f9a6a617d5ddaa89ab3b7133b5863d0dc551",
+      "cargo_manifest_sha256": "cb237f76710dd00daca0dce82211c3e0c3709a1ed663301552a598e94d53c535",
+      "wrapper_sha256": "556e5cc3e62ac8f3adb69b1419e8078c61d0a85615f59317103f10e3fda6e37c",
+      "runner": {
+        "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "logical_cpus": 16,
+        "image": null,
+        "image_version": null,
+        "cpu_model": "Intel(R) Core(TM) i9-9900KF CPU @ 3.60GHz"
+      },
+      "cargo_target_dir": "/home/edward/mygithub/rhwp/target/pr-review",
+      "cargo_build_jobs": "14",
+      "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+      "success": true,
+      "wall_seconds": 793.717,
+      "returncode": 0,
+      "events_seconds": {
+        "cargo_start": 0.44990633201086894,
+        "bindgen_start": 319.70739777298877,
+        "opt_start": 329.27150214399444,
+        "package_done": 793.6910280070151
+      },
+      "phase_seconds_approx": {
+        "preparation": 0.45,
+        "cargo": 319.257,
+        "bindgen_setup_and_run": 9.564,
+        "wasm_opt_and_finalize": 464.42,
+        "after_package": 0.026
+      },
+      "tool_commands": {
+        "wasm-bindgen": [
+          "/home/edward/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+          "/home/edward/mygithub/rhwp/target/pr-review/wasm32-unknown-unknown/release/rhwp.wasm",
+          "--out-dir",
+          "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/pkg",
+          "--typescript",
+          "--target",
+          "web"
+        ],
+        "wasm-opt": [
+          "/home/edward/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+          "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/pkg/rhwp_bg.wasm",
+          "-o",
+          "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/pkg/rhwp_bg.wasm-opt.wasm",
+          "-O"
+        ]
+      },
+      "tools": {
+        "wasm-bindgen": {
+          "version": "wasm-bindgen 0.2.127",
+          "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+        },
+        "wasm-opt": {
+          "version": "wasm-opt version 117 (version_117)",
+          "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+        }
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+          "bytes": 581315
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "60ebe8dc7175bab113a69c3e8fdae8ad78c55c8c19ff36033a49ed18c2d583d3",
+          "bytes": 29184257
+        }
+      }
+    },
+    "head": {
+      "source_sha": "e98d884fc35295c8b612ceb0ac86437fb8108fee",
+      "source_dirty": false,
+      "profile": "release",
+      "build_configuration": {
+        "profile": "release",
+        "build_mode": "standard",
+        "cdylib_only": "0",
+        "crate_types": "rlib+cdylib",
+        "lto_policy": "manifest",
+        "cache_variant": "release-rlib-cdylib-lto-manifest"
+      },
+      "command": [
+        "sh",
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--release"
+      ],
+      "rustc": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+      "wasm_pack": "wasm-pack 0.15.0",
+      "cargo_cache_hit": "unknown",
+      "cargo_cache_matched_key": "unknown",
+      "cargo_lock_sha256": "448b40a5ef01b4a730e21f1bbc31f9a6a617d5ddaa89ab3b7133b5863d0dc551",
+      "cargo_manifest_sha256": "cb237f76710dd00daca0dce82211c3e0c3709a1ed663301552a598e94d53c535",
+      "wrapper_sha256": "556e5cc3e62ac8f3adb69b1419e8078c61d0a85615f59317103f10e3fda6e37c",
+      "runner": {
+        "platform": "Linux-6.6.114.1-microsoft-standard-WSL2-x86_64-with-glibc2.39",
+        "logical_cpus": 16,
+        "image": null,
+        "image_version": null,
+        "cpu_model": "Intel(R) Core(TM) i9-9900KF CPU @ 3.60GHz"
+      },
+      "cargo_target_dir": "/home/edward/mygithub/rhwp/target/pr-review",
+      "cargo_build_jobs": "14",
+      "timing_method": "log receipt boundaries; includes setup/finalization, not isolated process timings",
+      "success": true,
+      "wall_seconds": 810.535,
+      "returncode": 0,
+      "events_seconds": {
+        "cargo_start": 0.3932634489610791,
+        "bindgen_start": 315.2507022319478,
+        "opt_start": 324.7109743159963,
+        "package_done": 810.5051304189838
+      },
+      "phase_seconds_approx": {
+        "preparation": 0.393,
+        "cargo": 314.857,
+        "bindgen_setup_and_run": 9.46,
+        "wasm_opt_and_finalize": 485.794,
+        "after_package": 0.03
+      },
+      "tool_commands": {
+        "wasm-bindgen": [
+          "/home/edward/.cache/.wasm-pack/wasm-bindgen-834c8396d913406b/wasm-bindgen",
+          "/home/edward/mygithub/rhwp/target/pr-review/wasm32-unknown-unknown/release/rhwp.wasm",
+          "--out-dir",
+          "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/pkg",
+          "--typescript",
+          "--target",
+          "web"
+        ],
+        "wasm-opt": [
+          "/home/edward/.cache/.wasm-pack/wasm-opt-1ceaaea8b7b5f7e0/bin/wasm-opt",
+          "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/pkg/rhwp_bg.wasm",
+          "-o",
+          "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/pkg/rhwp_bg.wasm-opt.wasm",
+          "-O"
+        ]
+      },
+      "tools": {
+        "wasm-bindgen": {
+          "version": "wasm-bindgen 0.2.127",
+          "sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+        },
+        "wasm-opt": {
+          "version": "wasm-opt version 117 (version_117)",
+          "sha256": "621b5a984f16d0323ea7aa8b389ac9ccda0950ddee5de0e99292970129f571ed"
+        }
+      },
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+          "bytes": 581315
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "cb36784306e8ca84367a64939b9ec5be36d6aea2732ab4343bc55f63c2309747",
+          "bytes": 29183109
+        }
+      }
+    }
+  },
+  "production_paths": {
+    "src/renderer/typeset/table/block/prepare.rs": {
+      "blob": "11664e4200902b1c199e39f66aa141446bdc775d",
+      "sha256": "b467d1e987bd3f484351179e88725bb5b031756071980c5c496ad3ab44bbef28"
+    },
+    "src/renderer/typeset/table/block/deferred_float.rs": {
+      "blob": "1381f1d9ca9617ae51eebd4ab6fb6aa84edb9df0",
+      "sha256": "4ba870ff9ef78c0be5b937b08b41bb0b2133042c0c62e8010c3d996883c6178b"
+    }
+  },
+  "fresh_merge_simulation": {
+    "base": "99b9d7ec5ca36884ea8fd981ac815c1edc34c653",
+    "head": "06f47c8a518f542a80d38e5a398ed73fed7dcc64",
+    "exit_code": 0,
+    "tree": "5cfdc5e3705266752011849ab843e493f88ed2e0",
+    "local_source_tree": "0da7d445bfb8e310a709eea37dea1a56f1dee64f",
+    "difference_from_actual_local_source": [
+      "mydocs/pr/pr_8945_review_plan.md"
+    ],
+    "runtime_and_fixture_files_identical": true
+  },
+  "actual_remote_merge": {
+    "sha": "4ab860651b857bfe6d28b22b4565b2855bebb042",
+    "runtime_and_fixture_files_identical_to_verified_local_source": true,
+    "only_tree_difference": [
+      "mydocs/pr/pr_8945_review_plan.md"
+    ]
+  }
+}

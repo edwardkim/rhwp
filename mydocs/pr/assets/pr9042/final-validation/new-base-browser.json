@@ -1,0 +1,144 @@
+{
+  "source": "d66d5f05f9efa4d182228494cd970614d479fb7a",
+  "browser": "Chrome/156.0.8078.47",
+  "bindings": {
+    "rhwp.js": "f28c25b4a470ef133de11ea6240436fbbc78f7eb29d3904e758a31bcf4131094",
+    "rhwp_bg.wasm": "845fd719d38d3b1611253413237cb6ffeceb5fb855f14df1e1242f3755826ced",
+    "rhwp.d.ts": "0c02b535ff3d0458c0c12b25b5f46d68e49be482d32aec9e5d8db03d1f33c2f0",
+    "rhwp_bg.wasm.d.ts": "9d21217c454fa8f1757e7f08e26b27d00c564bcc0be2a228b75bb0dae08aa738"
+  },
+  "alignments": [
+    {
+      "alignment": "left",
+      "empty": 113.4,
+      "before": 113.4,
+      "after": 126.3
+    },
+    {
+      "alignment": "center",
+      "empty": 396.9,
+      "before": 390.4,
+      "after": 403.3
+    },
+    {
+      "alignment": "right",
+      "empty": 680.3,
+      "before": 667.4,
+      "after": 680.3
+    }
+  ],
+  "results": [
+    {
+      "key": "deleted",
+      "cycle": 1,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/deleted-1.hwpx",
+      "sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341",
+      "bin_data_sha256": []
+    },
+    {
+      "key": "deleted",
+      "cycle": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/deleted-2.hwpx",
+      "sha256": "775dc6f2b6d53d679c466b0b550d7e7d8d337de1945660255fa4fe54ecc48341",
+      "bin_data_sha256": []
+    },
+    {
+      "key": "clipboard-restored",
+      "cycle": 1,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/clipboard-restored-1.hwpx",
+      "sha256": "34da4b2d3facc829c8db27dc70e8c19e117611347135135779b51547882698dd",
+      "bin_data_sha256": [
+        "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640"
+      ]
+    },
+    {
+      "key": "clipboard-restored",
+      "cycle": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/clipboard-restored-2.hwpx",
+      "sha256": "34da4b2d3facc829c8db27dc70e8c19e117611347135135779b51547882698dd",
+      "bin_data_sha256": [
+        "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640"
+      ]
+    },
+    {
+      "key": "snapshot-restored",
+      "cycle": 1,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/snapshot-restored-1.hwpx",
+      "sha256": "c562c187f4e34ac56c1f1e4c852f76809cc22408b638e6b5be546b57ee3b99a9",
+      "bin_data_sha256": [
+        "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640"
+      ]
+    },
+    {
+      "key": "snapshot-restored",
+      "cycle": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/snapshot-restored-2.hwpx",
+      "sha256": "c562c187f4e34ac56c1f1e4c852f76809cc22408b638e6b5be546b57ee3b99a9",
+      "bin_data_sha256": [
+        "b1ff9c8ea3a780bad09b346c423d2d0e46815926879b18e841d928376a946640"
+      ]
+    },
+    {
+      "key": "loaded-bullet-seed",
+      "cycle": 1,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/loaded-bullet-seed-1.hwpx",
+      "sha256": "9ca5b4b331a7077d442bf6a91f6bf23807ae9a8879fe519ed9035c43ec1803c6",
+      "bin_data_sha256": [
+        "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679"
+      ]
+    },
+    {
+      "key": "loaded-bullet-seed",
+      "cycle": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/loaded-bullet-seed-2.hwpx",
+      "sha256": "018d70580d389fdaf5cbcef33503851c0484c1d27ab1fe452c38e67bb7e95829",
+      "bin_data_sha256": [
+        "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679"
+      ]
+    },
+    {
+      "key": "loaded-bullet",
+      "cycle": 1,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/loaded-bullet-1.hwpx",
+      "sha256": "018d70580d389fdaf5cbcef33503851c0484c1d27ab1fe452c38e67bb7e95829",
+      "bin_data_sha256": [
+        "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679"
+      ]
+    },
+    {
+      "key": "loaded-bullet",
+      "cycle": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/loaded-bullet-2.hwpx",
+      "sha256": "018d70580d389fdaf5cbcef33503851c0484c1d27ab1fe452c38e67bb7e95829",
+      "bin_data_sha256": [
+        "fce481932ea5d07a91c7991c09fdadb4bf78f9b4cc8f927188384231f9d12679"
+      ]
+    },
+    {
+      "key": "unreferenced",
+      "cycle": 1,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/unreferenced-1.hwpx",
+      "sha256": "ac783aa26dff4cbc2b3eb74880a0d65a79aad56093d6a41440b4e56ec7c78d15",
+      "bin_data_sha256": [
+        "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86"
+      ]
+    },
+    {
+      "key": "unreferenced",
+      "cycle": 2,
+      "path": "/home/edward/mygithub/rhwp/output/pr-review/pr9042/submission-new-base-browser/unreferenced-2.hwpx",
+      "sha256": "ac783aa26dff4cbc2b3eb74880a0d65a79aad56093d6a41440b4e56ec7c78d15",
+      "bin_data_sha256": [
+        "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86",
+        "3bdba8cdd985df984cdb8dae9a5da9cb90dd1ada772c92cf813b88c8a6062b86"
+      ]
+    }
+  ],
+  "assertions": [
+    "deleted packages have no BinData after both saves",
+    "clipboard and snapshot restore retain PNG through both saves",
+    "picture bullet and loaded picture bullet retain their payload",
+    "unreferenced original two payloads remain byte-identical"
+  ]
+}

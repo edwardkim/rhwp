@@ -1,0 +1,95 @@
+{
+  "backend": "native",
+  "key": "c-rowbreak-table-moves-next-page",
+  "pages": 2,
+  "metrics": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-native/c-rowbreak-table-moves-next-page/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-native/c-rowbreak-table-moves-next-page/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/pr8945/focus/complete-visual/native/c-rowbreak-table-moves-next-page/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 9482,
+      "diff_ratio": 0.01063407,
+      "pixel_match_percent": 98.93659,
+      "ink_union_pixels": 13292,
+      "ink_diff_pixels": 9482,
+      "ink_diff_ratio": 0.71336142,
+      "ink_match_percent": 28.66386,
+      "visual_accuracy_proxy_percent": 28.66386,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 13292,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 1.208,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        114,
+        132,
+        179,
+        955
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-native/c-rowbreak-table-moves-next-page/rhwp_png/rhwp_002.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-native/c-rowbreak-table-moves-next-page/pdf_png/pdf-002.png",
+      "overlay_png": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/pr8945/focus/complete-visual/native/c-rowbreak-table-moves-next-page/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 3468,
+      "diff_ratio": 0.00388937,
+      "pixel_match_percent": 99.61106,
+      "ink_union_pixels": 4368,
+      "ink_diff_pixels": 3468,
+      "ink_diff_ratio": 0.79395604,
+      "ink_match_percent": 20.6044,
+      "visual_accuracy_proxy_percent": 20.6044,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4368,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 0.535,
+      "max_channel_delta": 242,
+      "diff_bbox": [
+        113,
+        169,
+        676,
+        254
+      ]
+    }
+  ],
+  "reviews": [
+    "mydocs/pr/assets/pr8945/focus/complete-visual/native/c-rowbreak-table-moves-next-page/review/review_001.png",
+    "mydocs/pr/assets/pr8945/focus/complete-visual/native/c-rowbreak-table-moves-next-page/review/review_002.png"
+  ],
+  "overlays": [
+    "mydocs/pr/assets/pr8945/focus/complete-visual/native/c-rowbreak-table-moves-next-page/overlay/overlay_001.png",
+    "mydocs/pr/assets/pr8945/focus/complete-visual/native/c-rowbreak-table-moves-next-page/overlay/overlay_002.png"
+  ]
+}

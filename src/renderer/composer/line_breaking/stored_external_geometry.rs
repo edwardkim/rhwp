@@ -37,35 +37,13 @@ pub(super) fn stored_rows_require_external_geometry(
     // 156655489 1쪽 실측: 본문 폭 48188, 저장 cs=0·sw=26692 → 결손 21496.
     // 용지 기준 Square 그림 폭 21212 (offset 32361 → 프레임 좌표 26692) 로,
     // 저장 사다리의 끝이 개체 왼쪽 변과 단위까지 맞는다.
-    if !float_carve_evidence.is_empty() && !line_segs.is_empty() {
-        // 실제 어울림 그림은 왼쪽과 오른쪽 어느 쪽에도 있을 수 있다.
-        // 저장 lane이 프레임 한 변을 공유하고 모든 행의 원점·폭이 같으면,
-        // 사라진 폭은 원점 이동량이 아니라 전체 폭과 lane 폭의 차이다.
-        // 같은 세로 band의 실제 개체가 그 차이를 설명할 때만 이 프레임의
-        // 소유 밖으로 남긴다. 근거 없는 문단 들여쓰기·양쪽 inset은 제외한다.
-        let first = &line_segs[0];
-        let lane_end = first.column_start.checked_add(first.segment_width);
-        let uniform_narrow = first.segment_width > 0
-            && first.column_start >= frame.horizontal.start
-            && lane_end.is_some_and(|end| {
-                end <= frame.horizontal.end
-                    && (first.column_start == frame.horizontal.start || end == frame.horizontal.end)
-            })
-            && line_segs.iter().all(|segment| {
-                segment.column_start == first.column_start
-                    && segment.segment_width == first.segment_width
-            });
-        if uniform_narrow {
-            let missing =
-                (frame.horizontal.end - frame.horizontal.start).saturating_sub(first.segment_width);
-            if missing > FLOAT_CARVE_MATCH_TOLERANCE_HU
-                && float_carve_evidence.iter().any(|evidence| {
-                    evidence.matches_stored_rows(missing, line_segs, FLOAT_CARVE_MATCH_TOLERANCE_HU)
-                })
-            {
-                return true;
-            }
-        }
+    if crate::renderer::float_placement::uniform_stored_rows_match_float_carve(
+        line_segs,
+        frame.horizontal.clone(),
+        float_carve_evidence,
+        FLOAT_CARVE_MATCH_TOLERANCE_HU,
+    ) {
+        return true;
     }
 
     // 빈 운반 행도 외부 어울림 경로가 정한 좁은 원점을 가질 수 있다.

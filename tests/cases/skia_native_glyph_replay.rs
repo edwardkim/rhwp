@@ -1,11 +1,15 @@
 //! 관계형: 합성 TextRun·공개 fixture 글꼴의 glyph coverage·replay와 typed 실패를 검사한다.
-//! 주석 갱신: 2026-11-07T19:17:16+09:00; e4ffabea 리베이스에서 양쪽 회귀 범위를 함께 보존했다.
+//! 주석 갱신: 2026-11-10T09:15:00+09:00; #8856 연속 그림자의 실제 엄격 재생 검사를 추가했다.
 //! 입력은 파일 내부 합성 문서·PageLayerTree 또는 저장소의 허가된 글꼴 fixture다.
 //! API·소유·자원/합성 paint 계약이며 실물 문서 페이지의 조판 위치를 고정하지 않는다.
 //! 이 assertion의 독립 한컴 PDF 대비 Native/fresh WASM raw 측정값은 비해당이다.
 //! 별도 실물 시각·플랫폼 실행 근거: mydocs/pr/assets/seo-rii-20261107/validation-scope.md.
 //! 엄격한 Native Skia 대안은 정확한 자원을 그리거나 원래 TextRun을 보존한다.
 //! #7640: 시스템 face의 조회·paint 프로그램 일치와 명시 공급 스타일의 윤곽 소유도 검사한다.
+
+//! 추가 주석 갱신: 2026-11-18T01:33:03+09:00; 직전 파일 변경: 050e78455ea22857665973be3cdb68981fd71cb0 2026-11-10T12:58:35+09:00.
+//! 원본 TTF/TTC 선택의 합성 RGBA 검사 2개를 기존 Native CI 실행 모듈로 이관했다.
+//! assertion·fixture·제품 바이트는 같으며 독립 한컴 페이지의 좌표 검사가 아니다.
 
 #![cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 
@@ -1299,5 +1303,200 @@ mod issue_7640_system_program {
         assert_ne!(pixels(&regular, &normal_page), pixels(&bold, &bold_page));
         assert_eq!(pixels(&regular, &normal_page), pixels(&mixed, &normal_page));
         assert_eq!(pixels(&bold, &bold_page), pixels(&mixed, &bold_page));
+    }
+}
+
+#[test]
+fn native_glyph_replay_keeps_the_prepared_continuous_shadow_samples() {
+    use rhwp::model::bin_data::{BinData, BinDataContent, BinDataType};
+    use rhwp::DocumentCore;
+
+    // 같은 MIT 글꼴로 실제 공통 계획과 엄격 glyph 자원을 만든다.
+    let bytes = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "A").unwrap();
+    let mut doc = core.document().clone();
+    for fonts in &mut doc.doc_info.font_faces {
+        for font in fonts {
+            font.name = "RHWP Host Fixture".into();
+            font.is_embedded = true;
+            font.resolved_bin_data_id = Some(1);
+        }
+    }
+    for style in &mut doc.doc_info.char_shapes {
+        style.base_size = 2400;
+        style.shadow_type = 2;
+        style.shadow_offset_x = 50;
+        style.shadow_offset_y = 30;
+    }
+    doc.doc_info.bin_data_list.push(BinData {
+        data_type: BinDataType::Embedding,
+        storage_id: 1,
+        extension: Some("ttf".into()),
+        ..Default::default()
+    });
+    doc.bin_data_content.push(BinDataContent {
+        id: 1,
+        extension: "ttf".into(),
+        data: bytes.to_vec().into(),
+    });
+    core.set_document(doc);
+    core.set_hangul2024_compat(true);
+    let layer = core
+        .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+        .unwrap();
+    fn find_run(node: &LayerNode) -> Option<&TextRunNode> {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => children.iter().find_map(find_run),
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                find_run(child)
+            }
+            LayerNodeKind::Leaf { ops } => ops.iter().find_map(|op| match op {
+                PaintOp::TextRun { run, .. } if run.display_or_text() == "A" => Some(run.as_ref()),
+                _ => None,
+            }),
+        }
+    }
+    let plan = find_run(&layer.root)
+        .unwrap()
+        .style
+        .continuous_shadow
+        .clone()
+        .unwrap();
+    assert_eq!(plan.source_hash, *blake3::hash(bytes).as_bytes());
+    assert!(plan.offsets().count() > 1);
+    let mut tree = glyph_tree(bytes, 0, 'A');
+    let style = &mut glyph_mut(&mut tree).paint_style;
+    style.shadow_type = 2;
+    style.shadow_color = 0xff0000;
+    [style.shadow_offset_x, style.shadow_offset_y] = plan.extent();
+    style.continuous_shadow = Some(plan);
+    let continuous = assert_selected(&tree);
+    glyph_mut(&mut tree).paint_style.continuous_shadow = None;
+    let endpoint_only = assert_selected(&tree);
+    assert!(
+        continuous != endpoint_only,
+        "엄격 glyph 대안도 공통 중간 그림자를 버리지 않는다"
+    );
+}
+
+#[test]
+fn issue_8856_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking() {
+    super::replacement_symbol_cell::assert_replacement_symbol_ink_keeps_the_intrinsic_cell_under_negative_tracking();
+}
+
+#[test]
+fn issue_8856_legacy_native_exporter_prepares_the_actual_supplied_program() {
+    use super::legacy_shadow_fixture::{actual_run, host_request_document};
+    use rhwp::document_core::queries::{
+        png_export::NativePngExporter, rendering::PngExportOptions,
+    };
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    for current in [false, true] {
+        let mut core = host_request_document(current, 2);
+        let exporter = NativePngExporter::new(
+            RenderProfile::Print,
+            PngExportOptions {
+                font_paths: vec![path.clone()],
+                ..Default::default()
+            },
+        );
+        exporter.prepare_document(&mut core).unwrap();
+        let run = actual_run(&core, RenderProfile::Print);
+        assert!(
+            run.style.continuous_shadow.is_some(),
+            "실제 PNG 내보내기도 선택한 프로그램으로 계획을 만든다: current={current}"
+        );
+    }
+}
+
+mod native_containers {
+    use rhwp::paint::RenderProfile;
+    use rhwp::renderer::{layer_renderer::RasterRenderOptions, skia::SkiaLayerRenderer};
+    use rhwp::DocumentCore;
+
+    const TTF: &[u8] = include_bytes!("../fixtures/fonts/RHWPNativeContainer.ttf");
+    const TTC: &[u8] = include_bytes!("../fixtures/fonts/RHWPNativeContainer.ttc");
+
+    fn paint(renderer: SkiaLayerRenderer) -> Vec<u8> {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.insert_text_native(0, 0, 0, "AAAA").unwrap();
+        let mut document = core.document().clone();
+        for fonts in &mut document.doc_info.font_faces {
+            fonts[0].name = "RHWP Native Container Probe".into();
+            fonts[0].alt_type = 1;
+        }
+        for style in &mut document.doc_info.char_shapes {
+            style.font_ids = [0; 7];
+            style.base_size = 4800;
+        }
+        core.set_document(document);
+        renderer.prepare_native_otf_fonts(&mut core).unwrap();
+        let tree = core
+            .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+            .unwrap();
+        renderer
+            .render_pixels_with_options(&tree, RasterRenderOptions::default())
+            .unwrap()
+            .bytes
+    }
+
+    #[test]
+    fn native_supplied_bytes_prefer_ttf_over_nonzero_ttc_face_in_both_orders() {
+        let render = |sources: &[Vec<u8>]| {
+            paint(
+                SkiaLayerRenderer::new()
+                    .try_with_font_data(sources)
+                    .unwrap(),
+            )
+        };
+        let standalone = render(&[TTF.to_vec()]);
+        let collection = render(&[TTC.to_vec()]);
+        assert_ne!(
+            standalone, collection,
+            "서로 다른 A 윤곽이 실제로 그려지는 대조군"
+        );
+        for sources in [[TTC.to_vec(), TTF.to_vec()], [TTF.to_vec(), TTC.to_vec()]] {
+            assert_eq!(
+                render(&sources),
+                standalone,
+                "공급 순서와 무관하게 원본 TTF를 선택한다"
+            );
+        }
+    }
+
+    #[test]
+    fn native_directory_order_does_not_promote_ttc_over_ttf() {
+        let folder =
+            std::env::temp_dir().join(format!("rhwp-native-container-{}", std::process::id()));
+        std::fs::create_dir(&folder).unwrap();
+        struct Cleanup(std::path::PathBuf);
+        impl Drop for Cleanup {
+            fn drop(&mut self) {
+                let _ = std::fs::remove_dir_all(&self.0);
+            }
+        }
+        let _cleanup = Cleanup(folder.clone());
+        let standalone = paint(
+            SkiaLayerRenderer::new()
+                .try_with_font_data(&[TTF.to_vec()])
+                .unwrap(),
+        );
+        for ttc_first in [true, false] {
+            let ttc_path = folder.join(if ttc_first { "0.ttc" } else { "1.ttc" });
+            let ttf_path = folder.join(if ttc_first { "1.ttf" } else { "0.ttf" });
+            std::fs::write(&ttc_path, TTC).unwrap();
+            std::fs::write(&ttf_path, TTF).unwrap();
+            assert_eq!(
+                paint(SkiaLayerRenderer::new().with_font_paths(std::slice::from_ref(&folder))),
+                standalone,
+                "파일명 정렬과 무관하게 같은 family의 TTF를 선택한다"
+            );
+            std::fs::remove_file(ttc_path).unwrap();
+            std::fs::remove_file(ttf_path).unwrap();
+        }
     }
 }

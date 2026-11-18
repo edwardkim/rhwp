@@ -1,0 +1,35 @@
+{
+  "guideline_commit": "1ac78ce9c9",
+  "policy_commit": "ccf84733c3",
+  "hancom_printer_policy_commit": "fbad35aea0",
+  "mcp_manual_kept_unchanged_commit": "556d083c06",
+  "comment_body_reverified_after_update": true,
+  "hancom_pdf_printer_explicit": true,
+  "microsoft_print_to_pdf_excluded": true,
+  "verified_comments": [
+    {
+      "pr": 9022,
+      "id": 6920549562,
+      "url": "https://github.com/edwardkim/rhwp/pull/9022#issuecomment-6920549562",
+      "exact": true
+    },
+    {
+      "pr": 9107,
+      "id": 6920550170,
+      "url": "https://github.com/edwardkim/rhwp/pull/9107#issuecomment-6920550170",
+      "exact": true
+    },
+    {
+      "pr": 9109,
+      "id": 6920550769,
+      "url": "https://github.com/edwardkim/rhwp/pull/9109#issuecomment-6920550769",
+      "exact": true
+    },
+    {
+      "pr": 9137,
+      "id": 6920551536,
+      "url": "https://github.com/edwardkim/rhwp/pull/9137#issuecomment-6920551536",
+      "exact": true
+    }
+  ]
+}

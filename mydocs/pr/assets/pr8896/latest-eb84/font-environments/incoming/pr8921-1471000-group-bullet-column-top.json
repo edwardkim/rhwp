@@ -1,0 +1,18 @@
+{
+  "documentSubstitutions": [],
+  "id": "native-webfont-3bded0d8733ef177640ddb32",
+  "preserveSourceMetrics": true,
+  "substitutions": {
+    "HCI Poppy": "NotoSerifKRExtraLight-Regular",
+    "HY헤드라인M": "NotoSansKRThin-Bold",
+    "굴림": "NotoSansKRExtraLight",
+    "돋움": "NotoSansKRExtraLight",
+    "맑은 고딕": "Pretendard-Regular",
+    "명조": "NotoSerifKRExtraLight-Bold",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "한양신명조": "NotoSansKR-Regular",
+    "한양중고딕": "NotoSansKR-Regular",
+    "한컴바탕": "HCRBatang",
+    "휴먼명조": "NotoSansKR-Regular"
+  }
+}

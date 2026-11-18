@@ -1,0 +1,60 @@
+{
+  "Native before": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 85.47659,
+    "silhouette_raw_unmatched_pixels": 515,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 3546,
+    "tolerant_content_match_percent": 85.47659
+  },
+  "Native after": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 100.0,
+    "silhouette_raw_unmatched_pixels": 0,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 2572,
+    "tolerant_content_match_percent": 100.0
+  },
+  "regularNativePageBytesUnchanged": true,
+  "alignment426PtPreserved": true,
+  "logicalFirstGlyphPt": [
+    211.61999999999998,
+    708.8199999999999,
+    18.0
+  ],
+  "printPhysicalOriginsUnchanged": true,
+  "printFirstGlyphPt": [
+    "창",
+    [
+      211.50624084472656,
+      708.04541015625
+    ]
+  ],
+  "WASM before": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 85.4725,
+    "silhouette_raw_unmatched_pixels": 515,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 3545,
+    "tolerant_content_match_percent": 85.4725
+  },
+  "WASM after": {
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 100.0,
+    "silhouette_raw_unmatched_pixels": 0,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 2572,
+    "tolerant_content_match_percent": 100.0
+  },
+  "regularWasmPageBytesUnchanged": true,
+  "preservationPageBytesUnchanged": {
+    "Native 509": true,
+    "WASM 509": true,
+    "Native 757": true,
+    "WASM 757": true
+  }
+}

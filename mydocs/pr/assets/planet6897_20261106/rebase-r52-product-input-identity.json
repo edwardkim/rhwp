@@ -1,0 +1,104 @@
+{
+  "before": "ada4fdffaac0b9a7491a3f2cfb09994303380c40",
+  "candidate": "a5099f8ed24f1a2f85d3b1de6f21fda491a948dc",
+  "base": "2a9a88a0ddc59eb6757ee73e03eee42b4e3ac497",
+  "identities": [
+    {
+      "path": "src",
+      "before_object": "3fade23333ddc5010a43f47c0614373e6aa37f67",
+      "after_object": "3fade23333ddc5010a43f47c0614373e6aa37f67",
+      "equal": true
+    },
+    {
+      "path": "crates",
+      "before_object": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab",
+      "after_object": "d9c7fcf02fe3d791fa1d33396385a1e372ddefab",
+      "equal": true
+    },
+    {
+      "path": "Cargo.toml",
+      "before_object": "decf1b4d333f67acb4d10bbdfd96953412050d2b",
+      "after_object": "decf1b4d333f67acb4d10bbdfd96953412050d2b",
+      "equal": true
+    },
+    {
+      "path": "Cargo.lock",
+      "before_object": "349a7f70cde6316f25cc46599f9ee3c364e9c67e",
+      "after_object": "349a7f70cde6316f25cc46599f9ee3c364e9c67e",
+      "equal": true
+    },
+    {
+      "path": "build.rs",
+      "before_object": "a3103a33faf38a899edb68f64fd0739dd4950787",
+      "after_object": "a3103a33faf38a899edb68f64fd0739dd4950787",
+      "equal": true
+    },
+    {
+      "path": "assets",
+      "before_object": "16d3b589c68c9f549e24808f21f613bcaf0f8e19",
+      "after_object": "16d3b589c68c9f549e24808f21f613bcaf0f8e19",
+      "equal": true
+    },
+    {
+      "path": "vendor",
+      "before_object": "d466079769b62c29fcb8b143eab31822a15be657",
+      "after_object": "d466079769b62c29fcb8b143eab31822a15be657",
+      "equal": true
+    },
+    {
+      "path": "bindings",
+      "before_object": "49f0ec6a1d207766da6ec7e146a38d03626ee2fa",
+      "after_object": "49f0ec6a1d207766da6ec7e146a38d03626ee2fa",
+      "equal": true
+    },
+    {
+      "path": "samples",
+      "before_object": "4ff8da55a270ef2e542f7fc24f0c242e468687ee",
+      "after_object": "4ff8da55a270ef2e542f7fc24f0c242e468687ee",
+      "equal": true
+    },
+    {
+      "path": "tests",
+      "before_object": "c9b4f59d1969aa678f01ae5116e4e1fb76545f93",
+      "after_object": "c9b4f59d1969aa678f01ae5116e4e1fb76545f93",
+      "equal": true
+    },
+    {
+      "path": "ttfs",
+      "before_object": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+      "after_object": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+      "equal": true
+    },
+    {
+      "path": "rhwp-studio/src",
+      "before_object": "a2088f2c2f5f3a6372b21ce11bd8b34b2775dee3",
+      "after_object": "a2088f2c2f5f3a6372b21ce11bd8b34b2775dee3",
+      "equal": true
+    },
+    {
+      "path": "rhwp-studio/public",
+      "before_object": "5f0aede09a58d8a95dd3d0df8101525e0c07fdbc",
+      "after_object": "5f0aede09a58d8a95dd3d0df8101525e0c07fdbc",
+      "equal": true
+    },
+    {
+      "path": "rhwp-studio/package.json",
+      "before_object": "7808379c7122d814927cdece9426d8e8e6c256ad",
+      "after_object": "7808379c7122d814927cdece9426d8e8e6c256ad",
+      "equal": true
+    },
+    {
+      "path": "scripts/wasm-pack-locked.sh",
+      "before_object": "855ca67dcd4b175287c297d4d015851aab3cf8af",
+      "after_object": "855ca67dcd4b175287c297d4d015851aab3cf8af",
+      "equal": true
+    },
+    {
+      "path": "scripts/visual_sweep.py",
+      "before_object": "1fcc98d21227cae6cbb9351daa5a7ad0ba22d8d7",
+      "after_object": "1fcc98d21227cae6cbb9351daa5a7ad0ba22d8d7",
+      "equal": true
+    }
+  ],
+  "reason": "CI·검증 도구·문서 변경만 반영. 작업지시자의 지시에 따라 기존 전체 회귀를 반복하지 않으며 진행 중인 추가 전쪽 검증은 유지한다."
+}

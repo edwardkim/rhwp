@@ -18,6 +18,81 @@ impl TypesetEngine {
         paragraphs: &[crate::model::paragraph::Paragraph],
         styles: &crate::renderer::style_resolver::ResolvedStyleSet,
     ) {
+        // [#8685] 글자처럼 취급한 표가 이 쪽에 통째로 놓인 뒤, 셀 각주를 더한 각주 영역의
+        // 위끝이 그 표의 아래끝보다 위로 올라오면(표를 덮으면) 한/글은 표와 참조를 그대로
+        // 두고 각주 본문만 다음 쪽 각주 영역으로 넘긴다(본문 각주의 다음 쪽 이월과 같은
+        // lane). 표 아래끝은 흐름 위치에서 호스트 줄의 뒤 줄 간격과 표 바깥 아래 여백을
+        // 뺀 자리다 — 그 빈 띠는 각주 영역이 써도 된다. 각주 영역 높이는 RowBreak 셀 각주
+        // 큐와 같은 paint 측정을 쓴다. 앞 각주가 이미 이월됐으면 번호 순서를 지키도록 뒤
+        // 각주도 같은 lane 에서 이어받는다.
+        if st.col_count == 1 {
+            let note = |fragment| FootnoteRef {
+                column_index: 0,
+                number: footnote.number,
+                source: source.clone(),
+                fragment,
+            };
+            if st.has_deferred_body_footnotes() {
+                st.defer_body_footnote_for_next_page(
+                    note(None),
+                    estimate_footnote_note_height(footnote, self.dpi),
+                );
+                return;
+            }
+            if let Some(table_bottom) = self.whole_tac_table_bottom(st, &source, paragraphs) {
+                let physical_capacity = st.base_available_height()
+                    - st.current_zone_y_offset
+                    - st.current_bottom_fixed_exclusion;
+                let projected = |st: &TypesetState, candidate: FootnoteRef| {
+                    let mut refs = st
+                        .pages
+                        .last()
+                        .map(|page| page.footnotes.clone())
+                        .unwrap_or_default();
+                    refs.push(candidate);
+                    crate::renderer::layout::LayoutEngine::new(self.dpi)
+                        .estimate_footnote_area_height_with_metrics(
+                            &refs,
+                            paragraphs,
+                            styles,
+                            st.footnote_area_width(),
+                            st.footnote_separator_overhead,
+                            st.footnote_between_notes_margin,
+                        )
+                };
+                let whole = projected(st, note(None));
+                if whole <= physical_capacity + 0.5
+                    && table_bottom + whole > physical_capacity + 0.5
+                {
+                    // 저장 각주 줄의 vpos 재시작은 한/글이 그 자리에서 각주를 다음 쪽으로
+                    // 이은 기록이다. 앞 조각이 표 아래 남은 자리에 들어가면 앞 조각은 이
+                    // 쪽, 뒤 조각은 다음 쪽 각주 영역에 둔다. 재시작이 없거나 앞 조각도
+                    // 들어가지 않으면 각주 전체를 다음 쪽으로 넘긴다.
+                    let split =
+                        native_hwp5_footnote_reset_fragments(footnote, self.dpi).filter(|split| {
+                            table_bottom + projected(st, note(Some(split.prefix)))
+                                <= physical_capacity + 0.5
+                        });
+                    if let Some(split) = split {
+                        st.record_current_footnote(note(Some(split.prefix)));
+                        st.add_footnote_fragment_height(
+                            split.prefix_height,
+                            split.prefix.draw_separator,
+                        );
+                        st.defer_body_footnote_for_next_page(
+                            note(Some(split.suffix)),
+                            split.suffix_height,
+                        );
+                    } else {
+                        st.defer_body_footnote_for_next_page(
+                            note(None),
+                            estimate_footnote_note_height(footnote, self.dpi),
+                        );
+                    }
+                    return;
+                }
+            }
+        }
         self.register_unqueued_table_footnote_with_content_height(
             st,
             footnote,
@@ -50,6 +125,57 @@ impl TypesetEngine {
                 );
             st.reserve_painted_footnote_area(height);
         }
+    }
+
+    /// [#8685] 각주 출처 표가 현재 쪽에 통째로(분할 없이) 놓인 글자처럼 취급 표이면 그 표의
+    /// 흐름상 아래끝(바깥 아래 여백 제외)을 돌려준다. 호스트 문단은 표 한 줄로 끝나며,
+    /// 흐름 위치 = 표 줄 끝 + 줄 간격이므로 그 둘을 되돌린다. 분할 표·글 위아래 표처럼
+    /// 흐름 위치와 표 아래끝의 관계가 다른 배치는 `None`(종전 등록)이다.
+    fn whole_tac_table_bottom(
+        &self,
+        st: &TypesetState,
+        source: &FootnoteSource,
+        paragraphs: &[crate::model::paragraph::Paragraph],
+    ) -> Option<f64> {
+        let (para_index, table_control_index) = match source {
+            FootnoteSource::TableCell {
+                para_index,
+                table_control_index,
+                ..
+            }
+            | FootnoteSource::NestedTableCell {
+                para_index,
+                table_control_index,
+                ..
+            } => (*para_index, *table_control_index),
+            _ => return None,
+        };
+        let placed_whole = matches!(
+            st.current_items.last(),
+            Some(crate::renderer::pagination::PageItem::Table {
+                para_index: placed_para,
+                control_index: placed_control,
+                ..
+            }) if *placed_para == para_index && *placed_control == table_control_index
+        );
+        let para = paragraphs.get(para_index)?;
+        let crate::model::control::Control::Table(table) =
+            para.controls.get(table_control_index)?
+        else {
+            return None;
+        };
+        let last = para.line_segs.last()?;
+        if !placed_whole || !table.common.treat_as_char {
+            return None;
+        }
+        Some(
+            st.current_height
+                - crate::renderer::typeset::hwpunit_to_px(last.line_spacing, self.dpi)
+                - crate::renderer::typeset::hwpunit_to_px(
+                    i32::from(table.outer_margin_bottom),
+                    self.dpi,
+                ),
+        )
     }
 
     /// `register_unqueued_table_footnote`와 같은 owner/fragment 계약을 사용하되,

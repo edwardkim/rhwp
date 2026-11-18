@@ -12,7 +12,8 @@ pub struct NativePuaFontRequest {
     pub paint_families: Vec<String>,
     pub bold: bool,
     pub italic: bool,
-    /// 원본 슬롯이 명시적 TTF일 때 같은 family의 HFT와 구분한다.
+    /// 같은 이름의 원본 TrueType 프로그램만 허용하는 공급 요청이다.
+    /// 파일의 미분류 글꼴 비트를 TTF 선언으로 바꾸는 필드가 아니다.
     #[serde(skip_serializing_if = "std::ops::Not::not")]
     pub source_ttf: bool,
     /// 리터럴 공백의 프로그램은 PUA 기호 fallback과 별도로 선택한다.
@@ -26,7 +27,9 @@ impl DocumentCore {
         let mut requests = BTreeMap::new();
         for (style_id, style) in self.styles.char_styles.iter().enumerate() {
             for lang in 0..crate::renderer::style_resolver::LANG_COUNT {
-                let source_ttf = style.source_ttf_for_lang(lang);
+                let source_ttf = self
+                    .styles
+                    .requests_original_truetype(style_id as u32, lang);
                 if !self.styles.allows_native_otf_metrics(style_id as u32, lang) {
                     continue;
                 }
@@ -78,6 +81,14 @@ impl DocumentCore {
         fonts.clear_otf();
         for request in self.native_otf_font_requests() {
             for (bytes, index) in provider(&request) {
+                // 표시용 full name·별칭으로 적재한 fallback을 원본 family의
+                // 자연 전진으로 인증하지 않는다. Native와 WASM 공급자에 같은
+                // 경계를 적용하며, HFT 표시 프로그램의 대체 계약은 유지한다.
+                if request.source_ttf
+                    && !original_program_owns_family(&bytes, index, &request.family)
+                {
+                    continue;
+                }
                 // 범위를 넘거나 읽을 수 없는 face는 원본 HFT 경로를 유지한다.
                 let _ = fonts.register_otf_for_source(
                     &request.family,
@@ -304,4 +315,23 @@ impl DocumentCore {
         self.overflow_links_cache.borrow_mut().clear();
         self.paginate_if_needed();
     }
+}
+
+fn original_program_owns_family(bytes: &[u8], index: u32, family: &str) -> bool {
+    let primary = family.split(',').next().unwrap_or("").trim();
+    let Ok(face) = ttf_parser::Face::parse(bytes, index) else {
+        return false;
+    };
+    !primary.is_empty()
+        && face.names().into_iter().any(|name| {
+            matches!(
+                name.name_id,
+                ttf_parser::name_id::FAMILY
+                    | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
+                    | ttf_parser::name_id::WWS_FAMILY
+                    | ttf_parser::name_id::POST_SCRIPT_NAME
+            ) && name
+                .to_string()
+                .is_some_and(|name| name.trim().eq_ignore_ascii_case(primary))
+        })
 }

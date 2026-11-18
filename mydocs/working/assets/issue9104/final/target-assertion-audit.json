@@ -1,0 +1,411 @@
+{
+  "source": "13bb8191967f7e2efc9c182deaf0e7e075576205",
+  "checked_at": "2026-11-17T02:49:57.642818+00:00",
+  "scope": "Only current corrected nested and two handbook inputs; other inputs in shared modules are not re-scoped",
+  "files": [
+    {
+      "path": "tests/cases/issue_8099_kopub_cjk_symbol_advance.rs",
+      "blob": "c823f9c9b874c2657032dd4cf49dfb8423508372",
+      "sha256": "0641a7946116bcb050e0350a1c2481300eef6a8af1e120496c4e9039eacb2395",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_opaque_mixed_axis_image_sampling.rs",
+      "blob": "51863b09beb1ed40532e184c4cfde6b6d3694b0e",
+      "sha256": "644dbb83f579f4e02648ad09fc72a056b5fa0e59de255b93c989fd5d8362caed",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_ordinary_row_opening_frame.rs",
+      "blob": "4459a780123281ad3ebe5c97378d0f8c0c7f806e",
+      "sha256": "c49beeb146efef466e3b285cbbfd76f8c71dd6aa290c58c4a7319ebe0af4912e",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_hanja_source_advance.rs",
+      "blob": "9b485d9d31ce24af983a80ced9b17e004802344a",
+      "sha256": "c295c508c9579ddf2d49562fa31561c2d7b35ad5bc0091714849e68ae3c6ff19",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_centered_inline_picture.rs",
+      "blob": "bcb1f25093830e52f95892ef5c53387dc25e300a",
+      "sha256": "045dfb5723126b23b0d5556ee60d3e548d71065e8d1a7f4fb7268311a725cbcb",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_handbook_source_roundtrip.rs",
+      "blob": "2ca6ffeb9d8301dede4da09bc9abe9dfe32b4edd",
+      "sha256": "88e0137ee702242ded804eac5e0b0ccb986c553d65a0e8d804cd042ae1d288bd",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_kopub_missing_dot_supplier.rs",
+      "blob": "7d1a959ac6c2da93f640b8acf6cf66029c80a63d",
+      "sha256": "0afb68c1ac5f2ccf8d2b5864abe7598eb0a4fadb95763e01880d39421d4c49fe",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8201_seal_pua.rs",
+      "blob": "328f4e67fc89442f9a58239f47fa0c2ca672b5fd",
+      "sha256": "f23d3a3b1eb35a3878fa8ce78c02ef70d1b2918bafa4a4d591c25034e76976fa",
+      "disposition": "retained",
+      "reason": "Nested document is only a negative font-supply control; seal input coordinates belong to a different source and are outside this target audit."
+    },
+    {
+      "path": "tests/cases/issue_8153_justified_visible_last_line.rs",
+      "blob": "f3c159d83f1055944772353a503f4390cf809905",
+      "sha256": "472d4613f830bcf4f1d04c8e4877ea0ca5837052ebdec6d06dc5249abfbc3db6",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_decorated_tac_pen.rs",
+      "blob": "a6ca92ed0ff41fc8e24f961680fcc6b7aba753ff",
+      "sha256": "a96d9dac9d15a7b9f408df82037449eb4fdc8ba70e4a661000abc686e040ec0a",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_textbox_saved_line_frame.rs",
+      "blob": "7cabe63e1a20b60e54b4d5fe0cf8179e92074701",
+      "sha256": "1e0fb4a8cb7ae6c6f76af2c9863f39235c234924df4995cc63d35c68ff7c3826",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_row_cell_frame_ownership.rs",
+      "blob": "de043e24514e84e4443c35a12da21d2fa8bdadf0",
+      "sha256": "ef4aa19549c4310e521505d7851feda24e5c9ecd2368659cd2d1b2acbc8a074c",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8306_hwpx_verify_normalization.rs",
+      "blob": "814b0c9f8fd0e5659dec8216fac7261cadee4935",
+      "sha256": "3abcaea6e93582db8a7982573c1d57bfa0ce7307d87513262cfaaa04061283f0",
+      "disposition": "retained",
+      "reason": "Document structure, source properties and repeated save normalization; no nested page pixel pin."
+    },
+    {
+      "path": "tests/cases/issue_8153_print_jpeg_fill_color.rs",
+      "blob": "0fa37097c4b40cedeacaf51e1ccd173dadb9e8ed",
+      "sha256": "56c8753265632fe0e104707d2e10190cc44cc09e323bef2304bd905f15843a48",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_6117_layer_decoration_trim.rs",
+      "blob": "e14b23dff6f824d9e94b022fbd815df69934b2a4",
+      "sha256": "f0336a2ebb52e559d349078f36a1e508abce0a9fe8833099907d2041dba2d944",
+      "disposition": "retained",
+      "reason": "Four newly registered source/decorated-tail/form-field cases, current 1566-row prerequisite and direct review; no absolute page coordinate introduced."
+    },
+    {
+      "path": "tests/cases/issue_8153_wmf_print_window.rs",
+      "blob": "35a3c9c20a9980ba9b37f67f322918b9b7d68b96",
+      "sha256": "10b707c6ac62752a8fa52b854033ed7bc5cef34df9f4a2a26ab201252437f953",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_positive_word_slack.rs",
+      "blob": "d4606504f4f2dce6c06f392e75a8b709cfa97f2c",
+      "sha256": "e8050207792095c5032df7c628e36f05ce6ef17ee6f786ec2fe6b5e70b08f7a5",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_reflowed_inline_shape_spacing.rs",
+      "blob": "d268e62480185779c4540eef8550b6761de971fe",
+      "sha256": "26d483ba6ddc7dcc49125a887a90aca07f8d0dbbe51c143f89fe79074d5c564e",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_7732_table_outer_margin_ownership.rs",
+      "blob": "3b4cbf751021e200d3f8081786b229fac56872d2",
+      "sha256": "d9e2db64fa5576b00c7a339172185885c6e57eee048ffbe50b299abdba1e2de3",
+      "disposition": "retained",
+      "reason": "Source HWPUNIT margin delta and unchanged table x/width relations, no independent absolute output coordinate."
+    },
+    {
+      "path": "tests/cases/issue_8748_partial_table_host_indent.rs",
+      "blob": "c89e141548bbff73709ff97f8502b3b9678b3b30",
+      "sha256": "a860dc1db1336eff8f05e2cfc53e69145e201c93e03b87b3644b5e1094f92fd3",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8578_group_text_editing.rs",
+      "blob": "21df6b5ff96eca6233762016444ed4f7696f2110",
+      "sha256": "e2b889ac904e9e9abb9a8e62b0aee645962659f9af26658c19ac97898ae07bba",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/hft_declared_en_dash_advance.rs",
+      "blob": "207f2affc2ba20bcb1d5f0a0b3947df8e91ecc7e",
+      "sha256": "6b7cbdaf3b3e6befa28f8645d98a36cacdf743b3d04934d434ba7e80c0074414",
+      "disposition": "retained",
+      "reason": "Original program/source-unit advance and family alias relations; no absolute page location."
+    },
+    {
+      "path": "tests/cases/issue_8153_stored_row_boundary_ownership.rs",
+      "blob": "9bbdadadb6fe25a885f0e65bbdb7aeae97e29fc0",
+      "sha256": "00ade56977c3c6f9da11e2e9c7154ca1823d263c0f8118d08d3fe0f09103e25a",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_handbook_print_boundaries.rs",
+      "blob": "b428cae938442bc45e85695d8f7aa291e1d6d805",
+      "sha256": "f5699159ea31c09c293df8262f010fad9e241bddbf070b67e89269d535c9b9af",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_group_bitmap_clip.rs",
+      "blob": "9b48dfbeaa1ee8642ce3b08f7808d76256aaa848",
+      "sha256": "e8d991e24a104414a71a261228ab21d90b30b0e2cf4b622bf6b11f21990753b2",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/source_frame_control_ownership.rs",
+      "blob": "043b908242b4a2858b1c106f6f8a507f55be2387",
+      "sha256": "e09c31b30b9948baa3581d608ae062d6b3a59bd2db5ac4d89ce583626406dda3",
+      "disposition": "retained",
+      "reason": "Nested target uses source ownership/continuation relations; fixed coordinates for other inputs are not expanded into this task."
+    },
+    {
+      "path": "tests/cases/issue_8153_centered_condense_fit.rs",
+      "blob": "1b7cde0e2ca251c58086a47992934c0104ff9199",
+      "sha256": "8db0462d65d4d1d78ec2d4ed4a3a833d49778ab99e353bf1d427e6b7c2f22edd",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_7288_table_page_break_split_policy.rs",
+      "blob": "2573b2639e7eb4b131dc22937c11ebdd761ba9b2",
+      "sha256": "bce436d6cb8795cbd4f6bb0e8b0a49528a9fb95d7f368fe790c8dd9d929b57a0",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_cell_bitmap_clip_ownership.rs",
+      "blob": "09c6a0b9cba5ee7b77b962e602d134570bd29d3e",
+      "sha256": "72805fae6b589df303ee287a7f6a203bee55b4f93d12a6922d7c3a9041bc9fb7",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_ordinary_row_continuation_frame.rs",
+      "blob": "d1a08d0c29c0455789776c092200dc7d042dc66a",
+      "sha256": "2ab06779110014a82dee572190827a327065b15b69bbfc9bf25e75a1363db9d9",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_4068_unclipped_cell_honors_valign.rs",
+      "blob": "78a8bb0cb2a69253ea092c166191e1314af1028e",
+      "sha256": "5b88a9eaeb897a280428d272473478a1325bac17d2891b28e9643065f0456009",
+      "disposition": "retained",
+      "reason": "Nested target uses cell containment and source valign/occupancy relations; 971.49/1068.02 coordinates belong to separate hwpx_sample2 input."
+    },
+    {
+      "path": "tests/cases/issue_8153_inline_picture_row_frame.rs",
+      "blob": "f22743f47620a7ba8006b95d86abc2aa964bbcb5",
+      "sha256": "f58763c9c1517b3da350bd70b1ad52f828ff5b97283c6d7aa865769613bba597",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/nested_declared_word_space_budget.rs",
+      "blob": "aae9a57d029f7e2927c0d0f22474f0888da172af",
+      "sha256": "9e4dcb96195ff4b7bb9e50559a9335e86b760a585725deaf14278e456686e78f",
+      "disposition": "retained",
+      "reason": "Retain independently measured Print p3 digit x=563.5345865885416 ±2px plus ownership and source budget control; current Native/WASM p3 both100.00 and all17 pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_print_alpha_mask.rs",
+      "blob": "614904f277c5494e678a4c9ffe5099c91908aaab",
+      "sha256": "842dc1c1011bea9dfd3f15b598a5323e23df21b73abd1af95355b8a96cbfcf8d",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_kopub_circled_symbol.rs",
+      "blob": "36810d180d2815c57b7d6148ba6ed31bfc49bec4",
+      "sha256": "bcf45c22331382e3ea535faa7ae4962029ac768a5af9cfb360c58a61a584f68b",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_all_pages.rs",
+      "blob": "632f9bc11ac0418d245ef514a72e4b410ecc0b69",
+      "sha256": "66e276bb374dceff3a540e90f8d36ef9beda618d0e7c3c22fcc0157dd853a856",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_empty_overlap_carrier.rs",
+      "blob": "d017367aa0d2cddae08c3b47f393ea3401c5f228",
+      "sha256": "3ded096764960181751037ddd204956983b4510d953f50ef868e185e9871af0e",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_ordinary_row_physical_remainder.rs",
+      "blob": "bb03f7a0963de5ab0889c4fae6f8c9c24bd1df1f",
+      "sha256": "a5d5b2a380f7b460fe0e463c4fe75e5aafa335dace4fa38df746b1a1f1f2715c",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_overlay_picture_line_owner.rs",
+      "blob": "d527f529a356a11b1cb65d73d3508a1853f5a740",
+      "sha256": "c036b2cfe3fb539ad465034357a95c7bd951a830d5fae6d3b8eb147cdedbf35c",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_centered_tracking.rs",
+      "blob": "1d58786e0abec73c57b9440d4e5b7d39bb332817",
+      "sha256": "677cc62c7622a9db0a75c8b050a8ea6f8cb9a961d597945c2b5bfafb9cdd52c7",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_inline_cell_picture_origin.rs",
+      "blob": "854cbf3726a2a6061e960b409ad833859a52fca8",
+      "sha256": "2b894d7dcb97f14ff5c35d7581c535950a2e0cec524b17e93dcaca77ec3a2b99",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_centered_picture_fill.rs",
+      "blob": "e1469e706315ed9d2d5dae8d28b4fd1d22035736",
+      "sha256": "e9cbb51d6b9dc22bcef82c7071371264495e4700e33399f13db0dadee76fd339",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/char_overlap_missing_pua_host_style.rs",
+      "blob": "b1b8e8be7a721e009431d3c41573065ab6e3d12a",
+      "sha256": "533af4f3b1d743f0c9f6d6c3777dd61ee5992822d8fe9462b6e5eee767b1da28",
+      "disposition": "retained",
+      "reason": "Marker source style/size, right-edge adjacency and content preservation, no absolute page pixel."
+    },
+    {
+      "path": "tests/cases/issue_8153_shared_border_owner.rs",
+      "blob": "ae794e9420a8dff8504e4b8d7ab4f87cd8e5d91f",
+      "sha256": "c7f4518aae5a7752e6c287a1a83382c755f3b3ea50304c1454325a79496258a2",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_ordinary_row_closing_body.rs",
+      "blob": "7394fe2ef647080db6221b180f044beb325d82e1",
+      "sha256": "e7dc0401fd80e29d5f7aff6f88738c1345437637f2dea3d30f267dedde6d6d54",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/nested_table_height_cache_contract.rs",
+      "blob": "6070a664b746787e5daedcfe80c80af73c1ed3d3",
+      "sha256": "f337874242e1ff3fe04104b8685f732f03b62acb79da56cb106208d272532fee",
+      "disposition": "retained",
+      "reason": "Compare same edit after prior render versus fresh document; equality is a state/cache relationship, not a fixed SVG golden or page-count pin."
+    },
+    {
+      "path": "tests/cases/issue_7288_cell_unit_row_is_atomic.rs",
+      "blob": "dd2772bb7f60cc8a9f5e94dff4662e157677c2e9",
+      "sha256": "223994915ac54ccb42d3e6d0e32d005fdbfd12b0b13ab1bd68ed21f65ddab089",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_spaced_merged_frame.rs",
+      "blob": "a7f9af4b7caf1e526f84e17e61a86336fc7f52ea",
+      "sha256": "811c7e7cab512bfd60c3bc9c296e4cb46503c81953db907da4ae203190fc68a9",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_justified_final_line_compression.rs",
+      "blob": "560b9c8be64f17f6aab99abcda73a247b6ab3bcb",
+      "sha256": "bc0d57219dce4f5917719b6948703b774158f6a8b20c90e2cc08d7188e42955b",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_cell_none_border.rs",
+      "blob": "7ed62173eeec2e02240af2ce46ae1a8fc19bdbd2",
+      "sha256": "adb64dcce22be4023eb3630e44ff54dab5c8f977876fc1be0f878e9a86c4d661",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/native_pua_host_font_protocol.rs",
+      "blob": "eaf9333bd080465d3e5f2a3b51726cbd370b18a0",
+      "sha256": "85ffb2bef84f47900b320d37562f27abd45c56b2cf888c70bdec4cc925c9b063",
+      "disposition": "retained",
+      "reason": "Original font request/session ownership, local public font fixture protocol and source preservation, no absolute page location."
+    },
+    {
+      "path": "tests/cases/off_canvas_baseline.rs",
+      "blob": "70a3910c08a303213cc5e1c29f5e6ac089a484a1",
+      "sha256": "c6b2bbd0a0dd209d0effb593c15b3bc8b31542987c04a365227bc912d8cfa438",
+      "disposition": "retained",
+      "reason": "Anomaly-count ratchet corpus reference; no fixed page x/y pin to rewrite."
+    },
+    {
+      "path": "tests/cases/issue_8153_fragment_physical_band.rs",
+      "blob": "7173e6a5d491ff041babba40daa32c2ee09cea3e",
+      "sha256": "baffa7cc3dfa8a157df6f61408eb66d9014ccc7fa15b8221bc65f2729ff743a1",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_intrarun_right_tab.rs",
+      "blob": "83a57a39971396911bf6e9cdf4a82960f7ec1996",
+      "sha256": "d36926527485aeb7cc7e04be4eae5c9c86f6f9dc32bd731397401507d23de7cd",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_picture_resource_resampling.rs",
+      "blob": "deb63ed5e5355b97fc0507811bba96bc36e89b8e",
+      "sha256": "6facba2667441aede40c97f4821169fb29e61f42f04db622c9544b36b9f14a4c",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_condense_keeps_glyph_advances.rs",
+      "blob": "de749b64ef2ce6f01870ebcaaea9ec2136d7e845",
+      "sha256": "c3a69cba1977480a608b47a3a858f65027ff73ff971a0af95a3a8ec8eab829dd",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    },
+    {
+      "path": "tests/cases/issue_8153_positive_source_tracking.rs",
+      "blob": "dc7d40effc57a7c52c52dcb7aef8f305b7287e62",
+      "sha256": "042f606aa395b048805e5616fc66f032240112b3447600d0f2501e17d1f7fae2",
+      "disposition": "retained",
+      "reason": "Existing handbook source/relationship assertions or independently qualified page pins retained; exact file matches prior reviewed inventory and current whole Native/WASM pages exceed98."
+    }
+  ],
+  "existing_files_already_reviewed_and_identical": 45,
+  "new_test_cases_added": 4,
+  "existing_absolute_pins_replaced": 0,
+  "existing_correct_relationship_or_qualified_pins_retained": true,
+  "fixtures_removed": 0
+}

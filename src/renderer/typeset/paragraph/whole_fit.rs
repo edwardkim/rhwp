@@ -3,10 +3,11 @@
 use super::super::{
     line_seg_visible_bounds_px, page_item_para_index, para_controls_only_tac_topbottom_objects,
     para_controls_only_topbottom_floats, para_has_visible_text, paragraph_page_end_fit_height,
-    paragraph_text_looks_like_list_continuation_tail, preceding_stored_vpos,
+    paragraph_text_looks_like_list_continuation_tail, preceding_stored_line_span,
     saved_bounds_fit_at_flow_tail, saved_flow_marks_page_last, single_line_visible_bounds_px,
     stored_rewind_boundary_matches_current_flow, stored_vpos_restarts_near_body_top,
-    stored_vpos_rewinds, VisibleFloatExclusion, STORED_VPOS_REWIND_MIN_FILL,
+    stored_vpos_rewinds, stored_vpos_rewinds_after, VisibleFloatExclusion,
+    STORED_VPOS_REWIND_MIN_FILL,
 };
 use super::metrics::FormattedParagraph;
 use crate::model::{paragraph::Paragraph, provenance::LayoutCompatibilityProfile};
@@ -213,7 +214,7 @@ pub(super) fn inspect(
     // [#3837] 저장 vpos 가 되돌아가면 한글은 거기서 쪽을 끊었다.
     let boundary_already_consumed =
         accepted_opening_owner.is_some() && accepted_opening_owner == para_idx.checked_sub(1);
-    let stored_vpos_rewind_base = !boundary_already_consumed
+    let stored_rewind_owner = !boundary_already_consumed
         && !stored_frame_prefix_consumed
         && page.col_count == 1
         && !super::stored_lines::stored_page_boundary_invalidated_by_reflow(
@@ -226,17 +227,17 @@ pub(super) fn inspect(
         && !page
             .current_items
             .iter()
-            .any(|it| page_item_para_index(it) == Some(para_idx))
-        && stored_vpos_rewinds(
-            if preceding_stored_line_left_on_earlier_page(paragraphs, para_idx, page.current_items)
-            {
-                // 앞 줄의 저장 vpos 는 앞 쪽 좌표다 — 이 쪽의 흐름 위치와 비교한다.
-                Some(crate::renderer::px_to_hwpunit(page.current_height, dpi))
-            } else {
-                preceding_stored_vpos(paragraphs, para_idx)
-            },
-            para,
-        );
+            .any(|it| page_item_para_index(it) == Some(para_idx));
+    // 앞 줄의 저장 vpos 는 앞 쪽 좌표일 수 있다 — 그때는 이 쪽의 흐름 위치와 비교한다.
+    let preceding_line =
+        if preceding_stored_line_left_on_earlier_page(paragraphs, para_idx, page.current_items) {
+            let flow = crate::renderer::px_to_hwpunit(page.current_height, dpi);
+            Some((flow, flow))
+        } else {
+            preceding_stored_line_span(paragraphs, para_idx)
+        };
+    let stored_vpos_rewind_base =
+        stored_rewind_owner && stored_vpos_rewinds(preceding_line.map(|(start, _)| start), para);
     // [#6761] 채움률 관문만으로는 "덜 찼는데 한글이 끊은 쪽"을 놓친다. 되감김이
     // **쪽 위쪽 띠에서 다시 시작**하고 되감김 직전 자리가 지금 흐름 위치와 같으면,
     // 사다리가 적은 그 쪽 경계가 지금 이 자리다 — 채움률과 무관하게 인정한다.
@@ -275,8 +276,18 @@ pub(super) fn inspect(
     // ⚠ [#6855] 여기까지 `page_occupied_height` 로 넓히면 안 된다 — 코퍼스 실측에서
     // `1480000-201600147` 의 **글자 겹침이 33 → 37** 로 는다. 이 술어는 종전대로
     // 흐름 계상으로 잰다.
-    let stored_vpos_rewind_overflow_break =
-        stored_vpos_rewind_base && page.current_height + page_end_fit_height > available;
+    //
+    // [#8805] 통째로 안 들어가는 문단에는 앞 줄의 하한을 **아래끝**으로 잰다. 시작 하한
+    // (`cl > 5000`)은 채움률·위치 관문이 쓰는 되감김에서 쪽 위쪽 띠의 부분 후퇴를 거르는
+    // 값인데, 쪽 위에서 시작해 아래로 길게 내려오는 글자처럼 취급한 그림 뒤의 `vpos 0`
+    // 새 쪽 신호까지 거른다(1351000-201500141 pi454: 시작 1700·아래끝 34496 → pi455
+    // vpos 0, 통째 469.3 + 461.2 > 876.8px). 그러면 아래 atomic top-fit 이 53.6px 를
+    // 하단 여백으로 흘려 본문 밖에 그린다. 들어가는 문단의 쪽 경계(채움률 관문)는
+    // 그대로 시작 하한을 쓴다 — 한/글은 들어가는 vpos 0 문단을 같은 쪽에 두기도 한다
+    // (`pr8036_stored_tall_line/zero.hwpx`).
+    let stored_vpos_rewind_overflow_break = stored_rewind_owner
+        && stored_vpos_rewinds_after(preceding_line, para)
+        && page.current_height + page_end_fit_height > available;
     // [compat 2024] 앵커 줄 회수분이 있거나 앞선 경계를 이미 덮은 상태에서
     // 이 문단의 첫 줄이 (회수 보너스 포함) 들어가면 저장 되감김(=2022 조판의
     // 쪽 경계)을 덮는다. 회수도 선행 덮음도 없으면 종전 동작 그대로.

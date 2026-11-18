@@ -1,0 +1,175 @@
+{
+  "status": "native_and_fresh_wasm_verified_full_regression_pending",
+  "source_parent": "6197d8e680dad3ff8b466a62b9a5ab78275cde01",
+  "native_producer": {
+    "parent": "6197d8e680dad3ff8b466a62b9a5ab78275cde01",
+    "patch_sha256": "8cf4e3be991a5f06245cc0ad260fd1de8aa9e7b4da270c6f68f0c25333b739f3",
+    "binary_sha256": "5b1cf7e9932b0d45ef7a4cf270f309f6993e5ed715602e4cb958515fdd1eeab7"
+  },
+  "native_cases": [
+    {
+      "key": "recommendation",
+      "pages": 22,
+      "minimum": 98.69,
+      "minimum_page": 7,
+      "below_98": []
+    },
+    {
+      "key": "probe",
+      "pages": 6,
+      "minimum": 100.0,
+      "minimum_page": 1,
+      "below_98": []
+    },
+    {
+      "key": "radial",
+      "pages": 6,
+      "minimum": 100.0,
+      "minimum_page": 1,
+      "below_98": []
+    },
+    {
+      "key": "cbta",
+      "pages": 204,
+      "minimum": 97.0,
+      "minimum_page": 96,
+      "below_98": [
+        {
+          "page": 96,
+          "raw": 97.0
+        }
+      ]
+    },
+    {
+      "key": "exam",
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "below_98": []
+    },
+    {
+      "key": "api",
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "below_98": []
+    },
+    {
+      "key": "footnote",
+      "pages": 50,
+      "minimum": 98.58,
+      "minimum_page": 37,
+      "below_98": []
+    }
+  ],
+  "independent_pdf": "pdf/issue7729/gradient-band-color-probe-2020.pdf",
+  "independent_pdf_sha256": "99b077124213a4f042ba2ab2a4ec5fc1910fb8d37cfca0f4f63d38d05487a0a3",
+  "cause": "최종 RGB 반올림 대신 시작색에 대한 signed 채널 변화량을 0 방향으로 버리고 더함",
+  "file_sha256": {
+    "wasm-probe.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+    "wasm-api.tsv": "76f12f9f4b677b340aa930d1894188256638a1e4c8d20a8356d5f7900863a2ac",
+    "gradient-band-color-print-status.json": "e90702154cf418a6de7dd36bae48b0705a9c6f206c74aa1d303c2477fd54f49c",
+    "wasm-recommendation.tsv": "cc669817ace630a67f88bc4a571f82c5622172e095fc549242cbe6d26b41ed26",
+    "pdf-p004.png": "d035ef4d927d917cd206e13fafc4c4b956f37df5791996d8440d79f2fad1abad",
+    "wasm-footnote.tsv": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+    "gradient-band-color-print-start.json": "b255003019b52eb6310e34f8c607540b74a02a7c9ad336417d915ad1a84866ce",
+    "gradient-channel-regression-before.json": "6ffffe0b5d1650e9972fdf7ef5b84f4268eaf0abcf3197864f9c11f1ce4db50a",
+    "wasm-radial.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+    "native-footnote.tsv": "650f6a1d30fb0cf059371d11477cd6132976a35c02bfdf4ece2244611fa4ad65",
+    "gradient-channel-producer.json": "6186ae2f856979957699be09578f259aa0bd6d921bb7dd3bbb427aedb83dc62b",
+    "native-exam.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "gradient-band-color-print-download.json": "f261d67e2da2b711f7ee1506be755968d91eb0b7c657c0c733f4e30247df0027",
+    "wasm-producer.json": "3b7a0d8613ce86e8f63155d5bae4299deb2119e0ee6c2d01487d1a51bcecea89",
+    "native-p004-overlay.png": "a72720809c8ada44efe8be9641076e0c37bf80c721a9c5c152b0b3a427856b57",
+    "wasm-exam.tsv": "4ee763deecfca07a600b468b5ba6528e59492044afff2ec5891c1655d7cd1419",
+    "minimal-font-validation.json": "8fe01cd038a6b185a0ab7589e49036d637ea17c470200e58fc9890a426811245",
+    "wasm-p004-review.png": "41f058ce2edd8c3153b05f6c87933162298f457170ea481b4eea58520f81f541",
+    "wasm-cbta.tsv": "6b93bc1fea55690751732ccbefbb6d6ed0278687e1cdbd64e7b9d3d902234eb2",
+    "native-cbta.tsv": "3442371144fa583ba3519e739f447382a7c9bbb72215e92ec79fb5ffec90442c",
+    "gradient-band-color-probe-input.json": "82f9c80f016844663387c7bcbc7918a8ffaee109263ec557be72baea516aa3e1",
+    "native-probe.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+    "native-recommendation.tsv": "87565d8bedb64b4b8d99568e31a669f2c3c57bc9c5f81b0406c8abf265346b63",
+    "gradient-channel-regression-after.json": "461578c93d6448f3c4536c190fd11857903dac3ab9e3fb3b2c3ed93c5586fb50",
+    "wasm-p004-overlay.png": "a4e78b3536ee19ad3ebfc9b44fa085848492a4ce94082a870db230e3f884ed77",
+    "native-api.tsv": "0d300742ef260dadda962f4474e3fb347fd3b54879acc5179cdd609b9f3746bf",
+    "native-p004-raw.png": "4e3b96ed50440ddb948db426644701c6aed839223902e0843a4202304eb4294f",
+    "native-radial.tsv": "cdcf3e026b8de27abee1649a14fc0767bd3b6d02806046e34dcc9164c24df91f",
+    "native-p004-review.png": "5cf6f8e0c00f3afe7da4955bf709e50d1080e2e1e8d159a102d16d970e438e3a",
+    "wasm-p004-raw.png": "99a2b8573f02cd2047fecca1e5b9991f752e3bc90577143c5183ae90575ad84a"
+  },
+  "wasm_cases": [
+    {
+      "key": "recommendation",
+      "pages": 22,
+      "minimum": 98.68,
+      "minimum_page": 7,
+      "below_98": []
+    },
+    {
+      "key": "probe",
+      "pages": 6,
+      "minimum": 100.0,
+      "minimum_page": 1,
+      "below_98": []
+    },
+    {
+      "key": "radial",
+      "pages": 6,
+      "minimum": 100.0,
+      "minimum_page": 1,
+      "below_98": []
+    },
+    {
+      "key": "cbta",
+      "pages": 204,
+      "minimum": 96.99,
+      "minimum_page": 96,
+      "below_98": [
+        {
+          "page": 96,
+          "raw": 96.99
+        }
+      ]
+    },
+    {
+      "key": "exam",
+      "pages": 8,
+      "minimum": 99.49,
+      "minimum_page": 3,
+      "below_98": []
+    },
+    {
+      "key": "api",
+      "pages": 105,
+      "minimum": 99.55,
+      "minimum_page": 97,
+      "below_98": []
+    },
+    {
+      "key": "footnote",
+      "pages": 50,
+      "minimum": 98.58,
+      "minimum_page": 37,
+      "below_98": []
+    }
+  ],
+  "focused_minimal_font": {
+    "status": "passed",
+    "tests": 12,
+    "passed": 12,
+    "failed": 0,
+    "selection_outside": 1707,
+    "runtime_seconds": 3.385,
+    "log_sha256": "29fff6d1da016ce4df329b436d905c890904e7245755eee9a7841332fc5d975b",
+    "profile_sha256": "f0ffac3b2f44d33f447aa1dc3674719f7699c1c979146cff40fbca37098e35a0",
+    "scope": "새 RGB 2개와 기존 핵심 10개; 전체 회귀 아님",
+    "corrected_invocation": "처음 -j 8과 --test-threads 8이 nextest에서 중복되어 실행 전 종료. -j를 빼고 CARGO_BUILD_JOBS=8로 빌드 병렬도 지정.",
+    "compiled_test_source_sha256": "477126d9b303b61b8a7e2b8ab4958e14620543381b98f3fbe6a7456fe21cc192",
+    "current_test_source_sha256": "a3f5b7654698a30e7a6a337f06f5d91eb5580cc1abe36665621db6fe2e799281",
+    "post_execution_change": "검증 결과를 파일 첫머리 문서 주석에 반영. assertion 변경 없음."
+  },
+  "direct_reading": {
+    "native_p004_review_and_overlay": "확인 완료",
+    "fresh_wasm_p004_review_and_overlay": "확인 완료"
+  }
+}

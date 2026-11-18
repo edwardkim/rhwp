@@ -1,0 +1,258 @@
+{
+  "pr": 8911,
+  "backend": "wasm",
+  "key": "pr8911-36376635-synthetic-tail-saved-reset",
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "producer": {
+    "complete": true,
+    "phase": "complete",
+    "runs": [
+      {
+        "name": "native",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "-j",
+          "8"
+        ],
+        "pid": 83180,
+        "exit_code": 0
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "pid": 93423,
+        "exit_code": 0
+      }
+    ],
+    "parent_head": "0f2ebe265e6ef4f2572925fca66ed2f5bd18a0c3",
+    "source_hashes": {
+      "src/document_core/queries/rendering.rs": "c1b43a62d9a6aa730c9dfddd17145b798018b46a34fb4cdf28e19b004a74fe42",
+      "src/paint/builder.rs": "966701b7a6fb94b546aa33c9cf49d5057c215d56d24b76da775f20b468fc95ac",
+      "src/parser/hwp3/mod.rs": "eecb17a72eaba544d2afbaa7b1aa21c736fbefb5c54fe52bf4d4ac1a920eea84",
+      "src/renderer/composer/line_breaking.rs": "6e6f2c7ba5f795e83f8643d4bf7c282f1c020b0556eac77664480a3b1fb701cf",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "836ab234a5035f093d218cdfc296f7e6d7bcf047f15e23557687dd8009cbeee8",
+      "src/renderer/float_placement/square_lane.rs": "2d29eb142a8adf351bc00d7bef132b56b8dd3560b56d595f94fb481f0cd0834b",
+      "src/renderer/float_placement/stored_square_top_band.rs": "55f1353be64100d0edaf9894d4e85a8c08b01dd11da619bd0af2e4a2b6d5db5c",
+      "src/renderer/height_measurer.rs": "8ad30b462ac0e7ec4e81e7a1cf46cd950edd25a301aaa17b147749bc363580db",
+      "src/renderer/layout.rs": "7723e9e3508d13e2cfbf645679c4e99d6902e2aed28b94058ac2fb459342f202",
+      "src/renderer/layout/paragraph_layout.rs": "b9a757e5bd258c134075202598a9eb3408e61df7313560c52c9809854082124f",
+      "src/renderer/layout/shape_layout.rs": "afc8da8da519faa674b2b6b36d530edd21b0d6648be0f10b2687f4754f93018d",
+      "src/renderer/layout/stored_tac_frame.rs": "325f0a1ed57eda8e61f3b3fbefac9ceb99c40be013f54909b7c1dc28d9ded5ea",
+      "src/renderer/layout/table_layout.rs": "60e94b774ff8ae5738d68d298aefd7f968e13a78ffe720c07c65e2c7615e626d",
+      "src/renderer/mod.rs": "259a54bef6781c60476ba7e6b46492a2e9ed508615107cd63fc609f9b55eb603",
+      "src/renderer/pagination.rs": "c3cb2acda1f75ad9a9538c8d3686394593de08df7e3dd279a5f00191204c03ea",
+      "src/renderer/render_tree.rs": "f5adc25d468bec605aa7f3d917d46d307b2a6ac1abf62ca2f7917b7e215bef1e",
+      "src/renderer/svg.rs": "4de706badd8164210757f5bb5f5077edbb47cb50e2174197403c1903563052bc",
+      "src/renderer/typeset.rs": "e3d513b8acfead7e5fd2d4e36eab65de6159b54f96b92a8df510d584803d137c",
+      "src/renderer/typeset/controls/deferred_picture.rs": "44f6fbbd5d54f8e5be275c881a9ada93b4fb1e0d82592b3571176448f05ce710",
+      "src/renderer/typeset/controls/host_wrap.rs": "fb80c43d2b01717e53b2c44cf9ccebd62afcfd98c86be50cf96396b11a5bd677",
+      "src/renderer/typeset/controls/stored_tac.rs": "b08e2c2501abc268d7647f299129f4b93d110dcf597855e7e16f2e5a17f806f6",
+      "src/renderer/typeset/controls/tac_fit.rs": "efec0181ba25c2f2ccc9a8629d1bfe268dac9251d2105824042840e721d1fed6",
+      "src/renderer/typeset/controls/wrap_absorption.rs": "1aa0fdd8a8366b8387c9a7d90eda9a75a7704f46a241524f00e55ea55c227ee3",
+      "src/renderer/typeset/controls/wrap_flow.rs": "175fd74ff3491c7dfe6a0ffd6e85195c11079c6b51c418d1445fe70cf85bed78",
+      "src/renderer/typeset/controls/wrap_match.rs": "6d0a6f49c0f26f53fbb321a6ba69c124a9f1ad051b5b416d8a608ec6f80819a7",
+      "src/renderer/typeset/paragraph.rs": "cbc38ba38a69b2ede303ca1ce9df7a65b44b37b5f71d7d6442d48ba668c0e385",
+      "src/renderer/typeset/paragraph/content.rs": "894dd06bb33acd4151e1c44e187b6f12103870c24eac14d9e38e36999523c5fc",
+      "src/renderer/typeset/paragraph/format.rs": "c95b71c449b9a08f028fbc9890cbba15c2d94d4a63a07f4a766a6230597a698a",
+      "src/renderer/typeset/paragraph/placement.rs": "564d2459e485735a05b871d5695a33a4cb10eba81eefc29122168447e4aa6670",
+      "src/renderer/typeset/section.rs": "25caa0b783ce499d1887e1ad8c45ffd11906dd3db3b86ac1134900b543c5f450",
+      "src/renderer/typeset/section/controls.rs": "a896e9f643f8db70cf5d1c3b7d014cb491e16265f35c4cc0cbb4273d5287ac4c",
+      "src/renderer/typeset/section/flow.rs": "ae3ede44081d412e9d7fa10da9c03cca1d3b3d16222cf3a2272301cb0b78e852",
+      "src/renderer/typeset/section/post_flow.rs": "579b189656d839f11795c6643f3a35692a266412d37e7af5ee076d8a70e86b78",
+      "src/renderer/typeset/state.rs": "3ac568f6d7e4b724ac0febe8d4c4136c92832513a23dc7cea0a9c94b5762dfc7",
+      "src/renderer/typeset/state/commands.rs": "55ed99145004bca61817457f58f45f8cb1a8f257950ff6559f9de8e7af46468b",
+      "src/renderer/typeset/state/data.rs": "5e5dc6c299f2aed57b64adda922c1961938e0a0b1d490ae358fb67f75c150e89",
+      "src/renderer/typeset/state/transition.rs": "5ed3a9f1d0e0a68fc6db91d8df563ca987d1a4687e4a8dc70defb9bbb37113f7",
+      "src/renderer/typeset/table/block/entry.rs": "873230a1e73286cef074fb2eaf4331697250af22835cb913324989f086aa4617"
+    },
+    "source_diff_sha256": "2c6584f12fcbcdda2f23c275ad91fb10a24066a4dc8d790579f90752a4c9f67e",
+    "started_at": "2026-11-11T00:50:48.049257+09:00",
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/employment79-v5-native",
+    "binary_sha256": "6ad28f665d9da971b5cdf0e691977268c5156bf7f5a66ee7f81a8c4f90ec441d",
+    "wasm_files": {
+      "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "rhwp_bg.wasm": "bf23f3629528d45cdc6a223d148e1aa37e1887a6fb4d25b40b41560369b9a851"
+    },
+    "studio_public_matches": {
+      "rhwp.js": true,
+      "rhwp_bg.wasm": true
+    },
+    "wasm_method": "Mac locked wrapper local no-opt alternative; not Docker optimization",
+    "success": true,
+    "finished_at": "2026-11-11T00:58:42.135978+09:00"
+  },
+  "case": {
+    "pr": 8911,
+    "key": "pr8911-36376635-synthetic-tail-saved-reset",
+    "doc": "samples/issue8904/36376635-synthetic-tail-saved-reset.hwpx",
+    "pdf": "pdf/issue8904/36376635-synthetic-tail-saved-reset-2020.pdf",
+    "compat": "2022",
+    "input_sha256": "27bc644e73eb8cf64d35227775dc7e9d5e27b74f540c610e1da12ad224d7dca5",
+    "pdf_sha256": "20257a2be00588346f8536e1ebf1452fcfab7781b06961b817e2190abb33ff35",
+    "protected_ids": []
+  },
+  "validated_output": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset",
+  "pages": 3,
+  "minimum": 100.0,
+  "claim_pages": [
+    2,
+    3
+  ],
+  "review_pages": [
+    1,
+    2,
+    3
+  ],
+  "actual_same_page_assets": [
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/silhouette.tsv",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/silhouette.tsv",
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/manifest.json",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/silhouette_manifest.json",
+      "sha256": "96081bf930af87019ef95830f5fe7f39f33aa292ffdf4871d8d2beceb34af7eb"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/raw-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/rhwp_png/rhwp_001.png",
+      "sha256": "67164b02016610e59980dc5a001a1b6b16025b31087752d42ea264a77466067d"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/pdf-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/pdf_png/pdf-001.png",
+      "sha256": "8a938a6bc3be9664eb52c58c2bb3e18ffb8968820bc2ffd72dce1a8d9531c6bb"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/review-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8911-36376635-synthetic-tail-saved-reset/review/review_001.png",
+      "sha256": "93eec68871d455d231fe372ef5630fe853aa0145de1e5ad656fde8a9b8c36578"
+    },
+    {
+      "page": 1,
+      "role": [
+        "whole_document_minimum"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/overlay-001.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8911-36376635-synthetic-tail-saved-reset/overlay/overlay_001.png",
+      "sha256": "699628cac2598f92e35b2135cf17dd59f15cd0b7baba63691bed73fe98d3316f"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/raw-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/rhwp_png/rhwp_002.png",
+      "sha256": "52432fd0ed03478ea9ac3b1d55679eeacf6f066f386eeaac1ce95982e5005d09"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/pdf-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/pdf_png/pdf-002.png",
+      "sha256": "5d6aab6943dc4e1e548220b84631f943ff7b4b6013eb87030d0c4c8df997e5ef"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/review-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8911-36376635-synthetic-tail-saved-reset/review/review_002.png",
+      "sha256": "9e2f3b57fe93728fcd33367f004cac8936b7c0cf2a19ca7bb6c413d2ba0ae091"
+    },
+    {
+      "page": 2,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/overlay-002.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8911-36376635-synthetic-tail-saved-reset/overlay/overlay_002.png",
+      "sha256": "ff210e8712d0000354ddb5201ab0b9d023cbde63f2e5eb6819ae95ec87166399"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "raw",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/raw-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/rhwp_png/rhwp_003.png",
+      "sha256": "c35d77005fd0c62ec30bf6e54d2dcaff4826841829f623dae0d8a883a6c5aa04"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "pdf",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/pdf-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-visual-wasm/pr8911-36376635-synthetic-tail-saved-reset/pdf_png/pdf-003.png",
+      "sha256": "a610a21adfcba6e01c4f1c107b942d29ff452d78f8a51419565ff7590eeab59b"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "review",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/review-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8911-36376635-synthetic-tail-saved-reset/review/review_003.png",
+      "sha256": "60a2cb7d757cdfd4ba41acb6114305919c180e8c822d62b467bd938765988e8e"
+    },
+    {
+      "page": 3,
+      "role": [
+        "claim"
+      ],
+      "kind": "overlay",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8911/cases/pr8911-36376635-synthetic-tail-saved-reset/wasm/overlay-003.png",
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/final-v5-panels-wasm/pr8911-36376635-synthetic-tail-saved-reset/overlay/overlay_003.png",
+      "sha256": "91df2fb125cd9405a80951e788316c82d8c9be8e6400bb22702754616e7d8c54"
+    }
+  ],
+  "final_direct_reading": "wasm-direct-reading-audit.json: 동일한 raw/PDF SHA의 직접 판독 완료"
+}

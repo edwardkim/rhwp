@@ -1,0 +1,340 @@
+{
+  "candidate": "fcf2e11b1727297743343446333132e1409737f1",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "status": "passed",
+  "isolation": "bubblewrap filesystem and pid namespace; hidden OS and private fonts; cleared environment",
+  "allowedFonts": [
+    {
+      "file": "NotoSansKR-ExtraLight.ttf",
+      "sha256": "67b4003e2be99ea44a7c957e4b35acde1b5e6e82a54fe195c5598c3c617bc2e3"
+    },
+    {
+      "file": "NotoSansKR-OFL.txt",
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
+    },
+    {
+      "file": "NotoSansKR-Regular.ttf",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    },
+    {
+      "file": "NotoSansSymbols2-Regular.ttf",
+      "sha256": "876598db5f1e3bef2bc77c4d94c5b0d5d2c1620be4878a06f18fb5434e331688"
+    },
+    {
+      "file": "README.md",
+      "sha256": "f009c0f4eb264b24a0d7aa5cf781bf873b4862de45c8c207d69120881b62a886"
+    },
+    {
+      "file": "RHWPOldHangul-Regular.otf",
+      "sha256": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4"
+    },
+    {
+      "file": "RHWPPublicBatang-OFL.txt",
+      "sha256": "04239f362e8d6b5e7e9c4e6ce6e69521762471c87274893d3f994d1a6c496531"
+    },
+    {
+      "file": "RHWPPublicBatang-Regular.ttf",
+      "sha256": "7e3aee5ee1d8f44cc37d35dbd07e5f66414fee5ce552ebda6b4347643d9d0b78"
+    }
+  ],
+  "runs": [
+    {
+      "label": "base-native-build",
+      "source": "22da83586aab1baf960f2159abda347062ecf7ed",
+      "command": [
+        "/home/tsjang/.cargo/bin/cargo",
+        "build",
+        "-v",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review"
+      ],
+      "startedAt": 1794920523.5590782,
+      "exitCode": 0,
+      "completedAt": 1794921220.8471575,
+      "binary": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/rhwp-base-native",
+      "binarySha256": "97c1b137e0d8e0a7bb521222bace443246e7dbdee28e6fb0b2261e8fc783ea98",
+      "summaryLines": [],
+      "logSha256": "d06dade6b5f82af254dcfb3bd835e3cd3e138872abf29e3efdb19330081e7972"
+    },
+    {
+      "label": "base-incoming-features",
+      "source": "22da83586aab1baf960f2159abda347062ecf7ed",
+      "command": [
+        "/home/tsjang/.cargo/bin/cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--status-level",
+        "fail",
+        "--final-status-level",
+        "fail",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_013",
+        "--test",
+        "regression_suite_019",
+        "-E",
+        "test(hwp_topbottom_line_band_anchor_flow::) | test(issue_9142_hwp_used_skip_synthetic::) | test(tab_stop_beyond_line_wraps::)"
+      ],
+      "startedAt": 1794921255.896419,
+      "exitCode": 0,
+      "completedAt": 1794921924.9664624,
+      "summary": [
+        "     Summary [   0.132s] 7 tests run: 7 passed, 1004 skipped"
+      ],
+      "summaryLines": [
+        "Starting 7 tests across 3 binaries (1004 tests skipped)",
+        "Summary [   0.132s] 7 tests run: 7 passed, 1004 skipped"
+      ],
+      "logSha256": "49fca4c1eee81c26f7079e10210551eb86329b569a8869edb8602132458ce8ab"
+    },
+    {
+      "label": "candidate-native-build",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "/home/tsjang/.cargo/bin/cargo",
+        "build",
+        "-v",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review"
+      ],
+      "startedAt": 1794921938.7158647,
+      "exitCode": 0,
+      "completedAt": 1794922462.217543,
+      "binary": "$REMOTE_WORKSPACE/output/pr-review/hwp3-essential-visual-rebased-20261117/rhwp-candidate-native",
+      "binarySha256": "b12e910574af8361a9c8695053d035cb5691de3bef5bc8dabea1c5006f2a2636",
+      "summaryLines": [],
+      "logSha256": "aa557b608fc7b9bd45af7c6847dde29fa26c6e71203751930b3aacbc08079097"
+    },
+    {
+      "label": "focused-native",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "/home/tsjang/.cargo/bin/cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--status-level",
+        "fail",
+        "--final-status-level",
+        "fail",
+        "--test",
+        "regression_suite_005",
+        "--test",
+        "regression_suite_014",
+        "--test",
+        "regression_suite_019",
+        "--test",
+        "regression_suite_022",
+        "--test",
+        "regression_suite_026",
+        "-E",
+        "test(installed_font_program_order::) | test(issue_8218_hwp3_link_bindata_order::) | test(hft_outline_font_contract::) | test(issue_2225_missing_picture_placeholder::) | test(issue_1892::) | test(hwp_topbottom_line_band_anchor_flow::) | test(issue_9142_hwp_used_skip_synthetic::) | test(tab_stop_beyond_line_wraps::)"
+      ],
+      "startedAt": 1794922512.7077,
+      "exitCode": 0,
+      "completedAt": 1794923378.6370375,
+      "summary": [
+        "     Summary [   6.188s] 49 tests run: 49 passed, 1698 skipped"
+      ],
+      "summaryLines": [
+        "Starting 49 tests across 5 binaries (1698 tests skipped)",
+        "Summary [   6.188s] 49 tests run: 49 passed, 1698 skipped"
+      ],
+      "logSha256": "4958f6023faab471ec5fe04300ef2d39ab555c0660a1ea51d4797d3d014b47c7"
+    },
+    {
+      "label": "native-lib",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "8"
+      ],
+      "startedAt": 1794923378.8024244,
+      "exitCode": 0,
+      "completedAt": 1794924177.6776748,
+      "summary": [
+        "test agent::dsel::error::tests::caret_lands_on_char_boundary_not_byte ... ok",
+        "test agent::dsel::error::tests::display_has_no_caret_but_carries_offset ... ok",
+        "test agent::dsel::error::tests::expected_is_sorted_and_deduped ... ok",
+        "test agent::dsel::error::tests::json_keeps_zero_offset ... ok",
+        "test agent::dsel::error::tests::tabs_are_preserved_in_caret_line ... ok",
+        "test error::tests::parse_error_to_hwp_error_uses_display_not_debug ... ok",
+        "test result: ok. 3853 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 41.28s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "summaryLines": [
+        "test result: ok. 3853 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 41.28s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "logSha256": "a33d14301c1ce682d1b2061644afb958958679b2a5dc7504f690063bbca07d05"
+    },
+    {
+      "label": "native-picture",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "startedAt": 1794924177.8150907,
+      "exitCode": 0,
+      "completedAt": 1794924187.1281164,
+      "summary": [
+        "     Summary [   3.213s] 2 tests run: 2 passed, 364 skipped"
+      ],
+      "summaryLines": [
+        "Starting 2 tests across 1 binary (364 tests skipped)",
+        "Summary [   3.213s] 2 tests run: 2 passed, 364 skipped"
+      ],
+      "logSha256": "40e708572d3cf1878cbc9aeb052c3811052844916bcf927c0f21a1cb82008eb1"
+    },
+    {
+      "label": "native-pdf",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "8"
+      ],
+      "startedAt": 1794924187.2804725,
+      "exitCode": 0,
+      "completedAt": 1794924227.6554418,
+      "summary": [
+        "     Summary [   2.872s] 36 tests run: 36 passed, 318 skipped"
+      ],
+      "summaryLines": [
+        "Starting 36 tests across 1 binary (318 tests skipped)",
+        "Summary [   2.872s] 36 tests run: 36 passed, 318 skipped"
+      ],
+      "logSha256": "3f25afcfba94b5ad6bea69a4c63d77b240e829b9295b1875d879d4e925c77c15"
+    },
+    {
+      "label": "full-regression",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "nextest",
+        "run",
+        "--locked",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review",
+        "--test-threads",
+        "8",
+        "--no-fail-fast",
+        "--status-level",
+        "fail",
+        "--final-status-level",
+        "fail",
+        "--tests"
+      ],
+      "startedAt": 1794924227.7725534,
+      "exitCode": 0,
+      "completedAt": 1794926754.0430336,
+      "summary": [
+        "     Summary [1061.189s] 13718 tests run: 13718 passed (7 slow), 45 skipped"
+      ],
+      "summaryLines": [
+        "Starting 13718 tests across 55 binaries (45 tests skipped)",
+        "Summary [1061.189s] 13718 tests run: 13718 passed (7 slow), 45 skipped"
+      ],
+      "logSha256": "481d397c5f50ff8ba7adaff2b0e628d49a29faa2dea82da4c29ccf02751150ea"
+    },
+    {
+      "label": "doctests",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--doc",
+        "--target-dir",
+        "$REMOTE_WORKSPACE/target/pr-review"
+      ],
+      "startedAt": 1794926754.351118,
+      "exitCode": 0,
+      "completedAt": 1794927030.1459599,
+      "summary": [
+        "test result: ok. 8 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 5.62s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "summaryLines": [
+        "test result: ok. 8 passed; 0 failed; 3 ignored; 0 measured; 0 filtered out; finished in 5.62s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "logSha256": "18d6fb59a3a861a4b0326d0c370eb3b602262d6de9e8997c7272bf521f34c2da"
+    }
+  ]
+}

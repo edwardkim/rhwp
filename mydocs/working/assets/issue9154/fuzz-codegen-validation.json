@@ -1,0 +1,34 @@
+{
+  "sourceBase": "b931460f9cb2478aaae745371f4c49794d5ff8c7",
+  "validatedAt": "2026-11-17T15:32:52.404566+00:00",
+  "checks": [
+    {
+      "name": "workflow contracts",
+      "count": 263,
+      "passed": true,
+      "command": "python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'",
+      "outputSha256": "188aa7f198585e7a9d48f2104cfd6ee62fe5d403195b79cb7332d7748324d74d"
+    },
+    {
+      "name": "CI classification/policy/trustedreuse",
+      "count": 339,
+      "passed": true,
+      "command": "node --test scripts/tests/ci-impact-classifier.test.cjs scripts/tests/ci-impact-policy.test.cjs scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs",
+      "outputSha256": "e963c960e42486e9ed8dd1c537ce4aff7819b927986d3935f5107672e852834b"
+    },
+    {
+      "name": "actionlint1.7.12",
+      "passed": true,
+      "command": "docker run --rm --network none -v WORKTREE:/repo:ro -w /repo rhysd/actionlint:1.7.12 -color .github/workflows/fuzz-smoke.yml"
+    },
+    {
+      "name": "internal markdownlinks",
+      "documents": 2,
+      "passed": true
+    }
+  ],
+  "actualFuzzCompilerTest": "fuzz-codegen-memory.json",
+  "proposedWorkflowSha256": "a6ea5fc47dd1fd4d53aada9fe1b696295dc6fff7d06ac74bdfb9e0ddfbfa2259",
+  "productRustCargoUnchanged": true,
+  "remoteApplication": "notyetapproved; no codegen16 workflow pushed"
+}

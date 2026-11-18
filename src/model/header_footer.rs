@@ -70,7 +70,7 @@ pub struct MasterPage {
     pub apply_to: HeaderFooterApply,
     /// 확장 바탕쪽 여부 (마지막 쪽/임의 쪽 — 두 번째 이후 Both)
     pub is_extension: bool,
-    /// 겹치게 하기 (확장 바탕쪽이 기존 바탕쪽 위에 겹쳐 표시)
+    /// 겹치게 하기 (확장 바탕쪽이 기존 바탕쪽 위에 겹쳐 표시). HWP5는 LIST_HEADER byte 22의 bit 0.
     pub overlap: bool,
     /// 렌더링 시 기존 기본 바탕쪽을 대체한다.
     ///
@@ -79,8 +79,8 @@ pub struct MasterPage {
     pub replace_base: bool,
     /// 확장 플래그 raw 값 (LIST_HEADER byte 18-19)
     pub ext_flags: u16,
-    /// HWPX `masterPage@pageFront` — 첫 쪽(표지) 전용 바탕쪽 여부.
-    /// HWP5에서 읽은 바탕쪽은 해당 XML 속성이 없으므로 기본 false.
+    /// 인쇄할 때 바탕쪽 맨 위로 보내기 — HWPX `masterPage@pageFront`, HWP5 바탕쪽 LIST_HEADER
+    /// byte 22의 bit 1(한컴 12.30 저장본에서 확인). 본문 위에 그린다.
     pub page_front: bool,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,

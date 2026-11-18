@@ -390,10 +390,16 @@ fn prepare_glyph_effects(
         passes.push((fill, (0.0, 0.0)));
     } else {
         if style.shadow_type > 0 {
-            passes.push((
-                fill_paint(colorref_to_skia(style.shadow_color, 1.0)),
-                (style.shadow_offset_x as f32, style.shadow_offset_y as f32),
-            ));
+            for [x, y] in crate::paint::text_shadow::offsets_for(
+                style.shadow_type,
+                [style.shadow_offset_x, style.shadow_offset_y],
+                style.continuous_shadow.as_ref(),
+            ) {
+                passes.push((
+                    fill_paint(colorref_to_skia(style.shadow_color, 1.0)),
+                    (x as f32, y as f32),
+                ));
+            }
         }
         // 외곽선 글자는 SVG·Canvas와 같은 굵기·반복 구간으로 윤곽만 긋는다.
         if let Some((width, intervals)) =

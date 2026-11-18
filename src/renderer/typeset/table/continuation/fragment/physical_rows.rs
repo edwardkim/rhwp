@@ -179,7 +179,7 @@ impl TypesetEngine {
                     && cell.height > 0
                     && cell.height < 0x8000_0000
                     && first <= row
-                    && row + 1 < first + usize::from(cell.row_span)
+                    && row < first + usize::from(cell.row_span)
             })
             .filter_map(|cell| {
                 let first = usize::from(cell.row);
@@ -194,7 +194,22 @@ impl TypesetEngine {
                     };
                     Some(sum + height + cs)
                 })?;
-                Some(hwpunit_to_px(cell.height as i32, self.dpi) - prefix)
+                let declared = hwpunit_to_px(cell.height as i32, self.dpi);
+                // 이 행에서 닫히는 병합 칸도 실제 끝 상자를 소유한다. 선언보다
+                // 내용이 큰 칸은 전체 줄·안여백의 점유에서 이미 수용한 앞 행만
+                // 뺀다. 이 소유자를 제외하면 남은 쪽 공간을 근거 없이 전부 채운다.
+                let whole = if row + 1 == first + usize::from(cell.row_span) {
+                    declared.max(layout.cell_cut_visible_height(
+                        cell,
+                        table,
+                        source.styles,
+                        0,
+                        usize::MAX,
+                    ))
+                } else {
+                    declared
+                };
+                Some(whole - prefix)
             })
             .fold(f64::NEG_INFINITY, f64::max);
         // 앞 행 상자를 아는 걸침 칸이 하나도 없으면 몫을 정할 수 없다 — 종전처럼 쪽 끝까지 준다.

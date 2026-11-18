@@ -2,12 +2,12 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pdf_developer_onboarding.md
-last_verified: 2026-11-08
+last_verified: 2026-11-18
 ---
 
-# PDF 가져오기: 0.9.0 개발자 시작 안내
+# PDF 가져오기: 0.9.1 개발자 시작 안내
 
-[English](pdf_developer_onboarding_EN.md). 이 문서는 **0.9.0**의 API·소비 계약이다.
+[English](pdf_developer_onboarding_EN.md). 이 문서는 **0.9.1**의 API·소비 계약이다.
 registry·스토어의 버전별 설치 가능 상태는 해당 채널에서 확인한다. 소스에서 빌드할 때도
 CLI·JS glue·WASM·Worker·Studio를 같은 릴리즈로 고정한다.
 
@@ -67,14 +67,14 @@ Standard Security R2–R6를 인증하며 빈 열기 암호이면 자동으로 �
 
 ## 2. Rust 라이브러리
 
-0.9.0부터 crates.io 배포를 시작한다. 아래는 게시 후 사용할 Rust 의존성이다.
+crates.io 배포는 0.9.0부터 제공한다. 아래는 0.9.1 게시 후 사용할 Rust 의존성이다.
 
 ```toml
 [dependencies]
-rhwp = { version = "0.9.0", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
+rhwp = { version = "0.9.1", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
 ```
 
-게시 준비 중에는 `version = "0.9.0"`을 `path = "/path/to/rhwp"`로 바꾸어 같은 버전의 checkout을 사용한다.
+게시 준비 중에는 `version = "0.9.1"`을 `path = "/path/to/rhwp"`로 바꾸어 같은 버전의 checkout을 사용한다.
 실제 공개 버전과 설치 확인은 [crates.io 소비 안내](../../packaging/crates-io/README_PACKAGE.md)를 따른다.
 `wasm-api`를 제외해 JS 자동 초기화를 연결하지 않는 구성이다. parser-only 빌드는 아니다.
 
@@ -97,7 +97,7 @@ fn import_pdf(bytes: &[u8]) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
 
 ## 3. npm core / WASM
 
-출시 후 `npm install @rhwp/core@0.9.0`으로 버전을 고정하고 `rhwp_bg.wasm`을 서버의
+출시 후 `npm install @rhwp/core@0.9.1`으로 버전을 고정하고 `rhwp_bg.wasm`을 서버의
 `/rhwp_bg.wasm`에 복사한다. 출시 전에는 [locked WASM 빌드](dev_environment_guide.md#wasm-빌드)의
 `pkg/`를 사용한다. JS와 WASM은 같은 빌드여야 한다.
 
@@ -156,7 +156,7 @@ try {
 Studio에서 PDF를 열면 가져오기 대화창에서 프로필·고급 설정·필요한 열기 암호를 지정한다.
 변환 중 원본 현재/전체 쪽과 완료율을 표시하며 취소 후 재시도할 수 있다. 완료 후 HWP/HWPX로 저장한다.
 
-`@rhwp/editor`는 iframe wrapper이므로 0.9.0 Studio를 함께 배포하고 `viewerUrl`로 지정한다.
+`@rhwp/editor`는 iframe wrapper이므로 0.9.1 Studio를 함께 배포하고 `viewerUrl`로 지정한다.
 패키지 번호만 바꾸고 오래된 호스팅 Studio를 그대로 사용하지 않는다.
 
 ```js

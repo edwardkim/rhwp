@@ -10,6 +10,13 @@ impl TypesetState {
         self.data.hidden_line_reflow_active = active;
     }
 
+    pub(in crate::renderer::typeset) fn set_page_band_host_line(
+        &mut self,
+        line: Option<(usize, usize, f64, i32)>,
+    ) {
+        self.data.page_band_host_line = line;
+    }
+
     pub(in crate::renderer::typeset) fn replace_deferred_table_successor_start(
         &mut self,
         start: Option<usize>,
@@ -165,6 +172,22 @@ impl TypesetState {
     ) {
         self.data.behind_pending_absorbs.push(para);
     }
+    /// 겹침 불허 그림 무리에서 다음 새 쪽 맨 위로 옮길 그림을 줄 세운다.
+    pub(in crate::renderer::typeset) fn queue_cascaded_pile_picture(
+        &mut self,
+        para_index: usize,
+        control_index: usize,
+    ) {
+        self.data
+            .cascaded_pile_pictures
+            .push_back((para_index, control_index));
+    }
+    /// 쪽이 모자라 아직 옮기지 못한 무리 그림을 현재 쪽 맨 앞에 둔다.
+    pub(in crate::renderer::typeset) fn place_remaining_pile_pictures_on_current_page(&mut self) {
+        let data = &mut *self.data;
+        data.page_start_pile_pictures
+            .extend(data.cascaded_pile_pictures.drain(..));
+    }
     pub(in crate::renderer::typeset) fn defer_square_picture(
         &mut self,
         picture: DeferredSquarePictureControl,
@@ -179,7 +202,7 @@ impl TypesetState {
         let data = &mut *self.data;
         if let Some(index) = picture.following_body_para_index {
             data.deferred_source_frame_body_pages
-                .insert(index, data.pages.len() + 2);
+                .insert(index, picture.target_page.unwrap_or(data.pages.len() + 2));
         }
         if matches!(
             picture.kind,
@@ -238,6 +261,7 @@ impl TypesetState {
         }
         self.data.deferred_next_column_stored_frames.push(
             crate::renderer::typeset::DeferredStoredFrameControl {
+                target_page: None,
                 kind: crate::renderer::typeset::DeferredStoredFrameKind::Picture,
                 para_index: para_idx,
                 control_index: ctrl_idx,
@@ -327,6 +351,23 @@ impl TypesetState {
     }
     pub(in crate::renderer::typeset) fn mark_pre_emitted_host(&mut self, index: usize) {
         self.data.pre_emitted_host_paras.insert(index);
+    }
+    /// 같은 호출이 이 쪽에 낸 호스트 글줄을 거둘 때 그 기록을 함께 지운다(#8652).
+    pub(in crate::renderer::typeset) fn retract_pre_emitted_host(&mut self, index: usize) {
+        self.data.pre_emitted_host_paras.remove(&index);
+        self.data.pre_emitted_host_heights.remove(&index);
+        self.data.pre_emitted_host_content_heights.remove(&index);
+    }
+    pub(in crate::renderer::typeset) fn request_block_table_restart(&mut self, index: usize) {
+        self.data.restart_block_table_para = Some(index);
+    }
+    pub(in crate::renderer::typeset) fn take_block_table_restart(&mut self, index: usize) -> bool {
+        if self.data.restart_block_table_para == Some(index) {
+            self.data.restart_block_table_para = None;
+            true
+        } else {
+            false
+        }
     }
     pub(in crate::renderer::typeset) fn record_pre_emitted_host_height(
         &mut self,
@@ -449,15 +490,30 @@ impl TypesetState {
         y: f64,
     ) {
         self.data.vpos_snapped_flow_start = Some((para_idx, y));
+        self.data.vpos_snapped_flow_page = Some((self.data.pages.len(), self.data.current_column));
     }
     pub(in crate::renderer::typeset) fn record_vpos_lazy_origin(&mut self, value: Option<i32>) {
         self.data.vpos_lazy_base = value;
+    }
+    pub(in crate::renderer::typeset) fn record_rejected_gap_snap(&mut self, value: i32) {
+        self.data.vpos_rejected_gap_hu = self.data.vpos_rejected_gap_hu.saturating_add(value);
+    }
+    pub(in crate::renderer::typeset) fn record_synthetic_forward_rejected(&mut self, hu: i32) {
+        self.data.synthetic_forward_rejected_hu += hu;
     }
     pub(in crate::renderer::typeset) fn record_rejected_stored_forward_origin(
         &mut self,
         value: Option<(usize, i32)>,
     ) {
         self.data.rejected_stored_forward_origin = value;
+    }
+    /// [#8845] 공통 vpos 질의가 낡은 전방 원점을 거절하고 기준을 옮겼으면 단이 끝날
+    /// 때까지 남긴다. 한 번 옮긴 기준은 뒤 문단에서도 유효하다.
+    pub(in crate::renderer::typeset) fn record_rebased_after_unstored_forward(
+        &mut self,
+        rebased: bool,
+    ) {
+        self.data.vpos_rebased_after_unstored_forward |= rebased;
     }
     pub(in crate::renderer::typeset) fn record_stored_column_origin(
         &mut self,
@@ -466,14 +522,15 @@ impl TypesetState {
         self.data.vpos_stored_column_origin = value;
     }
     /// 수용한 줄의 구성 결과를 같은 단의 실제 배치에 전달한다.
-    pub(in crate::renderer::typeset) fn record_computed_paragraph(
+    pub(in crate::renderer::typeset) fn record_computed_paragraph<S: crate::storage::Storage>(
         &mut self,
         index: usize,
         composed: &crate::renderer::composer::ComposedParagraph,
-    ) {
-        self.data
-            .computed_paragraphs
-            .insert(index, composed.clone());
+        storage: &S,
+    ) -> Result<(), S::Error> {
+        let composed = crate::storage::try_clone(composed, storage)?;
+        storage.insert_map(&mut self.data.computed_paragraphs, index, composed)?;
+        Ok(())
     }
 
     pub(in crate::renderer::typeset) fn discard_pending_paragraph_origins(&mut self) {
@@ -616,12 +673,28 @@ impl TypesetState {
     /// Keep the source host origin separate from the object's physical box.
     /// Following stored paragraph offsets use this origin; closing flow uses
     /// the occupied bottom supplied by the accepted object placement.
+    /// 저장 줄 없는 host 의 어울림 표 바깥 상자를 현재 쪽·단과 함께 남긴다(단 흐름 px).
+    pub(in crate::renderer::typeset) fn record_unstored_square_box(
+        &mut self,
+        para_index: usize,
+        x: std::ops::Range<f64>,
+        y: std::ops::Range<f64>,
+    ) {
+        let page = self.data.pages.len();
+        let column = self.data.current_column;
+        self.data
+            .unstored_square_boxes
+            .push((page, column, para_index, x.start, x.end, y.start, y.end));
+    }
     pub(in crate::renderer::typeset) fn register_square_band(
         &mut self,
         source_origin: f64,
         bottom: f64,
     ) {
         self.data.square_band_bottom = self.data.square_band_bottom.max(bottom);
+        if self.data.square_band_top != Some(source_origin) {
+            self.data.square_band_source_pen = None;
+        }
         self.data.square_band_top = Some(source_origin);
     }
     pub(in crate::renderer::typeset) fn record_ladder_band_table(&mut self, key: (usize, usize)) {
@@ -913,6 +986,13 @@ impl TypesetState {
     pub(in crate::renderer::typeset) fn restart_zone_columns(&mut self) {
         self.data.current_column = 0;
         self.data.current_height = 0.0;
+        // 표 띠 교정 바닥과 저장 줄 없는 어울림 상자는 앞 존의 단 흐름 좌표다. 새 존은 흐름
+        // 높이를 0 에서 다시 세므로 물려받으면 새 존 첫 문단이 앞 존 표 높이만큼 밀린다.
+        self.data.ladder_band_floor = 0.0;
+        let page = self.data.pages.len();
+        self.data
+            .unstored_square_boxes
+            .retain(|entry| entry.0 != page);
         // 저장 첫 줄의 밴드는 첫 존이 소유한다. 뒤 존의 측정과 paint가
         // 이전 존의 시작 높이를 물려받지 않도록 소유 상태를 함께 닫는다.
         if self.data.stored_initial_column_band > 0.0 {

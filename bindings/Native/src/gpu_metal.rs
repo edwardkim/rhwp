@@ -6,6 +6,18 @@ use std::ffi::{c_char, c_void, CString};
 use rhwp_core::native_host::NativeHostError;
 use serde_json::{json, Value};
 
+#[path = "gpu_metal/admission.rs"]
+#[cfg_attr(
+    not(all(feature = "native-skia-metal", target_os = "macos")),
+    allow(dead_code)
+)]
+mod admission;
+
+fn context_credits() -> Value {
+    let stats = admission::PROCESS_ADMISSION.stats();
+    json!({"inUse":stats.in_use,"quarantined":stats.quarantined,"limit":stats.limit})
+}
+
 fn response(f: impl FnOnce() -> Result<Value, NativeHostError>) -> *mut c_char {
     let value = match std::panic::catch_unwind(std::panic::AssertUnwindSafe(f)) {
         Ok(Ok(value)) => value,
@@ -36,10 +48,13 @@ pub extern "C" fn rhwp_metal_capabilities() -> *mut c_char {
             "ok":true,"abiVersion":1,
             "available":cfg!(all(feature="native-skia-metal",target_os="macos")),
             "backend":"metalGanesh","typedPointers":true,"ownerThreadHandles":true,
+            "cacheTrim":cfg!(all(feature="native-skia-metal",target_os="macos")),
             "pixelFormat":"bgra8UnormPremultiplied","origin":"topLeft","colorSpace":"srgb",
             "producerGpuCompletion":"synchronousOwnerThread","consumerGpuCompletion":false,
             "hardwareAccelerationVerified":false,
             "maxPresentersPerThread":2,"maxTargetBytes":16*1024*1024,"maxPages":8,
+            "maxPresentersPerProcess":admission::MAX_PROCESS_PRESENTERS,
+            "contextCredits":context_credits(),
             "wholeFrameReadbacks":0,
         }))
     })
@@ -164,8 +179,50 @@ mod enabled {
     use std::sync::atomic::{AtomicU64, Ordering};
 
     static NEXT_ID: AtomicU64 = AtomicU64::new(1);
-    thread_local! { static OWNERS:RefCell<HashMap<u64,NativeMetalPresenter>> = RefCell::new(HashMap::new()); }
+    thread_local! { static OWNERS:RefCell<HashMap<u64,Owner>> = RefCell::new(HashMap::new()); }
     const MAX_REQUEST_BYTES: usize = 64 * 1024;
+
+    struct Owner {
+        presenter: NativeMetalPresenter,
+        credit: admission::Credit<'static>,
+    }
+
+    impl Owner {
+        fn info(&self) -> Result<Value, NativeHostError> {
+            let mut info = self.presenter.info()?;
+            info["contextCredits"] = context_credits();
+            Ok(info)
+        }
+
+        fn observe_completion(&mut self) {
+            if self
+                .presenter
+                .info()
+                .is_ok_and(|info| info["state"] == "quarantined")
+            {
+                self.credit.quarantine();
+            }
+        }
+
+        fn release(&mut self) -> Result<(), NativeHostError> {
+            self.presenter.release()?;
+            self.credit.release_confirmed();
+            Ok(())
+        }
+
+        fn abandon(&mut self) {
+            self.credit.quarantine();
+            self.presenter.abandon();
+        }
+    }
+
+    impl Drop for Owner {
+        fn drop(&mut self) {
+            // In particular, TLS destruction and caught panics are not a
+            // successful Native release. Keep their process admission charged.
+            self.credit.quarantine();
+        }
+    }
 
     fn invalid_handle() -> NativeHostError {
         NativeHostError::InvalidArgument("unknown or foreign-thread Metal presenter".into())
@@ -207,13 +264,27 @@ mod enabled {
                 Ok(())
             }
         })?;
-        let id = NEXT_ID
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |v| v.checked_add(1))
-            .map_err(|_| NativeHostError::LimitExceeded("Metal handle space exhausted".into()))?;
+        let id = rhwp_codec_resource::atomic::try_update_u64(
+            &NEXT_ID,
+            Ordering::Relaxed,
+            Ordering::Relaxed,
+            |v| v.checked_add(1),
+        )
+        .map_err(|_| NativeHostError::LimitExceeded("Metal handle space exhausted".into()))?;
+        let mut credit = admission::PROCESS_ADMISSION.reserve().ok_or_else(|| {
+            NativeHostError::LimitExceeded(
+                "Metal process context/quarantine budget exhausted".into(),
+            )
+        })?;
+        // new validates config/pointers and creates an idle Ganesh context; it
+        // never records a frame or exposes the presenter. Its errors roll back
+        // the reservation. Arm before info/HashMap insertion can fail or unwind.
         let presenter = unsafe { NativeMetalPresenter::new(device, queue, generation, config)? };
-        let info = presenter.info()?;
+        credit.mark_live();
+        let owner = Owner { presenter, credit };
+        let info = owner.info()?;
         OWNERS.with(|owners| {
-            owners.borrow_mut().insert(id, presenter);
+            owners.borrow_mut().insert(id, owner);
         });
         Ok(json!({"ok":true,"presenter":id,"info":info}))
     }
@@ -235,17 +306,19 @@ mod enabled {
             .map_err(|_| NativeHostError::InvalidArgument("invalid Metal render request".into()))?;
         OWNERS.with(|owners| {
             let mut owners = owners.borrow_mut();
-            let presenter = owners.get_mut(&id).ok_or_else(invalid_handle)?;
-            let frame = unsafe {
-                presenter.render(
+            let owner = owners.get_mut(&id).ok_or_else(invalid_handle)?;
+            let result = unsafe {
+                owner.presenter.render(
                     crate::presentation::registry(),
                     request.stamp,
                     texture,
                     request.target,
                     &request.placements,
                     request.clear_color,
-                )?
+                )
             };
+            owner.observe_completion();
+            let frame = result?;
             Ok(json!({"ok":true,"frame":frame}))
         })
     }
@@ -253,6 +326,10 @@ mod enabled {
     #[serde(tag = "op", rename_all = "camelCase", deny_unknown_fields)]
     enum Request {
         Info {},
+        TrimCache {
+            #[serde(default, rename = "targetBytes")]
+            target_bytes: usize,
+        },
         Release {},
         Abandon {},
     }
@@ -267,16 +344,17 @@ mod enabled {
             })?;
         OWNERS.with(|owners| {
             let mut owners = owners.borrow_mut();
-            let presenter = owners.get_mut(&id).ok_or_else(invalid_handle)?;
+            let owner = owners.get_mut(&id).ok_or_else(invalid_handle)?;
             match request {
-                Request::Info {} => Ok(json!({"ok":true,"info":presenter.info()?})),
+                Request::Info {} => Ok(json!({"ok":true,"info":owner.info()?})),
+                Request::TrimCache { target_bytes } => owner.presenter.trim_cache(target_bytes),
                 Request::Release {} => {
-                    presenter.release()?;
+                    owner.release()?;
                     owners.remove(&id);
                     Ok(json!({"ok":true}))
                 }
                 Request::Abandon {} => {
-                    presenter.abandon();
+                    owner.abandon();
                     owners.remove(&id);
                     Ok(json!({"ok":true}))
                 }
@@ -308,8 +386,8 @@ mod enabled {
     pub(super) fn abandon_all() {
         let _ = OWNERS.try_with(|owners| {
             if let Ok(mut owners) = owners.try_borrow_mut() {
-                for presenter in owners.values_mut() {
-                    presenter.abandon();
+                for owner in owners.values_mut() {
+                    owner.abandon();
                 }
                 owners.clear();
             }

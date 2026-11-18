@@ -1,0 +1,10 @@
+{
+  "id": "hancom2022-sign-board-print-observed-batang",
+  "substitutions": {
+    "서울한강체 M": "Haansoft Batang",
+    "서울남산체 M": "Haansoft Batang"
+  },
+  "trueTypeFaces": [
+    "Haansoft Batang"
+  ]
+}

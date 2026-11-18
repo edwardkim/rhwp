@@ -1,0 +1,32 @@
+{
+  "source": "96805fee45853296fc4d6f3689f98e7bd125014f",
+  "native_binary_sha256": "4d27641f7133d13f40d62231801e72c274a2613e79c921bdf967baa66829690a",
+  "native": [
+    {
+      "key": "sample16-hwp2022",
+      "pages": 64,
+      "minimum": 100.0,
+      "tsv": "mydocs/pr/assets/planet6897_20261106/program-ink-r55/sample16-hwp2022-native.tsv",
+      "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+    },
+    {
+      "key": "sample16-hwp2024",
+      "pages": 64,
+      "minimum": 99.99,
+      "tsv": "mydocs/pr/assets/planet6897_20261106/program-ink-r55/sample16-hwp2024-native.tsv",
+      "sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49"
+    },
+    {
+      "key": "sample16-hwpx",
+      "pages": 64,
+      "minimum": 99.99,
+      "tsv": "mydocs/pr/assets/planet6897_20261106/program-ink-r55/sample16-hwpx-native.tsv",
+      "sha256": "804fedcc655075b2739abaf7adfb4764c1938357fcaeaaceb62dca421ecb4f49"
+    }
+  ],
+  "protected_rows": 192,
+  "protected_declines": 0,
+  "focused": "기존 66건 PASS. 새 legacy_program_ink_metric_separation은 당시 미수집으로 다음 실행에서 실제 확인한다.",
+  "wasm": "이 source의 새 package는 아직 빌드하지 않았다. R54 패키지의 선택 검사는 변경 전 대조군이다.",
+  "new_native_program_case_before": "native_system_program_preference: 1 FAIL; 96805fee의 제품 library와 새 MIT fixture로 실제 프로그램 선택 불일치를 재현했다."
+}

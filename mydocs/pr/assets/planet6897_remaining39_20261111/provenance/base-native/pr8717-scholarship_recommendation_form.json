@@ -1,0 +1,10 @@
+{
+  "key": "pr8717-scholarship_recommendation_form",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "46b9e055caa103dff584085376c551b1a422796dc80a47c84d57aafed502a8b5"
+}

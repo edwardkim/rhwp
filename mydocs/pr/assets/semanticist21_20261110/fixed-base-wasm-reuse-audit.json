@@ -1,0 +1,8 @@
+{
+  "base": "5f4e95c187f64116f48f710c3c048162786c1c14",
+  "snapshot": "01d2197973e282d7c96671cb1335ad83fbe68e8d",
+  "compared": 2634,
+  "mismatches": [],
+  "untracked_in_base": [],
+  "wasm_sha256": "dd77f8eceb160ebcc07c84f4374c21be10fcc0561f18357ffdd609b8d18df121"
+}

@@ -1,0 +1,116 @@
+{
+  "recorded_at": "2026-11-06T13:30:16.639789+00:00",
+  "role": "Native 단계 보정 증거. 최종 head의 fresh WASM·전체 검증을 대체하지 않음.",
+  "base": "45684640be5eddcf5972b063260250345b34d928",
+  "r8": {
+    "base": "45684640be5eddcf5972b063260250345b34d928",
+    "head": "3de4766e14e244a58261eea4af93d2879fcda41e",
+    "changed_sources": [
+      {
+        "path": "src/renderer/composer.rs",
+        "before_sha256": "edc0beaf483bed326548a8a4b9c6ff8e9644a54406c28a67ef0d4b6eb09e3f20",
+        "sha256": "69ae736585210a876469141c6f053e214be3fbba031d2325972cb370fdfe9465"
+      },
+      {
+        "path": "src/renderer/composer/object_host_tail.rs",
+        "before_sha256": "58b7054c37c866599611161ddb049619b263912084694238bdb944b8b8b6159a",
+        "sha256": "3f8dfc1538d1e85f7241522df5d84da639ef8b996fc55a977a9393b9cde2cf53"
+      },
+      {
+        "path": "src/renderer/float_placement/stored_empty_host_frame.rs",
+        "before_sha256": "010e9ca5c5c4b06d13286b7afec932dde81f16733a33a2a7e73db06030411320",
+        "sha256": "46d9901d11ed844a26eb65faaba82914c23c4395d265e326042d1bcf450ad9a0"
+      },
+      {
+        "path": "src/renderer/layout/paragraph_layout.rs",
+        "before_sha256": "5d67c2f1cc68828512ec3cde02e685c54efc6a00f184ab6cd36c6a946d57af56",
+        "sha256": "87d35c0faefaa96eb71c4a22765cab7cebb5fff10d6a51fa8b1008148b6c0bb2"
+      },
+      {
+        "path": "src/renderer/typeset.rs",
+        "before_sha256": "d59fd56c2c3c5fb0c0d3a71fd14d5553e43ce91c8ac8685a8428c3279cb9edbf",
+        "sha256": "5b64ff1f998a6fd5ba247cbbc3a37ce77f486f6351c22a8387efd6d9f9bd34f0"
+      },
+      {
+        "path": "src/renderer/typeset/paragraph/metrics.rs",
+        "before_sha256": "46e67739c86252cf18893b3392209365ca37a225fa30196cc6aff4c7a26d2b49",
+        "sha256": "52724b2ac55325ad22b689124ce26c630515274c4906eb9988d63632bb1558ab"
+      }
+    ],
+    "started_at": "2026-11-06T13:07:43.786589+00:00",
+    "producer": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r8",
+    "producer_sha256": "2c381ed9623808cfa774ab427bb156ccc424d905ff36eea3cf84c7891be80040",
+    "completed_at": "2026-11-06T13:15:30.447438+00:00"
+  },
+  "r9": {
+    "base": "45684640be5eddcf5972b063260250345b34d928",
+    "head": "3de4766e14e244a58261eea4af93d2879fcda41e",
+    "changed_sources": [
+      {
+        "path": "src/renderer/composer.rs",
+        "sha256": "69ae736585210a876469141c6f053e214be3fbba031d2325972cb370fdfe9465"
+      },
+      {
+        "path": "src/renderer/composer/object_host_tail.rs",
+        "sha256": "3f8dfc1538d1e85f7241522df5d84da639ef8b996fc55a977a9393b9cde2cf53"
+      },
+      {
+        "path": "src/renderer/float_placement/stored_empty_host_frame.rs",
+        "sha256": "46d9901d11ed844a26eb65faaba82914c23c4395d265e326042d1bcf450ad9a0"
+      },
+      {
+        "path": "src/renderer/layout/paragraph_layout.rs",
+        "sha256": "87d35c0faefaa96eb71c4a22765cab7cebb5fff10d6a51fa8b1008148b6c0bb2"
+      },
+      {
+        "path": "src/renderer/typeset.rs",
+        "sha256": "5b64ff1f998a6fd5ba247cbbc3a37ce77f486f6351c22a8387efd6d9f9bd34f0"
+      },
+      {
+        "path": "src/renderer/typeset/paragraph/metrics.rs",
+        "sha256": "52724b2ac55325ad22b689124ce26c630515274c4906eb9988d63632bb1558ab"
+      },
+      {
+        "path": "src/renderer/layout.rs",
+        "sha256": "e10436983058215697370bf75c6b41833ad3ff027c876a2be9b47d4520fbc59f"
+      }
+    ],
+    "started_at": "2026-11-06T13:17:52.752792+00:00",
+    "producer": "/home/tsjang/rhwp/output/pr-review/planet6897-integration-20261106/rhwp-common-fixes-r9",
+    "producer_sha256": "f8a73693a68f770f126a27e925b35ce77527211c2901240fc31206d8e3097256",
+    "completed_at": "2026-11-06T13:25:19.547975+00:00"
+  },
+  "artifacts": [
+    {
+      "artifact": "36474334-r9-native.tsv",
+      "sha256": "172562839188b3f7e781fcccb328d1c7f9e9734418eaadb30f862f46ae522f1e",
+      "source": "output/pr-review/planet6897-integration-20261106/common-fixes-r9-boundary/original-36474334/original-36474334/silhouette.tsv"
+    },
+    {
+      "artifact": "36474334-r9-p001-review.png",
+      "sha256": "207dff241e3cf973c915e874c12184f826e087c76006c9994e7d469deaf1961f",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/original-36474334-r9/review/review_001.png"
+    },
+    {
+      "artifact": "36474334-r9-p001-overlay.png",
+      "sha256": "6eca21f213056288587775d7117e2a81fd44d0c48f6a75bd5ca37db88b9dcdfb",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/original-36474334-r9/overlay/overlay_001.png"
+    },
+    {
+      "artifact": "report838-r8-native.tsv",
+      "sha256": "7959031b86d6f1a56740cb4dcb586e842e31242abd775bc08b27c5156dfe1b56",
+      "source": "output/pr-review/planet6897-integration-20261106/common-fixes-r8-native/report-838/report-838/silhouette.tsv"
+    },
+    {
+      "artifact": "report838-r8-p024-review.png",
+      "sha256": "b8f2885e61686f6fa2973691e031f38a6f069a3eea87caaeda0700e4700437b9",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/report-838-caption-r8/review/review_024.png"
+    },
+    {
+      "artifact": "report838-r8-p024-overlay.png",
+      "sha256": "51c95393122c064a0c605ce66afb7e30d80d39502d9fcd2c26689526163ac283",
+      "source": "output/pr-review/planet6897-integration-20261106/native-details/report-838-caption-r8/overlay/overlay_024.png"
+    }
+  ],
+  "blank_page_notice": "36474334의 2쪽은 독립 Print와 RHWP 모두 빈 쪽. 100.00%를 실제 내용 보존 근거로 취급하지 않음."
+}

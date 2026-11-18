@@ -1,0 +1,3328 @@
+{
+  "comparison": "latest-base",
+  "backend": "native",
+  "head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+  "base": "b768bee1c4c0023087687f79a0a95f12108743e9",
+  "pages": 2991,
+  "paired_pages": 2991,
+  "candidate_pages": 2995,
+  "reference_pages": 2991,
+  "expected_pages": 2995,
+  "missing": [
+    {
+      "case": "certificate",
+      "page": 9,
+      "missing": "base"
+    },
+    {
+      "case": "original-36474334",
+      "page": 2,
+      "missing": "base"
+    },
+    {
+      "case": "policy-agenda",
+      "page": 14,
+      "missing": "base"
+    },
+    {
+      "case": "summary-tail",
+      "page": 3,
+      "missing": "base"
+    }
+  ],
+  "documented_reference_missing_pages": [
+    {
+      "case": "certificate",
+      "page": 9,
+      "missing": "base",
+      "document_page_counts": {
+        "rhwp": 8,
+        "pdf": 9
+      },
+      "candidate_raw": "100.0",
+      "reason": "기준이 실제 출력하지 못한 쪽. base 점수를 만들지 않으며 후보 전쪽·해당 내용 보존을 별도 판독한다."
+    },
+    {
+      "case": "original-36474334",
+      "page": 2,
+      "missing": "base",
+      "document_page_counts": {
+        "rhwp": 1,
+        "pdf": 2
+      },
+      "candidate_raw": "100.0",
+      "reason": "기준이 실제 출력하지 못한 쪽. base 점수를 만들지 않으며 후보 전쪽·해당 내용 보존을 별도 판독한다."
+    },
+    {
+      "case": "policy-agenda",
+      "page": 14,
+      "missing": "base",
+      "document_page_counts": {
+        "rhwp": 13,
+        "pdf": 14
+      },
+      "candidate_raw": "100.0",
+      "reason": "기준이 실제 출력하지 못한 쪽. base 점수를 만들지 않으며 후보 전쪽·해당 내용 보존을 별도 판독한다."
+    },
+    {
+      "case": "summary-tail",
+      "page": 3,
+      "missing": "base",
+      "document_page_counts": {
+        "rhwp": 2,
+        "pdf": 3
+      },
+      "candidate_raw": "100.0",
+      "reason": "기준이 실제 출력하지 못한 쪽. base 점수를 만들지 않으며 후보 전쪽·해당 내용 보존을 별도 판독한다."
+    }
+  ],
+  "unexplained_missing": [],
+  "candidate_missing_pages": [],
+  "condition_mismatches": [],
+  "reference_execution_problems": [
+    {
+      "case": "cover",
+      "result": {
+        "key": "cover",
+        "prs": [
+          8550
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 4,
+        "expected_pages": 4,
+        "page_set_matches": true,
+        "minimum": 18.8,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "18.80"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/cover/cover/silhouette.tsv",
+        "tsv_sha256": "0109773580c1844b39ee13a75fa183555c0d23eee449274ab1ea845a09ec99e0",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/cover/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "family-register",
+      "result": {
+        "key": "family-register",
+        "prs": [
+          8559
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 47.91,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "47.91"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/family-register/family-register/silhouette.tsv",
+        "tsv_sha256": "303eab3c525675487e37c00764c0eda01d628376b086b8e1d70a974eeaee0d4d",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/family-register/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "agenda-cover",
+      "result": {
+        "key": "agenda-cover",
+        "prs": [
+          8563
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 49.72,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "49.72"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/agenda-cover/agenda-cover/silhouette.tsv",
+        "tsv_sha256": "5cde886ae67ccdb4d7039dc7647ddb0820dae125541b25d883673f8dcfebab8b",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/agenda-cover/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "trailing-space-2020",
+      "result": {
+        "key": "trailing-space-2020",
+        "prs": [
+          8581
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 85.08,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "85.08"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/trailing-space-2020/trailing-space-2020/silhouette.tsv",
+        "tsv_sha256": "9d46a180a5608aa8901b69afe95f5936c724d7b7e243885c3b2af9e7562e0bd8",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/trailing-space-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "trailing-space-2024",
+      "result": {
+        "key": "trailing-space-2024",
+        "prs": [
+          8581
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 85.64,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "85.64"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/trailing-space-2024/trailing-space-2024/silhouette.tsv",
+        "tsv_sha256": "02e9bc79c6285a320d114425b15456ff43a58374e385c1a72db8432033c317ca",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/trailing-space-2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      }
+    },
+    {
+      "case": "busan-form",
+      "result": {
+        "key": "busan-form",
+        "prs": [
+          8589
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 55.16,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "55.16"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/busan-form/busan-form/silhouette.tsv",
+        "tsv_sha256": "abfc5991e1449f80f3055c6bcccac790b54930664725e59e107d0ab90aa277ac",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/busan-form/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "image-fill-hwpx",
+      "result": {
+        "key": "image-fill-hwpx",
+        "prs": [
+          8600
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 61.74,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "61.74"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/image-fill-hwpx/image-fill-hwpx/silhouette.tsv",
+        "tsv_sha256": "e0084edd0329450d4e8d897edd1c4b3e41e4f67923a2aab7f1f4fc53257d9afb",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/image-fill-hwpx/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "image-fill-hwp",
+      "result": {
+        "key": "image-fill-hwp",
+        "prs": [
+          8600
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 43.76,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "61.74"
+          },
+          {
+            "page": "2",
+            "raw": "43.76"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/image-fill-hwp/image-fill-hwp/silhouette.tsv",
+        "tsv_sha256": "800b1e855d821949ab503737404c92a76366106c66d0ee855af3c3d4f31f95d1",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/image-fill-hwp/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "certificate",
+      "result": {
+        "key": "certificate",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 8,
+        "expected_pages": 9,
+        "page_set_matches": false,
+        "minimum": 36.61,
+        "below90": [
+          {
+            "page": "2",
+            "raw": "83.23"
+          },
+          {
+            "page": "3",
+            "raw": "47.74"
+          },
+          {
+            "page": "4",
+            "raw": "46.27"
+          },
+          {
+            "page": "5",
+            "raw": "49.60"
+          },
+          {
+            "page": "6",
+            "raw": "36.93"
+          },
+          {
+            "page": "7",
+            "raw": "36.61"
+          },
+          {
+            "page": "8",
+            "raw": "49.08"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette.tsv",
+        "tsv_sha256": "4e66332a4a7c64bedf4c6ce540d950a5819967e9988321f7a1f8015d08373ada",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 8,
+          "pdf": 9
+        },
+        "reference_count_receipt": {
+          "backend": "native",
+          "key": "certificate",
+          "document_page_counts": {
+            "rhwp": 8,
+            "pdf": 9
+          },
+          "source_result": {
+            "key": "certificate",
+            "prs": [
+              8604
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 8,
+            "expected_pages": 9,
+            "page_set_matches": false,
+            "minimum": 36.61,
+            "below90": [
+              {
+                "page": "2",
+                "raw": "83.23"
+              },
+              {
+                "page": "3",
+                "raw": "47.74"
+              },
+              {
+                "page": "4",
+                "raw": "46.27"
+              },
+              {
+                "page": "5",
+                "raw": "49.60"
+              },
+              {
+                "page": "6",
+                "raw": "36.93"
+              },
+              {
+                "page": "7",
+                "raw": "36.61"
+              },
+              {
+                "page": "8",
+                "raw": "49.08"
+              }
+            ],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette.tsv",
+            "tsv_sha256": "4e66332a4a7c64bedf4c6ce540d950a5819967e9988321f7a1f8015d08373ada",
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/run.log",
+            "dpi": 96,
+            "compat": "2022"
+          },
+          "source_run_manifests": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/run_manifest.json",
+              "sha256": "48333030c4a39ea2a0ea88fc2dfa6cdb67127942c7ce02c18507358cb8465516"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette-parts/p0002-0008/run_manifest.json",
+              "sha256": "f0f03ea0a33644673fa0308fc4c35b5554f2bc7683838aebfd90cc80d98cb4c0"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/certificate/certificate/silhouette-parts/p0001-0001/run_manifest.json",
+              "sha256": "de5a33e78547bb8162a22abb28c475fb96fa6bf42b1c9113e5c64abcdb35e053"
+            }
+          ],
+          "kind": "base-fewer-pages",
+          "missing_base_pages": [
+            9
+          ],
+          "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+        }
+      }
+    },
+    {
+      "case": "policy-agenda",
+      "result": {
+        "key": "policy-agenda",
+        "prs": [
+          8604
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 13,
+        "expected_pages": 14,
+        "page_set_matches": false,
+        "minimum": 18.22,
+        "below90": [
+          {
+            "page": "10",
+            "raw": "68.45"
+          },
+          {
+            "page": "11",
+            "raw": "36.27"
+          },
+          {
+            "page": "12",
+            "raw": "27.06"
+          },
+          {
+            "page": "13",
+            "raw": "18.22"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette.tsv",
+        "tsv_sha256": "9cbdb50d2b71446a8ed68e1b624fa16cc983b4a64d6b31c7c9a390cb92b41cb7",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 13,
+          "pdf": 14
+        },
+        "reference_count_receipt": {
+          "backend": "native",
+          "key": "policy-agenda",
+          "document_page_counts": {
+            "rhwp": 13,
+            "pdf": 14
+          },
+          "source_result": {
+            "key": "policy-agenda",
+            "prs": [
+              8604
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 13,
+            "expected_pages": 14,
+            "page_set_matches": false,
+            "minimum": 18.22,
+            "below90": [
+              {
+                "page": "10",
+                "raw": "68.45"
+              },
+              {
+                "page": "11",
+                "raw": "36.27"
+              },
+              {
+                "page": "12",
+                "raw": "27.06"
+              },
+              {
+                "page": "13",
+                "raw": "18.22"
+              }
+            ],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette.tsv",
+            "tsv_sha256": "9cbdb50d2b71446a8ed68e1b624fa16cc983b4a64d6b31c7c9a390cb92b41cb7",
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/run.log",
+            "dpi": 96,
+            "compat": "2022"
+          },
+          "source_run_manifests": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/run_manifest.json",
+              "sha256": "1a743862167c9611aa53d9c75545dd20fc5eb3646c5b193cac0996f4753eda23"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette-parts/p0002-0013/run_manifest.json",
+              "sha256": "bea51b56244f7dc572cb8bb943a36f28b359ef51b3681bd30c000d8927345c72"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette-parts/p0001-0001/run_manifest.json",
+              "sha256": "e9a00ce8b9ad0c6e2e75a6cc3cdb13f4ae059b57a5fa355953a59cdbddf08af6"
+            }
+          ],
+          "kind": "base-fewer-pages",
+          "missing_base_pages": [
+            14
+          ],
+          "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+        }
+      }
+    },
+    {
+      "case": "delegation-trimmed",
+      "result": {
+        "key": "delegation-trimmed",
+        "prs": [
+          8607
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 6,
+        "expected_pages": 6,
+        "page_set_matches": false,
+        "minimum": 6.42935,
+        "below90": [
+          {
+            "page": 1,
+            "raw": 6.42935
+          },
+          {
+            "page": 2,
+            "raw": 41.44832
+          },
+          {
+            "page": 3,
+            "raw": 47.55048
+          },
+          {
+            "page": 4,
+            "raw": 49.99569
+          },
+          {
+            "page": 5,
+            "raw": 47.67266
+          },
+          {
+            "page": 6,
+            "raw": 47.77714
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/delegation-trimmed/silhouette.tsv",
+        "tsv_sha256": "0316e4ef2d02bdcdfd0d08f0f5e33a03d54ed3a525d6aa4048b322d90f7dca71",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 7,
+          "pdf": 6
+        },
+        "unmatched_product_pages": [
+          {
+            "page": 7,
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+            "sha256": "181f39dde727ad95544cdddd8de00ebe47d6b790e34d591c114353bef5aa3f84",
+            "reason": "독립 PDF 대응 쪽 없음"
+          }
+        ],
+        "recovery_source_run_manifests": [
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/run_manifest.json",
+            "sha256": "2ae20f37441da5f92618941dd33c039e6f9248203e6cb974257ce125a7112a6c"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/run_manifest.json",
+            "sha256": "403df72e7e9b1eaf7148d410c5dec1fb97bd54abeae31f78657ec67578f58f1e"
+          }
+        ],
+        "reference_count_receipt": {
+          "backend": "native",
+          "key": "delegation-trimmed",
+          "document_page_counts": {
+            "rhwp": 7,
+            "pdf": 6
+          },
+          "source_result": {
+            "key": "delegation-trimmed",
+            "prs": [
+              8607
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 0,
+            "expected_pages": 6,
+            "page_set_matches": false,
+            "minimum": null,
+            "below90": [],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette.tsv",
+            "tsv_sha256": null,
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/run.log",
+            "dpi": 96,
+            "compat": "2022"
+          },
+          "source_run_manifests": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/run_manifest.json",
+              "sha256": "2ae20f37441da5f92618941dd33c039e6f9248203e6cb974257ce125a7112a6c"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/run_manifest.json",
+              "sha256": "403df72e7e9b1eaf7148d410c5dec1fb97bd54abeae31f78657ec67578f58f1e"
+            }
+          ],
+          "kind": "base-extra-pages-paired-recovery",
+          "paired_pages": 6,
+          "unmatched_product_pages": [
+            {
+              "page": 7,
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+              "sha256": "181f39dde727ad95544cdddd8de00ebe47d6b790e34d591c114353bef5aa3f84",
+              "reason": "독립 PDF 대응 쪽 없음"
+            }
+          ],
+          "recovered_result": {
+            "key": "delegation-trimmed",
+            "prs": [
+              8607
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 6,
+            "expected_pages": 6,
+            "page_set_matches": false,
+            "minimum": 6.42935,
+            "below90": [
+              {
+                "page": 1,
+                "raw": 6.42935
+              },
+              {
+                "page": 2,
+                "raw": 41.44832
+              },
+              {
+                "page": 3,
+                "raw": 47.55048
+              },
+              {
+                "page": 4,
+                "raw": 49.99569
+              },
+              {
+                "page": 5,
+                "raw": 47.67266
+              },
+              {
+                "page": 6,
+                "raw": 47.77714
+              }
+            ],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/delegation-trimmed/silhouette.tsv",
+            "tsv_sha256": "0316e4ef2d02bdcdfd0d08f0f5e33a03d54ed3a525d6aa4048b322d90f7dca71",
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/run.log",
+            "dpi": 96,
+            "compat": "2022",
+            "document_page_counts": {
+              "rhwp": 7,
+              "pdf": 6
+            },
+            "unmatched_product_pages": [
+              {
+                "page": 7,
+                "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+                "sha256": "181f39dde727ad95544cdddd8de00ebe47d6b790e34d591c114353bef5aa3f84",
+                "reason": "독립 PDF 대응 쪽 없음"
+              }
+            ],
+            "recovery_source_run_manifests": [
+              {
+                "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0002-0007/run_manifest.json",
+                "sha256": "2ae20f37441da5f92618941dd33c039e6f9248203e6cb974257ce125a7112a6c"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/delegation-trimmed/delegation-trimmed/silhouette-parts/p0001-0001/run_manifest.json",
+                "sha256": "403df72e7e9b1eaf7148d410c5dec1fb97bd54abeae31f78657ec67578f58f1e"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "nars-2019",
+      "result": {
+        "key": "nars-2019",
+        "prs": [
+          8615
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 55.05,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "55.05"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/nars-2019/nars-2019/silhouette.tsv",
+        "tsv_sha256": "b6a0b3a1610c8ce12d1b4c9a2ffca31bcdd0fc9bd003317f93349038ee009272",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/nars-2019/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "nars-2021",
+      "result": {
+        "key": "nars-2021",
+        "prs": [
+          8615
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 3,
+        "expected_pages": 3,
+        "page_set_matches": true,
+        "minimum": 53.18,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "53.18"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/nars-2021/nars-2021/silhouette.tsv",
+        "tsv_sha256": "b87a533288ea2c9193c7d7086a97d321775a08bba258f14e46f8e54b8c2cb47e",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/nars-2021/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "footnote-captioned",
+      "result": {
+        "key": "footnote-captioned",
+        "prs": [
+          8621
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 57.33,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "57.33"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/footnote-captioned/footnote-captioned/silhouette.tsv",
+        "tsv_sha256": "c283c7e3b587ddc5a8016905aea07000b6d3409b85deed2f912dff87d7b10e44",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/footnote-captioned/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "summary-tail",
+      "result": {
+        "key": "summary-tail",
+        "prs": [
+          8625
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 3,
+        "page_set_matches": false,
+        "minimum": 0.0,
+        "below90": [
+          {
+            "page": "2",
+            "raw": "0.00"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette.tsv",
+        "tsv_sha256": "2a380c045eb5896d91e014fb574326f50127efb8cbec095d0920524492b89077",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 2,
+          "pdf": 3
+        },
+        "reference_count_receipt": {
+          "backend": "native",
+          "key": "summary-tail",
+          "document_page_counts": {
+            "rhwp": 2,
+            "pdf": 3
+          },
+          "source_result": {
+            "key": "summary-tail",
+            "prs": [
+              8625
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 2,
+            "expected_pages": 3,
+            "page_set_matches": false,
+            "minimum": 0.0,
+            "below90": [
+              {
+                "page": "2",
+                "raw": "0.00"
+              }
+            ],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette.tsv",
+            "tsv_sha256": "2a380c045eb5896d91e014fb574326f50127efb8cbec095d0920524492b89077",
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/run.log",
+            "dpi": 96,
+            "compat": "2022"
+          },
+          "source_run_manifests": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/run_manifest.json",
+              "sha256": "f07cfad40dadfe60e0249ae068df8af80992f09b22cbc3bf4b59750e4afa6eca"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette-parts/p0002-0002/run_manifest.json",
+              "sha256": "b5913cb5869f34ffad702b9e21f5d12d36cbf22ddd379cf81f893c4d5d259e27"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/summary-tail/summary-tail/silhouette-parts/p0001-0001/run_manifest.json",
+              "sha256": "d550fd211c57f5bc31d159027bd14c729310e17fa3af5218999eb5294a610298"
+            }
+          ],
+          "kind": "base-fewer-pages",
+          "missing_base_pages": [
+            3
+          ],
+          "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+        }
+      }
+    },
+    {
+      "case": "reserve-a10",
+      "result": {
+        "key": "reserve-a10",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 41.75,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "41.75"
+          },
+          {
+            "page": "2",
+            "raw": "60.88"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/reserve-a10/reserve-a10/silhouette.tsv",
+        "tsv_sha256": "d6b82073394a2e4ed4a135f792450e777af035b2f2842345acbdb43340fe263d",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/reserve-a10/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "field-page-box",
+      "result": {
+        "key": "field-page-box",
+        "prs": [
+          8645,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 70.74,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "70.74"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/field-page-box/field-page-box/silhouette.tsv",
+        "tsv_sha256": "7d7aa65cbe3a2c34b2da9c20899d9d7659f732aa5536d5b87b697db83feb0e85",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/field-page-box/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "tall-prefix",
+      "result": {
+        "key": "tall-prefix",
+        "prs": [
+          8645,
+          8654
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 6.08,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "6.08"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/tall-prefix/tall-prefix/silhouette.tsv",
+        "tsv_sha256": "7a929d3640dba63f3d2125066aa9d55518f0a322f6ece99072961f12d46c11b2",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/tall-prefix/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "refund-notice",
+      "result": {
+        "key": "refund-notice",
+        "prs": [
+          8650
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 38.53,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "38.53"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/refund-notice/refund-notice/silhouette.tsv",
+        "tsv_sha256": "932ba0201efd1a27bdfe2e5ae1e936ce5a0de51da44b174639a36ab70d404514",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/refund-notice/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "stamp-a",
+      "result": {
+        "key": "stamp-a",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 37.34,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "37.34"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/stamp-a/stamp-a/silhouette.tsv",
+        "tsv_sha256": "730fe3d967f69e1123babc318beffb84bb7ba19aec315fd61540328462f3a657",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/stamp-a/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "stamp-b",
+      "result": {
+        "key": "stamp-b",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 37.24,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "37.24"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/stamp-b/stamp-b/silhouette.tsv",
+        "tsv_sha256": "39875685613202af51fd6b6456704e6ce91d5532279a07be6e4cdab765fb9124",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/stamp-b/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "labor-report",
+      "result": {
+        "key": "labor-report",
+        "prs": [
+          8654
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 53,
+        "expected_pages": 53,
+        "page_set_matches": true,
+        "minimum": 34.83,
+        "below90": [
+          {
+            "page": "13",
+            "raw": "87.92"
+          },
+          {
+            "page": "17",
+            "raw": "34.83"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/labor-report/labor-report/silhouette.tsv",
+        "tsv_sha256": "0f59a0e2117128e8baec7ff8c241ffe1b5b0e0eb1f703c63b3fa309ba8d3d708",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/labor-report/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "companion-baseline",
+      "result": {
+        "key": "companion-baseline",
+        "prs": [
+          8655
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 65.74,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "65.74"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/companion-baseline/companion-baseline/silhouette.tsv",
+        "tsv_sha256": "e43db1e4de93d32ff24b62dd387f9a54d9822bcc7798c1c3d0880e5d9e193277",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/companion-baseline/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "sign-board-2022",
+      "result": {
+        "key": "sign-board-2022",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 37.13,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "37.13"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sign-board-2022/sign-board-2022/silhouette.tsv",
+        "tsv_sha256": "93bcbf7498ae6b1f95ce4382e974ea7da319febf9de46998c032e1787124505a",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sign-board-2022/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "overflow-space-2020",
+      "result": {
+        "key": "overflow-space-2020",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 71.67,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "71.67"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/overflow-space-2020/overflow-space-2020/silhouette.tsv",
+        "tsv_sha256": "4f68e5d1677ea57a08e217573d0f83ed5955abd8597314ce53a2eb76688e6361",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/overflow-space-2020/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "overflow-space-2024",
+      "result": {
+        "key": "overflow-space-2024",
+        "prs": [
+          8662
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 72.36,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "72.36"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/overflow-space-2024/overflow-space-2024/silhouette.tsv",
+        "tsv_sha256": "4f2beb505ea59ec9a9701167325caa10a513c29b4d19a12c38233ac5bbb919c5",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/overflow-space-2024/run.log",
+        "dpi": 96,
+        "compat": "2024"
+      }
+    },
+    {
+      "case": "legislation-summary",
+      "result": {
+        "key": "legislation-summary",
+        "prs": [
+          8663
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 10,
+        "expected_pages": 10,
+        "page_set_matches": true,
+        "minimum": 30.68,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "69.20"
+          },
+          {
+            "page": "8",
+            "raw": "30.68"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/legislation-summary/legislation-summary/silhouette.tsv",
+        "tsv_sha256": "44f5f3f7b6a675df6883f28e61c9684193295e9e4c18c832223bf1e1cd343452",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/legislation-summary/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "cell-exclusion-36478532",
+      "result": {
+        "key": "cell-exclusion-36478532",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 53.8,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "53.80"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/cell-exclusion-36478532/cell-exclusion-36478532/silhouette.tsv",
+        "tsv_sha256": "003538197456a678e2872ba529ce89c6bfa8bbafb17bf64d00e8c0c31494003e",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/cell-exclusion-36478532/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "original-36493460",
+      "result": {
+        "key": "original-36493460",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 1,
+        "page_set_matches": true,
+        "minimum": 51.22,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "51.22"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36493460/original-36493460/silhouette.tsv",
+        "tsv_sha256": "e083acc585e1a1af2b3902286621715b66640aabcbba6176e0446d95b961090b",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36493460/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "original-36474334",
+      "result": {
+        "key": "original-36474334",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 1,
+        "expected_pages": 2,
+        "page_set_matches": false,
+        "minimum": 35.0,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "35.00"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/silhouette.tsv",
+        "tsv_sha256": "1d7b519d7ad96a86996edc616b82b2c5e645252a419b13ecf71012b20f42f683",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 1,
+          "pdf": 2
+        },
+        "reference_count_receipt": {
+          "backend": "native",
+          "key": "original-36474334",
+          "document_page_counts": {
+            "rhwp": 1,
+            "pdf": 2
+          },
+          "source_result": {
+            "key": "original-36474334",
+            "prs": [
+              8681
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 1,
+            "expected_pages": 2,
+            "page_set_matches": false,
+            "minimum": 35.0,
+            "below90": [
+              {
+                "page": "1",
+                "raw": "35.00"
+              }
+            ],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/silhouette.tsv",
+            "tsv_sha256": "1d7b519d7ad96a86996edc616b82b2c5e645252a419b13ecf71012b20f42f683",
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/run.log",
+            "dpi": 96,
+            "compat": "2022"
+          },
+          "source_run_manifests": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/run_manifest.json",
+              "sha256": "f7bacccff7a989f8eed6a4e7405fba1c2b2faaf9f8af8faed60469e313c92aca"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/original-36474334/original-36474334/silhouette-parts/p0001-0001/run_manifest.json",
+              "sha256": "f66c4d385098072047b68143a131d5a1a6232c161f3673b96976da0d3a1a27c6"
+            }
+          ],
+          "kind": "base-fewer-pages",
+          "missing_base_pages": [
+            2
+          ],
+          "note": "기준이 출력하지 못한 쪽은 점수를 만들지 않는다. 후보의 독립 PDF 전체 쪽수와 해당 내용 보존을 별도로 확인한다."
+        }
+      }
+    },
+    {
+      "case": "evaluation-original",
+      "result": {
+        "key": "evaluation-original",
+        "prs": [
+          8638
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 64.13,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "64.13"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/evaluation-original/evaluation-original/silhouette.tsv",
+        "tsv_sha256": "6df29078a73f5edff09f8641ee8c2ba9eb42df976b06362dfbe5feca37211acc",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/evaluation-original/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "report-628",
+      "result": {
+        "key": "report-628",
+        "prs": [
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 195,
+        "expected_pages": 195,
+        "page_set_matches": true,
+        "minimum": 33.31,
+        "below90": [
+          {
+            "page": "16",
+            "raw": "88.43"
+          },
+          {
+            "page": "18",
+            "raw": "58.55"
+          },
+          {
+            "page": "25",
+            "raw": "83.64"
+          },
+          {
+            "page": "59",
+            "raw": "74.83"
+          },
+          {
+            "page": "120",
+            "raw": "85.10"
+          },
+          {
+            "page": "122",
+            "raw": "53.78"
+          },
+          {
+            "page": "123",
+            "raw": "68.00"
+          },
+          {
+            "page": "124",
+            "raw": "57.84"
+          },
+          {
+            "page": "125",
+            "raw": "33.31"
+          },
+          {
+            "page": "136",
+            "raw": "87.51"
+          },
+          {
+            "page": "143",
+            "raw": "85.50"
+          },
+          {
+            "page": "155",
+            "raw": "89.16"
+          },
+          {
+            "page": "193",
+            "raw": "89.32"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-628/report-628/silhouette.tsv",
+        "tsv_sha256": "459c8ae3f0ae5b6f8299e9468ac5e6ad2f9827c8cf953f936db9f928a3b8f81c",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-628/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    },
+    {
+      "case": "report-838",
+      "result": {
+        "key": "report-838",
+        "prs": [
+          8621,
+          8642
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 109,
+        "expected_pages": 109,
+        "page_set_matches": false,
+        "minimum": 3.53561,
+        "below90": [
+          {
+            "page": 2,
+            "raw": 33.5362
+          },
+          {
+            "page": 3,
+            "raw": 55.46852
+          },
+          {
+            "page": 10,
+            "raw": 62.69374
+          },
+          {
+            "page": 24,
+            "raw": 88.61979
+          },
+          {
+            "page": 90,
+            "raw": 88.85717
+          },
+          {
+            "page": 91,
+            "raw": 21.06547
+          },
+          {
+            "page": 92,
+            "raw": 38.35815
+          },
+          {
+            "page": 93,
+            "raw": 36.78569
+          },
+          {
+            "page": 94,
+            "raw": 32.49636
+          },
+          {
+            "page": 95,
+            "raw": 14.18909
+          },
+          {
+            "page": 96,
+            "raw": 31.18752
+          },
+          {
+            "page": 97,
+            "raw": 28.62754
+          },
+          {
+            "page": 98,
+            "raw": 26.595
+          },
+          {
+            "page": 99,
+            "raw": 22.96307
+          },
+          {
+            "page": 100,
+            "raw": 27.87182
+          },
+          {
+            "page": 101,
+            "raw": 23.32362
+          },
+          {
+            "page": 102,
+            "raw": 21.0595
+          },
+          {
+            "page": 103,
+            "raw": 35.03675
+          },
+          {
+            "page": 104,
+            "raw": 40.25173
+          },
+          {
+            "page": 105,
+            "raw": 50.96506
+          },
+          {
+            "page": 106,
+            "raw": 33.37416
+          },
+          {
+            "page": 107,
+            "raw": 3.53561
+          },
+          {
+            "page": 108,
+            "raw": 5.27103
+          },
+          {
+            "page": 109,
+            "raw": 18.19333
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette.tsv",
+        "tsv_sha256": "0caae99737e3bf0188bfde67e8123289c80f4d4360cdb4c9e7d944d680d7ad85",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/run.log",
+        "dpi": 96,
+        "compat": "2022",
+        "document_page_counts": {
+          "rhwp": 110,
+          "pdf": 109
+        },
+        "unmatched_product_pages": [
+          {
+            "page": 110,
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/rhwp_png/rhwp_110.png",
+            "sha256": "2e6bceaec53036b8603b0f9173c462d6a3d71f22a00d3b6dc916c7075393a880",
+            "reason": "기준 PDF에는 대응 쪽이 없으므로 실루엣 점수를 만들지 않음"
+          }
+        ],
+        "recovery_source_run_manifests": [
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+            "sha256": "3f7ad6ef22da1e5961392e7c9288569402d37a0bde563c61b3550d16e1bd6c89"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+            "sha256": "648c09e903d5762ec1d15d76fb22575d26992e89bdc40dabd765c62be2cdb35d"
+          },
+          {
+            "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+            "sha256": "753e03fc5e48e53599649d9c00b25ccbd151d49c535a43b9a8846f45bc8b6e4f"
+          }
+        ],
+        "reference_count_receipt": {
+          "backend": "native",
+          "key": "report-838",
+          "document_page_counts": {
+            "rhwp": 110,
+            "pdf": 109
+          },
+          "source_result": {
+            "key": "report-838",
+            "prs": [
+              8621,
+              8642
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 0,
+            "expected_pages": 109,
+            "page_set_matches": false,
+            "minimum": null,
+            "below90": [],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette.tsv",
+            "tsv_sha256": null,
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/run.log",
+            "dpi": 96,
+            "compat": "2022"
+          },
+          "source_run_manifests": [
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+              "sha256": "648c09e903d5762ec1d15d76fb22575d26992e89bdc40dabd765c62be2cdb35d"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+              "sha256": "753e03fc5e48e53599649d9c00b25ccbd151d49c535a43b9a8846f45bc8b6e4f"
+            },
+            {
+              "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+              "sha256": "3f7ad6ef22da1e5961392e7c9288569402d37a0bde563c61b3550d16e1bd6c89"
+            }
+          ],
+          "kind": "existing-extra-page-pair-recovery",
+          "recovered_result": {
+            "key": "report-838",
+            "prs": [
+              8621,
+              8642
+            ],
+            "finished": true,
+            "exit_code": 1,
+            "pages": 109,
+            "expected_pages": 109,
+            "page_set_matches": false,
+            "minimum": 3.53561,
+            "below90": [
+              {
+                "page": 2,
+                "raw": 33.5362
+              },
+              {
+                "page": 3,
+                "raw": 55.46852
+              },
+              {
+                "page": 10,
+                "raw": 62.69374
+              },
+              {
+                "page": 24,
+                "raw": 88.61979
+              },
+              {
+                "page": 90,
+                "raw": 88.85717
+              },
+              {
+                "page": 91,
+                "raw": 21.06547
+              },
+              {
+                "page": 92,
+                "raw": 38.35815
+              },
+              {
+                "page": 93,
+                "raw": 36.78569
+              },
+              {
+                "page": 94,
+                "raw": 32.49636
+              },
+              {
+                "page": 95,
+                "raw": 14.18909
+              },
+              {
+                "page": 96,
+                "raw": 31.18752
+              },
+              {
+                "page": 97,
+                "raw": 28.62754
+              },
+              {
+                "page": 98,
+                "raw": 26.595
+              },
+              {
+                "page": 99,
+                "raw": 22.96307
+              },
+              {
+                "page": 100,
+                "raw": 27.87182
+              },
+              {
+                "page": 101,
+                "raw": 23.32362
+              },
+              {
+                "page": 102,
+                "raw": 21.0595
+              },
+              {
+                "page": 103,
+                "raw": 35.03675
+              },
+              {
+                "page": 104,
+                "raw": 40.25173
+              },
+              {
+                "page": 105,
+                "raw": 50.96506
+              },
+              {
+                "page": 106,
+                "raw": 33.37416
+              },
+              {
+                "page": 107,
+                "raw": 3.53561
+              },
+              {
+                "page": 108,
+                "raw": 5.27103
+              },
+              {
+                "page": 109,
+                "raw": 18.19333
+              }
+            ],
+            "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette.tsv",
+            "tsv_sha256": "0caae99737e3bf0188bfde67e8123289c80f4d4360cdb4c9e7d944d680d7ad85",
+            "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/run.log",
+            "dpi": 96,
+            "compat": "2022",
+            "document_page_counts": {
+              "rhwp": 110,
+              "pdf": 109
+            },
+            "unmatched_product_pages": [
+              {
+                "page": 110,
+                "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/rhwp_png/rhwp_110.png",
+                "sha256": "2e6bceaec53036b8603b0f9173c462d6a3d71f22a00d3b6dc916c7075393a880",
+                "reason": "기준 PDF에는 대응 쪽이 없으므로 실루엣 점수를 만들지 않음"
+              }
+            ],
+            "recovery_source_run_manifests": [
+              {
+                "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0001-0001/run_manifest.json",
+                "sha256": "3f7ad6ef22da1e5961392e7c9288569402d37a0bde563c61b3550d16e1bd6c89"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0002-0065/run_manifest.json",
+                "sha256": "648c09e903d5762ec1d15d76fb22575d26992e89bdc40dabd765c62be2cdb35d"
+              },
+              {
+                "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-838/report-838/silhouette-parts/p0066-0110/run_manifest.json",
+                "sha256": "753e03fc5e48e53599649d9c00b25ccbd151d49c535a43b9a8846f45bc8b6e4f"
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "case": "stored-band",
+      "result": {
+        "key": "stored-band",
+        "prs": [
+          8681
+        ],
+        "finished": true,
+        "exit_code": 1,
+        "pages": 2,
+        "expected_pages": 2,
+        "page_set_matches": true,
+        "minimum": 57.92,
+        "below90": [
+          {
+            "page": "1",
+            "raw": "57.92"
+          }
+        ],
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/stored-band/stored-band/silhouette.tsv",
+        "tsv_sha256": "daf8a35d19f0be0aab61005134529324d8201cd8daf167f7052a57a7a7700e9b",
+        "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/stored-band/run.log",
+        "dpi": 96,
+        "compat": "2022"
+      }
+    }
+  ],
+  "candidate_execution_problems": [],
+  "declines": [
+    {
+      "case": "childcare",
+      "page": "1",
+      "input_sha256": "f46bfde221a2876cae05e25255698b84f6b34e79df8b13610cb08fa4ff8ccd74",
+      "reference_pdf_sha256": "ef94efc5825d345f3172829cc5af4c069a375631a7cce5d84fe9d1d53b279a6e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.98381",
+      "candidate_raw": "99.98371",
+      "decline_pp": "0.00010",
+      "base_display": "99.98",
+      "candidate_display": "99.98",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/childcare/childcare/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/childcare/childcare/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "childcare",
+      "page": "5",
+      "input_sha256": "f46bfde221a2876cae05e25255698b84f6b34e79df8b13610cb08fa4ff8ccd74",
+      "reference_pdf_sha256": "ef94efc5825d345f3172829cc5af4c069a375631a7cce5d84fe9d1d53b279a6e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.95412",
+      "candidate_raw": "99.95411",
+      "decline_pp": "0.00001",
+      "base_display": "99.95",
+      "candidate_display": "99.95",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/childcare/childcare/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/childcare/childcare/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "childcare",
+      "page": "17",
+      "input_sha256": "f46bfde221a2876cae05e25255698b84f6b34e79df8b13610cb08fa4ff8ccd74",
+      "reference_pdf_sha256": "ef94efc5825d345f3172829cc5af4c069a375631a7cce5d84fe9d1d53b279a6e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.95276",
+      "candidate_raw": "99.95275",
+      "decline_pp": "0.00001",
+      "base_display": "99.95",
+      "candidate_display": "99.95",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/childcare/childcare/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/childcare/childcare/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-clip5587",
+      "page": "3",
+      "input_sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+      "reference_pdf_sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "98.75606",
+      "candidate_raw": "98.69196",
+      "decline_pp": "0.06410",
+      "base_display": "98.76",
+      "candidate_display": "98.69",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/focus-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "reuse_reason": "영향 범위 추가 실측; 실행 당시 HEAD 유지"
+    },
+    {
+      "case": "incoming8754-clip5587",
+      "page": "4",
+      "input_sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+      "reference_pdf_sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.94357",
+      "candidate_raw": "99.80186",
+      "decline_pp": "0.14171",
+      "base_display": "99.94",
+      "candidate_display": "99.80",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/focus-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "reuse_reason": "영향 범위 추가 실측; 실행 당시 HEAD 유지"
+    },
+    {
+      "case": "incoming8754-delegation7700",
+      "page": "1",
+      "input_sha256": "de43607f05072840097b19a294b4455905210402cc42823545125e03567df881",
+      "reference_pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99672",
+      "decline_pp": "0.00328",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-delegation7700/incoming8754-delegation7700/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-delegation7700/incoming8754-delegation7700/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-delegation7700",
+      "page": "86",
+      "input_sha256": "de43607f05072840097b19a294b4455905210402cc42823545125e03567df881",
+      "reference_pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.7063",
+      "candidate_raw": "99.70629",
+      "decline_pp": "0.00001",
+      "base_display": "99.71",
+      "candidate_display": "99.71",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-delegation7700/incoming8754-delegation7700/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-delegation7700/incoming8754-delegation7700/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-delegation7700",
+      "page": "87",
+      "input_sha256": "de43607f05072840097b19a294b4455905210402cc42823545125e03567df881",
+      "reference_pdf_sha256": "90eda86b2b4dfeabc601cd9b583408c6528a9efabf4e626fd6f2e28e3bcb2b97",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.997",
+      "candidate_raw": "99.9955",
+      "decline_pp": "0.0015",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-delegation7700/incoming8754-delegation7700/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-delegation7700/incoming8754-delegation7700/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "page": "24",
+      "input_sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+      "reference_pdf_sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+      "dpi": "192",
+      "compat": "2024",
+      "base_raw": "99.84777",
+      "candidate_raw": "99.84776",
+      "decline_pp": "0.00001",
+      "base_display": "99.85",
+      "candidate_display": "99.85",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-giant4138/incoming8754-giant4138/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-giant4138/incoming8754-giant4138/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "page": "67",
+      "input_sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+      "reference_pdf_sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+      "dpi": "192",
+      "compat": "2024",
+      "base_raw": "98.81315",
+      "candidate_raw": "98.8107",
+      "decline_pp": "0.00245",
+      "base_display": "98.81",
+      "candidate_display": "98.81",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-giant4138/incoming8754-giant4138/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-giant4138/incoming8754-giant4138/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-giant4138",
+      "page": "130",
+      "input_sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9",
+      "reference_pdf_sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571",
+      "dpi": "192",
+      "compat": "2024",
+      "base_raw": "97.3078",
+      "candidate_raw": "97.30772",
+      "decline_pp": "0.00008",
+      "base_display": "97.31",
+      "candidate_display": "97.31",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-giant4138/incoming8754-giant4138/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-giant4138/incoming8754-giant4138/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-lpg71352",
+      "page": "7",
+      "input_sha256": "4e9b240082ba91b99669325292cae2b62e88765854d1e7bbbc6d44146dc14d55",
+      "reference_pdf_sha256": "c2e1b4beea546d02436e85f9b491ab64093c6327bf6ef227f02f4f075608f501",
+      "dpi": "96",
+      "compat": "2024",
+      "base_raw": "99.58568",
+      "candidate_raw": "99.58502",
+      "decline_pp": "0.00066",
+      "base_display": "99.59",
+      "candidate_display": "99.59",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-lpg71352/incoming8754-lpg71352/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-lpg71352/incoming8754-lpg71352/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-lpg71352",
+      "page": "30",
+      "input_sha256": "4e9b240082ba91b99669325292cae2b62e88765854d1e7bbbc6d44146dc14d55",
+      "reference_pdf_sha256": "c2e1b4beea546d02436e85f9b491ab64093c6327bf6ef227f02f4f075608f501",
+      "dpi": "96",
+      "compat": "2024",
+      "base_raw": "99.50584",
+      "candidate_raw": "99.50579",
+      "decline_pp": "0.00005",
+      "base_display": "99.51",
+      "candidate_display": "99.51",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-lpg71352/incoming8754-lpg71352/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-lpg71352/incoming8754-lpg71352/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-nov-original",
+      "page": "1",
+      "input_sha256": "bc8bccbb954c337d813d1af96f4e3047242124c2f2939163e282634eb721accd",
+      "reference_pdf_sha256": "b5dc3580c0c3716963c9686ec62fd779cedfea97f50d8f49eb98a2ec8fae369a",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.41835",
+      "candidate_raw": "99.41802",
+      "decline_pp": "0.00033",
+      "base_display": "99.42",
+      "candidate_display": "99.42",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-nov-original/incoming8754-nov-original/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-nov-original/incoming8754-nov-original/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-nov-resaved",
+      "page": "1",
+      "input_sha256": "1392d5dab6350d232f39a06aa813f1797aec399e41a9e632ffd93e421916f72b",
+      "reference_pdf_sha256": "9c737bf4a8700c5e31d0eb05bba16ea8e6bad4a3bfed7c3bf88334053abcbd79",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.40525",
+      "candidate_raw": "99.4052",
+      "decline_pp": "0.00005",
+      "base_display": "99.41",
+      "candidate_display": "99.41",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-nov-resaved",
+      "page": "2",
+      "input_sha256": "1392d5dab6350d232f39a06aa813f1797aec399e41a9e632ffd93e421916f72b",
+      "reference_pdf_sha256": "9c737bf4a8700c5e31d0eb05bba16ea8e6bad4a3bfed7c3bf88334053abcbd79",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.6782",
+      "candidate_raw": "99.65588",
+      "decline_pp": "0.02232",
+      "base_display": "99.68",
+      "candidate_display": "99.66",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-nov-resaved/incoming8754-nov-resaved/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "1",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99544",
+      "decline_pp": "0.00456",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "2",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "98.8339",
+      "candidate_raw": "98.79183",
+      "decline_pp": "0.04207",
+      "base_display": "98.83",
+      "candidate_display": "98.79",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "3",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.79076",
+      "candidate_raw": "99.76405",
+      "decline_pp": "0.02671",
+      "base_display": "99.79",
+      "candidate_display": "99.76",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "18",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.4267",
+      "candidate_raw": "99.401",
+      "decline_pp": "0.0257",
+      "base_display": "99.43",
+      "candidate_display": "99.40",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "20",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "97.33108",
+      "candidate_raw": "97.33098",
+      "decline_pp": "0.00010",
+      "base_display": "97.33",
+      "candidate_display": "97.33",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "23",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "98.10597",
+      "candidate_raw": "98.10593",
+      "decline_pp": "0.00004",
+      "base_display": "98.11",
+      "candidate_display": "98.11",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "41",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.38594",
+      "candidate_raw": "99.3366",
+      "decline_pp": "0.04934",
+      "base_display": "99.39",
+      "candidate_display": "99.34",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "42",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.00962",
+      "candidate_raw": "99.00167",
+      "decline_pp": "0.00795",
+      "base_display": "99.01",
+      "candidate_display": "99.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "48",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.3246",
+      "candidate_raw": "99.32213",
+      "decline_pp": "0.00247",
+      "base_display": "99.32",
+      "candidate_display": "99.32",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-pii5846",
+      "page": "66",
+      "input_sha256": "f429768ec02e5a849d08c06678cbee029fdc8618ca9e2bdcdbba485087fe71f1",
+      "reference_pdf_sha256": "0fef38f44b3825f1c97869c2720112536504eaf30cec2a2d2af6d4399ffe8770",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "97.22675",
+      "candidate_raw": "97.15971",
+      "decline_pp": "0.06704",
+      "base_display": "97.23",
+      "candidate_display": "97.16",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-pii5846/incoming8754-pii5846/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-science",
+      "page": "1",
+      "input_sha256": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8",
+      "reference_pdf_sha256": "1c828fef29d7761d8ef46c8da50cc59936a95128920453ca5cc0d6440ac82d14",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.90105",
+      "candidate_raw": "99.89419",
+      "decline_pp": "0.00686",
+      "base_display": "99.90",
+      "candidate_display": "99.89",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-science/incoming8754-science/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-science/incoming8754-science/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "incoming8754-science",
+      "page": "2",
+      "input_sha256": "22d29786a80d68a9b2ad9294c2dab4915e0eced941e790e37390b14312b8b6a8",
+      "reference_pdf_sha256": "1c828fef29d7761d8ef46c8da50cc59936a95128920453ca5cc0d6440ac82d14",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.19496",
+      "candidate_raw": "99.19078",
+      "decline_pp": "0.00418",
+      "base_display": "99.19",
+      "candidate_display": "99.19",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-science/incoming8754-science/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/incoming8754-science/incoming8754-science/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "nested",
+      "page": "6",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.98465",
+      "candidate_raw": "99.98463",
+      "decline_pp": "0.00002",
+      "base_display": "99.98",
+      "candidate_display": "99.98",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/nested/nested/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/nested/nested/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "nested",
+      "page": "12",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.86764",
+      "candidate_raw": "99.86673",
+      "decline_pp": "0.00091",
+      "base_display": "99.87",
+      "candidate_display": "99.87",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/nested/nested/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/nested/nested/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "newyear",
+      "page": "2",
+      "input_sha256": "1be2736df6b21687f5c1627bac307cc689171928f6ceb0a235af0bc727eb6372",
+      "reference_pdf_sha256": "44b4e5f7517c86034b800ed307fcbf09dcf7242d342fd5e14ddfca9d22537ec0",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "98.87446",
+      "candidate_raw": "98.87432",
+      "decline_pp": "0.00014",
+      "base_display": "98.87",
+      "candidate_display": "98.87",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/newyear/newyear/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/newyear/newyear/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "policy-agenda",
+      "page": "2",
+      "input_sha256": "b3b7c0d557a26d7080957fe5d8472153a6783b9dab029acae4e3b0c29186e4ad",
+      "reference_pdf_sha256": "b15da297882bf644e53e5b895fdb79d119dd03314e24f0fef660001904f4cd4f",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.96027",
+      "candidate_raw": "99.95985",
+      "decline_pp": "0.00042",
+      "base_display": "99.96",
+      "candidate_display": "99.96",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/policy-agenda/policy-agenda/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "policy-agenda",
+      "page": "3",
+      "input_sha256": "b3b7c0d557a26d7080957fe5d8472153a6783b9dab029acae4e3b0c29186e4ad",
+      "reference_pdf_sha256": "b15da297882bf644e53e5b895fdb79d119dd03314e24f0fef660001904f4cd4f",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.9726",
+      "candidate_raw": "99.97242",
+      "decline_pp": "0.00018",
+      "base_display": "99.97",
+      "candidate_display": "99.97",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/policy-agenda/policy-agenda/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/policy-agenda/policy-agenda/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-628",
+      "page": "77",
+      "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+      "reference_pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.98447",
+      "candidate_raw": "99.98426",
+      "decline_pp": "0.00021",
+      "base_display": "99.98",
+      "candidate_display": "99.98",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-628/report-628/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-628/report-628/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-628",
+      "page": "110",
+      "input_sha256": "bde80abc635f46e8af68ff9a962229379d17f32bf7939398617774bb40635f66",
+      "reference_pdf_sha256": "34960349fb528ec433dfe0f616eaa275ea9331e15350823ba88f276cc0bd2255",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "93.23669",
+      "candidate_raw": "93.23582",
+      "decline_pp": "0.00087",
+      "base_display": "93.24",
+      "candidate_display": "93.24",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/report-628/report-628/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-628/report-628/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "9",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99897",
+      "candidate_raw": "99.99794",
+      "decline_pp": "0.00103",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "11",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99741",
+      "candidate_raw": "99.99612",
+      "decline_pp": "0.00129",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "15",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99865",
+      "decline_pp": "0.00135",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "17",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99625",
+      "decline_pp": "0.00375",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "20",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.97201",
+      "candidate_raw": "99.97198",
+      "decline_pp": "0.00003",
+      "base_display": "99.97",
+      "candidate_display": "99.97",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "21",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.98619",
+      "candidate_raw": "99.98481",
+      "decline_pp": "0.00138",
+      "base_display": "99.99",
+      "candidate_display": "99.98",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "25",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99842",
+      "decline_pp": "0.00158",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "27",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99578",
+      "decline_pp": "0.00422",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "31",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99729",
+      "candidate_raw": "99.99593",
+      "decline_pp": "0.00136",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "35",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99861",
+      "decline_pp": "0.00139",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "37",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99515",
+      "decline_pp": "0.00485",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "41",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99585",
+      "candidate_raw": "99.99377",
+      "decline_pp": "0.00208",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "42",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.94274",
+      "candidate_raw": "99.94272",
+      "decline_pp": "0.00002",
+      "base_display": "99.94",
+      "candidate_display": "99.94",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "45",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99901",
+      "decline_pp": "0.00099",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "47",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99686",
+      "decline_pp": "0.00314",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "51",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99699",
+      "candidate_raw": "99.99548",
+      "decline_pp": "0.00151",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "55",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99858",
+      "decline_pp": "0.00142",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "57",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99567",
+      "decline_pp": "0.00433",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "61",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.96834",
+      "candidate_raw": "99.96683",
+      "decline_pp": "0.00151",
+      "base_display": "99.97",
+      "candidate_display": "99.97",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "65",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99883",
+      "candidate_raw": "99.99765",
+      "decline_pp": "0.00118",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "67",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.57311",
+      "candidate_raw": "99.57002",
+      "decline_pp": "0.00309",
+      "base_display": "99.57",
+      "candidate_display": "99.57",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "77",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99844",
+      "candidate_raw": "99.99376",
+      "decline_pp": "0.00468",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "81",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99398",
+      "candidate_raw": "99.99248",
+      "decline_pp": "0.00150",
+      "base_display": "99.99",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "82",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99455",
+      "candidate_raw": "99.99454",
+      "decline_pp": "0.00001",
+      "base_display": "99.99",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "85",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99695",
+      "candidate_raw": "99.99543",
+      "decline_pp": "0.00152",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "report-838",
+      "page": "87",
+      "input_sha256": "686146869f9eae267c1f2ac7d82c9fa2bc0615c36a727687a2e2cf0985b6d207",
+      "reference_pdf_sha256": "c4fa3f7de6e276850daa648216346d5c4564a93dbcd4dbb10494b18c6ee71ed9",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.9971",
+      "candidate_raw": "99.99276",
+      "decline_pp": "0.00434",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-paired-recovery-native/report-838/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/report-838/report-838/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sample16",
+      "page": "18",
+      "input_sha256": "6a3cdf2c148bf39f40ab06e847767e7f722543fce59e6ee4328ef44b835f3f45",
+      "reference_pdf_sha256": "ba4b10dee6e35e9c5ee71dd8c8004528ad3dd72b47ef5dd0cd859e0431aae381",
+      "dpi": "96",
+      "compat": "2024",
+      "base_raw": "99.99271",
+      "candidate_raw": "99.99065",
+      "decline_pp": "0.00206",
+      "base_display": "99.99",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sample16/sample16/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sample16/sample16/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sample16-hwp2024",
+      "page": "18",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "dpi": "96",
+      "compat": "2024",
+      "base_raw": "99.99271",
+      "candidate_raw": "99.99065",
+      "decline_pp": "0.00206",
+      "base_display": "99.99",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sample16-hwp2024/sample16-hwp2024/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sample16-hwp2024/sample16-hwp2024/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sample16-hwpx",
+      "page": "18",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "dpi": "96",
+      "compat": "2024",
+      "base_raw": "99.99271",
+      "candidate_raw": "99.99065",
+      "decline_pp": "0.00206",
+      "base_display": "99.99",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sample16-hwpx/sample16-hwpx/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sample16-hwpx/sample16-hwpx/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "2",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99794",
+      "candidate_raw": "99.99792",
+      "decline_pp": "0.00002",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "3",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99818",
+      "decline_pp": "0.00182",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "6",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99459",
+      "decline_pp": "0.00541",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "11",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99802",
+      "candidate_raw": "99.99798",
+      "decline_pp": "0.00004",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "26",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99319",
+      "decline_pp": "0.00681",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "28",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.998",
+      "decline_pp": "0.002",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "35",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99786",
+      "decline_pp": "0.00214",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "42",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99677",
+      "candidate_raw": "99.99672",
+      "decline_pp": "0.00005",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "43",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99804",
+      "decline_pp": "0.00196",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "52",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99459",
+      "decline_pp": "0.00541",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "55",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99666",
+      "candidate_raw": "99.99492",
+      "decline_pp": "0.00174",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "61",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99467",
+      "decline_pp": "0.00533",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "64",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99793",
+      "decline_pp": "0.00207",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "68",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99824",
+      "decline_pp": "0.00176",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "69",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99817",
+      "candidate_raw": "99.99814",
+      "decline_pp": "0.00003",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "77",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.99084",
+      "decline_pp": "0.00916",
+      "base_display": "100.00",
+      "candidate_display": "99.99",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "78",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99531",
+      "candidate_raw": "99.9952",
+      "decline_pp": "0.00011",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "85",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.99797",
+      "candidate_raw": "99.99793",
+      "decline_pp": "0.00004",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    },
+    {
+      "case": "sungeo",
+      "page": "87",
+      "input_sha256": "3b13d15833cbd0fb42b5f7ac5909eee7a68ec4505a914eb70931168c01f79d96",
+      "reference_pdf_sha256": "4b7a90e1cb7b8fae8da4b5c4bfbbb1f22858f1ff9b4cbd3ca13ea5cb3c924e1e",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "100.0",
+      "candidate_raw": "99.998",
+      "decline_pp": "0.002",
+      "base_display": "100.00",
+      "candidate_display": "100.00",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/whole94-native/sungeo/sungeo/silhouette_manifest.json",
+      "candidate_measurement_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+      "reuse_reason": "사용자 승인: 충돌 없는 리베이스 및 영향 분석에 따라 기존 전쪽 결과 재사용"
+    }
+  ],
+  "declines_over_0_1pp": [
+    {
+      "case": "incoming8754-clip5587",
+      "page": "4",
+      "input_sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+      "reference_pdf_sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.94357",
+      "candidate_raw": "99.80186",
+      "decline_pp": "0.14171",
+      "base_display": "99.94",
+      "candidate_display": "99.80",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/focus-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "reuse_reason": "영향 범위 추가 실측; 실행 당시 HEAD 유지"
+    }
+  ],
+  "declines_over_2pp": [],
+  "applicable_decline_limit_pp": "0.1",
+  "completed_page_below98": [],
+  "tsv": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/comparisons/latest-base-native-comparison.tsv",
+  "tsv_sha256": "d20958506f3cef9442fbf418c710193a6ecc592fdeeaf81fdea80f388b6ade06",
+  "note": "이 작업의 사용자 지정 0.1%p 조건을 유지한다. 일반 정본의 2%p보다 엄격한 이 조건으로 제출 여부를 확인한다. 정본 보호 TSV의 두 자리 하락 금지는 후보 별도 감사로 확인한다. 이 보고서는 최신 base와 리베이스 전 원래 정밀값을 보존한다. 하락 쪽의 직접 판독은 별도로 필요하다.",
+  "submission_base": "509c4c987eb6351d821c4d7739e59f5d0e9725db",
+  "original_comparison_head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "original_comparison_path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/latest-base-native-comparison.json",
+  "original_comparison_sha256": "52d2e8dc2bde4fdf3e7a10a1922d7bc7220c1f256a93c87008da5c13f8861b33",
+  "current_measured_paired_pages": 18,
+  "reused_paired_pages": 2973,
+  "reuse_authorization": "2026-11-09 사용자: 충돌 없으면 기존 자료 재활용. 기존 producer SHA와 입력·Print·조건을 보존하며 이번 source의 2조건8쪽 및 앞선 HWP3 3조건10쪽 추가 실측을 구분한다.",
+  "source_scope": "base 필드는 실제 대조한 b768bee1(또는 리베이스 전 b4d8709)의 생산자다. 새 제출 base509c4c98과 혼동하지 않는다. 509c4c98의 HWP3 변경은 이번 영향3조건10쪽 및 새 HWP3 회귀로 별도 검증한다.",
+  "user_directed_residual_issue_rows": [
+    {
+      "case": "incoming8754-clip5587",
+      "page": "4",
+      "input_sha256": "8e7a95cf591944bff56050879fa90251921ec57e28eac66d40c6fb8ad103016f",
+      "reference_pdf_sha256": "901d842b033e30be1e9b4a7da8109be9e165af96af61fc4f175809ffbecc88a8",
+      "dpi": "96",
+      "compat": "2022",
+      "base_raw": "99.94357",
+      "candidate_raw": "99.80186",
+      "decline_pp": "0.14171",
+      "base_display": "99.94",
+      "candidate_display": "99.80",
+      "png_identical": "False",
+      "base_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/fixed-base-whole-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_manifest": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/final-preserved-source-509c4c98/focus-native/incoming8754-clip5587/incoming8754-clip5587/silhouette_manifest.json",
+      "candidate_measurement_head": "e1fbd75cfcbefc0f633bcbd2ccef256614267ce8",
+      "reuse_reason": "영향 범위 추가 실측; 실행 당시 HEAD 유지"
+    }
+  ],
+  "strict_0_1pp_pass": false,
+  "canonical_2pp_pass": true,
+  "scope_instruction": "빠른 pr 이 목적임. 나머지는 새로운 이슈로 생성하고 빨리 pr 해. 엄격0.1%p 잔여를 무회귀로 보고하지 않고 이슈와 PR 본문에 명시한다."
+}

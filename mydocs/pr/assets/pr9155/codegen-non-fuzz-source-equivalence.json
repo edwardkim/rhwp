@@ -1,0 +1,12 @@
+{
+  "originalSource": "de94e7cc23dcbea3fe857a726646a872399f8f9c",
+  "head": "d9868f4ef1e506918bb3eceece5453333b047e64",
+  "byteIdentical": true,
+  "excludedPaths": [
+    "mydocs/**",
+    ".github/workflows/fuzz-smoke.yml",
+    "scripts/tests/test_release_channel_policy_workflow.py"
+  ],
+  "scope": "Native/FullRenderer files, product code andtools unchanged; Fuzz-specific codegen execution/contract + docs excluded",
+  "snapshotSha256": "a547382785d7f7767880d81ad37847159f8fe4b92ea3e3751e6b6e493c8009be"
+}

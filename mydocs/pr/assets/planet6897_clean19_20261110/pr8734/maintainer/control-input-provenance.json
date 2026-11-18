@@ -1,0 +1,18 @@
+[
+  {
+    "validated_output_input": "output/pr-review/planet6897-clean20-integration-20261110/source-controls/issue8692/employment_service_interim_report.hwp",
+    "formal_input": "tests/fixtures/pr8734/employment_service_interim_report.hwp",
+    "source_commit": "462f58f74427bafcc5b05df5cb77acc7b26b8297",
+    "source_path": "samples/issue8692/employment_service_interim_report.hwp",
+    "sha256": "f2af4c2b4e7721cec84488833eaf68b48ee4c852fc2990411188b33bf223606a",
+    "bytes": 3353600
+  },
+  {
+    "validated_output_input": "output/pr-review/planet6897-clean20-integration-20261110/source-controls/issue8692/employment_service_interim_report-2020.pdf",
+    "formal_input": "pdf/issue8730/employment_service_interim_report-2020.pdf",
+    "source_commit": "462f58f74427bafcc5b05df5cb77acc7b26b8297",
+    "source_path": "pdf/issue8692/employment_service_interim_report-2020.pdf",
+    "sha256": "f11dbf1389dd43f37911c730d1bf63ee7de0d5821e95fa1d206165819732fc11",
+    "bytes": 1454452
+  }
+]

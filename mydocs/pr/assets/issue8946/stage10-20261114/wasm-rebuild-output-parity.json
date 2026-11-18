@@ -1,0 +1,119 @@
+[
+  {
+    "key": "cover-bold",
+    "checks": {
+      "png": {
+        "pages": 1,
+        "identical": true
+      },
+      "tree": {
+        "pages": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "cover-regular",
+    "checks": {
+      "png": {
+        "pages": 1,
+        "identical": true
+      },
+      "tree": {
+        "pages": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "tracking",
+    "checks": {
+      "png": {
+        "pages": 1,
+        "identical": true
+      },
+      "tree": {
+        "pages": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "mixed",
+    "checks": {
+      "png": {
+        "pages": 1,
+        "identical": true
+      },
+      "tree": {
+        "pages": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "pr8900-bar_axis_floor",
+    "checks": {
+      "png": {
+        "pages": 1,
+        "identical": true
+      },
+      "tree": {
+        "pages": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "pr9030",
+    "checks": {
+      "png": {
+        "pages": 1,
+        "identical": true
+      },
+      "tree": {
+        "pages": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "pr9034",
+    "checks": {
+      "png": {
+        "pages": 4,
+        "identical": true
+      },
+      "tree": {
+        "pages": 4,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "pr9036",
+    "checks": {
+      "png": {
+        "pages": 1,
+        "identical": true
+      },
+      "tree": {
+        "pages": 1,
+        "identical": true
+      }
+    }
+  },
+  {
+    "key": "pr9018-edited",
+    "checks": {
+      "png": {
+        "pages": 2,
+        "identical": true
+      },
+      "tree": {
+        "pages": 2,
+        "identical": true
+      }
+    }
+  }
+]

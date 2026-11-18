@@ -1,0 +1,35 @@
+{
+  "source_commit": "612b4053db0a09cd714aa85e9fefa045f7c4d193",
+  "base": "e00f9b7e26e581896fa17eaff3c8eb3f4889f9d4",
+  "before_count": 144,
+  "after_count": 137,
+  "before_by_rule": {
+    "rust/access-invalid-pointer": 7,
+    "rust/hard-coded-cryptographic-value": 98,
+    "rust/cleartext-logging": 36,
+    "rust/weak-sensitive-data-hashing": 1,
+    "rust/weak-cryptographic-algorithm": 2
+  },
+  "after_by_rule": {
+    "rust/hard-coded-cryptographic-value": 98,
+    "rust/cleartext-logging": 36,
+    "rust/weak-sensitive-data-hashing": 1,
+    "rust/weak-cryptographic-algorithm": 2
+  },
+  "executed_alert_rules": 17,
+  "all_requested_rules_present_in_sarif": true,
+  "pointer_findings_before": 7,
+  "pointer_findings_after": 0,
+  "pdf_target_findings_after": 1,
+  "unrelated_primary_findings_unchanged": true,
+  "unrelated_added": [],
+  "unrelated_removed": [],
+  "normalization": "Map unchanged source lines back to the pinned base using exact matching blocks. Compare all unrelated rule/message/primary sink regions. Message lines are compared as a multiset without SARIF witness link numbers; original ordering and flow locations are retained in codeql-witness-variations.json. Preserve raw candidate target flow locations separately.",
+  "snapshot_mismatches": [],
+  "sarif_sha256": {
+    "baseline": "81aee8f88843e1460e68ecd51da1f4cad0c739ccd7d049541e4d19ba6fdc3f3a",
+    "candidate": "d6c8cc02663c307175910d6ddc75fb7f64d841ede39e7f01bb323b38d821b407"
+  },
+  "local_analysis_not_protected_branch_analysis": true,
+  "unrelated_witness_variation_count": 1
+}

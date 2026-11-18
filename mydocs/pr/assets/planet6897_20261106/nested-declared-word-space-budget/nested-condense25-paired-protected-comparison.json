@@ -1,0 +1,30 @@
+[
+  {
+    "backend": "native",
+    "key": "nested",
+    "pages": 17,
+    "minimum": 98.36,
+    "protected_losses": []
+  },
+  {
+    "backend": "native",
+    "key": "outline",
+    "pages": 9,
+    "minimum": 100.0,
+    "protected_losses": []
+  },
+  {
+    "backend": "wasm",
+    "key": "nested",
+    "pages": 17,
+    "minimum": 98.37,
+    "protected_losses": []
+  },
+  {
+    "backend": "wasm",
+    "key": "outline",
+    "pages": 9,
+    "minimum": 100.0,
+    "protected_losses": []
+  }
+]

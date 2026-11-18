@@ -1,0 +1,168 @@
+{
+  "time": "2026-11-15T17:12:24.126278+09:00",
+  "product_source": "a9b0d49fd3a42ee3bf8ad4c212c9024d9c537c36",
+  "policy_commit": "7017b7a6bab31622d3c4f2c2e25c478ab24ba9d2",
+  "scope": "macOS user",
+  "copied_files": 9,
+  "copied_faces": 12,
+  "verified_files": 30,
+  "verified_faces": 36,
+  "hash_mismatches": [],
+  "unregistered_user_files": [],
+  "missing_faces": [],
+  "passed": true,
+  "copied": [
+    {
+      "filename": "84b0ba79a5d1-Batang.ttc",
+      "sha256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "Batang",
+          "postscript": "Batang",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": false,
+          "defaultSelectedSHA256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "family": "BatangChe",
+          "postscript": "BatangChe",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": false,
+          "defaultSelectedSHA256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "family": "Gungsuh",
+          "postscript": "Gungsuh",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": true,
+          "defaultSelectedSHA256": "84b0ba79a5d1c6012bbccf8d364ddc04a0c8b135d227a159196c558225cf1d89"
+        },
+        {
+          "family": "GungsuhChe",
+          "postscript": "GungsuhChe",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": false,
+          "defaultSelectedSHA256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        }
+      ]
+    },
+    {
+      "filename": "af6268b76ab7-NotoSansKR-Regular.ttf",
+      "sha256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "Noto Sans KR",
+          "postscript": "NotoSansKR-Regular",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": true,
+          "defaultSelectedSHA256": "af6268b76ab738e0d8a7ffaa149480d949898443dc11560f9262c3d3c1893834"
+        }
+      ]
+    },
+    {
+      "filename": "f78f538885b2-H2mjsM.ttf",
+      "sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "HYSinMyeongJo-Medium",
+          "postscript": "H2mjsM",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": false,
+          "defaultSelectedSHA256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc"
+        }
+      ]
+    },
+    {
+      "filename": "a541834fb9cd-MalgunGothicBold.ttf",
+      "sha256": "a541834fb9cdde9bd6d2c3ff1565cb0bb5ccf7a15e4e9daf2cb58d9b1cf282aa",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "Malgun Gothic",
+          "postscript": "MalgunGothicBold",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": false,
+          "defaultSelectedSHA256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        }
+      ]
+    },
+    {
+      "filename": "820d3212f688-H2gtrE.ttf",
+      "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "HYGothic-Extra",
+          "postscript": "H2gtrE",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": false,
+          "defaultSelectedSHA256": "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234"
+        }
+      ]
+    },
+    {
+      "filename": "0086c19e81d2-MalgunGothic.ttf",
+      "sha256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "Malgun Gothic",
+          "postscript": "MalgunGothic",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": true,
+          "defaultSelectedSHA256": "0086c19e81d293a542e7d75564c645fb58070cc850aefebf8fa1c397858e510c"
+        }
+      ]
+    },
+    {
+      "filename": "2fda1cc69297-H2mjrE.ttf",
+      "sha256": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "HYMyeongJo-Extra",
+          "postscript": "H2mjrE",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": true,
+          "defaultSelectedSHA256": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e"
+        }
+      ]
+    },
+    {
+      "filename": "6ff0f49540ef-Gulim.ttf",
+      "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "Gulim",
+          "postscript": "Gulim",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": true,
+          "defaultSelectedSHA256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab"
+        }
+      ]
+    },
+    {
+      "filename": "fcc11057e873-NanumBarunGothic.ttf",
+      "sha256": "fcc11057e873a9f62d68c9dee0f2683f22e0e6404a7aa6a29b23169a62b762ce",
+      "scope": 2,
+      "faces": [
+        {
+          "family": "NanumBarunGothic",
+          "postscript": "NanumBarunGothic",
+          "descriptorUsable": true,
+          "defaultSelectedRequestedFile": true,
+          "defaultSelectedSHA256": "fcc11057e873a9f62d68c9dee0f2683f22e0e6404a7aa6a29b23169a62b762ce"
+        }
+      ]
+    }
+  ],
+  "legacy_descriptor_note": "Human Myungjo의 CoreText 임시 PostScript 이름은 전역 이름 열거에 없으므로 독립 프로세스의 실제 파일 descriptor·glyphCount·사용자 등록 범위로 검증함. 글꼴 바이트 변경 없음.",
+  "font_bytes_committed": false,
+  "subset_scope": "3개의 작은 검증용 서브셋은 명시적 검증 공급으로 유지하고 전역 사용자 폰트로 설치하지 않음",
+  "visual_acceptance": "등록·파일 확인 완료이며 설치 후 전쪽 보호 검증 통과를 뜻하지 않음",
+  "local_evidence": "/Users/tsjang/Library/Logs/rhwp/font-installations/protected-20261115-170937"
+}

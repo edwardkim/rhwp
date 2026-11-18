@@ -1,0 +1,137 @@
+{
+  "8749": {
+    "description": "bitmap-channel-transfer-independent.hwpx / 독립 2024 PDF 전 1쪽의 Native·fresh WASM review/overlay와 공개 embedded bitmap font의 명시 preview를 구분한다. 후보 1개, 두 경로의 raw·pixel match·visual_accuracy_proxy_percent와 사람 판독을 기록한다.",
+    "images": [
+      "visual/bitmap-channel-native-review.png",
+      "visual/bitmap-channel-native-overlay.png",
+      "visual/bitmap-channel-wasm-review.png",
+      "visual/bitmap-channel-wasm-overlay.png",
+      "optimized-preview.png"
+    ],
+    "review": "mydocs/pr/archives/pr_8749_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8761": {
+    "description": "파일 저장·recovery의 기능 검증이다. 실제 Native 입력/저장·재열기·dirty·취소·외부 변경·게시 뒤 오류 결과를 설명하고 unrelated renderer 이미지를 붙이지 않는다.",
+    "images": [],
+    "review": "mydocs/pr/archives/pr_8761_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8764": {
+    "description": "문서 lifecycle·입력 settle·비동기 checkpoint·취소/닫기의 기능 검증이다. 실제 Native·owner 실행 결과를 설명한다.",
+    "images": [],
+    "review": "mydocs/pr/archives/pr_8764_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8765": {
+    "description": "원 PR이 사용하는 radial-corner-print-contract.hwpx 전 6쪽이다. 후보 1개, Native·fresh WASM 각 쪽의 실제 review/overlay와 세 지표를 포함한다. engine 출력 비교와 Flutter viewport/CPU batch 실행 결과를 구분한다.",
+    "images": [
+      "visual/radial-native-p001-review.png",
+      "visual/radial-native-p001-overlay.png",
+      "visual/radial-wasm-p001-review.png",
+      "visual/radial-wasm-p001-overlay.png",
+      "visual/radial-native-p002-review.png",
+      "visual/radial-native-p002-overlay.png",
+      "visual/radial-wasm-p002-review.png",
+      "visual/radial-wasm-p002-overlay.png",
+      "visual/radial-native-p003-review.png",
+      "visual/radial-native-p003-overlay.png",
+      "visual/radial-wasm-p003-review.png",
+      "visual/radial-wasm-p003-overlay.png",
+      "visual/radial-native-p004-review.png",
+      "visual/radial-native-p004-overlay.png",
+      "visual/radial-wasm-p004-review.png",
+      "visual/radial-wasm-p004-overlay.png",
+      "visual/radial-native-p005-review.png",
+      "visual/radial-native-p005-overlay.png",
+      "visual/radial-wasm-p005-review.png",
+      "visual/radial-wasm-p005-overlay.png",
+      "visual/radial-native-p006-review.png",
+      "visual/radial-native-p006-overlay.png",
+      "visual/radial-wasm-p006-review.png",
+      "visual/radial-wasm-p006-overlay.png"
+    ],
+    "review": "mydocs/pr/archives/pr_8765_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8767": {
+    "description": "원 P106 exact head의 desktop-consumer.hwpx p1, initial·edited·resized 3단계다. 실제 Windows compositor와 같은 snapshot의 CPU 비교 계약·종료 계수 0을 설명한다. 표시 수치를 한컴 조판 일치율로 확대하지 않는다.",
+    "images": [
+      "platform-visual/windows-p106-01.png",
+      "platform-visual/windows-p106-02.png",
+      "platform-visual/windows-p106-03.png"
+    ],
+    "review": "mydocs/pr/archives/pr_8767_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8769": {
+    "description": "실제 Apple SDK compile/link·Metal producer probe 검증이다. 원 P107 source와 제공 Native source·해시, 실제 SDK job을 연결한다. 별도 P110 WindowServer 화면을 P107 producer의 비교 이미지로 대신하지 않는다.",
+    "images": [],
+    "review": "mydocs/pr/archives/pr_8769_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8777": {
+    "description": "desktop-consumer.hwpx p1의 실제 메인테이너 Linux GTK consumer 단계 1·2·3·32다. 각 CPU·실제 display와 32회 전체 결과, 종료 계수 0과 실제 비교 계약을 설명한다.",
+    "images": [
+      "linux-actual/cpu-01.png",
+      "linux-actual/display-01.png",
+      "linux-actual/cpu-02.png",
+      "linux-actual/display-02.png",
+      "linux-actual/cpu-03.png",
+      "linux-actual/display-03.png",
+      "linux-actual/cpu-32.png",
+      "linux-actual/display-32.png"
+    ],
+    "review": "mydocs/pr/archives/pr_8777_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8779": {
+    "description": "desktop-consumer.hwpx p1의 실제 Windows continuous 단계 1·2·3·32다. 32회 전체 비교·불변 소유권 이전·종료 계수 0을 설명하며 targetReuse/GPU 완료/hardware 검증 flag를 그대로 유지한다.",
+    "images": [
+      "platform-visual/windows-continuous-01.png",
+      "platform-visual/windows-continuous-02.png",
+      "platform-visual/windows-continuous-03.png",
+      "platform-visual/windows-continuous-32.png"
+    ],
+    "review": "mydocs/pr/archives/pr_8779_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  },
+  "8781": {
+    "description": "desktop-consumer.hwpx p1의 실제 AppKit WindowServer 단계 1·2·3·32다. 32회 전체 결과·no-action animation·종료 계수 0을 설명하며 Paravirtual과 GPU 완료/hardware 검증 범위를 유지한다.",
+    "images": [
+      "platform-visual/macos-platform-0.png",
+      "platform-visual/macos-p110-02.png",
+      "platform-visual/macos-p110-03.png",
+      "platform-visual/macos-platform-1.png"
+    ],
+    "review": "mydocs/pr/archives/pr_8781_review.md",
+    "parent_issues_remain_open": [
+      536,
+      8701
+    ]
+  }
+}

@@ -1,6 +1,8 @@
-//! Private security regression: document font names are data in CSS and SVG.
-//! Synthetic IR preserves a real blank-document structure and a valid fixture font;
-//! this checks serialization boundaries, not Hancom layout fidelity.
+//! 검사 유형: 관계형. 글꼴 이름의 CSS/SVG 직렬화와 검색 루트 밖 파일 접근 차단을 검사한다.
+//! 주석 갱신: 2026-11-08T21:02:57+09:00; 직전 변경: 2026-10-06T11:49:12+09:00, 17a69fa4e789226d529ef90caaae5a58655a1eec.
+//! 합성 IR·MIT fixture의 보안 계약이며 독립 PDF·실물 페이지 raw 측정은 비해당이다.
+//! 검색 루트의 상대·절대·역슬래시 경로는 Linux·Mac·Windows에서 모두 검사한다.
+//! 큰따옴표를 실제 파일 이름에 넣는 경계만 해당 이름을 허용하는 Unix에서 추가 검사한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::model::bin_data::{BinData, BinDataContent, BinDataType};
@@ -8,10 +10,8 @@ use rhwp::paint::RenderProfile;
 use rhwp::renderer::svg::FontEmbedMode;
 use rhwp::DocumentCore;
 
-#[cfg(unix)]
 struct Directory(std::path::PathBuf);
 
-#[cfg(unix)]
 impl Directory {
     fn new() -> Self {
         let nonce = std::time::SystemTime::now()
@@ -25,7 +25,6 @@ impl Directory {
     }
 }
 
-#[cfg(unix)]
 impl Drop for Directory {
     fn drop(&mut self) {
         let _ = std::fs::remove_dir_all(&self.0);
@@ -203,7 +202,6 @@ fn actual_font_file_embedding_preserves_css_string_boundaries() {
 }
 
 #[test]
-#[cfg(unix)]
 fn exported_svg_cannot_embed_font_files_outside_the_configured_search_root() {
     let directory = Directory::new();
     let search_root = directory.0.join("fonts");

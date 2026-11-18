@@ -381,7 +381,8 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
         &clean_composed,
         &clean_probe,
         inner_width,
-        &styles
+        &styles,
+        false
     ));
     let mut clean_frame = ParagraphBox::content(0..width_hwp).frame(0);
     assert!(matches!(
@@ -399,7 +400,7 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
         Some(line_breaking::StoredRowResolution::Stored)
     ));
 
-    let stale = stored_rows_are_stale(&composed, &para, inner_width, &styles);
+    let stale = stored_rows_are_stale(&composed, &para, inner_width, &styles, false);
     assert!(
         stale,
         "the mutation bit, not overflow magnitude, is decisive"

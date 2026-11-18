@@ -1,0 +1,214 @@
+{
+  "status": "current_source_whole_claim_tsv_complete",
+  "frozen_producer": {
+    "status": "both_producers_ready",
+    "pid": 97481,
+    "head": "0d587554b804183b5cc6d090f396acc47525c089",
+    "base": "ae9277dda0ca17be279cba89c4deea74fb75dcae",
+    "results": [
+      {
+        "name": "fmt",
+        "command": [
+          "cargo",
+          "fmt",
+          "--all",
+          "--",
+          "--check"
+        ],
+        "exit_code": 0,
+        "seconds": 53.537
+      },
+      {
+        "name": "suite-prepare",
+        "command": [
+          "node",
+          "scripts/rust-test-suite-manifest.mjs",
+          "--prepare"
+        ],
+        "exit_code": 0,
+        "seconds": 59.606
+      },
+      {
+        "name": "focused-alias",
+        "command": [
+          "/usr/bin/sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-integration-20261116/minimal-font/profile.sb",
+          "node",
+          "scripts/run-rust-test.mjs",
+          "installed_font_program_order",
+          "--",
+          "--cargo-profile",
+          "release-test",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "--features",
+          "native-skia",
+          "--test-threads",
+          "8"
+        ],
+        "exit_code": 0,
+        "seconds": 354.717
+      },
+      {
+        "name": "native-build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--bin",
+          "rhwp",
+          "--target-dir",
+          "/Users/tsjang/rhwp/target/pr-review",
+          "-j",
+          "8"
+        ],
+        "exit_code": 0,
+        "seconds": 210.972
+      },
+      {
+        "name": "fresh-wasm",
+        "command": [
+          "scripts/wasm-pack-locked.sh",
+          "--target",
+          "web",
+          "--out-dir",
+          "pkg",
+          "--no-opt"
+        ],
+        "exit_code": 0,
+        "seconds": 363.399
+      }
+    ],
+    "source_sha256": {
+      "src/renderer/mod.rs": "fc96373c8d6c71f0d014bf12d6545e407f25e7509ab9a229634917e2c11a0dde",
+      "src/renderer/layout/text_measurement.rs": "a89fa0f89cbb2e0afd810f1a5ecb04f0fb164b49ca0e9ce6e3b343093cd8ba68",
+      "tests/cases/installed_font_program_order.rs": "fd199b636c7a683a36bfd171ec981ec93d17a156044836f5950efc130423bec0"
+    },
+    "current": "fresh-wasm",
+    "updated_at": "2026-11-16T11:25:46.054670+00:00",
+    "native_sha256": "a8f9b5c0f8f0ee7c14926a743aab2e4784ebfe57ac2e2506f3c08e5237cbce19",
+    "wasm_hashes": {
+      "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+      "rhwp_bg.wasm": "d1702a3b077f849804f63bace85f6e8c5547ca8e6c26b3bef3382beab96e166f"
+    }
+  },
+  "current_equivalent_read_paths_head": "9bed2ea288a9db3b4a7e03c4a3e4abd8129b5b85",
+  "datasets": [
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/native/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "native",
+      "pages": 2,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/native/silhouette.tsv",
+      "tsv_sha256": "3cc204d96eed3779a9bd07be48f45a90e50ea87b7345234e27a46c62fa31c17c",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "veterans_summer_support_press_release",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": "99.99",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/veterans_summer_support_press_release/wasm/silhouette.tsv",
+      "tsv_sha256": "77ace59d51a8436fb0734d1191e76c8238d406648242485877c0b907d1fc968c",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "native",
+      "pages": 6,
+      "minimum": "98.25",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/native/silhouette.tsv",
+      "tsv_sha256": "9e33e3288f2bc9dbd9e20e0410150a217df3f9a1c17cbcfd38ae433f2ce1e275",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "black_stork_restoration_press_release",
+      "backend": "wasm",
+      "pages": 6,
+      "minimum": "98.72",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/black_stork_restoration_press_release/wasm/silhouette.tsv",
+      "tsv_sha256": "18a38965c06deb26eae026dc6cea37a813d4c7a0fc00dfef9d9dbf6d1b1c95de",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "99.82",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/native/silhouette.tsv",
+      "tsv_sha256": "83a671d6ec8c8e9192240f90287351296d56fdb9353205dca4cb9eb1367c4cb3",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "native",
+      "pages": 4,
+      "minimum": "97.60",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/native/silhouette.tsv",
+      "tsv_sha256": "b0c04ebed06c90552aa53a6623a8368201dae9cc692174fb8270263af5dc4438",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-bold-probe",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": "97.51",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-bold-probe/wasm/silhouette.tsv",
+      "tsv_sha256": "ef993973c96e812ee46d5e0bb1d7dcbf70202e4bee6e72d0320b4d6601a7fab9",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "native",
+      "pages": 4,
+      "minimum": "97.42",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/native/silhouette.tsv",
+      "tsv_sha256": "8db1e70531f00dd60f9e5d5e7119f949cfb4d81fde1cf53f278844f69c315d0a",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "hft-sinmyeong_sunmyeongjo-probe",
+      "backend": "wasm",
+      "pages": 4,
+      "minimum": "97.39",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/hft-sinmyeong_sunmyeongjo-probe/wasm/silhouette.tsv",
+      "tsv_sha256": "bd43ef9fb6643ed416699f62dc6d88d3b247a56cf9e674a4209c8a5d8bba4a26",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "proficiency_test_result_form",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/proficiency_test_result_form/wasm/silhouette.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    },
+    {
+      "key": "facility_fee_reduction_criteria",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "99.83",
+      "tsv": "mydocs/pr/assets/planet6897_20261116/claims/facility_fee_reduction_criteria/wasm/silhouette.tsv",
+      "tsv_sha256": "d799bec3fc14cc7d66c8797e62acf84f2b3bb3748b5fa22cfbfbd81a59a847dc",
+      "source": "0d587554b804183b5cc6d090f396acc47525c089"
+    }
+  ],
+  "representative_reuse_audit": "final/main-representative-reuse-audit.json",
+  "base_head_comparison": "final/base-head-comparison.json",
+  "direct_reading": "final/direct-reading.json"
+}

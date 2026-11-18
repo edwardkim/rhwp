@@ -635,6 +635,9 @@ pub struct BorderFill {
     pub fill: Fill,
     /// 3차원 효과 (HWPX borderFill@threeD)
     pub three_d: bool,
+    /// 표 참조 문맥의 자동 분할 경계선 별도 설정(HWPX breakCellSeparateLine).
+    /// 선 종류·굵기·색은 diagonal을 사용하며 네 변·중심선과 구분한다.
+    pub break_cell_separate_line: bool,
 }
 
 /// 중심선 방향 (HWPX borderFill@centerLine)
@@ -808,14 +811,99 @@ pub enum FillType {
 }
 
 /// 단색 채우기
-#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, serde::Serialize)]
 pub struct SolidFill {
     /// 배경색
     pub background_color: ColorRef,
     /// 무늬색
     pub pattern_color: ColorRef,
-    /// 무늬 종류
+    /// 무늬 종류. HWP 저장값 그대로이며 0~5가 무늬, -1과 그 밖의 값은 무늬 없음이다
+    /// ([`HatchStyle`]).
     pub pattern_type: i32,
+}
+
+impl Default for SolidFill {
+    fn default() -> Self {
+        Self {
+            background_color: 0,
+            pattern_color: 0,
+            pattern_type: HatchStyle::NONE,
+        }
+    }
+}
+
+impl SolidFill {
+    /// 그릴 무늬. 무늬 없음이면 `None`.
+    pub fn hatch(&self) -> Option<HatchStyle> {
+        HatchStyle::from_pattern_type(self.pattern_type)
+    }
+}
+
+/// 채우기 무늬 종류.
+///
+/// HWP 5.0 표 29는 1~6으로 적지만 한컴은 0~5로 저장하고 그린다(한컴 2024 Print,
+/// `hwp_spec_errata.md` 참조). 변형 이름은 그리는 모양을 따른다. OWPML `hatchStyle`의
+/// `SLASH`·`BACK_SLASH`는 이름과 반대 방향으로 그려지므로 [`HatchStyle::owpml_name`]으로만
+/// 대응시킨다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum HatchStyle {
+    /// 0 ─ 가로줄
+    Horizontal,
+    /// 1 │ 세로줄
+    Vertical,
+    /// 2 ＼ 왼쪽 위에서 오른쪽 아래로 내려가는 빗금
+    Falling,
+    /// 3 ／ 왼쪽 아래에서 오른쪽 위로 올라가는 빗금
+    Rising,
+    /// 4 ＋ 가로·세로 격자
+    Cross,
+    /// 5 × 빗금 격자
+    DiagonalCross,
+}
+
+impl HatchStyle {
+    /// 무늬 없음 저장값.
+    pub const NONE: i32 = -1;
+
+    pub fn from_pattern_type(value: i32) -> Option<Self> {
+        Some(match value {
+            0 => Self::Horizontal,
+            1 => Self::Vertical,
+            2 => Self::Falling,
+            3 => Self::Rising,
+            4 => Self::Cross,
+            5 => Self::DiagonalCross,
+            _ => return None,
+        })
+    }
+
+    pub fn pattern_type(self) -> i32 {
+        self as i32
+    }
+
+    /// 한컴이 HWP를 HWPX로 저장할 때 쓰는 `hatchStyle` 값.
+    pub fn owpml_name(self) -> &'static str {
+        match self {
+            Self::Horizontal => "HORIZONTAL",
+            Self::Vertical => "VERTICAL",
+            Self::Falling => "SLASH",
+            Self::Rising => "BACK_SLASH",
+            Self::Cross => "CROSS",
+            Self::DiagonalCross => "CROSS_DIAGONAL",
+        }
+    }
+
+    pub fn from_owpml_name(name: &str) -> Option<Self> {
+        Some(match name {
+            "HORIZONTAL" => Self::Horizontal,
+            "VERTICAL" => Self::Vertical,
+            "SLASH" => Self::Falling,
+            "BACK_SLASH" => Self::Rising,
+            "CROSS" => Self::Cross,
+            "CROSS_DIAGONAL" => Self::DiagonalCross,
+            _ => return None,
+        })
+    }
 }
 
 /// 그러데이션 채우기
@@ -952,6 +1040,9 @@ pub struct CharShapeMods {
     pub engrave: Option<bool>,
     /// 언어별 개별 글꼴 ID (7개: 한글/영문/한자/일어/기타/기호/사용자)
     pub font_ids: Option<[u16; 7]>,
+    /// 글꼴 이름 (`fontName`). 모양에 직접 적용하지 않고, `DocumentCore::resolve_font_name_mods` 가
+    /// 적용 전에 문서 글꼴 목록에서 찾거나 등록해 `font_ids` 로 바꾼다.
+    pub font_name: Option<String>,
     /// 글자 테두리/배경 ID (1-based, 0=없음)
     pub border_fill_id: Option<u16>,
     /// 강조점 종류 (0~6)

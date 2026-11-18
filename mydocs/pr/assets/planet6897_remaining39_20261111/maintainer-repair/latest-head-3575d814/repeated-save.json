@@ -1,0 +1,383 @@
+[
+  {
+    "pr": 8794,
+    "source": "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+    "source_sha256": "ed64160c378693c843bdcfe782e71cbdb0b4be26bf4c8a3a9fcd3cafe4733af0",
+    "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+    "steps": [
+      {
+        "stage": "edit-save",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "edit",
+          "insert-text",
+          "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "0",
+          "--offset",
+          "0",
+          "--text",
+          "[PR-REVIEW-SAVE]",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8794-first.hwpx",
+          "--verify",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "changedPages": [
+            0
+          ],
+          "dryRun": false,
+          "insertedChars": 16,
+          "offset": 0,
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8794-first.hwpx",
+          "outputFormat": "hwpx",
+          "paragraph": 0,
+          "schemaVersion": "1.0",
+          "section": 0,
+          "source": "samples/issue8778/36495398-split-row-segments-reduced.hwpx",
+          "text": "[PR-REVIEW-SAVE]",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          }
+        }
+      },
+      {
+        "stage": "reopen-resave",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "export-hwpx",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8794-first.hwpx",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8794-second.hwpx",
+          "--verify",
+          "--verify-pages",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "bytes": 314109,
+          "format": "hwpx",
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8794-second.hwpx",
+          "passwordProtected": false,
+          "schemaVersion": "1.0",
+          "source": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8794-first.hwpx",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          },
+          "verifyPages": {
+            "after": 3,
+            "before": 3,
+            "identical": true
+          }
+        }
+      }
+    ],
+    "second_saved_marker_count": 1,
+    "saved_sha256": {
+      "first": "408a23eca44df4bbd3488f38fffb9df834882ef6efb6b952388d5ba0f2e75fdd",
+      "second": "408a23eca44df4bbd3488f38fffb9df834882ef6efb6b952388d5ba0f2e75fdd"
+    },
+    "content_marker_preserved_once": true
+  },
+  {
+    "pr": 8833,
+    "source": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+    "source_sha256": "18ea6268e9022072aa79f16eb6f94afc4fbd6f65ba73103feaa51dca9df96e1e",
+    "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+    "steps": [
+      {
+        "stage": "edit-save",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "edit",
+          "insert-text",
+          "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "0",
+          "--offset",
+          "0",
+          "--text",
+          "[PR-REVIEW-SAVE]",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8833-first.hwpx",
+          "--verify",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "changedPages": [
+            0
+          ],
+          "dryRun": false,
+          "insertedChars": 16,
+          "offset": 0,
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8833-first.hwpx",
+          "outputFormat": "hwpx",
+          "paragraph": 0,
+          "schemaVersion": "1.0",
+          "section": 0,
+          "source": "samples/issue8808/36341965-float-band-gap-reduced.hwpx",
+          "text": "[PR-REVIEW-SAVE]",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          }
+        }
+      },
+      {
+        "stage": "reopen-resave",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "export-hwpx",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8833-first.hwpx",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8833-second.hwpx",
+          "--verify",
+          "--verify-pages",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "bytes": 52926,
+          "format": "hwpx",
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8833-second.hwpx",
+          "passwordProtected": false,
+          "schemaVersion": "1.0",
+          "source": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8833-first.hwpx",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          },
+          "verifyPages": {
+            "after": 2,
+            "before": 2,
+            "identical": true
+          }
+        }
+      }
+    ],
+    "second_saved_marker_count": 1,
+    "saved_sha256": {
+      "first": "1dd8c5bf46db3e0dd00a5afc9dba752340e148793cd17fa73a2bc4a1e3209cd0",
+      "second": "1dd8c5bf46db3e0dd00a5afc9dba752340e148793cd17fa73a2bc4a1e3209cd0"
+    },
+    "content_marker_preserved_once": true
+  },
+  {
+    "pr": 8903,
+    "source": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+    "source_sha256": "62d1b9c736c05c94dd81ed4b930f9a6dcbc2d3b4d53e40867c7ed5e729301a5b",
+    "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+    "steps": [
+      {
+        "stage": "edit-save",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "edit",
+          "insert-text",
+          "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+          "--section",
+          "0",
+          "--para",
+          "0",
+          "--offset",
+          "0",
+          "--text",
+          "[PR-REVIEW-SAVE]",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8903-first.hwpx",
+          "--verify",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "changedPages": [
+            0
+          ],
+          "dryRun": false,
+          "insertedChars": 16,
+          "offset": 0,
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8903-first.hwpx",
+          "outputFormat": "hwpx",
+          "paragraph": 0,
+          "schemaVersion": "1.0",
+          "section": 0,
+          "source": "samples/issue8894/36340478-unstored-tac-column-top-spacing.hwpx",
+          "text": "[PR-REVIEW-SAVE]",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          }
+        }
+      },
+      {
+        "stage": "reopen-resave",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "export-hwpx",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8903-first.hwpx",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8903-second.hwpx",
+          "--verify",
+          "--verify-pages",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "bytes": 135893,
+          "format": "hwpx",
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8903-second.hwpx",
+          "passwordProtected": false,
+          "schemaVersion": "1.0",
+          "source": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8903-first.hwpx",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          },
+          "verifyPages": {
+            "after": 7,
+            "before": 7,
+            "identical": true
+          }
+        }
+      }
+    ],
+    "second_saved_marker_count": 1,
+    "saved_sha256": {
+      "first": "d7685151c4b36fb1a785383ddd51d605f870d021a70c77ecb753016f84cbed23",
+      "second": "d7685151c4b36fb1a785383ddd51d605f870d021a70c77ecb753016f84cbed23"
+    },
+    "content_marker_preserved_once": true
+  },
+  {
+    "pr": 8921,
+    "source": "samples/issue8917/44907-group-bullet-column-top.hwp",
+    "source_sha256": "f6a2331b08e005934d9b8c9d6ce39163b943128446abba35759d628ce57fd8f1",
+    "head": "3575d814f44053483bb51f54b01dcf8044d0b575",
+    "steps": [
+      {
+        "stage": "edit-save",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "edit",
+          "insert-text",
+          "samples/issue8917/44907-group-bullet-column-top.hwp",
+          "--section",
+          "0",
+          "--para",
+          "0",
+          "--offset",
+          "0",
+          "--text",
+          "[PR-REVIEW-SAVE]",
+          "-o",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8921-first.hwp",
+          "--verify",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "changedPages": [
+            0
+          ],
+          "dryRun": false,
+          "insertedChars": 16,
+          "offset": 0,
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8921-first.hwp",
+          "outputFormat": "hwp5",
+          "paragraph": 0,
+          "schemaVersion": "1.0",
+          "section": 0,
+          "source": "samples/issue8917/44907-group-bullet-column-top.hwp",
+          "text": "[PR-REVIEW-SAVE]",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          }
+        }
+      },
+      {
+        "stage": "reopen-resave",
+        "command": [
+          "sandbox-exec",
+          "-f",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/minimal-font/profile.sb",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/latest-native",
+          "convert",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8921-first.hwp",
+          "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8921-second.hwp",
+          "--verify",
+          "--verify-pages",
+          "--json"
+        ],
+        "exit_code": 0,
+        "result": {
+          "bytes": 1521152,
+          "format": "hwp5",
+          "output": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8921-second.hwp",
+          "passwordProtected": false,
+          "schemaVersion": "1.0",
+          "source": "/Users/tsjang/rhwp/output/pr-review/planet6897-remaining39-integration-20261111/maintainer-repair/latest-head-3575d814-20261111-215925/repeated-save/pr8921-first.hwp",
+          "untrustedContent": false,
+          "untrustedFields": [],
+          "verify": {
+            "diffCount": 0,
+            "identical": true
+          },
+          "verifyPages": {
+            "after": 4,
+            "before": 4,
+            "identical": true
+          },
+          "wasDistribution": false
+        }
+      }
+    ],
+    "second_saved_marker_count": 1,
+    "saved_sha256": {
+      "first": "7ac2b0df686ca70184ca6d0963831a42953a570e866bcffea170f16ad0574763",
+      "second": "7ac2b0df686ca70184ca6d0963831a42953a570e866bcffea170f16ad0574763"
+    },
+    "content_marker_preserved_once": true
+  }
+]

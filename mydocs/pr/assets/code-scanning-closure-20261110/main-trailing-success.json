@@ -1,0 +1,66 @@
+{
+  "at": "2026-11-10T09:22:25.202980+09:00",
+  "pr": 8884,
+  "head": "e44630a7b1b08e2433a96e95b8d5068aedd64da9",
+  "counts": {
+    "skipped": 21,
+    "success": 12
+  },
+  "active": [],
+  "failures": [],
+  "non_success_contexts": [],
+  "mergeable": true,
+  "mergeable_state": "blocked",
+  "runs": [
+    {
+      "id": 42726674483,
+      "name": "CI",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e44630a7b1b08e2433a96e95b8d5068aedd64da9",
+      "branch": "task/8745-code-scanning-main",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42726674483"
+    },
+    {
+      "id": 42726674403,
+      "name": "Render Diff",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e44630a7b1b08e2433a96e95b8d5068aedd64da9",
+      "branch": "task/8745-code-scanning-main",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42726674403"
+    },
+    {
+      "id": 42726673859,
+      "name": "CodeQL",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e44630a7b1b08e2433a96e95b8d5068aedd64da9",
+      "branch": "task/8745-code-scanning-main",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42726673859"
+    },
+    {
+      "id": 42726673906,
+      "name": "Adapter inter-diff",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e44630a7b1b08e2433a96e95b8d5068aedd64da9",
+      "branch": "task/8745-code-scanning-main",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42726673906"
+    },
+    {
+      "id": 42726673931,
+      "name": "Proptest roundtrip",
+      "event": "pull_request",
+      "status": "completed",
+      "conclusion": "success",
+      "head": "e44630a7b1b08e2433a96e95b8d5068aedd64da9",
+      "branch": "task/8745-code-scanning-main",
+      "url": "https://github.com/edwardkim/rhwp/actions/runs/42726673931"
+    }
+  ]
+}

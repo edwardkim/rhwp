@@ -6,6 +6,8 @@ extern crate alloc;
 use alloc::vec::Vec;
 use core::fmt;
 
+pub mod atomic;
+
 /// The requesting importer owns counters, limits, cancellation, and sticky errors.
 pub trait ResourceBudget: Send + Sync {
     fn allocation_limit(&self) -> usize;
@@ -277,12 +279,10 @@ mod tests {
             if self.failed.load(Ordering::Relaxed) {
                 return false;
             }
-            if self
-                .units
-                .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |n| {
-                    n.checked_sub(units)
-                })
-                .is_err()
+            if atomic::try_update_usize(&self.units, Ordering::Relaxed, Ordering::Relaxed, |n| {
+                n.checked_sub(units)
+            })
+            .is_err()
             {
                 self.reject();
                 return false;

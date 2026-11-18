@@ -1,0 +1,467 @@
+{
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "package_sha256": {
+    "rhwp.js": "cb4d7fea693a432c873a47f3cd0605b6c0cad2eb92a33523d1789eb28e0c50ed",
+    "rhwp_bg.wasm": "edfcfbe4005bb48fd475d4ddef2403a8dbda6e3b53dd969d5afb5f391a609ef6"
+  },
+  "checked_at": "2026-11-09T18:46:26.406086+09:00",
+  "public_calls": 15,
+  "successes": 5,
+  "error_atomicity": 10,
+  "saved_target_checks": 15,
+  "all_language_slots": 7,
+  "results": [
+    {
+      "key": "body",
+      "variant": "hwpx",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/body-hwpx.hwpx",
+      "sha256": "32959adeff607107a8c8bb232083514ff6f8dd8359d2913b311ed583fb58510d",
+      "targets": [
+        {
+          "text": "본문ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "body",
+      "variant": "hwpx_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/body-hwpx_reopen.hwpx",
+      "sha256": "32959adeff607107a8c8bb232083514ff6f8dd8359d2913b311ed583fb58510d",
+      "targets": [
+        {
+          "text": "본문ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "body",
+      "variant": "hwp_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/body-hwp_reopen.hwpx",
+      "sha256": "32959adeff607107a8c8bb232083514ff6f8dd8359d2913b311ed583fb58510d",
+      "targets": [
+        {
+          "text": "본문ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cell",
+      "variant": "hwpx",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-hwpx.hwpx",
+      "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5",
+      "targets": [
+        {
+          "text": "셀ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cell",
+      "variant": "hwpx_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-hwpx_reopen.hwpx",
+      "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5",
+      "targets": [
+        {
+          "text": "셀ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cell",
+      "variant": "hwp_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-hwp_reopen.hwpx",
+      "sha256": "5f9a64ec7cac48d52393dd047938b8e9b8a0413115bbede414efd70bd66062f5",
+      "targets": [
+        {
+          "text": "셀ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cell-by-path",
+      "variant": "hwpx",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-by-path-hwpx.hwpx",
+      "sha256": "fa84466225b82277964b6a5bf915d6d47130af9bc1b8a428e972941907cf7b06",
+      "targets": [
+        {
+          "text": "중첩ABC",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cell-by-path",
+      "variant": "hwpx_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-by-path-hwpx_reopen.hwpx",
+      "sha256": "fa84466225b82277964b6a5bf915d6d47130af9bc1b8a428e972941907cf7b06",
+      "targets": [
+        {
+          "text": "중첩ABC",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "cell-by-path",
+      "variant": "hwp_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/cell-by-path-hwp_reopen.hwpx",
+      "sha256": "fa84466225b82277964b6a5bf915d6d47130af9bc1b8a428e972941907cf7b06",
+      "targets": [
+        {
+          "text": "중첩ABC",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "header",
+      "variant": "hwpx",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/header-hwpx.hwpx",
+      "sha256": "7ed988344409eba4fd1cb9dab93de92143ee6c1becec4cb3d2195d8389b7613f",
+      "targets": [
+        {
+          "text": "머리ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "header",
+      "variant": "hwpx_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/header-hwpx_reopen.hwpx",
+      "sha256": "7ed988344409eba4fd1cb9dab93de92143ee6c1becec4cb3d2195d8389b7613f",
+      "targets": [
+        {
+          "text": "머리ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "header",
+      "variant": "hwp_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/header-hwp_reopen.hwpx",
+      "sha256": "7ed988344409eba4fd1cb9dab93de92143ee6c1becec4cb3d2195d8389b7613f",
+      "targets": [
+        {
+          "text": "머리ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "footer",
+      "variant": "hwpx",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/footer-hwpx.hwpx",
+      "sha256": "8275b90807163d03ba04d975285c4e1e91f665b0f1c09fbcf5cf4b6a8ea1b6d1",
+      "targets": [
+        {
+          "text": "머리ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "footer",
+      "variant": "hwpx_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/footer-hwpx_reopen.hwpx",
+      "sha256": "8275b90807163d03ba04d975285c4e1e91f665b0f1c09fbcf5cf4b6a8ea1b6d1",
+      "targets": [
+        {
+          "text": "머리ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    },
+    {
+      "key": "footer",
+      "variant": "hwp_reopen",
+      "path": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/pr8552-public-artifacts/footer-hwp_reopen.hwpx",
+      "sha256": "8275b90807163d03ba04d975285c4e1e91f665b0f1c09fbcf5cf4b6a8ea1b6d1",
+      "targets": [
+        {
+          "text": "머리ABC한글",
+          "charPrIDRef": "7",
+          "fontRef": {
+            "hangul": "2",
+            "latin": "2",
+            "hanja": "2",
+            "japanese": "2",
+            "other": "2",
+            "symbol": "2",
+            "user": "2"
+          },
+          "faces": [
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴",
+            "검토용등록글꼴"
+          ]
+        }
+      ]
+    }
+  ],
+  "status": "passed",
+  "scope": "글꼴 목록 등록만이 아니라 저장 HWPX 대상 run의 글자 모양→언어별 글꼴 참조를 검사. 설치 글꼴 모양/시각 일치율과 구분."
+}

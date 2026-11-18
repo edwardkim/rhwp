@@ -1,0 +1,169 @@
+{
+  "status": "native-and-fresh-wasm-focus-complete-whole-scope-and-regression-gates-pending",
+  "source_pr": 8734,
+  "before_source_head": "f8eded34f970e0d13e15f8406f6a2d61475ae7a2",
+  "after_producer": {
+    "head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "source_sha256": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "started_at": "2026-11-10T22:16:30.427054+09:00",
+    "complete": true,
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--features",
+      "native-skia",
+      "--bin",
+      "rhwp",
+      "-j",
+      "8"
+    ],
+    "pid": 76073,
+    "exit_code": 0,
+    "binary": "/Users/tsjang/rhwp/output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-native",
+    "binary_sha256": "42abdf7eed3565b4142313e3a931eed8866fdbdabc71a2f3621e90935bc1e519",
+    "finished_at": "2026-11-10T22:19:16.133587+09:00"
+  },
+  "input": "samples/hwp3-sample5-hwpx.hwpx",
+  "input_sha256": "bb85d575db9213243b10e24eb16ef181acb3859cf24839ee103d745187d4eccb",
+  "reference_pdf": "pdf/hwp3-sample5-hwpx-2020.pdf",
+  "reference_pdf_sha256": "460ea157eacef1127e2221a8f6e8e734bd83a74811eef7ba1ed607f4c4005139",
+  "metric": "silhouette_raw_match_percent",
+  "radius_px": 2,
+  "dpi": 96,
+  "compat": "2022",
+  "page": 16,
+  "before_native": 89.8,
+  "after_native": 100.0,
+  "direct_reading": "Uniform paragraph and mixed-width successor both preserve the stored lane beside the real square picture. Text is no longer distributed over the picture; full-width tail content remains in order. Same-page review and overlay inspected. Fresh WASM same-page review and overlay also directly inspected; the uniform and mixed successor lanes are preserved.",
+  "assets": [
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8734-sample5-hwpx/rhwp_png/rhwp_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/before-native-raw-016.png",
+      "sha256": "62e43ddfcb69efdd55a678aa6d39d2ac9601bd418cd436af7c05f79675f76f3a"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8734-sample5-hwpx/pdf_png/pdf-016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/before-native-pdf-016.png",
+      "sha256": "53e309a7cc36f6d5c6a04dafc7d8a41061546e1d41945a8a24aa6d507fecad3a"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8734-sample5-hwpx/review/review_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/before-native-review-016.png",
+      "sha256": "149454c632c06e5440ae9fc4996ac3c2990f2969efb5c0520e8dd9388a8e664f"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/candidate/pr8734-sample5-hwpx/overlay/overlay_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/before-native-overlay-016.png",
+      "sha256": "a49a30233104d2f1c40559f8c060557af8cb23f84353796f5231993692249678"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-focus/sample5-hwpx/rhwp_png/rhwp_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-native-raw-016.png",
+      "sha256": "5fe05b575a7359f0a797388fda7a8615ced2919a99f838cbd458c801f4cce800"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-focus/sample5-hwpx/pdf_png/pdf-016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-native-pdf-016.png",
+      "sha256": "53e309a7cc36f6d5c6a04dafc7d8a41061546e1d41945a8a24aa6d507fecad3a"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-focus/sample5-hwpx/review/review_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-native-review-016.png",
+      "sha256": "fc528c8e67934e64de71a8e712367afcff64bb61f34a24fa3d2beff8b96d1a23"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-focus/sample5-hwpx/overlay/overlay_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-native-overlay-016.png",
+      "sha256": "fb3ca8186247c54d88474bf9c4c251fa696804e5570a1c1f9b9933ccb208d34e"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-wasm-focus/sample5-hwpx/rhwp_png/rhwp_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-wasm-raw-016.png",
+      "sha256": "b8436353079ee3f25c74ad0c9b580da887c7b35cf25472bdc84234a8822b5e19"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-wasm-focus/sample5-hwpx/pdf_png/pdf-016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-wasm-pdf-016.png",
+      "sha256": "53e309a7cc36f6d5c6a04dafc7d8a41061546e1d41945a8a24aa6d507fecad3a"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-wasm-focus/sample5-hwpx/review/review_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-wasm-review-016.png",
+      "sha256": "635454145337a6eb25ab58fa20df177378d8df6006579a9ec154ebedd8d7850d"
+    },
+    {
+      "source": "output/pr-review/planet6897-clean20-integration-20261110/sample5-shared-lane-v3-wasm-focus/sample5-hwpx/overlay/overlay_016.png",
+      "asset": "mydocs/pr/assets/planet6897_clean19_20261110/pr8734/maintainer/after-wasm-overlay-016.png",
+      "sha256": "ce496db4c8190003b1561504bd28184c53a8ac37813dc522ac91422bcc4037b3"
+    }
+  ],
+  "after_fresh_wasm": 100.0,
+  "fresh_wasm_producer": {
+    "source_head": "410f33c8cf5f6a504f62cc3e8c8c71e3603f734b",
+    "started_at": "2026-11-10T22:19:23.239252+09:00",
+    "complete": true,
+    "method": "Mac locked wrapper local no-opt alternative; not Docker optimization",
+    "source_hashes": {
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f",
+      "src/renderer/composer/stored_lines_runs.inc.rs": "93208f587fca993cc3665dc3103edda2825e55224fc9876a54e7ab9347567799",
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8"
+    },
+    "source_diff_sha256": "16823b0f29e0693a6a1427456a022d1ba08943e2b7f6f04332e08742a68392ba",
+    "command": [
+      "scripts/wasm-pack-locked.sh",
+      "--target",
+      "web",
+      "--out-dir",
+      "pkg",
+      "--no-opt"
+    ],
+    "pid": 86878,
+    "exit_code": 0,
+    "files": {
+      "rhwp.js": "4f330b7b5c39602792d72f68b8a5bb8f22e9ec3e6881b72d6d2aa5bfde596429",
+      "rhwp_bg.wasm": "2a1f2faa408d9a162c226b0611fe3f655b1db4647cd88a1aea117393c91f4dfe"
+    },
+    "studio_public_matches": {
+      "rhwp.js": true,
+      "rhwp_bg.wasm": true
+    },
+    "finished_at": "2026-11-10T22:26:36.251386+09:00"
+  },
+  "regression_tests": {
+    "environment": "macOS minimum font sandbox; native-skia; build jobs8, test threads8",
+    "file": "tests/cases/square_stored_line_start.rs",
+    "new_test": "uniform_and_mixed_successor_rows_keep_their_source_picture_lane",
+    "test_sha256": "235cbb3a823e8a62770bc67155a099c08bc7d6b9b14a8f3f4a4cc003a20992d3",
+    "before": {
+      "passed": 3,
+      "failed": 1,
+      "exit_code": 100
+    },
+    "after": {
+      "passed": 4,
+      "failed": 0,
+      "exit_code": 0
+    },
+    "before_source_hashes": {
+      "src/renderer/float_placement.rs": "81ef7eae11367fe725140100ceff0afe43b9f26438c35c89ac1e83fbb2ac9aa7",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "8128de4cc8476f30db728f7319487fa5e655baf20ac32f155502e82852cef292",
+      "src/renderer/layout/paragraph_layout.rs": "6b2466debb9eb97d7691018b9853438b238d56f580f1d3323ffe2e26b6a970d2"
+    },
+    "after_source_hashes": {
+      "src/renderer/float_placement.rs": "e70632abdc618890e8b421e16f7d26d24d868e7f2134970d347f644c20f7353f",
+      "src/renderer/composer/line_breaking/stored_external_geometry.rs": "99bc6dd61e245b3cd8cafbfaec97aedbb11396384ae36a13f4793f7dd3aab8f8",
+      "src/renderer/layout/paragraph_layout.rs": "71f68b106e1ad8cc4501a01e4f9eb1549cefde49a65699dd19cbb24643e8838f"
+    }
+  }
+}

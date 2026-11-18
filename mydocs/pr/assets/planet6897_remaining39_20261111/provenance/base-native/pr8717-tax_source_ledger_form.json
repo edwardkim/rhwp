@@ -1,0 +1,10 @@
+{
+  "key": "pr8717-tax_source_ledger_form",
+  "mode": "silhouette_only",
+  "run_state": "incomplete",
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "reason": "실루엣 쪽 묶음 처리 중"
+  },
+  "canonical_manifest_sha256": "73f8cb10d5f3ffba2ce06d14c745768376e7a7d24a93e28a827e0c95cba1c5c0"
+}

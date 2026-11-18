@@ -103,6 +103,13 @@
         "path_attr",
         "root_mod"
       ]
+    },
+    {
+      "path": "tests/cases/native_metafile_mipmap_sampling.rs",
+      "allowBlockers": [
+        "path_attr",
+        "root_mod"
+      ]
     }
   ],
   "exceptions": [

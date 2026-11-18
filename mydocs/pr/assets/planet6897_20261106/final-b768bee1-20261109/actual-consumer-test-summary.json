@@ -1,0 +1,78 @@
+{
+  "state": "collected-from-current-logs",
+  "head": "eb876d1416fb558c874f9efec65c5722a6769751",
+  "collected_at": "2026-11-09T18:50:25.738958+09:00",
+  "results": [
+    {
+      "name": "minimal-v2-actual-exporter-browser",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/minimal-v2-actual-exporter-browser.log",
+      "log_sha256": "6b01f90a7a4d810d153f7b78c89dbc7bc59ca80f5a933519cb306c2370b837fa",
+      "node_pass": [
+        "17"
+      ],
+      "node_fail": [
+        "0"
+      ],
+      "unittest": [],
+      "rust": [],
+      "explicit_pass_lines": 0
+    },
+    {
+      "name": "minimal-v2-font-projection-generator",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/minimal-v2-font-projection-generator.log",
+      "log_sha256": "e0549581364daf443ab5abc15d79b46a01426307a56fa3752a032c18f4d4b77c",
+      "node_pass": [
+        "16"
+      ],
+      "node_fail": [
+        "0"
+      ],
+      "unittest": [],
+      "rust": [],
+      "explicit_pass_lines": 0
+    },
+    {
+      "name": "minimal-v2-sweep-python-contracts",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/minimal-v2-sweep-python-contracts.log",
+      "log_sha256": "f2d51b70af6b42eee7dcbff25e9ba2ff4ab5bd80133c3d51e5f79c983545a3a6",
+      "node_pass": [],
+      "node_fail": [],
+      "unittest": [
+        [
+          "76",
+          "1.330"
+        ]
+      ],
+      "rust": [],
+      "explicit_pass_lines": 0
+    },
+    {
+      "name": "incoming8809-browser",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/incoming8809-browser.log",
+      "log_sha256": "7a3a2e101cd7e788b37dc4143273a2fa1dcef6386193c33e3a55e9de0d8127f7",
+      "node_pass": [],
+      "node_fail": [],
+      "unittest": [],
+      "rust": [
+        [
+          "ok",
+          "12",
+          "0",
+          "0"
+        ]
+      ],
+      "explicit_pass_lines": 0
+    },
+    {
+      "name": "canvaskit-actual-font-preparation",
+      "log": "/Users/tsjang/rhwp/output/pr-review/native-program-resume-20261108/rebase-b768bee1-20261109/marker-indent-final/canvaskit-actual-font-preparation.log",
+      "log_sha256": "3207c1ebe357a68f949ea193c50e6830708fe8c5c043052693d426cde18996e2",
+      "node_pass": [],
+      "node_fail": [],
+      "unittest": [],
+      "rust": [],
+      "explicit_pass_lines": 13
+    }
+  ],
+  "note": "의도적으로 자원 준비 실패를 만드는 검사는 Canvas2D fallback 계약을 검증하며 CanvasKit 렌더 통과로 주장하지 않는다."
+}

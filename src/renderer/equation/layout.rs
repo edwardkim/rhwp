@@ -17,6 +17,7 @@ mod fraction_geometry;
 mod glyph_advances;
 mod hancom_decoration;
 mod hancom_sum;
+mod implicit_legacy;
 mod integral_placement;
 mod ladder_geometry;
 mod left_script_geometry;
@@ -45,6 +46,9 @@ mod variable_style;
 pub(crate) use variable_style::is_styled_variable;
 
 pub use super::box_types::{FontGlyphPaint, LayoutBox, LayoutKind};
+pub(super) fn supports_implicit_legacy(node: &EqNode) -> bool {
+    implicit_legacy::supports(node)
+}
 
 /// 수식 레이아웃 계산기
 #[derive(Clone, Copy)]
@@ -67,6 +71,7 @@ pub struct EqLayout {
     /// 다른 수식 구조에 속하지 않는 정렬 묶음의 자체 leading.
     standalone_eqalign: bool,
     legacy_hft_metrics: bool,
+    implicit_legacy_font: bool,
 }
 
 /// 비율 상수
@@ -154,6 +159,7 @@ impl EqLayout {
             source_variable_glyphs: true,
             standalone_eqalign: false,
             legacy_hft_metrics: false,
+            implicit_legacy_font: false,
         }
     }
 
@@ -171,7 +177,8 @@ impl EqLayout {
             hancom_math_face: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
             hancom_eqn: equation.font_name.eq_ignore_ascii_case("HancomEQN"),
             legacy_equation: legacy::matches_version(equation),
-            legacy_math_face: equation.uses_legacy_display(),
+            legacy_math_face: equation.uses_legacy_display()
+                || equation.uses_implicit_legacy_font(),
             legacy_declared_width: (equation.uses_legacy_display()
                 && equation.attr & crate::model::control::EQUATION_LINE_MODE_BIT == 0
                 && equation.eqedit & crate::model::control::EQUATION_LINE_MODE_BIT == 0
@@ -189,6 +196,7 @@ impl EqLayout {
             source_variable_glyphs: true,
             standalone_eqalign: false,
             legacy_hft_metrics: super::uses_legacy_hft_metrics(equation),
+            implicit_legacy_font: equation.uses_implicit_legacy_font(),
         }
     }
 
@@ -220,7 +228,10 @@ impl EqLayout {
 
     /// AST를 레이아웃 박스로 변환
     pub fn layout(&self, node: &EqNode) -> LayoutBox {
+        let implicit = self.implicit_legacy_font && implicit_legacy::supports(node);
         let root = Self {
+            implicit_legacy_font: implicit,
+            legacy_math_face: self.legacy_math_face && (!self.implicit_legacy_font || implicit),
             legacy_equation: self.legacy_equation
                 && legacy::supports(node)
                 && (!self.legacy_hft_metrics || legacy::compound_frame(node)),
@@ -228,6 +239,13 @@ impl EqLayout {
             ..*self
         };
         let result = root.layout_node(node, self.font_size);
+        if implicit {
+            return legacy::root(
+                implicit_legacy::line_frame(result, self.font_size),
+                self.font_size,
+                self.dpi,
+            );
+        }
         if let Some(width) = self.legacy_declared_width {
             // CHAR 평면은 글꼴 글줄 프레임까지 소유한다. 지원하는 문자·그룹만
             // 먼저 수용하며, 분수 등 복합식은 아래 HFT 프레임을 유지한다.
@@ -406,6 +424,9 @@ impl EqLayout {
     }
 
     fn layout_row(&self, children: &[EqNode], fs: f64) -> LayoutBox {
+        if self.implicit_legacy_font && children.iter().any(|node| matches!(node, EqNode::Row(_))) {
+            return self.layout_row(&implicit_legacy::flatten_terms(children), fs);
+        }
         if children.iter().any(|node| matches!(node, EqNode::Newline)) {
             return self.layout_newline_rows(children, fs);
         }
@@ -483,6 +504,9 @@ impl EqLayout {
     }
 
     fn layout_text(&self, text: &str, fs: f64) -> LayoutBox {
+        if self.implicit_legacy_font && super::text_has_cjk(text) {
+            return implicit_legacy::cjk_text(text, fs);
+        }
         if self.legacy_hft_metrics {
             if let Some(layout) =
                 self.layout_hancom_glyphs(text, super::hancom_glyphs::Role::LegacyLiteral, fs, 0.0)
@@ -844,9 +868,13 @@ impl EqLayout {
         let w = match kind {
             // 한컴의 명시적 ~는 반 em을 예약한다. 정상 저장한 A~...~M의
             // 전체 전진과 독립 Print의 글리프 원점 간격이 같은 결과를 쓴다.
-            SpaceKind::Normal if self.hancom_math_face || self.hancom_eqn => fs * 0.5,
+            SpaceKind::Normal
+                if self.hancom_math_face || self.hancom_eqn || self.implicit_legacy_font =>
+            {
+                fs * 0.5
+            }
             SpaceKind::Normal => fs * 0.33,
-            SpaceKind::Thin if self.hancom_math_face => {
+            SpaceKind::Thin if self.hancom_math_face || self.implicit_legacy_font => {
                 // 한컴의 명시적 Thin은 BaseUnit/8을 정수 HWPUNIT로 게시한다.
                 let size = super::font_frame_metrics::base_unit_at_dpi(fs, self.dpi);
                 super::super::hwpunit_to_px((size / 8) as i32, self.dpi)

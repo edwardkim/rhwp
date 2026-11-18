@@ -1,0 +1,146 @@
+{
+  "source": "fcf2e11b1727297743343446333132e1409737f1",
+  "base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "status": "passed",
+  "runs": [
+    {
+      "label": "suite-prepare",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "startedAt": 1794920435.8641424,
+      "exitCode": 0,
+      "completedAt": 1794920442.941927
+    },
+    {
+      "label": "fmt",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "startedAt": 1794923393.8365042,
+      "exitCode": 0,
+      "completedAt": 1794923503.7564936
+    },
+    {
+      "label": "root-clippy",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "$WORKSPACE\\target\\pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "startedAt": 1794923503.834569,
+      "exitCode": 0,
+      "completedAt": 1794923711.8197844
+    },
+    {
+      "label": "native-clippy",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "$WORKSPACE\\target\\pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "startedAt": 1794923711.8979135,
+      "exitCode": 0,
+      "completedAt": 1794923935.107501
+    },
+    {
+      "label": "wasm-clippy",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "-p",
+        "rhwp",
+        "--lib",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--target-dir",
+        "$WORKSPACE\\target\\pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "startedAt": 1794923935.2481313,
+      "exitCode": 0,
+      "completedAt": 1794924188.5753908
+    },
+    {
+      "label": "workspace-build",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "$WORKSPACE\\target\\pr-review"
+      ],
+      "startedAt": 1794924190.9650247,
+      "exitCode": 0,
+      "completedAt": 1794924784.8426187
+    },
+    {
+      "label": "workspace-clippy",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "$WORKSPACE\\target\\pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "startedAt": 1794924784.937744,
+      "exitCode": 0,
+      "completedAt": 1794925729.1309206
+    },
+    {
+      "label": "suite-check",
+      "source": "fcf2e11b1727297743343446333132e1409737f1",
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "22da83586aab1baf960f2159abda347062ecf7ed"
+      ],
+      "startedAt": 1794925729.9885142,
+      "exitCode": 0,
+      "completedAt": 1794925736.1755846
+    }
+  ],
+  "suiteContract": {
+    "command": "node --test scripts/tests/rust-test-suite-manifest.test.mjs",
+    "source": "fcf2e11b1727297743343446333132e1409737f1",
+    "exitCode": 0,
+    "passed": 24,
+    "failed": 0
+  }
+}

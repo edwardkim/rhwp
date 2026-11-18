@@ -265,6 +265,9 @@ impl EqLayout {
     }
 
     pub(super) fn layout_newline_rows(&self, children: &[EqNode], fs: f64) -> LayoutBox {
+        if self.implicit_legacy_font {
+            return self.layout_implicit_rows(children, fs);
+        }
         // 빈 행도 남기고, 일반 줄은 & 정렬 여백 없이 왼쪽 원점을 공유한다.
         let rows: Vec<_> = children
             .split(|node| matches!(node, EqNode::Newline))

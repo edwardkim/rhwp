@@ -1,0 +1,61 @@
+{
+  "side": "base-wasm",
+  "key": "pr8774-4680000-202100038_research_review_request",
+  "counts": {
+    "rhwp": 7,
+    "pdf": 6
+  },
+  "source_manifests": [
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8774-4680000-202100038_research_review_request/silhouette-parts/p0002-0007/run_manifest.json",
+      "sha256": "5db65af3a80a337b1d26f837f03760f164e4e7fd1da57e123aa72aacb5ce4fa6"
+    },
+    {
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8774-4680000-202100038_research_review_request/silhouette-parts/p0001-0001/run_manifest.json",
+      "sha256": "8591b9d335e5097552946ccc109c438b9f77c363f550481f8513abb08f26131b"
+    }
+  ],
+  "unpaired_rhwp_pages": [
+    {
+      "page": 7,
+      "path": "output/pr-review/planet6897-clean20-integration-20261110/individual-visual/base-wasm/pr8774-4680000-202100038_research_review_request/silhouette-parts/p0002-0007/rhwp_png/rhwp_007.png",
+      "sha256": "2f6e2138a8c0e380a70641636ae682fc7ce9f8e24a4ed01202447b2d2a6d8fa8"
+    }
+  ],
+  "output": "output/pr-review/planet6897-clean20-integration-20261110/base-pagination-quantified/base-wasm/pr8774-4680000-202100038_research_review_request",
+  "pr_review_gate": {
+    "status": "re_review_required",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [
+      {
+        "page": 2,
+        "silhouette_raw_match_percent": 27.59848
+      },
+      {
+        "page": 3,
+        "silhouette_raw_match_percent": 11.50276
+      },
+      {
+        "page": 4,
+        "silhouette_raw_match_percent": 2.57759
+      },
+      {
+        "page": 5,
+        "silhouette_raw_match_percent": 27.86766
+      },
+      {
+        "page": 6,
+        "silhouette_raw_match_percent": 17.43115
+      }
+    ],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 7,
+      "pdf": 6
+    },
+    "page_count_mismatch": true
+  },
+  "note": "고정 base의 쪽수 불일치·90% 미달을 그대로 유지한 비교 자료다. 통과한 후보 증거가 아니다."
+}

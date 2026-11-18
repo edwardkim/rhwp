@@ -1,0 +1,167 @@
+{
+  "checked_at": "2026-11-11T13:48:20.012384+09:00",
+  "method": "canonical check_markdown_links.collect_broken_links on final texts; full canonical global/relative checker previously passed for these 40 paths; only review text/evidence links changed afterward",
+  "broken_links": 0,
+  "documents": [
+    {
+      "path": "mydocs/pr/archives/pr_8689_review.md",
+      "sha256": "c0390854ff390ecf368b9a20635d13b70367b3a5310690b408316924623bed4d"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8708_review.md",
+      "sha256": "fa4e9131ee4285c2b5a0301db2fae88833cc17bb54802862539277bf05f294a3"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8710_review.md",
+      "sha256": "dd3cedd913fc64214118bc1271f8e0d4ee36dfdaf352ff47c4abfb7a29035d96"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8717_review.md",
+      "sha256": "ffd04155239b2c87df3b3ed602a5289e2307718a78779e028ae7ef4f4d77344d"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8719_review.md",
+      "sha256": "0e4d069c2680f46252ddb5cb8dd34d61907bea97a1a7c94582acc08f68fb08ec"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8729_review.md",
+      "sha256": "ebce7aac4a856114433f3b75cd8403f78e5aaf77253e1b5cb4ee406ae2b59a26"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8736_review.md",
+      "sha256": "e25927ce3214e5527f8c933a19e5ebc969e8bb4a0a44de83246861ae960e8003"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8740_review.md",
+      "sha256": "6c80d07c89df1e115887894d19dcb0dcc75fcd6e727c89b96982e671eb46f625"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8744_review.md",
+      "sha256": "815bea5791acd0c688d39771fc7e88076a909e419c0acd090e46054d9cdd15ad"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8746_review.md",
+      "sha256": "f5f5724d2649751663906b7bd7e9ba61b49c147201fe6571084ae6445f1c525c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8751_review.md",
+      "sha256": "c193186d3b93d60fd654d640bebbd1e3117edc2334c7599ea04bbe2ef64d5c39"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8758_review.md",
+      "sha256": "d5cb42f6c868b24c0621c9b4b06231027bc48e9bfeeeca40b5da5af3ee9704fd"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8772_review.md",
+      "sha256": "b0df118a0ea27f19c53bfc680b34633cb6b5db9fe8ce43bb7c0c3212c470c89b"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8775_review.md",
+      "sha256": "37c8cbb55adbe61007ae2192aaef1ed6df8e1c6231dd803cd4b116fe99cfe203"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8785_review.md",
+      "sha256": "1fa1e0c8658ea13b2290b82247e61d3cca12f131efd057e982bfdb9a363e307c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8788_review.md",
+      "sha256": "6f17703552b6f2227f50ade95aead9c9a6f2819d90856260b6826fbb32109c8f"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8792_review.md",
+      "sha256": "358c24f4e9aa8238bdaa57a4e0a2ad1ea8dac0372797405c929f4c2974bd80bd"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8794_review.md",
+      "sha256": "42affc2a893d95c3346013706d3bcc582c87f21d9e9312ec1292d06b71579e70"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8803_review.md",
+      "sha256": "6c85003c05460dfe196b2c24db0f049636ad91ff3aa4b879eb0d2be0a08a3be5"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8806_review.md",
+      "sha256": "830c80f44f51d3a5b2a0ef72215b9e7c154864d4d3ab600f0f5cd6b8738a9bc8"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8830_review.md",
+      "sha256": "e3c09e0f81af93b79516fcf88bfbffde242a545be07d5d47ee08111d9ade348d"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8833_review.md",
+      "sha256": "b7c7eaddbfac5bee349dd64c5d1dd3d5c70e5714053dbc8dff5a4942f24b904c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8835_review.md",
+      "sha256": "94ffe85aa893cf44e258f519eee49aaa5129bda15372410245eeaef3e6e62c7f"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8838_review.md",
+      "sha256": "e8110192a601b52fb3ef12f7fe9bca4b6078a7f1709bda56852bb782b689dc7d"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8846_review.md",
+      "sha256": "58adec38f6e34a5c83ce6343e2f9f79f59faa2b947c9507e6d00c061e15a5cc2"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8848_review.md",
+      "sha256": "bae90774ce98d6cac180079eab1a6417c26e197c688f5c14aaa1ce22ee19b040"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8849_review.md",
+      "sha256": "94ba3bb8441e529bd4e189957a5b0dfd220fb3194fba98478de7bc1d277d1a0d"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8861_review.md",
+      "sha256": "52a089b8e3ef4ad2c58b4d0129e3b3b207e08fe71c14b4f4eef89323a78d4ea0"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8862_review.md",
+      "sha256": "e0ef1708e215fcf755188348ca9dadaac6bac9302648876a9da65663b0ad47dc"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8876_review.md",
+      "sha256": "eeb04c896161a96de2742b3978ce354d7e5d802967fcf6c30f2b595936410a09"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8879_review.md",
+      "sha256": "e99ac495c73e17b6226fd2688e3e1c0f1969d968b5b0ffa09ed3779af9907fee"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8881_review.md",
+      "sha256": "619972302aad6f8ceff80fa6aac9c500e1f242907dcf0a9b1a73b41cd4afc54f"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8901_review.md",
+      "sha256": "27d3e366880fd94cca1946356dde3efd9ea791baa2c948d172dcb89951bf4c67"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8903_review.md",
+      "sha256": "c23787d400eebf47c6343e39e8da1fb08ece51b842e1ca905931c4c353694d56"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8909_review.md",
+      "sha256": "388516ad2f7a43451ea8b7a3ae11e10ab5b2aff14e0b855e84079fb91b15e1e7"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8921_review.md",
+      "sha256": "bf717d4affe1f01b2d2cd48955a63ee55ee303a195bd97ac2b8c8894d9fc770f"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8928_review.md",
+      "sha256": "f2a69dec279fd7061dc563655f2ed1aefba0b04c086d1af52ad30f0a387698e6"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8929_review.md",
+      "sha256": "47f233df9a0a7bae3788182a838af6f2a78d3d5709ab086d54a2317123ef9b9c"
+    },
+    {
+      "path": "mydocs/pr/archives/pr_8930_review.md",
+      "sha256": "ba0dcf1e10dab265eb6bec942337f6d0a184e9d37e13b6321755a4954ba383f1"
+    },
+    {
+      "path": "mydocs/pr/assets/planet6897_remaining39_20261111/README.md",
+      "sha256": "6243cdf349546a506871c5221be56b2f8938b02fb58ac4fa3701c3233a1e2d09"
+    }
+  ]
+}

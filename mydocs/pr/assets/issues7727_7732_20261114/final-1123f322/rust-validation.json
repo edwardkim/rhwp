@@ -1,0 +1,139 @@
+{
+  "head": "1123f322a65cd8eaa414a8f32c3e2b99462bbda0",
+  "base": "53da4d2da28ae0cacf8feac3a989cc6a69fb2622",
+  "status": "completed",
+  "minimal_font_environment": true,
+  "rhwp_font_path_unset": true,
+  "logical_build_jobs": 8,
+  "test_threads": 8,
+  "steps": [
+    {
+      "name": "suite-prepare",
+      "exit_code": 0,
+      "seconds": 3.66,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/suite-prepare.log",
+      "log_sha256": "0e1505b0c3c7523f64e4b3bf7d258e436f5c330e1998d45181a9b473777fcb66",
+      "test_summaries": []
+    },
+    {
+      "name": "undo-original",
+      "exit_code": 0,
+      "seconds": 171.915,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/undo-original.log",
+      "log_sha256": "3cc8006f36305f62561b10e20da60d5cbb37adc60d54a5d75b8e714ee6750dcb",
+      "test_summaries": [
+        "Summary [   0.025s] 1 test run: 1 passed, 3989 skipped"
+      ]
+    },
+    {
+      "name": "full-nextest",
+      "exit_code": 0,
+      "seconds": 710.63,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/full-nextest.log",
+      "log_sha256": "a738ad1ec42022ec21f0e340a3d9e817d45e2f7aa31f9e4a8db8cf0711f01e4b",
+      "test_summaries": [
+        "Summary [ 333.989s] 13565 tests run: 13565 passed (1 slow), 45 skipped"
+      ]
+    },
+    {
+      "name": "focused-note",
+      "exit_code": 0,
+      "seconds": 175.846,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/focused-note.log",
+      "log_sha256": "94ce3ad7b91dab6d9c9a6903d9bcbff399580c47fc9ba18e768b081a754fbc0b",
+      "test_summaries": [
+        "Summary [   2.378s] 2 tests run: 2 passed, 350 skipped"
+      ]
+    },
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "seconds": 13.895,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/fmt.log",
+      "log_sha256": "8804da7f32424d55a7bcfe15e6939e1b450075998b32e1a1c606db16ae51228b",
+      "test_summaries": []
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "seconds": 26.162,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/native-clippy.log",
+      "log_sha256": "fad9592c06bb9318dacfcbbdc046ecc0f88c589e45b5989b956b0c7cfb1d5f6f",
+      "test_summaries": []
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "seconds": 22.242,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/wasm-clippy.log",
+      "log_sha256": "5bc621c598382976af8018fa3fe4a15f1503f2e6bf705dcafaa540e932bbcec7",
+      "test_summaries": []
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "seconds": 30.158,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/workspace-build.log",
+      "log_sha256": "dd7f77da48034019f04af09e0a635ea29be3408be5ad0d640e042710dc381997",
+      "test_summaries": []
+    },
+    {
+      "name": "all-target-clippy",
+      "exit_code": 0,
+      "seconds": 34.848,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/all-target-clippy.log",
+      "log_sha256": "cc94a9e95a5872a6db1ff1660b116cfcd5382cdb710281f5aa4e0d779a91b6ad",
+      "test_summaries": []
+    },
+    {
+      "name": "suite-manifest",
+      "exit_code": 0,
+      "seconds": 1.554,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/suite-manifest.log",
+      "log_sha256": "80455fa5eafdb64979c0e192638343975cc6737c5820776660a2168915767667",
+      "test_summaries": []
+    },
+    {
+      "name": "unit-tier",
+      "exit_code": 0,
+      "seconds": 15.068,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/unit-tier.log",
+      "log_sha256": "de2919ba36c7fa856c0e3c93e96810683e49f658f226f8b9db3348eef8ce8dff",
+      "test_summaries": []
+    },
+    {
+      "name": "native-skia-lib",
+      "exit_code": 0,
+      "seconds": 186.587,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/native-skia-lib.log",
+      "log_sha256": "fec5ce443a131bc444d61019f9845b79083ebacca7cbee993e4b59e4bd91d124",
+      "test_summaries": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 11.27s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit_code": 0,
+      "seconds": 15.767,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/native-skia-placeholder.log",
+      "log_sha256": "45aac6df12e5cf626401969166d07e2ec93a1267a1bc297449de3483150e3b95",
+      "test_summaries": [
+        "Summary [   2.332s] 2 tests run: 2 passed, 343 skipped"
+      ]
+    },
+    {
+      "name": "native-skia-p37",
+      "exit_code": 0,
+      "seconds": 12.951,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7727-7732-20261114/stored-tab-owned-final-rust-gates/native-skia-p37.log",
+      "log_sha256": "064461c534b248cfc3ccd97e3c9e7e0c785972a79559a7fd0cfcb9c4eb91c52b",
+      "test_summaries": [
+        "Summary [   2.264s] 36 tests run: 36 passed, 300 skipped"
+      ]
+    }
+  ],
+  "scope": "Rust 전체 integration·Native Skia·새 RIGHT 탭/Undo/bbox·lint/build·suite/unit 정책. 로그 SHA는 실행 시 원본이며 요약은 실제 최종 문구에서 수집."
+}

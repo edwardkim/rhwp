@@ -1,0 +1,12 @@
+{
+  "before_parent": "5454a1656cdc44ba0468040441003c32f995e871",
+  "before_summary": "2 tests: 1 PASS / 1 FAIL; SourceWindow != OutputDeviceWindow",
+  "before_log_sha256": "049163f0fbb489bd488baf6b459393d8665d08fb3512c27d058bed5701d78342",
+  "after_focused_summary": "11 tests: 11 PASS / 0 FAIL",
+  "after_logs_sha256": {
+    "issue_8856_picture_soft_edge_ownership.log": "a5d531acce322abc8186f93231bf11228e41dade46b3bc07a2533393911751b4",
+    "issue_8593_picture_soft_edge_dim.log": "636b120be3995170adb41c346f6eeec5bfa8784674c6f45b4c3a2b751e6b9c52",
+    "issue_8856_soft_edge_paint.log": "5af1a9a2f1fcbcf4f32ee900d316ef79684613481d9d9714a0c8278e409fb2e3",
+    "issue_8856_soft_edge_print_planes.log": "df7e98ee7bcd94889cd8b6f25f85e6411317e1d5ea4e83c6fcc3edd9d1067ede"
+  }
+}

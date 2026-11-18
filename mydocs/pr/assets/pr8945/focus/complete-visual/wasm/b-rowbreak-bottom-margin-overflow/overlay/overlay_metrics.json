@@ -1,0 +1,102 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "average_silhouette_raw_match_percent": 100.0,
+    "worst_silhouette_raw_match_percent": 100.0,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 99.25302,
+    "worst_pixel_match_percent": 98.86369,
+    "average_ink_match_percent": 20.94294,
+    "worst_ink_match_percent": 18.2098,
+    "average_visual_accuracy_proxy_percent": 20.94294,
+    "worst_visual_accuracy_proxy_percent": 18.2098,
+    "average_tolerant_content_match_percent": 100.0,
+    "worst_tolerant_content_match_percent": 100.0,
+    "worst_pages": [
+      2,
+      1
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/pdf_png/pdf-001.png",
+      "overlay_png": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/pr8945/focus/complete-visual/wasm/b-rowbreak-bottom-margin-overflow/overlay/overlay_001.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 10132,
+      "diff_ratio": 0.01136305,
+      "pixel_match_percent": 98.86369,
+      "ink_union_pixels": 13275,
+      "ink_diff_pixels": 10132,
+      "ink_diff_ratio": 0.76323917,
+      "ink_match_percent": 23.67608,
+      "visual_accuracy_proxy_percent": 23.67608,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 13275,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 1.157,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        113,
+        132,
+        220,
+        977
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/rhwp_png/rhwp_002.png",
+      "pdf_png": "/home/edward/mygithub/rhwp/output/pr-review/pr8945/visual/head-wasm/b-rowbreak-bottom-margin-overflow/pdf_png/pdf-002.png",
+      "overlay_png": "/home/edward/mygithub/rhwp-worktrees/pr-8945-rowbreak-margin-budget/mydocs/pr/assets/pr8945/focus/complete-visual/wasm/b-rowbreak-bottom-margin-overflow/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "overlay_color_legend": {
+        "rhwp_only": "blue",
+        "pdf_only": "red",
+        "both_different": "orange",
+        "matching": "gray"
+      },
+      "total_pixels": 891662,
+      "diff_pixels": 3189,
+      "diff_ratio": 0.00357647,
+      "pixel_match_percent": 99.64235,
+      "ink_union_pixels": 3899,
+      "ink_diff_pixels": 3189,
+      "ink_diff_ratio": 0.81790203,
+      "ink_match_percent": 18.2098,
+      "visual_accuracy_proxy_percent": 18.2098,
+      "tolerant_content_match_radius_px": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 3899,
+      "tolerant_content_match_percent": 100.0,
+      "mean_abs_channel_delta": 0.502,
+      "max_channel_delta": 202,
+      "diff_bbox": [
+        116,
+        169,
+        676,
+        204
+      ]
+    }
+  ]
+}

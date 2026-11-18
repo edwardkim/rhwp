@@ -1,0 +1,85 @@
+{
+  "documentSubstitutions": [
+    {
+      "fontId": 8,
+      "languageSlot": 0,
+      "programId": "d1d1d8e02020ebe081cb0af257453477ca781ae9cda063e18c8f10cb46aa18c7",
+      "query": "휴먼고딕",
+      "source": "휴먼고딕",
+      "target": "Human Gothic"
+    }
+  ],
+  "id": "approved-print-gulim-preserve-other-programs",
+  "preserveSourceMetrics": true,
+  "selectedPrograms": {
+    "HCI Hollyhock": {
+      "family": "HCI Hollyhock",
+      "openTypeCff": true,
+      "programId": "7bfcf7cf1285f05e6519b2f0c8fb15bdd42d44fb01e9fb3b21547140acfcae1e",
+      "query": "HCI Hollyhock",
+      "trueType": false
+    },
+    "HCI Poppy": {
+      "family": "HCI Poppy",
+      "openTypeCff": true,
+      "programId": "16ea5d7d31cb6749978f98993de77fbe28ae4c249e35e6496bd3f5458ac3c14a",
+      "query": "HCI Poppy",
+      "trueType": false
+    },
+    "명조": {
+      "family": "Myeongjo",
+      "openTypeCff": true,
+      "programId": "0b6c5d9bbd45d90df3d5f4d5fd62830fa409676c3315b8c76d204cd0d789989d",
+      "query": "명조",
+      "trueType": false
+    },
+    "신명 태고딕": {
+      "family": "Sinmyeong Taegothic",
+      "openTypeCff": true,
+      "programId": "9d07b699622f035eeb78771920f60c89e5e49317dc2fbad88715f77dffb95d31",
+      "query": "신명 태고딕",
+      "trueType": false
+    },
+    "신명 태그래픽": {
+      "family": "Sinmyeong Taegraphic",
+      "openTypeCff": true,
+      "programId": "5920b2a255986f0cc22669cbf19f786d6bc72306b0019ef8bd439cbddccbf4eb",
+      "query": "신명 태그래픽",
+      "trueType": false
+    },
+    "한양신명조": {
+      "family": "HY Sinmyeongjo",
+      "openTypeCff": true,
+      "programId": "016526d6700359164c27eaecb599c03b8908c4adc9767e891b0889797c0d3b59",
+      "query": "한양신명조",
+      "trueType": false
+    },
+    "한양중고딕": {
+      "family": "HY Junggothic",
+      "openTypeCff": true,
+      "programId": "1fd7e301e828b77b80781953d7e1fced20086ccd0cb81a38ccf96915be5e1842",
+      "query": "한양중고딕",
+      "trueType": false
+    }
+  },
+  "substitutions": {
+    "HCI Hollyhock": "HCI Hollyhock",
+    "HCI Poppy": "HCI Poppy",
+    "명조": "Myeongjo",
+    "바탕": "NotoSerifKRExtraLight-Regular",
+    "바탕체": "NotoSerifKRExtraLight-Regular",
+    "신명 태고딕": "Sinmyeong Taegothic",
+    "신명 태그래픽": "Sinmyeong Taegraphic",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HY Junggothic",
+    "휴먼명조": "Gulim"
+  },
+  "trueTypeFaces": [
+    "Gulim"
+  ],
+  "glyphFallbacks": {
+    "Gulim": [
+      "Haansoft Batang"
+    ]
+  }
+}

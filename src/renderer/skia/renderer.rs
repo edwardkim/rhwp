@@ -495,6 +495,7 @@ struct PageReplayOutput {
 
 pub struct SkiaLayerRenderer {
     viewport_culling: bool,
+    font_fallback_observer: Option<super::font_observation::FontFallbackObserver>,
     font_mgr: FontMgr,
     text_shaper: OnceCell<Option<Shaper>>,
     /// 사용자 지정 경로의 family별 TTC face·스타일 catalog.
@@ -530,6 +531,7 @@ impl SkiaLayerRenderer {
         }
         SKIA_FONT_BASE.with(|(font_mgr, system_families)| Self {
             viewport_culling: true,
+            font_fallback_observer: None,
             font_mgr: font_mgr.clone(),
             text_shaper: OnceCell::new(),
             custom_typefaces: TypefaceCatalog::default(),
@@ -562,6 +564,29 @@ impl SkiaLayerRenderer {
     pub fn with_viewport_culling(mut self, enabled: bool) -> Self {
         self.viewport_culling = enabled;
         self
+    }
+
+    /// Observe actual text face choices without changing the matching policy.
+    /// Reset recorded pictures when enabling after use so replayed cached ink
+    /// cannot bypass collection in the new observation session.
+    pub fn with_font_fallback_reporting(mut self, enabled: bool) -> Self {
+        self.clear_caches();
+        self.font_fallback_observer =
+            enabled.then(super::font_observation::FontFallbackObserver::default);
+        self
+    }
+
+    pub fn font_fallback_report(&self) -> Option<super::NativeFontFallbackReport> {
+        self.font_fallback_observer
+            .as_ref()
+            .map(|observer| observer.snapshot())
+    }
+
+    fn reset_font_fallback_observations(&mut self) {
+        if self.font_fallback_observer.is_some() {
+            self.font_fallback_observer =
+                Some(super::font_observation::FontFallbackObserver::default());
+        }
     }
 
     /// Drop all retained native objects and reset cache diagnostics.
@@ -607,6 +632,7 @@ impl SkiaLayerRenderer {
         // Static pictures may retain legacy font fallback decisions. A changed
         // renderer font inventory must never reuse those recorded choices.
         self.clear_caches();
+        self.reset_font_fallback_observations();
         // [#2864] 조달 순서는 renderer::font_paths 가 단일 정의한다.
         // [#3300] custom(호출자+환경변수)과 번들 최후-폴백을 분리 적재한다 —
         // 시스템 디렉터리는 어느 쪽에도 넣지 않는다(스타일 매칭은 FontMgr 담당).
@@ -624,6 +650,7 @@ impl SkiaLayerRenderer {
     pub fn try_with_font_data(mut self, sources: &[Vec<u8>]) -> Result<Self, HwpError> {
         let catalog = TypefaceCatalog::try_from_data(&self.font_mgr, sources)?;
         self.clear_caches();
+        self.reset_font_fallback_observations();
         self.custom_typefaces = catalog;
         Ok(self)
     }
@@ -647,6 +674,7 @@ impl SkiaLayerRenderer {
             )));
         }
         self.clear_caches();
+        self.reset_font_fallback_observations();
         Ok(self)
     }
 
@@ -1332,6 +1360,7 @@ impl SkiaLayerRenderer {
         };
         let text_replay = SkiaTextReplay {
             canvas,
+            font_fallback_observer: self.font_fallback_observer.as_ref(),
             raster_target: cache_context.raster_target,
             geometric_text: cache_context.raster_target && cache_context.geometric_text,
             hft_outline_enabled,
@@ -2041,15 +2070,7 @@ impl SkiaLayerRenderer {
                             }
                         }
                         PaintOp::FootnoteMarker { bbox, marker } => {
-                            let style = crate::renderer::TextStyle {
-                                font_family: marker.font_family.clone(),
-                                font_size:
-                                    crate::renderer::render_tree::FootnoteMarkerNode::font_size(
-                                        marker.base_font_size,
-                                    ),
-                                color: marker.color,
-                                ..Default::default()
-                            };
+                            let style = marker.paint_style();
                             text_replay.draw_text(
                                 &marker.text,
                                 *bbox,
@@ -2061,7 +2082,9 @@ impl SkiaLayerRenderer {
                                 false,
                                 false,
                                 false,
-                                None,
+                                marker.source_run.as_deref().and_then(|run| {
+                                    run.validated_layout_positions_for(&marker.text)
+                                }),
                                 0,
                                 false,
                                 false,
@@ -4217,6 +4240,7 @@ mod tests {
             display_text: None,
         };
         let marker = FootnoteMarkerNode {
+            source_run: None,
             number: 1,
             text: "1)".to_string(),
             base_font_size: 18.0,

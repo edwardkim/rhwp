@@ -1,0 +1,11 @@
+{
+  "source": "5167f63a26b7ad3d9111f08e3e82307be6f309e6",
+  "archiveSha256": "22410c6ae05d2f008c9d70c319279e2b14e694d10d08162cf63e7e490337d7dd",
+  "command": [
+    "node",
+    "e2e/download-save.test.mjs"
+  ],
+  "distribution": "/home/edward/mygithub/rhwp/output/release-v0.9.1/amo-build/rhwp-source/rhwp-firefox/dist",
+  "exitCode": 0,
+  "seconds": 10.05
+}

@@ -1,0 +1,921 @@
+{
+  "code_commit": "21d62361fa670858e63fdfc475c236f112e20a3d",
+  "backend": "wasm",
+  "readings": [
+    {
+      "pr": 8691,
+      "key": "pr8691-rental_approval_form",
+      "page": 1,
+      "backend": "wasm",
+      "note": "승인서 앞 행 경계와 마지막 행 회수·본문·날짜/서명 위치가 PDF와 맞는다.100.00%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:00:53.989556+09:00",
+      "assets_sha256": {
+        "raw": "2e3f880cb1cbda2c650f648cde18e92efa3deab17e9ad657c56bfc61f8f804d9",
+        "pdf": "f21eb4cdca4de3a6ee31415a1a857f0cceea0f38f0ace3c00869078eed3343e0",
+        "review": "f710e18a94b715e1d04a2176443ecff33b87b5a0aae6ee069955ff8fd2f6c587",
+        "overlay": "7a5385ddd8ed26917095d1bd764a0806c411eb4caba6446ccb324eb406cee0d4"
+      }
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-artifact_loan_form",
+      "page": 1,
+      "backend": "wasm",
+      "note": "유물 대여 신청서의 7행 경계·병합 셀·마지막 행 본문·서명 순서와 위치가 PDF와 맞는다.100.00%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:00:54.020872+09:00",
+      "assets_sha256": {
+        "raw": "032bee60caef7bbe3b50b115f1b8087a159448794724907b135796ffc6f61dbe",
+        "pdf": "ac163737efd70ad1a91ed3baeb1f70ce83d59c83d0d3a83588a4c94e1733d6b1",
+        "review": "611ef3ea6141214078d642e84a727c322acc1c339e09b8095e2066deca76168f",
+        "overlay": "49a2b33234f902ffabd9bf57402dd9f3924b56a35d5e20cf77c4186e058b106b"
+      }
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 3,
+      "backend": "wasm",
+      "note": "중첩 표 반례의 기술·시장성 내용과 표 소속을 보존한다. 마지막 영역의 기존 줄·하단 경계 차이는 남으며 회수 비적용 대조군으로 판독한다.97.46%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:00:54.031284+09:00",
+      "assets_sha256": {
+        "raw": "7d5169581d16a1e6eaac39bde4f8d9e410cd6ff5e4658f55aab965174ba5a13c",
+        "pdf": "b04a119b84b02df90922166e801f702d2264bab88e8e5be1d1695bbf5f28cbb3",
+        "review": "f9a3d1814b827f9790af183b28cf167278f889b5d013f13fbed4493d17e05222",
+        "overlay": "54a1f4d090972b13baedeafe0b80361f17aba39419641d1dd305523963fc4103"
+      }
+    },
+    {
+      "pr": 8747,
+      "key": "pr8747-156641865_press_release_band",
+      "page": 1,
+      "backend": "wasm",
+      "note": "기관/제목 띠와 첫 본문·후속 문단 간격이 PDF와 맞고 굵게 지정한 본문도 보존한다.99.99%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:00:54.040092+09:00",
+      "assets_sha256": {
+        "raw": "276a3d482a80f2a534a6de041e3faa669965e0e0de75640a8e964c6f9fff9bc8",
+        "pdf": "f7098e936bfc718d9e0824cd256edb4676024f5d068b756908f76c57053f49e1",
+        "review": "df0b35adc12192211dde3bab84ddb942aa2a3a850a96472ccb6faa67826820c2",
+        "overlay": "9ef0cc1b447a82a82b8ca6b7c6c481a365925f2daf54fc651865864503060db3"
+      }
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 1,
+      "backend": "wasm",
+      "note": "공공성 심사의 표 행·병합 셀·기준 내용과 등급 소속 보존.99.99%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:03:16.902132+09:00",
+      "assets_sha256": {
+        "raw": "777fbe3b962a469514c5276d4e98d574087817f1a41183564437e2a151e28186",
+        "pdf": "c3405d85ac43502699ca7eb1abe245002040b96149e1f5126e705e6a1e5bba4f",
+        "review": "51f0430e6e3ed1cb3bbbeba79994336859f1d76321c96c19699e32615ec42d94",
+        "overlay": "5096cbe637d86dd77be4138d0316e87e669eda4955dc07941218e54fc346a54a"
+      }
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 2,
+      "backend": "wasm",
+      "note": "혁신성·제품 신기술성/탁월성·모델 적합성의 내용과 중첩 표 순서를 보존한다. 기존 미세한 줄·행 높이 차이는 남으며 회수 비적용 대조군으로 확인.99.62%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:03:16.906178+09:00",
+      "assets_sha256": {
+        "raw": "47d4d635c2595c5fa485fa4e3bcd21cd6c5c0fac198fbf44fb70eb11ee6d43fb",
+        "pdf": "7b6b2295ba38199cbfd6f65dac2ba7288543d6fc440cb9434dbdd76cfbeb975b",
+        "review": "475dd35624308c1bcaf549ee67a06269601da4face948d19a3645cffabf12e99",
+        "overlay": "28023ea0eacde3adb9fa4d063f2ecd2c3fb4242d89e4ef1a75aefe19db281cb9"
+      }
+    },
+    {
+      "pr": 8691,
+      "key": "pr8691-ai_procurement_appendix",
+      "page": 4,
+      "backend": "wasm",
+      "note": "종합의견·평가결과·서명부의 상자와 내용 정합.100.00%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:03:16.910928+09:00",
+      "assets_sha256": {
+        "raw": "2c5259472c42ea0d0b6812606687df23876a334308b907b0840d84bdc57b7521",
+        "pdf": "0dbb2b6a73661e64acbceb73443ba0dc6d0cb96e3d20ba438eff16f2e5c3cec7",
+        "review": "090223aea37b0a23277c517c658d4f57519b7d9d4b5b63560e6c60619f786a5a",
+        "overlay": "01808255e09fc22377e876ac7edec8ac89403d9cdc00c4c9017d0ad7f7b16fdb"
+      }
+    },
+    {
+      "pr": 8747,
+      "key": "pr8747-156713639_press_release_band",
+      "page": 1,
+      "backend": "wasm",
+      "note": "기관 로고·두 줄 제목 띠와 첫 본문·이후 문단의 높이·굵기·내용 소속 보존.100.00%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:03:16.914567+09:00",
+      "assets_sha256": {
+        "raw": "ec4211da1b81f8b345d0e6e0284b4688dca4ac1c6e785298c4a2eb3bad19ee17",
+        "pdf": "c84b9a82bed2775ddc5631406e1a2ef17141be29fae6fe2858c212542db8f20e",
+        "review": "c111555632107a6a96b371887f960ef85cc0200d2082669c5a08d0074a2dab5a",
+        "overlay": "2f1bf9d56c04c105b99259d1cefeb8d509c07f1a48a139b5ddc09fff3a65e7bd"
+      }
+    },
+    {
+      "pr": 8752,
+      "key": "pr8752-wide_paper_table_two_columns",
+      "page": 1,
+      "backend": "wasm",
+      "note": "가로 종이 2단 본문과 걸침 표의 순서·소속은 맞는다. 표 세로 경계·내부 글줄 및 오른쪽 마지막 문단의 기존 위치 차이는 남는다. 93.08%로 전쪽 판정과 잔여를 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:10.425973+09:00",
+      "assets_sha256": {
+        "raw": "eb0ac8fff23c3a928ab6ec8f5949432780ddc4695ddb9719fe15cf8d56028794",
+        "pdf": "2f2a825465e7230415b4b981383e6ea06f6f9da9af4f43a0bee311353023b401",
+        "review": "80c155c8916741cbee445e06f2e8e86f6f011591b23ce0844f74ab456080fe84",
+        "overlay": "683185025a826742c8472517071512ed5aaa6997e520e26439bea9c078b71d74"
+      }
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 3,
+      "backend": "wasm",
+      "note": "본문 및 같은 문단 TAC 차선과 표제 위치가 보존된다. 오른쪽 빈 개체 프레임 높이와 별표 위치는 독립 PDF와 기존 차이가 남는다. 98.88%를 전체 픽셀 동일로 표현하지 않는다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:10.432644+09:00",
+      "assets_sha256": {
+        "raw": "d567262ce0886c9f0f5b79aad16f8078cd1606c37a556be556f850fdd60f3c00",
+        "pdf": "8a534b0ebc5117b590e08258f7019773c128fa637dd7bd4a07cc6923183d9cf0",
+        "review": "b7cba1bb6c47c5ebdedd929001ed0c7b49f128e22a14dc2de4218c3f422bef1a",
+        "overlay": "0686c34f19be1a3f17d5a5e6139aa42c78c4c1713a1b7ca086e00acbdaccb630"
+      }
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 4,
+      "backend": "wasm",
+      "note": "두 표의 같은 문단 소속과 상하 본문·파란 후속 줄, 표 내부 내용과 경계를 보존한다. 이미지 프레임과 본문 겹침이 없다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:29.529164+09:00",
+      "assets_sha256": {
+        "raw": "ca29916244d52b2737dad857c15a7defe8c856985d794cb9aa16a7791c36d2c3",
+        "pdf": "2e132c405d3289cd556cbf362467cfa6de90af04d34155d2c7f8f9921dda7e81",
+        "review": "f5f0327af315d5d98eddedf5d0631a9f4f4645354e8307f27d7a9d15455c2e5a",
+        "overlay": "1ff9ea81b541f6dcc25b95aa8b974ab155b05c247f29755f82c2a999b7fccbf5"
+      }
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 1,
+      "backend": "wasm",
+      "note": "결재 표와 표지 제목·날짜·주택실 위치를 보존한다. 표 경계와 본문 누락이 없다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:29.689532+09:00",
+      "assets_sha256": {
+        "raw": "bb85eae8c211827c8da1917c34c50a47c47de3f05f32fb611ad51142414c2ccf",
+        "pdf": "60bc2ce3806e732012d4a83d345d74cdf02fdbee5d3952d5106ea5e684adc898",
+        "review": "c284901a25fdc82bd5f98e8274eb43fddb7a2126fc7f72aa6ced862188e7fdd7",
+        "overlay": "e3fffc393e39fd05a501d4cfe9ef4261c7399be80fe9879405e32751bf3041ce"
+      }
+    },
+    {
+      "pr": 8762,
+      "key": "pr8762-36458608-square-tac-same-paragraph",
+      "page": 5,
+      "backend": "wasm",
+      "note": "본문 및 지정 절차의 네 개 상자·화살표와 설명의 순서·줄 소속을 보존한다. 두 개체 배제 뒤 본문이 중복되지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:29.798401+09:00",
+      "assets_sha256": {
+        "raw": "bf4c76183deaa29de3b6cc6f006ad24bda71f98813e5743bd4fd10675e26492b",
+        "pdf": "acb3d0206b3c67fe7253187803528ffcd68e92d616210a4c51f6d85fd0533dfa",
+        "review": "2714a3092984117c79031b79c7f0cbb583adb64a56ce6f94daefed91babce638",
+        "overlay": "42440790799c7d1921d419ec69a2256cf455ad9bb4567aac8733ed913081bac9"
+      }
+    },
+    {
+      "pr": 8774,
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "page": 1,
+      "backend": "wasm",
+      "note": "표지 제목·그림·로고·날짜의 위치와 내용이 보존된다. 영상 색상 차이를 실루엣 동일로 혼동하지 않는다. 99.98%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:41.293779+09:00",
+      "assets_sha256": {
+        "raw": "1643757b2eb8aca30108a79a5a97630b5a51cc13cc9174e77d1f32eb8a52342a",
+        "pdf": "81d5344f80859b85d22c04169fa2b2ab6d7678826b03a14da3423893bfc912cf",
+        "review": "4fa813259ef550d87de3c982f2e52e3fbbeace2682d935b5d22fb72d8b1100b2",
+        "overlay": "92f38c12745cfc7234efd41f01914ddceb5846ab0c132f37ee35eb6d16692925"
+      }
+    },
+    {
+      "pr": 8774,
+      "key": "pr8774-4680000-202100038_research_review_request",
+      "page": 2,
+      "backend": "wasm",
+      "note": "기본 정보와 재원 표·추진상황의 쪽 소속과 순서가 맞는다. 제목 글꼴 윤곽과 일부 글자 간격의 기존 차이가 보이며 98.53%로 기록한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:41.296897+09:00",
+      "assets_sha256": {
+        "raw": "bb5a462981c675c177f386e60ce1e0f2e2d60f0aba5281ca56f8aaec6dc58e89",
+        "pdf": "93a5a25e117685a009f12a6be4846dc715f554c236c2c62cd466a7c76c692e80",
+        "review": "49b612f40058582e88d443045a5844ab2c438c4c7720fc2ade5177f01bc719cc",
+        "overlay": "2a774136bcf363280e970dbf1f61f12aec6e1315da46d797ae25bb7afcfa60e5"
+      }
+    },
+    {
+      "pr": 8796,
+      "key": "pr8796-successor_flow_axis",
+      "page": 1,
+      "backend": "wasm",
+      "note": "장식 그림 뒤 제목·사용자 정보·요금 경정 표·끝 문단의 세로 흐름과 내용이 맞는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:53.454799+09:00",
+      "assets_sha256": {
+        "raw": "4f3e155461099a59598ea04e19b849dd39851a499c8f120b634a6268b369b3cd",
+        "pdf": "3baf6203231459ad719e94e73aa5c55f1f90f134c80e713dda28cf0daa7c1db4",
+        "review": "8d88e2a3a2ff6156c673d052335e553f49016a0430ac9ee49fa305c390dd6fea",
+        "overlay": "07f2a519efa5401251af8b4aab28e4e07ffcdfde6ed0c85eb8a2bc6d07d65037"
+      }
+    },
+    {
+      "pr": 8796,
+      "key": "pr8796-successor_flow_axis",
+      "page": 2,
+      "backend": "wasm",
+      "note": "결재와 시행·연락처 블록이 둘째 쪽 아래에 보존되며 첫 쪽 내용이 중복되지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:07:53.479238+09:00",
+      "assets_sha256": {
+        "raw": "126288cd88c3cc0f7fe7d834ed3432875a99ff21603f968aac2f3c39cfa4d87d",
+        "pdf": "3d70744d8c0253b6dae80d6388f7d3942d5820e0e1c4545003ae7928404d3d1b",
+        "review": "3db711cb541d395f4589d97ad1042d758ad5e71f21c506a4f9202e6cf5b39b5a",
+        "overlay": "d9409a4945ba7e62cdf021d5ec0939dc9e39c7ff853b5e7cad4895e279fef68a"
+      }
+    },
+    {
+      "pr": 8802,
+      "key": "pr8802-first_margin_page_origin",
+      "page": 1,
+      "backend": "wasm",
+      "note": "최초 본문 여백과 결재 표·명령 표의 세로 원점이 PDF와 맞으며 끝 문단도 같은 쪽에 남는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:02.897743+09:00",
+      "assets_sha256": {
+        "raw": "6640a7d2ca2b84bc2ddcd842dbc6b4fa3eb6b008997fc3dc03b8566ad3397972",
+        "pdf": "11eeee107b90117ac349fdc2b35c57eb40c61fc00957eae1ed0076a713842a70",
+        "review": "d6e68922262c7277802587fee9182860d558dcc19e1836783f2e3249fc68d1ec",
+        "overlay": "21d3c487e38fa2c83fa6a1c0f2b6aff047f8b0ffef880e090b90c04b30c47743"
+      }
+    },
+    {
+      "pr": 8837,
+      "key": "pr8837-page_float_host_spacing",
+      "page": 1,
+      "backend": "wasm",
+      "note": "머리 그림과 본문 첫 줄·목록·붙임 및 결재 블록의 간격을 보존한다. 이미지 뒤 host 간격의 추가 누적이 없다. 99.99%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:02.902710+09:00",
+      "assets_sha256": {
+        "raw": "4c4d0f176f45e1cf38b7814636821a8196a2ee01180faace9d269916588c4787",
+        "pdf": "b67cda74bd6137dbbb360b67cbe3f1a0c8bcd8161d8c681cd9a9c72b6130dfa7",
+        "review": "1d477bf34ce63a87650427876c2c70017c0081aabcfcca0ee317292b53131ed0",
+        "overlay": "c589b2e915a12dfaa4fe4d5982d3a7d8482c1bb1cb70b51a4c9b782a09624c77"
+      }
+    },
+    {
+      "pr": 8847,
+      "key": "pr8847-36414883-negative-tac-line-spacing",
+      "page": 1,
+      "backend": "wasm",
+      "note": "음수 TAC 줄 간격이 본문·처분 표·끝 문단과 결재 블록에 중복 소비되지 않으며 한 쪽에 보존된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:12.071310+09:00",
+      "assets_sha256": {
+        "raw": "76e4fb1514f85be3392c749abc5c28738dc4f013bb89c34f10d856c9fd4524ad",
+        "pdf": "bf8f90f5acb94451f7ba234f06b74a75d7bde5f5d849778773aed147556fcbe4",
+        "review": "9f561e90ddc51669b7b50821dc5dfc9df79ec8f7e78064b24b22337e82902c14",
+        "overlay": "01a55ce9294e90a01252af4c61b10d850247116752eebd03951b7211d20def54"
+      }
+    },
+    {
+      "pr": 8865,
+      "key": "pr8865-missing_picture_print",
+      "page": 1,
+      "backend": "wasm",
+      "note": "표지의 결재 표·제목과 날짜·부서가 PDF와 맞고 누락 그림의 편집 표시가 Print에 들어오지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:12.106755+09:00",
+      "assets_sha256": {
+        "raw": "89c7c1928a2de298faf29b34fd2fc3ca6efbbcb962b99b697e6922eb463f5241",
+        "pdf": "037d4bb0e36b67d246f532a3efbf07a1c42e8ed931c781a934ce0f4da9762097",
+        "review": "039b1ee99fc8c209d9638643bc84ce9192ab934dea6eb70590cbe06ad1b90530",
+        "overlay": "8aab4032bf34664bb547495f59cf1c17eb2e5fa84022ccb8950cb530529169a8"
+      }
+    },
+    {
+      "pr": 8865,
+      "key": "pr8865-missing_picture_print",
+      "page": 2,
+      "backend": "wasm",
+      "note": "본문 줄과 최종 붙임의 배치가 맞고 하단 점선 원 도형은 두 출력에 모두 보존된다. 누락 이미지용 편집 placeholder가 Print에 나오지 않는다. 99.84%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:22.712279+09:00",
+      "assets_sha256": {
+        "raw": "52b866e7e942fe0a35dbb5dadf31cb40a657924a88ac194687cf88b5620a5b52",
+        "pdf": "dab688b4ccbbc7231d1fc847605ba74aa892c869a23709a953a4050905d72d3b",
+        "review": "a7fdf31204d9720ff6b3431ec2a2b0e9fa5f145437a3d7e970d756a7f15ec8fd",
+        "overlay": "b370e2258afee45542d50493edc35d9d4eaf46bbcf191162032c52b4aa31c340"
+      }
+    },
+    {
+      "pr": 8868,
+      "key": "pr8868-36379333-stored-text-above-offset-float",
+      "page": 1,
+      "backend": "wasm",
+      "note": "제목·날짜와 결재 표가 소속을 유지하며 근태 표와 하단 세 표의 내용·경계를 보존한다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:22.790383+09:00",
+      "assets_sha256": {
+        "raw": "44f88803768e16bdc10a8dbb11361a450f484a961920bce46171aa80fad44b21",
+        "pdf": "deb8b20dd485fc4c8c665703e304be887130d677a59dacf212700184cf03eb2c",
+        "review": "ba79948c87e7569547357640c954eb18f36748662896f0b6bf19b04bdfbb7e34",
+        "overlay": "12988d9e712f2a2d4e27d6944f4c1e18f41f8d0b3373ebcb9e299451f3bfdfe6"
+      }
+    },
+    {
+      "pr": 8886,
+      "key": "pr8886-36317264_approval",
+      "page": 1,
+      "backend": "wasm",
+      "note": "상단 결재 표와 본문 표지 띠·제목·날짜·기관의 위치를 보존한다. 중간 제목의 소속이 바뀌지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:38.792401+09:00",
+      "assets_sha256": {
+        "raw": "3f0b73c3e4b51b698e36f76d0099d54b70193264dd6e7810b9c028698e4653bd",
+        "pdf": "546e6c4e8fa8b7075b5b4d0e1eabac5de983c8433e1193bd09f2dc30c7f2bfec",
+        "review": "24313f2aec24b89d8d656501130be329904509d55b6bb9272f93729bad13f391",
+        "overlay": "eda72751ef747de44e8de3d4bfd1603336c2a87aab5ef3986c4a7dc45f897592"
+      }
+    },
+    {
+      "pr": 8887,
+      "key": "pr8887-36421178-long-word-first-char",
+      "page": 1,
+      "backend": "wasm",
+      "note": "긴 단어·별표 줄의 첫 글자와 들여쓰기 및 마지막 끝 문단을 보존한다. 가·나·다 목록과 본문 줄의 중복·누락이 없다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:53.143931+09:00",
+      "assets_sha256": {
+        "raw": "79b41e44fe35fce03e2b87284e9d895419f41b59563247eff8e4000fb3cfbd77",
+        "pdf": "aacc39cc5a40c5dadfd4ac4cd57b96311d3775b5c0b696cefa397778e6049e85",
+        "review": "30e050bf7b0131a363bec8e14417fcca2347b74181340be1f514214e722886f8",
+        "overlay": "43603af0a4ebfae64c6f690909827f0b1f69e61189507fc2779b64f914094577"
+      }
+    },
+    {
+      "pr": 8887,
+      "key": "pr8887-36421178-long-word-first-char",
+      "page": 2,
+      "backend": "wasm",
+      "note": "결재 및 시행 정보가 둘째 쪽에 보존되며 첫 쪽 본문 줄을 잘못 당기지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:08:53.171796+09:00",
+      "assets_sha256": {
+        "raw": "8be491adee308703e16112619a896f817f1e8e402da7155b1048ffee10642a92",
+        "pdf": "bb5632217d952e626a2e91c5f682620b9e5f218ac08e2b257fb0a49835254e26",
+        "review": "79de0e92439f46f5f736663691d9857fdde4457e0d083c73e7fcb788e33e340e",
+        "overlay": "dfd4feec3541afe2a25dc1bcc43a31f622acecfe12da086d15c30b081cf6495a"
+      }
+    },
+    {
+      "pr": 8892,
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "page": 1,
+      "backend": "wasm",
+      "note": "저장되지 않은 후속 글줄의 바깥 아래 여백이 중복되지 않고 네 본문 항목·붙임·끝이 같은 첫 쪽에 보존된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:05.847597+09:00",
+      "assets_sha256": {
+        "raw": "92897ddc0b3565a178634206f083ba383da30305105586899aca766a556405a4",
+        "pdf": "bb7d1fe93374dd26cebca7a727e44c68de4e88e8273f4eef3b438fe5a1347161",
+        "review": "77670d47bc7c9b0885d04422c948176ad88549a8358c8262274783208fb430bd",
+        "overlay": "02850fae1f4895933b7ff195d8f758e35d4cba6e022af3063fdb4c31df91207a"
+      }
+    },
+    {
+      "pr": 8892,
+      "key": "pr8892-36384898-unstored-next-float-bottom-margin",
+      "page": 2,
+      "backend": "wasm",
+      "note": "시장 명의와 결재·시행 정보가 같은 둘째 쪽 아래 위치에 보존된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:05.880503+09:00",
+      "assets_sha256": {
+        "raw": "2e6f726b5d8ef10cd387f70a57b3dabcdfc2a0f7878eada1ed4141c5654b8a01",
+        "pdf": "98d464047cd6e01829ca4d9da6ecf44467dec42ba118fe21e7c9f8cc6b7efb52",
+        "review": "4c68ac29ba0cca1b88e612e07c35b094dede44f4d466aa21752a57ec31464951",
+        "overlay": "d44addf92f5f87e6a2858e8619f5a42b2878f8d3e81a90a308341643018f79cc"
+      }
+    },
+    {
+      "pr": 8898,
+      "key": "pr8898-36400288_approval",
+      "page": 1,
+      "backend": "wasm",
+      "note": "본문의 세부 내용 표·첫 줄·붙임이 정확한 순서로 배치된다. 양쪽 로고의 기존 확대·잘림 차이는 남아 92.78%이며 이번 표 흐름 개선과 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:19.540690+09:00",
+      "assets_sha256": {
+        "raw": "0d54ac92359d3d185039e400ee000d0f8df67d5d462afcacb36720c4a042dbc3",
+        "pdf": "94b607deacad850cfe4307330864f6e7b11a5d0cac078d608add6ee5d5113bb8",
+        "review": "765d30c294bb7da793868e695811d546839a6238e2c9af76513edb9b3c1f0ef0",
+        "overlay": "75870686c938f05d9785d0e2ab77034e5fb309824481db0e3d6fab9bc19b3cc0"
+      }
+    },
+    {
+      "pr": 8898,
+      "key": "pr8898-36400288_approval",
+      "page": 2,
+      "backend": "wasm",
+      "note": "시행과 결재·협조자 정보가 둘째 쪽 아래에 보존된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:19.652706+09:00",
+      "assets_sha256": {
+        "raw": "c84cfa3a281e4d75e47549635c44fe35150ef83d0cddfa20c5614663d13e89bb",
+        "pdf": "6876f99f652fa0d5a586e80e6e1b2ee6288349bdbc6d3e5a5e8c8a4f292baab4",
+        "review": "4b5db846a649db072941f47d9faef0d2e7b9eb21832ed7fc0523fc842f63defc",
+        "overlay": "723d408a50b7c565fc41079ea73def20e4eec2b865356d8d57c0d3833bb82a7b"
+      }
+    },
+    {
+      "pr": 8911,
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "page": 1,
+      "backend": "wasm",
+      "note": "마스킹 꼬리 글줄과 저장 reset의 목록 소속·본문 순서·다음 쪽 경계가 맞으며 첫 쪽 줄을 임의로 당기지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:33.164991+09:00",
+      "assets_sha256": {
+        "raw": "67164b02016610e59980dc5a001a1b6b16025b31087752d42ea264a77466067d",
+        "pdf": "8a938a6bc3be9664eb52c58c2bb3e18ffb8968820bc2ffd72dce1a8d9531c6bb",
+        "review": "93eec68871d455d231fe372ef5630fe853aa0145de1e5ad656fde8a9b8c36578",
+        "overlay": "699628cac2598f92e35b2135cf17dd59f15cd0b7baba63691bed73fe98d3316f"
+      }
+    },
+    {
+      "pr": 8911,
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "page": 2,
+      "backend": "wasm",
+      "note": "이어진 나·다·라·마·바 항목과 여러 별표 문단의 첫·끝 줄이 Print와 같은 위치·순서를 보존한다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:33.201219+09:00",
+      "assets_sha256": {
+        "raw": "52432fd0ed03478ea9ac3b1d55679eeacf6f066f386eeaac1ce95982e5005d09",
+        "pdf": "5d6aab6943dc4e1e548220b84631f943ff7b4b6013eb87030d0c4c8df997e5ef",
+        "review": "9e2f3b57fe93728fcd33367f004cac8936b7c0cf2a19ca7bb6c413d2ba0ae091",
+        "overlay": "ff210e8712d0000354ddb5201ab0b9d023cbde63f2e5eb6819ae95ec87166399"
+      }
+    },
+    {
+      "pr": 8911,
+      "key": "pr8911-36376635-synthetic-tail-saved-reset",
+      "page": 3,
+      "backend": "wasm",
+      "note": "남은 문장·문의 두 문단·명의와 결재 블록을 같은 셋째 쪽에 보존한다. 저장 reset 뒤 잘못된 반복이나 빈 쪽이 없다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:49.220789+09:00",
+      "assets_sha256": {
+        "raw": "c35d77005fd0c62ec30bf6e54d2dcaff4826841829f623dae0d8a883a6c5aa04",
+        "pdf": "a610a21adfcba6e01c4f1c107b942d29ff452d78f8a51419565ff7590eeab59b",
+        "review": "60a2cb7d757cdfd4ba41acb6114305919c180e8c822d62b467bd938765988e8e",
+        "overlay": "91df2fb125cd9405a80951e788316c82d8c9be8e6400bb22702754616e7d8c54"
+      }
+    },
+    {
+      "pr": 8868,
+      "key": "pr8868-36379333-stored-text-above-offset-float",
+      "page": 2,
+      "backend": "wasm",
+      "note": "근무 현황 표 위 제목 복원과 뒤 표의 비겹침을 확인했다. 끝 문단이 특이사항 제목 왼쪽에 남는 차이는 고정 base에서도 같은 블록에 잘못 배치된다(기준 79.16%, 후보 99.92%). 기존 잔여와 이번 저장 첫 줄 복원을 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:09:49.447730+09:00",
+      "assets_sha256": {
+        "raw": "638dccafe5f251156b2c52081674166cde34affa4bb6c8808e4347080c2f7f22",
+        "pdf": "33cfb2345e17f680dda2c2824fa44840f816b63ebd726e2cb2710e4551a0804b",
+        "review": "908c8c95178f33dc5aedd9ca8a466d94ea769908b0fc2efc7d070fb7517b7596",
+        "overlay": "f4de07fdf24fe7712eecc0d6dc1f81e59bf19adc2b0e0ac45ddf4a14951b07fd"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 1,
+      "backend": "wasm",
+      "note": "원 HWP3 표제·본문 첫·끝 줄과 쪽번호가 같은 쪽을 보존한다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:12.248417+09:00",
+      "assets_sha256": {
+        "raw": "e291dc4850ef6fdd927dc93997343631b5e4a076c833247ccf6d77b850102eba",
+        "pdf": "73e84b29acd2088e7624619d5c80321b71a9e9d698ab4ec2a3fbbd94bde4c1de",
+        "review": "4bd5e5029d555aed57372d0e5973e9a16dfc41817c27efc4a0de189b7f65b4b9",
+        "overlay": "46b9bb431cc63817b1df2420574c88847bd13014b71cdb4dc238f7e93b6b1f56"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 4,
+      "backend": "wasm",
+      "note": "큰 구성도 오른쪽의 좁은 본문과 그림 아래 넓은 본문이 원 저장 줄 소속을 보존한다. 그림과 본문 겹침이 없고 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:12.334925+09:00",
+      "assets_sha256": {
+        "raw": "70320ae5de01882486eb3744d424aeaa08c6d023b24b67b7680edd6f9ebf863b",
+        "pdf": "83f0e0caf6a1f80cb875c4aba9998daf9371160816fea3f89b3054dd97ae5c3e",
+        "review": "836808f3a06fa7c798897b3d31b1054bc66330deab47edbb97a790973249c427",
+        "overlay": "7f40c9485d02912e246c954705a4c4eaaa498db4a2f293563ddcd9b6ab62791d"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 16,
+      "backend": "wasm",
+      "note": "그림 옆 좁은 본문과 아래 넓은 본문의 소속은 보존된다. 원 HWP3 캡션의 가로 소속과 이미지의 기존 기하 차이는 남아 95.48%다. HWP5/HWPX 개선 결과와 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:22.742872+09:00",
+      "assets_sha256": {
+        "raw": "fd0dc3d742702fe82d41efb3172024fbc5340c2d604f3300c0b4bf4d5b1f3854",
+        "pdf": "2f8e57bdd18ccc991f7b7e14369abd8758dbd555089604d4d4934c62171f2ece",
+        "review": "87f763179c519ba2146ac87388980a7dd5cf9e823bd2bccc690c0d53797f49c0",
+        "overlay": "3b957992ae58e29c1a08fc7999029db3edb1637221950f852b7784bd47d2ddae"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 22,
+      "backend": "wasm",
+      "note": "분할 도해 오른쪽 본문과 아래 넓은 문단이 같은 줄 소속을 유지한다. 그림 영역 위로 본문이 침범하지 않고 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:22.856071+09:00",
+      "assets_sha256": {
+        "raw": "54039e43942861bb7463ad387825a78930a7eadb473395dd9c0d42c48267318a",
+        "pdf": "2661163f74c2d3556cf68178788c73f074017c531a54ad654d2d167bdaf0e964",
+        "review": "9096712c2c026082c16ce41ae0df843eccdd587c2532f7008f51c85065caab80",
+        "overlay": "1e0475c1508bde3f4723b2424c9470e36acc02611a20a7a03f02ee3e7ae33c65"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5",
+      "page": 27,
+      "backend": "wasm",
+      "note": "마운트 그림 옆 본문 두 짧은 명령줄은 보존된다. 원 HWP3의 기존 Figure 캡션 가로 소속과 본문 시작 차이가 남아 95.65%다. HWP5/HWPX의 공통 보정100%와 분리한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:35.704146+09:00",
+      "assets_sha256": {
+        "raw": "703e4abca3c07960a819bc57fa641daa945bce8493434707e6a76af06c9311a8",
+        "pdf": "e80dfd85d1b89ac4e0607e5990c21c5a457a7539f28c9d9a0654c44d8b4a61cc",
+        "review": "3b0dde886c70c1d7291ef8327f4170bd3ad2724853080a4af41af01382bd1169",
+        "overlay": "916305e8e99fb4951afa2ed7458d6348eb7edb536a0380fc9398ab9df2317504"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 1,
+      "backend": "wasm",
+      "note": "HWP5 표제·본문 시작·끝 줄과 페이지 번호가 원본 Print와 같은 소속으로 출력된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:35.713656+09:00",
+      "assets_sha256": {
+        "raw": "65f4f1125c786a4a99d3b778df160d153ce30d6e5c31fc897b5306e193780da2",
+        "pdf": "73e84b29acd2088e7624619d5c80321b71a9e9d698ab4ec2a3fbbd94bde4c1de",
+        "review": "ea3ba98200d259336ce92f4f46154122c97476a885ea2cca5d4514da01d77297",
+        "overlay": "a1e4eb75ab015ce0fc56dfc9d7e32887d425dbc9f343a3da5dc1bb948af1fccb"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 4,
+      "backend": "wasm",
+      "note": "큰 구성도 옆 좁은 글줄과 그 아래 넓은 글줄의 원본 소속이 맞고 그림·본문이 겹치지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:47.596768+09:00",
+      "assets_sha256": {
+        "raw": "d392d593892a526709f704faea23a74ae5a3a43cef732c524c1a1997bdd15b9e",
+        "pdf": "d32677bf3197dab4bf6d4c00ba3f034e49f7131a0799d251b736ed1d5bf6a82b",
+        "review": "3d3d16cf0f8bc3b86286caa48b9ba7351c889296ae6a3898f55d56552af43cf0",
+        "overlay": "04d60cbbd223b5011472f920b0b1d947ea6d1ea52221561d0a04e6c6f6f1939e"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 16,
+      "backend": "wasm",
+      "note": "캡션이 왼쪽 넓은 저장 줄에 있고 그림 옆 두 문단·아래 본문의 차선이 Print와 맞는다. WMF 내부 기하의 미세 차이와 raw 실루엣100%를 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:47.602583+09:00",
+      "assets_sha256": {
+        "raw": "b8436353079ee3f25c74ad0c9b580da887c7b35cf25472bdc84234a8822b5e19",
+        "pdf": "53e309a7cc36f6d5c6a04dafc7d8a41061546e1d41945a8a24aa6d507fecad3a",
+        "review": "507b9702d0ed99f1487661422fc030eafbc0b5735867871d3871bba99ff1f4a7",
+        "overlay": "7191fa906608eba5b6a32908873280d6042c773f71b0a078a988a1b78b8e6e3f"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwp5",
+      "page": 22,
+      "backend": "wasm",
+      "note": "그림 옆 좁은 차선과 아래 본문 전폭 전환이 같은 원본 줄에 적용된다. 페이지 소속·끝 줄·쪽번호를 보존한다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:57.966335+09:00",
+      "assets_sha256": {
+        "raw": "039918e478fce83b3c56608fb18c37c28d6b1140de9f5e772fe92e28a01dd44b",
+        "pdf": "13bb9a954a190f6b9646b393f4f33213c8c9cc3cad0b7bd78102c9e346cf6241",
+        "review": "3585f643be0b1c0e67d755269b1464e90f73e306c62aecc2577a014aeeb8f880",
+        "overlay": "b186fcfedcd6402bc46ddd6edc701e58cf63f36fbf3078f3ee85e6c1f78c74a1"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 1,
+      "backend": "wasm",
+      "note": "HWPX 표제와 첫·끝 본문 줄 및 번호가 같은 쪽 소속으로 보존된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:10:58.048367+09:00",
+      "assets_sha256": {
+        "raw": "65f4f1125c786a4a99d3b778df160d153ce30d6e5c31fc897b5306e193780da2",
+        "pdf": "73e84b29acd2088e7624619d5c80321b71a9e9d698ab4ec2a3fbbd94bde4c1de",
+        "review": "1fcd76253eecd65272ea53df472ed5ff0bd1452ca24a9c4b91932840a47f4f31",
+        "overlay": "b07c847c25f3709f2f98276f60aceece8a2eecd2e9cf24313eacd5bc90845d47"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 4,
+      "backend": "wasm",
+      "note": "원본 그림 옆 좁은 본문과 아래 전폭 문단을 보존하며 본문이 그림 위로 이동하지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:09.324612+09:00",
+      "assets_sha256": {
+        "raw": "d392d593892a526709f704faea23a74ae5a3a43cef732c524c1a1997bdd15b9e",
+        "pdf": "d32677bf3197dab4bf6d4c00ba3f034e49f7131a0799d251b736ed1d5bf6a82b",
+        "review": "8185b7b75ef7ccaaff3582d7a91014a0d7d73c10e2711b7fa401efead059ff1e",
+        "overlay": "bf94474387d72f18c0aa15cd5c0428af19080285669ca766c78360127004a77b"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 16,
+      "backend": "wasm",
+      "note": "보정한 균일·혼합 저장 줄이 그림 오른쪽과 아래에 같은 차선으로 배치된다. 캡션·컨트롤러 문단과 이어진 본문의 소속이 맞는다. 실루엣100%이며 WMF 내부의 미세 선 차이는 별도다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:09.546185+09:00",
+      "assets_sha256": {
+        "raw": "b8436353079ee3f25c74ad0c9b580da887c7b35cf25472bdc84234a8822b5e19",
+        "pdf": "53e309a7cc36f6d5c6a04dafc7d8a41061546e1d41945a8a24aa6d507fecad3a",
+        "review": "aa29e56e8a6581d94dd0b59ae94aba955c8cce2fb895e76cacf3f32f70d2dcb7",
+        "overlay": "ef08c1e984a9f9e09cd3007a06ca2a0734cf702f88f7c518195b5a7792d3b11b"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-sample5-hwpx",
+      "page": 22,
+      "backend": "wasm",
+      "note": "도해 오른쪽 저장 차선·아래 전폭 문단의 소속과 하단 마지막 줄이 보존된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:20.257855+09:00",
+      "assets_sha256": {
+        "raw": "039918e478fce83b3c56608fb18c37c28d6b1140de9f5e772fe92e28a01dd44b",
+        "pdf": "13bb9a954a190f6b9646b393f4f33213c8c9cc3cad0b7bd78102c9e346cf6241",
+        "review": "21de0dcf867d36aad915707ad6e41af5d5d1014395df7a4bf1cbc1f213ffa8c8",
+        "overlay": "2c19fe35f1e2aa5e0e81fd64aa40b8c9dc84e5965aefcddab2221ee21fe32bcf"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-square-right",
+      "page": 1,
+      "backend": "wasm",
+      "note": "오른쪽 Square 줄 차선의 제목·세 본문 단락이 보존된다. 아래 NHS 주석의 기존 자간·폭 차이는 남아 93.02%이며 대상 저장 줄 소속 개선과 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:20.290275+09:00",
+      "assets_sha256": {
+        "raw": "c3e421928452f1d9a19a37b4e78322e770a7928920ddae7e5ad1757061b4f461",
+        "pdf": "74cd80367cda51c8f543f04ddbff369c14b314a7b85ede299b98c2e9e83860fa",
+        "review": "9a069e93b45fa9430bd6c1aa17285e4fd9a38a00ce31c5f059162bec6dcd5b03",
+        "overlay": "67c8fa1b917d5d8201f1201bf3debb63bd58eb660679bfc5c453dc081e1e5453"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-employment",
+      "page": 1,
+      "backend": "wasm",
+      "note": "표지의 배경과 제목 위치는 보존되며 부제의 기존 가로 위치·폭 차이는 남아 99.28%다. 그림 옆 글줄 개선과 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:35.108263+09:00",
+      "assets_sha256": {
+        "raw": "6b31db4d16ff9c17dcd494b185fe5d582729a99cd997a3ee519d97a78ead8df0",
+        "pdf": "61bd8c3233d918db17f15ab661ee286e12b88bff5411d50987f7a0e9ea7fc46b",
+        "review": "d78bdebe4dcf2aafc8a6894371a14dce9be5a6338fd36c5a21d182816e3bf30e",
+        "overlay": "dfb5822503fed09ef721ef3908bfd1caacadb76874779357ac8889956e3dde0b"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-employment",
+      "page": 14,
+      "backend": "wasm",
+      "note": "ISO 그림 오른쪽 저장 차선과 아래 이어진 본문을 보존한다. 작은 원 목록과 각주·쪽번호가 제자리에 있고 99.90%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:35.142704+09:00",
+      "assets_sha256": {
+        "raw": "86a743bef25228ec04b669e149f2b16f79c165b4a44b5889865d80a3353c0303",
+        "pdf": "397bd517686221b7d7b7214d46e0a3a4b632ba1b1b82a26b1de868b604697eb4",
+        "review": "382c610cd8d04b7a09737c40c33d694e52ce98441091384e9335438af58550ec",
+        "overlay": "98b4ea711b7b07ee0e77c69af45433e8c72e695b78abf4a879929a82fa615a6c"
+      }
+    },
+    {
+      "pr": 8734,
+      "key": "pr8734-employment",
+      "page": 51,
+      "backend": "wasm",
+      "note": "기존 표 하단 높이 차이와 PDF의 3) 앞 i 문자가 보인다. 본문 소속과 아래 표는 보존되며 96.72%. 이 영역은 고정 base·보정 전과 같은 기존 차이이고 79쪽 보정으로 해결했다고 하지 않는다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:50.586616+09:00",
+      "assets_sha256": {
+        "raw": "65f82f6fb21c8c1b71b77fc4be1f32fcde24ebacc98f3184bc3ff91e4ff9d1b8",
+        "pdf": "79d079b64ade1bc5734f4ec7aa296d229376fdc7c02132a556b20684f65f5be1",
+        "review": "5da15bcb874b14052c3be46afed1b3fa3664bf6e8302f5dad02714a24c4be75e",
+        "overlay": "3cfed5476d96e840eb0d3559dc432d4d140e67590a7526f33b68f54abda1c19d"
+      }
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "page": 47,
+      "backend": "wasm",
+      "note": "용어 대조 표의 행·본문과 오른쪽 장식 및 쪽번호가 PDF와 같은 소속이다. 들여쓰기 보정으로 셀 글줄이 밀리지 않는다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:11:50.698869+09:00",
+      "assets_sha256": {
+        "raw": "5b07e54a56b87019c18f4a5451f15e19ddc929733ec2d26bdb278f5acde927ee",
+        "pdf": "a6908279b02cbd0a0f798b9011ab68d799fd0ab7ab5cc507049e63ccc6af80ff",
+        "review": "e99982876f9e793e05b6123f2916cbeaeed3afc41472092763810190cf37bbf5",
+        "overlay": "35878299e7679cf7f3abab631f7483639dd817f6c2fd4bec31789e83d373a6bf"
+      }
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "page": 48,
+      "backend": "wasm",
+      "note": "표의 모든 행과 줄바꿈·가로 소속을 보존하며 쪽번호와 장식도 맞는다. 작은 글꼴 윤곽 차이는 지표100%와 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:03.566748+09:00",
+      "assets_sha256": {
+        "raw": "47d820701f3dc10bdf531676838809850184b451fe10f630d86a7f5842e94689",
+        "pdf": "b6c3ec1221d9db333580d5a75e0608a89ce18312e537dc663b16c914ec98a623",
+        "review": "e758aa601277a04548925615da88da54d1fea4149842c92e40c2a1d3ab0e7a01",
+        "overlay": "ec4fa7f9f36fd537be14082f44668f7ac8b9ce0f2123388a3e02d047586423ed"
+      }
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "page": 49,
+      "backend": "wasm",
+      "note": "용어 표와 어문 규범 표의 분리·행 높이·본문 줄 소속을 보존한다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:03.589725+09:00",
+      "assets_sha256": {
+        "raw": "521214468826068316bfc77f04f6acc321835e99e13d44953172aa7db11542b8",
+        "pdf": "cf0aa286b3cbb2b635c0b5409069d200bdda6eb973d5c7a75dbfef92c654b5b6",
+        "review": "693c4325d5e94394c0a96e927d073fbb015a9f122f655ee336cba10a3128c93e",
+        "overlay": "6e7be01b21e3063fc7692e8f0e4dec33409097e39d54152142b8d73bc145218e"
+      }
+    },
+    {
+      "pr": 8787,
+      "key": "pr8787-handbook",
+      "page": 130,
+      "backend": "wasm",
+      "note": "본문 들여쓰기·책괄호와 아래 시스템 화면 이미지의 크기·소속을 보존한다. 이미지의 기존 미세 raster 차이가 보이며 보호 기준99.96%를 유지한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:15.316888+09:00",
+      "assets_sha256": {
+        "raw": "e6eea87bb40845e8df34b9b10922249eb6ce036dab15abbc6cc73e3989b324a2",
+        "pdf": "5c6d2c1d0cf4a01f78cb6c4c320a29569e42cb50514622dcea2bba9afb9574c4",
+        "review": "d1039354c36dc6f55e245958a236bee92aecd4b101ee0cc62875f559da38b472",
+        "overlay": "1141c81a3c9d5c4589378a77e635a17fdf84aa4d7f3aa9427a0b06f79bdc4581"
+      }
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-original",
+      "page": 1,
+      "backend": "wasm",
+      "note": "원본 고객지원시스템 문서의 첫 줄 들여쓰기와 두 TAC 표·붙임·결재를 같은 한 쪽에 보존한다. 기준선·중첩 표 소유 보정 후 실루엣100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:15.342388+09:00",
+      "assets_sha256": {
+        "raw": "7717b7bd53585924fb9aace07e02d455cb73e5bee7a780deb4de19caf0ff496e",
+        "pdf": "10732cc3d5007e27662ce77ffaab3f019c8fad5be29a4e5f0f9084f9867a4e67",
+        "review": "245c4c5865296b5ff1777e95183f51b66e89d1ddcdd76ddbe6a5b56c6ef9c7a7",
+        "overlay": "857468552b5d357d8ffca297fa0fc668022e1346774221ce5e57da105f6178d4"
+      }
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 3,
+      "backend": "wasm",
+      "note": "상속재산분리·유류분반환과 상속포기 표의 본문·취소선·주석의 소속과 테두리가 보존된다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:26.939373+09:00",
+      "assets_sha256": {
+        "raw": "fc0ce15b202b60ffd9c0ea68f71e2787f3615301de66f8b8da40a954a0823bce",
+        "pdf": "a03965caf84a315f3494128499a22e6be33fae3df0c6d6821dc4ee8c7c50ad64",
+        "review": "fdebd5340244fb81c8c592fa5e64830ed3d11dce6714d9322d02323f83720a41",
+        "overlay": "0ea34d1788584233f62cfa2361ea5660fae0e85f07c266e43011092fe473c042"
+      }
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 4,
+      "backend": "wasm",
+      "note": "앞쪽 주석 두 줄과 호주상속·유산상속 표의 높이·기준선·아래 주석이 맞는다. 표 뒤 빈 영역도 소속을 유지한다. 100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:27.229333+09:00",
+      "assets_sha256": {
+        "raw": "68085e28440b1a3641920b72f14d0675622ae5362308b245bf9ffc7080c52a77",
+        "pdf": "c5c542863bfb00072801f4e5689f966eb203648fbf25d11390dcdbc1a9d136a0",
+        "review": "02488edeeece977c23a74b8d86f688e1316d3fba9f2e4ae8cb3633b493936bfa",
+        "overlay": "f231cd55fa84cd225cc4245c0d21b0669565eaed4da3357dc9a6284fc639bb8f"
+      }
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 5,
+      "backend": "wasm",
+      "note": "두 상속 표의 전체 셀 높이·이어서 흐르는 주석을 보존한다. 첫 표 권리자 본문의 기존 자간·줄 위치 차이는 남아98.88%다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:46.978417+09:00",
+      "assets_sha256": {
+        "raw": "5da9281cbf6bf99392205982c6dbc92d0ae978703eaf261cafc95fadb9751c2c",
+        "pdf": "dce4d7c941284fe08c9e18be282c6b5858f2b0696035a82e3564a5239f461780",
+        "review": "70241c284b96054b71856f4273518c054ccdc60173a20b084f2c7567af41ca0b",
+        "overlay": "545f9771d4b03634d1fc48b54ca132ca725a7c6dc6ed2488e1f913f704916d89"
+      }
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 7,
+      "backend": "wasm",
+      "note": "세 표와 그 사이 제목·주석의 순서 및 비겹침을 보존한다. 하단 셀의 마지막 권리자와 마지막 주석이 빠지지 않는다.100%.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:47.109398+09:00",
+      "assets_sha256": {
+        "raw": "a4aee935fac8bffde4e45859e61835a7b2884cee75344f03cd8bfbb674cd39e3",
+        "pdf": "d16443ff2438496cb38f777f6913b97e49c9c0b37980f2670041863ef0f12b0b",
+        "review": "23af5beaeecc090e0ed4a3aeb3726f86cbc17cf8b01cde15493f4af2a820b7da",
+        "overlay": "3b1aed9421b7936212f7abe583babc0b24c47ed5222f8d5f077afbc464a582e0"
+      }
+    },
+    {
+      "pr": 8839,
+      "key": "pr8839-3190263",
+      "page": 8,
+      "backend": "wasm",
+      "note": "부존재 확인 판결·특별연고자 분여 표와 각 주석의 소속을 보존한다. 첫 표 둘째 행의 기존 문자 폭 차이는 남아99.11%이며 표 흐름 개선과 구분한다.",
+      "directly_read": "review comparison including same-page overlay",
+      "read_at": "2026-11-11T02:12:59.659876+09:00",
+      "assets_sha256": {
+        "raw": "e56123d76c9d78292d5c63dab04f36eed7d657fa151b94a8e0b85a9ccac2aeb8",
+        "pdf": "e9af03c8ab0787ead1c41a513d887d62a516c87f10e8a0dc693af9163836b9db",
+        "review": "b3b1f2c5d3b967b6d596d7859eedfae974d5326b65db1022daaefc8e00d7d500",
+        "overlay": "6199eb92a57050254bc1ac7c80d2663732ce1cb44d313183b771872e553e191a"
+      }
+    }
+  ]
+}
