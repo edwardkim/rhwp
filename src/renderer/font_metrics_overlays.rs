@@ -208,6 +208,12 @@ pub(crate) fn declared_original_glyph_advance_em(
     if face == "한양신명조" && !bold && !italic && character == '\u{257A}' {
         return Some(1.0);
     }
+    // 화학 원본의 독립 한컴2020 Print T11 U+2022는 /Widths와 d1이
+    // 모두1000/1000em이다. 표시용 중고딕 프로그램의 cmap 결측 때문에
+    // 이 원본 전진을 반각으로 추정하지 않는다. 동명 TTF·다른 style은 별개다.
+    if face == "한양중고딕" && !bold && !italic && character == '\u{2022}' {
+        return Some(1.0);
+    }
     // 원본 HFT U+2027은 기존 독립 Print의 Type3 /Widths=500/1000em이다.
     // 표시용 OTF의 cmap 결측에서 일반 구두점 폭으로 내려가면 뒤 글자가 당겨진다.
     // glyph 표의 같은 반각 계약을 측정·paint가 함께 소비한다. 명시 TTF/OTF는 비대상이다.

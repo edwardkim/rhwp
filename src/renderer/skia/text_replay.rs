@@ -14,7 +14,7 @@ use super::font_catalog::TypefaceCatalog;
 use super::font_lookup::{
     font_style_for_text, match_supplied_family, match_system_family_style,
     select_typeface_for_character, text_typeface_candidates, text_typeface_candidates_for_source,
-    typeface_declares_family, SystemFontFamilies,
+    text_typeface_candidates_for_style, typeface_declares_family, SystemFontFamilies,
 };
 use super::renderer::colorref_to_skia;
 use super::synthetic_typeface::{draw_synthetic_bold_paths, unemboldened_typeface};
@@ -83,14 +83,12 @@ impl SkiaTextReplay<'_> {
                 //
                 // 모든 후보를 chain 으로 보존 — char 단위 fallback 에 사용.
                 // 후보와 glyph 선택은 opt-in font decision trace도 그대로 사용한다.
-                let (_, typeface_chain) = text_typeface_candidates_for_source(
+                let (_, typeface_chain) = text_typeface_candidates_for_style(
                     self.font_mgr,
                     self.system_families,
                     self.custom_typefaces,
                     self.bundled_typefaces,
-                    &crate::renderer::native_font_family_for_style(style),
-                    font_style,
-                    style.source_font_is_ttf,
+                    style,
                 );
                 let hft_outline_family = (self.hft_outline_enabled
                     && crate::renderer::hft_outline::supports_style(style))

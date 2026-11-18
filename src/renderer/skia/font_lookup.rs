@@ -145,7 +145,32 @@ pub(super) fn text_family_candidates(requested: &str) -> Vec<String> {
 }
 
 fn text_family_candidates_for_weight(requested: &str, bold: bool) -> Vec<String> {
-    let mut families = declared_family_candidates(requested);
+    text_family_candidates_for_selection(requested, bold, false)
+}
+
+fn text_family_candidates_for_selection(
+    requested: &str,
+    bold: bool,
+    explicit_glyph_fallbacks: bool,
+) -> Vec<String> {
+    let declared = declared_family_candidates(requested);
+    let mut families = if explicit_glyph_fallbacks {
+        // Canvas와 같은 계약: 명시한 glyph 공급자를 일반 표시 별칭이 선점하지 않는다.
+        // 주 face의 실제 hit는 첫 위치에 남기며 일반 환경의 별칭 순서는 바꾸지 않는다.
+        let mut selected: Vec<String> = Vec::new();
+        for family in internal_font_family_members(requested)
+            .into_iter()
+            .map(str::to_owned)
+            .chain(declared)
+        {
+            if !selected.contains(&family) {
+                selected.push(family);
+            }
+        }
+        selected
+    } else {
+        declared
+    };
     let requested_members = internal_font_family_members(requested);
     // SVG/Canvas와 같은 서체 분류·굵기 계약을 소비한다. 원 바탕 face가
     // 없다는 이유로 고딕을 우선하거나 굵은 본문에 ExtraLight를 고르지 않는다.
@@ -233,6 +258,34 @@ pub(super) fn text_typeface_candidates_for_source(
         &declared_family_candidates(requested),
         style,
         source_ttf,
+    );
+    (families, chain)
+}
+
+/// 명시적 glyph 공급 여부까지 실제 style에서 읽어 paint와 관측을 일치시킨다.
+pub(super) fn text_typeface_candidates_for_style(
+    font_mgr: &FontMgr,
+    system_families: &SystemFontFamilies,
+    custom_typefaces: &TypefaceCatalog,
+    bundled_typefaces: &TypefaceCatalog,
+    style: &crate::renderer::TextStyle,
+) -> (Vec<String>, Vec<TypefaceCandidate>) {
+    let requested = crate::renderer::native_font_family_for_style(style);
+    let font_style = font_style_for_text(style);
+    let families = text_family_candidates_for_selection(
+        &requested,
+        *font_style.weight() >= 600,
+        style.glyph_fallback_advance_explicit,
+    );
+    let chain = typeface_candidates_for_families_for_source(
+        font_mgr,
+        system_families,
+        custom_typefaces,
+        bundled_typefaces,
+        &families,
+        &declared_family_candidates(&requested),
+        font_style,
+        style.source_font_is_ttf,
     );
     (families, chain)
 }
