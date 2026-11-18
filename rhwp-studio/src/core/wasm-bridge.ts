@@ -3313,10 +3313,10 @@ export class WasmBridge {
     };
   }
 
-  getParaPropertiesAt(sec: number, para: number): ParaProperties {
+  getParaPropertiesAt(sec: number, para: number, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const props = JSON.parse(this.doc.getParaPropertiesAt(sec, para));
-    if (props.spacingBeforePx !== undefined) return props;
+    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
     let rootPara = para;
     for (let i = 0; i < sec; i++) rootPara += this.doc.getParagraphCount(i);
     return this.withLegacyParaSpacing(props, 0, rootPara);
@@ -3341,10 +3341,10 @@ export class WasmBridge {
     return this.withLegacyParaSpacing(props, list, para);
   }
 
-  getCellParaPropertiesAt(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number): ParaProperties {
+  getCellParaPropertiesAt(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const props = JSON.parse(this.doc.getCellParaPropertiesAt(sec, parentPara, controlIdx, cellIdx, cellParaIdx));
-    if (props.spacingBeforePx !== undefined) return props;
+    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
     return this.legacyCellParaSpacing(props, sec, parentPara, [
       { controlIndex: controlIdx, cellIndex: cellIdx, cellParaIndex: cellParaIdx },
     ]);
@@ -3355,10 +3355,10 @@ export class WasmBridge {
     return (this.doc as any).setNumberingRestart(sec, para, mode, startNum);
   }
 
-  getCellParaPropertiesAtByPath(sec: number, parentPara: number, pathJson: string): ParaProperties {
+  getCellParaPropertiesAtByPath(sec: number, parentPara: number, pathJson: string, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const props = JSON.parse(this.doc.getCellParaPropertiesAtByPath(sec, parentPara, pathJson));
-    if (props.spacingBeforePx !== undefined) return props;
+    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
     return this.legacyCellParaSpacing(props, sec, parentPara, JSON.parse(pathJson));
   }
 
