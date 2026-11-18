@@ -366,3 +366,20 @@ Native 98.53555→100.00000%, fresh WASM 97.57430→100.00000%를 확인했다.
 Studio만 바뀐 두 커밋 사이 Rust·crates·Cargo·build·assets·ttfs·scripts·tests·rhwp-shared Git 객체가 동일함을 확인했다. 새 커밋에서 locked wrapper로 fresh WASM을 다시 빌드한 결과도 기존 생산본과 byte SHA가 같다. 기존 Rust·정본 Visual Sweep 결과는 생산 커밋을 유지해 재사용하며, 변경된 Studio 소비자는 별도 폴더에 새로 실행한다. 첫 새 캡처의 탐색 컨텍스트 소멸과 앞선 WASM streaming compile 실패는 각각 실패 기록으로 분리했고 완료 결과로 수용하지 않았다.
 
 현재 전쪽 fresh WASM·편람 gate·정본 보호 문서와 실제 Studio 재검증은 진행 중이다. 검사 완료와 대표 raw/review/overlay 판독 전에는 이슈 해결·PR 준비 완료로 판정하지 않는다.
+
+
+## 사용자 지적: sample4 26쪽 회색 배경 하단
+
+같은 base에 존재하는 차이도 사용자 지적에 따라 원인을 확인하고 보정했다. 26쪽 문단 890의 글줄은 본문에 들어가지만, 생산된 20px 채움 밴드를 최종 paint에서 단 바닥으로 잘라 약 6.5px가 빠졌다. 독립 PDF 벡터 사각형과 원본 1,000HU 줄 높이·500HU 줄간격을 교차 확인했다. 과거 제외 보정 네 커밋을 원 Git 저장소에서 직접 읽었으며, 빈 문단 흡수·페이지 배분은 복원하지 않았다.
+
+`211253376d20aa40c4cf223fdaabd87467e88240`는 수용한 본문 TextLine의 실제 후행 채움만 보존한다. 외곽 테두리·넘친 줄·셀·머리말 등의 기존 물리 경계는 유지한다. 새 관계형 반례는 보정 전 1 FAIL, 보정 뒤 기존 그림·저장·소속을 포함한 모듈 6 PASS다. [원인](sample4-gray-tail/cause.md)과 [집중 검증](sample4-gray-tail/validation.json)을 보존한다.
+
+앞선 `623309719c`에서는 실제 CanvasKit compat/default가 각각 해당 backend로 실행됐고, fallback 없이 raw 99.18925%였다. Canvas2D는 98.87848%였다. root bar·뒤 E/Q·문단 소속을 직접 대조했으며 남은 미세 잉크 차이를 픽셀 동일로 주장하지 않는다. 이 증거는 회색 배경 보정 전의 정확한 Studio 기능 검증으로 보존한다.
+
+최종 검증은 `gray-tail-paint-final` 실행에서 새 코드의 Native/fresh WASM을 생산하고 같은 25·26쪽부터 대조한다. 이어 전체 회귀·다섯 문서·보호 문서·실제 소비 경로를 완료한다. 이전 후보의 252쪽 결과를 새 paint 코드의 완료 결과로 재명명하지 않으며, 코드가 같은 고정 base의 완료 16건만 원래 생산 영수증과 해시를 보존해 재사용한다. PR 준비·제출 완료는 아직 아니다.
+
+
+새 Native와 fresh WASM의 같은 25·26쪽을 확인했다. 두 backend 모두 25쪽 100.00%를 유지했고, 26쪽은 99.37%에서 100.00%로 상승했다. 원래 약 6px 빨간 띠는 해소됐고 약 1px 하단 경계 차이가 남는다. 이는 기존 2px 실루엣 판정의 100%이며 픽셀 동일을 뜻하지 않는다. 새 WASM Node 바인딩을 사용한 최소 글꼴 Studio 전체 2,811 PASS, TypeScript·build·E2E manifest·문서 링크 검사도 통과했다. 현재 추가 테두리 정상 대조를 실행 중이며, 전체 회귀·전쪽·보호 문서·실제 소비 경로의 최종 검증은 계속한다.
+
+
+최신 전체 회귀는 13,773건 중 13,770 PASS·3 FAIL·45 skip(558.449초)로 완료했다. 세 실패는 후행 배경 채움을 기존 본문 넘침 원장이 독립 Rect로 센 partition 2·4·5다. 같은 조건의 base/head 진단과 독립 PDF 벡터를 대조한 [원인 분석](overflow-fill-ownership/cause.md)을 보존했다. 기준 상향이나 회색 배경 복구 취소로 우회하지 않으며, 소유 글줄·선언 밴드와 실제 넘침을 구분하는 반례 검사를 보완한다. 최신 전체 회귀 통과·PR 준비 완료는 아니다.

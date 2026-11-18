@@ -1,0 +1,437 @@
+{
+  "status": "priority_pages_qualified_not_full_protection_acceptance",
+  "candidate_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+  "fixed_base": "197ce19e99438c2cba452c654ae1af504dab85ec",
+  "native_base_actual_build_source": "af54158960ec91504d42faf842b0cb3229366236",
+  "native_base_reuse_reason": "af541589 and fixed197ce source/build dependency identity proved; original producer SHA preserved",
+  "font_scope": "normal original font programs, not minimum font sandbox",
+  "capture_workers_total": 8,
+  "evaluated_pages_including_base_and_head": 20,
+  "records": [
+    {
+      "label": "priority-base-native-nested",
+      "key": "nested",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "0a76c014a999c1784a09c79722fc45cbe6c09494d14230959d0f444322fb0add",
+      "declines": [],
+      "tsv": "base/native/nested/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "af54158960ec91504d42faf842b0cb3229366236"
+    },
+    {
+      "label": "priority-head-native-nested",
+      "key": "nested",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "0a76c014a999c1784a09c79722fc45cbe6c09494d14230959d0f444322fb0add",
+      "declines": [],
+      "tsv": "head/native/nested/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    },
+    {
+      "label": "priority-base-native-seo-helvetica-styles",
+      "key": "seo-helvetica-styles",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "base/native/seo-helvetica-styles/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "af54158960ec91504d42faf842b0cb3229366236"
+    },
+    {
+      "label": "priority-head-native-seo-helvetica-styles",
+      "key": "seo-helvetica-styles",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "head/native/seo-helvetica-styles/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    },
+    {
+      "label": "priority-base-native-sample16-hwp2022",
+      "key": "sample16-hwp2022",
+      "pages": 2,
+      "minimum": 100.0,
+      "sha256": "9c1da32f38ab5cb6bd8b6e34c7fc87003ea15c009a7e556eddc718d0096aa3aa",
+      "declines": [],
+      "tsv": "base/native/sample16-hwp2022/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "af54158960ec91504d42faf842b0cb3229366236"
+    },
+    {
+      "label": "priority-head-native-sample16-hwp2022",
+      "key": "sample16-hwp2022",
+      "pages": 2,
+      "minimum": 100.0,
+      "sha256": "9c1da32f38ab5cb6bd8b6e34c7fc87003ea15c009a7e556eddc718d0096aa3aa",
+      "declines": [],
+      "tsv": "head/native/sample16-hwp2022/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    },
+    {
+      "label": "priority-base-native-yeongwol",
+      "key": "yeongwol",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "base/native/yeongwol/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "af54158960ec91504d42faf842b0cb3229366236"
+    },
+    {
+      "label": "priority-head-native-yeongwol",
+      "key": "yeongwol",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "head/native/yeongwol/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    },
+    {
+      "label": "priority-base-wasm-nested",
+      "key": "nested",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "0a76c014a999c1784a09c79722fc45cbe6c09494d14230959d0f444322fb0add",
+      "declines": [],
+      "tsv": "base/wasm/nested/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "197ce19e99438c2cba452c654ae1af504dab85ec"
+    },
+    {
+      "label": "priority-head-wasm-nested",
+      "key": "nested",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "0a76c014a999c1784a09c79722fc45cbe6c09494d14230959d0f444322fb0add",
+      "declines": [],
+      "tsv": "head/wasm/nested/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    },
+    {
+      "label": "priority-base-wasm-seo-helvetica-styles",
+      "key": "seo-helvetica-styles",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "base/wasm/seo-helvetica-styles/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "197ce19e99438c2cba452c654ae1af504dab85ec"
+    },
+    {
+      "label": "priority-head-wasm-seo-helvetica-styles",
+      "key": "seo-helvetica-styles",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "head/wasm/seo-helvetica-styles/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    },
+    {
+      "label": "priority-base-wasm-sample16-hwp2022",
+      "key": "sample16-hwp2022",
+      "pages": 2,
+      "minimum": 100.0,
+      "sha256": "9c1da32f38ab5cb6bd8b6e34c7fc87003ea15c009a7e556eddc718d0096aa3aa",
+      "declines": [],
+      "tsv": "base/wasm/sample16-hwp2022/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "197ce19e99438c2cba452c654ae1af504dab85ec"
+    },
+    {
+      "label": "priority-head-wasm-sample16-hwp2022",
+      "key": "sample16-hwp2022",
+      "pages": 2,
+      "minimum": 100.0,
+      "sha256": "9c1da32f38ab5cb6bd8b6e34c7fc87003ea15c009a7e556eddc718d0096aa3aa",
+      "declines": [],
+      "tsv": "head/wasm/sample16-hwp2022/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    },
+    {
+      "label": "priority-base-wasm-yeongwol",
+      "key": "yeongwol",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "base/wasm/yeongwol/silhouette.tsv",
+      "qualified_source_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "actual_binary_build_source": "197ce19e99438c2cba452c654ae1af504dab85ec"
+    },
+    {
+      "label": "priority-head-wasm-yeongwol",
+      "key": "yeongwol",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "declines": [],
+      "tsv": "head/wasm/yeongwol/silhouette.tsv",
+      "qualified_source_head": "211253376d20aa40c4cf223fdaabd87467e88240",
+      "actual_binary_build_source": "211253376d20aa40c4cf223fdaabd87467e88240"
+    }
+  ],
+  "direct_review_pairs": [
+    {
+      "key": "nested",
+      "backend": "native",
+      "page": 8,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/native/nested/raw-008.png",
+          "sha256": "719e46850127e9e18377ec70e0208c66fecc7ff0e253ce469d18fe2d29b21940"
+        },
+        "pdf": {
+          "path": "head/native/nested/pdf-008.png",
+          "sha256": "6b3863f866f88b34abd3044c31e7e4e0571423e99047f02b917fad84c4bb7cda"
+        },
+        "review": {
+          "path": "head/native/nested/review-008.png",
+          "sha256": "c6deba10f55cdaaaa4120816f0e776a01a5cdb89ccc7e08649b8eb35751ac753"
+        },
+        "overlay": {
+          "path": "head/native/nested/overlay-008.png",
+          "sha256": "d63c8644fa3f4bff4077f93399951a6555e486bc31f6f7f9b028bca964b6ffa1"
+        }
+      }
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "native",
+      "page": 1,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/native/seo-helvetica-styles/raw-001.png",
+          "sha256": "7ab9eb6b45d7fc4ce6becb8b44aa984f181a74932252e3198f6e94870a9e11c4"
+        },
+        "pdf": {
+          "path": "head/native/seo-helvetica-styles/pdf-001.png",
+          "sha256": "a446d324676f30a04c23b2b2a4d5f0972b676b4a952a46d86ab041373252b266"
+        },
+        "review": {
+          "path": "head/native/seo-helvetica-styles/review-001.png",
+          "sha256": "fb3d86d71c08c5e30b19fdbf21454f2bb3b17f6f3caaef7bbb7aff80beaac1b7"
+        },
+        "overlay": {
+          "path": "head/native/seo-helvetica-styles/overlay-001.png",
+          "sha256": "5fdb3fea55fa1c8039b52236c814a86d8435b0e7957cdc5c66b6c0726698639f"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "page": 38,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/native/sample16-hwp2022/raw-038.png",
+          "sha256": "1be38093c48a8b3cebb4c7e03bb1ff341d41c3fc9944ebfff5220abe0351b62f"
+        },
+        "pdf": {
+          "path": "head/native/sample16-hwp2022/pdf-038.png",
+          "sha256": "e7c2fc4f391fb1bef6005fed2854feb5f9b5cb493aba6a5bcef5646737c988a1"
+        },
+        "review": {
+          "path": "head/native/sample16-hwp2022/review-038.png",
+          "sha256": "68c3b95f5ce6ffcdc2851dd460d96c234ac36816991c665757768cd222b4004f"
+        },
+        "overlay": {
+          "path": "head/native/sample16-hwp2022/overlay-038.png",
+          "sha256": "81888dd5e26bd218455c3950f29316958caa2f24b8ace41fc4c7530ac0f45fb1"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "page": 43,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/native/sample16-hwp2022/raw-043.png",
+          "sha256": "87eac5b1ea6281a4709a9e080c146320d06a4bf5edfee4cdb3836714e189d18d"
+        },
+        "pdf": {
+          "path": "head/native/sample16-hwp2022/pdf-043.png",
+          "sha256": "ed92e1e7f4a0171dc200367be8bd2bc896d7e3c8b15dd6dbcd46b92f99ae1472"
+        },
+        "review": {
+          "path": "head/native/sample16-hwp2022/review-043.png",
+          "sha256": "8744a75b2518e10e555e71de29b5bc0ac520e734c3010e6d6fa3fd7dd27b96bb"
+        },
+        "overlay": {
+          "path": "head/native/sample16-hwp2022/overlay-043.png",
+          "sha256": "bd63c9034c0d4e65fe8f8f132a7be108cae093ded2973a42d4f8c31f14c739d9"
+        }
+      }
+    },
+    {
+      "key": "yeongwol",
+      "backend": "native",
+      "page": 1,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/native/yeongwol/raw-001.png",
+          "sha256": "30a12802a375151b9d104894457e309697088f7ffaeb62fb77af06f5db3a8a40"
+        },
+        "pdf": {
+          "path": "head/native/yeongwol/pdf-001.png",
+          "sha256": "1c663ee4b56f8560de850d46c02f9e398f49fd5afea94c1157d99b28688536ad"
+        },
+        "review": {
+          "path": "head/native/yeongwol/review-001.png",
+          "sha256": "3b05534a0856a4f811d5b96791be1f1d78cbecb326a732d709326ef03f94ad0f"
+        },
+        "overlay": {
+          "path": "head/native/yeongwol/overlay-001.png",
+          "sha256": "3accdcea61e9ebf7aec27fcc026846bf85006a0f2a17b8261498d73dee31b4d8"
+        }
+      }
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "page": 8,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/wasm/nested/raw-008.png",
+          "sha256": "2a9762704ac917da5c457aa2a9a5d4a716249f73437b617ab1a51cc07f090800"
+        },
+        "pdf": {
+          "path": "head/wasm/nested/pdf-008.png",
+          "sha256": "6b3863f866f88b34abd3044c31e7e4e0571423e99047f02b917fad84c4bb7cda"
+        },
+        "review": {
+          "path": "head/wasm/nested/review-008.png",
+          "sha256": "75526a2c55531aa39e36f2e2fdbfa87e7cc91e948f6fdf0c14c0ec42a4828557"
+        },
+        "overlay": {
+          "path": "head/wasm/nested/overlay-008.png",
+          "sha256": "ca1a54fbf274bd2488f191e1f048fe17481b47dd1dadf386ed8a608a8824c6c5"
+        }
+      }
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "page": 1,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/wasm/seo-helvetica-styles/raw-001.png",
+          "sha256": "d81a593967aee147d121a6d6b679564ad5c37b69e0a22a470fdc83be9422b5e8"
+        },
+        "pdf": {
+          "path": "head/wasm/seo-helvetica-styles/pdf-001.png",
+          "sha256": "a446d324676f30a04c23b2b2a4d5f0972b676b4a952a46d86ab041373252b266"
+        },
+        "review": {
+          "path": "head/wasm/seo-helvetica-styles/review-001.png",
+          "sha256": "21535211187075fba1312d86dfdcb587e7f4d4ea49d65be3bbe3569b5ec0e1cc"
+        },
+        "overlay": {
+          "path": "head/wasm/seo-helvetica-styles/overlay-001.png",
+          "sha256": "038a390b7bb3ddbaba27978a6ccfd22a05bd8e97be2f9fd892f62663d138a550"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": 38,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/wasm/sample16-hwp2022/raw-038.png",
+          "sha256": "3335b75c6cba1a97e3ad72da980539d6e047ee78bd330115b9bf30b797c857a4"
+        },
+        "pdf": {
+          "path": "head/wasm/sample16-hwp2022/pdf-038.png",
+          "sha256": "e7c2fc4f391fb1bef6005fed2854feb5f9b5cb493aba6a5bcef5646737c988a1"
+        },
+        "review": {
+          "path": "head/wasm/sample16-hwp2022/review-038.png",
+          "sha256": "d77468922b54abf1bda6382eb1e71b513b48004d04c45907fe376bb70d3a0202"
+        },
+        "overlay": {
+          "path": "head/wasm/sample16-hwp2022/overlay-038.png",
+          "sha256": "9d0b1913d2b60e3963408bf6223529cfdaa72f5b5bedc28256eb8a51f873a895"
+        }
+      }
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "page": 43,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/wasm/sample16-hwp2022/raw-043.png",
+          "sha256": "03b164b937141d7d8e68b28eb6cbe5aa1f9056a0f8cb061ea88e59bcf1b3bf39"
+        },
+        "pdf": {
+          "path": "head/wasm/sample16-hwp2022/pdf-043.png",
+          "sha256": "ed92e1e7f4a0171dc200367be8bd2bc896d7e3c8b15dd6dbcd46b92f99ae1472"
+        },
+        "review": {
+          "path": "head/wasm/sample16-hwp2022/review-043.png",
+          "sha256": "f5cc8fdecafb7679e930d7f8f3c8485024fca3b3bb04faf5808b55719e23355a"
+        },
+        "overlay": {
+          "path": "head/wasm/sample16-hwp2022/overlay-043.png",
+          "sha256": "aee3369e31d8dcf4a8417cf82a020379e9432cfa5e9917fd3935991e3414fe3f"
+        }
+      }
+    },
+    {
+      "key": "yeongwol",
+      "backend": "wasm",
+      "page": 1,
+      "directly_read": true,
+      "files": {
+        "raw": {
+          "path": "head/wasm/yeongwol/raw-001.png",
+          "sha256": "d3c1a967d7d01aff31b92214284f710e9d75102f016661220173666018e0345c"
+        },
+        "pdf": {
+          "path": "head/wasm/yeongwol/pdf-001.png",
+          "sha256": "1c663ee4b56f8560de850d46c02f9e398f49fd5afea94c1157d99b28688536ad"
+        },
+        "review": {
+          "path": "head/wasm/yeongwol/review-001.png",
+          "sha256": "4f648f8bec50f27349300b1995a53269d18fffbae2710d9dfdd2234ca9156a42"
+        },
+        "overlay": {
+          "path": "head/wasm/yeongwol/overlay-001.png",
+          "sha256": "466b99740923a49ac3a264c8e2b2de1cb383a8f0156c4529cb4380ae0a9027d8"
+        }
+      }
+    }
+  ],
+  "direct_reading_notes": {
+    "nested": "8쪽 표 머리글, 여섯 기관의 내용과 행 경계, 하단 EU 행과 쪽 번호를 대조했다. 내용 소속·줄바꿈은 보존되며 얇은 선/잉크 차이를 픽셀 동일로 주장하지 않는다.",
+    "seo-helvetica-styles": "regular/bold/italic/bold-italic 네 줄의 실제 굵기·기울기와 위치를 대조했다. 네 Arial 원본 프로그램 공급 조건에서 2px raw 100%다.",
+    "sample16-hwp2022": "38쪽 표의 원문 목록·중첩 셀과 43쪽 (1)~(8) 본문·하단 배점표를 대조했다. 외곽선·회색 제목 밴드의 미세 raster 차이는 남으며 내용 누락·중복·새 이동은 발견하지 않았다. 이 검사는 sample16 새 개선 주장이 아니라 보호 조건이다.",
+    "yeongwol": "1쪽 임대차 계약서의 표 칸·본문 계약조건·하단 서명과 ※ 표식을 대조했다. 2px raw 100%를 픽셀 동일로 표시하지 않는다."
+  },
+  "full_18_datasets_1771_pages_each_backend": "pending"
+}

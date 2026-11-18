@@ -15,7 +15,7 @@
   },
   "font_scope": "macOS minimum-font sandbox; RHWP_FONT_PATH unset",
   "change": "Paint-only trailing fill of an accepted body line. No pagination, source/PDF, border frame or threshold change.",
-  "status": "focused_passed_native_wasm_visual_and_final_gates_pending",
+  "status": "native_and_fresh_wasm_focus_100_passed_final_scope_gates_pending",
   "logs": [
     {
       "name": "before-nextest.log",
@@ -25,5 +25,7 @@
       "name": "after-focused-nextest.log",
       "sha256": "13183f10b619dec51d1e2aa6fbc692d92f0a95c91631afb1928c0bfdbd477fc2"
     }
-  ]
+  ],
+  "native_focus": "native/validation.json",
+  "wasm_focus": "wasm/validation.json"
 }
