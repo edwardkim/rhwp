@@ -11,6 +11,15 @@ last_verified: 2026-11-18
 [초기 제출 95a7fb1e8b의 제품·테스트·빌드 입력 동일성](source-identity.json), [빌드 신원](build-provenance.json),
 [직접 판독](direct-inspection.json)을 함께 확인한다. 이슈 #8371·#8218은 기존 조사와 입력의 맥락이며 새 종료 대상으로 지정하지 않는다.
 
+## 2026-11-18 확정 병합 결과
+
+[PR #9157](https://github.com/edwardkim/rhwp/pull/9157)을 작업지시자의 명시적인 선 병합·후속 처리 지시에 따라 `af54158960ec91504d42faf842b0cb3229366236`로 병합했습니다.
+보호 검증은 전 OS에 적용하며 현재 후보의 보호 18종 전쪽 검증은 여전히 미완료입니다. 기준값·하한은 변경하지 않았습니다.
+[최종 head CI·duration·로컬 추가 확인·raw 이미지 hash 영수증](merge-followup-20261118/receipt.json)과 [최종 검토](../../../archives/pr_9157_review.md)를 따릅니다.
+이하의 병합 보류 표현은 지시 이전의 검토 이력입니다. 이전 실행 producer와 실제 검증 범위를 보존하며 최신 head의 재실행으로 바꾸어 표시하지 않습니다.
+
+## 병합 지시 이전의 증적과 판단
+
 ## 수정과 소비 경로
 
 - HWP3 sample4의 NASM 그림은 25쪽 제목에 겹치던 상태에서 독립 한컴 Print의 26쪽으로 이동한다.
