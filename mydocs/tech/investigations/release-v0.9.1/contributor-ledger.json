@@ -1465,6 +1465,7 @@
         "archive:mydocs/pr/archives/pr_9012_review.md",
         "archive:mydocs/pr/archives/pr_9024_review.md",
         "archive:mydocs/pr/archives/pr_9168_review.md",
+        "archive:mydocs/pr/archives/pr_9170_review.md",
         "commit:025ebab1d7212b5974be48c464278690809c4343",
         "commit:1695089d21fb5ff116eeba263e4935f04b4ac494",
         "commit:1a3ed4a7cd76701085a24ac81d30bc5fb31942c1",
@@ -1476,6 +1477,7 @@
         "commit:5cc77a0da8e1e24afc3a810a4967f7876f890bb4",
         "commit:71c002495603a34af43f238dd2c98354d942a589",
         "commit:75da9680e31b3179efb3a044f934dce4227f9182",
+        "commit:8612752c0eb50ea74755906539e121aa9abd29d7",
         "commit:87a4acee56c4d39c290777a9b6c4bd6f3edbbe57",
         "commit:88170fd75f9d0ce156fe49d79aeabea9bb3a4bcc",
         "commit:89a859c1f339a423f2aa69411e60eedd9806a96f",
@@ -1492,6 +1494,7 @@
         "commit:fa32a1633b0677f3dc48ea5cc99a4cab309361b6",
         "commit:ff3e3a60916b9a9bb3954266464e5917cea49117",
         "merge:1695089d21fb5ff116eeba263e4935f04b4ac494",
+        "merge:8612752c0eb50ea74755906539e121aa9abd29d7",
         "merge:9e2794796787b46815462fcecd1536ab74ac8528",
         "merge:fa32a1633b0677f3dc48ea5cc99a4cab309361b6"
       ],
@@ -1502,7 +1505,8 @@
       "prNumbers": [
         9012,
         9024,
-        9168
+        9168,
+        9170
       ]
     },
     {
@@ -1845,17 +1849,17 @@
     }
   ],
   "counts": {
-    "baseMergedPullRequests": 125,
+    "baseMergedPullRequests": 126,
     "bots": 1,
-    "candidateMergedPullRequests": 125,
+    "candidateMergedPullRequests": 126,
     "cherryPickSources": 341,
     "cherryPickSourcesWithAssociatedPrs": 0,
     "excludedGitIdentities": 1,
     "excludedPullRequestReferences": 158,
-    "issueReferences": 215,
+    "issueReferences": 216,
     "people": 19,
-    "pullRequestCandidates": 283,
-    "pullRequests": 125,
+    "pullRequestCandidates": 284,
+    "pullRequests": 126,
     "resolvedCherryPickSourceObjects": 340,
     "unreferencedBaseMergedPullRequests": 0,
     "unresolvedGitIdentities": 0,
@@ -2048,8 +2052,8 @@
   ],
   "range": {
     "baseSha": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
-    "commitCount": 1225,
-    "headSha": "1695089d21fb5ff116eeba263e4935f04b4ac494"
+    "commitCount": 1226,
+    "headSha": "8612752c0eb50ea74755906539e121aa9abd29d7"
   },
   "schema": "rhwp.release-contributor-audit.v1",
   "unresolvedCherryPickSources": [

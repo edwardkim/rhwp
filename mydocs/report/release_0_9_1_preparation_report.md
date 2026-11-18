@@ -1,19 +1,19 @@
 # v0.9.1 릴리즈 준비 보고서
 
-상태: 로컬 검증 마무리 중. AMO source ZIP의 실제 재컴파일·Firefox 재빌드 결과를 기다린다.
+상태: 8a01b6529c의 로컬 검증과 AMO 실제 재컴파일은 완료했다. 새 devel #9170 반영 후 프런트엔드 재검증 중이다.
 원격 push·PR·workflow dispatch·main 승격·tag·registry 게시·스토어 제출은 아직 수행하지 않았다.
 
 ## 기준과 범위
 
 - 작업 브랜치: `release/0.9.1-preparation-20261118`.
 - 검증·로컬 포장 source: `8a01b6529c98c0f7fc53750dbe22ab86467e1350`.
-- 기능 기준 devel: `1695089d21fb5ff116eeba263e4935f04b4ac494`.
+- 최종 기능 기준 devel: `8612752c0eb50ea74755906539e121aa9abd29d7`.
 - main: `7213ed1f96266b95e22cd5645a07851c9c18298e`.
 - 이전 tag `v0.9.0`: `c9095c5f67632e6721e800ccc7fb43ea49d26682`.
 - [수행 계획](../plans/release_0_9_1_20261118.md), [국문 노트](../release/release_notes_v0.9.1.md),
   [영문 노트](../release/release_notes_v0.9.1_EN.md).
 
-준비 도중 devel에 병합된 #9168 한 건은 충돌 없이 반영했다. 해당 Studio 소스는 devel과 같으며,
+준비 도중 devel에 병합된 #9168·#9170은 충돌 없이 반영했다. 해당 Studio 소스는 devel과 같으며,
 실제 E2E에서 공급자 없음·빈 공급자는 쪽 트리 재조회 0회, 글꼴 공급자는 입력 20회에 편집 쪽만
 20회 조회하고 조합·붙여넣기·Undo/Redo와 3쪽 보존을 확인했다.
 
@@ -52,7 +52,7 @@ MSRV 1.93.1, 자원 상한·ID 고갈·메모리 순서 계약을 유지한다. 
 게시 사전 검사는 재사용 버전이 공개 registry에서 사라졌을 때 새 업로드로 전환하지 않는다.
 새 버전 8개와 재사용 6개의 소유자·공개 상태·checksum 검사가 통과했으며 실제 업로드는 없다.
 
-v0.9.0 이후 1,225개 commit의 Git 저자·공동 저자·원 PR·통합 출처를 감사했다. 사람 19명과
+v0.9.0 이후 1,226개 commit의 Git 저자·공동 저자·원 PR·통합 출처를 감사했다. 사람 19명과
 Dependabot을 국·영문 CHANGELOG·노트에 반영했고 미분류 저자·번호는 0건이다. 원 cherry-pick
 source 341개 중 객체 340개를 확보했다. 미확보 객체의 통합 Git 저자는 보존했고, 과거 issue
 참조 2개와 identity 판정 근거는 [공개 원장](../tech/investigations/release-v0.9.1/contributor-ledger.json)

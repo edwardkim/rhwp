@@ -19,6 +19,8 @@ This candidate improves table, paragraph, font and round-trip fidelity, clipboar
 
 - Recollect host font requests only for the edited Canvas2D page when document, font and pagination state remain valid; preserve full discovery after other changes ([#9168](https://github.com/edwardkim/rhwp/pull/9168)).
 
+- Report automatic HWP download opening as complete after the initial page is painted, including font-preparation races ([#9170](https://github.com/edwardkim/rhwp/pull/9170)).
+
 ### PDF, CLI, Native hosts and release tooling
 
 - Parse PDF ToUnicode range tokens and comments correctly. Existing PDF onboarding covers passwords, page selection, resource policies and Worker ownership ([#8922](https://github.com/edwardkim/rhwp/pull/8922)).
@@ -34,7 +36,7 @@ Product, npm, VS Code and browser-extension candidates use 0.9.1. Eight changed 
 
 ### Contributors
 
-The audit covers **1,225 commits** from v0.9.0 through feature source `1695089d21fb5ff116eeba263e4935f04b4ac494`, including Git authors, co-authors and original/integration PR evidence. Thank you to **19 people** and Dependabot. The local Atomic cleanup and release metadata are follow-ups by the maintainer already included below.
+The audit covers **1,226 commits** from v0.9.0 through feature source `8612752c0eb50ea74755906539e121aa9abd29d7`, including Git authors, co-authors and original/integration PR evidence. Thank you to **19 people** and Dependabot. The local Atomic cleanup and release metadata are follow-ups by the maintainer already included below.
 
 <!-- release-contributors:v0.9.1:start -->
 - @Bongseop-Kim

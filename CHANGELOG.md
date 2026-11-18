@@ -17,6 +17,8 @@
 
 - 문서·글꼴·쪽 나눔 상태가 유효하면 Canvas2D 편집한 쪽의 호스트 글꼴 요청만 다시 수집해 입력 비용을 줄였습니다. 다른 변경에서는 전체 요청 수집을 유지합니다 ([#9168](https://github.com/edwardkim/rhwp/pull/9168)).
 
+- HWP 다운로드 자동 열기의 첫 페이지가 실제로 그려진 뒤 완료를 표시하며 글꼴 준비 경합을 처리합니다 ([#9170](https://github.com/edwardkim/rhwp/pull/9170)).
+
 ### PDF·CLI·Native와 배포 환경
 
 - PDF ToUnicode 범위 항목의 토큰·주석 처리를 보정했습니다. PDF 가져오기·암호·선택 쪽·자원 한도·Worker 사용법은 기존 PDF 개발자 안내를 따릅니다 ([#8922](https://github.com/edwardkim/rhwp/pull/8922)).
@@ -32,7 +34,7 @@
 
 ### 기여자
 
-v0.9.0 이후 기능 기준 `1695089d21fb5ff116eeba263e4935f04b4ac494`까지 **1,225개 커밋**의 Git 저자·공동 저자·원 PR·통합 출처를 감사했습니다. 사람 **19명**과 Dependabot에 감사합니다. 로컬 deprecated 보정과 릴리즈 메타데이터는 이 명단에 이미 있는 메인테이너의 후속 변경입니다.
+v0.9.0 이후 기능 기준 `8612752c0eb50ea74755906539e121aa9abd29d7`까지 **1,226개 커밋**의 Git 저자·공동 저자·원 PR·통합 출처를 감사했습니다. 사람 **19명**과 Dependabot에 감사합니다. 로컬 deprecated 보정과 릴리즈 메타데이터는 이 명단에 이미 있는 메인테이너의 후속 변경입니다.
 
 <!-- release-contributors:v0.9.1:start -->
 - @Bongseop-Kim
