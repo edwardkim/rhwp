@@ -17,7 +17,7 @@ import uuid
 
 import gpu_memory_acceptance as memory_acceptance
 
-from build_linux_probe import require_linux
+from build_linux_probe import require_linux, sdk_supervises_children
 from check_macos_metal_sdk import stop_process_tree
 from qualify_desktop_texture import (MAX_BUILD_RECEIPT_BYTES, compare_pixels,
                                      read_json, validate_stage_identity,
@@ -264,6 +264,7 @@ def main():
     memory_acceptance.add_memory_arguments(parser)
     args = parser.parse_args()
     require_linux()
+    supervised = sdk_supervises_children()
     if not 3 <= args.frames <= 64 or not 30 <= args.timeout <= 300:
         parser.error("frame count must be 3..64 and timeout 30..300 seconds")
     cycles = args.memory_pressure_cycles
@@ -310,7 +311,7 @@ def main():
         try:
             process = subprocess.Popen([str(files["runner"])], cwd=files["runner"].parent, env=env,
                                        stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
-                                       start_new_session=True)
+                                       start_new_session=not supervised)
             state["pid"] = process.pid
             write_json(output / "receipt.json", state)
             compositor = X11Compositor(process.pid)
@@ -394,7 +395,7 @@ def main():
                          continuousPresentationSupported=args.frames > 4)
         except BaseException as error:
             state.update(qualification="failed", error=f"{type(error).__name__}: {error}")
-            if process is not None and process.poll() is None:
+            if not supervised and process is not None and process.poll() is None:
                 stop_process_tree(process)
             if process is not None:
                 state["exitCode"] = process.returncode

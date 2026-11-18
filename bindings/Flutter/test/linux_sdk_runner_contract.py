@@ -2,8 +2,11 @@
 """Portable orchestration fixtures, never Linux SDK/Native/GPU execution proof."""
 import copy
 import json
+import os
 from pathlib import Path
+import signal
 import struct
+import subprocess
 import sys
 import tempfile
 import time
@@ -51,10 +54,15 @@ class LinuxSdkRunner(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def execute(self, command, *, env, log_path, step, record, **unused):
+    def execute(self, command, *, env, log_path, step, record, stop_failed_group=False, **unused):
         # The fake executor exercises receipt ordering/rejection only. It does
         # not invoke a compiler, Rust, Flutter, Native code or a compositor.
         self.commands.append(command); self.environments.append(env)
+        nested = Path(command[2]).name in {
+            'build_linux_probe.py', 'qualify_linux_texture.py', 'qualify_linux_tile_group.py',
+        } if len(command) > 2 and command[0] == sys.executable else False
+        self.assertEqual(env.get(runner.SDK_SUPERVISION_ENV), '1' if nested else None)
+        self.assertTrue(stop_failed_group)
         if self.fail_command_keyword in command:
             Path(log_path).write_text('controlled child failure')
             step.update(exitCode=7, finished=time.time(), portableFakeExecutor=True)
@@ -301,6 +309,102 @@ class LinuxSdkRunner(unittest.TestCase):
                 target[path[-1]] = replacement
                 if path == ('abiVersion',) and replacement == 1: continue
                 with self.assertRaises(ValueError): runner.validate_capabilities(value)
+
+
+@unittest.skipUnless(sys.platform == 'linux', 'Linux SDK process supervision uses Linux process groups')
+class LinuxSdkProcessSupervision(unittest.TestCase):
+    def test_nested_worker_stops_on_outer_and_inner_deadlines(self):
+        wrapper = '''
+import os, sys
+from pathlib import Path
+sys.path.insert(0, sys.argv[1])
+from build_linux_probe import sdk_supervises_children
+from check_macos_metal_sdk import execute_step
+output = Path(sys.argv[2])
+worker = """
+import os, signal, sys, time
+from pathlib import Path
+signal.signal(signal.SIGTERM, signal.SIG_IGN)
+Path(sys.argv[1]).write_text(f'{os.getpid()} {os.getpgrp()}')
+time.sleep(20)
+"""
+execute_step([sys.executable, '-B', '-c', worker, str(output / 'worker.pid')],
+             repository=output, env=dict(os.environ), log_path=output / 'worker.log',
+             step={}, record=lambda: None, timeout=float(sys.argv[3]),
+             inherit_process_group=sdk_supervises_children())
+'''
+        for inner, outer in ((10, 2), (2, 10)):
+            with self.subTest(inner=inner, outer=outer), tempfile.TemporaryDirectory() as temp:
+                output = Path(temp)
+                step, marker = {}, output / 'worker.pid'
+                command = [sys.executable, '-B', '-c', wrapper,
+                           str(Path(runner.__file__).parent), temp, str(inner)]
+                sent = []
+                killpg = os.killpg
+
+                def signal_owned_group(pid, signum):
+                    self.assertEqual(pid, step['pid'])
+                    # Check before forwarding anything. Failed waitid means
+                    # the test must not send a signal to this numeric PGID.
+                    status = os.waitid(os.P_PID, pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                    if inner < outer:
+                        self.assertIsNotNone(status, 'the failed wrapper should have exited')
+                    sent.append(signum)
+                    killpg(pid, signum)
+
+                def run():
+                    return runner.execute_step(command, repository=output,
+                        env={**os.environ, runner.SDK_SUPERVISION_ENV: '1'},
+                        log_path=output / 'wrapper.log', step=step, record=lambda: None,
+                        timeout=outer, stop_grace=.1, stop_failed_group=True)
+
+                def worker_alive(pid):
+                    try:
+                        state = Path(f'/proc/{pid}/stat').read_text().split(') ', 1)[1][0]
+                    except FileNotFoundError:
+                        return False
+                    return state not in ('Z', 'X')
+
+                try:
+                    with mock.patch.object(os, 'killpg', side_effect=signal_owned_group):
+                        if outer < inner:
+                            with self.assertRaises(TimeoutError):
+                                run()
+                            self.assertIs(step['timedOut'], True)
+                        else:
+                            self.assertNotEqual(run(), 0)
+                    self.assertEqual(sent, [signal.SIGTERM, signal.SIGKILL])
+                    with self.assertRaises(ChildProcessError):
+                        os.waitid(os.P_PID, step['pid'], os.WEXITED | os.WNOHANG | os.WNOWAIT)
+                    worker_pid, group = map(int, marker.read_text().split())
+                    self.assertEqual(group, step['pid'])
+                    until = time.monotonic() + .5
+                    while worker_alive(worker_pid) and time.monotonic() < until:
+                        time.sleep(.02)
+                    self.assertFalse(worker_alive(worker_pid), 'nested SDK worker survived cleanup')
+                finally:
+                    if marker.exists():
+                        worker_pid, group = map(int, marker.read_text().split())
+                        if worker_alive(worker_pid) and os.getpgid(worker_pid) == group:
+                            os.kill(worker_pid, signal.SIGKILL)
+
+    def test_never_signals_a_group_after_losing_its_leader(self):
+        with tempfile.TemporaryDirectory() as temp:
+            output, step = Path(temp), {}
+            command = [sys.executable, '-B', '-c', 'raise SystemExit(9)']
+            leader = subprocess.Popen(command, start_new_session=True)
+            _, status = os.waitpid(leader.pid, 0)
+            try:
+                with mock.patch.object(subprocess, 'Popen', return_value=leader), \
+                     mock.patch.object(os, 'killpg') as killpg:
+                    with self.assertRaises(ChildProcessError):
+                        runner.execute_step(command, repository=output, env=dict(os.environ),
+                            log_path=output / 'failed.log', step=step, record=lambda: None,
+                            timeout=5, stop_failed_group=True)
+                    killpg.assert_not_called()
+            finally:
+                leader.returncode = os.waitstatus_to_exitcode(status)
+            self.assertIsNone(step['exitCode'])
 
 
 if __name__ == '__main__': unittest.main()
