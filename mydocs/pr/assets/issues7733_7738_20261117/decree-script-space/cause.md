@@ -27,3 +27,9 @@
 최종 공백 소스의 Native 13쪽은 100.00000%를 유지했고 18쪽은 99.82190→99.99005%(미대응 6픽셀)로 개선됐다. 같은 페이지 review/overlay를 직접 판독해 첨자 뒤 날짜 위치가 PDF와 정합함을 확인했다. 남은 작은 획 차이를 WMF·그림 차이라고 부르거나 100%로 반올림하지 않는다. `native/`와 `before-native/`에 raw·PDF·review·overlay를 함께 보관한다.
 
 생산자는 parent 5498과 기록된 dirty 소스로 실제 빌드했다. `native-producer.json`의 세 소스 파일 SHA와 같은 커밋 소스를 대조한다. 실행 당시 HEAD를 최종 커밋으로 다시 붙이지 않는다. 이 공백 소스의 fresh WASM·전체 회귀·전쪽·보호 검증은 아직 미완료다.
+
+## de467 소스의 fresh WASM과 전쪽 재검증
+
+`visual-de467/`에 같은 소스의 Native 252쪽·fresh WASM 252쪽 TSV 10개와 생산자를 보존한다. 13쪽은 양쪽 100.00000%·미대응 0픽셀이고, 18쪽은 Native 99.99005% / fresh WASM 99.99037%·각 6픽셀이다. fresh WASM의 같은 18쪽 review와 overlay를 직접 판독했다. Mac locked wrapper `--no-opt` 로컬 대체 빌드이며 Docker 최적화 통과가 아니다. 루트 pkg와 Studio public JS/WASM SHA가 각각 일치한다.
+
+다섯 문서 각각의 전쪽 최저는 `precision-summary.json`에 원래 정밀도로 기록한다. 모든 쪽이 98% 이상이며, 화학·사양서·시행령의 잔여 문자 차이를 그림 차이로 면제하지 않는다. 이 실행 이후 화학 72쪽의 원본 기호 전진·명시 공급자 순서 보정이 진행 중이므로 de467 결과를 이후 소스의 최종 전체 회귀·보호 통과로 인용하지 않는다.
