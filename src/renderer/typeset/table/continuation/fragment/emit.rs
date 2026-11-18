@@ -1277,14 +1277,39 @@ impl TypesetEngine {
                         .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))
                         .flatten()
                         .and_then(|(_, next)| {
-                            layout_engine.native_text_frame_terminal_successor_gap(
-                                input.source.paragraph,
-                                next,
-                                table,
-                                &st.inline_flow_column(),
-                                st.inline_flow_column().y + st.current_height + occupied,
-                                styles,
-                            )
+                            let fragment_bottom =
+                                st.inline_flow_column().y + st.current_height + occupied;
+                            layout_engine
+                                .native_text_frame_terminal_successor_gap(
+                                    input.source.paragraph,
+                                    next,
+                                    table,
+                                    &st.inline_flow_column(),
+                                    fragment_bottom,
+                                    styles,
+                                )
+                                .or_else(|| {
+                                    // [#9060] 흐름이 소유한 바깥 아래 여백이 아직 조각 하단에
+                                    // 들어 있지 않으면, 뒤 문단의 저장 줄은 그 여백 아래에서
+                                    // 시작한다(한/글 2020 Print·저장 vpos: ODA 보고서 150쪽 문단
+                                    // 79 = 문단 78 표 끝 조각 하단 + 바깥 아래 566HU). 같은 저장
+                                    // 줄 증거로 여백 아래를 조각 하단으로 보고, 전진량에는 그
+                                    // 여백을 함께 넣는다. 호스트 아래 간격은 앵커 쪽 글줄의
+                                    // 몫이라 이 끝에서 다시 더하지 않는다.
+                                    (terminal_flow_outer_bottom > 0.0)
+                                        .then(|| {
+                                            layout_engine.native_text_frame_terminal_successor_gap(
+                                                input.source.paragraph,
+                                                next,
+                                                table,
+                                                &st.inline_flow_column(),
+                                                fragment_bottom + terminal_flow_outer_bottom,
+                                                styles,
+                                            )
+                                        })
+                                        .flatten()
+                                        .map(|gap| gap + terminal_flow_outer_bottom)
+                                })
                         })
                 });
                 let terminal_spacing = terminal_successor_gap

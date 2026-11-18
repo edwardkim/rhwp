@@ -182,6 +182,19 @@ pub(crate) fn stored_first_margin_is_page_relative(
     let complete_margin_step = (stored_gap - first_after - next_before).abs() <= 0.5;
     let next_margin_step = first.column_type != crate::model::paragraph::ColumnBreakType::Page
         && (stored_gap - next_before).abs() <= 0.5;
+    // [#9060] 첫 문단이 쪽을 다 채워 다음 문단이 새 쪽에서 다시 시작하면 같은 쪽 안의
+    // 간격 단계로 닫을 수 없다. 그 다음 문단도 새 쪽 첫머리에서 자기 앞 간격과 같은
+    // 저장 위끝을 가지면, 두 쪽이 같은 「쪽 위끝 + 앞 간격」 인코딩임을 서로 입증한다
+    // (한/글 2020 Print·저장 vpos: ODA 보고서 79쪽 <표 3-23> 줄 vpos 420 = 앞 간격, 쪽을
+    // 채운 뒤 다음 문단 vpos 300 = 그 문단의 앞 간격, 한컴 표 위 괘선이 본문 위끝 + 5.6px).
+    let next_restarts_at_own_margin = i64::from(next_seg.vertical_pos)
+        < i64::from(last_seg.vertical_pos) + i64::from(last_seg.line_height)
+        && next_before > 0.5
+        && (hwpunit_to_px(next_seg.vertical_pos, dpi) - next_before).abs() <= 0.5
+        && !first.stored_text_partition_is_dirty()
+        && !next.stored_text_partition_is_dirty()
+        && !first.cell_format_vpos_dirty
+        && !next.cell_format_vpos_dirty;
     // 글자처럼 취급되는 도형이 있는 첫 문단은 제목과 개체가 저장 원점을 함께
     // 소유한다. 문단 앞 여백만으로 쪽 원점을 다시 정하면 후속 표가 그 여백만큼
     // 위로 이동한다. 일반 텍스트 문단의 여백 사다리와 구분한다(#6797 7쪽).
@@ -203,7 +216,10 @@ pub(crate) fn stored_first_margin_is_page_relative(
         && next_before >= 0.0
         && first_before > 0.5
         && first_margin_matches
-        && (float_closes_next || complete_margin_step || next_margin_step)
+        && (float_closes_next
+            || complete_margin_step
+            || next_margin_step
+            || next_restarts_at_own_margin)
 }
 
 /// 완전한 인라인 표의 저장 상자 뒤에서 새 본문 사다리가 0으로 재시작하면
