@@ -19,6 +19,9 @@
 
 - HWP 다운로드 자동 열기의 첫 페이지가 실제로 그려진 뒤 완료를 표시하며 글꼴 준비 경합을 처리합니다 ([#9170](https://github.com/edwardkim/rhwp/pull/9170)).
 
+- HWP3 저장 그림의 쪽 소속과 Native 글꼴 프로그램 복구·원본 TTF/TTC 우선순위를 보강했습니다 ([#9157](https://github.com/edwardkim/rhwp/pull/9157)). 해당 변경의 보호 문서 18종 전쪽 검증은 미완료이므로 릴리즈 승격 전에 완료해야 합니다.
+- Chrome worker 종료로 설정 응답을 받지 못하면 배지·미리보기를 임의로 켜지 않고 채널 오류를 처리합니다.
+
 ### PDF·CLI·Native와 배포 환경
 
 - PDF ToUnicode 범위 항목의 토큰·주석 처리를 보정했습니다. PDF 가져오기·암호·선택 쪽·자원 한도·Worker 사용법은 기존 PDF 개발자 안내를 따릅니다 ([#8922](https://github.com/edwardkim/rhwp/pull/8922)).
@@ -34,7 +37,7 @@
 
 ### 기여자
 
-v0.9.0 이후 기능 기준 `8612752c0eb50ea74755906539e121aa9abd29d7`까지 **1,226개 커밋**의 Git 저자·공동 저자·원 PR·통합 출처를 감사했습니다. 사람 **19명**과 Dependabot에 감사합니다. 로컬 deprecated 보정과 릴리즈 메타데이터는 이 명단에 이미 있는 메인테이너의 후속 변경입니다.
+v0.9.0 이후 기능 기준 `197ce19e99438c2cba452c654ae1af504dab85ec`까지 **1,238개 커밋**의 Git 저자·공동 저자·원 PR·통합 출처를 감사했습니다. 사람 **19명**과 Dependabot에 감사합니다. 로컬 deprecated 보정과 릴리즈 메타데이터는 이 명단에 이미 있는 메인테이너의 후속 변경입니다.
 
 <!-- release-contributors:v0.9.1:start -->
 - @Bongseop-Kim
