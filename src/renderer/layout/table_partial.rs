@@ -3552,6 +3552,7 @@ impl LayoutEngine {
                             cell_y + pad_top + origin
                                 - hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
                         }),
+                        cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     );
                     if start_line == 0 && end_line > start_line {
                         para_first_line_top = cell_node.children[lines_before..]

@@ -8443,6 +8443,7 @@ impl LayoutEngine {
                                 - hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
                         })
                         .or_else(|| stored_inline_frame.map(|_| text_y_start)),
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                 );
                 self.keep_continuation_column_top_spacing_before
                     .set(previous_keep_spacing);
@@ -8576,6 +8577,7 @@ impl LayoutEngine {
                         false,
                         None,
                         stored_text_origin,
+                        cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     );
                     has_preceding_text |= host_has_visible_text;
                 }

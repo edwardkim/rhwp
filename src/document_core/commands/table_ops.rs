@@ -749,13 +749,13 @@ impl DocumentCore {
                 .iter()
                 .enumerate()
                 .filter(|(cell_idx, cell)| {
-                    let Some(&(owner_width, _, _)) = metrics.get(*cell_idx) else {
+                    let Some(frame) = metrics.get(*cell_idx) else {
                         return false;
                     };
                     cell.paragraphs
                         .iter()
                         .flat_map(|p| p.line_segs.iter())
-                        .any(|ls| i64::from(ls.segment_width) > i64::from(owner_width))
+                        .any(|ls| i64::from(ls.segment_width) > i64::from(frame.width))
                 })
                 .map(|(ci, cell)| (ci, cell.paragraphs.len()))
                 .collect();
@@ -1267,11 +1267,11 @@ impl DocumentCore {
         let bf_json = self.build_border_fill_json_by_id(border_fill_id);
 
         Ok(format!(
-            "{{\"width\":{},\"height\":{},\"paddingLeft\":{},\"paddingRight\":{},\"paddingTop\":{},\"paddingBottom\":{},\"applyInnerMargin\":{},\"verticalAlign\":{},\"textDirection\":{},\"isHeader\":{},\"cellProtect\":{},\"fieldName\":{},\"editableInForm\":{},{}}}",
+            "{{\"width\":{},\"height\":{},\"paddingLeft\":{},\"paddingRight\":{},\"paddingTop\":{},\"paddingBottom\":{},\"applyInnerMargin\":{},\"verticalAlign\":{},\"textDirection\":{},\"lineWrap\":{},\"isHeader\":{},\"cellProtect\":{},\"fieldName\":{},\"editableInForm\":{},{}}}",
             cell.width, cell.height,
             cell.padding.left, cell.padding.right, cell.padding.top, cell.padding.bottom,
             cell.apply_inner_margin,
-            va, cell.text_direction, cell.is_header, cell.cell_protect(),
+            va, cell.text_direction, cell.line_wrap, cell.is_header, cell.cell_protect(),
             json_escape(cell.field_name.as_deref().unwrap_or("")),
             cell.editable_in_form(),
             bf_json,
@@ -1290,6 +1290,18 @@ impl DocumentCore {
         let parsed: serde_json::Value =
             serde_json::from_str(json).unwrap_or(serde_json::Value::Null);
         let obj = parsed.as_object();
+        let line_wrap = obj
+            .and_then(|m| m.get("lineWrap"))
+            .map(|value| {
+                value
+                    .as_u64()
+                    .filter(|&v| v <= 2)
+                    .map(|v| v as u8)
+                    .ok_or_else(|| {
+                        HwpError::RenderError("lineWrap은 0, 1, 2 중 하나여야 합니다".into())
+                    })
+            })
+            .transpose()?;
         let top_u32 = |key: &str| -> Option<u32> {
             obj.and_then(|m| m.get(key))
                 .and_then(|v| v.as_u64())
@@ -1441,7 +1453,7 @@ impl DocumentCore {
         // 대상 셀의 적용 직전 id — 아래 borrow 블록이 정상 완료되면 채워진다.
         let mut target_bf_before = 0u16;
 
-        let (needs_reflow, reflow_para_count) = {
+        let (needs_reflow, wrap_changed, reflow_para_count) = {
             let mut needs_reflow = false;
             let mut size_changed = false;
             let mut width_changed = false;
@@ -1523,6 +1535,10 @@ impl DocumentCore {
                 }
                 cell.border_fill_id = v;
             }
+            let wrap_changed = line_wrap.is_some_and(|value| value != cell.line_wrap);
+            if let Some(value) = line_wrap {
+                cell.line_wrap = value;
+            }
             if size_changed {
                 table.update_ctrl_dimensions();
                 if !width_changed {
@@ -1536,10 +1552,14 @@ impl DocumentCore {
                     );
                 }
             }
-            if text_direction_changed {
+            if text_direction_changed || wrap_changed {
                 table.invalidate_layout_page_break();
             }
-            (needs_reflow, table.cells[cell_idx].paragraphs.len())
+            (
+                needs_reflow || wrap_changed,
+                wrap_changed,
+                table.cells[cell_idx].paragraphs.len(),
+            )
         };
 
         if needs_reflow {
@@ -1553,6 +1573,17 @@ impl DocumentCore {
                     cell_para_idx,
                 );
             }
+        }
+
+        if wrap_changed {
+            self.recalculate_cell_paragraph_vpos_native(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                0,
+                None,
+            );
         }
 
         if has_border_fill_change {
@@ -4311,6 +4342,29 @@ mod table_frame_reflow_batch_tests {
         let mut core = DocumentCore::new_empty();
         core.set_document(document);
         core
+    }
+
+    #[test]
+    fn cell_line_wrap_partial_update_preserves_neighbors_and_rejects_invalid_values() {
+        let mut core = core_with_two_by_two_table();
+        let props = |core: &DocumentCore, cell| -> serde_json::Value {
+            serde_json::from_str(&core.get_cell_properties_native(0, 0, 0, cell).unwrap()).unwrap()
+        };
+        let neighbor = props(&core, 0);
+        core.set_cell_properties_native(0, 0, 0, 1, r#"{"lineWrap":2}"#)
+            .unwrap();
+        core.set_cell_properties_native(0, 0, 0, 1, r#"{"isHeader":true}"#)
+            .unwrap();
+        assert_eq!(props(&core, 1)["lineWrap"], 2);
+        for value in ["-1", "3", "257", "1.5", "null", r#""1""#] {
+            let update = format!(r#"{{"isHeader":false,"lineWrap":{value}}}"#);
+            assert!(core
+                .set_cell_properties_native(0, 0, 0, 1, &update)
+                .is_err());
+            assert_eq!(props(&core, 1)["isHeader"], true);
+            assert_eq!(props(&core, 1)["lineWrap"], 2);
+        }
+        assert_eq!(props(&core, 0), neighbor);
     }
 
     fn core_with_residual_owner_width_table() -> DocumentCore {

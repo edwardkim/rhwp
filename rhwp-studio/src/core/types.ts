@@ -461,6 +461,7 @@ export interface BorderLineInfo {
 
 /** WASM getCellProperties() 반환 타입 — HWPUNIT 원본값 */
 export interface CellProperties {
+  lineWrap?: number;  // BREAK=0, SQUEEZE=1, KEEP=2
   /** Explicit source-paint replacement intent: left, right, top, bottom. */
   borderPaintSides?: boolean[];
   width: number;
