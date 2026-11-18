@@ -1,0 +1,19 @@
+{
+  "source_commit": "c4ecf5b910a0ed62b4f3a93568133d3ed729bf8b",
+  "minimal_font_scope": "verified macOS sandbox; RHWP_FONT_PATH unset; personal font files denied",
+  "before": {
+    "run": 8,
+    "pass": 6,
+    "fail": 2,
+    "seconds": 1.295
+  },
+  "after": {
+    "run": 8,
+    "pass": 8,
+    "fail": 0,
+    "seconds": 1.325
+  },
+  "existing_pdf_origins_unchanged": true,
+  "new_relational_tests": 2,
+  "all_gates_complete": false
+}
