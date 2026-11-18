@@ -1450,6 +1450,10 @@ impl LayoutEngine {
         // 캡션 렌더링
         if let Some(caption) = caption {
             use crate::model::shape::CaptionVertAlign;
+            let body_caption = matches!(
+                parent.node_type,
+                RenderNodeType::Column(_) | RenderNodeType::Body { .. }
+            );
             let (cap_x, cap_w, cap_y) = match caption.direction {
                 CaptionDirection::Top => (adjusted_shape_x, shape_w, shape_y),
                 CaptionDirection::Bottom => (
@@ -1487,7 +1491,18 @@ impl LayoutEngine {
                 cap_w,
                 cap_y,
                 bin_data_content,
-                None,
+                // 표 캡션처럼 셀 65534 주소를 달아 캡션 글의 캐럿·누르기가 셀 API로 이어지게 한다.
+                // 머리말·꼬리말·바탕쪽 개체에는 본문 주소를 만들지 않는다.
+                body_caption.then(|| super::CellContext {
+                    in_textbox: false,
+                    parent_para_index: para_index,
+                    path: vec![super::CellPathEntry {
+                        control_index,
+                        cell_index: 65534,
+                        cell_para_index: 0,
+                        text_direction: 0,
+                    }],
+                }),
                 CaptionOwner::new(
                     Some(section_index),
                     Some(para_index),

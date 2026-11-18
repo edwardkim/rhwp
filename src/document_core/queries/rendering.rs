@@ -6867,6 +6867,19 @@ impl DocumentCore {
                     paragraph_index: cell_para_idx,
                 }
             }
+            Control::Shape(shape) if cell_idx == super::super::TABLE_CAPTION_CELL_SENTINEL => {
+                let valid = Self::shape_caption_ref(shape)
+                    .is_some_and(|caption| cell_para_idx < caption.paragraphs.len());
+                if !valid {
+                    return Err(HwpError::RenderError(format!(
+                        "render normalization shape-caption path mismatch: control={control_idx} para={cell_para_idx}"
+                    )));
+                }
+                RenderPathEntry::ShapeCaption {
+                    control_index: control_idx,
+                    paragraph_index: cell_para_idx,
+                }
+            }
             Control::Shape(shape) => {
                 let valid = super::super::helpers::get_textbox_at(shape, cell_idx)
                     .is_some_and(|textbox| cell_para_idx < textbox.paragraphs.len());
@@ -9912,6 +9925,8 @@ mod tests {
                     paragraphs: vec![Paragraph::default()],
                     ..Default::default()
                 }),
+                // 글상자와 캡션을 함께 가진 도형: 셀 0은 글상자, 셀 65534는 캡션이다.
+                caption: Some(caption()),
                 ..Default::default()
             },
             ..Default::default()
@@ -9951,6 +9966,14 @@ mod tests {
             .expect("shape textbox path");
         core.mark_render_normalization_path_dirty(0, 0, 2, 0, 0)
             .expect("picture caption path");
+        core.mark_render_normalization_path_dirty(
+            0,
+            0,
+            1,
+            crate::document_core::TABLE_CAPTION_CELL_SENTINEL,
+            0,
+        )
+        .expect("shape caption path");
 
         let entries = core
             .render_normalization
@@ -9985,6 +10008,13 @@ mod tests {
             entry,
             RenderPathEntry::PictureCaption {
                 control_index: 2,
+                paragraph_index: 0
+            }
+        )));
+        assert!(entries.iter().any(|entry| matches!(
+            entry,
+            RenderPathEntry::ShapeCaption {
+                control_index: 1,
                 paragraph_index: 0
             }
         )));

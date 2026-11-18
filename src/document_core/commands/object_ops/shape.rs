@@ -12,7 +12,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{Caption, CaptionDirection, CaptionVertAlign, ShapeObject};
 
 impl DocumentCore {
-    fn shape_caption_ref(shape: &ShapeObject) -> Option<&Caption> {
+    pub(crate) fn shape_caption_ref(shape: &ShapeObject) -> Option<&Caption> {
         match shape {
             ShapeObject::Line(s) => s.drawing.caption.as_ref(),
             ShapeObject::Rectangle(s) => s.drawing.caption.as_ref(),
@@ -27,7 +27,7 @@ impl DocumentCore {
         }
     }
 
-    fn shape_caption_mut(shape: &mut ShapeObject) -> &mut Option<Caption> {
+    pub(crate) fn shape_caption_mut(shape: &mut ShapeObject) -> &mut Option<Caption> {
         match shape {
             ShapeObject::Line(s) => &mut s.drawing.caption,
             ShapeObject::Rectangle(s) => &mut s.drawing.caption,

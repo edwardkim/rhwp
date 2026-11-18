@@ -2983,21 +2983,30 @@ impl DocumentCore {
                 Ok(&mut cell.paragraphs[cell_para_idx])
             }
             Control::Shape(shape) => {
-                let tb = super::super::helpers::get_textbox_at_mut(shape, cell_idx).ok_or_else(
-                    || {
-                        HwpError::RenderError(
-                            "지정된 Shape 컨트롤에 텍스트 박스가 없습니다".to_string(),
-                        )
-                    },
-                )?;
-                if cell_para_idx >= tb.paragraphs.len() {
+                // 셀 65534는 표와 같이 도형 캡션이다.
+                let (paragraphs, what) = if cell_idx == 65534 {
+                    let cap = Self::shape_caption_mut(shape).as_mut().ok_or_else(|| {
+                        HwpError::RenderError("지정된 도형 컨트롤에 캡션이 없습니다".to_string())
+                    })?;
+                    (&mut cap.paragraphs, "캡션")
+                } else {
+                    let tb = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                        .ok_or_else(|| {
+                            HwpError::RenderError(
+                                "지정된 Shape 컨트롤에 텍스트 박스가 없습니다".to_string(),
+                            )
+                        })?;
+                    (&mut tb.paragraphs, "글상자")
+                };
+                if cell_para_idx >= paragraphs.len() {
                     return Err(HwpError::RenderError(format!(
-                        "글상자 문단 인덱스 {} 범위 초과 (총 {}개)",
+                        "{} 문단 인덱스 {} 범위 초과 (총 {}개)",
+                        what,
                         cell_para_idx,
-                        tb.paragraphs.len()
+                        paragraphs.len()
                     )));
                 }
-                Ok(&mut tb.paragraphs[cell_para_idx])
+                Ok(&mut paragraphs[cell_para_idx])
             }
             Control::Picture(pic) => {
                 let cap = pic.caption.as_mut().ok_or_else(|| {
@@ -3361,6 +3370,14 @@ impl DocumentCore {
                     }
                 }
             }
+            Some(Control::Shape(shape)) if cell_idx == 65534 => {
+                if let Some(cell_para) = Self::shape_caption_mut(shape)
+                    .as_mut()
+                    .and_then(|caption| caption.paragraphs.get_mut(cell_para_idx))
+                {
+                    reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
+                }
+            }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     if let Some(cell_para) = tb.paragraphs.get_mut(cell_para_idx) {
@@ -3409,6 +3426,12 @@ impl DocumentCore {
                     return;
                 };
                 &mut cell.paragraphs
+            }
+            Control::Shape(shape) if cell_idx == 65534 => {
+                let Some(caption) = Self::shape_caption_mut(shape).as_mut() else {
+                    return;
+                };
+                &mut caption.paragraphs
             }
             Control::Shape(shape) => {
                 let Some(textbox) = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
@@ -3570,6 +3593,16 @@ impl DocumentCore {
                     let padding = cell.paragraph_frame_padding(&table.padding);
                     Some((width, padding.left, padding.right))
                 }
+            }
+            Control::Shape(shape) if cell_idx == 65534 => {
+                // 도형 캡션도 표 캡션처럼 Top/Bottom 은 max_width, Left/Right 는 width.
+                let cap = Self::shape_caption_ref(shape)?;
+                use crate::model::shape::CaptionDirection;
+                let w = match cap.direction {
+                    CaptionDirection::Left | CaptionDirection::Right => cap.width,
+                    _ => cap.max_width,
+                };
+                Some((w as i32, 0, 0))
             }
             Control::Shape(shape) => {
                 let tb = super::super::helpers::get_textbox_at(shape, cell_idx)?;
@@ -4213,6 +4246,9 @@ impl DocumentCore {
                 }
                 table.cells.get(cell_idx)?.paragraphs.get(cell_para_idx)
             }
+            Control::Shape(shape) if cell_idx == 65534 => Self::shape_caption_ref(shape)?
+                .paragraphs
+                .get(cell_para_idx),
             Control::Shape(shape) => super::super::helpers::get_textbox_at(shape, cell_idx)?
                 .paragraphs
                 .get(cell_para_idx),
@@ -5247,6 +5283,11 @@ impl DocumentCore {
                         .insert(new_cell_para_idx, new_para);
                 }
             }
+            Some(Control::Shape(shape)) if cell_idx == 65534 => {
+                if let Some(cap) = Self::shape_caption_mut(shape).as_mut() {
+                    cap.paragraphs.insert(new_cell_para_idx, new_para);
+                }
+            }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
                     tb.paragraphs.insert(new_cell_para_idx, new_para);
@@ -5377,6 +5418,14 @@ impl DocumentCore {
                     removed_meta = removed.capture_meta();
                     merge_point = table.cells[cell_idx].paragraphs[prev_idx].merge_from(&removed);
                 }
+            }
+            Some(Control::Shape(shape)) if cell_idx == 65534 => {
+                let cap = Self::shape_caption_mut(shape).as_mut().ok_or_else(|| {
+                    HwpError::RenderError("지정된 도형 컨트롤에 캡션이 없습니다".to_string())
+                })?;
+                let removed = cap.paragraphs.remove(cell_para_idx);
+                removed_meta = removed.capture_meta();
+                merge_point = cap.paragraphs[prev_idx].merge_from(&removed);
             }
             Some(Control::Shape(shape)) => {
                 if let Some(tb) = super::super::helpers::get_textbox_at_mut(shape, cell_idx) {
@@ -5940,6 +5989,11 @@ impl DocumentCore {
                     ))
                 })?;
                 Ok(cell.paragraphs.len())
+            }
+            Some(Control::Shape(shape)) if cell_idx == 65534 => {
+                let caption = Self::shape_caption_ref(shape)
+                    .ok_or_else(|| HwpError::RenderError("도형에 캡션이 없습니다".to_string()))?;
+                Ok(caption.paragraphs.len())
             }
             Some(Control::Shape(shape)) => {
                 let text_box = super::super::helpers::get_textbox_at(shape, cell_idx)
