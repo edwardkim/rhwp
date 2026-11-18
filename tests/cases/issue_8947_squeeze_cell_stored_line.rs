@@ -172,10 +172,8 @@ fn edited_title_fits_one_line_with_distinct_character_boundaries_after_save() {
         }
     }
 
-    for prefix in [
-        " ".repeat(20) + &"iiilll Long cell contents ".repeat(7),
-        " ".repeat(20) + &"iiilll\tLong cell contents ".repeat(7),
-    ] {
+    for (separator, enable_after_edit) in [(" ", false), ("\t", false), ("\t", true)] {
+        let prefix = " ".repeat(20) + &format!("iiilll{separator}Long cell contents ").repeat(7);
         let mut core = DocumentCore::from_bytes(&sample_bytes()).unwrap();
         let rhwp::model::control::Control::Table(table) =
             &core.document().sections[0].paragraphs[2].controls[1]
@@ -183,8 +181,16 @@ fn edited_title_fits_one_line_with_distinct_character_boundaries_after_save() {
             panic!("건 명 표")
         };
         let expected = prefix.clone() + &table.cells[1].paragraphs[0].text;
+        if enable_after_edit {
+            core.set_cell_properties_native(0, 2, 1, 1, r#"{"lineWrap":0}"#)
+                .unwrap();
+        }
         core.insert_text_in_cell_native(0, 2, 1, 1, 0, 0, &prefix)
             .unwrap();
+        if enable_after_edit {
+            core.set_cell_properties_native(0, 2, 1, 1, r#"{"lineWrap":1}"#)
+                .unwrap();
+        }
         check(&core, &expected);
         for bytes in [
             core.export_hwp_native().unwrap(),
