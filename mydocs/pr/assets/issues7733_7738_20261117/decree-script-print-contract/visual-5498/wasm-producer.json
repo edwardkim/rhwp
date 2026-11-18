@@ -1,0 +1,24 @@
+{
+  "source_head": "5498d80a8e7e0b94c668a2aea48c20bb3bd214a5",
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/minimal-font/profile.sb",
+    "env",
+    "-u",
+    "RHWP_FONT_PATH",
+    "scripts/wasm-pack-locked.sh",
+    "--target",
+    "web",
+    "--out-dir",
+    "pkg",
+    "--no-opt"
+  ],
+  "mode": "Mac local wrapper --no-opt; not Docker optimized",
+  "files": {
+    "/Users/tsjang/rhwp/pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "84a73d2fb2afa8fcfbf471bc37e69ebb472ec4e244e410c4d52080160058ba9f",
+    "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "84a73d2fb2afa8fcfbf471bc37e69ebb472ec4e244e410c4d52080160058ba9f"
+  }
+}
