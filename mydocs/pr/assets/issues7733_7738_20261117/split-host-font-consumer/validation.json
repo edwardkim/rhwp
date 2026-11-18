@@ -1,0 +1,39 @@
+{
+  "base_source_head": "0ce5ba3f157f66fb82f715ead36fd43dfeee213e",
+  "focused_before": {
+    "passed": 3,
+    "failed": 1
+  },
+  "focused_after": {
+    "passed": 38,
+    "failed": 0
+  },
+  "frontend_all_tests": {
+    "passed": 2811,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "duration_ms": 55144.845041
+  },
+  "frontend_build_exit_code": 0,
+  "regression_scope": "Minimum-font macOS sandbox; synthetic metadata and prepared typefaces, no private fonts or fixed document coordinates.",
+  "actual_studio_status": "pending_new_head_capture",
+  "logs": [
+    {
+      "name": "before.log",
+      "sha256": "b2894e55cc9bf5e89a51a7e2a27aaf21f37e414111eb6aa9258dbc5d928c1c46"
+    },
+    {
+      "name": "after-focused.log",
+      "sha256": "21f2681fb0b988c577d4887d94d409cd1075acafca9646a74d5b5eaaa537b16b"
+    },
+    {
+      "name": "frontend-build.log",
+      "sha256": "4295bc8b11ce457d8821d74b978b397249a13b7babbd327ec21a1167eff02770"
+    },
+    {
+      "name": "frontend-all-tests.log",
+      "sha256": "6869c4249cc9da9cd8cf9a954e36f8dbb1359173ca3f95801274ff6e261c630f"
+    }
+  ]
+}

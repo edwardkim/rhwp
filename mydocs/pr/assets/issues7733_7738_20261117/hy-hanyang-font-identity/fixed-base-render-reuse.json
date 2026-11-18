@@ -1,0 +1,113 @@
+{
+  "scope": "HWP/HWPX Native export-png 및 WASM Canvas2D Visual Sweep base 비교",
+  "fixed_base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+  "records": [
+    {
+      "backend": "native",
+      "actual_build_source": "af54158960ec91504d42faf842b0cb3229366236",
+      "qualified_fixed_base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+      "artifact_sha256": {
+        "rhwp": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "identical_git_objects": {
+        "src/cli": "30188761735e668b7b05f602da2d8c2c8b825bb1",
+        "src/parser": "27863bc2aeef9412c783e584f1ae0403254b4db5",
+        "src/model": "1cba2cf457e4dabe194e477e57450cd218bad7a2",
+        "src/document_core": "da76bc94bcaa1820f7a7b4d35f2610ed400f0fe3",
+        "src/renderer": "798ce9d5b0db73d6e066670ac2702505aa3dd9d8",
+        "assets/fonts": "f65b0b28e788e2e52972ed13b4082827b81b5d1e",
+        "ttfs": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+        "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787",
+        "scripts/visual_sweep.py": "9a1166712571965b927428c9ba8fd2ca4ff69a57",
+        "scripts/visual_sweep_png.py": "23efd0e49d03cbb5dec7212a0dec415d79724a56",
+        "scripts/visual_sweep_pdf.py": "4b9e60aed8b46dcdd3ca2ed8c259103d1bc9d2e3",
+        "crates/rhwp-ooxml-chart/src": "6f90a558e0dbed165c249d0f85a85781d8873763",
+        "crates/rhwp-contracts/src": "756fcff1ddfe2c9139c65cfc6ae8671b5c918978",
+        "crates/rhwp-password-crypto/src": "7ce5ac1ea47bb013de5db064b29bd3572ce72c70"
+      },
+      "changed_compilation_paths": [
+        "Cargo.lock",
+        "Cargo.toml",
+        "crates/rhwp-ooxml-chart/Cargo.toml",
+        "src/native_host/gpu_d3d.rs",
+        "src/native_host/presentation.rs",
+        "src/native_host/runtime.rs",
+        "src/native_host/save.rs",
+        "vendor/rhwp-codec-resource/Cargo.lock",
+        "vendor/rhwp-codec-resource/Cargo.toml",
+        "vendor/rhwp-codec-resource/src/atomic.rs",
+        "vendor/rhwp-codec-resource/src/lib.rs",
+        "vendor/rhwp-hayro-ccitt/Cargo.lock",
+        "vendor/rhwp-hayro-ccitt/Cargo.toml",
+        "vendor/rhwp-hayro-jbig2/Cargo.lock",
+        "vendor/rhwp-hayro-jbig2/Cargo.toml",
+        "vendor/rhwp-hayro-jpeg2000/Cargo.lock",
+        "vendor/rhwp-hayro-jpeg2000/Cargo.toml",
+        "vendor/rhwp-pdf-import-backend/Cargo.lock",
+        "vendor/rhwp-pdf-import-backend/Cargo.toml",
+        "vendor/rhwp-pdf-import-backend/src/import_limits.rs",
+        "vendor/rhwp-qcms/Cargo.toml"
+      ],
+      "source_effects_reviewed": [
+        "CLI export-png과 WASM Canvas2D의 HWP/HWPX 열기·조판·그리기 경로는 동일하다.",
+        "native_host의 GPU·프레젠테이션·요청·저장 원자 갱신은 Native CLI의 문서 PNG와 WASM Canvas 경로에서 호출하지 않는다.",
+        "PDF 비교는 별도 PDFium에서 수행한다. 변경된 PDF import 원자 예산과 codec resource helper는 이 HWP/HWPX 검증에서 사용되는 내보내기 경로의 조판과 비교 판정에 들어가지 않는다.",
+        "Cargo.lock·Cargo.toml 변화에는 버전과 기존 원자 업데이트 도우미 연결이 포함된다. 정확한 base의 새로 빌드한 바이너리로 표시하지 않는다."
+      ]
+    },
+    {
+      "backend": "wasm",
+      "actual_build_source": "197ce19e99438c2cba452c654ae1af504dab85ec",
+      "qualified_fixed_base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+      "artifact_sha256": {
+        "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "rhwp_bg.wasm": "1e03030eed19401015c1dfac8c66f7a395c2e56f8e796a6dbcdaee14d48f82fb"
+      },
+      "identical_git_objects": {
+        "src/cli": "30188761735e668b7b05f602da2d8c2c8b825bb1",
+        "src/parser": "27863bc2aeef9412c783e584f1ae0403254b4db5",
+        "src/model": "1cba2cf457e4dabe194e477e57450cd218bad7a2",
+        "src/document_core": "da76bc94bcaa1820f7a7b4d35f2610ed400f0fe3",
+        "src/renderer": "798ce9d5b0db73d6e066670ac2702505aa3dd9d8",
+        "assets/fonts": "f65b0b28e788e2e52972ed13b4082827b81b5d1e",
+        "ttfs": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+        "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787",
+        "scripts/visual_sweep.py": "9a1166712571965b927428c9ba8fd2ca4ff69a57",
+        "scripts/visual_sweep_png.py": "23efd0e49d03cbb5dec7212a0dec415d79724a56",
+        "scripts/visual_sweep_pdf.py": "4b9e60aed8b46dcdd3ca2ed8c259103d1bc9d2e3",
+        "crates/rhwp-ooxml-chart/src": "6f90a558e0dbed165c249d0f85a85781d8873763",
+        "crates/rhwp-contracts/src": "756fcff1ddfe2c9139c65cfc6ae8671b5c918978",
+        "crates/rhwp-password-crypto/src": "7ce5ac1ea47bb013de5db064b29bd3572ce72c70"
+      },
+      "changed_compilation_paths": [
+        "Cargo.lock",
+        "Cargo.toml",
+        "crates/rhwp-ooxml-chart/Cargo.toml",
+        "src/native_host/gpu_d3d.rs",
+        "src/native_host/presentation.rs",
+        "src/native_host/runtime.rs",
+        "src/native_host/save.rs",
+        "vendor/rhwp-codec-resource/Cargo.lock",
+        "vendor/rhwp-codec-resource/Cargo.toml",
+        "vendor/rhwp-codec-resource/src/atomic.rs",
+        "vendor/rhwp-codec-resource/src/lib.rs",
+        "vendor/rhwp-hayro-ccitt/Cargo.lock",
+        "vendor/rhwp-hayro-ccitt/Cargo.toml",
+        "vendor/rhwp-hayro-jbig2/Cargo.lock",
+        "vendor/rhwp-hayro-jbig2/Cargo.toml",
+        "vendor/rhwp-hayro-jpeg2000/Cargo.lock",
+        "vendor/rhwp-hayro-jpeg2000/Cargo.toml",
+        "vendor/rhwp-pdf-import-backend/Cargo.lock",
+        "vendor/rhwp-pdf-import-backend/Cargo.toml",
+        "vendor/rhwp-pdf-import-backend/src/import_limits.rs",
+        "vendor/rhwp-qcms/Cargo.toml"
+      ],
+      "source_effects_reviewed": [
+        "CLI export-png과 WASM Canvas2D의 HWP/HWPX 열기·조판·그리기 경로는 동일하다.",
+        "native_host의 GPU·프레젠테이션·요청·저장 원자 갱신은 Native CLI의 문서 PNG와 WASM Canvas 경로에서 호출하지 않는다.",
+        "PDF 비교는 별도 PDFium에서 수행한다. 변경된 PDF import 원자 예산과 codec resource helper는 이 HWP/HWPX 검증에서 사용되는 내보내기 경로의 조판과 비교 판정에 들어가지 않는다.",
+        "Cargo.lock·Cargo.toml 변화에는 버전과 기존 원자 업데이트 도우미 연결이 포함된다. 정확한 base의 새로 빌드한 바이너리로 표시하지 않는다."
+      ]
+    }
+  ]
+}

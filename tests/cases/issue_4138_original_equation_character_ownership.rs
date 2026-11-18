@@ -1,5 +1,5 @@
-//! 검사 유형: 문자/원본 숫자/현대 문법 4개는 관계형, 기저 괄호/근호 인자 원점 2개는 고정형(192DPI ±2px).
-//! 주석 갱신: 2026-11-07 09:02:52 KST.
+//! 검사 유형: 문자/원본 숫자/현대 문법·근호 계약 6개는 관계형, 기저 괄호/근호 인자 원점 2개는 고정형(192DPI ±2px).
+//! 주석 갱신: 2026-11-18 13:01 KST.
 //! Native/fresh WASM 전 197쪽 최저: 98.47416% / 98.50155%.
 //! 129쪽: 98.47416% / 98.50155%. 130쪽: 98.73703% / 98.71245%.
 //! 근호 슬롯 보정 뒤 12쪽은 99.35295% / 99.51005%로 회복했다. 독립 PDF의 E 원점을 고정한다.
@@ -319,4 +319,84 @@ fn original_radical_operand_origin_matches_independent_print_pixels() {
         ((y - expected_y) * 2.0).abs() <= 2.0,
         "원본 근호 E y: {y} / {expected_y}"
     );
+}
+
+/// 관계형: 독립 한컴 2024의 3크기·그룹 유무·E/Q 대조에서 원본 근호는
+/// 공개 대체 윤곽의 hmtx가 아니라 본체 크기 0.6em의 논리 전진을 소유한다.
+#[test]
+fn original_radicals_keep_the_source_operand_advance_separate_from_public_outline() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/issue7733_hft_radical/original-radical-controls-2024.hwpx");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    core.set_hangul2024_compat(true);
+    let tree = core
+        .build_page_layer_tree_with_profile(0, RenderProfile::Print)
+        .unwrap();
+    fn inspect(node: &LayerNode, values: &mut Vec<(f64, f64)>) {
+        fn layout(v: &Value, values: &mut Vec<(f64, f64)>) {
+            if let Some(body) = v
+                .get("kind")
+                .and_then(|k| k.get("Sqrt"))
+                .and_then(|s| s.get("body"))
+            {
+                values.push((
+                    v["font_size"].as_f64().unwrap(),
+                    body["x"].as_f64().unwrap(),
+                ));
+            }
+            match v {
+                Value::Array(items) => {
+                    for item in items {
+                        layout(item, values);
+                    }
+                }
+                Value::Object(items) => {
+                    for item in items.values() {
+                        layout(item, values);
+                    }
+                }
+                _ => {}
+            }
+        }
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    inspect(child, values);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                inspect(child, values)
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::Equation { equation, .. } = op {
+                        layout(&serde_json::to_value(&equation.layout_box).unwrap(), values);
+                    }
+                }
+            }
+        }
+    }
+    let mut values = Vec::new();
+    inspect(&tree.root, &mut values);
+    assert_eq!(values.len(), 12, "3크기 × 그룹 유무 × E/Q를 모두 검사한다");
+    for (size, advance) in values {
+        assert!(
+            (advance - size * 0.6).abs() < 1e-8,
+            "원본 근호 전진과 대체 윤곽의 전진을 구분한다: {advance} / {size}"
+        );
+    }
+}
+
+/// 관계형: 문서의 구형 HFT 계약을 공개 현대 수식의 자연 폭으로 전파하지 않는다.
+#[test]
+fn public_modern_radical_keeps_the_public_outline_advance() {
+    use rhwp::renderer::equation::{
+        layout::{EqLayout, LayoutKind},
+        parser,
+    };
+    let value = EqLayout::new(20.0).layout(&parser::parse("sqrt E"));
+    let LayoutKind::Sqrt { body, .. } = value.kind else {
+        panic!("공개 현대 근호")
+    };
+    assert!((body.x - 20.0 * 0.833).abs() < 1e-8);
 }

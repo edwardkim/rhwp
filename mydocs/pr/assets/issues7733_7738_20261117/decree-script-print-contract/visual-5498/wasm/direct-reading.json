@@ -1,0 +1,50 @@
+{
+  "source_head": "5498d80a8e7e0b94c668a2aea48c20bb3bd214a5",
+  "raw": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/rhwp_png/rhwp_013.png",
+  "pdf": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/pdf_png/pdf-013.png",
+  "review": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/review/review_013.png",
+  "overlay": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/overlay/overlay_013.png",
+  "metrics": {
+    "page": 13,
+    "rhwp_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/rhwp_png/rhwp_013.png",
+    "pdf_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/pdf_png/pdf-013.png",
+    "overlay_png": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/script-print-final/focus-wasm/decree/overlay/overlay_013.png",
+    "width": 794,
+    "height": 1122,
+    "pixel_diff_threshold": 32,
+    "overlay_color_legend": {
+      "rhwp_only": "blue",
+      "pdf_only": "red",
+      "both_different": "orange",
+      "matching": "gray"
+    },
+    "total_pixels": 890868,
+    "diff_pixels": 43379,
+    "diff_ratio": 0.04869296,
+    "pixel_match_percent": 95.1307,
+    "ink_union_pixels": 79222,
+    "ink_diff_pixels": 43379,
+    "ink_diff_ratio": 0.54756255,
+    "ink_match_percent": 45.24375,
+    "visual_accuracy_proxy_percent": 45.24375,
+    "tolerant_content_match_radius_px": 2,
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 100.0,
+    "silhouette_raw_unmatched_pixels": 0,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 79222,
+    "tolerant_content_match_percent": 100.0,
+    "mean_abs_channel_delta": 4.339,
+    "max_channel_delta": 255,
+    "diff_bbox": [
+      75,
+      76,
+      717,
+      1081
+    ]
+  },
+  "status": "direct_read",
+  "reading_note": "같은 페이지 review/overlay 직접 판독. 신고의 같은 줄 소속과 뒤 의무 면제 줄, 표·후속 본문 위치 보존 확인. raw100은2px 실루엣이며 RGB 동일을 주장하지 않음.",
+  "read_at": "2026-11-18T09:54:09.036186+09:00"
+}

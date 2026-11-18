@@ -90,6 +90,14 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
     {
         return Some((true, 911));
     }
+    // 현재 HBATANG bef63718…의 U+257A는 1024/1024em이다. 독립 화학 원본
+    // Print의 Haansoft Batang(xref 28, glyph 6)도 같은 전진·사각 잉크를 쓴다.
+    // BatangChe에 없는 표식을 다른 반각 글꼴의 잉크로 그리지 않게 공급을 인증한다.
+    if (metric.name, metric.em_size, metric.bold, metric.italic, ch)
+        == ("Haansoft Batang", 1024, false, false, '\u{257A}')
+    {
+        return Some((true, 1024));
+    }
     if !(0x2300..=0x23FF).contains(&(ch as u32)) {
         return None;
     }
@@ -107,6 +115,25 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
 }
 
 pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    // batang.TTC 0ea38ac5… 및 84b0ba79…의 BatangChe regular cmap 결측이다.
+    // 독립 Print는 같은 선언 체인의 Haansoft Batang으로 U+257A를 그린다.
+    // 실제 제공 프로그램의 hit와 명시적 HFT 계약은 호출자의 우선순위를 유지한다.
+    if (metric.name, metric.em_size, metric.bold, metric.italic, ch)
+        == ("BatangChe", 1024, false, false, '\u{257A}')
+    {
+        return Some(false);
+    }
+    // malgun.ttf 7a183cf1…192f / malgunbd.ttf e8cbc0b2…9082의 실제 cmap에는
+    // U+2981이 없다. 설치한 다른 맑은 고딕 TTF 3종도 같은 결측이다.
+    // 독립 시행령 Print는 HCRDotum의 동일 윤곽·970/1000em을 사용한다.
+    // 공급자는 기존 선언 체인이 고르며 다른 글자·기울임의 결측은 추정하지 않는다.
+    if ch == '\u{2981}'
+        && metric.name == "Malgun Gothic"
+        && metric.em_size == 2048
+        && !metric.italic
+    {
+        return Some(false);
+    }
     // 같은 등록 프로그램의 cmap 결측이다. 폭 표에 없다는 사실만으로
     // 결측을 추정하지 않으며, 다른 weight/style 프로그램에는 적용하지 않는다.
     // U+2027도 같은 원 프로그램에서 결측이고 Haansoft Batang이 공급한다.
@@ -122,9 +149,14 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
             // 원 프로그램 cmap의 확인된 결측이다. 폭 표의 미수집을 뜻하지 않는다.
             ("HYHeadLine-Medium", 1024, false, false) if ch == '\u{2024}' => return Some(false),
             // [#8419] batang.ttc 51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8:
-            // Batang regular cmap에 U+2024·U+2027이 모두 없지만 공급자는 U+2024만
-            // 독립 Print로 확인했다. U+2027의 기존 처리는 바꾸지 않는다.
-            ("Batang", 1024, false, false) if ch == '\u{2024}' => return Some(false),
+            // Batang regular cmap에 U+2024·U+2027이 모두 없다. 후자의 공급자도
+            // 화학 원본 27쪽의 독립 Print xref28·glyph7(178/1024em)로 확인했다.
+            ("Batang", 1024, false, false) => return Some(false),
+            // H2GTRE.TTF ca822120…5c234의 실제 cmap 결측이다.
+            // 독립 Print에서 HBATANG 공급을 확인한 U+2027만 해소한다.
+            ("HYGothic-Extra", 1024, false, false) if ch == '\u{2027}' => {
+                return Some(false)
+            }
             // gulim.TTC ed750275…776c의 GulimChe regular cmap 결측.
             // 독립2020 Print에서 공급자를 확인한 U+2024만 해소한다.
             ("GulimChe", 1024, false, false) if ch == '\u{2024}' => return Some(false),
@@ -149,7 +181,20 @@ fn verified_technical_symbol_width(metric: &FontMetric, ch: char) -> Option<u16>
 }
 
 // HFT 보정이 섞인 기존 표와 별개인 원 프로그램의 실제 hmtx.
+// 문서의 유형이 미상이어도 독립 Print와 원 프로그램에서 확인한 부분 glyph다.
+// 호출자가 명시적 HFT 슬롯은 제외하며 전체 메트릭 표의 신뢰도를 승격하지 않는다.
+pub(crate) fn verified_non_hft_glyph_width(metric: &FontMetric, ch: char) -> Option<u16> {
+    match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // 두 gulim TTC의 Dotum face에서 H18543의 hmtx는 384/1024다.
+        ("Dotum", 1024, false, false, '\u{25AA}') => Some(384),
+        _ => None,
+    }
+}
+
 pub(crate) fn verified_program_punctuation_width(metric: &FontMetric, ch: char) -> Option<u16> {
+    if let Some(width) = verified_non_hft_glyph_width(metric, ch) {
+        return Some(width);
+    }
     match (
         metric.name,
         metric.em_size,

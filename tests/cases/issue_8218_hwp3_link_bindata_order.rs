@@ -1,5 +1,7 @@
-//! 검사 유형: 관계형·고정형. 그림의 소속·순서·내용 보존을 검사한다.
-//! 주석 갱신: 2026-11-17T18:51:52+09:00; 직전 변경: 062e7a4db540861e4d0eebea16d714465484528a 2026-11-17T13:50:54+09:00.
+//! 고정형: sample4_page21_embedded_picture_matches_independent_print의 독립 그림 좌표.
+//! 관계형: NASM 그림의 소속·순서, 마지막 줄의 채움 포함과 진단 소유권.
+//! 비시각 관계형: BinData ID·연결 경로·저장 전후 내용 보존.
+//! 주석 갱신: 2026-11-18T17:26:07+09:00; 직전 파일 변경: 211253376d20aa40c4cf223fdaabd87467e88240 2026-11-18T16:37:35+09:00.
 //! 독립 측정 이력: 2026-11-17, source a27afaf7c9d7e2444b2ad1b14550da4ab5ab7202, hft2ttf 공급 조건.
 //! samples/hwp3-sample4.hwp 및 독립 한컴 2020 Print pdf/hwp3-sample4-2020.pdf 각 36쪽.
 //! 96 DPI, 색상 경계 보정 전 2px raw: Native 전쪽 최저 99.32%, fresh WASM 99.33%.
@@ -9,6 +11,10 @@
 //! 기존 21쪽 좌표의 독립 출처: mydocs/pr/assets/issue8219/sample4/evidence.json.
 //! NASM 그림은 독립 Print의 26쪽 소속과 그림→설명→본문 관계로 검사한다.
 //! 외부 연결 그림을 삽입한 메모리 합성 입력은 별도의 비시각 저장 계약이다.
+//! 2026-11-18 추가: 마지막 수용 글줄의 채움은 원본 줄 높이+줄간격의 포함 관계로 검사한다.
+//! paint 보정 전 623309719c의 Native/fresh WASM 26쪽은 각각 99.37%, 전 36쪽 최저는 각각 97.67%다.
+//! paint 생산 211253376d의 25·26쪽은 Native/fresh WASM 각각 100.00%; 진단 보정 뒤 전쪽 검증은 별도다.
+//! 과거 hft2ttf 수치와 구분하며 절대 px 경계를 기대값으로 고정하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 //! [#8218] HWP3의 그림 BinData는 실행마다 같은 순서로, binDataId 위치에 놓인다.
@@ -257,5 +263,200 @@ fn sample4_nasm_picture_and_following_text_keep_their_source_page() {
     assert!(
         !text_at(24, 852).is_empty(),
         "앞 쪽 제목도 자기 쪽에 보존한다"
+    );
+}
+
+#[test]
+fn sample4_accepted_last_line_keeps_its_declared_background_band() {
+    let core = DocumentCore::from_bytes(&read_fixture()).expect("sample4 원본");
+    let tree = core.build_page_render_tree(25).expect("26쪽 원본 배치");
+    let nodes = sample4_nodes(&tree.root);
+    let column = nodes
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .expect("본문 단");
+    let column_bottom = column.bbox.y + column.bbox.height;
+    let unit = 96.0 / 7200.0;
+    for pi in [889, 890] {
+        let line_index = nodes
+            .iter()
+            .position(|node| {
+                matches!(&node.node_type,
+                RenderNodeType::TextLine(line) if line.para_index == Some(pi))
+            })
+            .expect("원본 마지막 두 글줄");
+        let line = nodes[line_index];
+        assert!(
+            line.bbox.y + line.bbox.height <= column_bottom + unit,
+            "본문에 수용된 글줄의 후행 채움만 검사한다"
+        );
+        let source = &core.document().sections[0].paragraphs[pi];
+        let shape = &core.document().doc_info.para_shapes[source.para_shape_id as usize];
+        let fill = &core.document().doc_info.border_fills[usize::from(shape.border_fill_id) - 1];
+        let color = fill
+            .fill
+            .solid
+            .as_ref()
+            .expect("원본 회색 채움")
+            .background_color;
+        let saved = source.line_segs.first().expect("원본 저장 줄");
+        let declared_bottom =
+            line.bbox.y + f64::from(saved.line_height + saved.line_spacing.max(0)) * unit;
+        assert_eq!(
+            declared_bottom > column_bottom + unit,
+            pi == 890,
+            "단 중간 정상 대조와 단 마지막 반례의 소속을 구분한다"
+        );
+        assert!(
+            nodes.iter().take(line_index).any(|node| {
+                matches!(&node.node_type, RenderNodeType::Rectangle(rect)
+                if rect.style.fill_color == Some(color) && rect.style.opacity > 0.0)
+                    && node.bbox.x <= line.bbox.x + unit
+                    && node.bbox.x + node.bbox.width + unit >= line.bbox.x + line.bbox.width
+                    && node.bbox.y <= line.bbox.y + unit
+                    && node.bbox.y + node.bbox.height + unit >= declared_bottom
+            }),
+            "문단 {pi}: 원본 글줄이 소유한 후행 배경 밴드가 단 바닥에서 잘렸다"
+        );
+    }
+    let next = core.build_page_render_tree(26).expect("다음 쪽");
+    let following = sample4_nodes(&next.root);
+    assert!(
+        !following.iter().any(|node| matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(890))),
+        "앞 쪽 줄 중복 방지"
+    );
+    assert!(
+        following.iter().any(|node| matches!(&node.node_type,
+        RenderNodeType::TextLine(line) if line.para_index == Some(891))),
+        "다음 쪽 원문 줄 보존"
+    );
+}
+
+#[test]
+fn sample4_background_diagnostic_keeps_owner_and_independent_overflow_separate() {
+    use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
+
+    fn column_mut(node: &mut RenderNode) -> Option<&mut RenderNode> {
+        if matches!(node.node_type, RenderNodeType::Column(_)) {
+            return Some(node);
+        }
+        node.children.iter_mut().find_map(column_mut)
+    }
+
+    let core = DocumentCore::from_bytes(&read_fixture()).expect("sample4 원본");
+    let mut tree = core.build_page_render_tree(25).expect("26쪽");
+    let options = AnomalyOptions::default();
+    let body = sample4_nodes(&tree.root)
+        .into_iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .expect("물리 본문")
+        .bbox;
+    let body_bottom = body.y + body.height;
+    let line = sample4_nodes(&tree.root)
+        .into_iter()
+        .find(|node| {
+            matches!(&node.node_type, RenderNodeType::TextLine(line)
+            if line.para_index == Some(890))
+        })
+        .expect("마지막 원문 줄");
+    let line_id = line.id;
+    let line_y = line.bbox.y;
+    let background = column_mut(&mut tree.root)
+        .unwrap()
+        .children
+        .iter()
+        .find(|node| {
+            matches!(node.node_type, RenderNodeType::Rectangle(_))
+                && node.bbox.y <= line_y
+                && node.bbox.y + node.bbox.height > body_bottom
+        })
+        .expect("원본 후행 배경")
+        .clone();
+    let report = scan_page(25, &tree.root, core.page_count(), &options);
+    assert!(
+        !report
+            .overflow
+            .iter()
+            .any(|hit| hit.node_type == "Rect" && hit.over_bottom > options.overflow_tolerance_px),
+        "독립 Print가 그리는 수용 글줄의 선언된 후행 채움은 별도 본문 콘텐츠가 아니다"
+    );
+
+    // 같은 모양·색·좌표라도 소유 줄이 없는 독립 도형은 여전히 넘침이다.
+    column_mut(&mut tree.root)
+        .unwrap()
+        .children
+        .push(RenderNode::new(
+            u32::MAX - 1,
+            background.node_type.clone(),
+            background.bbox,
+        ));
+    let independent = scan_page(25, &tree.root, core.page_count(), &options);
+    assert!(
+        independent
+            .overflow
+            .iter()
+            .any(|hit| hit.node_type == "Rect" && hit.over_bottom > options.overflow_tolerance_px),
+        "독립 도형의 넘침 보존"
+    );
+    column_mut(&mut tree.root).unwrap().children.pop();
+
+    // 소유권이 있어도 선언 밴드나 실제 용지를 넘으면 반드시 진단한다.
+    let mut oversized = tree.root.clone();
+    let col = column_mut(&mut oversized).unwrap();
+    let fill = col
+        .children
+        .iter_mut()
+        .find(|node| node.id == background.id)
+        .unwrap();
+    fill.bbox.height += background.bbox.height;
+    let excess = scan_page(25, &oversized, core.page_count(), &options);
+    assert!(
+        excess
+            .overflow
+            .iter()
+            .any(|hit| hit.node_type == "Rect" && hit.over_bottom > options.overflow_tolerance_px),
+        "선언 후행 밴드 초과 보존"
+    );
+    let paper_bottom = oversized.bbox.y + oversized.bbox.height;
+    let fill = column_mut(&mut oversized)
+        .unwrap()
+        .children
+        .iter_mut()
+        .find(|node| node.id == background.id)
+        .unwrap();
+    fill.bbox.height = paper_bottom - fill.bbox.y + background.bbox.height;
+    let off_canvas = scan_page(25, &oversized, core.page_count(), &options);
+    assert!(
+        off_canvas
+            .off_canvas
+            .iter()
+            .any(|hit| hit.node_type == "Rect" && hit.over_bottom > options.overflow_tolerance_px),
+        "용지 밖 채움 보존"
+    );
+
+    // 소유 글줄이 본문 밖으로 나가면 배경도 면제하지 않는다.
+    let line = column_mut(&mut tree.root)
+        .unwrap()
+        .children
+        .iter_mut()
+        .find(|node| node.id == line_id)
+        .unwrap();
+    line.bbox.y = body_bottom + line.bbox.height;
+    let escaped = scan_page(25, &tree.root, core.page_count(), &options);
+    assert!(
+        escaped
+            .overflow
+            .iter()
+            .any(|hit| hit.node_type == "TextLine"
+                && hit.over_bottom > options.overflow_tolerance_px),
+        "실제 글줄 넘침 보존"
+    );
+    assert!(
+        escaped
+            .overflow
+            .iter()
+            .any(|hit| hit.node_type == "Rect" && hit.over_bottom > options.overflow_tolerance_px),
+        "넘친 소유 줄의 배경도 진단한다"
     );
 }

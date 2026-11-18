@@ -111,10 +111,10 @@ impl TypesetEngine {
                 .then_some(frame)
         })
         .flatten();
-        let block_acceptance =
+        let mut block_acceptance =
             self.accept_stored_block_frame(st, continuation, input, budget, &scan);
         let mut fragment_block_frames = mt.fragment_block_frames.clone();
-        let fragment_rows = if let Some(accepted) = &block_acceptance {
+        let mut fragment_rows = if let Some(accepted) = &block_acceptance {
             let range = accepted.range;
             if !fragment_block_frames.contains(&range) {
                 fragment_block_frames.push(range);
@@ -260,6 +260,23 @@ impl TypesetEngine {
         if let Some((height, last_height)) = stored_complete_extent {
             partial_height = height;
             end_row_height_override = Some(last_height);
+            // 내용 컷을 받은 병합 블록도 독립적으로 인증한 첫 물리 상자를 소비한다.
+            // 블록 행 목록은 paint의 권위이므로 끝 행 override만 갱신하면 이전 내용
+            // 높이가 그대로 그려진다. 같은 차이를 다음 조각의 소비 원장에도 반영한다.
+            if let (Some(accepted), Some(rows), Some(last)) = (
+                block_acceptance.as_mut(),
+                fragment_rows.as_mut(),
+                end_row.checked_sub(1),
+            ) {
+                if (accepted.range.0..accepted.range.1).contains(&last) {
+                    let extra = last_height - rows[last];
+                    rows[last] = last_height;
+                    accepted.rows[last] = last_height;
+                    if let Some(frame) = accepted.frame.as_mut() {
+                        frame.accepted += extra;
+                    }
+                }
+            }
         }
         if let Some((_, _, height, current_content)) = stored_row_frame {
             if height > current_content + 0.5 {

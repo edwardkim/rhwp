@@ -1,0 +1,1226 @@
+{
+  "status": "whole_tables_available",
+  "fixed_base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+  "product_source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "test_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "comparison_uses_unrounded_manifest_values": true,
+  "native_main_previous_reading": {
+    "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/native-main-reading-reuse.json",
+    "sha256": "e0bc4d3adb33761c34009c2b3344703b164e771e28f5673226dd158183286932",
+    "identical_page_pairs": 252
+  },
+  "datasets": [
+    {
+      "key": "chemical",
+      "backend": "native",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/base/chemical.tsv",
+        "sha256": "388d16c5a54ee876dc761bc0e48c8cff98fe8608f4811493ec572a8fc0e78ad2",
+        "pages": 103,
+        "minimum_display": "89.83",
+        "minimum_raw": "89.83308",
+        "minimum_pages": [
+          80
+        ],
+        "capture_manifest_sha256": "088ed1f294559e6022f91c44d80dc22c7f7629e5a853c64b87932ac7bc4e3c48",
+        "binary_producer_head": "af54158960ec91504d42faf842b0cb3229366236",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 1,
+        "elapsed_seconds": 48.907,
+        "input": {
+          "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+          "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+          "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "fb4b0bb5233995878dbed9b7b4eb023c5214b42090899ccb751d529d4a2e8d26",
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/chemical.tsv",
+        "sha256": "9111800060d296754f077d6fb6d0313f4f0300ab5c5d216c166aa3481e292dd5",
+        "pages": 103,
+        "minimum_display": "99.75",
+        "minimum_raw": "99.74736",
+        "minimum_pages": [
+          16,
+          68
+        ],
+        "capture_manifest_sha256": "d87c9db46ff6b96a127a19de438d666242abdfa788e83354ab27681e699fb9bd",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 56.59,
+        "input": {
+          "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+          "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+          "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "fb4b0bb5233995878dbed9b7b4eb023c5214b42090899ccb751d529d4a2e8d26",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 71,
+        "declined_pages": 2,
+        "unchanged_pages": 30,
+        "min_delta_pp": "-0.01866",
+        "declines_over_two_pp": [],
+        "declines": [
+          {
+            "page": 61,
+            "base": "99.99378",
+            "head": "99.97512",
+            "change_pp": "-0.01866"
+          },
+          {
+            "page": 96,
+            "base": "99.98534",
+            "head": "99.97947",
+            "change_pp": "-0.00587"
+          }
+        ]
+      }
+    },
+    {
+      "key": "spec13",
+      "backend": "native",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/base/spec13.tsv",
+        "sha256": "a64840d7185dd0cab0f59aba52d0f34f240d185ffb6da21f9dd719d997cd6978",
+        "pages": 71,
+        "minimum_display": "95.30",
+        "minimum_raw": "95.30311",
+        "minimum_pages": [
+          8
+        ],
+        "capture_manifest_sha256": "d3f55f74ea6d2fda8517542f899ba6fb85d7caf09af9090013a90c57099ab36b",
+        "binary_producer_head": "af54158960ec91504d42faf842b0cb3229366236",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 48.849,
+        "input": {
+          "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+          "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+        },
+        "reference_pdf": {
+          "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+          "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "96b95d283cb70263faa7774a39277f9d73c0a28d95a2eec6bb448ce42d30ca73",
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/spec13.tsv",
+        "sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+        "pages": 71,
+        "minimum_display": "99.69",
+        "minimum_raw": "99.68651",
+        "minimum_pages": [
+          8
+        ],
+        "capture_manifest_sha256": "5c932375092c741fb0226acc96fdf86cd18442e925a12c9b6a23e34ef8d7b3bc",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 32.552,
+        "input": {
+          "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+          "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+        },
+        "reference_pdf": {
+          "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+          "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "96b95d283cb70263faa7774a39277f9d73c0a28d95a2eec6bb448ce42d30ca73",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 7,
+        "declined_pages": 0,
+        "unchanged_pages": 64,
+        "min_delta_pp": "0.00000",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "outline-demo",
+      "backend": "native",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/base/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1,
+          2,
+          3
+        ],
+        "capture_manifest_sha256": "1d6a2ff4be9c8ac2eac8aea2d5bea4b92f36f740a804ffc366577d2bf14d2944",
+        "binary_producer_head": "af54158960ec91504d42faf842b0cb3229366236",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 12.853,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+          "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+          "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1,
+          2,
+          3
+        ],
+        "capture_manifest_sha256": "2bc6be2d8d789c201449b49aef5def2b8a10f4d70c962dda95c3193d5a555d24",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 7.327,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+          "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+          "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 0,
+        "declined_pages": 0,
+        "unchanged_pages": 3,
+        "min_delta_pp": "0.0",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "decree",
+      "backend": "native",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/base/decree.tsv",
+        "sha256": "87649c313622832355908d423fa5a06ca99afcce886c623e449236a70aa13631",
+        "pages": 74,
+        "minimum_display": "95.47",
+        "minimum_raw": "95.47468",
+        "minimum_pages": [
+          19
+        ],
+        "capture_manifest_sha256": "9b08b2c39d3bb6a2fe849a62f61ce0bd8b71d9f18af7d46eca99bc72a8555829",
+        "binary_producer_head": "af54158960ec91504d42faf842b0cb3229366236",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 59.194,
+        "input": {
+          "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+          "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+        },
+        "reference_pdf": {
+          "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+          "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab",
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/decree.tsv",
+        "sha256": "74ac79a552433fd3c66db702a1f4dbda5cc8529a17548ea1025f7c3219222a03",
+        "pages": 74,
+        "minimum_display": "99.74",
+        "minimum_raw": "99.73508",
+        "minimum_pages": [
+          19
+        ],
+        "capture_manifest_sha256": "8f9ebbc63f3dff511e8ed088250408c0e0e974f518778f61a34f1dda080ef759",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 151.198,
+        "input": {
+          "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+          "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+        },
+        "reference_pdf": {
+          "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+          "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 7,
+        "declined_pages": 0,
+        "unchanged_pages": 67,
+        "min_delta_pp": "0.0",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "native",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/base/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "pages": 1,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "0ab0c1ee4780eb029ca3e04d8a2aff28f487a712ef125388e27d10bfe6aecc23",
+        "binary_producer_head": "af54158960ec91504d42faf842b0cb3229366236",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 27.061,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+          "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+          "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "pages": 1,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "70c1fcf9c8b195b218c179082514b019d04443bb7a63209e174cf510049428e6",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 6.202,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+          "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+          "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 0,
+        "declined_pages": 0,
+        "unchanged_pages": 1,
+        "min_delta_pp": "0.0",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "original4138",
+      "backend": "native",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/base/original4138.tsv",
+        "sha256": "943ff30d25f1c0930bf8fae73af3299476d6cf6aa7c4eb13165e06f537be8379",
+        "pages": 197,
+        "minimum_display": "99.28",
+        "minimum_raw": "99.28276",
+        "minimum_pages": [
+          130
+        ],
+        "capture_manifest_sha256": "7ea7e3b244fbb5d953f00bd5f4f06e9b5b8da0c96deab121a018e2eb1f79d39d",
+        "binary_producer_head": "af54158960ec91504d42faf842b0cb3229366236",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 125.564,
+        "input": {
+          "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+          "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+          "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "fb46a96632cdf6dc6f9ddc24b2f6f3c8009f8a5306a35d2138ce28392dab2351",
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/original4138.tsv",
+        "sha256": "aadaaa0460f95f79f923082775383cfe1e824d9f675bf0b066b1efb735d7ab3a",
+        "pages": 197,
+        "minimum_display": "99.28",
+        "minimum_raw": "99.28276",
+        "minimum_pages": [
+          130
+        ],
+        "capture_manifest_sha256": "0c2eea38e544bf660b0413b8af1c1baf0857c0057a0b4be0eb63106e7df4961c",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 517.303,
+        "input": {
+          "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+          "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+          "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "6cbb06ee5d881446d9426d5f0dd2b8b276bb3b19953f37f45a08945aafcc6fd4",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 2,
+        "declined_pages": 0,
+        "unchanged_pages": 195,
+        "min_delta_pp": "0.0",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "radical-controls",
+      "backend": "native",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/base/radical-controls.tsv",
+        "sha256": "9b53703ca8828fe9b75be7b2dc78fd037745d7168f4f3ed57122aaf35e910158",
+        "pages": 1,
+        "minimum_display": "92.06",
+        "minimum_raw": "92.06256",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "cfcf1b7f1f142a2379dcb0fcfa3cf6ccfc098c42b64cec8842f20a3c2492f345",
+        "binary_producer_head": "af54158960ec91504d42faf842b0cb3229366236",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 11.373,
+        "input": {
+          "path": "tests/fixtures/issue7733_hft_radical/original-radical-controls-2024.hwpx",
+          "sha256": "675da9a508b2a33f7dc4944a1e353dd504a1eb38e308114138c4cc7dc085ab6b"
+        },
+        "reference_pdf": {
+          "path": "pdf/issues7733_7738_20261117/hft-radical-controls-2024.pdf",
+          "sha256": "c1a6495758b92a56f392d2d83686551059008940b42826f3c4c58c0d27cfd855"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "08e97d8c8986397f6b79a5065b0d7b2a1630261204ae24b98658001118ddecd5",
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/radical-controls.tsv",
+        "sha256": "474fadeef17b160ab0d033003732c486754a62bbbdb036712e2164bcfc368764",
+        "pages": 1,
+        "minimum_display": "98.38",
+        "minimum_raw": "98.38473",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "d9c8d0f258c46dd25fefcc4411104c9509b37954255889edc491d0829a50a79c",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 227.81,
+        "input": {
+          "path": "tests/fixtures/issue7733_hft_radical/original-radical-controls-2024.hwpx",
+          "sha256": "675da9a508b2a33f7dc4944a1e353dd504a1eb38e308114138c4cc7dc085ab6b"
+        },
+        "reference_pdf": {
+          "path": "pdf/issues7733_7738_20261117/hft-radical-controls-2024.pdf",
+          "sha256": "c1a6495758b92a56f392d2d83686551059008940b42826f3c4c58c0d27cfd855"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "75c8143fbb209dda493a6f76a98acd8c6896f91e00dbc27ccc434f0a0de88d31",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 1,
+        "declined_pages": 0,
+        "unchanged_pages": 0,
+        "min_delta_pp": "6.32217",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "sample4-gray-tail",
+      "backend": "native",
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/sample4-gray-tail.tsv",
+        "sha256": "a65b87542e04ff3811775210b002c4e7ce5ea13ab6d773af3935560ded1e03e3",
+        "pages": 36,
+        "minimum_display": "97.67",
+        "minimum_raw": "97.66581",
+        "minimum_pages": [
+          22
+        ],
+        "capture_manifest_sha256": "1537f7d815a3a70797e9800a68699b171c865dd3eb084920f29dc5af311537dc",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "recorded_verification_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "process_exit_code": 0,
+        "elapsed_seconds": 69.059,
+        "input": {
+          "path": "samples/hwp3-sample4.hwp",
+          "sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4"
+        },
+        "reference_pdf": {
+          "path": "pdf/hwp3-sample4-2020.pdf",
+          "sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "native-skia",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "cf7d32c7b047457fc9ad25b302bbfb87a6268a4577e122fdfce0d6a53746a500",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": null
+    },
+    {
+      "key": "chemical",
+      "backend": "wasm",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/base/chemical.tsv",
+        "sha256": "d72044141cba99ff55a9623f08ab946dacab7d79eca91ddf5145f9521214f3e5",
+        "pages": 103,
+        "minimum_display": "89.66",
+        "minimum_raw": "89.66049",
+        "minimum_pages": [
+          80
+        ],
+        "capture_manifest_sha256": "cdd46ef707ca4982fef9d666bc0782c96d04f2c4a81604baa8ac6cf4bf830601",
+        "binary_producer_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 1,
+        "elapsed_seconds": 251.407,
+        "input": {
+          "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+          "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+          "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637",
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/chemical.tsv",
+        "sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d",
+        "pages": 103,
+        "minimum_display": "99.71",
+        "minimum_raw": "99.70631",
+        "minimum_pages": [
+          91
+        ],
+        "capture_manifest_sha256": "a0b3d1eae26e04a8e47e9ea7e064eb5bd7369a11b77b35474c210a42803b60c4",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 183.929,
+        "input": {
+          "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+          "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+          "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 71,
+        "declined_pages": 1,
+        "unchanged_pages": 31,
+        "min_delta_pp": "-0.00001",
+        "declines_over_two_pp": [],
+        "declines": [
+          {
+            "page": 96,
+            "base": "99.97793",
+            "head": "99.97792",
+            "change_pp": "-0.00001"
+          }
+        ]
+      }
+    },
+    {
+      "key": "spec13",
+      "backend": "wasm",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/base/spec13.tsv",
+        "sha256": "ec1346c8224f1e54664f4c05cfe3850570bce0a3c8e1d2e77257832bd672e0f4",
+        "pages": 71,
+        "minimum_display": "95.26",
+        "minimum_raw": "95.26041",
+        "minimum_pages": [
+          8
+        ],
+        "capture_manifest_sha256": "8de8d043999e47ff933a4e48deab63452dbca38862b2810c130bcd1eff3a32ab",
+        "binary_producer_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 247.751,
+        "input": {
+          "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+          "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+        },
+        "reference_pdf": {
+          "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+          "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/spec13.tsv",
+        "sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+        "pages": 71,
+        "minimum_display": "99.67",
+        "minimum_raw": "99.66582",
+        "minimum_pages": [
+          8
+        ],
+        "capture_manifest_sha256": "c4131213c0623380f8bc0ddbafcb74a2e532e63a464f06835f95e12d61b6101b",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 135.907,
+        "input": {
+          "path": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+          "sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d"
+        },
+        "reference_pdf": {
+          "path": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+          "sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 7,
+        "declined_pages": 1,
+        "unchanged_pages": 63,
+        "min_delta_pp": "-0.00001",
+        "declines_over_two_pp": [],
+        "declines": [
+          {
+            "page": 15,
+            "base": "99.99634",
+            "head": "99.99633",
+            "change_pp": "-0.00001"
+          }
+        ]
+      }
+    },
+    {
+      "key": "outline-demo",
+      "backend": "wasm",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/base/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1,
+          2,
+          3
+        ],
+        "capture_manifest_sha256": "85b800ae8a821ef897c4c82422b8269b5ff74f22b11a1ab73dc2de500c19d211",
+        "binary_producer_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 58.766,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+          "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+          "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-demo.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "pages": 3,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1,
+          2,
+          3
+        ],
+        "capture_manifest_sha256": "adf3f0a240beb28885e10f09a2a2ee0c2757a90823075bf45c1d76d266a06cc1",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 77.029,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+          "sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+          "sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 0,
+        "declined_pages": 0,
+        "unchanged_pages": 3,
+        "min_delta_pp": "0.0",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "decree",
+      "backend": "wasm",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/base/decree.tsv",
+        "sha256": "58771bd53fee0f26a063c2b3567ca3fdc4753456874c1ee0652775a309bcaa7f",
+        "pages": 74,
+        "minimum_display": "95.46",
+        "minimum_raw": "95.46423",
+        "minimum_pages": [
+          19
+        ],
+        "capture_manifest_sha256": "dc4f6f148122e3a198604a188faef22deb150ed7fdbe6a16381a6d3ebe15ee4c",
+        "binary_producer_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 223.492,
+        "input": {
+          "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+          "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+        },
+        "reference_pdf": {
+          "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+          "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252",
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/decree.tsv",
+        "sha256": "be1f5166b7048d0f1f687f71ced888896bd190d9633f2a78f64e9a7e5693ffbf",
+        "pages": 74,
+        "minimum_display": "99.73",
+        "minimum_raw": "99.73446",
+        "minimum_pages": [
+          19
+        ],
+        "capture_manifest_sha256": "8a9dd7884cfce9829555294380ebef14c7fec61e98b650a7bea54fac74c25693",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 148.818,
+        "input": {
+          "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+          "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+        },
+        "reference_pdf": {
+          "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+          "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 11,
+        "declined_pages": 0,
+        "unchanged_pages": 63,
+        "min_delta_pp": "0.0",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/base/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "pages": 1,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "39a3685f9a8a739f58ae7f1d86a92b08cf46feb2a18d718bed3e18ffceddd85c",
+        "binary_producer_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 209.551,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+          "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+          "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-minimal.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "pages": 1,
+        "minimum_display": "100.00",
+        "minimum_raw": "100.0",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "d5d47d9259ab37120fdecf813b87ee92fb87b8d0d63757d70f8d680b1b0fc758",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 36.451,
+        "input": {
+          "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+          "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+          "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 0,
+        "declined_pages": 0,
+        "unchanged_pages": 1,
+        "min_delta_pp": "0.0",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "original4138",
+      "backend": "wasm",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/base/original4138.tsv",
+        "sha256": "570ee2d6b89e7f089491209ab7ff3140ee2926dcf7685cf5314b1f16ea5a35ed",
+        "pages": 197,
+        "minimum_display": "99.36",
+        "minimum_raw": "99.36039",
+        "minimum_pages": [
+          130
+        ],
+        "capture_manifest_sha256": "5c259bfa4df9ac47ef5560a94f9177ee4710e6d5c476158047cd181e1e8d83d2",
+        "binary_producer_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 454.828,
+        "input": {
+          "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+          "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+          "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/original4138.tsv",
+        "sha256": "e6648ff8f916f70581ee3eed4e83bcbb65cdabb048d63a6ebdd09bb6969acb74",
+        "pages": 197,
+        "minimum_display": "99.36",
+        "minimum_raw": "99.36039",
+        "minimum_pages": [
+          130
+        ],
+        "capture_manifest_sha256": "83277ed6b95e202a372cb196d28b9f499bcff591d9c8951a2cb1936c5ee4d22c",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 183.125,
+        "input": {
+          "path": "mydocs/pr/assets/issue7445/completed-20261009/regression-policy-20261015/issue4138-current-production/saved-split-1x2.hwp",
+          "sha256": "4a96f1fc838eb7239d8c85b7698b9e04f83fc6b2f271c948ccae038a1c6c89b9"
+        },
+        "reference_pdf": {
+          "path": "pdf/issue4138-ascii-split-20261016-2024.pdf",
+          "sha256": "5a82290de1571c692c7246fe6b57ae136602ae52c2068f2568fffc6c91bfd571"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 2,
+        "declined_pages": 1,
+        "unchanged_pages": 194,
+        "min_delta_pp": "-0.00008",
+        "declines_over_two_pp": [],
+        "declines": [
+          {
+            "page": 156,
+            "base": "99.99664",
+            "head": "99.99656",
+            "change_pp": "-0.00008"
+          }
+        ]
+      }
+    },
+    {
+      "key": "radical-controls",
+      "backend": "wasm",
+      "base": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/base/radical-controls.tsv",
+        "sha256": "325f1e84993cbdbed4a052b6cf0e5ef11112b3e999c9ab55b12cdbdc01a26691",
+        "pages": 1,
+        "minimum_display": "92.96",
+        "minimum_raw": "92.95871",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "4c1af11e5b9ae8307c0e847fbd59f12bf279ccd92feba0b0a0470dcf141a76d8",
+        "binary_producer_head": "197ce19e99438c2cba452c654ae1af504dab85ec",
+        "sweep_repo_head": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+        "recorded_verification_head": null,
+        "process_exit_code": 0,
+        "elapsed_seconds": 1861.037,
+        "input": {
+          "path": "tests/fixtures/issue7733_hft_radical/original-radical-controls-2024.hwpx",
+          "sha256": "675da9a508b2a33f7dc4944a1e353dd504a1eb38e308114138c4cc7dc085ab6b"
+        },
+        "reference_pdf": {
+          "path": "pdf/issues7733_7738_20261117/hft-radical-controls-2024.pdf",
+          "sha256": "c1a6495758b92a56f392d2d83686551059008940b42826f3c4c58c0d27cfd855"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "695636314465d16a6ca1c24531ddb1854a6662e7e476998d4697317195f0f56f"
+      },
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/radical-controls.tsv",
+        "sha256": "dcc8bfdaea993cb4e6c11d355272108104d6ee60e5dc9134396971dc2ec93d67",
+        "pages": 1,
+        "minimum_display": "98.35",
+        "minimum_raw": "98.35483",
+        "minimum_pages": [
+          1
+        ],
+        "capture_manifest_sha256": "80db8e7ba96dfdd934a29a24cda7190d6ae8d1017bca54d00719fc5f26ef24e2",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 27.281,
+        "input": {
+          "path": "tests/fixtures/issue7733_hft_radical/original-radical-controls-2024.hwpx",
+          "sha256": "675da9a508b2a33f7dc4944a1e353dd504a1eb38e308114138c4cc7dc085ab6b"
+        },
+        "reference_pdf": {
+          "path": "pdf/issues7733_7738_20261117/hft-radical-controls-2024.pdf",
+          "sha256": "c1a6495758b92a56f392d2d83686551059008940b42826f3c4c58c0d27cfd855"
+        },
+        "compat": "2024",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": null,
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": {
+        "improved_pages": 1,
+        "declined_pages": 0,
+        "unchanged_pages": 0,
+        "min_delta_pp": "5.39612",
+        "declines_over_two_pp": [],
+        "declines": []
+      }
+    },
+    {
+      "key": "sample4-gray-tail",
+      "backend": "wasm",
+      "head": {
+        "tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/sample4-gray-tail.tsv",
+        "sha256": "7b3264f1d4c10090fb157efb63f4e5c6faee191b775a389a616b51edca58dc44",
+        "pages": 36,
+        "minimum_display": "97.67",
+        "minimum_raw": "97.66556",
+        "minimum_pages": [
+          22
+        ],
+        "capture_manifest_sha256": "d14431cb1a49cbc8bfa4a5e391f68c3d150140d6309106e6e164c367a8def287",
+        "binary_producer_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+        "sweep_repo_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "recorded_verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+        "process_exit_code": 0,
+        "elapsed_seconds": 59.727,
+        "input": {
+          "path": "samples/hwp3-sample4.hwp",
+          "sha256": "f25a3ec30f54e045a492e9a9c97efaac8628e3b5fde024418bee743e6fdcebc4"
+        },
+        "reference_pdf": {
+          "path": "pdf/hwp3-sample4-2020.pdf",
+          "sha256": "61d63da58638b4a28900a15694779b35766f4ff5b3e0ed41d959a97f2599bb60"
+        },
+        "compat": "2022",
+        "profile": "print",
+        "radius_px": 2,
+        "backend": "wasm-canvas2d",
+        "pdfium_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+        "pdfium_version": "153.0.7999.0",
+        "sweep_sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4",
+        "supplied_font_environment_sha256": "cf7d32c7b047457fc9ad25b302bbfb87a6268a4577e122fdfce0d6a53746a500",
+        "frozen_native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0"
+      },
+      "pagewise_raw_comparison": null
+    }
+  ],
+  "pending": []
+}

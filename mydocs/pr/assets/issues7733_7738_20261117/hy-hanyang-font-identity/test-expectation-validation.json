@@ -1,0 +1,40 @@
+{
+  "kind": "pure_chain_expectation_correction_no_product_code_change",
+  "before": {
+    "source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+    "run": 13781,
+    "pass": 13778,
+    "fail": 3,
+    "skip": 45,
+    "test_seconds": 767.559,
+    "log_sha256": "e8e5ef4412986ae581e80b3cd5a7f5826ce8cf6856d22f3ba8d716d816933369"
+  },
+  "after_focused": {
+    "run_id": "eda75b0b-0b8d-45f9-ba93-3b62d53e376d",
+    "run": 4,
+    "pass": 4,
+    "fail": 0,
+    "skip_outside_filter": 359,
+    "test_seconds": 0.015,
+    "log_sha256": "48d6714c7999b61367d18ad1c317b531f39fbe6b2aa53c18aedeb46d73d89e20",
+    "scope": "All four existing issue_6171_hanyang_gyeongothic_alias tests, minimal macOS font sandbox"
+  },
+  "invalid_attempt": "Unprepared derived suite selected zero tests; not counted as PASS.",
+  "full_corrected_run": {
+    "source_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+    "exit_code": 0,
+    "run": 13781,
+    "pass": 13781,
+    "fail": 0,
+    "skip": 45,
+    "test_seconds": 873.621,
+    "wall_seconds_with_build": 1310.32,
+    "log_sha256": "335796c266bcb9f0d328f2e03272807301a91d8c6b62cbb7e3d0a3eb4249fe16",
+    "affected_case_lines": [
+      "PASS [   0.026s] (11668/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::bold_chain_keeps_gyeongothic_alias",
+      "PASS [   0.028s] (11669/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::gyeongothic_metric_alias_stays_paired_with_render_face",
+      "PASS [   0.021s] (11670/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::hanyang_gyeongothic_chain_reaches_installed_hy_face",
+      "PASS [   0.026s] (11671/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::hanyang_gyeonmyeongjo_chain_reaches_installed_hy_face"
+    ]
+  }
+}

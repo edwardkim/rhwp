@@ -1,0 +1,445 @@
+{
+  "status": "Native repair demonstrated; whole task and fresh WASM not complete",
+  "producer": {
+    "parent": "a92460abaaf887269b17de1a8b0dde0dece077a3",
+    "dirty_source_diff_sha256": "bda33ab4eb48168a3d1c7493d4bb61b9e5d041ff49d531ed601f01bf9ddd1684",
+    "changed_source_files": {
+      "src/document_core/queries/rendering.rs": "fa4c5f08ea8cf8337ffb70627e0ddb5f9108067b296fbadc68204410d1304fe7"
+    },
+    "rule": "Inherit previous section page-number position only on leading pages before the first explicit declaration. Some(position=0) stops inheritance and preserves explicit hiding.",
+    "independent_evidence": "Original chemical HWP Section4 declares pgnp only at paragraph179; earlier physical p79/80 PDF prints57/58, Native footers empty.",
+    "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-page-number-native",
+    "binary_sha256": "7ed6027e0f1d3163597209225edf166f3bd49d979dc9d044c481ff3045036740",
+    "source_sha256_after_build": "fa4c5f08ea8cf8337ffb70627e0ddb5f9108067b296fbadc68204410d1304fe7"
+  },
+  "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+  "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+  "source_control_evidence": {
+    "file_header_flags": 1,
+    "controls": [
+      {
+        "section": "BodyText/Section0",
+        "offset": 258,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "secd",
+        "body_hex": "64636573000000006e0400000000401f00000200000000000000000000000000000000000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 482,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "pgnp",
+        "body_hex": "706e6770020500000000000000002d00",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 909,
+        "top_paragraph": 2,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677001000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 807
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 2191,
+        "top_paragraph": 16,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 2089
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 3071,
+        "top_paragraph": 22,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 2969
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 3283,
+        "top_paragraph": 24,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 3163
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 6401,
+        "top_paragraph": 38,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 6299
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 6675,
+        "top_paragraph": 41,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 6573
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 6803,
+        "top_paragraph": 42,
+        "level": 1,
+        "control": "nwno",
+        "body_hex": "6f6e776e000000000100",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 6687
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 120274,
+        "top_paragraph": 152,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 120172
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 124540,
+        "top_paragraph": 182,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 124438
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 124664,
+        "top_paragraph": 183,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 124552
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 133258,
+        "top_paragraph": 240,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 133156
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section0",
+        "offset": 133380,
+        "top_paragraph": 241,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "6468677020000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 133270
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section1",
+        "offset": 170,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "secd",
+        "body_hex": "64636573000000006e0400000000401f00000300000000000000000000000000000000000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section1",
+        "offset": 374,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "pgnp",
+        "body_hex": "706e6770000500000000000000002d00",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section1",
+        "offset": 394,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "nwno",
+        "body_hex": "6f6e776e000000000100",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section1",
+        "offset": 6834,
+        "top_paragraph": 3,
+        "level": 1,
+        "control": "pghd",
+        "body_hex": "646867703f000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 6732
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section2",
+        "offset": 196,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "secd",
+        "body_hex": "64636573000000006e0400000000401f00000400000000000000000000000000000000000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section2",
+        "offset": 131211,
+        "top_paragraph": 152,
+        "level": 1,
+        "control": "nwno",
+        "body_hex": "6f6e776e040000000100",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 124703
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section2",
+        "offset": 131225,
+        "top_paragraph": 152,
+        "level": 1,
+        "control": "nwno",
+        "body_hex": "6f6e776e030000000100",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 124703
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section3",
+        "offset": 230,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "secd",
+        "body_hex": "64636573000000006a0400000000401f00000600000000000000000000000000000000000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section4",
+        "offset": 158,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "secd",
+        "body_hex": "64636573000000006a0400000000401f00000800000000000000000000000000000000000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section4",
+        "offset": 199715,
+        "top_paragraph": 179,
+        "level": 1,
+        "control": "pgnp",
+        "body_hex": "706e6770000500000000000000002d00",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 199028
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section5",
+        "offset": 154,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "secd",
+        "body_hex": "64636573000000006e0400000000401f00000100000000000000000000000000000000000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      },
+      {
+        "section": "BodyText/Section6",
+        "offset": 146,
+        "top_paragraph": 0,
+        "level": 1,
+        "control": "secd",
+        "body_hex": "64636573000000006e0400000000401f00000500000000000000000000000000000000000000",
+        "parents": {
+          "0": {
+            "tag": 66,
+            "offset": 0
+          }
+        }
+      }
+    ]
+  },
+  "before_p80": {
+    "page": 80,
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 89.83308,
+    "silhouette_raw_unmatched_pixels": 201,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 1977,
+    "tolerant_content_match_percent": 89.83308
+  },
+  "after_p80": {
+    "page": 80,
+    "silhouette_method": "threshold_boundary_color_support_v1",
+    "silhouette_raw_match_percent": 100.0,
+    "silhouette_raw_unmatched_pixels": 0,
+    "silhouette_boundary_reconciled_pixels": 0,
+    "silhouette_color_tolerance": 32,
+    "silhouette_content_union_pixels": 2036,
+    "tolerant_content_match_percent": 100.0
+  },
+  "page_counts": {
+    "rhwp": 103,
+    "pdf": 103
+  },
+  "rises": [
+    66,
+    67,
+    68,
+    69,
+    70,
+    71,
+    72,
+    73,
+    74,
+    75,
+    76,
+    77,
+    78,
+    79,
+    80,
+    81,
+    82,
+    83,
+    84,
+    85
+  ],
+  "decreases": [],
+  "remaining_below98": [
+    13,
+    14,
+    28,
+    40,
+    44,
+    49,
+    68,
+    79,
+    84,
+    95
+  ]
+}

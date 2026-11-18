@@ -1,0 +1,138 @@
+[
+  {
+    "key": "chemical",
+    "changes": [
+      {
+        "page": 31,
+        "before": 99.98278,
+        "after": 99.99137,
+        "delta": 0.00859
+      },
+      {
+        "page": 36,
+        "before": 99.99221,
+        "after": 100.0,
+        "delta": 0.00779
+      },
+      {
+        "page": 41,
+        "before": 99.98846,
+        "after": 100.0,
+        "delta": 0.01154
+      },
+      {
+        "page": 45,
+        "before": 99.95378,
+        "after": 99.99683,
+        "delta": 0.04305
+      },
+      {
+        "page": 46,
+        "before": 99.9629,
+        "after": 99.99816,
+        "delta": 0.03526
+      },
+      {
+        "page": 49,
+        "before": 99.95531,
+        "after": 99.95529,
+        "delta": -2e-05
+      },
+      {
+        "page": 50,
+        "before": 99.97312,
+        "after": 99.9731,
+        "delta": -2e-05
+      },
+      {
+        "page": 68,
+        "before": 99.75389,
+        "after": 99.75367,
+        "delta": -0.00022
+      },
+      {
+        "page": 69,
+        "before": 99.97695,
+        "after": 100.0,
+        "delta": 0.02305
+      },
+      {
+        "page": 74,
+        "before": 99.87285,
+        "after": 99.87247,
+        "delta": -0.00038
+      },
+      {
+        "page": 86,
+        "before": 99.9128,
+        "after": 99.94828,
+        "delta": 0.03548
+      },
+      {
+        "page": 89,
+        "before": 99.88223,
+        "after": 99.90863,
+        "delta": 0.0264
+      },
+      {
+        "page": 92,
+        "before": 99.9918,
+        "after": 99.99178,
+        "delta": -2e-05
+      },
+      {
+        "page": 93,
+        "before": 99.92056,
+        "after": 99.92048,
+        "delta": -8e-05
+      },
+      {
+        "page": 94,
+        "before": 99.98599,
+        "after": 99.98499,
+        "delta": -0.001
+      },
+      {
+        "page": 96,
+        "before": 99.98534,
+        "after": 99.98533,
+        "delta": -1e-05
+      }
+    ]
+  },
+  {
+    "key": "spec13",
+    "changes": []
+  },
+  {
+    "key": "outline-demo",
+    "changes": []
+  },
+  {
+    "key": "decree",
+    "changes": [
+      {
+        "page": 13,
+        "before": 99.16669,
+        "after": 100.0,
+        "delta": 0.83331
+      },
+      {
+        "page": 18,
+        "before": 99.95047,
+        "after": 99.8219,
+        "delta": -0.12857
+      },
+      {
+        "page": 49,
+        "before": 99.99848,
+        "after": 100.0,
+        "delta": 0.00152
+      }
+    ]
+  },
+  {
+    "key": "outline-minimal",
+    "changes": []
+  }
+]

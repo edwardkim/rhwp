@@ -1,0 +1,123 @@
+{
+  "scope": "maintainer/collaborator protected verification; original-font environment, not minimum-font regression sandbox",
+  "renderer_producer_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "qualified_rendering_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "font_path": "user font directory (macOS: $HOME/Library/Fonts); actual used program identities and substitutions must match",
+  "private_font_binaries_committed": false,
+  "documents": [
+    {
+      "key": "chemical",
+      "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "reference_provenance": "desktop_hancom_pdf_print",
+      "environments": {
+        "native": {
+          "final_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-native.json",
+          "sha256": "fb4b0bb5233995878dbed9b7b4eb023c5214b42090899ccb751d529d4a2e8d26"
+        },
+        "wasm": {
+          "final_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-wasm.json",
+          "sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637"
+        }
+      },
+      "capture_provenance": {
+        "native": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-native-provenance.json",
+          "sha256": "4139c09ed61a1a2b2c34b0f7e20c05ef1683b8f8da6cc3d1d9f2bea02497e0e1"
+        },
+        "wasm": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/chemical-wasm-provenance.json",
+          "sha256": "863de307d75b09666ffe7af4f25e1e0cc1ec3dbbc1b1c70d260a55f96b0855b3"
+        }
+      }
+    },
+    {
+      "key": "spec13",
+      "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+      "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "reference_provenance": "official_hancom_specification_original",
+      "environments": {},
+      "capture_provenance": {
+        "native": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/spec13-native-provenance.json",
+          "sha256": "8690c69e956ddbc6b75770059a4b217c540550ceca1be2feb6d54e077a0d3ba4"
+        },
+        "wasm": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/spec13-wasm-provenance.json",
+          "sha256": "baa930a3e9a4c8cd6f6528cac228e5cddde46385ae2e5940ee881f960650d142"
+        }
+      }
+    },
+    {
+      "key": "outline-demo",
+      "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+      "pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "reference_provenance": "desktop_hancom_pdf_print",
+      "environments": {},
+      "capture_provenance": {
+        "native": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-demo-native-provenance.json",
+          "sha256": "c2ce2a3bbce35a8f40d3f4b97559967b35cafc829699d170e57378b2e16c3b6f"
+        },
+        "wasm": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-demo-wasm-provenance.json",
+          "sha256": "66d53e92548067154179e3cad04d03a6e24761bad8fbbc0d33e6cd315812ff2e"
+        }
+      }
+    },
+    {
+      "key": "decree",
+      "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "pdf": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "reference_provenance": "desktop_hancom_pdf_print",
+      "environments": {
+        "native": {
+          "final_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native.json",
+          "sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab"
+        },
+        "wasm": {
+          "final_path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-wasm.json",
+          "sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252"
+        }
+      },
+      "capture_provenance": {
+        "native": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native-provenance.json",
+          "sha256": "40cd9111e62919f3f0445bdb77965dfe12be291c6a08d1a75a28b33375bf8aaa"
+        },
+        "wasm": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-wasm-provenance.json",
+          "sha256": "87a9a065f6fd4211bc6b34a30d87569083cb1bb559b82ab71511df2f0ea5b904"
+        }
+      }
+    },
+    {
+      "key": "outline-minimal",
+      "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "reference_provenance": "desktop_hancom_pdf_print",
+      "environments": {},
+      "capture_provenance": {
+        "native": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-minimal-native-provenance.json",
+          "sha256": "e17561b7194da256308e5bfa6747ec5c30e78efc80e0b1e92475ecdc3ba022c4"
+        },
+        "wasm": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/outline-minimal-wasm-provenance.json",
+          "sha256": "d701a7006e43907810eb1b896788ae7fa2f20b316c283bf1f0099b189973e2c8"
+        }
+      }
+    }
+  ],
+  "supply_note": "수용 당시 Visual Sweep이 기록한 공급 파일 SHA와 실제 producer를 보존한다. 공급 목록은 사용 가능 후보이며 모든 글꼴이 해당 문서에서 실제 사용됐다는 뜻은 아니다. 명시적 selectedPrograms는 각 환경 파일을 따른다."
+}

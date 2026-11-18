@@ -1,0 +1,23 @@
+{
+  "source_commit_equivalence": "fb56eeee387915f209059901ff885853b1911415",
+  "font_scope": "verified macOS minimum-font sandbox",
+  "results": {
+    "before": {
+      "summary": "Summary [   0.108s] 4 tests run: 1 passed, 3 failed, 677 skipped",
+      "log": "output/pr-review/issues-7733-7738-20261117/gothic-extra-point/before-test.log"
+    },
+    "after-supplier": {
+      "summary": "Summary [   0.021s] 3 tests run: 3 passed, 692 skipped",
+      "log": "output/pr-review/issues-7733-7738-20261117/gothic-extra-point/after-test.log"
+    },
+    "after-origin": {
+      "summary": "Summary [   0.117s] 1 test run: 1 passed, 348 skipped",
+      "log": "output/pr-review/issues-7733-7738-20261117/gothic-extra-point/after-origin.log"
+    },
+    "broad": {
+      "summary": "Summary [   1.709s] 59 tests run: 59 passed, 3878 skipped",
+      "log": "output/pr-review/issues-7733-7738-20261117/gothic-extra-point/broad-test.log"
+    }
+  },
+  "new_test_execution_note": "formatting moved the origin case to a different generated suite; its separate actual one-test PASS and the combined 59-test PASS are both recorded"
+}

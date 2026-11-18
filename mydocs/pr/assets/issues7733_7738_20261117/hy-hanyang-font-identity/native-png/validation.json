@@ -1,0 +1,155 @@
+{
+  "status": "focused_native_skia_export_png_compared",
+  "input": "samples/hwp3-sample10.hwp",
+  "reference_pdf": "pdf/issue8371/hwp3-sample10-2020.pdf",
+  "metric": "96DPI print / 2px raw silhouette",
+  "auto_vs_qualified": "별도 명시 조건은 474쪽의 HNC 글리프 공급 차이를 대조한다. 자동 선택은 474쪽에서 99.96%다.",
+  "comparisons": [
+    {
+      "role": "before",
+      "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "binary_sha256": "bd15811cac3ca34bba967cdc6c2d7a427018e03350fe1849f7b063fd54495291",
+      "exit_code": 0,
+      "elapsed_seconds": 16.51,
+      "rows": [
+        {
+          "page": "2",
+          "tolerant_content_match_percent": "98.25",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "98.25",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "d5939769437398349a7afea7352e6bd11269618b4357c82d4d36e946b4b2fad4",
+          "pdf_png_sha256": "6af972c006445f0898812a44f7ba865de10914fbcc3faecd0be7cc193772b259",
+          "review": "before-002-review.png",
+          "overlay": "before-002-overlay.png",
+          "raw": "before-002-raw.png",
+          "pdf": "before-002-pdf.png"
+        },
+        {
+          "page": "474",
+          "tolerant_content_match_percent": "99.96",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.96",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "fd937cb7c8468da6eb4ba5e9391fedd40734869909b4a8eae4675fd1b30130e9",
+          "pdf_png_sha256": "f04465ea253960834560974819f4215029c5acb3937efa8813b6cf78e9a24d9e"
+        },
+        {
+          "page": "690",
+          "tolerant_content_match_percent": "99.93",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.93",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "3eec7d14417161adc23e1925f0b5feae22ff9f3bb55db6f258268549c42a42a5",
+          "pdf_png_sha256": "da74c8b53df3039fdb8dade28c371045c14b85a1ffec1870f3e5d3c4caadba07"
+        }
+      ],
+      "direct_reading": [
+        {
+          "page": 2,
+          "observed": "보정 전 제목이 왼쪽으로 당겨지고 이중선 끝점이 짧다."
+        }
+      ]
+    },
+    {
+      "role": "current",
+      "source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+      "binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0",
+      "exit_code": 0,
+      "elapsed_seconds": 77.393,
+      "rows": [
+        {
+          "page": "2",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "e896a9cb6117d80e8f7a6972be48856b21257182f553cbd0c339c165b323fd97",
+          "pdf_png_sha256": "6af972c006445f0898812a44f7ba865de10914fbcc3faecd0be7cc193772b259",
+          "review": "current-002-review.png",
+          "overlay": "current-002-overlay.png",
+          "raw": "current-002-raw.png",
+          "pdf": "current-002-pdf.png"
+        },
+        {
+          "page": "474",
+          "tolerant_content_match_percent": "99.96",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.96",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "126d4972041331d61ff85967dd3077f52f3bb3e9a59f12c98d61fca8f36b2a86",
+          "pdf_png_sha256": "f04465ea253960834560974819f4215029c5acb3937efa8813b6cf78e9a24d9e"
+        },
+        {
+          "page": "690",
+          "tolerant_content_match_percent": "99.94",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.94",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "bdd2019b7b3fa191645224f13b1fd46b0e906c859319bcc12b6bf9badb49592d",
+          "pdf_png_sha256": "da74c8b53df3039fdb8dade28c371045c14b85a1ffec1870f3e5d3c4caadba07"
+        }
+      ],
+      "direct_reading": [
+        {
+          "page": 2,
+          "observed": "제목 위치와 양쪽 이중선 끝점이 복구됐다. 본문 점선과 잉크에는 미세 차이가 남는다."
+        }
+      ]
+    },
+    {
+      "role": "current-qualified",
+      "source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+      "binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0",
+      "exit_code": 0,
+      "elapsed_seconds": 37.609,
+      "rows": [
+        {
+          "page": "2",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "090f44fd53c9c7e4b2d475e0f938d5b548ab20aed1bd510f1549cad0d7630703",
+          "pdf_png_sha256": "6af972c006445f0898812a44f7ba865de10914fbcc3faecd0be7cc193772b259"
+        },
+        {
+          "page": "474",
+          "tolerant_content_match_percent": "100.00",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "100.00",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "ebeabd0aeae2745f9be981e5a51a209fd3795a9e8ed5716fa36002ae15865b4f",
+          "pdf_png_sha256": "f04465ea253960834560974819f4215029c5acb3937efa8813b6cf78e9a24d9e",
+          "review": "current-qualified-474-review.png",
+          "overlay": "current-qualified-474-overlay.png",
+          "raw": "current-qualified-474-raw.png",
+          "pdf": "current-qualified-474-pdf.png"
+        },
+        {
+          "page": "690",
+          "tolerant_content_match_percent": "99.94",
+          "below_90": "0",
+          "silhouette_raw_match_percent": "99.94",
+          "silhouette_boundary_reconciled_pixels": "0",
+          "raw_sha256": "bdd2019b7b3fa191645224f13b1fd46b0e906c859319bcc12b6bf9badb49592d",
+          "pdf_png_sha256": "da74c8b53df3039fdb8dade28c371045c14b85a1ffec1870f3e5d3c4caadba07",
+          "review": "current-qualified-690-review.png",
+          "overlay": "current-qualified-690-overlay.png",
+          "raw": "current-qualified-690-raw.png",
+          "pdf": "current-qualified-690-pdf.png"
+        }
+      ],
+      "direct_reading": [
+        {
+          "page": 474,
+          "observed": "HNC 조건에서 제목 아래 이중선과 반각 기호 구간의 끝이 맞는다. 본문 잉크 차이는 남는다."
+        },
+        {
+          "page": 690,
+          "observed": "문단 순서와 줄 소속을 유지한다. 밑줄 끝점의 미세 차이는 보호값 99.94%에 남는다."
+        }
+      ]
+    }
+  ]
+}

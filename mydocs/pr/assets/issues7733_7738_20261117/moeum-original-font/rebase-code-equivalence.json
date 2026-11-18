@@ -1,0 +1,44 @@
+{
+  "status": "rebased",
+  "before": "63632bb940f7ac7701812047a1d0f651b1d6c015",
+  "old_base": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "target": "fbf8081db57c0c6abc9bad418290c5018193e24f",
+  "backup_ref": "refs/backup/task7733-before-fbf808-20261118",
+  "before_trees": {
+    "src": "7f50e2f86bee760fcd0db1ca977112d8e78ee795",
+    "crates": "419c7064dfa4e626ad47734fd105ebc1dfa736a3",
+    "Cargo.toml": "9daffd7eee7a7ba7b70c2dad0007e5b5a8ee2e3f",
+    "Cargo.lock": "3b18dad7e3c8dd4ed361b5a578da1021f30b8d5a",
+    "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787",
+    "tests": "22c7b940d49aef605742afd8d3340b9ebcc759ee",
+    "assets": "73414adcf00534f04ccc94e83eb743483c15cb21",
+    "rhwp-studio/src": "1a023f47b4730a8414e0795cc7bafaf78a5560d3",
+    "rhwp-shared": "4fc1ecaeb88d288f0efb788d7308ef3a5a0679a0"
+  },
+  "started_at": "2026-11-18T04:46:58.332886+09:00",
+  "exit_code": 0,
+  "after": "6c8d56253b205662b9912705b490df60d0db4c86",
+  "dirty": "",
+  "after_trees": {
+    "src": "7f50e2f86bee760fcd0db1ca977112d8e78ee795",
+    "crates": "419c7064dfa4e626ad47734fd105ebc1dfa736a3",
+    "Cargo.toml": "9daffd7eee7a7ba7b70c2dad0007e5b5a8ee2e3f",
+    "Cargo.lock": "3b18dad7e3c8dd4ed361b5a578da1021f30b8d5a",
+    "build.rs": "a3103a33faf38a899edb68f64fd0739dd4950787",
+    "tests": "22c7b940d49aef605742afd8d3340b9ebcc759ee",
+    "assets": "73414adcf00534f04ccc94e83eb743483c15cb21",
+    "rhwp-studio/src": "1a023f47b4730a8414e0795cc7bafaf78a5560d3",
+    "rhwp-shared": "4fc1ecaeb88d288f0efb788d7308ef3a5a0679a0"
+  },
+  "identical_trees": {
+    "src": true,
+    "crates": true,
+    "Cargo.toml": true,
+    "Cargo.lock": true,
+    "build.rs": true,
+    "tests": true,
+    "assets": true,
+    "rhwp-studio/src": true,
+    "rhwp-shared": true
+  }
+}

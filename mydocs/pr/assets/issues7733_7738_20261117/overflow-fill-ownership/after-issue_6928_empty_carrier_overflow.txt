@@ -1,0 +1,13 @@
+[RustTestSuite] issue_6928_empty_carrier_overflow -> regression_suite_018::issue_6928_empty_carrier_overflow
+[RustTestSuite] cargo nextest run --locked --test regression_suite_018 -E test(/(^|::)issue_6928_empty_carrier_overflow::/) --cargo-profile release-test --target-dir target/pr-review --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 10.94s
+────────────
+ Nextest run ID a63520d7-a445-44d3-8440-b9c7a1e053ae with nextest profile: default
+    Starting 4 tests across 1 binary (336 tests skipped)
+        PASS [   0.014s] (1/4) rhwp::regression_suite_018 issue_6928_empty_carrier_overflow::visible_whitespace_and_display_runs_still_report_overflow
+        PASS [   0.014s] (2/4) rhwp::regression_suite_018 issue_6928_empty_carrier_overflow::decoration_and_object_children_are_not_empty_carriers
+        PASS [   0.014s] (3/4) rhwp::regression_suite_018 issue_6928_empty_carrier_overflow::empty_carrier_is_not_body_overflow
+        PASS [   0.035s] (4/4) rhwp::regression_suite_018 issue_6928_empty_carrier_overflow::semiconductor_sample_keeps_five_pages_without_empty_tail_overflow
+────────────
+     Summary [   0.036s] 4 tests run: 4 passed, 336 skipped

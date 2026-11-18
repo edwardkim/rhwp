@@ -1,0 +1,140 @@
+{
+  "status": "completed_focus_not_whole_acceptance",
+  "source_head": "120483b82f",
+  "capture_workers_total": 8,
+  "steps": [
+    {
+      "label": "auto-wasm-diagnostic",
+      "exit_code": 0,
+      "elapsed_seconds": 15.742
+    },
+    {
+      "label": "base-native",
+      "exit_code": 0,
+      "elapsed_seconds": 10.827
+    },
+    {
+      "label": "candidate-native",
+      "exit_code": 0,
+      "elapsed_seconds": 9.708
+    },
+    {
+      "label": "base-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 22.599
+    },
+    {
+      "label": "candidate-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 19.975
+    }
+  ],
+  "metrics": [
+    {
+      "label": "base-native",
+      "page": 13,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "base-native",
+      "page": 18,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "base-native",
+      "page": 61,
+      "raw": 99.55732,
+      "unmatched": 480
+    },
+    {
+      "label": "candidate-native",
+      "page": 13,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "candidate-native",
+      "page": 18,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "candidate-native",
+      "page": 61,
+      "raw": 99.55732,
+      "unmatched": 480
+    },
+    {
+      "label": "base-wasm",
+      "page": 13,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "base-wasm",
+      "page": 18,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "base-wasm",
+      "page": 61,
+      "raw": 99.55724,
+      "unmatched": 480
+    },
+    {
+      "label": "candidate-wasm",
+      "page": 13,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "candidate-wasm",
+      "page": 18,
+      "raw": 100.0,
+      "unmatched": 0
+    },
+    {
+      "label": "candidate-wasm",
+      "page": 61,
+      "raw": 99.55724,
+      "unmatched": 480
+    }
+  ],
+  "started_at": "2026-11-18T10:35:15.473598+09:00",
+  "active": null,
+  "command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--hwp",
+    "/Users/tsjang/rhwp/samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+    "--pdf",
+    "/Users/tsjang/rhwp/pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+    "--key",
+    "decree",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/rhwp-native",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--page-workers",
+    "8",
+    "--embed-fonts",
+    "full",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--pages",
+    "13,18,61",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-original-program-focus/candidate-wasm",
+    "--font-environment",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-auto-originals-palatino-wasm.json",
+    "--wasm-pkg",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/pkg"
+  ],
+  "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-original-program-focus/candidate-wasm.log"
+}

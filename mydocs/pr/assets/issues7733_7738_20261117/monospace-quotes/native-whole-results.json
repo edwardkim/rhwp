@@ -1,0 +1,1240 @@
+{
+  "status": "completed",
+  "base": "d98252a476a8d2803491127a5b89559af9e0eb92",
+  "binary_sha256": "ca08e12ee4a1022924b73d01b8dfe8f758c3f7fcbeb0e318d46bc5d4671dd4fd",
+  "capture_workers_total": 8,
+  "font_scope": "Normal installed original-font environment; not minimum-font isolation",
+  "records": [
+    {
+      "issue": 7733,
+      "key": "chemical",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+        "--key",
+        "chemical",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-quote-width-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 50.73,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/chemical/silhouette.tsv",
+      "tsv_exists": true,
+      "paired_pages": 103,
+      "minimum": 92.22,
+      "below90": [],
+      "scores": [
+        {
+          "page": 1,
+          "raw": 100.0
+        },
+        {
+          "page": 2,
+          "raw": 100.0
+        },
+        {
+          "page": 3,
+          "raw": 100.0
+        },
+        {
+          "page": 4,
+          "raw": 100.0
+        },
+        {
+          "page": 5,
+          "raw": 99.94
+        },
+        {
+          "page": 6,
+          "raw": 99.95
+        },
+        {
+          "page": 7,
+          "raw": 99.99
+        },
+        {
+          "page": 8,
+          "raw": 100.0
+        },
+        {
+          "page": 9,
+          "raw": 100.0
+        },
+        {
+          "page": 10,
+          "raw": 100.0
+        },
+        {
+          "page": 11,
+          "raw": 99.87
+        },
+        {
+          "page": 12,
+          "raw": 99.68
+        },
+        {
+          "page": 13,
+          "raw": 99.98
+        },
+        {
+          "page": 14,
+          "raw": 97.82
+        },
+        {
+          "page": 15,
+          "raw": 99.95
+        },
+        {
+          "page": 16,
+          "raw": 99.75
+        },
+        {
+          "page": 17,
+          "raw": 99.9
+        },
+        {
+          "page": 18,
+          "raw": 99.86
+        },
+        {
+          "page": 19,
+          "raw": 100.0
+        },
+        {
+          "page": 20,
+          "raw": 100.0
+        },
+        {
+          "page": 21,
+          "raw": 100.0
+        },
+        {
+          "page": 22,
+          "raw": 100.0
+        },
+        {
+          "page": 23,
+          "raw": 98.54
+        },
+        {
+          "page": 24,
+          "raw": 100.0
+        },
+        {
+          "page": 25,
+          "raw": 99.9
+        },
+        {
+          "page": 26,
+          "raw": 99.98
+        },
+        {
+          "page": 27,
+          "raw": 99.02
+        },
+        {
+          "page": 28,
+          "raw": 97.57
+        },
+        {
+          "page": 29,
+          "raw": 100.0
+        },
+        {
+          "page": 30,
+          "raw": 99.24
+        },
+        {
+          "page": 31,
+          "raw": 99.91
+        },
+        {
+          "page": 32,
+          "raw": 99.89
+        },
+        {
+          "page": 33,
+          "raw": 100.0
+        },
+        {
+          "page": 34,
+          "raw": 99.92
+        },
+        {
+          "page": 35,
+          "raw": 99.92
+        },
+        {
+          "page": 36,
+          "raw": 99.89
+        },
+        {
+          "page": 37,
+          "raw": 99.9
+        },
+        {
+          "page": 38,
+          "raw": 99.93
+        },
+        {
+          "page": 39,
+          "raw": 99.95
+        },
+        {
+          "page": 40,
+          "raw": 96.46
+        },
+        {
+          "page": 41,
+          "raw": 99.91
+        },
+        {
+          "page": 42,
+          "raw": 99.96
+        },
+        {
+          "page": 43,
+          "raw": 99.81
+        },
+        {
+          "page": 44,
+          "raw": 99.97
+        },
+        {
+          "page": 45,
+          "raw": 99.93
+        },
+        {
+          "page": 46,
+          "raw": 99.95
+        },
+        {
+          "page": 47,
+          "raw": 100.0
+        },
+        {
+          "page": 48,
+          "raw": 100.0
+        },
+        {
+          "page": 49,
+          "raw": 99.84
+        },
+        {
+          "page": 50,
+          "raw": 99.87
+        },
+        {
+          "page": 51,
+          "raw": 99.87
+        },
+        {
+          "page": 52,
+          "raw": 99.95
+        },
+        {
+          "page": 53,
+          "raw": 99.93
+        },
+        {
+          "page": 54,
+          "raw": 99.87
+        },
+        {
+          "page": 55,
+          "raw": 99.95
+        },
+        {
+          "page": 56,
+          "raw": 98.87
+        },
+        {
+          "page": 57,
+          "raw": 99.98
+        },
+        {
+          "page": 58,
+          "raw": 99.99
+        },
+        {
+          "page": 59,
+          "raw": 99.96
+        },
+        {
+          "page": 60,
+          "raw": 99.98
+        },
+        {
+          "page": 61,
+          "raw": 99.99
+        },
+        {
+          "page": 62,
+          "raw": 100.0
+        },
+        {
+          "page": 63,
+          "raw": 100.0
+        },
+        {
+          "page": 64,
+          "raw": 100.0
+        },
+        {
+          "page": 65,
+          "raw": 100.0
+        },
+        {
+          "page": 66,
+          "raw": 99.94
+        },
+        {
+          "page": 67,
+          "raw": 99.97
+        },
+        {
+          "page": 68,
+          "raw": 99.5
+        },
+        {
+          "page": 69,
+          "raw": 99.93
+        },
+        {
+          "page": 70,
+          "raw": 99.97
+        },
+        {
+          "page": 71,
+          "raw": 99.97
+        },
+        {
+          "page": 72,
+          "raw": 99.34
+        },
+        {
+          "page": 73,
+          "raw": 99.76
+        },
+        {
+          "page": 74,
+          "raw": 99.87
+        },
+        {
+          "page": 75,
+          "raw": 99.3
+        },
+        {
+          "page": 76,
+          "raw": 98.69
+        },
+        {
+          "page": 77,
+          "raw": 100.0
+        },
+        {
+          "page": 78,
+          "raw": 99.98
+        },
+        {
+          "page": 79,
+          "raw": 92.22
+        },
+        {
+          "page": 80,
+          "raw": 100.0
+        },
+        {
+          "page": 81,
+          "raw": 99.97
+        },
+        {
+          "page": 82,
+          "raw": 99.99
+        },
+        {
+          "page": 83,
+          "raw": 99.94
+        },
+        {
+          "page": 84,
+          "raw": 98.04
+        },
+        {
+          "page": 85,
+          "raw": 98.46
+        },
+        {
+          "page": 86,
+          "raw": 99.91
+        },
+        {
+          "page": 87,
+          "raw": 99.86
+        },
+        {
+          "page": 88,
+          "raw": 99.93
+        },
+        {
+          "page": 89,
+          "raw": 99.88
+        },
+        {
+          "page": 90,
+          "raw": 99.15
+        },
+        {
+          "page": 91,
+          "raw": 99.7
+        },
+        {
+          "page": 92,
+          "raw": 98.49
+        },
+        {
+          "page": 93,
+          "raw": 99.35
+        },
+        {
+          "page": 94,
+          "raw": 99.6
+        },
+        {
+          "page": 95,
+          "raw": 94.95
+        },
+        {
+          "page": 96,
+          "raw": 99.99
+        },
+        {
+          "page": 97,
+          "raw": 99.32
+        },
+        {
+          "page": 98,
+          "raw": 100.0
+        },
+        {
+          "page": 99,
+          "raw": 99.16
+        },
+        {
+          "page": 100,
+          "raw": 100.0
+        },
+        {
+          "page": 101,
+          "raw": 100.0
+        },
+        {
+          "page": 102,
+          "raw": 100.0
+        },
+        {
+          "page": 103,
+          "raw": 100.0
+        }
+      ],
+      "tsv_sha256": "e806331079539df62e1c8ab5049fa439892e8c17a4d73156a2be4424e0f4ac66"
+    },
+    {
+      "issue": 7735,
+      "key": "spec13",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/한글문서파일형식_5.0_revision1.3.hwp",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+        "--key",
+        "spec13",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-quote-width-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 24.818,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/spec13/silhouette.tsv",
+      "tsv_exists": true,
+      "paired_pages": 71,
+      "minimum": 99.33,
+      "below90": [],
+      "scores": [
+        {
+          "page": 1,
+          "raw": 99.79
+        },
+        {
+          "page": 2,
+          "raw": 99.79
+        },
+        {
+          "page": 3,
+          "raw": 100.0
+        },
+        {
+          "page": 4,
+          "raw": 99.96
+        },
+        {
+          "page": 5,
+          "raw": 100.0
+        },
+        {
+          "page": 6,
+          "raw": 99.99
+        },
+        {
+          "page": 7,
+          "raw": 99.98
+        },
+        {
+          "page": 8,
+          "raw": 99.69
+        },
+        {
+          "page": 9,
+          "raw": 100.0
+        },
+        {
+          "page": 10,
+          "raw": 100.0
+        },
+        {
+          "page": 11,
+          "raw": 100.0
+        },
+        {
+          "page": 12,
+          "raw": 100.0
+        },
+        {
+          "page": 13,
+          "raw": 99.87
+        },
+        {
+          "page": 14,
+          "raw": 100.0
+        },
+        {
+          "page": 15,
+          "raw": 100.0
+        },
+        {
+          "page": 16,
+          "raw": 99.95
+        },
+        {
+          "page": 17,
+          "raw": 100.0
+        },
+        {
+          "page": 18,
+          "raw": 100.0
+        },
+        {
+          "page": 19,
+          "raw": 100.0
+        },
+        {
+          "page": 20,
+          "raw": 100.0
+        },
+        {
+          "page": 21,
+          "raw": 99.86
+        },
+        {
+          "page": 22,
+          "raw": 100.0
+        },
+        {
+          "page": 23,
+          "raw": 100.0
+        },
+        {
+          "page": 24,
+          "raw": 100.0
+        },
+        {
+          "page": 25,
+          "raw": 100.0
+        },
+        {
+          "page": 26,
+          "raw": 100.0
+        },
+        {
+          "page": 27,
+          "raw": 100.0
+        },
+        {
+          "page": 28,
+          "raw": 100.0
+        },
+        {
+          "page": 29,
+          "raw": 100.0
+        },
+        {
+          "page": 30,
+          "raw": 100.0
+        },
+        {
+          "page": 31,
+          "raw": 100.0
+        },
+        {
+          "page": 32,
+          "raw": 100.0
+        },
+        {
+          "page": 33,
+          "raw": 100.0
+        },
+        {
+          "page": 34,
+          "raw": 100.0
+        },
+        {
+          "page": 35,
+          "raw": 100.0
+        },
+        {
+          "page": 36,
+          "raw": 100.0
+        },
+        {
+          "page": 37,
+          "raw": 100.0
+        },
+        {
+          "page": 38,
+          "raw": 100.0
+        },
+        {
+          "page": 39,
+          "raw": 100.0
+        },
+        {
+          "page": 40,
+          "raw": 100.0
+        },
+        {
+          "page": 41,
+          "raw": 100.0
+        },
+        {
+          "page": 42,
+          "raw": 100.0
+        },
+        {
+          "page": 43,
+          "raw": 100.0
+        },
+        {
+          "page": 44,
+          "raw": 100.0
+        },
+        {
+          "page": 45,
+          "raw": 100.0
+        },
+        {
+          "page": 46,
+          "raw": 100.0
+        },
+        {
+          "page": 47,
+          "raw": 100.0
+        },
+        {
+          "page": 48,
+          "raw": 100.0
+        },
+        {
+          "page": 49,
+          "raw": 100.0
+        },
+        {
+          "page": 50,
+          "raw": 100.0
+        },
+        {
+          "page": 51,
+          "raw": 100.0
+        },
+        {
+          "page": 52,
+          "raw": 100.0
+        },
+        {
+          "page": 53,
+          "raw": 100.0
+        },
+        {
+          "page": 54,
+          "raw": 100.0
+        },
+        {
+          "page": 55,
+          "raw": 100.0
+        },
+        {
+          "page": 56,
+          "raw": 100.0
+        },
+        {
+          "page": 57,
+          "raw": 100.0
+        },
+        {
+          "page": 58,
+          "raw": 100.0
+        },
+        {
+          "page": 59,
+          "raw": 100.0
+        },
+        {
+          "page": 60,
+          "raw": 100.0
+        },
+        {
+          "page": 61,
+          "raw": 100.0
+        },
+        {
+          "page": 62,
+          "raw": 99.97
+        },
+        {
+          "page": 63,
+          "raw": 100.0
+        },
+        {
+          "page": 64,
+          "raw": 100.0
+        },
+        {
+          "page": 65,
+          "raw": 100.0
+        },
+        {
+          "page": 66,
+          "raw": 100.0
+        },
+        {
+          "page": 67,
+          "raw": 100.0
+        },
+        {
+          "page": 68,
+          "raw": 100.0
+        },
+        {
+          "page": 69,
+          "raw": 100.0
+        },
+        {
+          "page": 70,
+          "raw": 99.33
+        },
+        {
+          "page": 71,
+          "raw": 99.91
+        }
+      ],
+      "tsv_sha256": "acf5bdb57e3abe935c62a9f07988a17fa2205ca060ac394dc4ebbfe7260e93d4"
+    },
+    {
+      "issue": 7736,
+      "key": "outline-demo",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/pr4093/outline_navigation_panel_demo.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+        "--key",
+        "outline-demo",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-quote-width-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.073,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/outline-demo/silhouette.tsv",
+      "tsv_exists": true,
+      "paired_pages": 3,
+      "minimum": 100.0,
+      "below90": [],
+      "scores": [
+        {
+          "page": 1,
+          "raw": 100.0
+        },
+        {
+          "page": 2,
+          "raw": 100.0
+        },
+        {
+          "page": 3,
+          "raw": 100.0
+        }
+      ],
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "issue": 7737,
+      "key": "decree",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+        "--key",
+        "decree",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-quote-width-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native",
+        "--font-environment",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-independent-print-fonts.json"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 56.447,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/decree/silhouette.tsv",
+      "tsv_exists": true,
+      "paired_pages": 74,
+      "minimum": 95.48,
+      "below90": [],
+      "scores": [
+        {
+          "page": 1,
+          "raw": 99.99
+        },
+        {
+          "page": 2,
+          "raw": 99.98
+        },
+        {
+          "page": 3,
+          "raw": 100.0
+        },
+        {
+          "page": 4,
+          "raw": 99.89
+        },
+        {
+          "page": 5,
+          "raw": 100.0
+        },
+        {
+          "page": 6,
+          "raw": 100.0
+        },
+        {
+          "page": 7,
+          "raw": 100.0
+        },
+        {
+          "page": 8,
+          "raw": 99.99
+        },
+        {
+          "page": 9,
+          "raw": 100.0
+        },
+        {
+          "page": 10,
+          "raw": 100.0
+        },
+        {
+          "page": 11,
+          "raw": 100.0
+        },
+        {
+          "page": 12,
+          "raw": 100.0
+        },
+        {
+          "page": 13,
+          "raw": 96.51
+        },
+        {
+          "page": 14,
+          "raw": 100.0
+        },
+        {
+          "page": 15,
+          "raw": 100.0
+        },
+        {
+          "page": 16,
+          "raw": 100.0
+        },
+        {
+          "page": 17,
+          "raw": 99.98
+        },
+        {
+          "page": 18,
+          "raw": 99.95
+        },
+        {
+          "page": 19,
+          "raw": 95.48
+        },
+        {
+          "page": 20,
+          "raw": 99.27
+        },
+        {
+          "page": 21,
+          "raw": 100.0
+        },
+        {
+          "page": 22,
+          "raw": 99.95
+        },
+        {
+          "page": 23,
+          "raw": 99.99
+        },
+        {
+          "page": 24,
+          "raw": 99.91
+        },
+        {
+          "page": 25,
+          "raw": 100.0
+        },
+        {
+          "page": 26,
+          "raw": 100.0
+        },
+        {
+          "page": 27,
+          "raw": 100.0
+        },
+        {
+          "page": 28,
+          "raw": 100.0
+        },
+        {
+          "page": 29,
+          "raw": 100.0
+        },
+        {
+          "page": 30,
+          "raw": 100.0
+        },
+        {
+          "page": 31,
+          "raw": 100.0
+        },
+        {
+          "page": 32,
+          "raw": 100.0
+        },
+        {
+          "page": 33,
+          "raw": 100.0
+        },
+        {
+          "page": 34,
+          "raw": 100.0
+        },
+        {
+          "page": 35,
+          "raw": 100.0
+        },
+        {
+          "page": 36,
+          "raw": 97.05
+        },
+        {
+          "page": 37,
+          "raw": 99.91
+        },
+        {
+          "page": 38,
+          "raw": 100.0
+        },
+        {
+          "page": 39,
+          "raw": 100.0
+        },
+        {
+          "page": 40,
+          "raw": 100.0
+        },
+        {
+          "page": 41,
+          "raw": 99.98
+        },
+        {
+          "page": 42,
+          "raw": 100.0
+        },
+        {
+          "page": 43,
+          "raw": 99.98
+        },
+        {
+          "page": 44,
+          "raw": 100.0
+        },
+        {
+          "page": 45,
+          "raw": 99.89
+        },
+        {
+          "page": 46,
+          "raw": 100.0
+        },
+        {
+          "page": 47,
+          "raw": 100.0
+        },
+        {
+          "page": 48,
+          "raw": 100.0
+        },
+        {
+          "page": 49,
+          "raw": 100.0
+        },
+        {
+          "page": 50,
+          "raw": 100.0
+        },
+        {
+          "page": 51,
+          "raw": 100.0
+        },
+        {
+          "page": 52,
+          "raw": 100.0
+        },
+        {
+          "page": 53,
+          "raw": 100.0
+        },
+        {
+          "page": 54,
+          "raw": 100.0
+        },
+        {
+          "page": 55,
+          "raw": 100.0
+        },
+        {
+          "page": 56,
+          "raw": 100.0
+        },
+        {
+          "page": 57,
+          "raw": 100.0
+        },
+        {
+          "page": 58,
+          "raw": 99.98
+        },
+        {
+          "page": 59,
+          "raw": 100.0
+        },
+        {
+          "page": 60,
+          "raw": 99.98
+        },
+        {
+          "page": 61,
+          "raw": 99.56
+        },
+        {
+          "page": 62,
+          "raw": 100.0
+        },
+        {
+          "page": 63,
+          "raw": 100.0
+        },
+        {
+          "page": 64,
+          "raw": 100.0
+        },
+        {
+          "page": 65,
+          "raw": 100.0
+        },
+        {
+          "page": 66,
+          "raw": 100.0
+        },
+        {
+          "page": 67,
+          "raw": 100.0
+        },
+        {
+          "page": 68,
+          "raw": 100.0
+        },
+        {
+          "page": 69,
+          "raw": 100.0
+        },
+        {
+          "page": 70,
+          "raw": 98.75
+        },
+        {
+          "page": 71,
+          "raw": 100.0
+        },
+        {
+          "page": 72,
+          "raw": 100.0
+        },
+        {
+          "page": 73,
+          "raw": 99.98
+        },
+        {
+          "page": 74,
+          "raw": 100.0
+        }
+      ],
+      "tsv_sha256": "edf00c76d7bc9cc4c07c638e714497acaf2fad260ee894063850c7e9a2cb5d2f"
+    },
+    {
+      "issue": 7738,
+      "key": "outline-minimal",
+      "command": [
+        "/Users/tsjang/rhwp/venv/bin/python",
+        "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--hwp",
+        "/Users/tsjang/rhwp/samples/pr4093/outline_navigation_table_cell_number.hwpx",
+        "--pdf",
+        "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+        "--key",
+        "outline-minimal",
+        "--rhwp-bin",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-quote-width-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "8",
+        "--embed-fonts",
+        "full",
+        "--font-path",
+        "/Users/tsjang/Library/Fonts",
+        "--out",
+        "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.129,
+      "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native/outline-minimal/silhouette.tsv",
+      "tsv_exists": true,
+      "paired_pages": 1,
+      "minimum": 100.0,
+      "below90": [],
+      "scores": [
+        {
+          "page": 1,
+          "raw": 100.0
+        }
+      ],
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    }
+  ],
+  "active_case": null,
+  "active_command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--hwp",
+    "/Users/tsjang/rhwp/samples/pr4093/outline_navigation_table_cell_number.hwpx",
+    "--pdf",
+    "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+    "--key",
+    "outline-minimal",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-quote-width-native",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--page-workers",
+    "8",
+    "--embed-fonts",
+    "full",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/quote-width-whole-native"
+  ]
+}

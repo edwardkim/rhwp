@@ -1,0 +1,17 @@
+{
+  "head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+  "frozen_renderer_source": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "source_code_changed_by_corpus_restore": false,
+  "source_assets_reused": true,
+  "full_nextest_required": "restored corpus and incoming atomic module; prior e639 pass preserved separately",
+  "fresh_build_paths": [
+    "latest-rhwp-native",
+    "latest-pkg"
+  ],
+  "capture_paths": [
+    "rhwp-native -> e639 frozen",
+    "pkg -> e639 frozen"
+  ],
+  "remaining": "sample4 whole36; handbook383; protected18x2x2; pending actual browser batches; final direct reading and curation"
+}

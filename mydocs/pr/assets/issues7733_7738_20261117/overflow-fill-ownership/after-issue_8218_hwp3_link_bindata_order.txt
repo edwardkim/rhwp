@@ -1,0 +1,16 @@
+[RustTestSuite] issue_8218_hwp3_link_bindata_order -> regression_suite_003::issue_8218_hwp3_link_bindata_order
+[RustTestSuite] cargo nextest run --locked --test regression_suite_003 -E test(/(^|::)issue_8218_hwp3_link_bindata_order::/) --cargo-profile release-test --target-dir target/pr-review --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 11.81s
+────────────
+ Nextest run ID 658e59fb-6788-4216-a060-df68d128c367 with nextest profile: default
+    Starting 7 tests across 1 binary (340 tests skipped)
+        PASS [   0.074s] (1/7) rhwp::regression_suite_003 issue_8218_hwp3_link_bindata_order::sample4_page21_embedded_picture_matches_independent_print
+        PASS [   0.080s] (2/7) rhwp::regression_suite_003 issue_8218_hwp3_link_bindata_order::sample4_background_diagnostic_keeps_owner_and_independent_overflow_separate
+        PASS [   0.083s] (3/7) rhwp::regression_suite_003 issue_8218_hwp3_link_bindata_order::sample4_accepted_last_line_keeps_its_declared_background_band
+        PASS [   0.104s] (4/7) rhwp::regression_suite_003 issue_8218_hwp3_link_bindata_order::sample4_embedded_pictures_keep_ids_and_contents_after_hwp5_save
+        PASS [   0.125s] (5/7) rhwp::regression_suite_003 issue_8218_hwp3_link_bindata_order::saved_hwp5_keeps_each_picture_external_path
+        PASS [   0.128s] (6/7) rhwp::regression_suite_003 issue_8218_hwp3_link_bindata_order::sample4_nasm_picture_and_following_text_keep_their_source_page
+        PASS [   0.132s] (7/7) rhwp::regression_suite_003 issue_8218_hwp3_link_bindata_order::link_bin_data_is_ordered_by_id_every_parse
+────────────
+     Summary [   0.135s] 7 tests run: 7 passed, 340 skipped

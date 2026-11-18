@@ -1,0 +1,67 @@
+{
+  "status": "native_complete_not_final_wasm_or_full_gates",
+  "records": [
+    {
+      "key": "chemical",
+      "paired_pages": 103,
+      "minimum": 98.46202,
+      "below98": [],
+      "changes": [
+        {
+          "page": 28,
+          "before": "97.56592",
+          "after": "99.99914",
+          "delta_pp": "2.43322"
+        },
+        {
+          "page": 95,
+          "before": "98.41818",
+          "after": "99.12075",
+          "delta_pp": "0.70257"
+        }
+      ],
+      "rises": 2,
+      "drops": 0
+    },
+    {
+      "key": "spec13",
+      "paired_pages": 71,
+      "minimum": 99.33397,
+      "below98": [],
+      "changes": [],
+      "rises": 0,
+      "drops": 0
+    },
+    {
+      "key": "outline-demo",
+      "paired_pages": 3,
+      "minimum": 100.0,
+      "below98": [],
+      "changes": [],
+      "rises": 0,
+      "drops": 0
+    },
+    {
+      "key": "decree",
+      "paired_pages": 74,
+      "minimum": 95.47612,
+      "below98": [
+        13,
+        19,
+        36
+      ],
+      "changes": [],
+      "rises": 0,
+      "drops": 0
+    },
+    {
+      "key": "outline-minimal",
+      "paired_pages": 1,
+      "minimum": 100.0,
+      "below98": [],
+      "changes": [],
+      "rises": 0,
+      "drops": 0
+    }
+  ]
+}

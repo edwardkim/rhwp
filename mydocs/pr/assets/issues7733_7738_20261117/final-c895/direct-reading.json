@@ -1,0 +1,260 @@
+[
+  {
+    "key": "chemical",
+    "backend": "native",
+    "page": 23,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/review-023.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/overlay-023.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "native",
+    "page": 27,
+    "raw": 99.85809,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/review-027.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/overlay-027.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "native",
+    "page": 72,
+    "raw": 99.38114,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/review-072.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/overlay-072.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "native",
+    "page": 79,
+    "raw": 99.98752,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/review-079.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/overlay-079.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "native",
+    "page": 85,
+    "raw": 99.97305,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/review-085.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/overlay-085.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "native",
+    "page": 92,
+    "raw": 99.9918,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/review-092.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/native/overlay-092.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "wasm",
+    "page": 23,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/review-023.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/overlay-023.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "wasm",
+    "page": 27,
+    "raw": 99.97356,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/review-027.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/overlay-027.png",
+    "direct_reading": "read",
+    "reading_note": "같은 페이지 review와 overlay 직접 판독. 표기 문자‧위치, 활자 크기‧색깔 뒤 본문의 앞당김 개선. 마지막 두 본문 줄 등에 미세 글리프/간격 차이는 남아 있음.",
+    "read_at": "2026-11-18T08:11:28.487888+09:00"
+  },
+  {
+    "key": "chemical",
+    "backend": "wasm",
+    "page": 72,
+    "raw": 99.43167,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/review-072.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/overlay-072.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "wasm",
+    "page": 79,
+    "raw": 99.98748,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/review-079.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/overlay-079.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "wasm",
+    "page": 85,
+    "raw": 99.97174,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/review-085.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/overlay-085.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "chemical",
+    "backend": "wasm",
+    "page": 92,
+    "raw": 99.99451,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/review-092.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/chemical/wasm/overlay-092.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "spec13",
+    "backend": "native",
+    "page": 8,
+    "raw": 99.68651,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/native/review-008.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/native/overlay-008.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "spec13",
+    "backend": "native",
+    "page": 70,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/native/review-070.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/native/overlay-070.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "spec13",
+    "backend": "wasm",
+    "page": 8,
+    "raw": 99.66582,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/wasm/review-008.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/wasm/overlay-008.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "spec13",
+    "backend": "wasm",
+    "page": 70,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/wasm/review-070.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/spec13/wasm/overlay-070.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "decree",
+    "backend": "native",
+    "page": 13,
+    "raw": 99.16669,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/review-013.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/overlay-013.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "decree",
+    "backend": "native",
+    "page": 19,
+    "raw": 99.72551,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/review-019.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/overlay-019.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "decree",
+    "backend": "native",
+    "page": 36,
+    "raw": 99.95036,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/review-036.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/overlay-036.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "decree",
+    "backend": "native",
+    "page": 70,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/review-070.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/native/overlay-070.png",
+    "direct_reading": "read",
+    "reading_note": "같은 페이지 review와 overlay 직접 판독. 세 열 표의 하단과 그림 상·하단, 중간 열 제목/본문 소속이 독립 Print와 정합. raw 미대응 0.",
+    "read_at": "2026-11-18T08:11:28.487915+09:00"
+  },
+  {
+    "key": "decree",
+    "backend": "wasm",
+    "page": 13,
+    "raw": 99.12883,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/review-013.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/overlay-013.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "decree",
+    "backend": "wasm",
+    "page": 19,
+    "raw": 99.72654,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/review-019.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/overlay-019.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "decree",
+    "backend": "wasm",
+    "page": 36,
+    "raw": 99.94529,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/review-036.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/overlay-036.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "decree",
+    "backend": "wasm",
+    "page": 70,
+    "raw": 99.99795,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/review-070.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/decree/wasm/overlay-070.png",
+    "direct_reading": "read",
+    "reading_note": "같은 페이지 review와 overlay 직접 판독. 표 하단의 초과 높이 제거, 그림 위치 보존. 1개 미대응 픽셀은 그림 밖 중간 열 문장부호 부근이며 이미지 차이로 분류하지 않음.",
+    "read_at": "2026-11-18T08:11:28.487919+09:00"
+  },
+  {
+    "key": "outline-demo",
+    "backend": "native",
+    "page": 3,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-demo/native/review-003.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-demo/native/overlay-003.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "outline-demo",
+    "backend": "wasm",
+    "page": 3,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-demo/wasm/review-003.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-demo/wasm/overlay-003.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "outline-minimal",
+    "backend": "native",
+    "page": 1,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-minimal/native/review-001.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-minimal/native/overlay-001.png",
+    "direct_reading": "pending"
+  },
+  {
+    "key": "outline-minimal",
+    "backend": "wasm",
+    "page": 1,
+    "raw": 100.0,
+    "review": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-minimal/wasm/review-001.png",
+    "overlay": "mydocs/pr/assets/issues7733_7738_20261117/final-c895/cases/outline-minimal/wasm/overlay-001.png",
+    "direct_reading": "pending"
+  }
+]

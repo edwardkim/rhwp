@@ -1,0 +1,5649 @@
+{
+  "status": "passed_current_scope_page_counts_and_two_pp_comparison",
+  "qualified_fixed_base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+  "qualified_candidate": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "reuse_evidence": [
+    "rebase-08b38-rendering-reuse.json",
+    "base-reuse-audit.json"
+  ],
+  "not_new_captures": true,
+  "results": [
+    {
+      "key": "chemical",
+      "backend": "native",
+      "pages": 103,
+      "base_minimum": "89.83308",
+      "candidate_minimum": "99.74736",
+      "improved_pages": 71,
+      "equal_pages": 30,
+      "lower_pages": [
+        {
+          "page": 61,
+          "base": "99.99378",
+          "candidate": "99.97512",
+          "delta_pp": "-0.01866"
+        },
+        {
+          "page": 96,
+          "base": "99.98534",
+          "candidate": "99.97947",
+          "delta_pp": "-0.00587"
+        }
+      ],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "388d16c5a54ee876dc761bc0e48c8cff98fe8608f4811493ec572a8fc0e78ad2",
+      "candidate_tsv_sha256": "9111800060d296754f077d6fb6d0313f4f0300ab5c5d216c166aa3481e292dd5",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 4,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 5,
+          "base": "99.9368",
+          "candidate": "99.98947",
+          "delta_pp": "0.05267"
+        },
+        {
+          "page": 6,
+          "base": "99.94633",
+          "candidate": "99.95707",
+          "delta_pp": "0.01074"
+        },
+        {
+          "page": 7,
+          "base": "99.99342",
+          "candidate": "100.0",
+          "delta_pp": "0.00658"
+        },
+        {
+          "page": 8,
+          "base": "99.99671",
+          "candidate": "99.99671",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 9,
+          "base": "99.99881",
+          "candidate": "99.99881",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 10,
+          "base": "99.99869",
+          "candidate": "99.99869",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 11,
+          "base": "99.86504",
+          "candidate": "99.98388",
+          "delta_pp": "0.11884"
+        },
+        {
+          "page": 12,
+          "base": "99.67888",
+          "candidate": "99.99259",
+          "delta_pp": "0.31371"
+        },
+        {
+          "page": 13,
+          "base": "95.12104",
+          "candidate": "99.98064",
+          "delta_pp": "4.85960"
+        },
+        {
+          "page": 14,
+          "base": "96.26558",
+          "candidate": "99.98848",
+          "delta_pp": "3.72290"
+        },
+        {
+          "page": 15,
+          "base": "99.94854",
+          "candidate": "99.99142",
+          "delta_pp": "0.04288"
+        },
+        {
+          "page": 16,
+          "base": "99.74736",
+          "candidate": "99.74736",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 17,
+          "base": "99.90376",
+          "candidate": "100.0",
+          "delta_pp": "0.09624"
+        },
+        {
+          "page": 18,
+          "base": "99.85538",
+          "candidate": "100.0",
+          "delta_pp": "0.14462"
+        },
+        {
+          "page": 19,
+          "base": "99.99627",
+          "candidate": "99.99627",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 20,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 21,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 22,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 23,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 24,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 25,
+          "base": "99.89553",
+          "candidate": "99.93932",
+          "delta_pp": "0.04379"
+        },
+        {
+          "page": 26,
+          "base": "99.98043",
+          "candidate": "99.98043",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 27,
+          "base": "99.02216",
+          "candidate": "99.85798",
+          "delta_pp": "0.83582"
+        },
+        {
+          "page": 28,
+          "base": "97.56511",
+          "candidate": "99.99914",
+          "delta_pp": "2.43403"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "99.90902",
+          "candidate": "100.0",
+          "delta_pp": "0.09098"
+        },
+        {
+          "page": 31,
+          "base": "98.97322",
+          "candidate": "99.98558",
+          "delta_pp": "1.01236"
+        },
+        {
+          "page": 32,
+          "base": "98.91852",
+          "candidate": "99.98878",
+          "delta_pp": "1.07026"
+        },
+        {
+          "page": 33,
+          "base": "99.99744",
+          "candidate": "99.99744",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 34,
+          "base": "99.92006",
+          "candidate": "99.99429",
+          "delta_pp": "0.07423"
+        },
+        {
+          "page": 35,
+          "base": "99.91811",
+          "candidate": "100.0",
+          "delta_pp": "0.08189"
+        },
+        {
+          "page": 36,
+          "base": "99.89092",
+          "candidate": "100.0",
+          "delta_pp": "0.10908"
+        },
+        {
+          "page": 37,
+          "base": "99.90228",
+          "candidate": "99.96579",
+          "delta_pp": "0.06351"
+        },
+        {
+          "page": 38,
+          "base": "98.09124",
+          "candidate": "100.0",
+          "delta_pp": "1.90876"
+        },
+        {
+          "page": 39,
+          "base": "99.946",
+          "candidate": "99.99614",
+          "delta_pp": "0.05014"
+        },
+        {
+          "page": 40,
+          "base": "96.45918",
+          "candidate": "100.0",
+          "delta_pp": "3.54082"
+        },
+        {
+          "page": 41,
+          "base": "99.91339",
+          "candidate": "100.0",
+          "delta_pp": "0.08661"
+        },
+        {
+          "page": 42,
+          "base": "99.40452",
+          "candidate": "99.9968",
+          "delta_pp": "0.59228"
+        },
+        {
+          "page": 43,
+          "base": "99.80826",
+          "candidate": "100.0",
+          "delta_pp": "0.19174"
+        },
+        {
+          "page": 44,
+          "base": "95.82619",
+          "candidate": "99.96761",
+          "delta_pp": "4.14142"
+        },
+        {
+          "page": 45,
+          "base": "99.29924",
+          "candidate": "99.99683",
+          "delta_pp": "0.69759"
+        },
+        {
+          "page": 46,
+          "base": "99.19191",
+          "candidate": "99.99816",
+          "delta_pp": "0.80625"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "97.62959",
+          "candidate": "99.95522",
+          "delta_pp": "2.32563"
+        },
+        {
+          "page": 50,
+          "base": "99.87313",
+          "candidate": "99.97306",
+          "delta_pp": "0.09993"
+        },
+        {
+          "page": 51,
+          "base": "99.86961",
+          "candidate": "100.0",
+          "delta_pp": "0.13039"
+        },
+        {
+          "page": 52,
+          "base": "99.94669",
+          "candidate": "99.98515",
+          "delta_pp": "0.03846"
+        },
+        {
+          "page": 53,
+          "base": "99.9344",
+          "candidate": "99.99321",
+          "delta_pp": "0.05881"
+        },
+        {
+          "page": 54,
+          "base": "99.86892",
+          "candidate": "100.0",
+          "delta_pp": "0.13108"
+        },
+        {
+          "page": 55,
+          "base": "99.94542",
+          "candidate": "99.9961",
+          "delta_pp": "0.05068"
+        },
+        {
+          "page": 56,
+          "base": "99.66074",
+          "candidate": "100.0",
+          "delta_pp": "0.33926"
+        },
+        {
+          "page": 57,
+          "base": "99.97875",
+          "candidate": "100.0",
+          "delta_pp": "0.02125"
+        },
+        {
+          "page": 58,
+          "base": "99.99086",
+          "candidate": "100.0",
+          "delta_pp": "0.00914"
+        },
+        {
+          "page": 59,
+          "base": "99.95944",
+          "candidate": "99.99346",
+          "delta_pp": "0.03402"
+        },
+        {
+          "page": 60,
+          "base": "99.98053",
+          "candidate": "99.98962",
+          "delta_pp": "0.00909"
+        },
+        {
+          "page": 61,
+          "base": "99.99378",
+          "candidate": "99.97512",
+          "delta_pp": "-0.01866"
+        },
+        {
+          "page": 62,
+          "base": "99.99873",
+          "candidate": "99.99873",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "99.52528",
+          "candidate": "100.0",
+          "delta_pp": "0.47472"
+        },
+        {
+          "page": 67,
+          "base": "99.60933",
+          "candidate": "99.99414",
+          "delta_pp": "0.38481"
+        },
+        {
+          "page": 68,
+          "base": "96.63994",
+          "candidate": "99.75343",
+          "delta_pp": "3.11349"
+        },
+        {
+          "page": 69,
+          "base": "99.63271",
+          "candidate": "100.0",
+          "delta_pp": "0.36729"
+        },
+        {
+          "page": 70,
+          "base": "99.77286",
+          "candidate": "99.99587",
+          "delta_pp": "0.22301"
+        },
+        {
+          "page": 71,
+          "base": "99.77656",
+          "candidate": "100.0",
+          "delta_pp": "0.22344"
+        },
+        {
+          "page": 72,
+          "base": "98.96427",
+          "candidate": "99.91401",
+          "delta_pp": "0.94974"
+        },
+        {
+          "page": 73,
+          "base": "99.02232",
+          "candidate": "99.7921",
+          "delta_pp": "0.76978"
+        },
+        {
+          "page": 74,
+          "base": "98.92083",
+          "candidate": "99.85241",
+          "delta_pp": "0.93158"
+        },
+        {
+          "page": 75,
+          "base": "99.55867",
+          "candidate": "100.0",
+          "delta_pp": "0.44133"
+        },
+        {
+          "page": 76,
+          "base": "98.46517",
+          "candidate": "99.99873",
+          "delta_pp": "1.53356"
+        },
+        {
+          "page": 77,
+          "base": "99.7763",
+          "candidate": "100.0",
+          "delta_pp": "0.2237"
+        },
+        {
+          "page": 78,
+          "base": "99.7188",
+          "candidate": "99.99604",
+          "delta_pp": "0.27724"
+        },
+        {
+          "page": 79,
+          "base": "91.48782",
+          "candidate": "99.98749",
+          "delta_pp": "8.49967"
+        },
+        {
+          "page": 80,
+          "base": "89.83308",
+          "candidate": "100.0",
+          "delta_pp": "10.16692"
+        },
+        {
+          "page": 81,
+          "base": "99.69892",
+          "candidate": "100.0",
+          "delta_pp": "0.30108"
+        },
+        {
+          "page": 82,
+          "base": "99.82384",
+          "candidate": "100.0",
+          "delta_pp": "0.17616"
+        },
+        {
+          "page": 83,
+          "base": "99.78785",
+          "candidate": "100.0",
+          "delta_pp": "0.21215"
+        },
+        {
+          "page": 84,
+          "base": "93.60693",
+          "candidate": "100.0",
+          "delta_pp": "6.39307"
+        },
+        {
+          "page": 85,
+          "base": "97.97537",
+          "candidate": "99.973",
+          "delta_pp": "1.99763"
+        },
+        {
+          "page": 86,
+          "base": "99.91262",
+          "candidate": "99.94817",
+          "delta_pp": "0.03555"
+        },
+        {
+          "page": 87,
+          "base": "99.86212",
+          "candidate": "99.91991",
+          "delta_pp": "0.05779"
+        },
+        {
+          "page": 88,
+          "base": "99.92735",
+          "candidate": "99.92735",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 89,
+          "base": "99.88166",
+          "candidate": "99.90819",
+          "delta_pp": "0.02653"
+        },
+        {
+          "page": 90,
+          "base": "99.97419",
+          "candidate": "100.0",
+          "delta_pp": "0.02581"
+        },
+        {
+          "page": 91,
+          "base": "99.70114",
+          "candidate": "99.75502",
+          "delta_pp": "0.05388"
+        },
+        {
+          "page": 92,
+          "base": "98.49215",
+          "candidate": "99.97532",
+          "delta_pp": "1.48317"
+        },
+        {
+          "page": 93,
+          "base": "99.21079",
+          "candidate": "99.90971",
+          "delta_pp": "0.69892"
+        },
+        {
+          "page": 94,
+          "base": "99.59762",
+          "candidate": "99.96492",
+          "delta_pp": "0.36730"
+        },
+        {
+          "page": 95,
+          "base": "94.95232",
+          "candidate": "99.96086",
+          "delta_pp": "5.00854"
+        },
+        {
+          "page": 96,
+          "base": "99.98534",
+          "candidate": "99.97947",
+          "delta_pp": "-0.00587"
+        },
+        {
+          "page": 97,
+          "base": "99.3203",
+          "candidate": "100.0",
+          "delta_pp": "0.6797"
+        },
+        {
+          "page": 98,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 99,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 100,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 101,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 102,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 103,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "spec13",
+      "backend": "native",
+      "pages": 71,
+      "base_minimum": "95.30311",
+      "candidate_minimum": "99.68651",
+      "improved_pages": 7,
+      "equal_pages": 64,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "a64840d7185dd0cab0f59aba52d0f34f240d185ffb6da21f9dd719d997cd6978",
+      "candidate_tsv_sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "99.78894",
+          "candidate": "99.78894",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 2,
+          "base": "99.78676",
+          "candidate": "99.78676",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 4,
+          "base": "99.95966",
+          "candidate": "99.95966",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 5,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 6,
+          "base": "99.99444",
+          "candidate": "99.99444",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 7,
+          "base": "99.9831",
+          "candidate": "99.9831",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 8,
+          "base": "95.30311",
+          "candidate": "99.68651",
+          "delta_pp": "4.38340"
+        },
+        {
+          "page": 9,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 10,
+          "base": "99.99743",
+          "candidate": "99.99743",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 11,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 12,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 13,
+          "base": "99.86509",
+          "candidate": "100.0",
+          "delta_pp": "0.13491"
+        },
+        {
+          "page": 14,
+          "base": "99.9985",
+          "candidate": "99.9985",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 15,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 16,
+          "base": "99.94572",
+          "candidate": "99.99887",
+          "delta_pp": "0.05315"
+        },
+        {
+          "page": 17,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 18,
+          "base": "99.99899",
+          "candidate": "99.99899",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 19,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 20,
+          "base": "99.99857",
+          "candidate": "99.99857",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 21,
+          "base": "99.86456",
+          "candidate": "99.92472",
+          "delta_pp": "0.06016"
+        },
+        {
+          "page": 22,
+          "base": "99.99928",
+          "candidate": "99.99928",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 23,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 24,
+          "base": "99.99759",
+          "candidate": "99.99759",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 25,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 26,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 27,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 28,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 31,
+          "base": "97.51239",
+          "candidate": "100.0",
+          "delta_pp": "2.48761"
+        },
+        {
+          "page": 32,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 33,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 34,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 35,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 36,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 37,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 38,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 39,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 40,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 41,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 42,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 43,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 44,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 45,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 46,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 50,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 51,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 52,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 53,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 54,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 55,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 56,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 57,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 58,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 59,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 60,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 61,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 62,
+          "base": "99.9743",
+          "candidate": "99.9743",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 67,
+          "base": "97.2833",
+          "candidate": "99.9976",
+          "delta_pp": "2.7143"
+        },
+        {
+          "page": 68,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 69,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 70,
+          "base": "99.35133",
+          "candidate": "100.0",
+          "delta_pp": "0.64867"
+        },
+        {
+          "page": 71,
+          "base": "99.90741",
+          "candidate": "99.90741",
+          "delta_pp": "0.00000"
+        }
+      ]
+    },
+    {
+      "key": "outline-demo",
+      "backend": "native",
+      "pages": 3,
+      "base_minimum": "100.0",
+      "candidate_minimum": "100.0",
+      "improved_pages": 0,
+      "equal_pages": 3,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "candidate_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "decree",
+      "backend": "native",
+      "pages": 74,
+      "base_minimum": "95.47468",
+      "candidate_minimum": "99.73508",
+      "improved_pages": 7,
+      "equal_pages": 67,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "87649c313622832355908d423fa5a06ca99afcce886c623e449236a70aa13631",
+      "candidate_tsv_sha256": "74ac79a552433fd3c66db702a1f4dbda5cc8529a17548ea1025f7c3219222a03",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 4,
+          "base": "99.89308",
+          "candidate": "99.89308",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 5,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 6,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 7,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 8,
+          "base": "99.98989",
+          "candidate": "99.98989",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 9,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 10,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 11,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 12,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 13,
+          "base": "96.50954",
+          "candidate": "100.0",
+          "delta_pp": "3.49046"
+        },
+        {
+          "page": 14,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 15,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 16,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 17,
+          "base": "99.98243",
+          "candidate": "99.98243",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 18,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 19,
+          "base": "95.47468",
+          "candidate": "99.73508",
+          "delta_pp": "4.26040"
+        },
+        {
+          "page": 20,
+          "base": "99.27379",
+          "candidate": "100.0",
+          "delta_pp": "0.72621"
+        },
+        {
+          "page": 21,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 22,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 23,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 24,
+          "base": "99.9105",
+          "candidate": "99.9105",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 25,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 26,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 27,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 28,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 31,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 32,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 33,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 34,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 35,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 36,
+          "base": "97.09293",
+          "candidate": "100.0",
+          "delta_pp": "2.90707"
+        },
+        {
+          "page": 37,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 38,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 39,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 40,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 41,
+          "base": "99.98217",
+          "candidate": "99.98217",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 42,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 43,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 44,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 45,
+          "base": "99.89388",
+          "candidate": "99.89388",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 46,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "99.99848",
+          "candidate": "100.0",
+          "delta_pp": "0.00152"
+        },
+        {
+          "page": 50,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 51,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 52,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 53,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 54,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 55,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 56,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 57,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 58,
+          "base": "99.98108",
+          "candidate": "99.98108",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 59,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 60,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 61,
+          "base": "99.55732",
+          "candidate": "100.0",
+          "delta_pp": "0.44268"
+        },
+        {
+          "page": 62,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 67,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 68,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 69,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 70,
+          "base": "98.7508",
+          "candidate": "100.0",
+          "delta_pp": "1.2492"
+        },
+        {
+          "page": 71,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 72,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 73,
+          "base": "99.98011",
+          "candidate": "99.98011",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 74,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "native",
+      "pages": 1,
+      "base_minimum": "100.0",
+      "candidate_minimum": "100.0",
+      "improved_pages": 0,
+      "equal_pages": 1,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "candidate_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "original4138",
+      "backend": "native",
+      "pages": 197,
+      "base_minimum": "99.28276",
+      "candidate_minimum": "99.28276",
+      "improved_pages": 2,
+      "equal_pages": 195,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "943ff30d25f1c0930bf8fae73af3299476d6cf6aa7c4eb13165e06f537be8379",
+      "candidate_tsv_sha256": "aadaaa0460f95f79f923082775383cfe1e824d9f675bf0b066b1efb735d7ab3a",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 4,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 5,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 6,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 7,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 8,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 9,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 10,
+          "base": "99.88551",
+          "candidate": "100.0",
+          "delta_pp": "0.11449"
+        },
+        {
+          "page": 11,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 12,
+          "base": "99.91821",
+          "candidate": "100.0",
+          "delta_pp": "0.08179"
+        },
+        {
+          "page": 13,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 14,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 15,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 16,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 17,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 18,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 19,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 20,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 21,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 22,
+          "base": "99.99649",
+          "candidate": "99.99649",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 23,
+          "base": "99.99035",
+          "candidate": "99.99035",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 24,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 25,
+          "base": "99.99272",
+          "candidate": "99.99272",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 26,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 27,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 28,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 31,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 32,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 33,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 34,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 35,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 36,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 37,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 38,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 39,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 40,
+          "base": "99.99313",
+          "candidate": "99.99313",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 41,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 42,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 43,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 44,
+          "base": "99.36999",
+          "candidate": "99.36999",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 45,
+          "base": "99.96705",
+          "candidate": "99.96705",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 46,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "99.99691",
+          "candidate": "99.99691",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 50,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 51,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 52,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 53,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 54,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 55,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 56,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 57,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 58,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 59,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 60,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 61,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 62,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 67,
+          "base": "99.98552",
+          "candidate": "99.98552",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 68,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 69,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 70,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 71,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 72,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 73,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 74,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 75,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 76,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 77,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 78,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 79,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 80,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 81,
+          "base": "99.99621",
+          "candidate": "99.99621",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 82,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 83,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 84,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 85,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 86,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 87,
+          "base": "99.99629",
+          "candidate": "99.99629",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 88,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 89,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 90,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 91,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 92,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 93,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 94,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 95,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 96,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 97,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 98,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 99,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 100,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 101,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 102,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 103,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 104,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 105,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 106,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 107,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 108,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 109,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 110,
+          "base": "99.99297",
+          "candidate": "99.99297",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 111,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 112,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 113,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 114,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 115,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 116,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 117,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 118,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 119,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 120,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 121,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 122,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 123,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 124,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 125,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 126,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 127,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 128,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 129,
+          "base": "99.33521",
+          "candidate": "99.33521",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 130,
+          "base": "99.28276",
+          "candidate": "99.28276",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 131,
+          "base": "99.99435",
+          "candidate": "99.99435",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 132,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 133,
+          "base": "99.99233",
+          "candidate": "99.99233",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 134,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 135,
+          "base": "99.99645",
+          "candidate": "99.99645",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 136,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 137,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 138,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 139,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 140,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 141,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 142,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 143,
+          "base": "99.99638",
+          "candidate": "99.99638",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 144,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 145,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 146,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 147,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 148,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 149,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 150,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 151,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 152,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 153,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 154,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 155,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 156,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 157,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 158,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 159,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 160,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 161,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 162,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 163,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 164,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 165,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 166,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 167,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 168,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 169,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 170,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 171,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 172,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 173,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 174,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 175,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 176,
+          "base": "99.99733",
+          "candidate": "99.99733",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 177,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 178,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 179,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 180,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 181,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 182,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 183,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 184,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 185,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 186,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 187,
+          "base": "99.7617",
+          "candidate": "99.7617",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 188,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 189,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 190,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 191,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 192,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 193,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 194,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 195,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 196,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 197,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "radical-controls",
+      "backend": "native",
+      "pages": 1,
+      "base_minimum": "92.06256",
+      "candidate_minimum": "98.38473",
+      "improved_pages": 1,
+      "equal_pages": 0,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "9b53703ca8828fe9b75be7b2dc78fd037745d7168f4f3ed57122aaf35e910158",
+      "candidate_tsv_sha256": "474fadeef17b160ab0d033003732c486754a62bbbdb036712e2164bcfc368764",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "92.06256",
+          "candidate": "98.38473",
+          "delta_pp": "6.32217"
+        }
+      ]
+    },
+    {
+      "key": "chemical",
+      "backend": "wasm",
+      "pages": 103,
+      "base_minimum": "89.66049",
+      "candidate_minimum": "99.70631",
+      "improved_pages": 71,
+      "equal_pages": 31,
+      "lower_pages": [
+        {
+          "page": 96,
+          "base": "99.97793",
+          "candidate": "99.97792",
+          "delta_pp": "-0.00001"
+        }
+      ],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "d72044141cba99ff55a9623f08ab946dacab7d79eca91ddf5145f9521214f3e5",
+      "candidate_tsv_sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 4,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 5,
+          "base": "99.96633",
+          "candidate": "99.99663",
+          "delta_pp": "0.03030"
+        },
+        {
+          "page": 6,
+          "base": "99.96677",
+          "candidate": "99.973",
+          "delta_pp": "0.00623"
+        },
+        {
+          "page": 7,
+          "base": "99.99567",
+          "candidate": "100.0",
+          "delta_pp": "0.00433"
+        },
+        {
+          "page": 8,
+          "base": "99.99841",
+          "candidate": "99.99841",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 9,
+          "base": "99.99941",
+          "candidate": "99.99941",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 10,
+          "base": "99.99936",
+          "candidate": "99.99936",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 11,
+          "base": "99.92532",
+          "candidate": "99.99425",
+          "delta_pp": "0.06893"
+        },
+        {
+          "page": 12,
+          "base": "99.72336",
+          "candidate": "99.9964",
+          "delta_pp": "0.27304"
+        },
+        {
+          "page": 13,
+          "base": "95.24855",
+          "candidate": "99.99105",
+          "delta_pp": "4.74250"
+        },
+        {
+          "page": 14,
+          "base": "96.27196",
+          "candidate": "99.99431",
+          "delta_pp": "3.72235"
+        },
+        {
+          "page": 15,
+          "base": "99.97151",
+          "candidate": "99.99593",
+          "delta_pp": "0.02442"
+        },
+        {
+          "page": 16,
+          "base": "99.89725",
+          "candidate": "99.89725",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 17,
+          "base": "99.90871",
+          "candidate": "100.0",
+          "delta_pp": "0.09129"
+        },
+        {
+          "page": 18,
+          "base": "99.91468",
+          "candidate": "100.0",
+          "delta_pp": "0.08532"
+        },
+        {
+          "page": 19,
+          "base": "99.99631",
+          "candidate": "99.99631",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 20,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 21,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 22,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 23,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 24,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 25,
+          "base": "99.90723",
+          "candidate": "99.93703",
+          "delta_pp": "0.02980"
+        },
+        {
+          "page": 26,
+          "base": "99.98594",
+          "candidate": "99.98594",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 27,
+          "base": "99.23602",
+          "candidate": "99.97354",
+          "delta_pp": "0.73752"
+        },
+        {
+          "page": 28,
+          "base": "97.53281",
+          "candidate": "99.9983",
+          "delta_pp": "2.46549"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "99.90926",
+          "candidate": "100.0",
+          "delta_pp": "0.09074"
+        },
+        {
+          "page": 31,
+          "base": "99.00737",
+          "candidate": "99.99433",
+          "delta_pp": "0.98696"
+        },
+        {
+          "page": 32,
+          "base": "98.92274",
+          "candidate": "99.98893",
+          "delta_pp": "1.06619"
+        },
+        {
+          "page": 33,
+          "base": "99.99831",
+          "candidate": "99.99831",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 34,
+          "base": "99.9432",
+          "candidate": "99.99307",
+          "delta_pp": "0.04987"
+        },
+        {
+          "page": 35,
+          "base": "99.94276",
+          "candidate": "100.0",
+          "delta_pp": "0.05724"
+        },
+        {
+          "page": 36,
+          "base": "99.91332",
+          "candidate": "99.9985",
+          "delta_pp": "0.08518"
+        },
+        {
+          "page": 37,
+          "base": "99.94172",
+          "candidate": "99.98424",
+          "delta_pp": "0.04252"
+        },
+        {
+          "page": 38,
+          "base": "98.06399",
+          "candidate": "100.0",
+          "delta_pp": "1.93601"
+        },
+        {
+          "page": 39,
+          "base": "99.96228",
+          "candidate": "99.99623",
+          "delta_pp": "0.03395"
+        },
+        {
+          "page": 40,
+          "base": "96.29426",
+          "candidate": "100.0",
+          "delta_pp": "3.70574"
+        },
+        {
+          "page": 41,
+          "base": "99.93529",
+          "candidate": "100.0",
+          "delta_pp": "0.06471"
+        },
+        {
+          "page": 42,
+          "base": "99.42129",
+          "candidate": "99.99531",
+          "delta_pp": "0.57402"
+        },
+        {
+          "page": 43,
+          "base": "99.87345",
+          "candidate": "100.0",
+          "delta_pp": "0.12655"
+        },
+        {
+          "page": 44,
+          "base": "95.87021",
+          "candidate": "99.96815",
+          "delta_pp": "4.09794"
+        },
+        {
+          "page": 45,
+          "base": "99.35612",
+          "candidate": "99.99582",
+          "delta_pp": "0.63970"
+        },
+        {
+          "page": 46,
+          "base": "99.20577",
+          "candidate": "99.99817",
+          "delta_pp": "0.79240"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "97.64083",
+          "candidate": "99.95439",
+          "delta_pp": "2.31356"
+        },
+        {
+          "page": 50,
+          "base": "99.90626",
+          "candidate": "99.9737",
+          "delta_pp": "0.06744"
+        },
+        {
+          "page": 51,
+          "base": "99.91705",
+          "candidate": "100.0",
+          "delta_pp": "0.08295"
+        },
+        {
+          "page": 52,
+          "base": "99.96588",
+          "candidate": "99.99218",
+          "delta_pp": "0.02630"
+        },
+        {
+          "page": 53,
+          "base": "99.95223",
+          "candidate": "99.99222",
+          "delta_pp": "0.03999"
+        },
+        {
+          "page": 54,
+          "base": "99.92635",
+          "candidate": "100.0",
+          "delta_pp": "0.07365"
+        },
+        {
+          "page": 55,
+          "base": "99.9613",
+          "candidate": "99.99613",
+          "delta_pp": "0.03483"
+        },
+        {
+          "page": 56,
+          "base": "99.70089",
+          "candidate": "100.0",
+          "delta_pp": "0.29911"
+        },
+        {
+          "page": 57,
+          "base": "99.98544",
+          "candidate": "100.0",
+          "delta_pp": "0.01456"
+        },
+        {
+          "page": 58,
+          "base": "99.99373",
+          "candidate": "100.0",
+          "delta_pp": "0.00627"
+        },
+        {
+          "page": 59,
+          "base": "99.97162",
+          "candidate": "99.99484",
+          "delta_pp": "0.02322"
+        },
+        {
+          "page": 60,
+          "base": "99.9782",
+          "candidate": "99.98974",
+          "delta_pp": "0.01154"
+        },
+        {
+          "page": 61,
+          "base": "99.97543",
+          "candidate": "99.97543",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 62,
+          "base": "99.99874",
+          "candidate": "99.99874",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "99.54743",
+          "candidate": "99.99767",
+          "delta_pp": "0.45024"
+        },
+        {
+          "page": 67,
+          "base": "99.62227",
+          "candidate": "99.99805",
+          "delta_pp": "0.37578"
+        },
+        {
+          "page": 68,
+          "base": "96.64395",
+          "candidate": "99.77603",
+          "delta_pp": "3.13208"
+        },
+        {
+          "page": 69,
+          "base": "99.67215",
+          "candidate": "100.0",
+          "delta_pp": "0.32785"
+        },
+        {
+          "page": 70,
+          "base": "99.7853",
+          "candidate": "99.99897",
+          "delta_pp": "0.21367"
+        },
+        {
+          "page": 71,
+          "base": "99.78674",
+          "candidate": "99.99898",
+          "delta_pp": "0.21224"
+        },
+        {
+          "page": 72,
+          "base": "99.03148",
+          "candidate": "99.9511",
+          "delta_pp": "0.91962"
+        },
+        {
+          "page": 73,
+          "base": "99.05714",
+          "candidate": "99.80482",
+          "delta_pp": "0.74768"
+        },
+        {
+          "page": 74,
+          "base": "98.94549",
+          "candidate": "99.85854",
+          "delta_pp": "0.91305"
+        },
+        {
+          "page": 75,
+          "base": "99.56753",
+          "candidate": "100.0",
+          "delta_pp": "0.43247"
+        },
+        {
+          "page": 76,
+          "base": "98.56422",
+          "candidate": "99.99755",
+          "delta_pp": "1.43333"
+        },
+        {
+          "page": 77,
+          "base": "99.77669",
+          "candidate": "100.0",
+          "delta_pp": "0.22331"
+        },
+        {
+          "page": 78,
+          "base": "99.72638",
+          "candidate": "99.99607",
+          "delta_pp": "0.26969"
+        },
+        {
+          "page": 79,
+          "base": "92.03102",
+          "candidate": "99.98745",
+          "delta_pp": "7.95643"
+        },
+        {
+          "page": 80,
+          "base": "89.66049",
+          "candidate": "100.0",
+          "delta_pp": "10.33951"
+        },
+        {
+          "page": 81,
+          "base": "99.71624",
+          "candidate": "100.0",
+          "delta_pp": "0.28376"
+        },
+        {
+          "page": 82,
+          "base": "99.82744",
+          "candidate": "100.0",
+          "delta_pp": "0.17256"
+        },
+        {
+          "page": 83,
+          "base": "99.7781",
+          "candidate": "99.99907",
+          "delta_pp": "0.22097"
+        },
+        {
+          "page": 84,
+          "base": "93.61873",
+          "candidate": "99.99501",
+          "delta_pp": "6.37628"
+        },
+        {
+          "page": 85,
+          "base": "98.0731",
+          "candidate": "99.9717",
+          "delta_pp": "1.8986"
+        },
+        {
+          "page": 86,
+          "base": "99.9376",
+          "candidate": "99.95689",
+          "delta_pp": "0.01929"
+        },
+        {
+          "page": 87,
+          "base": "99.89535",
+          "candidate": "99.93457",
+          "delta_pp": "0.03922"
+        },
+        {
+          "page": 88,
+          "base": "99.90908",
+          "candidate": "99.90908",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 89,
+          "base": "99.82144",
+          "candidate": "99.87375",
+          "delta_pp": "0.05231"
+        },
+        {
+          "page": 90,
+          "base": "99.9873",
+          "candidate": "100.0",
+          "delta_pp": "0.0127"
+        },
+        {
+          "page": 91,
+          "base": "99.66954",
+          "candidate": "99.70631",
+          "delta_pp": "0.03677"
+        },
+        {
+          "page": 92,
+          "base": "98.49392",
+          "candidate": "99.97797",
+          "delta_pp": "1.48405"
+        },
+        {
+          "page": 93,
+          "base": "99.40876",
+          "candidate": "99.9145",
+          "delta_pp": "0.50574"
+        },
+        {
+          "page": 94,
+          "base": "99.61143",
+          "candidate": "99.96505",
+          "delta_pp": "0.35362"
+        },
+        {
+          "page": 95,
+          "base": "94.9356",
+          "candidate": "99.95841",
+          "delta_pp": "5.02281"
+        },
+        {
+          "page": 96,
+          "base": "99.97793",
+          "candidate": "99.97792",
+          "delta_pp": "-0.00001"
+        },
+        {
+          "page": 97,
+          "base": "99.43633",
+          "candidate": "100.0",
+          "delta_pp": "0.56367"
+        },
+        {
+          "page": 98,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 99,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 100,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 101,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 102,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 103,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "spec13",
+      "backend": "wasm",
+      "pages": 71,
+      "base_minimum": "95.26041",
+      "candidate_minimum": "99.66582",
+      "improved_pages": 7,
+      "equal_pages": 63,
+      "lower_pages": [
+        {
+          "page": 15,
+          "base": "99.99634",
+          "candidate": "99.99633",
+          "delta_pp": "-0.00001"
+        }
+      ],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "ec1346c8224f1e54664f4c05cfe3850570bce0a3c8e1d2e77257832bd672e0f4",
+      "candidate_tsv_sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "99.8146",
+          "candidate": "99.8146",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 2,
+          "base": "99.78941",
+          "candidate": "99.78941",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 3,
+          "base": "99.9986",
+          "candidate": "99.9986",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 4,
+          "base": "99.95619",
+          "candidate": "99.95619",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 5,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 6,
+          "base": "99.99453",
+          "candidate": "99.99453",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 7,
+          "base": "99.98341",
+          "candidate": "99.98341",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 8,
+          "base": "95.26041",
+          "candidate": "99.66582",
+          "delta_pp": "4.40541"
+        },
+        {
+          "page": 9,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 10,
+          "base": "99.9962",
+          "candidate": "99.9962",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 11,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 12,
+          "base": "99.99881",
+          "candidate": "99.99881",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 13,
+          "base": "99.86585",
+          "candidate": "100.0",
+          "delta_pp": "0.13415"
+        },
+        {
+          "page": 14,
+          "base": "99.99851",
+          "candidate": "99.99851",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 15,
+          "base": "99.99634",
+          "candidate": "99.99633",
+          "delta_pp": "-0.00001"
+        },
+        {
+          "page": 16,
+          "base": "99.94359",
+          "candidate": "99.99668",
+          "delta_pp": "0.05309"
+        },
+        {
+          "page": 17,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 18,
+          "base": "99.999",
+          "candidate": "99.999",
+          "delta_pp": "0.000"
+        },
+        {
+          "page": 19,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 20,
+          "base": "99.9986",
+          "candidate": "99.9986",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 21,
+          "base": "99.86198",
+          "candidate": "99.92468",
+          "delta_pp": "0.06270"
+        },
+        {
+          "page": 22,
+          "base": "99.99928",
+          "candidate": "99.99928",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 23,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 24,
+          "base": "99.99759",
+          "candidate": "99.99759",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 25,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 26,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 27,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 28,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 31,
+          "base": "97.40628",
+          "candidate": "99.99919",
+          "delta_pp": "2.59291"
+        },
+        {
+          "page": 32,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 33,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 34,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 35,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 36,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 37,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 38,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 39,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 40,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 41,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 42,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 43,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 44,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 45,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 46,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 50,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 51,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 52,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 53,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 54,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 55,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 56,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 57,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 58,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 59,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 60,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 61,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 62,
+          "base": "99.98336",
+          "candidate": "99.98336",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 67,
+          "base": "97.34652",
+          "candidate": "99.99646",
+          "delta_pp": "2.64994"
+        },
+        {
+          "page": 68,
+          "base": "99.99682",
+          "candidate": "99.99682",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 69,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 70,
+          "base": "99.21538",
+          "candidate": "100.0",
+          "delta_pp": "0.78462"
+        },
+        {
+          "page": 71,
+          "base": "99.91755",
+          "candidate": "99.91755",
+          "delta_pp": "0.00000"
+        }
+      ]
+    },
+    {
+      "key": "outline-demo",
+      "backend": "wasm",
+      "pages": 3,
+      "base_minimum": "100.0",
+      "candidate_minimum": "100.0",
+      "improved_pages": 0,
+      "equal_pages": 3,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "candidate_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "decree",
+      "backend": "wasm",
+      "pages": 74,
+      "base_minimum": "95.46423",
+      "candidate_minimum": "99.73446",
+      "improved_pages": 11,
+      "equal_pages": 63,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "58771bd53fee0f26a063c2b3567ca3fdc4753456874c1ee0652775a309bcaa7f",
+      "candidate_tsv_sha256": "be1f5166b7048d0f1f687f71ced888896bd190d9633f2a78f64e9a7e5693ffbf",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 4,
+          "base": "99.89686",
+          "candidate": "99.89686",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 5,
+          "base": "99.99912",
+          "candidate": "100.0",
+          "delta_pp": "0.00088"
+        },
+        {
+          "page": 6,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 7,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 8,
+          "base": "99.98892",
+          "candidate": "99.99014",
+          "delta_pp": "0.00122"
+        },
+        {
+          "page": 9,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 10,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 11,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 12,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 13,
+          "base": "96.40079",
+          "candidate": "100.0",
+          "delta_pp": "3.59921"
+        },
+        {
+          "page": 14,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 15,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 16,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 17,
+          "base": "99.98244",
+          "candidate": "99.98244",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 18,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 19,
+          "base": "95.46423",
+          "candidate": "99.73446",
+          "delta_pp": "4.27023"
+        },
+        {
+          "page": 20,
+          "base": "99.273",
+          "candidate": "100.0",
+          "delta_pp": "0.727"
+        },
+        {
+          "page": 21,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 22,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 23,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 24,
+          "base": "99.9157",
+          "candidate": "99.9157",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 25,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 26,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 27,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 28,
+          "base": "99.99908",
+          "candidate": "100.0",
+          "delta_pp": "0.00092"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 31,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 32,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 33,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 34,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 35,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 36,
+          "base": "97.1126",
+          "candidate": "100.0",
+          "delta_pp": "2.8874"
+        },
+        {
+          "page": 37,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 38,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 39,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 40,
+          "base": "99.99843",
+          "candidate": "100.0",
+          "delta_pp": "0.00157"
+        },
+        {
+          "page": 41,
+          "base": "99.98217",
+          "candidate": "99.98217",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 42,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 43,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 44,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 45,
+          "base": "99.89306",
+          "candidate": "99.89306",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 46,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "99.99853",
+          "candidate": "100.0",
+          "delta_pp": "0.00147"
+        },
+        {
+          "page": 50,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 51,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 52,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 53,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 54,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 55,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 56,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 57,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 58,
+          "base": "99.98108",
+          "candidate": "99.98108",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 59,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 60,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 61,
+          "base": "99.55724",
+          "candidate": "100.0",
+          "delta_pp": "0.44276"
+        },
+        {
+          "page": 62,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 67,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 68,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 69,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 70,
+          "base": "98.7558",
+          "candidate": "100.0",
+          "delta_pp": "1.2442"
+        },
+        {
+          "page": 71,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 72,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 73,
+          "base": "99.98011",
+          "candidate": "99.98011",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 74,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "pages": 1,
+      "base_minimum": "100.0",
+      "candidate_minimum": "100.0",
+      "improved_pages": 0,
+      "equal_pages": 1,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "candidate_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "original4138",
+      "backend": "wasm",
+      "pages": 197,
+      "base_minimum": "99.36039",
+      "candidate_minimum": "99.36039",
+      "improved_pages": 2,
+      "equal_pages": 195,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "570ee2d6b89e7f089491209ab7ff3140ee2926dcf7685cf5314b1f16ea5a35ed",
+      "candidate_tsv_sha256": "e6648ff8f916f70581ee3eed4e83bcbb65cdabb048d63a6ebdd09bb6969acb74",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 2,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 3,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 4,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 5,
+          "base": "99.99655",
+          "candidate": "99.99655",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 6,
+          "base": "99.99609",
+          "candidate": "99.99609",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 7,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 8,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 9,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 10,
+          "base": "99.894",
+          "candidate": "100.0",
+          "delta_pp": "0.106"
+        },
+        {
+          "page": 11,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 12,
+          "base": "99.90966",
+          "candidate": "99.98705",
+          "delta_pp": "0.07739"
+        },
+        {
+          "page": 13,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 14,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 15,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 16,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 17,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 18,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 19,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 20,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 21,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 22,
+          "base": "99.99651",
+          "candidate": "99.99651",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 23,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 24,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 25,
+          "base": "99.99637",
+          "candidate": "99.99637",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 26,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 27,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 28,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 29,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 30,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 31,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 32,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 33,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 34,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 35,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 36,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 37,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 38,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 39,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 40,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 41,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 42,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 43,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 44,
+          "base": "99.46519",
+          "candidate": "99.46519",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 45,
+          "base": "99.94639",
+          "candidate": "99.94639",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 46,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 47,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 48,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 49,
+          "base": "99.99691",
+          "candidate": "99.99691",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 50,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 51,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 52,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 53,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 54,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 55,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 56,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 57,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 58,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 59,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 60,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 61,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 62,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 63,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 64,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 65,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 66,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 67,
+          "base": "99.9819",
+          "candidate": "99.9819",
+          "delta_pp": "0.0000"
+        },
+        {
+          "page": 68,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 69,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 70,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 71,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 72,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 73,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 74,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 75,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 76,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 77,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 78,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 79,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 80,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 81,
+          "base": "99.99242",
+          "candidate": "99.99242",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 82,
+          "base": "99.99678",
+          "candidate": "99.99678",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 83,
+          "base": "99.99283",
+          "candidate": "99.99283",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 84,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 85,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 86,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 87,
+          "base": "99.99258",
+          "candidate": "99.99258",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 88,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 89,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 90,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 91,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 92,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 93,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 94,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 95,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 96,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 97,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 98,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 99,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 100,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 101,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 102,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 103,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 104,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 105,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 106,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 107,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 108,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 109,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 110,
+          "base": "99.99297",
+          "candidate": "99.99297",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 111,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 112,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 113,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 114,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 115,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 116,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 117,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 118,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 119,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 120,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 121,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 122,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 123,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 124,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 125,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 126,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 127,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 128,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 129,
+          "base": "99.59784",
+          "candidate": "99.59784",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 130,
+          "base": "99.36039",
+          "candidate": "99.36039",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 131,
+          "base": "99.99443",
+          "candidate": "99.99443",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 132,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 133,
+          "base": "99.99233",
+          "candidate": "99.99233",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 134,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 135,
+          "base": "99.99645",
+          "candidate": "99.99645",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 136,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 137,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 138,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 139,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 140,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 141,
+          "base": "99.99578",
+          "candidate": "99.99578",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 142,
+          "base": "99.99681",
+          "candidate": "99.99681",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 143,
+          "base": "99.99638",
+          "candidate": "99.99638",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 144,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 145,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 146,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 147,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 148,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 149,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 150,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 151,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 152,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 153,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 154,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 155,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 156,
+          "base": "99.99664",
+          "candidate": "99.99664",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 157,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 158,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 159,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 160,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 161,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 162,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 163,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 164,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 165,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 166,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 167,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 168,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 169,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 170,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 171,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 172,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 173,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 174,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 175,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 176,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 177,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 178,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 179,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 180,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 181,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 182,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 183,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 184,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 185,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 186,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 187,
+          "base": "99.76273",
+          "candidate": "99.76273",
+          "delta_pp": "0.00000"
+        },
+        {
+          "page": 188,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 189,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 190,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 191,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 192,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 193,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 194,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 195,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 196,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        },
+        {
+          "page": 197,
+          "base": "100.0",
+          "candidate": "100.0",
+          "delta_pp": "0.0"
+        }
+      ]
+    },
+    {
+      "key": "radical-controls",
+      "backend": "wasm",
+      "pages": 1,
+      "base_minimum": "92.95871",
+      "candidate_minimum": "98.35483",
+      "improved_pages": 1,
+      "equal_pages": 0,
+      "lower_pages": [],
+      "declines_over_two_pp": [],
+      "base_tsv_sha256": "325f1e84993cbdbed4a052b6cf0e5ef11112b3e999c9ab55b12cdbdc01a26691",
+      "candidate_tsv_sha256": "dcc8bfdaea993cb4e6c11d355272108104d6ee60e5dc9134396971dc2ec93d67",
+      "page_deltas": [
+        {
+          "page": 1,
+          "base": "92.95871",
+          "candidate": "98.35483",
+          "delta_pp": "5.39612"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "parent": "62e7dcf60a5deaaeba85c1e97b55bb4193f1ebc3",
+  "captured_at": "2026-11-18T04:40:25.752770+09:00",
+  "sources": {
+    "src/renderer/height_measurer.rs": "08b7ca7d6fe8dbd6f4d19dd39d6f07ff34a2cae21518cfc2ba84bb0926ed40fc",
+    "src/renderer/layout/table_layout/plain_cell_flow.rs": "a4429a7aa2d27f7cd17c501c83d1d8cb192e51ff2c3dc9d76b2f9588d0015695",
+    "tests/cases/issue_7733_merged_empty_row_frame.rs": "68fea9d91c49a0f1f0d66531bf127c3dfe6e267ac40f9346511939e8ff0cb3fd"
+  },
+  "source_diff_sha256": "317fbecb40aa15fc88a0ecf56a0258645d340a5e35aa3af9c9d427e288e82998",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

@@ -1,0 +1,11 @@
+{
+  "cause.md": "a808962b7c9f5c72c6d6b56bcab93cf796f9050d86712fe8022a62b4b7962674",
+  "focus-state.json": "1518a3466e2a5757d8a86e931df6606285312310874bf0d0d9c1a52ae2fbe309",
+  "font-environment-native.json": "49748dacc107540cab0a5e9337c792dfb8e58393d534deb75133daa51922584d",
+  "font-environment-wasm.json": "e9e5f56421892af0d8d2e9839a15fe90326d92bd92175a62e9db9bea0cb9881d",
+  "independent-ttf-glyph-proof.json": "7aaf06c40238dd3182bbef33946fef9cedddb08521dcf167b0f190dcdc7a7638",
+  "p004-metric-condition-difference.json": "537807ca882f17b6d66b6e62b096a6a31bcf91f69da412d593d93faa65c01f0b",
+  "selection-diagnosis.json": "863ddc2cca66e8cfca66acc7e3549b56a7f2380aeac06b5d3ca1c20d48856c73",
+  "verified-original-programs-native.json": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab",
+  "verified-original-programs-wasm.json": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252"
+}

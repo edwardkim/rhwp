@@ -1,0 +1,172 @@
+{
+  "observed_source_head": "5f1d594605e27c49b8859b8ce12a914e37c96ed9",
+  "fixed_base": "fbf8081db57c0c6abc9bad418290c5018193e24f",
+  "official_baseline_sha256": "7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b",
+  "font_registration_repairs": [
+    {
+      "family": "Arial-BoldMT",
+      "before_sha256": "f2f7d89c8ca46e96287554f1f55ee48de80f47bc017223ad3387cb21098f6d54",
+      "sha256": "94675f5d0fa0163f5db26ecc9ba63ab49d8a6b80db469caed315e5510b42e14d",
+      "template_sha256": "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0",
+      "added_tables": [
+        "name",
+        "OS/2",
+        "post (format 3)"
+      ],
+      "unchanged_original_pdf_tables": [
+        "hhea",
+        "maxp",
+        "hmtx",
+        "cmap",
+        "fpgm",
+        "prep",
+        "cvt ",
+        "loca",
+        "glyf"
+      ],
+      "head_unchanged_except_checksum": true,
+      "key": "seo-helvetica-styles",
+      "registration_template_file": "Arial Bold.ttf"
+    },
+    {
+      "family": "Arial-ItalicMT",
+      "before_sha256": "e392071598eeb950d648698333960190622743891ae2e39011168c5211c5264a",
+      "sha256": "3ef75260d86cc5f72fd2b0a3d423206cfe919ded70e23d46055650521a7ecc2a",
+      "template_sha256": "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98",
+      "added_tables": [
+        "name",
+        "OS/2",
+        "post (format 3)"
+      ],
+      "unchanged_original_pdf_tables": [
+        "hhea",
+        "maxp",
+        "hmtx",
+        "cmap",
+        "fpgm",
+        "prep",
+        "cvt ",
+        "loca",
+        "glyf"
+      ],
+      "head_unchanged_except_checksum": true,
+      "key": "seo-helvetica-styles",
+      "registration_template_file": "Arial Italic.ttf"
+    },
+    {
+      "family": "Arial-BoldItalicMT",
+      "before_sha256": "148516126a5bc442f31b73faa25ed8afb447cda9c6bbc0ea28f8ad1fcced0b75",
+      "sha256": "5670ba4205bb4c8a5ca336a04cd44fb725e1272ec7006c2271fdccee73e899ae",
+      "template_sha256": "374b0190a9844343110d8f8ed1818117a4591803d022bbb2bd189d63a681e731",
+      "added_tables": [
+        "name",
+        "OS/2",
+        "post (format 3)"
+      ],
+      "unchanged_original_pdf_tables": [
+        "hhea",
+        "maxp",
+        "hmtx",
+        "cmap",
+        "fpgm",
+        "prep",
+        "cvt ",
+        "loca",
+        "glyf"
+      ],
+      "head_unchanged_except_checksum": true,
+      "key": "seo-helvetica-styles",
+      "registration_template_file": "Arial Bold Italic.ttf"
+    },
+    {
+      "family": "Arial-BoldMT",
+      "before_sha256": "0e7827e8ee6a8e59542b4cb13cdbbe86aeeaebf11873c4b94df831971486d393",
+      "sha256": "c68eb3eaa0bc090f11407d547393777f865f52110ea81ecee3b119cff633901d",
+      "template_sha256": "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0",
+      "added_tables": [
+        "name",
+        "OS/2",
+        "post (format 3)"
+      ],
+      "unchanged_original_pdf_tables": [
+        "hhea",
+        "maxp",
+        "hmtx",
+        "cmap",
+        "fpgm",
+        "prep",
+        "cvt ",
+        "loca",
+        "glyf"
+      ],
+      "head_unchanged_except_checksum": true,
+      "key": "sample16-hwp2022",
+      "registration_template_file": "Arial Bold.ttf"
+    },
+    {
+      "family": "Arial-ItalicMT",
+      "before_sha256": "f6792a8ca7f09547cf9bec6c40303cede2d8b8d5bde4d43b7734cc461cd4a3ad",
+      "sha256": "aa35dd5d440f599b5e1bdd3a6b2b6c6f276963ab69b54fff609b43785b678f33",
+      "template_sha256": "ce1d2f1ab89db45f9796100eee960f5702a40e84c225c2b48c3ec3e81d153f98",
+      "added_tables": [
+        "name",
+        "OS/2",
+        "post (format 3)"
+      ],
+      "unchanged_original_pdf_tables": [
+        "hhea",
+        "maxp",
+        "hmtx",
+        "cmap",
+        "fpgm",
+        "prep",
+        "cvt ",
+        "loca",
+        "glyf"
+      ],
+      "head_unchanged_except_checksum": true,
+      "key": "sample16-hwp2022",
+      "registration_template_file": "Arial Italic.ttf"
+    },
+    {
+      "family": "Arial-BoldMT",
+      "before_sha256": "0e7827e8ee6a8e59542b4cb13cdbbe86aeeaebf11873c4b94df831971486d393",
+      "sha256": "c68eb3eaa0bc090f11407d547393777f865f52110ea81ecee3b119cff633901d",
+      "template_sha256": "d72db21f9242aedd6b917d8549ad5921766b24d5f8d0becfda2ff4c620b3c2e0",
+      "added_tables": [
+        "name",
+        "OS/2",
+        "post (format 3)"
+      ],
+      "unchanged_original_pdf_tables": [
+        "hhea",
+        "maxp",
+        "hmtx",
+        "cmap",
+        "fpgm",
+        "prep",
+        "cvt ",
+        "loca",
+        "glyf"
+      ],
+      "head_unchanged_except_checksum": true,
+      "key": "nested",
+      "registration_template_file": "Arial Bold.ttf"
+    }
+  ],
+  "seo_style_priority_results": {
+    "before": {
+      "base_native": 99.26,
+      "head_native": 99.26
+    },
+    "after": {
+      "base_native": 100.0,
+      "head_native": 100.0
+    }
+  },
+  "current_all_18_condition_font_inventory_sha256": "cc46f3fd2696544ad12396f70a23b058f377ca4d34644fae263c189fdd435530",
+  "all_protected_documents_complete": false,
+  "old_unavailable_whole_file_identity_claimed": false,
+  "installed_font_files_changed": false,
+  "font_binaries_committed": false
+}

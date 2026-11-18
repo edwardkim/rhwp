@@ -1,0 +1,12 @@
+{
+  "parent": "a04228c7af45084207d82bb95dec1ebfdafed0e6",
+  "captured_at": "2026-11-18T06:33:56.234919+09:00",
+  "sources": {
+    "src/renderer/font_metrics_overlays.rs": "ab2536b2232d748abdef05c65ac16183882fa71a8fabbbe4643715f547f4d29c",
+    "tests/cases/issue_7733_box_drawing_glyph_supplier.rs": "e6736eb2da61ed9ea009ea311888dfc280599a781d1a3c83247d63a6bdb35c9e",
+    "tests/cases/issue_7733_box_drawing_marker_origin.rs": "d609891f9aeb40123c3b6a6509e37766ca14483f9ce5232cb45d20cd8a57f7bf"
+  },
+  "source_diff_sha256": "2bc230398d013167cd48aac189f9ffab8eebdf155069072066c593cb247cc271",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

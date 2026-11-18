@@ -678,3 +678,9 @@ samples/pr9042/nested-tail-margins-hancom.hwp	2	2
 samples/pr9042/nested-tail-single-line-hancom.hwp	2	2
 samples/pr9042/nested-tail-two-paragraphs-hancom.hwp	2	2
 samples/pr9042/pr9042-hancom-saved.hwp	2	2
+# #7733·#7735~#7738: 원본별 독립 Print 쪽수. 기존 행과 주석 순서는 보존한다.
+samples/issue6776/78494-virtual-convergence-industry-decree.hwpx	74	74
+samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	103	103
+samples/pr4093/outline_navigation_panel_demo.hwpx	3	3
+samples/pr4093/outline_navigation_table_cell_number.hwpx	1	1
+samples/한글문서파일형식_5.0_revision1.3.hwp	71	71

@@ -1,0 +1,225 @@
+{
+  "status": "passed_all_rust_gates",
+  "source_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "fixed_base": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+  "regression_font_scope": "verified macOS minimum-font sandbox; personal fonts denied",
+  "frozen_renderer_build_source": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "build_jobs": 8,
+  "test_threads": 8,
+  "steps": [
+    {
+      "name": "fresh-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 7.552,
+      "started_at": "2026-11-18T21:53:19.139765+09:00",
+      "log_filename": "fresh-wasm.log",
+      "log_sha256": "35c53c11ae808e107c39a03df44ef56eba58ba2f2c7b1a4d344b32cbf4a45c05",
+      "test_summaries": []
+    },
+    {
+      "name": "suite-prepare",
+      "exit_code": 0,
+      "elapsed_seconds": 4.701,
+      "started_at": "2026-11-18T22:33:09.555703+09:00",
+      "log_filename": "suite-prepare.log",
+      "log_sha256": "638fd19f497f240b6056062e07a77c970393e47ede056223f420317d56df1858",
+      "test_summaries": []
+    },
+    {
+      "name": "full-nextest",
+      "exit_code": 0,
+      "elapsed_seconds": 1310.32,
+      "started_at": "2026-11-18T22:33:14.840680+09:00",
+      "log_filename": "full-nextest.log",
+      "log_sha256": "335796c266bcb9f0d328f2e03272807301a91d8c6b62cbb7e3d0a3eb4249fe16",
+      "test_summaries": [
+        "Summary [ 873.621s] 13781 tests run: 13781 passed (4 slow), 45 skipped"
+      ]
+    },
+    {
+      "name": "gray-tail-issue_8218_hwp3_link_bindata_order",
+      "exit_code": 0,
+      "elapsed_seconds": 24.189,
+      "started_at": "2026-11-18T22:55:05.347045+09:00",
+      "log_filename": "gray-tail-issue_8218_hwp3_link_bindata_order.log",
+      "log_sha256": "4b9d5e9da3f728dd0a826f487b8905fc99bac0fc9059af386a1f0e04a0155ae2",
+      "test_summaries": [
+        "Summary [   0.168s] 7 tests run: 7 passed, 304 skipped"
+      ]
+    },
+    {
+      "name": "gray-tail-issue_7888_para_border_group_bottom_no_default_inset",
+      "exit_code": 0,
+      "elapsed_seconds": 4.866,
+      "started_at": "2026-11-18T22:55:29.725793+09:00",
+      "log_filename": "gray-tail-issue_7888_para_border_group_bottom_no_default_inset.log",
+      "log_sha256": "8d9ba67e134d216729202b974b320707127d3b67a52f74ede1b335362c852c7d",
+      "test_summaries": [
+        "Summary [   0.061s] 1 test run: 1 passed, 341 skipped"
+      ]
+    },
+    {
+      "name": "gray-tail-issue_5711_para_border_negative_spacing",
+      "exit_code": 0,
+      "elapsed_seconds": 2.215,
+      "started_at": "2026-11-18T22:55:34.734087+09:00",
+      "log_filename": "gray-tail-issue_5711_para_border_negative_spacing.log",
+      "log_sha256": "2901ce9868a98afd01aebc05e9a8d0c222e6acd49cfb84082fa9f21038098f8f",
+      "test_summaries": [
+        "Summary [   0.016s] 2 tests run: 2 passed, 329 skipped"
+      ]
+    },
+    {
+      "name": "fmt",
+      "exit_code": 0,
+      "elapsed_seconds": 22.568,
+      "started_at": "2026-11-18T22:55:37.074220+09:00",
+      "log_filename": "fmt.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "test_summaries": []
+    },
+    {
+      "name": "suite-manifest",
+      "exit_code": 0,
+      "elapsed_seconds": 1.352,
+      "started_at": "2026-11-18T22:55:59.785060+09:00",
+      "log_filename": "suite-manifest.log",
+      "log_sha256": "87cf1c419dd55eb5372c9300c694f910a49e643bad4a3e7933f40f5b717e9563",
+      "test_summaries": []
+    },
+    {
+      "name": "native-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 59.718,
+      "started_at": "2026-11-18T22:56:01.272456+09:00",
+      "log_filename": "native-clippy.log",
+      "log_sha256": "110fc542df0cdb3ae991ce177540c76fcdb3ce62f1b7888a6aad5cbe823ccecd",
+      "test_summaries": []
+    },
+    {
+      "name": "wasm-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 64.229,
+      "started_at": "2026-11-18T22:57:01.167823+09:00",
+      "log_filename": "wasm-clippy.log",
+      "log_sha256": "228b2f6b7ea12394963a1c198ff81e7f804607636e5053a7e3ae7fdda0b294b7",
+      "test_summaries": []
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "elapsed_seconds": 82.697,
+      "started_at": "2026-11-18T22:58:05.611612+09:00",
+      "log_filename": "workspace-build.log",
+      "log_sha256": "78ba450d17f083b641212e8db8c56e57c8fac22966871cb724b8a635088daeae",
+      "test_summaries": []
+    },
+    {
+      "name": "all-targets-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 96.608,
+      "started_at": "2026-11-18T22:59:28.533575+09:00",
+      "log_filename": "all-targets-clippy.log",
+      "log_sha256": "3b46bfb8927bd0fda9f76cab62e77599171bcaeb7eaaecce11830a33c08ada70",
+      "test_summaries": []
+    },
+    {
+      "name": "native-feature-clippy",
+      "exit_code": 0,
+      "elapsed_seconds": 55.185,
+      "started_at": "2026-11-18T23:01:05.372579+09:00",
+      "log_filename": "native-feature-clippy.log",
+      "log_sha256": "1d5a6d63bdc4f3acdec1d519eb1bfb14bc4c937d1706260b40b60f5ef9d8ed87",
+      "test_summaries": []
+    },
+    {
+      "name": "native-skia-lib",
+      "exit_code": 0,
+      "elapsed_seconds": 456.863,
+      "started_at": "2026-11-18T23:02:00.795620+09:00",
+      "log_filename": "native-skia-lib.log",
+      "log_sha256": "98517355c2ea53c731b1f60b233a3cefbf39c0b9dcb047c63e8aea792e0ad6c3",
+      "test_summaries": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 18.98s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "name": "native-skia-placeholder",
+      "exit_code": 0,
+      "elapsed_seconds": 495.602,
+      "started_at": "2026-11-18T23:09:38.029547+09:00",
+      "log_filename": "native-skia-placeholder.log",
+      "log_sha256": "a0161b8c701ea800fa092e075c281daaebff9ff2bf3806b317718864b79418c2",
+      "test_summaries": [
+        "Summary [   7.834s] 2 tests run: 2 passed, 336 skipped"
+      ]
+    },
+    {
+      "name": "native-skia-pdf",
+      "exit_code": 0,
+      "elapsed_seconds": 103.268,
+      "started_at": "2026-11-18T23:17:53.712980+09:00",
+      "log_filename": "native-skia-pdf.log",
+      "log_sha256": "de1db96fac38b28aae7ead120cf46970eaa7127470e1e48da2dcf200e3e3e156",
+      "test_summaries": [
+        "Summary [   4.283s] 36 tests run: 36 passed, 311 skipped"
+      ]
+    },
+    {
+      "name": "unit-tier",
+      "exit_code": 0,
+      "elapsed_seconds": 76.0,
+      "started_at": "2026-11-18T23:19:37.134003+09:00",
+      "log_filename": "unit-tier.log",
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "test_summaries": [
+        "[RustUnitTier] 확인 완료: 4094 tests / 295 modules / ready 0 / support 85 / white-box 4005 / cfg support items 28"
+      ]
+    },
+    {
+      "name": "suite-contracts",
+      "exit_code": 0,
+      "elapsed_seconds": 37.825,
+      "started_at": "2026-11-18T23:20:53.377808+09:00",
+      "log_filename": "suite-contracts.log",
+      "log_sha256": "366ed738999262935e1d39a13a47c3d908a77aa26ecce1896b03303f235ec05c",
+      "test_summaries": []
+    },
+    {
+      "name": "native-feature-issue_7733_hft_bullet_program_order",
+      "exit_code": 0,
+      "elapsed_seconds": 43.741,
+      "started_at": "2026-11-18T23:21:31.426357+09:00",
+      "log_filename": "native-feature-issue_7733_hft_bullet_program_order.log",
+      "log_sha256": "614d8adad0f1b53e471f1255fc786e1916d23148e893f9dee2a7d9290bf14dd1",
+      "test_summaries": [
+        "Summary [   0.400s] 3 tests run: 3 passed, 357 skipped"
+      ]
+    },
+    {
+      "name": "native-feature-skia_native_glyph_replay",
+      "exit_code": 0,
+      "elapsed_seconds": 80.114,
+      "started_at": "2026-11-18T23:22:15.363694+09:00",
+      "log_filename": "native-feature-skia_native_glyph_replay.log",
+      "log_sha256": "5b1a5ffbd08d21264dca95b1afc454c169f8f043a6525c2030e9505a204a266a",
+      "test_summaries": [
+        "Summary [  20.191s] 24 tests run: 24 passed, 332 skipped"
+      ]
+    },
+    {
+      "name": "oracle-registry-tests",
+      "exit_code": 0,
+      "elapsed_seconds": 1.514,
+      "started_at": "2026-11-18T23:23:36.051439+09:00",
+      "log_filename": "oracle-registry-tests.log",
+      "log_sha256": "05feed28f38ff02f042182bbb803eb46a9d2929e281c31c7354706e2ea038053",
+      "test_summaries": [
+        "Ran 14 tests in 0.641s"
+      ]
+    }
+  ]
+}

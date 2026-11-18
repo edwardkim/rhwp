@@ -1,0 +1,12 @@
+{
+  "parent": "f0a88a55f218e66659dffb4833a56f68d767ea22",
+  "captured_at": "2026-11-18T05:54:20.168938+09:00",
+  "sources": {
+    "src/renderer/layout/paragraph_layout.rs": "67f1500eb0de474908fe22fe369124b91ea0149bd16e631048b0fcc3295a345f",
+    "src/renderer/layout/paragraph_layout/list_marker_geometry.rs": "2e110bac4299605933af62f6ec83640cc1fcc509d1133ab1bfdb52b88fb938fa",
+    "tests/cases/issue_7733_box_drawing_marker_origin.rs": "a8521ac46636afdee5485e2f8e7dca082a40d88be8c1c29406e23e50585116cb"
+  },
+  "source_diff_sha256": "75c09559a61bb1afb227cd736c9f81859876df068c452f562c827b4962113428",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

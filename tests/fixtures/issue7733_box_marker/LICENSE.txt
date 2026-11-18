@@ -1,0 +1,5 @@
+RHWP Box Marker Present 합성 글꼴
+
+program-present.ttf와 generate.py는 저장소의 MIT 라이선스로 배포한다.
+이 글꼴의 윤곽은 generate.py에서 직접 만든 검사용 사각형이다.
+라이선스 전문은 저장소 루트 LICENSE를 따른다.

@@ -6,7 +6,7 @@ use super::TextStyle;
 pub(crate) fn family(style: &TextStyle, text: &str) -> Option<&'static str> {
     let mut chars = text.chars();
     let ch = chars.next()?;
-    if chars.next().is_some() || !matches!(ch, '\u{2024}' | '\u{2027}') {
+    if chars.next().is_some() || !matches!(ch, '\u{2024}' | '\u{2027}' | '\u{257A}' | '\u{2981}') {
         return None;
     }
     let decision = super::layout::char_width_decision(&[ch], &[1], 0, style, true);

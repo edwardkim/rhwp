@@ -1,0 +1,70 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 19.81s
+────────────
+ Nextest run ID 8f89f834-0bc5-432f-9422-11c6ec0c260a with nextest profile: default
+    Starting 5 tests across 2 binaries (728 tests skipped)
+        PASS [   0.015s] (1/5) rhwp::regression_suite_028 issue_7737_missing_math_symbol_supplier::explicit_hft_does_not_borrow_a_truetype_programs_missing_glyph_contract
+        FAIL [   0.015s] (2/5) rhwp::regression_suite_028 issue_7737_missing_math_symbol_supplier::missing_malgun_spot_uses_the_same_advance_as_the_independent_print_supplier
+  stdout ───
+
+    running 1 test
+    test issue_7737_missing_math_symbol_supplier::missing_malgun_spot_uses_the_same_advance_as_the_independent_print_supplier ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_missing_math_symbol_supplier::missing_malgun_spot_uses_the_same_advance_as_the_independent_print_supplier
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 349 filtered out; finished in 0.00s
+
+  stderr ───
+
+    thread 'issue_7737_missing_math_symbol_supplier::missing_malgun_spot_uses_the_same_advance_as_the_independent_print_supplier' (266002969) panicked at tests/generated/../cases/issue_7737_missing_math_symbol_supplier.rs:31:9:
+    확인한 원본 결측은 같은 공급자의 전진을 쓴다: bold=false, 16 vs 31
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.021s] (3/5) rhwp::regression_suite_020 symbol_slot_math_symbol_advance::math_symbol_block_uses_symbol_slot_face_and_advance
+        FAIL [   0.725s] (4/5) rhwp::regression_suite_028 issue_7737_missing_math_symbol_supplier::explicit_glyph_supplier_keeps_priority_over_the_generated_fallback_chain
+  stdout ───
+
+    running 1 test
+    test issue_7737_missing_math_symbol_supplier::explicit_glyph_supplier_keeps_priority_over_the_generated_fallback_chain ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_missing_math_symbol_supplier::explicit_glyph_supplier_keeps_priority_over_the_generated_fallback_chain
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 349 filtered out; finished in 0.71s
+
+  stderr ───
+
+    thread 'issue_7737_missing_math_symbol_supplier::explicit_glyph_supplier_keeps_priority_over_the_generated_fallback_chain' (266002971) panicked at tests/generated/../cases/issue_7737_missing_math_symbol_supplier.rs:101:10:
+    called `Result::unwrap()` on an `Err` value: RenderError("invalid font environment: missing field `substitutions` at line 1 column 81")
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.805s] (5/5) rhwp::regression_suite_028 issue_7737_missing_math_symbol_supplier::actual_source_spots_keep_the_declared_slot_and_use_the_verified_missing_glyph_supplier
+  stdout ───
+
+    running 1 test
+    test issue_7737_missing_math_symbol_supplier::actual_source_spots_keep_the_declared_slot_and_use_the_verified_missing_glyph_supplier ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_missing_math_symbol_supplier::actual_source_spots_keep_the_declared_slot_and_use_the_verified_missing_glyph_supplier
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 349 filtered out; finished in 0.79s
+
+  stderr ───
+
+    thread 'issue_7737_missing_math_symbol_supplier::actual_source_spots_keep_the_declared_slot_and_use_the_verified_missing_glyph_supplier' (266002970) panicked at tests/generated/../cases/issue_7737_missing_math_symbol_supplier.rs:67:9:
+    반각 추정 대신 독립 Print 공급 프로그램의 폭: 600 vs 1164; {"document":{"altType":1,"embedded":false,"face":"맑은 고딕","inheritedLanguageSlot":null,"languageSlot":5,"substFont":null},"layoutMetric":{"aliasResolvedFace":"Malgun Gothic","baseAdvanceHwpunit":600,"characterMatch":"miss","finalAdvanceHwpunit":580,"matchKind":"exact","metricEntry":4,"requestedFace":"맑은 고딕","transforms":[{"input":"-0.48","kind":"letterSpacing","output":null,"reason":"layoutSpacingAdjustment"}],"widthSource":"heuristicHalfwidth"},"layoutName":{"cssFamilyChain":["맑은 고딕"],"normalizedFace":"맑은 고딕","requestedFace":"맑은 고딕","steps":[]},"oracle":{"knownLimitations":["No oracle profile was supplied to this read-only query."],"profileId":null,"status":"notProvided"},"paint":{"canvas2d":{"candidates":[],"capabilities":[],"certainty":"unsupported","failures":["studioSnapshotRequired"],"requested":"맑은 고딕","resolved":null,"source":null,"status":"unsupported"},"canvaskit":{"candidates":[],"capabilities":[],"certainty":"unsupported","failures":["studioSnapshotRequired"],"requested":"맑은 고딕","resolved":null,"source":null,"status":"unsupported"},"native":{"candidates":[],"capabilities":[],"certainty":"unsupported","failures":["nativeRendererSnapshotRequired"],"requested":"맑은 고딕","resolved":null,"source":null,"status":"unsupported"}},"provenance":[{"candidateId":"candidate.28970f1984ed0e4ce06d","evidenceAnchor":"mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d","evidenceStatus":"inferred","knownLimitations":["The predicate selects advances; it does not prove glyph identity.","W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."],"reason":"ledgerSourceDrift","relationType":"unknown","ruleId":"rule.rust-measurement.28970f1984ed0e4ce06d","sourceOwner":"rust-measurement"},{"candidateId":"candidate.e69131207a16d7535d80","evidenceAnchor":"mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.e69131207a16d7535d80","evidenceStatus":"unknown","knownLimitations":["W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."],"reason":"ledgerSourceDrift","relationType":"unknown","ruleId":"rule.rust-metric.e69131207a16d7535d80","sourceOwner":"rust-metric"},{"candidateId":"candidate.0d036a87d3a9238b22b4","evidenceAnchor":"mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.0d036a87d3a9238b22b4","evidenceStatus":"verified-by-test","knownLimitations":["W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."],"reason":"ledgerSourceDrift","relationType":"metric-entry","ruleId":"rule.rust-metric.0d036a87d3a9238b22b4","sourceOwner":"rust-metric"}],"recordId":"page:12:run:34:char:0","source":{"charOffset":0,"charShapeId":148,"character":"⦁","codePoint":10625,"nestedPath":[0,5,0],"paragraphIndex":128,"runIndex":34,"sectionIndex":0,"status":"complete"}}
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.809s] 5 tests run: 2 passed, 3 failed, 728 skipped
+        FAIL [   0.015s] (2/5) rhwp::regression_suite_028 issue_7737_missing_math_symbol_supplier::missing_malgun_spot_uses_the_same_advance_as_the_independent_print_supplier
+        FAIL [   0.725s] (4/5) rhwp::regression_suite_028 issue_7737_missing_math_symbol_supplier::explicit_glyph_supplier_keeps_priority_over_the_generated_fallback_chain
+        FAIL [   0.805s] (5/5) rhwp::regression_suite_028 issue_7737_missing_math_symbol_supplier::actual_source_spots_keep_the_declared_slot_and_use_the_verified_missing_glyph_supplier
+error: test run failed

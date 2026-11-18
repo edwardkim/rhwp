@@ -1,0 +1,44 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 1m 13s
+────────────
+ Nextest run ID c95a7e52-e105-42eb-9705-ba886e23b129 with nextest profile: default
+    Starting 37 tests across 10 binaries (3478 tests skipped)
+        PASS [   0.017s] ( 1/37) rhwp::regression_suite_003 issue_7733_monospace_double_quotes::proportional_quotes_are_not_promoted_to_full_character_cells
+        PASS [   0.017s] ( 2/37) rhwp::regression_suite_003 issue_7733_monospace_double_quotes::untyped_monospace_double_quotes_keep_their_full_character_cell
+        PASS [   0.017s] ( 3/37) rhwp::regression_suite_005 issue_7702_curly_quote_paint_advance::true_type_quotes_keep_their_program_glyphs_in_paint
+        PASS [   0.017s] ( 4/37) rhwp::regression_suite_005 issue_7702_curly_quote_paint_advance::legacy_compatibility_quotes_keep_their_narrow_paint
+        PASS [   0.018s] ( 5/37) rhwp::regression_suite_008 issue_6060_cjk_quote_paint_measure_parity::issue_6060_proportional_faces_keep_fullwidth_quote
+        PASS [   0.018s] ( 6/37) rhwp::regression_suite_008 issue_6060_cjk_quote_paint_measure_parity::css_chain_first_face_decides
+        PASS [   0.031s] ( 7/37) rhwp::regression_suite_005 issue_7702_curly_quote_paint_advance::document_quote_runs_preserve_the_verified_program_through_paint
+        PASS [   0.013s] ( 8/37) rhwp::regression_suite_008 issue_6060_cjk_quote_paint_measure_parity::issue_6478_fixed_width_faces_keep_fullwidth_quote
+        PASS [   0.013s] ( 9/37) rhwp::regression_suite_008 issue_6060_cjk_quote_paint_measure_parity::non_quote_chars_are_never_forced
+        PASS [   0.014s] (10/37) rhwp::regression_suite_008 issue_6060_cjk_quote_paint_measure_parity::name_lookalike_outside_metric_db_is_not_forced
+        PASS [   0.014s] (11/37) rhwp::regression_suite_008 issue_6060_cjk_quote_paint_measure_parity::monospace_faces_outside_name_list_match_measurement
+        PASS [   0.014s] (12/37) rhwp::regression_suite_009 issue_7092_curly_quote_latin_slot::curly_quotes_are_classified_into_the_latin_slot
+        PASS [   0.017s] (13/37) rhwp::regression_suite_012 issue_7737_decree_superscript_flow::desktop_script_spaces_keep_body_half_space_and_explicit_glyph_space_separate
+        PASS [   0.036s] (14/37) rhwp::regression_suite_012 issue_7702_curly_quote_latin_slot::curly_quotes_advance_by_latin_slot_glyph_like_hangul
+        PASS [   0.067s] (15/37) rhwp::regression_suite_009 issue_7092_curly_quote_latin_slot::treatise_one_dot_leader_keeps_its_non_latin_face
+        PASS [   0.055s] (16/37) rhwp::regression_suite_009 issue_7092_curly_quote_latin_slot::treatise_quotes_use_the_latin_slot_face
+        PASS [   0.150s] (17/37) rhwp::regression_suite_015 issue_7445_asset_cell_frame::picture_successor_keeps_source_gap_and_independent_print_baseline
+        PASS [   0.149s] (18/37) rhwp::regression_suite_015 issue_7445_asset_cell_frame::saved_auction_frame_is_owned_by_both_measurement_and_painted_cell
+        PASS [   0.166s] (19/37) rhwp::regression_suite_012 issue_7737_decree_superscript_flow::hwp3_layout_retains_its_distinct_legacy_script_contract
+        PASS [   0.199s] (20/37) rhwp::regression_suite_003 issue_8160_fullwidth_cjk_quote::issue_8160_human_myeongjo_corner_quote_keeps_fullwidth_gap
+        PASS [   0.026s] (21/37) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::independent_ascii_quotes_can_finish_the_line_before_hangul
+        PASS [   0.029s] (22/37) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::directional_openers_and_existing_closing_prime_keep_their_owners
+        PASS [   0.046s] (23/37) rhwp::regression_suite_021 issue_8950_forbidden_head_before_long_run::source_paragraph_leaves_each_head_char_alone
+        PASS [   0.068s] (24/37) rhwp::regression_suite_021 issue_8950_forbidden_head_before_long_run::char_unit_head_char_moves_with_forbidden_tail
+        PASS [   0.047s] (25/37) rhwp::regression_suite_021 issue_8950_forbidden_head_before_long_run::word_unit_head_char_moves_with_forbidden_tail
+        PASS [   0.013s] (26/37) rhwp::regression_suite_024 hft_declared_en_dash_advance::display_alias_does_not_replace_the_declared_hft_en_dash_advance
+        PASS [   0.047s] (27/37) rhwp::regression_suite_021 issue_8950_forbidden_head_before_long_run::word_unit_head_char_stays_without_forbidden_tail_or_long_run
+        PASS [   0.013s] (28/37) rhwp::regression_suite_024 hft_declared_en_dash_advance::original_hft_en_dash_uses_its_independent_full_em_advance
+        PASS [   0.015s] (29/37) rhwp::regression_suite_024 hft_declared_en_dash_advance::unmeasured_bold_hft_en_dash_keeps_its_narrower_supplier_advance
+        PASS [   0.273s] (30/37) rhwp::regression_suite_020 issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text
+        PASS [   0.030s] (31/37) rhwp::regression_suite_026 issue_7092_monospace_quote_width::monospace_quotes_advance_full_width
+        PASS [   0.022s] (32/37) rhwp::regression_suite_026 issue_7092_monospace_quote_width::proportional_truetype_quotes_follow_the_hancom_advance
+        PASS [   0.388s] (33/37) rhwp::regression_suite_020 issue_7733_hft_bullet_program_order::ordinary_selection_keeps_its_existing_alias_fallback
+        PASS [   0.436s] (34/37) rhwp::regression_suite_020 issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases
+        PASS [   1.476s] (35/37) rhwp::regression_suite_012 issue_7737_decree_superscript_flow::desktop_print_superscript_keeps_the_following_word_on_its_source_line
+        PASS [   1.444s] (36/37) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner
+        PASS [   1.449s] (37/37) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::original_ascii_quote_and_next_line_keep_the_independent_print_origins
+────────────
+     Summary [   1.654s] 37 tests run: 37 passed, 3478 skipped

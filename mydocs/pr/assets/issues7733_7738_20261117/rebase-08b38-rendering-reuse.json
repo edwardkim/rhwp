@@ -1,0 +1,145 @@
+{
+  "rebase": {
+    "before": "c78e3da3ea1fe29f44ba130c06ebdbfd6947a6e8",
+    "onto": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+    "exit_code": 0,
+    "after": "3a76041d1fe3a30abdc9ab605fbc9dbe125f96b3",
+    "backup_ref": "backup/7733-before-authorized-rebase-20261118-191414"
+  },
+  "rendering_read_paths": [
+    {
+      "path": "src/renderer",
+      "before_git_object": "475aeeac073e6746305c0c9f28b9fd6e574b223a",
+      "after_git_object": "475aeeac073e6746305c0c9f28b9fd6e574b223a",
+      "identical": true
+    },
+    {
+      "path": "src/parser",
+      "before_git_object": "27863bc2aeef9412c783e584f1ae0403254b4db5",
+      "after_git_object": "27863bc2aeef9412c783e584f1ae0403254b4db5",
+      "identical": true
+    },
+    {
+      "path": "src/model",
+      "before_git_object": "1cba2cf457e4dabe194e477e57450cd218bad7a2",
+      "after_git_object": "1cba2cf457e4dabe194e477e57450cd218bad7a2",
+      "identical": true
+    },
+    {
+      "path": "src/document_core",
+      "before_git_object": "0c6ef5b092d667811072fc0b951c2812dec96d30",
+      "after_git_object": "0c6ef5b092d667811072fc0b951c2812dec96d30",
+      "identical": true
+    },
+    {
+      "path": "src/cli",
+      "before_git_object": "30188761735e668b7b05f602da2d8c2c8b825bb1",
+      "after_git_object": "30188761735e668b7b05f602da2d8c2c8b825bb1",
+      "identical": true
+    },
+    {
+      "path": "src/wasm_api",
+      "before_git_object": "d22f4d0758015d75b5a1538776e2051e8d5877b8",
+      "after_git_object": "d22f4d0758015d75b5a1538776e2051e8d5877b8",
+      "identical": true
+    },
+    {
+      "path": "assets",
+      "before_git_object": "3f4cd45fcd1b1621b767be8a810c74fdb9b6e9cb",
+      "after_git_object": "3f4cd45fcd1b1621b767be8a810c74fdb9b6e9cb",
+      "identical": true
+    },
+    {
+      "path": "ttfs",
+      "before_git_object": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+      "after_git_object": "790e77203ea8f9950c4a24c04c870c3c0234880b",
+      "identical": true
+    },
+    {
+      "path": "build.rs",
+      "before_git_object": "a3103a33faf38a899edb68f64fd0739dd4950787",
+      "after_git_object": "a3103a33faf38a899edb68f64fd0739dd4950787",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_quality.py",
+      "before_git_object": "03d4c87ae3f7e55d670b306e8065ac3b60d515a9",
+      "after_git_object": "03d4c87ae3f7e55d670b306e8065ac3b60d515a9",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_contributor.py",
+      "before_git_object": "dc19e0512002060d9196349ba7a6375e3421eed4",
+      "after_git_object": "dc19e0512002060d9196349ba7a6375e3421eed4",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_workers.py",
+      "before_git_object": "9b2e0517cb64e28d61a781689a4a0d68bc1fcca9",
+      "after_git_object": "9b2e0517cb64e28d61a781689a4a0d68bc1fcca9",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_quality_contracts.json",
+      "before_git_object": "c99fecdc7355b37b3e9ff5a6693801de7fb48a21",
+      "after_git_object": "c99fecdc7355b37b3e9ff5a6693801de7fb48a21",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_pdf.py",
+      "before_git_object": "4b9e60aed8b46dcdd3ca2ed8c259103d1bc9d2e3",
+      "after_git_object": "4b9e60aed8b46dcdd3ca2ed8c259103d1bc9d2e3",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_font_cmap.py",
+      "before_git_object": "59a12cd5fed31c51e115223f5f1797288cdf0b1a",
+      "after_git_object": "59a12cd5fed31c51e115223f5f1797288cdf0b1a",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_resume.py",
+      "before_git_object": "e3c7d8bc8420b0e1f5001e6859115250a5053584",
+      "after_git_object": "e3c7d8bc8420b0e1f5001e6859115250a5053584",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_raster.py",
+      "before_git_object": "7b0433ae8b27a1716ce3e5f957fa17cd883bd5c9",
+      "after_git_object": "7b0433ae8b27a1716ce3e5f957fa17cd883bd5c9",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_png.py",
+      "before_git_object": "23efd0e49d03cbb5dec7212a0dec415d79724a56",
+      "after_git_object": "23efd0e49d03cbb5dec7212a0dec415d79724a56",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep.py",
+      "before_git_object": "9a1166712571965b927428c9ba8fd2ca4ff69a57",
+      "after_git_object": "9a1166712571965b927428c9ba8fd2ca4ff69a57",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_images.py",
+      "before_git_object": "aadee34302a4d72075002da3b4f559008dfaee9c",
+      "after_git_object": "aadee34302a4d72075002da3b4f559008dfaee9c",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_handbook.py",
+      "before_git_object": "bf8255ed3fe3a38eab6d659bc8ba12dc2826c158",
+      "after_git_object": "bf8255ed3fe3a38eab6d659bc8ba12dc2826c158",
+      "identical": true
+    },
+    {
+      "path": "scripts/visual_sweep_native_webfonts.py",
+      "before_git_object": "48a07c2734e1c95d31b29639201b4f2e5a95b61a",
+      "after_git_object": "48a07c2734e1c95d31b29639201b4f2e5a95b61a",
+      "identical": true
+    }
+  ],
+  "artifact_reuse": "retain e639 producer labels; metadata/atomic/Studio-open changes require focused verification; no recapture of unchanged completed pages",
+  "remaining": "unfinished protected whole documents, handbook, sample4 whole, actual browser batches, restored corpus and fresh final gates"
+}

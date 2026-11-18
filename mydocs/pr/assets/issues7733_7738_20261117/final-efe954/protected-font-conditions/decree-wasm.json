@@ -1,0 +1,24 @@
+{
+  "id": "decree-independent-palatino-and-verified-original-hygothic-wasm",
+  "substitutions": {
+    "HCI Poppy": "Palatino Linotype",
+    "한양중고딕": "HYGothic-Medium"
+  },
+  "trueTypeFaces": [
+    "Palatino Linotype",
+    "HYGothic-Medium"
+  ],
+  "preserveSourceMetrics": true,
+  "replaceSourceMetricsFor": [
+    "HCI Poppy"
+  ],
+  "selectedPrograms": {
+    "한양중고딕": {
+      "query": "HY중고딕",
+      "family": "HYGothic-Medium",
+      "programId": "sweep-febb15c4b79dffd48f7424d656fa8456586575216f007a40d962801d0a5280fd",
+      "trueType": true,
+      "openTypeCff": false
+    }
+  }
+}

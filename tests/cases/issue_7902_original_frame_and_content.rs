@@ -138,13 +138,13 @@ fn native_generated_hft_font_trace_uses_paint_aliases() {
         assert!(!records.is_empty(), "생성 번호도 진단 대상이다");
         for record in records {
             let native = &record["paint"]["native"];
-            // 한양중고딕의 설치 TTF 이름은 HY중고딕이다. 실제 paint가
-            // 이 별칭을 찾는데 진단만 generic 후보를 바로 고르면 안 된다.
+            // 한양중고딕 원본의 영문 family 이름도 같은 프로그램을 가리킨다.
+            // 실제 paint와 같이 원본의 두 이름을 대체 글꼴보다 먼저 확인한다.
             let candidates = native["candidates"].as_array().unwrap();
             assert_eq!(candidates[0], "한양중고딕", "원 face 우선");
             assert_eq!(
-                candidates[1], "HY중고딕",
-                "generic보다 원 face의 설치 별칭 우선"
+                candidates[1], "HY Junggothic",
+                "대체 글꼴보다 원 face의 영문 이름 우선"
             );
         }
     }

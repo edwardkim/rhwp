@@ -1,0 +1,104 @@
+{
+  "status": "native_complete_not_final_wasm_or_full_gates",
+  "records": [
+    {
+      "key": "chemical",
+      "paired_pages": 103,
+      "minimum": 99.25221,
+      "below98": [],
+      "changes": [
+        {
+          "page": 14,
+          "before": "99.98845",
+          "after": "99.98844",
+          "delta_pp": "-0.00001"
+        },
+        {
+          "page": 36,
+          "before": "99.94082",
+          "after": "99.99221",
+          "delta_pp": "0.05139"
+        },
+        {
+          "page": 76,
+          "before": "98.70815",
+          "after": "99.99873",
+          "delta_pp": "1.29058"
+        },
+        {
+          "page": 83,
+          "before": "99.94209",
+          "after": "100.0",
+          "delta_pp": "0.05791"
+        },
+        {
+          "page": 92,
+          "before": "98.55232",
+          "after": "99.93984",
+          "delta_pp": "1.38752"
+        },
+        {
+          "page": 93,
+          "before": "99.37014",
+          "after": "99.92056",
+          "delta_pp": "0.55042"
+        },
+        {
+          "page": 94,
+          "before": "99.61103",
+          "after": "99.98599",
+          "delta_pp": "0.37496"
+        },
+        {
+          "page": 97,
+          "before": "99.34182",
+          "after": "99.96702",
+          "delta_pp": "0.62520"
+        }
+      ],
+      "rises": 7,
+      "drops": 1,
+      "official_two_decimal_drops": []
+    },
+    {
+      "key": "spec13",
+      "paired_pages": 71,
+      "minimum": 99.68651,
+      "below98": [],
+      "changes": [],
+      "rises": 0,
+      "drops": 0,
+      "official_two_decimal_drops": []
+    },
+    {
+      "key": "outline-demo",
+      "paired_pages": 3,
+      "minimum": 100.0,
+      "below98": [],
+      "changes": [],
+      "rises": 0,
+      "drops": 0,
+      "official_two_decimal_drops": []
+    },
+    {
+      "key": "decree",
+      "paired_pages": 74,
+      "minimum": 98.75022,
+      "below98": [],
+      "changes": [],
+      "rises": 0,
+      "drops": 0,
+      "official_two_decimal_drops": []
+    },
+    {
+      "key": "outline-minimal",
+      "paired_pages": 1,
+      "minimum": 100.0,
+      "below98": [],
+      "changes": [],
+      "rises": 0,
+      "drops": 0,
+      "official_two_decimal_drops": []
+    }
+  ]
+}

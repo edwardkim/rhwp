@@ -1,0 +1,3804 @@
+{
+  "source_commit": "10270c15e0063a134acc6bc2a3e561167a6f1f02",
+  "producer": {
+    "status": "completed",
+    "base": "dadb00467e96ff67403893c11c170f1ea13c2b81",
+    "binary_sha256": "27042d1c51286763cd94ea94eed79343de911db02769e4974dfb87742072bac3",
+    "capture_workers_total": 8,
+    "font_scope": "Normal installed original-font environment; not minimum-font isolation",
+    "records": [
+      {
+        "issue": 7733,
+        "key": "chemical",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+          "--key",
+          "chemical",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-empty-outline-native",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-pkg",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "8",
+          "--embed-fonts",
+          "full",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 111.057,
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm/chemical/silhouette.tsv",
+        "tsv_exists": true,
+        "paired_pages": 103,
+        "minimum": 92.77,
+        "below90": [],
+        "scores": [
+          {
+            "page": 1,
+            "raw": 100.0
+          },
+          {
+            "page": 2,
+            "raw": 100.0
+          },
+          {
+            "page": 3,
+            "raw": 100.0
+          },
+          {
+            "page": 4,
+            "raw": 100.0
+          },
+          {
+            "page": 5,
+            "raw": 99.97
+          },
+          {
+            "page": 6,
+            "raw": 99.97
+          },
+          {
+            "page": 7,
+            "raw": 100.0
+          },
+          {
+            "page": 8,
+            "raw": 100.0
+          },
+          {
+            "page": 9,
+            "raw": 100.0
+          },
+          {
+            "page": 10,
+            "raw": 100.0
+          },
+          {
+            "page": 11,
+            "raw": 99.93
+          },
+          {
+            "page": 12,
+            "raw": 99.72
+          },
+          {
+            "page": 13,
+            "raw": 95.25
+          },
+          {
+            "page": 14,
+            "raw": 96.36
+          },
+          {
+            "page": 15,
+            "raw": 99.97
+          },
+          {
+            "page": 16,
+            "raw": 99.9
+          },
+          {
+            "page": 17,
+            "raw": 99.91
+          },
+          {
+            "page": 18,
+            "raw": 99.91
+          },
+          {
+            "page": 19,
+            "raw": 100.0
+          },
+          {
+            "page": 20,
+            "raw": 100.0
+          },
+          {
+            "page": 21,
+            "raw": 100.0
+          },
+          {
+            "page": 22,
+            "raw": 100.0
+          },
+          {
+            "page": 23,
+            "raw": 97.57
+          },
+          {
+            "page": 24,
+            "raw": 100.0
+          },
+          {
+            "page": 25,
+            "raw": 99.91
+          },
+          {
+            "page": 26,
+            "raw": 99.99
+          },
+          {
+            "page": 27,
+            "raw": 99.24
+          },
+          {
+            "page": 28,
+            "raw": 97.53
+          },
+          {
+            "page": 29,
+            "raw": 100.0
+          },
+          {
+            "page": 30,
+            "raw": 98.81
+          },
+          {
+            "page": 31,
+            "raw": 99.01
+          },
+          {
+            "page": 32,
+            "raw": 98.94
+          },
+          {
+            "page": 33,
+            "raw": 100.0
+          },
+          {
+            "page": 34,
+            "raw": 99.94
+          },
+          {
+            "page": 35,
+            "raw": 99.94
+          },
+          {
+            "page": 36,
+            "raw": 99.91
+          },
+          {
+            "page": 37,
+            "raw": 99.94
+          },
+          {
+            "page": 38,
+            "raw": 98.07
+          },
+          {
+            "page": 39,
+            "raw": 99.96
+          },
+          {
+            "page": 40,
+            "raw": 96.3
+          },
+          {
+            "page": 41,
+            "raw": 99.94
+          },
+          {
+            "page": 42,
+            "raw": 99.42
+          },
+          {
+            "page": 43,
+            "raw": 99.87
+          },
+          {
+            "page": 44,
+            "raw": 95.88
+          },
+          {
+            "page": 45,
+            "raw": 99.36
+          },
+          {
+            "page": 46,
+            "raw": 99.16
+          },
+          {
+            "page": 47,
+            "raw": 100.0
+          },
+          {
+            "page": 48,
+            "raw": 100.0
+          },
+          {
+            "page": 49,
+            "raw": 97.64
+          },
+          {
+            "page": 50,
+            "raw": 99.91
+          },
+          {
+            "page": 51,
+            "raw": 99.92
+          },
+          {
+            "page": 52,
+            "raw": 99.97
+          },
+          {
+            "page": 53,
+            "raw": 99.95
+          },
+          {
+            "page": 54,
+            "raw": 99.93
+          },
+          {
+            "page": 55,
+            "raw": 99.96
+          },
+          {
+            "page": 56,
+            "raw": 98.4
+          },
+          {
+            "page": 57,
+            "raw": 99.99
+          },
+          {
+            "page": 58,
+            "raw": 99.99
+          },
+          {
+            "page": 59,
+            "raw": 99.97
+          },
+          {
+            "page": 60,
+            "raw": 99.99
+          },
+          {
+            "page": 61,
+            "raw": 99.99
+          },
+          {
+            "page": 62,
+            "raw": 100.0
+          },
+          {
+            "page": 63,
+            "raw": 100.0
+          },
+          {
+            "page": 64,
+            "raw": 100.0
+          },
+          {
+            "page": 65,
+            "raw": 100.0
+          },
+          {
+            "page": 66,
+            "raw": 99.96
+          },
+          {
+            "page": 67,
+            "raw": 99.98
+          },
+          {
+            "page": 68,
+            "raw": 96.99
+          },
+          {
+            "page": 69,
+            "raw": 99.97
+          },
+          {
+            "page": 70,
+            "raw": 99.98
+          },
+          {
+            "page": 71,
+            "raw": 99.98
+          },
+          {
+            "page": 72,
+            "raw": 98.73
+          },
+          {
+            "page": 73,
+            "raw": 99.25
+          },
+          {
+            "page": 74,
+            "raw": 99.88
+          },
+          {
+            "page": 75,
+            "raw": 98.85
+          },
+          {
+            "page": 76,
+            "raw": 98.78
+          },
+          {
+            "page": 77,
+            "raw": 100.0
+          },
+          {
+            "page": 78,
+            "raw": 99.98
+          },
+          {
+            "page": 79,
+            "raw": 92.77
+          },
+          {
+            "page": 80,
+            "raw": 100.0
+          },
+          {
+            "page": 81,
+            "raw": 99.98
+          },
+          {
+            "page": 82,
+            "raw": 99.99
+          },
+          {
+            "page": 83,
+            "raw": 99.93
+          },
+          {
+            "page": 84,
+            "raw": 94.56
+          },
+          {
+            "page": 85,
+            "raw": 98.54
+          },
+          {
+            "page": 86,
+            "raw": 99.94
+          },
+          {
+            "page": 87,
+            "raw": 99.9
+          },
+          {
+            "page": 88,
+            "raw": 99.91
+          },
+          {
+            "page": 89,
+            "raw": 99.82
+          },
+          {
+            "page": 90,
+            "raw": 98.64
+          },
+          {
+            "page": 91,
+            "raw": 99.67
+          },
+          {
+            "page": 92,
+            "raw": 98.51
+          },
+          {
+            "page": 93,
+            "raw": 99.42
+          },
+          {
+            "page": 94,
+            "raw": 99.63
+          },
+          {
+            "page": 95,
+            "raw": 94.94
+          },
+          {
+            "page": 96,
+            "raw": 99.98
+          },
+          {
+            "page": 97,
+            "raw": 99.44
+          },
+          {
+            "page": 98,
+            "raw": 100.0
+          },
+          {
+            "page": 99,
+            "raw": 98.44
+          },
+          {
+            "page": 100,
+            "raw": 100.0
+          },
+          {
+            "page": 101,
+            "raw": 100.0
+          },
+          {
+            "page": 102,
+            "raw": 100.0
+          },
+          {
+            "page": 103,
+            "raw": 100.0
+          }
+        ],
+        "tsv_sha256": "65032c4451637f5bd61e40bdb0ef87a89b61b6439cf675c4ece0c0c322e94fe3"
+      },
+      {
+        "issue": 7735,
+        "key": "spec13",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/한글문서파일형식_5.0_revision1.3.hwp",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+          "--key",
+          "spec13",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-empty-outline-native",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-pkg",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "8",
+          "--embed-fonts",
+          "full",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 95.993,
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm/spec13/silhouette.tsv",
+        "tsv_exists": true,
+        "paired_pages": 71,
+        "minimum": 97.35,
+        "below90": [],
+        "scores": [
+          {
+            "page": 1,
+            "raw": 99.81
+          },
+          {
+            "page": 2,
+            "raw": 99.79
+          },
+          {
+            "page": 3,
+            "raw": 100.0
+          },
+          {
+            "page": 4,
+            "raw": 99.96
+          },
+          {
+            "page": 5,
+            "raw": 100.0
+          },
+          {
+            "page": 6,
+            "raw": 99.99
+          },
+          {
+            "page": 7,
+            "raw": 99.98
+          },
+          {
+            "page": 8,
+            "raw": 99.67
+          },
+          {
+            "page": 9,
+            "raw": 100.0
+          },
+          {
+            "page": 10,
+            "raw": 100.0
+          },
+          {
+            "page": 11,
+            "raw": 100.0
+          },
+          {
+            "page": 12,
+            "raw": 100.0
+          },
+          {
+            "page": 13,
+            "raw": 99.87
+          },
+          {
+            "page": 14,
+            "raw": 100.0
+          },
+          {
+            "page": 15,
+            "raw": 100.0
+          },
+          {
+            "page": 16,
+            "raw": 99.94
+          },
+          {
+            "page": 17,
+            "raw": 100.0
+          },
+          {
+            "page": 18,
+            "raw": 100.0
+          },
+          {
+            "page": 19,
+            "raw": 100.0
+          },
+          {
+            "page": 20,
+            "raw": 100.0
+          },
+          {
+            "page": 21,
+            "raw": 99.86
+          },
+          {
+            "page": 22,
+            "raw": 100.0
+          },
+          {
+            "page": 23,
+            "raw": 100.0
+          },
+          {
+            "page": 24,
+            "raw": 100.0
+          },
+          {
+            "page": 25,
+            "raw": 100.0
+          },
+          {
+            "page": 26,
+            "raw": 100.0
+          },
+          {
+            "page": 27,
+            "raw": 100.0
+          },
+          {
+            "page": 28,
+            "raw": 100.0
+          },
+          {
+            "page": 29,
+            "raw": 100.0
+          },
+          {
+            "page": 30,
+            "raw": 100.0
+          },
+          {
+            "page": 31,
+            "raw": 97.41
+          },
+          {
+            "page": 32,
+            "raw": 100.0
+          },
+          {
+            "page": 33,
+            "raw": 100.0
+          },
+          {
+            "page": 34,
+            "raw": 100.0
+          },
+          {
+            "page": 35,
+            "raw": 100.0
+          },
+          {
+            "page": 36,
+            "raw": 100.0
+          },
+          {
+            "page": 37,
+            "raw": 100.0
+          },
+          {
+            "page": 38,
+            "raw": 100.0
+          },
+          {
+            "page": 39,
+            "raw": 100.0
+          },
+          {
+            "page": 40,
+            "raw": 100.0
+          },
+          {
+            "page": 41,
+            "raw": 100.0
+          },
+          {
+            "page": 42,
+            "raw": 100.0
+          },
+          {
+            "page": 43,
+            "raw": 100.0
+          },
+          {
+            "page": 44,
+            "raw": 100.0
+          },
+          {
+            "page": 45,
+            "raw": 100.0
+          },
+          {
+            "page": 46,
+            "raw": 100.0
+          },
+          {
+            "page": 47,
+            "raw": 100.0
+          },
+          {
+            "page": 48,
+            "raw": 100.0
+          },
+          {
+            "page": 49,
+            "raw": 100.0
+          },
+          {
+            "page": 50,
+            "raw": 100.0
+          },
+          {
+            "page": 51,
+            "raw": 100.0
+          },
+          {
+            "page": 52,
+            "raw": 100.0
+          },
+          {
+            "page": 53,
+            "raw": 100.0
+          },
+          {
+            "page": 54,
+            "raw": 100.0
+          },
+          {
+            "page": 55,
+            "raw": 100.0
+          },
+          {
+            "page": 56,
+            "raw": 100.0
+          },
+          {
+            "page": 57,
+            "raw": 100.0
+          },
+          {
+            "page": 58,
+            "raw": 100.0
+          },
+          {
+            "page": 59,
+            "raw": 100.0
+          },
+          {
+            "page": 60,
+            "raw": 100.0
+          },
+          {
+            "page": 61,
+            "raw": 100.0
+          },
+          {
+            "page": 62,
+            "raw": 99.98
+          },
+          {
+            "page": 63,
+            "raw": 100.0
+          },
+          {
+            "page": 64,
+            "raw": 100.0
+          },
+          {
+            "page": 65,
+            "raw": 100.0
+          },
+          {
+            "page": 66,
+            "raw": 100.0
+          },
+          {
+            "page": 67,
+            "raw": 97.35
+          },
+          {
+            "page": 68,
+            "raw": 100.0
+          },
+          {
+            "page": 69,
+            "raw": 100.0
+          },
+          {
+            "page": 70,
+            "raw": 99.22
+          },
+          {
+            "page": 71,
+            "raw": 99.92
+          }
+        ],
+        "tsv_sha256": "eb0a388281d49fc8f6446e6bbf3239d5e6851a89d6e3d4bc763489341b00383a"
+      },
+      {
+        "issue": 7736,
+        "key": "outline-demo",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/pr4093/outline_navigation_panel_demo.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+          "--key",
+          "outline-demo",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-empty-outline-native",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-pkg",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "8",
+          "--embed-fonts",
+          "full",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 30.652,
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm/outline-demo/silhouette.tsv",
+        "tsv_exists": true,
+        "paired_pages": 3,
+        "minimum": 100.0,
+        "below90": [],
+        "scores": [
+          {
+            "page": 1,
+            "raw": 100.0
+          },
+          {
+            "page": 2,
+            "raw": 100.0
+          },
+          {
+            "page": 3,
+            "raw": 100.0
+          }
+        ],
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+      },
+      {
+        "issue": 7737,
+        "key": "decree",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+          "--key",
+          "decree",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-empty-outline-native",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-pkg",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "8",
+          "--embed-fonts",
+          "full",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm",
+          "--font-environment",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/decree-independent-print-fonts.json"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 137.923,
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm/decree/silhouette.tsv",
+        "tsv_exists": true,
+        "paired_pages": 74,
+        "minimum": 95.49,
+        "below90": [],
+        "scores": [
+          {
+            "page": 1,
+            "raw": 100.0
+          },
+          {
+            "page": 2,
+            "raw": 99.98
+          },
+          {
+            "page": 3,
+            "raw": 100.0
+          },
+          {
+            "page": 4,
+            "raw": 99.9
+          },
+          {
+            "page": 5,
+            "raw": 100.0
+          },
+          {
+            "page": 6,
+            "raw": 100.0
+          },
+          {
+            "page": 7,
+            "raw": 100.0
+          },
+          {
+            "page": 8,
+            "raw": 99.99
+          },
+          {
+            "page": 9,
+            "raw": 100.0
+          },
+          {
+            "page": 10,
+            "raw": 100.0
+          },
+          {
+            "page": 11,
+            "raw": 100.0
+          },
+          {
+            "page": 12,
+            "raw": 100.0
+          },
+          {
+            "page": 13,
+            "raw": 96.42
+          },
+          {
+            "page": 14,
+            "raw": 100.0
+          },
+          {
+            "page": 15,
+            "raw": 100.0
+          },
+          {
+            "page": 16,
+            "raw": 100.0
+          },
+          {
+            "page": 17,
+            "raw": 99.98
+          },
+          {
+            "page": 18,
+            "raw": 99.95
+          },
+          {
+            "page": 19,
+            "raw": 95.49
+          },
+          {
+            "page": 20,
+            "raw": 99.28
+          },
+          {
+            "page": 21,
+            "raw": 100.0
+          },
+          {
+            "page": 22,
+            "raw": 99.95
+          },
+          {
+            "page": 23,
+            "raw": 99.99
+          },
+          {
+            "page": 24,
+            "raw": 99.92
+          },
+          {
+            "page": 25,
+            "raw": 100.0
+          },
+          {
+            "page": 26,
+            "raw": 100.0
+          },
+          {
+            "page": 27,
+            "raw": 100.0
+          },
+          {
+            "page": 28,
+            "raw": 100.0
+          },
+          {
+            "page": 29,
+            "raw": 100.0
+          },
+          {
+            "page": 30,
+            "raw": 100.0
+          },
+          {
+            "page": 31,
+            "raw": 100.0
+          },
+          {
+            "page": 32,
+            "raw": 100.0
+          },
+          {
+            "page": 33,
+            "raw": 100.0
+          },
+          {
+            "page": 34,
+            "raw": 100.0
+          },
+          {
+            "page": 35,
+            "raw": 100.0
+          },
+          {
+            "page": 36,
+            "raw": 97.03
+          },
+          {
+            "page": 37,
+            "raw": 99.91
+          },
+          {
+            "page": 38,
+            "raw": 100.0
+          },
+          {
+            "page": 39,
+            "raw": 100.0
+          },
+          {
+            "page": 40,
+            "raw": 100.0
+          },
+          {
+            "page": 41,
+            "raw": 99.98
+          },
+          {
+            "page": 42,
+            "raw": 100.0
+          },
+          {
+            "page": 43,
+            "raw": 99.98
+          },
+          {
+            "page": 44,
+            "raw": 100.0
+          },
+          {
+            "page": 45,
+            "raw": 99.89
+          },
+          {
+            "page": 46,
+            "raw": 100.0
+          },
+          {
+            "page": 47,
+            "raw": 100.0
+          },
+          {
+            "page": 48,
+            "raw": 100.0
+          },
+          {
+            "page": 49,
+            "raw": 100.0
+          },
+          {
+            "page": 50,
+            "raw": 100.0
+          },
+          {
+            "page": 51,
+            "raw": 100.0
+          },
+          {
+            "page": 52,
+            "raw": 100.0
+          },
+          {
+            "page": 53,
+            "raw": 100.0
+          },
+          {
+            "page": 54,
+            "raw": 100.0
+          },
+          {
+            "page": 55,
+            "raw": 100.0
+          },
+          {
+            "page": 56,
+            "raw": 100.0
+          },
+          {
+            "page": 57,
+            "raw": 100.0
+          },
+          {
+            "page": 58,
+            "raw": 99.98
+          },
+          {
+            "page": 59,
+            "raw": 100.0
+          },
+          {
+            "page": 60,
+            "raw": 99.98
+          },
+          {
+            "page": 61,
+            "raw": 99.55
+          },
+          {
+            "page": 62,
+            "raw": 100.0
+          },
+          {
+            "page": 63,
+            "raw": 100.0
+          },
+          {
+            "page": 64,
+            "raw": 100.0
+          },
+          {
+            "page": 65,
+            "raw": 100.0
+          },
+          {
+            "page": 66,
+            "raw": 100.0
+          },
+          {
+            "page": 67,
+            "raw": 100.0
+          },
+          {
+            "page": 68,
+            "raw": 100.0
+          },
+          {
+            "page": 69,
+            "raw": 100.0
+          },
+          {
+            "page": 70,
+            "raw": 98.76
+          },
+          {
+            "page": 71,
+            "raw": 100.0
+          },
+          {
+            "page": 72,
+            "raw": 100.0
+          },
+          {
+            "page": 73,
+            "raw": 99.98
+          },
+          {
+            "page": 74,
+            "raw": 100.0
+          }
+        ],
+        "tsv_sha256": "f77640b0cae17b9c796d65e417ed3c341030c4efd1da27791834c843aaf530c8"
+      },
+      {
+        "issue": 7738,
+        "key": "outline-minimal",
+        "command": [
+          "/Users/tsjang/rhwp/venv/bin/python",
+          "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+          "--silhouette-only",
+          "--hwp",
+          "/Users/tsjang/rhwp/samples/pr4093/outline_navigation_table_cell_number.hwpx",
+          "--pdf",
+          "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+          "--key",
+          "outline-minimal",
+          "--rhwp-bin",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-empty-outline-native",
+          "--wasm-pkg",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-pkg",
+          "--compat",
+          "2022",
+          "--dpi",
+          "96",
+          "--page-workers",
+          "8",
+          "--embed-fonts",
+          "full",
+          "--font-path",
+          "/Users/tsjang/Library/Fonts",
+          "--out",
+          "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm"
+        ],
+        "exit_code": 0,
+        "elapsed_seconds": 14.283,
+        "tsv": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm/outline-minimal/silhouette.tsv",
+        "tsv_exists": true,
+        "paired_pages": 1,
+        "minimum": 100.0,
+        "below90": [],
+        "scores": [
+          {
+            "page": 1,
+            "raw": 100.0
+          }
+        ],
+        "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    ],
+    "active_case": null,
+    "active_command": [
+      "/Users/tsjang/rhwp/venv/bin/python",
+      "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+      "--silhouette-only",
+      "--hwp",
+      "/Users/tsjang/rhwp/samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "--pdf",
+      "/Users/tsjang/rhwp/pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "--key",
+      "outline-minimal",
+      "--rhwp-bin",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-empty-outline-native",
+      "--wasm-pkg",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-pkg",
+      "--compat",
+      "2022",
+      "--dpi",
+      "96",
+      "--page-workers",
+      "8",
+      "--embed-fonts",
+      "full",
+      "--font-path",
+      "/Users/tsjang/Library/Fonts",
+      "--out",
+      "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/empty-outline-wasm"
+    ]
+  },
+  "font_conditions": "normal installed original fonts; decree uses independently qualified Print Palatino environment; not OS-default-only",
+  "pages": 252,
+  "results": [
+    {
+      "key": "chemical",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 26892,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 0,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 32059,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 0,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 5,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.96633,
+          "silhouette_raw_unmatched_pixels": 20,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 59395,
+          "tolerant_content_match_percent": 99.96633
+        },
+        {
+          "page": 6,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.96636,
+          "silhouette_raw_unmatched_pixels": 32,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 95127,
+          "tolerant_content_match_percent": 99.96636
+        },
+        {
+          "page": 7,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99563,
+          "silhouette_raw_unmatched_pixels": 6,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 137436,
+          "tolerant_content_match_percent": 99.99563
+        },
+        {
+          "page": 8,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99837,
+          "silhouette_raw_unmatched_pixels": 2,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 123044,
+          "tolerant_content_match_percent": 99.99837
+        },
+        {
+          "page": 9,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99941,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 168938,
+          "tolerant_content_match_percent": 99.99941
+        },
+        {
+          "page": 10,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99936,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 156017,
+          "tolerant_content_match_percent": 99.99936
+        },
+        {
+          "page": 11,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.92534,
+          "silhouette_raw_unmatched_pixels": 39,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 52235,
+          "tolerant_content_match_percent": 99.92534
+        },
+        {
+          "page": 12,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.7233,
+          "silhouette_raw_unmatched_pixels": 233,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 84206,
+          "tolerant_content_match_percent": 99.7233
+        },
+        {
+          "page": 13,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.24732,
+          "silhouette_raw_unmatched_pixels": 1644,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 34591,
+          "tolerant_content_match_percent": 95.24732
+        },
+        {
+          "page": 14,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.357,
+          "silhouette_raw_unmatched_pixels": 729,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 20011,
+          "tolerant_content_match_percent": 96.357
+        },
+        {
+          "page": 15,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9715,
+          "silhouette_raw_unmatched_pixels": 7,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 24560,
+          "tolerant_content_match_percent": 99.9715
+        },
+        {
+          "page": 16,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.89705,
+          "silhouette_raw_unmatched_pixels": 16,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 15542,
+          "tolerant_content_match_percent": 99.89705
+        },
+        {
+          "page": 17,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.90871,
+          "silhouette_raw_unmatched_pixels": 47,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 51482,
+          "tolerant_content_match_percent": 99.90871
+        },
+        {
+          "page": 18,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91468,
+          "silhouette_raw_unmatched_pixels": 21,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 24612,
+          "tolerant_content_match_percent": 99.91468
+        },
+        {
+          "page": 19,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99631,
+          "silhouette_raw_unmatched_pixels": 2,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 54133,
+          "tolerant_content_match_percent": 99.99631
+        },
+        {
+          "page": 20,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 11951,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 21,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 41602,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 22,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 0,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 23,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.5743,
+          "silhouette_raw_unmatched_pixels": 515,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 21231,
+          "tolerant_content_match_percent": 97.5743
+        },
+        {
+          "page": 24,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 0,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 25,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.90737,
+          "silhouette_raw_unmatched_pixels": 28,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30227,
+          "tolerant_content_match_percent": 99.90737
+        },
+        {
+          "page": 26,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9885,
+          "silhouette_raw_unmatched_pixels": 9,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78255,
+          "tolerant_content_match_percent": 99.9885
+        },
+        {
+          "page": 27,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.2366,
+          "silhouette_raw_unmatched_pixels": 440,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 57637,
+          "tolerant_content_match_percent": 99.2366
+        },
+        {
+          "page": 28,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.53362,
+          "silhouette_raw_unmatched_pixels": 3079,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 124839,
+          "tolerant_content_match_percent": 97.53362
+        },
+        {
+          "page": 29,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 133,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 30,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.80773,
+          "silhouette_raw_unmatched_pixels": 592,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 49653,
+          "tolerant_content_match_percent": 98.80773
+        },
+        {
+          "page": 31,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.01485,
+          "silhouette_raw_unmatched_pixels": 711,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72172,
+          "tolerant_content_match_percent": 99.01485
+        },
+        {
+          "page": 32,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.93604,
+          "silhouette_raw_unmatched_pixels": 783,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 73593,
+          "tolerant_content_match_percent": 98.93604
+        },
+        {
+          "page": 33,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99831,
+          "silhouette_raw_unmatched_pixels": 2,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 118395,
+          "tolerant_content_match_percent": 99.99831
+        },
+        {
+          "page": 34,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.94324,
+          "silhouette_raw_unmatched_pixels": 41,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72233,
+          "tolerant_content_match_percent": 99.94324
+        },
+        {
+          "page": 35,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.94282,
+          "silhouette_raw_unmatched_pixels": 27,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 47219,
+          "tolerant_content_match_percent": 99.94282
+        },
+        {
+          "page": 36,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91338,
+          "silhouette_raw_unmatched_pixels": 58,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 66960,
+          "tolerant_content_match_percent": 99.91338
+        },
+        {
+          "page": 37,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.94177,
+          "silhouette_raw_unmatched_pixels": 37,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 63540,
+          "tolerant_content_match_percent": 99.94177
+        },
+        {
+          "page": 38,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.06572,
+          "silhouette_raw_unmatched_pixels": 1149,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 59402,
+          "tolerant_content_match_percent": 98.06572
+        },
+        {
+          "page": 39,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.96223,
+          "silhouette_raw_unmatched_pixels": 30,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 79418,
+          "tolerant_content_match_percent": 99.96223
+        },
+        {
+          "page": 40,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.3035,
+          "silhouette_raw_unmatched_pixels": 3173,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85838,
+          "tolerant_content_match_percent": 96.3035
+        },
+        {
+          "page": 41,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.93533,
+          "silhouette_raw_unmatched_pixels": 57,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 88143,
+          "tolerant_content_match_percent": 99.93533
+        },
+        {
+          "page": 42,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.42179,
+          "silhouette_raw_unmatched_pixels": 375,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 64855,
+          "tolerant_content_match_percent": 99.42179
+        },
+        {
+          "page": 43,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.87356,
+          "silhouette_raw_unmatched_pixels": 72,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 56945,
+          "tolerant_content_match_percent": 99.87356
+        },
+        {
+          "page": 44,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.87739,
+          "silhouette_raw_unmatched_pixels": 1540,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 37355,
+          "tolerant_content_match_percent": 95.87739
+        },
+        {
+          "page": 45,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.35645,
+          "silhouette_raw_unmatched_pixels": 632,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 98205,
+          "tolerant_content_match_percent": 99.35645
+        },
+        {
+          "page": 46,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.16322,
+          "silhouette_raw_unmatched_pixels": 1397,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 166949,
+          "tolerant_content_match_percent": 99.16322
+        },
+        {
+          "page": 47,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 90592,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 48,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 172509,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 49,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.64497,
+          "silhouette_raw_unmatched_pixels": 1462,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 62080,
+          "tolerant_content_match_percent": 97.64497
+        },
+        {
+          "page": 50,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9064,
+          "silhouette_raw_unmatched_pixels": 50,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 53417,
+          "tolerant_content_match_percent": 99.9064
+        },
+        {
+          "page": 51,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91712,
+          "silhouette_raw_unmatched_pixels": 60,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72390,
+          "tolerant_content_match_percent": 99.91712
+        },
+        {
+          "page": 52,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9659,
+          "silhouette_raw_unmatched_pixels": 35,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 102631,
+          "tolerant_content_match_percent": 99.9659
+        },
+        {
+          "page": 53,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.95229,
+          "silhouette_raw_unmatched_pixels": 43,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 90136,
+          "tolerant_content_match_percent": 99.95229
+        },
+        {
+          "page": 54,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.92642,
+          "silhouette_raw_unmatched_pixels": 46,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 62515,
+          "tolerant_content_match_percent": 99.92642
+        },
+        {
+          "page": 55,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9613,
+          "silhouette_raw_unmatched_pixels": 20,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 51685,
+          "tolerant_content_match_percent": 99.9613
+        },
+        {
+          "page": 56,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.40343,
+          "silhouette_raw_unmatched_pixels": 670,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 41965,
+          "tolerant_content_match_percent": 98.40343
+        },
+        {
+          "page": 57,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98544,
+          "silhouette_raw_unmatched_pixels": 18,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 123662,
+          "tolerant_content_match_percent": 99.98544
+        },
+        {
+          "page": 58,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99373,
+          "silhouette_raw_unmatched_pixels": 9,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 143559,
+          "tolerant_content_match_percent": 99.99373
+        },
+        {
+          "page": 59,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.97164,
+          "silhouette_raw_unmatched_pixels": 22,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 77578,
+          "tolerant_content_match_percent": 99.97164
+        },
+        {
+          "page": 60,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9859,
+          "silhouette_raw_unmatched_pixels": 11,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78026,
+          "tolerant_content_match_percent": 99.9859
+        },
+        {
+          "page": 61,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99387,
+          "silhouette_raw_unmatched_pixels": 2,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 32634,
+          "tolerant_content_match_percent": 99.99387
+        },
+        {
+          "page": 62,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99873,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 79008,
+          "tolerant_content_match_percent": 99.99873
+        },
+        {
+          "page": 63,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 77092,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 64,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 77228,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 65,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 79580,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 66,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.95573,
+          "silhouette_raw_unmatched_pixels": 19,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 42919,
+          "tolerant_content_match_percent": 99.95573
+        },
+        {
+          "page": 67,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98055,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 51420,
+          "tolerant_content_match_percent": 99.98055
+        },
+        {
+          "page": 68,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.99172,
+          "silhouette_raw_unmatched_pixels": 1635,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 54350,
+          "tolerant_content_match_percent": 96.99172
+        },
+        {
+          "page": 69,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9683,
+          "silhouette_raw_unmatched_pixels": 18,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 56785,
+          "tolerant_content_match_percent": 99.9683
+        },
+        {
+          "page": 70,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98048,
+          "silhouette_raw_unmatched_pixels": 19,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 97353,
+          "tolerant_content_match_percent": 99.98048
+        },
+        {
+          "page": 71,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98072,
+          "silhouette_raw_unmatched_pixels": 19,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 98527,
+          "tolerant_content_match_percent": 99.98072
+        },
+        {
+          "page": 72,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.72951,
+          "silhouette_raw_unmatched_pixels": 1152,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 90674,
+          "tolerant_content_match_percent": 98.72951
+        },
+        {
+          "page": 73,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.24844,
+          "silhouette_raw_unmatched_pixels": 631,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 83959,
+          "tolerant_content_match_percent": 99.24844
+        },
+        {
+          "page": 74,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.878,
+          "silhouette_raw_unmatched_pixels": 26,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 21311,
+          "tolerant_content_match_percent": 99.878
+        },
+        {
+          "page": 75,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.84546,
+          "silhouette_raw_unmatched_pixels": 537,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 46512,
+          "tolerant_content_match_percent": 98.84546
+        },
+        {
+          "page": 76,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.78397,
+          "silhouette_raw_unmatched_pixels": 1034,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85031,
+          "tolerant_content_match_percent": 98.78397
+        },
+        {
+          "page": 77,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 87390,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 78,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9843,
+          "silhouette_raw_unmatched_pixels": 12,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 76448,
+          "tolerant_content_match_percent": 99.9843
+        },
+        {
+          "page": 79,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 92.77094,
+          "silhouette_raw_unmatched_pixels": 1785,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 24692,
+          "tolerant_content_match_percent": 92.77094
+        },
+        {
+          "page": 80,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 2008,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 81,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9767,
+          "silhouette_raw_unmatched_pixels": 18,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 77244,
+          "tolerant_content_match_percent": 99.9767
+        },
+        {
+          "page": 82,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99243,
+          "silhouette_raw_unmatched_pixels": 9,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 118856,
+          "tolerant_content_match_percent": 99.99243
+        },
+        {
+          "page": 83,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.93133,
+          "silhouette_raw_unmatched_pixels": 74,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 107769,
+          "tolerant_content_match_percent": 99.93133
+        },
+        {
+          "page": 84,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.56061,
+          "silhouette_raw_unmatched_pixels": 1220,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22429,
+          "tolerant_content_match_percent": 94.56061
+        },
+        {
+          "page": 85,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.54057,
+          "silhouette_raw_unmatched_pixels": 625,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 42825,
+          "tolerant_content_match_percent": 98.54057
+        },
+        {
+          "page": 86,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.93772,
+          "silhouette_raw_unmatched_pixels": 16,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 25691,
+          "tolerant_content_match_percent": 99.93772
+        },
+        {
+          "page": 87,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.89561,
+          "silhouette_raw_unmatched_pixels": 24,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22990,
+          "tolerant_content_match_percent": 99.89561
+        },
+        {
+          "page": 88,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.90935,
+          "silhouette_raw_unmatched_pixels": 16,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 17650,
+          "tolerant_content_match_percent": 99.90935
+        },
+        {
+          "page": 89,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.82224,
+          "silhouette_raw_unmatched_pixels": 20,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 11251,
+          "tolerant_content_match_percent": 99.82224
+        },
+        {
+          "page": 90,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.63776,
+          "silhouette_raw_unmatched_pixels": 553,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 40595,
+          "tolerant_content_match_percent": 98.63776
+        },
+        {
+          "page": 91,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.66977,
+          "silhouette_raw_unmatched_pixels": 242,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 73283,
+          "tolerant_content_match_percent": 99.66977
+        },
+        {
+          "page": 92,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.51158,
+          "silhouette_raw_unmatched_pixels": 1107,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 74374,
+          "tolerant_content_match_percent": 98.51158
+        },
+        {
+          "page": 93,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.41985,
+          "silhouette_raw_unmatched_pixels": 494,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85150,
+          "tolerant_content_match_percent": 99.41985
+        },
+        {
+          "page": 94,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.6318,
+          "silhouette_raw_unmatched_pixels": 372,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 101033,
+          "tolerant_content_match_percent": 99.6318
+        },
+        {
+          "page": 95,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 94.94197,
+          "silhouette_raw_unmatched_pixels": 5465,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 108046,
+          "tolerant_content_match_percent": 94.94197
+        },
+        {
+          "page": 96,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98382,
+          "silhouette_raw_unmatched_pixels": 11,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 67988,
+          "tolerant_content_match_percent": 99.98382
+        },
+        {
+          "page": 97,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.43679,
+          "silhouette_raw_unmatched_pixels": 368,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 65340,
+          "tolerant_content_match_percent": 99.43679
+        },
+        {
+          "page": 98,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 42432,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 99,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.43921,
+          "silhouette_raw_unmatched_pixels": 314,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 20118,
+          "tolerant_content_match_percent": 98.43921
+        },
+        {
+          "page": 100,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 234,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 101,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 39157,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 102,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 39848,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 103,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 6245,
+          "tolerant_content_match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "key": "spec13",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.8146,
+          "silhouette_raw_unmatched_pixels": 262,
+          "silhouette_boundary_reconciled_pixels": 2,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 141313,
+          "tolerant_content_match_percent": 99.81601
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.78941,
+          "silhouette_raw_unmatched_pixels": 114,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 54134,
+          "tolerant_content_match_percent": 99.78941
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9986,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 71260,
+          "tolerant_content_match_percent": 99.9986
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.95619,
+          "silhouette_raw_unmatched_pixels": 32,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 73036,
+          "tolerant_content_match_percent": 99.95619
+        },
+        {
+          "page": 5,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 21472,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 6,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99453,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 73118,
+          "tolerant_content_match_percent": 99.99453
+        },
+        {
+          "page": 7,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98341,
+          "silhouette_raw_unmatched_pixels": 4,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 24104,
+          "tolerant_content_match_percent": 99.98341
+        },
+        {
+          "page": 8,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.66582,
+          "silhouette_raw_unmatched_pixels": 271,
+          "silhouette_boundary_reconciled_pixels": 1,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 81093,
+          "tolerant_content_match_percent": 99.66705
+        },
+        {
+          "page": 9,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 12332,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 10,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9962,
+          "silhouette_raw_unmatched_pixels": 3,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78972,
+          "tolerant_content_match_percent": 99.9962
+        },
+        {
+          "page": 11,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 95074,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 12,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99881,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 84353,
+          "tolerant_content_match_percent": 99.99881
+        },
+        {
+          "page": 13,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.86585,
+          "silhouette_raw_unmatched_pixels": 143,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 106597,
+          "tolerant_content_match_percent": 99.86585
+        },
+        {
+          "page": 14,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99851,
+          "silhouette_raw_unmatched_pixels": 2,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 134319,
+          "tolerant_content_match_percent": 99.99851
+        },
+        {
+          "page": 15,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99634,
+          "silhouette_raw_unmatched_pixels": 5,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 136664,
+          "tolerant_content_match_percent": 99.99634
+        },
+        {
+          "page": 16,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.94359,
+          "silhouette_raw_unmatched_pixels": 51,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 90402,
+          "tolerant_content_match_percent": 99.94359
+        },
+        {
+          "page": 17,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 130520,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 18,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.999,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 100377,
+          "tolerant_content_match_percent": 99.999
+        },
+        {
+          "page": 19,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 102819,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 20,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9986,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 71583,
+          "tolerant_content_match_percent": 99.9986
+        },
+        {
+          "page": 21,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.86198,
+          "silhouette_raw_unmatched_pixels": 105,
+          "silhouette_boundary_reconciled_pixels": 20,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 76078,
+          "tolerant_content_match_percent": 99.88827
+        },
+        {
+          "page": 22,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99928,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 139712,
+          "tolerant_content_match_percent": 99.99928
+        },
+        {
+          "page": 23,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 124095,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 24,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99759,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 41567,
+          "tolerant_content_match_percent": 99.99759
+        },
+        {
+          "page": 25,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 108971,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 26,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 120352,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 27,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 55582,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 28,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 140560,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 29,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 136681,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 30,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85392,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 31,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.40628,
+          "silhouette_raw_unmatched_pixels": 3251,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 125341,
+          "tolerant_content_match_percent": 97.40628
+        },
+        {
+          "page": 32,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 115033,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 33,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 135924,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 34,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113730,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 35,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 63364,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 36,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 134042,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 37,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85720,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 38,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 146042,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 39,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 121736,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 40,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113942,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 41,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 116749,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 42,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 136540,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 43,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 118049,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 44,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 143503,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 45,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 157392,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 46,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 164838,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 47,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 136149,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 48,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 166716,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 49,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78369,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 50,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 162208,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 51,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 156756,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 52,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 147895,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 53,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 153877,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 54,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 121848,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 55,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 136212,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 56,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 177538,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 57,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 137036,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 58,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 155360,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 59,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 77415,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 60,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 115276,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 61,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 141705,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 62,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98336,
+          "silhouette_raw_unmatched_pixels": 15,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 90162,
+          "tolerant_content_match_percent": 99.98336
+        },
+        {
+          "page": 63,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 129938,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 64,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 129920,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 65,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 104982,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 66,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 66433,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 67,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.34652,
+          "silhouette_raw_unmatched_pixels": 2327,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 87696,
+          "tolerant_content_match_percent": 97.34652
+        },
+        {
+          "page": 68,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99682,
+          "silhouette_raw_unmatched_pixels": 3,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 94198,
+          "tolerant_content_match_percent": 99.99682
+        },
+        {
+          "page": 69,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 0,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 70,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.21538,
+          "silhouette_raw_unmatched_pixels": 129,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 16441,
+          "tolerant_content_match_percent": 99.21538
+        },
+        {
+          "page": 71,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91755,
+          "silhouette_raw_unmatched_pixels": 11,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 13342,
+          "tolerant_content_match_percent": 99.91755
+        }
+      ]
+    },
+    {
+      "key": "outline-demo",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 23626,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22763,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 24658,
+          "tolerant_content_match_percent": 100.0
+        }
+      ]
+    },
+    {
+      "key": "decree",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99599,
+          "silhouette_raw_unmatched_pixels": 2,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 49837,
+          "tolerant_content_match_percent": 99.99599
+        },
+        {
+          "page": 2,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.97896,
+          "silhouette_raw_unmatched_pixels": 24,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 114049,
+          "tolerant_content_match_percent": 99.97896
+        },
+        {
+          "page": 3,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99708,
+          "silhouette_raw_unmatched_pixels": 3,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 102854,
+          "tolerant_content_match_percent": 99.99708
+        },
+        {
+          "page": 4,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.89698,
+          "silhouette_raw_unmatched_pixels": 45,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 43682,
+          "tolerant_content_match_percent": 99.89698
+        },
+        {
+          "page": 5,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99912,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113518,
+          "tolerant_content_match_percent": 99.99912
+        },
+        {
+          "page": 6,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 81983,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 7,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 46848,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 8,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98892,
+          "silhouette_raw_unmatched_pixels": 9,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 81231,
+          "tolerant_content_match_percent": 99.98892
+        },
+        {
+          "page": 9,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 28048,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 10,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30303,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 11,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30805,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 12,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 30619,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 13,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 96.42361,
+          "silhouette_raw_unmatched_pixels": 3040,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 85002,
+          "tolerant_content_match_percent": 96.42361
+        },
+        {
+          "page": 14,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 35427,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 15,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 45178,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 16,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 57535,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 17,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98294,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 10,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 58629,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 18,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.95368,
+          "silhouette_raw_unmatched_pixels": 29,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 62604,
+          "tolerant_content_match_percent": 99.95368
+        },
+        {
+          "page": 19,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 95.49284,
+          "silhouette_raw_unmatched_pixels": 1792,
+          "silhouette_boundary_reconciled_pixels": 103,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 39759,
+          "tolerant_content_match_percent": 95.75191
+        },
+        {
+          "page": 20,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.27955,
+          "silhouette_raw_unmatched_pixels": 639,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 88694,
+          "tolerant_content_match_percent": 99.27955
+        },
+        {
+          "page": 21,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 75887,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 22,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9487,
+          "silhouette_raw_unmatched_pixels": 58,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113055,
+          "tolerant_content_match_percent": 99.9487
+        },
+        {
+          "page": 23,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99483,
+          "silhouette_raw_unmatched_pixels": 6,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 116132,
+          "tolerant_content_match_percent": 99.99483
+        },
+        {
+          "page": 24,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.91579,
+          "silhouette_raw_unmatched_pixels": 43,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 51062,
+          "tolerant_content_match_percent": 99.91579
+        },
+        {
+          "page": 25,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 48228,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 26,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 53006,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 27,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 8970,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 28,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99908,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 109052,
+          "tolerant_content_match_percent": 99.99908
+        },
+        {
+          "page": 29,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 87673,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 30,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 61959,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 31,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 43876,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 32,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 25267,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 33,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29220,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 34,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 21529,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 35,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29919,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 36,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 97.02563,
+          "silhouette_raw_unmatched_pixels": 2322,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 78067,
+          "tolerant_content_match_percent": 97.02563
+        },
+        {
+          "page": 37,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.90831,
+          "silhouette_raw_unmatched_pixels": 75,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 81801,
+          "tolerant_content_match_percent": 99.90831
+        },
+        {
+          "page": 38,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 65103,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 39,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 34878,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 40,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99843,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 63556,
+          "tolerant_content_match_percent": 99.99843
+        },
+        {
+          "page": 41,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98271,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 10,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 57831,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 42,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 80935,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 43,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.97582,
+          "silhouette_raw_unmatched_pixels": 27,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 111656,
+          "tolerant_content_match_percent": 99.97582
+        },
+        {
+          "page": 44,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99709,
+          "silhouette_raw_unmatched_pixels": 3,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 102937,
+          "tolerant_content_match_percent": 99.99709
+        },
+        {
+          "page": 45,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.89319,
+          "silhouette_raw_unmatched_pixels": 46,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 43068,
+          "tolerant_content_match_percent": 99.89319
+        },
+        {
+          "page": 46,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 110519,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 47,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 83380,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 48,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 48257,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 49,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99853,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 67865,
+          "tolerant_content_match_percent": 99.99853
+        },
+        {
+          "page": 50,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 25169,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 51,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29464,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 52,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 41898,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 53,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29755,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 54,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 89389,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 55,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 37038,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 56,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 27641,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 57,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 62085,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 58,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98161,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 10,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 54384,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 59,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 72944,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 60,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.9791,
+          "silhouette_raw_unmatched_pixels": 24,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 114808,
+          "tolerant_content_match_percent": 99.9791
+        },
+        {
+          "page": 61,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.55409,
+          "silhouette_raw_unmatched_pixels": 487,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 109216,
+          "tolerant_content_match_percent": 99.55409
+        },
+        {
+          "page": 62,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 42036,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 63,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 111983,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 64,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 113463,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 65,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 45149,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 66,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 25272,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 67,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29112,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 68,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 22643,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 69,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 29921,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 70,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 98.75534,
+          "silhouette_raw_unmatched_pixels": 626,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 50295,
+          "tolerant_content_match_percent": 98.75534
+        },
+        {
+          "page": 71,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 28644,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 72,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 41708,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 73,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.98069,
+          "silhouette_raw_unmatched_pixels": 10,
+          "silhouette_boundary_reconciled_pixels": 10,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 51780,
+          "tolerant_content_match_percent": 100.0
+        },
+        {
+          "page": 74,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 99.99869,
+          "silhouette_raw_unmatched_pixels": 1,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 76096,
+          "tolerant_content_match_percent": 99.99869
+        }
+      ]
+    },
+    {
+      "key": "outline-minimal",
+      "metrics": [
+        {
+          "page": 1,
+          "silhouette_method": "threshold_boundary_color_support_v1",
+          "silhouette_raw_match_percent": 100.0,
+          "silhouette_raw_unmatched_pixels": 0,
+          "silhouette_boundary_reconciled_pixels": 0,
+          "silhouette_color_tolerance": 32,
+          "silhouette_content_union_pixels": 1819,
+          "tolerant_content_match_percent": 100.0
+        }
+      ]
+    }
+  ]
+}

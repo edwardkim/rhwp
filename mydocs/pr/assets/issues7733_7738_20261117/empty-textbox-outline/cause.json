@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "source": "dadb00467e96ff67403893c11c170f1ea13c2b81",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--features",
+    "native-skia",
+    "--bin",
+    "rhwp",
+    "-j",
+    "8"
+  ],
+  "started_at": "2026-11-17T22:34:40.304510+09:00",
+  "exit_code": 0,
+  "binary": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/rhwp-empty-outline-native",
+  "sha256": "27042d1c51286763cd94ea94eed79343de911db02769e4974dfb87742072bac3",
+  "source_files": {
+    "src/renderer/layout/paragraph_layout.rs": "8404ea2b5951e4db703ef4befcdff6b3db5d6710c9a5420c65cf7ed06a579eb5",
+    "src/renderer/layout/shape_layout.rs": "73963e54c27a007a3c9a99a58b4db3169bc07db792d760addcfea0571639f5b8"
+  },
+  "diff_sha256": "e29eaad9e371628f071d7d03b1db62c19f78d2e8ca85ec1a0220f06199775a82",
+  "native_focus": [
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.68651,
+      "silhouette_raw_unmatched_pixels": 253,
+      "silhouette_boundary_reconciled_pixels": 1,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80705,
+      "tolerant_content_match_percent": 99.68775
+    }
+  ],
+  "fresh_wasm": "pending",
+  "whole_spec": {
+    "pages": 71,
+    "improved_pages": [
+      8
+    ],
+    "decreased_pages": [],
+    "below98": [
+      [
+        31,
+        97.51239
+      ],
+      [
+        67,
+        97.2833
+      ]
+    ]
+  }
+}

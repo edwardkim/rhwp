@@ -1,0 +1,28 @@
+{
+  "pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "page": 70,
+  "source_bullet": "U+F0A7",
+  "extraction": "PDF 문자 추적의 실제 glyph ID를 사용했다. 서브셋 cmap이 없다고 결측으로 판단하지 않았다.",
+  "programs": [
+    {
+      "xref": 372,
+      "pdf_font": "INPILL+Wingdings-Regular",
+      "font_program_sha256": "0e1fbea96c535a64ed156e019dda1bcbc2ec18db83927d6a5a2357f1d276d3f2",
+      "upem": 2048,
+      "glyph_id": 3,
+      "glyph": "glyph00003",
+      "hmtx": [
+        937,
+        173
+      ],
+      "bounds": [
+        173,
+        444,
+        765,
+        1036
+      ]
+    }
+  ],
+  "shape": "단일 축 정렬 네모이며 기존 U+F09F 원 프로그램과 전진·경계가 같다. 글꼴 파일과 추출 윤곽은 커밋하지 않는다."
+}

@@ -1,0 +1,31 @@
+{
+  "pre_repair_head": "623309719c2d974c7ea8b61533a4c44ca9d56732",
+  "before": {
+    "run_id": "b0e4900c-c0a0-4652-8c4e-9fad0700cc1b",
+    "passed": 0,
+    "failed": 1,
+    "duration_seconds": 0.052
+  },
+  "after_focused": {
+    "run_id": "3d2a2995-ec45-40e8-bc0c-69f992a9a5b4",
+    "passed": 6,
+    "failed": 0,
+    "duration_seconds": 0.118,
+    "scope": "issue_8218_hwp3_link_bindata_order module only; other suites are queued separately"
+  },
+  "font_scope": "macOS minimum-font sandbox; RHWP_FONT_PATH unset",
+  "change": "Paint-only trailing fill of an accepted body line. No pagination, source/PDF, border frame or threshold change.",
+  "status": "native_and_fresh_wasm_focus_100_passed_final_scope_gates_pending",
+  "logs": [
+    {
+      "name": "before-nextest.log",
+      "sha256": "0fb254d1be09c4169328f4ed8b6c351112943600ade30eff1a19258ff23258e9"
+    },
+    {
+      "name": "after-focused-nextest.log",
+      "sha256": "13183f10b619dec51d1e2aa6fbc692d92f0a95c91631afb1928c0bfdbd477fc2"
+    }
+  ],
+  "native_focus": "native/validation.json",
+  "wasm_focus": "wasm/validation.json"
+}

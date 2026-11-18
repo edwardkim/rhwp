@@ -1,0 +1,275 @@
+{
+  "backend": "실제 Chrome Print Canvas2D, software raster",
+  "verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "product_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "condition": "고정 보호 글꼴 목록에 누락된 설치 TTC의 원본 face를 base/후보에 같은 조건으로 공급했다.",
+  "discovery": {
+    "status": "metafile_face_supply_verified_on_two_pages",
+    "automatic_discovery_contains_gulim_ttc": true,
+    "original_explicit_catalog_contains_gulim": false,
+    "installed_ttc_sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+    "selected_face_index": 1,
+    "reference_pdf_same": true,
+    "declared_selector": "same family, style/weight; TTF then TTC face then OpenType; actual glyph coverage",
+    "scores": {
+      "explicit_without_gulim": {
+        "18": 77.59066,
+        "35": 82.46843
+      },
+      "explicit_with_same_local_gulim": {
+        "18": 99.99067,
+        "35": 100.0
+      }
+    },
+    "observations": [
+      {
+        "pages": [
+          35
+        ],
+        "selected": [
+          {
+            "family": "GulimChe",
+            "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+            "faceIndex": 1,
+            "weight": 400
+          },
+          {
+            "family": "굴림체",
+            "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+            "faceIndex": 1,
+            "weight": 400
+          }
+        ]
+      },
+      {
+        "pages": [
+          18
+        ],
+        "selected": [
+          {
+            "family": "GulimChe",
+            "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+            "faceIndex": 1,
+            "weight": 400
+          },
+          {
+            "family": "굴림체",
+            "sourceSha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+            "faceIndex": 1,
+            "weight": 400
+          }
+        ]
+      }
+    ],
+    "note": "고정 글꼴 목록을 쓰는 보호 검증에서 누락된 설치 프로그램을 확인했다. SHA 다른 Windows TTC 원본과 파일 동일성은 주장하지 않는다. 별도 전쪽 검증 진행 중."
+  },
+  "coverage": {
+    "program_face_index": 1,
+    "matched_codepoints": 151,
+    "units_per_em": 1024,
+    "outline_and_horizontal_metrics_match": true,
+    "comparison_program_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+    "identical_source_file": false,
+    "requests": [
+      {
+        "page": 18,
+        "requests": [
+          {
+            "families": [
+              "굴림체",
+              "GulimChe",
+              "±¼¸²Ã¼",
+              "Apple SD Gothic Neo",
+              "Malgun Gothic",
+              "Nanum Gothic",
+              "Noto Sans CJK KR",
+              "sans-serif"
+            ],
+            "weight": 400,
+            "requested_unique": 75,
+            "missing_points": []
+          },
+          {
+            "families": [
+              "굴림체",
+              "GulimChe",
+              "±¼¸²Ã¼",
+              "Apple SD Gothic Neo",
+              "Malgun Gothic",
+              "Nanum Gothic",
+              "Noto Sans CJK KR",
+              "sans-serif"
+            ],
+            "weight": 700,
+            "requested_unique": 102,
+            "missing_points": []
+          }
+        ]
+      },
+      {
+        "page": 35,
+        "requests": [
+          {
+            "families": [
+              "굴림체",
+              "GulimChe",
+              "±¼¸²Ã¼",
+              "Apple SD Gothic Neo",
+              "Malgun Gothic",
+              "Nanum Gothic",
+              "Noto Sans CJK KR",
+              "sans-serif"
+            ],
+            "weight": 400,
+            "requested_unique": 34,
+            "missing_points": []
+          },
+          {
+            "families": [
+              "굴림체",
+              "GulimChe",
+              "±¼¸²Ã¼",
+              "Apple SD Gothic Neo",
+              "Malgun Gothic",
+              "Nanum Gothic",
+              "Noto Sans CJK KR",
+              "sans-serif"
+            ],
+            "weight": 700,
+            "requested_unique": 100,
+            "missing_points": []
+          }
+        ]
+      }
+    ]
+  },
+  "direct_reading": [
+    {
+      "page": 18,
+      "raw_percent": 99.99067,
+      "images": {
+        "supplied": {
+          "raw": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/supplied/raw-018.png",
+            "sha256": "b0ea9c6bd83a2b17296c1eede3559c222a91d14a5e1e4bb4a09bd1d8c42b9f52"
+          },
+          "review": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/supplied/review-018.png",
+            "sha256": "4dabfbc4aa7737a5cacef3ef10786388c71e657748498bdc09cc2f5d237adcfb"
+          },
+          "overlay": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/supplied/overlay-018.png",
+            "sha256": "433ce60531d48649ac719150f992b03602a3ccac05dfad8b68ecec85131855fe"
+          }
+        },
+        "omitted": {
+          "raw": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/omitted/raw-018.png",
+            "sha256": "a57d57d86e697ac65ee41e24f1e29d151a6e1ce3f681dd56e66a8ea37cba433e"
+          },
+          "review": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/omitted/review-018.png",
+            "sha256": "822b41f5f2fde611c93aca19fc97435f25c3fe7670588ff8558180bb3d9da2d6"
+          },
+          "overlay": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/omitted/overlay-018.png",
+            "sha256": "6b9a4026ba3f804443214fe8f654061618fe966a7515003047ff535a11df1632"
+          }
+        },
+        "reference": {
+          "pdf": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/reference/pdf-018.png",
+            "sha256": "2caac70f82807ddb96858b5030fe3574b04489dc11349529f7d9c34914f3d61e"
+          }
+        }
+      },
+      "direct_reading": "구성도 안쪽의 서버 구역 제목·장비 캡션·배선이 기준 PDF와 대응한다. 외곽 테두리와 본문에는 얇은 안티앨리어싱 차이가 남는다."
+    },
+    {
+      "page": 35,
+      "raw_percent": 100.0,
+      "images": {
+        "supplied": {
+          "raw": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/supplied/raw-035.png",
+            "sha256": "9389f7753f9cbb30c6304c9f2fc245b44da564ca47335ecc9ebca2542b5e9189"
+          },
+          "review": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/supplied/review-035.png",
+            "sha256": "43287be9f36ac932762bd9efb784c658ddd5985e3e035013dd62d1130e122ec5"
+          },
+          "overlay": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/supplied/overlay-035.png",
+            "sha256": "5bd061a381df4e0fc695dd6d27e2f8ca1331d74efd7ae178afd9baaf5abf5190"
+          }
+        },
+        "omitted": {
+          "raw": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/omitted/raw-035.png",
+            "sha256": "1515e7f1ccee60d3a9da15c1a07d40cabe84a60354053f6386c11e3748b65dae"
+          },
+          "review": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/omitted/review-035.png",
+            "sha256": "5b6dee4aa2db0df854cf5617d464d5cb918adc973e2cdacf082cfe78780368ae"
+          },
+          "overlay": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/omitted/overlay-035.png",
+            "sha256": "d33bbfa1df5c9ae698df93376fc8c6d1bfc981583abc0e5d5eef5aec1c2c0bce"
+          }
+        },
+        "reference": {
+          "pdf": {
+            "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/sample16-gulim/reference/pdf-035.png",
+            "sha256": "1a52a417d67437aeec4131beb5d35c204bbc2cdf0cf48642e9d8b8f3d9d3d86f"
+          }
+        }
+      },
+      "direct_reading": "구성도의 구역과 장비 캡션, 배선과 장애 표식이 기준 PDF와 대응한다. 실루엣 100.00%에서도 얇은 색 경계는 보인다."
+    }
+  ],
+  "whole_page_runs": [
+    {
+      "label": "whole-base-wasm-sample16-hwpx",
+      "pages": 64,
+      "minimum": 99.99,
+      "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "elapsed_seconds": 237.189
+    },
+    {
+      "label": "whole-head-wasm-sample16-hwpx",
+      "pages": 64,
+      "minimum": 99.99,
+      "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "elapsed_seconds": 396.86
+    },
+    {
+      "label": "whole-base-wasm-sample16-hwp2022",
+      "pages": 64,
+      "minimum": 100.0,
+      "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "elapsed_seconds": 453.865
+    },
+    {
+      "label": "whole-head-wasm-sample16-hwp2022",
+      "pages": 64,
+      "minimum": 100.0,
+      "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "elapsed_seconds": 738.791
+    },
+    {
+      "label": "whole-base-wasm-sample16-hwp2024",
+      "pages": 64,
+      "minimum": 99.99,
+      "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "elapsed_seconds": 57.438
+    },
+    {
+      "label": "whole-head-wasm-sample16-hwp2024",
+      "pages": 64,
+      "minimum": 99.99,
+      "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "elapsed_seconds": 59.239
+    }
+  ],
+  "whole_page_status": "passed"
+}

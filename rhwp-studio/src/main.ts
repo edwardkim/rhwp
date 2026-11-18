@@ -1339,7 +1339,10 @@ function setupEventListeners(): void {
   });
 
   eventBus.on('local-fonts-changed', (payload) => {
-    if ((payload as { source?: string } | undefined)?.source === 'options-dialog-clear') {
+    const source = (payload as { source?: string } | undefined)?.source;
+    if (source === 'options-dialog-clear' || source === 'options-dialog') {
+      // 명시 재감지는 실제 파일 목록을 새로 수집한다. 이전 감지에서 등록한
+      // HY/한양 CSS 별칭·프로그램 바이트가 새 목록과 섞이지 않게 함께 해제한다.
       clearDeclaredLocalPrograms();
     }
     if (!canvasView || wasm.pageCount === 0) return;
@@ -1637,7 +1640,7 @@ async function promptLocalFontsIfNeeded(displayName: string): Promise<void> {
     // 호출한 문서 초기화가 이 결과로 공급·조판·뷰를 순서대로 준비한다.
     await detectLocalFonts({ force: true, candidateFamilies: candidates });
   } catch (error) {
-    console.warn(`[local-fonts] ${displayName} 글꼴 확인 실패:`, error);
+    console.warn('[local-fonts] %s 글꼴 확인 실패:', displayName, error);
   }
 }
 

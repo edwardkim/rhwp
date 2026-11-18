@@ -1,0 +1,207 @@
+{
+  "status": "passed_actual_macos_chrome_catalog_identity",
+  "source_commit": "0fee3421a4",
+  "scope": "Current Studio local-font detection; not rendering/WASM visual acceptance",
+  "method": "local-font-access",
+  "detected_at": "2026-11-18T12:45:04.734Z",
+  "total_faces": 1707,
+  "unresolved_requested_families": [],
+  "pair_program_identities_disjoint": true,
+  "groups": [
+    {
+      "requested": "HY중고딕",
+      "programs": [
+        {
+          "family": "HYGothic-Medium",
+          "postscript_name": "H2gtrM",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "한양중고딕",
+      "programs": [
+        {
+          "family": "HY Junggothic",
+          "postscript_name": "HYJunggothic-ENJGT",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Junggothic",
+          "postscript_name": "HYJunggothic-HJJGT",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Junggothic",
+          "postscript_name": "HYJunggothic-JPJGT",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Junggothic",
+          "postscript_name": "HYJunggothic-SPJGT",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "HY신명조",
+      "programs": [
+        {
+          "family": "HYSinMyeongJo-Medium",
+          "postscript_name": "H2mjsM",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "한양신명조",
+      "programs": [
+        {
+          "family": "HY Sinmyeongjo",
+          "postscript_name": "HYSinmyeongjo-ENSMJ",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Sinmyeongjo",
+          "postscript_name": "HYSinmyeongjo-FLSMJ",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Sinmyeongjo",
+          "postscript_name": "HYSinmyeongjo-HGSMJ",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Sinmyeongjo",
+          "postscript_name": "HYSinmyeongjo-HJSMJ",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Sinmyeongjo",
+          "postscript_name": "HYSinmyeongjo-JPSMJ",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Sinmyeongjo",
+          "postscript_name": "HYSinmyeongjo-SPSMJ",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "한양신명조",
+          "postscript_name": "HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "HY견고딕",
+      "programs": [
+        {
+          "family": "HYGothic-Extra",
+          "postscript_name": "H2gtrE",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HYgtrE",
+          "postscript_name": "HYgtrE",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "한양견고딕",
+      "programs": [
+        {
+          "family": "HY Gyeongothic",
+          "postscript_name": "HYGyeongothic-ENGGT",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Gyeongothic",
+          "postscript_name": "HYGyeongothic-HGGGT",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "HY견명조",
+      "programs": [
+        {
+          "family": "HYMyeongJo-Extra",
+          "postscript_name": "H2mjrE",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HYmjrE",
+          "postscript_name": "HYmjrE",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "한양견명조",
+      "programs": [
+        {
+          "family": "HY Gyeonmyeongjo",
+          "postscript_name": "HYGyeonmyeongjo-ENGMJ",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Gyeonmyeongjo",
+          "postscript_name": "HYGyeonmyeongjo-HGGMJ",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "HY그래픽",
+      "programs": [
+        {
+          "family": "HYgprM",
+          "postscript_name": "HYgprM",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "한양그래픽",
+      "programs": [
+        {
+          "family": "HY Graphic",
+          "postscript_name": "HYGraphic-ENGRP",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Graphic",
+          "postscript_name": "HYGraphic-HGGRP",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "HY궁서",
+      "programs": [
+        {
+          "family": "HYgsrB",
+          "postscript_name": "HYgsrB",
+          "detection_source": "local-font-access"
+        }
+      ]
+    },
+    {
+      "requested": "한양궁서",
+      "programs": [
+        {
+          "family": "HY Gungseo",
+          "postscript_name": "HYGungseo-ENGS",
+          "detection_source": "local-font-access"
+        },
+        {
+          "family": "HY Gungseo",
+          "postscript_name": "HYGungseo-HGGS",
+          "detection_source": "local-font-access"
+        }
+      ]
+    }
+  ]
+}

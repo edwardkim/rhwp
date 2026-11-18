@@ -300,7 +300,19 @@ impl super::LayoutEngine {
                         declared_rows[end - 1] += height - combined;
                     }
                 }
-                if heights.iter().sum::<f64>() + 0.5 >= declared_rows.iter().sum::<f64>() {
+                let content_total = heights.iter().sum::<f64>();
+                let declared_total = declared_rows.iter().sum::<f64>();
+                // 내용 제약을 먼저 풀어 요구 없는 행을 0으로 닫으면, 그 여유가
+                // 같은 끝 경계를 공유하는 다음 행으로 옮겨 총높이는 같을 수 있다.
+                // 높이 감소만 성공으로 보면 이미 소비한 병합 잔여를 다시 남긴다.
+                // 전체를 늘리거나 0인 행을 회수하지 않는 기존 배분은 그대로 둔다.
+                let reclaims_empty_row = heights
+                    .iter()
+                    .zip(&declared_rows)
+                    .any(|(&height, &declared)| height == 0.0 && declared > 0.0);
+                if content_total + 0.5 >= declared_total
+                    && (!reclaims_empty_row || content_total > declared_total + 1e-6)
+                {
                     return None;
                 }
             }

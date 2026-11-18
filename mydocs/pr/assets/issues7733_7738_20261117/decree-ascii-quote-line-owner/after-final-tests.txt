@@ -1,0 +1,11 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 11.12s
+────────────
+ Nextest run ID db161229-553d-45ba-aa1a-80ec9be7fa16 with nextest profile: default
+    Starting 4 tests across 1 binary (353 tests skipped)
+        PASS [   0.033s] (1/4) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::independent_ascii_quotes_can_finish_the_line_before_hangul
+        PASS [   0.033s] (2/4) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::directional_openers_and_existing_closing_prime_keep_their_owners
+        PASS [   1.342s] (3/4) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner
+        PASS [   1.351s] (4/4) rhwp::regression_suite_020 issue_7737_ascii_quote_line_owner::original_ascii_quote_and_next_line_keep_the_independent_print_origins
+────────────
+     Summary [   1.354s] 4 tests run: 4 passed, 353 skipped

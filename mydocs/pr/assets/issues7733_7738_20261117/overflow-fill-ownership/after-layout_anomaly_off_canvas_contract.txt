@@ -1,0 +1,22 @@
+[RustTestSuite] layout_anomaly_off_canvas_contract -> regression_suite_002::layout_anomaly_off_canvas_contract
+[RustTestSuite] cargo nextest run --locked --test regression_suite_002 -E test(/(^|::)layout_anomaly_off_canvas_contract::/) --cargo-profile release-test --target-dir target/pr-review --build-jobs 8 --test-threads 8 --no-fail-fast
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 9.82s
+────────────
+ Nextest run ID 850c0654-f09a-4080-9e96-34a8386f4d56 with nextest profile: default
+    Starting 13 tests across 1 binary (314 tests skipped)
+        PASS [   0.020s] ( 1/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::body_overflow_inside_page_is_not_off_canvas
+        PASS [   0.021s] ( 2/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::nested_content_past_page_box_is_off_canvas
+        PASS [   0.021s] ( 3/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::nested_content_inside_page_box_stays_clean
+        PASS [   0.021s] ( 4/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::clean_on_page_content_has_no_off_canvas
+        PASS [   0.021s] ( 5/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::negative_y_table_is_off_canvas
+        PASS [   0.013s] ( 6/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::nested_lines_inside_off_canvas_table_are_not_double_reported
+        PASS [   0.012s] ( 7/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::off_canvas_alone_is_strict_signal
+        PASS [   0.012s] ( 8/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::table_past_page_width_is_off_canvas
+        PASS [   0.013s] ( 9/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::off_canvas_within_tolerance_is_not_flagged
+        PASS [   0.012s] (10/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::table_past_page_height_is_off_canvas
+        PASS [   0.992s] (11/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::help_mentions_off_canvas_and_strict_choice
+        PASS [   0.992s] (12/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::capabilities_lists_off_canvas_count
+        PASS [   1.057s] (13/13) rhwp::regression_suite_002 layout_anomaly_off_canvas_contract::json_envelope_declares_off_canvas_count_and_stays_exit_zero
+────────────
+     Summary [   1.059s] 13 tests run: 13 passed, 314 skipped

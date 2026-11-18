@@ -280,11 +280,6 @@ fn break_before_text_token(
     {
         return true;
     }
-    // A'·AA'의 prime/닫는 따옴표는 여는 작은따옴표와 문자값이 같다.
-    // 실제 앞 글자를 확인해 닫힌 낱말 뒤 한글 경계를 허용한다. 공백 뒤의
-    // 여는 따옴표와 방향이 명시된 여는 괄호/따옴표는 기존 금칙을 유지한다.
-    let closing_apostrophe =
-        previous == '\'' && start_idx >= 2 && text_chars[start_idx - 2].is_alphanumeric();
     // 독립 한컴 Print의 `<개정 ...>`은 여는 꺾쇠와 다음 글자가 한 줄을
     // 소유한다. 단독 `<`는 비교·리다이렉션 연산자로 줄 끝에 올 수 있으므로
     // 뒤에 공백 없이 이어지는 짝 닫힘이 확인된 경우에만 이 계약을 쓴다.
@@ -301,9 +296,7 @@ fn break_before_text_token(
         && start_idx > line_start_idx
         && text_chars.get(start_idx).is_some_and(|c| is_hangul(*c))
         && text_chars.get(start_idx - 1).is_some_and(|prev| {
-            !prev.is_whitespace()
-                && !paired_angle_open
-                && (!is_line_end_forbidden(*prev) || closing_apostrophe)
+            !prev.is_whitespace() && !paired_angle_open && !is_line_end_forbidden(*prev)
         })
 }
 
@@ -323,14 +316,14 @@ fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
 }
 
 pub(crate) fn is_line_end_forbidden(ch: char) -> bool {
-    // ASCII 큰따옴표는 여는/닫는 모양이 같아 문자값만으로 줄끝 금칙으로
-    // 분류할 수 없다. 독립 Print에서도 큰따옴표 뒤 한글 경계가 줄끝이 된다.
+    // ASCII 작은/큰따옴표는 여는/닫는 모양이 같아 문자값만으로 줄끝 금칙으로
+    // 분류할 수 없다. 독립2020 Print의 공백 뒤 여는 ASCII 따옴표도 줄끝에
+    // 남고, 다음 한글은 다음 줄로 간다. A' 같은 기존 닫는 prime 경계도 유지한다.
     // 방향이 명시된 여는 따옴표·괄호와 기존 줄머리 금칙은 별도로 유지한다.
     matches!(
         ch,
         '(' | '['
             | '{'
-            | '\''
             | '\u{300A}'
             | '\u{300C}'
             | '\u{300E}'

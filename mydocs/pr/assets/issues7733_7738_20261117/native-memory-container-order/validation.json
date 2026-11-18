@@ -1,0 +1,28 @@
+{
+  "scope": "Mac minimum-font sandbox, Native Skia contract tests only",
+  "source_parent": "874a2ddc68cc9c63544747059cb347018c06d8cc",
+  "before_base": {
+    "head": "af54158960ec91504d42faf842b0cb3229366236",
+    "run": 24,
+    "pass": 23,
+    "fail": 1,
+    "seconds": 2.058
+  },
+  "before_candidate": {
+    "head": "da4034a7d38b38c356f5e7386cff4674918ec15f",
+    "run": 24,
+    "pass": 23,
+    "fail": 1,
+    "seconds": 1.967
+  },
+  "after": {
+    "run": 24,
+    "pass": 24,
+    "fail": 0,
+    "outside_selection": 325,
+    "seconds": 1.391,
+    "log_sha256": "b3ff99b56a9fedd026f5ce60a7c00cc2a4cd63879cecd819a00b63c5f4b4df0e"
+  },
+  "rgba_comparison": "Exact byte equality remains; failure output shortened only.",
+  "final_whole_visual_and_regression": "pending"
+}

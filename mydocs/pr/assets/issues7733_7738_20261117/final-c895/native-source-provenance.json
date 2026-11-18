@@ -1,0 +1,11 @@
+{
+  "parent": "fbbfb55cfb19b7ef365c574663c4cdfdd3ef84e0",
+  "captured_at": "2026-11-18T07:21:26.882059+09:00",
+  "sources": {
+    "src/renderer/height_measurer.rs": "ec5f5b1528bca0cdb0359018f7bde79fff89ef182bca92bd22eae1dadbed275a",
+    "tests/cases/issue_7737_picture_anchor_before_frame.rs": "347626e17fe744ed2060b40bfd75c057f62e0a1bca7f57faeb246596dd47db0b"
+  },
+  "source_diff_sha256": "c433f1dd8a84ba99689b1f67d754802f14c61e649076e4770c1f5404aeef4795",
+  "cargo_lock_sha256": "972bdb0994b216f0cef357b856ce0807ce3d437af6791377446b62f2e26c05a1",
+  "font_environment_sha256": "39ec77d269dcd5e687ecd68cd3c5ffb2d19f91a5d9580b2e11c0c4db8a9cb4b0"
+}

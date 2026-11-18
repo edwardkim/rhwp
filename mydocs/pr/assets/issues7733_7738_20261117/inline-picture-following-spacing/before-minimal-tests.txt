@@ -1,0 +1,28 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 14.73s
+────────────
+ Nextest run ID e8d8791e-4630-448f-af64-8b22e7113f20 with nextest profile: default
+    Starting 1 test across 1 binary (356 tests skipped)
+        FAIL [   2.706s] (1/1) rhwp::regression_suite_007 issue_7737_inline_picture_following_frame::picture_host_following_spacing_advances_the_owned_frame_and_paint_once
+  stdout ───
+
+    running 1 test
+    test issue_7737_inline_picture_following_frame::picture_host_following_spacing_advances_the_owned_frame_and_paint_once ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_inline_picture_following_frame::picture_host_following_spacing_advances_the_owned_frame_and_paint_once
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 356 filtered out; finished in 2.69s
+
+  stderr ───
+
+    thread 'issue_7737_inline_picture_following_frame::picture_host_following_spacing_advances_the_owned_frame_and_paint_once' (266163977) panicked at tests/generated/../cases/issue_7737_inline_picture_following_frame.rs:99:5:
+    표 조각도 이미 paint한 그림 뒤 간격을 예약한다: reserved=0, painted=6.933333333333337
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   2.711s] 1 test run: 0 passed, 1 failed, 356 skipped
+        FAIL [   2.706s] (1/1) rhwp::regression_suite_007 issue_7737_inline_picture_following_frame::picture_host_following_spacing_advances_the_owned_frame_and_paint_once
+error: test run failed

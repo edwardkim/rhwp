@@ -1,0 +1,17 @@
+{
+  "source_head": "120483b82f",
+  "read_at": "2026-11-18T10:45:06.077577+09:00",
+  "pages": [
+    {
+      "backend": "native",
+      "page": 72,
+      "review_and_overlay_directly_read": true
+    },
+    {
+      "backend": "wasm",
+      "page": 72,
+      "review_and_overlay_directly_read": true
+    }
+  ],
+  "notes": "다섯 원본 bullet과 본문의 시작이 정합한다. 일반 본문·하단 따옴표의 잔여를 숨기지 않는다."
+}

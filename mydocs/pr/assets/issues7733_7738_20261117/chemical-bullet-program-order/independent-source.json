@@ -1,0 +1,21 @@
+{
+  "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+  "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+  "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+  "page": 72,
+  "rows": [
+    {
+      "font_resource": "T11",
+      "font_xref": 66,
+      "code": 5,
+      "unicode": "U+2022",
+      "font_matrix": " .001 0 0 .001 0 0 ",
+      "glyph_sha256": "2506433f6422778c6963a3dcbf11c311df80b06e75aad7a49a64e9be6c25a16a",
+      "advance_units": 1000,
+      "units_per_em": 1000
+    }
+  ],
+  "actual_trace_source": "de46777ed8b8bf536cde5caefdafae16b59c4076",
+  "native_trace_sha256": "772a6ca17e902ed57300dccbde6b9723d3342cbeb56f155b0d8603e17e349c5a",
+  "rlib_sha256": "e5ffb4ff9ae6cf3e8aefddc0c1291ca7a99c8687e9384dfcee5bf2413bd9d14a"
+}

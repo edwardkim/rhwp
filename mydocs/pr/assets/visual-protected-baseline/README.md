@@ -12,8 +12,8 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `7eb001e3e30d6892d8bc03ba3e16456a4dd758cccb0e9aba073671366a9a5a1b`.
-- 입력 18개, Native/fresh WASM 각 18개 데이터셋·1,771쪽, 총 36개 데이터셋·3,542행.
+- TSV SHA-256: `295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a`.
+- 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
 ## 문서별 범위
@@ -41,6 +41,11 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [issue3307_outline_number.hwpx](<../../../../samples/task3307/issue3307_outline_number.hwpx>) | 9 | 100.00% | 100.00% |
 | [body-list-typed-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp>) | 1 | 100.00% | 100.00% |
 | [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 100.00% | 100.00% |
+| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.75% | 99.71% |
+| [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.69% | 99.67% |
+| [outline_navigation_panel_demo.hwpx](<../../../../samples/pr4093/outline_navigation_panel_demo.hwpx>) | 3 | 100.00% | 100.00% |
+| [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.74% | 99.73% |
+| [outline_navigation_table_cell_number.hwpx](<../../../../samples/pr4093/outline_navigation_table_cell_number.hwpx>) | 1 | 100.00% | 100.00% |
 
 ## 2026-11-15 PR #9075 검토의 상승분 반영
 
@@ -82,8 +87,8 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 
 ## 자료 무결성 확인
 
-통합 시 선택한 전 3,542행을 수용 commit의 원본 TSV와 대조한다. 중복 키·쪽 누락·범위 밖 값이 없어야 하며,
-입력 18개와 대응 PDF의 SHA·전체 쪽수, 양 backend의 페이지 범위를 확인한다. 선택 전의 중복 표에도 같은 검사를
+현재 선택한 전 4,046행을 수용 commit의 원본 TSV와 대조한다. 중복 키·쪽 누락·범위 밖 값이 없어야 하며,
+입력 23개와 대응 PDF의 SHA·전체 쪽수, 양 backend의 페이지 범위를 확인한다. 선택 전의 중복 표에도 같은 검사를
 적용하여 원래 보호값이 낮아지지 않았는지 확인한다. 실행 로그·임시 생성/검사 스크립트는 ignored output에만 보관한다.
 이 무결성 확인은 제품의 최신 head 재출력·회귀 검사·시각 판독을 대체하지 않는다.
 
@@ -120,3 +125,25 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 페이지별 최댓값을 조합하거나 별도 수용 예외를 적용하지 않았다. 편람/기여자 gate는 고정
 표 해시 연결만 갱신하며 비교 규칙·대상·한도는 같다. 로컬 검증의 수용 기록이고 원격 CI·병합
 완료를 뜻하지 않는다.
+
+## 2026-11-18 #7733·#7735–#7738의 다섯 원본 등록
+
+사용자 지시에 따라 개선한 다섯 원본의 Native/fresh WASM 전 252쪽씩, 총 504행을 추가했다.
+이전 18개 문서의 3,542행은 바이트 단위로 그대로 보존했다. 신규 문서의 각 페이지는 등록된
+공식 두 자리 raw 표시값 이상이어야 한다. 98%를 일괄 하한으로 삼지 않으며 다른 페이지의
+상승이나 평균으로 하락을 상쇄하지 않는다.
+
+[전쪽 TSV와 대표 판독](../issues7733_7738_20261117/final-efe954/README.md),
+[입력·PDF·실제 공급 조건](../issues7733_7738_20261117/final-efe954/protected-font-conditions.json),
+[등록 영수증](updates/issues7733-7738-20261118.json)에 출처를 연결한다. 사양 문서의
+기준은 기존 한컴 공식 원문 PDF이며 재산출하지 않았다. 나머지는 기록된 데스크톱 한컴의
+Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체하지 않는다.
+
+실제 전쪽 이미지 생산 소스는 `e63992fb2f4fbedb9c58569232b176ae91b98331`이며,
+렌더링 입력 객체가 같은 리베이스 후 `efe9540bd4f1cbaddd89bf018771ef1de20389c8`에서
+재사용한 근거를 구분한다. raw·PDF PNG·review·overlay와 Native 27쪽·WASM 26쪽의
+대표 판독을 보존하며 2px 실루엣 100%를 픽셀 완전 동일로 해석하지 않는다. 글꼴 바이너리는
+커밋하지 않는다. 이 등록은 통합 담당 collaborator·maintainer의 특별 보호 검증 대상이며
+일반 기여자 공통 4개 문서 검사나 편람 383쪽의 실행 범위를 확대하지 않는다.
+
+최종 제품 `0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0`로 Native/fresh WASM **4,046행**을 대조했다. 하락·누락은 0행이며 상승 0행을 반영했다. 전쪽 조건과 산출물은 [최종 보호 검증](../issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json)에 기록했다.

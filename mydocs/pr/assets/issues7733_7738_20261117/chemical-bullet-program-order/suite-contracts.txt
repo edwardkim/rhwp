@@ -1,0 +1,38 @@
+✔ 명시적 Cargo test target registry 동기화만 허용한다 (1.256792ms)
+✔ Cargo registry 동기화에 marker 블록 밖 변경을 섞지 못한다 (0.092416ms)
+[RustTestSuite] 자동 배정: tests/second.rs -> regression_suite_001
+[RustTestSuite] 자동 배정: tests/first.rs -> regression_suite_002
+[RustTestSuite] 전체 재배정: 2 sources / 2 suites / 0 exceptions
+[RustTestSuite] 생성: 2 harnesses, 0 exceptions
+✔ Cargo CRLF 블록은 허용하지만 실제 target drift는 거절한다 (100.715292ms)
+✔ Cargo checkout은 core.autocrlf=true여도 저장소 속성에 따라 LF를 유지한다 (92.277875ms)
+✔ 전체 integration source는 파생 산출물을 쓰지 않고 검증한다 (2527.398333ms)
+✔ 일반 case는 weighted suite로 해석한다 (47.502667ms)
+✔ 경로 의존 case는 기존 target 이름을 유지한다 (277.916ms)
+✔ 명시적으로 허용한 CLI module blocker는 generated suite에 배정한다 (525.270583ms)
+✔ Native Skia 함수 게이트 case는 generated suite에서 feature별로 실행한다 (260.581916ms)
+✔ #6308 전역 카운터·벽시계 테스트는 generated suite가 아니라 독립 target이다 (1108.412959ms)
+✔ CI slow archive case는 독립 target과 nextest 우선순위를 함께 유지한다 (265.466333ms)
+✔ harness와 Cargo target 렌더링은 입력 순서와 무관하다 (0.293792ms)
+✔ 공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harness마다 한 번 공급한다 (0.202667ms)
+✔ 신규 source는 선택된 suite에 정확히 한 번만 배정한다 (2.994833ms)
+✔ 개별 testcase에서 합산한 source 시간으로 suite를 재배정한다 (3.711834ms)
+✔ PR base에 없던 integration source는 tests/cases 밖에서 거부한다 (0.071ms)
+✔ PR base에서 새로 추가된 integration source만 tests/cases 경로를 강제한다 (0.053959ms)
+✔ PR은 파생 suite 산출물과 Cargo generated target 블록을 커밋할 수 없다 (0.097ms)
+✔ PR base 검사도 커밋된 manifest 산출물을 실제 Git diff에서 거부한다 (88.527625ms)
+✔ PR base 검사는 manifest와 맞지 않는 Cargo generated target registry를 거부한다 (101.367125ms)
+✔ CI가 삭제된 파생 산출물을 재생성해도 PR base 검사가 통과한다 (109.52775ms)
+✔ 기여자 가이드는 원본-only 제출을 안내한다 (8.214ms)
+✔ 검토·개발 가이드는 파생 suite 준비 경로를 안내한다 (5.072333ms)
+✔ CI가 일반 PR base를 integration과 source unit 정책 검사에 전달한다 (4.890416ms)
+✔ CI는 same-repository devel-to-main exact promotion에서만 head를 정책 기준으로 쓴다 (0.320292ms)
+✔ CI lint checkout은 PR base 3-way diff를 위해 전체 Git 계보를 가져온다 (0.274375ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5610.243458

@@ -1,0 +1,48 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 14.00s
+────────────
+ Nextest run ID 8312fef7-8589-48b9-b1c4-f8d6378f933f with nextest profile: default
+    Starting 2 tests across 1 binary (342 tests skipped)
+        FAIL [   0.351s] (1/2) rhwp::regression_suite_027 issue_7733_offset_fragment_outer_margin::positive_paragraph_offset_does_not_reopen_an_already_owned_top_margin
+  stdout ───
+
+    running 1 test
+    test issue_7733_offset_fragment_outer_margin::positive_paragraph_offset_does_not_reopen_an_already_owned_top_margin ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_offset_fragment_outer_margin::positive_paragraph_offset_does_not_reopen_an_already_owned_top_margin
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.34s
+
+  stderr ───
+
+    thread 'issue_7733_offset_fragment_outer_margin::positive_paragraph_offset_does_not_reopen_an_already_owned_top_margin' (265810475) panicked at tests/generated/../cases/issue_7733_offset_fragment_outer_margin.rs:42:5:
+    문단 오프셋 변화만 소비한다: 8.879999999999995 vs 7
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.351s] (2/2) rhwp::regression_suite_027 issue_7733_offset_fragment_outer_margin::changing_the_top_margin_of_an_offset_fragment_advances_it_only_once
+  stdout ───
+
+    running 1 test
+    test issue_7733_offset_fragment_outer_margin::changing_the_top_margin_of_an_offset_fragment_advances_it_only_once ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_offset_fragment_outer_margin::changing_the_top_margin_of_an_offset_fragment_advances_it_only_once
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.34s
+
+  stderr ───
+
+    thread 'issue_7733_offset_fragment_outer_margin::changing_the_top_margin_of_an_offset_fragment_advances_it_only_once' (265810476) panicked at tests/generated/../cases/issue_7733_offset_fragment_outer_margin.rs:50:5:
+    양수 오프셋이 있는 조각의 여백도 한 번만 소비한다: 2 vs 1
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   0.356s] 2 tests run: 0 passed, 2 failed, 342 skipped
+        FAIL [   0.351s] (1/2) rhwp::regression_suite_027 issue_7733_offset_fragment_outer_margin::positive_paragraph_offset_does_not_reopen_an_already_owned_top_margin
+        FAIL [   0.351s] (2/2) rhwp::regression_suite_027 issue_7733_offset_fragment_outer_margin::changing_the_top_margin_of_an_offset_fragment_advances_it_only_once
+error: test run failed

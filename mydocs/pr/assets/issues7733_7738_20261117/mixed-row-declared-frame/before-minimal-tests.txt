@@ -1,0 +1,48 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 14.77s
+────────────
+ Nextest run ID 91e9bc53-efb6-4c60-b225-fdf66571dad9 with nextest profile: default
+    Starting 2 tests across 1 binary (343 tests skipped)
+        FAIL [   3.093s] (1/2) rhwp::regression_suite_022 issue_7737_mixed_row_declared_frame::mixed_row_first_frame_keeps_its_page_limit_when_the_table_origin_moves
+  stdout ───
+
+    running 1 test
+    test issue_7737_mixed_row_declared_frame::mixed_row_first_frame_keeps_its_page_limit_when_the_table_origin_moves ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_mixed_row_declared_frame::mixed_row_first_frame_keeps_its_page_limit_when_the_table_origin_moves
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 344 filtered out; finished in 3.08s
+
+  stderr ───
+
+    thread 'issue_7737_mixed_row_declared_frame::mixed_row_first_frame_keeps_its_page_limit_when_the_table_origin_moves' (266274121) panicked at tests/generated/../cases/issue_7737_mixed_row_declared_frame.rs:79:5:
+    중첩 표가 있는 행도 같은 물리 하단을 소유한다: 1037.8666666666668 -> 1038.8666666666668
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   6.210s] (2/2) rhwp::regression_suite_022 issue_7737_mixed_row_declared_frame::center_label_uses_its_selected_prefix_while_top_label_keeps_its_origin
+  stdout ───
+
+    running 1 test
+    test issue_7737_mixed_row_declared_frame::center_label_uses_its_selected_prefix_while_top_label_keeps_its_origin ... FAILED
+
+    failures:
+
+    failures:
+        issue_7737_mixed_row_declared_frame::center_label_uses_its_selected_prefix_while_top_label_keeps_its_origin
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 344 filtered out; finished in 6.20s
+
+  stderr ───
+
+    thread 'issue_7737_mixed_row_declared_frame::center_label_uses_its_selected_prefix_while_top_label_keeps_its_origin' (266274122) panicked at tests/generated/../cases/issue_7737_mixed_row_declared_frame.rs:97:5:
+    같은 하단 안에서 가운데 라벨은 선택된 앞 문단만 정렬한다: center=1, top=1
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+────────────
+     Summary [   6.212s] 2 tests run: 0 passed, 2 failed, 343 skipped
+        FAIL [   3.093s] (1/2) rhwp::regression_suite_022 issue_7737_mixed_row_declared_frame::mixed_row_first_frame_keeps_its_page_limit_when_the_table_origin_moves
+        FAIL [   6.210s] (2/2) rhwp::regression_suite_022 issue_7737_mixed_row_declared_frame::center_label_uses_its_selected_prefix_while_top_label_keeps_its_origin
+error: test run failed

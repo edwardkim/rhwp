@@ -1,0 +1,128 @@
+{
+  "status": "six_page_base_and_candidate_confirm_prior_software_raster_condition",
+  "input": {
+    "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+    "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+    "bytes": 140149
+  },
+  "reference_pdf": {
+    "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+    "sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+    "bytes": 287952
+  },
+  "baseline_tsv_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "gpu_current_page_one_raw": 99.96967,
+  "gpu_current_official": "99.97",
+  "protected_page_one": "99.98",
+  "gpu_current_unmatched_pixels": 20,
+  "gpu_raw_and_reference_page_pairs": [
+    {
+      "page": 1,
+      "output_sha256": "4a2daae56d20cc9cae5dbb8fd271e9aad12f1d5920d90cbd2f3ae46f65758ba7",
+      "pdf_png_sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f"
+    },
+    {
+      "page": 2,
+      "output_sha256": "ed5733ae8f7f6a4b49d1fc5b2e5c78f0be0f2a75493ab6c302aa71c106dcf1fd",
+      "pdf_png_sha256": "c3410229c04a7b0ee181e42587d3f34e87dcbad789f38060f4aa9f137bc175ed"
+    },
+    {
+      "page": 3,
+      "output_sha256": "07aecc1cb9f468ece81942bab416a3d15c80ada626d771e0d9d8cdde24f6ff0c",
+      "pdf_png_sha256": "40e1dc4d62c8c6305ee5281f489f2e325a63a3da190b6095fc14bbe969049e4f"
+    },
+    {
+      "page": 4,
+      "output_sha256": "137a4bd28c6f3678cf115f89a968f1984f2a73b0ef4d62846191c624a5bdb13d",
+      "pdf_png_sha256": "9af478c1c739bce0e3df35d60b70aad2276a6b3df9e40959a5b3f9bbd4dbe41c"
+    },
+    {
+      "page": 5,
+      "output_sha256": "5abca40c68c092042b369eb0ed0ab72c352fb927bed36717d8624c15252ef441",
+      "pdf_png_sha256": "21f70f00ed8795cfa5b31abb9f0cd072a0b92cc0f641141e5e2820ffda32fdb4"
+    },
+    {
+      "page": 6,
+      "output_sha256": "4062b294e8f7140be31e3fe00bea020501362ce2d3490b451db723cf9b45f9b3",
+      "pdf_png_sha256": "1978d1caf5123432b30bd755ee86db4562e1bc858f4ee2bee7b80dc7c13ba902"
+    }
+  ],
+  "prior_raster_diagnosis": "mydocs/pr/assets/issue7732_split_span_20261115/raster-environment/README.md",
+  "prior_software_page_one_raw": 99.98059,
+  "prior_gpu_raw_png_matches_current": true,
+  "prior_pdf_png_matches_current": true,
+  "software_chrome_flags": [
+    "--disable-gpu"
+  ],
+  "software_wrapper_sha256": "0a5d7a9503f8dbfc294c4f34ad16f8f90a6d5ca69177626e73f61c4d5d0bbe4b",
+  "software_chrome_version": "Google Chrome 157.0.8103.79",
+  "software_results": {
+    "base": {
+      "all_6_pages": true,
+      "tsv_sha256": "8da442a73d4de191337083da11f5c507b66d668d80821b86f82f29d4fa556d98",
+      "raw_percent": 99.98059,
+      "official": "99.98",
+      "unmatched_pixels": 13,
+      "current_raw_png_sha256": "c54028779cb7c76cfc4a24a303b59a1bc26651f87885a059856221cd67a46e85",
+      "pdf_png_sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f",
+      "matches_earlier_software_png": true,
+      "font_supply_and_render_tree_identical_to_current_gpu": true
+    },
+    "head": {
+      "all_6_pages": true,
+      "tsv_sha256": "8da442a73d4de191337083da11f5c507b66d668d80821b86f82f29d4fa556d98",
+      "raw_percent": 99.98059,
+      "official": "99.98",
+      "unmatched_pixels": 13,
+      "current_raw_png_sha256": "c54028779cb7c76cfc4a24a303b59a1bc26651f87885a059856221cd67a46e85",
+      "pdf_png_sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f",
+      "matches_earlier_software_png": true,
+      "font_supply_and_render_tree_identical_to_current_gpu": true
+    }
+  },
+  "production_change": false,
+  "baseline_or_threshold_changed": false,
+  "direct_reading": {
+    "page": 1,
+    "reviewed_both_review_and_overlay": true,
+    "observation": "두 출력에서 제목·시행일 표기·QR·조문과 항목의 순서 및 하단 쪽번호를 대조했다. 본문 줄 재배치나 누락은 보이지 않으며 글자 가장자리의 잉크 차이는 남는다.",
+    "images": {
+      "gpu": {
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/gpu/overlay-001.png",
+          "sha256": "12915a3fc103fbb48c73e137ef5797c7d73726cb62d8001a23cfb8f9175d6135"
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/gpu/raw-001.png",
+          "sha256": "4a2daae56d20cc9cae5dbb8fd271e9aad12f1d5920d90cbd2f3ae46f65758ba7"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/gpu/pdf-001.png",
+          "sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/gpu/review-001.png",
+          "sha256": "6c638b197b95f175e9dab0c61d2dadc33763101c21fd8d243f1e236d8ce66878"
+        }
+      },
+      "software": {
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/software/overlay-001.png",
+          "sha256": "4099143b97cd3bbef67f98995e4a885f7c83d45544fa3491449095a266182eb6"
+        },
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/software/raw-001.png",
+          "sha256": "c54028779cb7c76cfc4a24a303b59a1bc26651f87885a059856221cd67a46e85"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/software/pdf-001.png",
+          "sha256": "46b37b542a259a21086a6fa630192d3ca53414b205c29f3b228c98942057c17f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/issue7905-raster/software/review-001.png",
+          "sha256": "9cba2f304cc058e9bbed540aa7631e28a2a5393c65ba72e192183cd98abfc0b9"
+        }
+      }
+    }
+  }
+}

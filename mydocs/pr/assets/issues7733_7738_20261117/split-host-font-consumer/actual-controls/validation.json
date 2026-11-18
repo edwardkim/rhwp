@@ -1,0 +1,81 @@
+{
+  "producer_head": "623309719c2d974c7ea8b61533a4c44ca9d56732",
+  "rust_component_producer": "2a820cc137ce04720bbdc5d79815a3b2e875c8c5",
+  "wasm_sha256": "7ccdacdd499ac73a0d0a47322792857a349289dc9042ea6b61a84aa6a9bcfb1f",
+  "before": "0ce5ba3f collection-only fix read the original split programs but both CanvasKit requests still fell back to Canvas2D due to a missing prepared family.",
+  "after": "Actual Canvas2D, CanvasKit compat, CanvasKit default executed with no font fallback and no hard gate violation.",
+  "direct_reading_at": "2026-11-18T16:31:40.874617+09:00",
+  "reading": "원본 radical과 뒤 E·Q의 위치 소속, root bar와 아래 본문 간격을 유지한다. 잉크·작은 글리프 위치 차이는 남아 픽셀 동일로 주장하지 않는다. 이후 사용자 지적 회색 배경 보정 전의 정확한 Studio 기능 검증으로 보존한다.",
+  "hard_gate_violations": 0,
+  "results": [
+    {
+      "requested": "canvas2d",
+      "actual": "canvas2d",
+      "raw_match_percent": 98.87848,
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvas2d/raw-001.png",
+          "sha256": "7d6b53765c31580da6bfbb24b961f3aa575774d020d222f3c55eb6d3508cb003"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvas2d/pdf-001.png",
+          "sha256": "31ae387ed4a9d43f76f8fdf8cd12feb55a83c05843ce137c5b4e60652df5b30c"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvas2d/review-001.png",
+          "sha256": "b5380563eeb94b24121e7b310dfa0bc06e867ae000b00d1bca121fe3a15b0f98"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvas2d/overlay-001.png",
+          "sha256": "8a865998641ac44dcc375ad7c6520a734bf32761773d9265f5773f19f32b1245"
+        }
+      }
+    },
+    {
+      "requested": "canvaskit-compat",
+      "actual": "canvaskit-compat",
+      "raw_match_percent": 99.18925,
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-compat/raw-001.png",
+          "sha256": "1770a3e45cb9109f23443f1acde650573a03e94311a8a6664c695181310dcd67"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-compat/pdf-001.png",
+          "sha256": "31ae387ed4a9d43f76f8fdf8cd12feb55a83c05843ce137c5b4e60652df5b30c"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-compat/review-001.png",
+          "sha256": "eded137d15a53ac724f47a7383c3ead84c9bab8b4cbad2219ea7ec03ec735860"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-compat/overlay-001.png",
+          "sha256": "0b153557661a8b4bf41b7ac21449833ca8ffc31ca6675ddc06c4872c8365bb34"
+        }
+      }
+    },
+    {
+      "requested": "canvaskit-default",
+      "actual": "canvaskit-default",
+      "raw_match_percent": 99.18925,
+      "files": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-default/raw-001.png",
+          "sha256": "1770a3e45cb9109f23443f1acde650573a03e94311a8a6664c695181310dcd67"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-default/pdf-001.png",
+          "sha256": "31ae387ed4a9d43f76f8fdf8cd12feb55a83c05843ce137c5b4e60652df5b30c"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-default/review-001.png",
+          "sha256": "a21922e76d5db9f29fb7a765aac4a0b27a7e17a4fe4000d5e44043ecc60a4237"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/split-host-font-consumer/actual-controls/canvaskit-default/overlay-001.png",
+          "sha256": "806e493a5c06cb51dea5d7bb07190a303aa39eef6543b3066504bfd3be35833d"
+        }
+      }
+    }
+  ]
+}

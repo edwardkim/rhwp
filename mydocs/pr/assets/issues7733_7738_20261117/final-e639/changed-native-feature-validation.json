@@ -1,0 +1,28 @@
+{
+  "producer_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+  "scope": "Changed native-skia-gated integration modules; full default integration and Native library checks are separate.",
+  "feature": "native-skia",
+  "font_scope": "verified macOS minimum-font sandbox; personal fonts denied",
+  "modules": [
+    {
+      "module": "issue_7733_hft_bullet_program_order",
+      "tests_run": 3,
+      "passed": 3,
+      "failed": 0,
+      "exit_code": 0,
+      "elapsed_seconds": 35.358,
+      "log_sha256": "74e379f41ada9abdc2b42f76445602590127ec00b54136b228d459e7e12f41cf",
+      "case_file_sha256": "93688ca4906210e1ef6ccba6592250ba4000456c89e58199dcd590220fca1efb"
+    },
+    {
+      "module": "skia_native_glyph_replay",
+      "tests_run": 24,
+      "passed": 24,
+      "failed": 0,
+      "exit_code": 0,
+      "elapsed_seconds": 24.282,
+      "log_sha256": "dfc51accc786dab940f81ab2ab9d091879d652987b91567fec58a00ef1dff3e0",
+      "case_file_sha256": "ac0f9a122583a016f41c0f249e82d70c2ab490af622b3a919ba04f4549dd5915"
+    }
+  ]
+}

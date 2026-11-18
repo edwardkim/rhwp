@@ -1,0 +1,5 @@
+    Starting 24 tests across 1 binary (312 tests skipped)
+        FAIL [   0.769s] ( 9/24) rhwp::regression_suite_025 skia_native_glyph_replay::native_containers::native_supplied_bytes_prefer_ttf_over_nonzero_ttc_face_in_both_orders
+     Summary [   2.058s] 24 tests run: 23 passed, 1 failed, 312 skipped
+        FAIL [   0.769s] ( 9/24) rhwp::regression_suite_025 skia_native_glyph_replay::native_containers::native_supplied_bytes_prefer_ttf_over_nonzero_ttc_face_in_both_orders
+error: test run failed
