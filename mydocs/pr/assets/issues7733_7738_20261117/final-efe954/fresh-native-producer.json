@@ -1,0 +1,12 @@
+{
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "actual_command": {
+    "name": "candidate-native-build",
+    "exit_code": 0,
+    "elapsed_seconds": 442.818,
+    "started_at": "2026-11-18T19:49:50.328877+09:00",
+    "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/candidate-native-build.log"
+  },
+  "binary_sha256": "bd15811cac3ca34bba967cdc6c2d7a427018e03350fe1849f7b063fd54495291",
+  "source_file_sha256": "5df9d6422435c816bcdf7529b390969094ed2a521c18b020972f5562ed902382"
+}

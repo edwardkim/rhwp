@@ -1,0 +1,107 @@
+{
+  "records": [
+    {
+      "key": "chemical",
+      "backend": "native",
+      "pages": 103,
+      "minimum": 99.75,
+      "sha256": "9111800060d296754f077d6fb6d0313f4f0300ab5c5d216c166aa3481e292dd5",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-native/chemical/silhouette.tsv"
+    },
+    {
+      "key": "spec13",
+      "backend": "native",
+      "pages": 71,
+      "minimum": 99.69,
+      "sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-native/spec13/silhouette.tsv"
+    },
+    {
+      "key": "outline-demo",
+      "backend": "native",
+      "pages": 3,
+      "minimum": 100.0,
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-native/outline-demo/silhouette.tsv"
+    },
+    {
+      "key": "decree",
+      "backend": "native",
+      "pages": 74,
+      "minimum": 99.74,
+      "sha256": "74ac79a552433fd3c66db702a1f4dbda5cc8529a17548ea1025f7c3219222a03",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-native/decree/silhouette.tsv"
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "native",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-native/outline-minimal/silhouette.tsv"
+    },
+    {
+      "key": "chemical",
+      "backend": "wasm",
+      "pages": 103,
+      "minimum": 99.71,
+      "sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-wasm/chemical/silhouette.tsv"
+    },
+    {
+      "key": "spec13",
+      "backend": "wasm",
+      "pages": 71,
+      "minimum": 99.67,
+      "sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-wasm/spec13/silhouette.tsv"
+    },
+    {
+      "key": "outline-demo",
+      "backend": "wasm",
+      "pages": 3,
+      "minimum": 100.0,
+      "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-wasm/outline-demo/silhouette.tsv"
+    },
+    {
+      "key": "decree",
+      "backend": "wasm",
+      "pages": 74,
+      "minimum": 99.73,
+      "sha256": "be1f5166b7048d0f1f687f71ced888896bd190d9633f2a78f64e9a7e5693ffbf",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-wasm/decree/silhouette.tsv"
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": 100.0,
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "actual_source_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+      "qualified_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "source": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/head-scope-whole-wasm/outline-minimal/silhouette.tsv"
+    }
+  ],
+  "reference_pdf_unchanged": true,
+  "reused_by_source_identity": true,
+  "protected_and_final_gates_pending": true
+}

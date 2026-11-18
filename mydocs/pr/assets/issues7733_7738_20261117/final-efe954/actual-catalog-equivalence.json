@@ -1,0 +1,49 @@
+{
+  "status": "passed",
+  "compared_fields": [
+    "sha256",
+    "families",
+    "weight",
+    "primaryFamily",
+    "postScriptNames",
+    "style",
+    "faceIndex"
+  ],
+  "records": [
+    {
+      "input": "issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "old_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "current_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "compared_faces": 1235,
+      "consumed_fields_equal_in_order": true
+    },
+    {
+      "input": "한글문서파일형식_5.0_revision1.3.hwp",
+      "old_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "current_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "compared_faces": 1235,
+      "consumed_fields_equal_in_order": true
+    },
+    {
+      "input": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "old_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "current_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "compared_faces": 1235,
+      "consumed_fields_equal_in_order": true
+    },
+    {
+      "input": "pr4093/outline_navigation_panel_demo.hwpx",
+      "old_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "current_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "compared_faces": 1235,
+      "consumed_fields_equal_in_order": true
+    },
+    {
+      "input": "pr4093/outline_navigation_table_cell_number.hwpx",
+      "old_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "current_catalog_sha256": "024ae6475d0e263b13d9f1669a1ebb91b9b3986d0e60869f7c856cf715a23a1a",
+      "compared_faces": 1235,
+      "consumed_fields_equal_in_order": true
+    }
+  ]
+}

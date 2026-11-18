@@ -1,0 +1,11 @@
+{
+  "head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "elapsed_seconds": 9.457,
+  "exit_code": 0,
+  "log_sha256": "3dc1c2314f2696897f1c1e3382dde48e973dfaf36954e38eb2106edc4100055a",
+  "index_present": true,
+  "wasm_sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+  "bundled_font_in_precache": true,
+  "precache_entries": 75,
+  "sandbox_font_hash_permission_error": false
+}

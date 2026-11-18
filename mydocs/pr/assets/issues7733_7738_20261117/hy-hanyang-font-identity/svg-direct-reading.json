@@ -1,0 +1,237 @@
+{
+  "status": "all_selected_pages_match_previous_direct_reading",
+  "backend": "svg",
+  "source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "page_count": 7,
+  "minimum_raw_percent": 99.8001,
+  "records": [
+    {
+      "backend": "svg",
+      "key": "chemical",
+      "page": 56,
+      "current_raw_png_sha256": "fcf2ed2a2922e4df98e47078d6cb395389285fed6f09b33cb86f9d651e5bfb63",
+      "current_pdf_png_sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43",
+      "raw_match_percent": 99.99288,
+      "previous_raw_match_percent": 99.99288,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/chemical/raw-056.png",
+          "sha256": "fcf2ed2a2922e4df98e47078d6cb395389285fed6f09b33cb86f9d651e5bfb63"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/chemical/pdf-056.png",
+          "sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/chemical/review-056.png",
+          "sha256": "6b12e5e9668f0bbf87312b0926938bd9afb827c8d9894c89f3ed9e58ce4e6efc"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/chemical/overlay-056.png",
+          "sha256": "ad3a85a794ae1e5b8ae83a532d9e14df9fc1eacd3ed7b3846d48c0ecf503c4ad"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "두 줄 장 제목·두 항목·장 탭과 쪽번호를 대조했다. 글리프 가장자리·회색 장 탭의 미세 잉크 차이를 구분했다."
+    },
+    {
+      "backend": "svg",
+      "key": "spec13",
+      "page": 70,
+      "current_raw_png_sha256": "6647d32ca2ca23f5228f24719c17c9d0bc8020265d771518749eb210a2616edb",
+      "current_pdf_png_sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/spec13/raw-070.png",
+          "sha256": "6647d32ca2ca23f5228f24719c17c9d0bc8020265d771518749eb210a2616edb"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/spec13/pdf-070.png",
+          "sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/spec13/review-070.png",
+          "sha256": "50d64de18f4ce1d97fb5a70489a63441ece67e91bc72a76d9f9796640d283ac4"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/spec13/overlay-070.png",
+          "sha256": "0e2a4fea8c8fa3d1db4422f9d828b7461197aa81c0f50b3ea4dcb277303d3d61"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "변경 이력의 네 revision과 들여쓰기·목록·마지막 항목을 대조했다."
+    },
+    {
+      "backend": "svg",
+      "key": "outline-demo",
+      "page": 3,
+      "current_raw_png_sha256": "173d0e5fbc3b37cdea72cc2850e1a156ec62981d37fc7c40b093ddd441d85151",
+      "current_pdf_png_sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-demo/raw-003.png",
+          "sha256": "173d0e5fbc3b37cdea72cc2850e1a156ec62981d37fc7c40b093ddd441d85151"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-demo/pdf-003.png",
+          "sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-demo/review-003.png",
+          "sha256": "63138855c904c0de95f2f4223e9b21c4fcbeda8cb953211dc83b51d984085676"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-demo/overlay-003.png",
+          "sha256": "fb0817e720f3c1f6e0887eb73647060019ee29ca18be069a7a00a459d7e3e366"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "표 셀 개요 번호와 뒤 개요·본문·부칙·시행일·경과조치가 겹치지 않고 순서를 보존한다."
+    },
+    {
+      "backend": "svg",
+      "key": "decree",
+      "page": 18,
+      "current_raw_png_sha256": "584a8e863f5684b5e55d89a524ee6b417d2f61961f85b550e5370b5d6e5c4a5a",
+      "current_pdf_png_sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511",
+      "raw_match_percent": 99.97779,
+      "previous_raw_match_percent": 99.97779,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/raw-018.png",
+          "sha256": "584a8e863f5684b5e55d89a524ee6b417d2f61961f85b550e5370b5d6e5c4a5a"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/pdf-018.png",
+          "sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/review-018.png",
+          "sha256": "c777c05563237fb4ad14d962540ee4d25a02a4c38f06c8999c44db15a4e50bde"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/overlay-018.png",
+          "sha256": "46f80397b2ba8a3bd7faf27e6bbe6b58261bb72e2b0d77b8622b6a0c2de845db"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "표의 중첩·행과 셀 소속·원형/사각 기호·각주 및 쪽번호를 대조했다. SVG의 얇은 괘선 농도·작은 기호 차이를 2px 실루엣 수치와 구별했다."
+    },
+    {
+      "backend": "svg",
+      "key": "decree",
+      "page": 61,
+      "current_raw_png_sha256": "ffcbb47d2d187b6f4b7ee72277725d8b52d5c398d0a693f9104fa6ac58d2c818",
+      "current_pdf_png_sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/raw-061.png",
+          "sha256": "ffcbb47d2d187b6f4b7ee72277725d8b52d5c398d0a693f9104fa6ac58d2c818"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/pdf-061.png",
+          "sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/review-061.png",
+          "sha256": "0e224e91ecf88de314c4bee5dd12fbd507a43085ea4af247b5fba2519f5cbe60"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/decree/overlay-061.png",
+          "sha256": "46c301f55f4290430ec2253e0adca8026c235c8886f5a16dccdfc4a39de28695"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "표의 중첩·행과 셀 소속·원형/사각 기호·각주 및 쪽번호를 대조했다. SVG의 얇은 괘선 농도·작은 기호 차이를 2px 실루엣 수치와 구별했다."
+    },
+    {
+      "backend": "svg",
+      "key": "outline-minimal",
+      "page": 1,
+      "current_raw_png_sha256": "37664f3f3c1e18336caf90fd3a01394dd515f8878557470eb91350dc7e42332f",
+      "current_pdf_png_sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-minimal/raw-001.png",
+          "sha256": "37664f3f3c1e18336caf90fd3a01394dd515f8878557470eb91350dc7e42332f"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-minimal/pdf-001.png",
+          "sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-minimal/review-001.png",
+          "sha256": "32a726e5e7a896067a39e76d183ae250b3cdfc688ae23b108905e654b04d7b58"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/outline-minimal/overlay-001.png",
+          "sha256": "5d587ea1c464f00fcb7ac54b8524d747e841440aad2f023a6f4ebdcdf2ad809d"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "최소 개요·일반 본문·표 셀 번호·후속 요구사항의 줄 순서와 간격을 대조했다."
+    },
+    {
+      "backend": "svg",
+      "key": "original4138",
+      "page": 12,
+      "current_raw_png_sha256": "442130e4d237681df6c2673f2128e3c65edc4277d526f38ff83d2ede0ec58813",
+      "current_pdf_png_sha256": "ead6f5dfa27141f1cb955c06727169d51867a53b6bc452ba3dcea0aa99126ae7",
+      "raw_match_percent": 99.8001,
+      "previous_raw_match_percent": 99.8001,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/original4138/raw-012.png",
+          "sha256": "442130e4d237681df6c2673f2128e3c65edc4277d526f38ff83d2ede0ec58813"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/original4138/pdf-012.png",
+          "sha256": "ead6f5dfa27141f1cb955c06727169d51867a53b6bc452ba3dcea0aa99126ae7"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/original4138/review-012.png",
+          "sha256": "4675c221f9e9ca491600b445a25d1198b64af54d35464f984f8b9f843bb81e6a"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/actual-svg/original4138/overlay-012.png",
+          "sha256": "e9ad5b5210d2e591750bf1aa75a848f9c11156611c3a934d09302944e825b4e6"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "문단 소속과 수식의 숫자·첨자·근호 및 앞뒤 본문이 보존된다. 수식 가장자리·작은 글리프 잉크 차이가 남으며 픽셀 동일로 주장하지 않는다."
+    }
+  ],
+  "native_binary_sha256": "50ed1f014b8d1ec949f411855384e26260d3695ef348eb4732d52dece1a65db0",
+  "raster_route": "Native export-svg followed by browser raster",
+  "capture_tables": {
+    "chemical": "2b2ca7405c870591bad8d63fee180f1af53e319ddabdcf3a3b4f583efd70f54a",
+    "spec13": "3cd65ac350ee1e64a1625a56571dbd5aa5e3b6616b57f1d299038b530c43442d",
+    "outline-demo": "d1b31110d1fdadcae81f9d1a2e9054bcc1a2a375e8c60cf3be2968da1402747c",
+    "decree": "d7adc164687a43dbe33c60aa59531c97c352b7213eb928488814b43c204a6060",
+    "outline-minimal": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "original4138": "b1bf1f3497a9af74c1fc8468ae574ee34ea8c519674cc8df17f7fcf838691571"
+  }
+}

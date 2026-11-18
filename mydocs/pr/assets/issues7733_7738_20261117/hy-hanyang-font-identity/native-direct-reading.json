@@ -1,0 +1,844 @@
+{
+  "status": "all_27_native_pairs_validate_previous_reading",
+  "source_head": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "verification_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+  "records": [
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 16,
+      "current_raw_png_sha256": "5bae96a29d85c2adad01c5958373b48d2632b1143705df96b52974509483ec31",
+      "current_pdf_png_sha256": "02082bef77c22daf56b3f9eb0575d788d679c06a3d0fbdebd5cd801df223036e",
+      "raw_match_percent": 99.74736,
+      "previous_raw_match_percent": 99.74736,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-016.png",
+          "sha256": "5bae96a29d85c2adad01c5958373b48d2632b1143705df96b52974509483ec31"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-016.png",
+          "sha256": "02082bef77c22daf56b3f9eb0575d788d679c06a3d0fbdebd5cd801df223036e"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-016.png",
+          "sha256": "fd8dc20d294a42c1c1b8bd6c3efe2cc20c094ac31a079a186ae4c2db78cce809"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-016.png",
+          "sha256": "3791de75659691026cd8ea1ebe2c3c0b2da831af8ad76539de76b8eb7bbfb813"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "상단 본문·하단 두 개의 목록·쪽번호 소속을 유지한다. 얇은 원형 기호의 농도 차이는 남는다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 23,
+      "current_raw_png_sha256": "b5899524c51ec22cd9a856ef1ccab3043431ced2a76dea913d00b8f01c0b6a5e",
+      "current_pdf_png_sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-023.png",
+          "sha256": "b5899524c51ec22cd9a856ef1ccab3043431ced2a76dea913d00b8f01c0b6a5e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-023.png",
+          "sha256": "2bde31fc7ac734a6a93584c666f17153445780866ec9b2c8899e44eec7e5c99b"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-023.png",
+          "sha256": "f7b66c9a3d4f9d9febac42fc3c736f48f59309063daf3088c83f6d06ac3e98ae"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-023.png",
+          "sha256": "36cd4fdcf90b44e80baa58198300ce6bab7afc2ee6585c37d03b5c3c9e13385c"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "장 제목·두 연구 항목·오른쪽 장 탭·아래 쪽번호의 위치와 문단 순서를 대조했다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 27,
+      "current_raw_png_sha256": "a8724f4e0321a8439191a221e9d46b7e2d0b4a91bc4c3c550d56804ad6f88de8",
+      "current_pdf_png_sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1",
+      "raw_match_percent": 99.85798,
+      "previous_raw_match_percent": 99.85798,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-027.png",
+          "sha256": "a8724f4e0321a8439191a221e9d46b7e2d0b4a91bc4c3c550d56804ad6f88de8"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-027.png",
+          "sha256": "f18544caac806cbbd2b34f1d830c41898c5f12a1264dbeec5ae66d38b205abd1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-027.png",
+          "sha256": "118d79cc23747e2905920fefa42e8b2d11ebd4e98e4f30fd4f51d3aad53cca8d"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-027.png",
+          "sha256": "eafe5ce96e929a34716259bd640f68ad223cb7378de9d5e65376f8de11f3819f"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "소제목·원형/사각 목록과 줄 소속·들여쓰기를 대조했다. 글리프 농도와 일부 작은 폭 차이는 남지만 줄 이동·내용 누락은 보이지 않는다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 56,
+      "current_raw_png_sha256": "daa590fe8ffb70b4989c0c6a91ca15d62b49baa3af613c2e96a6f942ea7d2904",
+      "current_pdf_png_sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-056.png",
+          "sha256": "daa590fe8ffb70b4989c0c6a91ca15d62b49baa3af613c2e96a6f942ea7d2904"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-056.png",
+          "sha256": "c6b7a3fa63a2c55d115ae544d778a6079d3bac3cf990c20b5d1130be6e462e43"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-056.png",
+          "sha256": "d0d055dfcc454013d07216ae2ceceb3414a25d96e21e0bde2c09e03866200d98"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-056.png",
+          "sha256": "61799b1e31322183d1c2ec236a1ec97158ef43c40daa173ed124f5b398d8a4f2"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "제3장 두 줄 제목·두 항목·파란 장 탭과 쪽번호를 확인했다. 제목 결측점과 원본 공급자 보정 뒤 단일 줄 소속이 유지된다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 68,
+      "current_raw_png_sha256": "a9345d70897cf9acad04d1fe5146df6b55e2c65ce5789b46e70969efeaff732a",
+      "current_pdf_png_sha256": "614c309bb796861bf502cd8f8402bf25fdffd195720200b0fa8bc56be627b2fd",
+      "raw_match_percent": 99.75343,
+      "previous_raw_match_percent": 99.75343,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-068.png",
+          "sha256": "a9345d70897cf9acad04d1fe5146df6b55e2c65ce5789b46e70969efeaff732a"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-068.png",
+          "sha256": "614c309bb796861bf502cd8f8402bf25fdffd195720200b0fa8bc56be627b2fd"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-068.png",
+          "sha256": "f10bf7e422333dd4b6294cacfa08ec37e9e9c2447342a9cd28a35ba5d1dcb469"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-068.png",
+          "sha256": "8050e141caab644c283fbd1a34861eb2dd72d2efb892ace28ec5d9f4daf96682"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "여섯 원형 목록과 캐나다 활자 크기 표, 앞뒤 문단과 46쪽 번호를 대조했다. 가는 원형 기호와 잉크·장평의 미세 차이를 구분한다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 76,
+      "current_raw_png_sha256": "f98cc48dca5c6d345b3ef9892f223c2610b5619246c45c710c984623d4981107",
+      "current_pdf_png_sha256": "e2d41b04552fb0ef2be398c1feb26adaa5dd0c781bf7699f6052a6bfdc138fcf",
+      "raw_match_percent": 99.99873,
+      "previous_raw_match_percent": 99.99873,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-076.png",
+          "sha256": "f98cc48dca5c6d345b3ef9892f223c2610b5619246c45c710c984623d4981107"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-076.png",
+          "sha256": "e2d41b04552fb0ef2be398c1feb26adaa5dd0c781bf7699f6052a6bfdc138fcf"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-076.png",
+          "sha256": "464630b83ab87c0389b182acd3b8cefacc83f84dac472674c031d57f1810b60b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-076.png",
+          "sha256": "9187edb1309a827633c4477b36718d062ea840d4a6bdaadf2c8b5a3c71c9c638"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "표 4-1의 캡션·상단 목록·국가/제도/대상제품 셀·쪽번호를 PDF와 대조했다. 캡션과 표가 뒤 본문을 덮지 않고 같은 줄 소속을 유지한다. 얇은 괘선·글리프 잉크 차이는 남는다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 78,
+      "current_raw_png_sha256": "a6d94338cf27e1c1d288c02ffd3bb460ab6175579ab23ba57b9eceb7e121a4b8",
+      "current_pdf_png_sha256": "f6935c818adf303b2ded0b3606affb090495759311e00460959c64c7ea4dc097",
+      "raw_match_percent": 99.99604,
+      "previous_raw_match_percent": 99.99604,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-078.png",
+          "sha256": "a6d94338cf27e1c1d288c02ffd3bb460ab6175579ab23ba57b9eceb7e121a4b8"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-078.png",
+          "sha256": "f6935c818adf303b2ded0b3606affb090495759311e00460959c64c7ea4dc097"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-078.png",
+          "sha256": "34e2707413e0a01f0dced1b0a0b6c742d404032c766484bd048edbbbdbc0ef9d"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-078.png",
+          "sha256": "c2a80cb21bc342712d84d64da93984a6c3a60e6d0511404a9046d57634fd5bcc"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "표 4-2의 국가별 병합행·제도명·비고와 뒤 표 4-3 캡션/머리 행, 꼬리 선·쪽번호를 대조했다. 행·다음 표 시작 소속을 유지하며 미세 잉크/선 차이는 남는다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 79,
+      "current_raw_png_sha256": "7e5a5b26258e15d0536fcfe82dccd28e46e31a776984232981fbb6fc892fbdd3",
+      "current_pdf_png_sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945",
+      "raw_match_percent": 99.98749,
+      "previous_raw_match_percent": 99.98749,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-079.png",
+          "sha256": "7e5a5b26258e15d0536fcfe82dccd28e46e31a776984232981fbb6fc892fbdd3"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-079.png",
+          "sha256": "9ed5e0a8146a2e24880e5c2658ae9bb1e2c0f55d170675989365a102970c8945"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-079.png",
+          "sha256": "e7360e7c6ab2ea4ffbff08bb9e0f1775a54da43606d4e3da2783e9977c083ac9"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-079.png",
+          "sha256": "9521bc9abc10965a2b9320c6878ae357c30837818304bdb1b708b226c9c0f6eb"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "큰 빈 영역·표4-4 캡션·해외 인증 마크 제목 행·쪽번호가 PDF와 같은 위치에 있다. PDF에도 빈 영역이 있으므로 내용 누락을 추정하지 않는다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 85,
+      "current_raw_png_sha256": "83334f671df189255eb46b0ad97e93c760849860c497a6f34ace4a7b3b555530",
+      "current_pdf_png_sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884",
+      "raw_match_percent": 99.973,
+      "previous_raw_match_percent": 99.973,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-085.png",
+          "sha256": "83334f671df189255eb46b0ad97e93c760849860c497a6f34ace4a7b3b555530"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-085.png",
+          "sha256": "00fb711445ef9f1e8e31cdbd985e7553d741fe97b821cdd8ff5f94814ca95884"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-085.png",
+          "sha256": "d4ee0e907816d131136ec5c78693060cefb1489063112feb58da705dc656d6cc"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-085.png",
+          "sha256": "a46c1f48405bc8018ae7987a8e96454c4d81f388dc7ea393871c7de979b8770b"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "제품 표시 두 상자와 제목·내부 라벨·어린이보호포장·신호어·쪽번호가 같은 상자에 보존된다."
+    },
+    {
+      "backend": "native",
+      "key": "chemical",
+      "page": 92,
+      "current_raw_png_sha256": "454b7ef222bcad7e41e6cc1b3c35df66711a262c4b04e2992a323dc43380570e",
+      "current_pdf_png_sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7",
+      "raw_match_percent": 99.97532,
+      "previous_raw_match_percent": 99.97532,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/raw-092.png",
+          "sha256": "454b7ef222bcad7e41e6cc1b3c35df66711a262c4b04e2992a323dc43380570e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/pdf-092.png",
+          "sha256": "5d4bade7bf4ab2bc4f2c40b511f690fe6dfb1d10cf3f23f5269a69cd259608a7"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/review-092.png",
+          "sha256": "62d816a6df323929aa1e219b3da13df5afe6d7ca13a06f706ff0f6a3333d9e9b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/chemical/overlay-092.png",
+          "sha256": "f635b9b78fe88d685f8b79ae55f3e041d3b0e64775b9832dafd81c116fa44e2b"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "상단 표시 상자와 하단 공통 표시사항·주석·제품별 특성 제목이 같은 순서와 줄 소속을 유지한다."
+    },
+    {
+      "backend": "native",
+      "key": "spec13",
+      "page": 8,
+      "current_raw_png_sha256": "5f0ac4ae87dd4928e8b69cb163c1dbf8cb214d37705dd04f8fbd5ce586b0e44e",
+      "current_pdf_png_sha256": "fdba969384e1c423758094a917bb5901ba1309af327f4aa5be4dd1325d238274",
+      "raw_match_percent": 99.68651,
+      "previous_raw_match_percent": 99.68651,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/raw-008.png",
+          "sha256": "5f0ac4ae87dd4928e8b69cb163c1dbf8cb214d37705dd04f8fbd5ce586b0e44e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/pdf-008.png",
+          "sha256": "fdba969384e1c423758094a917bb5901ba1309af327f4aa5be4dd1325d238274"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/review-008.png",
+          "sha256": "cbdd447f33a7dbdbe03947a860cd362f553514c7192a64a297860752f1a32ff3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/overlay-008.png",
+          "sha256": "69449a2c16430798e5ead746075397997bfb4e18560c032a7dd683be7bb60522"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "장 표지의 로고·제목·부제·회색 도형 배치를 유지한다. 제목 글리프 윤곽과 미세 위치 차이는 남는다."
+    },
+    {
+      "backend": "native",
+      "key": "spec13",
+      "page": 69,
+      "current_raw_png_sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1",
+      "current_pdf_png_sha256": "c67d40620de2014f04ee1f1245171aa55ae11410b2fdbf2adf049c58c33ecd70",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/raw-069.png",
+          "sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/pdf-069.png",
+          "sha256": "c67d40620de2014f04ee1f1245171aa55ae11410b2fdbf2adf049c58c33ecd70"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/review-069.png",
+          "sha256": "7630bc393c207ee18868a24ba351ea68eab5920b0005fc26e441e2f747b92402"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/overlay-069.png",
+          "sha256": "49a4f5fe8ed6ac6f9e58ff96db22dc41d3b35dab66831e58e6ef1b46303cde68"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "독립 PDF와 Native 모두 빈 페이지임을 직접 확인했다. 다른 페이지의 높은 점수로 대신하지 않는다."
+    },
+    {
+      "backend": "native",
+      "key": "spec13",
+      "page": 70,
+      "current_raw_png_sha256": "f238ab58bd21985c67356917acc174b0c9d8eb38b2bf7b2881d87cefa3dae390",
+      "current_pdf_png_sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/raw-070.png",
+          "sha256": "f238ab58bd21985c67356917acc174b0c9d8eb38b2bf7b2881d87cefa3dae390"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/pdf-070.png",
+          "sha256": "25a30a88dc51f0eb49ecb51248e1ebedc5ee186c1aa0ab9d7c0d250f395ebae1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/review-070.png",
+          "sha256": "154119edd6a8e0ccefeaa3e80a7cd9349322f3883e4b2509a9566047938c40f2"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/overlay-070.png",
+          "sha256": "248f71d2834680a011f8ac31955d09fd1f4b87893aa5db2e34de24630cf668ba"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "네 revision 항목과 모든 하위 변경 사항이 순서·글줄·띄어쓰기를 유지한다."
+    },
+    {
+      "backend": "native",
+      "key": "spec13",
+      "page": 71,
+      "current_raw_png_sha256": "868d2c21739bbd44b0317ba333cf6a8241978bce9e21db7b916ac781fd097f06",
+      "current_pdf_png_sha256": "ae9cce9ba9d7f001387811b34237bd47db0f66ab90b8ff8ffee19bad911f781a",
+      "raw_match_percent": 99.90741,
+      "previous_raw_match_percent": 99.90741,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/raw-071.png",
+          "sha256": "868d2c21739bbd44b0317ba333cf6a8241978bce9e21db7b916ac781fd097f06"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/pdf-071.png",
+          "sha256": "ae9cce9ba9d7f001387811b34237bd47db0f66ab90b8ff8ffee19bad911f781a"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/review-071.png",
+          "sha256": "782dd34d5ef73ef551a112b885112cbd66162015f3f7f9d4a9c3616cd58d3e1b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/spec13/overlay-071.png",
+          "sha256": "c0e0005d42b03d3eca100f37b0104d440f0e81e524473d9fa964ad565628ebc6"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "출판사 정보·주소·전화·팩스와 위아래 괘선이 같은 배치를 유지한다. 일부 글리프 잉크의 미세 차이가 남는다."
+    },
+    {
+      "backend": "native",
+      "key": "outline-demo",
+      "page": 1,
+      "current_raw_png_sha256": "bd48facc744718295f87bd4804970a2a846429f67796fef699c18751da345972",
+      "current_pdf_png_sha256": "5baab3fccc102bf0bd45b4ff93de1300228c93b184241fa98ed3bd641f5e2a45",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/raw-001.png",
+          "sha256": "bd48facc744718295f87bd4804970a2a846429f67796fef699c18751da345972"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/pdf-001.png",
+          "sha256": "5baab3fccc102bf0bd45b4ff93de1300228c93b184241fa98ed3bd641f5e2a45"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/review-001.png",
+          "sha256": "d1200e3e937c25ad98d482a4f42dc0e7dd92f040918605356cb9ead7780e21b3"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/overlay-001.png",
+          "sha256": "61fd18c12d176144103b4c5b634ab15aeee16ef5496cc5b94de1fb79f2cf6c8d"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "총칙·목적·배경·적용 범위·용어 정의 번호와 설명 두 줄씩을 대조해 계층과 순서를 확인했다."
+    },
+    {
+      "backend": "native",
+      "key": "outline-demo",
+      "page": 2,
+      "current_raw_png_sha256": "d9d0cf6a4739a554ec922ca0b71ea13ac4f5896c93d4a7993d2ae496a8559b4e",
+      "current_pdf_png_sha256": "26388ad7eacee0289356fe8ab79daf603ab344854aab2866d50c590a767193c5",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/raw-002.png",
+          "sha256": "d9d0cf6a4739a554ec922ca0b71ea13ac4f5896c93d4a7993d2ae496a8559b4e"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/pdf-002.png",
+          "sha256": "26388ad7eacee0289356fe8ab79daf603ab344854aab2866d50c590a767193c5"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/review-002.png",
+          "sha256": "2a3701fef4947077ae70e4e7cc44b74bc021466a27ab002cc6690078bd1bb4cb"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/overlay-002.png",
+          "sha256": "1d99bbc7dd46ccac0dc5b690e3a041c3a5045935b5db9be3b7cb7b075cd2887a"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "본문 규정·요구사항·기능·비기능·제약 조건의 계층 번호와 설명 줄 소속을 확인했다."
+    },
+    {
+      "backend": "native",
+      "key": "outline-demo",
+      "page": 3,
+      "current_raw_png_sha256": "a0d0d5382c37d4ac2b8e320b6b5b8d8f141d775f23b6cc143886771b21935e72",
+      "current_pdf_png_sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/raw-003.png",
+          "sha256": "a0d0d5382c37d4ac2b8e320b6b5b8d8f141d775f23b6cc143886771b21935e72"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/pdf-003.png",
+          "sha256": "e2da2b1ac64361d5cadd9e6b4a2fab3fbb66a57fcf364b405cbea3d35b9a2bb5"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/review-003.png",
+          "sha256": "809d07dcfb0e17f4f069913e0b325d479e75ef8a02964a2d3c4dabfc95b34a32"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-demo/overlay-003.png",
+          "sha256": "094f47bfe26bb028c0e54720030780152963ea35b1db611fcc6b57fcc102f0a2"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "표 셀 번호 문단과 뒤 하위 개요·부칙·시행일·경과조치가 PDF와 같은 순서와 별도 줄로 이어지며 겹침이 없다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 13,
+      "current_raw_png_sha256": "1240bb87264e266dac53333c738731858a44744d0332d616cb446666756a0cd6",
+      "current_pdf_png_sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-013.png",
+          "sha256": "1240bb87264e266dac53333c738731858a44744d0332d616cb446666756a0cd6"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-013.png",
+          "sha256": "1e9ef3376addc05fed4b9bf12e1bb0e153e61896c177f3bfad27c621cbe30a8f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-013.png",
+          "sha256": "210e207168beaf5a6097385b52f7aaf2ae09d2a0a2c84ff983d285dbc6882aad"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-013.png",
+          "sha256": "9cb6d364fb47f69bc9d2ad8caff375317ae4d16773120a6aee4d6689fe70f6bd"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "신고 대상 표의 2개 행과 원칙·예외·각주, 뒤 비용편익 제목·다음 표 머리를 대조했다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 18,
+      "current_raw_png_sha256": "b19037263fd6349387ea73105ca24f8790e68dab8f48321e4eaa2d0ca8d87197",
+      "current_pdf_png_sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-018.png",
+          "sha256": "b19037263fd6349387ea73105ca24f8790e68dab8f48321e4eaa2d0ca8d87197"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-018.png",
+          "sha256": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-018.png",
+          "sha256": "aaaaf980e6e4ba48a1cc17aed9545cd0f29e3803d49063f79108b56a3721b7ac"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-018.png",
+          "sha256": "ed1356530a262f0f4de47a286143fb70dd4a0911ff065ced9cf552a0b7e2ee80"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "큰 근거설명 셀의 내부 두 표와 뒤 설명·추정 문단, 바깥 표 끝을 대조했다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 19,
+      "current_raw_png_sha256": "5812c8128217d4503be63b0f159cc9f63ac6fd8cd9564d247f8b12be2c41b435",
+      "current_pdf_png_sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee",
+      "raw_match_percent": 99.73508,
+      "previous_raw_match_percent": 99.73508,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-019.png",
+          "sha256": "5812c8128217d4503be63b0f159cc9f63ac6fd8cd9564d247f8b12be2c41b435"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-019.png",
+          "sha256": "deb3f96f1198b67acbd6109d0a5fa94577fcecc28f8eda3b9f5ad38816c67aee"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-019.png",
+          "sha256": "f9b6b4e38ebfa0b6de651b68a4a50ff8fb37952f6b713b5a53ecc44dfef035c4"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-019.png",
+          "sha256": "8b83f9ea6a3691e89d66d7d6c0edf7926e89a9228a7b8ec071e52ff83dc75813"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "그래프·안쪽 두 표·바깥 표와 아래 본문·쪽번호 배치를 유지한다. 얇은 괘선과 글리프의 미세 차이는 남는다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 36,
+      "current_raw_png_sha256": "b46e0cdec6f3af6af38a232e65c83843973b446d296d58a6d9d4bffaf8d29653",
+      "current_pdf_png_sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-036.png",
+          "sha256": "b46e0cdec6f3af6af38a232e65c83843973b446d296d58a6d9d4bffaf8d29653"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-036.png",
+          "sha256": "a8e245f15414461772d86b62f07e8f4d6700e5a5eea1f9258afb84c940e2e3fe"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-036.png",
+          "sha256": "b2967e5c2bd2e9c4fb6bb5df60c35b52b97bc2b05c19ff745bfb209c592f0b8c"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-036.png",
+          "sha256": "12ca47f6282d0c8a65c940f78de78de5bdd67f93c8efe32488edc9086396ca72"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "지원센터 기준 표의 긴 셀과 다음 중첩 표의 첫 행이 PDF와 동일한 쪽 경계에 보존된다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 37,
+      "current_raw_png_sha256": "febfb6e45d8dd8a614877bf8339e69f6bd24cd130068482223a82cc4a89fe742",
+      "current_pdf_png_sha256": "1a4f8a533b4afb388ee544b65b87ea49d8ccf9a8165a41757cfff5ebe0ee51b9",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-037.png",
+          "sha256": "febfb6e45d8dd8a614877bf8339e69f6bd24cd130068482223a82cc4a89fe742"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-037.png",
+          "sha256": "1a4f8a533b4afb388ee544b65b87ea49d8ccf9a8165a41757cfff5ebe0ee51b9"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-037.png",
+          "sha256": "38b6ee67a24e88cd93f74d5ab26aaabfbc91aa03fbdb3f38c6415c8809954aee"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-037.png",
+          "sha256": "1a901ba66115e9742dfb3320383a650dd7437bdee3858316258a830ee3e3c3d8"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "앞쪽에서 이어진 인력/시설 중첩 표와 아래 두 지원센터 행의 소속·내용 순서를 대조했다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 59,
+      "current_raw_png_sha256": "28fa146fb1c8b0d9b58de0d748faa309f77621463e42b42ad413a7f551f0425a",
+      "current_pdf_png_sha256": "aaf7b8d7bcc7543f259a4417989dde4ce16d41c78c29ce2a4cdb107188b5a3b1",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-059.png",
+          "sha256": "28fa146fb1c8b0d9b58de0d748faa309f77621463e42b42ad413a7f551f0425a"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-059.png",
+          "sha256": "aaf7b8d7bcc7543f259a4417989dde4ce16d41c78c29ce2a4cdb107188b5a3b1"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-059.png",
+          "sha256": "7c8ac03c2c2ead2159fd6d17b083dd87fa9f5d2cf176dc18ccdf707633e09a08"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-059.png",
+          "sha256": "0cf8096bd3eaf21e721b9bf1a753d1ae2633c66e94397c8612ce402597f2bd11"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "상하 두 비용·편익 표와 중간 문단이 같은 경계를 유지한다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 61,
+      "current_raw_png_sha256": "14aa74606e4d832366a6c74869518ff65b91bf421282a8157c1a8c01210a59b8",
+      "current_pdf_png_sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-061.png",
+          "sha256": "14aa74606e4d832366a6c74869518ff65b91bf421282a8157c1a8c01210a59b8"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-061.png",
+          "sha256": "78c612091551ed060a63b3c453e0a80f4c3c52b357a6f9d5ef4faa756d492baa"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-061.png",
+          "sha256": "3e775ccad7019dd319b3dbf1d2188bd62428b6e5e4e7cba0065a986a147a2534"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-061.png",
+          "sha256": "8976671634f6d66ce0ab00e9b9188efd1b0b51e6ac2f919644d0ab0c62c4239e"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "정성분석·규제일몰제·우선허용 행의 회색 머리글·세로 병합과 마지막 적용여부 문단을 대조했다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 63,
+      "current_raw_png_sha256": "6abc4112862d83a86ea2e731a1deb638626eeaebdff2c20448a9fb8546b61640",
+      "current_pdf_png_sha256": "0835110956b79f40a7aa13080968006d71a94c82be28baaea9967d1cae178d8f",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-063.png",
+          "sha256": "6abc4112862d83a86ea2e731a1deb638626eeaebdff2c20448a9fb8546b61640"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-063.png",
+          "sha256": "0835110956b79f40a7aa13080968006d71a94c82be28baaea9967d1cae178d8f"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-063.png",
+          "sha256": "76ee526746b909a58073c1f03c8af55fba0ab25467857491b96cee406b19d272"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-063.png",
+          "sha256": "e8271223c0f3048590a1fe0856dcbf1cb6ba4ad6fa22f9f6c620b1151e003985"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "본문 굵은 런·괄호와 하단 참고 법조문 회색 제목·점선 상자를 대조했다."
+    },
+    {
+      "backend": "native",
+      "key": "decree",
+      "page": 70,
+      "current_raw_png_sha256": "d35f1185208f287e690f1f1d43fd19cf0664d0e86b0601640081b1914ff1f1be",
+      "current_pdf_png_sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/raw-070.png",
+          "sha256": "d35f1185208f287e690f1f1d43fd19cf0664d0e86b0601640081b1914ff1f1be"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/pdf-070.png",
+          "sha256": "b39672cfa6a6c525d1657af3560629e06dbf46557671adf1d60b2ef32f44cf57"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/review-070.png",
+          "sha256": "806b9c168d522ce952d9201d108babf556e034aab3f2709c8e1fa78e08f2a70b"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/decree/overlay-070.png",
+          "sha256": "0e0d1d3c74bca9a4a89a3a60dd308c10c4c7f7474e230c5158323a15bab1025d"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "상단 두 사례 문단과 큰 표의 법령 그림이 같은 원점에 보존된다. 앞 간격이 중복 소비되던 그림 호스트 보정 결과를 확인했다."
+    },
+    {
+      "backend": "native",
+      "key": "outline-minimal",
+      "page": 1,
+      "current_raw_png_sha256": "6ee3053c2364ae48fde05f14899e7e8728f7b2536f508bf72e72ba58716630cb",
+      "current_pdf_png_sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e",
+      "raw_match_percent": 100.0,
+      "previous_raw_match_percent": 100.0,
+      "previous_images": {
+        "raw": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-minimal/raw-001.png",
+          "sha256": "6ee3053c2364ae48fde05f14899e7e8728f7b2536f508bf72e72ba58716630cb"
+        },
+        "pdf": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-minimal/pdf-001.png",
+          "sha256": "503a195603c468fb58897aa1c96d39236861d87076cef62f93ae668ec85e1e3e"
+        },
+        "review": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-minimal/review-001.png",
+          "sha256": "d79290c5ddace0adfde67b3b54478cbd06fc46332ece7a14198aefd89e87a057"
+        },
+        "overlay": {
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/scope/native/outline-minimal/overlay-001.png",
+          "sha256": "be5bb4f44b6b2f7564d313a28b07d1911c8b1b245aa061e1e666f165f3181f1d"
+        }
+      },
+      "same_render_pixels": true,
+      "same_reference_pixels": true,
+      "reuse_direct_reading": true,
+      "observation": "2. 표 셀 번호 문단과 뒤 3. 요구사항이 각각 별도 줄이며 앞 개요/목적/본문 순서와 쪽 수를 유지한다."
+    }
+  ]
+}

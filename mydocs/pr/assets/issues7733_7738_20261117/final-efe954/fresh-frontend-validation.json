@@ -1,0 +1,70 @@
+{
+  "status": "passed_frontend_gates_pending_browser",
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "steps": [
+    {
+      "name": "node-wasm-bindings",
+      "exit_code": 0,
+      "elapsed_seconds": 1.861,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/node-wasm-bindings.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "studio-typescript",
+      "exit_code": 0,
+      "elapsed_seconds": 2.008,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/studio-typescript.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "studio-unit",
+      "exit_code": 0,
+      "elapsed_seconds": 46.309,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/studio-unit.log",
+      "log_sha256": "d363ac787e4c3ce159dfe63aa10cad6cedcc82736ba5b5e872c9e73869bd0090"
+    },
+    {
+      "name": "studio-production-build",
+      "exit_code": 0,
+      "elapsed_seconds": 9.476,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/studio-production-build.log",
+      "log_sha256": "80487a34db050c56635deda20957db0fc0b6b37ad98996447b4c8f41a521f6c9"
+    },
+    {
+      "name": "e2e-manifest",
+      "exit_code": 0,
+      "elapsed_seconds": 0.741,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/e2e-manifest.log",
+      "log_sha256": "1848fb98c78e975e32f308f66e6b69aac669660ded85f5c404ac0d353ef32780"
+    },
+    {
+      "name": "markdown-links",
+      "exit_code": 0,
+      "elapsed_seconds": 19.875,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/markdown-links.log",
+      "log_sha256": "237f0f183e5ba4272ab42948b5f5f38e0b77a4c0c2e2857b43d1761746974125"
+    },
+    {
+      "name": "chrome-options-tests",
+      "exit_code": 0,
+      "elapsed_seconds": 2.72,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/chrome-options-tests.log",
+      "log_sha256": "64cfd3c01830cf5eb26979df3fccd6222874771ae633bbcc64406007a8c769dd"
+    }
+  ],
+  "started_at": "2026-11-18T19:19:14.670157+09:00",
+  "active": null,
+  "command": [
+    "node",
+    "--test",
+    "rhwp-chrome/options.test.mjs"
+  ],
+  "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/post-rebase-08b38-corpus-final/logs/chrome-options-tests.log",
+  "studio_unit_summary": {
+    "tests": 2814,
+    "pass": 2814,
+    "fail": 0,
+    "skip": 0
+  },
+  "browser_validation": "separate fresh-browser-state; not implied by frontend pass"
+}

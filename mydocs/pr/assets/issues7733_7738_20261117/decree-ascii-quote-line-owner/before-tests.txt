@@ -41,7 +41,7 @@
   stderr ───
 
     thread 'issue_7737_ascii_quote_line_owner::ascii_apostrophe_keeps_the_independent_print_line_and_following_text_owner' (269660208) panicked at tests/generated/../cases/issue_7737_ascii_quote_line_owner.rs:71:5:
-    독립 Print의 ASCII 작은따옴표를 다음 줄로 밀면 양쪽 정렬 간격도 달라진다: ICT·SW 진흥기관으로, 현재 과기정통부로부터 예산을 지원받아 
+    독립 Print의 ASCII 작은따옴표를 다음 줄로 밀면 양쪽 정렬 간격도 달라진다: ICT·SW 진흥기관으로, 현재 과기정통부로부터 예산을 지원받아
     note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 ────────────

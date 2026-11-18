@@ -1,7 +1,85 @@
 {
   "status": "verified_installed_sfnt_names",
   "font_binaries_included": false,
-  "hft_originals": [
+  "hy_truetype_and_verified_same_file_exception": [
+    {
+      "file": "H2GTRM.TTF",
+      "names": [
+        "H2gtrM",
+        "HYGothic-Medium",
+        "HY중고딕"
+      ],
+      "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+    },
+    {
+      "file": "H2MJSM.TTF",
+      "names": [
+        "H2mjsM",
+        "HYSinMyeongJo-Medium",
+        "HY신명조"
+      ],
+      "sha256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc"
+    },
+    {
+      "file": "HYGSRB.TTF",
+      "names": [
+        "HYgsrB",
+        "HY궁서"
+      ],
+      "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
+    },
+    {
+      "file": "HYGTRE.TTF",
+      "names": [
+        "HYgtrE",
+        "HY견고딕"
+      ],
+      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
+    },
+    {
+      "file": "UNI_HSR.TTF",
+      "names": [
+        "HYhaeseo",
+        "한양해서"
+      ],
+      "sha256": "6db51feddcdc42e6b6240325acd2b335eb81b871831c96e954d7aa74d235c2de"
+    },
+    {
+      "file": "HYMJRE.TTF",
+      "names": [
+        "HYmjrE",
+        "HY견명조"
+      ],
+      "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
+    },
+    {
+      "file": "HYGPRM.TTF",
+      "names": [
+        "HYgprM",
+        "HY그래픽"
+      ],
+      "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+    },
+    {
+      "file": "H2GTRE.TTF",
+      "names": [
+        "H2gtrE",
+        "HYGothic-Extra",
+        "HY견고딕"
+      ],
+      "sha256": "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234"
+    },
+    {
+      "file": "H2MJRE.TTF",
+      "names": [
+        "H2mjrE",
+        "HYMyeongJo-Extra",
+        "HY견명조"
+      ],
+      "sha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002"
+    }
+  ],
+  "hft_declared_family_otf_suppliers": [
     {
       "file": "ENGGT.otf",
       "names": [
@@ -165,82 +243,6 @@
       "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
     }
   ],
-  "hy_truetype_and_verified_same_file_exception": [
-    {
-      "file": "H2GTRM.TTF",
-      "names": [
-        "H2gtrM",
-        "HYGothic-Medium",
-        "HY중고딕"
-      ],
-      "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
-    },
-    {
-      "file": "H2MJSM.TTF",
-      "names": [
-        "H2mjsM",
-        "HYSinMyeongJo-Medium",
-        "HY신명조"
-      ],
-      "sha256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc"
-    },
-    {
-      "file": "HYGSRB.TTF",
-      "names": [
-        "HYgsrB",
-        "HY궁서"
-      ],
-      "sha256": "b41cef3386d034040704b1a143ef13a63c5b9f1ec4222a7579c1796ea05517f6"
-    },
-    {
-      "file": "HYGTRE.TTF",
-      "names": [
-        "HYgtrE",
-        "HY견고딕"
-      ],
-      "sha256": "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8"
-    },
-    {
-      "file": "UNI_HSR.TTF",
-      "names": [
-        "HYhaeseo",
-        "한양해서"
-      ],
-      "sha256": "6db51feddcdc42e6b6240325acd2b335eb81b871831c96e954d7aa74d235c2de"
-    },
-    {
-      "file": "HYMJRE.TTF",
-      "names": [
-        "HYmjrE",
-        "HY견명조"
-      ],
-      "sha256": "a101a7a219ffd57273374a423e734adfba1529e5eaf2e9a7476f7150708ea506"
-    },
-    {
-      "file": "HYGPRM.TTF",
-      "names": [
-        "HYgprM",
-        "HY그래픽"
-      ],
-      "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
-    },
-    {
-      "file": "H2GTRE.TTF",
-      "names": [
-        "H2gtrE",
-        "HYGothic-Extra",
-        "HY견고딕"
-      ],
-      "sha256": "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234"
-    },
-    {
-      "file": "H2MJRE.TTF",
-      "names": [
-        "H2mjrE",
-        "HYMyeongJo-Extra",
-        "HY견명조"
-      ],
-      "sha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002"
-    }
-  ]
+  "actual_hft_file_loading": false,
+  "terminology": "HFT denotes the document declaration/origin; the listed suppliers are OTF, not raw HFT files."
 }

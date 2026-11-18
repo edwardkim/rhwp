@@ -20,5 +20,21 @@
     "scope": "All four existing issue_6171_hanyang_gyeongothic_alias tests, minimal macOS font sandbox"
   },
   "invalid_attempt": "Unprepared derived suite selected zero tests; not counted as PASS.",
-  "full_corrected_run": "pending"
+  "full_corrected_run": {
+    "source_head": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+    "exit_code": 0,
+    "run": 13781,
+    "pass": 13781,
+    "fail": 0,
+    "skip": 45,
+    "test_seconds": 873.621,
+    "wall_seconds_with_build": 1310.32,
+    "log_sha256": "335796c266bcb9f0d328f2e03272807301a91d8c6b62cbb7e3d0a3eb4249fe16",
+    "affected_case_lines": [
+      "PASS [   0.026s] (11668/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::bold_chain_keeps_gyeongothic_alias",
+      "PASS [   0.028s] (11669/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::gyeongothic_metric_alias_stays_paired_with_render_face",
+      "PASS [   0.021s] (11670/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::hanyang_gyeongothic_chain_reaches_installed_hy_face",
+      "PASS [   0.026s] (11671/13781) rhwp::regression_suite_023 issue_6171_hanyang_gyeongothic_alias::hanyang_gyeonmyeongjo_chain_reaches_installed_hy_face"
+    ]
+  }
 }

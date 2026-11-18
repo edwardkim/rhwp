@@ -1,0 +1,64 @@
+{
+  "status": "passed_actual_initialization_responses",
+  "source_head": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+  "expected_sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+  "records": [
+    {
+      "source_sha": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "profile": "Mac local locked wrapper --no-opt",
+      "expected_sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+      "page": "http://127.0.0.1:7793/?renderer=canvas2d",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52"
+        }
+      ]
+    },
+    {
+      "source_sha": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "profile": "Mac local locked wrapper --no-opt",
+      "expected_sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+      "page": "http://127.0.0.1:7793/?renderer=canvas2d",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52"
+        }
+      ]
+    },
+    {
+      "source_sha": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "profile": "Mac local locked wrapper --no-opt",
+      "expected_sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+      "page": "http://127.0.0.1:7793/?renderer=canvas2d",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52"
+        }
+      ]
+    },
+    {
+      "source_sha": "efe9540bd4f1cbaddd89bf018771ef1de20389c8",
+      "profile": "Mac local locked wrapper --no-opt",
+      "expected_sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52",
+      "page": "http://127.0.0.1:7793/?renderer=canvas2d",
+      "matched": true,
+      "received": [
+        {
+          "url": "http://127.0.0.1:7793/@fs/Users/tsjang/rhwp/pkg/rhwp_bg.wasm",
+          "status": 200,
+          "sha256": "b3fec19b68f976ab3b9d4aa4c0be11d1ddd44725543faf248bc15d961424dc52"
+        }
+      ]
+    }
+  ],
+  "record_count": 4
+}

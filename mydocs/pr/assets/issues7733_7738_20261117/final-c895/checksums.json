@@ -656,8 +656,8 @@
   },
   {
     "path": "rust-gates/native-skia-lib.txt",
-    "sha256": "c9b462bd13740409e40a1850b155297b46112abde5ddb608cb3de05b68fa039c",
-    "bytes": 343618
+    "sha256": "d1da47a73d35f4100cb33c5b3ddff3257d805d09d38218e09d35d29d46182e15",
+    "bytes": 343617
   },
   {
     "path": "rust-gates/native-skia-pdf.txt",
