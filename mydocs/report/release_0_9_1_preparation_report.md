@@ -81,6 +81,10 @@ Native sandbox의 WSL DNS 연결 파일 누락은 해당 파일만 읽기 전용
 
 보고용 PDF compatibility 4쪽의 기존 경고는 남는다. #9168의 실제 CI와 PDF raster 7개·direct gate 3개 비율을 대조한 근거를 별도 보존했다. 이 보고용 수치는 독립 한컴 Print 전쪽 검증을 대신하지 않는다. Chrome·Firefox·Safari manifest의 버전 외 필드는 v0.9.0과 같고, 실제 production 경로의 추가된 HTTP literal·네트워크 호출은 0건이다. 모든 사용자 흐름의 전수 네트워크 검증을 주장하지 않는다.
 
+## 준비 PR의 배포 문서 보정
+
+[#9173의 첫 lint](https://github.com/edwardkim/rhwp/actions/runs/44259474754/job/134649184729)에서 라이선스 고지의 프로젝트 버전과 VS Code 변경 이력의 제목 형식이 기존 릴리스 계약에 맞지 않아 실패했다. 최초 로컬 실행의 검사 목록에 이 계약 모듈이 빠져 있었다. 두 문서의 표기를 맞추고 라이선스 고지에 실린 내부 코덱 버전을 Cargo의 실제 버전과 일치시켰다. 동일한 CI 단계의 workflow 계약 643건, 고지 파일 84개 생성, 두 문서의 링크 검사가 통과했다. 제품 코드·빌드 입력 의존성·검사 기준은 그대로이며 앞선 영수증은 실제 실행 소스를 보존한다.
+
 ## 다음 원격 단계
 
 1. 구체적인 후보와 PR 본문·원격 실행안에 대해 승인받은 뒤 devel Open PR·해당 head CI·self-review·merge를 진행한다.

@@ -18,7 +18,7 @@ This software is based in part on the work of the Independent JPEG Group.
 
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.9.0)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.9.1)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
@@ -61,7 +61,7 @@ This software is based in part on the work of the Independent JPEG Group.
 | pbkdf2 | 0.13.0 | MIT OR Apache-2.0 | RustCrypto/password-hashes | HWPX 키 파생 |
 | pcx | 0.2.5 | MIT OR Apache-2.0 OR WTFPL | kryptan/pcx | PCX 이미지 디코딩 |
 | pdf-writer | 0.12.1 | MIT OR Apache-2.0 | typst/pdf-writer | PDF 출력 |
-| rhwp-pdf-import-backend | 0.3.78-rhwp.1 | MIT OR Apache-2.0 | edwardkim/rhwp | `pdf-import` optional; `pdf_oxide 0.3.78` 기반 내부 보안 패치, 코드 import alias `pdf_oxide` |
+| rhwp-pdf-import-backend | 0.3.78-rhwp.2 | MIT OR Apache-2.0 | edwardkim/rhwp | `pdf-import` optional; `pdf_oxide 0.3.78` 기반 내부 보안 패치, 코드 import alias `pdf_oxide` |
 | quick-xml | 0.41.0 | MIT | tafia/quick-xml | HWPX XML 파싱 |
 | resvg | 0.47.0 | Apache-2.0 OR MIT | linebender/resvg | Native/WASM 공통 WMF Print surface, native-skia SVG raster |
 | roxmltree | 0.21.1 | MIT OR Apache-2.0 | RazrFalcon/roxmltree | XML 검증·정규화 |
@@ -106,10 +106,10 @@ CCITT를, `pdf-jpeg2000`은 JPEG 2000을 선택한다. backend의 전체 renderi
 
 | 내부 패키지 | 원본 버전 | 라이선스 | 보완 범위 |
 | --- | --- | --- | --- |
-| `rhwp-hayro-jbig2` `0.3.0-rhwp.1` | `hayro-jbig2` `0.3.0` | Apache-2.0 OR MIT | 사전·segment·bitmap의 예약과 반복 작업 |
-| `rhwp-hayro-ccitt` `0.3.0-rhwp.1` | `hayro-ccitt` `0.3.0` | Apache-2.0 OR MIT | JBIG2 MMR의 changing-line 저장과 디코딩 작업 |
-| `rhwp-hayro-jpeg2000` `0.4.0-rhwp.1` | `hayro-jpeg2000` `0.4.0` | Apache-2.0 OR MIT | tile·component·wavelet 저장과 디코딩 작업 |
-| `rhwp-codec-resource` `0.1.0` | RHWP 자체 코드 | MIT | 동기 요청의 fallible 예약·논리 작업량 연결 |
+| `rhwp-hayro-jbig2` `0.3.0-rhwp.2` | `hayro-jbig2` `0.3.0` | Apache-2.0 OR MIT | 사전·segment·bitmap의 예약과 반복 작업 |
+| `rhwp-hayro-ccitt` `0.3.0-rhwp.2` | `hayro-ccitt` `0.3.0` | Apache-2.0 OR MIT | JBIG2 MMR의 changing-line 저장과 디코딩 작업 |
+| `rhwp-hayro-jpeg2000` `0.4.0-rhwp.2` | `hayro-jpeg2000` `0.4.0` | Apache-2.0 OR MIT | tile·component·wavelet 저장과 디코딩 작업 |
+| `rhwp-codec-resource` `0.1.1` | RHWP 자체 코드 | MIT | 동기 요청의 fallible 예약·논리 작업량 연결 |
 
 원저작자는 Laurenz Stampfl이며 원본은 [LaurenzV/hayro](https://github.com/LaurenzV/hayro)이다.
 각 `vendor/rhwp-hayro-*/`의 `NOTICE`, `LICENSE-*`, `UPSTREAM_FILES.json`에 원본 고지와
@@ -145,7 +145,7 @@ CCITT를, `pdf-jpeg2000`은 JPEG 2000을 선택한다. backend의 전체 renderi
 
 ### PDF 입력 의존성의 고지
 
-`pdf-import`는 기본 포함이며, 이를 통해 `rhwp-pdf-import-backend =0.3.78-rhwp.1`과
+`pdf-import`는 기본 포함이며, 이를 통해 `rhwp-pdf-import-backend =0.3.78-rhwp.2`와
 `office_oxide =0.1.9`를 모두 `default-features = false`로 사용한다.
 `office_oxide` 직접 버전 제약은 `pdf_oxide 0.3.78`과의 컴파일 호환성을 위한 것이며,
 rhwp가 Office 입력 형식 지원을 추가했다는 뜻은 아니다.
@@ -545,7 +545,7 @@ rhwp는 **MIT 라이선스**로 배포된다.
 
 ### 기본 ICC CMM
 
-`pdf-icc`는 기본 feature이며 Native/WASM에서 같은 순수 Rust CMM인 `rhwp-qcms`를
+`pdf-icc`는 기본 feature이며 Native/WASM에서 같은 순수 Rust CMM인 `rhwp-qcms 0.3.0-rhwp.2`를
 사용한다. qcms 0.3.0의 내부 보정판이며 Mozilla Foundation·Marti Maria 등의 원 저작권과
 MIT 전문은 [COPYING](vendor/rhwp-qcms/COPYING)에 보존한다. 원본 archive·VCS commit과
 요청별 CLUT 예약·작업량 변경은 [패치 기록](vendor/rhwp-qcms/RHWP_PATCHES.md)에 있다.
