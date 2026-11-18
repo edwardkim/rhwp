@@ -2,14 +2,15 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pdf_developer_onboarding.md
-last_verified: 2026-11-08
+last_verified: 2026-11-18
 ---
 
-# PDF import: developer quick start for 0.9.0
+# PDF import: developer quick start for 0.9.1
 
 [Complete guide and examples (Korean)](pdf_developer_onboarding.md). These instructions describe
-the **0.9.0** API and consumption contract. Check each registry or store for availability of that version.
-Pin CLI, JS glue, WASM, Worker and Studio to the same release. Initial crates.io publication is included in the 0.9.0 release.
+the **0.9.1** API and consumption contract. Check each registry or store for availability of that version.
+Pin CLI, JS glue, WASM, Worker and Studio to the same release. crates.io distribution started with
+0.9.0; the examples below target 0.9.1.
 
 PDF import produces editable Document IR and saves HWP/HWPX. It is not an embedded PDF viewer or OCR.
 Scanned text remains an image; reconstructed paragraphs and tables may differ from the original authoring document.
@@ -42,14 +43,14 @@ Imported output does not inherit PDF encryption. Keep password input files and d
 
 ## Rust
 
-The 0.9.0 release includes initial crates.io distribution. After publication, use:
+crates.io distribution started with 0.9.0. After 0.9.1 publication, use:
 
 ```toml
 [dependencies]
-rhwp = { version = "0.9.0", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
+rhwp = { version = "0.9.1", default-features = false, features = ["pdf-import", "pdf-jbig2", "pdf-jpeg2000", "pdf-icc"] }
 ```
 
-While publication is pending, replace `version = "0.9.0"` with `path = "/path/to/rhwp"` to consume the matching checkout.
+While publication is pending, replace `version = "0.9.1"` with `path = "/path/to/rhwp"` to consume the matching checkout.
 
 Use `DocumentCore::from_pdf_bytes_with_policy(bytes, &options, policy)` with `PdfImportOptions` and
 `PdfImportPolicy::for_profile(PdfImportProfile::Constrained)`. Serialize `core.document()` with
@@ -59,7 +60,7 @@ use a supervised worker; see the bundled [isolation example](../../packaging/cra
 
 ## JavaScript / WASM
 
-After npm publication, install `@rhwp/core@0.9.0` and serve its WASM file alongside matching JS glue:
+After npm publication, install `@rhwp/core@0.9.1` and serve its WASM file alongside matching JS glue:
 
 ```js
 import init, { HwpDocument } from '@rhwp/core';
@@ -83,7 +84,7 @@ Progress supplies `sourcePage` (one-based), `sourcePageCount`, `completedPages` 
 The percentage uses selected pages; 100% page processing may precede Core construction and saving.
 Cancellation terminates the candidate Worker; a subsequent import creates a new candidate.
 
-For an editor UI, `@rhwp/editor` embeds Studio via `viewerUrl`. Host matching 0.9.0 Studio assets and
+For an editor UI, `@rhwp/editor` embeds Studio via `viewerUrl`. Host matching 0.9.1 Studio assets and
 use `editor.loadFile(pdfBytes, 'input.pdf', { suppressDialogs: false })`. PDF settings/password dialogs
 still require user input. The iframe request timeout and PDF Worker timeout are separate.
 VS Code retains `.hwp`/`.hwpx` file associations; open the converted document there.
