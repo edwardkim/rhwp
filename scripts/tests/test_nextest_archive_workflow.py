@@ -218,6 +218,10 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
         self.assertIn(
+            "timeout-minutes: ${{ needs.preflight.outputs.test_profile == 'release-test' && 45 || 90 }}",
+            native,
+        )
+        self.assertIn(
             "TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}",
             native,
         )
