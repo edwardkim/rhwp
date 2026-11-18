@@ -8,7 +8,7 @@ last_verified: 2026-11-19
 # v0.9.1 배포 결과
 
 v0.9.1의 공개 CLI, Studio, crates.io, npm, VS Code Marketplace와 Open VSX를 확인했다.
-브라우저 확장 스토어 등록은 메인테이너가 수동으로 진행한다.
+메인테이너는 Chrome·Edge·Firefox 스토어에 0.9.1을 수동 제출했다. Firefox의 0.9.1 공개 배포를 확인했다.
 배포에 사용한 파일과 공개 다운로드의 해시, 패키지별 버전·소스는
 [배포 증적](../pr/assets/release-0.9.1-execution/delivery-evidence.json)에 기록했다.
 
@@ -60,6 +60,19 @@ Chrome·Firefox manifest는 v0.9.0 대비 버전만 달라졌다. ZIP별 SHA-256
 파일은 로컬 `output/release-v0.9.1/browser-store/packages/`에 모았다.
 제출은 [메인테이너 수동 절차](../manual/publish_guide.md#8단계-브라우저-확장-스토어-업로드)에 따른다.
 
+### 2026-11-19 KST 제출 및 공개 확인
+
+| 스토어 | 메인테이너 제출 | 공개 확인 |
+| --- | --- | --- |
+| Chrome Web Store | 0.9.1 제출 완료 | 공개 목록은 0.9.0으로 표시된다. [공개 목록](https://chromewebstore.google.com/detail/pgakpjflombjmehnebnbpnalhegaanag) |
+| Microsoft Edge Add-ons | 0.9.1 제출 완료 | 공개 업데이트 응답은 0.9.0.0을 제공한다. [공개 목록](https://microsoftedge.microsoft.com/addons/detail/nfkdfobhmanddlhdbclkpoanbccpigcn) |
+| Firefox AMO | 0.9.1 제출 완료 | 0.9.1이 공개됐고 XPI를 다운로드했다. [공개 목록](https://addons.mozilla.org/en-US/firefox/addon/rhwp-free-hwp-editor/) · [공개 XPI](https://addons.mozilla.org/firefox/downloads/file/5273191/rhwp_free_hwp_editor-0.9.1.xpi) |
+
+Firefox 공개 XPI의 해시는 AMO 응답과 일치했다. 제출 ZIP과 비교해 107개 파일은 바이트가 같았고,
+manifest는 서식만 바뀌었으며 JSON 값은 같다. Mozilla 서명 파일 5개가 추가됐다.
+공개 XPI를 격리 Firefox에 설치해 HWP 열기·편집·저장 및 저장본 재열기를 통과했다.
+Chrome과 Edge는 0.9.1 공개 전환을 확인할 때까지 제출 완료 상태로 기록한다.
+
 ## 남은 검증
 
 - [태그 CI](https://github.com/edwardkim/rhwp/actions/runs/44332297958)의 Native Skia는 최초 실행과
@@ -67,5 +80,5 @@ Chrome·Firefox manifest는 v0.9.0 대비 버전만 달라졌다. ZIP별 SHA-256
   회귀 바이너리를 링크하던 중 종료됐다. A–E, WASM, Frontend와 lint는 성공했다.
   태그 CI 집계는 Native 취소로 실패했다. main 승격 PR의 CI와 공개 배포 검증은 성공했다.
   [재실행 로그](https://github.com/edwardkim/rhwp/actions/runs/44332297958/job/134937841802).
-- 2026-11-19 02:15:24 KST 조회에서 같은 SHA의 [태그 CI 3차 실행](https://github.com/edwardkim/rhwp/actions/runs/44332297958/attempts/3) 상태는 `in_progress`였다.
+- 같은 SHA의 [태그 CI 3차 실행](https://github.com/edwardkim/rhwp/actions/runs/44332297958/attempts/3)도 Native Skia가 45분 제한에서 취소됐고 Build & Test 집계가 실패했다.
 - [#9154](https://github.com/edwardkim/rhwp/issues/9154)는 main에서 정기 Fuzz가 실행된 결과를 확인할 때까지 열린 상태다.

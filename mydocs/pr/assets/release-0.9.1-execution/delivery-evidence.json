@@ -72,11 +72,13 @@
     "job_timeout_minutes": 45,
     "aggregate_result": "failure",
     "observed_latest_attempt": {
-      "conclusion": null,
+      "conclusion": "cancelled",
       "head_sha": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
       "run_attempt": 3,
-      "status": "in_progress",
-      "observed_at_kst": "2026-11-19 02:15:24"
+      "status": "completed",
+      "observed_at_kst": "2026-11-19T02:57:48+09:00",
+      "native_job": 134979777907,
+      "aggregate_job": 135009987610
     }
   },
   "crates_packages": {
@@ -533,6 +535,56 @@
       "editPreserved": true,
       "browser": "firefox/155.0.1",
       "reopenParser": "published-npm-core-same-tag"
+    }
+  },
+  "browser_store_publication": {
+    "observed_at": "2026-11-19T02:57:48+09:00",
+    "submitted_version": "0.9.1",
+    "submission_confirmed_by": "maintainer",
+    "chrome": {
+      "submission": "complete",
+      "observed_public_version": "0.9.0",
+      "source": "https://chromewebstore.google.com/detail/pgakpjflombjmehnebnbpnalhegaanag"
+    },
+    "edge": {
+      "submission": "complete",
+      "observed_update_version": "0.9.0.0",
+      "extension_id": "nfkdfobhmanddlhdbclkpoanbccpigcn",
+      "source": "https://edge.microsoft.com/extensionwebstorebase/v1/crx"
+    },
+    "firefox": {
+      "submission": "complete",
+      "observed_public_version": "0.9.1",
+      "observed_at": "2026-11-19T02:56:40+09:00",
+      "amo": {
+        "version": "0.9.1",
+        "version_id": 6729110,
+        "file": {
+          "id": 5273191,
+          "url": "https://addons.mozilla.org/firefox/downloads/file/5273191/rhwp_free_hwp_editor-0.9.1.xpi",
+          "hash": "sha256:3fbcb5a179470cbe47d8828c2649df7c6cc68aa7c69cc66e50f6078c670a3b91",
+          "status": "public",
+          "created": "2026-11-18T17:33:17Z"
+        }
+      },
+      "archive_bytes": 53455651,
+      "byte_matching_payload_files": 107,
+      "manifest_json_equal": true,
+      "manifest_formatting_changed": true,
+      "amo_signature_entries": [
+        "META-INF/cose.manifest",
+        "META-INF/cose.sig",
+        "META-INF/manifest.mf",
+        "META-INF/mozilla.rsa",
+        "META-INF/mozilla.sf"
+      ],
+      "public_xpi_e2e": {
+        "browser": "firefox/155.0.1",
+        "status": "pass",
+        "viewerTabs": 1,
+        "completedDownloads": 3,
+        "editPreserved": true
+      }
     }
   }
 }
