@@ -72,7 +72,7 @@ function ptToRaw2x(pt: number): number {
   return Math.round(pt * HWPUNIT_PER_PT * 2);
 }
 
-/** pt → raw HWPUNIT (1x) — spacing/lineSpacing 적용용 */
+/** pt → raw HWPUNIT (1x) — 줄 간격 적용용 */
 function ptToRaw(pt: number): number {
   return Math.round(pt * HWPUNIT_PER_PT);
 }
@@ -90,6 +90,12 @@ function pxToRaw2x(px: number): number {
 /** px → raw HWPUNIT (1x) — 비교용 */
 function pxToRaw(px: number): number {
   return Math.round(px * 75);   // px * 72/96 * 100
+}
+
+// 구 엔진의 반올림된 px만으로는 원본의 CHAR 단위 비트를 복원할 수 없다.
+function spacingInputValue(resolvedPx?: number, legacyPx?: number): string {
+  if (resolvedPx !== undefined) return pxToPt(resolvedPx).toFixed(1);
+  return legacyPx ? '' : '0.0';
 }
 
 export class ParaShapeDialog {
@@ -663,8 +669,8 @@ export class ParaShapeDialog {
     }
 
     // 문단 간격 (px → pt)
-    this.spacingBeforeInput.value = pxToPt(p.spacingBeforePx ?? p.spacingBefore ?? 0).toFixed(1);
-    this.spacingAfterInput.value = pxToPt(p.spacingAfterPx ?? p.spacingAfter ?? 0).toFixed(1);
+    this.spacingBeforeInput.value = spacingInputValue(p.spacingBeforePx, p.spacingBefore);
+    this.spacingAfterInput.value = spacingInputValue(p.spacingAfterPx, p.spacingAfter);
 
     // ── 확장 탭
     const ht = p.headType || 'None';
@@ -828,10 +834,10 @@ export class ParaShapeDialog {
       ['spacingBefore', this.spacingBeforeInput, p.spacingBeforePx],
       ['spacingAfter', this.spacingAfterInput, p.spacingAfterPx],
     ] as const) {
-      const originalPt = Number(pxToPt(resolvedPx ?? p[key] ?? 0).toFixed(1));
-      const pt = parseFloat(input.value) || 0;
-      if (pt !== originalPt) {
-        mods[key] = resolvedPx === undefined ? ptToRaw(pt) : paragraphSpacingFromPt(pt);
+      const original = spacingInputValue(resolvedPx, p[key]);
+      const pt = input.valueAsNumber;
+      if (Number.isFinite(pt) && (original === '' || pt !== Number(original))) {
+        mods[key] = paragraphSpacingFromPt(pt);
       }
     }
 
