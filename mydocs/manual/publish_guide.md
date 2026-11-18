@@ -552,6 +552,9 @@ Actions 탭에서 하나의 `Release Binary` tag run이 다섯 native build, Rel
 
 ### 8단계: 브라우저 확장 스토어 업로드
 
+메인테이너가 스토어에 직접 업로드하고 심사를 요청한다. 제출 전에는 최종 태그의 ZIP,
+SHA-256, 권한 대조 및 reviewer note를 준비한다. 제출과 공개 설치는 각각 확인일을 기록한다.
+
 1. `rhwp-chrome` build zip을 Chrome Web Store에 업로드한다.
 2. 같은 zip을 `rhwp-edge-{version}.zip`으로 복사해 Microsoft Edge Add-ons에 업로드한다.
 3. `rhwp-firefox` build zip을 Firefox AMO에 업로드한다.
