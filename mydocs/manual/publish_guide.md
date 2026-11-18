@@ -37,9 +37,10 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 
 ## crates.io 준비와 수동 게시
 
-본체 0.9.0과 13개 내부·보정 의존 패키지의 준비·소비 계약·초회 수동 절차는
+본체와 13개 내부·보정 의존 패키지의 준비·소비 계약·수동 절차는
 [crates.io 가이드](crates_io_guide.md)를 따른다. **0.9.0부터 crates.io 배포를 시작한다.**
-초회 게시와 공개 registry의 Rust·CLI·WASM 소비 확인을 이번 릴리즈의 완료 조건에 포함한다.
+0.9.1은 변경된 8개 새 버전을 의존 순서로 게시하고, 변경 없는 6개 공개 버전은 그대로 재사용한다.
+공개 registry의 Rust·CLI·WASM 소비 확인을 이번 릴리즈의 완료 조건에 포함한다.
 현재 tag workflow의 네 채널에 crates.io를 자동 연결하지 않는다.
 게시·보안 업데이트·부분 실패 복구 책임자는 edwardkim이다. 토큰 준비 여부와 실제 업로드
 승인은 구분하며, 아래 기존 npm/확장 배포 절차로 Cargo 게시를 실행하지 않는다.
@@ -373,8 +374,11 @@ npm/editor/package.json:  0.6.1 → 0.6.2  (다른 파일 변경 없음)
 ### 1단계: 코드 검증
 
 ```bash
-cargo build && cargo test        # 네이티브 빌드 + 테스트
-docker compose --env-file .env.docker run --rm wasm   # WASM 빌드
+cargo build --locked --target-dir target/pr-review
+cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --no-fail-fast
+# 실제 릴리즈 WASM: 표준 혼합 산출물과 wasm-opt 검증을 생략하지 않는다.
+python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard \
+  --output output/release-wasm
 ```
 
 macOS 로컬에서 release 검증이 필요한 경우 `cargo test --release --tests` 대신
@@ -394,24 +398,24 @@ CHROME_CDP=http://localhost:19222 node e2e/edit-pipeline.test.mjs --mode=host
 
 **Cargo.toml** (Rust 패키지 + npm @rhwp/core 버전 원본):
 ```toml
-version = "0.9.0"
+version = "0.9.1"
 ```
 
 **rhwp-vscode/package.json**:
 ```json
-"version": "0.9.0"
+"version": "0.9.1"
 ```
 
 **rhwp-vscode/CHANGELOG.md** 새 버전 항목 추가.
 
 **npm/editor/package.json**:
 ```json
-"version": "0.9.0"
+"version": "0.9.1"
 ```
 
 **rhwp-studio/package.json** (제품정보 대화창 버전 자동 주입):
 ```json
-"version": "0.9.0"
+"version": "0.9.1"
 ```
 
 ### 3단계: README 점검
@@ -431,7 +435,7 @@ version = "0.9.0"
 ```bash
 # release 준비 변경은 작업 브랜치에서 커밋하고 devel 대상 PR로 통합
 git add -A
-git commit -m "v0.9.0 릴리즈 준비"
+git commit -m "v0.9.1 릴리즈 준비"
 
 # merge된 최신 devel 검증
 git fetch upstream
@@ -442,11 +446,12 @@ cargo nextest run \
   --cargo-profile release-test \
   --target-dir target/pr-review \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
-wasm-pack build --target web --out-dir pkg
+python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard \
+  --output output/release-wasm
 
 # release 시 devel → main PR 생성
 gh pr create --repo edwardkim/rhwp --base main --head devel \
-  --title "v0.7.3 릴리즈" --body-file <release-pr-body.md>
+  --title "v0.9.1 릴리즈" --body-file <release-pr-body.md>
 ```
 
 release 검증도 고정 thread 수를 복사하지 않는다. nextest 기본 동시성을 먼저 사용하고, release host의
@@ -470,15 +475,14 @@ promotion gate의 verify-only 실행이 성공해도 정식 tag에서 `Publish A
 > release 준비 변경도 `upstream/devel`에 직접 push하지 않는다. 작업 브랜치 PR과 CI를 거쳐 통합하고,
 > 검증된 `devel`을 `main` 대상 release PR로 올린다.
 >
-> main merge 시 CI/CD가 자동 실행된다:
-> - `ci.yml` → build + test + clippy 검증
-> - `deploy-pages.yml` → GitHub Pages 데모 사이트 자동 배포
+> main PR에서 `ci.yml` 검증을 마친 뒤 병합한다. main push는
+> `deploy-pages.yml`의 GitHub Pages 배포를 시작하며 `ci.yml`을 다시 기동하지 않는다.
 
 ### 5단계: stable tag push → Release·package 자동 배포
 
 ```bash
-git tag v0.7.3
-git push origin v0.7.3
+git tag v0.9.1
+git push origin v0.9.1
 ```
 
 tag push 직후 별도의 `gh release create`를 동시에 실행하지 않는다. `Release Binary`가 다섯 플랫폼을
@@ -496,9 +500,9 @@ v0.8.7의 기존 공식 archive에는 Native Skia가 빠져 있다. 해당 tag�
 asset 교체나 새 tag 배포는 별도 릴리즈 승인 범위에서 수행한다.
 
 ```bash
-gh release edit v0.7.3 \
+gh release edit v0.9.1 \
   --repo edwardkim/rhwp \
-  --title "v0.7.3 — 제목" \
+  --title "v0.9.1 — 제목" \
   --notes-file path/to/release-notes.md
 ```
 
