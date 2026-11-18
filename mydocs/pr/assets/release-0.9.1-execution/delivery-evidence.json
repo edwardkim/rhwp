@@ -600,6 +600,15 @@
         "viewerTabs": 1,
         "completedDownloads": 3,
         "editPreserved": true
+      },
+      "maintainer_update_test": {
+        "target_version": "0.9.1",
+        "method": "manual",
+        "update_detected": true,
+        "update_applied": true,
+        "post_update_functionality": "pass",
+        "reported_by": "maintainer",
+        "reported_at": "2026-11-19T03:06:29+09:00"
       }
     }
   }

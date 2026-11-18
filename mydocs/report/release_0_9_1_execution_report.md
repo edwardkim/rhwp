@@ -71,6 +71,7 @@ Chrome·Firefox manifest는 v0.9.0 대비 버전만 달라졌다. ZIP별 SHA-256
 Firefox 공개 XPI의 해시는 AMO 응답과 일치했다. 제출 ZIP과 비교해 107개 파일은 바이트가 같았고,
 manifest는 서식만 바뀌었으며 JSON 값은 같다. Mozilla 서명 파일 5개가 추가됐다.
 공개 XPI를 격리 Firefox에 설치해 HWP 열기·편집·저장 및 저장본 재열기를 통과했다.
+메인테이너가 Firefox 0.9.1 업데이트가 표시되고 정상 적용되며, 업데이트 후 확장 기능이 동작하는 것을 직접 확인했다.
 Chrome과 Edge는 0.9.1 공개 전환을 확인할 때까지 제출 완료 상태로 기록한다.
 
 ## 남은 검증
