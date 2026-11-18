@@ -1640,7 +1640,7 @@ async function promptLocalFontsIfNeeded(displayName: string): Promise<void> {
     // 호출한 문서 초기화가 이 결과로 공급·조판·뷰를 순서대로 준비한다.
     await detectLocalFonts({ force: true, candidateFamilies: candidates });
   } catch (error) {
-    console.warn(`[local-fonts] ${displayName} 글꼴 확인 실패:`, error);
+    console.warn('[local-fonts] %s 글꼴 확인 실패:', displayName, error);
   }
 }
 
