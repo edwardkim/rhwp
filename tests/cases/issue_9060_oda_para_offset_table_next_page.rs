@@ -1,6 +1,6 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-19 00:25:18 KST (Asia/Seoul).
-//! 직전 파일 변경: 63caae375a0562514fa66e9c99171ecf93e7f973 2026-11-18T09:59:17+09:00.
+//! 주석 갱신: 2026-11-19 08:07:10 KST (Asia/Seoul).
+//! 직전 파일 변경: 2c5461ff240433ec1c5788e9eed4705f52d3dbfd 2026-11-19T07:36:37+09:00.
 //!
 //! 입력: `samples/issue9060/oda-1092000-201600017.hwp`(정책연구관리시스템 PRISM 공개 보고서,
 //! 국무조정실 「한국 ODA 조달시스템 평가 연구」, 한컴오피스 2010 8.5.8.1485 저장).
@@ -12,27 +12,28 @@
 //! (첫 job 32c1b42e 는 worker 비정상 종료로 실패해 같은 engine 으로 한 번 다시 실행했다).
 //! Creator Hwp 2020. 이슈 첨부 Hwp 2022 12.0.0.4547 Print(159쪽)와 148쪽 표 위 괘선이 같다.
 //!
-//! 측정일: 2026-11-18. 소스 10dac056ac(코드), Native release-test native-skia
-//! SHA-256 3ab40bd8b1f763010187fe9583547cb127b18ac728e68e4c34efe9645fbcbe93,
-//! fresh WASM `rhwp_bg.wasm` SHA-256 803415333604c0f1a439d557fabe4c123c41bac92eeb0fb943802a1fd34f9081.
+//! 측정일: 2026-11-19. 소스 2c5461ff24(코드), Native release-test native-skia
+//! SHA-256 ae3fd109ac31a5e96144806eeebd3d62d96eee05689eb74452559f31e465216f,
+//! fresh WASM `rhwp_bg.wasm` SHA-256 dab60baecf026184632f99e840b963eb3894531825811143ed9f08db5d539b2c.
 //! 방법: `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`, 색상 경계 보정 전 2px raw.
-//! 전체 159쪽(독립 PDF·Native·WASM 같음). 대상 쪽 Native/fresh WASM: 147쪽 99.68/99.94%,
-//! 148쪽 99.46/99.91%, 149쪽 99.44/99.86%.
-//! 전쪽 최저: Native 61.24%(152쪽), fresh WASM 54.09%(152쪽). 90% 미만 쪽은 Native 23·70·79·141·152,
-//! WASM 23·79·141·152 로, 모두 글꼴 글리프 차이이며 수정 전부터 있었다. devel fbf8081db5 Native는
-//! 23·70·79·141쪽이 같은 값(81.45·89.76·64.08·87.18%)이고 160쪽이라 148쪽 이후가 밀렸다(148쪽
-//! 40.56%). 내용을 맞춘 devel 153쪽 대 PDF 152쪽도 57.48% 다.
-//! 증거: `mydocs/pr/assets/issue_9060_oda/native/oda_silhouette.tsv`, `.../wasm/oda_silhouette.tsv`,
-//! `.../native-base/oda_silhouette.tsv`, `.../native-base/oda_content_aligned_p150-158_silhouette.tsv`,
-//! 148쪽 review·overlay `.../{native,wasm}/oda_{review,overlay}_148.png`.
+//! 글꼴: `RHWP_FONT_PATH` 로 이 문서가 쓰는 설치 글꼴만 모은 폴더를 공급(`direct-font-programs`,
+//! Native 38개·WASM 34개 파일, Native 글꼴 환경 SHA-256 a978c6dc74e88d18…). 회귀 실행에는 요구하지 않는다.
+//! 전체 159쪽(독립 PDF·Native·WASM 같음). 대상 쪽 Native/fresh WASM: 79쪽 99.96/99.95%,
+//! 147쪽 99.68/99.94%, 148쪽 99.46/99.91%, 149쪽 99.47/99.86%, 150쪽 99.61/99.94%,
+//! 151쪽 99.43/99.87%, 152쪽 99.44/99.79%.
+//! 전쪽 최저: Native 90.30%(70쪽), fresh WASM 90.48%(70쪽). 90% 미만 쪽은 없다.
+//! 증거: `mydocs/pr/assets/issue_9060_oda/{native,wasm}/oda_silhouette.tsv`,
+//! 79·148·152쪽 review·overlay `mydocs/pr/assets/issue_9060_oda/{native,wasm}/oda_{review,overlay}_*.png`.
 //!
 //! 고정형은 독립 PDF의 전체 쪽수 159다.
-//! 관계형은 2구역 문단 76(빈 호스트, 위 캡션, 문단 기준 세로 오프셋 2668HU의 2×2 표)의 쪽
+//! 관계형은 (1) 2구역 문단 76(빈 호스트, 위 캡션, 문단 기준 세로 오프셋 2668HU의 2×2 표)의 쪽
 //! 소유, 본문 위끝·캡션·표 위끝 순서와 거리 대 원본 오프셋, 앞 표(문단 75)와 뒤 문단(77·78)의
 //! 쪽 소속이다. 147쪽 바닥은 문단 75 표가 채워 문단 76 표의 첫 행이 `문단 위치 + 오프셋`
 //! 자리에 들어가지 않는다. 한/글은 표를 148쪽 본문 위끝 + 바깥 위 여백 + 위 캡션에서 연다.
-//! 수정 전에는 오프셋을 새 쪽에서 다시 더해 표가 그만큼 내려가고 첫 조각이 한 줄 짧아져
-//! 문서가 160쪽이 됐다.
+//! 수정 전에는 오프셋을 새 쪽에서 다시 더해 표가 그만큼 내려가고 문서가 160쪽이 됐다.
+//! (2) 문단 80(빈 호스트 표)의 호스트 글줄·빈 문단 81 이 150쪽에 남고, 152쪽 문단 82 가 표 끝
+//! 조각 + 원본 바깥 아래 여백에서 시작한다(수정 전 81 이 152쪽에서 9.5px 를 점유).
+//! (3) 79쪽 <표 3-23>(글자처럼 취급, 쪽을 채움)의 캡션 위끝 = 본문 위끝 + 저장 첫 줄 vpos(수정 전 0).
 //! 실물의 절대 px 좌표를 고정하지 않으며 회귀 실행에 설치된 OTF·시스템 글꼴을 요구하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
