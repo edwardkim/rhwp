@@ -1,0 +1,1071 @@
+{
+  "pdf": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+  "pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+  "page": 18,
+  "font_resource": 20,
+  "pdf_font": "INPILL+H2gtrM",
+  "original_font": "user Fonts/H2GTRM.TTF",
+  "original_sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+  "em": 1024,
+  "used_glyphs": 132,
+  "same_outline_and_advance_count": 132,
+  "rows": [
+    {
+      "unicode": "U+2460",
+      "pdf_gid": 254,
+      "original_glyph": "uni2460",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D53C",
+      "pdf_gid": 193,
+      "original_glyph": "uniD53C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+ADDC",
+      "pdf_gid": 46,
+      "original_glyph": "uniADDC",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C81C",
+      "pdf_gid": 79,
+      "original_glyph": "uniC81C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0020",
+      "pdf_gid": 3,
+      "original_glyph": "space",
+      "same_outline_commands": true,
+      "pdf_advance": 341,
+      "original_advance": 341
+    },
+    {
+      "unicode": "U+AE30",
+      "pdf_gid": 17,
+      "original_glyph": "uniAE30",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C5C5",
+      "pdf_gid": 87,
+      "original_glyph": "uniC5C5",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C18C",
+      "pdf_gid": 6,
+      "original_glyph": "uniC18C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C0C1",
+      "pdf_gid": 81,
+      "original_glyph": "uniC0C1",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+ACF5",
+      "pdf_gid": 251,
+      "original_glyph": "uniACF5",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C778",
+      "pdf_gid": 13,
+      "original_glyph": "uniC778",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+003A",
+      "pdf_gid": 206,
+      "original_glyph": "colon",
+      "same_outline_commands": true,
+      "pdf_advance": 426,
+      "original_advance": 426
+    },
+    {
+      "unicode": "U+25A1",
+      "pdf_gid": 255,
+      "original_glyph": "H22073",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C9C1",
+      "pdf_gid": 40,
+      "original_glyph": "uniC9C1",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C811",
+      "pdf_gid": 229,
+      "original_glyph": "uniC811",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BE44",
+      "pdf_gid": 198,
+      "original_glyph": "uniBE44",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C6A9",
+      "pdf_gid": 137,
+      "original_glyph": "uniC6A9",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0028",
+      "pdf_gid": 31,
+      "original_glyph": "parenleft",
+      "same_outline_commands": true,
+      "pdf_advance": 426,
+      "original_advance": 426
+    },
+    {
+      "unicode": "U+C815",
+      "pdf_gid": 21,
+      "original_glyph": "uniC815",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B7C9",
+      "pdf_gid": 256,
+      "original_glyph": "uniB7C9",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0029",
+      "pdf_gid": 32,
+      "original_glyph": "parenright",
+      "same_outline_commands": true,
+      "pdf_advance": 426,
+      "original_advance": 426
+    },
+    {
+      "unicode": "U+C601",
+      "pdf_gid": 141,
+      "original_glyph": "uniC601",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D5A5",
+      "pdf_gid": 142,
+      "original_glyph": "uniD5A5",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C9D1",
+      "pdf_gid": 160,
+      "original_glyph": "uniC9D1",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B2E8",
+      "pdf_gid": 192,
+      "original_glyph": "uniB2E8",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BA85",
+      "pdf_gid": 78,
+      "original_glyph": "uniBA85",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+AC00",
+      "pdf_gid": 80,
+      "original_glyph": "uniAC00",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C735",
+      "pdf_gid": 82,
+      "original_glyph": "uniC735",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D569",
+      "pdf_gid": 83,
+      "original_glyph": "uniD569",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D50C",
+      "pdf_gid": 86,
+      "original_glyph": "uniD50C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B7AB",
+      "pdf_gid": 84,
+      "original_glyph": "uniB7AB",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D3FC",
+      "pdf_gid": 85,
+      "original_glyph": "uniD3FC",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C0AC",
+      "pdf_gid": 12,
+      "original_glyph": "uniC0AC",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C790",
+      "pdf_gid": 10,
+      "original_glyph": "uniC790",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D65C",
+      "pdf_gid": 191,
+      "original_glyph": "uniD65C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B3D9",
+      "pdf_gid": 223,
+      "original_glyph": "uniB3D9",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BAA9",
+      "pdf_gid": 196,
+      "original_glyph": "uniBAA9",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C758",
+      "pdf_gid": 88,
+      "original_glyph": "uniC758",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C2E0",
+      "pdf_gid": 20,
+      "original_glyph": "uniC2E0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+ACE0",
+      "pdf_gid": 89,
+      "original_glyph": "uniACE0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B300",
+      "pdf_gid": 90,
+      "original_glyph": "uniB300",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C900",
+      "pdf_gid": 91,
+      "original_glyph": "uniC900",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D56D",
+      "pdf_gid": 15,
+      "original_glyph": "uniD56D",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D589",
+      "pdf_gid": 99,
+      "original_glyph": "uniD589",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BD80",
+      "pdf_gid": 5,
+      "original_glyph": "uniBD80",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B2F4",
+      "pdf_gid": 28,
+      "original_glyph": "uniB2F4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0039",
+      "pdf_gid": 102,
+      "original_glyph": "nine",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+0034",
+      "pdf_gid": 55,
+      "original_glyph": "four",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+0030",
+      "pdf_gid": 52,
+      "original_glyph": "zero",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+002C",
+      "pdf_gid": 144,
+      "original_glyph": "comma",
+      "same_outline_commands": true,
+      "pdf_advance": 384,
+      "original_advance": 384
+    },
+    {
+      "unicode": "U+0038",
+      "pdf_gid": 76,
+      "original_glyph": "eight",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+0036",
+      "pdf_gid": 57,
+      "original_glyph": "six",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+C77C",
+      "pdf_gid": 61,
+      "original_glyph": "uniC77C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C2DC",
+      "pdf_gid": 98,
+      "original_glyph": "uniC2DC",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C801",
+      "pdf_gid": 14,
+      "original_glyph": "uniC801",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+002F",
+      "pdf_gid": 257,
+      "original_glyph": "slash",
+      "same_outline_commands": true,
+      "pdf_advance": 384,
+      "original_advance": 384
+    },
+    {
+      "unicode": "U+BC18",
+      "pdf_gid": 164,
+      "original_glyph": "uniBC18",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BCF5",
+      "pdf_gid": 258,
+      "original_glyph": "uniBCF5",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C0B0",
+      "pdf_gid": 94,
+      "original_glyph": "uniC0B0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C2DD",
+      "pdf_gid": 259,
+      "original_glyph": "uniC2DD",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C218",
+      "pdf_gid": 158,
+      "original_glyph": "uniC218",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0058",
+      "pdf_gid": 260,
+      "original_glyph": "X",
+      "same_outline_commands": true,
+      "pdf_advance": 640,
+      "original_advance": 640
+    },
+    {
+      "unicode": "U+ADFC",
+      "pdf_gid": 261,
+      "original_glyph": "uniADFC",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+AC70",
+      "pdf_gid": 183,
+      "original_glyph": "uniAC70",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C124",
+      "pdf_gid": 105,
+      "original_glyph": "uniC124",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+CD94",
+      "pdf_gid": 114,
+      "original_glyph": "uniCD94",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+25CB",
+      "pdf_gid": 262,
+      "original_glyph": "circle",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+002A",
+      "pdf_gid": 263,
+      "original_glyph": "asterisk",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+0032",
+      "pdf_gid": 53,
+      "original_glyph": "two",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+0031",
+      "pdf_gid": 62,
+      "original_glyph": "one",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+223C",
+      "pdf_gid": 264,
+      "original_glyph": "similar",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0033",
+      "pdf_gid": 54,
+      "original_glyph": "three",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+C5F0",
+      "pdf_gid": 50,
+      "original_glyph": "uniC5F0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B3C4",
+      "pdf_gid": 128,
+      "original_glyph": "uniB3C4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0035",
+      "pdf_gid": 56,
+      "original_glyph": "five",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+0037",
+      "pdf_gid": 108,
+      "original_glyph": "seven",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+C9C4",
+      "pdf_gid": 59,
+      "original_glyph": "uniC9C4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D765",
+      "pdf_gid": 96,
+      "original_glyph": "uniD765",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BC95",
+      "pdf_gid": 95,
+      "original_glyph": "uniBC95",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B839",
+      "pdf_gid": 97,
+      "original_glyph": "uniB839",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C870",
+      "pdf_gid": 93,
+      "original_glyph": "uniC870",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+AC01",
+      "pdf_gid": 170,
+      "original_glyph": "uniAC01",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D638",
+      "pdf_gid": 171,
+      "original_glyph": "uniD638",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C5D0",
+      "pdf_gid": 132,
+      "original_glyph": "uniC5D0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D574",
+      "pdf_gid": 124,
+      "original_glyph": "uniD574",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B2F9",
+      "pdf_gid": 29,
+      "original_glyph": "uniB2F9",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D558",
+      "pdf_gid": 123,
+      "original_glyph": "uniD558",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B294",
+      "pdf_gid": 134,
+      "original_glyph": "uniB294",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+203B",
+      "pdf_gid": 265,
+      "original_glyph": "uni203B",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+CD9C",
+      "pdf_gid": 180,
+      "original_glyph": "uniCD9C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+CC98",
+      "pdf_gid": 7,
+      "original_glyph": "uniCC98",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D55C",
+      "pdf_gid": 177,
+      "original_glyph": "uniD55C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+AD6D",
+      "pdf_gid": 44,
+      "original_glyph": "uniAD6D",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BA54",
+      "pdf_gid": 60,
+      "original_glyph": "uniBA54",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D0C0",
+      "pdf_gid": 217,
+      "original_glyph": "uniD0C0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BC84",
+      "pdf_gid": 266,
+      "original_glyph": "uniBC84",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C2A4",
+      "pdf_gid": 199,
+      "original_glyph": "uniC2A4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D611",
+      "pdf_gid": 267,
+      "original_glyph": "uniD611",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D68C",
+      "pdf_gid": 231,
+      "original_glyph": "uniD68C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+004B",
+      "pdf_gid": 270,
+      "original_glyph": "K",
+      "same_outline_commands": true,
+      "pdf_advance": 725,
+      "original_advance": 725
+    },
+    {
+      "unicode": "U+002D",
+      "pdf_gid": 51,
+      "original_glyph": "hyphen",
+      "same_outline_commands": true,
+      "pdf_advance": 853,
+      "original_advance": 853
+    },
+    {
+      "unicode": "U+004D",
+      "pdf_gid": 271,
+      "original_glyph": "M",
+      "same_outline_commands": true,
+      "pdf_advance": 896,
+      "original_advance": 896
+    },
+    {
+      "unicode": "U+0045",
+      "pdf_gid": 269,
+      "original_glyph": "E",
+      "same_outline_commands": true,
+      "pdf_advance": 682,
+      "original_advance": 682
+    },
+    {
+      "unicode": "U+0054",
+      "pdf_gid": 272,
+      "original_glyph": "T",
+      "same_outline_commands": true,
+      "pdf_advance": 597,
+      "original_advance": 597
+    },
+    {
+      "unicode": "U+0041",
+      "pdf_gid": 268,
+      "original_glyph": "A",
+      "same_outline_commands": true,
+      "pdf_advance": 682,
+      "original_advance": 682
+    },
+    {
+      "unicode": "U+CCB4",
+      "pdf_gid": 121,
+      "original_glyph": "uniCCB4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+ACB0",
+      "pdf_gid": 273,
+      "original_glyph": "uniACB0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+ACFC",
+      "pdf_gid": 16,
+      "original_glyph": "uniACFC",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0027",
+      "pdf_gid": 125,
+      "original_glyph": "quotesingle",
+      "same_outline_commands": true,
+      "pdf_advance": 256,
+      "original_advance": 256
+    },
+    {
+      "unicode": "U+002E",
+      "pdf_gid": 75,
+      "original_glyph": "period",
+      "same_outline_commands": true,
+      "pdf_advance": 384,
+      "original_advance": 384
+    },
+    {
+      "unicode": "U+B9E4",
+      "pdf_gid": 178,
+      "original_glyph": "uniB9E4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B144",
+      "pdf_gid": 185,
+      "original_glyph": "uniB144",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C9C0",
+      "pdf_gid": 34,
+      "original_glyph": "uniC9C0",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C18D",
+      "pdf_gid": 274,
+      "original_glyph": "uniC18D",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C73C",
+      "pdf_gid": 120,
+      "original_glyph": "uniC73C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B85C",
+      "pdf_gid": 119,
+      "original_glyph": "uniB85C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C99D",
+      "pdf_gid": 275,
+      "original_glyph": "uniC99D",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C788",
+      "pdf_gid": 148,
+      "original_glyph": "uniC788",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B098",
+      "pdf_gid": 174,
+      "original_glyph": "uniB098",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C774",
+      "pdf_gid": 25,
+      "original_glyph": "uniC774",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D6C4",
+      "pdf_gid": 240,
+      "original_glyph": "uniD6C4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+AC10",
+      "pdf_gid": 242,
+      "original_glyph": "uniAC10",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+ACBD",
+      "pdf_gid": 112,
+      "original_glyph": "uniACBD",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C744",
+      "pdf_gid": 117,
+      "original_glyph": "uniC744",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+BCF4",
+      "pdf_gid": 18,
+      "original_glyph": "uniBCF4",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+C784",
+      "pdf_gid": 101,
+      "original_glyph": "uniC784",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+0052",
+      "pdf_gid": 276,
+      "original_glyph": "R",
+      "same_outline_commands": true,
+      "pdf_advance": 725,
+      "original_advance": 725
+    },
+    {
+      "unicode": "U+BAA8",
+      "pdf_gid": 195,
+      "original_glyph": "uniBAA8",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D615",
+      "pdf_gid": 104,
+      "original_glyph": "uniD615",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+D1B5",
+      "pdf_gid": 22,
+      "original_glyph": "uniD1B5",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+AC04",
+      "pdf_gid": 190,
+      "original_glyph": "uniAC04",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    },
+    {
+      "unicode": "U+B97C",
+      "pdf_gid": 129,
+      "original_glyph": "uniB97C",
+      "same_outline_commands": true,
+      "pdf_advance": 1024,
+      "original_advance": 1024
+    }
+  ],
+  "scope": "glyph identity on used page; font containers not byte-identical"
+}

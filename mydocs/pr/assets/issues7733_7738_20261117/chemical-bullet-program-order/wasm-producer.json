@@ -1,0 +1,10 @@
+{
+  "source_head": "120483b82f4ceb2c77aff6727c1a52d34413551a",
+  "mode": "Mac local wrapper --no-opt; not Docker optimized",
+  "files": {
+    "/Users/tsjang/rhwp/pkg/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "/Users/tsjang/rhwp/pkg/rhwp_bg.wasm": "ddc88e4c97436406fa504462eb1a13e4cb3445049396b843c5162c3011923125",
+    "/Users/tsjang/rhwp/rhwp-studio/public/rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "/Users/tsjang/rhwp/rhwp-studio/public/rhwp_bg.wasm": "ddc88e4c97436406fa504462eb1a13e4cb3445049396b843c5162c3011923125"
+  }
+}

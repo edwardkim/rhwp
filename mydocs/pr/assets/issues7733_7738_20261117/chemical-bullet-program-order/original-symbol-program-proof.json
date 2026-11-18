@@ -1,0 +1,27 @@
+{
+  "source_pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+  "source_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+  "page": 72,
+  "character": "U+2022",
+  "font_resource": "T11",
+  "type3_glyph_sha256": "2506433f6422778c6963a3dcbf11c311df80b06e75aad7a49a64e9be6c25a16a",
+  "source_advance": 1000.0,
+  "source_em": 1000,
+  "candidate_font": "/Users/tsjang/Library/Fonts/issue8160/original-hanyang-complete-symbols/hanyang-original-complete-symbols.otf",
+  "candidate_font_sha256": "04264432d4d3d30eb2b4d0174b4c191b0418ebc2729bdeee8978305ceb8b14d1",
+  "candidate_names": [
+    "HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols",
+    "한양신명조",
+    "한양신명조 Original HFT Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols"
+  ],
+  "candidate_em": 1000,
+  "candidate_hmtx": [
+    1000,
+    316
+  ],
+  "exact_same_outline_commands": true,
+  "source_outline_sha256": "1db97d138af3dfd8e1fd7d5a8c32d56125440a0f2e6af7893c0bf64726e3d180",
+  "candidate_outline_sha256": "f13f31e7726602f5d70baf4368295729a37c3c7cbf54cceeb86fc086d24740e1",
+  "status": "glyph identity proof only; actual provider/layout/capture not verified",
+  "outline_hash_note": "Two recorded serialization hashes differ in numeric representation; exact_same_outline_commands compares numeric pen operations, not those serialized hashes."
+}

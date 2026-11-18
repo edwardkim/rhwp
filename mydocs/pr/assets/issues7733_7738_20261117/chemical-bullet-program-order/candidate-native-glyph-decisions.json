@@ -1,0 +1,382 @@
+[
+  {
+    "source": {
+      "status": "complete",
+      "sectionIndex": 4,
+      "paragraphIndex": 87,
+      "nestedPath": [
+        0,
+        0,
+        1,
+        0,
+        3,
+        1
+      ],
+      "runIndex": 131,
+      "charOffset": 0,
+      "character": "•",
+      "codePoint": 8226,
+      "charShapeId": 163
+    },
+    "metric": {
+      "requestedFace": "한양중고딕",
+      "aliasResolvedFace": "한양중고딕",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "hit",
+      "widthSource": "measuredOriginalGlyph",
+      "baseAdvanceHwpunit": 900,
+      "transforms": [
+        {
+          "kind": "letterSpacing",
+          "input": "-0.6",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        }
+      ],
+      "finalAdvanceHwpunit": 856
+    },
+    "paint": {
+      "status": "complete",
+      "certainty": "observed",
+      "requested": "HY중고딕,HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols,HYGothic-Medium",
+      "candidates": [
+        "HY중고딕",
+        "HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols",
+        "HYGothic-Medium",
+        "HYGothic",
+        "HCR Dotum",
+        "함초롬돋움",
+        "Malgun Gothic",
+        "맑은 고딕",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR ExtraLight",
+        "Noto Sans KR",
+        "Noto Sans CJK KR",
+        "Pretendard",
+        "HCR Batang",
+        "함초롬바탕",
+        "HCR Batang Ext",
+        "함초롬바탕 확장",
+        "HCR Batang ExtB",
+        "함초롬바탕 확장B",
+        "RHWP Old Hangul",
+        "Segoe UI Emoji",
+        "Noto Emoji",
+        "Noto Color Emoji",
+        "sans-serif"
+      ],
+      "resolved": "한양신명조",
+      "source": "system",
+      "capabilities": [
+        "nativeTypefaceChainEnumerated",
+        "nativeGlyphCoverageObserved"
+      ],
+      "failures": []
+    }
+  },
+  {
+    "source": {
+      "status": "complete",
+      "sectionIndex": 4,
+      "paragraphIndex": 87,
+      "nestedPath": [
+        0,
+        0,
+        1,
+        0,
+        3,
+        2
+      ],
+      "runIndex": 133,
+      "charOffset": 0,
+      "character": "•",
+      "codePoint": 8226,
+      "charShapeId": 163
+    },
+    "metric": {
+      "requestedFace": "한양중고딕",
+      "aliasResolvedFace": "한양중고딕",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "hit",
+      "widthSource": "measuredOriginalGlyph",
+      "baseAdvanceHwpunit": 900,
+      "transforms": [
+        {
+          "kind": "letterSpacing",
+          "input": "-0.6",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        }
+      ],
+      "finalAdvanceHwpunit": 856
+    },
+    "paint": {
+      "status": "complete",
+      "certainty": "observed",
+      "requested": "HY중고딕,HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols,HYGothic-Medium",
+      "candidates": [
+        "HY중고딕",
+        "HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols",
+        "HYGothic-Medium",
+        "HYGothic",
+        "HCR Dotum",
+        "함초롬돋움",
+        "Malgun Gothic",
+        "맑은 고딕",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR ExtraLight",
+        "Noto Sans KR",
+        "Noto Sans CJK KR",
+        "Pretendard",
+        "HCR Batang",
+        "함초롬바탕",
+        "HCR Batang Ext",
+        "함초롬바탕 확장",
+        "HCR Batang ExtB",
+        "함초롬바탕 확장B",
+        "RHWP Old Hangul",
+        "Segoe UI Emoji",
+        "Noto Emoji",
+        "Noto Color Emoji",
+        "sans-serif"
+      ],
+      "resolved": "한양신명조",
+      "source": "system",
+      "capabilities": [
+        "nativeTypefaceChainEnumerated",
+        "nativeGlyphCoverageObserved"
+      ],
+      "failures": []
+    }
+  },
+  {
+    "source": {
+      "status": "complete",
+      "sectionIndex": 4,
+      "paragraphIndex": 87,
+      "nestedPath": [
+        0,
+        0,
+        1,
+        0,
+        3,
+        3
+      ],
+      "runIndex": 135,
+      "charOffset": 0,
+      "character": "•",
+      "codePoint": 8226,
+      "charShapeId": 163
+    },
+    "metric": {
+      "requestedFace": "한양중고딕",
+      "aliasResolvedFace": "한양중고딕",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "hit",
+      "widthSource": "measuredOriginalGlyph",
+      "baseAdvanceHwpunit": 900,
+      "transforms": [
+        {
+          "kind": "letterSpacing",
+          "input": "-0.6",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        }
+      ],
+      "finalAdvanceHwpunit": 856
+    },
+    "paint": {
+      "status": "complete",
+      "certainty": "observed",
+      "requested": "HY중고딕,HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols,HYGothic-Medium",
+      "candidates": [
+        "HY중고딕",
+        "HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols",
+        "HYGothic-Medium",
+        "HYGothic",
+        "HCR Dotum",
+        "함초롬돋움",
+        "Malgun Gothic",
+        "맑은 고딕",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR ExtraLight",
+        "Noto Sans KR",
+        "Noto Sans CJK KR",
+        "Pretendard",
+        "HCR Batang",
+        "함초롬바탕",
+        "HCR Batang Ext",
+        "함초롬바탕 확장",
+        "HCR Batang ExtB",
+        "함초롬바탕 확장B",
+        "RHWP Old Hangul",
+        "Segoe UI Emoji",
+        "Noto Emoji",
+        "Noto Color Emoji",
+        "sans-serif"
+      ],
+      "resolved": "한양신명조",
+      "source": "system",
+      "capabilities": [
+        "nativeTypefaceChainEnumerated",
+        "nativeGlyphCoverageObserved"
+      ],
+      "failures": []
+    }
+  },
+  {
+    "source": {
+      "status": "complete",
+      "sectionIndex": 4,
+      "paragraphIndex": 87,
+      "nestedPath": [
+        0,
+        0,
+        1,
+        0,
+        3,
+        4
+      ],
+      "runIndex": 139,
+      "charOffset": 0,
+      "character": "•",
+      "codePoint": 8226,
+      "charShapeId": 163
+    },
+    "metric": {
+      "requestedFace": "한양중고딕",
+      "aliasResolvedFace": "한양중고딕",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "hit",
+      "widthSource": "measuredOriginalGlyph",
+      "baseAdvanceHwpunit": 900,
+      "transforms": [
+        {
+          "kind": "letterSpacing",
+          "input": "-0.6",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        }
+      ],
+      "finalAdvanceHwpunit": 856
+    },
+    "paint": {
+      "status": "complete",
+      "certainty": "observed",
+      "requested": "HY중고딕,HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols,HYGothic-Medium",
+      "candidates": [
+        "HY중고딕",
+        "HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols",
+        "HYGothic-Medium",
+        "HYGothic",
+        "HCR Dotum",
+        "함초롬돋움",
+        "Malgun Gothic",
+        "맑은 고딕",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR ExtraLight",
+        "Noto Sans KR",
+        "Noto Sans CJK KR",
+        "Pretendard",
+        "HCR Batang",
+        "함초롬바탕",
+        "HCR Batang Ext",
+        "함초롬바탕 확장",
+        "HCR Batang ExtB",
+        "함초롬바탕 확장B",
+        "RHWP Old Hangul",
+        "Segoe UI Emoji",
+        "Noto Emoji",
+        "Noto Color Emoji",
+        "sans-serif"
+      ],
+      "resolved": "한양신명조",
+      "source": "system",
+      "capabilities": [
+        "nativeTypefaceChainEnumerated",
+        "nativeGlyphCoverageObserved"
+      ],
+      "failures": []
+    }
+  },
+  {
+    "source": {
+      "status": "complete",
+      "sectionIndex": 4,
+      "paragraphIndex": 87,
+      "nestedPath": [
+        0,
+        0,
+        1,
+        0,
+        3,
+        5
+      ],
+      "runIndex": 141,
+      "charOffset": 0,
+      "character": "•",
+      "codePoint": 8226,
+      "charShapeId": 163
+    },
+    "metric": {
+      "requestedFace": "한양중고딕",
+      "aliasResolvedFace": "한양중고딕",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "hit",
+      "widthSource": "measuredOriginalGlyph",
+      "baseAdvanceHwpunit": 900,
+      "transforms": [
+        {
+          "kind": "letterSpacing",
+          "input": "-0.6",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        }
+      ],
+      "finalAdvanceHwpunit": 856
+    },
+    "paint": {
+      "status": "complete",
+      "certainty": "observed",
+      "requested": "HY중고딕,HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols,HYGothic-Medium",
+      "candidates": [
+        "HY중고딕",
+        "HanyangSinMyeongJo-OriginalHFT-Hangul-GeneralPunctuation-CompleteGraphics-CompleteSymbols",
+        "HYGothic-Medium",
+        "HYGothic",
+        "HCR Dotum",
+        "함초롬돋움",
+        "Malgun Gothic",
+        "맑은 고딕",
+        "Apple SD Gothic Neo",
+        "Noto Sans KR ExtraLight",
+        "Noto Sans KR",
+        "Noto Sans CJK KR",
+        "Pretendard",
+        "HCR Batang",
+        "함초롬바탕",
+        "HCR Batang Ext",
+        "함초롬바탕 확장",
+        "HCR Batang ExtB",
+        "함초롬바탕 확장B",
+        "RHWP Old Hangul",
+        "Segoe UI Emoji",
+        "Noto Emoji",
+        "Noto Color Emoji",
+        "sans-serif"
+      ],
+      "resolved": "한양신명조",
+      "source": "system",
+      "capabilities": [
+        "nativeTypefaceChainEnumerated",
+        "nativeGlyphCoverageObserved"
+      ],
+      "failures": []
+    }
+  }
+]

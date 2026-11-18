@@ -1,0 +1,657 @@
+{
+  "before_partial_environment": [
+    {
+      "recordId": "page:17:run:75:char:1",
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 193,
+        "nestedPath": [
+          0,
+          13,
+          0,
+          1,
+          0,
+          5
+        ],
+        "runIndex": 75,
+        "charOffset": 21,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 18
+      },
+      "document": {
+        "languageSlot": 1,
+        "inheritedLanguageSlot": 1,
+        "face": "한양중고딕",
+        "altType": 1,
+        "embedded": false,
+        "substFont": "HY중고딕"
+      },
+      "layoutName": {
+        "requestedFace": "한양중고딕",
+        "normalizedFace": "한양중고딕",
+        "cssFamilyChain": [
+          "한양중고딕",
+          "HY중고딕"
+        ],
+        "steps": [
+          {
+            "kind": "documentSubstFont",
+            "input": "한양중고딕",
+            "output": "HY중고딕",
+            "reason": "nonEmbeddedDocumentSubstitute"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HY중고딕",
+        "aliasResolvedFace": "HYGothic-Medium",
+        "matchKind": "exact",
+        "metricEntry": 267,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 916,
+        "transforms": [],
+        "finalAdvanceHwpunit": 916
+      },
+      "paint": {
+        "status": "complete",
+        "certainty": "observed",
+        "requested": "한양중고딕,HY중고딕",
+        "candidates": [
+          "한양중고딕",
+          "HY중고딕",
+          "HYGothic",
+          "HYGothic-Medium",
+          "HCR Dotum",
+          "함초롬돋움",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "Apple SD Gothic Neo",
+          "Noto Sans KR ExtraLight",
+          "Noto Sans KR",
+          "Noto Sans CJK KR",
+          "Pretendard",
+          "HCR Batang",
+          "함초롬바탕",
+          "HCR Batang Ext",
+          "함초롬바탕 확장",
+          "HCR Batang ExtB",
+          "함초롬바탕 확장B",
+          "RHWP Old Hangul",
+          "Segoe UI Emoji",
+          "Noto Emoji",
+          "Noto Color Emoji",
+          "sans-serif"
+        ],
+        "resolved": "HY Junggothic",
+        "source": "custom",
+        "capabilities": [
+          "nativeTypefaceChainEnumerated",
+          "nativeGlyphCoverageObserved"
+        ],
+        "failures": []
+      }
+    },
+    {
+      "recordId": "page:17:run:80:char:0",
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 193,
+        "nestedPath": [
+          0,
+          13,
+          0,
+          1,
+          0,
+          7
+        ],
+        "runIndex": 80,
+        "charOffset": 2,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 10
+      },
+      "document": {
+        "languageSlot": 0,
+        "inheritedLanguageSlot": 0,
+        "face": "한양중고딕",
+        "altType": 1,
+        "embedded": false,
+        "substFont": "HY중고딕"
+      },
+      "layoutName": {
+        "requestedFace": "한양중고딕",
+        "normalizedFace": "한양중고딕",
+        "cssFamilyChain": [
+          "한양중고딕",
+          "HY중고딕"
+        ],
+        "steps": [
+          {
+            "kind": "documentSubstFont",
+            "input": "한양중고딕",
+            "output": "HY중고딕",
+            "reason": "nonEmbeddedDocumentSubstitute"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HY중고딕",
+        "aliasResolvedFace": "HYGothic-Medium",
+        "matchKind": "exact",
+        "metricEntry": 267,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1082,
+        "transforms": [
+          {
+            "kind": "letterSpacing",
+            "input": "-0.3466666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 1064
+      },
+      "paint": {
+        "status": "complete",
+        "certainty": "observed",
+        "requested": "한양중고딕,HY중고딕",
+        "candidates": [
+          "한양중고딕",
+          "HY중고딕",
+          "HYGothic",
+          "HYGothic-Medium",
+          "HCR Dotum",
+          "함초롬돋움",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "Apple SD Gothic Neo",
+          "Noto Sans KR ExtraLight",
+          "Noto Sans KR",
+          "Noto Sans CJK KR",
+          "Pretendard",
+          "HCR Batang",
+          "함초롬바탕",
+          "HCR Batang Ext",
+          "함초롬바탕 확장",
+          "HCR Batang ExtB",
+          "함초롬바탕 확장B",
+          "RHWP Old Hangul",
+          "Segoe UI Emoji",
+          "Noto Emoji",
+          "Noto Color Emoji",
+          "sans-serif"
+        ],
+        "resolved": "HY Junggothic",
+        "source": "custom",
+        "capabilities": [
+          "nativeTypefaceChainEnumerated",
+          "nativeGlyphCoverageObserved"
+        ],
+        "failures": []
+      }
+    },
+    {
+      "recordId": "page:17:run:93:char:0",
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 193,
+        "nestedPath": [
+          0,
+          13,
+          0,
+          1,
+          0,
+          11
+        ],
+        "runIndex": 93,
+        "charOffset": 2,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 9
+      },
+      "document": {
+        "languageSlot": 1,
+        "inheritedLanguageSlot": 1,
+        "face": "한양중고딕",
+        "altType": 1,
+        "embedded": false,
+        "substFont": "HY중고딕"
+      },
+      "layoutName": {
+        "requestedFace": "한양중고딕",
+        "normalizedFace": "한양중고딕",
+        "cssFamilyChain": [
+          "한양중고딕",
+          "HY중고딕"
+        ],
+        "steps": [
+          {
+            "kind": "documentSubstFont",
+            "input": "한양중고딕",
+            "output": "HY중고딕",
+            "reason": "nonEmbeddedDocumentSubstitute"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HY중고딕",
+        "aliasResolvedFace": "HYGothic-Medium",
+        "matchKind": "exact",
+        "metricEntry": 267,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1082,
+        "transforms": [],
+        "finalAdvanceHwpunit": 1084
+      },
+      "paint": {
+        "status": "complete",
+        "certainty": "observed",
+        "requested": "한양중고딕,HY중고딕",
+        "candidates": [
+          "한양중고딕",
+          "HY중고딕",
+          "HYGothic",
+          "HYGothic-Medium",
+          "HCR Dotum",
+          "함초롬돋움",
+          "Malgun Gothic",
+          "맑은 고딕",
+          "Apple SD Gothic Neo",
+          "Noto Sans KR ExtraLight",
+          "Noto Sans KR",
+          "Noto Sans CJK KR",
+          "Pretendard",
+          "HCR Batang",
+          "함초롬바탕",
+          "HCR Batang Ext",
+          "함초롬바탕 확장",
+          "HCR Batang ExtB",
+          "함초롬바탕 확장B",
+          "RHWP Old Hangul",
+          "Segoe UI Emoji",
+          "Noto Emoji",
+          "Noto Color Emoji",
+          "sans-serif"
+        ],
+        "resolved": "HY Junggothic",
+        "source": "custom",
+        "capabilities": [
+          "nativeTypefaceChainEnumerated",
+          "nativeGlyphCoverageObserved"
+        ],
+        "failures": []
+      }
+    }
+  ],
+  "after_actual_auto_environment": [
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 193,
+        "nestedPath": [
+          0,
+          13,
+          0,
+          1,
+          0,
+          5
+        ],
+        "runIndex": 75,
+        "charOffset": 21,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 18
+      },
+      "document": {
+        "languageSlot": 1,
+        "inheritedLanguageSlot": 1,
+        "face": "한양중고딕",
+        "altType": 1,
+        "embedded": false,
+        "substFont": "HY중고딕"
+      },
+      "layoutName": {
+        "requestedFace": "한양중고딕",
+        "normalizedFace": "HYGothic-Medium",
+        "cssFamilyChain": [
+          "HY중고딕",
+          "HYGothic-Medium"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "한양중고딕",
+            "output": "HYGothic-Medium",
+            "reason": "declared-program-a0d3f16cd245014254c2eea778293be3ec4eaaf611733fdce9a8c6319f9c8239"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HY중고딕",
+        "aliasResolvedFace": "HYGothic-Medium",
+        "matchKind": "exact",
+        "metricEntry": 267,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 916,
+        "transforms": [],
+        "finalAdvanceHwpunit": 916
+      },
+      "paint": {
+        "native": {
+          "status": "complete",
+          "certainty": "observed",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
+            "Noto Sans KR ExtraLight",
+            "Noto Sans KR",
+            "Noto Sans CJK KR",
+            "Pretendard",
+            "HCR Batang",
+            "함초롬바탕",
+            "HCR Batang Ext",
+            "함초롬바탕 확장",
+            "HCR Batang ExtB",
+            "함초롬바탕 확장B",
+            "RHWP Old Hangul",
+            "Segoe UI Emoji",
+            "Noto Emoji",
+            "Noto Color Emoji",
+            "sans-serif"
+          ],
+          "resolved": "HYGothic-Medium",
+          "source": "custom",
+          "capabilities": [
+            "nativeTypefaceChainEnumerated",
+            "nativeGlyphCoverageObserved"
+          ],
+          "failures": []
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 193,
+        "nestedPath": [
+          0,
+          13,
+          0,
+          1,
+          0,
+          7
+        ],
+        "runIndex": 80,
+        "charOffset": 2,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 10
+      },
+      "document": {
+        "languageSlot": 0,
+        "inheritedLanguageSlot": 0,
+        "face": "한양중고딕",
+        "altType": 1,
+        "embedded": false,
+        "substFont": "HY중고딕"
+      },
+      "layoutName": {
+        "requestedFace": "한양중고딕",
+        "normalizedFace": "HYGothic-Medium",
+        "cssFamilyChain": [
+          "HY중고딕",
+          "HYGothic-Medium"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "한양중고딕",
+            "output": "HYGothic-Medium",
+            "reason": "declared-program-a0d3f16cd245014254c2eea778293be3ec4eaaf611733fdce9a8c6319f9c8239"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HY중고딕",
+        "aliasResolvedFace": "HYGothic-Medium",
+        "matchKind": "exact",
+        "metricEntry": 267,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1082,
+        "transforms": [
+          {
+            "kind": "letterSpacing",
+            "input": "-0.3466666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 1064
+      },
+      "paint": {
+        "native": {
+          "status": "complete",
+          "certainty": "observed",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
+            "Noto Sans KR ExtraLight",
+            "Noto Sans KR",
+            "Noto Sans CJK KR",
+            "Pretendard",
+            "HCR Batang",
+            "함초롬바탕",
+            "HCR Batang Ext",
+            "함초롬바탕 확장",
+            "HCR Batang ExtB",
+            "함초롬바탕 확장B",
+            "RHWP Old Hangul",
+            "Segoe UI Emoji",
+            "Noto Emoji",
+            "Noto Color Emoji",
+            "sans-serif"
+          ],
+          "resolved": "HYGothic-Medium",
+          "source": "custom",
+          "capabilities": [
+            "nativeTypefaceChainEnumerated",
+            "nativeGlyphCoverageObserved"
+          ],
+          "failures": []
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      }
+    },
+    {
+      "source": {
+        "status": "complete",
+        "sectionIndex": 0,
+        "paragraphIndex": 193,
+        "nestedPath": [
+          0,
+          13,
+          0,
+          1,
+          0,
+          11
+        ],
+        "runIndex": 93,
+        "charOffset": 2,
+        "character": "-",
+        "codePoint": 45,
+        "charShapeId": 9
+      },
+      "document": {
+        "languageSlot": 1,
+        "inheritedLanguageSlot": 1,
+        "face": "한양중고딕",
+        "altType": 1,
+        "embedded": false,
+        "substFont": "HY중고딕"
+      },
+      "layoutName": {
+        "requestedFace": "한양중고딕",
+        "normalizedFace": "HYGothic-Medium",
+        "cssFamilyChain": [
+          "HY중고딕",
+          "HYGothic-Medium"
+        ],
+        "steps": [
+          {
+            "kind": "fontEnvironment",
+            "input": "한양중고딕",
+            "output": "HYGothic-Medium",
+            "reason": "declared-program-a0d3f16cd245014254c2eea778293be3ec4eaaf611733fdce9a8c6319f9c8239"
+          }
+        ]
+      },
+      "layoutMetric": {
+        "requestedFace": "HY중고딕",
+        "aliasResolvedFace": "HYGothic-Medium",
+        "matchKind": "exact",
+        "metricEntry": 267,
+        "characterMatch": "hit",
+        "widthSource": "embeddedMetric",
+        "baseAdvanceHwpunit": 1082,
+        "transforms": [],
+        "finalAdvanceHwpunit": 1084
+      },
+      "paint": {
+        "native": {
+          "status": "complete",
+          "certainty": "observed",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
+            "Noto Sans KR ExtraLight",
+            "Noto Sans KR",
+            "Noto Sans CJK KR",
+            "Pretendard",
+            "HCR Batang",
+            "함초롬바탕",
+            "HCR Batang Ext",
+            "함초롬바탕 확장",
+            "HCR Batang ExtB",
+            "함초롬바탕 확장B",
+            "RHWP Old Hangul",
+            "Segoe UI Emoji",
+            "Noto Emoji",
+            "Noto Color Emoji",
+            "sans-serif"
+          ],
+          "resolved": "HYGothic-Medium",
+          "source": "custom",
+          "capabilities": [
+            "nativeTypefaceChainEnumerated",
+            "nativeGlyphCoverageObserved"
+          ],
+          "failures": []
+        },
+        "canvas2d": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        },
+        "canvaskit": {
+          "status": "unsupported",
+          "certainty": "unsupported",
+          "requested": "HY중고딕,HYGothic-Medium",
+          "candidates": [],
+          "resolved": null,
+          "source": null,
+          "capabilities": [],
+          "failures": [
+            "studioSnapshotRequired"
+          ]
+        }
+      }
+    }
+  ],
+  "status": "font-selection diagnosis; new comparison capture pending"
+}

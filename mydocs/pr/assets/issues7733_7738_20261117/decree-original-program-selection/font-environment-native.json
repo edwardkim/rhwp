@@ -1,0 +1,132 @@
+{
+  "id": "decree-original-ttf-with-independent-palatino-print",
+  "substitutions": {
+    "HCI Poppy": "Palatino Linotype",
+    "HY헤드라인M": "HYHeadLine-Medium",
+    "굴림": "Gulim",
+    "나눔바른고딕": "NanumBarunGothic",
+    "맑은 고딕": "Malgun Gothic",
+    "명조": "Myeongjo",
+    "바탕체": "BatangChe",
+    "한양신명조": "HY Sinmyeongjo",
+    "한양중고딕": "HYGothic-Medium",
+    "한컴바탕": "Haansoft Batang",
+    "함초롬돋움": "HCR Dotum",
+    "함초롬바탕": "HCR Batang",
+    "휴먼고딕": "휴먼고딕",
+    "휴먼명조": "휴먼명조"
+  },
+  "selectedPrograms": {
+    "HY헤드라인M": {
+      "query": "HY헤드라인M",
+      "family": "HYHeadLine-Medium",
+      "programId": "ac1b909a6c44c48abc008484ee604de3031269067fedfd1e3e9786c3175e1dbb",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "굴림": {
+      "query": "굴림",
+      "family": "Gulim",
+      "programId": "5156b4eb79fe5ffb616278674a649d749d25968903844089b39d181398cdb0c8",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "나눔바른고딕": {
+      "query": "나눔바른고딕",
+      "family": "NanumBarunGothic",
+      "programId": "eb739f23b5dcf370300372473a7be82e2120598bd88a22161e32ab4b91314891",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "맑은 고딕": {
+      "query": "맑은 고딕",
+      "family": "Malgun Gothic",
+      "programId": "f689f79d762a6ba103ef9ba8fc8b8d47af9ce351c837127d4b5897defecd474c",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "명조": {
+      "query": "명조",
+      "family": "Myeongjo",
+      "programId": "c844e18302b686388e572f670a312c2f2c639500582e371bb150097d040af10c",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "바탕체": {
+      "query": "바탕체",
+      "family": "BatangChe",
+      "programId": "5cb40fa8aa937ecac3954a43397ee2eb8215eb0d264284869cb1d8c609587b36",
+      "trueType": true,
+      "openTypeCff": false,
+      "collectionFace": true
+    },
+    "한양신명조": {
+      "query": "한양신명조",
+      "family": "HY Sinmyeongjo",
+      "programId": "c20485a292d437a1f4fd2ac1def811401b8e8bff598449416656fa9b97d8e4e8",
+      "trueType": false,
+      "openTypeCff": true
+    },
+    "한양중고딕": {
+      "query": "HY중고딕",
+      "family": "HYGothic-Medium",
+      "programId": "f19bd4435ac004182cf09af592a7353c03155fc41620d3cf8b76e556c857cfe4",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "한컴바탕": {
+      "query": "한컴바탕",
+      "family": "Haansoft Batang",
+      "programId": "cf877a7b26ad94a906dada429b32b8595a17e2a83c6c161629ec98d340f230a8",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "함초롬돋움": {
+      "query": "함초롬돋움",
+      "family": "HCR Dotum",
+      "programId": "c36d6e8cd9be327ac66f414e223e8c58137d54f8f98f8213b80d2cece863e1ee",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "함초롬바탕": {
+      "query": "함초롬바탕",
+      "family": "HCR Batang",
+      "programId": "6247c14b4d48d9c44d37124d74a8d3428c822e82dfa2cd3cd66cd74489e0171b",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "휴먼고딕": {
+      "query": "휴먼고딕",
+      "family": "휴먼고딕",
+      "programId": "e4569928193e96698ca77ebb16919a770dfe2d91345cdc12bb9426d0ed06152f",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "휴먼명조": {
+      "query": "휴먼명조",
+      "family": "휴먼명조",
+      "programId": "f44febee110ef64620a17f9e884aac284878aef1bdf3cb3f41bc9efb462e629e",
+      "trueType": true,
+      "openTypeCff": false
+    }
+  },
+  "trueTypeFaces": [
+    "BatangChe",
+    "Gulim",
+    "HCR Batang",
+    "HCR Dotum",
+    "HYGothic-Medium",
+    "HYHeadLine-Medium",
+    "Haansoft Batang",
+    "Malgun Gothic",
+    "NanumBarunGothic",
+    "Palatino Linotype",
+    "휴먼고딕",
+    "휴먼명조"
+  ],
+  "preserveSourceMetrics": true,
+  "documentSubstitutions": [],
+  "replaceSourceMetricsFor": [
+    "HCI Poppy"
+  ]
+}

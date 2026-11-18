@@ -1,0 +1,10 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 3m 26s
+────────────
+ Nextest run ID ec90d5da-c75e-430f-bbbf-57cb552b37ba with nextest profile: default
+    Starting 3 tests across 1 binary (340 tests skipped)
+        PASS [   0.258s] (1/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text
+        PASS [   0.308s] (2/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::ordinary_selection_keeps_its_existing_alias_fallback
+        PASS [   0.344s] (3/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases
+────────────
+     Summary [   0.347s] 3 tests run: 3 passed, 340 skipped

@@ -1,0 +1,107 @@
+{
+  "status": "completed_focus_not_whole_acceptance",
+  "source_head": "120483b82f",
+  "steps": [
+    {
+      "name": "native-build",
+      "exit_code": 0,
+      "elapsed_seconds": 198.821,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/native-build.log"
+    },
+    {
+      "name": "base-native",
+      "exit_code": 0,
+      "elapsed_seconds": 9.905,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/base-native.log"
+    },
+    {
+      "name": "candidate-native",
+      "exit_code": 0,
+      "elapsed_seconds": 5.39,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/candidate-native.log"
+    },
+    {
+      "name": "base-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 16.403,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/base-wasm.log"
+    },
+    {
+      "name": "fresh-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 351.94,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/fresh-wasm.log"
+    },
+    {
+      "name": "candidate-wasm",
+      "exit_code": 0,
+      "elapsed_seconds": 19.089,
+      "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/candidate-wasm.log"
+    }
+  ],
+  "started_at": "2026-11-18T10:27:08.249283+09:00",
+  "capture_workers_total": 8,
+  "active": null,
+  "command": [
+    "/Users/tsjang/rhwp/venv/bin/python",
+    "/Users/tsjang/rhwp/scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--hwp",
+    "/Users/tsjang/rhwp/samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+    "--pdf",
+    "/Users/tsjang/rhwp/pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+    "--key",
+    "chemical",
+    "--rhwp-bin",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/rhwp-native",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--page-workers",
+    "8",
+    "--embed-fonts",
+    "full",
+    "--font-path",
+    "/Users/tsjang/Library/Fonts",
+    "--font-environment",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-original-symbol-font-environment-wasm.json",
+    "--pages",
+    "72",
+    "--out",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/candidate-wasm",
+    "--wasm-pkg",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/pkg"
+  ],
+  "log": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/chemical72-bullet-repair/candidate-wasm.log",
+  "visual": [
+    {
+      "label": "base-native",
+      "backend": "native",
+      "raw": 99.8665,
+      "unmatched": 118,
+      "font_environment_sha256": "fb4b0bb5233995878dbed9b7b4eb023c5214b42090899ccb751d529d4a2e8d26"
+    },
+    {
+      "label": "candidate-native",
+      "backend": "native",
+      "raw": 99.91401,
+      "unmatched": 76,
+      "font_environment_sha256": "fb4b0bb5233995878dbed9b7b4eb023c5214b42090899ccb751d529d4a2e8d26"
+    },
+    {
+      "label": "base-wasm",
+      "backend": "wasm",
+      "raw": 99.9511,
+      "unmatched": 44,
+      "font_environment_sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637"
+    },
+    {
+      "label": "candidate-wasm",
+      "backend": "wasm",
+      "raw": 99.9511,
+      "unmatched": 44,
+      "font_environment_sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637"
+    }
+  ]
+}

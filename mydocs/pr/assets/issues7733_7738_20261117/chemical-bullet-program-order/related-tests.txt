@@ -1,0 +1,54 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 43.65s
+────────────
+ Nextest run ID 6fcdb8ba-cd50-4ed3-9fb3-d5ee72e26220 with nextest profile: default
+    Starting 47 tests across 6 binaries (2030 tests skipped)
+        PASS [   0.015s] ( 1/47) rhwp::regression_suite_017 canvas_explicit_glyph_fallback_order::explicit_supplier_does_not_replace_the_verified_primary_ttf
+        PASS [   0.015s] ( 2/47) rhwp::regression_suite_017 canvas_explicit_glyph_fallback_order::ordinary_selection_preserves_installed_alias_priority
+        PASS [   0.015s] ( 3/47) rhwp::regression_suite_017 canvas_explicit_glyph_fallback_order::explicit_glyph_supplier_precedes_unselected_os_aliases
+        PASS [   0.033s] ( 4/47) rhwp::regression_suite_011 display_alias_declared_glyph_fallback::display_alias_preserves_the_documents_missing_glyph_supplier_advance
+        PASS [   0.351s] ( 5/47) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text
+        PASS [   0.347s] ( 6/47) rhwp::regression_suite_022 native_supplied_font_family_names::full_face_record_does_not_become_a_family_alias
+        PASS [   0.393s] ( 7/47) rhwp::regression_suite_019 native_system_font_family_ownership::supplied_style_list_keeps_requested_family_before_other_truetype_on_each_native_os
+        PASS [   0.436s] ( 8/47) rhwp::regression_suite_022 native_supplied_font_family_names::explicit_postscript_identity_selects_its_supplied_program
+        PASS [   0.469s] ( 9/47) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::ordinary_selection_keeps_its_existing_alias_fallback
+        PASS [   0.532s] (10/47) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases
+        PASS [   0.250s] (11/47) rhwp::regression_suite_022 native_supplied_font_family_names::localized_family_selects_the_same_supplied_program
+        PASS [   0.613s] (12/47) rhwp::regression_suite_022 issue_8856_hft_bullet_source_advance::completed_table_first_text_origins_keep_the_independent_print_positions
+        PASS [   0.262s] (13/47) rhwp::regression_suite_022 native_supplied_font_family_names::primary_family_keeps_its_supplied_program
+        PASS [   0.261s] (14/47) rhwp::regression_suite_022 native_supplied_font_family_names::typographic_family_selects_the_same_supplied_program
+        PASS [   0.270s] (15/47) rhwp::regression_suite_022 native_supplied_font_family_names::wws_family_selects_the_same_supplied_program
+        PASS [   0.115s] (16/47) rhwp::regression_suite_024 native_fractional_glyph_origin::issue_4138_page_frame_fractional_coverage::paper_frame_preserves_independent_print_fractional_edge_coverage
+        PASS [   0.310s] (17/47) rhwp::regression_suite_023 issue_8153_symbol_fallback::mapped_empty_symbols_use_real_fallback_without_changing_source_or_positions
+        PASS [   0.766s] (18/47) rhwp::regression_suite_022 issue_8856_hft_bullet_source_advance::original_hft_bullet_keeps_full_cell_before_the_following_text
+        PASS [   0.256s] (19/47) rhwp::regression_suite_023 issue_8153_symbol_fallback::missing_primary_symbol_keeps_the_same_slot_with_unclassified_font_type
+        PASS [   0.018s] (20/47) rhwp::regression_suite_024 native_pua_host_font_protocol::additional_source_box_minus_preserves_its_program_and_fallback
+        PASS [   0.017s] (21/47) rhwp::regression_suite_024 native_pua_host_font_protocol::additional_source_box_plus_preserves_its_program_and_fallback
+        PASS [   0.018s] (22/47) rhwp::regression_suite_024 native_pua_host_font_protocol::additional_source_dash_preserves_its_program_and_fallback
+        PASS [   0.015s] (23/47) rhwp::regression_suite_024 native_pua_host_font_protocol::document_glyph_fallback_remains_bound_to_its_language_slot
+        PASS [   0.186s] (24/47) rhwp::regression_suite_024 native_fractional_glyph_origin::same_format_system_program_keeps_os_preference
+        PASS [   0.262s] (25/47) rhwp::regression_suite_024 native_fractional_glyph_origin::fixed_advance_glyph_preserves_quarter_pixel_baseline_translation
+        PASS [   0.014s] (26/47) rhwp::regression_suite_024 native_pua_host_font_protocol::hft_bold_tracking_requires_verified_source_and_program
+        PASS [   0.112s] (27/47) rhwp::regression_suite_024 native_fractional_glyph_origin::system_program_preference::coretext_system_cff_keeps_selected_primary_program_identity
+        PASS [   0.018s] (28/47) rhwp::regression_suite_024 native_pua_host_font_protocol::host_font_request_names_are_not_css_quoted
+        PASS [   0.012s] (29/47) rhwp::regression_suite_024 native_pua_host_font_protocol::literal_space_programs_are_owned_by_source_type
+        PASS [   0.274s] (30/47) rhwp::regression_suite_024 native_fractional_glyph_origin::ordinary_ttf_keeps_existing_raster_baseline_grid
+        PASS [   0.021s] (31/47) rhwp::regression_suite_024 native_pua_host_font_protocol::original_truetype_provider_requires_program_family_ownership
+        PASS [   0.020s] (32/47) rhwp::regression_suite_024 native_pua_host_font_protocol::otf_session_supply_preserves_document_and_saved_bytes
+        PASS [   0.020s] (33/47) rhwp::regression_suite_024 native_pua_host_font_protocol::prepared_source_glyph_replaces_an_earlier_unicode_display_and_clear_restores_it
+        PASS [   0.017s] (34/47) rhwp::regression_suite_024 native_pua_host_font_protocol::pua_supply_clear_preserves_explicit_exact_font_owner
+        PASS [   0.018s] (35/47) rhwp::regression_suite_024 native_pua_host_font_protocol::same_family_hft_and_truetype_requests_keep_distinct_source_programs
+        PASS [   0.016s] (36/47) rhwp::regression_suite_024 native_pua_host_font_protocol::small_source_triangle_keeps_its_program_and_clear_restores_unicode_fallback
+        PASS [   0.016s] (37/47) rhwp::regression_suite_024 native_pua_host_font_protocol::source_square_uses_supplied_hmtx_and_clear_restores_unicode_fallback
+        PASS [   0.027s] (38/47) rhwp::regression_suite_024 native_pua_host_font_protocol::source_pointer_requests_its_program_without_reclassifying_unicode_pointer
+        PASS [   0.190s] (39/47) rhwp::regression_suite_024 native_pua_host_font_protocol::compact_truetype_retains_unicode_coverage_and_natural_advances
+        PASS [   0.014s] (40/47) rhwp::regression_suite_024 native_pua_host_font_protocol::supplied_truetype_advance_is_distinct_from_hft_and_cff
+        PASS [   0.014s] (41/47) rhwp::regression_suite_024 native_pua_host_font_protocol::unassigned_hwp5_font_bits_allow_source_probe_without_truetype_declaration
+        PASS [   0.076s] (42/47) rhwp::regression_suite_024 native_pua_host_font_protocol::truetype_metrics_do_not_exhaust_budget_with_unused_font_bytes
+        PASS [   0.232s] (43/47) rhwp::regression_suite_024 native_pua_host_font_protocol::missing_source_glyph_does_not_inherit_the_paint_fallback_advance
+        PASS [   0.325s] (44/47) rhwp::regression_suite_024 native_pua_host_font_protocol::exact_postscript_source_owns_its_true_type_metrics
+        PASS [   0.320s] (45/47) rhwp::regression_suite_024 native_pua_host_font_protocol::explicit_glyph_fallback_owns_advance_when_source_program_lacks_glyph
+        PASS [   0.425s] (46/47) rhwp::regression_suite_024 native_fractional_glyph_origin::subpixel_stroke_hairline::subpixel_table_rules_cover_one_device_pixel
+        PASS [   0.453s] (47/47) rhwp::regression_suite_024 native_fractional_glyph_origin::subpixel_stroke_hairline::subpixel_dashed_page_border_covers_one_device_pixel
+────────────
+     Summary [   1.180s] 47 tests run: 47 passed, 2030 skipped

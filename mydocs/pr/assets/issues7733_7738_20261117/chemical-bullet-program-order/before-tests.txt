@@ -1,0 +1,51 @@
+   Compiling rhwp v0.9.0 (/Users/tsjang/rhwp)
+    Finished `release-test` profile [optimized] target(s) in 10.78s
+────────────
+ Nextest run ID 863613bd-366e-41a7-b054-ed99fafd1946 with nextest profile: default
+    Starting 3 tests across 1 binary (340 tests skipped)
+        FAIL [   0.207s] (1/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text
+  stdout ───
+
+    running 1 test
+    test issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 342 filtered out; finished in 0.19s
+
+  stderr ───
+
+    thread 'issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text' (269409131) panicked at tests/generated/../cases/issue_7733_hft_bullet_program_order.rs:40:9:
+    독립 Print의 한 칸을 표시 glyph 결측으로 반각 추정하면 뒤 본문이 당겨진다: 450/900
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        FAIL [   0.212s] (2/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases
+  stdout ───
+
+    running 1 test
+    test issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases ... FAILED
+
+    failures:
+
+    failures:
+        issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases
+
+    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 342 filtered out; finished in 0.20s
+
+  stderr ───
+
+    thread 'issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases' (269409130) panicked at tests/generated/../cases/issue_7733_hft_bullet_program_order.rs:120:9:
+    assertion `left == right` failed
+      left: String("Latin Modern Math")
+     right: "RHWP Host Fixture"
+    note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+        PASS [   0.212s] (3/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::ordinary_selection_keeps_its_existing_alias_fallback
+────────────
+     Summary [   0.213s] 3 tests run: 1 passed, 2 failed, 340 skipped
+        FAIL [   0.207s] (1/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::original_hft_bullets_keep_one_em_before_the_following_text
+        FAIL [   0.212s] (2/3) rhwp::regression_suite_019 issue_7733_hft_bullet_program_order::explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases
+error: test run failed

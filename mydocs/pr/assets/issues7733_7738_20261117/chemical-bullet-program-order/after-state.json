@@ -1,0 +1,30 @@
+{
+  "exit_code": 0,
+  "command": [
+    "sandbox-exec",
+    "-f",
+    "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/minimal-font/profile.sb",
+    "env",
+    "-u",
+    "RHWP_FONT_PATH",
+    "cargo",
+    "nextest",
+    "run",
+    "--locked",
+    "--cargo-profile",
+    "release-test",
+    "--target-dir",
+    "target/pr-review",
+    "--features",
+    "native-skia",
+    "--build-jobs",
+    "8",
+    "--test",
+    "regression_suite_019",
+    "-E",
+    "test(issue_7733_hft_bullet_program_order::)",
+    "--test-threads",
+    "8",
+    "--no-fail-fast"
+  ]
+}

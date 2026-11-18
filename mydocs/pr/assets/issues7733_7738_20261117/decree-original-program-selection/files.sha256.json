@@ -1,0 +1,14 @@
+{
+  "focus-state.json": "1518a3466e2a5757d8a86e931df6606285312310874bf0d0d9c1a52ae2fbe309",
+  "selection-diagnosis.json": "863ddc2cca66e8cfca66acc7e3549b56a7f2380aeac06b5d3ca1c20d48856c73",
+  "independent-ttf-glyph-proof.json": "7aaf06c40238dd3182bbef33946fef9cedddb08521dcf167b0f190dcdc7a7638",
+  "font-environment-native.json": "49748dacc107540cab0a5e9337c792dfb8e58393d534deb75133daa51922584d",
+  "font-environment-wasm.json": "e9e5f56421892af0d8d2e9839a15fe90326d92bd92175a62e9db9bea0cb9881d",
+  "cause.md": "4fec0a157c70464f74db4f3b61db26282d160853c1e1bd97580c1aa0ec527ba5",
+  "native/review-018.png": "a93928507300f82fa67ab723d3bb1c07348134b974fa1f9e107b9b1c09f162d4",
+  "native/pdf-018.png": "928918e0ae78266d4b6d37c79a8dc535944197721cd0a9d43f19c64f03428511",
+  "native/raw-018.png": "7dc83c2e2cb8f8db2d23283d6128508c5442334feba125bbb935709e34bb07a0",
+  "native/focus-silhouette.tsv": "df2ebbefb51372e852d80ec7834f69fe33f89a2e5c77fcef0373cb7c5cfd2f3d",
+  "native/overlay-018.png": "b3655b9523aa91cad06646d6bd973c2ef308c68e10a08187e960853de226a488",
+  "wasm/focus-silhouette.tsv": "df2ebbefb51372e852d80ec7834f69fe33f89a2e5c77fcef0373cb7c5cfd2f3d"
+}
