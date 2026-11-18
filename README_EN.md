@@ -1,5 +1,4 @@
 <p align="center">
-
   <img src="assets/logo/logo-256.png" alt="rhwp logo" width="128" />
 </p>
 

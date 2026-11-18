@@ -10,3 +10,5 @@
 - 심사·공개 전환과 독립 설치 검증은 아직 완료되지 않았습니다.
 
 [0.9.1 전체 변경과 기여자](../release/release_notes_v0.9.1.md)
+
+No new permissions. v0.9.0 대비 manifest의 버전 외 필드는 동일합니다.

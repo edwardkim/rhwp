@@ -10,3 +10,20 @@
 - 심사·공개 전환과 독립 설치 검증은 아직 완료되지 않았습니다.
 
 [0.9.1 전체 변경과 기여자](../release/release_notes_v0.9.1.md)
+
+## 검토용 source ZIP 재빌드
+
+최종 source ZIP은 제품 source·workspace·vendor·lockfile·공개 재배포 자원만 포함합니다.
+대형 샘플·개인 폰트·환경 비밀·빌드 산출물은 제외합니다. Node 24.15.0과 저장소
+`rust-toolchain.toml`의 Rust 1.93.1을 사용해 다음 경로를 실제 재검증합니다.
+
+```sh
+cd rhwp-source
+npm --prefix rhwp-studio ci
+npm --prefix rhwp-firefox ci
+sh scripts/wasm-pack-locked.sh --target web --release
+npm --prefix rhwp-firefox run build
+```
+
+source ZIP hash와 실제 재빌드 완료·사용한 도구·생성 manifest는 포장 원장에 기록합니다.
+위 명령을 제시한 것만으로 재빌드 통과나 AMO 승인 완료로 판정하지 않습니다.

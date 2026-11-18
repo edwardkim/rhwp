@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-11-09
+last_verified: 2026-11-18
 ---
 
 # 배포 가이드

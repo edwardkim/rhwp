@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/publish_guide.md
-last_verified: 2026-11-08
+last_verified: 2026-11-18
 ---
 
 # crates.io 소비 계약과 초회 수동 게시

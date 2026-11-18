@@ -1,6 +1,6 @@
 # @rhwp/core
 
-> **0.9.1 배포 준비:** 최신 변경·기여자·지원 범위는 [릴리즈 노트](../mydocs/release/release_notes_v0.9.1.md)를 참고하세요. 실제 설치 가능 버전은 해당 배포 채널에서 확인합니다.
+> **0.9.1 배포 준비:** 최신 변경·기여자·지원 범위는 [릴리즈 노트](https://github.com/edwardkim/rhwp/blob/main/mydocs/release/release_notes_v0.9.1.md)를 참고하세요. 실제 설치 가능 버전은 해당 배포 채널에서 확인합니다.
 
 **알(R), 모두의 한글** — 브라우저에서 HWP/HWPX 파일을 열어보세요
 
