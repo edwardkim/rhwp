@@ -1,0 +1,615 @@
+{
+  "version": "0.9.1",
+  "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+  "observed_date_kst": "2026-11-19",
+  "main_promotion": {
+    "pr": 9176,
+    "head": "08b38c12a75fa5cabfe5fbbfde9388aceb3fcca3",
+    "merge": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+    "tree": "fd066bb4f6db75e02176ed5e5e2f98372f0c895d",
+    "ci_run": 44316168569,
+    "validated_dispatches": 12,
+    "policy_requirements_passed": 15,
+    "policy_waivers": 0
+  },
+  "github_release": {
+    "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+    "tag": "v0.9.1",
+    "release": "https://github.com/edwardkim/rhwp/releases/tag/v0.9.1",
+    "archives": {
+      "rhwp-v0.9.1-linux-aarch64.tar.gz": "85d17b51b96badadafd4a1f890c0d182a44d3100ff1a9f41c9235bf901f4cdd8",
+      "rhwp-v0.9.1-linux-x86_64.tar.gz": "9283dd9ecd3182ddb50eeba9a2f26d2d23b5386e39defb081e52a3706916e65d",
+      "rhwp-v0.9.1-macos-aarch64.tar.gz": "a8217038f2d2ef33b1fcf215cc570faacb09c8d53366f2aaa88701ecb245c125",
+      "rhwp-v0.9.1-macos-x86_64.tar.gz": "15ce4148235377b02275fbe16929cb16faac8d151fcd755c6facd58ecafc4f2e",
+      "rhwp-v0.9.1-windows-x86_64.zip": "2214c5b07408f18417e450e6e8f44a9f0a4cd917b09839f3ec3577ba19945c9c"
+    },
+    "linux_png_smoke": {
+      "archive": "rhwp-v0.9.1-linux-x86_64.tar.gz",
+      "version": "rhwp v0.9.1",
+      "exportPngAvailable": true,
+      "pngWidth": 794,
+      "pngHeight": 1123
+    }
+  },
+  "github_pages": {
+    "run": 44325466203,
+    "deployment": 7886986139,
+    "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034"
+  },
+  "release_binary": {
+    "run": 44332298724,
+    "publication_artifact": 14448456977,
+    "verdict": "completed",
+    "channels": {
+      "npm-core": {
+        "inputState": "published",
+        "jobResult": "success",
+        "state": "published"
+      },
+      "npm-editor": {
+        "inputState": "published",
+        "jobResult": "success",
+        "state": "published"
+      },
+      "open-vsx": {
+        "inputState": "published",
+        "jobResult": "success",
+        "state": "published"
+      },
+      "vscode-marketplace": {
+        "inputState": "published",
+        "jobResult": "success",
+        "state": "published"
+      }
+    }
+  },
+  "tag_ci": {
+    "run": 44332297958,
+    "attempt": 2,
+    "conclusion": "cancelled",
+    "native_job": 134937841802,
+    "tests_passed_before_timeout": 61,
+    "job_timeout_minutes": 45,
+    "aggregate_result": "failure",
+    "observed_latest_attempt": {
+      "conclusion": "cancelled",
+      "head_sha": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+      "run_attempt": 3,
+      "status": "completed",
+      "observed_at_kst": "2026-11-19T02:57:48+09:00",
+      "native_job": 134979777907,
+      "aggregate_job": 135009987610
+    }
+  },
+  "crates_packages": {
+    "tag": "v0.9.1",
+    "source_sha": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+    "packages": {
+      "rhwp-codec-resource": {
+        "name": "rhwp-codec-resource",
+        "version": "0.1.1",
+        "checksum": "09f4a718154c71510452308755202eeb9a0a61c12f0c28db7f76cea58e165712",
+        "bytes": 5931,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:28:34.106240+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      },
+      "rhwp-contracts": {
+        "name": "rhwp-contracts",
+        "version": "0.1.0",
+        "checksum": "562667a1d3cd9fe4e24f7845211024fe098f327d8db925fcb9be91945c823362",
+        "bytes": 32411,
+        "source": "c9095c5f67632e6721e800ccc7fb43ea49d26682",
+        "observed_at": "2026-11-18T15:28:35.126704+00:00",
+        "action": "already-present"
+      },
+      "rhwp-jpeg-decoder": {
+        "name": "rhwp-jpeg-decoder",
+        "version": "0.3.2-rhwp.1",
+        "checksum": "1f2bd23d396ee20440f3909fe3248dc749272f0952b7387b11eababecf9ec9af",
+        "bytes": 53293,
+        "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "observed_at": "2026-11-18T15:28:37.284563+00:00",
+        "action": "already-present"
+      },
+      "rhwp-jpeg-encoder": {
+        "name": "rhwp-jpeg-encoder",
+        "version": "0.7.1-rhwp.1",
+        "checksum": "509f50d0ff86268e903fb0d1c076fed846565c294406071456fde1cf9b57e64a",
+        "bytes": 44570,
+        "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "observed_at": "2026-11-18T15:28:38.894630+00:00",
+        "action": "already-present"
+      },
+      "rhwp-ooxml-chart": {
+        "name": "rhwp-ooxml-chart",
+        "version": "0.1.1",
+        "checksum": "2f0377b7d25d5b32ce99cb7c9f3aebf20661f7954187962f36773f913a3cda4b",
+        "bytes": 112937,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:28:49.554186+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      },
+      "rhwp-password-crypto": {
+        "name": "rhwp-password-crypto",
+        "version": "0.1.0",
+        "checksum": "c83ab2ebe4fb177da61ebd73ce1c36ff226e244417ed80b3e78341fe3c63c676",
+        "bytes": 16234,
+        "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "observed_at": "2026-11-18T15:28:51.133433+00:00",
+        "action": "already-present"
+      },
+      "rhwp-svg2pdf": {
+        "name": "rhwp-svg2pdf",
+        "version": "0.13.0-rhwp.1",
+        "checksum": "74e743c35b8291f385f83f29b8f86ab37b3c289e1e5d165702b76751cec12a00",
+        "bytes": 59102,
+        "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "observed_at": "2026-11-18T15:28:52.183862+00:00",
+        "action": "already-present"
+      },
+      "rhwp-zune-jpeg": {
+        "name": "rhwp-zune-jpeg",
+        "version": "0.5.15-rhwp.1",
+        "checksum": "81405ea92f5547ef9568bd5970ef4e033a1e0a99462c4873b9adcce0880eba43",
+        "bytes": 103383,
+        "source": "4a765822988575099104c30081516b2bb7c4ddb5",
+        "observed_at": "2026-11-18T15:28:53.799023+00:00",
+        "action": "already-present"
+      },
+      "rhwp-hayro-ccitt": {
+        "name": "rhwp-hayro-ccitt",
+        "version": "0.3.0-rhwp.2",
+        "checksum": "9035ef7476f22e8f5178e311874c27c3b20b12bb1c85bc71209e986f9b60f00a",
+        "bytes": 16766,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:29:02.546035+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      },
+      "rhwp-hayro-jpeg2000": {
+        "name": "rhwp-hayro-jpeg2000",
+        "version": "0.4.0-rhwp.2",
+        "checksum": "eb0bbddc988261baf4fa9fafce195121bcb945d580cb496ea0475480de3c618c",
+        "bytes": 96177,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:29:18.425456+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      },
+      "rhwp-qcms": {
+        "name": "rhwp-qcms",
+        "version": "0.3.0-rhwp.2",
+        "checksum": "581bb268ee625c3deae6304bba617aab3257991094133db0bb9f9a060342e17d",
+        "bytes": 58318,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:29:27.786536+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      },
+      "rhwp-hayro-jbig2": {
+        "name": "rhwp-hayro-jbig2",
+        "version": "0.3.0-rhwp.2",
+        "checksum": "73e43fff7574ee533fe232f22a72773210879fbe05b17c13b0f9e66d75e1a7be",
+        "bytes": 70547,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:29:39.528719+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      },
+      "rhwp-pdf-import-backend": {
+        "name": "rhwp-pdf-import-backend",
+        "version": "0.3.78-rhwp.2",
+        "checksum": "5b8831f27b9005d8ddf2fd4d6e7a9511c1caa0126deb56566b0e6094a32906d4",
+        "bytes": 6984499,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:31:11.580420+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      },
+      "rhwp": {
+        "name": "rhwp",
+        "version": "0.9.1",
+        "checksum": "d97b7c0c1c602dd5cf25907c3dd2db753c78c381cecb129f26b828e349e4a5d0",
+        "bytes": 9797954,
+        "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+        "observed_at": "2026-11-18T15:34:33.075303+00:00",
+        "action": "published",
+        "cargo_publish_exit": 0
+      }
+    },
+    "completed_at": "2026-11-18T15:34:33.075816+00:00"
+  },
+  "docs_rs": {
+    "observed_at": "2026-11-18T15:41:14.171427+00:00",
+    "packages": [
+      {
+        "name": "rhwp-codec-resource",
+        "version": "0.1.1",
+        "url": "https://docs.rs/crate/rhwp-codec-resource/0.1.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-codec-resource/0.1.1/builds/5377192",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-contracts",
+        "version": "0.1.0",
+        "url": "https://docs.rs/crate/rhwp-contracts/0.1.0/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-contracts/0.1.0/builds/5212220",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-jpeg-decoder",
+        "version": "0.3.2-rhwp.1",
+        "url": "https://docs.rs/crate/rhwp-jpeg-decoder/0.3.2-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-jpeg-decoder/0.3.2-rhwp.1/builds/5213197",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-jpeg-encoder",
+        "version": "0.7.1-rhwp.1",
+        "url": "https://docs.rs/crate/rhwp-jpeg-encoder/0.7.1-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-jpeg-encoder/0.7.1-rhwp.1/builds/5213199",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-ooxml-chart",
+        "version": "0.1.1",
+        "url": "https://docs.rs/crate/rhwp-ooxml-chart/0.1.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-ooxml-chart/0.1.1/builds/5377198",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-password-crypto",
+        "version": "0.1.0",
+        "url": "https://docs.rs/crate/rhwp-password-crypto/0.1.0/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-password-crypto/0.1.0/builds/5213201",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-svg2pdf",
+        "version": "0.13.0-rhwp.1",
+        "url": "https://docs.rs/crate/rhwp-svg2pdf/0.13.0-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-svg2pdf/0.13.0-rhwp.1/builds/5213202",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-zune-jpeg",
+        "version": "0.5.15-rhwp.1",
+        "url": "https://docs.rs/crate/rhwp-zune-jpeg/0.5.15-rhwp.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-zune-jpeg/0.5.15-rhwp.1/builds/5213251",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-hayro-ccitt",
+        "version": "0.3.0-rhwp.2",
+        "url": "https://docs.rs/crate/rhwp-hayro-ccitt/0.3.0-rhwp.2/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-hayro-ccitt/0.3.0-rhwp.2/builds/5377199",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-hayro-jpeg2000",
+        "version": "0.4.0-rhwp.2",
+        "url": "https://docs.rs/crate/rhwp-hayro-jpeg2000/0.4.0-rhwp.2/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-hayro-jpeg2000/0.4.0-rhwp.2/builds/5377208",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-qcms",
+        "version": "0.3.0-rhwp.2",
+        "url": "https://docs.rs/crate/rhwp-qcms/0.3.0-rhwp.2/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-qcms/0.3.0-rhwp.2/builds/5377212",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-hayro-jbig2",
+        "version": "0.3.0-rhwp.2",
+        "url": "https://docs.rs/crate/rhwp-hayro-jbig2/0.3.0-rhwp.2/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-hayro-jbig2/0.3.0-rhwp.2/builds/5377223",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp-pdf-import-backend",
+        "version": "0.3.78-rhwp.2",
+        "url": "https://docs.rs/crate/rhwp-pdf-import-backend/0.3.78-rhwp.2/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp-pdf-import-backend/0.3.78-rhwp.2/builds/5377240",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      },
+      {
+        "name": "rhwp",
+        "version": "0.9.1",
+        "url": "https://docs.rs/crate/rhwp/0.9.1/builds",
+        "builds": [
+          {
+            "url": "https://docs.rs/crate/rhwp/0.9.1/builds/5377284",
+            "verdict": "All builds succeeded"
+          }
+        ],
+        "state": "success"
+      }
+    ]
+  },
+  "docker_consumer": {
+    "checks_passed": 36,
+    "font_pixel_check": {
+      "size": [
+        794,
+        1122
+      ],
+      "explicit_auto_equal": true,
+      "automatic_nonblank": true
+    }
+  },
+  "public_rust_wasm": {
+    "browser": "Chrome/152.0.7946.0",
+    "outcomes": [
+      {
+        "mode": "minimal",
+        "version": "0.9.1",
+        "frameworkVersion": null,
+        "hostStarted": true,
+        "bytes": 7237,
+        "zipHeader": [
+          80,
+          75,
+          3,
+          4
+        ]
+      },
+      {
+        "mode": "facade",
+        "version": "0.9.1",
+        "frameworkVersion": "0.9.1",
+        "hostStarted": null,
+        "bytes": 7237,
+        "zipHeader": [
+          80,
+          75,
+          3,
+          4
+        ]
+      }
+    ],
+    "registry": "crates.io",
+    "version": "0.9.1",
+    "wasm_bindgen": "0.2.127",
+    "wasm_opt": "117"
+  },
+  "npm_packages": [
+    {
+      "name": "@rhwp/core",
+      "version": "0.9.1",
+      "tarball": "https://registry.npmjs.org/@rhwp/core/-/core-0.9.1.tgz",
+      "integrity": "sha512-jMLOubFHp5MocnbyYNoPwcUDAIqzF47hBv420i0prnN4+hk0iX/f4RPv0NotDOtQcANaFjJe8/mo64aQsZ73XA==",
+      "sha256": "1a4717863545d77ac86ada2afe5530fea4c26cf6dab842eb8b909c7e9c3e1a91",
+      "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+      "provenance": "https://slsa.dev/provenance/v1",
+      "signatures_reported": 2
+    },
+    {
+      "name": "@rhwp/editor",
+      "version": "0.9.1",
+      "tarball": "https://registry.npmjs.org/@rhwp/editor/-/editor-0.9.1.tgz",
+      "integrity": "sha512-uw6KuUjmglmtNvBljpmewkX4plnXl1n9ahIkzh6KseMwLSAejvZYHIb7kYA7DnvGmB8kMTzR+kWLIE8o4O+vrw==",
+      "sha256": "27bd37112c7a12b99d068e360fb7ea8ffc08da875f38c25b9ce97459ae596b24",
+      "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+      "provenance": "https://slsa.dev/provenance/v1",
+      "signatures_reported": 2
+    }
+  ],
+  "vsix": {
+    "version": "0.9.1",
+    "sha256": "7c1692472cc395881dd7268351a79ef6883525f4fe1684cb5e33493c74316720",
+    "matching_public_channels": [
+      "vscode-marketplace",
+      "open-vsx"
+    ]
+  },
+  "browser_store_preflight": {
+    "source": "981ce66b4183b13c1a3b5907e04a8969c8c42034",
+    "version": "0.9.1",
+    "storeSubmission": "maintainer-manual",
+    "chrome": {
+      "name": "rhwp-chrome-0.9.1.zip",
+      "bytes": 52191674,
+      "sha256": "1340a4aee8faa395ac92c624dd58e92f0007fb23aaee9e4007c0f8379c655516",
+      "runtime": {
+        "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "rhwp_bg.wasm": "e2e56dfd387ffee5b0995d23e4a0086001407f12a045820eb61bd6a506c9abc1"
+      },
+      "manifestChanges": [
+        "version"
+      ],
+      "files": 110
+    },
+    "edge": {
+      "name": "rhwp-edge-0.9.1.zip",
+      "bytes": 52191674,
+      "sha256": "1340a4aee8faa395ac92c624dd58e92f0007fb23aaee9e4007c0f8379c655516",
+      "runtime": {
+        "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "rhwp_bg.wasm": "e2e56dfd387ffee5b0995d23e4a0086001407f12a045820eb61bd6a506c9abc1"
+      },
+      "manifestChanges": [
+        "version"
+      ],
+      "files": 110
+    },
+    "firefox": {
+      "name": "rhwp-firefox-0.9.1.zip",
+      "bytes": 52187357,
+      "sha256": "63fe4448dad863ae85b387ffc51a1b859857853ef4ee91fe6907a1d390551f17",
+      "runtime": {
+        "rhwp.js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+        "rhwp_bg.wasm": "d6868b1d802168b809f8b4522d074dea689187af50f424ff9dfc44cd2320a9c2"
+      },
+      "manifestChanges": [
+        "version"
+      ],
+      "files": 108
+    },
+    "amoSource": {
+      "name": "rhwp-source-0.9.1-amo.zip",
+      "bytes": 52935765,
+      "sha256": "ec25a72d45d4fc347e924095762d48e1ef3341c9fb5e7fbfe293be64180da65d",
+      "verifiedSourceFiles": 4888,
+      "rebuild": "cold-recompile"
+    },
+    "chromeE2e": {
+      "testedContentSha256": "05bd5b2e97a967dde7aa4ff198c1b7b45329c32fbed236c6f03958c8fa79b2a6",
+      "suites": [
+        "extension-smoke",
+        "download-interceptor",
+        "extension-lifecycle"
+      ]
+    },
+    "firefoxE2e": {
+      "viewerTabs": 1,
+      "completedDownloads": 3,
+      "editPreserved": true,
+      "browser": "firefox/155.0.1",
+      "reopenParser": "published-npm-core-same-tag"
+    }
+  },
+  "browser_store_publication": {
+    "observed_at": "2026-11-19T02:57:48+09:00",
+    "submitted_version": "0.9.1",
+    "submission_confirmed_by": "maintainer",
+    "chrome": {
+      "submission": "complete",
+      "observed_public_version": "0.9.0",
+      "source": "https://chromewebstore.google.com/detail/pgakpjflombjmehnebnbpnalhegaanag",
+      "maintainer_local_test": {
+        "version": "0.9.1",
+        "mode": "local",
+        "method": "manual",
+        "result": "pass",
+        "reported_by": "maintainer",
+        "reported_at": "2026-11-19T03:02:01+09:00"
+      }
+    },
+    "edge": {
+      "submission": "complete",
+      "observed_update_version": "0.9.0.0",
+      "extension_id": "nfkdfobhmanddlhdbclkpoanbccpigcn",
+      "source": "https://edge.microsoft.com/extensionwebstorebase/v1/crx",
+      "maintainer_local_test": {
+        "version": "0.9.1",
+        "mode": "local",
+        "method": "manual",
+        "result": "pass",
+        "reported_by": "maintainer",
+        "reported_at": "2026-11-19T03:02:01+09:00"
+      }
+    },
+    "firefox": {
+      "submission": "complete",
+      "observed_public_version": "0.9.1",
+      "observed_at": "2026-11-19T02:56:40+09:00",
+      "amo": {
+        "version": "0.9.1",
+        "version_id": 6729110,
+        "file": {
+          "id": 5273191,
+          "url": "https://addons.mozilla.org/firefox/downloads/file/5273191/rhwp_free_hwp_editor-0.9.1.xpi",
+          "hash": "sha256:3fbcb5a179470cbe47d8828c2649df7c6cc68aa7c69cc66e50f6078c670a3b91",
+          "status": "public",
+          "created": "2026-11-18T17:33:17Z"
+        }
+      },
+      "archive_bytes": 53455651,
+      "byte_matching_payload_files": 107,
+      "manifest_json_equal": true,
+      "manifest_formatting_changed": true,
+      "amo_signature_entries": [
+        "META-INF/cose.manifest",
+        "META-INF/cose.sig",
+        "META-INF/manifest.mf",
+        "META-INF/mozilla.rsa",
+        "META-INF/mozilla.sf"
+      ],
+      "public_xpi_e2e": {
+        "browser": "firefox/155.0.1",
+        "status": "pass",
+        "viewerTabs": 1,
+        "completedDownloads": 3,
+        "editPreserved": true
+      },
+      "maintainer_update_test": {
+        "target_version": "0.9.1",
+        "method": "manual",
+        "update_detected": true,
+        "update_applied": true,
+        "post_update_functionality": "pass",
+        "reported_by": "maintainer",
+        "reported_at": "2026-11-19T03:06:29+09:00"
+      }
+    }
+  }
+}
