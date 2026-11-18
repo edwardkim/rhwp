@@ -1107,6 +1107,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
             extra_word_spacing: 0.0,
             unjustified_leading_spaces: 0,
             extra_char_spacing: 0.0,
+            squeeze_cell_advances: false,
             extra_dash_advance: 0.0,
             text_paint: cs.text_paint,
             outline_type: cs.outline_type,
@@ -2876,7 +2877,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     let mut without_bold_tracking_px = final_width_px - bold_tracking_px;
     let mut negative_spacing_clamped = false;
     if letter_spacing + extra_char_spacing < 0.0 {
-        let min_width = base_width_px * ratio * 0.5;
+        let min_width = style.minimum_tracked_advance(base_width_px * ratio);
         without_bold_tracking_px = without_bold_tracking_px.max(min_width);
         if final_width_px < min_width {
             applied_letter_spacing_px += min_width - final_width_px;
@@ -3026,7 +3027,7 @@ pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
         + style.extra_char_spacing
         + style.extra_word_spacing;
     if style.letter_spacing + style.extra_char_spacing < 0.0 {
-        width = width.max(base_w * ratio * 0.5);
+        width = width.max(style.minimum_tracked_advance(base_w * ratio));
     }
     let stored_width = estimate_text_width_unrounded(" ", style);
     (width > stored_width + f64::EPSILON).then_some(width)
@@ -4076,6 +4077,28 @@ mod tests {
                 positions
             );
         }
+    }
+
+    #[test]
+    fn explicit_cell_squeeze_keeps_character_origins_monotonic_below_half_width() {
+        let text = "Wi, W";
+        let natural_style = TextStyle {
+            font_size: 12.0,
+            ..Default::default()
+        };
+        let untracked = trace_char_width_decisions(text, &natural_style);
+        let mut style = natural_style.clone();
+        style.extra_char_spacing = -style.font_size;
+        let ordinary = compute_char_positions(text, &style);
+        style.squeeze_cell_advances = true;
+        let squeezed = compute_char_positions(text, &style);
+        assert_eq!(squeezed.len(), text.chars().count() + 1);
+        assert!(squeezed.windows(2).all(|pair| pair[0] <= pair[1]));
+        for (pair, glyph) in ordinary.windows(2).zip(&untracked) {
+            assert!(pair[1] - pair[0] >= glyph.base_width_px * 0.5 - 1e-6);
+        }
+        assert!(squeezed.windows(2).any(|pair| pair[0] == pair[1]));
+        assert!(squeezed.last() < ordinary.last());
     }
 
     /// 실제 문서 재현 케이스: 압축은 CharShape 의 `letter_spacing` 을 통해 오며
