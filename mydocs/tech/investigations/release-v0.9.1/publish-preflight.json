@@ -1,0 +1,294 @@
+{
+  "status": "local-preflight-passed",
+  "upload_performed": false,
+  "permission_changes": false,
+  "source_sha": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+  "observed_at": "2026-11-18T03:38:11.299864+00:00",
+  "owner": "edwardkim",
+  "dependency_order": [
+    "rhwp-codec-resource",
+    "rhwp-contracts",
+    "rhwp-jpeg-decoder",
+    "rhwp-jpeg-encoder",
+    "rhwp-ooxml-chart",
+    "rhwp-password-crypto",
+    "rhwp-svg2pdf",
+    "rhwp-zune-jpeg",
+    "rhwp-hayro-ccitt",
+    "rhwp-hayro-jpeg2000",
+    "rhwp-qcms",
+    "rhwp-hayro-jbig2",
+    "rhwp-pdf-import-backend",
+    "rhwp"
+  ],
+  "packages": [
+    {
+      "name": "rhwp-codec-resource",
+      "version": "0.1.1",
+      "archive_sha256": "1dc2e77aa3a3e35bff097fd5451e81defc176deede3d674bce209872b64ca18c",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.1.0",
+            "checksum": "2bf436913acde45fbb0a6cce70d9c6d1121ba5ec3006d3967dd5febefef6adbf",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    },
+    {
+      "name": "rhwp-contracts",
+      "version": "0.1.0",
+      "archive_sha256": "562667a1d3cd9fe4e24f7845211024fe098f327d8db925fcb9be91945c823362",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.1.0",
+            "checksum": "562667a1d3cd9fe4e24f7845211024fe098f327d8db925fcb9be91945c823362",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "already-present"
+    },
+    {
+      "name": "rhwp-jpeg-decoder",
+      "version": "0.3.2-rhwp.1",
+      "archive_sha256": "1f2bd23d396ee20440f3909fe3248dc749272f0952b7387b11eababecf9ec9af",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.3.2-rhwp.1",
+            "checksum": "1f2bd23d396ee20440f3909fe3248dc749272f0952b7387b11eababecf9ec9af",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "already-present"
+    },
+    {
+      "name": "rhwp-jpeg-encoder",
+      "version": "0.7.1-rhwp.1",
+      "archive_sha256": "509f50d0ff86268e903fb0d1c076fed846565c294406071456fde1cf9b57e64a",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.7.1-rhwp.1",
+            "checksum": "509f50d0ff86268e903fb0d1c076fed846565c294406071456fde1cf9b57e64a",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "already-present"
+    },
+    {
+      "name": "rhwp-ooxml-chart",
+      "version": "0.1.1",
+      "archive_sha256": "bd07960233defdd6ee52f078fc248aad28e168ece06dfc966fb5ac6d82d25540",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.1.0",
+            "checksum": "8dd67a4a79127b0657d83a768fa0eb98ddf324fafc6b5d7382c6bb802e005522",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    },
+    {
+      "name": "rhwp-password-crypto",
+      "version": "0.1.0",
+      "archive_sha256": "c83ab2ebe4fb177da61ebd73ce1c36ff226e244417ed80b3e78341fe3c63c676",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.1.0",
+            "checksum": "c83ab2ebe4fb177da61ebd73ce1c36ff226e244417ed80b3e78341fe3c63c676",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "already-present"
+    },
+    {
+      "name": "rhwp-svg2pdf",
+      "version": "0.13.0-rhwp.1",
+      "archive_sha256": "74e743c35b8291f385f83f29b8f86ab37b3c289e1e5d165702b76751cec12a00",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.13.0-rhwp.1",
+            "checksum": "74e743c35b8291f385f83f29b8f86ab37b3c289e1e5d165702b76751cec12a00",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "already-present"
+    },
+    {
+      "name": "rhwp-zune-jpeg",
+      "version": "0.5.15-rhwp.1",
+      "archive_sha256": "81405ea92f5547ef9568bd5970ef4e033a1e0a99462c4873b9adcce0880eba43",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.5.15-rhwp.1",
+            "checksum": "81405ea92f5547ef9568bd5970ef4e033a1e0a99462c4873b9adcce0880eba43",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "already-present"
+    },
+    {
+      "name": "rhwp-hayro-ccitt",
+      "version": "0.3.0-rhwp.2",
+      "archive_sha256": "ed12c894ac38daf62a25c3c5fe9fd1ba1c465de60fc6c7f342ea5c29aa029657",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.3.0-rhwp.1",
+            "checksum": "17d00bd1df14c6c7ed9033ec50642be9d851574e8a5f5ce165263d692ad5d188",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    },
+    {
+      "name": "rhwp-hayro-jpeg2000",
+      "version": "0.4.0-rhwp.2",
+      "archive_sha256": "08aa6342faf29535e2c542306661f16bc38f8544d27ddeb8760114b52b83bebc",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.4.0-rhwp.1",
+            "checksum": "c39fd555a5024503bfd113fe14a3fcdcc4d4e17d11150ff55a1cb3ab0989ffa8",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    },
+    {
+      "name": "rhwp-qcms",
+      "version": "0.3.0-rhwp.2",
+      "archive_sha256": "f682eba5c4e9a0e7689f8343589f3c913c387b1f1234f66471cc2034bea6c35d",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.3.0-rhwp.1",
+            "checksum": "4ba957532f7ab014dab32446c77b135536c0418a0d048618e2628cd4604f8152",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    },
+    {
+      "name": "rhwp-hayro-jbig2",
+      "version": "0.3.0-rhwp.2",
+      "archive_sha256": "c549d26f8dfc066f321ee191688dbd3106bb1f076d72d2c1294c9f61488bf246",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.3.0-rhwp.1",
+            "checksum": "ded7171b8dffea67baf68bc0dd38dc6bff0bb66cea6c30b9b9855b8e59d29f6c",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    },
+    {
+      "name": "rhwp-pdf-import-backend",
+      "version": "0.3.78-rhwp.2",
+      "archive_sha256": "1ed840b560bc0cdbfdce09882719305334eb094d06dbb0f0071416255d9137ca",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.3.78-rhwp.1",
+            "checksum": "a288aae6ed37f58961549688d7f616f0e06c55aa0699bb622f3ddb01d9266162",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    },
+    {
+      "name": "rhwp",
+      "version": "0.9.1",
+      "archive_sha256": "81a3eaefc98d5c7c245b0f00a65876e4fd535832a23a546aecb1e8ecab0a1295",
+      "registry": {
+        "status": "exists",
+        "owners": [
+          "edwardkim"
+        ],
+        "versions": [
+          {
+            "version": "0.9.0",
+            "checksum": "a1e228d3bf78bf79dfa4fd305d03d7a8abd917687e98ae87e733d7d6a014ce36",
+            "yanked": false
+          }
+        ]
+      },
+      "action": "new-version-pending-approval"
+    }
+  ],
+  "public_parent_dry_run_verified": false,
+  "publication_authorized": false
+}

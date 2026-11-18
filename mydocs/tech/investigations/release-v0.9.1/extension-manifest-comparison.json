@@ -6,20 +6,33 @@
       "path": "rhwp-chrome/manifest.json",
       "oldVersion": "0.9.0",
       "newVersion": "0.9.1",
-      "allOtherManifestFieldsEqual": true
+      "allOtherManifestFieldsEqual": true,
+      "packagedManifestMatchesSource": true
     },
     {
       "path": "rhwp-firefox/manifest.json",
       "oldVersion": "0.9.0",
       "newVersion": "0.9.1",
-      "allOtherManifestFieldsEqual": true
+      "allOtherManifestFieldsEqual": true,
+      "packagedManifestMatchesSource": true
     },
     {
       "path": "rhwp-safari/src/manifest.json",
       "oldVersion": "0.9.0",
       "newVersion": "0.9.1",
-      "allOtherManifestFieldsEqual": true
+      "allOtherManifestFieldsEqual": true,
+      "packagedManifestMatchesSource": null
     }
   ],
-  "status": "manifest permissions/hosts/CSP unchanged; packaged external endpoint/runtime verification pending"
+  "status": "source and packaged manifests checked; Chrome/Firefox runtime gates passed; Safari source manifest only",
+  "runtime": {
+    "chromeSuites": [
+      "extension-smoke",
+      "download-interceptor",
+      "extension-lifecycle"
+    ],
+    "chromeStatus": "pass",
+    "firefoxStatus": "download/edit/save passed",
+    "safariRuntime": "not part of this release-channel validation"
+  }
 }

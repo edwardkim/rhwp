@@ -1,0 +1,13 @@
+{
+  "baseline": "v0.9.0",
+  "candidate": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+  "scope": [
+    "rhwp-chrome/src",
+    "rhwp-firefox/src",
+    "rhwp-studio/src",
+    "rhwp-shared"
+  ],
+  "addedLinesContainingNetworkOperationsOrHttpLiterals": [],
+  "runtimeCheck": "Chrome extension smoke/download/lifecycle request/proxy guards passed",
+  "limitation": "Static literals/operation review is not a proof that every possible user flow was exercised."
+}

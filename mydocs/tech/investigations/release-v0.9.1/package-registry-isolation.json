@@ -1,0 +1,118 @@
+{
+  "status": "pass",
+  "packages": [
+    {
+      "archive": "rhwp-0.9.1.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-codec-resource-0.1.1.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-contracts-0.1.0.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-hayro-ccitt-0.3.0-rhwp.2.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-hayro-jbig2-0.3.0-rhwp.2.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-hayro-jpeg2000-0.4.0-rhwp.2.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-jpeg-decoder-0.3.2-rhwp.1.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-jpeg-encoder-0.7.1-rhwp.1.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-ooxml-chart-0.1.1.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-password-crypto-0.1.0.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-pdf-import-backend-0.3.78-rhwp.2.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-qcms-0.3.0-rhwp.2.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-svg2pdf-0.13.0-rhwp.1.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    },
+    {
+      "archive": "rhwp-zune-jpeg-0.5.15-rhwp.1.crate",
+      "checked": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "localRegistryConfigurationLeaked": false
+    }
+  ],
+  "purpose": "Normalized package manifests and locks retain public registry identity, without loopback configuration or machine dependency paths."
+}

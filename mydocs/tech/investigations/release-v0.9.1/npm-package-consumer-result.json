@@ -1,0 +1,34 @@
+{
+  "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+  "exitCode": 0,
+  "result": {
+    "core": {
+      "version": "0.9.1",
+      "pages": 1,
+      "reopenedPages": 1,
+      "hwpxBytes": 7382,
+      "svg": true,
+      "pdf": {
+        "enabled": true,
+        "jbig2": true,
+        "jpeg2000": true,
+        "icc": true,
+        "boundedXrefRecovery": true
+      }
+    },
+    "editor": {
+      "loadedPages": 1,
+      "reopenedPages": 1,
+      "pages": 1,
+      "hwpBytes": 12800,
+      "hwpxBytes": 7382
+    },
+    "browser": "Chrome/152.0.7946.0",
+    "packageSource": "local npm tgz; no registry publication"
+  },
+  "packages": {
+    "rhwp-core-0.9.1.tgz": "5b912c51f362dac6431ff5a83e8ab3dd3c1f1036e3dedcba764e3e4ebab9647c",
+    "rhwp-editor-0.9.1.tgz": "27bd37112c7a12b99d068e360fb7ea8ffc08da875f38c25b9ce97459ae596b24"
+  },
+  "published": false
+}

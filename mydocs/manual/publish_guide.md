@@ -286,7 +286,7 @@ Firefox AMO는 `rhwp-firefox` 빌드 산출물을 사용한다.
 
 ```bash
 # 저장소 루트에서 실행한다. 미게시 준비 산출물은 output/에만 둔다.
-release_version=0.9.0
+release_version=0.9.1
 release_out="$PWD/output/release-v${release_version}/packages"
 mkdir -p "$release_out"
 npm --prefix rhwp-chrome run build
@@ -295,7 +295,7 @@ cp "${release_out}/rhwp-chrome-${release_version}.zip" "${release_out}/rhwp-edge
 npm --prefix rhwp-firefox run build
 (cd rhwp-firefox/dist && zip -qr "${release_out}/rhwp-firefox-${release_version}.zip" .)
 
-git archive --format=zip --prefix=rhwp-source/ --output="${release_out}/rhwp-source-${release_version}-amo.zip" HEAD Cargo.toml Cargo.lock build.rs rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src crates vendor rhwp-studio rhwp-firefox rhwp-shared licenses assets/licenses assets/fonts assets/font-rules data/font-metrics packaging/crates-io assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf ttfs/opensource/NotoSansKR-OFL.txt scripts npm/README.md npm/editor npm/hwpctrl-ocx bindings/Native tools/rhwp-subsecond tools/batch-convert tools/llm_verifier/verdict_protocol tools/llm_verifier/claim_bind tools/llm_verifier/criteria_decomp mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes mydocs/manual/gym_optional_tool.md mydocs/tech/agent_roadmap/atlas_r1_r200.md mydocs/tech/agent_runtime/version_policy.md
+git archive --format=zip --prefix=rhwp-source/ --output="${release_out}/rhwp-source-${release_version}-amo.zip" HEAD Cargo.toml Cargo.lock build.rs rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src crates vendor rhwp-studio rhwp-firefox rhwp-shared licenses assets/licenses assets/fonts assets/font-rules data/font-metrics packaging/crates-io assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf ttfs/opensource/NotoSansKR-OFL.txt scripts npm/README.md npm/editor npm/hwpctrl-ocx bindings/Native tools/rhwp-subsecond tools/batch-convert tools/llm_verifier/verdict_protocol tools/llm_verifier/claim_bind tools/llm_verifier/criteria_decomp mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes mydocs/manual/gym_optional_tool.md mydocs/tech/agent_roadmap/atlas_r1_r200.md mydocs/tech/agent_runtime/version_policy.md mydocs/release/release_notes_v0.9.1.md mydocs/release/release_notes_v0.9.1_EN.md
 zip -d "${release_out}/rhwp-source-${release_version}-amo.zip" \
   "rhwp-source/rhwp-studio/public/samples/*" \
   "rhwp-source/tools/llm_verifier/*/fixtures/*" \
@@ -313,6 +313,13 @@ source zip은 확장 재빌드에 필요한 경로만 포함한다.
   `Cargo.lock`, build script와 production `include_str!`/`include_bytes!` 리소스
 - 제외: top-level `samples/`, `pdf/`, `output/`, `target/`, `node_modules/`, extension `dist/`
 
+Git archive의 과거 mtime과 공용 Cargo target을 함께 쓰면 이전 작업공간의 컴파일 결과를
+재사용할 수 있다. source ZIP 재빌드는 압축 안 파일과 추출 파일의 내용 해시를 먼저
+대조한 뒤 추출 소스의 mtime을 갱신하고, Cargo 로그에서 **추출 경로의 본체가 실제
+컴파일됐는지** 확인한다. registry 의존성 캐시는 사용할 수 있다. 기존 `pkg/` 복사나
+캐시 적중만으로 source 재빌드를 완료 처리하지 않는다. 표준 release·wasm-opt와 Firefox
+포장까지 완료하고 source SHA·ZIP hash·사용한 도구·실행 명령을 남긴다.
+
 #### 확장 스토어 제출 문서
 
 스토어 제출 문서는 `mydocs/feedback/`에 버전별로 보관한다.
@@ -324,9 +331,9 @@ source zip은 확장 재빌드에 필요한 경로만 포함한다.
 | `edge-{version}_reviewer_notes.md` | Microsoft Edge Add-ons 심사 노트 |
 | `firefox-{version}_amo_notes.md` | Firefox AMO 패키지·source ZIP·재빌드·심사 안내 |
 
-0.9.0 제출 후보: [Chrome 한국어](../feedback/chrome-0.9.0_kor.md),
-[Chrome 영어](../feedback/chrome-0.9.0_eng.md), [Edge](../feedback/edge-0.9.0_reviewer_notes.md),
-[Firefox AMO](../feedback/firefox-0.9.0_amo_notes.md).
+0.9.1 제출 후보: [Chrome 한국어](../feedback/chrome-0.9.1_kor.md),
+[Chrome 영어](../feedback/chrome-0.9.1_eng.md), [Edge](../feedback/edge-0.9.1_reviewer_notes.md),
+[Firefox AMO](../feedback/firefox-0.9.1_amo_notes.md).
 이전 버전 제출 기록을 덮어쓰지 않고 이번 버전의 파일을 사용한다.
 
 사용자·개발자 안내, CHANGELOG, 기여자 명단, 스토어 제출 초안은 **main 승격 전에 devel에

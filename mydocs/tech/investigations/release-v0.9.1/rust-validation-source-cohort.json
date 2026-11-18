@@ -1,0 +1,120 @@
+{
+  "reference": "830d17a308839794237bfbeed3ad6aff42e6124c",
+  "sources": [
+    {
+      "source": "830d17a308839794237bfbeed3ad6aff42e6124c",
+      "rustAndCargoInputDifference": [],
+      "otherChangedPaths": []
+    },
+    {
+      "source": "871f9b276f8dfc784a2d09940fa53653cd57e0f0",
+      "rustAndCargoInputDifference": [],
+      "otherChangedPaths": [
+        "mydocs/manual/crates_io_guide.md",
+        "packaging/crates-io/source-policy.json",
+        "scripts/crates_io_publish_preflight.py",
+        "scripts/tests/test_crates_io_publish_preflight.py"
+      ]
+    },
+    {
+      "source": "57ad9ac277c95c7612021a8e359c8907ad5fe5f7",
+      "rustAndCargoInputDifference": [],
+      "otherChangedPaths": [
+        "README.md",
+        "README_EN.md",
+        "mydocs/feedback/edge-0.9.1_reviewer_notes.md",
+        "mydocs/feedback/firefox-0.9.1_amo_notes.md",
+        "mydocs/manual/crates_io_guide.md",
+        "mydocs/manual/publish_guide.md",
+        "npm/README.md",
+        "npm/editor/README.md",
+        "packaging/crates-io/source-policy.json",
+        "scripts/crates_io_publish_preflight.py",
+        "scripts/tests/test_crates_io_publish_preflight.py"
+      ]
+    },
+    {
+      "source": "60cb4620e085b4f369ab0c2faab5a5a251169e69",
+      "rustAndCargoInputDifference": [],
+      "otherChangedPaths": [
+        "README.md",
+        "README_EN.md",
+        "mydocs/feedback/edge-0.9.1_reviewer_notes.md",
+        "mydocs/feedback/firefox-0.9.1_amo_notes.md",
+        "mydocs/manual/crates_io_guide.md",
+        "mydocs/manual/pdf_developer_onboarding.md",
+        "mydocs/manual/pdf_developer_onboarding_EN.md",
+        "mydocs/manual/publish_guide.md",
+        "npm/README.md",
+        "npm/editor/README.md",
+        "packaging/PDF_QUICKSTART.md",
+        "packaging/PDF_QUICKSTART_EN.md",
+        "packaging/crates-io/source-policy.json",
+        "rhwp-vscode/README.md",
+        "scripts/crates_io_publish_preflight.py",
+        "scripts/tests/test_crates_io_publish_preflight.py"
+      ]
+    },
+    {
+      "source": "d5036939b9ead9f4628cf63aaed8959e3f09b624",
+      "rustAndCargoInputDifference": [],
+      "otherChangedPaths": [
+        "README.md",
+        "README_EN.md",
+        "mydocs/feedback/edge-0.9.1_reviewer_notes.md",
+        "mydocs/feedback/firefox-0.9.1_amo_notes.md",
+        "mydocs/manual/crates_io_guide.md",
+        "mydocs/manual/pdf_developer_onboarding.md",
+        "mydocs/manual/pdf_developer_onboarding_EN.md",
+        "mydocs/manual/publish_guide.md",
+        "npm/README.md",
+        "npm/editor/README.md",
+        "packaging/PDF_QUICKSTART.md",
+        "packaging/PDF_QUICKSTART_EN.md",
+        "packaging/crates-io/source-policy.json",
+        "rhwp-vscode/README.md",
+        "scripts/crates_io_publish_preflight.py",
+        "scripts/tests/test_crates_io_publish_preflight.py"
+      ]
+    },
+    {
+      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "rustAndCargoInputDifference": [],
+      "otherChangedPaths": [
+        "CHANGELOG.md",
+        "CHANGELOG_EN.md",
+        "README.md",
+        "README_EN.md",
+        "mydocs/feedback/edge-0.9.1_reviewer_notes.md",
+        "mydocs/feedback/firefox-0.9.1_amo_notes.md",
+        "mydocs/manual/crates_io_guide.md",
+        "mydocs/manual/pdf_developer_onboarding.md",
+        "mydocs/manual/pdf_developer_onboarding_EN.md",
+        "mydocs/manual/publish_guide.md",
+        "mydocs/orders/20261118.md",
+        "mydocs/plans/issue_9165_host_font_input.md",
+        "mydocs/plans/release_0_9_1_20261118.md",
+        "mydocs/pr/archives/pr_9168_review.md",
+        "mydocs/release/release_notes_v0.9.1.md",
+        "mydocs/release/release_notes_v0.9.1_EN.md",
+        "mydocs/tech/investigations/release-v0.9.1/contributor-ledger.json",
+        "npm/README.md",
+        "npm/editor/README.md",
+        "packaging/PDF_QUICKSTART.md",
+        "packaging/PDF_QUICKSTART_EN.md",
+        "packaging/crates-io/source-policy.json",
+        "rhwp-studio/e2e/MANIFEST.md",
+        "rhwp-studio/e2e/host-font-input-issue9165.test.mjs",
+        "rhwp-studio/package.json",
+        "rhwp-studio/src/core/host-font-requests.ts",
+        "rhwp-studio/src/core/wasm-bridge.ts",
+        "rhwp-studio/src/view/canvas-view.ts",
+        "rhwp-studio/tests/host-font-page-requests.test.ts",
+        "rhwp-vscode/README.md",
+        "scripts/crates_io_publish_preflight.py",
+        "scripts/tests/test_crates_io_publish_preflight.py"
+      ]
+    }
+  ],
+  "note": "Relevant Rust source, Cargo manifests/locks, build.rs and toolchain inputs are identical; reports retain actual execution source SHA."
+}

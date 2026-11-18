@@ -15,7 +15,9 @@
 
 최종 source ZIP은 제품 source·workspace·vendor·lockfile·공개 재배포 자원만 포함합니다.
 대형 샘플·개인 폰트·환경 비밀·빌드 산출물은 제외합니다. Node 24.15.0과 저장소
-`rust-toolchain.toml`의 Rust 1.93.1을 사용해 다음 경로를 실제 재검증합니다.
+`rust-toolchain.toml`의 Rust 1.93.1·wasm32 target, wasm-pack 0.15.0을 사용합니다.
+wasm-pack이 없다면 `cargo install wasm-pack --version 0.15.0 --locked`로 준비합니다.
+다음 경로를 실제 재검증합니다.
 
 ```sh
 cd rhwp-source

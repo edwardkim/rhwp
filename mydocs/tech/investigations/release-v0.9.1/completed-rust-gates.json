@@ -1,0 +1,90 @@
+{
+  "status": "all-listed-gates-passed",
+  "completedAt": "2026-11-18T03:03:19.377041+00:00",
+  "rows": [
+    {
+      "job": "fmt",
+      "source": "830d17a308839794237bfbeed3ad6aff42e6124c",
+      "exitCode": 0,
+      "seconds": 26.965
+    },
+    {
+      "job": "native-clippy",
+      "source": "830d17a308839794237bfbeed3ad6aff42e6124c",
+      "exitCode": 0,
+      "seconds": 118.819
+    },
+    {
+      "job": "wasm-clippy",
+      "source": "830d17a308839794237bfbeed3ad6aff42e6124c",
+      "exitCode": 0,
+      "seconds": 103.281
+    },
+    {
+      "job": "workspace-build",
+      "source": "830d17a308839794237bfbeed3ad6aff42e6124c",
+      "exitCode": 0,
+      "seconds": 142.135
+    },
+    {
+      "job": "workspace-clippy",
+      "source": "871f9b276f8dfc784a2d09940fa53653cd57e0f0",
+      "exitCode": 0,
+      "seconds": 133.301
+    },
+    {
+      "job": "regressions",
+      "source": "871f9b276f8dfc784a2d09940fa53653cd57e0f0",
+      "exitCode": 0,
+      "seconds": 1210.961
+    },
+    {
+      "job": "native-skia-lib",
+      "source": "57ad9ac277c95c7612021a8e359c8907ad5fe5f7",
+      "exitCode": 0,
+      "seconds": 357.281
+    },
+    {
+      "job": "native-missing-picture",
+      "source": "57ad9ac277c95c7612021a8e359c8907ad5fe5f7",
+      "exitCode": 0,
+      "seconds": 281.695
+    },
+    {
+      "job": "native-direct-pdf",
+      "source": "57ad9ac277c95c7612021a8e359c8907ad5fe5f7",
+      "exitCode": 0,
+      "seconds": 15.643
+    },
+    {
+      "job": "native-release",
+      "source": "57ad9ac277c95c7612021a8e359c8907ad5fe5f7",
+      "exitCode": 0,
+      "seconds": 1183.254
+    },
+    {
+      "job": "doc-tests",
+      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "exitCode": 0,
+      "seconds": 241.534
+    },
+    {
+      "job": "nightly-workspace",
+      "source": "8a01b6529c98c0f7fc53750dbe22ab86467e1350",
+      "exitCode": 0,
+      "seconds": 65.544
+    }
+  ],
+  "regressions": {
+    "passed": 13723,
+    "failed": 0,
+    "existingSkipped": 45
+  },
+  "officialNativePassed": 4073,
+  "docTests": {
+    "passed": 8,
+    "failed": 0,
+    "existingIgnored": 3
+  },
+  "nightlyDeprecatedDiagnostics": 0
+}
