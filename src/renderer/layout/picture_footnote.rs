@@ -2062,6 +2062,7 @@ impl LayoutEngine {
                         false,
                         Some(placement.spacing),
                         None,
+                        false,
                     );
                     if shape.number_code_superscript && numbered.is_some() {
                         shrink_footnote_number(

@@ -2388,12 +2388,19 @@ fn converge_cell_overflow_char_spacing(
     total_char_count: usize,
     total_text_width: f64,
     available_width: f64,
+    explicit_squeeze: bool,
 ) -> f64 {
     let spacing_count = total_char_count - line_plan.leading_spaces;
     debug_assert!(spacing_count > 0);
     let body_width = total_text_width - line_plan.natural_width(styles, tab_width);
     let avg_char_w = body_width / spacing_count as f64;
-    let min_sp = -avg_char_w * 0.5;
+    // 일반 저장 줄의 자동 축소 하한은 유지한다. 명시적으로 한 줄을 요청한 셀은
+    // 각 글리프의 전진폭 하한을 적용한 실제 측정값으로 축소량을 정한다.
+    let min_sp = if explicit_squeeze {
+        f64::NEG_INFINITY
+    } else {
+        -avg_char_w * 0.5
+    };
     let mut extra = ((available_width - total_text_width) / spacing_count as f64).max(min_sp);
     for _ in 0..4 {
         let measured = visible_line_measure.map_or_else(
@@ -2964,6 +2971,7 @@ fn compute_line_extra_spacing_with_dash_plan(
                         distributed_char_count,
                         total_text_width,
                         available_width,
+                        false,
                     ),
                     0.0,
                 )
@@ -3087,6 +3095,7 @@ fn compute_line_extra_spacing_with_dash_plan(
                     fit_char_count + trailing_fit_count,
                     fit_width + trailing_fit_width,
                     available_width,
+                    false,
                 ),
                 0.0,
             )
@@ -3447,6 +3456,7 @@ impl LayoutEngine {
                             .map_or(0.0, |s| s.spacing_after),
                     }),
                 None,
+                false,
             );
             return;
         }
@@ -5504,6 +5514,7 @@ impl LayoutEngine {
                 recomposed.is_some() && crate::renderer::para_has_no_stored_line_segs(para),
                 vertical_spacing.or(flow_spacing),
                 None,
+                false,
             );
         }
 
@@ -6083,6 +6094,7 @@ impl LayoutEngine {
             false,
             None,
             None,
+            false,
         )
     }
 
@@ -6110,6 +6122,7 @@ impl LayoutEngine {
         computed_body_rows: bool,
         vertical_spacing: Option<ParagraphVerticalSpacing>,
         stored_cell_content_origin: Option<f64>,
+        cell_line_wrap_squeeze: bool,
     ) -> f64 {
         // 저장 vpos가 없는 것은 첫 문단의 앞 간격이 0이라는 증거가 아니다.
         // 실제 셀의 순수 재조판 텍스트는 측정/컷 원장과 같은 flow-before를 쓴다.
@@ -7958,7 +7971,8 @@ impl LayoutEngine {
                 });
             // 문단 「한 줄로 입력」은 줄을 나누지 않고 자간을 좁혀 한 줄에 담는다.
             // 한 줄로 조합된 이 문단의 넘침은 잘라낼 내용이 아니라 좁힐 대상이다.
-            let line_wrap_squeeze = composed.lines.len() == 1
+            let line_wrap_squeeze = cell_line_wrap_squeeze
+                || composed.lines.len() == 1
                 && para_style.is_some_and(|style| style.line_wrap_squeeze);
             let suppress_cell_overflow_spacing = cell_ctx.is_some()
                 && !line_wrap_squeeze
@@ -8161,6 +8175,26 @@ impl LayoutEngine {
                 .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
             let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
                 (0.0, 0.0, 0.0)
+            } else if cell_line_wrap_squeeze
+                && total_text_width > available_width
+                && total_char_count > leading_space_plan.leading_spaces
+                && !has_tabs
+                && line_tac_offsets_for_width.is_empty()
+            {
+                (
+                    0.0,
+                    converge_cell_overflow_char_spacing(
+                        &leading_space_plan,
+                        styles,
+                        visible_line_measure.as_ref(),
+                        tab_width,
+                        total_char_count,
+                        total_text_width,
+                        available_width,
+                        true,
+                    ),
+                    0.0,
+                )
             } else if is_hancom_company_pua_logo_line {
                 // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
                 // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부

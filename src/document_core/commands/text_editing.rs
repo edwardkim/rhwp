@@ -77,7 +77,22 @@ fn boundary_controls_to_delete(
     Ok(selected)
 }
 
-pub(crate) type CellReflowMetrics = (i32, i16, i16);
+#[derive(Clone, Copy)]
+pub(crate) struct CellReflowMetrics {
+    pub(crate) width: i32,
+    pub(crate) horizontal_padding: i32,
+    pub(crate) squeeze: bool,
+}
+
+impl CellReflowMetrics {
+    fn new(width: i32, left: i16, right: i16, squeeze: bool) -> Self {
+        Self {
+            width,
+            horizontal_padding: i32::from(left) + i32::from(right),
+            squeeze,
+        }
+    }
+}
 
 fn validate_form_boundary_metadata(
     paragraph: &Paragraph,
@@ -3234,17 +3249,18 @@ impl DocumentCore {
         control_idx: usize,
         cell_idx: usize,
         cell_para_idx: usize,
-        (cell_width, pad_left, pad_right): CellReflowMetrics,
+        metrics: CellReflowMetrics,
         edit_char_offset: Option<usize>,
         split_stale_cell_reflow: bool,
     ) {
         use crate::renderer::hwpunit_to_px;
 
         let styles = self.resolve_render_styles();
-        let cell_width_px = hwpunit_to_px(cell_width, self.dpi);
-        let pad_left_px = hwpunit_to_px(pad_left as i32, self.dpi);
-        let pad_right_px = hwpunit_to_px(pad_right as i32, self.dpi);
-        let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
+        let available_width = hwpunit_to_px(
+            metrics.width.saturating_sub(metrics.horizontal_padding),
+            self.dpi,
+        )
+        .max(0.0);
 
         // 문단 여백 계산
         let para_shape_id = {
@@ -3264,7 +3280,8 @@ impl DocumentCore {
         // Keep the style-derived origin as well as the width. The render frame
         // already consumes this box; passing only its width here published
         // column_start=0 after an edit despite a nonzero paragraph margin.
-        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, self.dpi);
+        let paragraph_box = ParagraphBox::content_for_style(available_width, para_style, self.dpi)
+            .with_line_wrap_squeeze(metrics.squeeze);
 
         // 가변 참조로 리플로우 실행
         match self.document.sections[section_idx].paragraphs[parent_para_idx]
@@ -3543,7 +3560,12 @@ impl DocumentCore {
             .zip(table.paragraph_frame_owner_widths())
             .map(|(cell, width)| {
                 let padding = cell.paragraph_frame_padding(&table.padding);
-                (width, padding.left, padding.right)
+                CellReflowMetrics::new(
+                    width,
+                    padding.left,
+                    padding.right,
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
+                )
             })
             .collect()
     }
@@ -3562,13 +3584,18 @@ impl DocumentCore {
                         CaptionDirection::Left | CaptionDirection::Right => cap.width,
                         _ => cap.max_width,
                     };
-                    Some((w as i32, 0, 0))
+                    Some(CellReflowMetrics::new(w as i32, 0, 0, false))
                 } else {
                     let cell = table.cells.get(cell_idx)?;
                     let owner_widths = table.paragraph_frame_owner_widths();
                     let width = *owner_widths.get(cell_idx)?;
                     let padding = cell.paragraph_frame_padding(&table.padding);
-                    Some((width, padding.left, padding.right))
+                    Some(CellReflowMetrics::new(
+                        width,
+                        padding.left,
+                        padding.right,
+                        cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
+                    ))
                 }
             }
             Control::Shape(shape) => {
@@ -3583,9 +3610,16 @@ impl DocumentCore {
                 } else {
                     owner.common().width as i32
                 };
-                Some((width, tb.margin_left, tb.margin_right))
+                Some(CellReflowMetrics::new(
+                    width,
+                    tb.margin_left,
+                    tb.margin_right,
+                    false,
+                ))
             }
-            Control::Picture(pic) => Some((pic.common.width as i32, 0, 0)),
+            Control::Picture(pic) => {
+                Some(CellReflowMetrics::new(pic.common.width as i32, 0, 0, false))
+            }
             _ => None,
         }
     }
@@ -3619,7 +3653,7 @@ impl DocumentCore {
                     let width = page_def.width as i32
                         - page_def.margin_left as i32
                         - page_def.margin_right as i32;
-                    return (cell_idx == 0).then_some((width, 0, 0));
+                    return (cell_idx == 0).then_some(CellReflowMetrics::new(width, 0, 0, false));
                 }
                 return Self::cell_metrics_for_control(control, cell_idx);
             }
@@ -3652,17 +3686,17 @@ impl DocumentCore {
     ) {
         use crate::renderer::hwpunit_to_px;
 
-        let Some((cell_width, pad_left, pad_right)) =
-            self.resolve_innermost_cell_metrics(section_idx, parent_para_idx, path)
+        let Some(metrics) = self.resolve_innermost_cell_metrics(section_idx, parent_para_idx, path)
         else {
             return;
         };
         let styles = self.resolve_render_styles();
         let dpi = self.dpi;
-        let cell_width_px = hwpunit_to_px(cell_width, dpi);
-        let pad_left_px = hwpunit_to_px(pad_left as i32, dpi);
-        let pad_right_px = hwpunit_to_px(pad_right as i32, dpi);
-        let available_width = (cell_width_px - pad_left_px - pad_right_px).max(0.0);
+        let available_width = hwpunit_to_px(
+            metrics.width.saturating_sub(metrics.horizontal_padding),
+            dpi,
+        )
+        .max(0.0);
 
         // 머리말·꼬리말 문단은 그 편집 경로(`reflow_hf_paragraph`)와 같은 상자로 다시 짠다.
         let header_footer = path.len() == 1
@@ -3686,6 +3720,7 @@ impl DocumentCore {
             ParagraphBox::content_width_px((available_width - margins).max(0.0), dpi)
         } else {
             ParagraphBox::content_for_style(available_width, para_style, dpi)
+                .with_line_wrap_squeeze(metrics.squeeze)
         };
         // 셀 내용 상자 — 열이 없으므로 미스냅.
         reflow_line_segs(cell_para, paragraph_box, &styles, dpi);
