@@ -173,8 +173,6 @@ const FORMAT_COPY_PARA_KEYS: Array<keyof ParaProperties> = [
   'marginLeft',
   'marginRight',
   'indent',
-  'spacingBefore',
-  'spacingAfter',
   'headType',
   'paraLevel',
   'numberingId',
@@ -218,10 +216,6 @@ function pickDefined<T extends object, K extends keyof T>(source: T, keys: K[]):
 
 function pxToRaw2x(px: number): number {
   return Math.round(px * PX_TO_RAW_2X);
-}
-
-function pxToRaw(px: number): number {
-  return Math.round(px * PX_TO_HWPUNIT);
 }
 
 function availableDropWidthPx(pageInfo: PageInfo, pageX: number): number {
@@ -271,8 +265,9 @@ function normalizeFormatCopyParaProps(props: Partial<ParaProperties>): Partial<P
   if (props.marginLeft !== undefined) normalized.marginLeft = pxToRaw2x(props.marginLeft);
   if (props.marginRight !== undefined) normalized.marginRight = pxToRaw2x(props.marginRight);
   if (props.indent !== undefined) normalized.indent = pxToRaw2x(props.indent);
-  if (props.spacingBefore !== undefined) normalized.spacingBefore = props.spacingBeforeRaw ?? pxToRaw(props.spacingBefore);
-  if (props.spacingAfter !== undefined) normalized.spacingAfter = props.spacingAfterRaw ?? pxToRaw(props.spacingAfter);
+  // 구 엔진의 반올림된 px는 단위 비트를 잃는다. 확인된 저장값만 복사한다.
+  if (props.spacingBeforeRaw !== undefined) normalized.spacingBefore = props.spacingBeforeRaw;
+  if (props.spacingAfterRaw !== undefined) normalized.spacingAfter = props.spacingAfterRaw;
   return normalized;
 }
 
