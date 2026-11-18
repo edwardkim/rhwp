@@ -10,6 +10,7 @@ async function open(page, name, bytes, mode = 'ordinary') {
     const probe = window.openProbe;
     probe.mode = mode;
     probe.entered = false;
+    if (mode === 'held') probe.obsoleteFinished = false;
     const files = new DataTransfer();
     files.items.add(new File([Uint8Array.from(atob(data), c => c.charCodeAt(0))], name));
     const input = document.querySelector('#file-input');
@@ -147,6 +148,36 @@ await runTest('최초 페이지 렌더링과 글꼴 준비 경합 (#9164)', asyn
   }));
   assert.deepEqual(afterRelease, { document: 'case-current.hwpx', loaded: 1, hash: reference.hash });
   assert.match(await page.$eval('#sb-message', e => e.textContent), /^case-current\.hwpx/);
+  await open(page, 'case-retained.hwp', a, 'held');
+  await page.waitForFunction(() => window.openProbe.entered);
+  await open(page, 'case-invalid.hwp', Buffer.from('invalid synthetic document'));
+  await page.waitForFunction(() => document.querySelector('#sb-message').textContent.includes('UNSUPPORTED_FILE_FORMAT'));
+  const failureStatus = await page.$eval('#sb-message', e => e.textContent);
+  await page.evaluate(() => window.openProbe.release());
+  await page.waitForFunction(() => window.openProbe.obsoleteFinished
+    && !document.documentElement.classList.contains('rhwp-busy')
+    && window.openProbe.loaded.has(window.__wasm.documentGeneration));
+  assert.equal(await page.$eval('#sb-message', e => e.textContent), failureStatus);
+  assert.equal(await page.evaluate(() => window.__wasm.fileName), 'case-retained.hwp');
+  assert.equal(await page.evaluate(() => window.openProbe.firstPage().hash), normal.hash);
+  assert.equal(await page.evaluate(() => window.__inputHandler.isActive()), true, '복원한 문서의 편집 상태');
+  await page.keyboard.type('recovered-input');
+  assert.ok(await page.evaluate(() => window.__wasm.doc.getTextFileText().includes('recovered-input')));
+  await page.evaluate(() => { document.querySelector('#file-input').dataset.skipUnsavedGuard = 'true'; });
+  await open(page, 'case-fresh.hwpx', b);
+  await success(page, 'case-fresh.hwpx');
+  // A 복구의 글꼴 준비 도중 C를 열면 뒤늦은 복구가 C를 덮지 않는다.
+  await open(page, 'case-interrupted.hwp', a, 'held');
+  await page.waitForFunction(() => window.openProbe.entered);
+  await page.evaluate(() => { window.openProbe.releaseOriginal = window.openProbe.release; });
+  await open(page, 'case-broken.hwp', Buffer.from('invalid synthetic document'), 'held');
+  await page.waitForFunction(() => window.openProbe.entered && window.openProbe.release !== window.openProbe.releaseOriginal);
+  await open(page, 'case-third.hwpx', b);
+  assert.equal((await success(page, 'case-third.hwpx')).hash, reference.hash);
+  await page.evaluate(() => { window.openProbe.releaseOriginal(); window.openProbe.release(); });
+  await page.waitForFunction(() => !document.documentElement.classList.contains('rhwp-busy'));
+  assert.equal(await page.evaluate(() => window.__wasm.fileName), 'case-third.hwpx');
+  assert.match(await page.$eval('#sb-message', e => e.textContent), /^case-third\.hwpx/);
   // 복구할 수 없는 paint 실패는 성공으로 보고되지 않아야 한다.
   await page.evaluate(() => {
     window.__canvasView.pageRenderer.renderPage = () => { throw Error('합성 paint 실패'); };

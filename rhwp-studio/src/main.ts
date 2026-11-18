@@ -537,6 +537,8 @@ function waitForNextPaint(): Promise<void> {
 
 const supersededOpen = new Error('새 문서 열기가 시작되었습니다.');
 let documentOpen: AbortController | undefined;
+// 파싱된 문서와 편집 준비를 끝낸 문서는 다를 수 있다.
+let pendingInitialization: { generation: number; signal: AbortSignal } | null = null;
 
 function beginDocumentOpen(): AbortSignal {
   documentOpen?.abort(supersededOpen);
@@ -544,10 +546,11 @@ function beginDocumentOpen(): AbortSignal {
   return documentOpen.signal;
 }
 
-async function updateLoadProgress(percent: number, label: string, signal: AbortSignal): Promise<void> {
+async function updateLoadProgress(percent: number, label: string, signal: AbortSignal, status: HTMLElement | null = sbMessage()): Promise<void> {
   signal.throwIfAborted();
+  if (!status) return;
   const safePercent = Math.max(0, Math.min(100, Math.round(percent)));
-  sbMessage().textContent = `파일 로딩 ${safePercent}% - ${label}`;
+  status.textContent = `파일 로딩 ${safePercent}% - ${label}`;
   await waitForNextPaint();
   signal.throwIfAborted();
 }
@@ -1527,9 +1530,9 @@ async function initializeDocument(
   docInfo: DocumentInfo,
   displayName: string,
   signal: AbortSignal,
-  options: { suppressDialogs?: boolean; suppressLocalFontPrompt?: boolean } = {},
+  options: { suppressDialogs?: boolean; suppressLocalFontPrompt?: boolean; preserveStatus?: boolean } = {},
 ): Promise<void> {
-  const msg = sbMessage();
+  const msg = options.preserveStatus ? null : sbMessage();
   try {
     signal.throwIfAborted();
     // 이미 승인된 snapshot을 권한 prompt 없이 준비한 뒤 프로그램을 선택한다.
@@ -1552,23 +1555,23 @@ async function initializeDocument(
     ])];
     lastAppliedLocalFontGeneration = null;
     console.log('[initDoc] 1. 폰트 로딩 시작');
-    await updateLoadProgress(55, '폰트 준비 중...', signal);
+    await updateLoadProgress(55, '폰트 준비 중...', signal, msg);
     if (currentDocumentFonts.length) {
       await loadWebFonts(currentDocumentFonts, (loaded, total) => {
-        if (signal.aborted) return;
+        if (signal.aborted || !msg) return;
         const fontPercent = total > 0 ? 55 + Math.round((loaded / total) * 20) : 65;
         msg.textContent = `파일 로딩 ${fontPercent}% - 폰트 로딩 중... (${loaded}/${total})`;
       }, extensionViewerSettings);
     }
     console.log('[initDoc] 2. 폰트 로딩 완료');
-    await updateLoadProgress(75, '문서 상태 적용 중...', signal);
+    await updateLoadProgress(75, '문서 상태 적용 중...', signal, msg);
     totalSections = docInfo.sectionCount ?? 1;
     sbSection().textContent = t('ui.sbSection.text', { p1: 1, p2: totalSections });
     applySavedTextMarkSettings();
     console.log('[initDoc] 3. inputHandler deactivate');
     inputHandler?.deactivate();
     console.log('[initDoc] 4. canvasView loadDocument');
-    await updateLoadProgress(82, '페이지 렌더 준비 중...', signal);
+    await updateLoadProgress(82, '페이지 렌더 준비 중...', signal, msg);
     if (!canvasView) throw new Error('문서 화면이 준비되지 않았습니다.');
     const savedZoomFitMode = userSettings.getViewSettings().zoomFitMode;
     await canvasView?.loadDocument();
@@ -1577,13 +1580,13 @@ async function initializeDocument(
     applySavedZoomFitMode(savedZoomFitMode);
     prepareCanvasKitLocalFonts(docInfo.fontsUsed);
     console.log('[initDoc] 5. toolbar setEnabled');
-    await updateLoadProgress(90, '도구 모음 준비 중...', signal);
+    await updateLoadProgress(90, '도구 모음 준비 중...', signal, msg);
     toolbar?.setEnabled(true);
     console.log('[initDoc] 6. toolbar initFontDropdown + initStyleDropdown');
     toolbar?.initFontDropdown(docInfo.fontsUsed);
     toolbar?.initStyleDropdown();
     console.log('[initDoc] 7. 사전 검증 및 로컬 글꼴 확인');
-    await updateLoadProgress(94, '문서 검증 및 글꼴 확인 중...', signal);
+    await updateLoadProgress(94, '문서 검증 및 글꼴 확인 중...', signal, msg);
 
     // #177: HWPX 비표준 lineseg 감지 (진단 로그).
     // #2527: 자동 보정(reflowLinesegs)이 빈-lineseg 문서에서 글리프 좌표를 붕괴시켜
@@ -1605,10 +1608,12 @@ async function initializeDocument(
 
     // 로컬 글꼴 감지 결과가 뷰를 갱신한 뒤에 캐럿을 연결해야 입력 포커스가 재설정과 경합하지 않는다.
     console.log('[initDoc] 8. inputHandler activateWithCaretPosition');
-    await updateLoadProgress(96, '편집 상태 초기화 중...', signal);
+    await updateLoadProgress(96, '편집 상태 초기화 중...', signal, msg);
+    signal.throwIfAborted();
     inputHandler?.activateWithCaretPosition();
     // 최종 단계 뒤에는 비동기 작업이 없으므로 100% progress paint를 기다리지 않는다.
-    msg.textContent = displayName;
+    if (msg) msg.textContent = displayName;
+    pendingInitialization = null;
     console.log('[initDoc] 9. 완료');
 
     // #2527: 자동 보정을 하지 않으므로 로드 직후 문서는 항상 clean.
@@ -1748,6 +1753,18 @@ async function loadDocumentForOpen(data: Uint8Array, fileName: string, openSigna
  */
 function restoreViewAfterFailedOpen(): void {
   if (!canvasView || wasm.pageCount === 0) return;
+  const signal = documentOpen?.signal;
+  const interrupted = pendingInitialization;
+  if (signal && interrupted?.generation === wasm.documentGeneration && interrupted.signal.aborted) {
+    pendingInitialization = { generation: interrupted.generation, signal };
+    // 같은 문서의 툴바·캐럿까지 복원한다. 실패한 열기의 오류 메시지는 유지한다.
+    void withBusyCursor(document.documentElement, () => initializeDocument(
+      wasm.getDocumentInfo(), wasm.fileName, signal, { suppressDialogs: true, preserveStatus: true },
+    )).catch(error => {
+      if (!signal.aborted) console.warn('[main] 중단된 문서 초기화 복구 실패:', error);
+    });
+    return;
+  }
   void canvasView.loadDocument().catch((error) => {
     console.warn('[main] 열기 실패 후 이전 문서 뷰 복구 실패:', error);
   });
@@ -1793,7 +1810,8 @@ async function loadFile(
   }
 }
 
-function prepareCanvasRendererDocument(): void {
+function prepareCanvasRendererDocument(signal: AbortSignal): void {
+  pendingInitialization = { generation: wasm.documentGeneration, signal };
   canvasView?.prepareDocumentLoad();
 }
 
@@ -1838,7 +1856,7 @@ async function loadBytes(
       wasm.requiresPasswordForSave = true;
       wasm.setRecoveryCipher(options.recoveryCipher);
     }
-    prepareCanvasRendererDocument();
+    prepareCanvasRendererDocument(signal);
     // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
     // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
     plugins.notifyDocumentSwap();
@@ -2050,7 +2068,7 @@ async function createNewDocument(): Promise<void> {
       msg.textContent = '새 문서 생성 중...';
       const docInfo = wasm.createNewDocument();
       eventBus.emit('document-swapped');
-      prepareCanvasRendererDocument();
+      prepareCanvasRendererDocument(signal);
       plugins.notifyDocumentSwap();
       await autosaveManager.beginDocument(
         { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
