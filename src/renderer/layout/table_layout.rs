@@ -2002,6 +2002,18 @@ impl CellUnit {
             && self.vis_end == following.vis_start
     }
 
+    /// 이 유닛이 중첩 표의 한 행을 통째로 닫고 다음 유닛이 같은 표의 바로 다음 행을 통째로 연다.
+    pub(super) fn closes_whole_nested_row_before(&self, next: &CellUnit) -> bool {
+        self.para_idx == next.para_idx
+            && self.nested_table_fragment.is_none()
+            && next.nested_table_fragment.is_none()
+            && !self.mixed_nested_fragment
+            && !next.mixed_nested_fragment
+            && self
+                .nested_row
+                .is_some_and(|row| next.nested_row == Some(row + 1))
+    }
+
     /// 문단의 표 존재와 현재 유닛의 표 소유를 구분한다.
     pub(super) fn owns_table_in_paragraph(&self, para: &Paragraph) -> bool {
         if self.nested_row.is_some() || self.mixed_nested_fragment {
