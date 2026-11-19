@@ -2960,9 +2960,8 @@ impl LayoutEngine {
                             .is_some_and(|(a, b)| a.closes_whole_nested_row_before(b));
                     closes_on_nested_row
                         || ((end_unit >= units.len()
-                            || self.cell_unit_opens_stored_page_frame(
-                                cell, table, styles, end_unit,
-                            ))
+                            || self
+                                .cell_unit_opens_stored_page_frame(cell, table, styles, end_unit))
                             && (start_unit == 0 || !cuts_through_table(start_unit - 1, start_unit))
                             && !cuts_through_table(end_unit - 1, end_unit))
                 });

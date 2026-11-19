@@ -3596,7 +3596,17 @@ impl LayoutEngine {
                         || self.profile.get().hwpx_stored_layout()),
             )
             .map(|hu| hwpunit_to_px(hu, self.dpi))
-            .unwrap_or(0.0);
+            .unwrap_or(0.0)
+            .max(
+                (!self.profile.get().session_edited()
+                    && (self.profile.get().hwp5_stored_pagination_layout()
+                        || self.profile.get().hwpx_stored_layout()))
+                .then(|| {
+                    crate::renderer::float_placement::cell_text_host_topbottom_stack(paragraphs)
+                })
+                .flatten()
+                .map_or(0.0, |stack| hwpunit_to_px(stack.extent_hu, self.dpi)),
+            );
         // [Task #2226] TopAndBottom flow 개체 보유 문단의 para_top 은 사다리 기반
         // 문단 시작 — height_measurer::cell_wrap_objects_bottom_height 와 동일 정정.
         let mut prev_extent = 0.0f64;
@@ -9321,6 +9331,21 @@ impl LayoutEngine {
                                 // 아니라 stale 음수 offset과 짝을 이룬 이전 페이지 ladder다.
                                 // page-local content top이 한컴 PDF의 그림 상단이다.
                                 content_cell_y + pad_top
+                            } else if let Some(top) = (row_filter.is_none()
+                                && !single_row_fragment
+                                && !self.profile.get().session_edited()
+                                && (self.profile.get().hwp5_stored_pagination_layout()
+                                    || self.profile.get().hwpx_stored_layout()))
+                            .then(|| {
+                                crate::renderer::float_placement::cell_text_host_topbottom_stack(
+                                    &cell.paragraphs,
+                                )
+                            })
+                            .flatten()
+                            .and_then(|stack| stack.top_hu(ctrl_idx))
+                            {
+                                // 정렬이 쓴 같은 겹침 없는 자리에서 그림 위끝을 정한다.
+                                text_y_start + hwpunit_to_px(top, self.dpi)
                             } else if let Some(frame) = trust_stored_cell_flow.then(|| {
                                 crate::renderer::float_placement::stored_cell_flow_picture_frame(
                                     &cell.paragraphs, cp_idx, pic,
@@ -12159,6 +12184,29 @@ impl LayoutEngine {
                         &cell.paragraphs,
                         self.dpi,
                     )
+            } else {
+                text_y_start
+            };
+            // 글 한 줄과 겹침 없는 자리차지 그림 여럿을 가진 칸은 그림이 문단 위끝에서 놓인다.
+            // 정렬 내용은 글줄 뒤에 그림을 다시 쌓은 높이가 아니라 가장 아래 그림 바닥까지다.
+            let text_host_topbottom_stack = (row_filter.is_none()
+                && !single_row_fragment
+                && !self.profile.get().session_edited()
+                && (self.profile.get().hwp5_stored_pagination_layout()
+                    || self.profile.get().hwpx_stored_layout()))
+            .then(|| {
+                crate::renderer::float_placement::cell_text_host_topbottom_stack(&cell.paragraphs)
+            })
+            .flatten();
+            let text_y_start = if let Some(stack) = &text_host_topbottom_stack {
+                let free = (inner_height - hwpunit_to_px(stack.extent_hu, self.dpi)).max(0.0);
+                content_cell_y
+                    + pad_top
+                    + match effective_valign {
+                        VerticalAlign::Top => 0.0,
+                        VerticalAlign::Center => free / 2.0,
+                        VerticalAlign::Bottom => free,
+                    }
             } else {
                 text_y_start
             };
