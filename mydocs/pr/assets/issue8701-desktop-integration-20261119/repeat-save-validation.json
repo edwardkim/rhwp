@@ -1,0 +1,58 @@
+{
+  "source_head": "64ba35858d4f511bdd993f24eae9337880a7f2b2",
+  "platform": "macOS",
+  "profile": "release",
+  "features": [
+    "native-skia-metal"
+  ],
+  "asserted_behavior": "Flutter TextEditingValue 조합 → Native FFI 저장 → 다시 열기 → 재저장 → 다시 열기",
+  "tests_passed": 2,
+  "artifacts": [
+    {
+      "name": "librhwp_flutter_owner.dylib",
+      "sha256": "ba594ca9bc918cc938ea166fe611baf31cb1a97d48cd98308de7f46db101e733"
+    },
+    {
+      "name": "librhwp_native_ffi.dylib",
+      "sha256": "b082b57063bd8fd8d30ce5242fdcfbd175038966f61ae9af39cae51d3f125830"
+    }
+  ],
+  "formats": [
+    {
+      "format": "hwp",
+      "accepted": "한",
+      "reopenCycles": 2,
+      "nativeOwner": true,
+      "saved_documents": [
+        {
+          "name": "first.hwp",
+          "bytes": 12800,
+          "sha256": "faaa67703a2a1bb232a02fa90d6b29662a0a545592c91deca37fd07c80267f45"
+        },
+        {
+          "name": "second.hwp",
+          "bytes": 12800,
+          "sha256": "28e512aa0baa2b1079524a60e6783db1ee7b328fdb2522fc3ed2d21577f93e69"
+        }
+      ]
+    },
+    {
+      "format": "hwpx",
+      "accepted": "한",
+      "reopenCycles": 2,
+      "nativeOwner": true,
+      "saved_documents": [
+        {
+          "name": "first.hwpx",
+          "bytes": 7391,
+          "sha256": "1e8d7c27b605db38a20c15b72805694c43495a737b0927d06ffab06e55295bdc"
+        },
+        {
+          "name": "second.hwpx",
+          "bytes": 7391,
+          "sha256": "1e8d7c27b605db38a20c15b72805694c43495a737b0927d06ffab06e55295bdc"
+        }
+      ]
+    }
+  ]
+}
