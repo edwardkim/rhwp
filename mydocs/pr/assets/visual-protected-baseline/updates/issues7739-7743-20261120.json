@@ -1,0 +1,20 @@
+{
+  "previous_table_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "table_sha256": "2c9bb270ad515144500cfceeb8b3020abc8cbc7ae6b800a30bd15f829f822a92",
+  "evidence_commit": "9cf03b849900e9ba2b01830c08ef9321bc7390ca",
+  "code_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+  "conditions": 46,
+  "compared_rows": 4046,
+  "declines": [],
+  "increases": [
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "wasm",
+      "page": 19,
+      "previous": "99.73",
+      "current": "99.74"
+    }
+  ],
+  "accepted_at": "2026-11-20T03:48:11.932634+09:00"
+}
