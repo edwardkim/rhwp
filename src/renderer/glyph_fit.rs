@@ -162,7 +162,15 @@ pub(crate) fn canvas_cluster_fit(
                 style.bold,
                 style.italic,
                 character,
-            ) {
+            )
+            .or_else(|| {
+                super::font_metrics_data::declared_original_centered_glyph_advance_em(
+                    source,
+                    style.bold,
+                    style.italic,
+                    character,
+                )
+            }) {
                 let (size, _) = style.script_draw_metrics(style.effective_font_size(), 0.0);
                 let advance = size * style.ratio_draw_params(1.0).1 * em;
                 if advance.is_finite()

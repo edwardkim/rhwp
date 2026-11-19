@@ -119,6 +119,22 @@ class NativeWebfontTests(unittest.TestCase):
         self.assertEqual(result['font_environment'], path)
         self.assertEqual(result['evidence']['mappings'], {})
 
+    def test_supplied_hancom_default_replaces_generic_noto_for_unregistered_source(self):
+        # planet6897/rhwp-issue-docs#547: 글꼴 계획의 한컴 기본 대체가 공급 경로에 있으면
+        # 원장 밖 원본을 일반 Noto로 치환하지 않는다. 없을 때만 기존 일반 공급을 쓴다.
+        plan = {'embeddedFamilies': [], 'requests': [
+            {'source': 'Absent', 'primary': ['Absent'], 'substitute': [],
+             'hancomMissingDefault': ['한컴바탕', 'Haansoft Batang']},
+            {'source': 'Unknown', 'primary': ['Unknown'], 'substitute': []},
+        ]}
+        with patch.object(web, '_installed_names', return_value={'haansoftbatang', '한컴바탕'}), \
+                patch.object(web, '_resource', side_effect=self.resource) as resource, \
+                patch.object(web, '_run', side_effect=[plan, {'fontEnvironment': None}]):
+            result = web.prepare(self.root, self.hwp, 'rhwp', [], None, '2022', 96)
+        self.assertEqual(result['evidence']['mappings'],
+                         {'Absent': '한컴바탕', 'Unknown': 'WebGenericPS'})
+        self.assertEqual(resource.call_count, 1)
+
     def test_declared_local_substitute_precedes_a_registered_webfont(self):
         plan = {'embeddedFamilies': [], 'requests': [
             {'source': 'Missing', 'primary': ['Missing'], 'substitute': ['LocalSub']},
