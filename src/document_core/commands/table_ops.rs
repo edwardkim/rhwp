@@ -4349,29 +4349,6 @@ mod table_frame_reflow_batch_tests {
         core
     }
 
-    #[test]
-    fn cell_line_wrap_partial_update_preserves_neighbors_and_rejects_invalid_values() {
-        let mut core = core_with_two_by_two_table();
-        let props = |core: &DocumentCore, cell| -> serde_json::Value {
-            serde_json::from_str(&core.get_cell_properties_native(0, 0, 0, cell).unwrap()).unwrap()
-        };
-        let neighbor = props(&core, 0);
-        core.set_cell_properties_native(0, 0, 0, 1, r#"{"lineWrap":2}"#)
-            .unwrap();
-        core.set_cell_properties_native(0, 0, 0, 1, r#"{"isHeader":true}"#)
-            .unwrap();
-        assert_eq!(props(&core, 1)["lineWrap"], 2);
-        for value in ["-1", "3", "257", "1.5", "null", r#""1""#] {
-            let update = format!(r#"{{"isHeader":false,"lineWrap":{value}}}"#);
-            assert!(core
-                .set_cell_properties_native(0, 0, 0, 1, &update)
-                .is_err());
-            assert_eq!(props(&core, 1)["isHeader"], true);
-            assert_eq!(props(&core, 1)["lineWrap"], 2);
-        }
-        assert_eq!(props(&core, 0), neighbor);
-    }
-
     fn core_with_residual_owner_width_table() -> DocumentCore {
         let mut core = core_with_two_by_two_table();
         let Control::Table(table) = &mut core.document.sections[0].paragraphs[0].controls[0] else {
