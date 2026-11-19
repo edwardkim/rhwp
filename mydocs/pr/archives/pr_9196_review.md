@@ -26,6 +26,12 @@
 - 머리말과 꼬리말에 같은 1×2 표와 아래 캡션을 둔 합성 HWPX 두 개를 준비했다. 같은 fresh WASM을 Node와 Chrome에서 불러 `hitTestInHeaderFooterTarget`에 각 캡션의 실제 좌표를 넘겼다. 두 경우 모두 올바른 본문 문단·표 컨트롤·캡션 셀 65534가 반환됐다. 실제 브라우저 검증은 공개 WASM API 호출까지다.
 - 전체 Nextest 13,824건 통과, 실패 0건, 건너뜀 45건. 입력 변형은 해당 위치 조회를 검증하기 위해 사용했다.
 
+## 통합 PR #9200의 코드 CI
+
+[통합 PR #9200](https://github.com/edwardkim/rhwp/pull/9200)의 코드 CI head `8a8917958e38a30e556d2f08960268216ce59fee`. 필수 Build & Test가 통과했고 GitHub 검사 34건 성공, 5건 조건부 건너뜀, 실패 0건이다. 첫 Native Skia 잡은 APT 갱신의 180초 제한으로 종료됐고, 같은 head의 [잡 재실행](https://github.com/edwardkim/rhwp/actions/runs/44530849923/attempts/2)이 통과했다. [APT 자동 재시도는 #9203](https://github.com/edwardkim/rhwp/issues/9203)에서 다룬다. 후행 문서 커밋의 필수 검사를 확인한 뒤 통합 PR을 병합한다.
+
+[CI](https://github.com/edwardkim/rhwp/actions/runs/44530849923) · [CodeQL](https://github.com/edwardkim/rhwp/actions/runs/44530849934) · [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/44530849915) · [Adapter inter-diff](https://github.com/edwardkim/rhwp/actions/runs/44530849971) · [Proptest roundtrip](https://github.com/edwardkim/rhwp/actions/runs/44530850072) · [CI Impact Policy Controller](https://github.com/edwardkim/rhwp/actions/runs/44530849537)
+
 ## Merge 후 contributor PR comment 계획
 
 통합 PR과 검증한 최종 head의 CI·병합 SHA를 확인 후 원 PR에 연결한다.
