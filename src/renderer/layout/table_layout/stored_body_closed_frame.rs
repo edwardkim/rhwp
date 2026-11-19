@@ -4,6 +4,32 @@ use super::{LayoutEngine, ResolvedStyleSet};
 use crate::model::{control::Control, paragraph::Paragraph, shape::VertAlign, table::Table};
 
 impl LayoutEngine {
+    /// 물리 끝 상자를 복원할 때 컷 뒤의 저장 쪽을 여는 유닛 앞 전진량을 읽는다.
+    /// 쪽에 글을 더 담기 위해 빼는 예산용 trim과는 별개다.
+    pub(in crate::renderer::layout) fn stored_page_break_closing_advance(
+        &self,
+        table: &Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> f64 {
+        self.indexed_row_cut_cell_order(table, row)
+            .iter()
+            .zip(cut)
+            .filter_map(|(&index, &end)| {
+                let cell = &table.cells[index];
+                let units = self.cell_units(cell, table, styles);
+                let next = units.get(end)?;
+                let closing = units.get(end.checked_sub(1)?)?;
+                (next.page_frame_reset_before
+                    && !closing.reflowed_line_slot
+                    && closing.nested_row.is_none()
+                    && closing.vis_start < closing.vis_end)
+                    .then_some(closing.following_line_advance)
+            })
+            .fold(0.0, f64::max)
+    }
+
     /// 실제 병합 종료 컷이 다음 저장 쪽을 열면 앞 조각도 독립된 정렬 상자다.
     /// 본문 프레임 소유 확인은 호출자가 공유하며, 여기서는 같은 실제 유닛을 읽는다.
     pub(in crate::renderer::layout) fn original_restart_span_cut_owns_alignment(
@@ -270,6 +296,48 @@ impl LayoutEngine {
             .then_some(frame_bottom)
     }
 
+    /// 한 칸이 소유한 자식 표의 첫 선언 상자가 이 컷의 마지막 행에서 닫힌다.
+    /// 자식 행을 추가로 받지 않고, 부모 본문 상자의 남은 공간만 예약한다.
+    pub(in crate::renderer) fn row_cut_closes_original_nested_object_frame(
+        &self,
+        table: &Table,
+        row: usize,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let owners = Self::row_cut_cell_order(table, row);
+        let ([index], [end]) = (owners.as_slice(), cut) else {
+            return false;
+        };
+        let cell = &table.cells[*index];
+        let [para] = cell.paragraphs.as_slice() else {
+            return false;
+        };
+        let [Control::Table(child)] = para.controls.as_slice() else {
+            return false;
+        };
+        if !para.text.trim().is_empty()
+            || child.common.treat_as_char
+            || !crate::renderer::float_placement::is_para_topbottom_float(&child.common)
+            || self
+                .render_normalization
+                .borrow()
+                .table_text_reflowed(child)
+        {
+            return false;
+        }
+        let units = self.cell_units(cell, table, styles);
+        let Some(prefix) = units.get(..*end).filter(|_| *end < units.len()) else {
+            return false;
+        };
+        Self::nested_row_projection_cut(prefix).is_some_and(|child_cut| {
+            child_cut.start_row == 0
+                && child_cut.start_cut.is_empty()
+                && child_cut.end_cut.is_empty()
+                && self.stored_object_frame_row_count(child) == Some(child_cut.end_row)
+        })
+    }
+
     /// 미소비 셀 모두가 같은 원본 쪽 경계에서 끝나는지 확인한다.
     /// 완료 셀과 미소비 셀을 구분하며 한 셀의 로컬 reset으로 전체 행을 늘리지 않는다.
     pub(crate) fn row_cut_closes_shared_original_frame(
@@ -279,6 +347,9 @@ impl LayoutEngine {
         cut: &[usize],
         styles: &ResolvedStyleSet,
     ) -> bool {
+        if self.row_cut_closes_original_nested_object_frame(table, row, cut, styles) {
+            return true;
+        }
         let owners = Self::row_cut_cell_order(table, row);
         // 일반 행 컷은 row_span == 1 소유자만 표현한다. 이 행을 가로지르는
         // 병합 셀이 있으면 블록 컷의 별도 소유 관계가 필요하므로 추정하지 않는다.

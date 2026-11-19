@@ -173,7 +173,8 @@ impl TypesetEngine {
         let span_share = table
             .cells
             .iter()
-            .filter(|cell| {
+            .enumerate()
+            .filter(|(_, cell)| {
                 let first = usize::from(cell.row);
                 cell.row_span > 1
                     && cell.height > 0
@@ -181,19 +182,34 @@ impl TypesetEngine {
                     && first <= row
                     && row < first + usize::from(cell.row_span)
             })
-            .filter_map(|cell| {
+            .filter_map(|(cell_index, cell)| {
                 let first = usize::from(cell.row);
                 // 이어받은 시작 행은 앞 조각과 이 조각에 걸친 한 행이다 — 그 행의 측정 높이를 앞 행 상자로 센다.
-                let prefix = (first..row).try_fold(0.0, |sum, prior| {
-                    let height = if prior < first_row {
-                        cursor.accepted_row_boxes.get(prior).copied().flatten()?
-                    } else if prior == first_row && !input.start.start_cut.is_empty() {
-                        *source.measured_table.row_heights.get(prior)?
-                    } else {
-                        *fragment_rows.get(prior)?
-                    };
-                    Some(sum + height + cs)
-                })?;
+                let prefix = (first..row)
+                    .try_fold(0.0, |sum, prior| {
+                        let height = if prior < first_row {
+                            cursor.accepted_row_boxes.get(prior).copied().flatten()?
+                        } else if prior == first_row && !input.start.start_cut.is_empty() {
+                            *source.measured_table.row_heights.get(prior)?
+                        } else {
+                            *fragment_rows.get(prior)?
+                        };
+                        Some(sum + height + cs)
+                    })
+                    .or_else(|| {
+                        // 이전 조각의 부분 행은 완전 행 원장에 아직 없을 수 있다.
+                        // 간격 없는 격자에서는 같은 걸침 칸이 이미 수용한 물리
+                        // 상자와 현재 조각의 앞 행 합이 그 구간을 정확히 덮는다.
+                        if cs != 0.0 || first >= first_row || !input.start.start_cut.is_empty() {
+                            return None;
+                        }
+                        let accepted = cursor
+                            .straddle_page_bands
+                            .iter()
+                            .find(|carry| carry.cell_index == cell_index)?
+                            .accepted_prefix_physical_height()?;
+                        Some(accepted + fragment_rows.get(first_row..row)?.iter().sum::<f64>())
+                    })?;
                 let declared = hwpunit_to_px(cell.height as i32, self.dpi);
                 // 이 행에서 닫히는 병합 칸도 실제 끝 상자를 소유한다. 선언보다
                 // 내용이 큰 칸은 전체 줄·안여백의 점유에서 이미 수용한 앞 행만
@@ -591,8 +607,29 @@ impl TypesetEngine {
                     floor = floor.max((demand.required() - prefix).max(0.0));
                 }
             }
+            let independent_opening_row = row == cursor.row
+                && physical_start_cut.is_empty()
+                && cursor.start_row_height_override.is_none()
+                && layout.stored_ordinary_row_closes_content(table, row, source.styles);
             let required = closing.iter().fold(floor, |height, cell| {
                 let first = cell.row as usize;
+                if independent_opening_row
+                    && first < row
+                    && cursor.straddle_page_bands.iter().any(|carry| {
+                        table
+                            .cells
+                            .get(carry.cell_index)
+                            .is_some_and(|owner| std::ptr::eq(owner, *cell))
+                            && layout.accepted_text_span_exhausted(
+                                table,
+                                cell,
+                                carry,
+                                source.styles,
+                            )
+                    })
+                {
+                    return height;
+                }
                 let used = heights[first..row].iter().sum::<f64>()
                     + prepared.cell_spacing * (row - first) as f64;
                 // 같은 종료 행에 새로 시작한 병합 칸도 실제 내용 하한을 소유한다.

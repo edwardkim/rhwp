@@ -1,0 +1,1414 @@
+{
+  "restoration_commit": "37ec7fa3722ab2c9ae42daa63c8803c628666df5",
+  "historical_functions": [
+    {
+      "file": "tests/cases/issue_1133_page_number_bottom_margin.rs",
+      "function": "footnote_page_number_keeps_the_same_bottom_margin_anchor",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_1133_page_number_bottom_margin.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_4961_font_decision_trace.rs",
+      "function": "issue4967_combined_evidence_reports_actual_cache_key_rejection",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_4961_font_decision_trace.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+      "function": "spec_revision13_original_is_69_pages",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "a9dfc4e664bc8e4c20fd0bbb26118d8f6310ca55",
+        "subject": "fix: share complete reflow frames and legacy Latin punctuation widths"
+      }
+    },
+    {
+      "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+      "function": "spec_revision13_export_hwpx_preserves_page_count",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_5128_spec_page_roundtrip.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_5128_spec_page_roundtrip.rs",
+      "function": "spec_revision13_p015_table73_split_and_p016_keeps_para84",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_5128_spec_page_roundtrip.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs",
+      "function": "issue_5846_cut_fragment_defers_partial_nested_tail_row",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_5846_mixed_nested_partial_row_duplicate.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+      "function": "issue_5920_page8_holds_both_nested_boxes",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_5920_nested_atom_tail_page_fit.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+      "function": "issue_5920_page9_does_not_restart_with_the_conclusion_box",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_5920_nested_atom_tail_page_fit.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_5920_nested_atom_tail_page_fit.rs",
+      "function": "issue_7206_page4_fragment_does_not_exceed_the_body",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_5920_nested_atom_tail_page_fit.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_5941_neartop_reset_only_on_empty_page.rs",
+      "function": "stored_neartop_reset_survives_on_a_filled_page",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+        "subject": "fix: planet6897 PR 11개 통합과 조판·회귀 검증 보정 (#7568)"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6013_empty_para_stored_frame_flag.rs",
+      "function": "issue_6013_stored_chunk_last_line_stays_on_page_10",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6013_empty_para_stored_frame_flag.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6023_halfwidth_corner_bracket.rs",
+      "function": "issue_6023_halfwidth_corner_bracket_advances_half_em",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6023_halfwidth_corner_bracket.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6030_subline_row_grow_lastline.rs",
+      "function": "issue_6030_exam_eng_choice_last_line_not_clipped",
+      "prior_exit": 100,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "9d4f144bd22752f76cdea74662290dc61e40e8c8",
+        "subject": "검사: 영어시험의 실제 차단 회귀 한 개만 보류"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs",
+      "function": "issue_6031_page_tail_lines_stay_inside_body_bottom",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6031_ladder_sb_omitted_tail_overrun.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6060_fullwidth_cjk_quote.rs",
+      "function": "issue_6060_human_myeongjo_corner_quote_keeps_fullwidth_gap",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6368_row_cut_fp_epsilon.rs",
+      "function": "issue_6368_hwpctl_api_example_last_line_stays_on_page_12",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6409_table_page_top_vpos.rs",
+      "function": "issue_6409_form_table_starts_on_next_page_not_leftover",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6409_table_page_top_vpos.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6527_standalone_equation_text.rs",
+      "function": "inline_equations_are_extracted_once_in_reading_order",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "08fa22645a81ded588a66970e9df1d37e91970c3",
+        "subject": "test: sample16 수식의 원본 소유와 글줄 읽기 순서를 보호"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6569_cell_center_lead_in_stack.rs",
+      "function": "issue_6630_contract_still_holds_when_stack_excludes_lead",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "defe8d69faccfca9691e197d91b4dc4a61151904",
+        "subject": "시험지 관련 회귀 검사를 별도 작업으로 이관"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6630_cell_first_para_lead.rs",
+      "function": "master_page_title_picture_sits_below_the_first_para_lead",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "defe8d69faccfca9691e197d91b4dc4a61151904",
+        "subject": "시험지 관련 회귀 검사를 별도 작업으로 이관"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6646_nbsp_advance_matches_space.rs",
+      "function": "issue_6646_nbsp_advance_matches_plain_space",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "defe8d69faccfca9691e197d91b4dc4a61151904",
+        "subject": "시험지 관련 회귀 검사를 별도 작업으로 이관"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6706_stored_inline_control_rows.rs",
+      "function": "stored_table_picture_table_rows_keep_hancom_positions_and_unique_ownership",
+      "prior_exit": 100,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "0da53c4018429a7a99eb2949171552cfd09a6359",
+        "subject": "test: 표 그림 표 검사를 새 이름의 원문 소유 관계로 교체"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs",
+      "function": "para_float_band_keeps_the_next_table_fragment_on_paper",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6764_para_float_band_starts_at_anchor.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6764_public_table_fragment_presence.rs",
+      "function": "repaired_public_table_keeps_its_leading_rows_inside_the_paper",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+        "subject": "fix: planet6897 PR 11개 통합과 조판·회귀 검증 보정 (#7568)"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6776_cell_tac_picture_accounting.rs",
+      "function": "issue_6776_host_page_paints_no_picture_past_the_paper",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "7807021b7679765f6b783bdfaea483ea5b4d39cb",
+        "subject": "test(review): 78494 쪽 구성 불일치의 차단 검사만 #7445로 분리"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6776_cell_tac_picture_accounting.rs",
+      "function": "issue_6776_big_picture_is_placed_whole_on_exactly_one_page",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6776_cell_tac_picture_accounting.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "the_page_still_holds_all_twelve_cell_images",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "the_target_image_sits_inside_its_own_cell_at_the_hangul_position",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "the_other_eleven_images_keep_their_offsets",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "japan_mixed_wrap_marks_stay_inside_their_cell",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "japan_mixed_wrap_marks_reserve_the_blank_line_at_cell_bottom",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "the_reduced_fixture_preserves_original_cell_image_geometry",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "continued_centered_image_uses_the_reserved_forward_space",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "japan_picture_band_and_final_empty_line_share_the_stored_frame",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "whole_japan_cell_uses_the_same_picture_and_empty_line_frame",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6782_cell_float_offset_outside_cell.rs",
+      "function": "deferred_japan_picture_band_keeps_both_marks_and_final_line",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6782_cell_float_offset_outside_cell.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+      "function": "issue_6844_intra_run_right_tab_bbox_reaches_the_glyphs",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6844_intra_run_right_tab_bbox.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6844_intra_run_right_tab_bbox.rs",
+      "function": "issue_6844_toc_page_numbers_share_one_right_edge",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "f8234f6f90cb25d9601c9d5d762e0a565aea19e4",
+        "subject": "fix: 다섯 원본 389쪽 피델리티·공통 paint·편집 탭 소유 보정 (#9083)"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6854_empty_para_orphan_page.rs",
+      "function": "issue_6854_hwp_sample_has_no_body_less_page",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6854_empty_para_orphan_page.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6854_empty_para_orphan_page.rs",
+      "function": "issue_6854_hwp_sample_matches_the_2020_oracle_page_count",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6854_empty_para_orphan_page.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6855_float_band_page_fill_rewind.rs",
+      "function": "issue_6855_band_page_paints_nothing_below_the_paper",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6855_float_band_page_fill_rewind.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6855_float_band_page_fill_rewind.rs",
+      "function": "issue_6855_rewound_line_starts_the_next_page",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+        "subject": "fix: planet6897 PR 11개 통합과 조판·회귀 검증 보정 (#7568)"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7023_glyph_band_follows_baseline.rs",
+      "function": "issue_7023_corrected_body_footer_does_not_overlap",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_7023_glyph_band_follows_baseline.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_7048_stored_picture_successor.rs",
+      "function": "issue_7048_reduced_body_baselines_match_hancom",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_7048_stored_picture_successor.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_7048_stored_picture_successor.rs",
+      "function": "issue_7048_saved_picture_boundary_requires_independent_source_agreement",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_7048_stored_picture_successor.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_7048_stored_picture_successor.rs",
+      "function": "issue_7048_cellbreak_boundary_closes_both_saved_fragments",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_7048_stored_picture_successor.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+      "function": "issue_7063_empty_float_host_table_starts_below_previous_line_box",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+      "function": "issue_7063_second_empty_float_host_table_matches_oracle",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+      "function": "issue_7063_stored_ladder_witness_table_is_untouched",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7063_empty_float_host_snap_intrudes_prev_line.rs",
+      "function": "issue_7063_following_flow_and_page_boundary_match_hancom",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7095_page_spanning_fragment_box.rs",
+      "function": "issue_7095_first_fragment_starting_at_page_top_is_pinned_too",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_7095_page_spanning_fragment_box.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_7095_page_spanning_fragment_box.rs",
+      "function": "issue_7095_terminal_fragment_does_not_push_the_next_paragraph_past_its_stored_top",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_7095_page_spanning_fragment_box.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_7147_row_declaration_beats_object_height.rs",
+      "function": "object_height_that_ends_mid_row_still_reconciles",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "731de9e1b4bb946d76f35108ed7e186ebe4ebecb",
+        "subject": "fix: planet6897 PR 11개 통합과 조판·회귀 검증 보정 (#7568)"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+      "function": "a_float_table_top_sits_on_its_stored_anchor",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+      "function": "treat_as_char_tables_are_untouched",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+      "function": "an_offset_anchored_float_table_keeps_flow_placement",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_7203_float_table_stored_anchor_top.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_7203_float_table_stored_anchor_top.rs",
+      "function": "downstream_table_split_and_body_follow_the_oracle_pages",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+      "function": "para_float_table_top_sits_at_the_stored_anchor_not_a_line_above",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_float_table_top_uses_stored_anchor.rs",
+      "function": "saved_anchor_subtracts_only_top_margin_with_asymmetric_margins",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+      "function": "split_fragment_ignores_the_anchor_leading_gap",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+      "function": "split_fragment_without_a_gap_is_unchanged",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_split_float_anchors_to_paragraph_top.rs",
+      "function": "the_correction_does_not_move_the_page_count",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+      "function": "stored_rewind_keeps_its_last_line_in_the_fragment",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+      "function": "the_continuation_neither_repeats_nor_drops_the_moved_unit",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+      "function": "neither_the_fragment_nor_the_following_table_overflows_the_body",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+      "function": "an_already_selected_boundary_uses_the_same_trimmed_box",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+      "function": "the_page_count_matches_the_oracle",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_stored_rewind_fragment_trailing_trim.rs",
+      "function": "reserved_bottom_matches_painted_bottom_and_continuation_cuts",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_tac_column_top_stored_vpos.rs",
+      "function": "column_top_tac_table_keeps_stored_vertical_pos",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7203_tac_column_top_stored_vpos.rs",
+      "function": "column_top_tac_table_without_stored_vertical_pos_does_not_move",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7287_square_float_outer_top.rs",
+      "function": "empty_host_square_float_top_includes_its_outer_margin",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3b4ceca81b54f15da67e71cb8034d5dde32e96b1",
+        "subject": "보정211: #7287 저피델리티 좌표 회귀 이관"
+      }
+    },
+    {
+      "file": "tests/cases/issue_7387_use_font_space_latin_slot.rs",
+      "function": "use_font_space_line_width_matches_hancom_in_absolute_px",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "bce6b28088b684f79aa4f1d514bda4453ac6b05f",
+        "subject": "test: 기존 미달 API 렌더링 회귀를 이슈7731로 이관하고 IR 검증 유지"
+      }
+    },
+    {
+      "file": "tests/exam_eng_multicolumn.rs",
+      "function": "exam_eng_page_count_after_359_fix",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "defe8d69faccfca9691e197d91b4dc4a61151904",
+        "subject": "시험지 관련 회귀 검사를 별도 작업으로 이관"
+      }
+    },
+    {
+      "file": "tests/issue_1086.rs",
+      "function": "task1086_hwp3_sample16_hwp5_page_count_matches_hancom_office",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_page_break_before_section_4_matches_hancom",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2010_business_selection_break_matches_hancom",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "a30426a0d10111ec1df98f47a0aedad4132b3b92",
+        "subject": "검사: 같은 HWP 두 이름의 실제 차단 범위만 보류"
+      }
+    },
+    {
+      "file": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2010_server_requirements_page_matches_hancom",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "a30426a0d10111ec1df98f47a0aedad4132b3b92",
+        "subject": "검사: 같은 HWP 두 이름의 실제 차단 범위만 보류"
+      }
+    },
+    {
+      "file": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2022_business_selection_break_matches_hancom",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1105.rs",
+      "function": "task1105_sample16_hwp5_2022_server_requirements_page_matches_hancom",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_toc_leaders_stop_before_page_numbers",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_toc_page_numbers_share_right_edge",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_page3_svg_latin_glyphs_pin_browser_width",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_2022_page3_latin_font_matches_legacy_hancom_mapping",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_page3_heading_positions_follow_lineseg_vpos",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "d47ae4ff8e839ab52df5590b92f3b34bfb4854bf",
+        "subject": "test: 검증한 문서별 완료 쪽의 핵심 위치를 독립 Print 좌표로 보호"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_page3_dump_pages_summary_uses_lineseg_spacing",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "d47ae4ff8e839ab52df5590b92f3b34bfb4854bf",
+        "subject": "test: 검증한 문서별 완료 쪽의 핵심 위치를 독립 Print 좌표로 보호"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracle",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "d47ae4ff8e839ab52df5590b92f3b34bfb4854bf",
+        "subject": "test: 검증한 문서별 완료 쪽의 핵심 위치를 독립 Print 좌표로 보호"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_2022_page3_bcp_tail_paragraph_folds_orphan_lineseg",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "7f44525cd30891049722aa1202d8a0b0cd79b9ec",
+        "subject": "test: 2022 저장본의 꼬리와 이어받기 표를 새 관계 검사로 보호"
+      }
+    },
+    {
+      "file": "tests/issue_1116.rs",
+      "function": "sample16_hwp5_2022_page3_bcp_tail_glyph_stays_on_hancom_line",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "7f44525cd30891049722aa1202d8a0b0cd79b9ec",
+        "subject": "test: 2022 저장본의 꼬리와 이어받기 표를 새 관계 검사로 보호"
+      }
+    },
+    {
+      "file": "tests/issue_1139_inline_picture_duplicate.rs",
+      "function": "issue_1139_sample16_page3_page_number_stays_below_bottom_border",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_1749_saved_bounds_page_break.rs",
+      "function": "issue_1749_v2_pi26_stays_on_page_2",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_1749_saved_bounds_page_break.rs"
+      ]
+    },
+    {
+      "file": "tests/issue_1749_saved_bounds_page_break.rs",
+      "function": "issue_1811_hwpx_pi52_rowbreak_cut_matches_hwp_reference",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_1749_saved_bounds_page_break.rs"
+      ]
+    },
+    {
+      "file": "tests/issue_1749_saved_bounds_page_break.rs",
+      "function": "issue_1811_hwpx_pi57_tac_rowbreak_cell_uses_saved_height",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_1749_saved_bounds_page_break.rs"
+      ]
+    },
+    {
+      "file": "tests/issue_2015_saved_bounds_rowbreak.rs",
+      "function": "issue_2015_stage1_documents_current_overflow",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_2015_saved_bounds_rowbreak.rs"
+      ]
+    },
+    {
+      "file": "tests/issue_2015_saved_bounds_rowbreak.rs",
+      "function": "issue_2015_page4_rowbreak_table_stays_in_body",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_2015_saved_bounds_rowbreak.rs"
+      ]
+    },
+    {
+      "file": "tests/issue_2099_araea_pua.rs",
+      "function": "issue_2099_revision13_page1_prioritizes_old_hangul_font",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_2099_araea_pua.rs"
+      ]
+    },
+    {
+      "file": "tests/issue_2158_hwpx_vpos_reset_preserve.rs",
+      "function": "hwp3_sample16_hwpx_matches_hwp5_and_hangul",
+      "prior_exit": 100,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/issue_3637_split_cell_nested_table_vpos.rs",
+      "function": "nested_table_snap_stays_inside_the_split_cell",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_3637_split_cell_nested_table_vpos.rs"
+      ]
+    },
+    {
+      "file": "tests/issue_775.rs",
+      "function": "issue_775_exam_eng_p4_pi181_table_at_column_top",
+      "prior_exit": 0,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "defe8d69faccfca9691e197d91b4dc4a61151904",
+        "subject": "시험지 관련 회귀 검사를 별도 작업으로 이관"
+      }
+    },
+    {
+      "file": "tests/issue_rowbreak_chart_overlap.rs",
+      "function": "rowbreak_hwp_page8_keeps_continued_nested_reference_line",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "46549e19b48adee87cd77613e99c4318e5341436",
+        "subject": "test: 피델리티 보류 HWP의 차단 검사 한 건 이관"
+      }
+    },
+    {
+      "file": "tests/issue_rowbreak_chart_overlap.rs",
+      "function": "rowbreak_hwp_page12_reference_text_stays_inside_body",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/issue_rowbreak_chart_overlap.rs"
+      ]
+    },
+    {
+      "file": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+      "function": "hwp3_sample16_hwp5_page_count_64",
+      "prior_exit": 100,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "a30426a0d10111ec1df98f47a0aedad4132b3b92",
+        "subject": "검사: 같은 HWP 두 이름의 실제 차단 범위만 보류"
+      }
+    },
+    {
+      "file": "tests/suites/issue_regression_pilot/issue_1035_alignment.rs",
+      "function": "hwp3_sample16_hwp5_2022_page_count_64",
+      "prior_exit": 100,
+      "current_path_exists": false,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "3e02fe2749866a8453af3eb3901b9c1a674cccaf",
+        "subject": "feat: 기여 PR 10건 통합과 조판·Studio 회귀 보정 (#8228)"
+      }
+    },
+    {
+      "file": "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs",
+      "function": "rowbreak_footnote_table_does_not_over_paginate",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/suites/issue_regression_pilot/issue_1937_rowbreak_footnote_overpagination.rs"
+      ]
+    },
+    {
+      "file": "tests/outline_navigation_table_cell_number.rs",
+      "function": "outline_numbers_match_rendered_numbers_across_table_cell_number",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/outline_navigation_table_cell_number.rs"
+      ]
+    },
+    {
+      "file": "tests/outline_navigation_table_cell_number.rs",
+      "function": "panel_demo_outline_matches_rendered_document",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/outline_navigation_table_cell_number.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+      "function": "picture_feedback_keeps_allow_overlap_under_restrict_in_page",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6806_objectprops_getset_identity.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+      "function": "shape_feedback_keeps_stored_zero_size",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6806_objectprops_getset_identity.rs"
+      ]
+    },
+    {
+      "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+      "function": "shape_edit_that_drops_a_nonzero_size_to_zero_still_clamps",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": false,
+      "current_same_name_paths": [],
+      "last_name_change": {
+        "commit": "f9a8acd05f031b64228143534103c80b797ad68a",
+        "subject": "test: 시험지 원본을 보존하고 남은 회귀 참조 제거"
+      }
+    },
+    {
+      "file": "tests/cases/issue_6806_objectprops_getset_identity.rs",
+      "function": "shape_resize_undo_restores_stored_zero_height",
+      "prior_exit": 0,
+      "current_path_exists": true,
+      "current_name_exists": true,
+      "current_same_name_paths": [
+        "tests/cases/issue_6806_objectprops_getset_identity.rs"
+      ]
+    }
+  ],
+  "historical_corpus_restored_rows": {
+    "tests/fixtures/body_overflow_baseline.tsv": [
+      "hwp3-sample16-hwp5.hwpx\t7",
+      "issue1937_rowbreak_footnote_overpagination.hwp\t7",
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t19",
+      "issue6776/78494-virtual-convergence-industry-decree.hwpx\t1",
+      "issue6782/1480000-201900042-chemical-labeling-standards.hwp\t6",
+      "task1749/saved_bounds_cumulative_page_break.hwpx\t1",
+      "한글문서파일형식_5.0_revision1.3.hwp\t8"
+    ],
+    "tests/fixtures/off_canvas_baseline.tsv": [
+      "hwp3-sample16-hwp5.hwpx\t3",
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t2",
+      "issue6031/3249937_asset_management_rules.hwpx\t1",
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t5",
+      "rowbreak-problem-pages.hwp\t1",
+      "task2097/75544_pii_bunseok.hwpx\t2",
+      "한글문서파일형식_5.0_revision1.3.hwp\t1"
+    ],
+    "tests/fixtures/text_overlap_baseline.tsv": [
+      "issue5941/1480000-201900698-native-neartop-reset.hwp\t10",
+      "issue6031/3249937_asset_management_rules.hwpx\t1",
+      "issue6764/1613000-202200037-air-traffic-controller-cbta.hwp\t7",
+      "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp\t5",
+      "task2097/75544_pii_bunseok.hwpx\t2"
+    ],
+    "tests/fixtures/oracle_page_count_baseline.tsv": [
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13",
+      "samples/rowbreak-problem-pages.hwp\t18\t18"
+    ],
+    "tests/fixtures/render_page_samples.tsv": [
+      "samples/issue3637/press_release_split_cell_nested_table.hwpx\t12\t13\t1",
+      "samples/rowbreak-problem-pages.hwp\t18\t18\t0"
+    ],
+    "tests/fixtures/overflow_cell_baseline.tsv": [
+      "task2097/75544_pii_bunseok.hwpx\t2"
+    ]
+  },
+  "historical_corpus_failures": [
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_10",
+      "observations": [
+        "증가: issue6795/1341000-201100013-cyber-university-application.hwp — 2 → 3건"
+      ]
+    },
+    {
+      "test": "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_9",
+      "observations": [
+        "신규 발생: issue6035/cgmp_evaluation_table.hwpx — 7줄 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_12",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_0",
+      "observations": [
+        "증가: issue5941/1480000-201900698-native-neartop-reset.hwp — 10 → 19건"
+      ]
+    },
+    {
+      "test": "rhwp::overflow_cell_baseline overflow_cell_lines_do_not_grow_partition_8",
+      "observations": [
+        "증가: task2097/21217935_simsa_jipyo.hwp — 24 → 26줄"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_2",
+      "observations": [
+        "신규 발생: task2319/20544835_jinan_apt_form.hwp — 5건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_13",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+        "증가: task2287/1342000_edu_curriculum_map.hwp — 37 → 90건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_14",
+      "observations": [
+        "증가: rowbreak-problem-pages.hwpx — 1 → 2건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_8",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_0",
+      "observations": [
+        "samples/issue3637/regulatory_impact_nested_table_escape.hwpx: 정답지 [31] 대비 격차가 커졌다 — 기준 31쪽(차 0) → 현재 32쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_009 text_overlap_baseline::text_overlaps_do_not_grow_partition_3",
+      "observations": [
+        "증가: issue6764/1613000-202200037-air-traffic-controller-cbta.hwp — 7 → 11건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_1",
+      "observations": [
+        "samples/2025 행정업무운영 편람(최종).hwp: 정답지 [384] 대비 격차가 커졌다 — 기준 384쪽(차 0) → 현재 383쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_7",
+      "observations": [
+        "samples/hwpctl_ParameterSetID_Item_v1.2.hwp: 정답지 [74] 대비 격차가 커졌다 — 기준 74쪽(차 0) → 현재 75쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_14",
+      "observations": [
+        "samples/basic/issue2007_nested_cell_pagination_42065.hwp: 정답지 [17] 대비 격차가 커졌다 — 기준 17쪽(차 0) → 현재 21쪽(차 4)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_11",
+      "observations": [
+        "신규 발생: issue7196/156760012_page_top_spacing_trim.hwpx — 2건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_014 oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_5",
+      "observations": [
+        "samples/task2146/21761835_jeonjik_exemption_table.hwp: 정답지 [6] 대비 격차가 커졌다 — 기준 6쪽(차 0) → 현재 7쪽(차 1)",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp: 정답지 [215] 대비 격차가 커졌다 — 기준 215쪽(차 0) → 현재 216쪽(차 1)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_5",
+      "observations": [
+        "증가: issue1853_caption_precedes_body_split.hwpx — 0 → 2건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_7",
+      "observations": [
+        "증가: hwpx/issue2019_floating_form_74312.hwpx — 2 → 3건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_11",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "observations": [
+        "신규 발생: hwp3-sample16-hwp5-2010.hwp — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_13",
+      "observations": [
+        "신규 발생: HWP5-nopassword-123456.hwpx — 1건 (baseline 없음)",
+        "신규 발생: basic/issue2007_nested_cell_pagination_42065.hwp — 2건 (baseline 없음)",
+        "신규 발생: hwp3-sample16-hwp5-2022.hwp — 1건 (baseline 없음)",
+        "증가: issue6031/3249937_asset_management_rules.hwpx — 1 → 12건"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_027 off_canvas_baseline::off_canvas_does_not_grow_partition_3",
+      "observations": [
+        "신규 발생: issue6892/156726122-recycling-press-release.hwpx — 1건 (baseline 없음)"
+      ]
+    },
+    {
+      "test": "rhwp::regression_suite_022 body_overflow_baseline::body_overflow_does_not_grow_partition_10",
+      "observations": [
+        "신규 발생: issue6778/156757920-animal-welfare-husbandry-guidelines.hwp — 1건 (baseline 없음)"
+      ]
+    }
+  ],
+  "exact_name_locations_summary": {
+    "original-path": 49,
+    "no-same-name": 61
+  }
+}

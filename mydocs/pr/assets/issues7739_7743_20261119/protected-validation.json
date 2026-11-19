@@ -1,0 +1,1130 @@
+{
+  "status": "passed",
+  "product_source": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+  "fixed_base": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "datasets": [
+    {
+      "logical_key": "angle-narrow",
+      "backend": "native",
+      "document_id": "59f6ab1155623bda",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "7af42b173a76ad6b64809980901a5124255fc13e2772007317d5bfa4d8d9a654",
+      "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "angle-narrow",
+      "backend": "wasm",
+      "document_id": "59f6ab1155623bda",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/angle-narrow.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "c45f535360be04accadef779c69db8262814fc7315fd302213a9723be4bc5f57",
+      "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "chemical",
+      "backend": "native",
+      "document_id": "870eabd0a7d9534c",
+      "pages": 103,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/chemical.tsv",
+      "tsv_sha256": "9111800060d296754f077d6fb6d0313f4f0300ab5c5d216c166aa3481e292dd5",
+      "capture_manifest_sha256": "d298fb2ad6b16463b203682f5eb255651f58e4a700d9bb823ebecccab47fdf99",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "font_environment_sha256": "fb4b0bb5233995878dbed9b7b4eb023c5214b42090899ccb751d529d4a2e8d26",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.74736,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "chemical",
+      "backend": "wasm",
+      "document_id": "870eabd0a7d9534c",
+      "pages": 103,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/chemical.tsv",
+      "tsv_sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d",
+      "capture_manifest_sha256": "4ad4fd8382cfab7ac872c7b2c4dcdb84aea4bef48d196ffd70bd47e9dafea0e3",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "font_environment_sha256": "c88fdd07f92f9d1a7d1766e10547741ec577bba1e53303f67df54779b5877637",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": "chemical-default-browser",
+      "min_raw": 99.70631,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "decree",
+      "backend": "native",
+      "document_id": "61c6ae96913006c5",
+      "pages": 74,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/decree.tsv",
+      "tsv_sha256": "74ac79a552433fd3c66db702a1f4dbda5cc8529a17548ea1025f7c3219222a03",
+      "capture_manifest_sha256": "a6b017e4fa4d73d8d24dbc9bd392a140adfa753f7b8ae4e891e85fc3fc2b5142",
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "font_environment_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.73508,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "decree",
+      "backend": "wasm",
+      "document_id": "61c6ae96913006c5",
+      "pages": 74,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/decree.tsv",
+      "tsv_sha256": "d524d8840c2e2968f1e0f5fe31c74d9c2ca75063b37eb58eba8e3691746a162d",
+      "capture_manifest_sha256": "9251719564415cad7546e463a29e197b73ba4bab2dfa7a90d3819b914c90e378",
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "font_environment_sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.73506,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "handbook-hwp",
+      "backend": "native",
+      "document_id": "2fb2575d58042dcf",
+      "pages": 383,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/handbook-hwp.tsv",
+      "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "capture_manifest_sha256": "fcc0d8d928c1cdd93c4b4adf2730a9c941ea425d771ee553479dd64827c992fb",
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "font_environment_sha256": "3bc96343dfd2b69422fd9b09661a14723ea1e7158cb3ec5e015d78f408337271",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1221,
+        "ordered_sha256_multiset_sha256": "284493283bb6fa1ac76989d8ef25be8e196065a591b1b4835bd2957d3f09fc20"
+      },
+      "condition": null,
+      "min_raw": 99.96503,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "handbook-hwp",
+      "backend": "wasm",
+      "document_id": "2fb2575d58042dcf",
+      "pages": 383,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/handbook-hwp.tsv",
+      "tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a",
+      "capture_manifest_sha256": "d51cbe286254edd051acfc9cb1fb8d2aeed6f3f502af745151de313b16e3e5c3",
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.96445,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "handbook-hwpx",
+      "backend": "native",
+      "document_id": "941fe0c3549c0017",
+      "pages": 383,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/handbook-hwpx.tsv",
+      "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+      "capture_manifest_sha256": "3eb275913d650c20e364d1d7ec8ca078cb4ed6c7051b268b8837ca726e678ebe",
+      "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.96503,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "handbook-hwpx",
+      "backend": "wasm",
+      "document_id": "941fe0c3549c0017",
+      "pages": 383,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/handbook-hwpx.tsv",
+      "tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a",
+      "capture_manifest_sha256": "a6b6c2f340d1bf7293ea6e8a475c1d0ceabdcce438a9da65b77c5911f95ec8ab",
+      "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.96445,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "issue7905",
+      "backend": "native",
+      "document_id": "a8e95b4accc79fa8",
+      "pages": 6,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/issue7905.tsv",
+      "tsv_sha256": "b828c10e23bcef9c5e7078451d3c8d92e1cb9811a7ac3a952c084a741f6ac6fe",
+      "capture_manifest_sha256": "e623a42817fe0e1bd4af54e531ab6125c25cdf7a447b4a618e40425587dc2e8d",
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 98.86043,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "issue7905",
+      "backend": "wasm",
+      "document_id": "a8e95b4accc79fa8",
+      "pages": 6,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/issue7905.tsv",
+      "tsv_sha256": "8da442a73d4de191337083da11f5c507b66d668d80821b86f82f29d4fa556d98",
+      "capture_manifest_sha256": "0e45ed69f071807b092a7be7f7f094f4c5cd21db2ee78939304fe4e3437ba557",
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 98.86474,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "issue8040-insert-delete",
+      "backend": "native",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "pages": 4,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "capture_manifest_sha256": "f89d0b39188e22565e864b7565519465e16237e75a3b0df8ff75c6496ed03e0c",
+      "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.98918,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "pages": 4,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/issue8040-insert-delete.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "capture_manifest_sha256": "6cd56782af3eac81d3199f35212ee6d0e8f80103f498719062e7e9c4de5e5ac8",
+      "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.9892,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "issue8040-insert",
+      "backend": "native",
+      "document_id": "71f98206e45c354a",
+      "pages": 4,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "capture_manifest_sha256": "913891d8d10741215b23c3ecf726fd41b2873b93a2abeb57ebc213228977ac1a",
+      "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.98918,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "issue8040-insert",
+      "backend": "wasm",
+      "document_id": "71f98206e45c354a",
+      "pages": 4,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/issue8040-insert.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "capture_manifest_sha256": "c0c1db9c4faf0ff40c20ecfad6a7bfd8924afe308c7789687894cd692c8db61f",
+      "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.9892,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "nested",
+      "backend": "native",
+      "document_id": "78e1720edfe2277d",
+      "pages": 17,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/nested.tsv",
+      "tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+      "capture_manifest_sha256": "d14c3281cbc08da10dfe8d9661bfa80573de9333497dca1ded4977f7dc53515e",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "font_environment_sha256": "ee0ec809251345992f10f33e17d04f9c8add4e1f09588a1a0a48cafd2f336cb1",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "f9e0679a350654f7088dd420d830c7e1976c306451b936a3d389cf850ddf9de6"
+      },
+      "condition": "independent-junggothic-source-bitmap-and-outline",
+      "min_raw": 99.97636,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "nested",
+      "backend": "wasm",
+      "document_id": "78e1720edfe2277d",
+      "pages": 17,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/nested.tsv",
+      "tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+      "capture_manifest_sha256": "26e2dc115fd1bc5c75a89c22e48a3037b10b8a6054ff62e9c33b202ace0bf8a3",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "font_environment_sha256": "ee0ec809251345992f10f33e17d04f9c8add4e1f09588a1a0a48cafd2f336cb1",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "f9e0679a350654f7088dd420d830c7e1976c306451b936a3d389cf850ddf9de6"
+      },
+      "condition": "independent-junggothic-source-bitmap-and-outline",
+      "min_raw": 99.97687,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "outline-demo",
+      "backend": "native",
+      "document_id": "6456507d769ec90b",
+      "pages": 3,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/outline-demo.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "capture_manifest_sha256": "4c693c6c5db9addc2ed471aac95756f87df28715956037824aadd5cb36002098",
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "outline-demo",
+      "backend": "wasm",
+      "document_id": "6456507d769ec90b",
+      "pages": 3,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/outline-demo.tsv",
+      "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+      "capture_manifest_sha256": "70c2c05d629c241dca0957b08fb08ca2f18962dd291ed861778461447a0ea2c7",
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "outline-minimal",
+      "backend": "native",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/outline-minimal.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "f369e1f93ba29a019b6f88453955b029e082e771ca3eda4bcd97f78e34f02d3f",
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "outline-minimal",
+      "backend": "wasm",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/outline-minimal.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "b5bb18084f324b305b0725f7f6709206433997e96dbb7c9527e1daf454570458",
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "outline",
+      "backend": "native",
+      "document_id": "69bcf084e2ae31a5",
+      "pages": 9,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "capture_manifest_sha256": "d2371a62a4f8c15addd766678cf5bdfab776dca4e9fd0d6542903abcc30a94e0",
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "font_environment_sha256": "cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1221,
+        "ordered_sha256_multiset_sha256": "284493283bb6fa1ac76989d8ef25be8e196065a591b1b4835bd2957d3f09fc20"
+      },
+      "condition": null,
+      "min_raw": 99.99689,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "outline",
+      "backend": "wasm",
+      "document_id": "69bcf084e2ae31a5",
+      "pages": 9,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/outline.tsv",
+      "tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+      "capture_manifest_sha256": "ae03cc012a18e5f50523e5af66ba19617c0a976b14c944e465494cb513825379",
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "sample10",
+      "backend": "native",
+      "document_id": "b1a9055c4c7e6f09",
+      "pages": 763,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/sample10.tsv",
+      "tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+      "capture_manifest_sha256": "99e9a3c38009912f7f2d881928a8884609432e84d032cee9c053c045a0679f2e",
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "font_environment_sha256": "a133e6de02a876ea3346a1a36440d2a2ca9d38c801e96a97c6b6ff016f44c9f3",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 66,
+        "ordered_sha256_multiset_sha256": "e1c891e8c332d8ef8e5c87aae4bf0244530a27779125ef1d2ab99bd865b0fd63"
+      },
+      "condition": "verified-sample10-font-programs",
+      "min_raw": 99.56641,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "sample10",
+      "backend": "wasm",
+      "document_id": "b1a9055c4c7e6f09",
+      "pages": 763,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/sample10.tsv",
+      "tsv_sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+      "capture_manifest_sha256": "db02fb91de88f41bab13e5fe42d4f96b9eb3e1645eb0f9e058373b784df4a3c1",
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 66,
+        "ordered_sha256_multiset_sha256": "e1c891e8c332d8ef8e5c87aae4bf0244530a27779125ef1d2ab99bd865b0fd63"
+      },
+      "condition": "verified-sample10-font-programs",
+      "min_raw": 99.56647,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "sample16-hwp2022",
+      "backend": "native",
+      "document_id": "4bac5a5d1702df5f",
+      "pages": 64,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "capture_manifest_sha256": "c664258f203173349df2fea0fa9430c7e22826d2a8f0d2be31d14771000b3c6d",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "font_environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "7490f0ae839c0e680173363bf6699b3c184231363010a6cb626b54fc567be1c2"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "sample16-hwp2022",
+      "backend": "wasm",
+      "document_id": "4bac5a5d1702df5f",
+      "pages": 64,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/sample16-hwp2022.tsv",
+      "tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+      "capture_manifest_sha256": "5b61daeafa8abe71dc96be8c144d5f89b64bd4fbfcb9e50790966bbd2106a579",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "font_environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "7490f0ae839c0e680173363bf6699b3c184231363010a6cb626b54fc567be1c2"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "sample16-hwp2024",
+      "backend": "native",
+      "document_id": "7df4af8174abd82a",
+      "pages": 64,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "capture_manifest_sha256": "b287f98a165973eaf9f96792a8dd50df49791589326bf9a0f14360ac0c6d582f",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "font_environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "7490f0ae839c0e680173363bf6699b3c184231363010a6cb626b54fc567be1c2"
+      },
+      "condition": null,
+      "min_raw": 99.99065,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "sample16-hwp2024",
+      "backend": "wasm",
+      "document_id": "7df4af8174abd82a",
+      "pages": 64,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/sample16-hwp2024.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "capture_manifest_sha256": "2223969cd5ff6d74acf3eec428c5fb05b6cba5dee084e3a76c01f0220abb4bb0",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "font_environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "7490f0ae839c0e680173363bf6699b3c184231363010a6cb626b54fc567be1c2"
+      },
+      "condition": null,
+      "min_raw": 99.99067,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "sample16-hwpx",
+      "backend": "native",
+      "document_id": "43c0a207f6daa0bb",
+      "pages": 64,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "capture_manifest_sha256": "34c829d5d05280de8f24bed76d34fd991534dab549402c14963ae997dbee19b2",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "font_environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "7490f0ae839c0e680173363bf6699b3c184231363010a6cb626b54fc567be1c2"
+      },
+      "condition": null,
+      "min_raw": 99.99065,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "sample16-hwpx",
+      "backend": "wasm",
+      "document_id": "43c0a207f6daa0bb",
+      "pages": 64,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/sample16-hwpx.tsv",
+      "tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+      "capture_manifest_sha256": "a3e8b7ab0002ed3ac93c2fad7dfa9260d47ef21676ca502770d23c1c0deed66a",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "font_environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1220,
+        "ordered_sha256_multiset_sha256": "7490f0ae839c0e680173363bf6699b3c184231363010a6cb626b54fc567be1c2"
+      },
+      "condition": null,
+      "min_raw": 99.99067,
+      "compat": "2024"
+    },
+    {
+      "logical_key": "seo-body-list-typed",
+      "backend": "native",
+      "document_id": "2b43ec3782a748e1",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "305f931809b86205d710c309effd94c07349ea958baea78f3f928ce26c376534",
+      "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-body-list-typed",
+      "backend": "wasm",
+      "document_id": "2b43ec3782a748e1",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/seo-body-list-typed.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "f0c213bf8f33c11ec75e6eac0f246c345cb3198c0e618f4803abeff2215f5a23",
+      "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-helvetica-styles",
+      "backend": "native",
+      "document_id": "4314830495cfde87",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/seo-helvetica-styles.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "0f446fa044dda8f156586ada2b8465924257953aea9a873a07cc568ac8e8ecba",
+      "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "font_environment_sha256": "f5d2afcee5469e8fdebcdcb914d39f4a25adf7f905bab870cc592d076d0bc714",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1223,
+        "ordered_sha256_multiset_sha256": "f1a606897b37772f2321951f81cdd739fe6d681d1665e6d22830537da3a1f058"
+      },
+      "condition": "arial-verified-four-faces",
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "document_id": "4314830495cfde87",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/seo-helvetica-styles.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "f4aee063a99392d427cbdb04074c86090ed62c4a5642b7950c267ca8f76e2b95",
+      "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "font_environment_sha256": "f5d2afcee5469e8fdebcdcb914d39f4a25adf7f905bab870cc592d076d0bc714",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1223,
+        "ordered_sha256_multiset_sha256": "f1a606897b37772f2321951f81cdd739fe6d681d1665e6d22830537da3a1f058"
+      },
+      "condition": "arial-verified-four-faces",
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-pic-crop-01",
+      "backend": "native",
+      "document_id": "cdacd874b6e6ac66",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "3982df5674e116101577075b2972db9da8dd2a6820636be1a28422898ddc6b80",
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.99756,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "document_id": "cdacd874b6e6ac66",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/seo-pic-crop-01.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "2bb4439f58f5c630afc72ca4690b86460a1f714a9f0579289eb7a9daa0e205f0",
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.99756,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-re-03-latin",
+      "backend": "native",
+      "document_id": "52ee61fe7201e36b",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "139858a540145371dfa6907b7dd39225283170d0c2348c55805e699bbb140af3",
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-re-03-latin",
+      "backend": "wasm",
+      "document_id": "52ee61fe7201e36b",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/seo-re-03-latin.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "56ef93935799f566421d469ddcbf0336bb6d7ef0634dc5e0d209fbe29429fb38",
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-shape-group-02",
+      "backend": "native",
+      "document_id": "d03a9dde3d5dc7ac",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "7a17445ff05c51ff64877d536a2faa5367a35d3b709793bfcf7da957089661bd",
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "seo-shape-group-02",
+      "backend": "wasm",
+      "document_id": "d03a9dde3d5dc7ac",
+      "pages": 1,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/seo-shape-group-02.tsv",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "capture_manifest_sha256": "901e3b16add860655d53cf38e3ed015094997c5f9c0cc89cb56090ae35e1fe5c",
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "automatic_local_and_web",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "spec13",
+      "backend": "native",
+      "document_id": "3298ed895b9a645c",
+      "pages": 71,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/spec13.tsv",
+      "tsv_sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+      "capture_manifest_sha256": "06018fba868fb8b50ed9ff2c773da19f683aa38701ff3aec52901535a9cef5ee",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "font_environment_sha256": "96b95d283cb70263faa7774a39277f9d73c0a28d95a2eec6bb448ce42d30ca73",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1221,
+        "ordered_sha256_multiset_sha256": "284493283bb6fa1ac76989d8ef25be8e196065a591b1b4835bd2957d3f09fc20"
+      },
+      "condition": null,
+      "min_raw": 99.68651,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "spec13",
+      "backend": "wasm",
+      "document_id": "3298ed895b9a645c",
+      "pages": 71,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/spec13.tsv",
+      "tsv_sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+      "capture_manifest_sha256": "754f1e0064269a2e07308c69db1712ffb7bb08e38f48abb3f41e6ac0803a7965",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 99.66582,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "yeongwol",
+      "backend": "native",
+      "document_id": "0b7e7d0538284271",
+      "pages": 4,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/native/yeongwol.tsv",
+      "tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+      "capture_manifest_sha256": "213ca12d2bdaf630351838ee3bf988eb76e6b171d0937650b4c7a9214bf61c64",
+      "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "font_environment_sha256": "189eaa6fcf1f230c23a364323e9c4b9f65218b6a008fbdfa33298462e9cd3010",
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1228,
+        "ordered_sha256_multiset_sha256": "2db25340a4900d16c47f39c70f90917bd2ca2933cf8eabd5f4f17766b238eff1"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    },
+    {
+      "logical_key": "yeongwol",
+      "backend": "wasm",
+      "document_id": "0b7e7d0538284271",
+      "pages": 4,
+      "tsv": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/yeongwol.tsv",
+      "tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+      "capture_manifest_sha256": "940bcff71b0cbf7b2dfe5b6e3aa0fccb8998e0097c1a7d67b0871dc52d223e45",
+      "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "font_environment_sha256": null,
+      "program_supply": {
+        "mode": "direct-font-programs",
+        "source": "explicit",
+        "program_count": 1219,
+        "ordered_sha256_multiset_sha256": "8e974cb588673affa1e39242b73afaf50272547647813da5d98fa95449f7e251"
+      },
+      "condition": null,
+      "min_raw": 100.0,
+      "compat": "2022"
+    }
+  ],
+  "raster": {
+    "dpi": 96,
+    "radius_px": 2,
+    "profile": "print",
+    "pdfium_version": "153.0.7999.0",
+    "chrome_version": "157.0.8103.79"
+  },
+  "native_binary_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+  "wasm_pkg_sha256": {
+    "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
+    "rhwp_bg.wasm": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f"
+  },
+  "official_display_increases": [
+    {
+      "dataset": "decree/wasm",
+      "page": 19,
+      "previous": "99.73",
+      "current": "99.74"
+    }
+  ],
+  "official_display_declines": [],
+  "coverage": {
+    "native": {
+      "documents": 23,
+      "pages": 2023
+    },
+    "wasm": {
+      "documents": 23,
+      "pages": 2023
+    }
+  },
+  "comparison": "전체 TSV의 동일 document_id·backend·page를 직접 대조",
+  "private_font_binaries_committed": false,
+  "restore_condition_summary": {
+    "initial_declines": [
+      [
+        "seo-helvetica-styles",
+        "native",
+        [
+          [
+            1,
+            "100.00",
+            "99.68",
+            "99.68199"
+          ]
+        ]
+      ],
+      [
+        "nested",
+        "native",
+        [
+          [
+            5,
+            "100.00",
+            "99.99",
+            "99.99027"
+          ]
+        ]
+      ],
+      [
+        "sample10",
+        "native",
+        [
+          [
+            474,
+            "100.00",
+            "99.96",
+            "99.9614"
+          ]
+        ]
+      ],
+      [
+        "seo-helvetica-styles",
+        "wasm",
+        [
+          [
+            1,
+            "100.00",
+            "98.78",
+            "98.7779"
+          ]
+        ]
+      ],
+      [
+        "nested",
+        "wasm",
+        [
+          [
+            5,
+            "100.00",
+            "99.98",
+            "99.98388"
+          ]
+        ]
+      ],
+      [
+        "chemical",
+        "wasm",
+        [
+          [
+            67,
+            "100.00",
+            "99.99",
+            "99.99417"
+          ],
+          [
+            74,
+            "99.86",
+            "99.85",
+            "99.85355"
+          ],
+          [
+            86,
+            "99.96",
+            "99.95",
+            "99.94894"
+          ],
+          [
+            87,
+            "99.93",
+            "99.92",
+            "99.9211"
+          ],
+          [
+            92,
+            "99.98",
+            "99.97",
+            "99.9741"
+          ]
+        ]
+      ],
+      [
+        "sample10",
+        "wasm",
+        [
+          [
+            474,
+            "100.00",
+            "99.96",
+            "99.9614"
+          ],
+          [
+            757,
+            "99.57",
+            "99.56",
+            "99.56105"
+          ]
+        ]
+      ]
+    ],
+    "arial": "독립 Print에 내장된 윤곽 및 hmtx가 일치하는 설치 Arial 네 스타일",
+    "chemical": "같은 Mac Chrome의 기본 구동, SHA가 같은 사용자 글꼴 1,219개와 선언 환경",
+    "nested": "별도의 한컴 2020 Print에서 재확보한 독립 기호 프로그램과 기존 언어 슬롯 선언",
+    "sample10": "원 수용본과 SHA가 동일한 실제 글꼴 66개, Native 명시 PUA 공급과 WASM 직접 공급"
+  }
+}

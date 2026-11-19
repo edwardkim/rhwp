@@ -3062,11 +3062,7 @@ fn write_text_decoration(
             0,
         ),
         TextDecorationKind::Strikethrough => (
-            if run.style.strike_color != 0 {
-                run.style.strike_color
-            } else {
-                run.style.color
-            },
+            run.style.strike_color,
             run.style.strike_shape,
             UnderlineType::None,
             0,

@@ -190,6 +190,14 @@ pub(crate) fn stored_plain_closed_cell_ink_height(
 /// Complete original line boxes, including intentional empty lines, in one
 /// natural cell frame. Its last advance does not enlarge the closing ink box.
 pub(crate) fn stored_plain_cell_ink_height(cell: &crate::model::table::Cell) -> Option<i32> {
+    stored_plain_cell_ink_height_from(cell, 0)
+}
+
+/// 시작 위치를 독립적으로 확인한 저장 줄 사다리의 원본 좌표계 끝.
+pub(super) fn stored_plain_cell_ink_height_from(
+    cell: &crate::model::table::Cell,
+    first_origin: i32,
+) -> Option<i32> {
     use crate::model::paragraph::LineSeg;
     if cell.dirty_flag || cell.text_direction != 0 || cell.height >= 0x8000_0000 {
         return None;
@@ -210,7 +218,7 @@ pub(crate) fn stored_plain_cell_ink_height(cell: &crate::model::table::Cell) -> 
                 || line.line_height <= 0
                 || line.line_spacing < 0
                 || line.vertical_pos < ink_end
-                || (first && line.vertical_pos != 0)
+                || (first && line.vertical_pos != first_origin)
             {
                 return None;
             }
@@ -4706,6 +4714,35 @@ pub(crate) fn empty_host_float_successor_absorbed_spacing_px(
         return 0.0;
     }
     let outer_bottom = hwpunit_to_px(i32::from(table.outer_margin_bottom), dpi).max(0.0);
+    // 저장 HWPX의 종료 조각 뒤에 같은 문단 모양이 이어질 때, 앞 쪽
+    // 좌표에 남은 저장 줄은 이 조각의 끝과 별도의 앞 간격을 증명하지 않는다.
+    // 한컴 인쇄는 이 줄을 조각 끝에서 시작한다. 새로 편집한 문단이나 표
+    // 끝을 가리키는 유효한 저장 좌표에는 기존 간격 판정을 적용한다.
+    if stored_layout
+        && hwpx_container
+        && table.layout_page_break() == TablePageBreak::RowBreak
+        && matches!(host.controls.as_slice(), [Control::Table(_)])
+        && matches!(previous_item, Some(PageItem::PartialTable {
+            is_continuation: true, end_cut, ..
+        }) if end_cut.is_empty())
+        && paragraphs.get(para_index).is_some_and(|next| {
+            next.para_shape_id == host.para_shape_id
+                && next.controls.is_empty()
+                && next.column_type == crate::model::paragraph::ColumnBreakType::None
+                && !next.text.trim().is_empty()
+                && !next.stored_text_partition_is_dirty()
+                && !next.cell_format_vpos_dirty
+                && next.line_segs.first().is_some_and(|line| {
+                    line.vertical_pos > 0
+                        && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                        && hwpunit_to_px(line.vertical_pos, dpi) + spacing_before
+                            < flow_from_body_top
+                })
+        })
+    {
+        return spacing_before;
+    }
     if spacing_before > outer_bottom {
         return 0.0;
     }

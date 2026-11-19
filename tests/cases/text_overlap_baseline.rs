@@ -283,11 +283,8 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "86712_regulatory_analysis.hwp",
     // #7445 동일 원문 피델리티 이관 및 사용자 지시: 렌더링 회귀에서 제외한다.
     "issue1891/86712_regulatory_analysis.hwpx",
-    "issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
     "issue1937_rowbreak_footnote_overpagination.hwp",
     "task1749/saved_bounds_cumulative_page_break.hwpx",
-    "rowbreak-problem-pages.hwpx",
-    "issue6795/1341000-201100013-cyber-university-application.hwp",
     "task2319/20544835_jinan_apt_form.hwp",
 ];
 

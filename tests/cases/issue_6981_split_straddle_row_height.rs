@@ -1,4 +1,8 @@
-//! [#6981] 조각 경계가 rowspan 블록 안쪽이면 이어받는 조각의 걸친 셀이 제 높이를 받는다.
+//! 관계형 — 걸침 행의 물리 소속과 내용 보존을 검사한다.
+//! 주석 갱신: 2026-11-20T02:06:18+09:00. 직전 변경: bd3a2b9cf879857a15e75476c79e9bc92067b57e 2026-10-10T12:05:51+09:00.
+//! #7743 복원 검사: 2026-11-20 96 DPI, 2px 이웃 raw 실루엣 83쪽 Native/fresh WASM 모두 100%.
+//! 교육과정 전체 415쪽, Native 최저 98.21994% / fresh WASM 최저 98.18712%.
+//! 독립 Print와 전쪽 TSV: mydocs/pr/assets/issues7739_7743_20261119/analysis.md.
 //!
 //! # 무엇이 깨져 있었나
 //!
@@ -302,10 +306,18 @@ fn continuation_height_respects_varying_page_budgets() {
     );
 }
 
-// 한컴 2022 기준 PDF p83에는 전남부터 제주까지의 조례가 함께 있다.
-// 앞 쪽에서 소비한 빈 행 밴드를 내용 컷만으로 재계산하면 이 행들이 밀려난다.
-// #7445: 교육과정의 실패한83쪽 소속 검사만 이관(최신 base Native33.95761%).
-// 다른 이어받기/셀 포함 관계 검사는 보존한다. 근거는 issue7445 README.
+/// 독립 한컴 Print 83쪽의 전남·제주 조례는 앞 조각의 빈 높이를 다시 소비하지 않는다.
+#[test]
+fn physical_blank_band_is_not_reserved_again_on_continuation() {
+    let bytes = std::fs::read(TARGET).expect("커밋된 교육과정 원본");
+    let core = DocumentCore::from_bytes(&bytes).expect("교육과정 파싱");
+    let tree = core.build_page_render_tree(82).expect("독립 Print 83쪽");
+    let body = line_text(&tree.root);
+    for owner in ["전라남도교육청", "제주특별자치도교육청"] {
+        assert!(body.contains(owner), "83쪽 소속: {owner}");
+    }
+    assert_tables_inside_body(&tree.root, None);
+}
 
 /// 최종 컷 뒤에 내용 없는 페이지를 할당하면 그 쪽에는 쪽 번호만 남는다.
 /// 마지막 표의 글자는 앞 쪽에 남고, 다음 구역 본문은 빈 쪽 없이 이어져야 한다.

@@ -1906,6 +1906,37 @@ fn list_marker_breaker_box(
         .map_or((0.0, indent_px), |geometry| geometry.breaker_box(indent_px))
 }
 
+/// 현재 상자와 같은 저장 목록에서 별도 줄에 남은 마지막 음절은
+/// 문단 끝 음수 자간을 되돌린 실제 폭으로 흡수 여부를 판정한다.
+fn saved_marker_tail_owns_terminal_ink(
+    para: &Paragraph,
+    paragraph_box: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    if para.line_segs.len() < 2
+        || !para.controls.is_empty()
+        || para.stored_text_partition_is_dirty()
+        || para.text.contains(['\n', '\r'])
+        || super::stored_row_fragments::crosses_physical_frame(para)
+        || para
+            .line_segs
+            .iter()
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        || !super::stored_word_tail::projects_current_marker_geometry(para, paragraph_box, styles)
+    {
+        return false;
+    }
+    let visible = para.text.trim_end();
+    visible
+        .char_indices()
+        .next_back()
+        .is_some_and(|(index, ch)| {
+            ('\u{ac00}'..='\u{d7a3}').contains(&ch)
+                && visible[..index].encode_utf16().count()
+                    == para.line_seg_text_start(para.line_segs.len() - 1) as usize
+        })
+}
+
 /// 토큰이 줄에 들어가는가 — 문단 `condense`(공백 최소값) 규칙 포함.
 ///
 /// [#7418] 한/글은 공백을 condense% 까지 줄여 **이미 시작한 낱말**의 글자를 더 담는다.
@@ -1984,6 +2015,8 @@ struct FillCursor {
     word_gap_natural_hwp: Option<i32>,
     /// 물리 프레임의 폭이 확정되면 추정 메트릭의 초과 허용을 얹지 않는다.
     allow_metric_tolerance: bool,
+    /// 같은 목록 상자에 저장된 마지막 자동 글자가 차지하는 끝 자간을 확인한다.
+    preserve_cached_terminal_ink: bool,
     /// 등간격 탭 격자가 속한 단/셀 좌표계의 현재 줄 원점.
     tab_grid_origin_px: Option<f64>,
     finished: bool,
@@ -2008,6 +2041,7 @@ impl FillCursor {
             fs_at_last_break: 0.0,
             word_gap_natural_hwp: None,
             allow_metric_tolerance: true,
+            preserve_cached_terminal_ink: false,
             tab_grid_origin_px: None,
             finished: false,
             emitted_any: false,
@@ -2722,8 +2756,10 @@ fn fill_one_interval(
                         !matches!(token, BreakToken::Space { inline_width, .. } if *inline_width == 0.0)
                     })
                     .is_none_or(|token| matches!(token, BreakToken::LineBreak { .. }));
-                let w_hwp_fit = if at_written_line_end
-                    && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0
+                let terminal_tracking = at_written_line_end
+                    && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0;
+                let w_hwp_fit = if terminal_tracking
+                    && !cursor.preserve_cached_terminal_ink
                     && cursor.lw + w_hwp
                         <= effective_width + line_break_tolerance_hwp(effective_width)
                 {
@@ -4735,7 +4771,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
     // [#7160] 저장 줄이 없는 글자처럼 취급 표 host 는 이 채움이 유일한 소유자다.
     let supported = match purpose {
-        FramePurpose::Body => {
+        FramePurpose::Body | FramePurpose::StoredMarkerTailReflow => {
             supports_picture_band_frame_controls(para)
                 || supports_cached_body_frame_controls(para)
                 || supports_inline_form_frame_controls(para)
@@ -5011,6 +5047,17 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     let first_row = frame.row_count();
     let frame_checkpoint = frame.try_append_checkpoint(storage)?;
     let mut cursor = FillCursor::replay_from_boundary(&tokens, start_char, start_char == 0);
+    // 같은 목록 상자의 마지막 음절이 원본에서 별도 자동 줄을 소유하면,
+    // 음수 자간으로 더 줄어든 문단 종료 폭만으로 그 음절을 앞줄에 합치지 않는다.
+    // 기존의 강제 개행·새 문단 입력에는 저장 자동 줄이라는 근거가 없다.
+    cursor.preserve_cached_terminal_ink = start_char == 0
+        && !frame.models_exclusions()
+        && (purpose == FramePurpose::StoredMarkerTailReflow
+            || saved_marker_tail_owns_terminal_ink(
+                para,
+                &ParagraphBox::content(frame.horizontal.clone()),
+                styles,
+            ));
     // 확정된 물리 구간은 원본 격자 폭 자체가 경계다. 추정 여유를 더하면
     // 4 HU 격자로 내린 칸에도 26 HU 초과 글자가 들어가 격자 계약이 무효화된다.
     cursor.allow_metric_tolerance = false;
@@ -5146,6 +5193,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                             cursor.is_first_line,
                         );
                         replay.allow_metric_tolerance = false;
+                        replay.preserve_cached_terminal_ink = cursor.preserve_cached_terminal_ink;
                         replay.tab_grid_origin_px = Some(tab_grid_origin_px);
                         let filled = fill_one_interval(
                             terminal_tokens,
@@ -5700,9 +5748,31 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
             // A rejected row cannot remain the provenance template for fresh rows:
             // placement/empty flags describe the stored physical rows, not this
             // frame's newly carved projection.
+            // 같은 목록 상자의 마지막 자동 줄이라는 증거는 행 플래그와 별개다.
+            // 캐시를 지우기 전에 폭 판정에 필요한 이 사실만 보존해, 탐색과
+            // 실제 발행이 같은 글줄 경계를 사용하도록 한다.
+            let purpose = if !frame.models_exclusions()
+                && saved_marker_tail_owns_terminal_ink(
+                    para,
+                    &ParagraphBox::content(frame.horizontal.clone()),
+                    styles,
+                ) {
+                FramePurpose::StoredMarkerTailReflow
+            } else {
+                FramePurpose::Body
+            };
             reflow_input.line_segs.clear();
-            layout_paragraph_in_frame_with_storage(&reflow_input, frame, styles, dpi, storage)?
-                .map(|_| StoredRowResolution::Reflowed)
+            try_layout_paragraph_in_frame_impl(
+                &reflow_input,
+                frame,
+                styles,
+                dpi,
+                true,
+                FrameStart::Scalar(0),
+                purpose,
+                storage,
+            )?
+            .map(|_| StoredRowResolution::Reflowed)
         })
     })();
     if resolved.is_err() {

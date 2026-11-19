@@ -3179,11 +3179,7 @@ impl Renderer for WebCanvasRenderer {
             if style.strikethrough {
                 let text_width = decoration_width;
                 let strike_y = y - font_size * 0.3;
-                let st_color = if style.strike_color != 0 {
-                    color_to_css(style.strike_color)
-                } else {
-                    color_to_css(style.color)
-                };
+                let st_color = color_to_css(style.strike_color);
                 self.draw_line_shape_canvas(
                     x,
                     strike_y,

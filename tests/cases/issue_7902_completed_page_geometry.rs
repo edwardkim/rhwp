@@ -1,4 +1,13 @@
-//! #7902: 전쪽90%·선택 쪽 양쪽98%를 확인한 원본의 중요 기하를 보호한다.
+//! 고정형·관계형 — 독립 인쇄의 좌표와 원본 내용·개체 소속을 보호한다.
+//! 주석 갱신: 2026-11-20T02:06:18+09:00. 직전 변경: 84764fa21c96cd5f8a0e158658e4162a4fb3ce9e 2026-10-16T11:32:36+09:00.
+//! 2026-11-20 측정. 96 DPI raw 실루엣, 2px 이웃. 수치는 Native/fresh WASM 순이다.
+//! #7739 화학제품은 103쪽, 전쪽 최저 98.79596%/98.79775%. 16·64·88쪽의 개별값은 아래에 기록한다.
+//! #7741 분할 표 HWPX는 18쪽, 최저 98.32256%/98.36100%. 5쪽 99.99508%/99.99228%,
+//! 11쪽 99.95013%/99.94357%, 12쪽 99.92582%/99.92345%.
+//! #7742 사이버대학은 45쪽, 최저 98.31892%/98.54594%. 28·29쪽의 개별값은 아래에 기록한다.
+//! #7743 교육과정은 415쪽, 최저 98.21994%/98.18712%. 175쪽은 양쪽 raw 100%.
+//! 원본·PDF·전쪽 TSV와 대표 확대 증거: mydocs/pr/assets/issues7739_7743_20261119/analysis.md.
+//! #7902의 기존 검증 범위는 아래의 기록을 따른다.
 //!
 //! 독립 Print의 image bbox·표 괘선·글자 원점을 72pt→96dpi로 환산한 기대값이다.
 //! 원본/Print 해시·producer·전쪽 TSV·선정 이유·같은 영역의 직접 판독은
@@ -452,4 +461,196 @@ fn hft_hwp_and_hwpx_pages_104_keep_source_face_and_post_table_body_origins() {
             }
         }
     }
+}
+
+/// #7742 고정형과 내용 소유 검사. 28쪽 Native 99.76759% / fresh WASM 99.76866%,
+/// 29쪽 98.31892% / 98.54594%. 고정 좌표는 28쪽의 독립 한컴 2020 Print 괘선이다.
+/// mydocs/pr/assets/issues7739_7743_20261119/analysis.md의 원본과 인쇄 증적을 따른다.
+#[test]
+fn cyber_software_table_closes_the_first_seven_rows_in_the_parent_frame() {
+    let core = load(
+        "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+        false,
+    );
+    assert_eq!(core.page_count(), 45, "한컴 Print 원본 쪽수");
+    let opening = core.build_page_render_tree(27).unwrap().root;
+    let continuation = core.build_page_render_tree(28).unwrap().root;
+    let before = table(&opening, 113, 0, 27, 10);
+    let after = table(&continuation, 113, 0, 27, 10);
+    let child_before = table(before, 0, 0, 8, 3);
+    let child_after = table(after, 0, 0, 8, 3);
+    near(child_before.bbox.y, 694.363, "중첩 표 첫 조각 위쪽");
+    near(bottom(child_before), 842.035, "중첩 표 첫 조각 아래쪽");
+    near(bottom(before), 850.993, "부모 표 28쪽 닫힘");
+    contained(
+        child_before,
+        cell_owner(before, child_before, None).expect("28쪽 중첩 표의 부모 셀"),
+    );
+    contained(
+        child_after,
+        cell_owner(after, child_after, None).expect("29쪽 중첩 표의 부모 셀"),
+    );
+    let first = compact(&text(child_before));
+    let second = compact(&text(child_after));
+    assert_eq!(first.matches("콘텐츠관리도구").count(), 1);
+    assert_eq!(second.matches("보안S/W").count(), 1);
+    assert!(!first.contains("보안S/W"));
+    assert!(!second.contains("콘텐츠관리도구"));
+}
+
+/// #7739 고정형과 포함 검사. 64쪽 Native 99.70363% / fresh WASM 99.70377%.
+/// 화학제품 표시도안 연구의 독립 한컴 2022 Print에서 나온 두 그림의 좌표다.
+#[test]
+fn chemical_product_photos_stay_inside_the_same_continuation_cell() {
+    let core = load(
+        "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        false,
+    );
+    assert_eq!(core.page_count(), 103, "한컴 Print 원본 쪽수");
+    let root = core.build_page_render_tree(63).unwrap().root;
+    let frame = table(&root, 0, 2, 17, 10);
+    let cell = unique(
+        frame,
+        |node| matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 11 && cell.col == 3),
+    );
+    let mut nodes = Vec::new();
+    walk(cell, &mut nodes);
+    let mut photos: Vec<_> = nodes
+        .into_iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Image(_)))
+        .collect();
+    assert_eq!(
+        photos.len(),
+        2,
+        "양초와 방향제 사진이 한 번씩 같은 칸에 속한다"
+    );
+    photos.sort_by(|a, b| a.bbox.x.total_cmp(&b.bbox.x));
+    for (picture, print_top) in photos.into_iter().zip([445.040, 445.041]) {
+        near(picture.bbox.y, print_top, "표 조각 안 사진 위쪽");
+        contained(picture, cell);
+    }
+}
+
+/// #7739 인쇄 그림 픽셀 검사. 16쪽 Native 99.98426% / fresh WASM 99.99781%,
+/// 88쪽 양쪽 100%. 한컴 2022 Print에 포함된 JPEG의 픽셀을 독립적으로 읽었다.
+#[test]
+fn opaque_bitmap_print_conversion_preserves_the_independent_image_samples() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
+
+    fn collect_jpegs<'a>(node: &'a LayerNode, found: &mut Vec<&'a [u8]>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    collect_jpegs(child, found);
+                }
+            }
+            LayerNodeKind::ClipPath { child, .. } | LayerNodeKind::ClipRect { child, .. } => {
+                collect_jpegs(child, found);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    if let PaintOp::Image {
+                        resolved: Some(image),
+                        ..
+                    } = op
+                    {
+                        if image.mime == "image/jpeg" {
+                            found.push(&image.data);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let core = load(
+        "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+        false,
+    );
+    for (number, expected_size, coordinates, expected) in [
+        (16, (781, 666), (212, 132), 255),
+        (88, (781, 636), (28, 284), 198),
+    ] {
+        let tree = core
+            .build_page_layer_tree_with_profile(number - 1, RenderProfile::Print)
+            .unwrap();
+        let mut pictures = Vec::new();
+        collect_jpegs(&tree.root, &mut pictures);
+        let matching: Vec<_> = pictures
+            .into_iter()
+            .map(|bytes| {
+                image::load_from_memory_with_format(bytes, image::ImageFormat::Jpeg).unwrap()
+            })
+            .filter(|image| (image.width(), image.height()) == expected_size)
+            .collect();
+        assert_eq!(matching.len(), 1, "{number}쪽 독립 Print와 같은 그림");
+        let rgb = matching[0].to_rgb8();
+        let [red, green, blue] = rgb.get_pixel(coordinates.0, coordinates.1).0;
+        for channel in [red, green, blue] {
+            assert!(
+                channel.abs_diff(expected) <= 2,
+                "{number}쪽 독립 Print RGB {expected}, 실제 ({red}, {green}, {blue})"
+            );
+        }
+    }
+}
+
+/// #7741 고정형. 앞 표가 소비한 간격은 후속 본문에 한 번만 반영된다.
+#[test]
+fn rowbreak_hwpx_page_five_keeps_the_post_table_line_origins() {
+    let core = load("samples/rowbreak-problem-pages.hwpx", false);
+    let root = core.build_page_render_tree(4).unwrap().root;
+    let first = baseline(&root, "클라우드컴퓨팅서비스 품질", 947.5199);
+    let second = baseline(&root, "정보보호 수준을 향상시키기 위", 979.5199);
+    let third = baseline(&root, "하여 노력하여야 함", 1011.5199);
+    assert!(bottom(first) <= second.bbox.y && bottom(second) <= third.bbox.y);
+}
+
+/// #7741 고정형·관계형. 물리 쪽 경계가 같은 원본 표의 두 조각을 가른다.
+#[test]
+fn rowbreak_hwpx_lower_table_preserves_the_page_eleven_cut_and_successor() {
+    let core = load("samples/rowbreak-problem-pages.hwpx", false);
+    let left = core.build_page_render_tree(10).unwrap().root;
+    let right = core.build_page_render_tree(11).unwrap().root;
+    let before = table(&left, 5, 0, 8, 3);
+    let after = table(&right, 5, 0, 8, 3);
+    near(bottom(before), 1021.763, "독립 Print 11쪽 하단 표 괘선");
+    let anchor = "공통표준도메인관리항목";
+    let successor = "공통표준도메인정의기준";
+    let first_text = compact(&text(before));
+    let next_text = compact(&text(after));
+    assert_eq!(first_text.matches(anchor).count(), 1);
+    assert_eq!(next_text.matches(successor).count(), 1);
+    assert!(!first_text.contains(successor));
+    assert!(!next_text.contains(anchor));
+}
+
+/// #7743 고정형·관계형. 목록 칸의 마지막 글자는 같은 문단의 둘째 줄에 속한다.
+#[test]
+fn curriculum_numbered_cell_keeps_the_final_syllable_on_its_own_line() {
+    let core = load(
+        "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+        false,
+    );
+    let root = core.build_page_render_tree(174).unwrap().root;
+    let frame = table(&root, 2, 0, 80, 8);
+    let cell = unique(
+        frame,
+        |node| matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 25 && cell.col == 7),
+    );
+    let first = baseline(cell, "발표하", 487.36);
+    assert!(compact(&text(first)).ends_with("발표하"));
+    let tail = unique(
+        cell,
+        |node| matches!(&node.node_type, RenderNodeType::TextRun(run) if run.display_or_text() == "기"),
+    );
+    let RenderNodeType::TextRun(run) = &tail.node_type else {
+        unreachable!();
+    };
+    near(
+        tail.bbox.y + run.baseline,
+        504.8,
+        "독립 Print의 고립된 끝 글자",
+    );
+    assert!(bottom(first) <= tail.bbox.y);
 }

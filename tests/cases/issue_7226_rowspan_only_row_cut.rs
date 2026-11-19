@@ -38,11 +38,10 @@
 //!
 //! # 전체 쪽수의 독립 기준
 //!
-//! 같은 원본의 한컴 Print PDF는 415쪽이다. 일부 구간의 쪽 정렬로 전체 413쪽을
-//! 정상값으로 고정할 수 없다. 부적합한 전체 쪽수 검사는 #7445로 이관하고 내용의
-//! 소유·중복 검사와 합성 예산 계약은 유지한다.
+//! 같은 원본의 한컴 Print PDF와 Native/fresh WASM 출력은 모두 415쪽이다. 전체 쪽수는
+//! 복원한 `oracle_page_count_baseline.tsv`에서 검사한다. 이 파일은 소유·중복을 검사한다.
 //! 기준: `mydocs/pr/assets/issue7445/education-curriculum-map/current-source-hancom2020-print.pdf`.
-//! 전쪽 Native/fresh WASM 90% 적격성은 별도 시각 검증이며 이 검사 PASS로 대신하지 않는다.
+//! #7743 전쪽 검증과 독립 PDF: mydocs/pr/assets/issues7739_7743_20261119/analysis.md.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
@@ -152,10 +151,6 @@ fn the_continuation_page_has_no_text_overlap() {
         overlaps.len()
     );
 }
-
-// 겹침을 쪽을 늘려 없애면 안 된다 — 이 구간의 쪽 번호는 이미 정본과 같다.
-// #7445: 최신 base에서도 90% 미달인 교육과정의 실패한 쪽수 편차 검사만 이관.
-// 같은 문서의 정상 이어받기/겹침 검사는 보존한다. 근거는 issue7445 README.
 
 /// 원본 표 IR을 유지하고 본문의 물리 예산만 바꾼다.
 /// 별도 한컴 저장본이나 PDF 정답지가 없는 합성 계약 검사다.

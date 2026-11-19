@@ -636,12 +636,8 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
         0
     };
 
-    // 5.0.3.0 이후: 취소선 색
-    let strike_color = if r.remaining() >= 4 {
-        r.read_color_ref().unwrap_or(0)
-    } else {
-        0
-    };
+    // 5.0.3.0 이후에 저장되는 COLORREF의 0은 검정이다.
+    let stored_strike_color = r.read_color_ref().ok();
 
     // 속성 비트 해석
     let italic = (attr & 0x01) != 0;
@@ -674,6 +670,7 @@ fn parse_char_shape(data: &[u8]) -> Result<CharShape, DocInfoError> {
     // 취소선 여부 (bit 18-20). 비트만으로는 판정할 수 없어 모양 id를 함께 본다
     // (is_real_strike_shape_id 참고).
     let strikethrough = (attr >> 18) & 0x07 != 0 && is_real_strike_shape_id(strike_shape);
+    let strike_color = stored_strike_color.unwrap_or(if strikethrough { text_color } else { 0 });
     // 커닝 여부 (bit 30)
     let kerning = (attr & (1 << 30)) != 0;
     // 글꼴에 어울리는 빈칸 사용 여부 (bit 25)

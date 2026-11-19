@@ -1,0 +1,732 @@
+{
+  "documents": 4,
+  "conditions": 8,
+  "total_pages_by_backend": 581,
+  "median_is_not_used": true,
+  "results": [
+    {
+      "issue": 7741,
+      "document": "rowbreak-hwpx",
+      "backend": "native",
+      "pages": 18,
+      "input_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf_sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": null,
+      "minimum_base": "93.56202",
+      "minimum_candidate": "98.32256",
+      "exact100_pages": 7,
+      "below_98": [],
+      "declines": [
+        {
+          "page": 17,
+          "base": "98.94316",
+          "head": "98.94224",
+          "decline_pp": "0.00092"
+        }
+      ],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/base-silhouette.tsv",
+      "candidate_tsv_sha256": "dcce96bcbf62c84ae0a90ed52a3a3b556f4f8ed2765a7081c3bf09e9931a743c",
+      "base_tsv_sha256": "d861b18a70f3b0f6543e621cab16a9cc65ec98bab450a14a603e6d46298e6c4e",
+      "review_pages": [
+        {
+          "page": 5,
+          "raw": 99.99508,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/review_005.png",
+            "sha256": "a758683abf2a647e82c3333330abf71f03ce1cf86c387bf8279f495d2068d5ca"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/overlay_005.png",
+            "sha256": "d1ac5a0086bbc929d3d85f7fd44a84a943a34ee33dedb8831d081807aed6b327"
+          }
+        },
+        {
+          "page": 11,
+          "raw": 99.95013,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/review_011.png",
+            "sha256": "859790bcc29169e35647694a7e7577b09f2a340af4c171593b0599c461bcb029"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/overlay_011.png",
+            "sha256": "fb2b7cb43408a52181fcc02039cf5a2a1ad8cf77661128df5d36f7b3e3ba59cc"
+          }
+        },
+        {
+          "page": 12,
+          "raw": 99.92582,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/review_012.png",
+            "sha256": "7af7b1dd61ab80dc437284d76c4e5c9711de7b1fef40950e8429531cb24f8202"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/overlay_012.png",
+            "sha256": "ae6a136619262bdb5a632b9ece3949803c70452d8de86f5b6694fe9aeda0529a"
+          }
+        },
+        {
+          "page": 16,
+          "raw": 98.32256,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/review_016.png",
+            "sha256": "813707bd199b745feaaaa52a4dbd99421c9d0e02d641e5cea154d45c4ae9a02f"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/native/overlay_016.png",
+            "sha256": "db41d2fdfc260c3aeffd903c9fbfeac7d27c2e86f62465ceea6f69089cc990d3"
+          }
+        }
+      ],
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "reference_pdf": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        16
+      ]
+    },
+    {
+      "issue": 7742,
+      "document": "cyber-6795",
+      "backend": "native",
+      "pages": 45,
+      "input_sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+      "pdf_sha256": "88f7a53b08c93f72fb9a7f1af45f5e04dd345f41ed6f594d6ee380732d4b04f6",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": null,
+      "minimum_base": "90.74554",
+      "minimum_candidate": "98.31892",
+      "exact100_pages": 7,
+      "below_98": [],
+      "declines": [
+        {
+          "page": 29,
+          "base": "98.66897",
+          "head": "98.31892",
+          "decline_pp": "0.35005"
+        }
+      ],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/base-silhouette.tsv",
+      "candidate_tsv_sha256": "3a8846eb96ad8b6def3ebc6dc9844b28f5cb4a51fa2bb86eba5c537016d2683a",
+      "base_tsv_sha256": "480f2aeea4bbbcb89873d727f4d33fd1f2a66fcbf22a3a0e7c57d4962d371a6b",
+      "review_pages": [
+        {
+          "page": 1,
+          "raw": 98.78671,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/review_001.png",
+            "sha256": "4d43c52e6fb59327fbc78e37e2640e32657caca57e71acd85151c242618f5ecf"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/overlay_001.png",
+            "sha256": "767f7381fab45079c1d22b8b127be3227474bbe2577ecf110aa7d7d0e3726aba"
+          }
+        },
+        {
+          "page": 10,
+          "raw": 98.85684,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/review_010.png",
+            "sha256": "c4f21bfbda1b886fe315b8783c8f8d75a33c03372c380a6d8d4bf7adab770157"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/overlay_010.png",
+            "sha256": "6334a7d161ff37ff312818ae86d880b40fcf577bf81fdb894d3a918af74dd8eb"
+          }
+        },
+        {
+          "page": 28,
+          "raw": 99.76759,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/review_028.png",
+            "sha256": "2541a6b6ca2d6efcc2451f3b7ad9cb9f1b2aeabdc63aa62a14f6c00aa5686960"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/overlay_028.png",
+            "sha256": "9ed877e8b221326179751affa93e3af4f74ce70984d2f8d859dfe1b0173762bc"
+          }
+        },
+        {
+          "page": 29,
+          "raw": 98.31892,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/review_029.png",
+            "sha256": "6b528a6c35ab51b7de041e9d134e68170e24251b8676b26c62d4044165526f4c"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/native/overlay_029.png",
+            "sha256": "4e2bd05de6aafca5cb59679c685c3825d3f00231e5cf0537a85dd34ea8b747e5"
+          }
+        }
+      ],
+      "input": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "reference_pdf": "pdf/issue7742/cyber-university-application-hancom2020-print.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        29
+      ]
+    },
+    {
+      "issue": 7739,
+      "document": "chemical-6782",
+      "backend": "native",
+      "pages": 103,
+      "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": null,
+      "minimum_base": "89.48983",
+      "minimum_candidate": "98.79596",
+      "exact100_pages": 73,
+      "below_98": [],
+      "declines": [
+        {
+          "page": 60,
+          "base": "99.98176",
+          "head": "99.98167",
+          "decline_pp": "0.00009"
+        },
+        {
+          "page": 72,
+          "base": "99.84918",
+          "head": "99.84917",
+          "decline_pp": "0.00001"
+        },
+        {
+          "page": 91,
+          "base": "99.75742",
+          "head": "99.7574",
+          "decline_pp": "0.00002"
+        }
+      ],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/base-silhouette.tsv",
+      "candidate_tsv_sha256": "db0ddfff9b60dabd2bf401d5962d3ca3b93ca0cdfc608ea00b565542c2fc9365",
+      "base_tsv_sha256": "fa2f2ec89a5adb00458b6defe7875becf448a15668d3f3be1a890a38f09c872b",
+      "review_pages": [
+        {
+          "page": 16,
+          "raw": 99.98426,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/review_016.png",
+            "sha256": "830f66894ad771fa0e2f2f2804c2da45f23206d52c2dd745d230dfc07c38ef57"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/overlay_016.png",
+            "sha256": "a95df637001ff3e17364621969063bb5d83996cb3270ae10f8eafa640361494a"
+          }
+        },
+        {
+          "page": 64,
+          "raw": 99.70363,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/review_064.png",
+            "sha256": "e12a0800148215c625a4b8df94b3a98df2249b770247efecd50d376c0687fb1e"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/overlay_064.png",
+            "sha256": "051c16579e5126e51ecf254bb1c93b4632c7a66ed812467e9a987400355516c3"
+          }
+        },
+        {
+          "page": 88,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/review_088.png",
+            "sha256": "e88585d54dbb0de0ab4a51d12635201b7161e7a390511082d3adecf3939b6b32"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/native/overlay_088.png",
+            "sha256": "3fd9ba27262f6c44de8ec3344863c1c2cd191fabd84ed601e382360b8620f16b"
+          }
+        }
+      ],
+      "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "reference_pdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        65
+      ]
+    },
+    {
+      "issue": 7743,
+      "document": "curriculum-2287",
+      "backend": "native",
+      "pages": 415,
+      "input_sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "pdf_sha256": "82fe8eefecbf3ad5176549976a8cd486ac0bb9c113e7ac34510a69ee6ccbf17f",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": null,
+      "minimum_base": "68.72796",
+      "minimum_candidate": "98.21994",
+      "exact100_pages": 376,
+      "below_98": [],
+      "declines": [],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/base-silhouette.tsv",
+      "candidate_tsv_sha256": "e71a868a1fa475c784b775621555a08ddb282b53e40be03516c9d28ce1dec380",
+      "base_tsv_sha256": "4fc0f240549cd78f05b967dc4d93db14c25ee4fddb610e8e8ddef369d026928b",
+      "review_pages": [
+        {
+          "page": 83,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/review_083.png",
+            "sha256": "02b028095c9b23b5bf428b6c5af9d3c72779187e6cdc486b7f3e906c9f3dae24"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/overlay_083.png",
+            "sha256": "da1c459be8c70f4127b6901de676330d21ca9f8f500b81fd04e56736d8f9eaa1"
+          }
+        },
+        {
+          "page": 134,
+          "raw": 98.21994,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/review_134.png",
+            "sha256": "ba891764a8f169f19e1e73c96d03f55d47d8e8091e95a27fec1f5f78d8a06922"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/overlay_134.png",
+            "sha256": "719c9458257f961d7b69e511ecc354d53acdefbb1f46a8b2d2a94af52a0132f3"
+          }
+        },
+        {
+          "page": 175,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/review_175.png",
+            "sha256": "4a6ed0e8a855e734d25bea6323c0b42e46b9b6f4729f4d078afd4d87f02c1b69"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/overlay_175.png",
+            "sha256": "336a562fdf8d47f63c515c83e2cb88611c554814a369182c0320b98b8db69b38"
+          }
+        },
+        {
+          "page": 230,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/review_230.png",
+            "sha256": "d508a836fe1cb430b21d00c0b4da596f07cf2c2b3f04a72596b6fa86f2d262d3"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/native/overlay_230.png",
+            "sha256": "4db55f2cce76e9a1debdf74a32093090a7c61c5138f7ad9b908c6d8026f6ca3a"
+          }
+        }
+      ],
+      "input": "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+      "reference_pdf": "mydocs/pr/assets/issue7445/education-curriculum-map/current-source-hancom2020-print.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        134
+      ]
+    },
+    {
+      "issue": 7741,
+      "document": "rowbreak-hwpx",
+      "backend": "wasm",
+      "pages": 18,
+      "input_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf_sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": {
+        "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
+        "rhwp_bg.wasm": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f"
+      },
+      "minimum_base": "93.40205",
+      "minimum_candidate": "98.361",
+      "exact100_pages": 6,
+      "below_98": [],
+      "declines": [
+        {
+          "page": 17,
+          "base": "98.94356",
+          "head": "98.94264",
+          "decline_pp": "0.00092"
+        }
+      ],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/base-silhouette.tsv",
+      "candidate_tsv_sha256": "a4dcf6074f473560e2ad9bb446a823e39d5ad5d3d47829d254c464cd994ca046",
+      "base_tsv_sha256": "51725e647524f5206e3fdd28dbe89cd2a79badafb319f9d8606100166cef4832",
+      "review_pages": [
+        {
+          "page": 5,
+          "raw": 99.99228,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/review_005.png",
+            "sha256": "7a210a841e26d83cefa47200b0f168b4f4325422150847211248100163beb229"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/overlay_005.png",
+            "sha256": "ef866147785e89aec79cb9fcdb484d45f4898c9852ebfef701cdf45575201a8b"
+          }
+        },
+        {
+          "page": 11,
+          "raw": 99.94357,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/review_011.png",
+            "sha256": "935779fe12feea010eb03dec2b96f93473f254729607a7d29f2e406b80a63485"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/overlay_011.png",
+            "sha256": "2f2c982c7541a498d3591228ecab70dbfed210dd68c89715ecf7a6279421fcda"
+          }
+        },
+        {
+          "page": 12,
+          "raw": 99.92345,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/review_012.png",
+            "sha256": "77bbfdf7826eec48fb4f95878229e4c415547adc1629650c4e04a549a3047d06"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/overlay_012.png",
+            "sha256": "8ecfd3774ebe9c338e2e4bfc92487c4fb2bfe162343ba457c8415239c2d88492"
+          }
+        },
+        {
+          "page": 16,
+          "raw": 98.361,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/review_016.png",
+            "sha256": "232cd6460306aade1e6d881dc8785cc567bcbd60efb890a392c51fa51e3f8bd0"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/rowbreak-hwpx/wasm/overlay_016.png",
+            "sha256": "10abef32da6e286640017e65e9b14312f6fc3aa6f0f8cd49935510f4dcc096db"
+          }
+        }
+      ],
+      "input": "samples/rowbreak-problem-pages.hwpx",
+      "reference_pdf": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        16
+      ]
+    },
+    {
+      "issue": 7742,
+      "document": "cyber-6795",
+      "backend": "wasm",
+      "pages": 45,
+      "input_sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+      "pdf_sha256": "88f7a53b08c93f72fb9a7f1af45f5e04dd345f41ed6f594d6ee380732d4b04f6",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": {
+        "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
+        "rhwp_bg.wasm": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f"
+      },
+      "minimum_base": "90.7083",
+      "minimum_candidate": "98.54594",
+      "exact100_pages": 7,
+      "below_98": [],
+      "declines": [
+        {
+          "page": 29,
+          "base": "98.88893",
+          "head": "98.54594",
+          "decline_pp": "0.34299"
+        }
+      ],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/base-silhouette.tsv",
+      "candidate_tsv_sha256": "4faa80c5b9290fb36c8782e2735254b7f98a75e8735129edf48f0ef6aec9dea9",
+      "base_tsv_sha256": "c695db7a04fede00c15fd9e5bd205f556d3e44902cc38ee1ff917221376b2a55",
+      "review_pages": [
+        {
+          "page": 1,
+          "raw": 99.67869,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/review_001.png",
+            "sha256": "3c153938a6374546de0cd795bfad5b20c5215f98717a64df76032997bbeb4e22"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/overlay_001.png",
+            "sha256": "27cdc1c009839fc7d85eca130198d2509717bc5a8441213f5da0a6d6d834eb3a"
+          }
+        },
+        {
+          "page": 10,
+          "raw": 98.95071,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/review_010.png",
+            "sha256": "bd78e64d0a9419696f373e2766c0742f49cbfc4c368d1fb89c7fed6d2cc856f6"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/overlay_010.png",
+            "sha256": "8f758685cee351f48621487633f66d2a1514295032721bbfc08d795d1628d44e"
+          }
+        },
+        {
+          "page": 28,
+          "raw": 99.76866,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/review_028.png",
+            "sha256": "1e1ad38d1b533934a2628170c02648879d18e736bd3e715c3dfaa97656594ae6"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/overlay_028.png",
+            "sha256": "a4b2c584ed0bd839c1a2532e016b4b9247fc9e9b947526286af95770c8d9f327"
+          }
+        },
+        {
+          "page": 29,
+          "raw": 98.54594,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/review_029.png",
+            "sha256": "f5f88edf5f6f2b16a6314670fc0b84e34ab3d3c512a39d4ff8bc27941274968f"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/cyber-6795/wasm/overlay_029.png",
+            "sha256": "a1e7bc595cece010136858f622919d0909a785a17bf288d7bba0b29f2383ac60"
+          }
+        }
+      ],
+      "input": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "reference_pdf": "pdf/issue7742/cyber-university-application-hancom2020-print.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        29
+      ]
+    },
+    {
+      "issue": 7739,
+      "document": "chemical-6782",
+      "backend": "wasm",
+      "pages": 103,
+      "input_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": {
+        "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
+        "rhwp_bg.wasm": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f"
+      },
+      "minimum_base": "89.72682",
+      "minimum_candidate": "98.79775",
+      "exact100_pages": 65,
+      "below_98": [],
+      "declines": [
+        {
+          "page": 60,
+          "base": "99.981",
+          "head": "99.98091",
+          "decline_pp": "0.00009"
+        },
+        {
+          "page": 66,
+          "base": "99.99845",
+          "head": "99.99844",
+          "decline_pp": "0.00001"
+        },
+        {
+          "page": 72,
+          "base": "99.89212",
+          "head": "99.89211",
+          "decline_pp": "0.00001"
+        },
+        {
+          "page": 91,
+          "base": "99.70916",
+          "head": "99.70913",
+          "decline_pp": "0.00003"
+        }
+      ],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/base-silhouette.tsv",
+      "candidate_tsv_sha256": "9fc9abf4eaac7cff0208b23d9ab4e81d2567ac14ee20856dc29a9be42428d1a9",
+      "base_tsv_sha256": "8513186a198937503f64011b38d2cdc718523565e8eff219cf4213eee2af2c14",
+      "review_pages": [
+        {
+          "page": 16,
+          "raw": 99.99781,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/review_016.png",
+            "sha256": "4db84494f433eb7f628ebb9f4acc5328d92be812769dcaf40c65b6c09960a056"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/overlay_016.png",
+            "sha256": "b282da381fe874919bd4109f4b17239981f964422723cd34c3a1ef9c01a1b222"
+          }
+        },
+        {
+          "page": 64,
+          "raw": 99.70377,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/review_064.png",
+            "sha256": "4f3d6fbd968adeb2b13835e2ccf591529563814a2fdc477c88b1dccfc2878f5c"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/overlay_064.png",
+            "sha256": "78aa266690e9ac73eae7ec8ed1a65a98b904ed44c584ef77c21f3dd3ea013f9d"
+          }
+        },
+        {
+          "page": 88,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/review_088.png",
+            "sha256": "5cfbfb36532f91d625574731c563b1a82d881c14492392fbdb3a590c17dba092"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/chemical-6782/wasm/overlay_088.png",
+            "sha256": "8670ec85f44aea48a5e3f8cdfd89f5e1ba5c4527df280e0143e0261f473ebf14"
+          }
+        }
+      ],
+      "input": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "reference_pdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        65
+      ]
+    },
+    {
+      "issue": 7743,
+      "document": "curriculum-2287",
+      "backend": "wasm",
+      "pages": 415,
+      "input_sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "pdf_sha256": "82fe8eefecbf3ad5176549976a8cd486ac0bb9c113e7ac34510a69ee6ccbf17f",
+      "source_patch_sha256": "dc050bac48ff4f922619be186d1d93a51f00b47972ef33780b799181b44bf1e7",
+      "actual_executable_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+      "wasm_package": {
+        "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
+        "rhwp_bg.wasm": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f"
+      },
+      "minimum_base": "68.57401",
+      "minimum_candidate": "98.18712",
+      "exact100_pages": 374,
+      "below_98": [],
+      "declines": [],
+      "declines_over_2pp": [],
+      "candidate_tsv": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/silhouette.tsv",
+      "base_tsv": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/base-silhouette.tsv",
+      "candidate_tsv_sha256": "ffc9de50b3f68d15c923bebc781230f62e4b353606e625419e9ace063955c280",
+      "base_tsv_sha256": "19f56525f4f51450b9541b1910ab349a5207ef1448174692e53171fc4ae42e5c",
+      "review_pages": [
+        {
+          "page": 83,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/review_083.png",
+            "sha256": "ec4d3c7e5359b9b11c5882b796b4b4767796b368d59356281a9cd193b299ce97"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/overlay_083.png",
+            "sha256": "68fe2960855025d2f08a9d3150a89d7057f82548fdbd150c10b1053a1a73060a"
+          }
+        },
+        {
+          "page": 134,
+          "raw": 98.18712,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/review_134.png",
+            "sha256": "c68c408e4a4ad59d034d93b8c0b77e0105efc760df149ed6440df11b8ff193b1"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/overlay_134.png",
+            "sha256": "6133ad9900ad6456c012d7dbf5da0bcef3179c8ff5d26c853e95a5612427b6f1"
+          }
+        },
+        {
+          "page": 175,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/review_175.png",
+            "sha256": "591937aad30d49ba08340632608bcffc799e46016ad3d16e396f1cd88293b67e"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/overlay_175.png",
+            "sha256": "f836ea469371eccf678ede771560dbadc85205d8cffd2cd54cc5768501282048"
+          }
+        },
+        {
+          "page": 230,
+          "raw": 100.0,
+          "review": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/review_230.png",
+            "sha256": "fadd115e7c160fb200340e71fc574a61523ea30f908c5d2d1ef73d00ea329821"
+          },
+          "overlay": {
+            "file": "mydocs/pr/assets/issues7739_7743_20261119/curriculum-2287/wasm/overlay_230.png",
+            "sha256": "66985186c360cc2e811c7ea8a26645e32fe6b1d1346229d0cd7b26e459a32755"
+          }
+        }
+      ],
+      "input": "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+      "reference_pdf": "mydocs/pr/assets/issue7445/education-curriculum-map/current-source-hancom2020-print.pdf",
+      "source_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+      "fixed_base_commit": "9f605a0d0aa2410754ec1470078d831a0c09688f",
+      "dpi": 96,
+      "profile": "print",
+      "compat": "2022",
+      "radius_px": 2,
+      "pdf_rasterizer": "pdfium_smooth_rgb_exact_dpi_v2",
+      "candidate_minimum_pages": [
+        134
+      ]
+    }
+  ]
+}
