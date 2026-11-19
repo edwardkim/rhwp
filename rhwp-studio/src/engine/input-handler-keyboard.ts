@@ -21,6 +21,7 @@ import type { DocumentPosition, CursorRect, CellBbox, CellPathLike } from '@/cor
 import type { WasmBridge } from '@/core/wasm-bridge';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { inlineOfficeClipboardImages, liftImagesToBlockLevel, needsRtfImageInlining } from './office-clipboard-images';
+import { unsupportedHwpJsonControls } from './hwpjson-paste-guard';
 import { sanitizeOfficeHtmlForCore } from './office-html-sanitize';
 import { scrollByPageStep, type PageScrollDirection } from '@/view/page-scroll';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
@@ -2153,6 +2154,13 @@ export function extractHwpJsonModel(html: string): string | null {
  * 호출한 쪽이 종전 HTML 경로로 되돌아가게 한다.
  */
 function pasteHwpJsonModel(this: any, model: string, hasSelection: boolean): boolean {
+  // 코어가 모르는 제어문자(누름틀 등)가 있으면 코어를 부르지 않는다 — 실패가 명령 오류
+  // 경계를 거치는 동안 뒤이은 HTML 붙여넣기까지 거절돼 아무것도 붙지 않던 것.
+  const unsupported = unsupportedHwpJsonControls(model);
+  if (unsupported === null || unsupported.length > 0) {
+    console.debug('[paste] 문서모델에 코어가 모르는 개체가 있어 HTML 경로로:', unsupported ?? 'JSON 아님');
+    return false;
+  }
   let ok = false;
   try {
     this.executeOperation({
