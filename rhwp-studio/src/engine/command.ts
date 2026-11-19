@@ -357,7 +357,7 @@ function cellPathJson(pos: DocumentPosition): string {
 
 /** cellPath 의 최내곽(마지막) 엔트리의 cellParaIndex 를 지정 값으로 바꾼 pathJson.
  *  중첩 셀의 문단별 ByPath 호출(삭제 undo 저장과 문자 서식 적용/undo)에 쓴다. */
-function cellPathJsonForPara(pos: DocumentPosition, cellParaIndex: number): string {
+export function cellPathJsonForPara(pos: DocumentPosition, cellParaIndex: number): string {
   const path = cellPathForEdit(pos);
   path[path.length - 1].cellParaIndex = cellParaIndex;
   return JSON.stringify(path);
