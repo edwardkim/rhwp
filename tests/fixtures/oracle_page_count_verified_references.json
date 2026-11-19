@@ -46,6 +46,42 @@
       "pages": 1,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/issues7733_7738_20261117/input-audit.json"
+    },
+    {
+      "sample": "samples/rowbreak-problem-pages.hwpx",
+      "source_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "pdf_sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "pages": 18,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
+    },
+    {
+      "sample": "samples/issue6795/1341000-201100013-cyber-university-application.hwp",
+      "source_sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+      "pdf": "pdf/issue7742/cyber-university-application-hancom2020-print.pdf",
+      "pdf_sha256": "88f7a53b08c93f72fb9a7f1af45f5e04dd345f41ed6f594d6ee380732d4b04f6",
+      "pages": 45,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
+    },
+    {
+      "sample": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "source_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "pdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "pages": 103,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+      "source_sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "pdf": "mydocs/pr/assets/issue7445/education-curriculum-map/current-source-hancom2020-print.pdf",
+      "pdf_sha256": "82fe8eefecbf3ad5176549976a8cd486ac0bb9c113e7ac34510a69ee6ccbf17f",
+      "pages": 415,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "job_id": "01ca1569-65d9-4c19-8574-f8317efe6bb7",
+  "terminal": true,
+  "status": "succeeded",
+  "phase": "completed",
+  "engine": "2020",
+  "elapsed_seconds": 67,
+  "output_bytes": 703296,
+  "exit": 0,
+  "result": {
+    "hancom_version": "11.0.0.9136",
+    "pdf_page_count": 45
+  },
+  "input_sha256": "3202819ec9712c49b189ecb0e1b4a2d46aba37d01e1654c6917438e8134f42d8",
+  "pdf_sha256": "88f7a53b08c93f72fb9a7f1af45f5e04dd345f41ed6f594d6ee380732d4b04f6",
+  "method": "desktop_hancom_print_0_1up"
+}
