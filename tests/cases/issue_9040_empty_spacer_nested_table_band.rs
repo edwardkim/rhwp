@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9040] 나뉜 칸의 빈 문단 뒤 자리차지 중첩 표 띠를 한 번만 세고 표를 앞 흐름 뒤에 둔다.
-//! 주석 갱신: 2026-11-13 12:28 KST (새 파일)
+//! 주석 갱신: 2026-11-19 22:13 KST (새 파일)
 //!
 //! 입력: 공개 정책연구용역과제 신청서(문화체육관광부, HWP, 10쪽) `samples/issue9040/1371000-policy-research-application.hwp`.
 //! 기준: 한컴 engine 2020 Print PDF `pdf/issue9040/1371000-policy-research-application-2020.pdf`(10쪽).
@@ -12,10 +12,11 @@
 //! - 관계형: 9쪽 조직도 표는 칸 조각 안에 있고 앞 빈 줄(p41) 아래에서 시작한다. 9쪽은 「2. 유사 용역실적」과
 //!   「창의도시 정책」 행까지, 10쪽은 「Pension Policies」 행부터 담는다.
 //!
-//! 측정(2026-11-13, 이 파일과 같은 커밋의 코드, base = upstream/devel 41c889cfd8,
+//! 측정(2026-11-19, 이 파일과 같은 커밋의 코드, base = upstream/devel eb9311d9d6,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
-//! - Native: 10쪽 / 10쪽, 9쪽 99.83 · 10쪽 99.73(base 21.65 · 27.04, base 11쪽), 최저 91.33(2쪽)
+//! - Native: 10쪽 / 10쪽, 9쪽 99.85 · 10쪽 99.72, 최저 92.48(2쪽).
+//!   수정 전(2026-11-13, devel 41c889cfd8)은 11쪽이고 9쪽 21.65 · 10쪽 27.04 였다. base eb9311d9d6 도 11쪽이다
 //! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 10쪽 / 10쪽, 9쪽 99.84 · 10쪽 99.76, 최저 91.92(2쪽)
 //! - 증거: `mydocs/pr/assets/issue_9040/`(native·wasm TSV, review·overlay PNG)
 #![cfg(not(target_arch = "wasm32"))]
