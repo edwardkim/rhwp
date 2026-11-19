@@ -221,7 +221,9 @@ fn horizontal_pen(
     let alignment = para_style.alignment;
     let horizontal_pen = match alignment {
         crate::model::style::Alignment::Center => {
-            left + (available - leading - width) / 2.0 + leading
+            // 줄보다 넓은 표는 줄의 왼쪽 펜에서 시작한다. 가운데 정렬은
+            // 실제로 남는 공간만 나누므로 표의 바깥 왼쪽 여백도 보존된다.
+            left + (available - leading - width).max(0.0) / 2.0 + leading
         }
         crate::model::style::Alignment::Right => left + available - width,
         _ => left + leading,
