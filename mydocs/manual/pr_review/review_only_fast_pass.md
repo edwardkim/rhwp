@@ -58,6 +58,11 @@ contributor code PR의 뒤에 review 문서·오늘할일·허용된 신규 기�
 Update branch, merge, rebase를 수행하지 않는다. 따라서 직전 green PR head 자체가 review-only commit이어도,
 그 commit의 full CI가 성공했고 그 뒤에 허용된 기록만 추가됐다면 candidate가 될 수 있다.
 
+증적이 300개를 넘는 커밋의 변경 파일은 [GitHub 커밋 API](https://docs.github.com/en/rest/commits/commits#get-a-commit)로
+모든 페이지를 확인한다. 목록 누락·중복·조회 실패 또는 API 한도인 3,000개에 도달하면 전체 검사를
+실행한다. WASM API 변경은 초기 코드 head에서 전체 검사를 요구하며, 이후 허용된 문서만 바뀌었을 때
+같은 PR의 녹색 후보를 아래 조건대로 재사용할 수 있다.
+
 다음 조건을 모두 만족해야 한다.
 
 1. candidate 이후 current head까지의 review-only commit은 single-parent다. 단, current base 병합 bridge는

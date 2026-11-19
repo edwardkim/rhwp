@@ -155,7 +155,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         for name, workflow_path in WORKFLOWS.items():
             with self.subTest(workflow=name):
                 workflow = workflow_path.read_text(encoding="utf-8")
-                direct_bridge_index = workflow.index("const latestCommitSha = commits.at(-1).sha;")
+                direct_bridge_index = workflow.index("const latestCommit = commits.at(-1);")
                 candidate_scan_index = workflow.index("const reviewOnlyCandidates = [];")
                 self.assertLess(direct_bridge_index, candidate_scan_index)
                 self.assertIn("function isCiExecutionPath(filename)", workflow)
@@ -238,7 +238,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             identity_base_sha=prior_base_sha,
         )
 
-        output = self._run_render_diff_preflight(
+        output = self._run_main_preflight(
             files=files,
             commits=commits,
             runs=runs,
@@ -275,7 +275,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             identity_base_sha="a" * 40,
         )
 
-        output = self._run_render_diff_preflight(
+        output = self._run_main_preflight(
             files=[
                 {"filename": "src/renderer/layout.rs", "status": "modified"},
                 {"filename": "mydocs/orders/20260827.md", "status": "modified"},
@@ -399,7 +399,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
 
         for name, runs, jobs, reason in matrix:
             with self.subTest(case=name):
-                output = self._run_render_diff_preflight(
+                output = self._run_main_preflight(
                     files=files,
                     commits=commits,
                     runs=runs,
@@ -411,7 +411,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 self.assertEqual(output["reason"], reason)
 
         second_merge = "3" * 40
-        multiple_merge_output = self._run_render_diff_preflight(
+        multiple_merge_output = self._run_main_preflight(
             files=files,
             commits=[
                 commits[0],
@@ -819,15 +819,26 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             const listCommits = Symbol('pulls.listCommits');
             const listWorkflowRuns = Symbol('actions.listWorkflowRuns');
             const commits = new Map(fixture.commits.map((commit) => [commit.sha, commit]));
+            const getCommit = async ({ ref }) => ({ data: commits.get(ref) });
             const github = {
               rest: {
                 pulls: { listFiles, listCommits },
                 repos: {
-                  getCommit: async ({ ref }) => ({ data: commits.get(ref) }),
+                  getCommit,
                 },
                 actions: { listWorkflowRuns },
               },
-              paginate: async (endpoint) => {
+              paginate: async (endpoint, parameters, mapPage) => {
+                if (endpoint === getCommit) {
+                  const detail = commits.get(parameters.ref);
+                  if (parameters.per_page !== 100) throw new Error('unexpected per_page');
+                  let result = [];
+                  for (let index = 0; index < detail.files.length; index += parameters.per_page) {
+                    const files = detail.files.slice(index, index + parameters.per_page);
+                    result = result.concat(mapPage({ data: { ...detail, files } }));
+                  }
+                  return result;
+                }
                 if (endpoint === listFiles) return fixture.files;
                 if (endpoint === listCommits) return fixture.commits;
                 if (endpoint === listWorkflowRuns) return fixture.runs;
@@ -913,7 +924,74 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         }
         return runs, jobs
 
-    def _run_render_diff_preflight(
+    def test_9197_large_evidence_commit_reuses_its_exact_green_head(self) -> None:
+        base, code, evidence, tail = ("b" * 40, "c" * 40, "d" * 40, "e" * 40)
+        code_file = {"filename": "src/wasm_api.rs", "status": "modified"}
+        review_file = {"filename": "mydocs/orders/20261119.md", "status": "modified"}
+        assets = [
+            {"filename": f"mydocs/pr/assets/review/{index}.png", "status": "added"}
+            for index in range(315)
+        ]
+
+        for name in WORKFLOWS:
+            runs, jobs = self._render_diff_green_fixture(evidence, identity_base_sha=base)
+            runs[0]["path"] = f".github/workflows/{name}.yml"
+            checks = []
+            if name == "ci":
+                jobs["101"][0]["name"] = "Build & Test"
+            if name == "codeql":
+                jobs["101"] = [
+                    {"name": f"Analyze ({language})", "status": "completed", "conclusion": "success"}
+                    for language in ("javascript-typescript", "python", "rust", "actions")
+                ]
+                checks = [{
+                    "name": "CodeQL",
+                    "app": {"slug": "github-advanced-security"},
+                    "head_sha": evidence,
+                    "status": "completed",
+                    "conclusion": "success",
+                    "started_at": "2026-08-20T12:02:00Z",
+                }]
+
+            for variant in ("315-assets", "3000-api-cap", "last-page-code", "code-rename", "no-green"):
+                with self.subTest(workflow=name, case=variant):
+                    assets_in_candidate = assets
+                    tail_files = [review_file]
+                    if variant == "3000-api-cap":
+                        assets_in_candidate = [
+                            {"filename": f"mydocs/pr/assets/review/{index}.png", "status": "added"}
+                            for index in range(3000)
+                        ]
+                    elif variant == "last-page-code":
+                        tail_files = [*assets, code_file]
+                    elif variant == "code-rename":
+                        tail_files = [*assets, {
+                            "filename": "mydocs/pr/assets/review/renamed.md",
+                            "previous_filename": "src/wasm_api.rs",
+                            "status": "renamed",
+                        }]
+                    commits = [
+                        {"sha": code, "parents": [{"sha": base}], "files": [code_file]},
+                        {"sha": evidence, "parents": [{"sha": code}], "files": assets_in_candidate},
+                        {"sha": tail, "parents": [{"sha": evidence}], "files": tail_files},
+                    ]
+                    output = self._run_main_preflight(
+                        files=[code_file, *assets, review_file],
+                        commits=commits,
+                        runs=[] if variant == "no-green" else runs,
+                        jobs=jobs,
+                        base_sha=base,
+                        head_sha=tail,
+                        workflow_name=name,
+                        checks=checks,
+                    )
+                    if variant == "315-assets":
+                        self.assertEqual(output["fast_pass"], "true", output)
+                        self.assertEqual(output["candidate_sha"], evidence)
+                    else:
+                        self.assertEqual(output["fast_pass"], "false", output)
+
+    def _run_main_preflight(
         self,
         *,
         files: list[dict[str, object]],
@@ -922,8 +1000,10 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         jobs: dict[str, list[dict[str, object]]],
         base_sha: str,
         head_sha: str,
+        workflow_name: str = "render-diff",
+        checks: list[dict[str, object]] | None = None,
     ) -> dict[str, str]:
-        workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
+        workflow = WORKFLOWS[workflow_name].read_text(encoding="utf-8")
         script = workflow.split("script: |\n", maxsplit=1)[1].split(
             "\n      # 기준선 병합을 fast-pass bridge로",
             maxsplit=1,
@@ -936,6 +1016,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             "commits": commits,
             "runs": runs,
             "jobs": jobs,
+            "checks": checks or [],
         }
         harness = textwrap.dedent(
             """
@@ -945,13 +1026,15 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             const listCommits = Symbol('pulls.listCommits');
             const listWorkflowRuns = Symbol('actions.listWorkflowRuns');
             const listJobsForWorkflowRun = Symbol('actions.listJobsForWorkflowRun');
+            const listChecksForRef = Symbol('checks.listForRef');
             const listCommitStatusesForRef = Symbol('repos.listCommitStatusesForRef');
             const commits = new Map(fixture.commits.map((commit) => [commit.sha, commit]));
+            const getCommit = async ({ ref }) => ({ data: commits.get(ref) });
             const github = {
               rest: {
                 pulls: { listFiles, listCommits },
                 repos: {
-                  getCommit: async ({ ref }) => ({ data: commits.get(ref) }),
+                  getCommit,
                   listCommitStatusesForRef,
                 },
                 actions: {
@@ -959,8 +1042,19 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                   listJobsForWorkflowRun,
                   getWorkflowRun: async () => { throw new Error('unexpected controller lookup'); },
                 },
+                checks: { listForRef: listChecksForRef },
               },
-              paginate: async (endpoint, parameters) => {
+              paginate: async (endpoint, parameters, mapPage) => {
+                if (endpoint === getCommit) {
+                  const detail = commits.get(parameters.ref);
+                  if (parameters.per_page !== 100) throw new Error('unexpected per_page');
+                  let result = [];
+                  for (let index = 0; index < detail.files.length; index += parameters.per_page) {
+                    const files = detail.files.slice(index, index + parameters.per_page);
+                    result = result.concat(mapPage({ data: { ...detail, files } }));
+                  }
+                  return result;
+                }
                 if (endpoint === listFiles) return fixture.files;
                 if (endpoint === listCommits) return fixture.commits;
                 if (endpoint === listWorkflowRuns) {
@@ -970,6 +1064,9 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 }
                 if (endpoint === listJobsForWorkflowRun) {
                   return fixture.jobs[String(parameters.run_id)] || [];
+                }
+                if (endpoint === listChecksForRef) {
+                  return fixture.checks.filter((check) => check.head_sha === parameters.ref);
                 }
                 if (endpoint === listCommitStatusesForRef) return [];
                 throw new Error('unexpected paginate endpoint');

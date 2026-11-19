@@ -338,6 +338,10 @@ function isReviewReferencePath(filename) {
 
 function isAllowedReviewFile(file) {
   const normalized = normalizeFile(file);
+  if (normalized.previous_filename && (
+    !normalized.previous_filename.startsWith('mydocs/')
+    || RENDER_CONTRACT_DOC_PATHS.has(normalized.previous_filename)
+  )) return false;
   if (normalized.filename === 'AGENTS.md' || normalized.filename === 'CLAUDE.md') {
     return !normalized.previous_filename
       && (normalized.status === 'added' || normalized.status === 'modified');
@@ -400,7 +404,10 @@ function selectReviewOnlyCandidate(commits, currentBaseSha) {
       expectedSha = sourceParentSha;
       continue;
     }
-    if (files.length === 0 || files.length >= 300) {
+    const filenames = files.map((file) => normalizeFile(file).filename);
+    if (files.length === 0 || files.length >= 3000
+      || filenames.some((filename) => !filename)
+      || new Set(filenames).size !== filenames.length) {
       return { eligible: false, reason: `unusable-file-list:${sha}`, candidateSha: '' };
     }
     if (files.every(isAllowedReviewFile)) {

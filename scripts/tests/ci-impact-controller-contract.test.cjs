@@ -69,7 +69,7 @@ async function executeWorkerTail(config, change = () => {}) {
     script.push(line.slice(12));
   }
   const outputs = {}, calls = [], errors = [];
-  const endpoints = Object.fromEntries(['files', 'commits', 'runs', 'jobs'].map(name => [name, Symbol(name)]));
+  const endpoints = Object.fromEntries(['files', 'commits', 'commitDetail', 'runs', 'jobs'].map(name => [name, Symbol(name)]));
   const pr = { ...pull(), changed_files: fixture.changedFiles,
     head: { ...pull().head, sha: TAIL_DOC, repo: { id: 20 } } };
   let failure;
@@ -80,9 +80,19 @@ async function executeWorkerTail(config, change = () => {}) {
       core: { setOutput: (key, value) => { outputs[key] = String(value); },
         info() {}, warning: message => errors.push(message) },
       github: { rest: { pulls: { listFiles: endpoints.files, listCommits: endpoints.commits },
-        repos: { getCommit: async ({ ref }) => ({ data: { files: fixture.details[ref] } }) },
+        repos: { getCommit: endpoints.commitDetail },
         actions: { listWorkflowRuns: endpoints.runs, listJobsForWorkflowRun: endpoints.jobs } },
-      paginate: async (endpoint, params) => {
+      paginate: async (endpoint, params, mapPage) => {
+        if (endpoint === endpoints.commitDetail) {
+          assert.equal(params.per_page, 100);
+          const detail = fixture.details[params.ref] || [];
+          let files = [];
+          for (let index = 0; index < detail.length; index += params.per_page) {
+            const page = detail.slice(index, index + params.per_page);
+            files = files.concat(mapPage({ data: { sha: params.ref, files: page } }));
+          }
+          return files;
+        }
         if (endpoint === endpoints.files) return clone(fixture.files);
         if (endpoint === endpoints.commits) return clone(fixture.commits);
         if (endpoint === endpoints.runs) {
@@ -115,6 +125,32 @@ for (const config of workerWorkflows) {
     assert.equal(result.calls.length, 1);
     assert.equal(result.calls[0].run_id, config.runId);
     assert.ok(result.outputs.reason.endsWith(TAIL_CODE));
+  });
+
+  test(`#9197 ${config.workflow}: 315개 증적 뒤에는 그 head의 worker 성공만 재사용`, async () => {
+    const evidenceSha = 'd'.repeat(40);
+    for (const variant of ['315-assets', '3000-cap', 'last-page-code']) {
+      const result = await executeWorkerTail(config, f => {
+        const assets = Array.from({ length: variant === '3000-cap' ? 3000 : 315 },
+          (_, index) => ({ filename: `mydocs/pr/assets/review/${index}.png`, status: 'added' }));
+        f.commits[1].parents = [{ sha: evidenceSha }];
+        f.commits.splice(1, 0, { sha: evidenceSha, parents: [{ sha: TAIL_CODE }] });
+        f.details[evidenceSha] = assets;
+        f.files.push(...assets.slice(0, 315));
+        f.changedFiles = f.files.length;
+        f.runs[0].head_sha = evidenceSha;
+        f.jobs[config.runId][0].head_sha = evidenceSha;
+        if (variant === 'last-page-code') {
+          f.details[TAIL_DOC] = [...assets, modified('src/wasm_api.rs')];
+        }
+      });
+      assert.equal(result.failure, undefined);
+      assert.equal(result.accepted, variant === '315-assets', JSON.stringify(result.outputs));
+      if (variant === '315-assets') {
+        assert.equal(result.calls.length, 1);
+        assert.ok(result.outputs.reason.endsWith(evidenceSha));
+      }
+    }
   });
 
   test(`#9089 ${config.workflow}: worker의 run·attempt·SHA·실행 성공이 모두 필요`, async () => {

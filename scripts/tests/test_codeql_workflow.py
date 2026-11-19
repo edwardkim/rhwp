@@ -406,6 +406,7 @@ const endpoints = {
   listJobsForWorkflowRun: Symbol('listJobsForWorkflowRun'),
   listFiles: Symbol('listFiles'),
   listCommits: Symbol('listCommits'),
+  getCommit: Symbol('getCommit'),
   listForRef: Symbol('listForRef'),
 };
 const commits = {
@@ -430,10 +431,14 @@ const github = {
     },
     checks: { listForRef: endpoints.listForRef },
     repos: {
-      getCommit: async ({ ref }) => ({ data: { sha: ref, ...commits[ref] } }),
+      getCommit: endpoints.getCommit,
     },
   },
-  paginate: async (endpoint, params) => {
+  paginate: async (endpoint, params, mapPage) => {
+    if (endpoint === endpoints.getCommit) {
+      const commit = { sha: params.ref, ...commits[params.ref] };
+      return mapPage({ data: commit });
+    }
     if (endpoint === endpoints.listFiles) {
       return [
         { filename: 'src/lib.rs', status: 'modified' },
@@ -441,7 +446,7 @@ const github = {
       ];
     }
     if (endpoint === endpoints.listCommits) {
-      return [{ sha: 'cccccccccccccccccccccccccccccccccccccccc' }, { sha: 'dddddddddddddddddddddddddddddddddddddddd' }];
+      return Object.keys(commits).sort().map((sha) => ({ sha, parents: commits[sha].parents }));
     }
     if (endpoint === endpoints.listWorkflowRuns) {
       return [{

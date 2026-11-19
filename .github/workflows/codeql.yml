@@ -121,6 +121,12 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
+              if (file.previous_filename && (
+                !file.previous_filename.startsWith('mydocs/')
+                || renderContractPaths.has(file.previous_filename)
+              )) {
+                return false;
+              }
               if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
                 return !file.previous_filename
                   && (file.status === 'added' || file.status === 'modified');
@@ -415,12 +421,12 @@ jobs:
                 return;
               }
 
-              const latestCommitSha = commits.at(-1).sha;
-              const { data: latestCommit } = await github.rest.repos.getCommit({
-                owner,
-                repo,
-                ref: latestCommitSha,
-              });
+              const latestCommit = commits.at(-1);
+              const latestCommitSha = latestCommit.sha;
+              if (latestCommitSha !== pr.head.sha) {
+                setResult(false, 'review-tail-parent-mismatch');
+                return;
+              }
               if (isCurrentBaseUpdateMerge(latestCommit, pr.base.sha)) {
                 if (prFiles.some((file) => isCiExecutionPath(file.filename))) {
                   setResult(false, 'current-base-source-ci-execution-change');
@@ -455,14 +461,10 @@ jobs:
               let expectedSha = pr.head.sha;
 
               for (let index = commits.length - 1; index >= 0; index -= 1) {
-                const sha = commits[index].sha;
-                const { data: commit } = await github.rest.repos.getCommit({
-                  owner,
-                  repo,
-                  ref: sha,
-                });
+                const commit = commits[index];
+                const sha = commit.sha;
                 const parents = commit.parents || [];
-                if (sha !== expectedSha || commit.sha !== sha) {
+                if (sha !== expectedSha) {
                   setResult(false, 'review-tail-parent-mismatch');
                   return;
                 }
@@ -483,10 +485,18 @@ jobs:
                   core.info(`including current-base update merge bridge ${sha}`);
                   continue;
                 }
-                const files = commit.files || [];
-
-                // The commit endpoint may truncate very large file lists. Fall back to full CodeQL.
-                if (files.length === 0 || files.length >= 300) {
+                // 300개를 넘는 증적 커밋도 끝까지 읽는다. API 상한에서는 전체 CI로 돌아간다.
+                const files = await github.paginate(github.rest.repos.getCommit, {
+                  owner, repo, ref: sha, per_page: 100,
+                }, ({ data }) => {
+                  if (data.sha !== sha || !Array.isArray(data.files) || !data.files.length) {
+                    throw new Error(`unusable-commit-file-page:${sha}`);
+                  }
+                  return data.files;
+                });
+                if (files.length === 0 || files.length >= 3000
+                  || files.some((file) => !file?.filename)
+                  || new Set(files.map((file) => file.filename)).size !== files.length) {
                   setResult(false, `unusable-file-list:${sha}`);
                   return;
                 }

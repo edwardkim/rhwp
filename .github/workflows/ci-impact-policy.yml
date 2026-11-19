@@ -309,8 +309,13 @@ jobs:
                       per_page: 100,
                     });
                     for await (const response of pages) {
-                      if (!commit) commit = response.data;
-                      commitFiles.push(...(response.data.files || []));
+                      const page = response.data;
+                      if (page.sha !== summary.sha || !Array.isArray(page.files) || !page.files.length) {
+                        throw new Error(`unusable-commit-file-page:${summary.sha}`);
+                      }
+                      if (!commit) commit = page;
+                      commitFiles.push(...page.files);
+                      if (commitFiles.length >= 3000) break;
                     }
                     if (!commit) throw new Error(`Commit metadata unavailable: ${summary.sha}`);
                     commits.push({
