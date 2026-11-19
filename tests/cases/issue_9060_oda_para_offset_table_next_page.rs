@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형·고정형.
-//! 주석 갱신: 2026-11-19 08:07:10 KST (Asia/Seoul).
+//! 주석 갱신: 2026-11-19 18:07:43 KST (Asia/Seoul).
 //! 직전 파일 변경: 2c5461ff240433ec1c5788e9eed4705f52d3dbfd 2026-11-19T07:36:37+09:00.
 //!
 //! 입력: `samples/issue9060/oda-1092000-201600017.hwp`(정책연구관리시스템 PRISM 공개 보고서,
@@ -34,6 +34,10 @@
 //! (2) 문단 80(빈 호스트 표)의 호스트 글줄·빈 문단 81 이 150쪽에 남고, 152쪽 문단 82 가 표 끝
 //! 조각 + 원본 바깥 아래 여백에서 시작한다(수정 전 81 이 152쪽에서 9.5px 를 점유).
 //! (3) 79쪽 <표 3-23>(글자처럼 취급, 쪽을 채움)의 캡션 위끝 = 본문 위끝 + 저장 첫 줄 vpos(수정 전 0).
+//! (4) 70쪽 <표 3-21>은 저장 줄보다 넓어도 바깥 왼쪽 여백을 유지한다. 위의 좁은 표는
+//! 남는 폭의 절반을 사용한다. 같은 독립 Print와 보정 코드 b0ce128792의 Native 99.92658%,
+//! fresh WASM 99.92923%를 96 DPI raw로 실측했다. 전 159쪽 최저는 각각 96.89%, 96.93%다.
+//! 70쪽 판독에서 아래 표의 제목과 왼쪽 괘선이 같은 위치로 돌아왔음을 확인했다.
 //! 실물의 절대 px 좌표를 고정하지 않으며 회귀 실행에 설치된 OTF·시스템 글꼴을 요구하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -41,7 +45,9 @@ use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
-use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::model::style::Alignment;
+use rhwp::renderer::hwpunit_to_px;
+use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue9060/oda-1092000-201600017.hwp";
 const SECTION: usize = 2;
@@ -58,11 +64,11 @@ fn document() -> DocumentCore {
 
 #[derive(Default)]
 struct Page {
-    body: Option<(f64, f64)>,
+    body: Option<BoundingBox>,
     /// 표 밖 본문 글줄(문단, 위끝, 아래끝). 표 캡션 글줄도 여기에 든다.
     lines: Vec<(usize, f64, f64)>,
-    /// 최상위 표(문단, 위끝, 아래끝).
-    tables: Vec<(usize, f64, f64)>,
+    /// 최상위 표(문단, 배치 영역).
+    tables: Vec<(usize, BoundingBox)>,
 }
 
 impl Page {
@@ -71,13 +77,12 @@ impl Page {
             let mut inside = in_table;
             match &node.node_type {
                 RenderNodeType::Body { .. } if out.body.is_none() => {
-                    out.body = Some((node.bbox.y, node.bbox.y + node.bbox.height));
+                    out.body = Some(node.bbox);
                 }
                 RenderNodeType::Header | RenderNodeType::Footer => return,
                 RenderNodeType::Table(table) => {
                     if let Some(para) = table.para_index.filter(|_| !in_table) {
-                        out.tables
-                            .push((para, node.bbox.y, node.bbox.y + node.bbox.height));
+                        out.tables.push((para, node.bbox));
                     }
                     inside = true;
                 }
@@ -101,11 +106,15 @@ impl Page {
         out
     }
 
+    fn body_vertical_bounds(&self) -> Option<(f64, f64)> {
+        self.body.map(|bbox| (bbox.y, bbox.y + bbox.height))
+    }
+
     fn table(&self, para: usize) -> Option<(f64, f64)> {
         self.tables
             .iter()
-            .filter(|(p, _, _)| *p == para)
-            .map(|(_, top, bottom)| (*top, *bottom))
+            .filter(|(p, _)| *p == para)
+            .map(|(_, bbox)| (bbox.y, bbox.y + bbox.height))
             .reduce(|a, b| (a.0.min(b.0), a.1.max(b.1)))
     }
 
@@ -148,7 +157,7 @@ fn table_opens_next_page_at_body_top_without_paragraph_offset() {
     let (_, previous_bottom) = previous
         .table(PREVIOUS_TABLE_PARA)
         .expect("147쪽에 문단 75 표의 마지막 조각이 있다");
-    let (_, previous_body_bottom) = previous.body.expect("147쪽 본문 영역");
+    let (_, previous_body_bottom) = previous.body_vertical_bounds().expect("147쪽 본문 영역");
     assert!(
         previous.table(TABLE_PARA).is_none(),
         "문단 76 표는 147쪽에 조각을 두지 않는다"
@@ -159,7 +168,7 @@ fn table_opens_next_page_at_body_top_without_paragraph_offset() {
     );
 
     let page = Page::of(&core, TABLE_PAGE);
-    let (body_top, body_bottom) = page.body.expect("148쪽 본문 영역");
+    let (body_top, body_bottom) = page.body_vertical_bounds().expect("148쪽 본문 영역");
     let (top, bottom) = page
         .table(TABLE_PARA)
         .expect("148쪽에 문단 76 표의 첫 조각이 있다");
@@ -249,7 +258,7 @@ fn empty_host_successor_stays_with_the_host_and_next_paragraph_follows_the_table
 
     let host_page = Page::of(&core, 149);
     assert!(host_page.table(HOST).is_none(), "150쪽에는 표 조각이 없다");
-    let (_, body_bottom) = host_page.body.expect("150쪽 본문 영역");
+    let (_, body_bottom) = host_page.body_vertical_bounds().expect("150쪽 본문 영역");
     let host_line = host_page
         .lines
         .iter()
@@ -311,7 +320,7 @@ fn page_filling_inline_table_keeps_its_stored_page_top_margin() {
         "저장 첫 줄은 쪽 위끝에서 앞 간격만큼 아래다"
     );
     let page = Page::of(&core, 78);
-    let (body_top, body_bottom) = page.body.expect("79쪽 본문 영역");
+    let (body_top, body_bottom) = page.body_vertical_bounds().expect("79쪽 본문 영역");
     let (top, bottom) = page.table(TAC_PARA).expect("79쪽에 <표 3-23> 이 있다");
     let caption_top = page
         .lines
@@ -330,4 +339,55 @@ fn page_filling_inline_table_keeps_its_stored_page_top_margin() {
         Page::of(&core, 79).table(TAC_PARA).is_none(),
         "<표 3-23> 은 80쪽으로 이어지지 않는다"
     );
+}
+
+/// <표 3-21>의 바깥 여백을 포함한 폭은 저장 글줄을 넘는다.
+/// 표가 왼쪽 여백을 침범하지 않고 위의 좁은 표는 가운데 정렬을 유지한다.
+#[test]
+fn oversized_centered_inline_table_starts_at_the_stored_line_left() {
+    let core = document();
+    let page = Page::of(&core, 69);
+    let body_left = page.body.expect("70쪽 본문 영역").x;
+    let doc = core.document();
+    let paragraphs = &doc.sections[0].paragraphs;
+    let px = |hu: i32| hwpunit_to_px(hu, 96.0);
+
+    for para_index in [732, 733] {
+        let host = &paragraphs[para_index];
+        assert_eq!(
+            doc.doc_info.para_shapes[usize::from(host.para_shape_id)].alignment,
+            Alignment::Center
+        );
+        let [Control::Table(table)] = host.controls.as_slice() else {
+            panic!("문단 {para_index}에 표 하나가 있다");
+        };
+        assert!(table.common.treat_as_char);
+        let [line] = host.line_segs.as_slice() else {
+            panic!("문단 {para_index}에 저장 글줄 하나가 있다");
+        };
+        let occupied = i32::try_from(table.common.width).expect("표의 원본 폭")
+            + i32::from(table.outer_margin_left)
+            + i32::from(table.outer_margin_right);
+        let spare = line.segment_width - occupied;
+        let centering = if para_index == 732 {
+            assert!(spare > 0, "위 표는 저장 글줄보다 좁다");
+            px(spare) / 2.0
+        } else {
+            assert!(spare < 0, "<표 3-21>은 저장 글줄보다 넓다");
+            0.0
+        };
+        let bbox = page
+            .tables
+            .iter()
+            .find(|(owner, _)| *owner == para_index)
+            .map(|(_, bbox)| bbox)
+            .expect("70쪽의 해당 본문 표");
+        let expected_left =
+            body_left + px(line.column_start + i32::from(table.outer_margin_left)) + centering;
+        assert!(
+            (bbox.x - expected_left).abs() <= px(1),
+            "본문 시작·저장 글줄·바깥 왼쪽 여백에 따른 문단 {para_index} 표 위치: 기대 {expected_left:.3}px, 실제 {:.3}px",
+            bbox.x
+        );
+    }
 }
