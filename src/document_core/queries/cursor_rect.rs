@@ -5059,12 +5059,31 @@ impl DocumentCore {
                 && y <= node.bbox.y + node.bbox.height
         }
         /// 머리말 문단에 바로 든 표(중첩 표, 글상자·도형 안 표 제외)에서 누른 칸.
+        /// 표 캡션 줄을 누르면 캡션 셀(65534)과 그 줄들을 품은 노드다.
         fn find_cell(
             node: &RenderNode,
             x: f64,
             y: f64,
         ) -> Option<(usize, usize, usize, &RenderNode)> {
             for child in &node.children {
+                // 캡션 줄의 글자 런은 셀 문맥 [(표 컨트롤, 65534, 캡션 문단)]을 갖는다.
+                if matches!(child.node_type, RenderNodeType::TextLine(_)) && inside(child, x, y) {
+                    let caption = child.children.iter().find_map(|run| {
+                        let RenderNodeType::TextRun(run) = &run.node_type else {
+                            return None;
+                        };
+                        let ctx = run.cell_context.as_ref()?;
+                        match ctx.path.as_slice() {
+                            [step] if step.cell_index == 65534 => {
+                                Some((ctx.parent_para_index, step.control_index))
+                            }
+                            _ => None,
+                        }
+                    });
+                    if let Some((para, control)) = caption {
+                        return Some((para, control, 65534, node));
+                    }
+                }
                 // 글상자·도형 안 표의 문단 번호는 머리말 문단이 아니라 그 글상자의 문단이다.
                 if matches!(
                     child.node_type,
@@ -5098,6 +5117,8 @@ impl DocumentCore {
         /// 칸의 글자 런(중첩 표 안 제외): (칸 문단, 글자 시작, 글자 위치, 노드).
         fn runs<'a>(
             node: &'a RenderNode,
+            para_index: usize,
+            control_index: usize,
             cell_index: usize,
             out: &mut Vec<(usize, usize, Vec<f64>, &'a RenderNode)>,
         ) {
@@ -5109,12 +5130,17 @@ impl DocumentCore {
                         else {
                             continue;
                         };
-                        if ctx.path.len() == 1 && ctx.path[0].cell_index == cell_index {
-                            let positions = run.replay_positions_for(&run.text).into_owned();
-                            out.push((ctx.path[0].cell_para_index, start, positions, child));
+                        if let [step] = ctx.path.as_slice() {
+                            if ctx.parent_para_index == para_index
+                                && step.control_index == control_index
+                                && step.cell_index == cell_index
+                            {
+                                let positions = run.replay_positions_for(&run.text).into_owned();
+                                out.push((step.cell_para_index, start, positions, child));
+                            }
                         }
                     }
-                    _ => runs(child, cell_index, out),
+                    _ => runs(child, para_index, control_index, cell_index, out),
                 }
             }
         }
@@ -5126,7 +5152,7 @@ impl DocumentCore {
         )?;
         let (hf_para, table_control, cell_index, cell) = find_cell(hf_node, x, y)?;
         let mut found = Vec::new();
-        runs(cell, cell_index, &mut found);
+        runs(cell, hf_para, table_control, cell_index, &mut found);
         // 누른 줄(없으면 가장 가까운 줄)의 런 가운데 x가 가장 가까운 런.
         let line_distance = |node: &RenderNode| {
             if y < node.bbox.y {
