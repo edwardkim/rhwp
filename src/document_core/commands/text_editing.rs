@@ -3629,7 +3629,7 @@ impl DocumentCore {
                     CaptionDirection::Left | CaptionDirection::Right => cap.width,
                     _ => cap.max_width,
                 };
-                Some((w as i32, 0, 0))
+                Some(CellReflowMetrics::new(w as i32, 0, 0, false))
             }
             Control::Shape(shape) => {
                 let tb = super::super::helpers::get_textbox_at(shape, cell_idx)?;
