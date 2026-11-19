@@ -113,3 +113,11 @@ Print 쪽수를 oracle과 렌더 원장에 반영했으며, 교육과정에서 �
 보고되므로 이 문서의 예전 기준 2건을 1건으로 낮춰 래칫을 복원했다.
 [Native review](cyber-6795/native/review_010.png) · [overlay](cyber-6795/native/overlay_010.png) ·
 [WASM review](cyber-6795/wasm/review_010.png) · [overlay](cyber-6795/wasm/overlay_010.png).
+
+## 로컬 회귀와 저장 대조
+
+최소 글꼴 환경의 최종 전체 회귀 13,831건이 통과했고 45건이 건너뛰어졌다. 최초 집중 45건,
+원장 수정 후 집중 2건, Native Skia 라이브러리·placeholder·직접 PDF와 필수 fmt/Clippy/구성
+검사도 통과했다. 교육과정 원본 편집 뒤 HWP와 HWPX를 각각 재저장해 415쪽, 편집 문자열의
+단일 소속과 취소선의 색 속성을 확인했다. [실행 범위 및 종료 영수증](local-validation.json)을
+보존한다.
