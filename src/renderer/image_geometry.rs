@@ -2,10 +2,10 @@
 use super::render_tree::{BoundingBox, ImageNode, ShapeTransform};
 use crate::model::image::Picture;
 
-/// 전체 크기가 저장되지 않은 GIF의 자르기를 이미지 픽셀 영역으로 해소한다.
-/// GIF에는 물리 해상도가 없고, 한컴 Print는 픽셀당 75 HWPUNIT을 사용한다.
-/// 명시된 원본 크기는 우선하며 TIFF·JPEG 등의 별도 좌표계는 변경하지 않는다.
-pub(crate) fn normalize_gif_crop(image: &mut ImageNode) {
+/// 전체 크기가 저장되지 않은 비트맵의 자르기 좌표계를 확정한다.
+/// GIF와 밀도 정보가 없는 BMP의 실제 픽셀 좌표는 픽셀당 75 HWPUNIT을 쓴다.
+/// 명시된 원본 크기와 별도 물리 해상도는 우선한다.
+pub(crate) fn normalize_bitmap_crop(image: &mut ImageNode) {
     if image
         .original_size_hu
         .is_some_and(|(width, height)| width > 0 && height > 0)
@@ -21,7 +21,14 @@ pub(crate) fn normalize_gif_crop(image: &mut ImageNode) {
     let Some(data) = image.data.as_deref() else {
         return;
     };
-    if !data.starts_with(b"GIF87a") && !data.starts_with(b"GIF89a") {
+    let is_gif = data.starts_with(b"GIF87a") || data.starts_with(b"GIF89a");
+    let has_default_bmp_density = data.starts_with(b"BM")
+        && data
+            .get(14..18)
+            .and_then(|bytes| bytes.try_into().ok())
+            .is_some_and(|bytes| u32::from_le_bytes(bytes) >= 40)
+        && data.get(38..46) == Some(&[0; 8]);
+    if !is_gif && !has_default_bmp_density {
         return;
     }
     let Some((width, height)) = super::svg::parse_image_dimensions(data) else {
@@ -36,6 +43,11 @@ pub(crate) fn normalize_gif_crop(image: &mut ImageNode) {
     };
     let width_i = width as i32;
     let height_i = height as i32;
+    // BMP의 창이 기본 픽셀 영역에 담길 때만 해당 좌표계를 확정한다.
+    // 범위를 벗어난 BMP는 저장 단위가 다를 수 있으므로 기존 추론을 사용한다.
+    if has_default_bmp_density && (left < 0 || top < 0 || right > width_i || bottom > height_i) {
+        return;
+    }
     image.crop = Some((
         left.clamp(0, width_i),
         top.clamp(0, height_i),

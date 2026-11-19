@@ -263,7 +263,7 @@ impl RenderNode {
 
     pub fn new(id: NodeId, mut node_type: RenderNodeType, bbox: BoundingBox) -> Self {
         if let RenderNodeType::Image(image) = &mut node_type {
-            super::image_geometry::normalize_gif_crop(image);
+            super::image_geometry::normalize_bitmap_crop(image);
         }
         Self {
             cell_frame_paint: false,

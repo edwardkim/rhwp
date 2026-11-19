@@ -360,7 +360,7 @@ impl PaintOp {
         mut image: ImageNode,
         resolved: Option<ResolvedImagePayload>,
     ) -> Self {
-        crate::renderer::image_geometry::normalize_gif_crop(&mut image);
+        crate::renderer::image_geometry::normalize_bitmap_crop(&mut image);
         image.original_size_hu = crate::renderer::image_resolver::image_crop_reference(&image);
         if let Some(payload) = resolved.as_ref() {
             crate::renderer::image_resolver::normalize_resolved_image_window(&mut image, payload);
