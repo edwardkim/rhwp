@@ -816,8 +816,8 @@ class CiImpactWorkflowTests(unittest.TestCase):
                        "Acquire::https::Timeout=30", "DPkg::Lock::Timeout=60"):
             self.assertIn(option, install)
 
-    def _run_native_skia_bootstrap(self, *, ready=False, timeout=False,
-                                   apt_failure=False, missing_after_install=False,
+    def _run_native_skia_bootstrap(self, *, ready=False, update_errors=(),
+                                   install_errors=(), missing_after_install=False,
                                    wrong_family=False):
         # 실제 workflow 셸을 실행하되 시스템 패키지·글꼴은 수정하지 않는다.
         step = self._step("Install native Skia runtime packages", self._job("native-skia-tests"))
@@ -832,43 +832,77 @@ class CiImpactWorkflowTests(unittest.TestCase):
                 "sudo": 'exec "$@"',
                 "pkg-config": '[ "$RHWP_TEST_READY" = 1 ] || [ -f "$RHWP_TEST_MARKER" ]',
                 "fc-match": 'case "$*" in *family*) if [ "$RHWP_TEST_WRONG_FAMILY" = 1 ]; then echo Other; else echo "DejaVu Sans"; fi;; *) echo "$RHWP_TEST_FONT";; esac',
-                "timeout": 'shift; if [ "$RHWP_TEST_TIMEOUT" = 1 ]; then exit 124; fi; exec "$@"',
-                "apt-get": 'printf "%s\\n" "$*" >> "$RHWP_TEST_APT_LOG"; if [ "$RHWP_TEST_APT_FAILURE" = 1 ]; then exit 100; fi; for arg in "$@"; do if [ "$arg" = install ] && [ "$RHWP_TEST_NO_MARKER" != 1 ]; then touch "$RHWP_TEST_MARKER"; fi; done',
+                "timeout": textwrap.dedent("""\
+                    test "$1" = 180 || exit 98
+                    shift
+                    test "$1" = apt-get || exit 98
+                    for arg in "$@"; do
+                        case "$arg" in
+                            update) verb=update; errors=$RHWP_TEST_UPDATE_ERRORS ;;
+                            install) verb=install; errors=$RHWP_TEST_INSTALL_ERRORS ;;
+                        esac
+                    done
+                    test -n "$verb" || exit 98
+                    previous="$(grep -cx "apt $verb" "$RHWP_TEST_APT_LOG" || true)"
+                    printf 'apt %s\\n' "$verb" >> "$RHWP_TEST_APT_LOG"
+                    for status in $errors; do
+                        if [ "$previous" -eq 0 ]; then
+                            exit "$status"
+                        fi
+                        previous=$((previous - 1))
+                    done
+                    exec "$@"
+                    """),
+                "apt-get": 'for arg in "$@"; do if [ "$arg" = install ] && [ "$RHWP_TEST_NO_MARKER" != 1 ]; then touch "$RHWP_TEST_MARKER"; fi; done',
+                "sleep": 'printf "sleep %s\\n" "$*" >> "$RHWP_TEST_APT_LOG"',
             }
             for name, command in commands.items():
                 path = binaries / name
                 path.write_text("#!/bin/sh\n" + command + "\n", encoding="utf-8")
                 path.chmod(0o755)
             log = root / "apt.log"
+            log.touch()
             env = {**os.environ, "PATH": str(binaries) + os.pathsep + os.environ["PATH"],
                    "GITHUB_OUTPUT": str(root / "outputs"), "RHWP_TEST_MARKER": str(root / "ready"),
                    "RHWP_TEST_FONT": str(font), "RHWP_TEST_APT_LOG": str(log),
-                   "RHWP_TEST_READY": str(int(ready)), "RHWP_TEST_TIMEOUT": str(int(timeout)),
-                   "RHWP_TEST_APT_FAILURE": str(int(apt_failure)),
+                   "RHWP_TEST_READY": str(int(ready)),
+                   "RHWP_TEST_UPDATE_ERRORS": " ".join(map(str, update_errors)),
+                   "RHWP_TEST_INSTALL_ERRORS": " ".join(map(str, install_errors)),
                    "RHWP_TEST_NO_MARKER": str(int(missing_after_install)),
                    "RHWP_TEST_WRONG_FAMILY": str(int(wrong_family))}
             result = subprocess.run(["bash", "-e", "-c", script], env=env,
                                     text=True, capture_output=True, timeout=10)
-            return result, log.read_text() if log.exists() else ""
+            return result, log.read_text().splitlines()
 
     def test_native_skia_ready_dependencies_do_not_call_apt(self):
         result, calls = self._run_native_skia_bootstrap(ready=True)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(calls, "")
+        self.assertEqual(calls, [])
 
-    def test_native_skia_missing_dependencies_timeout_is_failure(self):
-        result, _ = self._run_native_skia_bootstrap(timeout=True)
+    def test_native_skia_timeout_fails_after_three_retries(self):
+        result, calls = self._run_native_skia_bootstrap(update_errors=(124,) * 5)
         self.assertEqual(result.returncode, 124, result.stdout + result.stderr)
+        self.assertEqual(calls, ["apt update", "sleep 60"] * 3 + ["apt update"])
 
-    def test_native_skia_apt_error_is_failure(self):
-        result, _ = self._run_native_skia_bootstrap(apt_failure=True)
+    def test_native_skia_apt_error_fails_with_last_status(self):
+        result, calls = self._run_native_skia_bootstrap(update_errors=(124, 100, 124, 100))
         self.assertEqual(result.returncode, 100, result.stdout + result.stderr)
+        self.assertEqual(calls, ["apt update", "sleep 60"] * 3 + ["apt update"])
+
+    def test_native_skia_update_can_succeed_on_third_retry(self):
+        result, calls = self._run_native_skia_bootstrap(update_errors=(124,) * 3)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(calls, ["apt update", "sleep 60"] * 3 + ["apt update", "apt install"])
+
+    def test_native_skia_retries_install_without_repeating_update(self):
+        result, calls = self._run_native_skia_bootstrap(install_errors=(100,))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(calls, ["apt update", "apt install", "sleep 60", "apt install"])
 
     def test_native_skia_install_must_restore_actual_dependencies(self):
         result, calls = self._run_native_skia_bootstrap()
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-        self.assertIn("update", calls)
-        self.assertIn("install", calls)
+        self.assertEqual(calls, ["apt update", "apt install"])
 
     def test_native_skia_successful_apt_without_dependencies_is_failure(self):
         result, _ = self._run_native_skia_bootstrap(missing_after_install=True)
