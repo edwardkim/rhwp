@@ -407,6 +407,30 @@ CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 기록한다. 최종 C
 이전 producer가 잘못 복사됐으면 해당 결과를 무효로 구분한 뒤 올바른 산출물로 재검증한다.
 정상 결과와 무효 결과를 섞거나 공유 target 전체를 삭제해 해결하지 않는다.
 
+### Helvetica 스타일 보호 문서의 Arial 공급
+
+`seo-helvetica-styles`는 원본의 Helvetica 네 스타일과 문서에 선언된 대체 family인 Arial을 확인하는
+1쪽 보호 문서다. Native와 fresh WASM을 검증할 때 같은 Arial 네 스타일의 실제 파일을 준비해
+이미 공급 중인 다른 글꼴 경로와 함께 `--font-path`로 지정한다.
+[원본 HWP](../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp) ·
+[데스크톱 한컴 2020 Hancom PDF Print](../../../pdf/issue8109/print/control-styles-hwp-2020.pdf)
+
+| 공급 글꼴 | 파일명 예 | Print에 내장된 PostScript 이름 |
+| --- | --- | --- |
+| Arial Regular | `arial.ttf` | `ArialMT` |
+| Arial Bold | `arialbd.ttf` | `Arial-BoldMT` |
+| Arial Italic | `ariali.ttf` | `Arial-ItalicMT` |
+| Arial Bold Italic | `arialbi.ttf` | `Arial-BoldItalicMT` |
+
+파일의 SHA-256과 face를 수용 기록에 대조하고, 고정 base와 후보 양쪽에서 같은 프로그램을 공급한다.
+원문의 `Helvetica`, `Helvetica-Bold`, `Helvetica-Oblique`, `Helvetica-BoldOblique`가
+문서에 선언된 `Arial` family와 각각의 스타일로 실제 출력되는지 선택 기록에서 확인한다.
+Mac에 설치된 Helvetica가 선택되는 경우에는 아래 [대체 글꼴 설정과 비교 조건](#대체-글꼴-설정과-비교-조건)에
+따라 `--font-environment`를 양쪽에 같은 내용으로 지정한다. `substitutions`의 네 대상을 모두
+`Arial` family로 지정하고 `preserveSourceMetrics: true`를 사용해 원본 스타일과 메트릭을 유지한다.
+표의 PostScript 이름으로 실제 프로그램을 확인한 뒤 재측정한다.
+[기존 Arial 공급 검증](../../pr/assets/jinho-von-choi-20261114/protected-environment-review.md)
+
 ### 원본 글꼴 프로그램의 형식 순서와 명시적 환경 설정
 
 문서의 글꼴 이름·저장 형식과 실제 설치 프로그램의 이름·형식을 구분한다.
