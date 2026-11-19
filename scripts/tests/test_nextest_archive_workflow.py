@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
 import tempfile
+import textwrap
 import unittest
 from pathlib import Path
 
@@ -33,7 +35,7 @@ def step_body(workflow: str, step_name: str) -> str:
         raise AssertionError(f"workflow에 {step_name} step이 없다")
     body = workflow.split(marker, maxsplit=1)[1]
     boundary = re.search(
-        r"(?m)^(?:      - (?:name:|uses:)|  [A-Za-z0-9_-]+:)\s*", body
+        r"(?m)^(?:      - (?:name:|uses:)|  (?:[A-Za-z0-9_-]+:|#))\s*", body
     )
     return body[: boundary.start()] if boundary else body
 
@@ -215,18 +217,186 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("const refreshed = refreshDurationPolicy(policy, measurements)", refresh)
         self.assertIn("identical run, ref, and sha provenance", refresh)
 
-    def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
+    def test_native_skia_uses_release_test_for_tag_fallback_only(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
         self.assertIn(
-            "TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}",
+            "TEST_PROFILE: ${{ github.event_name == 'push' && "
+            "startsWith(github.ref, 'refs/tags/v') && 'release-test' || "
+            "needs.preflight.outputs.test_profile || 'release' }}",
             native,
         )
+        self.assertIn("needs.preflight.outputs.native_skia_reuse_run_id == ''", native)
         step = step_body(self.ci, "Native Skia tests")
         self.assertIn('case "${TEST_PROFILE}" in', step)
         self.assertIn("release-test)", step)
         self.assertIn("release)", step)
         self.assertIn("Unknown test profile", step)
         self.assertNotIn('"${GITHUB_EVENT_NAME}" == "pull_request"', step)
+
+    def test_native_skia_promotion_receipt_follows_the_test(self) -> None:
+        native = job_body(self.ci, "native-skia-tests")
+        capture = step_body(native, "Record Native Skia promotion evidence")
+        self.assertIn("github.base_ref == 'main'", capture)
+        self.assertIn("github.head_ref == 'devel'", capture)
+        self.assertIn("github.event.pull_request.head.repo.full_name == github.repository", capture)
+        self.assertLess(native.index("- name: Native Skia tests"), native.index(capture))
+        upload = step_body(native, "Upload Native Skia promotion evidence")
+        self.assertIn("steps.native-skia-promotion-evidence.outputs.artifact_name", upload)
+        self.assertIn("if-no-files-found: error", upload)
+        script = textwrap.dedent(capture.split("        run: |\n", 1)[1])
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "output"
+            sha, tree = subprocess.check_output(
+                ["git", "rev-parse", "HEAD", "HEAD^{tree}"],
+                cwd=REPO_ROOT, text=True,
+            ).splitlines()
+            env = {
+                "GITHUB_OUTPUT": str(output), "GITHUB_SHA": sha,
+                "PR_NUMBER": "123", "GITHUB_RUN_ATTEMPT": "2", "RUNNER_TEMP": directory,
+            }
+            result = run_script(script, env)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(output.read_text(), f"artifact_name=native-skia-promotion-v1-123-2-{sha}-{tree}\n")
+            result = run_script(script, {**env, "GITHUB_SHA": "0" * 40})
+            self.assertNotEqual(result.returncode, 0)
+
+    def test_native_skia_tag_requires_exact_successful_promotion_evidence(self) -> None:
+        step = step_body(job_body(self.ci, "preflight"), "Verify release tag Native Skia evidence")
+        self.assertIn("github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')", step)
+        script_body = textwrap.dedent(step.split("          script: |\n", 1)[1])
+        driver = r"""
+            import assert from 'node:assert/strict';
+            const verify = new (Object.getPrototypeOf(async function () {}).constructor)(
+              'github', 'context', 'core', SCRIPT_BODY,
+            );
+            const taggedSha = 'a'.repeat(40);
+            const testedSha = 'b'.repeat(40);
+            const tree = 'c'.repeat(40);
+            const baseSha = 'd'.repeat(40);
+            const headSha = 'e'.repeat(40);
+            const repository = { id: 42 };
+            const ref = (name, sha) => ({ ref: name, sha, repo: repository });
+            const beforeMerge = '2026-11-18T14:00:00Z';
+            const mergedAt = '2026-11-18T15:00:00Z';
+            const afterMerge = '2026-11-18T16:00:00Z';
+            const context = { sha: taggedSha, repo: { owner: 'test', repo: 'rhwp' } };
+            const data = (value) => ({ data: value });
+            const successful = { status: 'completed', conclusion: 'success' };
+
+            function fixture() {
+              const commit = (sha) => ({ sha, tree: { sha: tree }, parents: [{ sha: baseSha }, { sha: headSha }] });
+              const step = (name) => ({ ...successful, name });
+              return {
+                tagged: commit(taggedSha),
+                tested: commit(testedSha),
+                pulls: [{
+                  number: 123, state: 'closed', merged_at: mergedAt, merge_commit_sha: taggedSha,
+                  base: ref('main', baseSha), head: ref('devel', headSha),
+                }],
+                run: {
+                  ...successful, id: 456, run_attempt: 2, event: 'pull_request',
+                  path: '.github/workflows/ci.yml', head_branch: 'devel', head_sha: headSha,
+                  repository, head_repository: repository, created_at: beforeMerge, pull_requests: [],
+                },
+                jobs: ['Native Skia tests', 'Build & Test', 'Workflow promotion preflight'].map((name) => ({
+                  ...successful, name, run_id: 456, head_sha: headSha, completed_at: beforeMerge,
+                  steps: [step('Native Skia tests'), step('Upload Native Skia promotion evidence')],
+                })),
+                artifacts: [{
+                  name: `native-skia-promotion-v1-123-2-${testedSha}-${tree}`,
+                  expired: false, created_at: beforeMerge,
+                }],
+              };
+            }
+
+            async function verifyCase(label, change, shouldReuse = false) {
+              const evidence = fixture();
+              change(evidence);
+              const output = {};
+              const github = {
+                rest: {
+                  git: { getCommit: async ({ commit_sha }) => {
+                    if (evidence.apiError) throw new Error('API unavailable');
+                    if (commit_sha === taggedSha) return data(evidence.tagged);
+                    assert.equal(commit_sha, testedSha);
+                    return data(evidence.tested);
+                  } },
+                  pulls: { list: () => evidence.pulls },
+                  actions: {
+                    listWorkflowRuns: async (params) => {
+                      assert.equal(params.event, 'pull_request');
+                      assert.equal(params.workflow_id, 'ci.yml');
+                      assert.equal(params.head_sha, headSha);
+                      return data({ workflow_runs: [evidence.run] });
+                    },
+                    listWorkflowRunArtifacts: () => evidence.artifacts,
+                  },
+                },
+                paginate: async (request, params) => {
+                  if (typeof request === 'function') return request();
+                  assert.match(request, /\/attempts\/\{attempt_number\}\/jobs$/);
+                  assert.equal(params.run_id, 456);
+                  assert.equal(params.attempt_number, evidence.run.run_attempt);
+                  return evidence.jobs;
+                },
+              };
+              await verify(github, context, {
+                notice: () => {},
+                setOutput: (key, value) => { output[key] = value; },
+              });
+              assert.deepEqual(output, shouldReuse ? { source_run_id: '456' } : {}, label);
+            }
+
+            await verifyCase('exact promotion', () => {}, true);
+            await verifyCase('unassociated tag', (f) => { f.pulls = []; });
+            await verifyCase('foreign PR', (f) => { f.pulls[0].head.repo = { id: 1 }; });
+            await verifyCase('foreign run', (f) => { f.run.head_repository = { id: 1 }; });
+            await verifyCase('failed run', (f) => { f.run.conclusion = 'failure'; });
+            await verifyCase('skipped native job', (f) => { f.jobs[0].conclusion = 'skipped'; });
+            await verifyCase('skipped tests in green native job', (f) => { f.jobs[0].steps[0].conclusion = 'skipped'; });
+            await verifyCase('missing promotion check', (f) => { f.jobs.pop(); });
+            await verifyCase('late aggregate', (f) => { f.jobs[1].completed_at = afterMerge; });
+            await verifyCase('missing receipt', (f) => { f.artifacts = []; });
+            await verifyCase('expired receipt', (f) => { f.artifacts[0].expired = true; });
+            await verifyCase('different attempt', (f) => { f.run.run_attempt = 3; });
+            await verifyCase('different tree', (f) => { f.tested.tree.sha = 'f'.repeat(40); });
+            await verifyCase('different tested parent', (f) => { f.tested.parents.reverse(); });
+            await verifyCase('API error', (f) => { f.apiError = true; });
+        """
+        result = subprocess.run(
+            ["node", "--input-type=module"],
+            input=driver.replace("SCRIPT_BODY", json.dumps(script_body)),
+            env={**os.environ, "GITHUB_REPOSITORY_ID": "42"},
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_build_and_test_accepts_native_skia_reuse_only_for_a_release_tag(self) -> None:
+        step = step_body(self.ci, "Check Build & Test worker results")
+        script = textwrap.dedent(step.split("        run: |\n", 1)[1])
+        worker_names = re.findall(r"^          ([A-Z0-9_]+_RESULT):", step, re.M)
+        base_env = {
+            **dict.fromkeys(worker_names, "success"),
+            "PREFLIGHT_RESULT": "success", "FAST_PASS": "false",
+            "RUST_REQUIRED": "true", "NATIVE_SKIA_REQUIRED": "true",
+            "FRONTEND_MODE": "package", "FRONTEND_UNIT_RESULT": "skipped",
+            "CANONICAL_PROMOTION": "false", "PROMOTION_RESULT": "skipped",
+        }
+        for event, ref, receipt, native, expected in (
+            ("push", "refs/tags/v1.2.3", "456", "skipped", 0),
+            ("push", "refs/tags/v1.2.3", "456", "failure", 1),
+            ("push", "refs/tags/v1.2.3", "invalid", "skipped", 1),
+            ("push", "refs/tags/v1.2.3", "", "success", 0),
+            ("push", "refs/tags/v1.2.3", "", "skipped", 1),
+            ("pull_request", "refs/pull/123/merge", "456", "skipped", 1),
+            ("workflow_dispatch", "refs/tags/v1.2.3", "456", "skipped", 1),
+        ):
+            with self.subTest(event=event, receipt=receipt, native=native):
+                result = run_script(script, {
+                    **base_env, "GITHUB_EVENT_NAME": event, "GITHUB_REF": ref,
+                    "NATIVE_SKIA_RESULT": native, "NATIVE_SKIA_REUSE_RUN_ID": receipt,
+                })
+                self.assertEqual(result.returncode, expected, result.stdout + result.stderr)
 
     def test_reusable_builder_isolates_partition_artifacts(self):
         from pathlib import Path
