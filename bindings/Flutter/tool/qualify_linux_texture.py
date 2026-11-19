@@ -15,7 +15,9 @@ import subprocess
 import time
 import uuid
 
-from build_linux_probe import require_linux
+import gpu_memory_acceptance as memory_acceptance
+
+from build_linux_probe import require_linux, sdk_supervises_children
 from check_macos_metal_sdk import stop_process_tree
 from qualify_desktop_texture import (MAX_BUILD_RECEIPT_BYTES, compare_pixels,
                                      read_json, validate_stage_identity,
@@ -53,7 +55,7 @@ def validate_stage(value, *, nonce, index, pid):
     return dimensions
 
 
-def validate_result(value, *, nonce, frames):
+def validate_result(value, *, nonce, frames, memory_cycles=0, stages=(), pid=None):
     if (value.get("protocol") != 1 or value.get("nonce") != nonce or
             value.get("ok") is not True or value.get("publications") != frames or
             value.get("consumerGpuCompletionVerified") is not False or
@@ -71,6 +73,8 @@ def validate_result(value, *, nonce, frames):
                 "frameHandles", "retainedFrames", "frameBytes", "leases", "inFlightReplays"):
         if type(stats.get(key)) is not int or stats[key] != 0:
             raise ValueError("Native owner teardown was not observed: " + key)
+    return memory_acceptance.validate_memory_acceptance(
+        value, cycles=memory_cycles, stages=stages, pid=pid)
 
 
 def verify_loaded_artifacts(pid, files):
@@ -257,10 +261,17 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--frames", type=int, default=32)
     parser.add_argument("--timeout", type=float, default=240)
+    memory_acceptance.add_memory_arguments(parser)
     args = parser.parse_args()
     require_linux()
+    supervised = sdk_supervises_children()
     if not 3 <= args.frames <= 64 or not 30 <= args.timeout <= 300:
         parser.error("frame count must be 3..64 and timeout 30..300 seconds")
+    cycles = args.memory_pressure_cycles
+    try:
+        memory_acceptance.memory_pressure_schedule(args.frames, cycles)
+    except ValueError as error:
+        parser.error(str(error))
     files = {key: getattr(args, key).resolve(strict=True) for key in ("runner", "native", "dispatcher", "fixture")}
     receipt = read_json(args.build_receipt, limit=MAX_BUILD_RECEIPT_BYTES)
     if receipt.get("platform") != "linux" or receipt.get("buildExitCode") != 0:
@@ -281,6 +292,7 @@ def main():
     nonce = uuid.uuid4().hex
     config = {"protocol": 1, "nonce": nonce, "output": str(output), "frameCount": args.frames,
               "cpuReference": True,
+              **({"memoryPressureCycles": cycles} if cycles else {}),
               **{key: str(value) for key, value in files.items()}}
     write_json(output / "config.json", config)
     env = dict(os.environ, GDK_BACKEND="x11", GTK_CSD="0",
@@ -289,6 +301,9 @@ def main():
              "stages": [], "consumerGpuCompletionVerified": False,
              "continuousPresentationSupported": False, "hardwareAccelerationVerified": False,
              "capture": "visible-x11-root", "started": time.time(), "exitCode": None}
+    if cycles:
+        state.update(memoryPressureCycles=cycles, memoryCollectorSourceFiles=
+                     memory_acceptance.verify_memory_sources(receipt, Path(__file__).resolve()))
     process = compositor = None
     log_path = output / "runner.log"
     with log_path.open("wb") as log:
@@ -296,7 +311,7 @@ def main():
         try:
             process = subprocess.Popen([str(files["runner"])], cwd=files["runner"].parent, env=env,
                                        stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT,
-                                       start_new_session=True)
+                                       start_new_session=not supervised)
             state["pid"] = process.pid
             write_json(output / "receipt.json", state)
             compositor = X11Compositor(process.pid)
@@ -368,7 +383,10 @@ def main():
             result = read_json(output / "result.json")
             if code:
                 raise ValueError("runner did not complete its actual close/unregister checks")
-            validate_result(result, nonce=nonce, frames=args.frames)
+            memory_summary = validate_result(result, nonce=nonce, frames=args.frames,
+                memory_cycles=cycles, stages=[entry["stage"] for entry in state["stages"]], pid=process.pid)
+            if memory_summary is not None:
+                state["memoryAcceptance"] = memory_summary
             verify_runtime_artifacts(files, receipt, platform="linux")
             verify_runtime_bundle(files["runner"].parent, receipt.get("runtimeBundle"))
             if time.monotonic() >= deadline:
@@ -377,7 +395,7 @@ def main():
                          continuousPresentationSupported=args.frames > 4)
         except BaseException as error:
             state.update(qualification="failed", error=f"{type(error).__name__}: {error}")
-            if process is not None and process.poll() is None:
+            if not supervised and process is not None and process.poll() is None:
                 stop_process_tree(process)
             if process is not None:
                 state["exitCode"] = process.returncode

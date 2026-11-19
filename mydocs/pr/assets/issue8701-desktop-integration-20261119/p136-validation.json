@@ -1,0 +1,95 @@
+{
+  "code_source": "64ba35858d4f511bdd993f24eae9337880a7f2b2",
+  "source_pr": 9166,
+  "input": {
+    "path": "samples/issue8554/2913671-appendix1-family-register.hwp",
+    "sha256": "7f62b9fea6135cbf87192fc152674986c6a5eb4bdc73f216f32925e853dc077b",
+    "pages": 2
+  },
+  "reference_pdf": {
+    "path": "pdf/issue8554/2913671-appendix1-family-register-2022.pdf",
+    "sha256": "bfaf077f4e01e5397cbc34831a564fd88760c78c31aff1800ad13e52c5e69067",
+    "creator": "Hwp 2022 12.0.0.4547",
+    "producer": "Hancom PDF 1.3.0.547",
+    "pages": 2
+  },
+  "compat": "2022",
+  "dpi": 96,
+  "profile": "print",
+  "visual": {
+    "native": {
+      "tsv": {
+        "path": "native/silhouette.tsv",
+        "sha256": "ee2c1e3f3437c6863203ab226f8b39ea81287ac8f006820e3b04ef7d7494d617"
+      },
+      "pages": [
+        [
+          1,
+          "99.66"
+        ],
+        [
+          2,
+          "100.00"
+        ]
+      ],
+      "representatives": [
+        {
+          "path": "native/review_001.png",
+          "sha256": "a02c6f5415a8d2d8917e4d36b19ef1d65e0310d21a2c57915393091b64ba85b9"
+        },
+        {
+          "path": "native/review_002.png",
+          "sha256": "60d5d1cf81f19324ec4da86cf188818531c2e2d117ca0d9bb7e28e8c6f579fd0"
+        },
+        {
+          "path": "native/overlay_001.png",
+          "sha256": "f77c5b29ea905269726b76226e1a5f20d630c5933ceb4298886ddbffc1e426e2"
+        },
+        {
+          "path": "native/overlay_002.png",
+          "sha256": "9dda1159bfa62b41e8d2ccceeba622ba00b170f95dda6956656938f763bdd782"
+        }
+      ]
+    },
+    "wasm": {
+      "tsv": {
+        "path": "wasm/silhouette.tsv",
+        "sha256": "234bd285262377f54ea51049715f999e3e995b1281755e29ac7633e3c064d529"
+      },
+      "pages": [
+        [
+          1,
+          "99.67"
+        ],
+        [
+          2,
+          "100.00"
+        ]
+      ],
+      "representatives": [
+        {
+          "path": "wasm/review_001.png",
+          "sha256": "9b7fdced451f73b6d399a66a54d544ee7f2e56d4b9751d9557c4f6b67ebf67f7"
+        },
+        {
+          "path": "wasm/review_002.png",
+          "sha256": "071bc1d4c7a418dfd0cece0dece7f696f8d76b6544ab784eecba3109cfad91f1"
+        },
+        {
+          "path": "wasm/overlay_001.png",
+          "sha256": "05504c51cc0cd27187d792a451fadf12ae44f316bf76753d47dce870217d394c"
+        },
+        {
+          "path": "wasm/overlay_002.png",
+          "sha256": "b4c179e6422121ee059e5caf2f6504a60101718dcb78ea753556f39125ff40f3"
+        }
+      ]
+    }
+  },
+  "artifacts": {
+    "native": "28ad35911d8574c053ec318f506f3d5a9d94d38e6653efbcb87ef8cca0d7e8b1",
+    "wasm_js": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+    "wasm_binary": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba"
+  },
+  "reading": "첫 쪽 양쪽 표의 한자 6글자와 본문 및 표 경계의 표시를 확인했다. 둘째 쪽 점수는 Native와 WASM 모두 100.00%다."
+}

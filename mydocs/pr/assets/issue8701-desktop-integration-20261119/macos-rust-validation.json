@@ -1,0 +1,91 @@
+{
+  "source_head": "64ba35858d4f511bdd993f24eae9337880a7f2b2",
+  "platform": "macOS",
+  "toolchain": "rustc 1.93.1 (01f6ddf75 2026-02-11)",
+  "full_nextest": {
+    "passed": 13781,
+    "failed": 0,
+    "slow": 3,
+    "skipped": 45,
+    "runtime_seconds": 716.033
+  },
+  "skia_tests": {
+    "library_passed": 4034,
+    "library_ignored": 12,
+    "focused_nextest": {
+      "focused-skia": 24,
+      "skia-placeholder": 2,
+      "skia-pdf-export": 36
+    }
+  },
+  "rust_gates": [
+    {
+      "name": "focused-skia",
+      "exit_code": 0,
+      "log_sha256": "af5392e2e971848cdd934ec1c9783f55acc12cd055c3780ffd1c893521adb8dd"
+    },
+    {
+      "name": "full-nextest",
+      "exit_code": 0,
+      "log_sha256": "4bdc2932e25cf0718698bd6149bdee706f939b9036180212c8df26d50e87c861"
+    },
+    {
+      "name": "clippy-native",
+      "exit_code": 0,
+      "log_sha256": "dd114d5a19262a63432ae2e03c07b9a0f302ea62687ec3cad25cc2347de4552a"
+    },
+    {
+      "name": "clippy-wasm",
+      "exit_code": 0,
+      "log_sha256": "2f31fcb96eeedd95793e4591d183e6e072b0e09b607bf0481b48329930f1ffd1"
+    },
+    {
+      "name": "workspace-build",
+      "exit_code": 0,
+      "log_sha256": "ef5e9adfa1e1c3106108a733d33edead38df754594ccf6d6b6233dafa88f04c6"
+    },
+    {
+      "name": "clippy-workspace",
+      "exit_code": 0,
+      "log_sha256": "baf562717b1842e47cf108b5a22dd0617da4061d0b2e15744b967455de81f56c"
+    },
+    {
+      "name": "suite-manifest",
+      "exit_code": 0,
+      "log_sha256": "4280caca7e24142ed9005822b563bc31755e17e2d4820051c0fbb8fc74ba6cb9"
+    },
+    {
+      "name": "skia-unit",
+      "exit_code": 0,
+      "log_sha256": "c537ac2f52bc06ffedf9d7429ed92a8e2b6f72a0953663b5f81ed6743f206cba"
+    },
+    {
+      "name": "skia-placeholder",
+      "exit_code": 0,
+      "log_sha256": "a4ce7891c17413d4f316d028214785415e16a1ee11be595f774a4bdb2c8b578f"
+    },
+    {
+      "name": "skia-pdf-export",
+      "exit_code": 0,
+      "log_sha256": "4516d307dbc66b786d4d8ce771ae56fdbee06bbd7f5f251f03545d003eb11d3e"
+    },
+    {
+      "name": "native-ffi",
+      "exit_code": 0,
+      "log_sha256": "fa9b9671843819601d7793820352e2f4a416779604b0b19379f493ca19f9ddbb"
+    }
+  ],
+  "repo_format_and_diff_check": {
+    "exit_code": 0,
+    "log_sha256": "12cec2a842fff39e24bb4aa4afb55603a28be89c1a2b09f3f5ab376865296dfc"
+  },
+  "svg_snapshot": {
+    "passed": [
+      "issue_157_page_1",
+      "table_text_page_0",
+      "form_002_page_0",
+      "render_is_deterministic_within_process"
+    ],
+    "golden_changes": 0
+  }
+}

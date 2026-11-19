@@ -23,6 +23,7 @@ class NativeEditorController extends ChangeNotifier {
   final int editorGeneration;
   int _optimisticBatches = 0;
   Future<void> _tail = Future<void>.value();
+  ({Future<void> tail, Future<void> done})? _focusSettlement;
   int _pending = 0;
   int _inputEpoch = 0;
   bool _disposed = false;
@@ -297,10 +298,28 @@ class NativeEditorController extends ChangeNotifier {
     }
   }
 
-  Future<void> focusLost() => _run(() async {
-    await _settleComposition(cancel: true);
-    await _synchronize();
-  });
+  /// Settle accepted input before taking a save checkpoint.
+  /// Ordinary focus loss commits the native preedit; Escape explicitly cancels.
+  Future<void> focusLost({bool cancel = false}) {
+    // Applying focus changes synchronously can queue the blur before the host
+    // awaits its save barrier. Share that commit only at the same queue tail.
+    final previous = _focusSettlement;
+    if (!cancel && previous != null && identical(previous.tail, _tail)) {
+      _guard();
+      return previous.done;
+    }
+    final result = _run(() async {
+      await _settleComposition(cancel: cancel);
+      await _synchronize();
+    });
+    if (cancel) return result;
+    final tail = _tail;
+    final done = result.whenComplete(() {
+      if (identical(_focusSettlement?.tail, tail)) _focusSettlement = null;
+    });
+    _focusSettlement = (tail: tail, done: done);
+    return done;
+  }
 
   Future<void> point(int page, double x, double y, {bool extend = false}) =>
       _run(() async {

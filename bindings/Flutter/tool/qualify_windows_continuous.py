@@ -6,6 +6,7 @@ completion, target reuse, or a bound on consumer/driver allocations.
 """
 
 import argparse
+
 import hashlib
 import os
 from pathlib import Path
@@ -13,6 +14,8 @@ import re
 import subprocess
 import time
 import uuid
+
+import gpu_memory_acceptance as memory_acceptance
 
 from qualify_desktop_texture import (MAX_BUILD_RECEIPT_BYTES, WindowsCompositor,
                                      compare_pixels, digest, read_json,
@@ -182,7 +185,7 @@ def validate_transition(previous, current):
         raise ValueError("same-geometry publication did not observe private target reuse")
 
 
-def validate_result(value, *, nonce, frames, last_stage):
+def validate_result(value, *, nonce, frames, last_stage, memory_cycles=0, stages=(), pid=None):
     if (type(value.get("protocol")) is not int or value["protocol"] != 1 or
             value.get("nonce") != nonce or value.get("ok") is not True or
             type(value.get("publications")) is not int or value["publications"] != frames or
@@ -221,6 +224,8 @@ def validate_result(value, *, nonce, frames, last_stage):
     for key in NATIVE_STATS:
         if counter(stats, key) != 0:
             raise ValueError("Native source/snapshot/frame/lease teardown was not observed: " + key)
+    return memory_acceptance.validate_memory_acceptance(
+        value, cycles=memory_cycles, stages=stages, pid=pid)
 
 
 def read_pixels(path, size):
@@ -239,6 +244,7 @@ def main():
         parser.add_argument("--" + name, type=Path, required=True)
     parser.add_argument("--frames", type=int, default=32)
     parser.add_argument("--timeout", type=float, default=600)
+    memory_acceptance.add_memory_arguments(parser)
     args = parser.parse_args()
     try:
         require_actual_windows()
@@ -246,6 +252,11 @@ def main():
         parser.error(str(error))
     if not 32 <= args.frames <= 64 or not 30 <= args.timeout <= 600:
         parser.error("frame count must be 32..64 and timeout 30..600 seconds")
+    cycles = args.memory_pressure_cycles
+    try:
+        memory_acceptance.memory_pressure_schedule(args.frames, cycles)
+    except ValueError as error:
+        parser.error(str(error))
     files = {key: getattr(args, key).resolve(strict=True) for key in ("runner", "native", "dispatcher", "fixture")}
     if files["fixture"].stat().st_size > 16 * 1024 * 1024:
         raise ValueError("reference document exceeds its byte limit")
@@ -269,6 +280,7 @@ def main():
     config = {"protocol": 1, "nonce": nonce, "output": str(output), "frameCount": args.frames,
               "cpuReference": True, "backend": "windowsImmutableTransfer",
               "presentationKind": "externalTexture",
+              **({"memoryPressureCycles": cycles} if cycles else {}),
               **{key: str(value) for key, value in files.items()}}
     write_json(output / "config.json", config)
     env = dict(os.environ, RHWP_CONSUMER_PROBE_CONFIG=str(output / "config.json"))
@@ -277,6 +289,9 @@ def main():
              "stages": [], "consumerGpuCompletionVerified": False, "targetReuse": False,
              "continuousPresentationSupported": False, "hardwareAccelerationVerified": False,
              "consumerAndDriverMemoryIncluded": False, "started": time.time(), "exitCode": None}
+    if cycles:
+        state.update(memoryPressureCycles=cycles, memoryCollectorSourceFiles=
+                     memory_acceptance.verify_memory_sources(build, Path(__file__).resolve()))
     process = None
     log_path = output / "runner.log"
     with log_path.open("wb") as log:
@@ -338,7 +353,10 @@ def main():
             result = read_json(output / "result.json")
             if code:
                 raise ValueError("runner did not complete actual close/unregister checks")
-            validate_result(result, nonce=nonce, frames=args.frames, last_stage=previous)
+            memory_summary = validate_result(result, nonce=nonce, frames=args.frames, last_stage=previous,
+                memory_cycles=cycles, stages=[entry["stage"] for entry in state["stages"]], pid=process.pid)
+            if memory_summary is not None:
+                state["memoryAcceptance"] = memory_summary
             verify_runtime_artifacts(files, build)
             verify_runtime_bundle(files["runner"].parent, build.get("runtimeBundle"))
             if time.monotonic() >= deadline:

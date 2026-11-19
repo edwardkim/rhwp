@@ -1,0 +1,150 @@
+{
+  "fresh_source": "64ba35858d4f511bdd993f24eae9337880a7f2b2",
+  "previous_source": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+  "evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+  "evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+  "baseline_sha256": "295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a",
+  "js_sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365",
+  "wasm_sha256": "8875f1b150a102a36d8ca8c2c571f720bddeeeb76f3262e620a86c6faeb335ba",
+  "protected": [
+    {
+      "document": "yeongwol",
+      "pages": 4,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/yeongwol.tsv",
+      "prior_tsv_sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1"
+    },
+    {
+      "document": "seo-body-list-typed",
+      "pages": 1,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/seo-body-list-typed.tsv",
+      "prior_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "document": "handbook-hwp",
+      "pages": 383,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/handbook-hwp.tsv",
+      "prior_tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a"
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "pages": 1,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/seo-helvetica-styles.tsv",
+      "prior_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "document": "sample16-hwpx",
+      "pages": 64,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/sample16-hwpx.tsv",
+      "prior_tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+    },
+    {
+      "document": "sample16-hwp2022",
+      "pages": 64,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/sample16-hwp2022.tsv",
+      "prior_tsv_sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+    },
+    {
+      "document": "seo-re-03-latin",
+      "pages": 1,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/seo-re-03-latin.tsv",
+      "prior_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "document": "angle-narrow",
+      "pages": 1,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/angle-narrow.tsv",
+      "prior_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "document": "outline",
+      "pages": 9,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/outline.tsv",
+      "prior_tsv_sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
+    },
+    {
+      "document": "issue8040-insert",
+      "pages": 4,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/issue8040-insert.tsv",
+      "prior_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+    },
+    {
+      "document": "nested",
+      "pages": 17,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/nested.tsv",
+      "prior_tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592"
+    },
+    {
+      "document": "sample16-hwp2024",
+      "pages": 64,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/sample16-hwp2024.tsv",
+      "prior_tsv_sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+    },
+    {
+      "document": "handbook-hwpx",
+      "pages": 383,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/handbook-hwpx.tsv",
+      "prior_tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a"
+    },
+    {
+      "document": "issue7905",
+      "pages": 6,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/issue7905.tsv",
+      "prior_tsv_sha256": "8da442a73d4de191337083da11f5c507b66d668d80821b86f82f29d4fa556d98"
+    },
+    {
+      "document": "sample10",
+      "pages": 763,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/sample10.tsv",
+      "prior_tsv_sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5"
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "pages": 4,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/issue8040-insert-delete.tsv",
+      "prior_tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "pages": 1,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/seo-pic-crop-01.tsv",
+      "prior_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "document": "seo-shape-group-02",
+      "pages": 1,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected/head/wasm/seo-shape-group-02.tsv",
+      "prior_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "document": "chemical",
+      "pages": 103,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/chemical.tsv",
+      "prior_tsv_sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d"
+    },
+    {
+      "document": "spec13",
+      "pages": 71,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/spec13.tsv",
+      "prior_tsv_sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a"
+    },
+    {
+      "document": "outline-demo",
+      "pages": 3,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-demo.tsv",
+      "prior_tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+    },
+    {
+      "document": "decree",
+      "pages": 74,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/decree.tsv",
+      "prior_tsv_sha256": "be1f5166b7048d0f1f687f71ced888896bd190d9633f2a78f64e9a7e5693ffbf"
+    },
+    {
+      "document": "outline-minimal",
+      "pages": 1,
+      "prior_tsv": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/outline-minimal.tsv",
+      "prior_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    }
+  ],
+  "status": "identical_package_all_previous_pages_meet_current_floor"
+}

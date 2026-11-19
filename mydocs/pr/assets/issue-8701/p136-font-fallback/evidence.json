@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "scope": "Native CPU paint glyph presence, not whole-document visual qualification",
+  "baselineSource": "22da83586aab1baf960f2159abda347062ecf7ed",
+  "fixedSource": "this PR; same core with ordered candidate selection followed by platform character fallback",
+  "fixture": {
+    "path": "samples/issue8554/2913671-appendix1-family-register.hwp",
+    "gitBlob": "587fd4af3f3fb2e5f00661a104e20efaf0307ff8",
+    "sha256": "7f62b9fea6135cbf87192fc152674986c6a5eb4bdc73f216f32925e853dc077b",
+    "pageIndex": 0
+  },
+  "renderer": {
+    "kind": "native-skia CPU raster",
+    "dpi": 96,
+    "cliFeature": "baseline native-skia; fixed native-skia-gl (same CPU paint path)",
+    "rustc": "1.93.1",
+    "baselineCliSha256": "da62a46d293a5e716939cc90428dbd9a460da5a9a1c50a94a6a6a309b4d49cd3",
+    "fixedCliSha256": "34e091e3d66272c2c77a6c29912d0583c30a0193117884b006c334754822d7d8"
+  },
+  "fontPrograms": {
+    "webfontCommit": "7d06d5c706f1d89f1662e739abf2b1b25d2a98e4",
+    "offlineCache": true,
+    "fonts": [
+      {
+        "role": "Hangul-only generic Sans subset",
+        "name": "NotoSansKR-Regular.woff2",
+        "sourceSha256": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+        "decodedSha256": "39c5925cf712ba90568994b008266fec755f41fd14ba6112b8c9b6d1a08566b1"
+      },
+      {
+        "role": "only system Fontconfig program in before/after",
+        "name": "NotoSerifCJK-Regular.ttc",
+        "sha256": "a04178ec485dffdff7cc0c0c20e1fce9202d7e2160d805e8e44a4c8841c58481"
+      },
+      {
+        "role": "additional Sans+Serif control system program",
+        "name": "NotoSansCJK-Regular.ttc",
+        "sha256": "b76b0433203017ca80401b2ee0dd69350349871c4b19d504c34dbdd80541690a"
+      }
+    ]
+  },
+  "measurements": {
+    "names": [
+      "李乙女",
+      "金丙女"
+    ],
+    "beforeInkBelow160": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "afterInkBelow160": [
+      [
+        39,
+        39,
+        43
+      ],
+      [
+        41,
+        60,
+        43
+      ]
+    ],
+    "emptyCacheSerifControlInk": [
+      [
+        39,
+        39,
+        43
+      ],
+      [
+        41,
+        60,
+        43
+      ]
+    ],
+    "sansSerifControlInk": [
+      [
+        80,
+        52,
+        68
+      ],
+      [
+        79,
+        76,
+        68
+      ]
+    ],
+    "regions": [
+      [
+        [
+          239,
+          406,
+          254,
+          424
+        ],
+        [
+          257,
+          406,
+          271,
+          424
+        ],
+        [
+          274,
+          406,
+          288,
+          424
+        ]
+      ],
+      [
+        [
+          239,
+          434,
+          254,
+          452
+        ],
+        [
+          257,
+          434,
+          271,
+          452
+        ],
+        [
+          274,
+          434,
+          288,
+          452
+        ]
+      ]
+    ],
+    "renderTreeBytesUnchanged": true,
+    "fontDecisionTraceMatchesPaint": true,
+    "observedSystemFamily": "Noto Serif CJK JP"
+  },
+  "assets": [
+    {
+      "path": "before.png",
+      "case": "family_serif_only",
+      "sha256": "84b4b43cf7123ba9b4cf2d335cecc8c90d8f1f8abf3fc8e5a745fdb7a1a2f321",
+      "bytes": 56866
+    },
+    {
+      "path": "after.png",
+      "case": "family_fixed_serif_only",
+      "sha256": "564b945bc0145b41ec14d4c308583cc23c3c3e5afc19c11b3599111c57a9508b",
+      "bytes": 59608
+    },
+    {
+      "path": "sans-serif-control.png",
+      "case": "family_fixed_cached_subsets",
+      "sha256": "fa6a7c97e0c1b474816178dd385333bc23d7e49c7036d4dfd1e8c46529dfc889",
+      "bytes": 59647
+    }
+  ],
+  "otherReports": {
+    "8624": "No reproduction in current Linux sample16 p41 before/after: eleven opening bracket bboxes remain 18.7px wide at 96dpi; not all-platform closure.",
+    "8635": "Still open: original 195-page D0150004 input unavailable; no claim from a substitute fixture."
+  }
+}

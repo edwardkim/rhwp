@@ -98,6 +98,10 @@ IME/접근성이나 최종 한컴 비교를 완료한 것으로 확대하지 않
 python3 -B bindings/Flutter/macos/tests/sdk_qualification_contract.py
 ```
 
+Linux와 macOS에서는 C++17 컴파일러로 작은 공유 라이브러리를 만들고, 플러그인이 사용하는
+동적 로더에서 필수 owner 심볼과 선택 Metal 심볼 누락을 구분하는지 검사합니다. 라이브러리 열기
+실패와 이미 고정된 라이브러리 경로의 충돌도 확인합니다.
+
 이 검사는 독립 premultiplied 색상, 잘못된 pixel·stamp·backend·완료 근거 거절, stale target 보존,
 격리된 빌드 출력과 비 Apple 플랫폼 거절을 검사합니다. 임시 Git 저장소의 vendor 변경·
 untracked source, architecture별 Cargo target/artifact 경로 및 실제 child timeout·descendant

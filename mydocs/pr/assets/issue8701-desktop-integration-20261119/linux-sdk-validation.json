@@ -1,0 +1,52 @@
+{
+  "source_head": "64ba35858d4f511bdd993f24eae9337880a7f2b2",
+  "linux_sdk_status": "passed",
+  "sdk_steps": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "xvfb_resolution": "5120x1600x24",
+  "gl_mode": "Xvfb with LIBGL_ALWAYS_SOFTWARE=1",
+  "single_memory_acceptance": {
+    "cycles": 2,
+    "managedBytesTrimmed": 3590144,
+    "outcomes": [
+      "observedReclamation",
+      "observedReclamation"
+    ],
+    "resumedPublications": [
+      4,
+      18
+    ],
+    "physicalVramBytes": null,
+    "consumerGpuCompletionVerified": false
+  },
+  "tile_memory_acceptance": {
+    "cycles": 2,
+    "managedBytesTrimmed": 19324416,
+    "outcomes": [
+      "observedReclamation",
+      "observedReclamation"
+    ],
+    "resumedPublications": [
+      2,
+      3
+    ],
+    "physicalVramBytes": null,
+    "consumerGpuCompletionVerified": false
+  },
+  "unchanged_native_artifact_reused": true,
+  "receipts": {
+    "linux-sdk-receipt.json": "f2ccf98a421905df565aee7ce754292fe6aafa7128062e088745ba357d4d06a3",
+    "single-capture-receipt.json": "1e98d40ad494154fd9a69ad9c6ee2e647b38248125040f8925bccfea95923ca1",
+    "tile-capture-receipt.json": "ee8d4c8d1281ccb21b05525733e7db862a82c6ce8a6d606ea83ed19d37979c7d"
+  }
+}

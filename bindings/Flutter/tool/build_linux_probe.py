@@ -15,6 +15,17 @@ from build_desktop_probe import artifact, checked_sha, sources, verify_copied_so
 from check_macos_metal_sdk import execute_step
 from qualify_desktop_texture import MAX_BUILD_RECEIPT_BYTES, digest, runtime_bundle_manifest, write_json
 
+SDK_SUPERVISION_ENV = "RHWP_LINUX_SDK_SUPERVISED"
+
+
+def sdk_supervises_children():
+    """The combined SDK driver owns and stops this group on failure."""
+    if os.environ.get(SDK_SUPERVISION_ENV) != "1":
+        return False
+    if os.getsid(0) != os.getpid() or os.getpgrp() != os.getpid():
+        raise RuntimeError("SDK supervision requires a dedicated process group")
+    return True
+
 
 def require_linux():
     if sys.platform != "linux":
@@ -32,6 +43,7 @@ def main():
     parser.add_argument("--tile-group", action="store_true", help="build the two-target, >4096px compositor probe")
     args = parser.parse_args()
     require_linux()
+    supervised = sdk_supervises_children()
     if not 30 <= args.step_timeout <= 1800:
         parser.error("step timeout must be between 30 and 1800 seconds")
     repository = Path(__file__).resolve().parents[3]
@@ -80,7 +92,7 @@ def main():
         write_json(receipt_path, receipt)
         code = execute_step(command, repository=cwd, env=env, log_path=step["log"],
                             step=step, record=lambda: write_json(receipt_path, receipt),
-                            timeout=args.step_timeout)
+                            timeout=args.step_timeout, inherit_process_group=supervised)
         if code:
             raise RuntimeError("build failed; inspect completed log: " + step["log"])
         return Path(step["log"]).read_text(encoding="utf-8", errors="replace")

@@ -99,7 +99,7 @@ struct State : std::enable_shared_from_this<State> {
   static bool accept_group(const std::shared_ptr<State>& first, const std::shared_ptr<State>& second,
                            const std::shared_ptr<Job>& a, const std::shared_ptr<Job>& b);
   void close();
-  void fail(const std::string& message, const std::string& code = "backendUnavailable");
+  void fail(const std::string& message, const std::string& code = "nativeTextureError");
 };
 ImmutableFrames& frames();
 std::shared_ptr<int> reserve_producer();

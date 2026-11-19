@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' hide Size;
 import 'dart:io';
+import 'dart:ui' as ui;
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,268 @@ typedef _DataDart = Pointer<Uint8> Function(int, Pointer<UintPtr>);
 
 void _require(bool value, String message) {
   if (!value) throw StateError(message);
+}
+
+/// Qualification-only controls. Zero preserves the original capture protocol.
+List<int> desktopMemoryPressureSchedule(int frames, int cycles) {
+  _require(cycles >= 0 && cycles <= 4, 'memory-pressure cycles must be 0..4');
+  if (cycles == 0) return const [];
+  _require(frames >= 32 && frames <= 64, 'memory-pressure needs 32..64 frames');
+  return List<int>.unmodifiable(
+    List<int>.generate(cycles, (index) => 3 + (frames - 3) * index ~/ cycles),
+  );
+}
+
+/// The existing Linux two-tile probe has exactly three sampled publications.
+List<int> desktopLinuxTileMemoryPressureSchedule(int cycles) {
+  _require(cycles >= 0 && cycles <= 2, 'Linux tile memory cycles must be 0..2');
+  return List<int>.unmodifiable(
+    List<int>.generate(cycles, (index) => index + 1),
+  );
+}
+
+/// Delivers the actual framework system channel message to binding observers.
+/// This does not call a lifecycle observer or substitute a GPU trim result.
+Future<void> dispatchDesktopMemoryPressure() {
+  final response = Completer<void>();
+  ui.channelBuffers.push(
+    SystemChannels.system.name,
+    const JSONMessageCodec().encodeMessage({'type': 'memoryPressure'}),
+    (_) => response.complete(),
+  );
+  return response.future.timeout(const Duration(seconds: 3));
+}
+
+/// Observes the real controller's typed result without changing its behavior.
+class DesktopMemoryTextureController extends NativeTextureController {
+  DesktopMemoryTextureController({
+    required super.document,
+    required super.presentation,
+    required super.platform,
+    super.useTileGroups,
+    super.allowImmutableOwnershipTransfer,
+    super.operationTimeout,
+    super.trace,
+    super.channel,
+  });
+
+  int trimCalls = 0;
+  Future<NativeGpuCacheTrimResult>? lastTrim;
+
+  @override
+  Future<NativeGpuCacheTrimResult> trimCaches({int targetBytes = 0}) {
+    _require(++trimCalls <= 8, 'unexpected memory-pressure notification count');
+    return lastTrim = super.trimCaches(targetBytes: targetBytes);
+  }
+}
+
+Map<String, Object?> desktopCacheTrimReceipt(NativeGpuCacheTrimResult result) =>
+    {
+      'supported': result.supported,
+      'textureId': result.textureId,
+      'deviceGeneration': result.deviceGeneration,
+      'requestId': result.requestId,
+      'targetBytes': result.targetBytes,
+      'scope': result.scope,
+      'before': result.before,
+      'after': result.after,
+      'trimmed': result.trimmed,
+      'pending': result.pending,
+      'busy': result.busy,
+      'reason': result.reason,
+      if (result.members.isNotEmpty) ...{
+        'groupId': result.textureId,
+        'members': [
+          for (final member in result.members) desktopCacheTrimReceipt(member),
+        ],
+      },
+    };
+
+/// Shared real-runtime observations for the continuous and three-stage probes.
+class DesktopMemoryAcceptanceObserver {
+  DesktopMemoryAcceptanceObserver({
+    required this.controller,
+    required this.status,
+    required this.rssStartBytes,
+  });
+  final DesktopMemoryTextureController controller;
+  final Future<Map<String, Object?>> Function() status;
+  final int rssStartBytes;
+  final observations = <Map<String, Object?>>[];
+  Object? trimError;
+
+  Map<String, Object?> owner(NativePresentationStamp stamp) => {
+    'textureId': controller.textureId,
+    'deviceGeneration': stamp.deviceGeneration,
+    'memberTextureIds': controller.tileTextureIds,
+  };
+
+  Map<String, int> traceCounts() => {
+    for (final stage in NativeGpuTraceStage.values)
+      stage.name: controller.trace!.counts[stage] ?? 0,
+  };
+
+  Map<String, Object?> _progress(Map value) => {
+    for (final name in [
+      'acceptedSerial',
+      'renderedSerial',
+      'framesSubmitted',
+      'frames',
+    ])
+      if (value[name] is int) name: value[name],
+  };
+
+  Future<Map<String, Object?>> takeSample(NativePresentationStamp stamp) async {
+    final native = await status();
+    final group = controller.tileTextureIds.isNotEmpty;
+    final rawMembers = native['members'];
+    _require(
+      !group || rawMembers is List && rawMembers.length == 2,
+      'memory observation needs both actual native tile statuses',
+    );
+    final states = group
+        ? (rawMembers! as List)
+              .map((item) => Map<String, Object?>.from(item as Map))
+              .toList()
+        : [native];
+    _require(
+      controller.canDisplay &&
+          native['deviceGeneration'] == stamp.deviceGeneration,
+      'memory-pressure probe lost its displayed device owner',
+    );
+    if (group) {
+      _require(
+        (native['groupId'] ?? native['textureId']) == controller.textureId,
+        'memory-pressure group owner changed',
+      );
+    }
+    for (var index = 0; index < states.length; index++) {
+      final state = states[index];
+      _require(
+        stamp.matches(state['renderedStamp']) &&
+            state['deviceGeneration'] == stamp.deviceGeneration &&
+            (!group || state['textureId'] == controller.tileTextureIds[index]),
+        'memory-pressure probe lost a held native publication/owner',
+      );
+    }
+    return {
+      'owner': owner(stamp),
+      'stamp': stamp.toJson(),
+      'rssBytes': ProcessInfo.currentRss,
+      'canDisplay': controller.canDisplay,
+      'traceCounts': traceCounts(),
+      'native': {
+        'deviceGeneration': native['deviceGeneration'],
+        'renderedStamp': states.first['renderedStamp'],
+        'progress': _progress(states.first),
+        if (group)
+          'members': [
+            for (final state in states)
+              {
+                'textureId': state['textureId'],
+                'deviceGeneration': state['deviceGeneration'],
+                'renderedStamp': state['renderedStamp'],
+                'progress': _progress(state),
+              },
+          ],
+      },
+      // This remains a published-frame snapshot, including after trim. It is
+      // never substituted for the live managed-target trim receipt below.
+      'producerDiagnostics': NativeGpuCacheSample.fromStatus(
+        group
+            ? {
+                'producerDiagnosticsSamples': [
+                  for (final state in states) state['producerDiagnostics'],
+                ],
+              }
+            : native,
+        stamp,
+      )?.toJson(),
+    };
+  }
+
+  Future<Map<String, Object?>> pressureAfter(
+    int publication,
+    NativePresentationStamp stamp,
+  ) async {
+    _require(observations.length < 4, 'memory observation cycle bound');
+    final before = await takeSample(stamp);
+    final calls = controller.trimCalls;
+    await dispatchDesktopMemoryPressure();
+    _require(
+      controller.trimCalls == calls + 1 && controller.lastTrim != null,
+      'binding memory pressure did not invoke the real lifecycle trim',
+    );
+    final trim = await controller.lastTrim!.timeout(const Duration(seconds: 9));
+    _require(
+      trimError == null &&
+          trim.supported &&
+          !trim.pending &&
+          trim.textureId == controller.textureId &&
+          trim.deviceGeneration == stamp.deviceGeneration,
+      'memory pressure did not return a current final native trim receipt',
+    );
+    final watch = Stopwatch()..start();
+    final samples = <Map<String, Object?>>[];
+    for (var index = 0; index < 3; index++) {
+      if (index != 0) {
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+      }
+      final sample = await takeSample(stamp);
+      sample['elapsedMicros'] = watch.elapsedMicroseconds;
+      samples.add(sample);
+    }
+    final first = samples.first['traceCounts']! as Map;
+    final last = samples.last['traceCounts']! as Map;
+    _require(
+      first['captureStarted'] == last['captureStarted'] &&
+          first['submitStarted'] == last['submitStarted'],
+      'held idle publication unexpectedly captured or submitted another frame',
+    );
+    final cycle = {
+      'cycle': observations.length + 1,
+      'afterPublication': publication,
+      'trigger': 'flutter/system:memoryPressure',
+      'observer': 'NativeGpuLifecycle.didHaveMemoryPressure',
+      'before': before,
+      'trim': desktopCacheTrimReceipt(trim),
+      'outcome': trim.trimmed == 0 ? 'observedNoop' : 'observedReclamation',
+      'idle': {
+        'durationMicros': watch.elapsedMicroseconds,
+        'probeStatusPolls': samples.length,
+        'controllerStatusPolls':
+            (last['statusPolled']! as int) - (first['statusPolled']! as int),
+        'samples': samples,
+      },
+    };
+    observations.add(cycle);
+    return cycle;
+  }
+
+  Map<String, Object?> report(
+    NativePresentationStamp stamp, {
+    required int requestedCycles,
+    String publicationProfile = 'continuous32To64',
+  }) => {
+    'schemaVersion': 1,
+    'scope': 'managedGpuTargetsAndProcessRss',
+    'publicationProfile': publicationProfile,
+    'pid': pid,
+    'requestedCycles': requestedCycles,
+    'rssScope': 'probeProcessRss',
+    'rssStartBytes': rssStartBytes,
+    'physicalVramBytes': null,
+    'consumerAndDriverMemoryIncluded': false,
+    'consumerGpuCompletionVerified': false,
+    'cycles': observations,
+    'close': {
+      'owner': owner(stamp),
+      'controllerPhase': controller.phase.name,
+      'retirementPending': controller.retirementPending,
+      'rssBytes': ProcessInfo.currentRss,
+      'traceCounts': traceCounts(),
+    },
+  };
 }
 
 class DesktopConsumerOracle {
@@ -204,6 +467,10 @@ class _ProbeState extends State<_Probe> {
   var _continuousBackend = false;
   var _nativeCoverProbe = false;
   var _tileGroups = false;
+  List<int> _memorySchedule = const [];
+  DesktopMemoryAcceptanceObserver? _memory;
+  NativeGpuTrace? _memoryTrace;
+  int? _rssStartBytes;
   List<Map<String, Object?>> _tileMembers = const [];
   @override
   void initState() {
@@ -260,6 +527,18 @@ class _ProbeState extends State<_Probe> {
       await Future<void>.delayed(const Duration(milliseconds: 20));
     }
     throw TimeoutException(message);
+  }
+
+  Future<void> _memoryPressureAfter(int publication) async {
+    if (!_memorySchedule.contains(publication)) return;
+    _stage = 'memory-pressure-after-$publication';
+    final cycle = await _memory!.pressureAfter(publication, _metadata!.stamp!);
+    await _write('memory-cycle-$publication.json', {
+      'protocol': 1,
+      'nonce': _nonce,
+      'pid': pid,
+      ...cycle,
+    });
   }
 
   Future<void> _publication(int index, String stage) async {
@@ -378,6 +657,7 @@ class _ProbeState extends State<_Probe> {
         'geometryProof': {'cpu': cpuGeometry, 'reference': referenceGeometry},
       },
       'nativeStatus': status,
+      if (_memorySchedule.isNotEmpty) 'memoryOwner': _memory!.owner(stamp),
       if (_tileGroups) ...{
         'tileGroup': true,
         'groupId': controller.textureId,
@@ -545,6 +825,18 @@ class _ProbeState extends State<_Probe> {
             : _frameCount == 3,
         'probe frame count exceeds its platform contract',
       );
+      _memorySchedule = desktopMemoryPressureSchedule(
+        _frameCount,
+        (config['memoryPressureCycles'] as int?) ?? 0,
+      );
+      _require(
+        _memorySchedule.isEmpty || _continuousBackend,
+        'memory pressure requires an existing continuous desktop backend',
+      );
+      if (_memorySchedule.isNotEmpty) {
+        _memoryTrace = NativeGpuTrace(capacity: 64);
+        _rssStartBytes = ProcessInfo.currentRss;
+      }
       if (_continuousBackend) {
         _watchdog.cancel();
         _watchdog = Timer(const Duration(seconds: 590), () {
@@ -591,14 +883,36 @@ class _ProbeState extends State<_Probe> {
       );
       _oracle = DesktopConsumerOracle(native);
       _channel = MethodChannel(platform.channelName);
-      _controller = NativeTextureController(
-        document: document,
-        presentation: metadata,
-        platform: platform,
-        useTileGroups: _tileGroups,
-        allowImmutableOwnershipTransfer: backend == 'windowsImmutableTransfer',
-        operationTimeout: const Duration(seconds: 8),
-      );
+      _controller = _memorySchedule.isEmpty
+          ? NativeTextureController(
+              document: document,
+              presentation: metadata,
+              platform: platform,
+              useTileGroups: _tileGroups,
+              allowImmutableOwnershipTransfer:
+                  backend == 'windowsImmutableTransfer',
+              operationTimeout: const Duration(seconds: 8),
+            )
+          : DesktopMemoryTextureController(
+              document: document,
+              presentation: metadata,
+              platform: platform,
+              useTileGroups: _tileGroups,
+              allowImmutableOwnershipTransfer:
+                  backend == 'windowsImmutableTransfer',
+              operationTimeout: const Duration(seconds: 8),
+              trace: _memoryTrace,
+            );
+      if (_memorySchedule.isNotEmpty) {
+        _memory = DesktopMemoryAcceptanceObserver(
+          controller: _controller! as DesktopMemoryTextureController,
+          rssStartBytes: _rssStartBytes!,
+          status: () async => {
+            ...await _status(),
+            if (_tileGroups) 'members': _tileMembers,
+          },
+        );
+      }
       _viewport = NativePageViewport.fit(
         await document.pageSize(0),
         _physicalSize / MediaQuery.devicePixelRatioOf(context),
@@ -620,6 +934,7 @@ class _ProbeState extends State<_Probe> {
       );
       setState(() {});
       await _publication(3, 'resize');
+      await _memoryPressureAfter(3);
       final baseline = _viewport!;
       for (var index = 4; index <= _frameCount; index++) {
         final dpr = MediaQuery.devicePixelRatioOf(context);
@@ -631,6 +946,7 @@ class _ProbeState extends State<_Probe> {
         );
         setState(() {});
         await _publication(index, 'continuous');
+        await _memoryPressureAfter(index);
       }
       _stage = 'close';
       await _controller!.close();
@@ -708,6 +1024,11 @@ class _ProbeState extends State<_Probe> {
                     true),
         'presentationKind': presentationKind,
         'publications': _frameCount,
+        if (_memory != null)
+          'memoryAcceptance': _memory!.report(
+            _metadata!.stamp!,
+            requestedCycles: _memorySchedule.length,
+          ),
         if (_tileGroups) ...{
           'tileGroup': true,
           'nativeTileMembers': _tileMembers,
@@ -747,14 +1068,24 @@ class _ProbeState extends State<_Probe> {
                 key: _textureKey,
                 width: _physicalSize.width / dpr,
                 height: _physicalSize.height / dpr,
-                child: NativeTextureView(
-                  controller: _controller!,
-                  viewport: _viewport!,
-                  cpuFallback: (_) =>
-                      const ColoredBox(color: Color(0xff55575a)),
-                ),
+                child: _texture(),
               ),
       ),
     );
+  }
+
+  Widget _texture() {
+    final texture = NativeTextureView(
+      controller: _controller!,
+      viewport: _viewport!,
+      cpuFallback: (_) => const ColoredBox(color: Color(0xff55575a)),
+    );
+    return _memorySchedule.isEmpty
+        ? texture
+        : NativeGpuLifecycle(
+            controller: _controller!,
+            onTrimError: (error) => _memory!.trimError = error,
+            child: texture,
+          );
   }
 }

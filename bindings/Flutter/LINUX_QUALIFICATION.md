@@ -11,6 +11,58 @@ Native GL 기능과 full-stamp presentation ABI를 제공하는 실제 Native `.
 그 선언 자체를 검증하는 것은 아니다. 영수증에 실제 바이너리 SHA-256과 `nativeBuildVerified:false`를
 함께 남긴다.
 
+## SDK·GL feature·표시의 순차 실행
+
+`tool/check_linux_desktop_sdk.py`는 Linux x86_64에서 기존 도구를 순서대로 실행한다.
+준비된 Flutter SDK, C++ compiler, `pkg-config`의 GTK3/epoxy 개발 파일이 필요하며
+SDK·패키지를 설치하거나 저장소 feature default를 변경하지 않는다. 출력은 checkout 밖의
+새 경로이고 원본 소스는 커밋된 clean 상태여야 한다.
+
+```bash
+# 실제 public headers/engine으로 plugin 전체를 compile/link한다. Rust/Native는 실행하지 않는다.
+python3 -B bindings/Flutter/tool/check_linux_desktop_sdk.py \
+  --flutter-sdk /SDK/flutter --compile-only --output /private/linux-sdk-compile
+
+# 새 고유 Cargo target에서 native-skia-gl을 빌드하고 두 Flutter probe를 빌드한다.
+# --build-only를 생략하면 실제 X11 single 32회·두 타일 3회 수집/종료까지 수행한다.
+python3 -B bindings/Flutter/tool/check_linux_desktop_sdk.py \
+  --flutter-sdk /SDK/flutter --build-only --output /private/linux-sdk-build
+```
+
+Native 재빌드를 피하려면 `--native-artifact-root /artifact/linux-gl
+--native-source-head FULL_GIT_SHA`를 함께 지정한다. artifact는 기존 검증기와 같은
+bounded 디렉터리이며 `librhwp_native_ffi.so`, `native-build-receipt.json`,
+`linux-sdk-receipt.json`을 포함해야 한다. 전체 Cargo cache를 artifact로 공급하지 않는다.
+정확한 source/Native build input 동등성, `.so` hash, 성공한 `native-skia-gl`·
+`x86_64-unknown-linux-gnu` build command를 검증한다. Linux의 `cargo +1.93.1 rustc
+--lib --crate-type cdylib` host-default build는 성공한 실제 rustc host 명령·원본 stdout과
+ELF64/DYN/x86_64 metadata를 추가로 대조해야 한다. CPU-only feature, 실패 명령,
+다른 host/ELF/source와 숨겨진 command target override는 거절한다.
+이후 별도 child에서 실제 `.so`를 열어
+Native worker/Skia·full-stamp snapshot·CPU oracle·GL host-FBO capability를 확인한다.
+CPU library와 CPU feature receipt는 GPU 성공 근거로 인정하지 않는다.
+
+`linux-sdk-receipt.json`은 실제 SDK compile/link, Native build provenance, Native GL
+feature probe, 두 Flutter runner build, single/tile compositor sampling을 별도 flag로 기록한다.
+`--compile-only` 성공은 `linux-sdk-compiled`, `--build-only`는 `linux-desktop-built`이며
+표시 검증 flag는 false다. capability probe는 context 생성·GPU replay·sampling 증거가 아니다.
+실제 두 수집기가 각각 성공해야 `linux-desktop-consumer-passed`로 기록하며,
+그 경우에도 consumer GPU fence·hardware acceleration은 false를 유지한다.
+전체 수집에 `--memory-pressure-cycles 2`를 더하면 single 32회와 기존 두 타일 3단계 모두에서
+실제 binding→Native trim·RSS·idle·후속 표시·종료를 확인한다. 통합 실행기는 0..2회만 받고,
+측정을 생략하는 `--compile-only`·`--build-only`와 양수 압박 횟수의 조합은 거절한다.
+두 경로의 압박 검증 flag와 영수증을 각각 기록하며, 회수량 0은 observedNoop으로 보존한다.
+자세한 범위와 개별 수집기 옵션은 [메모리 검증 가이드](GPU_MEMORY_ACCEPTANCE.md)를 따른다.
+각 child의 private log·PID·timeout·exit와 source/SDK/engine/artifact hash를 기록하고,
+실패 시 이미 통과한 단계와 아직 입증하지 못한 단계를 구분한다.
+
+`test/linux_sdk_runner_contract.py`의 executor·비실행 ELF fixture와
+`test/native_artifact_provenance_contract.py`는 orchestration/거절만 검증한다.
+실제 compiler·Native·Flutter/GTK·GPU 실행의 대체가 아니다. 이전 source/Native의
+실제 SDK·llvmpipe 실행도 보존하되, 새 source의 실행으로 다시 계산하지 않는다.
+
+## 개별 probe 빌드와 수집
+
 ```bash
 python3 -B bindings/Flutter/tool/build_linux_probe.py \
   --flutter-sdk /SDK/flutter \

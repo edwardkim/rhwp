@@ -10,9 +10,12 @@ enum NativeUnsavedDecision { save, discard, cancel }
 
 /// Reference-host decisions around an existing document and its file store.
 ///
-/// [settleInput] must drain the attached editor's accepted input before returning
-/// (for NativeEditorController, call focusLost). Keep the viewport mounted while
-/// [retireViewport] waits for the platform's normal texture retirement path.
+/// [settleInput] must stop platform input admission, then drain the attached
+/// editor's accepted input before returning. A Flutter host should unfocus and
+/// apply pending focus changes to detach the input connection, then await
+/// NativeEditorController.focusLost. A save checkpoint must include the last
+/// accepted native preedit. Keep the viewport mounted while [retireViewport]
+/// waits for normal texture retirement.
 /// This controller does not create a parser, an editor or a platform window.
 class NativeDocumentLifecycle extends ChangeNotifier {
   NativeDocumentLifecycle({

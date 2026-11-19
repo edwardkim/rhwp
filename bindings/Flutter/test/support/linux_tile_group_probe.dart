@@ -9,7 +9,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rhwp_native_reference/rhwp_native_flutter.dart';
 
-import 'desktop_consumer_probe.dart' show DesktopConsumerOracle;
+import 'desktop_consumer_probe.dart'
+    show
+        DesktopConsumerOracle,
+        DesktopMemoryTextureController,
+        DesktopMemoryAcceptanceObserver,
+        desktopLinuxTileMemoryPressureSchedule;
 
 void require(bool value, String message) {
   if (!value) throw StateError(message);
@@ -85,6 +90,9 @@ class _TileProbeState extends State<TileProbe> {
   late Timer watchdog;
   Size physical = const Size(4098, 480);
   String stage = 'connect';
+  List<int> memorySchedule = const [];
+  DesktopMemoryAcceptanceObserver? memory;
+  int? rssStartBytes;
   @override
   void initState() {
     super.initState();
@@ -276,6 +284,15 @@ class _TileProbeState extends State<TileProbe> {
       'stamp': stamp.toJson(),
       'snapshotIds': ids.toList(),
       'group': raw,
+      if (memory != null) ...{
+        'memoryOwner': memory!.owner(stamp),
+        'groupId': raw['groupId'],
+        'tileTextureIds': controller!.tileTextureIds,
+        'nativeStatus': {
+          'textureId': raw['groupId'],
+          'deviceGeneration': raw['deviceGeneration'],
+        },
+      },
       'submission': submission,
       'tileRects': [
         for (final rect in controller!.physicalTiles)
@@ -322,6 +339,14 @@ class _TileProbeState extends State<TileProbe> {
       );
       nonce = config['nonce']! as String;
       output = Directory(config['output']! as String);
+      memorySchedule = desktopLinuxTileMemoryPressureSchedule(
+        (config['memoryPressureCycles'] as int?) ?? 0,
+      );
+      require(
+        !windows || memorySchedule.isEmpty,
+        'memory-pressure configuration targets the Linux three-stage tile probe',
+      );
+      if (memorySchedule.isNotEmpty) rssStartBytes = ProcessInfo.currentRss;
       final native = await File(config['native']! as String)
           .resolveSymbolicLinks();
       final owner = await NativeOwnerTransport.connect(
@@ -349,16 +374,33 @@ class _TileProbeState extends State<TileProbe> {
       );
       require(metadata!.available, 'full-stamp metadata capability');
       oracle = DesktopConsumerOracle(native);
-      NativeTextureController createController() => NativeTextureController(
-        document: document!,
-        presentation: metadata!,
-        platform: widget.platform,
-        channel: channel,
-        useTileGroups: true,
-        allowImmutableOwnershipTransfer: windows,
-        operationTimeout: const Duration(seconds: 8),
-      );
+      NativeTextureController createController() => memorySchedule.isEmpty
+          ? NativeTextureController(
+              document: document!,
+              presentation: metadata!,
+              platform: widget.platform,
+              channel: channel,
+              useTileGroups: true,
+              allowImmutableOwnershipTransfer: windows,
+              operationTimeout: const Duration(seconds: 8),
+            )
+          : DesktopMemoryTextureController(
+              document: document!,
+              presentation: metadata!,
+              platform: widget.platform,
+              channel: channel,
+              useTileGroups: true,
+              operationTimeout: const Duration(seconds: 8),
+              trace: NativeGpuTrace(capacity: 64),
+            );
       controller = createController();
+      if (memorySchedule.isNotEmpty) {
+        memory = DesktopMemoryAcceptanceObserver(
+          controller: controller! as DesktopMemoryTextureController,
+          status: () => status().timeout(const Duration(seconds: 5)),
+          rssStartBytes: rssStartBytes!,
+        );
+      }
       if (windows) {
         session = NativeGpuSession(
           initialController: controller!,
@@ -368,8 +410,10 @@ class _TileProbeState extends State<TileProbe> {
       viewport = placed(await document!.pageSize(0));
       setState(() {});
       await publication(1);
+      await memoryPressureAfter(1);
       await document!.request('pasteText', {'text': '\n\n\n\n\n\n'});
       await publication(2);
+      await memoryPressureAfter(2);
       physical = windows ? const Size(1025, 496) : const Size(4097, 496);
       viewport = placed(await document!.pageSize(0));
       setState(() {});
@@ -468,6 +512,14 @@ class _TileProbeState extends State<TileProbe> {
         'callerReleases': metadata!.releases,
         'consumerGpuCompletionVerified': false,
         'hardwareAccelerationVerified': false,
+        if (memory != null)
+          'memoryAcceptance': memory!.report(
+            NativePresentationStamp.fromJson(
+              Map<String, Object?>.from(channel.submitted!['stamp']! as Map),
+            ),
+            requestedCycles: memorySchedule.length,
+            publicationProfile: 'linuxThreeStageTileGroup',
+          ),
       });
       succeeded = true;
     } catch (error, stack) {
@@ -499,13 +551,41 @@ class _TileProbeState extends State<TileProbe> {
             child: SizedBox(
               width: viewport!.viewport.width,
               height: viewport!.viewport.height,
-              child: NativeTextureView(
-                key: textureKey,
-                controller: controller!,
-                viewport: viewport!,
-                cpuFallback: (_) => const ColoredBox(color: Color(0xff334455)),
-              ),
+              child: texture(),
             ),
           ),
   );
+
+  Future<void> memoryPressureAfter(int publication) async {
+    if (!memorySchedule.contains(publication)) return;
+    stage = 'memory-pressure-after-$publication';
+    final cycle = await memory!.pressureAfter(
+      publication,
+      NativePresentationStamp.fromJson(
+        Map<String, Object?>.from(channel.submitted!['stamp']! as Map),
+      ),
+    );
+    await write('memory-cycle-$publication.json', {
+      'protocol': 1,
+      'nonce': nonce,
+      'pid': pid,
+      ...cycle,
+    });
+  }
+
+  Widget texture() {
+    final view = NativeTextureView(
+      key: textureKey,
+      controller: controller!,
+      viewport: viewport!,
+      cpuFallback: (_) => const ColoredBox(color: Color(0xff334455)),
+    );
+    return memory == null
+        ? view
+        : NativeGpuLifecycle(
+            controller: controller!,
+            onTrimError: (error) => memory!.trimError = error,
+            child: view,
+          );
+  }
 }

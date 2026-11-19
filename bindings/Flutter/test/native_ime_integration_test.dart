@@ -3,6 +3,7 @@
 // --dart-define=RHWP_NATIVE_LIBRARY=/absolute/native.so followed by this file.
 import 'dart:convert';
 import 'dart:ffi';
+import 'dart:io';
 
 import 'package:ffi/ffi.dart';
 import 'package:flutter/services.dart';
@@ -106,6 +107,86 @@ void _expectNoPresentationResources(Map<String, Object?> stats) {
 }
 
 void main() {
+  for (final format in ['hwpx', 'hwp']) {
+    test(
+      '$format save/reopen twice preserves baseline and accepted Hangul preedit',
+      () async {
+        final (document, editor, _) = await _openEditor();
+        final directory = await Directory.systemTemp.createTemp(
+          'rhwp-ime-save-',
+        );
+        addTearDown(() => directory.delete(recursive: true));
+        final path = '${directory.path}/document.$format';
+        final files = NativeFileStore(document);
+        final lifecycle = NativeDocumentLifecycle(
+          document: document,
+          files: files,
+          settleInput: editor.focusLost,
+          confirmUnsaved: (_) async => NativeUnsavedDecision.cancel,
+          chooseSavePath: () async => path,
+        );
+        addTearDown(lifecycle.dispose);
+        const baseline = '기존 본문 ';
+        const firstText = '$baseline한';
+        await editor.setEditingValue(
+          TextEditingValue(
+            text: baseline,
+            selection: TextSelection.collapsed(offset: baseline.length),
+          ),
+        );
+        await editor.setEditingValue(
+          TextEditingValue(
+            text: firstText,
+            selection: TextSelection.collapsed(offset: firstText.length),
+            composing: TextRange(start: baseline.length, end: firstText.length),
+          ),
+        );
+        expect(document.info!.compositionId, isNotNull);
+        expect(await lifecycle.save(), isTrue);
+        expect(document.info!.compositionId, isNull);
+        expect(document.info!.isDirty, isFalse);
+        await files.openPath(path);
+        final reopened = NativeEditorController(document);
+        addTearDown(reopened.dispose);
+        await reopened.initialize();
+        expect(reopened.value.text, firstText);
+        expect(reopened.value.composing, TextRange.empty);
+
+        const secondText = '$firstText글';
+        await reopened.setEditingValue(
+          TextEditingValue(
+            text: secondText,
+            selection: TextSelection.collapsed(offset: secondText.length),
+            composing: TextRange(
+              start: firstText.length,
+              end: secondText.length,
+            ),
+          ),
+        );
+        expect(document.info!.compositionId, isNotNull);
+        final secondLifecycle = NativeDocumentLifecycle(
+          document: document,
+          files: files,
+          settleInput: reopened.focusLost,
+          confirmUnsaved: (_) async => NativeUnsavedDecision.cancel,
+          chooseSavePath: () async =>
+              throw StateError('The reopened document must retain its path.'),
+        );
+        addTearDown(secondLifecycle.dispose);
+        expect(await secondLifecycle.save(), isTrue);
+        expect(document.info!.compositionId, isNull);
+        expect(document.info!.isDirty, isFalse);
+        await files.openPath(path);
+        final reopenedAgain = NativeEditorController(document);
+        addTearDown(reopenedAgain.dispose);
+        await reopenedAgain.initialize();
+        expect(reopenedAgain.value.text, secondText);
+        expect(reopenedAgain.value.composing, TextRange.empty);
+        expect(document.info!.isDirty, isFalse);
+      },
+      skip: _missingLibraries ? _skipReason : false,
+    );
+  }
   test(
     'real Dart owner IME composes Hangul once and preserves scalar selections',
     () async {

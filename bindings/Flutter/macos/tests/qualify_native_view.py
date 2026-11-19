@@ -23,6 +23,7 @@ from qualify_desktop_texture import compare_pixels, digest, positive_integer, re
 import qualify_desktop_texture as pixel_contract
 import build_desktop_probe as build_contract
 from build_desktop_probe import artifact, checked_sha, sources, verify_copied_sources
+import gpu_memory_acceptance as memory_acceptance
 
 MAX_ENTRIES = 4096
 MAX_FILES = 2048
@@ -245,7 +246,8 @@ def validate_stage(stage, *, nonce, index, pid, previous=None, tile_group=False)
     return width, height, tuple(offset), dpr
 
 
-def validate_result(value, *, nonce, frames, tile_group=False, previous=None):
+def validate_result(value, *, nonce, frames, tile_group=False, previous=None,
+                    memory_cycles=0, stages=(), pid=None):
     if value.get("protocol") != 1 or value.get("nonce") != nonce or value.get("ok") is not True:
         raise ValueError("foreign or failed actual Mac completion")
     if value.get("consumerGpuCompletionVerified") is not False:
@@ -273,6 +275,8 @@ def validate_result(value, *, nonce, frames, tile_group=False, previous=None):
                 "retainedFrames", "frameBytes", "leases", "inFlightReplays"):
         if type(value.get("stats", {}).get(key)) is not int or value["stats"][key] != 0:
             raise ValueError("Native teardown did not return to zero: " + key)
+    return memory_acceptance.validate_memory_acceptance(
+        value, cycles=memory_cycles, stages=stages, pid=pid)
 
 
 def validate_cover(value, *, nonce, pid, previous, tile_group=False):
@@ -529,6 +533,8 @@ class MainFlutterWindow: NSWindow {
 
 def capture(args):
     require_macos()
+    cycles = getattr(args, "memory_pressure_cycles", 0)
+    memory_acceptance.memory_pressure_schedule(args.frames, cycles)
     receipt = read_json(args.build_receipt, limit=MAX_RECEIPT)
     if receipt.get("platform") != "macos" or receipt.get("buildExitCode") != 0:
         raise ValueError("successful actual Mac build receipt is required")
@@ -559,6 +565,7 @@ def capture(args):
     config = {"protocol": 1, "nonce": nonce, "output": str(output), "frameCount": args.frames, "cpuReference": True, "nativeCoverProbe": True,
               "backend": "macosMetalView", "presentationKind": "nativeView",
               "tileGroups": args.tile_group,
+              **({"memoryPressureCycles": cycles} if cycles else {}),
               **{key: str(value) for key, value in files.items()}}
     write_json(output / "config.json", config)
     state = {"platform": "macos", "qualification": "pending", "started": time.time(), "stages": [],
@@ -568,6 +575,9 @@ def capture(args):
              "nativeCoverStrategy": "nativeHideAndOpaqueFlutterCover",
              "tileGroupRequested": args.tile_group, "tileGroupSamplingVerified": False,
              "flutterOverlayOccludesVisibleNativeViewVerified": False}
+    if cycles:
+        state.update(memoryPressureCycles=cycles, memoryCollectorSourceFiles=
+                     memory_acceptance.verify_memory_sources(receipt, Path(__file__).resolve()))
     process = None
     log_path = output / "runner.log"
     try:
@@ -634,7 +644,11 @@ def capture(args):
             result = read_json(output / "result.json")
             if code:
                 raise ValueError("actual Mac Native close failed")
-            validate_result(result, nonce=nonce, frames=args.frames, tile_group=args.tile_group, previous=previous)
+            memory_summary = validate_result(result, nonce=nonce, frames=args.frames, tile_group=args.tile_group,
+                previous=previous, memory_cycles=cycles,
+                stages=[entry["stage"] for entry in state["stages"]], pid=process.pid)
+            if memory_summary is not None:
+                state["memoryAcceptance"] = memory_summary
             if not state["heldCoverVerified"]:
                 raise ValueError("actual held-cover/native-view composition was never observed")
             verify_bundle(bundle, receipt["runtimeBundle"])
@@ -670,6 +684,7 @@ def main():
     driver.add_argument("--frames", type=int, default=32)
     driver.add_argument("--tile-group", action="store_true", help="qualify two real AppKit tiles with one shared snapshot")
     driver.add_argument("--timeout", type=float, default=240)
+    memory_acceptance.add_memory_arguments(driver)
     args = parser.parse_args()
     if args.mode == "capture" and (not 8 <= args.frames <= 64 or not math.isfinite(args.timeout) or not 30 <= args.timeout <= 600):
         parser.error("capture requires 8..64 frames and a finite 30..600 second deadline")

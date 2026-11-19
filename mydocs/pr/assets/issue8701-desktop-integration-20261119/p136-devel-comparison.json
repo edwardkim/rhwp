@@ -1,0 +1,106 @@
+{
+  "base_source": "c526dd402bcf55d09cb8d0993537698a25d4740a",
+  "candidate_source": "64ba35858d4f511bdd993f24eae9337880a7f2b2",
+  "input": {
+    "path": "samples/issue8554/2913671-appendix1-family-register.hwp",
+    "sha256": "7f62b9fea6135cbf87192fc152674986c6a5eb4bdc73f216f32925e853dc077b",
+    "pages": 2
+  },
+  "reference_pdf": {
+    "path": "pdf/issue8554/2913671-appendix1-family-register-2022.pdf",
+    "sha256": "bfaf077f4e01e5397cbc34831a564fd88760c78c31aff1800ad13e52c5e69067",
+    "creator": "Hwp 2022 12.0.0.4547",
+    "producer": "Hancom PDF 1.3.0.547",
+    "pages": 2
+  },
+  "metric": "silhouette_raw_match_percent",
+  "profile": "print",
+  "compat": "2022",
+  "dpi": 96,
+  "raw_radius_px": 2,
+  "comparison": {
+    "native": {
+      "baseline_binary_sha256": "85724b0cb78d75e020375d6e27b497758d56e7ade57fdd47926cb1f62db19c06",
+      "baseline_package_sha256": [],
+      "baseline_tsv": "base-native.tsv",
+      "baseline_tsv_sha256": "ee2c1e3f3437c6863203ab226f8b39ea81287ac8f006820e3b04ef7d7494d617",
+      "baseline_capture_manifest_sha256": "42358dbceb0a6bc6ce235d270ffafb453d0bd81f2b15506cbdefef68dbd9fad3",
+      "candidate_tsv": "native/silhouette.tsv",
+      "candidate_tsv_sha256": "ee2c1e3f3437c6863203ab226f8b39ea81287ac8f006820e3b04ef7d7494d617",
+      "page_comparison": [
+        {
+          "page": 1,
+          "devel": "99.66",
+          "candidate": "99.66",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 2,
+          "devel": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        }
+      ],
+      "rendered_pngs": [
+        {
+          "page": 1,
+          "devel_sha256": "d2c3c95074f20f98205d4be3122d885d1fa2d984ed6435ef578d4cae303a0500",
+          "candidate_sha256": "d2c3c95074f20f98205d4be3122d885d1fa2d984ed6435ef578d4cae303a0500",
+          "identical_bytes": true
+        },
+        {
+          "page": 2,
+          "devel_sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1",
+          "candidate_sha256": "b0e152794b097b46e03a2db76356bb9c14ac2e3fe864380d480ff0cfa743a0b1",
+          "identical_bytes": true
+        }
+      ]
+    },
+    "wasm": {
+      "baseline_binary_sha256": "85724b0cb78d75e020375d6e27b497758d56e7ade57fdd47926cb1f62db19c06",
+      "baseline_package_sha256": [
+        {
+          "name": "rhwp.js",
+          "sha256": "75eaf7070854c66d31b2223558a4128d05d00dff46b51051ec943cfe250c6365"
+        },
+        {
+          "name": "rhwp_bg.wasm",
+          "sha256": "5cd2276e65e1737d040a54475d9fc5bdbd6885f3da864522dee243d15b610c87"
+        }
+      ],
+      "baseline_tsv": "base-wasm.tsv",
+      "baseline_tsv_sha256": "234bd285262377f54ea51049715f999e3e995b1281755e29ac7633e3c064d529",
+      "baseline_capture_manifest_sha256": "b5fe00d7afd0b4e742cbeaf826e53f5ceb81419242de0cf84463a06612fe9b73",
+      "candidate_tsv": "wasm/silhouette.tsv",
+      "candidate_tsv_sha256": "234bd285262377f54ea51049715f999e3e995b1281755e29ac7633e3c064d529",
+      "page_comparison": [
+        {
+          "page": 1,
+          "devel": "99.67",
+          "candidate": "99.67",
+          "delta_pp": "0.00"
+        },
+        {
+          "page": 2,
+          "devel": "100.00",
+          "candidate": "100.00",
+          "delta_pp": "0.00"
+        }
+      ],
+      "rendered_pngs": [
+        {
+          "page": 1,
+          "devel_sha256": "4977d7a06d9081e93d9e8a357b21aa0029b5058057d62e4544288aa0ce076c44",
+          "candidate_sha256": "4977d7a06d9081e93d9e8a357b21aa0029b5058057d62e4544288aa0ce076c44",
+          "identical_bytes": true
+        },
+        {
+          "page": 2,
+          "devel_sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302",
+          "candidate_sha256": "6fb2edcbc902de425f2df69d5b3f88bb5a0c58b8428abbca2caabc57521c8302",
+          "identical_bytes": true
+        }
+      ]
+    }
+  }
+}

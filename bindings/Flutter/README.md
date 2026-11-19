@@ -1,8 +1,10 @@
 # Flutter Native 참조 호스트
 
-Flutter UI에서 기존 rhwp Native worker C ABI를 호출하는 작은 CPU 참조 패키지다.
-브라우저·WASM·platform channel의 대형 픽셀 JSON을 사용하지 않는다. 문서 열기·정보·페이지 크기·
-CPU RGBA 표시와 종료를 연결한다. 문서 편집·IME·접근성·GPU texture plugin·설치 프로그램은 이 단계의 범위가 아니다.
+Flutter UI에서 기존 rhwp Native worker C ABI를 호출하는 범위가 제한된 참조 편집기다.
+HWP/HWPX 열기·편집·저장, IME·선택·caret·undo/redo, 다중 페이지 탐색과 CPU 표시를 연결하며
+선택적으로 Native GPU viewport를 사용한다. 브라우저·WASM·platform channel의 대형 픽셀 JSON을
+사용하지 않는다. 각 경로의 상한과 실행 절차는 아래 입력·다중 페이지·GPU 및 실행 번들 문서를 따른다.
+제품용 전체 UI와 실물 OS IME·접근성·GPU/hardware qualification은 별도 범위다.
 
 ## 스레드와 메모리 계약
 
@@ -46,8 +48,10 @@ flutter test --concurrency=1
 Linux의 dispatcher 파일은 `.so`, macOS는 `.dylib`, Windows는 `.dll`이다. Windows 빌드는 C11을 지원하는
 Visual Studio 개발 셸에서 실행한다. 실제 검증한 OS·SDK와 source SHA는 PR 검증 기록을 따른다.
 
-`example/lib/main.dart`는 파일 경로로 HWP/HWPX를 열고 첫 페이지의 보이는 CPU 영역을 표시한다.
-큰 문서·화면은 위 상한을 명시적으로 거절하며 전체 데스크톱 편집기를 제공하지 않는다.
+`example/lib/main.dart`는 HWP/HWPX 파일 열기·편집·저장과 bounded 다중 페이지 viewport를 연결한다.
+기본 CPU 경로와 선택적 GPU 경로의 실행·fallback 절차는 [실행 번들 가이드](RUNTIME_BUNDLE.md)를 따른다.
+페이지 metadata는 최대 256개, 한 번에 보이는 영역은 최대 4쪽이며 큰 요청은 명시적으로 거절한다.
+서식 도구 등 제품용 전체 데스크톱 UI는 별도 범위다.
 표준 Flutter desktop runner가 없는 checkout에서는 example에 필요한 runner를 먼저 생성한다.
 
 ```bash
@@ -92,7 +96,10 @@ Flutter DeltaTextInputClient의 UTF-16 문맥은 Native `imeEditContext`/`applyI
 전체 bounded context와 revision/font/selection/composition을 검증하며 surrogate 중간,
 16 KiB·4096 scalar 초과, 오래된 oldText, 근거 없는 조합 범위 이동은 거절하고 Native 상태로
 다시 동기화한다. 한글 preview 갱신은 같은 composition을 유지하고, 확정+새 조합은 취소 baseline을
-분리한다. focus loss/Escape는 현재 조합을 취소한다. 조합 중 Undo는 조합만 취소한다.
+분리한다. 일반 focus loss와 저장 전 입력 정리는 현재 Native 조합을 확정하고 완료를 기다린다.
+참조앱은 저장 전에 focus 변경을 적용해 플랫폼 입력 연결부터 닫고, 이미 수락한 입력의 확정을 기다린다.
+닫힌 입력 연결에서 늦게 전달된 editing value·delta·action은 새 편집으로 수락하지 않는다.
+Escape는 현재 조합을 취소한다. 조합 중 Undo도 조합만 취소한다.
 
 키 이동·grapheme 삭제·문단 분리·undo/redo·plain-text clipboard는 Native 명령을 사용한다.
 AltGr를 Ctrl 단축키로 취급하지 않는다. 드래그 hit-test는 하나만 진행하고 다음 위치를 합친다.
@@ -104,8 +111,9 @@ DPR은 raster/texture 해상도에만 적용하고 pointer/candidate rect의 log
 불완전 scope는 Native limitations/complete 상태를 유지한다. 여러 문단/객체를 걸친 선택은 Native에
 유지되며 clipboard/명령으로 다룰 수 있지만 이 IME 문맥으로 편집하지 않는다.
 
-이 뷰는 한 페이지 상단을 표시하는 참조 연결이다. 제품용 다중 페이지 navigation/scroll,
-서식 도구·파일 전환 UI 전체와 OS별 실물 IME/AT qualification을 완료했다고 표시하지 않는다.
+`NativeEditorView`는 [다중 페이지 viewport](#다중-페이지-참조-viewport-p105p111)의 배치와 연결해
+페이지 탐색·scroll 및 선택/caret follow를 제공한다. 최대 256쪽 metadata·4쪽 visible 영역의
+bounded 참조 연결이며, 서식 도구 등 전체 제품 UI와 OS별 실물 IME/AT qualification은 별도 범위다.
 
 ## 스냅샷 전송과 종료 경계
 
@@ -311,3 +319,8 @@ python3 tool/qualify_linux_tile_group.py \
 snapshot의 별도 CPU strip·2배 source replay로 양쪽과 seam을 검사한다. 각 CPU 요청은 기존 한도
 안에 남는다. 실제 두 registration 종료와 Native 아홉 자원 counter의 0을 확인한다. Xvfb/Mesa 결과는
 소프트웨어 실행 증거이며 Windows/macOS SDK·실물 GPU·한컴 독립 출력 qualification을 대신하지 않는다.
+
+기존 32..64회 연속 desktop probe의 선택적 메모리 압박·idle·종료 검증은
+[GPU memory acceptance 가이드](GPU_MEMORY_ACCEPTANCE.md)를 따른다.
+실제 binding→Native trim 영수증·process RSS·후속 compositor 표시를 함께 기록하며,
+회수량 0은 observedNoop으로 남기고 physical VRAM과 consumer GPU 완료는 추정하지 않는다.
