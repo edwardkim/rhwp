@@ -139,6 +139,8 @@ code head CI가 진행 중·실패·취소·미실행이면 review·오늘할일
 [collaborator self PR의 기록 시점](pr_review/collaborator_self_merge.md#821-pr-채번과-오늘할일-생성갱신-시점)을 따른다.
 
 외부 contributor PR처럼 PR이 이미 존재하는 경우에는 발급된 번호로 바로 review 접수를 시작한다.
+체리픽 통합은 원 PR별 archive 검토 문서를 로컬에서 작성·커밋한 뒤 통합 PR을 생성한다.
+[여러 PR 체리픽 누적 검토](pr_review/multi_pr_update_branch.md#421-여러-pr-체리픽-누적-검토)를 따른다.
 **일반 제출은 검증을 완료한 Open PR이며, 특별한 사유 없는 Draft 생성은 금지한다.** Draft는
 미완성 설계 논의·WIP 공유 목적과 그 상태 변경을 작업지시자가 명시적으로 승인한 경우에만 사용한다.
 일반 PR 생성 승인, 번호 확보·CI 시작·대기와 필수 검증 실패·미완료는 예외 사유가 아니다.

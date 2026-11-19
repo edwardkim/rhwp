@@ -8907,6 +8907,20 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 문단 번호 정의의 10수준 값을 통째로 바꾼다(한/글 '문단 번호/개요 번호 사용자 정의 모양').
+    ///
+    /// numberingId는 1부터이고 0이면 새로 만든다. 고친 정의는 번호가 그대로라 그 번호를 가리키는
+    /// 문단 모양·구역 개요 번호가 함께 바뀐다(한/글 개요 번호 모양처럼). json은
+    /// `{"levels":[{"format":"^1.","numberFormat":0,"start":1,"align":0,"useInstWidth":true,
+    /// "autoIndent":true,"widthAdjust":0,"textOffset":50,"charShape":null}, …]}`(수준 10개 또는 7개).
+    /// 반환값: Numbering ID (1-based)
+    #[wasm_bindgen(js_name = setNumbering)]
+    pub fn set_numbering(&mut self, numbering_id: u16, json: &str) -> Result<u16, JsValue> {
+        self.core
+            .set_numbering_native(numbering_id, json)
+            .map_err(|e| e.into())
+    }
+
     /// 글머리표 정의를 새로 만든다(한/글 '글머리표/그림 글머리표 사용자 정의 모양').
     ///
     /// json: {"char":"❏","align":1,"useInstWidth":false,"autoIndent":false,"widthAdjust":1000,

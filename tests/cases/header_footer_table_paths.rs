@@ -325,3 +325,80 @@ fn header_paragraph_shape_is_set_by_path() {
         1000
     );
 }
+
+/// 빈 문서 본문 표에 넣은 아래 캡션("표 1"). 머리말 표에 옮겨 단다.
+fn bottom_caption() -> rhwp::model::shape::Caption {
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document().unwrap();
+    let created: serde_json::Value =
+        serde_json::from_str(&doc.create_table_native(0, 0, 0, 1, 1).unwrap()).unwrap();
+    let para = created["paraIdx"].as_u64().unwrap() as usize;
+    let control = created["controlIdx"].as_u64().unwrap() as usize;
+    doc.set_table_properties_native(
+        0,
+        para,
+        control,
+        r#"{"hasCaption":true,"captionDirection":3}"#,
+    )
+    .unwrap();
+    match &doc.document().sections[0].paragraphs[para].controls[control] {
+        Control::Table(table) => table.caption.clone().expect("캡션"),
+        _ => panic!("표가 아니다"),
+    }
+}
+
+#[test]
+fn header_table_caption_is_hit_in_header_edit() {
+    use serde_json::Value;
+
+    fn caption_run(node: &Value) -> Option<&Value> {
+        if node["type"] == "TextRun" && node["text"].as_str().is_some_and(|t| t.contains('표')) {
+            return Some(node);
+        }
+        node["children"].as_array()?.iter().find_map(caption_run)
+    }
+
+    let (mut doc, host, hf) = doc_with_header_table();
+    let mut model = doc.document().clone();
+    let Control::Header(header) = &mut model.sections[0].paragraphs[host].controls[hf] else {
+        panic!("머리말이 아니다");
+    };
+    let Some(Control::Table(table)) = header.paragraphs[0].controls.first_mut() else {
+        panic!("머리말 표가 없다");
+    };
+    table.caption = Some(bottom_caption());
+    doc.set_document(model);
+
+    let tree: Value = serde_json::from_str(&doc.get_page_render_tree(0).unwrap()).unwrap();
+    let header = tree["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|n| n["type"] == "Header")
+        .expect("머리말 노드");
+    let run = caption_run(header).expect("머리말 표 캡션 줄");
+    let b = |k: &str| run["bbox"][k].as_f64().unwrap();
+    // 캡션 줄을 누르면 머리말 문단이 아니라 그 캡션(셀 65534) 글이다.
+    let hit: Value = serde_json::from_str(
+        &doc.hit_test_in_header_footer_target_native(
+            0,
+            0,
+            true,
+            0,
+            b("x") + b("w") / 2.0,
+            b("y") + b("h") / 2.0,
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    assert_eq!(hit["parentParaIndex"], host as u64, "{hit}");
+    assert_eq!(
+        hit["cellPath"],
+        serde_json::json!([
+            {"controlIndex": hf, "cellIndex": 0, "cellParaIndex": 0},
+            {"controlIndex": 0, "cellIndex": 65534, "cellParaIndex": 0}
+        ]),
+        "{hit}"
+    );
+    assert_eq!(hit["paraIndex"], 0, "{hit}");
+}

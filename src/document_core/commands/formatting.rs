@@ -2706,6 +2706,16 @@ impl DocumentCore {
                     }
                 }
                 para.forget_para_text_if_emptied();
+                Self::remap_active_field_root_control(
+                    &mut self.active_field,
+                    section_idx,
+                    para_idx,
+                    |index| match index.cmp(&idx) {
+                        std::cmp::Ordering::Less => Some(index),
+                        std::cmp::Ordering::Equal => None,
+                        std::cmp::Ordering::Greater => Some(index - 1),
+                    },
+                );
             }
         } else {
             let ph = PageHide {
@@ -2727,6 +2737,7 @@ impl DocumentCore {
                 for range in &mut para.field_ranges {
                     range.control_idx += 1;
                 }
+                self.shift_active_field_for_control_insert(section_idx, para_idx, 0);
             }
         }
 
