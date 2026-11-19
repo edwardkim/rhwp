@@ -1,5 +1,11 @@
 //! 검사 유형: 관계형 — 원 PUA·표시 기호·기호 프로그램·전진폭의 소유를 구분한다.
-//! 주석 갱신: 2026-11-12T20:27:00+09:00.
+//! 주석 갱신: 2026-11-20T05:29:53+09:00; 직전 파일 변경 31a422575722f634cfc2d9eb97e708da58aea188 (2026-11-13T01:05:55+09:00).
+//! planet6897/rhwp-issue-docs#614: 0xA1 의 「○ 크기의 흰 원」 기대값은 웹한글기안기 Haan Wings
+//! 이력이었다. 현재 기준 2020 Print 는 Wingdings glyph 7(advance 1825, 바깥 (173,0)..(1653,1480),
+//! 안쪽 (321,148)..(1505,1332))의 굵은 고리이므로 고리 윤곽 관계로 교정했다.
+//! 측정 2026-11-20(9f605a0d0a + 수정), 96 DPI·2px raw: 1쪽 Native 99.91%(수정 전 99.91%,
+//! 미일치 픽셀 동일) / fresh WASM 99.66%, 전체 1쪽 일치. 증거: mydocs/pr/assets/issue_614/.
+//! 이전 주석 갱신: 2026-11-12T20:27:00+09:00.
 //! 시각 근거: 보정 전 8fe7d1fb8b, 96 DPI·2px raw, Native 99.54% / fresh WASM 99.50%.
 //! 현재 기준: 독립 한컴 2020 11.0.0.9136 Print
 //! `pdf/issue8680/wingdings_pua_symbols-hwpx-2020.pdf`. 아래 웹 출력 설명은 이력이다.
@@ -189,8 +195,42 @@ fn wingdings_pua_circled_digits_are_painted_with_visible_symbols() {
     for s in ["⓪", "⑩", "⓿", "❶", "❿"] {
         assert_eq!(count(s), 1, "Wingdings 0x80~0x95 대역 {s}");
     }
-    // 0xA1 세 개 + 일반 ○ 세 개
-    assert_eq!(count("○"), 6, "Wingdings 0xA1 은 ○ 크기의 흰 원이다");
+    // 독립 한컴 2020 Print 의 0xA1 은 ○ 글꼴의 가는 원이 아니라 Wingdings 굵은 고리다.
+    // 보이는 ○ 글자는 둘째 줄의 일반 ○ 세 개뿐이고, 0xA1 세 개는 원 프로그램 윤곽의
+    // 고리(바깥 740/2048em, 안쪽 592/2048em)로 그린다.
+    assert_eq!(count("○"), 3, "보이는 ○ 글자는 일반 ○ 뿐이다");
+    let size = all.iter().find(|g| g.text == "○").expect("일반 ○").size;
+    let rings = ring_radii(&svg);
+    assert_eq!(rings.len(), 3, "Wingdings 0xA1 고리 세 개");
+    for (outer, inner) in rings {
+        assert!(
+            (outer / size - 740.0 / 2048.0).abs() < 0.002,
+            "바깥 반지름 {outer}"
+        );
+        assert!(
+            (inner / outer - 0.8).abs() < 0.002,
+            "안쪽/바깥 {inner}/{outer}"
+        );
+    }
+}
+
+/// `fill-rule="evenodd"` 고리 경로의 (바깥, 안쪽) 가로 반지름.
+fn ring_radii(svg: &str) -> Vec<(f64, f64)> {
+    svg.split("<path d=\"M")
+        .skip(1)
+        .filter_map(|tail| {
+            let head = &tail[..tail.find('>')?];
+            if !head.contains("fill-rule=\"evenodd\"") {
+                return None;
+            }
+            let d = &head[..head.find('"')?];
+            let radius = |part: &str| -> Option<f64> {
+                part.split('a').nth(1)?.split(' ').next()?.parse().ok()
+            };
+            let mut parts = d.split('M');
+            Some((radius(parts.next()?)?, radius(parts.next()?)?))
+        })
+        .collect()
 }
 
 #[test]

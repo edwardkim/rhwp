@@ -53,7 +53,7 @@ mod picture_bullet;
 pub(crate) use list_marker_geometry::ListMarkerGeometry;
 use list_marker_geometry::{
     head_marker_text_style, list_marker_geometry_for, marker_text_style, marker_text_width,
-    nominal_marker_size,
+    nominal_marker_size, unreferenced_bullet_marker_style,
 };
 mod cross_run_tab;
 pub(crate) use cross_run_tab::{resolve_last_tab_pending, PendingTab};
@@ -932,7 +932,8 @@ pub(crate) fn list_marker_geometry(
         .or_else(|| para.char_shapes.first().map(|cs| cs.char_shape_id))
         .unwrap_or(0);
     let end_id = paragraph_end_char_shape_id(para).unwrap_or(char_shape_id);
-    let style = marker_char_style(styles, head, &text, end_id)
+    let bullet = para_style.head_type == HeadType::Bullet;
+    let style = marker_char_style(styles, head, &text, end_id, bullet)
         .unwrap_or_else(|| marker_text_style(styles, end_id, &text));
     Some(list_marker_geometry_for(
         &text,
@@ -940,7 +941,7 @@ pub(crate) fn list_marker_geometry(
         &style,
         nominal_marker_size(styles, head, end_id, style.font_size),
         para_style.indent,
-        para_style.head_type == HeadType::Bullet,
+        bullet,
     ))
 }
 
@@ -953,17 +954,30 @@ pub(crate) fn list_marker_geometry(
 /// 별도 모양을 참조하지 않는 편집기·HWP3의 합성 머리는 생성 단계에서 센티널을 명시한다.
 /// 참조한 글자 모양의 기준 크기가 0 이면(한/글 '본문 글자 크기 따름') 문단 끝 글자 모양 `end_id` 의
 /// 크기로 그린다([`paragraph_end_char_shape_id`]).
+/// 참조 없는 글머리표(`bullet`)는 [`unreferenced_bullet_marker_style`]로 끝 모양을 쓰되
+/// 진하게를 적용하지 않는다. 참조 없는 번호·개요는 호출자의 끝 모양 상속을 그대로 쓴다.
 fn marker_char_style(
     styles: &ResolvedStyleSet,
     head: MarkerHead,
     text: &str,
     end_id: u32,
+    bullet: bool,
 ) -> Option<TextStyle> {
     let id = head.char_shape_id;
+    if id == u32::MAX && bullet {
+        return unreferenced_bullet_marker_style(styles, end_id, text);
+    }
     if id == u32::MAX || (id as usize) >= styles.char_styles.len() {
         return None;
     }
     Some(head_marker_text_style(styles, id, end_id, text))
+}
+
+fn para_style_is_bullet(styles: &ResolvedStyleSet, para_style_id: usize) -> bool {
+    styles
+        .para_styles
+        .get(para_style_id)
+        .is_some_and(|style| style.head_type == HeadType::Bullet)
 }
 
 /// 문단 끝(문단 나눔 표시) 자리의 글자 모양. 한/글 12.30은 '본문 글자 크기 따름' 번호를 이 크기로
@@ -4464,6 +4478,7 @@ impl LayoutEngine {
                 *head,
                 text,
                 paragraph_end_char_shape_id(para).unwrap_or(char_style_id),
+                para_style_is_bullet(styles, para_style_id as usize),
             )
             .unwrap_or_else(|| marker_text_style(styles, char_style_id, text));
             let height = para.line_segs.first().map_or(para_max_font_size, |line| {
@@ -6417,14 +6432,11 @@ impl LayoutEngine {
                 .unwrap_or_else(|| {
                     let first_run = composed.lines.first().and_then(|l| l.runs.first());
                     let end_id = marker_end_char_shape_id(para, first_run);
-                    let num_style = marker_char_style(styles, *head, num_text, end_id)
+                    let bullet = para_style_is_bullet(styles, composed.para_style_id as usize);
+                    let num_style = marker_char_style(styles, *head, num_text, end_id, bullet)
                         .unwrap_or_else(|| {
                             numbering_marker_text_style(styles, para, first_run, num_text)
                         });
-                    let bullet = styles
-                        .para_styles
-                        .get(composed.para_style_id as usize)
-                        .is_some_and(|ps| ps.head_type == HeadType::Bullet);
                     let nominal_size =
                         nominal_marker_size(styles, *head, end_id, num_style.font_size);
                     list_marker_geometry_for(
@@ -8449,6 +8461,7 @@ impl LayoutEngine {
                         *head,
                         num_text,
                         marker_end_char_shape_id(para, comp_line.runs.first()),
+                        para_style_is_bullet(styles, composed.para_style_id as usize),
                     )
                     .unwrap_or_else(|| {
                         numbering_marker_text_style(styles, para, comp_line.runs.first(), num_text)
@@ -13512,7 +13525,8 @@ pub fn map_pua_bullet_char(ch: char) -> char {
         // [Task #509] 0xA0 → · U+00B7 (Middle dot) — 한컴 PDF 정답지 시각 정합.
         // ▪ U+25AA (Black small square) 영역 아님 (synam-001 사용 영역).
         0xA0 => '\u{00B7}', // · Middle dot
-        // 웹한글기안기 인쇄의 Haan Wings 0xA1 은 ○ 와 같은 크기의 흰 원이다.
+        // 표시·텍스트 추출용 대응이다. 실제 전진·잉크는 독립 한컴 Print의 Wingdings
+        // 고리 윤곽을 implicit_symbol이 소유하며 ○ 글꼴의 가는 원으로 그리지 않는다.
         // ⚪(U+26AA)는 대체 글꼴에서 작은 점처럼 보여 점검표 표시가 달라진다.
         0xA1 => '\u{25CB}', // ○ White circle
         0xA2 => '\u{25CB}', // ○ (Heavy large circle → 근사값)

@@ -1029,6 +1029,47 @@ IR `SolidFill.pattern_type`은 HWP 저장값을 그대로 둔다. HWPX 파서·�
 대응을 쓰고, SVG·웹 캔버스·Skia·Studio CanvasKit은 같은 0~5 표로 그린다
 (`src/model/style.rs`의 `HatchStyle`).
 
+## 41. 문단 머리 정보 (표 39) — 글자 모양 참조 `0xFFFFFFFF`의 글머리표 표시
+
+- **발견일**: 2026-11-20, planet6897/rhwp-issue-docs#614.
+- **분류**: 미기술 보완. 공식 원문은 표 39의 「글자 모양 아이디 참조」만 적고, 참조가 없는
+  `0xFFFFFFFF`(HWPX `charPrIDRef="4294967295"`)일 때 마커를 어떤 글자 모양으로 그리는지
+  기술하지 않는다. 원문 PDF는 변경하지 않는다.
+- **확인한 동작**: 참조 없는 머리는 **문단 끝**(문단 나눔 표시) 글자 모양의 글꼴·크기로
+  마커를 그리고, '%' 본문 거리도 그 크기를 기준으로 한다. 문단 첫 글자 모양이 아니다.
+  이 중 **글머리표**는 끝 글자 모양이 진하게여도 진하게를 적용하지 않는다.
+  문단 번호는 같은 참조 없음에서 끝 모양의 진하게를 유지한다.
+
+### 교차 확인한 근거
+
+모두 원본 DocInfo BULLET/NUMBERING·PARA_CHAR_SHAPE 바이트와 독립 한컴 Print의 글꼴·크기·
+렌더 모드(Tr)를 대조했다.
+
+1. `samples/issue614/issue614-bullet-end-char-shape.hwp`(SHA-256 앞 16자리 `f959c73dc62f27da`)
+   2쪽 「추후작성예정」: 글머리표 1(`U+F0A1`, 참조 없음, 거리 50%), 첫 글자 모양 1100HU,
+   끝 1600HU 진하게. 한컴 2022 Print `pdf/issue614/issue614-bullet-end-char-shape-2022.pdf`
+   (`9ee27ab469e4ca95`)는 Wingdings 15.95pt·채움만(Tr 0)으로 그리고, 본문 첫 글자는
+   마커 원점 104.82pt + 16pt×(1+50%) = 128.81pt에서 시작한다. 같은 문서 13쪽의 같은
+   글머리표(끝 1100HU)는 11.03pt다. 같은 쪽 제목 「머리말」의 진하게는 Tr 2로 그린다.
+2. 크기 방향 반례: `1480000-201900042-chemical-labeling-standards`(첫 1200·끝 1000HU)는
+   `U+F0A1`·`U+F09F`를 9.96pt로, `70833-electrical-safety-rule-regulatory-analysis` 12쪽
+   (첫 1000·끝 1200HU)은 `U+F046`을 12.0pt로, `issue4514/sample1-repro` 7쪽의 `-`
+   (첫 1200·끝 900HU)는 9.0pt로 그린다. `task2097/21217935_simsa_jipyo` 7쪽의 `-`는 본문
+   맑은 고딕이 아닌 끝 글자 모양의 굴림으로 그린다.
+3. 진하게 미적용: `issue8795/1351000-201500141_arrhythmia_research_plan` 35·46쪽(끝 1200HU
+   진하게)과 `1341000-201100013-cyber-university-application` 33쪽(첫·끝 진하게)의 Wingdings
+   마커는 Tr 0이다. `hwpx/20260909-para-table` 1쪽(한컴 2024)의 `-`는 본문 HCRDotum-Bold와
+   달리 HCRDotum이고, `pr-1674` 8쪽의 `-`는 첫 글자 진하게·끝 보통에서 채움만이다.
+   본문 Wingdings를 윤곽선 포함(Tr 1·2)으로 그린 한컴 Print도 있다(`k-water-rfp-hwp-2020` 23쪽,
+   `inner-table-01-hwp-2020` 1쪽). Wingdings라서 진하게를 못 그리는 것은 아니다.
+4. 번호 대조군: `synam-001` 4쪽의 번호 `^1.`(참조 없음, 첫 1100·끝 1000HU, 모두 진하게)는
+   MalgunGothicBold 9.96pt다. 크기는 같은 끝 모양 규칙이고 진하게는 유지된다.
+
+문단 끝 크기 상속은 #9177(`dc5f347ae8`)에서 구현했다. 글머리표의 진하게 제외는
+`src/renderer/layout/paragraph_layout/list_marker_geometry.rs`의
+`unreferenced_bullet_marker_style`이 소유하며 줄 나눔·배치·paint가 같은 결과를 소비한다.
+기울임·밑줄 등 다른 꾸밈은 독립 근거가 없어 끝 모양을 그대로 쓴다.
+
 ## 검증 원칙
 
 1. **사양 우선·불일치 교차 검증**: 공식 사양의 단위·속성·규칙을 먼저 따른다. 실제 결과가

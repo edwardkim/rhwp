@@ -571,6 +571,29 @@ impl SkiaTextReplay<'_> {
                                 crate::renderer::implicit_symbol::InkShape::Rectangle => {
                                     canvas.draw_rect(bounds, &text_paint);
                                 }
+                                crate::renderer::implicit_symbol::InkShape::Ring { inner }
+                                | crate::renderer::implicit_symbol::InkShape::Frame { inner } => {
+                                    let (irx, iry) = (rx * inner, ry * inner);
+                                    let hole = skia_safe::Rect::from_xywh(
+                                        (cx - irx) as f32,
+                                        (cy - iry) as f32,
+                                        (2.0 * irx) as f32,
+                                        (2.0 * iry) as f32,
+                                    );
+                                    let mut outline = skia_safe::PathBuilder::new();
+                                    if matches!(
+                                        shape,
+                                        crate::renderer::implicit_symbol::InkShape::Ring { .. }
+                                    ) {
+                                        outline.add_oval(bounds, None, None);
+                                        outline.add_oval(hole, None, None);
+                                    } else {
+                                        outline.add_rect(bounds, None, None);
+                                        outline.add_rect(hole, None, None);
+                                    }
+                                    outline.set_fill_type(skia_safe::PathFillType::EvenOdd);
+                                    canvas.draw_path(&outline.detach(), &text_paint);
+                                }
                             }
                             continue;
                         }
