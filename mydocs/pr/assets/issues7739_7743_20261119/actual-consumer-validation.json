@@ -1,0 +1,1242 @@
+{
+  "status": "passed",
+  "product_source": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+  "purpose": "대표 페이지의 실제 화면과 네 원본 전쪽 인쇄 점수의 검증 경로를 각각 기록",
+  "native_binary_sha256": "b16cfa81f9e0395dc7aa76531c485d92c7671e67c8870f305687e2fb965ae88a",
+  "build": "macOS arm64 locked wasm-pack --target web --out-dir pkg --no-opt",
+  "full_canvas_sweep": "visual-evidence.json",
+  "dpi": 96,
+  "comparison_profile": "print",
+  "browser": "Chrome/157.0.8103.79",
+  "page_rows": [
+    {
+      "case": "rowbreak-hwpx",
+      "page": 5,
+      "native": {
+        "png_sha256": "b87267559cfffa63e25f55fd2a8d4f8945fa156f43c6a0c572489b6b2e4ba6a4",
+        "pdf_png_sha256": "de1ef7fd72da49860517141bbdff3b21c4c1a75e729eaca174b983723d04c3b4",
+        "raw_match": 99.99508
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 18,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1123
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 5,
+        "raw_match": 99.96405,
+        "png_sha256": "d2543dfc2e8ca5257aca8855ddb38ff300790c9c1b8b657ed5b2ac79aafc2f7a",
+        "pdf_png_sha256": "de1ef7fd72da49860517141bbdff3b21c4c1a75e729eaca174b983723d04c3b4",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+          "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+          "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+          "f80f710a6079a9783e5a23405903fab70e7f10914aa9d0c824e1631567f169f5",
+          "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+        ]
+      },
+      "canvaskit": {
+        "active": "canvaskit",
+        "profile": "print",
+        "page_count": 18,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1123
+        ],
+        "selection": "explicitCanvasKit",
+        "paint_generation": 6,
+        "raw_match": 99.953,
+        "png_sha256": "423f4c79aadf551969e28b7d8a112c55f63079bce3b99d71cab1b0448b92df2f",
+        "pdf_png_sha256": "de1ef7fd72da49860517141bbdff3b21c4c1a75e729eaca174b983723d04c3b4",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ],
+        "runtime_readiness_passed": true,
+        "backend_diagnostics": {},
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p005/canvaskit.png",
+          "sha256": "423f4c79aadf551969e28b7d8a112c55f63079bce3b99d71cab1b0448b92df2f"
+        },
+        "review": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p005/canvaskit-review.png",
+          "sha256": "8ab0bbcf338050a55fffcedb62022f9506a7d4a0a05a7c879fb3dae1c15fc474"
+        },
+        "overlay": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p005/canvaskit-overlay.png",
+          "sha256": "36449647d4368f0d6dbb87068600a1b0b917b579f602c4de4be570ed60d19997"
+        }
+      }
+    },
+    {
+      "case": "rowbreak-hwpx",
+      "page": 11,
+      "native": {
+        "png_sha256": "86a6b55c59de37cf9546b2b17c6d12d1ba06c69f370d2ffc1406b1e706d6190a",
+        "pdf_png_sha256": "5d6c438eac0afd4abc4def5fbf5666d7cd0e2047004dc29ebc4795ff7c1c3f77",
+        "raw_match": 99.95013,
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p011/native.png",
+          "sha256": "86a6b55c59de37cf9546b2b17c6d12d1ba06c69f370d2ffc1406b1e706d6190a"
+        }
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 18,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1123
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 5,
+        "raw_match": 99.66495,
+        "png_sha256": "0a85f377479d3cff98999b6b6da716f6e8d7feff2cf9cedc036fbb825ec72971",
+        "pdf_png_sha256": "5d6c438eac0afd4abc4def5fbf5666d7cd0e2047004dc29ebc4795ff7c1c3f77",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+          "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+          "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+          "f80f710a6079a9783e5a23405903fab70e7f10914aa9d0c824e1631567f169f5",
+          "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+        ],
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p011/canvas2d.png",
+          "sha256": "0a85f377479d3cff98999b6b6da716f6e8d7feff2cf9cedc036fbb825ec72971"
+        },
+        "review": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p011/canvas2d-review.png",
+          "sha256": "ee7eec54db861755a0117e9c089785648247c75fd103a7b41cfbe3e5074066f6"
+        },
+        "overlay": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p011/canvas2d-overlay.png",
+          "sha256": "5c4eab03e319671a74c9eaa370a296c4316a5427bdfd53f69ee9cb982b0f5ad1"
+        }
+      },
+      "canvaskit": {
+        "active": "canvaskit",
+        "profile": "print",
+        "page_count": 18,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1123
+        ],
+        "selection": "explicitCanvasKit",
+        "paint_generation": 6,
+        "raw_match": 99.43946,
+        "png_sha256": "5d677f5791c29fa9fa61919b37fabc8f81d2d1418f7bf4fa831085e1d662d3cd",
+        "pdf_png_sha256": "5d6c438eac0afd4abc4def5fbf5666d7cd0e2047004dc29ebc4795ff7c1c3f77",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ],
+        "runtime_readiness_passed": true,
+        "backend_diagnostics": {},
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p011/canvaskit.png",
+          "sha256": "5d677f5791c29fa9fa61919b37fabc8f81d2d1418f7bf4fa831085e1d662d3cd"
+        },
+        "review": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p011/canvaskit-review.png",
+          "sha256": "49b4a3fec50760a4450e37a463fe3f0b4cae4e91e87989dd882ebfb8128a9eb6"
+        },
+        "overlay": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p011/canvaskit-overlay.png",
+          "sha256": "d8b303bf9d4f658acd12b1a1170470fb7f96c055a8a15ae1a966507017eea8e8"
+        }
+      }
+    },
+    {
+      "case": "rowbreak-hwpx",
+      "page": 12,
+      "native": {
+        "png_sha256": "9d442584ccf8a47d9dd94a127b26f753a76e359918c5da188e464ec471eaa7cc",
+        "pdf_png_sha256": "7ef6f4f624889d706ae9cbdf466103faad59268d51581df1a55c0c8c563c11d5",
+        "raw_match": 99.92582
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 18,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1122
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 5,
+        "raw_match": 98.36753,
+        "png_sha256": "9f324057a693b30b04b0c85595dfb8d4072e718103ca373fd27ede54bb62a780",
+        "pdf_png_sha256": "7ef6f4f624889d706ae9cbdf466103faad59268d51581df1a55c0c8c563c11d5",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "018a0f18613a98d446696ea3d36194e288d5d8004aa58327789c830f6179e23d",
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "94de26a11aa25619526ac8183fde4f46e74e22c527acb42aea2e93f5313bbc5b",
+          "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+          "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
+          "f80f710a6079a9783e5a23405903fab70e7f10914aa9d0c824e1631567f169f5",
+          "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+        ]
+      },
+      "canvaskit": {
+        "active": "canvaskit",
+        "profile": "print",
+        "page_count": 18,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1122
+        ],
+        "selection": "explicitCanvasKit",
+        "paint_generation": 6,
+        "raw_match": 98.70026,
+        "png_sha256": "b2a04249bc88cf7049755b7d5277958ac863561c483f15d3ec50e639e7e13289",
+        "pdf_png_sha256": "7ef6f4f624889d706ae9cbdf466103faad59268d51581df1a55c0c8c563c11d5",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ],
+        "runtime_readiness_passed": true,
+        "backend_diagnostics": {},
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p012/canvaskit.png",
+          "sha256": "b2a04249bc88cf7049755b7d5277958ac863561c483f15d3ec50e639e7e13289"
+        },
+        "review": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p012/canvaskit-review.png",
+          "sha256": "b9d728ff45ab83b9f2c90ec5e6a50833222dda371aa1b9de2ecbbc434a7b1ba2"
+        },
+        "overlay": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/rowbreak-hwpx/p012/canvaskit-overlay.png",
+          "sha256": "f9017b8cdbc1c00f4c001aa30f40c55ba4bf472a5408d664fdc282fbd33595e3"
+        }
+      }
+    },
+    {
+      "case": "cyber-6795",
+      "page": 1,
+      "native": {
+        "png_sha256": "033daef7d9d7df1fbc9cdabc0a07f61d98de8abd6991272685a13243d75abd7d",
+        "pdf_png_sha256": "e561b7fe619c01b371ba57b1425454d1bb2fa441d1765d4cca493a94d2b3e680",
+        "raw_match": 98.78671
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 45,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          718,
+          983
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 4,
+        "raw_match": 99.17185,
+        "png_sha256": "1ec4bfcb77c44ee415f8388d1352a6f6e7cf64ed7365de29cf073b1b0122cc48",
+        "pdf_png_sha256": "e561b7fe619c01b371ba57b1425454d1bb2fa441d1765d4cca493a94d2b3e680",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+          "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c",
+          "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+          "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ]
+      }
+    },
+    {
+      "case": "cyber-6795",
+      "page": 28,
+      "native": {
+        "png_sha256": "db50c264fbda7b49b97c047b5f91e9245b1e357960298ec5a1b7a6e3452eb231",
+        "pdf_png_sha256": "59839adf80d8e2695697051f23bc349a75e1352b691e41c29992d0436f423c2f",
+        "raw_match": 99.76759,
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/cyber-6795/p028/native.png",
+          "sha256": "db50c264fbda7b49b97c047b5f91e9245b1e357960298ec5a1b7a6e3452eb231"
+        }
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 45,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          718,
+          983
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 5,
+        "raw_match": 99.75361,
+        "png_sha256": "99308f003285a05863c07fc079475ed1933a03f7676e6aaaa4db796db8f466ef",
+        "pdf_png_sha256": "59839adf80d8e2695697051f23bc349a75e1352b691e41c29992d0436f423c2f",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+          "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c",
+          "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+          "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ],
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/cyber-6795/p028/canvas2d.png",
+          "sha256": "99308f003285a05863c07fc079475ed1933a03f7676e6aaaa4db796db8f466ef"
+        },
+        "review": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/cyber-6795/p028/canvas2d-review.png",
+          "sha256": "d5d144f2005969aecb0e12c322278bbbb4f1c56caa2db91a856f8532bc1a75b0"
+        },
+        "overlay": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/cyber-6795/p028/canvas2d-overlay.png",
+          "sha256": "53979b5750b5e8b0d9b1d9740163f7e068c2cbb63e4dc22c0243cc22c17a23d2"
+        }
+      }
+    },
+    {
+      "case": "cyber-6795",
+      "page": 29,
+      "native": {
+        "png_sha256": "61b3b38baf89e1c2d91e405e1bc113afc97b43ec4180eff29a44f9bf79d3dc11",
+        "pdf_png_sha256": "9bfbe707d5dca5475f0c26eac15501e799ad6fafa31d346520441ddee870694c",
+        "raw_match": 98.31892
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 45,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          718,
+          982
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 5,
+        "raw_match": 99.86233,
+        "png_sha256": "2042243201427dcc2927f6717da0ad6da5028eb86136c7828c4356b10f09789a",
+        "pdf_png_sha256": "9bfbe707d5dca5475f0c26eac15501e799ad6fafa31d346520441ddee870694c",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "472830cfd4f5edc2d9dc9d0a8e3078839977c4bb0e317b198549ce278075bd26",
+          "4aa75dc359589ce6177b790cd347ab7caa9affb78ca74621d17d370a8f6bed52",
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "596303d75b0c9a700c3c1aa0e8c55e09d120e9eb1479e284e5941dc0ac26585c",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c",
+          "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+          "dbdf067e6e1d40bb8baeae72ca06289a4b8be15ded97f831262f28e8901ee54f",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ]
+      }
+    },
+    {
+      "case": "chemical-6782",
+      "page": 16,
+      "native": {
+        "png_sha256": "e8f22f71c9afba2775dd706daac2995b4797ca5b6ddc8e8e2bb028e2b511655e",
+        "pdf_png_sha256": "9b038957b3c8d749118aa6233d5e09a1a1783849a85316b96926f97e35a9648f",
+        "raw_match": 99.98426
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 103,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1122
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 4,
+        "raw_match": 99.99781,
+        "png_sha256": "73bedfac18a58a5778b23754c326904d30c2bd1d49b2681c784227a3dcf4d92b",
+        "pdf_png_sha256": "9b038957b3c8d749118aa6233d5e09a1a1783849a85316b96926f97e35a9648f",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "27c429bed5366bb68d12ca457ca1763ba10993d8f2614ca7ce2a723237b3e7cb",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd",
+          "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ]
+      }
+    },
+    {
+      "case": "chemical-6782",
+      "page": 64,
+      "native": {
+        "png_sha256": "281d4193c344027173570024f0e9b41cc192f22f33210004a892e2af6f245dee",
+        "pdf_png_sha256": "e2e6e876d09ca39fb1989b94d94ae2187863d8172d3b80307a35d6e63563f32f",
+        "raw_match": 99.70363,
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/chemical-6782/p064/native.png",
+          "sha256": "281d4193c344027173570024f0e9b41cc192f22f33210004a892e2af6f245dee"
+        }
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 103,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          1122,
+          794
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 4,
+        "raw_match": 99.70578,
+        "png_sha256": "716882225d7be07178e703e3a073ea540efedbcde0310f1cb78a3429b9951312",
+        "pdf_png_sha256": "e2e6e876d09ca39fb1989b94d94ae2187863d8172d3b80307a35d6e63563f32f",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "27c429bed5366bb68d12ca457ca1763ba10993d8f2614ca7ce2a723237b3e7cb",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd",
+          "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ],
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/chemical-6782/p064/canvas2d.png",
+          "sha256": "716882225d7be07178e703e3a073ea540efedbcde0310f1cb78a3429b9951312"
+        },
+        "review": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/chemical-6782/p064/canvas2d-review.png",
+          "sha256": "be05d389352cccb8a5159ec30a0a32d8b02b0407961767fce4e4cd5fc24f0bfc"
+        },
+        "overlay": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/chemical-6782/p064/canvas2d-overlay.png",
+          "sha256": "38c62ba1ace5322514fdef051275ed9a7f9d4bfcc271b3ede7b0a43ec13d78fb"
+        }
+      }
+    },
+    {
+      "case": "chemical-6782",
+      "page": 88,
+      "native": {
+        "png_sha256": "f1aa688c8b5f23075c1a41dd90392c719783b3901048d8a21be988a567426dcc",
+        "pdf_png_sha256": "c9cff6de0d81a73db5e5ee1ffdb48bdb7d79a68ffe1b21f06668b10a3b923f33",
+        "raw_match": 100.0
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 103,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1123
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 4,
+        "raw_match": 100.0,
+        "png_sha256": "60e21ec7f6d0f55b5ee3dfa99dc595296b6e29e18ed680df5e7d3e63d71c04cb",
+        "pdf_png_sha256": "c9cff6de0d81a73db5e5ee1ffdb48bdb7d79a68ffe1b21f06668b10a3b923f33",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "27c429bed5366bb68d12ca457ca1763ba10993d8f2614ca7ce2a723237b3e7cb",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "b23742143bae95dfaf50d8d530e798c7863336b254b899024b0b12b09c93abfd",
+          "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d713af89fbadd537f4bdf217f43a16dd11e9ec21f371e82ad93898afbb35374e",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ]
+      }
+    },
+    {
+      "case": "curriculum-2287",
+      "page": 8,
+      "native": {
+        "png_sha256": "c7b6b2e183d4722fbf5fc89cc2e05a6c6f01a27fa75ee1d8e367ab23e9df6d4a",
+        "pdf_png_sha256": "0673d6c2400d2c5d5dfe5877292102527d71b36c7ab230d4f7a6e659e51de40d",
+        "raw_match": 100.0,
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/curriculum-2287/p008/native.png",
+          "sha256": "c7b6b2e183d4722fbf5fc89cc2e05a6c6f01a27fa75ee1d8e367ab23e9df6d4a"
+        }
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 415,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          794,
+          1122
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 4,
+        "raw_match": 100.0,
+        "png_sha256": "b8f5c3c45c817b9dc40ca1801eedddfa349032bfcbf0a76f90a8d49c2ad38cbe",
+        "pdf_png_sha256": "0673d6c2400d2c5d5dfe5877292102527d71b36c7ab230d4f7a6e659e51de40d",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1984e8c30aecd04af2bc204ff5fe5bcf1f8fe98451d2d8944122d3235bc1d2f4",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733",
+          "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+          "4df601c0a47dc2b38b41d3542855192e381191462d202c87c3e5aef0fb07f003",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+          "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+          "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ],
+        "png": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/curriculum-2287/p008/canvas2d.png",
+          "sha256": "b8f5c3c45c817b9dc40ca1801eedddfa349032bfcbf0a76f90a8d49c2ad38cbe"
+        },
+        "review": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/curriculum-2287/p008/canvas2d-review.png",
+          "sha256": "45a9e20b3ed733cc8a19ad93268bdb0cbd13b4fc69a400f4485d80ce9681b213"
+        },
+        "overlay": {
+          "file": "mydocs/pr/assets/issues7739_7743_20261119/actual/curriculum-2287/p008/canvas2d-overlay.png",
+          "sha256": "5e457054f835d937a89b83f84324ea8a56c7695b2b45417ea3cff1d60d84e6e2"
+        }
+      }
+    },
+    {
+      "case": "curriculum-2287",
+      "page": 175,
+      "native": {
+        "png_sha256": "ef05b46dd1a8fe07b3aa36ded26d1c9135f7934e583161140d806bfdd71e1825",
+        "pdf_png_sha256": "fa69ceaccd7030f53f8ba0cef5cacd623e885084c14c816c4b40994fedbc7908",
+        "raw_match": 100.0
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 415,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          1122,
+          794
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 4,
+        "raw_match": 99.90977,
+        "png_sha256": "b6610a3b20ae8115715b3f8064626a94b6a3ed15b3424919a128cb6bce48934c",
+        "pdf_png_sha256": "fa69ceaccd7030f53f8ba0cef5cacd623e885084c14c816c4b40994fedbc7908",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1984e8c30aecd04af2bc204ff5fe5bcf1f8fe98451d2d8944122d3235bc1d2f4",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733",
+          "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+          "4df601c0a47dc2b38b41d3542855192e381191462d202c87c3e5aef0fb07f003",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+          "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+          "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ]
+      }
+    },
+    {
+      "case": "curriculum-2287",
+      "page": 230,
+      "native": {
+        "png_sha256": "bc0e4216dff753b966f9cac8913db6ff55f59f8c353537726b90557beb9f9458",
+        "pdf_png_sha256": "b11200431d986e023ac7d6ac6a23370cffc72911c87923a1c8a49ecb2f851bb3",
+        "raw_match": 100.0
+      },
+      "canvas2d": {
+        "active": "canvas2d",
+        "profile": "print",
+        "page_count": 415,
+        "zoom": 1,
+        "dpr": 1,
+        "actual_size": [
+          1122,
+          794
+        ],
+        "selection": "explicitCanvas2d",
+        "paint_generation": 4,
+        "raw_match": 99.93915,
+        "png_sha256": "946767c4c8391eec277bfbf8c490da2019caa164a9c523703a7787254d469125",
+        "pdf_png_sha256": "b11200431d986e023ac7d6ac6a23370cffc72911c87923a1c8a49ecb2f851bb3",
+        "browser_initialization": [
+          {
+            "name": "rhwp.js",
+            "status": 200,
+            "digest": "4b346a2269e70e1e7c5f605f052cbb92a15c5b0e8ef9896bc23f25c8de2d22fa",
+            "bytes": 3320754,
+            "sourceHashes": [
+              "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d"
+            ]
+          },
+          {
+            "name": "rhwp_bg.wasm",
+            "status": 200,
+            "digest": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f",
+            "bytes": 32301967,
+            "sourceHashes": []
+          }
+        ],
+        "prepared_program_sha256s": [
+          "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+          "1984e8c30aecd04af2bc204ff5fe5bcf1f8fe98451d2d8944122d3235bc1d2f4",
+          "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+          "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659",
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "48a28e97b34fc8e5b157657633670cd1b7de126cfc414da65ce9c3d5bc8be733",
+          "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+          "4df601c0a47dc2b38b41d3542855192e381191462d202c87c3e5aef0fb07f003",
+          "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+          "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104",
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "d0adfdcb40b7e73389128cc0222b53a91e5aa0e653f89967485a1f8b46124eb7",
+          "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+          "d4783b24266c1d24af76c4330801ed119bbda4221357f0170964964b7a3624c9",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+          "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831",
+          "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f",
+          "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        ]
+      }
+    }
+  ],
+  "canvas_kit_fallbacks": [
+    {
+      "case": "cyber-6795",
+      "pages": [
+        1,
+        28,
+        29
+      ],
+      "actual_backend": "canvas2d",
+      "used_for_canvaskit_pass": false,
+      "preflight": {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "eligible",
+        "eligible": true,
+        "complete": true,
+        "pageCount": 45,
+        "scannedPages": 45,
+        "scannedWorkUnits": 88720,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 200000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 10456,
+          "directItems": 10456,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [],
+        "requiredFontFamilies": [
+          "HY견명조",
+          "HY헤드라인M",
+          "Palatino Linotype",
+          "굴림",
+          "굴림체",
+          "돋움",
+          "맑은 고딕",
+          "옥션고딕 M",
+          "한양견고딕",
+          "한양견명조",
+          "한양신명조",
+          "한양중고딕",
+          "한컴돋움",
+          "휴먼명조"
+        ],
+        "capabilityDigest": "blake3:3974e9ab1d35f059e3f6de270df84323bad94a7efa442243b18a52ddbdc32574"
+      },
+      "selection_reason": "canvaskitResourcePreparationFailed",
+      "selection_error": "렌더링 오류: Canvas2D supplemental metrics are active; select portable metrics before exporting"
+    },
+    {
+      "case": "chemical-6782",
+      "pages": [
+        16,
+        64,
+        88
+      ],
+      "actual_backend": "canvas2d",
+      "used_for_canvaskit_pass": false,
+      "preflight": {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "ineligible",
+        "eligible": false,
+        "complete": true,
+        "pageCount": 103,
+        "scannedPages": 103,
+        "scannedWorkUnits": 158166,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 200000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 14085,
+          "directItems": 14084,
+          "directRequiredItems": 1,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 1
+        },
+        "blockers": [
+          {
+            "pageIndex": 85,
+            "code": "hiddenCanvas2dOverlayRequired",
+            "opType": "rectangle",
+            "detail": "shapeTransform"
+          }
+        ],
+        "requiredFontFamilies": [
+          "-소망B",
+          "HY견고딕",
+          "HY중고딕",
+          "HY헤드라인M",
+          "Palatino Linotype",
+          "돋움",
+          "맑은 고딕",
+          "바탕",
+          "바탕체",
+          "한양신명조",
+          "한양중고딕",
+          "휴먼명조",
+          "휴먼모음T"
+        ],
+        "capabilityDigest": "blake3:a99e48ab91ae1bd26fbc464d58f9006f6f36639c8c0fa200892bd756a8ee589c"
+      },
+      "selection_reason": "canvaskitResourcePreparationFailed",
+      "selection_error": "CanvasKit font family가 준비되지 않았습니다: 휴먼모음T"
+    },
+    {
+      "case": "curriculum-2287",
+      "pages": [
+        8,
+        175,
+        230
+      ],
+      "actual_backend": "canvas2d",
+      "used_for_canvaskit_pass": false,
+      "preflight": {
+        "schemaVersion": 1,
+        "mode": "default",
+        "profile": "print",
+        "status": "incomplete",
+        "eligible": false,
+        "complete": false,
+        "pageCount": 415,
+        "scannedPages": 0,
+        "scannedWorkUnits": 0,
+        "limits": {
+          "maxPages": 128,
+          "maxWorkUnits": 200000,
+          "maxBlockers": 32,
+          "maxRequiredFontFamilies": 256
+        },
+        "summary": {
+          "totalItems": 0,
+          "directItems": 0,
+          "directRequiredItems": 0,
+          "compatOverlayItems": 0,
+          "textFallbackItems": 0,
+          "unsupportedItems": 0,
+          "hiddenOverlayViolations": 0
+        },
+        "blockers": [
+          {
+            "pageIndex": 128,
+            "code": "pageLimitExceeded",
+            "detail": "pageCount=415;maxPages=128"
+          }
+        ],
+        "requiredFontFamilies": [],
+        "capabilityDigest": "blake3:88f674b7ce12af4233a5ab04f55fdda0e578701b6dd3565babf6a3689e9e5f5d"
+      },
+      "selection_reason": "canvaskitResourcePreparationFailed",
+      "selection_error": "렌더링 오류: Canvas2D supplemental metrics are active; select portable metrics before exporting"
+    }
+  ],
+  "root_pkg_and_studio_public_at_execution": {
+    "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
+    "rhwp_bg.wasm": "1450f32801008aa8fe174bd2ebfb1c6764a1194098eaee7630fed2a03d59eb9f"
+  },
+  "permitted_vite_source_transform_sha256": "ada912a7a78c1deb4800a15dd5ed8728190065d09083f51fb060c1938266b76d",
+  "coverage": {
+    "native": 12,
+    "canvas2d": 12,
+    "actual_canvaskit": 3,
+    "observed_canvaskit_fallback": 9
+  }
+}

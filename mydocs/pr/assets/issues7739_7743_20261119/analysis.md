@@ -121,3 +121,30 @@ Print 쪽수를 oracle과 렌더 원장에 반영했으며, 교육과정에서 �
 검사도 통과했다. 교육과정 원본 편집 뒤 HWP와 HWPX를 각각 재저장해 415쪽, 편집 문자열의
 단일 소속과 취소선의 색 속성을 확인했다. [실행 범위 및 종료 영수증](local-validation.json)을
 보존한다.
+
+## 실제 Studio 화면과 보호 기준
+
+실제 문서 열기와 페이지 표시를 거쳐 Native Skia 12쪽, Studio Canvas2D 12쪽,
+CanvasKit의 준비 검사를 통과한 분할 표 3쪽을 대조했다. Canvas2D는 각 문서의
+원본 글꼴 프로그램을 Host Font Provider로 공급한 뒤 다시 캡처했다. 준비 전 화면에
+나왔던 두부 문자를 안정화 뒤 다시 확인했다. 분할 표 12쪽의 후속 문단, 사이버대학
+29쪽의 평가 내용, 교육과정 8쪽 목차 본문과 쪽번호가 정상 표시된다. 이 세 화면의
+인쇄 대조값은 각각 98.36753%, 99.86233%, 100.00%다.
+
+화학제품 64쪽의 첫 사진과 다음 조각, 사이버대학 28·29쪽의 중첩 표, 교육과정
+175·230쪽의 목록과 표 연속부도 직접 대조했다. CanvasKit 요청 중 화학제품은
+글꼴·그림 레이어 준비, 사이버대학은 보충 메트릭·글꼴 준비, 교육과정은 전 문서
+사전검사 한도에 걸려 Canvas2D로 전환됐다. 요청 9쪽의 전환을 검사 결과에 기록했다.
+[실제 출력과 브라우저 초기화 해시](actual-consumer-validation.json)에 확인한
+쪽·backend·폰트 프로그램·판독용 PNG를 연결했다.
+
+교육과정 8쪽의 명시 검정 취소선은 Native 97.07%→100.00%, WASM 97.10%→100.00%다.
+원본 COLORREF 0의 검정 선이 도트 리더 영역에서 보이는 것을 렌더러별로 확인했다.
+[Native review](curriculum-2287/native/review_008.png) ·
+[overlay](curriculum-2287/native/overlay_008.png) ·
+[WASM review](curriculum-2287/wasm/review_008.png) ·
+[overlay](curriculum-2287/wasm/overlay_008.png).
+
+[보호 문서 46조건·4,046쪽](protected-validation.json)은 페이지 단위의 공식 표시값
+하락과 누락이 0건이다. [법령 표 WASM 19쪽의 99.73%→99.74% 상승](../visual-protected-baseline/updates/issues7739-7743-20261120.json)을
+보호 기준에 반영했다. 편람 HWPX 383쪽 및 기여자 공통 8조건의 기준값은 그대로다.
