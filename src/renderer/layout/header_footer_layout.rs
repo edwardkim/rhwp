@@ -4,6 +4,85 @@ use super::*;
 
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
+    /// 머리말·꼬리말 문단 글줄에 든 글자처럼 취급 그림의 아래 캡션을 그 그림 바로 아래에 그린다
+    /// (한컴 12.30). 캡션 글줄은 머리말 표 칸처럼 머리말 문단이 뿌리인 [(그림, 0, 캡션 문단)] 문맥을
+    /// 가져 머리말 히트·셀 경로 API가 그 캡션 글에 닿는다. 그린 캡션의 바닥을 돌려준다.
+    /// ponytail: 아래 캡션만 그린다. 위·옆 캡션은 그림을 옮겨야 해 아직 그리지 않는다.
+    fn layout_header_footer_tac_captions(
+        &self,
+        tree: &mut PageLayoutContext,
+        area_node: &mut RenderNode,
+        para: &Paragraph,
+        para_index: usize,
+        styles: &ResolvedStyleSet,
+        area: &LayoutRect,
+        bin_data_content: &[BinDataContent],
+    ) -> f64 {
+        fn image_box(node: &RenderNode, para: usize, control: usize) -> Option<BoundingBox> {
+            if let RenderNodeType::Image(ref img) = node.node_type {
+                if img.para_index == Some(para) && img.control_index == Some(control) {
+                    return Some(node.bbox);
+                }
+            }
+            node.children
+                .iter()
+                .find_map(|child| image_box(child, para, control))
+        }
+        let mut bottom = f64::MIN;
+        for (ci, ctrl) in para.controls.iter().enumerate() {
+            let Control::Picture(pic) = ctrl else {
+                continue;
+            };
+            let Some(caption) = pic.caption.as_ref() else {
+                continue;
+            };
+            if !pic.common.treat_as_char
+                || caption.direction != crate::model::shape::CaptionDirection::Bottom
+            {
+                continue;
+            }
+            // 글줄 배치는 머리말 문단 번호를 usize::MAX - i 로 적는다(머리말 노드 후처리가 되돌린다).
+            let Some(image) = image_box(area_node, usize::MAX - para_index, ci) else {
+                continue;
+            };
+            let ext_left = hwpunit_to_px(
+                caption.margin_extension_left(&pic.common.margin) as i32,
+                self.dpi,
+            );
+            let ext_w = hwpunit_to_px(
+                caption.text_width(pic.common.width, &pic.common.margin) as i32
+                    - pic.common.width as i32,
+                self.dpi,
+            )
+            .max(0.0);
+            let cap_y = image.y + image.height + hwpunit_to_px(caption.spacing as i32, self.dpi);
+            self.layout_caption(
+                tree,
+                area_node,
+                caption,
+                styles,
+                area,
+                image.x - ext_left,
+                image.width + ext_w,
+                cap_y,
+                bin_data_content,
+                Some(CellContext {
+                    in_textbox: false,
+                    parent_para_index: para_index,
+                    path: vec![CellPathEntry {
+                        control_index: ci,
+                        cell_index: 0,
+                        cell_para_index: 0,
+                        text_direction: 0,
+                    }],
+                }),
+                None,
+            );
+            bottom = bottom.max(cap_y + self.calculate_caption_height(&pic.caption, styles));
+        }
+        bottom
+    }
+
     pub(super) fn layout_header_footer_paragraphs(
         &self,
         tree: &mut PageLayoutContext,
@@ -361,6 +440,15 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         None, // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                     );
+                    y_offset = y_offset.max(self.layout_header_footer_tac_captions(
+                        tree,
+                        area_node,
+                        para,
+                        i,
+                        styles,
+                        area,
+                        bin_data_content,
+                    ));
                 }
             } else if has_shape {
                 // [#5802] 글자처럼 취급(TAC) 도형은 paragraph_layout 이 inline 좌표를

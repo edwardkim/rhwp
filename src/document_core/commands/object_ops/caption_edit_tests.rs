@@ -299,4 +299,185 @@ fn cell_picture_caption_lines_address_the_caption() {
         .map(|entry| (entry.control_index, entry.cell_index, entry.cell_para_index))
         .collect();
     assert_eq!(steps, vec![(table_ctrl, 0, 0), (inner, 0, 0)]);
+
+    // 한컴 12.30처럼 셀이 아래 캡션까지 커져 캡션 글줄이 셀 안에 든다.
+    let cell_box = first_cell_box(&core);
+    let last = lines.last().expect("캡션 글줄").0;
+    assert!(
+        last.y + last.height <= cell_box.y + cell_box.height + 0.5,
+        "{last:?} {cell_box:?}"
+    );
+    // 캡션 글줄을 누르면 그 그림 캡션 자리가 된다.
+    let hit = core
+        .hit_test_native(0, last.x + 2.0, last.y + last.height / 2.0)
+        .expect("누르기");
+    let hit: serde_json::Value = serde_json::from_str(&hit).expect("JSON");
+    let path = hit["cellPath"].as_array().expect("셀 경로");
+    assert_eq!(path.len(), 2, "{hit}");
+    assert_eq!(path[1]["controlIndex"], inner);
+}
+
+fn first_cell_box(core: &DocumentCore) -> BoundingBox {
+    fn walk(node: &RenderNode) -> Option<BoundingBox> {
+        if matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            return Some(node.bbox);
+        }
+        node.children.iter().find_map(walk)
+    }
+    walk(&core.build_page_tree(0).expect("쪽 트리").root).expect("셀")
+}
+
+#[test]
+fn header_picture_caption_line_hits_its_caption() {
+    header_picture_caption(false, false);
+}
+
+/// 한컴 12.30은 머리말에 넣은 그림을 글자처럼 취급하고 그 아래 캡션을 그림 바로 아래에 그린다.
+#[test]
+fn header_inline_picture_caption_is_drawn_and_hits_its_caption() {
+    header_picture_caption(true, false);
+}
+
+/// 한컴 12.30처럼 머리말 그림에도 캡션을 새로 단다.
+#[test]
+fn header_picture_gets_a_new_caption() {
+    header_picture_caption(true, true);
+}
+
+fn header_picture_caption(treat_as_char: bool, new_caption: bool) {
+    const CAPTION: &str = r#""hasCaption":true,"captionDirection":"Bottom","captionVertAlign":"Top","captionWidth":8504,"captionSpacing":850"#;
+    let mut core = blank();
+    let (para, ctrl) = floating_picture(
+        &mut core,
+        &if new_caption {
+            format!(r#"{{"treatAsChar":{treat_as_char}}}"#)
+        } else {
+            format!(r#"{{"treatAsChar":{treat_as_char},{CAPTION}}}"#)
+        },
+    );
+    let picture = core.document.sections[0].paragraphs[para].controls[ctrl].clone();
+    core.create_header_footer_native(0, true, 0)
+        .expect("머리말");
+    let info: serde_json::Value = serde_json::from_str(
+        &core
+            .get_header_footer_native(0, true, 0)
+            .expect("머리말 정보"),
+    )
+    .expect("JSON");
+    let host = info["paraIndex"].as_u64().expect("paraIndex") as usize;
+    let hf = info["controlIndex"].as_u64().expect("controlIndex") as usize;
+    // 한컴 12.30에서 머리말에 넣은 그림처럼, 캡션 달린 그림을 머리말 첫 문단 맨 앞 컨트롤로 둔다.
+    let Control::Header(header) = &mut core.document.sections[0].paragraphs[host].controls[hf]
+    else {
+        panic!("머리말이 아니다");
+    };
+    let first = &mut header.paragraphs[0];
+    first.controls.insert(0, picture);
+    first.shift_for_inline_control_insert(0, 0);
+    first.char_count += 8;
+    core.document.sections[0].raw_stream = None;
+    core.mark_section_dirty(0);
+    core.paginate_if_needed();
+    if new_caption {
+        core.set_header_footer_picture_properties_native(
+            0,
+            host,
+            hf,
+            0,
+            0,
+            &format!("{{{CAPTION}}}"),
+        )
+        .expect("머리말 그림 캡션 넣기");
+    }
+
+    // 머리말 캡션 글줄의 셀 문맥은 머리말 표 칸처럼 머리말 문단이 뿌리인 [(그림, 0, 0)]이다.
+    // 머리말 글줄은 본문 캡션 소유자(caption_owner)를 싣지 않으므로 글자 조각의 셀 문맥으로 찾는다.
+    fn header_caption(node: &RenderNode) -> Option<(BoundingBox, CellContext)> {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            let ctx = node
+                .children
+                .iter()
+                .find_map(|child| match &child.node_type {
+                    RenderNodeType::TextRun(run) => run.cell_context.clone(),
+                    _ => None,
+                });
+            if let Some(ctx) = ctx.filter(|ctx| ctx.path.len() == 1) {
+                return Some((node.bbox, ctx));
+            }
+        }
+        node.children.iter().find_map(header_caption)
+    }
+    let tree = core.build_page_tree(0).expect("쪽 트리");
+    let header_node = tree
+        .root
+        .children
+        .iter()
+        .find(|child| matches!(child.node_type, RenderNodeType::Header))
+        .expect("머리말 노드");
+    let (line, ctx) = header_caption(header_node).expect("머리말 캡션 글줄");
+    assert_eq!(ctx.parent_para_index, 0);
+    let steps: Vec<_> = ctx
+        .path
+        .iter()
+        .map(|entry| (entry.control_index, entry.cell_index, entry.cell_para_index))
+        .collect();
+    assert_eq!(steps, vec![(0, 0, 0)]);
+
+    // 머리말 편집에서 그 글줄을 누르면 그림 캡션 자리가 된다.
+    let hit = core
+        .hit_test_in_header_footer_target_native(
+            0,
+            0,
+            true,
+            0,
+            line.x + 2.0,
+            line.y + line.height / 2.0,
+        )
+        .expect("누르기");
+    let hit: serde_json::Value = serde_json::from_str(&hit).expect("JSON");
+    let path = hit["cellPath"].as_array().expect("셀 경로");
+    assert_eq!(path.len(), 2, "{hit}");
+    assert_eq!(hit["parentParaIndex"], host);
+    assert_eq!(path[0]["controlIndex"], hf);
+    assert_eq!(path[1]["controlIndex"], 0);
+}
+
+/// 한컴 12.30은 캡션 글에 캡션 달린 그림을 넣을 수 있다. HWP로 저장해 다시 열어도 안쪽 그림은
+/// 그림과 그 캡션으로 남는다(바깥 그림의 캡션이 안쪽 그림의 SHAPE_COMPONENT 앞에서 잘리면 안쪽
+/// 그림이 사각형 글상자가 되고, 한컴은 그 파일을 열지 못한다).
+#[test]
+fn captioned_picture_inside_a_caption_survives_hwp_round_trip() {
+    let caption = r#"{"hasCaption":true,"captionDirection":"Bottom","captionVertAlign":"Top","captionWidth":8504,"captionSpacing":850}"#;
+    let mut core = blank();
+    let (para, ctrl) = floating_picture(&mut core, caption);
+    let mut inner = core.document.sections[0].paragraphs[para].controls[ctrl].clone();
+    if let Control::Picture(pic) = &mut inner {
+        pic.common.treat_as_char = true;
+    }
+    let Control::Picture(outer) = &mut core.document.sections[0].paragraphs[para].controls[ctrl]
+    else {
+        panic!("그림이 아니다");
+    };
+    let first = &mut outer.caption.as_mut().expect("캡션").paragraphs[0];
+    let end = first.text.chars().count();
+    let at = first.controls.len();
+    first.controls.push(inner);
+    first.shift_for_inline_control_insert(at, end);
+    first.char_count += 8;
+    core.document.sections[0].raw_stream = None;
+
+    let reopened = DocumentCore::from_bytes(&core.export_hwp_native().expect("HWP")).expect("열기");
+    let Control::Picture(outer) = &reopened.document.sections[0].paragraphs[para].controls[ctrl]
+    else {
+        panic!("바깥 그림이 아니다");
+    };
+    let controls = &outer.caption.as_ref().expect("바깥 캡션").paragraphs[0].controls;
+    let inner = controls
+        .iter()
+        .find_map(|control| match control {
+            Control::Picture(pic) => Some(pic),
+            _ => None,
+        })
+        .expect("캡션 안 그림");
+    assert!(inner.caption.is_some(), "안쪽 그림 캡션");
 }

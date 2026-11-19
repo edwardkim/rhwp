@@ -703,8 +703,7 @@ impl DocumentCore {
     /// [Task #825] 머리말/꼬리말 안 그림 속성 변경.
     /// path: section[si].paragraphs[outer_para].controls[outer_ctrl] = Header/Footer
     ///       → .paragraphs[inner_para].controls[inner_ctrl] = Picture
-    /// 캡션 신규 생성은 본 함수에서 미지원 (현 dialog UI 가 머리말 picture 캡션
-    /// 변경을 노출하지 않음). caption_created 검출 시 NotSupported 에러.
+    /// 캡션을 새로 달면 본문 setter처럼 자동 번호를 다시 매긴다.
     pub fn set_header_footer_picture_properties_native(
         &mut self,
         section_idx: usize,
@@ -804,15 +803,15 @@ impl DocumentCore {
                 }
             }
         }
+        // 한컴 12.30처럼 머리말·꼬리말 그림에도 캡션을 새로 단다. 본문 setter처럼 자동 번호를 다시 매긴다.
         if caption_created {
-            return Err(HwpError::RenderError(
-                "머리말/꼬리말 그림에 캡션 신규 생성은 본 버전에서 지원하지 않습니다".to_string(),
-            ));
+            crate::parser::assign_auto_numbers(&mut self.document);
         }
         let section = &mut self.document.sections[section_idx];
         section.raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
         self.event_log.push(DocumentEvent::PictureResized {
             section: section_idx,
             para: outer_para_idx,
