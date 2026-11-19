@@ -185,11 +185,15 @@ collaborator가 외부 contributor PR의 source branch에 archive review·오늘
 
 - 순서는 오래된 PR 번호 또는 작업지시자가 지정한 순서를 따른다.
 - PR 안의 Merge branch devel commit은 검토 체리픽에서 제외한다.
-- 누적 branch는 충돌·테스트·시각 검증용 임시 branch다. review 문서는 원 PR 번호별로 작성한다.
-- 각 review 문서에 체리픽 순서, 적용 SHA, conflict, 선행 PR 의존성을 그 PR 기준으로 적는다.
-- 원 PR별 archive 검토 기록과 필요한 오늘할일은 통합 branch의 같은 PR diff에 둔다. 통합 PR 번호를 위한
-  별도 review 문서를 만들거나, 체리픽 통합 결과의 검토 기록만 담은 별도 docs-only PR을 만들지 않는다.
-  문서 보완은 동일 통합 PR의 code candidate CI 성공 뒤 trailing docs-only commit으로 처리한다.
+- 누적 branch에서 충돌·테스트·시각 검증을 수행한다. **통합 PR을 생성하기 전에** 포함하는 원 PR마다
+  `mydocs/pr/archives/pr_N_review.md`를 작성해 통합 branch에 커밋하고 PR 본문에서 연결한다.
+  기존 기록이 있는 원 PR의 후속 보정은 그 문서에 새 검토 절을 더한다.
+- 각 문서에는 원 head, 체리픽 순서·적용 SHA, 충돌·선행 PR 의존성, 원 PR의 주장별 실제 검증 결과와 증적을
+  적는다. 메인터너 보정이 있으면 필요했던 이유와 보정 SHA·재검증을 기록한다. PR을 열기 전에 확인할 수 있는
+  로컬 결과까지 기재하고, 원격 CI·병합 결과는 확인한 시점에 기록한다.
+- 원 PR별 archive 기록과 필요한 오늘할일은 같은 통합 PR에 둔다. 문서 보완은 통합 PR의 코드 후보 CI 성공 뒤
+  trailing 문서 커밋으로 반영한다. CI 실행 정책 변경의 병합 후 기록은 [옵션 2](post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)를
+  따른다. 통합 PR 번호와 원 PR 번호는 기존 원 PR별 문서에서 연결한다.
 - 여러 PR을 한꺼번에 검증했어도 merge 전에는 각 PR의 최신 head, mergeable, required check를 개별 재확인한다.
 
 fetch·visibility branch·Cargo 검증은 [로컬 검증](local_validation.md)을, 렌더 영향 증적은
