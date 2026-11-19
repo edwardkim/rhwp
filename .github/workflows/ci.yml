@@ -98,6 +98,7 @@ jobs:
       frontend_canvas_required: ${{ steps.impact.outputs.frontend_canvas_required || 'true' }}
       render_required: ${{ steps.impact.outputs.render_required || 'true' }}
       native_skia_required: ${{ steps.impact.outputs.native_skia_required || 'true' }}
+      native_skia_reuse_run_id: ${{ steps.native-skia-tag-evidence.outputs.source_run_id || '' }}
       codeql_languages: ${{ steps.impact.outputs.codeql_languages || 'javascript-typescript,python,rust,actions' }}
       classification_status: ${{ steps.impact.outputs.classification_status || 'full' }}
       classifier_version: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
@@ -853,6 +854,101 @@ jobs:
             printf '| security_sweep_samples_json | %s |\n' "\`${SECURITY_SWEEP_SAMPLES_JSON}\`"
           } >> "${GITHUB_STEP_SUMMARY}"
 
+      - name: Verify release tag Native Skia evidence
+        id: native-skia-tag-evidence
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
+        continue-on-error: true
+        timeout-minutes: 2
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const scope = { owner, repo };
+            const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
+            const isSha = (value) => /^[0-9a-f]{40}$/.test(value);
+            const positiveId = (value) => Number.isSafeInteger(value) && value > 0;
+            const fallback = (reason) => core.notice(`Native Skia will run with release-test: ${reason}`);
+
+            try {
+              const { data: tagged } = await github.rest.git.getCommit({ ...scope, commit_sha: context.sha });
+              const parents = tagged.parents.map(({ sha }) => sha);
+              if (tagged.sha !== context.sha || !isSha(tagged.tree.sha)
+                || parents.length !== 2 || parents[0] === parents[1] || !parents.every(isSha)
+                || !positiveId(repositoryId)) {
+                return fallback('tag does not identify a two-parent promotion merge');
+              }
+
+              const pulls = await github.paginate(github.rest.pulls.list, {
+                ...scope, state: 'closed', base: 'main', head: `${owner}:devel`, per_page: 100,
+              });
+              const matches = pulls.filter((pr) => pr.state === 'closed'
+                && pr.merge_commit_sha === context.sha && Number.isFinite(Date.parse(pr.merged_at))
+                && pr.base?.ref === 'main' && pr.base.repo?.id === repositoryId
+                && pr.base.sha === parents[0] && pr.head?.ref === 'devel'
+                && pr.head.repo?.id === repositoryId && pr.head.sha === parents[1]);
+              if (matches.length !== 1 || !positiveId(matches[0].number)) {
+                return fallback('canonical merged promotion PR is unavailable');
+              }
+              const pr = matches[0];
+              const mergedAt = Date.parse(pr.merged_at);
+              const { data: { workflow_runs: runs } } = await github.rest.actions.listWorkflowRuns({
+                ...scope, workflow_id: 'ci.yml', event: 'pull_request', branch: 'devel',
+                head_sha: pr.head.sha, per_page: 100,
+              });
+              const run = runs.find((item) => item.event === 'pull_request'
+                && item.path === '.github/workflows/ci.yml' && item.head_branch === 'devel'
+                && item.repository?.id === repositoryId && item.head_repository?.id === repositoryId
+                && item.head_sha === pr.head.sha && Date.parse(item.created_at) <= mergedAt);
+              if (!run || !positiveId(run.id) || !positiveId(run.run_attempt)
+                || run.status !== 'completed' || run.conclusion !== 'success') {
+                return fallback('successful promotion CI attempt is unavailable');
+              }
+
+              const jobs = await github.paginate('GET /repos/{owner}/{repo}/actions/runs/{run_id}/attempts/{attempt_number}/jobs', {
+                ...scope, run_id: run.id, attempt_number: run.run_attempt, per_page: 100,
+              });
+              const successful = (name) => {
+                const named = jobs.filter((job) => job.name === name);
+                return named.length === 1 && named[0].run_id === run.id
+                  && named[0].head_sha === pr.head.sha
+                  && named[0].status === 'completed' && named[0].conclusion === 'success'
+                  && Date.parse(named[0].completed_at) <= mergedAt ? named[0] : null;
+              };
+              const native = successful('Native Skia tests');
+              if (!native || !successful('Build & Test') || !successful('Workflow promotion preflight')
+                || !['Native Skia tests', 'Upload Native Skia promotion evidence'].every((name) => {
+                  const steps = native.steps.filter((step) => step.name === name);
+                  return steps.length === 1 && steps[0].status === 'completed' && steps[0].conclusion === 'success';
+                })) {
+                return fallback('required promotion jobs or Native Skia steps did not succeed');
+              }
+
+              const artifacts = await github.paginate(github.rest.actions.listWorkflowRunArtifacts, {
+                ...scope, run_id: run.id, per_page: 100,
+              });
+              const prefix = `native-skia-promotion-v1-${pr.number}-${run.run_attempt}-`;
+              const suffix = `-${tagged.tree.sha}`;
+              const receipts = artifacts.filter((artifact) => artifact.expired === false
+                && Date.parse(artifact.created_at) <= mergedAt
+                && artifact.name.startsWith(prefix) && artifact.name.endsWith(suffix)
+                && isSha(artifact.name.slice(prefix.length, -suffix.length)));
+              if (receipts.length !== 1) return fallback('exact Native Skia tree receipt is unavailable');
+
+              // Actions run head_sha is the PR source head. The receipt binds the
+              // actual checkout to this attempt. Resolve its immutable Git object.
+              const testedSha = receipts[0].name.slice(prefix.length, -suffix.length);
+              const { data: tested } = await github.rest.git.getCommit({ ...scope, commit_sha: testedSha });
+              if (tested.sha !== testedSha || tested.tree.sha !== tagged.tree.sha
+                || tested.parents.map(({ sha }) => sha).join(' ') !== parents.join(' ')) {
+                return fallback('tested merge does not match the tagged promotion tree');
+              }
+
+              core.notice(`Reusing Native Skia from promotion PR #${pr.number}, run ${run.id}, attempt ${run.run_attempt}, tree ${tagged.tree.sha}`);
+              core.setOutput('source_run_id', String(run.id));
+            } catch (error) {
+              fallback(error.message);
+            }
+
   # A new reusable adapter can be verified before registration on main through
   # this already registered workflow. Local calls use the caller's exact commit.
   release-operations-contracts:
@@ -1331,6 +1427,7 @@ jobs:
         && needs.preflight.result == 'success'
         && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.native_skia_required == 'true'
+        && needs.preflight.outputs.native_skia_reuse_run_id == ''
       }}
     permissions:
       contents: read
@@ -1439,7 +1536,7 @@ jobs:
 
       - name: Native Skia tests
         env:
-          TEST_PROFILE: ${{ needs.preflight.outputs.test_profile || 'release' }}
+          TEST_PROFILE: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && 'release-test' || needs.preflight.outputs.test_profile || 'release' }}
         run: |
           set -euo pipefail
           case "${TEST_PROFILE}" in
@@ -1498,6 +1595,36 @@ jobs:
               exit 1
               ;;
           esac
+
+      - name: Record Native Skia promotion evidence
+        id: native-skia-promotion-evidence
+        continue-on-error: true
+        if: >-
+          ${{
+            github.event_name == 'pull_request' && github.base_ref == 'main'
+            && github.head_ref == 'devel' && github.event.pull_request.head.repo.full_name == github.repository
+          }}
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          tested_sha="$(git rev-parse HEAD)"
+          [[ "${tested_sha}" == "${GITHUB_SHA}" ]]
+          tree_sha="$(git rev-parse 'HEAD^{tree}')"
+          printf '%s\n' "${tree_sha}" > "${RUNNER_TEMP}/native-skia-promotion-tree.txt"
+          printf 'artifact_name=native-skia-promotion-v1-%s-%s-%s-%s\n' \
+            "${PR_NUMBER}" "${GITHUB_RUN_ATTEMPT}" "${tested_sha}" "${tree_sha}" >> "${GITHUB_OUTPUT}"
+
+      - name: Upload Native Skia promotion evidence
+        if: ${{ steps.native-skia-promotion-evidence.outputs.artifact_name != '' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.native-skia-promotion-evidence.outputs.artifact_name }}
+          path: ${{ runner.temp }}/native-skia-promotion-tree.txt
+          retention-days: 7
+          if-no-files-found: error
 
   frontend-unit-gates:
     name: Frontend unit gates
@@ -2160,6 +2287,7 @@ jobs:
           FAST_PASS: ${{ needs.preflight.outputs.fast_pass }}
           RUST_REQUIRED: ${{ needs.preflight.outputs.rust_required }}
           NATIVE_SKIA_REQUIRED: ${{ needs.preflight.outputs.native_skia_required }}
+          NATIVE_SKIA_REUSE_RUN_ID: ${{ needs.preflight.outputs.native_skia_reuse_run_id }}
           FRONTEND_MODE: ${{ needs.preflight.outputs.frontend_mode }}
           BUILD_ARCHIVE_A_RESULT: ${{ needs['build-test-archive-a'].result }}
           BUILD_ARCHIVE_B_RESULT: ${{ needs['build-test-archive-b'].result }}
@@ -2205,11 +2333,22 @@ jobs:
             false) [[ "$rust_results" == "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]] || { echo "::error::Rust lane expected skipped, got: $rust_results"; failed=1; } ;;
             *) echo "::error::Unknown rust_required: ${RUST_REQUIRED}"; failed=1 ;;
           esac
-          case "${NATIVE_SKIA_REQUIRED}" in
-            true) [[ "${NATIVE_SKIA_RESULT}" == "success" ]] || { echo "::error::Native Skia lane expected success, got: ${NATIVE_SKIA_RESULT}"; failed=1; } ;;
-            false) [[ "${NATIVE_SKIA_RESULT}" == "skipped" ]] || { echo "::error::Native Skia lane expected skipped, got: ${NATIVE_SKIA_RESULT}"; failed=1; } ;;
-            *) echo "::error::Unknown native_skia_required: ${NATIVE_SKIA_REQUIRED}"; failed=1 ;;
-          esac
+          if [[ -n "${NATIVE_SKIA_REUSE_RUN_ID}" ]]; then
+            if [[ "${GITHUB_EVENT_NAME}" == "push" && "${GITHUB_REF}" == refs/tags/v* \
+                && "${NATIVE_SKIA_REUSE_RUN_ID}" =~ ^[1-9][0-9]*$ \
+                && "${NATIVE_SKIA_REQUIRED}/${NATIVE_SKIA_RESULT}" == "true/skipped" ]]; then
+              echo "Native Skia evidence reused from promotion CI run ${NATIVE_SKIA_REUSE_RUN_ID}."
+            else
+              echo "::error::Invalid Native Skia promotion reuse state."
+              failed=1
+            fi
+          else
+            case "${NATIVE_SKIA_REQUIRED}" in
+              true) [[ "${NATIVE_SKIA_RESULT}" == "success" ]] || { echo "::error::Native Skia lane expected success, got: ${NATIVE_SKIA_RESULT}"; failed=1; } ;;
+              false) [[ "${NATIVE_SKIA_RESULT}" == "skipped" ]] || { echo "::error::Native Skia lane expected skipped, got: ${NATIVE_SKIA_RESULT}"; failed=1; } ;;
+              *) echo "::error::Unknown native_skia_required: ${NATIVE_SKIA_REQUIRED}"; failed=1 ;;
+            esac
+          fi
           case "${FRONTEND_MODE}" in
             none) [[ "${FRONTEND_UNIT_RESULT}/${FRONTEND_PACKAGE_RESULT}" == "skipped/skipped" ]] || { echo "::error::Frontend none lane expected skipped/skipped"; failed=1; } ;;
             unit) [[ "${FRONTEND_UNIT_RESULT}/${FRONTEND_PACKAGE_RESULT}" == "success/skipped" ]] || { echo "::error::Frontend unit lane expected success/skipped"; failed=1; } ;;

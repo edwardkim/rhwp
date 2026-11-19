@@ -502,6 +502,12 @@ Linux runner에는 fontconfig·FreeType 개발 패키지를 설치한다. 첨부
 공개 소형 입력의 첫 쪽 PNG 생성을 검사한다. `--version` 성공만으로 PNG 지원을 판정하지 않는다.
 이 검사는 배포 기능의 smoke gate이며 한컴 출력과의 시각 일치를 대신하지 않는다.
 
+Native Skia 전체 회귀는 main 승격 PR에서 `release-test`로 실행한다. 태그 CI는 같은 저장소의
+`devel → main` 승격 PR에서 검사한 병합 tree와 태그 tree가 일치하고, 해당 CI attempt의
+Native Skia·승격 사전검사·`Build & Test`가 병합 전에 통과했을 때만 Native Skia 결과를 재사용한다.
+성공 증거가 없거나 만료되면 태그 CI에서 `release-test`로 전체 Native Skia 회귀를 실행한다.
+실제로 포장한 배포용 `release` CLI의 PNG 검증은 위의 Release Binary 단계에서 실행한다.
+
 v0.8.7의 기존 공식 archive에는 Native Skia가 빠져 있다. 해당 tag의 workflow 재실행만으로는
 빌드 옵션이 바뀌지 않는다. 수정은 devel PR과 정규 devel → main 통합을 거치며, 기존 Release
 asset 교체나 새 tag 배포는 별도 릴리즈 승인 범위에서 수행한다.
