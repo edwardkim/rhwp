@@ -53,6 +53,38 @@ fn implicit_symbol_svg(
             2.0 * rx,
             2.0 * ry,
         ),
+        super::implicit_symbol::InkShape::Ring { inner } => {
+            let ellipse = |rx: f64, ry: f64| {
+                format!(
+                    "M{:.4} {cy:.4}a{rx:.4} {ry:.4} 0 1 0 {:.4} 0a{rx:.4} {ry:.4} 0 1 0 {:.4} 0Z",
+                    cx - rx,
+                    2.0 * rx,
+                    -2.0 * rx,
+                )
+            };
+            format!(
+                "<path d=\"{}{}\" fill-rule=\"evenodd\" {attrs}/>\n",
+                ellipse(rx, ry),
+                ellipse(rx * inner, ry * inner),
+            )
+        }
+        super::implicit_symbol::InkShape::Frame { inner } => {
+            let rect = |rx: f64, ry: f64| {
+                format!(
+                    "M{:.4} {:.4}h{:.4}v{:.4}h{:.4}Z",
+                    cx - rx,
+                    cy - ry,
+                    2.0 * rx,
+                    2.0 * ry,
+                    -2.0 * rx,
+                )
+            };
+            format!(
+                "<path d=\"{}{}\" fill-rule=\"evenodd\" {attrs}/>\n",
+                rect(rx, ry),
+                rect(rx * inner, ry * inner),
+            )
+        }
     }
 }
 
