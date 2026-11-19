@@ -15,7 +15,7 @@ import { resolveGlyphStartRect, isCompositionBoxRepresentable } from './line-sta
 import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
-import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SubmodeSnapshotCommand, SubmodeSelectionSnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS, applyCharShapeModsToRange, cellAxisPath, cellParaIndexOf } from './command';
+import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SubmodeSnapshotCommand, SubmodeSelectionSnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS, applyCharShapeModsToRange, cellAxisPath, cellParaIndexOf, cellPathJsonForPara } from './command';
 import type { OperationDescriptor, ParaFormatTarget, RefreshPolicy, TextMutationEffects, EditCommand, EditContext, HeaderFooterSelectionSnapshot, FormValueTarget } from './command';
 import { selectCellIndicesInRange, paraFormatTargetsForCellBlock, withCellPathTarget } from './cell-block-format';
 import type { SelectedCellBlock } from './cell-block-format';
@@ -778,7 +778,7 @@ export class InputHandler {
         ? this.cursor.hasSelection()
         : this.getNonEmptySelection() !== null || this.getNonEmptyHeaderFooterSelection() !== null;
       if (hasSelectedText || this.getSelectedCellBlock()) {
-        this.applyCharFormat({ shadeColor: color as string });
+        this.applyHighlight(color as string);
       } else {
         this.setHighlightPen(color as string);
       }
@@ -817,8 +817,61 @@ export class InputHandler {
   /** 연속 형광펜 모드에서 드래그로 잡은 블록에 형광펜을 칠하고 블록을 해제한다 */
   private applyHighlightPenToSelection(): void {
     if (!this.highlightPenColor || !this.cursor.hasSelection()) return;
-    this.applyCharFormat({ shadeColor: this.highlightPenColor });
+    this.applyHighlight(this.highlightPenColor);
     this.cursor.clearSelection();
+  }
+
+  /**
+   * 한컴 형광펜 동작: 선택 범위 전체가 이미 같은 색으로 칠해져 있으면 형광펜을 지우고,
+   * 칠해지지 않은 글자가 하나라도 섞여 있으면(더 넓게 잡은 경우 등) 범위 전체를 칠한다.
+   */
+  private applyHighlight(color: string): void {
+    const NONE = '#ffffff';
+    const target = color.toLowerCase();
+    let next = color;
+    if (target !== NONE) {
+      try {
+        if (this.isSelectionFullyShaded(target)) next = NONE;
+      } catch {
+        // 조회 실패 시 기존처럼 칠한다.
+      }
+    }
+    this.applyCharFormat({ shadeColor: next });
+  }
+
+  /** 본문/셀 안 텍스트 선택의 모든 글자 음영색이 color 인지 확인한다. 그 외 선택은 false. */
+  private isSelectionFullyShaded(color: string): boolean {
+    if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return false;
+    if (this.getSelectedCellBlock()) return false;
+    const sel = this.getNonEmptySelection();
+    if (!sel) return false;
+    const { start, end } = sel;
+    const cell = start.parentParaIndex !== undefined;
+    const first = cell ? cellParaIndexOf(start) : start.paragraphIndex;
+    const last = cell ? cellParaIndexOf(end) : end.paragraphIndex;
+    let checked = 0;
+    for (let p = first; p <= last; p++) {
+      const pathJson = cell ? cellPathJsonForPara(start, p) : undefined;
+      const from = p === first ? start.charOffset : 0;
+      const to = p === last
+        ? end.charOffset
+        : (pathJson !== undefined
+          ? this.wasm.getCellParagraphLengthByPath(start.sectionIndex, start.parentParaIndex!, pathJson)
+          : this.wasm.getParagraphLength(start.sectionIndex, p));
+      if (to <= from) continue;
+      const runs = pathJson !== undefined
+        ? this.wasm.getCharShapeRunsInCellByPath(start.sectionIndex, start.parentParaIndex!, pathJson, from, to)
+        : this.wasm.getCharShapeRuns(start.sectionIndex, p, from, to);
+      for (const run of runs) {
+        if (run.endOffset <= run.startOffset) continue;
+        const props = pathJson !== undefined
+          ? this.wasm.getCellCharPropertiesAtByPath(start.sectionIndex, start.parentParaIndex!, pathJson, run.startOffset)
+          : this.wasm.getCharPropertiesAt(start.sectionIndex, p, run.startOffset);
+        if ((props.shadeColor ?? '').toLowerCase() !== color) return false;
+        checked++;
+      }
+    }
+    return checked > 0;
   }
 
   /** 줌·resize 뒤 VirtualScroll 확정 좌표에 캐럿과 선택 오버레이를 다시 투영한다. */
