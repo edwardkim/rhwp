@@ -200,3 +200,31 @@ fn edited_title_fits_one_line_with_distinct_character_boundaries_after_save() {
         }
     }
 }
+
+#[test]
+fn cell_line_wrap_partial_update_preserves_neighbors_and_rejects_invalid_values() {
+    let mut core = DocumentCore::from_bytes(&sample_bytes()).unwrap();
+    let props = |core: &DocumentCore, cell| -> serde_json::Value {
+        serde_json::from_str(
+            &core
+                .get_cell_properties_by_cell_path_native(0, 2, &[(1, 0, 0)], cell)
+                .unwrap(),
+        )
+        .unwrap()
+    };
+    let neighbor = props(&core, 0);
+    core.set_cell_properties_native(0, 2, 1, 1, r#"{"lineWrap":2}"#)
+        .unwrap();
+    core.set_cell_properties_native(0, 2, 1, 1, r#"{"isHeader":true}"#)
+        .unwrap();
+    assert_eq!(props(&core, 1)["lineWrap"], 2);
+    for value in ["-1", "3", "257", "1.5", "null", r#""1""#] {
+        let update = format!(r#"{{"isHeader":false,"lineWrap":{value}}}"#);
+        assert!(core
+            .set_cell_properties_native(0, 2, 1, 1, &update)
+            .is_err());
+        assert_eq!(props(&core, 1)["isHeader"], true);
+        assert_eq!(props(&core, 1)["lineWrap"], 2);
+    }
+    assert_eq!(props(&core, 0), neighbor);
+}
