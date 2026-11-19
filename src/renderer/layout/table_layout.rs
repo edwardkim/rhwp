@@ -23964,11 +23964,33 @@ impl LayoutEngine {
             para.line_segs.first(),
         ) {
             (Some(first), Some(last), Some(current)) => {
+                // 셀의 첫 문단은 셀 좌표에서도 0에서 시작하므로 앞쪽 증거를 낼 수 없다.
+                // 그때는 새 원점 문단의 저장 끝에서 다음 문단이 이어지는 것이 같은
+                // 셀 좌표의 증거다. 문단마다 0에서 시작하는 지역 원점은 이어지지 않는다.
+                let continues_after_restart = || {
+                    std::ptr::eq(previous, &cell.paragraphs[0])
+                        && first.vertical_pos == 0
+                        && para.line_segs.iter().all(original)
+                        && cell
+                            .paragraphs
+                            .iter()
+                            .position(|p| std::ptr::eq(p, para))
+                            .and_then(|index| cell.paragraphs.get(index + 1))
+                            .and_then(|next| next.line_segs.first())
+                            .zip(para.line_segs.last())
+                            .is_some_and(|(next, tail)| {
+                                original(next)
+                                    && i64::from(next.vertical_pos)
+                                        == i64::from(tail.vertical_pos)
+                                            + i64::from(tail.line_height)
+                                            + i64::from(tail.line_spacing)
+                            })
+                };
                 original(first)
                     && original(last)
                     && original(current)
-                    && first.vertical_pos > 0
-                    && last.vertical_pos > 0
+                    && ((first.vertical_pos > 0 && last.vertical_pos > 0)
+                        || continues_after_restart())
                     && current.vertical_pos == 0
                     && last.column_start == current.column_start
             }
