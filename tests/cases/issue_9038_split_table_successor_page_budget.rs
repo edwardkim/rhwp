@@ -1,6 +1,6 @@
 //! 관계형·고정형 — [#9038] 같은 문단에서 쪽을 넘겨 나뉜 앞 표 뒤의 둘째 표는 앞 표 조각 끝에서 쪽 예산을 잰다.
 //!
-//! 주석 갱신: 2026-11-13 KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-20 01:06 KST(+09:00), 새 파일.
 //!
 //! - 입력: 공개 문서 `samples/issue9038/sme_announcement_split_table_successor.hwpx`
 //!   (중소벤처기업부 사업공고 첨부 HWPX, edwardkim/rhwp#9038). `pi=99` 는 글 없는 문단에 18행 표
@@ -14,6 +14,12 @@
 //!
 //! 검사: 전체 쪽수 = 한컴 46쪽, 23쪽에는 「2. 장비의 범위」가 없고 24쪽에 있으며, 23·24쪽 글이 모두
 //! 쪽 상자 안에 놓인다.
+//!
+//! 측정(2026-11-20, 이 파일과 같은 커밋의 코드, `scripts/visual_sweep.py --silhouette-only --dpi 96
+//! --compat 2022`, raw = `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource`):
+//! - Native: 46쪽 / 46쪽, 23쪽 95.10 · 24쪽 99.92, 전쪽 최저 90.83(17쪽)
+//! - fresh WASM: 46쪽 / 46쪽, 23쪽 95.56 · 24쪽 99.96, 전쪽 최저 93.38(17쪽)
+//! - 증거: `mydocs/pr/assets/issue_9045/`(native·wasm 전쪽 TSV)
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
