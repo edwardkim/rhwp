@@ -368,6 +368,8 @@ pub(crate) fn stored_table_terminal_suffix_start(
     None
 }
 
+mod topbottom_stack;
+pub(crate) use topbottom_stack::cell_text_host_topbottom_stack;
 mod empty_successor;
 pub(crate) use empty_successor::{
     stored_empty_host_line_after_band, stored_empty_successor_advance,
