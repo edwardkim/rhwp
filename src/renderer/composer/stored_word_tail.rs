@@ -72,8 +72,9 @@ pub(crate) fn project_current_marker_geometry_rows_with_storage<S: crate::storag
             ),
             failure,
         )??;
-        let changed_partition = rows.len() == para.line_segs.len()
-            && rows
+        let same_line_count = rows.len() == para.line_segs.len();
+        let changed_partition = !same_line_count
+            || rows
                 .iter()
                 .zip(&para.line_segs)
                 .any(|(fresh, stored)| fresh.text_start != stored.text_start);
@@ -88,10 +89,12 @@ pub(crate) fn project_current_marker_geometry_rows_with_storage<S: crate::storag
             }
             // 같은 수·높이의 슬롯에서 문자 경계만 새 마커 기하로 옮긴다.
             // 원본 프레임 원점과 명시적 쪽/단 경계를 재래핑의 부산물로 바꾸지 않는다.
-            for (fresh, stored) in rows.iter_mut().zip(&para.line_segs) {
-                let text_start = fresh.text_start;
-                *fresh = stored.clone();
-                fresh.text_start = text_start;
+            if same_line_count {
+                for (fresh, stored) in rows.iter_mut().zip(&para.line_segs) {
+                    let text_start = fresh.text_start;
+                    *fresh = stored.clone();
+                    fresh.text_start = text_start;
+                }
             }
         }
         if rows

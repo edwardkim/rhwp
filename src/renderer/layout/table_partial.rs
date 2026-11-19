@@ -5,7 +5,8 @@ mod tail_alignment;
 
 use super::super::composer::{compose_paragraph, ComposedParagraph};
 use super::super::float_placement::{
-    native_hwp5_stored_reset_fragment_paint_geometry, topbottom_flow_vertical_offset_hu,
+    is_para_topbottom_float, native_hwp5_stored_reset_fragment_paint_geometry,
+    topbottom_flow_vertical_offset_hu,
 };
 use super::super::height_measurer::{
     stored_nested_table_empty_wrap_spacer, stored_nested_table_wrap_successor,
@@ -4397,6 +4398,38 @@ impl LayoutEngine {
                                                 + frame.picture_y(cp_idx, ctrl_idx, self.dpi)
                                         })
                                         .unwrap_or(pic_y);
+                                    // 온전한 저장 칸의 첫 빈 문단은 작은 그림들을 나란히
+                                    // 담을 수 있다. 셀 위를 가리키는 음수 오프셋은 이
+                                    // 경우 원래 괘선 바깥으로 그림을 옮기지 않는다.
+                                    let pic_y = if !cell_was_split
+                                        && cell.row_span == 1
+                                        && cp_idx == 0
+                                        && cell.paragraphs.len() == 1
+                                        && para.text.trim().is_empty()
+                                        && !self.profile.get().session_edited()
+                                        && (self.profile.get().hwp5_stored_pagination_layout()
+                                            || self.profile.get().hwpx_stored_layout())
+                                        && top_and_bottom_para
+                                        && pic.common.flow_with_text
+                                        && (pic.common.vertical_offset as i32) < 0
+                                        && pad_top + pic_h <= cell_h
+                                        && pic_y < cell_y
+                                        && pic_y + pic_h > cell_y
+                                        && para
+                                            .controls
+                                            .iter()
+                                            .filter(|control| {
+                                                matches!(control, Control::Picture(other)
+                                                if other.common.flow_with_text
+                                                    && is_para_topbottom_float(&other.common))
+                                            })
+                                            .count()
+                                            > 1
+                                    {
+                                        cell_y + pad_top
+                                    } else {
+                                        pic_y
+                                    };
                                     // 겹침 허용 안 함인 어울림 그림은 이 조각에 먼저 놓인 같은 문단
                                     // 그림과 겹치면 그 아래로 내린다. 이 경로는 문단 흐름으로 그림을
                                     // 이미 내려 놓기도 하므로 오프셋 이동량 대신 실제 자리로 판정한다.
@@ -7481,6 +7514,45 @@ impl LayoutEngine {
             }
         }
 
+        // 저장 컷이 수용한 첫 조각의 원래 닫는 선을 최종 배치 원점에서 대조한다.
+        // 쪽 스캔의 저장 호스트 원점과 실제 배치 원점이 다를 때에도, 컷은 그대로 두고
+        // 선언 상자가 실제 쪽을 닫는 경우에만 끝 줄간격에 해당하는 물리 띠를 복원한다.
+        if end_row_owns_stored_frame
+            && !is_continuation
+            && enclosing_cell_ctx.is_none()
+            && !is_block_split
+            && start_row == 0
+            && start_cut.is_empty()
+            && end_row > 0
+            && end_row <= row_heights.len()
+            && table.caption.is_none()
+            && cell_spacing == 0.0
+            && self.profile.get().hwpx_stored_layout()
+            && !self.profile.get().session_edited()
+            && table.common.height <= i32::MAX as u32
+            && paragraphs.get(para_index).is_some_and(|host| {
+                crate::renderer::float_placement::object_only_saved_table_anchor(host, table)
+            })
+        {
+            let declared_height = hwpunit_to_px(table.common.height as i32, self.dpi);
+            let actual_bottom = crate::renderer::float_placement::single_cell_page_fragment_bottom(
+                table,
+                col_area.y + col_area.height,
+                self.dpi,
+            );
+            let band = declared_height - row_heights[..end_row].iter().sum::<f64>();
+            let last = end_row - 1;
+            if (y_start + declared_height - actual_bottom).abs() <= hwpunit_to_px(2, self.dpi)
+                && band > 0.0
+                && self.row_cut_ends_at_original_plain_text_reset(
+                    table, last, start_cut, end_cut, styles,
+                )
+                && band <= self.stored_page_break_closing_advance(table, last, end_cut, styles)
+            {
+                row_heights[last] += band;
+            }
+        }
+
         if std::env::var_os("RHWP_DIAG_NESTED_FRAME").is_some() {
             eprintln!("NESTED_FRAME rows={} cols={} range={:?} start={:?} end={:?} block={} start_block={} measured={} resolved={:?} actual={:?} start_override={:?} end_override={:?}", table.row_count, table.col_count, start_row..end_row, start_cut, end_cut, is_block_split, start_cut_is_block, measured_table.is_some(), resolved_row_heights, row_heights, start_row_height_override, end_row_height_override);
         }
@@ -7856,13 +7928,14 @@ impl LayoutEngine {
                     .map(|_| start_row),
                 end_row_height_override.and_then(|_| {
                     let row = end_row.checked_sub(1)?;
-                    self.row_cut_closes_original_restart_frame(
+                    (self.row_cut_closes_original_restart_frame(
                         table,
                         row,
                         end_cut,
                         &resolved_row_heights,
                         styles,
-                    )
+                    ) || self
+                        .row_cut_closes_original_nested_object_frame(table, row, end_cut, styles))
                     .then_some(row)
                 }),
             ]

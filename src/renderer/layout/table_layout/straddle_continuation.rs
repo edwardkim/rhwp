@@ -18,6 +18,73 @@ impl StraddleContinuationDemand {
 }
 
 impl LayoutEngine {
+    /// 저장 일반 칸의 내용과 안 여백이 선언된 행을 독립적으로 닫는다.
+    pub(crate) fn stored_ordinary_row_closes_content(
+        &self,
+        table: &crate::model::table::Table,
+        row: usize,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        !self.profile.get().session_edited()
+            && (self.profile.get().hwp5_stored_pagination_layout()
+                || self.profile.get().hwpx_stored_layout())
+            && self
+                .indexed_row_cut_cell_order(table, row)
+                .into_iter()
+                .map(|index| &table.cells[index])
+                .filter(|cell| {
+                    cell.row_span == 1
+                        && !self
+                            .render_normalization
+                            .borrow()
+                            .cell_frame_reflowed(table, cell)
+                })
+                .any(|cell| {
+                    let padding = i64::from(cell.effective_vertical_padding_hu(&table.padding));
+                    let before = cell
+                        .paragraphs
+                        .first()
+                        .and_then(|para| styles.para_styles.get(para.para_shape_id as usize))
+                        .map_or(0, |style| {
+                            crate::renderer::px_to_hwpunit(style.spacing_before, self.dpi)
+                        });
+                    let ink_height = |origin| {
+                        crate::renderer::float_placement::stored_plain_cell_ink_height_from(
+                            cell, origin,
+                        )
+                    };
+                    ink_height(0)
+                        .or_else(|| ink_height(before))
+                        .is_some_and(|ink| {
+                            (i64::from(ink) + padding - i64::from(cell.height)).abs() <= 1
+                        })
+                })
+    }
+
+    /// 여러 완성 행을 지나며 글을 다 소비한 병합 칸은 독립 행에 공간을 더하지 않는다.
+    /// 짧은 두 행 병합에는 앞 조각에 소비한 본체 상자와 이 행의 실제 잔여가 남는다.
+    pub(crate) fn accepted_text_span_exhausted(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        carry: &crate::renderer::pagination::StraddleCellCarry,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let incoming = carry
+            .fragment_cut
+            .map(|(start, _)| start)
+            .or(carry.next_unit);
+        let unit_count = self.cell_units(cell, table, styles).len();
+        cell.row_span > 2
+            && carry.accepted_prefix_physical_height().is_some()
+            && unit_count > 0
+            && incoming == Some(unit_count)
+            && cell
+                .paragraphs
+                .iter()
+                .any(|para| !para.text.trim().is_empty())
+    }
+
     /// 시작 경계를 걸친 셀의 마지막 행을 온전히 배치할 때 필요한 조각 높이.
     /// 끝 컷이 있으면 남은 유닛 전부를 받지 않으므로 그 셀의 증분 예약은 제외한다.
     #[allow(clippy::too_many_arguments)]
@@ -42,6 +109,9 @@ impl LayoutEngine {
             return None;
         }
         let (end_row, end_cut_is_empty) = fragment_end;
+        let closes_independent_opening_row = row == start_row
+            && start_cut.is_empty()
+            && self.stored_ordinary_row_closes_content(table, row, styles);
         self.spanning_cells(table)
             .filter(|cell| {
                 let cell_row = cell.row as usize;
@@ -94,18 +164,21 @@ impl LayoutEngine {
                 });
                 let prefix = carry.and_then(|carry| carry.accepted_prefix_physical_height());
                 let physical = prefix.map_or(0.0, |before| {
+                    let unit_count = self.cell_units(cell, table, styles).len();
+                    if closes_independent_opening_row
+                        && content == 0.0
+                        && carry.is_some_and(|carry| {
+                            self.accepted_text_span_exhausted(table, cell, carry, styles)
+                        })
+                    {
+                        return 0.0;
+                    }
                     let declared = if cell.height < 0x8000_0000 {
                         hwpunit_to_px(cell.height as i32, self.dpi)
                     } else {
                         0.0
                     };
-                    let whole = self.cell_cut_visible_height(
-                        cell,
-                        table,
-                        styles,
-                        0,
-                        self.cell_units(cell, table, styles).len(),
-                    );
+                    let whole = self.cell_cut_visible_height(cell, table, styles, 0, unit_count);
                     (declared.max(whole) - before).max(0.0)
                 });
                 super::unit_diagnostics::trace_continuation_demand(

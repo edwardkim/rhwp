@@ -1001,11 +1001,7 @@ impl SkiaTextReplay<'_> {
                         }
                     }
                     if style.strikethrough && text_width > 0.0 {
-                        let color = if style.strike_color != 0 {
-                            colorref_to_skia(style.strike_color, 1.0)
-                        } else {
-                            colorref_to_skia(style.color, 1.0)
-                        };
+                        let color = colorref_to_skia(style.strike_color, 1.0);
                         lines.shape(
                             start_x,
                             y as f32 - font_size * 0.3,

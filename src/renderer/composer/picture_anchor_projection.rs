@@ -5,6 +5,7 @@ use crate::model::{control::Control, paragraph::Paragraph};
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum FramePurpose {
     Body,
+    StoredMarkerTailReflow,
     PictureAnchor,
 }
 
