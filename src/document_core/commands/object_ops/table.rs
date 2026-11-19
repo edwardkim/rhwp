@@ -1756,6 +1756,8 @@ impl DocumentCore {
             restrict_enabled_by_this_call || json_i32(props_json, "horzOffset").is_some();
         let clamp_vert =
             restrict_enabled_by_this_call || json_i32(props_json, "vertOffset").is_some();
+        let caption_styles = self.resolve_render_styles();
+        let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
         let caption_changed = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -1776,7 +1778,15 @@ impl DocumentCore {
                 }
             };
             let had_caption = pic.caption.is_some();
+            let caption_width_before = super::picture::picture_caption_text_width(pic);
             let caption_created = Self::apply_picture_props_inner(pic, props_json);
+            super::picture::reflow_picture_caption_if_width_changed(
+                pic,
+                caption_width_before,
+                &caption_styles,
+                dpi,
+                hwp3_layout,
+            );
             caption_created || (had_caption && pic.caption.is_none())
         };
         if caption_changed {
@@ -1938,6 +1948,8 @@ impl DocumentCore {
         props_json: &str,
     ) -> Result<String, HwpError> {
         let path = Self::parse_cell_path_json(cell_path_json)?;
+        let caption_styles = self.resolve_render_styles();
+        let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
         let caption_changed = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -1957,7 +1969,16 @@ impl DocumentCore {
                     ))
                 }
             };
-            Self::apply_shape_props_inner(shape, props_json)
+            let caption_width_before = super::shape::shape_caption_text_width(shape);
+            let changed = Self::apply_shape_props_inner(shape, props_json);
+            super::shape::reflow_shape_caption_if_width_changed(
+                shape,
+                caption_width_before,
+                &caption_styles,
+                dpi,
+                hwp3_layout,
+            );
+            changed
         };
         if caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);

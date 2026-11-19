@@ -105,6 +105,7 @@ impl DocumentCore {
         }
 
         let default_max_width = shape.common().width;
+        let ole = matches!(shape, ShapeObject::Ole(_));
         let mut created = false;
         {
             let caption_slot = Self::shape_caption_mut(shape);
@@ -113,9 +114,11 @@ impl DocumentCore {
                     max_width: default_max_width,
                     ..Default::default()
                 };
+                // 한컴 12.30에서 그리기 개체 캡션은 그림 캡션처럼 번호 뒤에 마침표가 없다("그림 N").
+                // OLE 개체는 HWP 그림 번호 뒤 마침표를 지킨다.
                 let auto_number = crate::model::control::AutoNumber {
                     number_type: crate::model::control::AutoNumberType::Picture,
-                    suffix_char: '.',
+                    suffix_char: if ole { '.' } else { '\0' },
                     ..Default::default()
                 };
                 // 한컴 그림/OLE 캡션은 AutoNumber 앞에 "그림" 접두어를 함께 표시한다.
@@ -381,7 +384,10 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::document_core::helpers::{json_bool, json_i32, json_str};
 
+        let caption_styles = self.resolve_render_styles();
+        let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
+        let caption_width_before = shape_caption_text_width(shape);
 
         // [#8399] 어울림 배제 밴드 지문 — 그림 속성 편집(#6204)과 같은 재투영 판정.
         let band_geometry_before = super::picture::picture_band_geometry(shape.common());
@@ -594,6 +600,13 @@ impl DocumentCore {
         group_geometry::finish_top_level_edit(shape, transform_before);
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
+        reflow_shape_caption_if_width_changed(
+            shape,
+            caption_width_before,
+            &caption_styles,
+            dpi,
+            hwp3_layout,
+        );
 
         // Group 리사이즈: original_width 유지, current_width만 변경 (렌더러가 스케일 적용)
         // 한컴 방식: 자식은 변경하지 않고, 컨테이너의 current/original 비율로 스케일 결정
@@ -2793,6 +2806,36 @@ impl DocumentCore {
         self.invalidate_page_tree_cache();
 
         Ok(crate::document_core::helpers::json_ok())
+    }
+}
+
+/// 도형 캡션 글 폭. 캡션이 없으면 None이다.
+pub(crate) fn shape_caption_text_width(shape: &ShapeObject) -> Option<u32> {
+    let common = shape.common();
+    DocumentCore::shape_caption_ref(shape)
+        .map(|caption| caption.text_width(common.width, &common.margin))
+}
+
+/// 속성 변경으로 도형 캡션 글 폭이 바뀌었으면(새 캡션 포함) 캡션 글을 새 폭으로 다시 줄 나눈다.
+pub(crate) fn reflow_shape_caption_if_width_changed(
+    shape: &mut ShapeObject,
+    before: Option<u32>,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
+    let after = shape_caption_text_width(shape);
+    if let (Some(width), Some(caption)) = (
+        after.filter(|_| after != before),
+        DocumentCore::shape_caption_mut(shape).as_mut(),
+    ) {
+        super::super::text_editing::reflow_caption_to_width(
+            caption,
+            width,
+            styles,
+            dpi,
+            is_hwp3_variant,
+        );
     }
 }
 
