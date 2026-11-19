@@ -1506,7 +1506,7 @@ jobs:
             exit 0
           fi
 
-          # 각 APT 명령은 180초로 제한하며 실패·초과를 job 실패로 전달한다.
+          # APT 호출은 각각 180초로 제한한다. 실패한 명령만 60초 간격으로 최대 3회 다시 시도한다.
           apt_options=(
             -o Acquire::Retries=3
             -o Acquire::http::Timeout=30
@@ -1514,17 +1514,28 @@ jobs:
             -o DPkg::Lock::Timeout=60
           )
           install_apt() {
-            set +e
-            sudo env DEBIAN_FRONTEND=noninteractive \
-              timeout 180 apt-get "${apt_options[@]}" "$@"
-            local status=$?
-            set -e
+            local status retry
+            for retry in 0 1 2 3; do
+              if sudo env DEBIAN_FRONTEND=noninteractive \
+                timeout 180 apt-get "${apt_options[@]}" "$@"; then
+                return 0
+              else
+                status=$?
+              fi
+              if (( retry == 3 )); then
+                break
+              fi
+              printf '::warning::Native Skia APT %s exited with %d; retry %d/3 in 60 seconds.\n' \
+                "$1" "$status" "$((retry + 1))"
+              sleep 60
+            done
 
             if [[ "${status}" -eq 124 ]]; then
-              echo "::error::Native Skia dependencies unavailable: APT command exceeded 180 seconds."
-              exit "${status}"
+              echo "::error::Native Skia APT $1 exceeded 180 seconds on the final attempt."
+            else
+              echo "::error::Native Skia APT $1 failed after 3 retries (exit $status)."
             fi
-            return "${status}"
+            exit "${status}"
           }
 
           install_apt update
