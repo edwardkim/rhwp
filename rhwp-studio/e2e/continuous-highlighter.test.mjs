@@ -1,12 +1,15 @@
 /**
  * 연속 형광펜 모드: 블록 없이 형광펜 색을 고르면 모드에 진입하고, 드래그로 블록을 잡을 때마다
  * 그 색을 칠한다. Esc 또는 형광펜 버튼 재클릭으로 종료하며, 블록이 있으면 기존처럼 즉시 칠한다.
+ * 이미 같은 색으로 칠한 영역 전체를 다시 칠하면 형광펜을 지우고, 칠하지 않은 글자가 섞여 있으면
+ * 전체를 칠한다.
  */
 import {
   assert, clickEditArea, createNewDocument, runTest, setTestCase, typeText,
 } from './helpers.mjs';
 
 const GREEN = '#00ff00';
+const YELLOW = '#ffff00';
 
 async function isOpen(page) {
   return page.$eval('#highlight-dropdown', element => element.classList.contains('open'));
@@ -61,10 +64,41 @@ async function dragChars(page, from, to) {
   await page.evaluate(() => new Promise(r => setTimeout(r, 150)));
 }
 
-async function pickSwatch(page) {
+async function pickSwatch(page, index = 4) {
   if (!await isOpen(page)) await page.click('#btn-highlight');
   const swatches = await page.$$('.sb-hl-swatch');
-  await swatches[4].click(); // 첫 행 다섯 번째 = #00ff00
+  await swatches[index].click(); // 첫 행: 4 = #00ff00, 2 = #ffff00
+}
+
+/** 새 문서에 표를 만들고 첫 셀에 text 를 입력한 뒤 커서 위치를 돌려준다 */
+async function createTableWithText(page, text) {
+  await createNewDocument(page);
+  await clickEditArea(page);
+  await page.evaluate(async () => {
+    const { tableCommands } = await import('/src/command/commands/table.ts');
+    tableCommands.find(command => command.id === 'table:create').execute({
+      getInputHandler: () => window.__inputHandler,
+    });
+  });
+  const grid = await page.waitForSelector('[data-row="1"][data-col="1"]', { visible: true });
+  await grid.hover();
+  await grid.click();
+  await typeText(page, text);
+  return page.evaluate(() => window.__inputHandler.cursor.getPosition());
+}
+
+async function cellShadeAt(page, pos) {
+  return page.evaluate(p => window.__wasm.getCellCharPropertiesAt(
+    0, p.parentParaIndex, p.controlIndex, p.cellIndex, 0, 0,
+  ).shadeColor, pos);
+}
+
+/** 현재 셀 문단의 글자 전체를 키보드로 선택한다 */
+async function selectCellLine(page) {
+  await page.keyboard.press('End');
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('Home');
+  await page.keyboard.up('Shift');
 }
 
 runTest('연속 형광펜 모드', async ({ page }) => {
@@ -148,23 +182,63 @@ runTest('연속 형광펜 모드', async ({ page }) => {
   assert(await undoDepth(page) === depthCollapsed, '빈 선택에서 모드 진입은 undo 기록을 만들지 않는다');
   await page.keyboard.press('Escape');
 
-  setTestCase('F5 셀 블록에는 즉시 칠하고 한 단계로 복원한다');
+  setTestCase('같은 블록을 같은 색으로 다시 칠하면 형광펜이 지워진다');
   await createNewDocument(page);
   await clickEditArea(page);
-  await page.evaluate(async () => {
-    const { tableCommands } = await import('/src/command/commands/table.ts');
-    tableCommands.find(command => command.id === 'table:create').execute({
-      getInputHandler: () => window.__inputHandler,
-    });
-  });
-  const grid = await page.waitForSelector('[data-row="1"][data-col="1"]', { visible: true });
-  await grid.hover();
-  await grid.click();
-  await typeText(page, 'CELL');
-  const cellPos = await page.evaluate(() => window.__inputHandler.cursor.getPosition());
-  const cellShade = () => page.evaluate(pos => window.__wasm.getCellCharPropertiesAt(
-    0, pos.parentParaIndex, pos.controlIndex, pos.cellIndex, 0, 0,
-  ).shadeColor, cellPos);
+  await typeText(page, 'alpha beta gamma');
+  const plain = await shadeAt(page, 1);
+  await dragChars(page, 0, 5);
+  await pickSwatch(page);
+  assert(await shadeAt(page, 1) === GREEN, '처음 칠하면 블록이 칠해진다');
+  const depthErase = await undoDepth(page);
+  await dragChars(page, 0, 5);
+  await pickSwatch(page);
+  assert(await shadeAt(page, 1) === plain, '같은 블록을 같은 색으로 다시 칠하면 지워진다');
+  assert(await undoDepth(page) === depthErase + 1, '지우기도 undo 한 단계로 기록된다');
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  assert(await shadeAt(page, 1) === GREEN, 'undo 로 지운 형광펜이 복원된다');
+
+  setTestCase('칠하지 않은 글자가 섞인 넓은 블록은 전체를 칠한다');
+  await dragChars(page, 0, 10);
+  await pickSwatch(page);
+  assert(await shadeAt(page, 1) === GREEN, '이미 칠한 부분은 그대로 칠해져 있다');
+  assert(await shadeAt(page, 8) === GREEN, '칠하지 않았던 부분까지 칠해진다');
+  await dragChars(page, 0, 10);
+  await pickSwatch(page);
+  assert(await shadeAt(page, 1) === plain && await shadeAt(page, 8) === plain,
+    '넓게 칠한 블록 전체를 다시 칠하면 전체가 지워진다');
+
+  setTestCase('다른 색으로 다시 칠하면 지우지 않고 그 색으로 바꾼다');
+  await dragChars(page, 0, 5);
+  await pickSwatch(page);
+  await dragChars(page, 0, 5);
+  await pickSwatch(page, 2);
+  assert(await shadeAt(page, 1) === YELLOW, '다른 색은 기존 색을 덮어쓴다');
+
+  setTestCase('연속 형광펜 모드에서도 칠한 곳을 다시 드래그하면 지워진다');
+  await clickEditArea(page);
+  await pickSwatch(page);
+  assert((await penState(page)).mode, '연속 형광펜 모드에 진입한다');
+  await dragChars(page, 11, 16);
+  assert(await shadeAt(page, 13) === GREEN, '첫 드래그로 칠해진다');
+  await dragChars(page, 11, 16);
+  assert(await shadeAt(page, 13) === plain, '같은 곳을 다시 드래그하면 지워진다');
+  await page.keyboard.press('Escape');
+
+  setTestCase('셀 안 텍스트 선택도 다시 칠하면 지워진다');
+  const textCellPos = await createTableWithText(page, 'TEXT');
+  const textCellPlain = await cellShadeAt(page, textCellPos);
+  await selectCellLine(page);
+  await pickSwatch(page);
+  assert(await cellShadeAt(page, textCellPos) === GREEN, '셀 안 선택 글자가 칠해진다');
+  await selectCellLine(page);
+  await pickSwatch(page);
+  assert(await cellShadeAt(page, textCellPos) === textCellPlain,
+    '같은 색을 다시 칠하면 셀 글자 형광펜이 지워진다');
+
+  setTestCase('F5 셀 블록에는 즉시 칠하고 한 단계로 복원한다');
+  const cellPos = await createTableWithText(page, 'CELL');
+  const cellShade = () => cellShadeAt(page, cellPos);
   const originalShade = await cellShade();
   await page.keyboard.press('F5');
   const cellBlock = await page.evaluate(() => window.__inputHandler.getSelectedCellBlock());
