@@ -1,0 +1,128 @@
+[
+  {
+    "pr": 9188,
+    "case": "tulip",
+    "source": "samples/issue677/1480000-200900112-hci-tulip-table.hwp",
+    "source_sha256": "a7adf287e749aeb29a991fc74b8430e46a0afd59f9142867eb012eb741a69440",
+    "path": "pdf/issue677/1480000-200900112-hci-tulip-table-2022.pdf",
+    "meta": {
+      "Creator": "Hwp 2022 12.0.0.4547",
+      "Producer": "Hancom PDF 1.3.0.547",
+      "Pages": "16",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "360f4ad703dbb3f0d8550f15d0bf084c45b70b65f63953bf53985a225e586317"
+  },
+  {
+    "pr": 9167,
+    "case": "footnote-l100",
+    "source": "samples/issue9014/footnote-100-lines.hwpx",
+    "source_sha256": "d5cb95f005d78c9f0f724cdb73b2b9fec771b53b32dd3e00ad146354eb1983bf",
+    "path": "pdf/issue9014/footnote-100-lines-2020.pdf",
+    "meta": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "4",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "9aa104134362169154977e6f6da34a5fba924a8ed50a15c4bfeedd69c7608e6b"
+  },
+  {
+    "pr": 9167,
+    "case": "footnote-l30",
+    "source": "samples/issue9014/footnote-30-lines.hwpx",
+    "source_sha256": "e87677f02b9eeee69d04eda9c56b29e460a28bdc03c3851783ac4f0f37b34df0",
+    "path": "pdf/issue9014/footnote-30-lines-2020.pdf",
+    "meta": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "2",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "5444171b3637dac8da13042b9de5ee2c4789ef36e9ad379e4a98d3b6baa4068e"
+  },
+  {
+    "pr": 9167,
+    "case": "footnote-l45",
+    "source": "samples/issue9014/footnote-45-lines.hwpx",
+    "source_sha256": "98b2053d07af7a761997398783b61aabb846589d78173e5b9394172d9b95a8cd",
+    "path": "pdf/issue9014/footnote-45-lines-2020.pdf",
+    "meta": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "2",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "5eaf16c92ca2381d75b1d816001e3ece1acf17c2d4b0a7a64b7f9f40e49875ea"
+  },
+  {
+    "pr": 9167,
+    "case": "footnote-l60",
+    "source": "samples/issue9014/footnote-60-lines.hwpx",
+    "source_sha256": "e6a42961de1c647e4d74eac605cd9e5e2ff587a5986b5ed1992416107718ab8b",
+    "path": "pdf/issue9014/footnote-60-lines-2020.pdf",
+    "meta": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "3",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "5101649246f07c4845f3c20af30fe7a17ebf2e0a7635d4cf200a2e896884b953"
+  },
+  {
+    "pr": 9182,
+    "case": "a1",
+    "source": "samples/issue9060/a1-small-top-para-offset.hwpx",
+    "source_sha256": "83b6a5577e3541c3c49c10609b6881878dc38e76091c59b092f0c11c67e9d524",
+    "path": "pdf/issue9060/a1-small-top-para-offset-2024.pdf",
+    "meta": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "2",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "12c88cc4100a91788bbaed4e85dead2696186f01b6b99ad47a6a3e8ea6b580f3"
+  },
+  {
+    "pr": 9182,
+    "case": "m2",
+    "source": "samples/issue9060/m2-full-t2tall-para-offset-next-page.hwp",
+    "source_sha256": "e774998d8ceb0807f435c62f878c1cd7f91b2be758f572239ded1e735f3385f9",
+    "path": "pdf/issue9060/m2-full-t2tall-para-offset-next-page-2020.pdf",
+    "meta": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "4",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "95979023e1e60854e2e6183301034ca5fa671f3c3857c5824eb52f9037620949"
+  },
+  {
+    "pr": 9182,
+    "case": "oda",
+    "source": "samples/issue9060/oda-1092000-201600017.hwp",
+    "source_sha256": "478e77d783cedaccc56a27dc9efbd9eeed2cf7008ecb1b1c6dc71318cd4c5107",
+    "path": "pdf/issue9060/oda-1092000-201600017-2020.pdf",
+    "meta": {
+      "Creator": "Hwp 2020 0.0.0.0",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "159",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "4d61e6a3f511950dec964522c8227aa04fa190b02a81e4e87de361bd3725d448"
+  },
+  {
+    "pr": 9182,
+    "case": "t34",
+    "source": "samples/issue9060/t34-rows4000-para-offset-split.hwpx",
+    "source_sha256": "e3a546b5b49a7d1bd34cb7532ebd5cbc6d25b7894eab9754133a0b4f9c113e16",
+    "path": "pdf/issue9060/t34-rows4000-para-offset-split-2024.pdf",
+    "meta": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "2",
+      "Page size": "595 x 841 pts (A4)"
+    },
+    "sha256": "d584d2d4a71f4f98efb3eb5ba1248b6dfcaa64fb7c7dcf4c530b11820523e10f"
+  }
+]

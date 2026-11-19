@@ -1,0 +1,84 @@
+{
+  "validated_source": "a84c52f4dcade0a068050226851fe61ba550a813",
+  "fixed_base": "af53659e19f70c18d0d3591a719c238235007a05",
+  "rebased_source": "59c43eec10b52bb35c54c071fa45f682636dc3a0",
+  "integration_base": "bd5adce6449a91e33e600e83deab061d1e1a3ea4",
+  "rebase": {
+    "conflicts": [],
+    "source_identity": "exact predicted merge tree",
+    "updated_paths": [
+      [
+        "M",
+        ".github/workflows/ci.yml"
+      ],
+      [
+        "M",
+        "mydocs/manual/publish_guide.md"
+      ],
+      [
+        "M",
+        "mydocs/orders/20261119.md"
+      ],
+      [
+        "A",
+        "mydocs/pr/archives/pr_9191_review.md"
+      ],
+      [
+        "M",
+        "scripts/tests/test_nextest_archive_workflow.py"
+      ]
+    ]
+  },
+  "incoming_ci_contract": {
+    "linux_bash_5_2": {
+      "passed": 21,
+      "failed": 0
+    },
+    "actionlint_exit": 0,
+    "macos_bash_3_2": {
+      "passed": 20,
+      "failed": 1,
+      "failure": "Native Skia promotion-receipt mismatch exit code"
+    }
+  },
+  "rust": {
+    "gates": [
+      "prepare-suites",
+      "focused-nextest",
+      "rust-fmt",
+      "clippy-native",
+      "clippy-wasm",
+      "workspace-build",
+      "clippy-all-targets",
+      "suite-manifest-final",
+      "unit-tiers-final",
+      "full-nextest",
+      "native-skia-lib",
+      "native-skia-placeholder",
+      "native-skia-pdf"
+    ],
+    "nextest": {
+      "passed": 13816,
+      "failed": 0,
+      "skipped": 45
+    },
+    "focused_passed": 35,
+    "native_skia_lib_passed": 4034,
+    "native_skia_lib_ignored": 12,
+    "full_nextest_log_sha256": "bb88908871f6676919a1f4a29e7198ddb2a9ffdaaaebe93ff3a7ef472bc36ad2"
+  },
+  "studio": {
+    "passed": 2820,
+    "failed": 0,
+    "skipped": 2,
+    "build_passed": true,
+    "fresh_wasm": "locked wasm-pack  --target web --out-dir pkg --no-opt"
+  },
+  "visual": {
+    "claim_cases": 9,
+    "candidate_pages": 388,
+    "protected_pages": 4046,
+    "protected_declines": 0,
+    "handbook_native_pages": 383
+  }
+}

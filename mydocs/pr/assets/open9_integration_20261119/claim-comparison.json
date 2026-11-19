@@ -1,0 +1,370 @@
+[
+  {
+    "case": "oda",
+    "backend": "wasm",
+    "pages": 159,
+    "reference_before_compared_pages": 159,
+    "minimum": "96.93",
+    "worst_pages": [
+      124
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [
+      [
+        70,
+        "90.77",
+        "99.93"
+      ],
+      [
+        79,
+        "64.79",
+        "99.95"
+      ],
+      [
+        138,
+        "99.99",
+        "99.99"
+      ],
+      [
+        145,
+        "95.79",
+        "99.52"
+      ],
+      [
+        148,
+        "36.33",
+        "99.90"
+      ],
+      [
+        152,
+        "38.09",
+        "99.75"
+      ]
+    ],
+    "tsv": "9182/oda/wasm/silhouette.tsv",
+    "base_tsv": "9182/oda/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "t34",
+    "backend": "wasm",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9182/t34/wasm/silhouette.tsv",
+    "base_tsv": "9182/t34/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "m2",
+    "backend": "wasm",
+    "pages": 4,
+    "reference_before_compared_pages": 4,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9182/m2/wasm/silhouette.tsv",
+    "base_tsv": "9182/m2/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "a1",
+    "backend": "wasm",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9182/a1/wasm/silhouette.tsv",
+    "base_tsv": "9182/a1/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l45",
+    "backend": "wasm",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l45/wasm/silhouette.tsv",
+    "base_tsv": "9167/footnote-l45/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l60",
+    "backend": "wasm",
+    "pages": 3,
+    "reference_before_compared_pages": 3,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2,
+      3
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l60/wasm/silhouette.tsv",
+    "base_tsv": "9167/footnote-l60/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l100",
+    "backend": "wasm",
+    "pages": 4,
+    "reference_before_compared_pages": 3,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l100/wasm/silhouette.tsv",
+    "base_tsv": "9167/footnote-l100/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l30",
+    "backend": "wasm",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l30/wasm/silhouette.tsv",
+    "base_tsv": "9167/footnote-l30/wasm/base-silhouette.tsv"
+  },
+  {
+    "case": "oda",
+    "backend": "native",
+    "pages": 159,
+    "reference_before_compared_pages": 159,
+    "minimum": "96.89",
+    "worst_pages": [
+      124
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [
+      [
+        70,
+        "90.60",
+        "99.93"
+      ],
+      [
+        79,
+        "64.17",
+        "99.95"
+      ],
+      [
+        138,
+        "99.98",
+        "99.97"
+      ],
+      [
+        145,
+        "95.77",
+        "99.54"
+      ],
+      [
+        148,
+        "36.33",
+        "99.90"
+      ],
+      [
+        152,
+        "38.09",
+        "99.75"
+      ]
+    ],
+    "tsv": "9182/oda/native/silhouette.tsv",
+    "base_tsv": "9182/oda/native/base-silhouette.tsv"
+  },
+  {
+    "case": "t34",
+    "backend": "native",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9182/t34/native/silhouette.tsv",
+    "base_tsv": "9182/t34/native/base-silhouette.tsv"
+  },
+  {
+    "case": "m2",
+    "backend": "native",
+    "pages": 4,
+    "reference_before_compared_pages": 4,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9182/m2/native/silhouette.tsv",
+    "base_tsv": "9182/m2/native/base-silhouette.tsv"
+  },
+  {
+    "case": "a1",
+    "backend": "native",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9182/a1/native/silhouette.tsv",
+    "base_tsv": "9182/a1/native/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l45",
+    "backend": "native",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l45/native/silhouette.tsv",
+    "base_tsv": "9167/footnote-l45/native/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l60",
+    "backend": "native",
+    "pages": 3,
+    "reference_before_compared_pages": 3,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2,
+      3
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l60/native/silhouette.tsv",
+    "base_tsv": "9167/footnote-l60/native/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l100",
+    "backend": "native",
+    "pages": 4,
+    "reference_before_compared_pages": 3,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2,
+      3,
+      4
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l100/native/silhouette.tsv",
+    "base_tsv": "9167/footnote-l100/native/base-silhouette.tsv"
+  },
+  {
+    "case": "footnote-l30",
+    "backend": "native",
+    "pages": 2,
+    "reference_before_compared_pages": 2,
+    "minimum": "100.00",
+    "worst_pages": [
+      1,
+      2
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [],
+    "tsv": "9167/footnote-l30/native/silhouette.tsv",
+    "base_tsv": "9167/footnote-l30/native/base-silhouette.tsv"
+  },
+  {
+    "case": "tulip",
+    "backend": "native",
+    "pages": 16,
+    "reference_before_compared_pages": 16,
+    "minimum": "99.57",
+    "worst_pages": [
+      15
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [
+      [
+        7,
+        "90.91",
+        "99.92"
+      ]
+    ],
+    "tsv": "9188/tulip/native/silhouette.tsv",
+    "base_tsv": "9188/tulip/native/base-silhouette.tsv"
+  },
+  {
+    "case": "tulip",
+    "backend": "wasm",
+    "pages": 16,
+    "reference_before_compared_pages": 16,
+    "minimum": "99.57",
+    "worst_pages": [
+      15
+    ],
+    "under_90": [],
+    "declines_gt_2pp": [],
+    "claim_values": [
+      [
+        7,
+        "90.87",
+        "99.92"
+      ]
+    ],
+    "tsv": "9188/tulip/wasm/silhouette.tsv",
+    "base_tsv": "9188/tulip/wasm/base-silhouette.tsv"
+  }
+]

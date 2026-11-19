@@ -12,7 +12,24 @@ impl TypesetState {
         note: FootnoteRef,
         height: f64,
     ) {
-        self.data.deferred_body_footnotes.push((note, height));
+        self.defer_splittable_body_footnote(note, height, Vec::new());
+    }
+
+    /// 다음 쪽으로 넘기는 각주 조각. `lines` 는 각주 전체를 펼친 줄의
+    /// (줄 높이, 줄간격)이며, 비어 있으면 조각을 통째로만 옮긴다.
+    fn defer_splittable_body_footnote(
+        &mut self,
+        note: FootnoteRef,
+        height: f64,
+        lines: Vec<(f64, f64)>,
+    ) {
+        self.data
+            .deferred_body_footnotes
+            .push(DeferredBodyFootnote {
+                note,
+                height,
+                lines,
+            });
     }
 
     /// 쪽 전환을 확정한 뒤 다음 각주 lane의 같은 조각 높이를 fit과 paint에 예약한다.
@@ -30,14 +47,81 @@ impl TypesetState {
         &mut self,
         storage: &S,
     ) -> Result<(), S::Error> {
-        for (note, height) in std::mem::take(&mut self.data.deferred_body_footnotes) {
-            let draw_separator = note
+        let mut queue = std::mem::take(&mut self.data.deferred_body_footnotes).into_iter();
+        while let Some(deferred) = queue.next() {
+            let draw_separator = deferred
+                .note
                 .fragment
                 .map_or(true, |fragment| fragment.draw_separator);
-            self.record_current_footnote_with_storage(note, storage)?;
-            self.add_footnote_fragment_height(height, draw_separator);
+            // 이어받은 조각도 이 쪽 각주 영역보다 길면 한/글처럼 들어가는 줄까지만
+            // 이 쪽에 두고, 남은 줄과 뒤 번호는 다시 다음 쪽 각주 영역으로 넘긴다.
+            if let Some((head, tail)) = self.split_deferred_footnote_for_current_page(&deferred) {
+                self.record_current_footnote_with_storage(head.note, storage)?;
+                self.add_footnote_fragment_height(head.height, draw_separator);
+                self.data.deferred_body_footnotes.push(tail);
+                self.data.deferred_body_footnotes.extend(queue);
+                break;
+            }
+            self.record_current_footnote_with_storage(deferred.note, storage)?;
+            self.add_footnote_fragment_height(deferred.height, draw_separator);
         }
         Ok(())
+    }
+
+    /// 미룬 조각이 현재 쪽에 다 들어가지 않을 때, 들어가는 가장 긴 앞 줄 조각과 남은 조각.
+    /// 줄 메트릭이 없거나 한 줄도 들어가지 않으면 종전처럼 통째로 둔다.
+    fn split_deferred_footnote_for_current_page(
+        &self,
+        deferred: &DeferredBodyFootnote,
+    ) -> Option<(DeferredBodyFootnote, DeferredBodyFootnote)> {
+        if deferred.lines.is_empty() {
+            return None;
+        }
+        let fragment =
+            deferred
+                .note
+                .fragment
+                .unwrap_or(crate::renderer::pagination::FootnoteFragment {
+                    start_line: 0,
+                    end_line: deferred.lines.len(),
+                    draw_separator: true,
+                    draw_number: true,
+                });
+        let start = fragment.start_line;
+        let end = fragment.end_line.min(deferred.lines.len());
+        let fits = |height: f64| {
+            self.footnote_fragment_fits_current_page(height, fragment.draw_separator, 0.0)
+        };
+        if start >= end || fits(deferred.height) {
+            return None;
+        }
+        let split_line = (start + 1..end)
+            .rev()
+            .find(|&split| fits(note_lines_fragment_height(&deferred.lines, start, split)))?;
+        let with_fragment = |fragment| FootnoteRef {
+            fragment: Some(fragment),
+            ..deferred.note.clone()
+        };
+        Some((
+            DeferredBodyFootnote {
+                note: with_fragment(crate::renderer::pagination::FootnoteFragment {
+                    end_line: split_line,
+                    ..fragment
+                }),
+                height: note_lines_fragment_height(&deferred.lines, start, split_line),
+                lines: Vec::new(),
+            },
+            DeferredBodyFootnote {
+                note: with_fragment(crate::renderer::pagination::FootnoteFragment {
+                    start_line: split_line,
+                    end_line: end,
+                    draw_separator: true,
+                    draw_number: false,
+                }),
+                height: note_lines_fragment_height(&deferred.lines, split_line, end),
+                lines: deferred.lines.clone(),
+            },
+        ))
     }
 
     /// 각주 높이 추가
@@ -477,7 +561,7 @@ impl TypesetState {
             };
             if self.has_deferred_body_footnotes() {
                 // 앞 번호가 다음 쪽으로 넘어갔으면 뒤 번호도 그 뒤를 잇는다.
-                self.defer_body_footnote_for_next_page(whole, note.content_height);
+                self.defer_splittable_body_footnote(whole, note.content_height, note.lines.clone());
             } else if self.footnote_fragment_fits_current_page(note.content_height, true, guard) {
                 self.record_current_footnote_with_storage(whole, storage)?;
                 self.add_footnote_fragment_height(note.content_height, true);
@@ -492,7 +576,7 @@ impl TypesetState {
                     storage,
                 )?;
                 self.add_footnote_fragment_height(split.prefix_height, split.prefix.draw_separator);
-                self.defer_body_footnote_for_next_page(
+                self.defer_splittable_body_footnote(
                     FootnoteRef {
                         column_index: 0,
                         number: note.number,
@@ -500,9 +584,10 @@ impl TypesetState {
                         fragment: Some(split.suffix),
                     },
                     split.suffix_height,
+                    note.lines.clone(),
                 );
             } else {
-                self.defer_body_footnote_for_next_page(whole, note.content_height);
+                self.defer_splittable_body_footnote(whole, note.content_height, note.lines.clone());
             }
             self.data
                 .line_registered_notes
@@ -559,13 +644,26 @@ pub(in crate::renderer::typeset) struct OwnLineNoteLevel {
     pub cost: f64,
 }
 
+/// 다음 쪽 각주 영역으로 넘긴 각주 조각과 그 예약 높이.
+#[derive(Debug, Clone)]
+pub(in crate::renderer::typeset) struct DeferredBodyFootnote {
+    pub note: FootnoteRef,
+    pub height: f64,
+    /// 각주 전체를 펼친 줄의 (줄 높이, 줄간격). 비어 있으면 통째로만 옮긴다.
+    pub lines: Vec<(f64, f64)>,
+}
+
 /// 각주 줄 `start..end` 조각의 높이 — 마지막 줄 뒤 줄간격은 넣지 않는다.
 fn own_line_note_fragment_height(
     note: &crate::renderer::typeset::OwnLineNote,
     start: usize,
     end: usize,
 ) -> f64 {
-    note.lines[start..end]
+    note_lines_fragment_height(&note.lines, start, end)
+}
+
+fn note_lines_fragment_height(lines: &[(f64, f64)], start: usize, end: usize) -> f64 {
+    lines[start..end]
         .iter()
         .enumerate()
         .map(|(index, (height, spacing))| {

@@ -1,5 +1,6 @@
 mod body_page_fields;
 mod bookmark_query;
+pub use bookmark_query::{parse_bookmark_place, BookmarkHeaderFooter, BookmarkPlace};
 mod cursor_nav;
 mod cursor_rect;
 pub(crate) mod doc_tree_nav;

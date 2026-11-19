@@ -40,6 +40,33 @@ pub(crate) fn header_footer_step(
     })
 }
 
+/// 셀 경로의 표 마디. 셀 65534는 그 표의 캡션이다(본문 셀 번호 API·가변 경로 해석기와 같은 꼴).
+fn table_step_paragraphs(
+    table: &crate::model::table::Table,
+    step: usize,
+    cell_idx: usize,
+) -> Result<&[Paragraph], HwpError> {
+    if cell_idx == crate::document_core::TABLE_CAPTION_CELL_SENTINEL {
+        return table
+            .caption
+            .as_ref()
+            .map(|caption| caption.paragraphs.as_slice())
+            .ok_or_else(|| HwpError::RenderError(format!("경로[{}]: 표에 캡션이 없습니다", step)));
+    }
+    table
+        .cells
+        .get(cell_idx)
+        .map(|cell| cell.paragraphs.as_slice())
+        .ok_or_else(|| {
+            HwpError::RenderError(format!(
+                "경로[{}]: 셀 {} 범위 초과 (총 {}개)",
+                step,
+                cell_idx,
+                table.cells.len()
+            ))
+        })
+}
+
 /// 글자겹침과 확장 필드는 화면 글자 수와 무관하게 모델의 캐럿 한 칸을 차지한다.
 ///
 /// `compute_char_positions(run.text)`는 raw marker의 가상 글리프 폭을 반환하므로,
@@ -748,20 +775,13 @@ impl DocumentCore {
             // 중간 항목: Table 또는 Shape(글상자)
             match ctrl {
                 Control::Table(table) => {
-                    let cell = table.cells.get(cell_idx).ok_or_else(|| {
-                        HwpError::RenderError(format!(
-                            "경로[{}]: 셀 {} 범위 초과 (총 {}개)",
-                            i,
-                            cell_idx,
-                            table.cells.len()
-                        ))
-                    })?;
-                    para = cell.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                    let paragraphs = table_step_paragraphs(table, i, cell_idx)?;
+                    para = paragraphs.get(cell_para_idx).ok_or_else(|| {
                         HwpError::RenderError(format!(
                             "경로[{}]: 셀문단 {} 범위 초과 (총 {}개)",
                             i,
                             cell_para_idx,
-                            cell.paragraphs.len()
+                            paragraphs.len()
                         ))
                     })?;
                 }
@@ -865,20 +885,13 @@ impl DocumentCore {
         for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path.iter().enumerate() {
             let next_para = match para.controls.get(ctrl_idx) {
                 Some(Control::Table(table)) => {
-                    let cell = table.cells.get(cell_idx).ok_or_else(|| {
-                        HwpError::RenderError(format!(
-                            "경로[{}]: 셀 {} 범위 초과 (총 {}개)",
-                            i,
-                            cell_idx,
-                            table.cells.len()
-                        ))
-                    })?;
-                    cell.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                    let paragraphs = table_step_paragraphs(table, i, cell_idx)?;
+                    paragraphs.get(cell_para_idx).ok_or_else(|| {
                         HwpError::RenderError(format!(
                             "경로[{}]: 셀문단 {} 범위 초과 (총 {}개)",
                             i,
                             cell_para_idx,
-                            cell.paragraphs.len()
+                            paragraphs.len()
                         ))
                     })?
                 }
@@ -986,17 +999,14 @@ impl DocumentCore {
         // 중간 경로 탐색 (마지막 엔트리 제외)
         for (i, &(ctrl_idx, cell_idx, cell_para_idx)) in path[..path.len() - 1].iter().enumerate() {
             let next_para = match para.controls.get(ctrl_idx) {
-                Some(Control::Table(table)) => {
-                    let cell = table.cells.get(cell_idx).ok_or_else(|| {
-                        HwpError::RenderError(format!("경로[{}]: 셀 {} 범위 초과", i, cell_idx))
-                    })?;
-                    cell.paragraphs.get(cell_para_idx).ok_or_else(|| {
+                Some(Control::Table(table)) => table_step_paragraphs(table, i, cell_idx)?
+                    .get(cell_para_idx)
+                    .ok_or_else(|| {
                         HwpError::RenderError(format!(
                             "경로[{}]: 셀문단 {} 범위 초과",
                             i, cell_para_idx
                         ))
-                    })?
-                }
+                    })?,
                 Some(Control::Shape(shape)) => {
                     let text_box = super::super::helpers::get_textbox_at(shape, cell_idx)
                         .ok_or_else(|| {
@@ -1046,11 +1056,7 @@ impl DocumentCore {
         let last = path.last().unwrap();
         match para.controls.get(last.0) {
             Some(Control::Table(table)) => {
-                let cell = table
-                    .cells
-                    .get(last.1)
-                    .ok_or_else(|| HwpError::RenderError(format!("셀 {} 범위 초과", last.1)))?;
-                Ok(cell.paragraphs.len())
+                Ok(table_step_paragraphs(table, path.len() - 1, last.1)?.len())
             }
             Some(Control::Shape(shape)) => {
                 let text_box = super::super::helpers::get_textbox_at(shape, last.1)
@@ -2422,7 +2428,12 @@ impl DocumentCore {
 
         // 주요 페이지 트리 미리 빌드
         for &pn in &page_nums {
-            tree_cache.push((pn, selection_tree(pn)?));
+            let mut tree = selection_tree(pn)?;
+            // 본문 칸이다. 같은 문단·컨트롤 번호의 머리말·꼬리말 표 칸을 잡지 않는다.
+            if cell_target.is_some() {
+                tree.root.remove_page_areas();
+            }
+            tree_cache.push((pn, tree));
         }
 
         // 한 line segment의 양 cursor는 반드시 같은 page tree에서 찾는다. split paragraph의

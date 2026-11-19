@@ -1,0 +1,9 @@
+{
+  "testedHead": "a84c52f4dcade0a068050226851fe61ba550a813",
+  "fullLogSha256": "bb88908871f6676919a1f4a29e7198ddb2a9ffdaaaebe93ff3a7ef472bc36ad2",
+  "fullSummary": "Summary [ 668.563s] 13816 tests run: 13816 passed (3 slow), 45 skipped",
+  "selected": [
+    "PASS [   0.024s] ( 8483/13816) rhwp::regression_suite_014 control_edit_keeps_field_ranges::deleting_a_footnote_keeps_the_following_field",
+    "PASS [   0.027s] ( 8485/13816) rhwp::regression_suite_014 control_edit_keeps_field_ranges::page_hide_on_and_off_keeps_the_field"
+  ]
+}

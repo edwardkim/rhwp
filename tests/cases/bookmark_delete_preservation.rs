@@ -418,3 +418,223 @@ fn bookmark_add_keeps_following_body_field_active() {
     core.insert_text_native(0, 0, end, "이어 입력").unwrap();
     assert_eq!(fields(&core)[0]["value"], "기존이어 입력");
 }
+
+/// 문단 셋("가나다라마바사"·"아자차카타파하"·"끝")의 빈 문서.
+fn block_fixture() -> DocumentCore {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가나다라마바사").unwrap();
+    core.split_paragraph_native(0, 0, 7, None).unwrap();
+    core.insert_text_native(0, 1, 0, "아자차카타파하").unwrap();
+    core.split_paragraph_native(0, 1, 7, None).unwrap();
+    core.insert_text_native(0, 2, 0, "끝").unwrap();
+    core
+}
+
+fn listed(core: &DocumentCore) -> Vec<Value> {
+    serde_json::from_str::<Value>(&core.get_bookmarks_native().unwrap())
+        .unwrap()
+        .as_array()
+        .unwrap()
+        .clone()
+}
+
+fn body(para: usize) -> rhwp::document_core::queries::BookmarkPlace {
+    serde_json::from_value(serde_json::json!({"section": 0, "para": para})).unwrap()
+}
+
+#[test]
+fn block_bookmarks_in_one_and_several_paragraphs_survive_hwp_and_hwpx() {
+    let mut core = block_fixture();
+    // 한컴 12.30: 고른 범위로 넣은 책갈피는 책갈피 창 종류가 "블록"이고 이동하면 그 범위를 고른다.
+    let r = core
+        .add_block_bookmark_native(&body(0), 2, 0, 5, "다라마")
+        .unwrap();
+    assert!(r.contains(r#""ok":true"#), "{r}");
+    let r = core
+        .add_block_bookmark_native(&body(0), 3, 1, 3, "여러 문단")
+        .unwrap();
+    assert!(r.contains(r#""ok":false"#), "엇갈린 블록은 거절한다: {r}");
+    let r = core
+        .add_block_bookmark_native(&body(0), 6, 1, 3, "여러 문단")
+        .unwrap();
+    assert!(r.contains(r#""ok":true"#), "{r}");
+    let r = core.add_bookmark_at_native(&body(2), 0, "점").unwrap();
+    assert!(r.contains(r#""ok":true"#), "{r}");
+    let r = core
+        .add_block_bookmark_native(&body(2), 0, 2, 1, "점")
+        .unwrap();
+    assert!(r.contains("같은 이름"), "{r}");
+    let expect = |core: &DocumentCore| {
+        let items = listed(core);
+        let shape: Vec<_> = items
+            .iter()
+            .map(|b| {
+                (
+                    b["name"].as_str().unwrap().to_string(),
+                    b["kind"].as_str().unwrap().to_string(),
+                    b["place"]["para"].as_u64().unwrap(),
+                    b["start"].as_u64().unwrap(),
+                    b["endPara"].as_u64(),
+                    b["end"].as_u64(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            shape,
+            vec![
+                ("다라마".into(), "block".into(), 0, 2, Some(0), Some(5)),
+                ("여러 문단".into(), "block".into(), 0, 6, Some(1), Some(3)),
+                ("점".into(), "point".into(), 2, 0, None, None),
+            ]
+        );
+        let paragraphs = &core.document().sections[0].paragraphs;
+        assert_eq!(paragraphs[0].text, "가나다라마바사");
+        assert_eq!(paragraphs[1].text, "아자차카타파하");
+    };
+    expect(&core);
+    // HWPX는 한컴 저장본(fieldBegin type="BOOKMARK" dirty="1", Prop 2)과 같은 꼴이다.
+    let mut zip = zip::ZipArchive::new(Cursor::new(core.export_hwpx_native().unwrap())).unwrap();
+    let mut xml = String::new();
+    zip.by_name("Contents/section0.xml")
+        .unwrap()
+        .read_to_string(&mut xml)
+        .unwrap();
+    assert!(
+        xml.contains(r#"type="BOOKMARK" name="다라마" editable="0" dirty="1""#),
+        "{xml}"
+    );
+    assert!(xml.contains(r#"<hp:integerParam name="Prop">2</hp:integerParam>"#));
+    assert_eq!(xml.matches("<hp:fieldEnd").count(), 2);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        expect(&reopened);
+        // 이름 바꾸기와 지우기도 블록에 닿고, 지워도 글은 남는다.
+        let ctrl = |core: &DocumentCore, name: &str| {
+            listed(core)
+                .iter()
+                .find(|b| b["name"] == name)
+                .map(|b| b["ctrlIdx"].as_u64().unwrap() as usize)
+                .unwrap()
+        };
+        let ci = ctrl(&reopened, "다라마");
+        let r = reopened
+            .rename_bookmark_at_native(&body(0), ci, "새 이름")
+            .unwrap();
+        assert!(r.contains(r#""ok":true"#), "{r}");
+        let ci = ctrl(&reopened, "여러 문단");
+        let r = reopened.delete_bookmark_at_native(&body(0), ci).unwrap();
+        assert!(r.contains(r#""ok":true"#), "{r}");
+        for bytes in [
+            reopened.export_hwp_native().unwrap(),
+            reopened.export_hwpx_native().unwrap(),
+        ] {
+            let again = DocumentCore::from_bytes(&bytes).unwrap();
+            let names: Vec<_> = listed(&again)
+                .iter()
+                .map(|b| b["name"].as_str().unwrap().to_string())
+                .collect();
+            assert_eq!(names, ["새 이름", "점"]);
+            let paragraphs = &again.document().sections[0].paragraphs;
+            assert_eq!(paragraphs[0].text, "가나다라마바사");
+            assert_eq!(paragraphs[1].text, "아자차카타파하");
+            assert!(paragraphs[1].orphan_field_ends.is_empty());
+        }
+    }
+}
+
+#[test]
+fn bookmarks_go_into_cells_headers_and_master_pages() {
+    let mut core = block_fixture();
+    core.create_table_native(0, 2, 1, 1, 2).unwrap();
+    let (table_para, table_ctrl) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(p, para)| {
+            para.controls
+                .iter()
+                .position(|c| matches!(c, Control::Table(_)))
+                .map(|c| (p, c))
+        })
+        .unwrap();
+    core.insert_text_in_cell_native(0, table_para, table_ctrl, 1, 0, 0, "셀 글")
+        .unwrap();
+    core.create_header_footer_native(0, true, 0).unwrap();
+    core.insert_text_in_header_footer_native(0, true, 0, 0, 0, "머리말 글")
+        .unwrap();
+    core.create_master_page_native(0, r#"{"applyTo":0}"#)
+        .unwrap();
+    core.insert_text_in_header_footer_native(0, false, 16, 0, 0, "바탕쪽 글")
+        .unwrap();
+    let place = |json: Value| -> rhwp::document_core::queries::BookmarkPlace {
+        serde_json::from_value(json).unwrap()
+    };
+    let cell = place(serde_json::json!({
+        "section": 0, "para": table_para, "cellPath": [[table_ctrl, 1, 0]]
+    }));
+    let header = place(serde_json::json!({
+        "section": 0, "para": 0, "headerFooter": {"isHeader": true, "applyTo": 0}
+    }));
+    let master = place(serde_json::json!({
+        "section": 0, "para": 0, "headerFooter": {"isHeader": false, "applyTo": 16}
+    }));
+    for (target, name) in [(&cell, "셀"), (&header, "머리말")] {
+        let r = core.add_bookmark_at_native(target, 1, name).unwrap();
+        assert!(r.contains(r#""ok":true"#), "{name}: {r}");
+    }
+    let r = core
+        .add_block_bookmark_native(&master, 0, 0, 3, "바탕쪽")
+        .unwrap();
+    assert!(r.contains(r#""ok":true"#), "{r}");
+    let check = |core: &DocumentCore| {
+        let items = listed(core);
+        let find = |name: &str| items.iter().find(|b| b["name"] == name).cloned().unwrap();
+        assert_eq!(
+            serde_json::from_value::<rhwp::document_core::queries::BookmarkPlace>(
+                find("셀")["place"].clone()
+            )
+            .unwrap(),
+            cell
+        );
+        assert_eq!(find("셀")["areas"], serde_json::json!(["table"]));
+        assert_eq!(find("셀")["start"], 1);
+        assert_eq!(
+            serde_json::from_value::<rhwp::document_core::queries::BookmarkPlace>(
+                find("머리말")["place"].clone()
+            )
+            .unwrap(),
+            header
+        );
+        assert_eq!(find("바탕쪽")["kind"], "block");
+        assert_eq!(
+            serde_json::from_value::<rhwp::document_core::queries::BookmarkPlace>(
+                find("바탕쪽")["place"].clone()
+            )
+            .unwrap(),
+            master
+        );
+        assert_eq!(find("바탕쪽")["end"], 3);
+    };
+    check(&core);
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let mut reopened = DocumentCore::from_bytes(&bytes).unwrap();
+        check(&reopened);
+        for (target, name) in [(&cell, "셀"), (&header, "머리말"), (&master, "바탕쪽")] {
+            let ci = listed(&reopened)
+                .iter()
+                .find(|b| b["name"] == name)
+                .map(|b| b["ctrlIdx"].as_u64().unwrap() as usize)
+                .unwrap();
+            let r = reopened.delete_bookmark_at_native(target, ci).unwrap();
+            assert!(r.contains(r#""ok":true"#), "{name}: {r}");
+        }
+        assert!(listed(&reopened).is_empty());
+    }
+}

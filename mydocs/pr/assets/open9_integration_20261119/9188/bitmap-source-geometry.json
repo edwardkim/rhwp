@@ -1,0 +1,20 @@
+{
+  "path": [
+    "BinData",
+    "BIN0003.bmp"
+  ],
+  "width": 758,
+  "height": 527,
+  "metadata": {
+    "dpi": [
+      0.0,
+      0.0
+    ],
+    "compression": 0
+  },
+  "bmp_ppm": [
+    0,
+    0
+  ],
+  "bmp_sha256": "ddc7aa4ce8e27354541e9d6cf61b4a7b1a96ee87b67102b0a91027071709d187"
+}

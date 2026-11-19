@@ -42,7 +42,14 @@ const CI_COLD: i64 = 1_668_246_628; // b"cold"
 const CI_PGNP: i64 = 1_885_826_672; // b"pgnp"
 const CI_TBL: i64 = 1_952_607_264; // b"tbl "
 const CI_GSO: i64 = 1_735_618_336; // b"gso "
-                                   // `cs[gso].rc.ci` — 도형 레코드 종류(별도 네임스페이스)
+const CI_CLK: i64 = 627_272_811; // b"%clk" — 누름틀 시작
+const CI_FIELD_END: i64 = 157_510_763; // b"\tclk" — 필드 끝(`fo` 가 시작 개체를 가리킨다)
+/// 글자 안 탭의 제어 코드.
+const CC_TAB: i64 = 9;
+/// 개체 매개변수(`ps.pa`)에서 필드 이름을 담는 항목 번호(CTRL_DATA 의 이름).
+const PS_FIELD_NAME: i64 = 16_384;
+
+// `cs[gso].rc.ci` — 도형 레코드 종류(별도 네임스페이스)
 const RC_REC: i64 = 611_476_835; // b"$rec"
 
 // --- 열거표 (사양서에서 확정된 쌍은 주석에 원본 근거를 적었다) -------------
@@ -939,16 +946,143 @@ fn emit_control(m: &Model, ids: &mut Ids, ch: &Value) -> Result<String, String> 
     let Some(o) = m.table("cs").get(control_id) else {
         return Err(format!("지원하지 않는 hwpjson control 참조: {control_id}"));
     };
+    // 필드 끝: 한/글 2020 은 ci=`	clk` 로, 다른 판(11.0.0.8808 등)은 시작과 같은 ci=`%clk` 로 적는다.
+    // 어느 쪽이든 `cc=4` 이고 `fo` 로 시작을 가리키므로 ci 보다 먼저 이것으로 가른다.
+    if is_field_end(ch, o) {
+        return emit_field_end(m, o);
+    }
     match geti(ch, "ci", 0) {
         CI_SECD => Ok(emit_secpr(m, ids, o)), // ctrl 래핑 없음(사양서 반증 확정)
         CI_COLD => Ok(emit_colpr(o)),         // ctrl 래핑 있음
         CI_PGNP => Ok(emit_pagenum(o)),       // ctrl 래핑 있음
         CI_TBL => emit_tbl(m, ids, o),
         CI_GSO => emit_gso(m, ids, o),
+        CI_CLK => Ok(emit_clickhere_begin(o)),
+        CI_FIELD_END => emit_field_end(m, o),
         ci => Err(format!(
             "지원하지 않는 hwpjson control 종류: ci={ci}, co={control_id}"
         )),
     }
+}
+
+/// 누름틀 시작(`%clk`) → `<hp:fieldBegin type="CLICK_HERE">`.
+///
+/// 개체 `{cc:3, ci, ps:{pa:[{na:16384, va:이름}]}, fb:{id, fi, ed, di, pa:{pr, co}}}` 에서
+/// 이름·편집 가능·수정됨·속성(Prop)·명령(Command)을 옮긴다. 명령 문자열
+/// (`Clickhere:set:N:Direction:wstring:L:안내문 HelpState:wstring:L:도움말`)의 항목은
+/// 한컴 HWPX 처럼 `stringParam` 으로도 풀어 둔다.
+fn emit_clickhere_begin(o: &Value) -> String {
+    let fb = sub(o, "fb");
+    let fpa = sub(fb, "pa");
+    let name = getarr(sub(o, "ps"), "pa")
+        .iter()
+        .find(|p| geti(p, "na", 0) == PS_FIELD_NAME)
+        .map(|p| gets(p, "va"))
+        .unwrap_or("");
+    let command = gets(fpa, "co");
+    let items = parse_field_command(command);
+    let mut params = format!(
+        "<hp:integerParam name=\"Prop\">{}</hp:integerParam>\
+         <hp:stringParam name=\"Command\">{}</hp:stringParam>",
+        geti(fpa, "pr", 0),
+        esc_text(command)
+    );
+    for (k, v) in &items {
+        params.push_str(&format!(
+            "<hp:stringParam name=\"{}\">{}</hp:stringParam>",
+            esc_attr(k),
+            esc_text(v)
+        ));
+    }
+    format!(
+        "<hp:ctrl><hp:fieldBegin id=\"{}\" type=\"CLICK_HERE\" name=\"{}\" editable=\"{}\" \
+         dirty=\"{}\" zorder=\"-1\" fieldid=\"{}\"><hp:parameters cnt=\"{}\" name=\"\">{}\
+         </hp:parameters></hp:fieldBegin></hp:ctrl>",
+        u32v(geti(fb, "id", 0)),
+        esc_attr(name),
+        b01(getb(fb, "ed")),
+        b01(getb(fb, "di")),
+        u32v(geti(fb, "fi", CI_CLK)),
+        2 + items.len(),
+        params
+    )
+}
+
+/// 필드 명령 `종류:set:길이:이름:wstring:글자수:값 이름:…` 의 `(이름, 값)` 들.
+/// 값 길이는 글자 수(UTF-16 아님, 한/글 2020 클립보드 실측: `wstring:7:TGT_DPT`). 틀리면 거기서 멈춘다.
+fn parse_field_command(command: &str) -> Vec<(String, String)> {
+    let mut out = Vec::new();
+    let chars: Vec<char> = command.chars().collect();
+    // 머리 `종류:set:길이:` 건너뛰기
+    let mut i = 0usize;
+    let mut colons = 0;
+    while i < chars.len() && colons < 3 {
+        if chars[i] == ':' {
+            colons += 1;
+        }
+        i += 1;
+    }
+    if colons < 3 {
+        return out;
+    }
+    loop {
+        while i < chars.len() && chars[i] == ' ' {
+            i += 1;
+        }
+        let read_to_colon = |i: &mut usize| -> Option<String> {
+            let start = *i;
+            while *i < chars.len() && chars[*i] != ':' {
+                *i += 1;
+            }
+            if *i >= chars.len() {
+                return None;
+            }
+            let s: String = chars[start..*i].iter().collect();
+            *i += 1;
+            Some(s)
+        };
+        let Some(key) = read_to_colon(&mut i) else {
+            break;
+        };
+        let Some(_ty) = read_to_colon(&mut i) else {
+            break;
+        };
+        let Some(len) = read_to_colon(&mut i).and_then(|s| s.parse::<usize>().ok()) else {
+            break;
+        };
+        if key.is_empty() || i + len > chars.len() {
+            break;
+        }
+        out.push((key, chars[i..i + len].iter().collect()));
+        i += len;
+    }
+    out
+}
+
+/// 필드 끝 → `<hp:fieldEnd>`. `fo` 가 가리키는 시작 개체의 `fb.id`·`fb.fi` 를 잇는다.
+/// 본문 제어문자 `ch`(와 그 `cs` 항목 `o`)가 필드 끝인지.
+fn is_field_end(ch: &Value, o: &Value) -> bool {
+    let ci = geti(ch, "ci", 0);
+    ci == CI_FIELD_END || (geti(ch, "cc", 0) == 4 && !gets(o, "fo").is_empty())
+}
+
+fn emit_field_end(m: &Model, o: &Value) -> Result<String, String> {
+    let begin = m
+        .table("cs")
+        .get(gets(o, "fo"))
+        .ok_or_else(|| format!("필드 끝이 가리키는 시작이 없습니다: {}", gets(o, "fo")))?;
+    if geti(begin, "ci", 0) != CI_CLK {
+        return Err(format!(
+            "지원하지 않는 hwpjson 필드 끝(시작 ci={})",
+            geti(begin, "ci", 0)
+        ));
+    }
+    let fb = sub(begin, "fb");
+    Ok(format!(
+        "<hp:ctrl><hp:fieldEnd beginIDRef=\"{}\" fieldid=\"{}\"/></hp:ctrl>",
+        u32v(geti(fb, "id", 0)),
+        u32v(geti(fb, "fi", CI_CLK))
+    ))
 }
 
 /// 원본은 구역정의 run 과 그 뒤 내용을 분리해 적는다.
@@ -969,6 +1103,19 @@ fn split_run(ch: &[Value]) -> Vec<&[Value]> {
     vec![ch]
 }
 
+/// 글자 안 탭(`{cc:9, wi, le, ty}` — 제어 표 참조 없이 바로 적힌다)을 HWPX `<hp:tab>` 으로.
+fn emit_inline_tab(c: &Value) -> Option<String> {
+    if geti(c, "cc", 0) != CC_TAB || c.get("co").is_some() {
+        return None;
+    }
+    Some(format!(
+        "<hp:t><hp:tab width=\"{}\" leader=\"{}\" type=\"{}\"/></hp:t>",
+        geti(c, "wi", 0),
+        geti(c, "le", 0),
+        geti(c, "ty", 1)
+    ))
+}
+
 fn emit_run(m: &Model, ids: &mut Ids, cp_objid: &str, ch: &[Value]) -> Result<String, String> {
     let cid = charpr_ref(ids, cp_objid);
     let has_obj = ch.iter().any(|c| c.get("t").is_none());
@@ -984,6 +1131,8 @@ fn emit_run(m: &Model, ids: &mut Ids, cp_objid: &str, ch: &[Value]) -> Result<St
             } else {
                 body.push_str(&format!("<hp:t>{}</hp:t>", esc_text(t)));
             }
+        } else if let Some(tab) = emit_inline_tab(c) {
+            body.push_str(&tab);
         } else {
             body.push_str(&emit_control(m, ids, c)?);
         }

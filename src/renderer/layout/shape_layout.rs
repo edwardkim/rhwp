@@ -1925,6 +1925,19 @@ impl LayoutEngine {
         let cell_index = table_cell_ref.map(|(ci, _, _)| ci);
         let cell_para_index = table_cell_ref.map(|(_, cpi, _)| cpi);
         let outer_table_control_index = table_cell_ref.map(|(_, _, otci)| otci);
+        // 표 셀 도형은 상위 경로 대신 table_cell_ref로 온다(#1138). 글상자 글의 경로는 그 셀부터
+        // 시작해야 커서·히트·경로 편집 API가 같은 문단을 가리킨다.
+        let textbox_parent_path: Vec<CellPathEntry> = match table_cell_ref {
+            Some((cell_idx, cell_para_idx, outer_ctrl)) if parent_cell_path.is_empty() => {
+                vec![CellPathEntry {
+                    control_index: outer_ctrl,
+                    cell_index: cell_idx,
+                    cell_para_index: cell_para_idx,
+                    text_direction: 0,
+                }]
+            }
+            _ => parent_cell_path.to_vec(),
+        };
 
         // 회전/대칭이 있으면 current 크기로 중앙 배치
         // 그렇지 않으면 호출자가 전달한 w, h를 그대로 사용
@@ -2001,7 +2014,7 @@ impl LayoutEngine {
                     styles,
                     bin_data_content,
                     overflow_map,
-                    parent_cell_path,
+                    &textbox_parent_path,
                     shape.common().treat_as_char,
                     matrix_positioned,
                     textbox_vpos_origin_hu(shape.common(), matrix_positioned),
@@ -2331,7 +2344,7 @@ impl LayoutEngine {
                     styles,
                     bin_data_content,
                     &empty_map,
-                    parent_cell_path,
+                    &textbox_parent_path,
                     shape.common().treat_as_char,
                     matrix_positioned,
                     textbox_vpos_origin_hu(shape.common(), matrix_positioned),
@@ -2561,7 +2574,7 @@ impl LayoutEngine {
                     styles,
                     bin_data_content,
                     &empty_map,
-                    parent_cell_path,
+                    &textbox_parent_path,
                     shape.common().treat_as_char,
                     matrix_positioned,
                     textbox_vpos_origin_hu(shape.common(), matrix_positioned),
@@ -2629,7 +2642,7 @@ impl LayoutEngine {
                     styles,
                     bin_data_content,
                     &empty_map,
-                    parent_cell_path,
+                    &textbox_parent_path,
                     shape.common().treat_as_char,
                     matrix_positioned,
                     textbox_vpos_origin_hu(shape.common(), matrix_positioned),
@@ -2713,10 +2726,11 @@ impl LayoutEngine {
                         );
                     }
                     if textbox_offset > 0 {
+                        // 묶음 단계는 글상자 경로(표 셀 안 묶음이면 그 셀 단계 뒤)의 끝에 붙는다.
                         for rendered in &mut group_node.children[first_child..] {
                             offset_group_textbox_sources(
                                 rendered,
-                                parent_cell_path.len(),
+                                textbox_parent_path.len(),
                                 textbox_offset,
                             );
                         }

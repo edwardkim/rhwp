@@ -1,0 +1,715 @@
+{
+  "counts": {
+    "canvas2d_requests": 16,
+    "canvaskit_direct": 16,
+    "canvaskit_fallback": 16
+  },
+  "results": [
+    {
+      "sampleId": "image-crop",
+      "page": 0,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "3a916dd453e0e4d4059b0bb1ccb7cc202024459b43074320d84428046fb2368e",
+        "sizeBytes": 62195,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "image-crop",
+      "page": 0,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "879a39addff51a6dc7b09ea772ad4563b1dab6a5fd4b7e30a8bf1f5df4166866",
+        "sizeBytes": 62067,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "image-crop",
+      "page": 0,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "879a39addff51a6dc7b09ea772ad4563b1dab6a5fd4b7e30a8bf1f5df4166866",
+        "sizeBytes": 62067,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "image-crop",
+      "page": 0,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "6a61e9a8c9479933524d8eee8d6b020aa8d8a1610fa0001fec2d12800f71ee62",
+        "sizeBytes": 61308,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "image-crop",
+      "page": 0,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "877affe71877388e7fc1629cda4326486a4aa0ebbc001527c9d30aa3b37c4dcd",
+        "sizeBytes": 60842,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "image-crop",
+      "page": 0,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "877affe71877388e7fc1629cda4326486a4aa0ebbc001527c9d30aa3b37c4dcd",
+        "sizeBytes": 60842,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "tulip-crop-p7",
+      "page": 6,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "ff227146a6d300576dae6a9cb58a46d4d9d59692e7a1e5b4ccb179d41df8c31e",
+        "sizeBytes": 119589,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "tulip-crop-p7",
+      "page": 6,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "ff227146a6d300576dae6a9cb58a46d4d9d59692e7a1e5b4ccb179d41df8c31e",
+        "sizeBytes": 119589,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "tulip-crop-p7",
+      "page": 6,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "ff227146a6d300576dae6a9cb58a46d4d9d59692e7a1e5b4ccb179d41df8c31e",
+        "sizeBytes": 119589,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "tulip-crop-p7",
+      "page": 6,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "4deeddc9605406833c5502dd017ab30f716b9e2a22c1ae74521f6c8afffec262",
+        "sizeBytes": 117101,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "tulip-crop-p7",
+      "page": 6,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "4deeddc9605406833c5502dd017ab30f716b9e2a22c1ae74521f6c8afffec262",
+        "sizeBytes": 117101,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "tulip-crop-p7",
+      "page": 6,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "4deeddc9605406833c5502dd017ab30f716b9e2a22c1ae74521f6c8afffec262",
+        "sizeBytes": 117101,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "tulip-normal-p1",
+      "page": 0,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "7a0d0d2182fea3ee96465c1b28d9f998b295a843930cb0ec4ec76d4d7eebbc4d",
+        "sizeBytes": 142462,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "tulip-normal-p1",
+      "page": 0,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "7a0d0d2182fea3ee96465c1b28d9f998b295a843930cb0ec4ec76d4d7eebbc4d",
+        "sizeBytes": 142462,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "tulip-normal-p1",
+      "page": 0,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "7a0d0d2182fea3ee96465c1b28d9f998b295a843930cb0ec4ec76d4d7eebbc4d",
+        "sizeBytes": 142462,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "tulip-normal-p1",
+      "page": 0,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "a3b2fcd1ace8347f0ecc4d73d52c3253c3a6d216c070a0fdcb597fb78739dff5",
+        "sizeBytes": 140825,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "tulip-normal-p1",
+      "page": 0,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "a3b2fcd1ace8347f0ecc4d73d52c3253c3a6d216c070a0fdcb597fb78739dff5",
+        "sizeBytes": 140825,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "tulip-normal-p1",
+      "page": 0,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "a3b2fcd1ace8347f0ecc4d73d52c3253c3a6d216c070a0fdcb597fb78739dff5",
+        "sizeBytes": 140825,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit font family가 준비되지 않았습니다: 한양신명조"
+    },
+    {
+      "sampleId": "long-footnote-p3",
+      "page": 2,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "b8445309194051b4badd4cf08d93331ddfcdd431d7f833748eb434221a8c45fe",
+        "sizeBytes": 135220,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "long-footnote-p3",
+      "page": 2,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "91f73a4b286fffc234ba1ef29f982ef9efaedad2e828bd3b86cdf98ad15ed98a",
+        "sizeBytes": 107967,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "long-footnote-p3",
+      "page": 2,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "91f73a4b286fffc234ba1ef29f982ef9efaedad2e828bd3b86cdf98ad15ed98a",
+        "sizeBytes": 107967,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "long-footnote-p3",
+      "page": 2,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "1e267393c67580ff4d0d2953ff6077aa82c77c54053f6927477c8ba8ca0db154",
+        "sizeBytes": 135024,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "long-footnote-p3",
+      "page": 2,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "0957ad6fefbd95bbdb531a6684f94ea3afb32d2b6bb9c13bc4a568a2d034a148",
+        "sizeBytes": 107762,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "long-footnote-p3",
+      "page": 2,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "0957ad6fefbd95bbdb531a6684f94ea3afb32d2b6bb9c13bc4a568a2d034a148",
+        "sizeBytes": 107762,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "long-footnote-p4",
+      "page": 3,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "5aae48a1d8e4c157e4a4bbceb9d22522f3be00f6a1c48a7755b5ba1a46ed13be",
+        "sizeBytes": 32552,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "long-footnote-p4",
+      "page": 3,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "481f8443918440ed85bc9876db19e5c4b653eb6328dc299ebaaba17e65c67609",
+        "sizeBytes": 25563,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "long-footnote-p4",
+      "page": 3,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "481f8443918440ed85bc9876db19e5c4b653eb6328dc299ebaaba17e65c67609",
+        "sizeBytes": 25563,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "long-footnote-p4",
+      "page": 3,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "af84b61e52a3697685e14260a658e441dd214e3aa17bf755919a099440d0de96",
+        "sizeBytes": 32349,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "long-footnote-p4",
+      "page": 3,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "b7e8bb52197d0df344c9a421a1c2c00793fee2965bf8a9928e5298f0478246b1",
+        "sizeBytes": 25361,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "long-footnote-p4",
+      "page": 3,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "b7e8bb52197d0df344c9a421a1c2c00793fee2965bf8a9928e5298f0478246b1",
+        "sizeBytes": 25361,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "moving-table-m2-p3",
+      "page": 2,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "184053b9ae5f98678d8245a25f6e12b45f86afe4ce75eb0605c5a6a25a59f183",
+        "sizeBytes": 10327,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "moving-table-m2-p3",
+      "page": 2,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "5bc943e57c22a2201730e3389cf95ff566dee56b3a74d4e87b4167c121631b27",
+        "sizeBytes": 8666,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "moving-table-m2-p3",
+      "page": 2,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "5bc943e57c22a2201730e3389cf95ff566dee56b3a74d4e87b4167c121631b27",
+        "sizeBytes": 8666,
+        "width": 794,
+        "height": 1123
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "moving-table-m2-p3",
+      "page": 2,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "88f93d6fb43b8a1a9fe28e021f28bcbac8059bff095d9f128c8d5f3778a82e96",
+        "sizeBytes": 9799,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "moving-table-m2-p3",
+      "page": 2,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "artifact": {
+        "sha256": "8f9329b8a5281952207237727836ec334441bd0a0fc56f533700232eefab9c8d",
+        "sizeBytes": 8162,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "moving-table-m2-p3",
+      "page": 2,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "artifact": {
+        "sha256": "8f9329b8a5281952207237727836ec334441bd0a0fc56f533700232eefab9c8d",
+        "sizeBytes": 8162,
+        "width": 794,
+        "height": 1122
+      },
+      "completed": true,
+      "hiddenCanvas2dOverlayUsed": false,
+      "unexpected_ops": []
+    },
+    {
+      "sampleId": "moving-table-oda-p148",
+      "page": 147,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "0afe8b39f56c560236aa36d04c2da1ca5512d3dd305f2fdef295307754db6137",
+        "sizeBytes": 138110,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "moving-table-oda-p148",
+      "page": 147,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "0afe8b39f56c560236aa36d04c2da1ca5512d3dd305f2fdef295307754db6137",
+        "sizeBytes": 138110,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    },
+    {
+      "sampleId": "moving-table-oda-p148",
+      "page": 147,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "0afe8b39f56c560236aa36d04c2da1ca5512d3dd305f2fdef295307754db6137",
+        "sizeBytes": 138110,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    },
+    {
+      "sampleId": "moving-table-oda-p148",
+      "page": 147,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "7d184b7864ba9c652edb7e3b9af350ed845cd3432735bd33aa59ba3149acc361",
+        "sizeBytes": 138370,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "moving-table-oda-p148",
+      "page": 147,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "7d184b7864ba9c652edb7e3b9af350ed845cd3432735bd33aa59ba3149acc361",
+        "sizeBytes": 138370,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    },
+    {
+      "sampleId": "moving-table-oda-p148",
+      "page": 147,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "7d184b7864ba9c652edb7e3b9af350ed845cd3432735bd33aa59ba3149acc361",
+        "sizeBytes": 138370,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    },
+    {
+      "sampleId": "oda-table-3-21-p70",
+      "page": 69,
+      "profile": "screen",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "b7bda2744b17dfcbe7cd8e13f462521a3781ee70b14b3d56d89ccfe574fee145",
+        "sizeBytes": 192757,
+        "width": 794,
+        "height": 1123
+      }
+    },
+    {
+      "sampleId": "oda-table-3-21-p70",
+      "page": 69,
+      "profile": "screen",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "b7bda2744b17dfcbe7cd8e13f462521a3781ee70b14b3d56d89ccfe574fee145",
+        "sizeBytes": 192757,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    },
+    {
+      "sampleId": "oda-table-3-21-p70",
+      "page": 69,
+      "profile": "screen",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "b7bda2744b17dfcbe7cd8e13f462521a3781ee70b14b3d56d89ccfe574fee145",
+        "sizeBytes": 192757,
+        "width": 794,
+        "height": 1123
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    },
+    {
+      "sampleId": "oda-table-3-21-p70",
+      "page": 69,
+      "profile": "print",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "579bb0e81ee5a7fb379c2780face2522a8772cdfe1a857f502b68751b7a90fcd",
+        "sizeBytes": 193673,
+        "width": 794,
+        "height": 1122
+      }
+    },
+    {
+      "sampleId": "oda-table-3-21-p70",
+      "page": 69,
+      "profile": "print",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "579bb0e81ee5a7fb379c2780face2522a8772cdfe1a857f502b68751b7a90fcd",
+        "sizeBytes": 193673,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    },
+    {
+      "sampleId": "oda-table-3-21-p70",
+      "page": 69,
+      "profile": "print",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvas2d",
+      "artifact": {
+        "sha256": "579bb0e81ee5a7fb379c2780face2522a8772cdfe1a857f502b68751b7a90fcd",
+        "sizeBytes": 193673,
+        "width": 794,
+        "height": 1122
+      },
+      "selectionReason": "canvaskitResourcePreparationFailed",
+      "selectionError": "CanvasKit 문서 글꼴 요구 목록이 완전하지 않습니다"
+    }
+  ],
+  "oda_document_preflight_page_limit": 128,
+  "page_index_base": 0
+}

@@ -10629,6 +10629,77 @@ impl HwpDocument {
             .rename_bookmark_native(sec as usize, para as usize, ctrl_idx as usize, new_name)
             .map_err(|e| e.into())
     }
+
+    /// 주소 문단(`getBookmarks`의 `place` 꼴 JSON: 본문·표 셀·글상자·캡션·각주·미주·머리말·꼬리말·바탕쪽)의
+    /// 글자 자리에 보통 책갈피를 넣는다.
+    #[wasm_bindgen(js_name = addBookmarkAt)]
+    pub fn add_bookmark_at(
+        &mut self,
+        place_json: &str,
+        char_offset: u32,
+        name: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .add_bookmark_at_native(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                char_offset as usize,
+                name,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 주소 문단의 `start`부터 같은 문단 목록 `end_para` 문단의 `end`까지를 블록 책갈피로 감싼다.
+    #[wasm_bindgen(js_name = addBlockBookmark)]
+    pub fn add_block_bookmark(
+        &mut self,
+        place_json: &str,
+        start: u32,
+        end_para: u32,
+        end: u32,
+        name: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .add_block_bookmark_native(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                start as usize,
+                end_para as usize,
+                end as usize,
+                name,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 주소 문단의 보통·블록 책갈피 이름을 바꾼다.
+    #[wasm_bindgen(js_name = renameBookmarkAt)]
+    pub fn rename_bookmark_at(
+        &mut self,
+        place_json: &str,
+        ctrl_idx: u32,
+        new_name: &str,
+    ) -> Result<String, JsValue> {
+        self.core
+            .rename_bookmark_at_native(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                ctrl_idx as usize,
+                new_name,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 주소 문단의 보통·블록 책갈피를 지운다. 블록은 감싼 글을 남긴다.
+    #[wasm_bindgen(js_name = deleteBookmarkAt)]
+    pub fn delete_bookmark_at(
+        &mut self,
+        place_json: &str,
+        ctrl_idx: u32,
+    ) -> Result<String, JsValue> {
+        self.core
+            .delete_bookmark_at_native(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                ctrl_idx as usize,
+            )
+            .map_err(|e| e.into())
+    }
 }
 
 // ─── 독립 함수 (문서 로드 없이 사용 가능) ───────────────

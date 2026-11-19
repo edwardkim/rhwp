@@ -1,0 +1,44 @@
+[
+  {
+    "label": "9187: 앞 각주 제거 후 누름틀",
+    "results": [
+      [
+        "Hwp",
+        "Hwp"
+      ],
+      [
+        "Hwp",
+        "Hwpx"
+      ],
+      [
+        "Hwpx",
+        "Hwp"
+      ],
+      [
+        "Hwpx",
+        "Hwpx"
+      ]
+    ]
+  },
+  {
+    "label": "9187: 쪽 감추기 토글 후 누름틀",
+    "results": [
+      [
+        "Hwp",
+        "Hwp"
+      ],
+      [
+        "Hwp",
+        "Hwpx"
+      ],
+      [
+        "Hwpx",
+        "Hwp"
+      ],
+      [
+        "Hwpx",
+        "Hwpx"
+      ]
+    ]
+  }
+]

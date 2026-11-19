@@ -99,7 +99,8 @@ pub(in crate::renderer::typeset) struct StateView {
         Vec<crate::renderer::footnote_frames::Reservation>,
     /// 저장 각주 reset 뒤 조각과 그 뒤 번호는 다음 물리 쪽을 소유한다.
     /// 현재 본문을 먼저 이월하지 않고 실제 쪽 전환 때 같은 순서로 예약한다.
-    pub(in crate::renderer::typeset) deferred_body_footnotes: Vec<(FootnoteRef, f64)>,
+    pub(in crate::renderer::typeset) deferred_body_footnotes:
+        Vec<super::notes::DeferredBodyFootnote>,
     /// 지금 배치 중인 문단의 본문 각주와 그 참조가 든 줄. 분할 판정이 앞 줄의
     /// 각주 높이를 뒤 줄보다 먼저 예약하고, 조각 확정 때 그 쪽에 등록한다.
     pub(in crate::renderer::typeset) own_line_notes: Vec<crate::renderer::typeset::OwnLineNote>,

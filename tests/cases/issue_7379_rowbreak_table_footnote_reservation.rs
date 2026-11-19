@@ -1,6 +1,8 @@
 //! 관계형·고정형: #7379 분할 표·각주의 원문 소유와 기존 경계 대조를 보존한다.
-//! 주석 갱신: 2026-11-07T16:55:33+09:00.
-//! 직전 파일 변경: d753f31aa835a972e068f729e48295229c991de9 (2026-11-07T16:50:39+09:00).
+//! 주석 갱신: 2026-11-19T09:18:55+09:00.
+//! 직전 파일 변경: d5830a4061d59a4814ae82bbecd5fdd55865c27f (2026-11-09T21:28:01+09:00).
+//! [#9060] 한 행 캡션 이월 합성 계약의 쪽 소유는 표 조각 항목만 센다(빈 호스트 저장 글줄은 앞 쪽에 남는다).
+//! [#9060] 위 캡션 이월 표의 새 쪽 원점은 문단 오프셋을 다시 더하지 않는다(한/글 Print 근거는 아래 함수 주석).
 //! 이번 helper 변경은 합성 예산 반례의 IR 본문과 자동 마커를 구분한다. 실물 좌표·골든의
 //! 기대값은 변경하지 않으며, 아래 미완료 실물의 시각 통과나 신규 px 핀을 주장하지 않는다.
 //!
@@ -190,17 +192,19 @@ fn assert_single_row_caption_deferral(
         .expect("뒤 본문 원본");
     core.set_document(doc);
     let dump = core.dump_page_items_json(None);
+    // [#9060] 표 조각의 쪽 소유만 센다. 빈 호스트의 저장 글줄은 앞 쪽 좌표에 있으면 그 쪽에
+    // 남는다(한/글 2020 Print·저장 vpos, ODA 보고서 150쪽 문단 80). 그 글줄 항목은 행 보존과
+    // 별개라 이 검사의 소유 쪽이 아니다.
     let owners: Vec<_> = dump
         .as_array()
         .expect("쪽")
         .iter()
         .filter(|page| {
             page["columns"].as_array().expect("단").iter().any(|col| {
-                col["items"]
-                    .as_array()
-                    .expect("항목")
-                    .iter()
-                    .any(|item| item["paraIndex"].as_u64() == Some(HOST_PARA as u64))
+                col["items"].as_array().expect("항목").iter().any(|item| {
+                    item["paraIndex"].as_u64() == Some(HOST_PARA as u64)
+                        && matches!(item["kind"].as_str(), Some("table" | "partialTable"))
+                })
             })
         })
         .collect();
@@ -219,8 +223,16 @@ fn assert_single_row_caption_deferral(
     } else {
         0.0
     };
-    let expected_table_top =
-        body_top + outer_top + opening_caption_height + f64::from(vertical_offset) / 75.0;
+    // [#9060] 위 캡션 표가 첫 유닛을 앞 쪽에 두지 못해 새 쪽으로 넘어가면 문단 오프셋은 앞 쪽
+    // 앵커에서 이미 쓰였다. 한/글 2020·2024 Print 는 새 쪽 본문 위끝 + 바깥 위 여백 + 위 캡션에서
+    // 표를 연다(`issue_9060_para_offset_table_moves_to_next_page` 합성 M2_full 3쪽, ODA 148쪽).
+    // 아래 캡션 형상은 독립 출력 근거가 없어 기존 계약(오프셋 유지)을 그대로 둔다.
+    let carried_offset = if matches!(direction, rhwp::model::shape::CaptionDirection::Top) {
+        0.0
+    } else {
+        f64::from(vertical_offset) / 75.0
+    };
+    let expected_table_top = body_top + outer_top + opening_caption_height + carried_offset;
     assert!(
         (table.bbox.y - expected_table_top).abs() <= 1.5,
         "중간 쪽에 과수용하지 않고 새 쪽에서 시작: table={}, body={body_top}",

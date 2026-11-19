@@ -251,9 +251,19 @@ pub enum ControlCode {
 }
 
 impl RenderNode {
+    /// 머리말·꼬리말·바탕쪽 부분 트리를 뺀다. 그 영역 표의 칸 글은 영역 문단 번호를 부모 문단으로
+    /// 가져, 같은 문단·컨트롤 번호의 본문 표 칸과 주소가 겹친다. 본문 칸 캐럿·상자 조회가 쓴다.
+    pub(crate) fn remove_page_areas(&mut self) {
+        self.children
+            .retain(|child| !child.node_type.is_page_area());
+        for child in &mut self.children {
+            child.remove_page_areas();
+        }
+    }
+
     pub fn new(id: NodeId, mut node_type: RenderNodeType, bbox: BoundingBox) -> Self {
         if let RenderNodeType::Image(image) = &mut node_type {
-            super::image_geometry::normalize_gif_crop(image);
+            super::image_geometry::normalize_bitmap_crop(image);
         }
         Self {
             cell_frame_paint: false,
@@ -524,6 +534,13 @@ pub enum RenderNodeType {
     Placeholder(PlaceholderNode),
     /// 이미 생성된 SVG 조각을 그대로 출력 (OOXML 차트 등) — Task #195 단계 8
     RawSvg(RawSvgNode),
+}
+
+impl RenderNodeType {
+    /// 머리말·꼬리말·바탕쪽 영역 노드인지.
+    pub(crate) fn is_page_area(&self) -> bool {
+        matches!(self, Self::Header | Self::Footer | Self::MasterPage)
+    }
 }
 
 /// RawSvg/placeholder가 원본 문서 개체와 연결될 때 쓰는 상호작용 메타.

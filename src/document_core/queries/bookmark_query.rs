@@ -1,40 +1,435 @@
 //! 책갈피 조회/조작 기능
+//!
+//! 한컴 책갈피는 두 가지다. 보통 책갈피는 글자 사이의 `Control::Bookmark`(8유닛 `bokm`)이고,
+//! 블록 책갈피는 고른 범위를 감싼 `%bmk` 필드(`Field{field_type: Bookmark}`)다. 블록이 여러
+//! 문단에 걸치면 시작 문단에 필드가, 끝 문단에 고아 끝 표지(`OrphanFieldEnd`)가 든다.
+//! 둘 다 본문뿐 아니라 표 셀·글상자·캡션·각주·미주·숨은 설명·머리말·꼬리말·바탕쪽에 놓일 수 있어,
+//! `*At` API는 [`BookmarkPlace`] 주소로 그 문단을 가리킨다.
 
 use crate::document_core::helpers::find_control_text_positions;
-use crate::document_core::DocumentCore;
+use crate::document_core::{header_footer_apply_from_u8, master_page_slot, DocumentCore};
 use crate::error::HwpError;
-use crate::model::control::{Bookmark, Control};
-use crate::model::paragraph::Paragraph;
+use crate::model::control::{Bookmark, Control, Field, FieldType, Parameter, ParameterList};
+use crate::model::paragraph::{FieldRange, OrphanFieldEnd, Paragraph};
+use crate::parser::tags;
+
+/// 책갈피가 든 문단의 주소.
+///
+/// `header_footer`가 없으면 `para`는 본문 문단이고 `cell_path`는 그 문단에서 시작하는
+/// (컨트롤, 셀, 안쪽 문단) 경로다. `header_footer`가 있으면 `para`는 그 머리말·꼬리말
+/// (`apply_to` 0~2)이나 바탕쪽(`apply_to` 16 이상)의 문단이고 경로는 그 문단에서 시작한다.
+/// 셀 65534는 표·도형 캡션, 그림 캡션·각주·미주·숨은 설명·머리말·꼬리말은 셀 0이다.
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BookmarkPlace {
+    pub section: usize,
+    pub para: usize,
+    #[serde(default)]
+    pub cell_path: Vec<(usize, usize, usize)>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub header_footer: Option<BookmarkHeaderFooter>,
+}
+
+/// 구역의 머리말·꼬리말 정의(그 종류·적용 범위의 첫 컨트롤)나 바탕쪽.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct BookmarkHeaderFooter {
+    pub is_header: bool,
+    pub apply_to: u8,
+}
 
 /// 책갈피 정보
 #[derive(Debug, Clone)]
 struct BookmarkInfo {
     name: String,
     sec: usize,
+    /// 본문 책갈피면 그 문단, 셀·주석·머리말 안이면 그 영역을 가진 본문 문단(바탕쪽은 0)
     para: usize,
     ctrl_idx: usize,
-    /// 텍스트 내 위치 (정렬용)
+    /// 텍스트 내 위치 (정렬용). 중첩 책갈피는 옛 계약대로 0이다.
     char_pos: usize,
+    place: BookmarkPlace,
+    /// 경로 항목마다 그 컨트롤이 품은 영역의 종류
+    areas: Vec<&'static str>,
+    /// 블록 책갈피의 끝: 같은 문단 목록 안의 (문단, 글자 자리). 보통 책갈피면 None이다.
+    end: Option<(usize, usize)>,
+    /// 그 문단의 글자 자리. 블록이면 시작이다.
+    start: usize,
 }
 
 impl DocumentCore {
-    /// 문서 내 모든 책갈피 목록을 JSON으로 반환
+    /// 문서 내 모든 책갈피 목록을 JSON으로 반환한다(문서 순서). 블록 책갈피(`kind: "block"`)도
+    /// 함께 주며, `place`는 `*At` API가 받는 주소다.
     pub fn get_bookmarks_native(&self) -> Result<String, HwpError> {
         let bookmarks = self.collect_bookmarks();
         let items: Vec<String> = bookmarks
             .iter()
             .map(|b| {
+                let end = b
+                    .end
+                    .map(|(para, offset)| format!(",\"endPara\":{para},\"end\":{offset}"))
+                    .unwrap_or_default();
                 format!(
-                    "{{\"name\":{},\"sec\":{},\"para\":{},\"ctrlIdx\":{},\"charPos\":{}}}",
+                    "{{\"name\":{},\"sec\":{},\"para\":{},\"ctrlIdx\":{},\"charPos\":{},\"kind\":\"{}\",\"place\":{},\"areas\":{},\"start\":{}{}}}",
                     json_escape(&b.name),
                     b.sec,
                     b.para,
                     b.ctrl_idx,
-                    b.char_pos
+                    b.char_pos,
+                    if b.end.is_some() { "block" } else { "point" },
+                    serde_json::to_string(&b.place).unwrap_or_else(|_| "null".into()),
+                    serde_json::to_string(&b.areas).unwrap_or_else(|_| "[]".into()),
+                    b.start,
+                    end
                 )
             })
             .collect();
         Ok(format!("[{}]", items.join(",")))
+    }
+
+    /// `addBookmarkAt`: 주소 문단의 글자 자리에 보통 책갈피를 넣는다.
+    pub fn add_bookmark_at_native(
+        &mut self,
+        place: &BookmarkPlace,
+        offset: usize,
+        name: &str,
+    ) -> Result<String, HwpError> {
+        if let Some(error) = self.bookmark_name_error(name, None) {
+            return Ok(error);
+        }
+        let (list, idx) = self.bookmark_list_mut(place)?;
+        let paragraph = list.get_mut(idx).ok_or_else(|| invalid("문단 범위 초과"))?;
+        if offset > paragraph.text.chars().count() {
+            return Err(invalid("글자 자리가 문단 끝을 넘습니다"));
+        }
+        let insert_idx = insert_point_bookmark(paragraph, offset, name);
+        self.shift_active_field(place, insert_idx, true);
+        self.bookmark_edited(place);
+        Ok(r#"{"ok":true}"#.to_string())
+    }
+
+    /// `addBlockBookmark`: 주소 문단의 `start`부터 같은 문단 목록의 `end_para` 문단 `end`까지를
+    /// 한컴 블록 책갈피(`%bmk` 필드)로 감싼다. 글은 그대로 두고, 다른 필드와 엇갈리는 범위는 거절한다.
+    pub fn add_block_bookmark_native(
+        &mut self,
+        place: &BookmarkPlace,
+        start: usize,
+        end_para: usize,
+        end: usize,
+        name: &str,
+    ) -> Result<String, HwpError> {
+        if let Some(error) = self.bookmark_name_error(name, None) {
+            return Ok(error);
+        }
+        let field_id = self.next_click_here_field_id();
+        let (list, idx) = self.bookmark_list_mut(place)?;
+        let lengths = |p: &Paragraph| p.text.chars().count();
+        if idx >= list.len() || end_para >= list.len() {
+            return Err(invalid("문단 범위 초과"));
+        }
+        if end_para < idx || (end_para == idx && end <= start) {
+            return Err(invalid(
+                "블록 책갈피는 비어 있지 않은 앞에서 뒤로의 범위가 필요합니다",
+            ));
+        }
+        if start > lengths(&list[idx]) || end > lengths(&list[end_para]) {
+            return Err(invalid("글자 자리가 문단 끝을 넘습니다"));
+        }
+        // 글자별 원시 좌표가 없는 문단(HWP3 개체 표지)은 슬롯 자리를 셀 수 없다.
+        if list[idx..=end_para]
+            .iter()
+            .any(|p| p.text.contains('\u{fffc}') || p.char_offsets.len() != lengths(p))
+        {
+            return Err(invalid("이 문단에는 블록 책갈피를 넣을 수 없습니다"));
+        }
+        let range = ((idx, start), (end_para, end));
+        if field_spans(list)
+            .into_iter()
+            .any(|span| crosses(span, range))
+        {
+            return Ok(
+                r#"{"ok":false,"error":"다른 블록 책갈피나 필드와 겹치는 범위에는 넣을 수 없습니다."}"#
+                    .to_string(),
+            );
+        }
+        let field = Field {
+            field_type: FieldType::Bookmark,
+            ctrl_id: tags::FIELD_BOOKMARK,
+            field_id,
+            ctrl_data_name: Some(name.to_string()),
+            // 한컴 12.30 저장본처럼 수정됨 표식(dirty)과 매개변수 Prop=2를 둔다.
+            properties: 1 << 15,
+            parameters: ParameterList {
+                name: Some(String::new()),
+                items: vec![Parameter::Integer {
+                    name: Some("Prop".into()),
+                    value: 2,
+                }],
+            },
+            ..Default::default()
+        };
+        let paragraph = &mut list[idx];
+        let positions = find_control_text_positions(paragraph);
+        let insert_idx = find_control_insert_index(paragraph, start);
+        // 같은 문단에서 닫히면 BEGIN 뒤·END 앞 사이에 든 컨트롤 수를 적는다(파서와 같은 계약).
+        let inner_slot_count = positions
+            .iter()
+            .skip(insert_idx)
+            .filter(|&&pos| end_para == idx && pos < end)
+            .count();
+        paragraph.shift_for_inline_control_insert(insert_idx, start);
+        paragraph.char_count += 8;
+        paragraph.align_ctrl_data_records();
+        paragraph.controls.insert(insert_idx, Control::Field(field));
+        // CTRL_DATA는 저장기가 `ctrl_data_name`으로 만든다.
+        paragraph.ctrl_data_records.insert(insert_idx, None);
+        if end_para == idx {
+            paragraph.shift_for_control_slot_insert(end);
+            paragraph.char_count += 8;
+            paragraph.field_ranges.push(FieldRange {
+                start_char_idx: start,
+                end_char_idx: end,
+                control_idx: insert_idx,
+                inner_slot_count,
+                ..Default::default()
+            });
+            paragraph
+                .field_ranges
+                .sort_by_key(|range| (range.start_char_idx, range.control_idx));
+        }
+        paragraph.invalidate_layout_inputs();
+        if end_para != idx {
+            let last = &mut list[end_para];
+            last.shift_for_control_slot_insert(end);
+            last.char_count += 8;
+            let at = last
+                .orphan_field_ends
+                .iter()
+                .position(|other| other.char_idx > end)
+                .unwrap_or(last.orphan_field_ends.len());
+            last.orphan_field_ends.insert(
+                at,
+                OrphanFieldEnd {
+                    char_idx: end,
+                    begin_id_ref: field_id,
+                    begin_ctrl_id: tags::FIELD_BOOKMARK,
+                    ..Default::default()
+                },
+            );
+            last.invalidate_layout_inputs();
+        }
+        self.shift_active_field(place, insert_idx, true);
+        self.bookmark_edited(place);
+        Ok(r#"{"ok":true}"#.to_string())
+    }
+
+    /// `renameBookmarkAt`: 주소 문단의 `ctrl_idx` 책갈피(보통·블록)의 이름을 바꾼다.
+    pub fn rename_bookmark_at_native(
+        &mut self,
+        place: &BookmarkPlace,
+        ctrl_idx: usize,
+        new_name: &str,
+    ) -> Result<String, HwpError> {
+        if let Some(error) = self.bookmark_name_error(new_name, Some((place, ctrl_idx))) {
+            return Ok(error);
+        }
+        let (list, idx) = self.bookmark_list_mut(place)?;
+        let paragraph = list.get_mut(idx).ok_or_else(|| invalid("문단 범위 초과"))?;
+        match paragraph.controls.get_mut(ctrl_idx) {
+            Some(Control::Bookmark(bookmark)) => {
+                bookmark.name = new_name.to_string();
+                if ctrl_idx < paragraph.ctrl_data_records.len() {
+                    paragraph.ctrl_data_records[ctrl_idx] =
+                        Some(build_bookmark_ctrl_data(new_name));
+                }
+            }
+            Some(Control::Field(field)) if field.field_type == FieldType::Bookmark => {
+                field.ctrl_data_name = Some(new_name.to_string());
+                // 원본 CTRL_DATA가 옛 이름을 싣고 있으면 저장기가 새 이름으로 다시 만들게 한다.
+                if ctrl_idx < paragraph.ctrl_data_records.len() {
+                    paragraph.ctrl_data_records[ctrl_idx] = None;
+                }
+            }
+            _ => {
+                return Ok(r#"{"ok":false,"error":"해당 컨트롤이 책갈피가 아닙니다."}"#.to_string())
+            }
+        }
+        self.bookmark_edited(place);
+        Ok(r#"{"ok":true}"#.to_string())
+    }
+
+    /// `deleteBookmarkAt`: 주소 문단의 `ctrl_idx` 책갈피를 지운다. 블록은 감싼 글을 남긴다.
+    pub fn delete_bookmark_at_native(
+        &mut self,
+        place: &BookmarkPlace,
+        ctrl_idx: usize,
+    ) -> Result<String, HwpError> {
+        let (list, idx) = self.bookmark_list_mut(place)?;
+        let paragraph = list.get(idx).ok_or_else(|| invalid("문단 범위 초과"))?;
+        match paragraph.controls.get(ctrl_idx) {
+            Some(Control::Bookmark(_)) => remove_point_bookmark(&mut list[idx], ctrl_idx)?,
+            Some(Control::Field(field)) if field.field_type == FieldType::Bookmark => {
+                let field_id = field.field_id;
+                let closed = paragraph
+                    .field_ranges
+                    .iter()
+                    .any(|range| range.control_idx == ctrl_idx);
+                let removed = if closed {
+                    list[idx].unwrap_field_control(ctrl_idx)
+                } else {
+                    let end = (field_id != 0)
+                        .then(|| orphan_end_of(list, idx, field_id))
+                        .flatten()
+                        .ok_or_else(|| invalid("블록 책갈피의 끝을 찾을 수 없습니다"))?;
+                    let ok = list[idx].remove_unclosed_field_begin(ctrl_idx);
+                    if ok {
+                        list[end.0].remove_orphan_field_end(end.1);
+                        list[end.0].invalidate_layout_inputs();
+                    }
+                    ok
+                };
+                if !removed {
+                    return Err(invalid("블록 책갈피의 자리를 확인할 수 없습니다"));
+                }
+            }
+            _ => {
+                return Ok(r#"{"ok":false,"error":"해당 컨트롤이 책갈피가 아닙니다."}"#.to_string())
+            }
+        }
+        self.shift_active_field(place, ctrl_idx, false);
+        self.bookmark_edited(place);
+        Ok(r#"{"ok":true}"#.to_string())
+    }
+
+    /// 이름이 비었거나 다른 책갈피가 이미 쓰면 응답 JSON을 준다. `except`는 이름을 바꾸는 그 책갈피다.
+    fn bookmark_name_error(
+        &self,
+        name: &str,
+        except: Option<(&BookmarkPlace, usize)>,
+    ) -> Option<String> {
+        if name.trim().is_empty() {
+            return Some(r#"{"ok":false,"error":"책갈피 이름을 입력하세요."}"#.to_string());
+        }
+        self.collect_bookmarks()
+            .iter()
+            .any(|b| b.name == name && except != Some((&b.place, b.ctrl_idx)))
+            .then(|| {
+                r#"{"ok":false,"error":"같은 이름의 책갈피가 이미 등록되어 있습니다."}"#.to_string()
+            })
+    }
+
+    /// 주소가 가리키는 문단 목록과 그 안의 문단 번호.
+    fn bookmark_list_mut(
+        &mut self,
+        place: &BookmarkPlace,
+    ) -> Result<(&mut Vec<Paragraph>, usize), HwpError> {
+        let section = place.section;
+        if section >= self.document.sections.len() {
+            return Err(invalid("구역 범위 초과"));
+        }
+        let Some(hf) = place.header_footer else {
+            let Some(&(_, _, inner)) = place.cell_path.last() else {
+                return Ok((&mut self.document.sections[section].paragraphs, place.para));
+            };
+            let list =
+                self.get_cell_paragraphs_mut_by_path(section, place.para, &place.cell_path)?;
+            return Ok((list, inner));
+        };
+        if let Some(slot) = master_page_slot(hf.apply_to) {
+            if !place.cell_path.is_empty() {
+                return Err(invalid("바탕쪽 안 개체의 책갈피는 고칠 수 없습니다"));
+            }
+            return Ok((
+                &mut self.master_page_mut(section, slot)?.paragraphs,
+                place.para,
+            ));
+        }
+        let (host, path) = self.header_footer_path(place, hf)?;
+        let inner = path.last().map_or(place.para, |entry| entry.2);
+        let list = self.get_cell_paragraphs_mut_by_path(section, host, &path)?;
+        Ok((list, inner))
+    }
+
+    /// 머리말·꼬리말 주소를 그 컨트롤을 가진 본문 문단과 본문에서 시작하는 경로로 바꾼다.
+    fn header_footer_path(
+        &self,
+        place: &BookmarkPlace,
+        hf: BookmarkHeaderFooter,
+    ) -> Result<(usize, Vec<(usize, usize, usize)>), HwpError> {
+        let (host, control) = self
+            .find_header_footer_control(
+                place.section,
+                hf.is_header,
+                header_footer_apply_from_u8(hf.apply_to),
+            )
+            .ok_or_else(|| invalid("머리말/꼬리말 정의를 찾을 수 없음"))?;
+        let mut path = vec![(control, 0, place.para)];
+        path.extend_from_slice(&place.cell_path);
+        Ok((host, path))
+    }
+
+    /// 책갈피를 넣거나 빼면 같은 문단 또는 그 문단의 개체 안에 있는 활성 누름틀의 컨트롤 번호를 맞춘다.
+    fn shift_active_field(&mut self, place: &BookmarkPlace, ctrl_idx: usize, inserted: bool) {
+        // 활성 누름틀 주소는 본문에서 시작한다. 바탕쪽에는 누름틀 편집이 없다.
+        let (host, path) = match place.header_footer {
+            None => (place.para, place.cell_path.clone()),
+            Some(hf) if master_page_slot(hf.apply_to).is_none() => {
+                match self.header_footer_path(place, hf) {
+                    Ok(address) => address,
+                    Err(_) => return,
+                }
+            }
+            Some(_) => return,
+        };
+        let Some(active) = self.active_field.as_mut() else {
+            return;
+        };
+        if active.section_idx != place.section || active.para_idx != host {
+            return;
+        }
+        let shift = |index: &mut usize| {
+            if inserted && *index >= ctrl_idx {
+                *index += 1;
+            } else if !inserted && *index > ctrl_idx {
+                *index -= 1;
+            }
+        };
+        let active_path = active.cell_path.clone().unwrap_or_default();
+        if !active_path.starts_with(&path) {
+            return;
+        }
+        if active_path.len() == path.len() {
+            shift(&mut active.control_idx);
+        } else if let Some(entry) = active
+            .cell_path
+            .as_mut()
+            .and_then(|cells| cells.get_mut(path.len()))
+        {
+            shift(&mut entry.0);
+        }
+    }
+
+    /// 책갈피 편집 뒤 저장 원본을 버리고 다시 조판한다.
+    fn bookmark_edited(&mut self, place: &BookmarkPlace) {
+        let section = place.section;
+        match place.header_footer {
+            Some(hf) if master_page_slot(hf.apply_to).is_some() => {
+                self.sync_section_def_controls_from_section(section);
+            }
+            Some(hf) => {
+                if let Ok((host, path)) = self.header_footer_path(place, hf) {
+                    self.mark_cell_control_dirty(section, host, path[0].0);
+                }
+            }
+            None => {
+                if let Some(&(control, _, _)) = place.cell_path.first() {
+                    self.mark_cell_control_dirty(section, place.para, control);
+                }
+            }
+        }
+        // 원본 스트림 무효화 — 비우지 않으면 저장기가 원본 바이트를 그대로 내 편집이 사라진다.
+        self.document.sections[section].raw_stream = None;
+        self.recompose_section(section);
     }
 
     /// 책갈피 추가
@@ -71,29 +466,7 @@ impl DocumentCore {
             .get_mut(para)
             .ok_or_else(|| HwpError::RenderError("문단 범위 초과".into()))?;
 
-        // char_offset에 해당하는 컨트롤 삽입 위치 결정
-        let insert_idx = find_control_insert_index(paragraph, char_offset);
-
-        paragraph.controls.insert(
-            insert_idx,
-            Control::Bookmark(Bookmark {
-                name: name.to_string(),
-            }),
-        );
-
-        // CTRL_DATA 레코드 생성 (ParameterSet: 책갈피 이름)
-        let ctrl_data = build_bookmark_ctrl_data(name);
-        if paragraph.ctrl_data_records.len() >= insert_idx {
-            paragraph
-                .ctrl_data_records
-                .insert(insert_idx, Some(ctrl_data));
-        }
-
-        // 책갈피도 스트림에서 8유닛을 차지한다. 글자별 배열에 항목을 끼우지 않고 뒤 글자와
-        // 같은 축의 참조를 함께 민다. 삭제와 같은 이유로 저장 줄 경계는 새 조판 결과를 쓴다.
-        paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
-        paragraph.char_count += 8;
-        paragraph.stored_text_partition_dirty = true;
+        let insert_idx = insert_point_bookmark(paragraph, char_offset, name);
         if let Some(active) = self.active_field.as_mut() {
             if active.section_idx == sec
                 && active.para_idx == para
@@ -142,9 +515,6 @@ impl DocumentCore {
             return Ok(r#"{"ok":false,"error":"해당 컨트롤이 책갈피가 아닙니다."}"#.to_string());
         }
 
-        // 글자별 배열에서 컨트롤 번호의 항목을 빼면 글자 하나의 원시 좌표가 사라진다.
-        // 변경 전에 8유닛 슬롯 위치를 확인하고 같은 축의 참조를 함께 당긴다.
-        let start = bookmark_raw_start(paragraph, ctrl_idx)?;
         if self.active_field.as_ref().is_some_and(|active| {
             active.section_idx == sec
                 && active
@@ -157,39 +527,7 @@ impl DocumentCore {
                 "셀 누름틀 편집을 끝낸 뒤 책갈피를 삭제하세요.".into(),
             ));
         }
-        let shift = |position: &mut u32| {
-            if *position > start {
-                *position = position.saturating_sub(8).max(start);
-            }
-        };
-        for position in &mut paragraph.char_offsets {
-            shift(position);
-        }
-        for shape in &mut paragraph.char_shapes {
-            shift(&mut shape.start_pos);
-        }
-        for range in &mut paragraph.range_tags {
-            shift(&mut range.start);
-            shift(&mut range.end);
-        }
-        for mark in &mut paragraph.markpen_marks {
-            if let Some(position) = &mut mark.utf16_pos {
-                shift(position);
-            }
-        }
-        paragraph.char_count -= 8;
-        // 저장 줄 경계는 HWPX 별도 축일 수 있으므로 새 조판 결과를 사용한다.
-        paragraph.stored_text_partition_dirty = true;
-        paragraph.controls.remove(ctrl_idx);
-        if ctrl_idx < paragraph.ctrl_data_records.len() {
-            paragraph.ctrl_data_records.remove(ctrl_idx);
-        }
-        for range in &mut paragraph.field_ranges {
-            if range.control_idx > ctrl_idx {
-                range.control_idx -= 1;
-            }
-        }
-        paragraph.forget_para_text_if_emptied();
+        remove_point_bookmark(paragraph, ctrl_idx)?;
         if let Some(active) = self.active_field.as_mut() {
             if active.section_idx == sec
                 && active.para_idx == para
@@ -274,11 +612,32 @@ impl DocumentCore {
             })
     }
 
-    /// 내부: 모든 책갈피 수집 (중첩 구조 포함)
+    /// 내부: 모든 책갈피 수집(문서 순서). 구역마다 본문(그 안의 표·글상자·캡션·각주·미주·
+    /// 숨은 설명·머리말·꼬리말 포함) 뒤에 바탕쪽을 훑는다.
     fn collect_bookmarks(&self) -> Vec<BookmarkInfo> {
         let mut result = vec![];
         for (sec_idx, section) in self.document.sections.iter().enumerate() {
-            collect_bookmarks_from_paragraphs(&section.paragraphs, sec_idx, None, &mut result);
+            let mut walk = BookmarkWalk {
+                core: self,
+                place: BookmarkPlace {
+                    section: sec_idx,
+                    para: 0,
+                    cell_path: Vec::new(),
+                    header_footer: None,
+                },
+                areas: Vec::new(),
+                host: None,
+                out: &mut result,
+            };
+            walk.list(&section.paragraphs);
+            for (slot, master) in section.section_def.master_pages.iter().enumerate() {
+                walk.place.header_footer = Some(BookmarkHeaderFooter {
+                    is_header: false,
+                    apply_to: crate::document_core::MASTER_PAGE_APPLY_BASE + slot as u8,
+                });
+                walk.host = Some(0);
+                walk.list(&master.paragraphs);
+            }
         }
         result
     }
@@ -335,90 +694,284 @@ fn bookmark_raw_start(paragraph: &Paragraph, control_idx: usize) -> Result<u32, 
     checked_start(start)
 }
 
-/// 문단 목록에서 책갈피를 재귀적으로 수집 (표 셀, 글상자 등 중첩 구조 포함)
-///
-/// `host_para`: 중첩 구조의 경우 소속 최상위 문단 인덱스. None이면 최상위 레벨.
-fn collect_bookmarks_from_paragraphs(
-    paragraphs: &[crate::model::paragraph::Paragraph],
-    sec: usize,
-    host_para: Option<usize>,
-    result: &mut Vec<BookmarkInfo>,
-) {
-    for (para_idx, para) in paragraphs.iter().enumerate() {
-        // 최상위 레벨이면 para_idx 사용, 중첩이면 호스트 문단 인덱스 유지
-        let effective_para = host_para.unwrap_or(para_idx);
-        let positions = find_control_text_positions(para);
-        for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
-            match ctrl {
-                Control::Bookmark(bm) => {
-                    let char_pos = if host_para.is_some() {
-                        // 중첩 구조 내 책갈피: 호스트 문단 시작점으로 이동
-                        0
-                    } else {
-                        positions.get(ctrl_idx).copied().unwrap_or(0)
-                    };
-                    result.push(BookmarkInfo {
-                        name: bm.name.clone(),
-                        sec,
-                        para: effective_para,
-                        ctrl_idx,
-                        char_pos,
-                    });
-                }
-                Control::Table(t) => {
-                    for cell in &t.cells {
-                        collect_bookmarks_from_paragraphs(
-                            &cell.paragraphs,
-                            sec,
-                            Some(effective_para),
-                            result,
-                        );
+/// 책갈피 수집의 현재 문단 목록 주소. `place.para`·경로 마지막 항목의 문단 번호는 훑는 동안 바뀐다.
+struct BookmarkWalk<'a, 'b> {
+    core: &'a DocumentCore,
+    place: BookmarkPlace,
+    areas: Vec<&'static str>,
+    /// 옛 계약의 본문 문단(셀·주석·머리말 안이면 그 영역을 가진 본문 문단). None이면 본문 목록이다.
+    host: Option<usize>,
+    out: &'b mut Vec<BookmarkInfo>,
+}
+
+impl BookmarkWalk<'_, '_> {
+    fn list(&mut self, paragraphs: &[Paragraph]) {
+        for (para_idx, para) in paragraphs.iter().enumerate() {
+            match self.place.cell_path.last_mut() {
+                Some(entry) => entry.2 = para_idx,
+                None => self.place.para = para_idx,
+            }
+            let host = self.host.unwrap_or(para_idx);
+            let positions = find_control_text_positions(para);
+            for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+                let position = positions.get(ctrl_idx).copied().unwrap_or(0);
+                let (name, start, end) = match ctrl {
+                    Control::Bookmark(bm) => (bm.name.clone(), position, None),
+                    Control::Field(field) if field.field_type == FieldType::Bookmark => {
+                        let range = para
+                            .field_ranges
+                            .iter()
+                            .find(|range| range.control_idx == ctrl_idx);
+                        let end = match range {
+                            Some(range) => Some((para_idx, range.end_char_idx)),
+                            None => (field.field_id != 0)
+                                .then(|| orphan_end_of(paragraphs, para_idx, field.field_id))
+                                .flatten()
+                                .map(|(end_para, end_idx)| {
+                                    (
+                                        end_para,
+                                        paragraphs[end_para].orphan_field_ends[end_idx].char_idx,
+                                    )
+                                }),
+                        };
+                        // 끝을 찾지 못한 블록은 시작 자리의 보통 책갈피처럼 보인다.
+                        let start = range.map_or(position, |range| range.start_char_idx);
+                        (field.ctrl_data_name.clone().unwrap_or_default(), start, end)
                     }
-                }
-                Control::Header(h) => {
-                    collect_bookmarks_from_paragraphs(
-                        &h.paragraphs,
-                        sec,
-                        Some(effective_para),
-                        result,
-                    );
-                }
-                Control::Footer(f) => {
-                    collect_bookmarks_from_paragraphs(
-                        &f.paragraphs,
-                        sec,
-                        Some(effective_para),
-                        result,
-                    );
-                }
-                Control::Footnote(n) => {
-                    collect_bookmarks_from_paragraphs(
-                        &n.paragraphs,
-                        sec,
-                        Some(effective_para),
-                        result,
-                    );
-                }
-                Control::Endnote(n) => {
-                    collect_bookmarks_from_paragraphs(
-                        &n.paragraphs,
-                        sec,
-                        Some(effective_para),
-                        result,
-                    );
-                }
-                Control::HiddenComment(hc) => {
-                    collect_bookmarks_from_paragraphs(
-                        &hc.paragraphs,
-                        sec,
-                        Some(effective_para),
-                        result,
-                    );
-                }
-                _ => {}
+                    _ => {
+                        self.children(ctrl_idx, ctrl, host);
+                        continue;
+                    }
+                };
+                self.out.push(BookmarkInfo {
+                    name,
+                    sec: self.place.section,
+                    para: host,
+                    ctrl_idx,
+                    char_pos: if self.host.is_some() { 0 } else { start },
+                    place: self.place.clone(),
+                    areas: self.areas.clone(),
+                    end,
+                    start,
+                });
             }
         }
     }
+
+    /// 컨트롤이 품은 문단 목록을 훑는다. 본문의 머리말·꼬리말 정의는 그 머리말 주소로 가리킨다.
+    fn children(&mut self, ctrl_idx: usize, ctrl: &Control, host: usize) {
+        let body = self.place.cell_path.is_empty() && self.place.header_footer.is_none();
+        if let (true, Control::Header(_) | Control::Footer(_)) = (body, ctrl) {
+            let (is_header, apply) = match ctrl {
+                Control::Header(h) => (true, h.apply_to),
+                Control::Footer(f) => (false, f.apply_to),
+                _ => unreachable!(),
+            };
+            let canonical =
+                self.core
+                    .find_header_footer_control(self.place.section, is_header, apply)
+                    == Some((self.place.para, ctrl_idx));
+            if canonical {
+                let saved = self.place.para;
+                self.place.header_footer = Some(BookmarkHeaderFooter {
+                    is_header,
+                    apply_to: crate::document_core::header_footer_apply_to_u8(apply),
+                });
+                let previous_host = self.host.replace(host);
+                if let Some(paragraphs) = ctrl.header_footer_paragraphs() {
+                    self.list(paragraphs);
+                }
+                self.host = previous_host;
+                self.place.header_footer = None;
+                self.place.para = saved;
+                return;
+            }
+        }
+        for (cell, area, paragraphs) in child_lists(ctrl) {
+            self.place.cell_path.push((ctrl_idx, cell, 0));
+            self.areas.push(area);
+            let previous_host = self.host.replace(host);
+            self.list(paragraphs);
+            self.host = previous_host;
+            self.areas.pop();
+            self.place.cell_path.pop();
+        }
+    }
+}
+
+/// 컨트롤이 품은 문단 목록과 그 경로 셀 번호·영역 종류.
+fn child_lists(ctrl: &Control) -> Vec<(usize, &'static str, &[Paragraph])> {
+    let mut lists: Vec<(usize, &'static str, &[Paragraph])> = Vec::new();
+    match ctrl {
+        Control::Table(table) => {
+            for (cell, content) in table.cells.iter().enumerate() {
+                lists.push((cell, "table", &content.paragraphs));
+            }
+            if let Some(caption) = &table.caption {
+                lists.push((65534, "caption", &caption.paragraphs));
+            }
+        }
+        Control::Shape(shape) => {
+            for index in 0..shape.textbox_shape_count() {
+                if let Some(text_box) = crate::document_core::helpers::get_textbox_at(shape, index)
+                {
+                    lists.push((index, "textBox", &text_box.paragraphs));
+                }
+            }
+            if let Some(caption) = DocumentCore::shape_caption_ref(shape) {
+                lists.push((65534, "caption", &caption.paragraphs));
+            }
+        }
+        Control::Picture(picture) => {
+            if let Some(caption) = &picture.caption {
+                lists.push((0, "caption", &caption.paragraphs));
+            }
+        }
+        Control::Footnote(note) => lists.push((0, "footnote", &note.paragraphs)),
+        Control::Endnote(note) => lists.push((0, "endnote", &note.paragraphs)),
+        Control::Header(header) => lists.push((0, "header", &header.paragraphs)),
+        Control::Footer(footer) => lists.push((0, "footer", &footer.paragraphs)),
+        Control::HiddenComment(comment) => lists.push((0, "hiddenComment", &comment.paragraphs)),
+        _ => {}
+    }
+    lists
+}
+
+/// `start` 문단에서 연 다단락 필드의 고아 끝 표지: (문단, 그 문단의 고아 끝 번호).
+fn orphan_end_of(paragraphs: &[Paragraph], start: usize, field_id: u32) -> Option<(usize, usize)> {
+    paragraphs
+        .iter()
+        .enumerate()
+        .skip(start + 1)
+        .find_map(|(para_idx, para)| {
+            para.orphan_field_ends
+                .iter()
+                .position(|end| end.begin_id_ref == field_id)
+                .map(|end_idx| (para_idx, end_idx))
+        })
+}
+
+/// 문단 목록의 모든 필드 범위 ((시작 문단, 글자), (끝 문단, 글자)). 끝을 모르는 필드는 시작 자리에서 끝난다.
+fn field_spans(paragraphs: &[Paragraph]) -> Vec<((usize, usize), (usize, usize))> {
+    let mut spans = Vec::new();
+    for (para_idx, para) in paragraphs.iter().enumerate() {
+        let positions = find_control_text_positions(para);
+        for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+            let Control::Field(field) = ctrl else {
+                continue;
+            };
+            if let Some(range) = para
+                .field_ranges
+                .iter()
+                .find(|range| range.control_idx == ctrl_idx)
+            {
+                spans.push((
+                    (para_idx, range.start_char_idx),
+                    (para_idx, range.end_char_idx),
+                ));
+                continue;
+            }
+            let start = (para_idx, positions.get(ctrl_idx).copied().unwrap_or(0));
+            let end = (field.field_id != 0)
+                .then(|| orphan_end_of(paragraphs, para_idx, field.field_id))
+                .flatten()
+                .map_or(start, |(end_para, end_idx)| {
+                    (
+                        end_para,
+                        paragraphs[end_para].orphan_field_ends[end_idx].char_idx,
+                    )
+                });
+            spans.push((start, end));
+        }
+    }
+    spans
+}
+
+/// 필드 하나와 새 범위가 엇갈리는가. 같은 자리에서 다른 필드가 끝나면 그 END가 새 BEGIN보다,
+/// 새 END가 같은 자리에서 시작하는 필드의 BEGIN보다 먼저 저장되므로 맞닿음은 엇갈림이 아니다.
+/// 새 범위는 다른 필드를 품거나 그 안에 들 수 있지만, 끝이 같은 자리면 END 차례가 모호해 거절한다.
+fn crosses(
+    (start, end): ((usize, usize), (usize, usize)),
+    (new_start, new_end): ((usize, usize), (usize, usize)),
+) -> bool {
+    let apart = end <= new_start || start >= new_end;
+    let outer = start <= new_start && end > new_end;
+    let inner = start > new_start && end < new_end;
+    !(apart || outer || inner)
+}
+
+/// 문단의 글자 자리에 보통 책갈피를 넣고 그 컨트롤 번호를 돌려준다. 같은 자리의 개체·각주 뒤에 든다.
+fn insert_point_bookmark(paragraph: &mut Paragraph, char_offset: usize, name: &str) -> usize {
+    let insert_idx = find_control_insert_index(paragraph, char_offset);
+    paragraph.controls.insert(
+        insert_idx,
+        Control::Bookmark(Bookmark {
+            name: name.to_string(),
+        }),
+    );
+    // CTRL_DATA 레코드 생성 (ParameterSet: 책갈피 이름)
+    let ctrl_data = build_bookmark_ctrl_data(name);
+    if paragraph.ctrl_data_records.len() >= insert_idx {
+        paragraph
+            .ctrl_data_records
+            .insert(insert_idx, Some(ctrl_data));
+    }
+    // 책갈피도 스트림에서 8유닛을 차지한다. 글자별 배열에 항목을 끼우지 않고 뒤 글자와
+    // 같은 축의 참조를 함께 민다. 삭제와 같은 이유로 저장 줄 경계는 새 조판 결과를 쓴다.
+    paragraph.shift_for_inline_control_insert(insert_idx, char_offset);
+    paragraph.char_count += 8;
+    paragraph.stored_text_partition_dirty = true;
+    insert_idx
+}
+
+/// 문단의 보통 책갈피 하나를 그 8유닛 자리와 함께 지운다.
+fn remove_point_bookmark(paragraph: &mut Paragraph, ctrl_idx: usize) -> Result<(), HwpError> {
+    // 글자별 배열에서 컨트롤 번호의 항목을 빼면 글자 하나의 원시 좌표가 사라진다.
+    // 변경 전에 8유닛 슬롯 위치를 확인하고 같은 축의 참조를 함께 당긴다.
+    let start = bookmark_raw_start(paragraph, ctrl_idx)?;
+    let shift = |position: &mut u32| {
+        if *position > start {
+            *position = position.saturating_sub(8).max(start);
+        }
+    };
+    for position in &mut paragraph.char_offsets {
+        shift(position);
+    }
+    for shape in &mut paragraph.char_shapes {
+        shift(&mut shape.start_pos);
+    }
+    for range in &mut paragraph.range_tags {
+        shift(&mut range.start);
+        shift(&mut range.end);
+    }
+    for mark in &mut paragraph.markpen_marks {
+        if let Some(position) = &mut mark.utf16_pos {
+            shift(position);
+        }
+    }
+    paragraph.char_count -= 8;
+    // 저장 줄 경계는 HWPX 별도 축일 수 있으므로 새 조판 결과를 사용한다.
+    paragraph.stored_text_partition_dirty = true;
+    paragraph.controls.remove(ctrl_idx);
+    if ctrl_idx < paragraph.ctrl_data_records.len() {
+        paragraph.ctrl_data_records.remove(ctrl_idx);
+    }
+    for range in &mut paragraph.field_ranges {
+        if range.control_idx > ctrl_idx {
+            range.control_idx -= 1;
+        }
+    }
+    paragraph.forget_para_text_if_emptied();
+    Ok(())
+}
+
+/// `*At` WASM API의 주소 JSON을 읽는다.
+pub fn parse_bookmark_place(json: &str) -> Result<BookmarkPlace, HwpError> {
+    serde_json::from_str(json).map_err(|error| invalid(&format!("책갈피 주소: {error}")))
+}
+
+fn invalid(message: &str) -> HwpError {
+    HwpError::InvalidField(message.to_string())
 }
 
 /// 문단 내 char_offset에 해당하는 컨트롤 삽입 위치를 결정
