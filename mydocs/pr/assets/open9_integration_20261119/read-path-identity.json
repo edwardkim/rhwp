@@ -1,0 +1,226 @@
+[
+  {
+    "backend": "native",
+    "case": "footnote-l30",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "case": "footnote-l45",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "case": "footnote-l60",
+    "rhwp_png": {
+      "pages": 3,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 3,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 3,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "case": "footnote-l100",
+    "rhwp_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 4,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "case": "m2",
+    "rhwp_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 4,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "case": "a1",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "native",
+    "case": "t34",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "case": "footnote-l30",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "case": "footnote-l45",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "case": "footnote-l60",
+    "rhwp_png": {
+      "pages": 3,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 3,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 3,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "case": "footnote-l100",
+    "rhwp_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 4,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "case": "m2",
+    "rhwp_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 4,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 4,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "case": "a1",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  },
+  {
+    "backend": "wasm",
+    "case": "t34",
+    "rhwp_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "pdf_png": {
+      "pages": 2,
+      "identical": true
+    },
+    "render_tree": {
+      "pages": 2,
+      "identical": true
+    }
+  }
+]

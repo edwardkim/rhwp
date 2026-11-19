@@ -1,0 +1,92 @@
+{
+  "render_source": "b0ce1287929079f3fc1d100279a67b1eda8b8e80",
+  "test_source": "a84c52f4dcade0a068050226851fe61ba550a813",
+  "fixed_base": "af53659e19f70c18d0d3591a719c238235007a05",
+  "doc": "samples/issue9060/oda-1092000-201600017.hwp",
+  "pdf": "pdf/issue9060/oda-1092000-201600017-2020.pdf",
+  "dpi": 96,
+  "compat": 2022,
+  "page": 70,
+  "backend_scores": [
+    {
+      "backend": "native",
+      "pages": 159,
+      "minimum": "96.89",
+      "minimum_pages": [
+        124
+      ],
+      "changes_from_previous": [
+        {
+          "page": 70,
+          "before": "90.60",
+          "after": "99.93"
+        },
+        {
+          "page": 138,
+          "before": "99.98",
+          "after": "99.97"
+        },
+        {
+          "page": 145,
+          "before": "95.77",
+          "after": "99.54"
+        }
+      ],
+      "drops_over_2pp_from_base": [],
+      "page_70": {
+        "fixed_base": "90.60",
+        "previous_candidate": "90.60",
+        "candidate": "99.93",
+        "candidate_exact": "99.92658",
+        "same_pdf_page_sha256": "c108d9d4bf0530dc4f7d3996e1bb2c8cc957d85a90316f9a29bdba1dab577f82"
+      }
+    },
+    {
+      "backend": "wasm",
+      "pages": 159,
+      "minimum": "96.93",
+      "minimum_pages": [
+        124
+      ],
+      "changes_from_previous": [
+        {
+          "page": 70,
+          "before": "90.77",
+          "after": "99.93"
+        },
+        {
+          "page": 145,
+          "before": "95.79",
+          "after": "99.52"
+        }
+      ],
+      "drops_over_2pp_from_base": [],
+      "page_70": {
+        "fixed_base": "90.77",
+        "previous_candidate": "90.77",
+        "candidate": "99.93",
+        "candidate_exact": "99.92923",
+        "same_pdf_page_sha256": "c108d9d4bf0530dc4f7d3996e1bb2c8cc957d85a90316f9a29bdba1dab577f82"
+      }
+    }
+  ],
+  "file_sha256": {
+    "native/before-review-070.png": "aa0472e87d30f48e42d14339acaca6d6379276d740eec9e87218c6fc50606900",
+    "native/before-overlay-070.png": "18528cb9217a4d47bcfbd481f7d2f681fd708d2a72e337de34fa2875c18a7457",
+    "native/review-070.png": "09680228b47b0e3377b196a0160718a64a2348839e9eb72ae8bce7264be5a9b3",
+    "native/overlay-070.png": "febf729761950c3e3c0a775f8b76a844c29e5618f905a7acbbd8859194ec2169",
+    "native/raw-070.png": "bb8d7513b5e1297a7d142efa8d65bc82e32a5d5495069dd8639e8e1d3059a798",
+    "native/pdf-070.png": "c108d9d4bf0530dc4f7d3996e1bb2c8cc957d85a90316f9a29bdba1dab577f82",
+    "native/silhouette.tsv": "f439ff69dc023af187bef2700cea7fbd69ad83198684df8602ebd120fd13728f",
+    "native/base-silhouette.tsv": "162c7e0e1a0835fa2dca8639e2a6086c9ab1d40755787b1a2ec70356905d19ed",
+    "wasm/before-review-070.png": "db45c82c00686c0aee2d768f8d8150702e523b53ceb6821eac33798341b50c49",
+    "wasm/before-overlay-070.png": "cc938b2c73c4dde0ee16c4f3f05ef489f3b4f62857055837ba9c4379a1215d7e",
+    "wasm/review-070.png": "e6032ff4fb522989c259721c2c0c66646a62f3e30094279b4577a40522f6e1d3",
+    "wasm/overlay-070.png": "da1ba221cd4a7155a889bf35ee36fa12573cb5fdae8a61a5f7d80bfe7dc8044b",
+    "wasm/raw-070.png": "478942e57d2948fd2b07d67b8cb217f09b23480f4d40e4d7a65d66517c739f49",
+    "wasm/pdf-070.png": "c108d9d4bf0530dc4f7d3996e1bb2c8cc957d85a90316f9a29bdba1dab577f82",
+    "wasm/silhouette.tsv": "507ecb922a75723ccea68310c2ef09e6a48e3a32e458576c2ce72ce01c05643c",
+    "wasm/base-silhouette.tsv": "1c85998aeee93383d175d2ff52d6f00f0384c87dae7fbb33a008039138cf5ea1",
+    "geometry.json": "d251d85b5588a0357bb996432ad01bc6f5276d8bcbb7cd5a4d7f7090f3f12905"
+  }
+}
