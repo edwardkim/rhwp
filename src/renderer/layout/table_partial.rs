@@ -4237,6 +4237,25 @@ impl LayoutEngine {
                                                 crate::renderer::float_placement::topbottom_flow_vertical_offset_hu(&pic.common),
                                                 self.dpi,
                                             )
+                                    } else if let Some(frame) = (!cell_was_split
+                                        && !is_rowbreak_straddle)
+                                        .then(|| {
+                                            crate::renderer::float_placement::stored_cell_flow_picture_frame(
+                                                &cell.paragraphs,
+                                                cp_idx,
+                                                pic,
+                                                !self.profile.get().session_edited()
+                                                    && (self.profile.get().hwp5_stored_pagination_layout()
+                                                        || self.profile.get().hwpx_stored_layout()),
+                                            )
+                                        })
+                                        .flatten()
+                                        .filter(|frame| frame.closed_by_next_line)
+                                    {
+                                        // 뒤 문단의 저장 줄이 닫은 그림 띠는 칸 내용 흐름의 일부다.
+                                        // 정렬이 옮긴 내용 원점에서 저장 그림 상자 위끝을 쓴다
+                                        // (일반 표 경로와 같은 계약).
+                                        text_y_start + hwpunit_to_px(frame.top_hu, self.dpi)
                                     } else if top_and_bottom_para
                                         && pic.common.flow_with_text
                                         && !unrestricted_take_place_cell_float
