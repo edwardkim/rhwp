@@ -997,6 +997,30 @@ test('trusted review reuse fails closed on missing, pending, or mismatched candi
   }).trusted_review_fast_pass, 'false');
 });
 
+test('#9197: trusted policy can read a complete evidence commit over 300 files', () => {
+  const codeSha = 'c'.repeat(40);
+  const evidenceSha = 'd'.repeat(40);
+  const tailSha = 'e'.repeat(40);
+  const baseSha = 'f'.repeat(40);
+  const code = { sha: codeSha, parents: [baseSha], files: [{ filename: 'src/wasm_api.rs' }] };
+  const evidence = {
+    sha: evidenceSha,
+    parents: [codeSha],
+    files: Array.from({ length: 315 }, (_, index) => ({ filename: `mydocs/pr/assets/${index}.png` })),
+  };
+  const tail = { sha: tailSha, parents: [evidenceSha], files: [{ filename: 'mydocs/orders/20261119.md' }] };
+  const valid = selectReviewOnlyCandidate([code, evidence, tail], baseSha);
+  assert.equal(valid.eligible, true);
+  assert.equal(valid.candidateSha, codeSha);
+  assert.equal(valid.trailingCount, 2);
+
+  const capped = { ...evidence, files: Array.from({ length: 3000 },
+    (_, index) => ({ filename: `mydocs/pr/assets/${index}.png` })) };
+  assert.equal(selectReviewOnlyCandidate([code, capped, tail], baseSha).eligible, false);
+  const duplicate = { ...evidence, files: [...evidence.files, evidence.files[0]] };
+  assert.equal(selectReviewOnlyCandidate([code, duplicate, tail], baseSha).eligible, false);
+});
+
 test('review candidate lineage accepts only single-parent review tails and verified base bridges', () => {
   const candidateSha = 'c'.repeat(40);
   const reviewSha = 'd'.repeat(40);

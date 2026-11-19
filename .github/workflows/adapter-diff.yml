@@ -79,6 +79,9 @@ jobs:
 
             function isAllowedReviewPath(file) {
               const filename = file.filename;
+              if (file.previous_filename && !file.previous_filename.startsWith('mydocs/')) {
+                return false;
+              }
               if (isAdapterExecutionPath(filename)
                 || isSuiteManifestPath(filename)
                 || isAdapterExecutionPath(file.previous_filename || '')
@@ -244,13 +247,21 @@ jobs:
                 core.info(`including current-base update merge bridge ${commit.sha}`);
                 continue;
               }
-              const detail = await github.rest.repos.getCommit({
+              // 300개를 넘는 증적 커밋도 끝까지 읽는다. API 상한에서는 전체 CI로 돌아간다.
+              const commitFiles = await github.paginate(github.rest.repos.getCommit, {
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 ref: commit.sha,
+                per_page: 100,
+              }, ({ data }) => {
+                if (data.sha !== commit.sha || !Array.isArray(data.files) || !data.files.length) {
+                  throw new Error(`unusable-commit-file-page:${commit.sha}`);
+                }
+                return data.files;
               });
-              const commitFiles = detail.data.files || [];
-              if (commitFiles.length === 0 || commitFiles.length >= 300) {
+              if (commitFiles.length === 0 || commitFiles.length >= 3000
+                || commitFiles.some((file) => !file?.filename)
+                || new Set(commitFiles.map((file) => file.filename)).size !== commitFiles.length) {
                 setResult(true, `unusable-file-list:${commit.sha}`);
                 return;
               }

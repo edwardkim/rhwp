@@ -52,8 +52,13 @@ async function preflight(name, options = {}) {
     pulls: { listFiles: "files", listCommits: "commits" },
     actions: { listWorkflowRuns: "runs", listJobsForWorkflowRun: "jobs" },
     checks: { listForRef: "checks" },
-    repos: { getCommit: async ({ ref }) => ({ data: commits.find(commit => commit.sha === ref) }) },
-  }, paginate: async (method, args) => {
+    repos: { getCommit: "commitDetail" },
+  }, paginate: async (method, args, mapPage) => {
+    if (method === "commitDetail") {
+      assert.equal(args.per_page, 100);
+      const detail = commits.find(commit => commit.sha === args.ref);
+      return mapPage({ data: detail });
+    }
     if (method === "files") return files;
     if (method === "commits") return commits;
     if (method === "runs") { requested.push(args.head_sha || "all"); return runs.filter(run => !args.head_sha || args.head_sha === run.head_sha); }
