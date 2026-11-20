@@ -35,18 +35,24 @@
   HWP와 HWPX 각각 두 번 저장·재열기한 뒤 대상/이웃 값 `SQUEEZE/BREAK`를 독립 XML로
   확인했다. 고정 기준의 같은 편집 재현은 `BREAK/BREAK`였다.
   [재열기 UI](../assets/pr-9207/studio-production-cell.png) · [저장과 페이지 증적](../assets/pr-9207/evidence.json).
-- 결재 문서 2쪽의 fresh WASM 기준·후보 PNG가 바이트 단위로 같다. 후보 raw는
-  1쪽 98.30399%, 2쪽 97.32424%였다. 1쪽의 제목이 같은 셀의 한 줄에 있는 것을 독립 Print와
-  대조했다. 부대시설 사용료 원본의 `SQUEEZE` 15문단은 같은 셀·한 줄·원래 순서를 보존했다.
-  화학제품 103쪽, 한컴 사양서 71쪽과 시행령 74쪽도 각 출력 경로의 고정 기준 PNG와 동일했다.
-  [결재 문서 HWPX](../../../samples/issue8947/36481164-squeeze-title-cell.hwpx) ·
-  [한컴 2020 Print](../../../pdf/issue8947/36481164-squeeze-title-cell-2020.pdf) ·
-  [입력별 전체 TSV·대표 이미지 해시](../assets/pr-9207/evidence.json).
+- 결재 문서 2쪽과 부대시설 사용료 감면기준 1쪽을 Windows 데스크톱 한컴 2024
+  (13.0.0.3901)의 Hancom PDF Print로 재인쇄해 Native·fresh WASM 각 3쪽을 대조했다.
+  결재 문서의 Native raw는 1쪽 98.27%, 2쪽 97.79%이고 fresh WASM은 98.31%, 97.35%다.
+  1쪽의 제목은 같은 셀의 한 줄에 있다. 부대시설 사용료 감면기준은 두 출력 모두 99.97%이며,
+  `SQUEEZE` 15문단이 같은 셀·한 줄·원래 순서를 보존했다. 웹한글기안기와 Cairo PDF는
+  공식 비교 기준에서 제외했다.
+  [결재 문서 Print](../../../pdf/issue8947/36481164-squeeze-title-cell-2024.pdf) ·
+  [감면기준 Print](../../../pdf/issue9085/facility_fee_reduction_criteria-2024.pdf) ·
+  [전쪽 TSV·인쇄 영수증·원본 PNG](../assets/pr-9207/hancom-2024/evidence.json).
+- 화학제품 103쪽, 한컴 사양서 71쪽과 시행령 74쪽의 고정 기준 출력도 별도로 비교했다.
+  시행령의 기존 보호 TSV와 한컴 2024 재인쇄 대조는 비교 조건이 다르다.
+  [고정 기준과 대표 증적](../assets/pr-9207/evidence.json).
 
 | 페이지 | Native | fresh WASM |
 | --- | --- | --- |
-| 결재 문서 제목 1쪽 | [review](../assets/pr-9207/squeeze-native-001-review.png) · [overlay](../assets/pr-9207/squeeze-native-001-overlay.png) | [review](../assets/pr-9207/squeeze-wasm-001-review.png) · [overlay](../assets/pr-9207/squeeze-wasm-001-overlay.png) |
-| 시행령 19쪽 | [review](../assets/pr-9207/decree-native-019-review.png) · [overlay](../assets/pr-9207/decree-native-019-overlay.png) | [review](../assets/pr-9207/decree-wasm-019-review.png) · [overlay](../assets/pr-9207/decree-wasm-019-overlay.png) |
+| 결재 문서 제목 1쪽 | [review](../assets/pr-9207/hancom-2024/squeeze-native-001-review.png) · [overlay](../assets/pr-9207/hancom-2024/squeeze-native-001-overlay.png) | [review](../assets/pr-9207/hancom-2024/squeeze-wasm-001-review.png) · [overlay](../assets/pr-9207/hancom-2024/squeeze-wasm-001-overlay.png) |
+| 결재 문서 2쪽 | [review](../assets/pr-9207/hancom-2024/squeeze-native-002-review.png) · [overlay](../assets/pr-9207/hancom-2024/squeeze-native-002-overlay.png) | [review](../assets/pr-9207/hancom-2024/squeeze-wasm-002-review.png) · [overlay](../assets/pr-9207/hancom-2024/squeeze-wasm-002-overlay.png) |
+| 감면기준 1쪽 | [review](../assets/pr-9207/hancom-2024/para-squeeze-native-001-review.png) · [overlay](../assets/pr-9207/hancom-2024/para-squeeze-native-001-overlay.png) | [review](../assets/pr-9207/hancom-2024/para-squeeze-wasm-001-review.png) · [overlay](../assets/pr-9207/hancom-2024/para-squeeze-wasm-001-overlay.png) |
 
 ## Merge 후 contributor PR comment 계획
 
