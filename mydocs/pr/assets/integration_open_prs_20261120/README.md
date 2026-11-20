@@ -22,6 +22,9 @@ Visual Sweep Python 268건도 통과했다. Native Skia 라이브러리 검사�
 HWP·HWPX 저장 계약도 확인했다. [배포 응답과 편집 결과](final-product-consumers.json).
 같은 소스로 빌드한 테스트용 Node WASM에서 Studio·편집기 SDK·공용 PDF 검사 2,822건이
 통과했다. 실패·제외는 0건이다. [Node WASM과 실행 결과](final-current-test-receipt.json).
+정본 보호 입력도 Native·fresh WASM 각각 23조건·2,023쪽을 대조했다. 전체 하락·누락은 0쪽이며
+시행령 19쪽과 #7905 시행규칙 1쪽의 공식 표시값이 두 출력 경로에서 올랐다.
+[전쪽 검증과 생산자 신원](final-protected/validation.json) · [상승 쪽 review·overlay](final-protected/gain-reviews/README.md).
 
 ## 초기 통합 소스 검증
 
