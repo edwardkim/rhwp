@@ -87,5 +87,22 @@
   "rust_gate_complete": {
     "exit": 0,
     "normal_macos_font_inventory_before_after_sha256": "273b4f5e1efdbb29042e5031008ca80cfbb7b8296893471beb9ef6086340c975"
+  },
+  "studio_editor_sdk_shared_pdf": {
+    "exit": 0,
+    "tests": 2822,
+    "passed": 2822,
+    "failed": 0,
+    "skipped": 0,
+    "node_wasm_package": {
+      "target": "nodejs",
+      "optimized": false,
+      "sha256": {
+        "rhwp.js": "53f00732c67d7de8172487af11dca50e003e3887d451113f2ca35af843122656",
+        "rhwp_bg.wasm": "ba5cd607ba7b3d99587bc64f54a9825086467b4b49e46c9b9a3c33755381ce00"
+      }
+    },
+    "log_sha256": "578c924262ddf534726576d28b1a571b8d80f53546a92f98865ee35a1a42666d",
+    "build_log_sha256": "b5fd7f0e8e7bf679c5809d7a6366077b61d1b738895dcadcf43ca2156ae911bc"
   }
 }

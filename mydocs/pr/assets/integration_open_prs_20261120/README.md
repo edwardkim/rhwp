@@ -20,6 +20,8 @@ Visual Sweep Python 268건도 통과했다. Native Skia 라이브러리 검사�
 최적화한 WASM을 포함한 Studio 배포본을 새 브라우저에서 열어 초기화 요청의 JS·WASM 응답
 해시를 빌드 산출물과 대조했다. 실제 편집 경로에서 캡션, 문단 모양 복사, 한 줄 셀의
 HWP·HWPX 저장 계약도 확인했다. [배포 응답과 편집 결과](final-product-consumers.json).
+같은 소스로 빌드한 테스트용 Node WASM에서 Studio·편집기 SDK·공용 PDF 검사 2,822건이
+통과했다. 실패·제외는 0건이다. [Node WASM과 실행 결과](final-current-test-receipt.json).
 
 ## 초기 통합 소스 검증
 
