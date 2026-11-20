@@ -109,9 +109,6 @@ const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",
     "issue1891/86712_regulatory_analysis.hwpx",
-    "issue6892/156726122-recycling-press-release.hwpx",
-    "HWP5-nopassword-123456.hwpx",
-    "basic/issue2007_nested_cell_pagination_42065.hwp",
 ];
 
 fn collect_samples() -> Vec<(PathBuf, String)> {
