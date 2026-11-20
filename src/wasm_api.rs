@@ -9486,6 +9486,53 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 쪽(문서 전체 쪽 번호)에 적용되는 감추기 조판 부호 목록.
+    /// `{ok, section, hides:[{para, cellPath, controlIdx, hideHeader, …}]}` — 마지막 것이 그 쪽을 정한다.
+    #[wasm_bindgen(js_name = getPageHidesOnPage)]
+    pub fn get_page_hides_on_page(&self, page: u32) -> Result<String, JsValue> {
+        self.get_page_hides_on_page_native(page)
+            .map_err(|e| e.into())
+    }
+
+    /// 한/글 쪽 > 감추기: 쪽의 감추기 조판 부호 하나를 고치거나, 없으면 캐럿 자리(본문 문단
+    /// `para` 또는 그 문단 표의 `cell_path_json` 셀 문단, `char_offset`)에 넣는다. 모두 끄면 지운다.
+    #[wasm_bindgen(js_name = setPageHideOnPage)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn set_page_hide_on_page(
+        &mut self,
+        page: u32,
+        para: u32,
+        cell_path_json: &str,
+        char_offset: u32,
+        hide_header: bool,
+        hide_footer: bool,
+        hide_master: bool,
+        hide_border: bool,
+        hide_fill: bool,
+        hide_page_num: bool,
+    ) -> Result<String, JsValue> {
+        let path = if cell_path_json.trim().is_empty() {
+            Vec::new()
+        } else {
+            DocumentCore::parse_cell_path(cell_path_json).map_err(JsValue::from)?
+        };
+        self.set_page_hide_on_page_native(
+            page,
+            para as usize,
+            &path,
+            char_offset as usize,
+            crate::model::control::PageHide {
+                hide_header,
+                hide_footer,
+                hide_master_page: hide_master,
+                hide_border,
+                hide_fill,
+                hide_page_num,
+            },
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 감추기 조회
     #[wasm_bindgen(js_name = getPageHide)]
     pub fn get_page_hide(&self, sec: u32, para: u32) -> Result<String, JsValue> {
