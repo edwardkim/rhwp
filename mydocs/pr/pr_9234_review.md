@@ -1,0 +1,27 @@
+# PR #9234 검토 — fix(note): 다단 쪽의 단 각주 영역마다 누르기·캐럿·선택을 찾고, 각주 영역 폭이 바뀌면 각주 줄을 그 폭으로 다시 나눈다
+
+## 최종 판정
+
+**머지 보류.** 제출한 HWP 3종의 단 폭 변경 및 각주 편집 후 줄바꿈을 확인할 독립 Print와 Native·fresh WASM 전쪽 대조가 필요하다.
+
+## 접수와 검토 범위
+
+- 작성자 및 브랜치 `semanticist21/pr/multi-column-footnote`
+- 검토 head `fb144c2ecceee9f7db6288629121ed521257c16f`
+- 리뷰어 `edwardkim`, 요청 시각 `2026-11-20T10:37:43Z` (UTC), GitHub 요청 목록 재확인
+- 최신 devel `0a437a7eefb19bfe81fc12866887e4548ea9554d` 기준 개별 및 번호순 누적 병합 시뮬레이션 성공
+- 원 head의 Build & Test 및 CI Impact Policy 성공. [CI 집계](https://github.com/edwardkim/rhwp/actions/runs/44700778799/job/136180876717)
+
+두 단 아래, 너비가 다른 세 단 아래, 오른쪽 단 아래의 HWP 3개는 포함됐다. 테스트에 인용한 한컴 Mac Print 좌표는 있지만 해당 출력 PDF와 편집 후 Native 및 fresh WASM의 전쪽 TSV를 확인할 수 없다. 단 폭 변경은 실제 각주의 줄바꿈을 바꾸므로 편집 후 상태의 비교가 필요하다.
+
+## 메인테이너 실행 결과
+
+누적 적용 9번째, 적용 직후 `bb3cfa6101`. 충돌 없이 적용됐다. 처음 10건을 합친 `c6407bf83c`에서 이 PR의 집중 검사 5개가 통과했다.
+
+두 단·너비가 다른 세 단·오른쪽 단 각주 사례를 포함한 집중 검사 5개는 통과했다. 각주 조판은 문서와 편집 상태에 따라 달라진다. 원 HWP와 동일하게 편집한 문서 각각의 독립 기준 출력·쪽수·페이지별 TSV와 각주 영역 확대 대조를 확보하면 보류 사유를 재검토할 수 있다.
+
+## 2026-11-21 메인테이너 보완 착수
+
+원 [PR #9234](https://github.com/edwardkim/rhwp/pull/9234)의 head는 `fb144c2ecceee9f7db6288629121ed521257c16f`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
+
+다단 각주의 클릭·캐럿 및 너비 변경 회귀는 있으나 원본 및 폭 변경·편집 상태에 대응하는 독립 PDF와 양 backend 전쪽 시각 결과가 필요하다. 동일한 편집 상태의 한컴 Print와 Native·fresh WASM 전쪽 TSV 및 각주 영역 확대 대조를 보완한다.
