@@ -1110,6 +1110,74 @@ pub(crate) fn fill_json_values(
     }
 }
 
+/// 그림 채우기의 세부 값 JSON 조각(`,"image…"`). 도형 속성 조회가 쓴다.
+pub(crate) fn image_fill_json(image: &crate::model::style::ImageFill) -> String {
+    let (bright, contrast) = image.display_brightness_contrast();
+    // HWPX TOTAL(크기에 맞추어)은 HWP의 크기에 맞추어와 같은 항목으로 알린다.
+    let fill_mode = match image.fill_mode {
+        crate::model::style::ImageFillMode::Total => crate::model::style::ImageFillMode::FitToSize,
+        mode => mode,
+    };
+    format!(
+        ",\"imageBinDataId\":{},\"imageFillMode\":\"{}\",\"imageEffect\":{},\"imageBrightness\":{},\"imageContrast\":{}",
+        image.bin_data_id,
+        IMAGE_FILL_MODES
+            .iter()
+            .find(|(_, mode)| *mode == fill_mode)
+            .map_or("tileAll", |(name, _)| name),
+        image.effect,
+        bright,
+        contrast,
+    )
+}
+
+/// [`image_fill_json`]의 값으로 그림 채우기를 만든다. `imageBinDataId`가 1 이상일 때만 만든다.
+pub(crate) fn image_fill_from_json(json: &str) -> Option<crate::model::style::ImageFill> {
+    let id = json_u32(json, "imageBinDataId").filter(|id| (1..=u16::MAX as u32).contains(id))?;
+    let fill_mode = json_str(json, "imageFillMode")
+        .and_then(|name| {
+            IMAGE_FILL_MODES
+                .iter()
+                .find(|(n, _)| *n == name)
+                .map(|(_, mode)| *mode)
+        })
+        .unwrap_or_default();
+    let byte = |key: &str| json_i32(json, key).unwrap_or(0).clamp(-100, 100) as i8;
+    // 이진 FILL_INFO 순서: 첫 바이트가 화면 대비, 둘째가 화면 밝기다.
+    Some(crate::model::style::ImageFill {
+        fill_mode,
+        brightness: byte("imageContrast"),
+        contrast: byte("imageBrightness"),
+        effect: json_i32(json, "imageEffect").unwrap_or(0).clamp(0, 3) as u8,
+        bin_data_id: id as u16,
+    })
+}
+
+/// 그림 채우기 유형 이름(채우기 JSON)과 모델 값.
+pub(crate) const IMAGE_FILL_MODES: [(&str, crate::model::style::ImageFillMode); 18] = {
+    use crate::model::style::ImageFillMode as M;
+    [
+        ("tileAll", M::TileAll),
+        ("tileHorzTop", M::TileHorzTop),
+        ("tileHorzBottom", M::TileHorzBottom),
+        ("tileVertLeft", M::TileVertLeft),
+        ("tileVertRight", M::TileVertRight),
+        ("fitToSize", M::FitToSize),
+        ("zoom", M::Zoom),
+        ("total", M::Total),
+        ("center", M::Center),
+        ("centerTop", M::CenterTop),
+        ("centerBottom", M::CenterBottom),
+        ("leftCenter", M::LeftCenter),
+        ("leftTop", M::LeftTop),
+        ("leftBottom", M::LeftBottom),
+        ("rightCenter", M::RightCenter),
+        ("rightTop", M::RightTop),
+        ("rightBottom", M::RightBottom),
+        ("none", M::None),
+    ]
+};
+
 // === HTML 파싱 유틸리티 함수 ===
 
 /// chars 배열에서 pos부터 target 문자를 찾아 인덱스를 반환한다.
