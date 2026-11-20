@@ -3,7 +3,11 @@
 use super::{
     effective_text_for_metrics, estimate_text_width_exact, LeadingSpacePlan, ResolvedStyleSet,
 };
-use crate::renderer::{composer::condense_space_savings_px, space_compression::SpaceCompression};
+use crate::renderer::{
+    composer::{condense_space_budget_for_px, whole_space_savings_hwp},
+    hwpunit_to_px,
+    space_compression::SpaceCompression,
+};
 
 pub(super) struct CondensePlan {
     pub runs: Vec<Option<SpaceCompression>>,
@@ -33,7 +37,7 @@ impl CondensePlan {
         let end = chars.iter().rposition(|(ch, _)| *ch != ' ')? + 1;
         let mut position = 0;
         let mut entries = Vec::new();
-        let mut budget = 0.0;
+        let mut budget = 0i64;
         for (index, run) in line.line.runs.iter().enumerate() {
             let text = effective_text_for_metrics(run);
             let field = line.body_field_runs.get(index).copied().unwrap_or(false);
@@ -64,23 +68,26 @@ impl CondensePlan {
             if let Some(latin) = untracked.ascii_punct_latin.as_mut() {
                 latin.letter_spacing = 0.0;
             }
-            let allowed =
-                condense_space_savings_px(estimate_text_width_exact(" ", &untracked), percent, dpi);
-            if !natural.is_finite() || natural <= 0.0 || !allowed.is_finite() || allowed <= 0.0 {
+            let allowed = condense_space_budget_for_px(
+                estimate_text_width_exact(" ", &untracked),
+                percent,
+                dpi,
+            );
+            if !natural.is_finite() || natural <= 0.0 || allowed <= 0 {
                 return None;
             }
-            budget += allowed * count as f64;
+            budget += allowed * count as i64;
             entries.push(Some((eligible_end, count, allowed, natural)));
         }
-        if needed > budget || budget <= 0.0 {
+        if needed > hwpunit_to_px(whole_space_savings_hwp(budget), dpi) {
             return None;
         }
-        let share = needed / budget;
+        let share = needed / budget as f64;
         let mut runs = Vec::new();
         let mut saving_px = 0.0;
         for entry in entries {
             if let Some((end, count, allowed, natural)) = entry {
-                let reduction_px = allowed * share;
+                let reduction_px = allowed as f64 * share;
                 if reduction_px >= natural {
                     return None;
                 }

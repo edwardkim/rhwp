@@ -1576,20 +1576,20 @@ fn space_is_line_leading(text_chars: &[char], line_start: usize, space_idx: usiz
         .is_none_or(|before| before.iter().all(|c| *c == ' '))
 }
 
-/// 공백 하나를 condense 로 줄일 수 있는 폭. `space_width_hwp` 는 자간 **적용 전** 폭이다
-/// (`BreakToken::Space::condense_base`).
-fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i32 {
-    if condense_min_space == 0 || space_width_hwp <= 0 {
-        return 0;
-    }
-    let shrink_percent = condense_min_space.min(75) as i32;
-    space_width_hwp * shrink_percent / 100
+/// 자간 적용 전 공백 폭에서 구한 압축 예산. 줄의 모든 공백을 합산하기 전에는
+/// HWPUNIT의 100분의 1까지 유지한다.
+fn condense_space_budget(space_width_hwp: i32, percent: u8) -> i64 {
+    i64::from(space_width_hwp.max(0)) * i64::from(percent.min(75))
+}
+
+pub(crate) fn whole_space_savings_hwp(budget: i64) -> i32 {
+    (budget / 100).clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
 }
 
 /// 실제 배치도 줄 수용과 같은 원본 HU 공백 예산을 소비한다.
-pub(crate) fn condense_space_savings_px(space_width_px: f64, percent: u8, dpi: f64) -> f64 {
+pub(crate) fn condense_space_budget_for_px(space_width_px: f64, percent: u8, dpi: f64) -> i64 {
     let source_width = to_hwp(space_width_px * crate::renderer::DEFAULT_DPI / dpi);
-    crate::renderer::hwpunit_to_px(condense_space_savings_hwp(source_width, percent), dpi)
+    condense_space_budget(source_width, percent)
 }
 
 fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
@@ -1953,14 +1953,14 @@ fn saved_marker_tail_owns_terminal_ink(
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
     token_width: FitWidthHwp,
-    space_savings_hwp: i32,
+    space_budget: i64,
     effective_width_hwp: i32,
     new_word_natural_before_hwp: Option<i32>,
 ) -> bool {
     text_token_fits_in_line_with_tolerance_hwp(
         current_width_hwp,
         token_width,
-        space_savings_hwp,
+        whole_space_savings_hwp(space_budget),
         effective_width_hwp,
         new_word_natural_before_hwp,
         line_break_tolerance_hwp(effective_width_hwp),
@@ -2002,13 +2002,13 @@ struct FillCursor {
     initial_start_idx: usize,
     line_start_idx: usize,
     lw: i32,
-    line_space_savings: i32,
+    line_condense_budget: i64,
     line_max_fs: f64,
     is_first_line: bool,
     last_break_token_idx: Option<usize>,
     last_break_char_idx: usize,
     width_at_last_break: i32,
-    space_savings_at_last_break: i32,
+    condense_budget_at_last_break: i64,
     fs_at_last_break: f64,
     /// [#7418] 마지막으로 소비한 토큰이 이 줄의 공백이면, 그 공백 묶음 직전까지의 자연폭.
     /// 다음 글자 토큰이 새 낱말을 시작하는지와 그때 줄이 자연폭 안인지를 판정한다.
@@ -2031,13 +2031,13 @@ impl FillCursor {
             initial_start_idx,
             line_start_idx: initial_start_idx,
             lw: 0,
-            line_space_savings: 0,
+            line_condense_budget: 0,
             line_max_fs: 0.0,
             is_first_line: initial_is_first_line,
             last_break_token_idx: None,
             last_break_char_idx: 0,
             width_at_last_break: 0,
-            space_savings_at_last_break: 0,
+            condense_budget_at_last_break: 0,
             fs_at_last_break: 0.0,
             word_gap_natural_hwp: None,
             allow_metric_tolerance: true,
@@ -2275,11 +2275,11 @@ fn fill_one_interval(
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Option<FilledInterval> {
     let allow_metric_tolerance = cursor.allow_metric_tolerance;
-    let fits_physical_line = |current, token, savings, width, word| {
+    let fits_physical_line = |current, token, space_budget, width, word| {
         text_token_fits_in_line_with_tolerance_hwp(
             current,
             token,
-            savings,
+            whole_space_savings_hwp(space_budget),
             width,
             word,
             if allow_metric_tolerance {
@@ -2379,7 +2379,7 @@ fn fill_one_interval(
                     && fits_physical_line(
                         cursor.lw,
                         FitWidthHwp(to_hwp(*width)),
-                        cursor.line_space_savings,
+                        cursor.line_condense_budget,
                         eff_w(cursor.is_first_line),
                         None,
                     )
@@ -2388,7 +2388,7 @@ fn fill_one_interval(
                     cursor.last_break_char_idx = *idx + 1;
                     // 전진은 0이다. 다음 줄로 넘길 때 표시 하이픈 폭을 빼지 않는다.
                     cursor.width_at_last_break = cursor.lw;
-                    cursor.space_savings_at_last_break = cursor.line_space_savings;
+                    cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                     cursor.fs_at_last_break = size;
                 }
                 cursor.line_max_fs = size;
@@ -2403,7 +2403,7 @@ fn fill_one_interval(
                 };
                 cursor.line_start_idx = *idx + 1;
                 cursor.lw = 0;
-                cursor.line_space_savings = 0;
+                cursor.line_condense_budget = 0;
                 cursor.line_max_fs = 0.0;
                 cursor.is_first_line = false;
                 cursor.last_break_token_idx = None;
@@ -2465,7 +2465,7 @@ fn fill_one_interval(
                     };
                     cursor.line_start_idx = end_idx;
                     cursor.lw = 0;
-                    cursor.line_space_savings = 0;
+                    cursor.line_condense_budget = 0;
                     cursor.line_max_fs = 0.0;
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
@@ -2491,7 +2491,7 @@ fn fill_one_interval(
                         };
                         cursor.line_start_idx = cursor.last_break_char_idx;
                         cursor.lw -= cursor.width_at_last_break;
-                        cursor.line_space_savings -= cursor.space_savings_at_last_break;
+                        cursor.line_condense_budget -= cursor.condense_budget_at_last_break;
                         result
                     } else {
                         let result = LineBreakResult {
@@ -2502,7 +2502,7 @@ fn fill_one_interval(
                         };
                         cursor.line_start_idx = *idx;
                         cursor.lw = 0;
-                        cursor.line_space_savings = 0;
+                        cursor.line_condense_budget = 0;
                         cursor.line_max_fs = *max_font_size;
                         result
                     };
@@ -2526,7 +2526,7 @@ fn fill_one_interval(
                 cursor.last_break_token_idx = Some(ti);
                 cursor.last_break_char_idx = *idx;
                 cursor.width_at_last_break = cursor.lw;
-                cursor.space_savings_at_last_break = cursor.line_space_savings;
+                cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                 cursor.fs_at_last_break = cursor.line_max_fs;
                 cursor.lw = next_tab_hwp;
                 cursor.token_index += 1;
@@ -2545,19 +2545,23 @@ fn fill_one_interval(
                 let space_hwp = to_hwp(*width);
                 // [#7418] 줄 맨 앞 공백은 condense 로 줄지 않는다.
                 let leading = space_is_line_leading(text_chars, cursor.line_start_idx, *idx);
-                let space_savings = if leading {
+                let space_budget = if leading {
                     0
                 } else {
-                    condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space)
+                    condense_space_budget(to_hwp(*condense_base), condense_min_space)
                 };
                 if let Some(cut) = overflowing_space_cut(
                     cursor.line_start_idx,
                     *idx,
                     cursor.lw + space_hwp,
-                    cursor.line_space_savings + space_savings,
+                    whole_space_savings_hwp(cursor.line_condense_budget + space_budget),
                     eff_w(cursor.is_first_line),
-                    (*inline_width > 0.0)
-                        .then(|| (cursor.lw + to_hwp(*inline_width), cursor.line_space_savings)),
+                    (*inline_width > 0.0).then(|| {
+                        (
+                            cursor.lw + to_hwp(*inline_width),
+                            whole_space_savings_hwp(cursor.line_condense_budget),
+                        )
+                    }),
                 )
                 .filter(|_| {
                     !first_interword_separator(tokens, ti, text_chars, cursor.line_start_idx)
@@ -2620,7 +2624,7 @@ fn fill_one_interval(
                     cursor.line_start_idx = cut;
                     cursor.lw = if absorbed { 0 } else { space_hwp };
                     // 넘어간 공백은 새 줄의 맨 앞 공백이다.
-                    cursor.line_space_savings = 0;
+                    cursor.line_condense_budget = 0;
                     cursor.line_max_fs = if absorbed { 0.0 } else { *max_font_size };
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
@@ -2644,13 +2648,13 @@ fn fill_one_interval(
                 cursor.last_break_token_idx = Some(ti);
                 cursor.last_break_char_idx = *idx;
                 cursor.width_at_last_break = cursor.lw;
-                cursor.space_savings_at_last_break = cursor.line_space_savings;
+                cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                 cursor.fs_at_last_break = cursor.line_max_fs;
                 if cursor.word_gap_natural_hwp.is_none() && !leading {
                     cursor.word_gap_natural_hwp = Some(cursor.lw);
                 }
                 cursor.lw += space_hwp;
-                cursor.line_space_savings += space_savings;
+                cursor.line_condense_budget += space_budget;
                 cursor.token_index += 1;
             }
             BreakToken::Text {
@@ -2733,7 +2737,7 @@ fn fill_one_interval(
                     cursor.last_break_token_idx = Some(ti - 1);
                     cursor.last_break_char_idx = *start_idx;
                     cursor.width_at_last_break = cursor.lw;
-                    cursor.space_savings_at_last_break = cursor.line_space_savings;
+                    cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                     cursor.fs_at_last_break = cursor.line_max_fs;
                 }
                 if *max_font_size > cursor.line_max_fs {
@@ -2775,7 +2779,7 @@ fn fill_one_interval(
                 let token_fits = fits_physical_line(
                     cursor.lw,
                     w_hwp_fit.with_pair_adjustment(pair_adjustment_hwp),
-                    cursor.line_space_savings,
+                    cursor.line_condense_budget,
                     effective_width,
                     new_word_natural,
                 );
@@ -2813,7 +2817,7 @@ fn fill_one_interval(
                         cursor.last_break_token_idx = Some(ti);
                         cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
                         cursor.width_at_last_break = cursor.lw + w_hwp; // 이 글자 폭 포함
-                        cursor.space_savings_at_last_break = cursor.line_space_savings;
+                        cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                         cursor.fs_at_last_break = cursor.line_max_fs;
                     }
                 }
@@ -2842,12 +2846,8 @@ fn fill_one_interval(
                             }
                             cursor.line_start_idx = next_start;
                             cursor.lw = recalc_width_hwp(tokens, ti, next_start);
-                            cursor.line_space_savings = recalc_space_savings_hwp(
-                                tokens,
-                                ti,
-                                next_start,
-                                condense_min_space,
-                            );
+                            cursor.line_condense_budget =
+                                recalc_condense_budget(tokens, ti, next_start, condense_min_space);
                             cursor.line_max_fs = *max_font_size;
                             cursor.is_first_line = false;
                             cursor.last_break_token_idx = None;
@@ -2857,7 +2857,7 @@ fn fill_one_interval(
                             if detached_tail.is_some() || cursor.lw > eff_w(false) {
                                 cursor.token_index = first_token_at_or_after(tokens, next_start);
                                 cursor.lw = 0;
-                                cursor.line_space_savings = 0;
+                                cursor.line_condense_budget = 0;
                                 if let Some(BreakToken::Text { start_idx, .. }) =
                                     tokens.get(cursor.token_index)
                                 {
@@ -2904,7 +2904,7 @@ fn fill_one_interval(
                                         0
                                     },
                                 ),
-                                cursor.line_space_savings,
+                                cursor.line_condense_budget,
                                 eff_w(false),
                                 new_word_natural_before_hwp(tokens, ti, cursor.line_start_idx),
                             ) {
@@ -2917,7 +2917,7 @@ fn fill_one_interval(
                                 });
                             }
 
-                            cursor.line_space_savings = 0;
+                            cursor.line_condense_budget = 0;
                             cursor.last_break_token_idx = None;
                             cursor.fallback_char_idx = Some(*start_idx);
                             cursor.emitted_any = true;
@@ -2929,7 +2929,7 @@ fn fill_one_interval(
                     }
 
                     // 토큰에 저장된 개별 글자 폭을 HWPUNIT로 변환
-                    cursor.line_space_savings = 0;
+                    cursor.line_condense_budget = 0;
                     cursor.last_break_token_idx = None;
                     cursor.fallback_char_idx = Some(*start_idx);
                     continue;
@@ -2977,14 +2977,14 @@ fn fill_lines_before_cursor(
     let mut results = Vec::new();
     let mut line_start_idx = initial_start_idx;
     let mut lw = 0i32; // HWPUNIT 정수 누적
-    let mut line_space_savings = 0i32;
+    let mut line_condense_budget = 0i64;
     let mut line_max_fs = 0.0f64;
     let mut is_first_line = initial_is_first_line;
 
     let mut last_break_token_idx: Option<usize> = None;
     let mut last_break_char_idx: usize = 0;
     let mut width_at_last_break = 0i32;
-    let mut space_savings_at_last_break = 0i32;
+    let mut condense_budget_at_last_break = 0i64;
     let mut fs_at_last_break = 0.0f64;
 
     let eff_w = |first: bool| -> i32 {
@@ -3014,12 +3014,15 @@ fn fill_lines_before_cursor(
             } => {
                 line_max_fs = line_max_fs.max(*max_font_size);
                 if *idx > line_start_idx
-                    && lw + to_hwp(*width) - line_space_savings <= eff_w(is_first_line)
+                    && condensed_line_width_hwp(
+                        lw + to_hwp(*width),
+                        whole_space_savings_hwp(line_condense_budget),
+                    ) <= eff_w(is_first_line)
                 {
                     last_break_token_idx = Some(ti);
                     last_break_char_idx = *idx + 1;
                     width_at_last_break = lw;
-                    space_savings_at_last_break = line_space_savings;
+                    condense_budget_at_last_break = line_condense_budget;
                     fs_at_last_break = line_max_fs;
                 }
             }
@@ -3032,7 +3035,7 @@ fn fill_lines_before_cursor(
                 });
                 line_start_idx = *idx + 1;
                 lw = 0;
-                line_space_savings = 0;
+                line_condense_budget = 0;
                 line_max_fs = 0.0;
                 is_first_line = false;
                 last_break_token_idx = None;
@@ -3058,7 +3061,7 @@ fn fill_lines_before_cursor(
                         });
                         line_start_idx = last_break_char_idx;
                         lw = lw - width_at_last_break;
-                        line_space_savings -= space_savings_at_last_break;
+                        line_condense_budget -= condense_budget_at_last_break;
                     } else {
                         results.push(LineBreakResult {
                             start_idx: line_start_idx,
@@ -3068,7 +3071,7 @@ fn fill_lines_before_cursor(
                         });
                         line_start_idx = *idx;
                         lw = 0;
-                        line_space_savings = 0;
+                        line_condense_budget = 0;
                         line_max_fs = *max_font_size;
                     }
                     is_first_line = false;
@@ -3080,7 +3083,7 @@ fn fill_lines_before_cursor(
                     last_break_token_idx = Some(ti);
                     last_break_char_idx = *idx;
                     width_at_last_break = lw;
-                    space_savings_at_last_break = line_space_savings;
+                    condense_budget_at_last_break = line_condense_budget;
                     fs_at_last_break = line_max_fs;
                     lw = next_tab_hwp;
                 }
@@ -3098,13 +3101,13 @@ fn fill_lines_before_cursor(
                 last_break_token_idx = Some(ti);
                 last_break_char_idx = *idx;
                 width_at_last_break = lw;
-                space_savings_at_last_break = line_space_savings;
+                condense_budget_at_last_break = line_condense_budget;
                 fs_at_last_break = line_max_fs;
                 let space_hwp = to_hwp(*width);
                 lw += space_hwp;
                 if !space_is_line_leading(text_chars, line_start_idx, *idx) {
-                    line_space_savings +=
-                        condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
+                    line_condense_budget +=
+                        condense_space_budget(to_hwp(*condense_base), condense_min_space);
                 }
             }
             BreakToken::Text {
@@ -3124,7 +3127,7 @@ fn fill_lines_before_cursor(
                     last_break_token_idx = Some(ti - 1);
                     last_break_char_idx = *start_idx;
                     width_at_last_break = lw;
-                    space_savings_at_last_break = line_space_savings;
+                    condense_budget_at_last_break = line_condense_budget;
                     fs_at_last_break = line_max_fs;
                 }
                 if *max_font_size > line_max_fs {
@@ -3141,7 +3144,7 @@ fn fill_lines_before_cursor(
                 let token_fits = text_token_fits_line_hwp(
                     lw,
                     FitWidthHwp(w_hwp),
-                    line_space_savings,
+                    line_condense_budget,
                     effective_width,
                     new_word_natural,
                 );
@@ -3157,14 +3160,14 @@ fn fill_lines_before_cursor(
                         last_break_token_idx = Some(ti);
                         last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
                         width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
-                        space_savings_at_last_break = line_space_savings;
+                        condense_budget_at_last_break = line_condense_budget;
                         fs_at_last_break = line_max_fs;
                     }
                 }
                 if !text_token_fits_line_hwp(
                     lw,
                     FitWidthHwp(w_hwp),
-                    line_space_savings,
+                    line_condense_budget,
                     effective_width,
                     new_word_natural,
                 ) {
@@ -3182,12 +3185,8 @@ fn fill_lines_before_cursor(
                             }
                             line_start_idx = next_start;
                             lw = recalc_width_hwp(tokens, ti, next_start);
-                            line_space_savings = recalc_space_savings_hwp(
-                                tokens,
-                                ti,
-                                next_start,
-                                condense_min_space,
-                            );
+                            line_condense_budget =
+                                recalc_condense_budget(tokens, ti, next_start, condense_min_space);
                             line_max_fs = *max_font_size;
                             is_first_line = false;
                             last_break_token_idx = None;
@@ -3206,7 +3205,7 @@ fn fill_lines_before_cursor(
                             if text_token_fits_line_hwp(
                                 lw,
                                 FitWidthHwp(w_hwp),
-                                line_space_savings,
+                                line_condense_budget,
                                 eff_w(false),
                                 new_word_natural_before_hwp(tokens, ti, line_start_idx),
                             ) {
@@ -3234,7 +3233,7 @@ fn fill_lines_before_cursor(
                         is_first_line = false;
                     }
                     lw = remaining_w;
-                    line_space_savings = 0;
+                    line_condense_budget = 0;
                     line_max_fs = remaining_fs;
                     last_break_token_idx = None;
                     continue;
@@ -3298,14 +3297,14 @@ fn recalc_width_hwp(tokens: &[BreakToken], current_token_idx: usize, new_line_st
     w
 }
 
-/// 줄 바꿈 지점 이후 공백 압축 가능 폭 재계산 (HWPUNIT)
-fn recalc_space_savings_hwp(
+/// 이월된 줄의 공백 압축 예산을 다시 모은다 (HWPUNIT의 100분의 1).
+fn recalc_condense_budget(
     tokens: &[BreakToken],
     current_token_idx: usize,
     new_line_start: usize,
     condense_min_space: u8,
-) -> i32 {
-    let mut w = 0i32;
+) -> i64 {
+    let mut budget = 0i64;
     // [#7418] 줄 맨 앞 공백(첫 글자 토큰 앞)은 줄지 않는다.
     let mut line_has_text = false;
     for t in &tokens[..current_token_idx] {
@@ -3313,7 +3312,7 @@ fn recalc_space_savings_hwp(
             BreakToken::Space {
                 idx, condense_base, ..
             } if *idx >= new_line_start && line_has_text => {
-                w += condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
+                budget += condense_space_budget(to_hwp(*condense_base), condense_min_space);
             }
             BreakToken::Text { start_idx, .. } if *start_idx >= new_line_start => {
                 line_has_text = true;
@@ -3321,7 +3320,7 @@ fn recalc_space_savings_hwp(
             _ => {}
         }
     }
-    w
+    budget
 }
 
 /// 뒤 ASCII 낱말이 한 줄을 넘을 때 끊는 자리 토큰 끝의 줄머리 금칙 묶음 앞에서 줄을 끝낼
