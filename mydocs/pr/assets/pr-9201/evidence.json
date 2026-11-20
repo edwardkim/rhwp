@@ -1,0 +1,145 @@
+{
+  "original_pr": 9201,
+  "original_head": "77cd2377e562349ff4b0d4fbbf7f9ecf64b90a47",
+  "checked_pr_body_sha256": "9bc51665d2377067c1eff47e643f03a786dd01cc4022495f85edc7558ea1b574",
+  "base": "0a437a7eefb19bfe81fc12866887e4548ea9554d",
+  "candidate": "25f9587840d09b08af2b37be178ab93379a7b9dc",
+  "pages": [
+    {
+      "document": "shape-caption",
+      "backend": "native",
+      "page": 1,
+      "raw": "100.0",
+      "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+      "independent_hancom_print_sha256": "c4443e4a6ece6d78d43a23dd68c44c87c715bdf4d70a44cb75977c46f1e983b7",
+      "candidate_png_sha256": "c4c120e0ab8ce4e568c8da81888f6747ab40aafcd394bbc184c0880b9839b9b2",
+      "print_png_sha256": "87f3dd80acf6c1a845fa1695b39173cfc9ea5916e01f8d99ac925a1be98437d6",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/native/shape-caption.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "comparison_pages": 1,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "99.90299",
+      "visual_accuracy_proxy_percent": "15.44477",
+      "overlay_metrics_sha256": "4da72728947ac78161ede473c4d92a682718d5965fe20bb3c772cf242777537d",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-native-001-review.png",
+        "sha256": "583a0d83a971c9a39e932c75876c5091f72d4f17a36d186a1f43930c4e651ea0",
+        "bytes": 36494
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-native-001-overlay.png",
+        "sha256": "c880f587c5e6c005b77b4cba71991e6430e194be5a00c602f3baed3c53b6ae1e",
+        "bytes": 25377
+      }
+    },
+    {
+      "document": "shape-caption",
+      "backend": "wasm",
+      "page": 1,
+      "raw": "100.0",
+      "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+      "independent_hancom_print_sha256": "c4443e4a6ece6d78d43a23dd68c44c87c715bdf4d70a44cb75977c46f1e983b7",
+      "candidate_png_sha256": "d4fb90eb0dc53a72f484d2018d62fc6c89b046641db38dd2e9af6f53f646bf2f",
+      "print_png_sha256": "87f3dd80acf6c1a845fa1695b39173cfc9ea5916e01f8d99ac925a1be98437d6",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/wasm/shape-caption.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "comparison_pages": 1,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "99.90501",
+      "visual_accuracy_proxy_percent": "15.46906",
+      "overlay_metrics_sha256": "a18d48e102b7b94e929e3fe8de9a699138681af2aa6e928f40a37c3200d0448d",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-wasm-001-review.png",
+        "sha256": "a3770f409ffab07c2684d2c82f36c59a8e3a7b05a2269285ce07bcc70064d442",
+        "bytes": 36117
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-wasm-001-overlay.png",
+        "sha256": "e3de0ec94491602e6dc6b0c9dbe6181d0ee758f1dfba1f00f006c1bd46e6a6fd",
+        "bytes": 25524
+      }
+    }
+  ],
+  "pending": [],
+  "additional": [
+    {
+      "path": "mydocs/pr/assets/pr-9201/caption-p001-enlarged.png",
+      "sha256": "f2c01d6cda4afa2dd362b27b4fced130341ec37f381f0ccff72427a9c271e815",
+      "bytes": 13137
+    }
+  ],
+  "crop_at_96_dpi": [
+    0,
+    0,
+    122,
+    165
+  ],
+  "crop_scale": 4,
+  "measurement": {
+    "dpi": 96,
+    "comparison_radius_px": 2,
+    "reference": "Hancom Office 2020 Print 1-up",
+    "backends": [
+      {
+        "backend": "native",
+        "total_pages": 1,
+        "minimum_raw": "100.00000",
+        "runtime_sha256": {
+          "native": "ce01a6c03c64e6326cac6abbe830c6de47cd092add4cc1075ce8986de5c88f48"
+        }
+      },
+      {
+        "backend": "wasm",
+        "total_pages": 1,
+        "minimum_raw": "100.00000",
+        "runtime_sha256": {
+          "native": "ce01a6c03c64e6326cac6abbe830c6de47cd092add4cc1075ce8986de5c88f48",
+          "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
+          "rhwp_bg.wasm": "4dbfe3e073bfe565f6efe5637786367ce38ccf0d9e05c281f8b174ba8c5fe0a8"
+        }
+      }
+    ]
+  },
+  "storage_result": {
+    "base_exit": 1,
+    "base_error": "렌더링 오류: 셀 문단 접근 실패: sec=0, para=0, ctrl=2, cell=65534, cellPara=0",
+    "base_log_sha256": "ae5fb858e3afc9812c0cab07835a8c0679a347590a71aa71483a0fbb04b2e466",
+    "candidate_exit": 0,
+    "candidate_log_sha256": "c1ace61bd38d7cded854b3e66079977184c869f45111f2feed718a50b28581fd",
+    "candidate_checks": {
+      "results": [
+        {
+          "method": "exportHwp",
+          "save": 1,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        },
+        {
+          "method": "exportHwp",
+          "save": 2,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        },
+        {
+          "method": "exportHwpx",
+          "save": 1,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        },
+        {
+          "method": "exportHwpx",
+          "save": 2,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        }
+      ],
+      "initialHit": 65534
+    }
+  }
+}

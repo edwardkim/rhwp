@@ -1,0 +1,55 @@
+# PR #9207 검토 — 한 줄 셀의 저장과 편집
+
+## 최종 판정
+
+**머지 보류 — 통합 후보의 정본 WASM 보호 두 쪽이 하한에 도달해야 한다.**
+한 줄 설정의 저장·편집과 정상 저장 줄 보존은 통합 후보에서 확인했다.
+[통합 검증](../assets/integration_open_prs_20261120/README.md).
+
+## 접수와 적용
+
+| 항목 | 확인 |
+| --- | --- |
+| 원 PR·작성자·리뷰어 | [#9207](https://github.com/edwardkim/rhwp/pull/9207) · `JinHo-von-Choi` · `jangster77` |
+| 원 head·관련 이슈 | `1c85b170b112dd2ff53e026bc76c73eac904dc3e`, 열린 PR, MERGEABLE, 65파일 · [#7940](https://github.com/edwardkim/rhwp/issues/7940) |
+| 적용 순서 | 네 번째. `bdb74fa17e3a49c034cb47763ebc7af98b289de6`부터 `10f1c07f8d157e23f8013f54aa916db07145f562`까지 7개 |
+| 고정 기준·제품 후보 | `0a437a7eefb19bfe81fc12866887e4548ea9554d` · `25f9587840d09b08af2b37be178ab93379a7b9dc` |
+
+## 원 기여와 메인터너 보정
+
+선택한 셀이 한 줄로 바뀌면 기존 줄 분할을 무효화하고, 편집한 긴 글자와 캐럿이
+셀의 실제 내용 폭 안에 들어가도록 한다. 저장된 한 줄과 일반 줄바꿈 셀이 각자의 속성을
+보존하며 이웃 셀에는 편집이 전파되지 않는다. 중첩 표 안쪽 셀을 지정할 수 없는 대화상자
+경로에서 해당 항목이 비활성화되는 조건을 유지했다.
+
+공용 셀 너비 구조의 변경을 #9201의 도형 캡션과 함께 적용했다. 보정 커밋
+`25f9587840d09b08af2b37be178ab93379a7b9dc`는 캡션의 방향별 너비를 전달하며
+한 줄 압축 적용은 셀의 선언이 소유한다. [도형 캡션 병행 검증](pr_9201_review.md) ·
+[한 줄 셀과 일반 줄 대조 검사](../../../tests/cases/issue_8947_squeeze_cell_stored_line.rs).
+
+## 검증과 시각 증적
+
+- 실제 Studio에서 긴 입력 앞뒤의 캐럿이 같은 줄에 남고 실행 취소·다시 실행을 통과했다.
+  HWP와 HWPX 각각 두 번 저장·재열기한 뒤 대상/이웃 값 `SQUEEZE/BREAK`를 독립 XML로
+  확인했다. 고정 기준의 같은 편집 재현은 `BREAK/BREAK`였다.
+  [재열기 UI](../assets/pr-9207/studio-production-cell.png) · [저장과 페이지 증적](../assets/pr-9207/evidence.json).
+- 결재 문서 2쪽의 fresh WASM 기준·후보 PNG가 바이트 단위로 같다. 후보 raw는
+  1쪽 98.30399%, 2쪽 97.32424%였다. 1쪽의 제목이 같은 셀의 한 줄에 있는 것을 독립 Print와
+  대조했다. 부대시설 사용료 원본의 `SQUEEZE` 15문단은 같은 셀·한 줄·원래 순서를 보존했다.
+  화학제품 103쪽, 한컴 사양서 71쪽과 시행령 74쪽도 각 출력 경로의 고정 기준 PNG와 동일했다.
+  [결재 문서 HWPX](../../../samples/issue8947/36481164-squeeze-title-cell.hwpx) ·
+  [한컴 2020 Print](../../../pdf/issue8947/36481164-squeeze-title-cell-2020.pdf) ·
+  [입력별 전체 TSV·대표 이미지 해시](../assets/pr-9207/evidence.json).
+
+| 페이지 | Native | fresh WASM |
+| --- | --- | --- |
+| 결재 문서 제목 1쪽 | [review](../assets/pr-9207/squeeze-native-001-review.png) · [overlay](../assets/pr-9207/squeeze-native-001-overlay.png) | [review](../assets/pr-9207/squeeze-wasm-001-review.png) · [overlay](../assets/pr-9207/squeeze-wasm-001-overlay.png) |
+| 시행령 19쪽 | [review](../assets/pr-9207/decree-native-019-review.png) · [overlay](../assets/pr-9207/decree-native-019-overlay.png) | [review](../assets/pr-9207/decree-wasm-019-review.png) · [overlay](../assets/pr-9207/decree-wasm-019-overlay.png) |
+
+## Merge 후 contributor PR comment 계획
+
+대상 셀의 한 줄 설정과 이웃 셀의 줄바꿈을 함께 보존한 기여에 감사한다. 메인터너 보정이
+필요했던 공용 너비 호출과 두 형식의 재열기 결과를 설명한다. 통합 CI·병합 SHA·devel
+반영 확인 뒤, 원 PR의 각 주장과 같은 문서·쪽의 review·overlay를 병합 SHA의 이미지로
+표시한다. 편람 130쪽은 Native 증거를 사용한다. 이미지 응답·해시와 게시 본문, #7940
+상태를 확인한다. [Visual Sweep 코멘트 지침](../../manual/verification/visual_sweep_guide.md#github-merge-comment).
