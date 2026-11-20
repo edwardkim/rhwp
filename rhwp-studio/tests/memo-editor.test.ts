@@ -4,7 +4,7 @@ import { requireMemoSuccess, memoTargetPath, validateMemoEdit } from '../src/cor
 
 test('메모 실패 JSON은 성공으로 처리하지 않는다', () => {
   requireMemoSuccess('{"ok":true}');
-  assert.throws(() => requireMemoSuccess('{"ok":false,"message":"실패"}'), /실패/);
+  assert.throws(() => requireMemoSuccess('{"ok":false,"code":"memo_overlap","message":"내부 메시지"}'), /이미 메모/);
   assert.throws(() => requireMemoSuccess('{}'));
   assert.throws(() => requireMemoSuccess('not json'));
 });
