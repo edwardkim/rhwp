@@ -1562,6 +1562,7 @@ def render_target(
     compat: str = "2022",
     page_workers: int = 4,
     rasterizer: str = "svg",
+    print_png_rgb555: bool = False,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1632,6 +1633,8 @@ def render_target(
         directory.mkdir(parents=True, exist_ok=True)
 
     environment_args = ["--compat", compat]
+    if print_png_rgb555:
+        environment_args.append("--print-png-rgb555")
     if font_environment is not None:
         font_environment = resolve_input_path(root, font_environment)
         environment_args.extend(["--font-environment", str(font_environment)])
@@ -1650,6 +1653,8 @@ def render_target(
     else:
         provenance["raster_backend"] = "svg-" + svg_rasterizer
     provenance["layout_generation"] = compat
+    if print_png_rgb555:
+        provenance["print_png_rgb555"] = True
     if exclusion_evidence is not None:
         provenance["linked_image_exclusions"] = exclusion_evidence
     if linked_images:
@@ -1711,7 +1716,8 @@ def render_target(
                     png_module.export_wasm_png(sys.modules[__name__], root, hwp, wasm_pkg, base,
                                               selected_pages, font_paths or [], font_environment, compat,
                                               dpi, page_workers, observed_font_receipt,
-                                              linked_images=linked_images or (exclusion_evidence.get("assets", []) if exclusion_evidence else None))
+                                              linked_images=linked_images or (exclusion_evidence.get("assets", []) if exclusion_evidence else None),
+                                              print_png_rgb555=print_png_rgb555)
                 else:
                     png_module.export_native_png(sys.modules[__name__], root, hwp, rhwp_bin, base,
                                                 selected_pages, font_paths or [], environment_args,
@@ -5929,6 +5935,8 @@ def main() -> None:
         "--compat", choices=("2022", "2024"), default="2022",
         help="기준 PDF의 실제 한컴 조판 세대. 2020 Print는 2022, 2024 Print는 2024로 명시하며 원문에서 자동 추정하지 않습니다.",
     )
+    parser.add_argument("--print-png-rgb555", action="store_true",
+                        help="독립 Print에서 확인된 RGB555 압축 전 변환을 직접 PNG 출력에 적용합니다.")
     parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
@@ -6054,6 +6062,8 @@ def main() -> None:
     else:
         selected = list(TARGETS.values())
     selected = dedupe_target_keys([*selected, *custom_targets])
+    if args.print_png_rgb555 and (args.rasterizer != "png" or len(selected) != 1):
+        parser.error("--print-png-rgb555는 직접 PNG 비교 대상 하나에 지정합니다.")
     if any(safe_target_key(target.key) == "required-handbook-8153-native" for target in selected):
         parser.error("required-handbook-8153-native은 필수 편람 검사의 예약 대상 이름입니다.")
     exclusions, evidence = (load_linked_image_exclusions(args.linked_image_exclusions)
@@ -6077,6 +6087,7 @@ def main() -> None:
             resume=args.resume, rhwp_bin=args.rhwp_bin, dpi=args.dpi,
             compat=args.compat, rasterizer=args.rasterizer, wasm_pkg=args.wasm_pkg,
             linked_images=image_records,
+            print_png_rgb555=args.print_png_rgb555,
         )
     re_review_targets: list[str] = []
     for target in selected:
@@ -6103,6 +6114,7 @@ def main() -> None:
             compat=args.compat,
             page_workers=args.page_workers,
             rasterizer=args.rasterizer,
+            print_png_rgb555=args.print_png_rgb555,
         )
         if not args.silhouette_only:
             options['silhouette_only'] = False

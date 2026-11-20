@@ -17,6 +17,7 @@ pub(crate) fn print_jpeg_payload(
     image: &ImageNode,
     bbox: BoundingBox,
     dpi: f64,
+    print_png_rgb555: bool,
 ) -> Option<ResolvedImagePayload> {
     if image.effect != ImageEffect::RealPic
         || image.brightness != 0
@@ -36,7 +37,8 @@ pub(crate) fn print_jpeg_payload(
     if super::png_sampling::pdf_source(data) {
         return None;
     }
-    match detect_image_mime_type(data) {
+    let mime = detect_image_mime_type(data);
+    match mime {
         "image/bmp" | "image/png" | "image/gif" => (),
         _ => return None,
     }
@@ -67,8 +69,10 @@ pub(crate) fn print_jpeg_payload(
         .floor()
         .clamp(35.0, 75.0) as u8;
     // 32비트 BI_RGB DIB도 Hancom PDF의 불투명 전송에서 RGB555를 거친다.
-    // 저장 형식이 같은 그림만 이 규칙을 공유하고, 기존 PNG·GIF 경로는 유지한다.
+    // 동일 원본의 한컴 2020·2022 Print에서 PNG 색상 경로가 달랐다.
+    // 조판 호환 모드와 별도로 선택된 장치만 기존 RGB555 팔레트 규칙을 적용한다.
     let expand = image.hancom2024_print_bitmap
+        || (print_png_rgb555 && mime == "image/png")
         || (data.starts_with(b"BM")
             && data.get(14..18) == Some(&40_u32.to_le_bytes())
             && data.get(28..34) == Some(&[32, 0, 0, 0, 0, 0]));

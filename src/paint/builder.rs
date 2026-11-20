@@ -45,6 +45,7 @@ pub struct LayerBuilder {
     image_frames: HashMap<NodeId, ImagePaintFrame>,
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
+    print_png_rgb555: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
     prior_print_solid_fill: bool,
     hangul2024_print: bool,
@@ -67,6 +68,7 @@ impl LayerBuilder {
             image_frames: HashMap::new(),
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
+            print_png_rgb555: false,
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
             hangul2024_print: false,
@@ -94,6 +96,11 @@ impl LayerBuilder {
     /// 그림 색의 출력 세대를 장치 픽셀 값과 독립적으로 전달한다.
     pub fn with_hancom2024_print_bitmap(mut self, enabled: bool) -> Self {
         self.hancom2024_print_bitmap = enabled && self.profile == RenderProfile::Print;
+        self
+    }
+
+    pub(crate) fn with_print_png_rgb555(mut self, enabled: bool) -> Self {
+        self.print_png_rgb555 = enabled;
         self
     }
 
@@ -602,6 +609,7 @@ impl LayerBuilder {
                                             &image,
                                             frame,
                                             self.layout_dpi,
+                                            self.print_png_rgb555,
                                         )
                                     })
                                     .flatten()

@@ -324,6 +324,8 @@ HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_pn
 - `--vlm-target <프리셋>` — claude / gpt4v-low / gpt4v-high(gpt4v) / gemini / qwen-vl(qwen) / llava
 - `--profile <프로필>` — **기본 `screen`**. 인쇄 비교에는 `--profile print`를 명시한다.
   Print에서는 편집 화면 안내문·미지정 그림 placeholder를 제외한다.
+- `--print-png-rgb555` — `--profile print`에서 JPEG로 전달하는 고색수 불투명 PNG에
+  한컴 Print 장치의 RGB555 변환을 적용한다. 독립 인쇄에서 이 변환을 확인한 경우 지정한다.
 - `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 
 > 네이티브 `gpu` 옵션과 `export-png-gpu`·`gpu-info` 명령은 제거되었습니다.

@@ -9,7 +9,7 @@ BATCH_PAGES = 64
 
 
 def prepare_target_plan(vs, root, out_root, targets, selected_pages, *, resume,
-                        rhwp_bin, dpi, compat, rasterizer, wasm_pkg, linked_images):
+                        rhwp_bin, dpi, compat, rasterizer, wasm_pkg, linked_images, print_png_rgb555=False):
     """다중 대상의 시작 전·중단 후 목록과 입력을 고정한다."""
     plan = {
         'version': 1,
@@ -24,6 +24,7 @@ def prepare_target_plan(vs, root, out_root, targets, selected_pages, *, resume,
         'binary': vs.rhwp_binary_identifier(root, rhwp_bin),
         'dpi': dpi,
         'compat': compat,
+        'print_png_rgb555': print_png_rgb555,
         'rasterizer': rasterizer,
         'wasm': vs.wasm_package_provenance(root, wasm_pkg, rasterizer) if wasm_pkg else None,
         'linked_images': linked_images,
@@ -55,6 +56,7 @@ def render_silhouette_resumable(vs, root, target, out_root, rhwp_bin, dpi,
         'dpi': dpi,
         'pixel_diff_threshold': pixel_diff_threshold,
         'compat': kwargs.get('compat', '2022'),
+        'print_png_rgb555': kwargs.get('print_png_rgb555', False),
         'rasterizer': kwargs.get('rasterizer', 'svg'),
         'selection': selected_pages,
         'batch_pages': BATCH_PAGES,

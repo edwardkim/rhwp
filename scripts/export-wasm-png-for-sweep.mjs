@@ -206,13 +206,14 @@ async function main() {
         const page = await browser.newPage();
         await page.goto(`http://127.0.0.1:${server.address().port}`);
         const canvasContext = await page.$eval('#page', preparePrintReadbackCanvas);
-        const info = await page.evaluate(async ({compat, environmentJson, fonts, observedFontFallbacks, linkedImages, sourcePassword}) => {
+        const info = await page.evaluate(async ({compat, printPngRgb555, environmentJson, fonts, observedFontFallbacks, linkedImages, sourcePassword}) => {
           const module = await import('/rhwp.js');
           await module.default({module_or_path: '/rhwp_bg.wasm'});
           const {openSweepDocument} = await import('/font-supply.js');
           const doc = openSweepDocument(module, new Uint8Array(await (await fetch('/source')).arrayBuffer()), sourcePassword);
           if (typeof doc.renderPageToCanvasFilteredWithProfile !== 'function') throw Error('Print Canvas API가 없는 이전 WASM입니다.');
           doc.setHangul2024Compat(compat === '2024');
+          if (printPngRgb555) doc.setPrintPngRgb555(true);
           if (linkedImages.length) {
             if (typeof doc.getExternalImageBasenames !== 'function' || typeof doc.injectExternalImage !== 'function') {
               throw Error('연결 그림 주입 API가 없는 WASM입니다.');
@@ -276,7 +277,8 @@ async function main() {
           doc.selectCanvasMetrics(false);
           const canvasMetricsActive = doc.canvasMetricsActive();
           return {pageCount: doc.pageCount(), version: module.version(), nativePuaFonts, hftOtfFonts, observedFonts, fontEnvironment, screenCanvasMetricsActive, canvasMetricsActive};
-        }, {compat: settings.compat, environmentJson, fonts, observedFontFallbacks, linkedImages, sourcePassword});
+        }, {compat: settings.compat, printPngRgb555: settings.printPngRgb555 === true,
+            environmentJson, fonts, observedFontFallbacks, linkedImages, sourcePassword});
         const signature = JSON.stringify(info.fontEnvironment);
         if (environmentSignature !== undefined && environmentSignature !== signature) throw Error('WASM 작업자의 실제 글꼴 환경이 다릅니다.');
         environmentSignature = signature;
@@ -514,6 +516,7 @@ async function main() {
     if (pageRecords.length !== expected.length || new Set(pageRecords.map(p => p.page)).size !== expected.length) throw Error('WASM PNG 쪽 누락·중복');
     writeFileSync(join(output, 'wasm-export-complete.json'), JSON.stringify({
       pageCount, layoutGeneration: settings.compat, comparisonProfile: 'print', rasterBackend: 'wasm-canvas2d', protocolTimeoutMs: protocolTimeout,
+      printPngRgb555: settings.printPngRgb555 === true,
       pngBackground: 'opaque-white-print-paper',
       captureCanvasPolicy: 'fresh-per-page-after-font-and-image-preparation',
       fontEnvironment,

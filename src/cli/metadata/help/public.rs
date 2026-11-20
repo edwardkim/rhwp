@@ -61,6 +61,7 @@ pub(super) fn print() {
     println!("      --json                 stdout에 PNG 산출물·전체 쪽수 JSON만 출력");
     println!("      --metadata-only        PNG 없이 전체 쪽수 JSON만 출력");
     println!("      --render-tree-output <폴더> 같은 문서의 선택 쪽 render tree를 함께 저장");
+    println!("      --print-png-rgb555     Print의 불투명 PNG 압축에 RGB555 장치색을 적용");
     println!("      --font-environment <JSON> 조판/출력의 명시적 글꼴 환경 적용");
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       선택 쪽 (0부터 시작, 여러 번 지정 가능)");

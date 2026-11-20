@@ -455,6 +455,7 @@ impl DocumentCore {
             debug_overlay: false,
             respect_vpos_reset: false,
             hangul2024_compat: false,
+            print_png_rgb555: false,
             measured_tables: Vec::new(),
             dirty_sections: storage
                 .collect(std::iter::repeat_n(true, sec_count))

@@ -189,6 +189,12 @@ web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중
 `--resume`으로 섞을 수 없다. 자세한 세대 근거는
 [CLI 조판 세대](../cli_commands.md#조판-세대---compat)를 따른다.
 
+한컴 Print PDF의 이미지 자원에서 고색수 불투명 PNG에 RGB555가 적용됐음을
+확인한 경우, 직접 PNG 비교 대상 하나에 `--print-png-rgb555`를 지정한다.
+예를 들어 가상융합산업 진흥법 시행령 19쪽은 한컴 2022 Print의 JPEG에서 이 변환을
+확인했다. 같은 원본의 한컴 2020 Print는 원래 RGB를 사용한다. 두 경우 모두 조판은
+`--compat 2022`를 사용한다. Native와 WASM은 같은 값을 사용하며 비교 실행 조건에 기록한다.
+
 ### PDF 래스터의 물리 DPI와 출력 버퍼
 
 PDF 기준 PNG는 용지의 point 좌표에 양 축 동일한 `dpi/72` 행렬을 적용한다.

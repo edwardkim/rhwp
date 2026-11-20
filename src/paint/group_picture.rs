@@ -58,7 +58,7 @@ pub(super) fn project(
     original.crop = None;
     original.original_size_hu = None;
     original.original_size = None;
-    let payload = print_jpeg_payload(&original, full, dpi).or_else(|| {
+    let payload = print_jpeg_payload(&original, full, dpi, false).or_else(|| {
         if original
             .data
             .as_deref()

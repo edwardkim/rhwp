@@ -28,11 +28,11 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
             command["flags"] = serde_json::json!([
                 "--page", "-p", "--output", "-o", "--font-path", "--profile", "--compat",
                 "--font-environment", "--dpi", "--scale", "--json", "--metadata-only",
-                "--render-tree-output"
+                "--render-tree-output", "--print-png-rgb555"
             ]);
             command["recordFields"] = serde_json::json!([
                 "schemaVersion", "source", "backend", "comparisonProfile", "layoutGeneration",
-                "outputDir", "pageCount", "renderedCount", "pages"
+                "printPngRgb555", "outputDir", "pageCount", "renderedCount", "pages"
             ]);
             command
         },
