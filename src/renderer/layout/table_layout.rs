@@ -967,11 +967,7 @@ fn rebase_nested_cell_top_residue_line(node: &mut RenderNode) {
 ///
 /// This operates only on direct source siblings.  It never grows the clip:
 /// prior-page text remains hidden and a future-page tail cannot be exposed.
-fn repair_clipped_cell_text_table_seam(
-    tree: &PageLayoutContext,
-    node: &mut RenderNode,
-    suppress_bottom_text_residue: bool,
-) {
+fn repair_clipped_cell_text_table_seam(node: &mut RenderNode, suppress_bottom_text_residue: bool) {
     let is_clipped_cell = matches!(
         &node.node_type,
         RenderNodeType::TableCell(TableCellNode { clip: true, .. })
@@ -1022,12 +1018,7 @@ fn repair_clipped_cell_text_table_seam(
             // The table has no paintable content in this fragment.  Its title
             // belongs to the next fragment with the table rather than to this
             // page's last line.
-            let hide_from = if tree.owns_saved_fragment_text_line(node.children[title_index].id) {
-                table_index
-            } else {
-                title_index
-            };
-            for child in &mut node.children[hide_from..=table_index] {
+            for child in &mut node.children[title_index..=table_index] {
                 child.visible = false;
             }
             continue;
@@ -1368,7 +1359,7 @@ fn repair_clipped_nested_table_fragment_frame(
 
     let clip_top = node.bbox.y;
     let clip_bottom = node.bbox.y + node.bbox.height;
-    repair_clipped_cell_text_table_seam(tree, node, suppress_bottom_text_residue);
+    repair_clipped_cell_text_table_seam(node, suppress_bottom_text_residue);
     suppress_future_nested_table_border_residue(node, clip_bottom);
     expand_page_fragment_clip_to_own_text_lines(node, tree.page_size().1, false);
     for table_index in 0..node.children.len() {

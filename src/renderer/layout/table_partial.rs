@@ -2979,6 +2979,9 @@ impl LayoutEngine {
                 (None, None) => (0, cell.paragraphs.len()),
             };
             let reflow_block_flow = self.reflow_block_cell_flow_in_cell(cell, table, styles);
+            let carried_child_host = cut_units.and_then(|(start, end)| {
+                self.stored_carried_child_host(table, cell, start, end, styles)
+            });
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
                 let no_overlap_square_stack =
@@ -4734,6 +4737,11 @@ impl LayoutEngine {
                                 cell_node.children.push(eq_node);
                             }
                             Control::Table(nested_table) => {
+                                // 현재 컷이 글줄에서 끝나면 자식 표는 다음 조각이 배치한다.
+                                // 셀 clip은 아직 선택되지 않은 자식의 쪽 소속을 정하지 않는다.
+                                if carried_child_host == Some(cp_idx) {
+                                    continue;
+                                }
                                 let frame_owner = composed
                                     .frame_owns_inline_table(ctrl_idx)
                                     .then(|| {
@@ -6079,19 +6087,6 @@ impl LayoutEngine {
             // 각주 참조 번호
             for para in &cell.paragraphs {
                 self.add_footnote_superscripts(tree, &mut cell_node, para, styles);
-            }
-
-            if let Some((paragraph, line)) = cut_units.and_then(|(start, end)| {
-                self.stored_text_before_carried_child(table, cell, start, end, styles)
-            }) {
-                for node in &cell_node.children {
-                    if matches!(&node.node_type, RenderNodeType::TextLine(text)
-                        if text.para_index == Some(paragraph)
-                            && text.line_index == Some(line as u32))
-                    {
-                        tree.keep_saved_fragment_text_line(node.id);
-                    }
-                }
             }
 
             // [#4159] `end_cut=[]`인 종료 유닛 창은 이후 continuation이 없다. 재귀

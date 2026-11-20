@@ -7,16 +7,15 @@ use crate::model::table::{Cell, Table};
 use super::{CellUnit, LayoutEngine, NestedTableCut, ResolvedStyleSet};
 
 impl LayoutEngine {
-    /// 같은 문단의 저장 글줄이 먼저 수용되고 자식 표가 다음 컷에 남은 경계.
-    /// 그림 쪽 여백을 보고 글줄도 자식과 함께 넘겼다고 다시 판정하지 않는다.
-    pub(in crate::renderer::layout) fn stored_text_before_carried_child(
+    /// 저장 글줄 뒤의 단일 자식 표가 아직 현재 컷에 들어오지 않은 호스트 문단.
+    pub(in crate::renderer::layout) fn stored_carried_child_host(
         &self,
         table: &Table,
         cell: &Cell,
         start: usize,
         end: usize,
         styles: &ResolvedStyleSet,
-    ) -> Option<(usize, usize)> {
+    ) -> Option<usize> {
         let profile = self.profile.get();
         if start >= end
             || cell.dirty_flag
@@ -39,12 +38,21 @@ impl LayoutEngine {
             return None;
         }
         let paragraph = cell.paragraphs.get(previous.para_idx)?;
-        let line_index = previous.vis_end - 1;
-        let line = paragraph.line_segs.get(line_index)?;
+        let line = paragraph.line_segs.get(previous.vis_end - 1)?;
         (!paragraph.stored_text_partition_is_dirty()
             && !paragraph.cell_format_vpos_dirty
-            && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
-            .then_some((previous.para_idx, line_index))
+            && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && paragraph
+                .controls
+                .iter()
+                .filter(|control| matches!(control, Control::Table(_)))
+                .count()
+                == 1
+            && !units[start..end].iter().any(|unit| {
+                unit.para_idx == previous.para_idx
+                    && (unit.nested_row.is_some() || unit.mixed_nested_fragment)
+            }))
+        .then_some(previous.para_idx)
     }
 
     /// 현재 조각의 첫 자식이 닫히는 좌표는 그 직후 저장 줄로 확인한다.

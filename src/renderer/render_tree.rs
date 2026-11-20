@@ -2192,8 +2192,6 @@ pub struct PageLayoutContext {
     horizontal_shaping_sidecars: HorizontalShapingPageSidecars,
     /// Q4-D2 bounded HWP5 vertical table-cell owners. Paint publication is D3-only.
     vertical_shaping_sidecars: VerticalShapingPageSidecars,
-    /// 자식 표보다 먼저 현재 쪽 컷에 들어온 저장 글줄의 노드 ID.
-    saved_fragment_text_lines: std::collections::HashSet<NodeId>,
 }
 
 impl PageLayoutContext {
@@ -2206,7 +2204,6 @@ impl PageLayoutContext {
             page_bbox: BoundingBox::new(0.0, 0.0, width, height),
             horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
             vertical_shaping_sidecars: VerticalShapingPageSidecars::default(),
-            saved_fragment_text_lines: std::collections::HashSet::new(),
         }
     }
 
@@ -2223,14 +2220,6 @@ impl PageLayoutContext {
     /// 페이지 폭/높이
     pub fn page_size(&self) -> (f64, f64) {
         (self.page_bbox.width, self.page_bbox.height)
-    }
-
-    pub(crate) fn keep_saved_fragment_text_line(&mut self, line: NodeId) {
-        self.saved_fragment_text_lines.insert(line);
-    }
-
-    pub(crate) fn owns_saved_fragment_text_line(&self, line: NodeId) -> bool {
-        self.saved_fragment_text_lines.contains(&line)
     }
 
     /// `CellContext` 를 InlineShapeKey 의 cell_path 부분으로 변환.
