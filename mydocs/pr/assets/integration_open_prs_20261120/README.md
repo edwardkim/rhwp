@@ -53,3 +53,7 @@ Google 서명과 배포 SHA-256을 확인한 Chrome 157.0.8103.79에서 두 쪽�
 확인했다. 소스 보정 후 Native·fresh WASM에서 시행령 각 74쪽과 시행규칙 각 6쪽을 같은 기준
 PDF 및 보호값에 대조했다. fresh WASM은 Mac에서 locked wrapper의 `--no-opt`로 빌드했다.
 [원인과 독립 대조](maintainer-cause.md) · [전쪽 결과와 생산물 해시](maintainer-repair/verification.json).
+
+보정한 제품 소스에서 집중 회귀 10건과 Visual Sweep Python 검사 267건이 통과했다.
+필수 편람 HWPX Native 검사도 383쪽 전부 통과했다. 공식 표시 최저값은 99.97%이며
+페이지별 보호값 하락은 0쪽이다.

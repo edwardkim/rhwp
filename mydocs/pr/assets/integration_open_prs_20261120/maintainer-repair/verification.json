@@ -153,5 +153,23 @@
     "decree wasm page 19",
     "issue7905 wasm page 1",
     "issue7905 native page 1"
-  ]
+  ],
+  "validation": {
+    "focused_nextest": {
+      "passed": 10,
+      "selected_outside": 340,
+      "duration_seconds": 2.006
+    },
+    "visual_sweep_python_tests": {
+      "passed": 267
+    },
+    "handbook_native": {
+      "status": "passed",
+      "pages": 383,
+      "minimum_display": "99.97",
+      "regressions": 0,
+      "seconds": 355.66,
+      "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+    }
+  }
 }
