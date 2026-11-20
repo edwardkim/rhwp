@@ -8,6 +8,7 @@
 //!   오른쪽 단 본문은 다음 쪽으로 가고, 남은 각주와 뒤 번호 각주는 다음 쪽 오른쪽 단에 잇는다.
 //!
 //! - `overflow-e2`·`overflow-r2`: 2단. 1단 각주(가1~가345)가 단을 넘치고, 단 나눔 뒤 2단 문단에 각주 하나.
+//! - `overflow-e2-tail`: 뒤 문단 없이 1단 각주만 넘치는 2단.
 //! - `overflow-e2-flow`·`overflow-r2-flow`: 같은 각주 뒤에 단 나눔 없이 긴 본문(흐름1~흐름300).
 //! - `overflow-r3u`: 너비가 다른 3단 오른쪽 단 아래. 1단 각주(나1~)가 넘치고 2·3단 문단에 각주 하나씩.
 #![cfg(not(target_arch = "wasm32"))]
@@ -107,6 +108,15 @@ fn each_column_overflow_continues_in_next_column_on_same_page() {
     assert!(first
         .body_at(412.0)
         .is_some_and(|body| body.starts_with("2단")));
+
+    // 뒤 문단이 없어도 같은 쪽 2단에 잇는다.
+    let tail = open("overflow-e2-tail.hwp");
+    assert_eq!(tail.page_count(), 1);
+    let (rest, _) = page(&tail, 0).notes_at(412.0).expect("2단 각주 영역");
+    assert!(
+        rest.starts_with("가305") && rest.ends_with("가345"),
+        "{rest}"
+    );
 }
 
 #[test]
