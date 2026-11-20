@@ -54,6 +54,10 @@
 | 결재 문서 2쪽 | [review](../assets/pr-9207/hancom-2024/squeeze-native-002-review.png) · [overlay](../assets/pr-9207/hancom-2024/squeeze-native-002-overlay.png) | [review](../assets/pr-9207/hancom-2024/squeeze-wasm-002-review.png) · [overlay](../assets/pr-9207/hancom-2024/squeeze-wasm-002-overlay.png) |
 | 감면기준 1쪽 | [review](../assets/pr-9207/hancom-2024/para-squeeze-native-001-review.png) · [overlay](../assets/pr-9207/hancom-2024/para-squeeze-native-001-overlay.png) | [review](../assets/pr-9207/hancom-2024/para-squeeze-wasm-001-review.png) · [overlay](../assets/pr-9207/hancom-2024/para-squeeze-wasm-001-overlay.png) |
 
+최종 Studio의 실제 브라우저에서 HWP·HWPX 각각 두 번 저장하고 다시 열었다. 네 결과 모두
+대상 셀과 이웃 셀의 한 줄 속성 차이와 두 셀의 텍스트를 유지했고, 캐럿은 대상의 같은 줄에 있었다.
+[최종 제품 SHA와 실행 결과](../assets/integration_open_prs_20261120/final-product-consumers.json).
+
 ## Merge 후 contributor PR comment 계획
 
 대상 셀의 한 줄 설정과 이웃 셀의 줄바꿈을 함께 보존한 기여에 감사한다. 메인터너 보정이

@@ -33,6 +33,11 @@ Studio의 입력·표시 pt와 WASM 저장 원시값을 구분한다. 실제 사
 - 집중 기능 검사와 원래 2,822개 Studio 테스트가 통과했다. 원시값은 HWPX XML과 브라우저
   표시값을 함께 확인했다. 이 동작에는 한컴 PDF 그림을 대조 기준으로 사용하지 않았다.
 
+최종 Studio의 실제 브라우저에서 본문에서 표 셀로 문단 모양을 복사했다. 대상 셀의 원시 간격은
+3000·2000 HWPUNIT, 이웃 셀은 800·400 HWPUNIT를 유지했다. 실행 취소·재실행과 HWP·HWPX
+저장 결과도 확인했다.
+[최종 제품 SHA와 실행 결과](../assets/integration_open_prs_20261120/final-product-consumers.json).
+
 ## Merge 후 contributor PR comment 계획
 
 문단 간격 저장 단위를 보존한 기여에 감사한다. 두 형식의 재열기, 셀 서식 복사, 구 WASM의

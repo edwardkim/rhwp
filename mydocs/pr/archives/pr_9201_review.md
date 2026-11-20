@@ -49,6 +49,10 @@
 | --- | --- | --- |
 | 합성 사각형의 캡션 1쪽 | [review](../assets/pr-9201/shape-caption-native-001-review.png) · [overlay](../assets/pr-9201/shape-caption-native-001-overlay.png) | [review](../assets/pr-9201/shape-caption-wasm-001-review.png) · [overlay](../assets/pr-9201/shape-caption-wasm-001-overlay.png) |
 
+최종 최적화 WASM의 Node 소비 경로에서 HWP·HWPX 각각 두 번 저장하고 다시 읽었다.
+네 저장 모두 캡션 문구와 편집 주소 `65534`를 보존했다.
+[최종 제품 SHA와 실행 결과](../assets/integration_open_prs_20261120/final-product-consumers.json).
+
 ## Merge 후 contributor PR comment 계획
 
 캡션 주소를 통일한 기여에 감사하고, 한 줄 셀 PR과 통합할 때 캡션 너비 호출을 맞춘
