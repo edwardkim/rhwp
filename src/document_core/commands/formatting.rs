@@ -2836,6 +2836,19 @@ impl DocumentCore {
         for source in &sources {
             self.page_hide_source_paragraph_mut(section_idx, source)?
                 .remove_control(source.control);
+            // 본문 문단의 조판 부호를 빼면 활성 누름틀의 뿌리 컨트롤 번호도 당긴다.
+            if source.path.is_empty() {
+                Self::remap_active_field_root_control(
+                    &mut self.active_field,
+                    section_idx,
+                    source.para,
+                    |index| match index.cmp(&source.control) {
+                        std::cmp::Ordering::Less => Some(index),
+                        std::cmp::Ordering::Equal => None,
+                        std::cmp::Ordering::Greater => Some(index - 1),
+                    },
+                );
+            }
             // 캐럿 셀 경로가 지난 문단에서 앞 컨트롤이 빠지면 경로의 표 번호를 당긴다.
             if source.para == para_idx {
                 for k in 0..cell_path.len() {

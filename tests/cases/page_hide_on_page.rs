@@ -220,3 +220,33 @@ fn page_hide_at_the_first_character_of_a_page_stays_on_that_page() {
         assert!(header_drawn(&again, 0));
     }
 }
+
+/// 같은 문단의 감추기 조판 부호를 넣거나 빼거나 옮겨도 활성 누름틀 끝 입력은 그 누름틀에 든다.
+#[test]
+fn page_hide_on_page_keeps_typing_in_the_active_field() {
+    for (before, hide) in [(false, true), (true, false), (true, true)] {
+        let mut doc = HwpDocument::create_empty();
+        doc.create_blank_document_native().unwrap();
+        doc.insert_text_native(0, 0, 0, "앞  뒤").unwrap();
+        doc.insert_click_here_field_at(0, 0, 2, "안내문", "메모", "남을 필드", true)
+            .unwrap();
+        doc.set_field_value_by_name("남을 필드", "AB").unwrap();
+        if before {
+            doc.set_page_hide_on_page_native(0, 0, &[], 0, HIDE)
+                .unwrap();
+        }
+        let fields: Vec<serde_json::Value> =
+            serde_json::from_str(&doc.get_field_list_json()).unwrap();
+        let end = fields[0]["endCharIdx"].as_u64().unwrap() as usize;
+        assert!(doc.set_active_field(0, 0, end));
+        let ph = PageHide {
+            hide_header: hide,
+            ..Default::default()
+        };
+        doc.set_page_hide_on_page_native(0, 0, &[], 0, ph).unwrap();
+        doc.insert_text_native(0, 0, end, "C").unwrap();
+        let field: serde_json::Value =
+            serde_json::from_str(&doc.get_field_value_by_name("남을 필드").unwrap()).unwrap();
+        assert_eq!(field["value"], "ABC", "앞 감추기 {before}, 감추기 {hide}");
+    }
+}
