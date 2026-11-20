@@ -26,11 +26,14 @@ export interface MemoAnchor {
 export function touchesMemoAnchor(
   anchors: readonly MemoAnchor[], target: HyperlinkTarget, start: number, end: number,
 ): boolean {
-  return anchors.some(memo => memo.sectionIndex === target.section
-    && memo.paraIndex === target.para
+  return anchors.some(memo => memoAnchorMatchesTarget(memo, target)
     && memo.startCharIdx !== null && memo.endCharIdx !== null
-    && memo.startCharIdx <= end && start <= memo.endCharIdx
-    && sameCellPath(memo.path ?? [], target.cellPath));
+    && memo.startCharIdx <= end && start <= memo.endCharIdx);
+}
+
+export function memoAnchorMatchesTarget(memo: MemoAnchor, target: HyperlinkTarget): boolean {
+  return memo.sectionIndex === target.section && memo.paraIndex === target.para
+    && sameCellPath(memo.path ?? [], target.cellPath);
 }
 
 function sameCellPath(path: readonly MemoPathEntry[], cellPath: readonly [number, number, number][]): boolean {

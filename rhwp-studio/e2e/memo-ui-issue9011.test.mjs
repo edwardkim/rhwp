@@ -52,8 +52,15 @@ async function saveAndReopen(page, format, pass) {
   const path = resolve(output, name);
   writeFileSync(path, bytes);
   await (await page.$('#file-input')).uploadFile(path);
-  await page.waitForFunction(name => window.__wasm.fileName === name && !!window.__inputHandler, {}, name);
-  await page.waitForFunction(() => !window.__documentState.isDirty());
+  await page.waitForFunction(name => {
+    const fallback = [...document.querySelectorAll('.modal-overlay .dialog-footer button')]
+      .find(button => ['대체 글꼴로 보기', 'View with substitute fonts'].includes(button.textContent));
+    if (fallback) fallback.click();
+    return window.__wasm.fileName === name && !!window.__inputHandler
+      && document.querySelector('#file-input').value === ''
+      && !document.documentElement.classList.contains('rhwp-busy')
+      && !window.__documentState.isDirty();
+  }, {}, name);
 }
 
 await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
@@ -225,6 +232,45 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
       assert.equal(await page.$eval('#memo-text', el => el.value), memo.text);
       assert.match(await page.$eval('select[aria-label="문서의 메모"]', el => el.selectedOptions[0].textContent), /표 셀 2/);
       await close(page);
+      console.log(`  ${format.toUpperCase()} ${pass}회차: 본문과 두 셀의 메모 및 대상 위치 보존`);
     }
   }
+
+  await createNewDocument(page);
+  const grouped = await page.evaluate(async () => {
+    const wasm = window.__wasm;
+    const boxes = [];
+    for (const [i, text] of ['첫째 글상자', '둘째 글상자'].entries()) {
+      const box = wasm.createShapeControl({
+        sectionIdx: 0, paraIdx: 0, charOffset: i, shapeType: 'textbox',
+        width: 10000, height: 5000, horzOffset: i * 12000, vertOffset: 0,
+      });
+      if (!box.ok) throw new Error('글상자 생성 실패');
+      wasm.insertTextInCell(0, box.paraIdx, box.controlIdx, 0, 0, 0, text);
+      boxes.push({ paraIdx: box.paraIdx, controlIdx: box.controlIdx });
+    }
+    const group = wasm.groupShapes(0, boxes);
+    if (!group.ok) throw new Error('글상자 묶기 실패');
+    const target = { section: 0, para: group.paraIdx, cellPath: [[group.controlIdx, 1, 0]] };
+    if (wasm.getHyperlinkContext(target).text !== '둘째 글상자') throw new Error('묶음 내부 주소가 잘못되었습니다.');
+    await window.__canvasView.loadDocument();
+    return group;
+  });
+  const groupedBox = {
+    sectionIndex: 0, paragraphIndex: 0, charOffset: 0, isTextBox: true,
+    parentParaIndex: grouped.paraIdx, controlIndex: grouped.controlIdx, cellIndex: 1, cellParaIndex: 0,
+    cellPath: [{ controlIndex: grouped.controlIdx, cellIndex: 1, cellParaIndex: 0 }],
+  };
+  await position(groupedBox);
+  const hwpBytes = () => page.evaluate(() => Array.from(window.__wasm.exportHwp()));
+  const before = await hwpBytes();
+  await open(page);
+  await fill(page, '묶음 안에 남아서는 안 되는 메모');
+  await page.click('.dialog-btn-primary');
+  assert.match(await page.$eval('[data-memo-dialog] [role="alert"]', el => el.textContent), /이 위치에는/);
+  assert.deepEqual(await hwpBytes(), before, '거부된 메모는 저장 바이트를 바꾸지 않는다');
+  assert.deepEqual(await state(page), []);
+  assert.equal(await dirty(page), false);
+  await close(page);
+  console.log('  묶음 안 글상자: 오류 표시, 저장 바이트·dirty 유지');
 });
