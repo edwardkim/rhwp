@@ -28,7 +28,10 @@ code head의 기존 CI·증적 재사용은 그 조건을 확인해 기록한다
 전체 TSV를 기록한다. 일반 Visual Sweep은 이 검사를 자동으로 반복하지 않는다.
 편람 gate와 별도로, [정본 보호 TSV 전체의 특별 하락 금지 검증](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)은
 통합 담당 collaborator·maintainer만 수행한다. 일반 기여자에게 비공개 원본 OTF 설치나 이 특별 검증의 재현을 요구하지 않는다.
-일반 시각 검증의 90%·쪽수·내용 보존과 페이지별 98% px 회귀 조건은 계속 적용한다.
+일반 시각 검증의 자동 90% 하한과 쪽수·내용 보존을 확인한다. 제출 전 조판·렌더링 차이는
+Native·fresh WASM 양쪽 모두 전쪽 98% 이상으로 보정하고, 가능한 경우 100%까지 개선한다.
+동일한 글꼴을 확보해 적용할 수 없어 그 차이만 남은 쪽의 예외와 별도의 px 회귀 자격은
+[페이지별 제출 판정](../verification/visual_verification_governance.md#페이지별-tsv와-pr-재검토-필수-조건)을 따른다.
 
 조판 영향 PR은 편람 검사와 함께 **기여자 공통 보호 검사**도 제출 전 최종 head에서 실행한다.
 공개 웹폰트로 재현을 확인한 4개 문서의 Native/fresh WASM을 한 번에 검사하며,
