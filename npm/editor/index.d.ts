@@ -299,6 +299,61 @@ export interface RhwpDocumentAgentError extends Error {
   recovered?: boolean;
 }
 
+export type PasswordSaveFormat = 'hwp' | 'hwpx';
+export type SaveProtection = 'plain' | 'password-protected';
+
+export interface SaveProtectionState {
+  schemaVersion: 1;
+  persistedProtection: SaveProtection;
+  requiresPasswordForSave: boolean;
+  loadedFormat: 'hwp3' | 'hwp5' | 'hwpx';
+  documentEpoch: number;
+  changeSeq: number;
+}
+
+export interface PasswordProtectedDocumentRequest {
+  schemaVersion: 1;
+  format: PasswordSaveFormat;
+  password: string;
+  expectedDocumentEpoch: number;
+  expectedChangeSeq: number;
+}
+
+export interface PasswordSaveContentLossReport {
+  schemaVersion: 1;
+  outputFormat: PasswordSaveFormat;
+  count: number;
+  losses: Array<{
+    code: 'binaryContentEmptied' | 'controlOmitted' | 'metadataReduced';
+    subject: 'binaryData' | 'control' | 'fieldParameters';
+    path: string;
+    reason: 'resourceReadFailedOrLimitExceeded' | 'storedCompressionMismatch'
+      | 'rawPassthroughUnavailable' | 'unsupportedByOutputFormat';
+    resourceId?: number;
+  }>;
+}
+
+export interface HostSaveAcknowledgment {
+  schemaVersion: 1;
+  exportId: string;
+  documentEpoch: number;
+  changeSeq: number;
+  format: PasswordSaveFormat;
+  protection: 'password-protected';
+  fileName?: string;
+}
+
+export interface PasswordProtectedDocumentExport extends Omit<HostSaveAcknowledgment, 'fileName'> {
+  bytes: Uint8Array;
+  byteCount: number;
+  contentLoss: PasswordSaveContentLossReport;
+}
+
+export interface HostSaveResult {
+  ok: true;
+  wasDirty: boolean;
+}
+
 export declare class RhwpEditor {
   private constructor();
   /** HWP 파일을 로드합니다 */
@@ -328,6 +383,10 @@ export declare class RhwpEditor {
    * 스튜디오가 notify-saved-v1 capability를 광고하지 않으면 요청 없이 실패합니다.
    */
   notifySaved(fileName?: string): Promise<{ ok: true; wasDirty: boolean }>;
+  getSaveProtectionState(): Promise<SaveProtectionState>;
+  exportPasswordProtectedDocument(request: PasswordProtectedDocumentRequest): Promise<PasswordProtectedDocumentExport>;
+  /** Acknowledge this exact export only after the host's durable write succeeds. */
+  acknowledgeHostSave(request: HostSaveAcknowledgment): Promise<HostSaveResult>;
   /** 현재 문서의 에이전트 명령 fence와 SHA-256 상태 */
   getDocumentState(): Promise<RhwpDocumentStateV1>;
   /** 현재 캐럿/선택의 exact body paragraph 컨텍스트 */

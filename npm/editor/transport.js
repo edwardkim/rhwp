@@ -1,3 +1,9 @@
+import {
+  PASSWORD_SAVE_CAPABILITY,
+  PasswordSaveError,
+  isPasswordSaveMethod,
+} from './password-save-contract.js';
+
 const PROTOCOL_VERSION = 1;
 const CAPABILITIES = [
   'transferable-array-buffer',
@@ -11,6 +17,7 @@ const CAPABILITIES = [
   'target-navigation-v1',
   'document-change-events-v1',
   'field-focus-events-v1',
+  PASSWORD_SAVE_CAPABILITY,
 ];
 /** 이벤트마다 협상돼야 하는 capability. 목록에 없는 이벤트는 버린다. */
 const EVENT_CAPABILITIES = {
@@ -19,6 +26,7 @@ const EVENT_CAPABILITIES = {
 };
 const LONG_RUNNING_METHODS = new Set([
   'loadFile', 'getFontDecisionTrace', 'exportHwp', 'exportHwpVerify', 'exportHwpx', 'exportHml',
+  'exportPasswordProtectedDocument',
 ]);
 
 export function requestTimeoutFor(method, configuredTimeout) {
@@ -111,6 +119,9 @@ export class EditorTransport {
 
   request(method, params = {}) {
     if (this._destroyed) return Promise.reject(new Error('Editor destroyed'));
+    if (isPasswordSaveMethod(method) && (this._legacy || !this.supports(PASSWORD_SAVE_CAPABILITY))) {
+      return Promise.reject(new PasswordSaveError('UNSUPPORTED_CAPABILITY'));
+    }
     const id = ++this._nextId;
     const prepared = prepareParams(params);
     return new Promise((resolve, reject) => {
@@ -175,7 +186,8 @@ export class EditorTransport {
     if (message?.type === 'rhwp-connected'
         && message.version === PROTOCOL_VERSION
         && message.sessionId === this._sessionId
-        && message.capabilities?.includes('transferable-array-buffer')) {
+        && Array.isArray(message.capabilities)
+        && message.capabilities.includes('transferable-array-buffer')) {
       clearTimeout(this._connectTimer);
       this._peerCapabilities = new Set(message.capabilities);
       const resolve = this._connectResolve;
