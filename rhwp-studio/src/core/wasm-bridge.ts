@@ -1,3 +1,4 @@
+import { isHwp3Document } from './document-signature.ts';
 import { publishPreparedPdf } from './pdf-open';
 import { RecoveryCipher } from '../recovery/recovery-crypto';
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
@@ -423,6 +424,7 @@ export class WasmBridge {
   onRecoveryProtectionChanged?: () => void;
   private _pdfImport: Record<string, unknown> | null = null;
   private _requiresPasswordForSave = false;
+  private _loadedHwp3 = false;
   private _documentDigest: string | null = null;
   /** 같은 바이트를 다시 열어도 구분되는 문서 인스턴스 세대. */
   private _documentGeneration = 0;
@@ -513,6 +515,7 @@ export class WasmBridge {
     this.setRecoveryCipher(null);
     this._pdfImport = null;
     this._requiresPasswordForSave = false;
+    this._loadedHwp3 = false;
     this._documentDigest = null;
   }
 
@@ -551,6 +554,7 @@ export class WasmBridge {
     this._recoveryCipher = null;
     this._pdfImport = null;
     this._requiresPasswordForSave = requiresPasswordForSave;
+    this._loadedHwp3 = isHwp3Document(data);
     this._documentDigest = nextDocumentDigest;
     this._documentGeneration += 1;
     const notify = (work: () => void) => {
@@ -692,6 +696,7 @@ export class WasmBridge {
     this.setRecoveryCipher(null);
     this._pdfImport = null;
     this._requiresPasswordForSave = false;
+    this._loadedHwp3 = false;
     this.doc.setFileName(this._fileName);
     try {
       this._documentDigest = `blake3:${bytesToHex(blake3(this.doc.exportHwp()))}`;
@@ -883,6 +888,13 @@ export class WasmBridge {
   exportHwpVerify(): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return this.doc.exportHwpVerify();
+  }
+
+  getLoadedDocumentFormat(): string | null {
+    if (!this.doc) return null;
+    const format = this.getSourceFormat();
+    if (format !== 'hwp') return format;
+    return this._loadedHwp3 ? 'hwp3' : 'hwp5';
   }
 
   getSourceFormat(): string {
