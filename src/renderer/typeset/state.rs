@@ -106,6 +106,10 @@ impl TypesetState {
         self.data.wrap_around_derived_band
     }
 
+    pub(super) fn following_wrap_is_stored_flow(&self) -> bool {
+        self.data.wrap_around_stored_flow
+    }
+
     pub(super) fn following_wrap_layout(&self) -> &crate::renderer::page_layout::PageLayoutInfo {
         &self.data.layout
     }
@@ -140,6 +144,7 @@ impl TypesetState {
         self.data.wrap_around_sw = -1;
         self.data.wrap_around_any_seg = false;
         self.data.wrap_around_derived_band = false;
+        self.data.wrap_around_stored_flow = false;
         self.close_square_band();
     }
 
@@ -307,6 +312,7 @@ impl TypesetState {
         self.data.wrap_around_table_para = para_idx;
         self.data.wrap_around_any_seg = true;
         self.data.wrap_around_derived_band = false;
+        self.data.wrap_around_stored_flow = false;
     }
 
     pub(super) fn register_host_wrap_anchor(
@@ -325,6 +331,7 @@ impl TypesetState {
         self.data.wrap_around_table_para = para_idx;
         self.data.wrap_around_any_seg = false;
         self.data.wrap_around_derived_band = true;
+        self.data.wrap_around_stored_flow = false;
     }
 
     /// 강제 경계 준비 뒤의 문단 흐름 힌트에 사용할 현재 상태의 profile.

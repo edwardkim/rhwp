@@ -78,7 +78,8 @@ mod picture_anchor;
 mod square_lane;
 pub(crate) use picture_anchor::stored_picture_anchor_delta;
 pub(crate) use square_lane::{
-    square_successor_starts_beside_table, stored_line_lane_probe, StoredLineLaneProbe,
+    flanking_successor_host_advance_hu, square_successor_starts_beside_table,
+    stored_line_lane_probe, stored_rows_flank_square_table, StoredLineLaneProbe,
 };
 mod stored_text_page_frame;
 pub(crate) use stored_text_page_frame::{stored_text_page_frame, StoredTextPageFrame};
