@@ -122,7 +122,10 @@ test('only same-window identity allows a custom-scheme MessagePort', { timeout: 
   const { handlers } = fixture();
   const embedded = install(t, handlers);
   const blockedPort = new MessageChannel();
+  t.after(() => blockedPort.port1.close());
   const closed = once(blockedPort.port1, 'close');
+  // A close listener alone does not keep Node's event loop alive.
+  blockedPort.port1.ref();
   embedded.dispatch({ type: 'rhwp-connect', version: 1, sessionId: 'opaque',
     capabilities: ['transferable-array-buffer', 'password-save-v1'] }, 'null', [blockedPort.port2]);
   await closed;
