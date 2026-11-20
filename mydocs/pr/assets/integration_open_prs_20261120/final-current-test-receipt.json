@@ -123,5 +123,64 @@
       "passed": 268,
       "log_sha256": "f9aa20deaca0eecbcdc873c02721a6bd1ad382e73c18b7f69ee8a9b31c5c83fe"
     }
+  },
+  "public_contributor_visual_gate": {
+    "status": "passed",
+    "baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+    "catalog_sha256": "21ebfc0b9044936357bbdbd61afc6378d376eefff2d7d4c2751ba50c065eaa9a",
+    "report_sha256": "ada4b79e1c1b2d6a13c4d4e7a6b7f1f7cefced59e82070cfe4b04ab3063d1340",
+    "doc_count": 4,
+    "conditions": 8,
+    "minimum_raw_percent": "99.99756",
+    "results": [
+      {
+        "document_id": "52ee61fe7201e36b",
+        "input": "samples/re-03-latin-only-hancom.hwp",
+        "backend": "native",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "52ee61fe7201e36b",
+        "input": "samples/re-03-latin-only-hancom.hwp",
+        "backend": "wasm",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "59f6ab1155623bda",
+        "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "backend": "native",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "59f6ab1155623bda",
+        "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "backend": "wasm",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "cdacd874b6e6ac66",
+        "input": "samples/pic-crop-01.hwp",
+        "backend": "native",
+        "minimum": "99.99756"
+      },
+      {
+        "document_id": "cdacd874b6e6ac66",
+        "input": "samples/pic-crop-01.hwp",
+        "backend": "wasm",
+        "minimum": "99.99756"
+      },
+      {
+        "document_id": "d03a9dde3d5dc7ac",
+        "input": "samples/shape-group-02.hwp",
+        "backend": "native",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "d03a9dde3d5dc7ac",
+        "input": "samples/shape-group-02.hwp",
+        "backend": "wasm",
+        "minimum": "100.0"
+      }
+    ]
   }
 }

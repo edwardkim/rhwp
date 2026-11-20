@@ -31,6 +31,8 @@ HWP·HWPX 저장 계약도 확인했다. [배포 응답과 편집 결과](final-
 공식 한컴 2020·2024 Print 비교 16조건·46쪽의 최종 재실행에서 제품 PNG, 기준 PDF PNG, 전쪽
 TSV가 각각 이미 보존한 증적과 바이트 단위로 일치했다.
 [입력·PDF·TSV와 브라우저 신원](final-official-claim-refresh.json).
+기여자 공통 검사는 네 원본의 Native·fresh WASM 총 8조건에서 새 정본 하한을 충족했다.
+raw 최저는 99.99756%다. [공통 검사 결과](final-current-test-receipt.json).
 
 ## 초기 통합 소스 검증
 
