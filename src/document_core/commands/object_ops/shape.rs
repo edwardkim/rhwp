@@ -605,30 +605,9 @@ impl DocumentCore {
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
 
-        // Group 리사이즈: original_width 유지, current_width만 변경 (렌더러가 스케일 적용)
-        // 한컴 방식: 자식은 변경하지 않고, 컨테이너의 current/original 비율로 스케일 결정
+        // 묶음 크기 바꾸기: original은 두고 current와 자손 행렬에 배율을 합성한다(한컴 12.30).
         if let crate::model::shape::ShapeObject::Group(ref mut group) = shape {
-            // [#6806] 묶음도 값이 바뀔 때만 — 파싱값이 `current ≠ common` 인 묶음(corpus 36건)은
-            // 같은 봉지를 되먹이면 지문이 흔들려 원본 변환 행렬(#6740)이 지워졌다.
-            if let Some(nw) = new_w.filter(|&w| w != width_before) {
-                group.shape_attr.current_width = nw;
-                // original_width는 유지 (스케일 기준)
-            }
-            if let Some(nh) = new_h.filter(|&h| h != height_before) {
-                group.shape_attr.current_height = nh;
-            }
-            // 회전 중심 갱신 — common 에서 다시 세우므로 무변경 시 멱등이다.
-            group.shape_attr.rotation_center.x = (group.common.width / 2) as i32;
-            group.shape_attr.rotation_center.y = (group.common.height / 2) as i32;
-            // [#6740] raw_rendering 초기화는 **실제로 변환이 바뀐 뒤에만** 한다.
-            // 종전에는 `if let Some(..)` 가드 밖에서 무조건 비웠기 때문에, 크기 키가
-            // 없는 속성(예: 빈 JSON)이나 같은 값 재적용에도 한컴 원본 행렬이 사라졌다.
-            // 판정 형태는 #6355(그림)와 같다.
-            if super::common::shape_transform_fingerprint(&group.common, &group.shape_attr)
-                != transform_before
-            {
-                group.shape_attr.raw_rendering = Vec::new();
-            }
+            group_geometry::finish_group_edit(group, transform_before, new_w, new_h);
         }
 
         super::common::update_changed_polygon_geometry(shape, transform_before);
@@ -974,21 +953,7 @@ impl DocumentCore {
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
 
         if let crate::model::shape::ShapeObject::Group(ref mut group) = shape {
-            // [#6806] 본문 경로와 동형 — 값이 바뀔 때만.
-            if let Some(nw) = new_w.filter(|&w| w != width_before) {
-                group.shape_attr.current_width = nw;
-            }
-            if let Some(nh) = new_h.filter(|&h| h != height_before) {
-                group.shape_attr.current_height = nh;
-            }
-            group.shape_attr.rotation_center.x = (group.common.width / 2) as i32;
-            group.shape_attr.rotation_center.y = (group.common.height / 2) as i32;
-            // [#6740] 본문 경로(set_shape_properties_native)와 같은 판정 — 실제 변화 시에만.
-            if super::common::shape_transform_fingerprint(&group.common, &group.shape_attr)
-                != transform_before
-            {
-                group.shape_attr.raw_rendering = Vec::new();
-            }
+            group_geometry::finish_group_edit(group, transform_before, new_w, new_h);
         }
         super::common::update_changed_polygon_geometry(shape, transform_before);
         caption_changed
