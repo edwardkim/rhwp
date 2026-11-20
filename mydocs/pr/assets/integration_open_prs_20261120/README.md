@@ -67,3 +67,20 @@ Visual Sweep은 기준 PDF의 제품·인쇄 드라이버를 읽어 RGB555를 �
 제외 45건이다. 별도로 실행한 지식지도 Python 검사 3건은 고정 devel에서도 동일하게 실패했다.
 Native·WASM Clippy, 워크스페이스 빌드 및 전체 타깃 Clippy도 통과했다.
 Native Skia 라이브러리는 3,852건 통과, 제외 12건이다.
+
+## 최적화한 fresh WASM 재검증
+
+시행령과 #7905를 Native 및 Mac locked wrapper에서 `wasm-opt`를 완료한 fresh WASM으로
+각각 산출했다. 두 입력·두 백엔드 전 160쪽의 제품 PNG, 기준 PDF PNG, 렌더 트리 및
+실루엣 TSV가 앞선 같은 조건의 실행과 바이트 단위로 일치했다.
+[실행과 파일 해시](maintainer-repair/optimized/verification.json).
+
+| 대표 쪽 | Native | 최적화한 fresh WASM |
+| --- | --- | --- |
+| 시행령 19쪽 그래프 | [review](maintainer-repair/optimized/decree-native-p019-review.png) · [overlay](maintainer-repair/optimized/decree-native-p019-overlay.png) | [review](maintainer-repair/optimized/decree-wasm-p019-review.png) · [overlay](maintainer-repair/optimized/decree-wasm-p019-overlay.png) |
+| #7905 1쪽 시행일 | [review](maintainer-repair/optimized/issue7905-native-p001-review.png) · [overlay](maintainer-repair/optimized/issue7905-native-p001-overlay.png) | [review](maintainer-repair/optimized/issue7905-wasm-p001-review.png) · [overlay](maintainer-repair/optimized/issue7905-wasm-p001-overlay.png) |
+
+Native의 시행령 19쪽에서 그래프의 선과 범례를 확인했다. 표의 글자 획과 경계에는 미세한 차이가
+있으며 2px raw는 100.00000%다. #7905의 시행일·개정 문구는 기준선이 맞고 QR과 본문
+가장자리에 미세한 차이가 있으며 Native raw는 99.99246%다. 이 결과는 기존 보호 PDF에 대한
+재현이다. 한컴 2020·2024 재인쇄본과의 비교는 별도 결과로 기록한다.
