@@ -7,20 +7,31 @@ use crate::model::style::Alignment;
 pub(super) enum RowEnding<'a> {
     Soft(&'a [char]),
     Forced(&'a [char]),
-    ParagraphEnd(&'a [char]),
+    /// 문단 끝 줄. 둘째 값은 정렬 폭에서 뺄 줄 끝 공백 상자 수다
+    /// ([`paragraph_end_aligned_trailing_spaces`]).
+    ParagraphEnd(&'a [char], usize),
 }
 
 impl<'a> RowEnding<'a> {
     pub(super) fn trimmed_chars(self) -> Option<&'a [char]> {
         match self {
             Self::Soft(chars) | Self::Forced(chars) => Some(chars),
-            Self::ParagraphEnd(_) => None,
+            Self::ParagraphEnd(..) => None,
+        }
+    }
+
+    /// 정렬 폭에서 뺄 줄 끝 공백 상자 수. 자동·작성 줄바꿈은 [`Self::trimmed_chars`]
+    /// 가 공백 상자를 모두 걷고, 문단 끝은 호출자가 정한 수만 걷는다.
+    pub(super) fn paragraph_end_trimmed_boxes(self) -> usize {
+        match self {
+            Self::ParagraphEnd(_, count) => count,
+            Self::Soft(_) | Self::Forced(_) => 0,
         }
     }
 
     fn chars(self) -> &'a [char] {
         match self {
-            Self::Soft(chars) | Self::Forced(chars) | Self::ParagraphEnd(chars) => chars,
+            Self::Soft(chars) | Self::Forced(chars) | Self::ParagraphEnd(chars, _) => chars,
         }
     }
 }
@@ -84,4 +95,37 @@ pub(super) fn gaps_with_storage<S: crate::storage::Storage>(
         }
     }
     Ok(gaps)
+}
+
+/// [planet6897/rhwp-issue-docs#497] 가운데 정렬 문단 끝 줄의 말미 공백 상자 수.
+///
+/// 한/글은 가운데 정렬 줄의 폭에서 마지막 글자·개체 **뒤** 공백을 뺀다. 본문 글줄
+/// 경로의 `center_alignment_excludes_trailing_space` ·
+/// `trailing_space_width_after_last_inline_object`(#5820·#6173·#7081)와 같은 규칙이다:
+/// 줄에 가시 글자나 개체가 있어야 하고(공백만인 줄은 그대로), 밑줄 친 말미 공백은
+/// 보이는 내용이라 남긴다. 개체 앞·사이 공백은 말미가 아니므로 뒤에서부터 연속한
+/// 공백 상자만 센다. 왼쪽·양쪽·배분 정렬은 문단 끝 공백이 원점을 바꾸지 않거나
+/// 별도 배분 계약을 가지므로 대상이 아니다.
+///
+/// 실측 `18561241_[별표 8]` pi=4(`[TAC 표][공백][공백]`, 가운데 정렬, 저장 줄 없음):
+/// 한/글 2022 Print 의 표 왼쪽 괘선 x=100.7~101.1px 는 표+바깥여백만 가운데 둔 값이다.
+/// 첫 공백을 폭에 넣으면 97.05px 로 4px 왼쪽에 놓인다.
+pub(super) fn paragraph_end_aligned_trailing_spaces(
+    row: &[InlineFlowBox],
+    chars: &[char],
+    alignment: Alignment,
+    underlined: impl Fn(u32) -> bool,
+) -> usize {
+    if alignment != Alignment::Center || !super::separator_spaces::has_flow_content(row, chars) {
+        return 0;
+    }
+    row.iter()
+        .rev()
+        .take_while(|item| match &item.content {
+            InlineFlowContent::Text { range, style, .. } => {
+                chars[range.clone()].iter().all(|ch| *ch == ' ') && !underlined(*style)
+            }
+            _ => false,
+        })
+        .count()
 }
