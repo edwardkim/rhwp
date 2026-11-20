@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9223,
+  "title": "단 폭을 채운 어울림 개체에 밀려 글줄만 다음 쪽으로 넘어갈 때 개체까지 옮겨 다음 내용과 겹친다",
+  "entries": [
+    {
+      "path": "samples/issue9223/ccus-press-release-square-band.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9223",
+      "originalFilename": "156654167_1009(10석간)에너지기술과, 「이산화탄소저장활용법」 하위법령 제정안 입법예고.hwpx",
+      "bytes": 526688,
+      "sha256": "043f5db6444ecbe6a23a7e70f1dfbc61fdc66331e807302dc26c647628197a66",
+      "lastSavedWith": {
+        "product": "hancom-office-2020",
+        "version": null
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9223/ccus-press-release-square-band-2020.pdf",
+      "referencePdfSha256": "e0d19eee4dc9af599b59638a0cfbf9a5d382901e50591c30210d22533c7ca9e4",
+      "referencePdfPageCount": 3,
+      "contract": "pi=16 은 [0] 사각형 글상자(어울림, 세로 문단 기준 오프셋 2943HU, 48797×4287HU — 단 폭 48188HU 이상)와 [1] 글자처럼 취급한 1×3 표(저장 줄 vpos 0, 높이 3013)를 가진다. 개체가 줄 자리와 겹쳐 줄을 밀었고 줄은 2쪽 맨 위로 넘어갔다. 사각형은 1쪽에서 앞 표(pi=15) 아래에 있고 2쪽에는 없다. 2쪽에서 넘어온 표는 제목 표(pi=18) 위에 있다. 전체 3쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}
