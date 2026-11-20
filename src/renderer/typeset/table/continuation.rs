@@ -155,6 +155,10 @@ pub(in crate::renderer::typeset) struct BlockTableContinuationPreparedState {
     /// 저장 첫 조각이 비가시 공간만 소비할 때의 공통 행 프레임.
     pub(in crate::renderer::typeset) empty_opening_row_frame:
         Option<crate::renderer::float_placement::StoredEmptyOpeningRowFrame>,
+    /// 새 쪽에서 온전히 수용할 그림·캡션의 원본 물리 행.
+    pub(in crate::renderer::typeset) relocated_picture_caption_rows: Option<[f64; 2]>,
+    /// 실제 이월한 그림 뒤 문단의 (저장 줄 상단, 문단 위 간격 전 흐름 원점).
+    pub(in crate::renderer::typeset) relocated_picture_successor: Option<(f64, f64)>,
     pub(in crate::renderer::typeset) row_count: usize,
     pub(in crate::renderer::typeset) cell_spacing: f64,
     pub(in crate::renderer::typeset) can_intra_split: bool,

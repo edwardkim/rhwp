@@ -284,6 +284,12 @@ impl TypesetEngine {
                 measured
                     .fragment_block_frames
                     .push((frame.start, frame.end));
+            } else if prepared.relocated_picture_caption_rows.is_some()
+                && continuation.row == 0
+                && !continuation.is_continuation
+                && start.start_cut.is_empty()
+            {
+                measured.fragment_block_frames.push((0, rows.len()));
             }
             measured.cumulative_heights = vec![0.0];
             for (row, &height) in rows.iter().enumerate() {

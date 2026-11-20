@@ -2523,15 +2523,16 @@ fn right_leader_number_origin(
     target - digit_width
 }
 
-/// A left automatic tab fixes the label's end position. Distribution belongs
-/// to text after that anchor, including when character styles split the label.
-fn fixed_auto_tab_prefix_by_run(line: &ComposedLine) -> Vec<usize> {
+/// 왼쪽 탭 앞의 내용을 여러 글자 모양으로 나눠도 같은 자연 전진을 보존한다.
+fn fixed_tab_prefix_by_run(line: &ComposedLine, tab_count: usize) -> Vec<usize> {
     let mut remaining = line
         .runs
         .iter()
         .flat_map(|run| effective_text_for_metrics(run).chars())
-        .position(|c| c == '\t')
-        .map_or(0, |index| index + 1);
+        .enumerate()
+        .filter(|(_, character)| *character == '\t')
+        .nth(tab_count.saturating_sub(1))
+        .map_or(0, |(index, _)| index + 1);
     line.runs
         .iter()
         .map(|run| {
@@ -3034,12 +3035,12 @@ fn compute_line_extra_spacing_with_dash_plan(
                 // 같은 가시 폭과 글자 수로 저장 줄·합성 줄의 배분을 정한다.
                 let visible_body_count = spacing_chars[..visible_count]
                     .iter()
-                    .skip(leading_space_plan.leading_spaces)
+                    .skip(leading_spaces)
                     .filter(|(_, field)| !field)
                     .count();
                 let slots = spacing_chars[..visible_count.saturating_sub(1)]
                     .iter()
-                    .skip(leading_space_plan.leading_spaces)
+                    .skip(leading_spaces)
                     .filter(|(_, field)| !field)
                     .count();
                 if slots == 0 {
@@ -7963,9 +7964,29 @@ impl LayoutEngine {
             let has_forced_break = comp_line.has_line_break && !note_line.follows_break;
             // [#6864] 저장 줄 정보나 머리말/꼬리말 위치는 정렬 의미를 바꾸지
             // 않는다. 마지막 줄 분배가 필요한 원본은 파서가 Split으로 전달한다.
-            let needs_justify =
-                needs_word_distribution(alignment, is_last_line_of_para, has_forced_break);
-            let needs_distribute = alignment == Alignment::Distribute;
+            // 다음 줄에서 각주 본문이 시작할 때 남은 첫 줄의 자동 번호는
+            // 원본 한 슬롯이다. 표시한 여러 숫자 사이에는 배분할 경계가 없다.
+            let lone_footnote_number = line_idx == 0
+                && runs_all_whitespace
+                && line_tac_offsets_for_width.is_empty()
+                && note_line.positions.is_empty()
+                && para.is_some_and(|paragraph| {
+                    matches!(paragraph.controls.first(), Some(Control::AutoNumber(number))
+                        if number.number_type == crate::model::control::AutoNumberType::Footnote)
+                })
+                && comp_line
+                    .runs
+                    .iter()
+                    .filter(|run| {
+                        run.display_text
+                            .as_ref()
+                            .is_some_and(|text| !text.trim().is_empty())
+                    })
+                    .count()
+                    == 1;
+            let needs_justify = !lone_footnote_number
+                && needs_word_distribution(alignment, is_last_line_of_para, has_forced_break);
+            let needs_distribute = !lone_footnote_number && alignment == Alignment::Distribute;
 
             let has_tabs = comp_line.runs.iter().any(|r| r.text.contains('\t'));
             let renders_synthetic_wrap_trailing_space = !physical_frame_rows
@@ -8185,14 +8206,30 @@ impl LayoutEngine {
             // 공백 한계·잔여 글자 사이 압축은 같은 Justify 계약을 따른다.
             let needs_justify_spacing = needs_justify || negative_justified_last_line;
             // 실제 배치할 run 분할이 확정된 뒤 같은 소유 배열을 만든다.
-            let unjustified_leading_spaces = if needs_justify_spacing
+            let saved_left_tabs = (needs_justify
+                && has_tabs
+                && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+                && !profile.session_edited())
+            .then(|| {
+                tab_frame::saved_left_tab_count(
+                    para?,
+                    composed,
+                    comp_line,
+                    line_idx,
+                    stored_tab_index_before_line(composed, comp_line),
+                )
+            })
+            .flatten();
+            let unjustified_leading_spaces = if let Some(tabs) = saved_left_tabs {
+                fixed_tab_prefix_by_run(&leading_space_plan.line, tabs)
+            } else if needs_justify_spacing
                 && has_tabs
                 && styles
                     .para_styles
                     .get(composed.para_style_id as usize)
                     .is_some_and(|style| style.auto_tab_left && style.indent < 0.0)
             {
-                fixed_auto_tab_prefix_by_run(&leading_space_plan.line)
+                fixed_tab_prefix_by_run(&leading_space_plan.line, 1)
             } else if needs_justify_spacing && !is_hancom_company_pua_logo_line {
                 // Both measurement and emitted advances stop indentation at
                 // the same visible owner, including a note marker outside

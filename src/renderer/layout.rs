@@ -6238,7 +6238,7 @@ impl LayoutEngine {
                                         &physical_paper_area,
                                         body_area,
                                         &paper_area,
-                                        paper_area.y,
+                                        mp_y_offset,
                                         Alignment::Left,
                                     );
                                     let pic_area = super::layout::LayoutRect {
@@ -11102,12 +11102,18 @@ impl LayoutEngine {
                         // lazy 기준이 아직 없거나 다른 기준으로 재생성될 수 있다.
                         // 그 기준으로 저장 사다리를 다시 투영하지 않는다.
                         let resolved_end = col_area.y + end;
-                        if !matches!(
-                            item,
-                            PageItem::Shape { .. }
-                                | PageItem::Table { .. }
-                                | PageItem::PartialTable { .. }
-                        ) || resolved_end >= new_y
+                        let closes_visible_table = matches!(item,
+                            PageItem::PartialTable { is_continuation: true, end_cut, .. }
+                                if end_cut.is_empty())
+                            && resolved_end >= self.last_item_content_bottom.get();
+                        if closes_visible_table
+                            || !matches!(
+                                item,
+                                PageItem::Shape { .. }
+                                    | PageItem::Table { .. }
+                                    | PageItem::PartialTable { .. }
+                            )
+                            || resolved_end >= new_y
                         {
                             new_y = resolved_end;
                         }

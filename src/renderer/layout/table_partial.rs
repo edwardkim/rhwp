@@ -1134,6 +1134,10 @@ impl LayoutEngine {
         fold_slack: &mut f64,
     ) {
         let parent_owned = external_frame.is_none_or(|frame| frame.parent_owned);
+        let stored_wrapper_closing_height =
+            (is_continuation && !is_block_split && !start_cut_is_block && end_cut.is_empty())
+                .then(|| self.stored_wrapper_closing_height(table, start_cut, styles))
+                .flatten();
         for (cell_idx, cell) in table.cells.iter().enumerate() {
             // [#4149] 프로브: 대상 셀만 방출. 셀 방출 루프는 셀-간 캐리가 없어
             // (실측 muts 0, 외부 sink = table_node 단일) 생략이 대상 셀 좌표를 바꾸지 않는다.
@@ -2341,8 +2345,13 @@ impl LayoutEngine {
             .then(|| self.stored_empty_picture_cell_frame(cell, table))
             .flatten()
             .filter(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi) <= inner_height + 0.5);
-            let total_content_height = declared_opening_content_height
-                .filter(|_| declared_opening_frame_owns_alignment)
+            // 닫는 저장 빈 줄과 자식은 수용한 조각의 같은 세로 상자에 속한다.
+            // 정렬에서 빈 줄을 빼면 가운데/아래 정렬이 먼저 그린 자식까지 민다.
+            let stored_closing_content_height = stored_wrapper_closing_height
+                .map(|height| (height - pad_top - pad_bottom).max(0.0));
+            let total_content_height = stored_closing_content_height
+                .or(declared_opening_content_height
+                    .filter(|_| declared_opening_frame_owns_alignment))
                 .or_else(|| {
                     stored_empty_picture_frame
                         .map(|frame| hwpunit_to_px(frame.content_height_hu, self.dpi))
@@ -2402,7 +2411,9 @@ impl LayoutEngine {
             let stored_page_content_height = cut_units.and_then(|(start, end)| {
                 self.stored_cell_cut_alignment_height(cell, table, styles, start, end)
             });
-            let centered_content_height = if let Some(height) = atomic_opening_alignment_height {
+            let centered_content_height = if let Some(height) = stored_closing_content_height {
+                height
+            } else if let Some(height) = atomic_opening_alignment_height {
                 height
             } else if let Some(frame) = &stored_picture_cut_frame {
                 frame.content_height
@@ -6070,6 +6081,19 @@ impl LayoutEngine {
                 self.add_footnote_superscripts(tree, &mut cell_node, para, styles);
             }
 
+            if let Some((paragraph, line)) = cut_units.and_then(|(start, end)| {
+                self.stored_text_before_carried_child(table, cell, start, end, styles)
+            }) {
+                for node in &cell_node.children {
+                    if matches!(&node.node_type, RenderNodeType::TextLine(text)
+                        if text.para_index == Some(paragraph)
+                            && text.line_index == Some(line as u32))
+                    {
+                        tree.keep_saved_fragment_text_line(node.id);
+                    }
+                }
+            }
+
             // [#4159] `end_cut=[]`인 종료 유닛 창은 이후 continuation이 없다. 재귀
             // 중첩 표의 bottom stroke가 top padding만큼 셀 clip을 넘는 경우에만
             // 현재 셀 bbox를 포섭 확장한다. `eu < usize::MAX` 비종료 조각은 보존한다.
@@ -6765,13 +6789,15 @@ impl LayoutEngine {
             && enclosing_cell_ctx.is_none()
             && col_node.children.is_empty()
             && (y_start - col_area.y).abs() <= 0.5
-            && self.intra_paragraph_rowbreak_reopens_outer_top(
+            && (self.intra_paragraph_rowbreak_reopens_outer_top(
                 &paragraphs[para_index],
                 table,
                 start_row,
                 start_cut,
                 styles,
-            );
+            ) || (start_row == 0
+                && !start_cut_is_block
+                && self.stored_nested_wrapper_cut_reopens_outer_top(table, start_cut, styles)));
         let rowbreak_reopens_outer_top = !repeat_fragment_outer_margin
             && enclosing_cell_ctx.is_none()
             && crate::renderer::float_placement::stored_rowbreak_fragment_opens_outer_top(
@@ -7718,6 +7744,9 @@ impl LayoutEngine {
         } else {
             y_start
         } + stored_reset_paint_geometry
+            // 조판이 넘긴 조각 윗변과 앞 흐름이 연 여백은 이미 물리 원점에 있다.
+            // 저장 frame의 높이는 그대로 소비하고 같은 바깥 위 여백은 한 번만 연다.
+            .filter(|_| resolved_table_top.is_none() && !flow_branch_opened_outer_top)
             .map(|geometry| hwpunit_to_px(geometry.outer_top_hu, self.dpi))
             .unwrap_or(0.0);
 
@@ -7777,6 +7806,7 @@ impl LayoutEngine {
                 );
             }
         }
+        let zone_background_index = table_node.children.len();
 
         let source_first_row_frame =
             self.saved_first_row_opening_frame(table, styles, self.current_body_area.get().3);
@@ -8185,7 +8215,7 @@ impl LayoutEngine {
             // cellzone·표 외곽 테두리 덮어쓰기를 비분할 표와 같게 적용한다. 아래의 조각 경계
             // 지우기보다 먼저 해야 열린 윗변·아랫변이 되살아나지 않는다. 그리드는 조각-지역
             // 행(`render_rows` 순서)이므로 칸·zone 행 주소를 그 공간으로 옮긴다.
-            {
+            let fragment_zones = {
                 // 원본 행 [row, end) 중 이 조각에 그려지는 첫·끝 조각-지역 행
                 let local_rows = |row: usize, end: usize| {
                     let first = render_rows.iter().position(|&r| r >= row && r < end)?;
@@ -8242,7 +8272,8 @@ impl LayoutEngine {
                     &fragment_cells,
                     styles,
                 );
-            }
+                fragment_zones
+            };
 
             // 어울림 표가 행 안에서 다음 쪽으로 이어지면 새 물리 조각의 맨 위는
             // 원본 셀의 윗변이 아니다. 반복 제목행이 없는 경우 그 컷 경계에
@@ -8415,6 +8446,45 @@ impl LayoutEngine {
             } else {
                 fragment_row_col_x
             };
+
+            // 테두리와 배경은 반복 머리행과 접힌 마지막 행을 포함한 같은 조각을 쓴다.
+            // 비분할 표와 같은 순서로 표 배경 위, 각 셀의 배경과 본문 아래에 놓는다.
+            let zone_start = table_node.children.len();
+            for zone in &fragment_zones {
+                let row = usize::from(zone.start_row);
+                let Some(columns) = fragment_row_col_x.get(row) else {
+                    continue;
+                };
+                let Some(border_style) = zone
+                    .border_fill_id
+                    .checked_sub(1)
+                    .and_then(|index| styles.border_styles.get(usize::from(index)))
+                else {
+                    continue;
+                };
+                let (Some(&left), Some(&right), Some(&top), Some(&bottom)) = (
+                    columns.get(usize::from(zone.start_col)),
+                    columns.get(usize::from(zone.end_col) + 1),
+                    grid_row_y.get(row),
+                    grid_row_y.get(usize::from(zone.end_row) + 1),
+                ) else {
+                    continue;
+                };
+                if right > left && bottom > top {
+                    self.render_cell_background(
+                        tree,
+                        &mut table_node,
+                        Some(border_style),
+                        table_x + left,
+                        table_y + top,
+                        right - left,
+                        bottom - top,
+                        bin_data_content,
+                    );
+                }
+            }
+            let zone_count = table_node.children.len() - zone_start;
+            table_node.children[zone_background_index..].rotate_right(zone_count);
 
             // 엣지 기반 테두리 렌더링
             let body_top_clip = (enclosing_cell_ctx.is_none()

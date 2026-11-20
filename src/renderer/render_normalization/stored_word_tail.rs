@@ -473,6 +473,9 @@ fn normalize_flow_with_storage<S: crate::storage::Storage>(
                     if !refresh_markers
                         || !(refresh_text || spans_physical_frames)
                         || !projects_current_marker_geometry(&paragraph, &box_, styles)
+                        || crate::renderer::composer::stored_fixed_bullet_keeps_rows(
+                            &paragraph, &box_, styles, dpi,
+                        )
                     {
                         return None;
                     }

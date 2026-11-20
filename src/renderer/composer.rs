@@ -55,7 +55,7 @@ pub(crate) use stored_word_tail::{
     project_current_marker_geometry_rows, project_current_marker_geometry_rows_with_storage,
     project_current_source_program_rows, project_current_source_program_rows_with_storage,
     project_stored_soft_wraps, project_stored_soft_wraps_with_storage,
-    projects_current_marker_geometry,
+    projects_current_marker_geometry, stored_fixed_bullet_keeps_rows,
 };
 mod note_line_slots;
 mod punctuation_slots;

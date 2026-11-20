@@ -734,6 +734,90 @@ pub(crate) fn stored_relocated_measured_table_successor_origin(
         .then(|| hwpunit_to_px(next_vpos, dpi))
 }
 
+/// 이월한 그림 행과 캡션 행의 실제 끝을 후속 저장 줄이 닫는다.
+pub(crate) fn stored_relocated_picture_caption_rows(
+    host: &Paragraph,
+    table: &Table,
+    next: &Paragraph,
+    dpi: f64,
+) -> Option<[f64; 2]> {
+    use crate::model::paragraph::{ColumnBreakType, LineSeg};
+    let original_line = |paragraph: &Paragraph| {
+        !paragraph.stored_text_partition_is_dirty()
+            && !paragraph.cell_format_vpos_dirty
+            && matches!(paragraph.line_segs.as_slice(), [line] if
+                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && line.vertical_pos >= 0 && line.line_height > 0)
+    };
+    if table.row_count != 2
+        || table.col_count != 1
+        || table.cells.len() != 2
+        || table.cell_spacing != 0
+        || table.caption.is_some()
+        || (table.repeat_header && table.cells.iter().any(|cell| cell.is_header))
+        || table.layout_page_break() != TablePageBreak::RowBreak
+        || !is_para_topbottom_float(&table.common)
+        || !table.common.flow_with_text
+        || table.common.allow_overlap
+        || !host.text.is_empty()
+        || !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || !original_line(host)
+        || next.column_type != ColumnBreakType::None
+        || !original_line(next)
+        || table.cells.iter().any(|cell| {
+            cell.dirty_flag || cell.col != 0 || cell.col_span != 1 || cell.row_span != 1
+        })
+    {
+        return None;
+    }
+    let host_pos = ladder_vpos(host, 0, host.line_segs[0].vertical_pos);
+    let next_pos = ladder_vpos(next, 0, next.line_segs[0].vertical_pos);
+    if next_pos <= 0 || next_pos >= host_pos {
+        return None;
+    }
+    let picture_cell = table.cells.iter().find(|cell| cell.row == 0)?;
+    let caption_cell = table.cells.iter().find(|cell| cell.row == 1)?;
+    let [picture_host] = picture_cell.paragraphs.as_slice() else {
+        return None;
+    };
+    let [caption] = caption_cell.paragraphs.as_slice() else {
+        return None;
+    };
+    let [Control::Picture(picture)] = picture_host.controls.as_slice() else {
+        return None;
+    };
+    if !original_line(picture_host)
+        || !original_line(caption)
+        || !picture_host.text.is_empty()
+        || !para_has_non_whitespace_text(caption)
+        || caption
+            .controls
+            .iter()
+            .any(|control| !matches!(control, Control::Footnote(_)))
+        || picture_host.line_segs[0].vertical_pos != 0
+        || caption.line_segs[0].vertical_pos != 0
+        || picture.caption.is_some()
+        || !is_para_topbottom_float(&picture.common)
+        || picture.common.vert_align != VertAlign::Top
+        || !picture.common.flow_with_text
+        || picture.common.allow_overlap
+        || signed_hwpunit(picture.common.vertical_offset) > 0
+        || i64::from(picture.common.height) < i64::from(picture_host.line_segs[0].line_height)
+    {
+        return None;
+    }
+    let rows = [
+        i64::from(picture.common.height)
+            + i64::from(picture_cell.effective_vertical_padding_hu(&table.padding)),
+        i64::from(caption.line_segs[0].line_height)
+            + i64::from(caption_cell.effective_vertical_padding_hu(&table.padding)),
+    ];
+    let next_line = rows.iter().sum::<i64>()
+        + i64::from(table.outer_margin_top)
+        + i64::from(table.outer_margin_bottom);
+    (next_line == i64::from(next_pos)).then(|| rows.map(|height| hwpunit_to_px(height as i32, dpi)))
+}
+
 /// 원본 HWP5·HWPX에서 새 쪽으로 이월한 빈 그림 표는 저장 셀 프레임이
 /// 실제 그림·아래 캡션보다 클 수 있다. 표 프레임을 보존하면서 흐름만 다음
 /// 저장 글줄 원점에서 재개하는 형상을 확인한다. 반환값은 본문 상대 좌표다.
@@ -7590,6 +7674,42 @@ impl ParagraphFloatPlacement {
             return None;
         }
         Self::from_stored_host_at(para, table, control_index, text_origin, table_height, dpi)
+    }
+
+    /// 앞뒤 저장 줄이 같게 닫는 빈 호스트의 실제 줄 상자다.
+    /// 후속 줄까지 표 앞 띠에 있으면 이 호스트의 빈 줄도 그 띠를 점유한다.
+    pub(crate) fn stored_empty_offset_host_owns_line(
+        para: &Paragraph,
+        table: &Table,
+        control_index: usize,
+        next: &Paragraph,
+    ) -> bool {
+        use crate::model::paragraph::{ColumnBreakType, LineSeg};
+        let ([line], Some(successor)) = (para.line_segs.as_slice(), next.line_segs.first()) else {
+            return false;
+        };
+        para.text.is_empty()
+            && matches!(para.controls.as_slice(), [Control::Table(_)])
+            && table.layout_page_break() == TablePageBreak::RowBreak
+            && Self::stored_host_lines_are_valid(para, table, control_index)
+            && !para.cell_format_vpos_dirty
+            && next.controls.is_empty()
+            && next.column_type == ColumnBreakType::None
+            && !next.stored_text_partition_is_dirty()
+            && !next.cell_format_vpos_dirty
+            && !successor.is_first_line_of_page()
+            && !successor.is_first_line_of_column()
+            && successor.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && line.line_height > 0
+            && line.line_spacing >= 0
+            && successor.line_height > 0
+            && i64::from(line.vertical_pos)
+                + i64::from(line.line_height)
+                + i64::from(line.line_spacing)
+                == i64::from(successor.vertical_pos)
+            && i64::from(successor.vertical_pos) + i64::from(successor.line_height)
+                <= i64::from(line.vertical_pos)
+                    + i64::from(signed_hwpunit(table.common.vertical_offset))
     }
 
     /// 글 앞 개체도 저장 호스트 줄이 양수 오프셋 안에서 모두 끝나면
