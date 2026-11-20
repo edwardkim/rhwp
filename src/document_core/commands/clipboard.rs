@@ -892,6 +892,38 @@ impl DocumentCore {
         self.paste_internal_at_caret_native(section_idx, para_idx, text, after_control)
     }
 
+    /// 내부 클립보드를 본문 논리 캐럿(`insertTextLogical` 과 같은 축)에 붙인다.
+    ///
+    /// `paste_internal_native` 는 컨트롤 없는 한 문단 조각만 글자 자리로 받고, 여러 문단·개체 조각은
+    /// 문단 나누기 자리(논리 축)로 받는다. 각주·글자처럼 취급한 개체 뒤에서는 두 축이 달라, 이 API는
+    /// 어느 조각이든 논리 캐럿으로 받는다. 반환 `charOffset` 은 `paste_internal_native` 와 같은 글자 자리다.
+    pub fn paste_internal_logical_native(
+        &mut self,
+        section_idx: usize,
+        para_idx: usize,
+        logical_offset: usize,
+    ) -> Result<String, HwpError> {
+        let para = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(para_idx))
+            .ok_or_else(|| HwpError::RenderError("붙일 본문 위치를 확인해 주세요".into()))?;
+        if logical_offset > logical_paragraph_length(para) {
+            return Err(HwpError::RenderError(
+                "붙일 캐럿 위치를 확인해 주세요".into(),
+            ));
+        }
+        let text_fragment = self.clipboard.as_ref().is_some_and(|clipboard| {
+            matches!(clipboard.paragraphs.as_slice(), [only] if only.controls.is_empty())
+        });
+        if text_fragment {
+            let (text, after_control) = logical_to_text_offset(para, logical_offset);
+            return self.paste_internal_at_caret_native(section_idx, para_idx, text, after_control);
+        }
+        self.paste_internal_at_caret_native(section_idx, para_idx, logical_offset, false)
+    }
+
     fn paste_internal_at_caret_native(
         &mut self,
         section_idx: usize,
@@ -1365,7 +1397,9 @@ impl DocumentCore {
 
         // 커서 위치 문단의 속성 상속 (빈 문단 생성용) — 커서 offset 의 글자모양 기준.
         let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
+        // 아래 문단 나누기는 논리 캐럿을 받는다. 글자 모양은 그 캐럿의 글자 자리에서 읽는다.
+        let shape_offset = logical_to_text_offset(current_para, char_offset).0;
+        let default_char_shape_id: u32 = current_para.char_shape_id_at(shape_offset).unwrap_or(0);
         let default_para_shape_id: u16 = current_para.para_shape_id;
 
         // 편집 영역 폭

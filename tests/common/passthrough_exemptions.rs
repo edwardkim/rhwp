@@ -96,6 +96,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "순수 조각과 논리 위치를 검증한 뒤 구역 무효화 공통 구현에 위임한다.",
     ),
     (
+        "commands/clipboard.rs",
+        "paste_internal_logical_native",
+        Exempt::DelegatesTo("paste_internal_at_caret_native"),
+        "논리 캐럿을 조각에 맞는 자리로 바꾼 뒤 캐럿 붙이기 공통 함수에 위임한다. 공통 함수가 raw_stream을 무효화한다.",
+    ),
+    (
         "commands/html_import.rs",
         "paste_html_native",
         Exempt::DelegatesTo("paste_html_at_caret_native"),
