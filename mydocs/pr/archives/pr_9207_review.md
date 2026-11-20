@@ -58,6 +58,9 @@
 대상 셀과 이웃 셀의 한 줄 속성 차이와 두 셀의 텍스트를 유지했고, 캐럿은 대상의 같은 줄에 있었다.
 [최종 제품 SHA와 실행 결과](../assets/integration_open_prs_20261120/final-product-consumers.json).
 
+결재문서 1쪽은 실제 Studio의 Canvas2D·CanvasKit compat/default에서 화면·인쇄 프로필로 확인했다. 대상 쪽의 글꼴 폴백은 0건이었다.
+[실제 Studio 캡처와 검증](../assets/integration_open_prs_20261120/actual-studio-renderers/README.md).
+
 ## Merge 후 contributor PR comment 계획
 
 대상 셀의 한 줄 설정과 이웃 셀의 줄바꿈을 함께 보존한 기여에 감사한다. 메인터너 보정이

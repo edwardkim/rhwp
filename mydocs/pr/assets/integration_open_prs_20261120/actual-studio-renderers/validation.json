@@ -1,0 +1,1037 @@
+{
+  "source_sha": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+  "wasm_sha256": "ee3461090090fc7dad9562bdf418a65094bce5988c5efbbbdc862bdaec7826a0",
+  "browser": "Chrome/157.0.8103.80",
+  "capture_total": 24,
+  "actual_canvas2d": 8,
+  "actual_canvaskit": 16,
+  "fallback_on_target_pages": 0,
+  "test_only_font_supply": true,
+  "decree_font_demand": [
+    {
+      "family": "나눔바른고딕,한컴바탕",
+      "bold": true,
+      "italic": false
+    },
+    {
+      "family": "나눔바른고딕,함초롬돋움",
+      "bold": true,
+      "italic": false
+    }
+  ],
+  "font_catalog": {
+    "nanum-barun": {
+      "id": "nanum-barun",
+      "family": "나눔바른고딕",
+      "fullName": "NanumBarunGothic",
+      "postscriptName": "NanumBarunGothic",
+      "style": "Regular",
+      "weight": 400,
+      "slant": "normal",
+      "faceIndex": 0,
+      "sha256": "fcc11057e873a9f62d68c9dee0f2683f22e0e6404a7aa6a29b23169a62b762ce"
+    },
+    "myeongjo": {
+      "id": "myeongjo",
+      "family": "명조",
+      "fullName": "Myeongjo",
+      "postscriptName": "Myeongjo-ENMJ",
+      "style": "Regular",
+      "weight": 400,
+      "slant": "normal",
+      "faceIndex": 0,
+      "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+    },
+    "decree-sinmyeongjo": {
+      "id": "decree-sinmyeongjo",
+      "family": "한양신명조",
+      "fullName": "HY Sinmyeongjo",
+      "postscriptName": "HYSinmyeongjo-ENSMJ",
+      "style": "Regular",
+      "weight": 400,
+      "slant": "normal",
+      "faceIndex": 0,
+      "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+    },
+    "application-sinmyeongjo": {
+      "id": "application-sinmyeongjo",
+      "family": "한양신명조",
+      "fullName": "HY Sinmyeongjo",
+      "postscriptName": "HYSinmyeongjo-JPSMJ",
+      "style": "Regular",
+      "weight": 400,
+      "slant": "normal",
+      "faceIndex": 0,
+      "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+    },
+    "human-gothic": {
+      "id": "human-gothic",
+      "family": "휴먼고딕",
+      "fullName": "휴먼고딕",
+      "postscriptName": "휴먼고딕",
+      "style": "Regular",
+      "weight": 400,
+      "slant": "normal",
+      "faceIndex": 0,
+      "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+    },
+    "gulim": {
+      "id": "gulim",
+      "family": "굴림",
+      "fullName": "Gulim",
+      "postscriptName": "Gulim",
+      "style": "Regular",
+      "weight": 400,
+      "slant": "normal",
+      "faceIndex": 0,
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+    },
+    "nanum-barun-bold": {
+      "id": "nanum-barun-bold",
+      "family": "나눔바른고딕",
+      "fullName": "NanumBarunGothic Bold",
+      "postscriptName": "NanumBarunGothicBold",
+      "style": "Bold",
+      "weight": 700,
+      "slant": "normal",
+      "faceIndex": 0,
+      "sha256": "39bba4cd9bd2986143825c8654abbb62443914ab33b346c0c929a916f5d98bf2",
+      "os2WeightClass": 600,
+      "upstream": "https://hangeul.naver.com/hangeul_static/webfont/zips/nanum-barun-gothic.zip"
+    }
+  },
+  "previous_resource_failures": [
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕",
+          "명조",
+          "한양신명조",
+          "휴먼고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "나눔바른고딕"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "backend": "canvaskit-compat",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "backend": "canvaskit-default",
+      "profile": "screen",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "backend": "canvaskit-compat",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "backend": "canvaskit-default",
+      "profile": "print",
+      "actualBackend": "canvas2d",
+      "fontFallback": {
+        "reason": "canvaskitResourcePreparationFailed",
+        "missingFonts": [
+          "한양신명조"
+        ],
+        "actualBackend": "canvas2d"
+      },
+      "source_report": "actual-renderer-isolated"
+    }
+  ],
+  "browser_init_response_verification": {
+    "decree_conditions": 12,
+    "result": "all matched"
+  },
+  "reports": {
+    "actual-renderer-isolated": {
+      "sha256": "714bfe78b69c46ad7a29404352d2a39560b0d73a1196ae15147bb61a33ff502b",
+      "browser": "Chrome/157.0.8103.80"
+    },
+    "actual-renderer-host-fonts-final": {
+      "sha256": "263a5785b085f2640ae1cd42b1d3e9c1cb85e6ff9ad715c76526beae4ab3c660",
+      "browser": "Chrome/157.0.8103.80"
+    },
+    "actual-renderer-decree-bold-verified": {
+      "sha256": "45dcd22bab98a9b911acb0babbc3a95a7ee79dc0a6ab1b3388e64fa384e2656f",
+      "browser": "Chrome/157.0.8103.80"
+    }
+  },
+  "captures": [
+    {
+      "sampleId": "decree-terminal-p007",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "e3da2d1e182b08b609d31294f7cc834df3bb6c12bfa1ac8231ac62cf1fdd54fb",
+        "sizeBytes": 108971,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 7,
+      "runtime": null,
+      "review_png": null,
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "8986ce34ec371ca93be1199d6fc84d345dacc01a7ff91aa92b1f9dacf150d312",
+        "sizeBytes": 100178,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 7,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "8986ce34ec371ca93be1199d6fc84d345dacc01a7ff91aa92b1f9dacf150d312",
+        "sizeBytes": 100178,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 7,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "978a3d719ec6d8f330df314d6f77da5854f0e459b41e339bf7cd4c4c7fd4d209",
+        "sizeBytes": 111682,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 7,
+      "runtime": null,
+      "review_png": "decree-terminal-p007-canvas2d-print.png",
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "6bff2943c1f052c1346346cfd66d2155f6e1dc87c12d1b6a1a09d3ef986b723b",
+        "sizeBytes": 99948,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 7,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "decree-terminal-p007-canvaskit-compat-print.png",
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p007",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "6bff2943c1f052c1346346cfd66d2155f6e1dc87c12d1b6a1a09d3ef986b723b",
+        "sizeBytes": 99948,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 7,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "decree-terminal-p007-canvaskit-default-print.png",
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "bf2de6d536c6ed099bb6cd26e7aa8818118bb78f36d41025085281994446edcf",
+        "sizeBytes": 137875,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 16,
+      "runtime": null,
+      "review_png": null,
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "3c63f79c71e44ac89a2650e66f22bddb216afcccbcc526b99893bde34bfab79f",
+        "sizeBytes": 130904,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 16,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "3c63f79c71e44ac89a2650e66f22bddb216afcccbcc526b99893bde34bfab79f",
+        "sizeBytes": 130904,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 16,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "8fec7e1795408eb0cc542f655d25a9768350648b26d141a1efd05e78f4c66cc3",
+        "sizeBytes": 140807,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 16,
+      "runtime": null,
+      "review_png": "decree-terminal-p016-canvas2d-print.png",
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "1d5d4c9067b9623a58df72dad3277618d49440549fb22ada89ed7f6b9a17426f",
+        "sizeBytes": 130510,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 16,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "decree-terminal-p016-canvaskit-compat-print.png",
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "decree-terminal-p016",
+      "file": "issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "documentDigest": "sha256:5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "1d5d4c9067b9623a58df72dad3277618d49440549fb22ada89ed7f6b9a17426f",
+        "sizeBytes": 130510,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 16,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 5,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "decree-terminal-p016-canvaskit-default-print.png",
+      "source_report": "actual-renderer-decree-bold-verified"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "file": "issue9040/1371000-policy-research-application.hwp",
+      "documentDigest": "sha256:23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "ccd0cfb895801e12ce2edf4c8c3f3c9e9357218780b9cb5c70d25fe0913a4b90",
+        "sizeBytes": 83143,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 9,
+      "runtime": null,
+      "review_png": null,
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "file": "issue9040/1371000-policy-research-application.hwp",
+      "documentDigest": "sha256:23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "775388f3ebbf8d05bab8a49e251f8ab2f602deaad6bb19afb7010a3038e9b892",
+        "sizeBytes": 74836,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 9,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 1,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "file": "issue9040/1371000-policy-research-application.hwp",
+      "documentDigest": "sha256:23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "775388f3ebbf8d05bab8a49e251f8ab2f602deaad6bb19afb7010a3038e9b892",
+        "sizeBytes": 74836,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 9,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 1,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "file": "issue9040/1371000-policy-research-application.hwp",
+      "documentDigest": "sha256:23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "a12c15ac4a92ae7ba77d0712989933a9bbfc58be7f743092571c28acfa543ac3",
+        "sizeBytes": 83108,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 9,
+      "runtime": null,
+      "review_png": "issue9040-nested-p009-canvas2d-print.png",
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "file": "issue9040/1371000-policy-research-application.hwp",
+      "documentDigest": "sha256:23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "32703330df31e0c1cd7757604deec223ecf79df43f1a53b945a182277fb79fdc",
+        "sizeBytes": 72234,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 9,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 1,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "issue9040-nested-p009-canvaskit-compat-print.png",
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "issue9040-nested-p009",
+      "file": "issue9040/1371000-policy-research-application.hwp",
+      "documentDigest": "sha256:23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "32703330df31e0c1cd7757604deec223ecf79df43f1a53b945a182277fb79fdc",
+        "sizeBytes": 72234,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 9,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 1,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "issue9040-nested-p009-canvaskit-default-print.png",
+      "source_report": "actual-renderer-host-fonts-final"
+    },
+    {
+      "sampleId": "squeeze-title-p001",
+      "file": "issue8947/36481164-squeeze-title-cell.hwpx",
+      "documentDigest": "sha256:7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "6f0b91a72033cac5cc98457a8c833196d6aa446f785c0eb454012eb094bcb527",
+        "sizeBytes": 110036,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 1,
+      "runtime": null,
+      "review_png": null,
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "squeeze-title-p001",
+      "file": "issue8947/36481164-squeeze-title-cell.hwpx",
+      "documentDigest": "sha256:7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "b40d29c871456f1dd21db3b6e8e29354d9ba6a901c9b23060fb1df26f7e2a799",
+        "sizeBytes": 86994,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 1,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "squeeze-title-p001",
+      "file": "issue8947/36481164-squeeze-title-cell.hwpx",
+      "documentDigest": "sha256:7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "screen",
+      "actualProfile": "screen",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "b40d29c871456f1dd21db3b6e8e29354d9ba6a901c9b23060fb1df26f7e2a799",
+        "sizeBytes": 86994,
+        "width": 794,
+        "height": 1123
+      },
+      "page": 1,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": null,
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "squeeze-title-p001",
+      "file": "issue8947/36481164-squeeze-title-cell.hwpx",
+      "documentDigest": "sha256:7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "backend": "canvas2d",
+      "actualBackend": "canvas2d",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "448481b74b4d70cda1c45eaa93b810caaad8351ac72a6d753466facc507d2222",
+        "sizeBytes": 106129,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 1,
+      "runtime": null,
+      "review_png": "squeeze-title-p001-canvas2d-print.png",
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "squeeze-title-p001",
+      "file": "issue8947/36481164-squeeze-title-cell.hwpx",
+      "documentDigest": "sha256:7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "backend": "canvaskit-compat",
+      "actualBackend": "canvaskit-compat",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "ad77a3510d3b25c0818849d8cf28f96cd2d74f920a24c8c1a9b76a761a3166da",
+        "sizeBytes": 81890,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 1,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "squeeze-title-p001-canvaskit-compat-print.png",
+      "source_report": "actual-renderer-isolated"
+    },
+    {
+      "sampleId": "squeeze-title-p001",
+      "file": "issue8947/36481164-squeeze-title-cell.hwpx",
+      "documentDigest": "sha256:7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "backend": "canvaskit-default",
+      "actualBackend": "canvaskit-default",
+      "profile": "print",
+      "actualProfile": "print",
+      "fontFallback": null,
+      "artifact": {
+        "sha256": "ad77a3510d3b25c0818849d8cf28f96cd2d74f920a24c8c1a9b76a761a3166da",
+        "sizeBytes": 81890,
+        "width": 794,
+        "height": 1122
+      },
+      "page": 1,
+      "runtime": {
+        "lastRenderCompleted": true,
+        "passesRuntimeReadinessGate": true,
+        "surfaceBackend": "software",
+        "localTypefaceCount": 0,
+        "localTypefaceLoadFailureCount": 0,
+        "localTypefacePendingCount": 0,
+        "hiddenCanvas2dOverlayUsed": false
+      },
+      "review_png": "squeeze-title-p001-canvaskit-default-print.png",
+      "source_report": "actual-renderer-isolated"
+    }
+  ]
+}

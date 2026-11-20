@@ -64,6 +64,9 @@ Print와 일치했다. 9쪽의 조직도 앞 빈 줄과 10쪽의 `Pension Polici
 | 9쪽 조직도와 후속 실적 표 | [review](../assets/pr-9202/hancom-2024/issue9040-native-p009-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-native-p009-overlay.png) | [review](../assets/pr-9202/hancom-2024/issue9040-wasm-p009-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-wasm-p009-overlay.png) |
 | 10쪽 이어지는 표 | [review](../assets/pr-9202/hancom-2024/issue9040-native-p010-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-native-p010-overlay.png) | [review](../assets/pr-9202/hancom-2024/issue9040-wasm-p010-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-wasm-p010-overlay.png) |
 
+신청서 9쪽은 실제 Studio의 Canvas2D·CanvasKit compat/default에서 화면·인쇄 프로필로 확인했다. 검증 세션에 한해 한양신명조 프로그램을 공급한 후 대상 쪽의 글꼴 폴백은 0건이었다.
+[실제 Studio 캡처와 검증](../assets/integration_open_prs_20261120/actual-studio-renderers/README.md).
+
 ## Merge 후 contributor PR comment 계획
 
 저장 줄을 이용해 표와 뒤 행을 같은 흐름으로 복원한 기여에 감사한다. 한컴과 같은 10쪽
