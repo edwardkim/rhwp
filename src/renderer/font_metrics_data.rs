@@ -213,10 +213,11 @@ pub(crate) fn verified_missing_glyph_supplier(
     ch: char,
 ) -> Option<&'static str> {
     match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
-        // MT.TTF(d1050921…ff44)의 문체부 바탕체에 없는 세 구두점이다.
-        // 독립 한컴 2024 Print online-search-rfp의 5쪽은 본문을 MBatang으로,
-        // 이 구두점만 Haansoft Batang으로 출력한다. HFT 계약은 호출자가 보존한다.
-        ("MBatang", 1000, false, false, '-' | ',' | '·') => Some("Haansoft Batang"),
+        // 독립 한컴 2024 Print online-search-rfp의 5·6쪽은 MBatang에 없는
+        // 영문·숫자·구두점을 한컴바탕으로 그린다. 원본 한글의 공급은 유지한다.
+        ("MBatang", 1000, false, false, ch) if mbatang_print_missing_glyph(ch) => {
+            Some("Haansoft Batang")
+        }
         // batang.TTC(0ea38ac5…c2c8)의 BatangChe face에는 U+2027이 없다.
         // 독립 한컴 2024 Print labor-survey-2022h1 15쪽의 공급자도 한컴바탕이다.
         ("BatangChe", 1024, false, false, '\u{2027}') => Some("Haansoft Batang"),

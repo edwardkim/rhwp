@@ -69,6 +69,18 @@ static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[
         advance_units: 1000,
         em_units: 1000,
     },
+    // #9217 한컴 2024 Print 10·14쪽의 휴먼명조 HFT U+FFED.
+    // 사각형 원점 705에서 공백 없이 뒤따르는 한글 원점 822까지 117 장치
+    // 단위(1em)다. 표시용 한컴바탕의 반각 hmtx는 뒤 글자 원점을 결정하지
+    // 않는다. 같은 Print 대조군의 반각 화살표·원은 기존 반각을 유지한다.
+    OriginalGlyphMetric {
+        face: "휴먼명조",
+        bold: false,
+        italic: false,
+        character: '\u{FFED}',
+        advance_units: 1,
+        em_units: 1,
+    },
     // 80168 구판 HWPX의 한컴2020 Print 30쪽 T10(Type3, xref348):
     // ToUnicode1630의 code79→00B7, Widths1629=384, FontMatrix.001.
     // 대체 TTF가 실제 선택되지 않은 type1도 이 원본 기호 폭을 유지한다.
@@ -264,7 +276,10 @@ pub(crate) fn declared_original_glyph_advance_em(
     // 화학 원본의 독립 한컴2020 Print T11 U+2022는 /Widths와 d1이
     // 모두1000/1000em이다. 표시용 중고딕 프로그램의 cmap 결측 때문에
     // 이 원본 전진을 반각으로 추정하지 않는다. 동명 TTF·다른 style은 별개다.
-    if face == "한양중고딕" && !bold && !italic && character == '\u{2022}' {
+    // #9217 한컴2024 Print 3쪽 T10의 U+2023도 /Widths=1000, FontMatrix=.001이다.
+    // 세 문단에서 삼각형 원점부터 뒤 한글 원점까지 실제로 1em 전진한다.
+    if face == "한양중고딕" && !bold && !italic && matches!(character, '\u{2022}' | '\u{2023}')
+    {
         return Some(1.0);
     }
     // 10k 오라클 547(`pdf/issue547/online-search-rfp-2022.pdf`) 14·15쪽의 기호 슬롯

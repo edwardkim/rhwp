@@ -6924,6 +6924,38 @@ impl LayoutEngine {
         crate::renderer::float_placement::stored_empty_picture_cell_frame(cell, table)
     }
 
+    /// 폭 없는 첫 줄에 기록된 문단 앞 간격은 빈 줄의 좌표다. 한컴 Print
+    /// 에서는 그림만 있는 칸의 자리차지 그림 띠가 칸 안 여백에서 시작한다.
+    pub(super) fn stored_picture_only_cell_starts_at_padding(
+        &self,
+        table: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let profile = self.profile.get();
+        let [para] = cell.paragraphs.as_slice() else {
+            return false;
+        };
+        let [line] = para.line_segs.as_slice() else {
+            return false;
+        };
+        profile.hwpx_stored_layout()
+            && !profile.session_edited()
+            && !self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(table, cell)
+            && line.vertical_pos > 0
+            && crate::renderer::float_placement::stored_picture_only_cell_height_hu(cell).is_some()
+            && styles
+                .para_styles
+                .get(para.para_shape_id as usize)
+                .is_some_and(|style| {
+                    crate::renderer::px_to_hwpunit(style.spacing_before, self.dpi)
+                        == line.vertical_pos
+                })
+    }
+
     /// 실제 셀 재조판 뒤 온전한 행의 예약도 배치와 같은 측정 결과를 소비한다.
     /// 저장 프레임의 유효성이나 행 내부 내용 컷을 이 판정으로 대신하지 않는다.
     pub(crate) fn reflowed_fragment_row_uses_measured_height(
@@ -8655,7 +8687,17 @@ impl LayoutEngine {
                     Alignment::Center | Alignment::Distribute => {
                         inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
                     }
-                    Alignment::Right => inner_area.x + (right_box_w - line_w).max(0.0),
+                    Alignment::Right => {
+                        let right_edge =
+                            super::table_inline_picture_origin::picture_only_saved_right_edge(
+                                para,
+                                inner_area.width,
+                                para_margin_right_px,
+                                self.dpi,
+                            )
+                            .unwrap_or(right_box_w);
+                        inner_area.x + (right_edge - line_w).max(0.0)
+                    }
                     _ => inner_area.x + line_margin,
                 }
             };
@@ -9348,6 +9390,11 @@ impl LayoutEngine {
                             {
                                 // 정렬이 쓴 같은 겹침 없는 자리에서 그림 위끝을 정한다.
                                 text_y_start + hwpunit_to_px(top, self.dpi)
+                            } else if row_filter.is_none()
+                                && !single_row_fragment
+                                && self.stored_picture_only_cell_starts_at_padding(table, cell, styles)
+                            {
+                                content_cell_y + pad_top
                             } else if let Some(frame) = trust_stored_cell_flow.then(|| {
                                 crate::renderer::float_placement::stored_cell_flow_picture_frame(
                                     &cell.paragraphs, cp_idx, pic,
@@ -27182,10 +27229,21 @@ impl LayoutEngine {
                     table,
                     usize::from(cell.row),
                 );
-            if !(same_paragraph || serialized_paragraph_successor)
+            // 첫 문단의 여러 저장 글줄 뒤에 새 셀 좌표가 독립적으로 이어지면,
+            // 이미 선택한 컷은 마지막 줄 상자에서 닫힌다. 다음 조각의 빈
+            // 첫 문단이 0에서 시작해도 끝 줄간격을 두 조각에 예약하지 않는다.
+            let first_paragraph_frame_restart = unit.para_idx == 0
+                && unit.vis_start > 0
+                && unit.vis_end == para.line_segs.len()
+                && next.para_idx == 1
+                && next.vis_start == 0
+                && next_para.text.trim().is_empty()
+                && self.stored_plain_paragraph_restart(cell, table, para, next_para);
+            let progressing_line = (same_paragraph || serialized_paragraph_successor)
+                && next_line.vertical_pos >= line.vertical_pos.saturating_add(line.line_height);
+            if !(progressing_line || first_paragraph_frame_restart)
                 || next_line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
                     != 0
-                || next_line.vertical_pos < line.vertical_pos.saturating_add(line.line_height)
             {
                 return 0.0;
             }

@@ -3700,7 +3700,19 @@ impl LayoutEngine {
                             inner_area.x + (inner_area.width - first_tac_width).max(0.0) / 2.0
                         }
                         Alignment::Right => {
-                            inner_area.x + (inner_area.width - first_tac_width).max(0.0)
+                            let margin_right = styles
+                                .para_styles
+                                .get(para.para_shape_id as usize)
+                                .map_or(0.0, |style| style.margin_right);
+                            let right_edge =
+                                super::table_inline_picture_origin::picture_only_saved_right_edge(
+                                    para,
+                                    inner_area.width,
+                                    margin_right,
+                                    self.dpi,
+                                )
+                                .unwrap_or(inner_area.width);
+                            inner_area.x + (right_edge - first_tac_width).max(0.0)
                         }
                         _ => {
                             inner_area.x
@@ -4254,6 +4266,11 @@ impl LayoutEngine {
                                                 crate::renderer::float_placement::topbottom_flow_vertical_offset_hu(&pic.common),
                                                 self.dpi,
                                             )
+                                    } else if !cell_was_split
+                                        && !is_rowbreak_straddle
+                                        && self.stored_picture_only_cell_starts_at_padding(table, cell, styles)
+                                    {
+                                        cell_y + pad_top
                                     } else if let Some(frame) = (!cell_was_split
                                         && !is_rowbreak_straddle)
                                         .then(|| {

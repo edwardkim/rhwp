@@ -2,6 +2,37 @@
 
 use super::{Paragraph, RenderNode, RenderNodeType};
 
+/// 오른쪽 정렬된 그림만 있는 저장 줄의 오른쪽 경계를 반환한다.
+pub(super) fn picture_only_saved_right_edge(
+    para: &Paragraph,
+    cell_inner_width: f64,
+    margin_right: f64,
+    dpi: f64,
+) -> Option<f64> {
+    use crate::model::{control::Control, paragraph::LineSeg};
+    let [Control::Picture(picture)] = para.controls.as_slice() else {
+        return None;
+    };
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    if !picture.common.treat_as_char
+        || !para.text.is_empty()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.segment_width <= 0
+        || margin_right <= 0.0
+    {
+        return None;
+    }
+    let end = line.column_start.checked_add(line.segment_width)?;
+    let edge = crate::renderer::hwpunit_to_px(end, dpi);
+    let unit = crate::renderer::hwpunit_to_px(1, dpi);
+    // 저장 줄 폭과 문단 여백이 같은 물리 경계를 가리킬 때만 쓴다.
+    ((cell_inner_width - edge - margin_right).abs() <= unit).then_some(edge)
+}
+
 pub(super) fn rendered_picture_paragraph_origin(
     cell_node: &RenderNode,
     para: &Paragraph,

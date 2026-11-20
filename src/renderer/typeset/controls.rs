@@ -538,6 +538,23 @@ pub(super) fn place_table_host_shape_with_storage<S: crate::storage::Storage>(
     if st.has_spilled_page_tail_float(para_idx, ctrl_idx) {
         return Ok(());
     }
+    // 활성 표 조각이 여러 쪽으로 이어져도 같은 호스트의 고정 장식은
+    // 원본 문단의 첫 표 조각이 있는 용지에 한 번만 놓는다.
+    if st.profile.hwpx_stored_layout() && !st.profile.session_edited() {
+        use crate::model::shape::{HorzRelTo, TextWrap, VertRelTo};
+        let fixed_paper_overlay = matches!(ctrl, Control::Shape(shape)
+            if !shape.common().treat_as_char
+                && !shape.common().flow_with_text
+                && shape.common().allow_overlap
+                && shape.common().horz_rel_to == HorzRelTo::Paper
+                && shape.common().vert_rel_to == VertRelTo::Paper
+                && shape.common().text_wrap == TextWrap::InFrontOfText);
+        if fixed_paper_overlay
+            && st.place_paper_overlay_on_opening_table_fragment(para_idx, ctrl_idx, storage)?
+        {
+            return Ok(());
+        }
+    }
     // [#8660] 쪽 영역 안으로 제한한 문단 기준 개체가 본문 아래 끝을 넘으면 개체만 다음 쪽
     // 본문 맨 위에 놓는다. 표를 품은 기준 문단도 본문 문단과 같다(표 칸 안 개체는 무관).
     if st.col_count == 1 {

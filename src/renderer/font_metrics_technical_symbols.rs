@@ -114,10 +114,15 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
     Some((present[index], widths[index]))
 }
 
+/// MT.TTF(d1050921…ff44)의 Unicode cmap에는 공백을 제외한 ASCII가 없다.
+/// HBATANG.TTF(bef63718…4068)는 그 전 범위를 제공하며 독립 Print는 같은 공급자를 쓴다.
+/// 12쪽의 U+2024도 HBATANG에서 178/1024em이며, 두 위치에서 인쇄 전진을 확인했다.
+fn mbatang_print_missing_glyph(ch: char) -> bool {
+    ch.is_ascii_graphic() || matches!(ch, '·' | '․' | '◦' | '「' | '」')
+}
+
 pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
-    // 547 독립 한컴 2024 Print 5쪽의 두 TrueType 프로그램과 실제 cmap을 대조했다.
-    // 원본 문체부 바탕체에 없는 문장부호만 다음 face에 맡긴다.
-    if matches!(ch, '-' | ',' | '·') && !metric.bold && !metric.italic {
+    if mbatang_print_missing_glyph(ch) && !metric.bold && !metric.italic {
         match (metric.name, metric.em_size) {
             ("MBatang", 1000) => return Some(false),
             ("Haansoft Batang", 1024) => return Some(true),
