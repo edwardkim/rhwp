@@ -1,0 +1,54 @@
+{
+  "source": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+  "source_input": {
+    "key": "decree",
+    "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+    "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+    "pdf": "pdf/78494-virtual-convergence-industry-decree-2024.pdf",
+    "pdf_sha256": "3cef9ce52330e33dabc45c99bf52851888eb84d1dc0b4d4bfd011caa2ad32b57",
+    "pages": 74,
+    "reused_exact_mcp_2024": true,
+    "receipt": {
+      "job_id": "4976d354-2ba9-49bf-ba24-7e40b2ef45c9",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_page_count": 74,
+      "input_preprocess": "scripts_disabled"
+    },
+    "bytes": 721957,
+    "pdfinfo": {
+      "Creator": "Hancom PDF 1.3.0.550",
+      "Producer": "Hancom PDF 1.3.0.550",
+      "Pages": "74"
+    }
+  },
+  "backend": "native",
+  "native_sha256": "b8f93c4c40d8b79ecb9f687f0c81cc2704a2e8ac8354c866decc6f8518f14d5e",
+  "wasm_sha256": null,
+  "wasm_js_sha256": null,
+  "font_environment_sha256": "e73416c7ed8550e94bb2514a973bd682dafcef408faa67a7f8e12a1a4ea1af0c",
+  "tsv_sha256": "fce481418606e89116db16efb5c6641114c356d4f00a7bbdf2a3c979ff2ef77b",
+  "visual_contract": {
+    "layout_generation": "2024",
+    "dpi": 96,
+    "radius_px": 2
+  },
+  "compared_pages": 74,
+  "minimum_page": 4,
+  "minimum": "90.59",
+  "focused": {
+    "4": "90.59",
+    "7": "100.00",
+    "16": "99.99"
+  },
+  "image_sha256": {
+    "review-004.png": "72986e0c543dbc75bf63ee717b18b5ea31b2725c53653d978d459bdd507f2460",
+    "overlay-004.png": "897feade565f3412a099e87d576757f5ba62dce87b8c7c3e009e44400d2f9d58",
+    "review-007.png": "e48c2d3c132d766c7d5aeb87e21a758e20bd684f28904861ab774b6503ddca85",
+    "overlay-007.png": "13230281f65ab32506c4ee8be5f37308168544255d97d1344f0b42075b8b63d5",
+    "review-016.png": "3072987d72b311b8023a70ff593383bd73890e22c2d7860fef9563894d465666",
+    "overlay-016.png": "2d135caa54bd888463a2296b9616fcf83e7b3d13add80207fa2afdb2fc43762c"
+  }
+}

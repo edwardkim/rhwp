@@ -97,6 +97,7 @@ Hancom PDF로 인쇄했다. 각 출력의 MCP 엔진·한컴 빌드·Print 경�
 | --- | --- | --- |
 | 정본 보호 입력과 기존 인쇄본 | Native·fresh WASM 46조건, 4,046쪽. 하락·누락 0쪽, 상승 4쪽. | [조건별 TSV와 검증 영수증](final-protected/validation.json) |
 | #7905 종합부동산세법 시행규칙, 한컴 2020 Print | Native·fresh WASM 각 6쪽. 공식 표시 최저값은 두 경로 모두 2쪽 98.82%. 1쪽은 Native 99.99568%, WASM 99.99268%. | [한컴 2020 영수증과 이미지 해시](maintainer-repair/hancom-2020-issue7905/evidence.json) · [Native TSV](maintainer-repair/hancom-2020-issue7905/native/silhouette.tsv) · [WASM TSV](maintainer-repair/hancom-2020-issue7905/wasm/silhouette.tsv) |
+| 가상융합산업 진흥법 시행령, 한컴 2024 Print | Native·fresh WASM 각 74쪽. 최저 4쪽 Native 90.59%, WASM 90.51%. | [전쪽 TSV와 4·7·16쪽 review·overlay](maintainer-repair/hancom-2024-decree/README.md) |
 
 #7905의 1쪽에서 시행일·개정 문구와 바로 아래 본문을 직접 대조했다. 두 경로에서 같은 쪽의
 문구 순서와 조판 소속을 확인했다.
