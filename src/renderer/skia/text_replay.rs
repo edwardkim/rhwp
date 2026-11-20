@@ -348,7 +348,8 @@ impl SkiaTextReplay<'_> {
                 let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
-                let symbol_sources = crate::renderer::implicit_symbol::sources(metric_source, text);
+                let symbol_sources =
+                    crate::renderer::implicit_symbol::sources(metric_source, text, style);
                 let metric_text = crate::renderer::composer::display_projection_metric_text(
                     metric_source,
                     text,

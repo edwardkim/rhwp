@@ -41,9 +41,20 @@ pub(crate) fn advance_em(source: char) -> Option<f64> {
     }
 }
 
+fn has_original_hft_bullet(style: &TextStyle) -> bool {
+    style.source_font_is_hft
+        && !style.italic
+        && style
+            .original_glyph_metric_family
+            .as_deref()
+            .is_some_and(|face| face == "한양신명조")
+}
+
 /// 일대일 표시 투영만 원 주소를 연결한다. 옛한글 확장 등은 추측하지 않는다.
-pub(crate) fn sources(source: &str, display: &str) -> Option<Vec<char>> {
-    if !source.chars().any(|ch| advance_em(ch).is_some())
+pub(crate) fn sources(source: &str, display: &str, style: &TextStyle) -> Option<Vec<char>> {
+    if !source
+        .chars()
+        .any(|ch| advance_em(ch).is_some() || (ch == '•' && has_original_hft_bullet(style)))
         || source.chars().count() != display.chars().count()
     {
         return None;
@@ -57,8 +68,24 @@ pub(crate) fn ink(
     index: usize,
     style: &TextStyle,
 ) -> Option<(InkShape, f64, f64, f64, f64)> {
+    let source = sources?.get(index).copied()?;
+    let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+    if source == '•' && has_original_hft_bullet(style) {
+        // 한컴 2020 Print의 화학제품 표시 기준 91쪽 Type3 T11/T18은
+        // 같은 1em 원형 잉크를 쓰며, 굵게만 0.02em 외곽선을 더한다.
+        // 원점·장평은 문서에서 가져오고 전진폭은 기존 조판 결정에 맡긴다.
+        let size = style.script_font_size(style.effective_font_size());
+        let bold_radius = if style.bold { 10.0 } else { 0.0 };
+        return Some((
+            InkShape::Ellipse,
+            size * ratio * (501.375 / 1000.0),
+            -size * (348.0 / 1000.0),
+            size * ratio * ((185.625 + bold_radius) / 1000.0),
+            size * ((186.0 + bold_radius) / 1000.0),
+        ));
+    }
     // (도형, 중심 x, 기준선 위 중심 높이, 반지름) — 원 프로그램의 2048 단위.
-    let (shape, center_x, center_y, radius) = match sources?.get(index).copied()? {
+    let (shape, center_x, center_y, radius) = match source {
         '\u{f09f}' => (InkShape::Ellipse, 469.0, 740.0, 296.0),
         '\u{f0a7}' => (InkShape::Rectangle, 469.0, 740.0, 296.0),
         // 안쪽 반지름 592 / 바깥 740.
@@ -82,7 +109,6 @@ pub(crate) fn ink(
         _ => return None,
     };
     let size = style.script_font_size(style.font_size);
-    let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
     Some((
         shape,
         size * ratio * (center_x / 2048.0),

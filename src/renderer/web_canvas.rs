@@ -2774,7 +2774,7 @@ impl Renderer for WebCanvasRenderer {
         let old_hangul_font = font_setup.old_hangul_descriptor();
         self.ctx.set_font(font);
 
-        let symbol_sources = super::implicit_symbol::sources(&metric_source, text);
+        let symbol_sources = super::implicit_symbol::sources(&metric_source, text, style);
         // 클러스터 분할
         let clusters = contextual_text::coalesce(split_into_clusters(text));
 
