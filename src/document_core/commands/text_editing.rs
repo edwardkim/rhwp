@@ -6494,14 +6494,45 @@ impl DocumentCore {
                     }
                 }
                 Some(Control::Shape(shape)) => {
-                    let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
-                        .ok_or_else(|| {
+                    if cell_idx == super::super::TABLE_CAPTION_CELL_SENTINEL {
+                        &mut Self::shape_caption_mut(shape)
+                            .as_mut()
+                            .ok_or_else(|| {
+                                HwpError::RenderError(format!(
+                                    "경로[{}]: 도형에 캡션이 없습니다",
+                                    i
+                                ))
+                            })?
+                            .paragraphs
+                    } else {
+                        let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                            .ok_or_else(|| {
                             HwpError::RenderError(format!(
                                 "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",
                                 i, ctrl_idx
                             ))
                         })?;
-                    &mut text_box.paragraphs
+                        &mut text_box.paragraphs
+                    }
+                }
+                // 각주·미주는 셀 0이다(머리말·꼬리말과 같은 꼴).
+                Some(Control::Footnote(note)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 각주의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    &mut note.paragraphs
+                }
+                Some(Control::Endnote(note)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 미주의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    &mut note.paragraphs
                 }
                 Some(Control::Picture(pic)) => {
                     if cell_idx != 0 {

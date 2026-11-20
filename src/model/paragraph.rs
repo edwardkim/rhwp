@@ -1410,6 +1410,18 @@ impl Paragraph {
         );
     }
 
+    /// 제목 차례 표시 하나를 그 8유닛 자리와 함께 걷어낸다.
+    pub(crate) fn remove_title_mark(&mut self, index: usize) {
+        if index >= self.title_marks.len() {
+            return;
+        }
+        let char_idx = self.title_marks.remove(index).char_idx;
+        self.remove_leading_gap_slot(char_idx);
+        if !self.title_marks.is_empty() {
+            self.control_mask |= 1u32 << 0x0008;
+        }
+    }
+
     /// `char_idx` 글자 앞 갭의 첫 슬롯(8유닛)을 걷어낸다.
     ///
     /// 나누기로 잘린 누름틀의 끝 표지처럼 다른 문단으로 간 슬롯 자리에 쓴다. 남겨 두면 그
