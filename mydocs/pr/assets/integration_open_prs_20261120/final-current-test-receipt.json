@@ -51,5 +51,19 @@
     "exit": 0,
     "passed": 268,
     "log_sha256": "7bf4f6b21f87e17805068e0b3f91caadd936004c5f1e6b20e19039d97165cd7a"
+  },
+  "native_skia_library": {
+    "exit": 0,
+    "workspace_binaries": 4,
+    "passed": 4034,
+    "failed": 0,
+    "ignored": 12,
+    "log_sha256": "741d5f4a9e9664f5266699d1b39204a6d407e657e42c1beddbd8ab7c567b54fb"
+  },
+  "rust_unit_test_tiers": {
+    "exit": 0,
+    "tests": 4094,
+    "modules": 295,
+    "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
   }
 }

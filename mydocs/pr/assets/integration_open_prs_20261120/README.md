@@ -12,7 +12,8 @@
 제품 소스 `3901aa782d4445efb171ec4ffb026f2a459c2daf`에서 macOS 최소 글꼴 환경의 전체
 Nextest 13,839건이 통과했다. 실패 0건, 제외 45건이며 테스트 바이너리는 55개다.
 Native·WASM Clippy, 워크스페이스 빌드·전체 타깃 Clippy, 포맷·suite 검사 및
-Visual Sweep Python 268건도 통과했다. [실행 ID와 로그 해시](final-current-test-receipt.json).
+Visual Sweep Python 268건도 통과했다. Native Skia 라이브러리 검사는 워크스페이스 전체
+4,034건 통과, 실패 0건, 무시 12건이다. [실행 ID와 로그 해시](final-current-test-receipt.json).
 
 최적화한 WASM을 포함한 Studio 배포본을 새 브라우저에서 열어 초기화 요청의 JS·WASM 응답
 해시를 빌드 산출물과 대조했다. 실제 편집 경로에서 캡션, 문단 모양 복사, 한 줄 셀의
