@@ -357,6 +357,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "[#5524] 세션 호환 모드 플래그·재페이지네이션만 갱신. 문서 IR 무변경.",
     ),
     (
+        "mod.rs",
+        "set_print_png_rgb555",
+        Exempt::SessionState,
+        "현재 세션의 Print 이미지 색상 옵션을 설정하고 출력 캐시만 비운다. 저장 문서의 IR과 원본 스트림은 유지한다.",
+    ),
+    (
         "queries/rendering.rs",
         "begin_deferred_pagination",
         Exempt::SessionState,
