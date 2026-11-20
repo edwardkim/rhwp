@@ -1528,10 +1528,10 @@ export class WasmBridge {
     const local = new Date(time.getTime() + offset * 60_000).toISOString().slice(0, -1);
     const zone = (offset < 0 ? '-' : '+') + digits(Math.floor(Math.abs(offset) / 60))
       + ':' + digits(Math.abs(offset) % 60);
-    doc.setPrintJobContext(JSON.stringify({
-      fileName: this.fileName,
-      printedAt: local + zone,
-    }));
+    // 로드 경로와 편집기의 문서명은 유지하고 인쇄 바닥글에는 파일명만 넘긴다.
+    const leaf = this.fileName.split(/[/\\]/).pop()?.replace(/\p{Cc}/gu, '') ?? '';
+    const fileName = leaf.trim() ? Array.from(leaf).slice(0, 255).join('') : '문서.hwp';
+    doc.setPrintJobContext(JSON.stringify({ fileName, printedAt: local + zone }));
     try {
       return operation();
     } finally {

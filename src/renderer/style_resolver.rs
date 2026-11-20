@@ -415,6 +415,15 @@ pub(crate) fn resolve_styles_with_environment(
                                             .is_none()
                                 })
                         });
+                    let source_face = original.requested_face.as_deref();
+                    let source_metric_table = source_face.and_then(|face| {
+                        crate::renderer::font_metrics_data::legacy_hft_metric_face(face).or_else(
+                            || {
+                                has_own_metric_table(&face, style.bold, style.italic)
+                                    .then_some(face)
+                            },
+                        )
+                    });
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
                         && preserve_source_metrics
@@ -422,34 +431,35 @@ pub(crate) fn resolve_styles_with_environment(
                             || style.font_families_source_hft[lang]
                             || verified_legacy_widths_with_explicit_fallback)
                         && original.embedded != Some(true)
-                        && original.requested_face.as_deref().is_some_and(|face| {
-                            crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
-                                || has_own_metric_table(&face, style.bold, style.italic)
-                                || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
-                        });
+                        && (source_metric_table.is_some()
+                            || source_face.is_some_and(
+                                crate::renderer::font_metrics_data::has_declared_original_glyph_metrics,
+                            ));
                     if keep_source_metrics
                         && source_font.is_none_or(|face| face.native_program.is_none())
                     {
-                        style.font_families_metric_face[lang] = original
-                            .requested_face
-                            .as_deref()
-                            .and_then(|face| {
-                                crate::renderer::font_metrics_data::legacy_hft_metric_face(face)
-                                    .or_else(|| {
-                                        has_own_metric_table(&face, style.bold, style.italic)
-                                            .then_some(face)
-                                    })
-                            })
-                            .map(str::to_owned);
+                        style.font_families_metric_face[lang] =
+                            source_metric_table.map(str::to_owned);
                     }
-                    let explicit_true_type = !keep_source_metrics
-                        && environment.is_some_and(|env| env.selects_true_type(target));
+                    let declared_true_type =
+                        environment.is_some_and(|env| env.selects_true_type(target));
+                    let explicit_true_type = !keep_source_metrics && declared_true_type;
                     let explicit_replacement = environment.is_some_and(|env| {
                         decision
                             .requested_face
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
+                    // 개별 원본 글리프의 폭은 유지할 수 있지만, 그 사실만으로
+                    // 명시적 TrueType 대체에 원 HFT의 그래픽 프레임을 적용하지 않는다.
+                    // 실제 정적 TrueType 공급은 출력 레이어에서 자기 프레임을 선택한다.
+                    if explicit_replacement
+                        && declared_true_type
+                        && keep_source_metrics
+                        && source_metric_table.is_none()
+                    {
+                        style.font_families_hft_print_frame[lang] = false;
+                    }
                     // 기존 명시 공급의 윤곽은 전진 칸에 눌러 그리지 않는다(#8188).
                     // 생략된 설정의 기존 전진/leader와 명시 자연 전진은 별도로 선택한다.
                     style.font_families_preserve_glyph_ink[lang] =

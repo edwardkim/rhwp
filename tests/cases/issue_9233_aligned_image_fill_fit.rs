@@ -24,7 +24,8 @@
 //! - 증거: `mydocs/pr/assets/issue_9233/`(native·wasm 전쪽 TSV, 1쪽 review·overlay PNG)
 #![cfg(not(target_arch = "wasm32"))]
 
-use rhwp::document_core::DocumentCore;
+use rhwp::document_core::{DocumentCore, PrintJobContext};
+use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, RenderProfile};
 use std::path::Path;
 
 const SAMPLE: &str = "samples/issue9233/high-school-transfer-plan-cover-band.hwp";
@@ -134,4 +135,81 @@ fn aligned_image_fill_shrinks_the_overflowing_axis_to_the_area() {
         (iw - ih).abs() < 0.01,
         "도형 채우기 그림은 원래 종횡비(정사각형)를 유지해야 한다: {iw:.2}×{ih:.2}"
     );
+}
+
+/// 고정형 좌표와 관계 검사. 한컴 2024 Print 2쪽의 96 DPI 기준이며,
+/// Native·fresh WASM raw 모두 100.00%다. 2쪽은 문서의 쪽 번호 재시작으로 '1쪽'이다.
+#[test]
+fn automatic_footer_follows_the_print_job_without_changing_the_document() {
+    const FILE_NAME: &str = "hwp-no-scripts-5b26f65dc7954a6da84dac2a1373c8ee.hwp";
+    let mut core = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue9233/high-school-transfer-plan-cover-band.hwp"
+    ))
+    .expect("인쇄 fixture 열기");
+    core.set_hangul2024_compat(true);
+    assert_eq!(core.page_count(), PDF_PAGES);
+
+    let page = 1;
+    let original = core.export_hwp_native().expect("원본 저장 사본");
+    let render = |core: &DocumentCore, profile| {
+        core.render_page_svg_layer_with_profile_native(page, profile)
+            .expect("2쪽 SVG")
+    };
+    let original_print = render(&core, RenderProfile::Print);
+    let original_screen = render(&core, RenderProfile::Screen);
+    let job = PrintJobContext::from_json(&format!(
+        r#"{{"fileName":"{FILE_NAME}","printedAt":"2026-11-20T20:57:56+09:00"}}"#
+    ))
+    .expect("수용한 독립 Print의 작업 정보");
+    core.set_print_job_context(Some(job));
+
+    let expected = [
+        (FILE_NAME, 75.52),
+        ("2026-11-20 오후 8:57", 330.24),
+        ("22쪽 중 1쪽", 652.96),
+    ];
+    let layer = core
+        .build_page_layer_tree_with_profile(page, RenderProfile::Print)
+        .expect("2쪽 인쇄 레이어");
+    fn text_positions(node: &LayerNode, expected: &str, positions: &mut Vec<(f64, f64)>) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    text_positions(child, expected, positions);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                text_positions(child, expected, positions);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    match op {
+                        PaintOp::TextRun { bbox, run, .. } if run.text == expected => {
+                            positions.push((bbox.x, bbox.y + run.baseline));
+                        }
+                        _ => {}
+                    }
+                }
+            }
+        }
+    }
+    for (text, reference_x) in expected {
+        let mut positions = Vec::new();
+        text_positions(&layer.root, text, &mut positions);
+        assert_eq!(positions.len(), 1, "자동 바닥글 항목 소유: {text}");
+        let (x, baseline) = positions[0];
+        assert!((x - reference_x).abs() <= 1.0, "{text} 시작 x={x}");
+        assert!(
+            (baseline - 1095.04).abs() <= 1.0,
+            "{text} 기준선 y={baseline}"
+        );
+    }
+    assert_eq!(render(&core, RenderProfile::Screen), original_screen);
+    assert_eq!(
+        core.export_hwp_native().expect("인쇄 중 저장 사본"),
+        original
+    );
+
+    core.set_print_job_context(None);
+    assert_eq!(render(&core, RenderProfile::Print), original_print);
 }
