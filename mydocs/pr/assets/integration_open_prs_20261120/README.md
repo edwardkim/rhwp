@@ -16,7 +16,7 @@
 | 실제 Studio | 테스트 2,822건 통과, 제품 빌드·반복 저장·재열기 확인 |
 | 원 PR 시각 비교 | Native·fresh WASM 26조건 540쪽, 90% 미만 및 고정 기준 대비 2%p 초과 하락 0쪽. 두 출력 경로의 #9202 9·10쪽만 제품 PNG가 달라졌다. |
 | 편람·공개 보호 | 편람 HWPX Native 383쪽과 기여자 공통 보호 8조건 통과 |
-| 메인터너 정본 보호 | 46조건 4,046쪽 전부 대조. 미달 2쪽으로 머지 보류. |
+| 메인터너 정본 보호 | 보정 전 46조건 4,046쪽을 대조해 미달 2쪽을 확인했다. 보정 후 해당 두 문서는 Native·fresh WASM 160쪽 모두 보호값을 충족했다. |
 
 정본 보호는 Chrome Canvas 기반 fresh WASM과 Native Skia의 Print 출력을 각각 독립 한컴 Print와
 96 DPI로 대조한 색상 경계 보정 전 2px raw 실루엣의 공식 두 자리 값을 사용했다. Mac에서
@@ -37,15 +37,19 @@
 [보정 후 review](nested-after-p005-review.png) · [overlay](nested-after-p005-overlay.png) ·
 [Native 전쪽 TSV](nested-native.tsv).
 
-## 남은 WASM 두 쪽
+## 보호 미달 두 쪽의 메인터너 보정
 
-| 문서·쪽 | 정본 | 기준·후보 | 직접 비교 |
-| --- | ---: | ---: | --- |
-| 가상융합산업 진흥법 시행령 19쪽 | 99.74% | 99.73% | [review](decree-p019-review.png) · [overlay](decree-p019-overlay.png) |
-| 종합부동산세법 시행규칙 #7905 1쪽 | 99.98% | 99.97% | [review](issue7905-p001-review.png) · [overlay](issue7905-p001-overlay.png) |
+| 문서·쪽 | WASM 보호값 | 보정 전 raw | 보정 후 raw | 보정 후 대조 |
+| --- | ---: | ---: | ---: | --- |
+| 가상융합산업 진흥법 시행령 19쪽 | 99.74% | 99.73446% | 100.00000% | [review](maintainer-repair/decree-p019-review.png) · [overlay](maintainer-repair/decree-p019-overlay.png) |
+| 종합부동산세법 시행규칙 #7905 1쪽 | 99.98% | 99.96967% | 99.99540% | [review](maintainer-repair/issue7905-p001-review.png) · [overlay](maintainer-repair/issue7905-p001-overlay.png) |
 
 Google 서명과 배포 SHA-256을 확인한 Chrome 157.0.8103.79에서 두 쪽을 각각 다시
 산출했다. 같은 환경에서 고정 기준과 후보의 PNG 해시가 각 쪽마다 일치했고, Chrome .80에서
 얻은 PNG 해시와도 같았다. 시행령 차이는 그래프 이미지 범례 주변에, 시행규칙 차이는 제목 아래
 시행일·개정 문구와 일부 본문 글자에 남는다. 두 쪽에서 통합으로 인한 출력 변화는 측정되지 않았다.
-정본 표시값 미달의 원인이 해소되면 두 문서 전쪽과 정본 보호 전체를 확인한다.
+
+한컴 2022 Print의 RGB555 색상 전달과 #7905의 머리말·꼬리말 제어문자 높이 소유를 독립 출력으로
+확인했다. 소스 보정 후 Native·fresh WASM에서 시행령 각 74쪽과 시행규칙 각 6쪽을 같은 기준
+PDF 및 보호값에 대조했다. fresh WASM은 Mac에서 locked wrapper의 `--no-opt`로 빌드했다.
+[원인과 독립 대조](maintainer-cause.md) · [전쪽 결과와 생산물 해시](maintainer-repair/verification.json).

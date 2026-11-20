@@ -2,7 +2,9 @@
 
 ## 최종 판정
 
-**머지 보류 — 통합 후보의 정본 WASM 보호 두 쪽이 하한에 도달해야 한다.**
+**보호 미달 두 쪽 보정 완료 — 대상 문서 Native·fresh WASM 160쪽이 페이지별 보호값을 충족했다.**
+
+[메인터너 보정 원인](../assets/integration_open_prs_20261120/maintainer-cause.md) · [전쪽 결과](../assets/integration_open_prs_20261120/maintainer-repair/verification.json). 최종 통합 승인에는 새 코드의 전체 검증이 필요하다.
 원 PR의 분할 셀 흐름 개선과 뒤 행 보존은 고정 기준 및 독립 Print와 확인했다.
 [통합 검증](../assets/integration_open_prs_20261120/README.md).
 
