@@ -19,9 +19,9 @@ JPEG 자원은 2022 Print와 SHA-256도 일치했다. 2020 Print의 같은 그�
 | 한컴 2020 대조 | `d59aa782fa93c271d3bd1f21d247d4f0fd9f8d60876da815901cc4640b24fdb8` | 0 | 61,350 |
 | 한컴 2024 대조 | `a96ceaf2edf5ee5424f3283915fa3259e7c3932b6b2115fa5671fd9907368d74` | 61,350 | 0 |
 
-2020과 2022가 공유하는 기존 조판 세대 설정에서 Print PNG의 압축 전 색상 변환을 선택할 수 있게 했다.
-시행령 보호 비교에는 기존 `--compat 2022`와 함께 `--print-png-rgb555`를 사용한다. 이 옵션은
-Native Skia와 WASM Canvas2D가 공통 Print 이미지 생산 경로를 선택하며, 실행 기록에도 남는다.
+2020과 2022가 공유하는 조판 세대에서 Print PNG의 압축 전 색상 변환을 분리했다.
+Visual Sweep은 기준 PDF의 `Creator`와 `Producer`를 확인해 한컴 2022 Hancom PDF 출력에서
+RGB555를 자동 선택한다. Native Skia와 WASM Canvas2D에 같은 설정을 전달하고 판단 근거를 기록한다.
 
 ## 종합부동산세법 시행규칙 1쪽
 

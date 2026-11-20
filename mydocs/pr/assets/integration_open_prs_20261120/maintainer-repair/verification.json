@@ -161,7 +161,7 @@
       "duration_seconds": 2.006
     },
     "visual_sweep_python_tests": {
-      "passed": 267
+      "passed": 268
     },
     "handbook_native": {
       "status": "passed",
@@ -170,6 +170,74 @@
       "regressions": 0,
       "seconds": 355.66,
       "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+    },
+    "registry_nextest": {
+      "passed": 7
+    },
+    "full_nextest": {
+      "source_head": "d8583287e6ae852e4dd7e48f49f7d4ad62f30297",
+      "passed": 13837,
+      "failed": 0,
+      "skipped": 45,
+      "duration_seconds": 421.4,
+      "log_sha256": "ba184db3625ec926482425e40d15a358cbde24383e569766886204b11c35da68"
+    },
+    "base_reproduced_knowledge_map_python_failures": [
+      "test_map_not_rewritten",
+      "test_peer_skills_exist_but_codex_not_rewritten",
+      "test_transcripts_are_excerpted_not_live"
+    ],
+    "rust_gates": {
+      "native_clippy": "passed",
+      "wasm_clippy": "passed",
+      "workspace_build": "passed",
+      "all_targets_clippy": "passed",
+      "skia_lib": "passed"
+    },
+    "skia_lib": {
+      "passed": 3852,
+      "failed": 0,
+      "ignored": 12
     }
+  },
+  "automatic_reference_print_input": {
+    "producer": "Hancom PDF 1.3.0.550",
+    "creator": "Hwp 2022 0.0.0.0",
+    "cases": [
+      {
+        "key": "issue7905",
+        "backend": "native",
+        "page_count": 6,
+        "print_png_rgb555": false,
+        "tsv": "issue7905-native.tsv",
+        "matching_previous_png_and_tree": true
+      },
+      {
+        "key": "decree",
+        "backend": "native",
+        "page_count": 74,
+        "print_png_rgb555": true,
+        "tsv": "decree-native.tsv",
+        "matching_previous_png_and_tree": true
+      },
+      {
+        "key": "issue7905",
+        "backend": "wasm",
+        "page_count": 6,
+        "print_png_rgb555": false,
+        "tsv": "issue7905-wasm.tsv",
+        "matching_previous_png_and_tree": true
+      },
+      {
+        "key": "decree",
+        "backend": "wasm",
+        "page_count": 74,
+        "print_png_rgb555": true,
+        "tsv": "decree-wasm.tsv",
+        "matching_previous_png_and_tree": true
+      }
+    ],
+    "pages": 160,
+    "sweep_sha256": "22578e30d19286de54fbbac1550713f896b1905dff75d54ef9d1db7be2bbd36f"
   }
 }

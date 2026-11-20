@@ -54,6 +54,16 @@ Google 서명과 배포 SHA-256을 확인한 Chrome 157.0.8103.79에서 두 쪽�
 PDF 및 보호값에 대조했다. fresh WASM은 Mac에서 locked wrapper의 `--no-opt`로 빌드했다.
 [원인과 독립 대조](maintainer-cause.md) · [전쪽 결과와 생산물 해시](maintainer-repair/verification.json).
 
-보정한 제품 소스에서 집중 회귀 10건과 Visual Sweep Python 검사 267건이 통과했다.
+Visual Sweep은 기준 PDF의 제품·인쇄 드라이버를 읽어 RGB555를 자동 선택한다.
+수동 플래그 없이 다시 실행한 Native·WASM 160쪽의 PNG·TSV·render tree는 모두 앞서 보관한
+출력과 같은 SHA-256이었다.
+
+보정한 제품 소스에서 집중 회귀 10건과 Visual Sweep Python 검사 268건이 통과했다.
 필수 편람 HWPX Native 검사도 383쪽 전부 통과했다. 공식 표시 최저값은 99.97%이며
 페이지별 보호값 하락은 0쪽이다.
+
+신규 PNG JSON 필드와 문서 저장에 영향을 주지 않는 세션 설정을 기존 계약에 등록했다.
+등록 후 계약 검사 7건을 통과했다. 전체 Nextest 재실행은 13,837건 통과, 실패 0건,
+제외 45건이다. 별도로 실행한 지식지도 Python 검사 3건은 고정 devel에서도 동일하게 실패했다.
+Native·WASM Clippy, 워크스페이스 빌드 및 전체 타깃 Clippy도 통과했다.
+Native Skia 라이브러리는 3,852건 통과, 제외 12건이다.
