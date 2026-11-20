@@ -421,14 +421,29 @@ impl LayoutEngine {
                     text_direction: 0,
                 }],
             };
+            // 캡션은 실제로 그려진 그림 왼쪽에서 시작한다. 글줄이 그린 그림은 등록 자리가
+            // 정렬 계산과 달라 그 자리를 쓴다(한컴 12.30: 글자처럼 취급 그림 바로 아래).
+            let image_x = registered_inline_pos
+                .map(|(registered_x, _)| registered_x)
+                .unwrap_or(pic_x + margin_left);
+            let ext_left = hwpunit_to_px(
+                caption.margin_extension_left(&pic.common.margin) as i32,
+                self.dpi,
+            );
+            let ext_w = hwpunit_to_px(
+                caption.text_width(pic.common.width, &pic.common.margin) as i32
+                    - pic.common.width as i32,
+                self.dpi,
+            )
+            .max(0.0);
             self.layout_caption(
                 tree,
                 col_node,
                 caption,
                 styles,
                 col_area,
-                pic_x,
-                pic_w,
+                image_x - ext_left,
+                pic_w + ext_w,
                 cap_y,
                 bin_data_content,
                 Some(cell_ctx),
