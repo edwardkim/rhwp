@@ -1,0 +1,86 @@
+//! 관계형: 글자가 없는 테두리 없는 겹침의 폭과 캐럿 한 칸.
+//! 한/글 12.30 Mac에서 `앞[빈 겹침]뒤끝`(HWP·HWPX)을 열면 포갠 겹침은 폭 없이 캐럿 한 칸만 두고,
+//! 펼친 겹침은 전각 한 칸을 비운다. 절대 배치 좌표는 고정하지 않는다.
+#![cfg(not(target_arch = "wasm32"))]
+
+use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+/// `앞뒤끝`의 `뒤` 앞에 글자 없는 테두리 없는 겹침을 둔다. overlap이 참이면 포갠 겹침이다.
+fn fixture(overlap: bool) -> DocumentCore {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "앞뒤끝").unwrap();
+    core.insert_char_overlap_native(
+        0,
+        0,
+        1,
+        &format!(r#"{{"text":"가","shape":0,"overlap":{overlap}}}"#),
+    )
+    .unwrap();
+    let mut doc = core.document().clone();
+    for control in &mut doc.sections[0].paragraphs[0].controls {
+        if let Control::CharOverlap(co) = control {
+            co.chars.clear();
+            co.char_shape_ids.truncate(1);
+        }
+    }
+    core.set_document(doc);
+    core
+}
+
+/// 첫 문단 글자 run의 (글, 왼쪽 x)와 겹침 run의 폭.
+fn runs(node: &RenderNode, text: &mut Vec<(String, f64)>, overlap: &mut Vec<f64>) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if run.para_index == Some(0) {
+            if run.char_overlap.is_some() {
+                overlap.push(node.bbox.width);
+            } else if !run.text.is_empty() {
+                text.push((run.text.clone(), node.bbox.x));
+            }
+        }
+    }
+    for child in &node.children {
+        runs(child, text, overlap);
+    }
+}
+
+fn layout(core: &DocumentCore) -> (f64, f64) {
+    let tree = core.build_page_render_tree(0).unwrap();
+    let (mut text, mut overlap) = (Vec::new(), Vec::new());
+    runs(&tree.root, &mut text, &mut overlap);
+    assert_eq!(overlap.len(), 1, "{text:?}");
+    let x = |needle: &str| {
+        text.iter()
+            .find(|(t, _)| t.starts_with(needle))
+            .map(|(_, x)| *x)
+            .unwrap_or_else(|| panic!("{needle}: {text:?}"))
+    };
+    (overlap[0], x("뒤") - x("앞"))
+}
+
+#[test]
+fn empty_borderless_overlap_has_no_width() {
+    let core = fixture(true);
+    let (width, gap) = layout(&core);
+    assert_eq!(width, 0.0);
+    // `뒤`는 `앞` 한 글자 폭만큼만 뒤에 선다.
+    let (_, spread_gap) = layout(&fixture(false));
+    assert!(spread_gap > gap + 5.0, "{spread_gap} / {gap}");
+    for bytes in [
+        core.export_hwp_native().unwrap(),
+        core.export_hwpx_native().unwrap(),
+    ] {
+        let saved = DocumentCore::from_bytes(&bytes).unwrap();
+        assert_eq!(layout(&saved).0, 0.0);
+    }
+}
+
+#[test]
+fn empty_borderless_spread_overlap_keeps_a_full_width_cell() {
+    let core = fixture(false);
+    let (width, _) = layout(&core);
+    let size = 10.0 * 96.0 / 72.0;
+    assert!((width - size).abs() < 1.0, "{width}");
+}
