@@ -53,6 +53,7 @@ pub mod height_cursor;
 pub mod height_measurer;
 pub(crate) mod hft_ascii_evidence;
 pub(crate) mod hft_outline;
+pub(crate) mod hidden_pictures;
 pub mod html;
 pub(crate) mod hwp3_caption_host;
 pub mod hyperlinks;

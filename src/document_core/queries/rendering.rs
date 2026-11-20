@@ -8731,6 +8731,9 @@ impl DocumentCore {
         // 두 그림의 미세한 세로 스케일 차이로 인한 잔상(이중 라인) 제거.
         // build 직후 1회만 적용 — 모든 렌더러(SVG/Canvas/Skia/HTML/Layer) 공통.
         tree.clip_overlapping_same_bin_images();
+        if !self.show_pictures {
+            crate::renderer::hidden_pictures::hide_pictures(&mut tree);
+        }
         Ok(tree)
     }
 

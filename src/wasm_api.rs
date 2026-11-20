@@ -1220,6 +1220,20 @@ impl HwpDocument {
         self.invalidate_page_tree_cache();
     }
 
+    /// 편집 화면에 그림을 그리는지 반환한다.
+    #[wasm_bindgen(js_name = getShowPictures)]
+    pub fn get_show_pictures(&self) -> bool {
+        self.show_pictures
+    }
+
+    /// 한컴 보기 > 그림. 끄면 그림 개체는 회색 파선 자리 상자로, 쪽·셀 배경 그림은 빼고 그린다.
+    /// 도형 면을 채운 그림·차트·수식은 그대로다. 인쇄할 때는 켜고 그린다.
+    #[wasm_bindgen(js_name = setShowPictures)]
+    pub fn set_show_pictures(&mut self, enabled: bool) {
+        self.show_pictures = enabled;
+        self.invalidate_page_tree_cache();
+    }
+
     /// 편집 화면의 바탕쪽을 흐리게 그릴지 반환한다.
     #[wasm_bindgen(js_name = getDimMasterPages)]
     pub fn get_dim_master_pages(&self) -> bool {
