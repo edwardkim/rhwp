@@ -2015,8 +2015,8 @@ struct FillCursor {
     word_gap_natural_hwp: Option<i32>,
     /// 물리 프레임의 폭이 확정되면 추정 메트릭의 초과 허용을 얹지 않는다.
     allow_metric_tolerance: bool,
-    /// 같은 목록 상자에 저장된 마지막 자동 글자가 차지하는 끝 자간을 확인한다.
-    preserve_cached_terminal_ink: bool,
+    /// 문단 끝의 자동 줄바꿈은 마지막 글자의 끝 자간을 제외한 폭으로 판정한다.
+    fit_terminal_ink: bool,
     /// 등간격 탭 격자가 속한 단/셀 좌표계의 현재 줄 원점.
     tab_grid_origin_px: Option<f64>,
     finished: bool,
@@ -2041,7 +2041,7 @@ impl FillCursor {
             fs_at_last_break: 0.0,
             word_gap_natural_hwp: None,
             allow_metric_tolerance: true,
-            preserve_cached_terminal_ink: false,
+            fit_terminal_ink: false,
             tab_grid_origin_px: None,
             finished: false,
             emitted_any: false,
@@ -2759,7 +2759,7 @@ fn fill_one_interval(
                 let terminal_tracking = at_written_line_end
                     && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0;
                 let w_hwp_fit = if terminal_tracking
-                    && !cursor.preserve_cached_terminal_ink
+                    && !cursor.fit_terminal_ink
                     && cursor.lw + w_hwp
                         <= effective_width + line_break_tolerance_hwp(effective_width)
                 {
@@ -5078,17 +5078,23 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     let first_row = frame.row_count();
     let frame_checkpoint = frame.try_append_checkpoint(storage)?;
     let mut cursor = FillCursor::replay_from_boundary(&tokens, start_char, start_char == 0);
-    // 같은 목록 상자의 마지막 음절이 원본에서 별도 자동 줄을 소유하면,
-    // 음수 자간으로 더 줄어든 문단 종료 폭만으로 그 음절을 앞줄에 합치지 않는다.
-    // 기존의 강제 개행·새 문단 입력에는 저장 자동 줄이라는 근거가 없다.
-    cursor.preserve_cached_terminal_ink = start_char == 0
-        && !frame.models_exclusions()
-        && (purpose == FramePurpose::StoredMarkerTailReflow
-            || saved_marker_tail_owns_terminal_ink(
-                para,
-                &ParagraphBox::content(frame.horizontal.clone()),
-                styles,
-            ));
+    // 확정된 상자에서 저장 줄 없이 자동 조판한 문단은 마지막 음절까지
+    // 실제 글자 폭으로 담는다. 한컴 2024 인쇄의 본문과 표 칸에서 동일하다.
+    // 폭을 소비하지 않는 표식은 본문과 같은 폭을 쓴다. 명시 개행·필드 값·개체에는
+    // 종전의 끝 전진 계약을 적용한다.
+    let unsegmented_plain_paragraph = para.line_segs.is_empty()
+        && para.layout_field_values.is_empty()
+        && para.controls.iter().all(control_is_width_neutral_marker)
+        && !para.text.contains(['\n', '\r']);
+    cursor.fit_terminal_ink = unsegmented_plain_paragraph
+        || (start_char == 0
+            && !frame.models_exclusions()
+            && (purpose == FramePurpose::StoredMarkerTailReflow
+                || saved_marker_tail_owns_terminal_ink(
+                    para,
+                    &ParagraphBox::content(frame.horizontal.clone()),
+                    styles,
+                )));
     // 확정된 물리 구간은 원본 격자 폭 자체가 경계다. 추정 여유를 더하면
     // 4 HU 격자로 내린 칸에도 26 HU 초과 글자가 들어가 격자 계약이 무효화된다.
     cursor.allow_metric_tolerance = false;
@@ -5225,7 +5231,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                             cursor.is_first_line,
                         );
                         replay.allow_metric_tolerance = false;
-                        replay.preserve_cached_terminal_ink = cursor.preserve_cached_terminal_ink;
+                        replay.fit_terminal_ink = cursor.fit_terminal_ink;
                         replay.tab_grid_origin_px = Some(tab_grid_origin_px);
                         let filled = fill_one_interval(
                             terminal_tokens,
