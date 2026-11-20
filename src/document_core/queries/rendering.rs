@@ -3923,7 +3923,8 @@ impl DocumentCore {
         //
         // 범위는 이 구역의 본문 문단뿐이다 — 표 셀 폭은 용지 여백이 아니라 표 자신이 정하므로
         // 셀 문단의 저장 분할은 여전히 유효하다.
-        if self.body_wrap_width(section_idx) != wrap_width_before {
+        let wrap_changed = self.body_wrap_width(section_idx) != wrap_width_before;
+        if wrap_changed {
             self.reflow_body_paragraphs_in_section(section_idx);
         }
 
@@ -3931,6 +3932,10 @@ impl DocumentCore {
         self.recompose_all_with_horizontal_shaping();
         self.mark_all_sections_dirty();
         self.paginate();
+        // 각주 영역 폭도 본문 폭을 따르므로 이미 있는 각주를 새 폭으로 다시 나눈다.
+        if wrap_changed {
+            self.reflow_body_footnotes(section_idx);
+        }
 
         let page_count = self.page_count();
         Ok(format!("{{\"ok\":true,\"pageCount\":{}}}", page_count))
