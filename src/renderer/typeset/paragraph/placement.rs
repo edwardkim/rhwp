@@ -40,7 +40,14 @@ pub(in crate::renderer::typeset) fn plan_fragment(
         end_line,
         cumulative,
     } = boundary;
-    if carried_notes_hold_body && cumulative > avail_for_lines {
+    // 줄 훑기와 같이 마지막 줄 뒤 줄간격은 빼고 잰다. 들어가는 조각까지 밀면
+    // 이어받은 각주를 먼저 둔 다음 단의 본문이 통째로 다음 쪽으로 간다.
+    let trailing_spacing = end_line
+        .checked_sub(1)
+        .and_then(|line| fmt.line_spacings.get(line))
+        .copied()
+        .unwrap_or(0.0);
+    if carried_notes_hold_body && cumulative - trailing_spacing > avail_for_lines + 0.5 {
         return None;
     }
     let part_line_height = fmt.line_advances_sum(cursor_line..end_line);

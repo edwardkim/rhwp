@@ -470,8 +470,15 @@ impl TypesetEngine {
         // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을
         // 열면 전환 command가 큐를 인출하고 기존 각주 lane에 높이를 예약한다.
         // 쪽보다 긴 각주는 쪽마다 들어가는 줄까지만 인출되므로 큐가 빌 때까지 연다.
+        // 각 단 아래 각주는 같은 쪽 다음 단부터 잇는다.
         while st.has_deferred_body_footnotes() {
-            st.push_new_page_with_storage(storage)?;
+            if st.footnote_frame_policy().continues_in_next_column()
+                && st.current_column + 1 < st.col_count
+            {
+                st.advance_column_or_new_page_with_storage(storage)?;
+            } else {
+                st.push_new_page_with_storage(storage)?;
+            }
         }
         st.ensure_page_with_storage(storage)?;
 

@@ -205,13 +205,20 @@ impl TypesetState {
         draw_separator: bool,
         overlap_guard: f64,
     ) -> bool {
-        let projected = self.projected_footnote_fragment_height(content_height, draw_separator);
-        let page_available = (self.base_available_height()
-            - projected.max(0.0)
+        let footnote_only_capacity = (self.base_available_height()
             - self.data.current_zone_y_offset
             - self.data.current_bottom_fixed_exclusion)
             .max(0.0);
-        let footnote_only_capacity = (self.base_available_height()
+        if let Some(fits) = self.uncharged_footnote_frame_fits(
+            content_height,
+            draw_separator,
+            footnote_only_capacity,
+        ) {
+            return fits;
+        }
+        let projected = self.projected_footnote_fragment_height(content_height, draw_separator);
+        let page_available = (self.base_available_height()
+            - projected.max(0.0)
             - self.data.current_zone_y_offset
             - self.data.current_bottom_fixed_exclusion)
             .max(0.0);

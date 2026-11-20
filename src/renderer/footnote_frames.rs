@@ -21,6 +21,11 @@ impl FramePolicy {
         self.columns <= 1 || self.placement == FootnotePlacement::BelowText
     }
 
+    /// 각 단 아래 각주가 단 영역을 넘치면 같은 쪽 다음 단 각주 영역에 잇는다(한/글 12.30).
+    pub fn continues_in_next_column(self) -> bool {
+        self.placement == FootnotePlacement::EachColumn && self.columns > 1
+    }
+
     pub fn charges_column(self, column: u16) -> bool {
         self.placement != FootnotePlacement::RightColumn || column + 1 >= self.columns
     }

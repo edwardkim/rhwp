@@ -1087,6 +1087,10 @@ impl TypesetState {
             {
                 self.commit_table_host_shape_with_storage(para_idx, ctrl_idx, flow, None, storage)?;
             }
+            // 각 단 아래 각주가 앞 단 영역을 넘쳤으면 남은 조각을 이 단 각주 영역에 먼저 잇는다.
+            if self.footnote_frame_policy().continues_in_next_column() {
+                self.drain_deferred_body_footnotes_with_storage(storage)?;
+            }
         } else {
             self.push_new_page_with_storage(storage)?;
         }
