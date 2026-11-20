@@ -671,10 +671,10 @@ fidelity 원장을 함께 보존해야 한다.
 
 ```bash
 venv/bin/python scripts/visual_sweep.py \
-  --file-target reg80168 samples/80168_regulatory_analysis.hwp pdf/80168_regulatory_analysis-2022.pdf \
+  --file-target reg80168 samples/80168_regulatory_analysis.hwp pdf/80168_regulatory_analysis-hwp-2024.pdf \
   --rhwp-bin target/pr-review/debug/rhwp \
   --wasm-pkg /path/to/new-web-pkg \
-  --pages 21,49,75-77,108-109 --dpi 96 --out output/wasm-review
+  --pages 21,49,75-77,108-109 --compat 2024 --dpi 96 --out output/wasm-review
 ```
 
 직접 PNG 경로는 `--font-path`의 실제 name/weight/face-index를 읽어 Canvas가 요청한 family
@@ -782,9 +782,11 @@ mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이
 메트릭은 서로 다르므로 임의로 치환하지 않는다. base/후보와 Native/fresh WASM 모두 같은
 원본 프로그램·우선순위로 다시 출력하고, 글꼴 공급 전의 미달 결과와 구분해 기록한다.
 
+같은 원본을 한컴 2020 또는 2024의 `Hancom PDF` 프린터로 인쇄한 경로를 지정한다.
+
 ```bash
 venv/bin/python scripts/visual_sweep.py \
-  --file-target bold samples/issue2470/36382471_masked.hwpx pdf/issue2470/36382471_masked-2022.pdf \
+  --file-target bold samples/issue2470/36382471_masked.hwpx "${BOLD_PRINT_PDF:?기준 PDF 경로를 지정하세요}" \
   --rhwp-bin target/pr-review/release-test/rhwp --pages 1,2 \
   --embed-fonts=full --font-path /path/to/private/validated-font-subsets --out output/bold-review
 ```
@@ -840,13 +842,13 @@ Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재�
 # 같은 원본·독립 Print PDF를 네 작업자로 전쪽 비교
 python3 scripts/visual_sweep.py --silhouette-only --page-workers 4 \
   --rhwp-bin target/pr-review/release-test/rhwp --embed-fonts full \
-  --file-target kps samples/kps-ai.hwp pdf/kps-ai-2022.pdf \
+  --file-target kps samples/kps-ai.hwp "${KPS_PRINT_PDF:?한컴 2020 또는 2024 인쇄본을 지정하세요}" \
   --out output/pr-review/kps-four-workers
 
 # 메모리가 부족하거나 순차 결과와 비교할 때
 python3 scripts/visual_sweep.py --silhouette-only --page-workers 1 \
   --rhwp-bin target/pr-review/release-test/rhwp --embed-fonts full \
-  --file-target kps samples/kps-ai.hwp pdf/kps-ai-2022.pdf \
+  --file-target kps samples/kps-ai.hwp "${KPS_PRINT_PDF:?한컴 2020 또는 2024 인쇄본을 지정하세요}" \
   --out output/pr-review/kps-one-worker
 ```
 
@@ -861,6 +863,9 @@ WASM PNG와 SVG 캡처 작업자마다 Chrome 하나를 재사용하고 동시�
 사용하므로 가용 메모리가 부족하면 `--page-workers 2` 또는 `1`로 줄인다.
 
 #### 실제 문서의 순차·병렬 비교
+
+아래 기록은 당시 파일과 실행 조건으로 측정한 성능 자료다. 새 PR의 기준 PDF에는
+[한컴 2020·2024 인쇄 출처 확인 절차](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)를 적용한다.
 
 2026-10-14 직접 PNG 경로를 `samples/table-vpos-01.hwp`와 독립 Print
 `pdf/table-vpos-01-hwp-2020.pdf`의 전체5쪽·96dpi·같은 공급 글꼴로 비교했다.

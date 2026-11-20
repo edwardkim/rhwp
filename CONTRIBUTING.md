@@ -1172,9 +1172,9 @@ python tools/roundtrip_fidelity_harness.py --files <샘플.hwpx> --workdir outpu
   첨부해주세요. 렌더링 변경의 공개 가능한 대표 Visual Sweep review·overlay PNG는
   `mydocs/pr/assets/issue_<N>_<topic>/` 또는 동등한 안정 경로에 보존하고, PR head SHA 고정 raw URL을
   PR 본문 Markdown 이미지로 표시합니다. output 전체·원시 raster·로그·JSON은 포함하지 않습니다.
-- **한컴 편집기 PDF 를 오라클로 제공하실 때**: `pdf/{원본 stem}-{한컴버전}.pdf` 명명
-  (예: `pdf/issue1835_tac_stale_height-2022.pdf`), PR 본문에 생성 환경(한컴 버전)을
-  명시해주세요. 50 MiB 미만 한컴 정본 오라클은 `pdf/**`에 일반 Git blob으로 커밋하며
+- **기준 PDF를 제공할 때**는 한컴 2020 또는 2024에서 `Hancom PDF` 프린터로 인쇄하고
+  `pdf/{원본 stem}-2020.pdf` 또는 `pdf/{원본 stem}-2024.pdf`로 저장합니다.
+  PR 본문에 실제 인쇄 제품 버전을 명시해 주세요. 50 MiB 미만 기준 PDF는 `pdf/**`에 일반 Git blob으로 커밋하며
   `pdf-2020/`, `pdf-large/` 같은 최상위 분리 폴더와 Git LFS pointer를 사용하지 않습니다.
   **50 MiB(52,428,800바이트) 이상 PDF는 로컬에만 보관하고 commit·push·PR 첨부에서 제외합니다.**
   저장소 밖의 안정적인 로컬 경로에 보관하고, 저장소 안에 둘 경우 `.git/info/exclude`에 정확한 경로를
