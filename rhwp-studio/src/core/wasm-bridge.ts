@@ -1516,6 +1516,29 @@ export class WasmBridge {
     return this.withPortableMetrics(() => d.renderPageSvgWithProfile!(pageNum, profile));
   }
 
+  withPrintJobContext<T>(operation: () => T): T {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      setPrintJobContext?: (json?: string) => void;
+    };
+    if (!doc.setPrintJobContext) return operation();
+    const time = new Date();
+    const offset = -time.getTimezoneOffset();
+    const digits = (value: number) => String(value).padStart(2, '0');
+    const local = new Date(time.getTime() + offset * 60_000).toISOString().slice(0, -1);
+    const zone = (offset < 0 ? '-' : '+') + digits(Math.floor(Math.abs(offset) / 60))
+      + ':' + digits(Math.abs(offset) % 60);
+    doc.setPrintJobContext(JSON.stringify({
+      fileName: this.fileName,
+      printedAt: local + zone,
+    }));
+    try {
+      return operation();
+    } finally {
+      doc.setPrintJobContext();
+    }
+  }
+
   getCursorRect(sec: number, para: number, charOffset: number): CursorRect {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCursorRect(sec, para, charOffset));

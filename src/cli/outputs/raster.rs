@@ -321,8 +321,12 @@ fn png_font_environment_metadata(
 pub(crate) fn export_png(args: &[String]) -> i32 {
     use rhwp::document_core::queries::rendering::PngExportOptions;
 
-    let (filtered_args, font_environment) = match super::font_environment_args(args) {
+    let (mut filtered_args, font_environment) = match super::font_environment_args(args) {
         Ok(options) => options,
+        Err(code) => return code,
+    };
+    let print_job_context = match super::print_job_context_arg(&mut filtered_args) {
+        Ok(context) => context,
         Err(code) => return code,
     };
     let PngExportArgs {
@@ -344,6 +348,10 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         Ok(options) => options,
         Err(code) => return code,
     };
+    if print_job_context.is_some() && render_profile != rhwp::paint::RenderProfile::Print {
+        eprintln!("오류: --print-job-context는 --profile print와 함께 사용합니다.");
+        return EXIT_USAGE;
+    }
 
     let data = match fs::read(file_path) {
         Ok(d) => d,
@@ -362,6 +370,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         core.set_hangul2024_compat(true);
     }
     core.set_print_png_rgb555(print_png_rgb555);
+    core.set_print_job_context(print_job_context);
     // 실제 공급 글꼴은 SVG/PDF와 같은 환경에서 측정·쪽수·paint에 사용한다.
     // Skia에만 font_paths를 넘기면 원본 HFT 호환 폭으로 조판한 뒤 TrueType
     // 글리프를 그려, 전각 작은따옴표의 잉크가 뒤 글자와 겹칠 수 있다.

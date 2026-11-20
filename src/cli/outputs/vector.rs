@@ -315,8 +315,12 @@ fn configure_svg_document(
 }
 
 pub(crate) fn export_svg(args: &[String]) -> i32 {
-    let (filtered_args, font_environment) = match super::font_environment_args(args) {
+    let (mut filtered_args, font_environment) = match super::font_environment_args(args) {
         Ok(options) => options,
+        Err(code) => return code,
+    };
+    let print_job_context = match super::print_job_context_arg(&mut filtered_args) {
+        Ok(context) => context,
         Err(code) => return code,
     };
     let args = filtered_args.as_slice();
@@ -341,6 +345,13 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         Ok(options) => options,
         Err(code) => return code,
     };
+    if print_job_context.is_some()
+        && (render_profile != Some(rhwp::paint::RenderProfile::Print)
+            || matches!(backend, SvgExportBackend::Legacy))
+    {
+        eprintln!("오류: --print-job-context는 레이어 --profile print와 함께 사용합니다.");
+        return EXIT_USAGE;
+    }
 
     // 파일 읽기
     let data = match fs::read(file_path) {
@@ -358,6 +369,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         Ok(d) => d,
         Err(e) => return e.report(),
     };
+    doc.set_print_job_context(print_job_context);
     let font_supply =
         match super::apply_font_environment(&mut doc, font_environment, &mut font_paths) {
             Ok(supply) => supply,

@@ -775,10 +775,12 @@ def wasm_export_has_pages(base: Path, selected_pages: list[int] | None) -> bool:
     )
 
 
-def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None, font_args: list[str] | None = None, compat: str = "2022", selected_pages: list[int] | None = None) -> None:
+def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base: Path, font_environment: Path | None = None, font_args: list[str] | None = None, compat: str = "2022", selected_pages: list[int] | None = None, *, print_job_context: Path | None = None) -> None:
     environment_args = ["--compat", compat]
     if font_environment:
         environment_args.extend(["--font-environment", str(font_environment)])
+    if print_job_context:
+        environment_args.extend(["--print-job-context", str(print_job_context)])
     wasm_dir = base / "wasm"
     policy_dir = base / "font_policy"
     # 이전 실행이 중간에 끝났으면 부분 SVG/JSON을 내보내기 성공 결과로 사용하지 않는다.
@@ -833,6 +835,7 @@ def export_wasm_target(root: Path, hwp: Path, package: Path, rhwp_bin: str, base
 def export_native_target(
     root: Path, hwp: Path, rhwp_bin: str, base: Path,
     selected_pages: list[int] | None, font_args: list[str], environment_args: list[str],
+    *, print_args: list[str] | None = None,
 ) -> None:
     """선택한 쪽만 내보내고 전체 문서 쪽수와 실제 산출물 개수를 구분한다."""
     svg_dir = base / "svg"
@@ -868,7 +871,7 @@ def export_native_target(
         log_name = f"export_{page:03}.log" if page is not None else "export.log"
         proc = run(
             [rhwp_bin, "export-svg", str(hwp), *font_args, "--profile", "print", "-o", str(svg_dir),
-             *page_args, *environment_args, "--json"],
+             *page_args, *environment_args, *(print_args or []), "--json"],
             cwd=root, log_path=base / log_name,
         )
         try:
@@ -1557,6 +1560,7 @@ def render_target(
     svg_rasterizer: str,
     wasm_pkg: Path | None = None,
     font_environment: Path | None = None,
+    print_job_context: Path | None = None,
     observed_font_receipt: Path | None = None,
     embed_fonts: str | None = None,
     font_paths: list[Path] | None = None,
@@ -1645,7 +1649,15 @@ def render_target(
     if font_environment is not None:
         font_environment = resolve_input_path(root, font_environment)
         environment_args.extend(["--font-environment", str(font_environment)])
+    print_args = []
+    if print_job_context is not None:
+        print_job_context = resolve_input_path(root, print_job_context)
+        print_args = ["--print-job-context", str(print_job_context)]
     provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
+    if print_job_context is not None:
+        provenance["print_job_context"] = {
+            "path": str(print_job_context), "sha256": sha256_file(print_job_context),
+        }
     if native_webfonts is not None:
         provenance["native_webfont_fallback"] = native_webfonts
     png_module = None
@@ -1725,10 +1737,11 @@ def render_target(
                                               selected_pages, font_paths or [], font_environment, compat,
                                               dpi, page_workers, observed_font_receipt,
                                               linked_images=linked_images or (exclusion_evidence.get("assets", []) if exclusion_evidence else None),
-                                              print_png_rgb555=print_png_rgb555)
+                                              print_png_rgb555=print_png_rgb555,
+                                              print_job_context=print_job_context)
                 else:
                     png_module.export_native_png(sys.modules[__name__], root, hwp, rhwp_bin, base,
-                                                selected_pages, font_paths or [], environment_args,
+                                                selected_pages, font_paths or [], [*environment_args, *print_args],
                                                 dpi, page_workers)
         except (Exception, SystemExit):
             run_manifest['run_state'] = 'failed'
@@ -1740,9 +1753,11 @@ def render_target(
             raise
     elif wasm_pkg is not None:
         if not wasm_export_has_pages(base, selected_pages):
-            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment, font_args, compat, selected_pages)
+            export_wasm_target(root, hwp, wasm_pkg, rhwp_bin, base, font_environment, font_args,
+                               compat, selected_pages, print_job_context=print_job_context)
     else:
-        export_native_target(root, hwp, rhwp_bin, base, selected_pages, font_args, environment_args)
+        export_native_target(root, hwp, rhwp_bin, base, selected_pages, font_args, environment_args,
+                             print_args=print_args)
 
     all_svg_paths = sorted((rhwp_png_dir.glob("*.png") if png_module else svg_dir.glob("*.svg")), key=page_num)
     all_tree_paths = sorted(tree_dir.glob("*.json"), key=page_num)
@@ -5960,6 +5975,7 @@ def main() -> None:
     parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
+    parser.add_argument("--print-job-context", type=Path, help="한컴 Print와 같은 파일명·현지 인쇄 시각을 기록한 JSON")
     parser.add_argument("--observed-font-receipt", type=Path, help="같은 입력·사용자 환경의 Native export-png JSON에 기록된 실제 대체 글꼴 관측 (WASM PNG 전용)")
     parser.add_argument(
         "--font-mismatch-evidence",
@@ -6040,7 +6056,7 @@ def main() -> None:
     if args.png_pair:
         if not args.silhouette_only:
             parser.error("--png-pair는 --silhouette-only와 함께 사용합니다.")
-        if args.target or args.hwp or args.pdf or args.file_target or args.wasm_pkg or args.linked_image:
+        if args.target or args.hwp or args.pdf or args.file_target or args.wasm_pkg or args.linked_image or args.print_job_context:
             parser.error("--png-pair와 원문 export 입력은 함께 사용하지 않습니다.")
         pairs = silhouette_png_pairs(*args.png_pair, selected_pages)
         exclusions, evidence = (load_linked_image_exclusions(args.linked_image_exclusions)
@@ -6090,6 +6106,8 @@ def main() -> None:
         parser.error("연결 그림 제외 증거는 정확히 하나의 원본·PDF 대상에만 적용합니다.")
     if args.linked_image and len(selected) != 1:
         parser.error("연결 그림 공급은 정확히 하나의 원본 대상에만 적용합니다.")
+    if args.print_job_context and len(selected) != 1:
+        parser.error("인쇄 작업 정보는 정확히 하나의 원본 대상에만 적용합니다.")
     image_records = linked_image_records(root, args.linked_image)
     if image_records and evidence is not None and evidence.get("assets"):
         parser.error("--linked-image와 제외 증거의 별도 그림 공급은 함께 지정하지 않습니다.")
@@ -6105,6 +6123,7 @@ def main() -> None:
             resume=args.resume, rhwp_bin=args.rhwp_bin, dpi=args.dpi,
             compat=args.compat, rasterizer=args.rasterizer, wasm_pkg=args.wasm_pkg,
             linked_images=image_records,
+            print_job_context=args.print_job_context,
         )
     re_review_targets: list[str] = []
     for target in selected:
@@ -6121,6 +6140,7 @@ def main() -> None:
             svg_rasterizer=args.svg_rasterizer,
             wasm_pkg=args.wasm_pkg,
             font_environment=args.font_environment,
+            print_job_context=args.print_job_context,
             observed_font_receipt=args.observed_font_receipt,
             embed_fonts=args.embed_fonts,
             font_paths=args.font_path,

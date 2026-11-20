@@ -123,3 +123,31 @@ pub(crate) fn font_environment_args(
     }
     Ok((rest, environment))
 }
+
+pub(crate) fn print_job_context_arg(
+    args: &mut Vec<String>,
+) -> Result<Option<rhwp::document_core::PrintJobContext>, i32> {
+    use std::io::Read;
+    let flag = "--print-job-context";
+    let Some(index) = args.iter().position(|arg| arg == flag) else {
+        return Ok(None);
+    };
+    let error = |message: &dyn std::fmt::Display| {
+        eprintln!("오류: {message}");
+        crate::EXIT_USAGE
+    };
+    let path = args
+        .get(index + 1)
+        .filter(|_| !args[index + 1..].iter().any(|arg| arg == flag))
+        .ok_or_else(|| error(&"--print-job-context 뒤에 JSON 파일을 한 번 지정하세요."))?;
+    let mut json = String::new();
+    std::fs::File::open(path)
+        .and_then(|file| file.take(8193).read_to_string(&mut json))
+        .map_err(|e| error(&e))?;
+    if json.len() > 8192 {
+        return Err(error(&"인쇄 작업 JSON의 최대 크기는 8192바이트입니다."));
+    }
+    let context = rhwp::document_core::PrintJobContext::from_json(&json).map_err(|e| error(&e))?;
+    args.drain(index..index + 2);
+    Ok(Some(context))
+}

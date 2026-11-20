@@ -464,6 +464,26 @@ impl Document {
         })
     }
 
+    /// 문서에 저장된 인쇄 작업 바닥글 설정을 읽는다.
+    pub(crate) fn print_auto_footer(&self) -> bool {
+        if let Some(settings) = self.hwpx_aux_entry("settings.xml") {
+            let Some(xml) = std::str::from_utf8(settings).ok() else {
+                return false;
+            };
+            return xml
+                .split_once(r#"name="PrintAutoFootNote""#)
+                .and_then(|(_, tail)| tail.split_once('>'))
+                .and_then(|(_, value)| value.split_once('<'))
+                .is_some_and(|(value, _)| value.trim() == "true");
+        }
+        self.doc_info.extra_records.iter().any(|record| {
+            record.tag_id == crate::parser::tags::HWPTAG_DOC_DATA
+                && record.data.chunks_exact(8).any(|pair| {
+                    pair[..4] == 0x0006_400a_u32.to_le_bytes() && pair[4..] == 1_u32.to_le_bytes()
+                })
+        })
+    }
+
     /// HWPX 원본 보조 엔트리를 경로로 조회한다.
     ///
     /// 직렬화기가 하드코딩 상수 대신 원본 바이트를 출력할지 결정할 때 사용한다.
