@@ -110,7 +110,7 @@ class OracleVerifiedReferenceTests(unittest.TestCase):
         self.registry.write_text(json.dumps(dict(schema_version=1, references=entries)),
                                  encoding='utf-8')
 
-    def run_regeneration(self, extracted_pdf=None):
+    def run_regeneration(self, extracted_pdf=None, retired=()):
         scratch = self.root / 'scratch'
         scratch.mkdir(exist_ok=True)
         baseline = self.root / 'generated.tsv'
@@ -122,7 +122,7 @@ class OracleVerifiedReferenceTests(unittest.TestCase):
             os.chdir(self.root)
             with (mock.patch.object(sys, 'argv', ['regenerate.py', '--rhwp', 'mock-rhwp']),
                   mock.patch.object(regenerate, 'FIXTURE', str(baseline)),
-                  mock.patch.object(regenerate, 'sample_paths', return_value=[self.sample]),
+                  mock.patch.object(regenerate, 'inactive_oracle_samples', return_value=set(retired)),
                   mock.patch.object(regenerate, 'git_pdf_paths', return_value=[self.pdf]),
                   mock.patch.object(regenerate, 'rhwp_info', return_value=(3, False, None)),
                   mock.patch.object(regenerate, 'rhwp_text', return_value=['표본'] * 3),
@@ -181,6 +181,24 @@ class OracleVerifiedReferenceTests(unittest.TestCase):
         self.write_registry([dict(self.entry, pages=4)])
         with self.assertRaisesRegex(ValueError, '독립 PDF'):
             self.run_regeneration()
+
+    def test_only_registered_active_asset_is_collected(self):
+        asset = 'mydocs/pr/assets/example/registered.hwp'
+        other = 'mydocs/pr/assets/example/unregistered.hwpx'
+        for relative in (asset, other):
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(b'original-source')
+        self.write_registry([dict(self.entry, sample=asset)])
+        baseline = self.run_regeneration()
+        self.assertIn(f'{asset}\t3\t3', baseline.splitlines())
+        self.assertNotIn(other, baseline)
+        self.assertNotIn(asset, self.run_regeneration(retired=[asset]))
+
+    def test_registered_asset_must_stay_under_allowed_root(self):
+        self.write_registry([dict(self.entry, sample='mydocs/pr/assets/../../../samples/guide.hwp')])
+        with self.assertRaisesRegex(ValueError, '경로'):
+            regenerate.load_verified_references(self.root)
 
     def test_restored_five_sources_keep_their_verified_references(self):
         root = pathlib.Path(__file__).resolve().parents[1]

@@ -185,16 +185,16 @@ def git_pdf_paths():
     return [p.strip() for p in out.split('\n') if p.strip().lower().endswith('.pdf')]
 
 
-def sample_paths():
+def sample_paths(registered=()):
     # 활성 회귀에서 제거한 입력은 원본을 보존해도 재생성 원장에 다시 넣지 않는다.
     retired = inactive_oracle_samples()
-    found = []
+    found = set(registered) - retired
     for root, _, files in os.walk('samples'):
         for f in files:
             if f.lower().endswith(('.hwp', '.hwpx')):
                 path = os.path.join(root, f).replace(os.sep, '/')
                 if path not in retired:
-                    found.append(path)
+                    found.add(path)
     return sorted(found)
 
 
@@ -295,12 +295,19 @@ def load_verified_references(root=None):
             raise ValueError(f'독립 PDF 쪽수가 잘못됐다: {sample}')
         if entry.get('provenance') not in ('desktop_hancom_print', 'official_hancom_specification'):
             raise ValueError(f'독립 PDF 출처가 확인되지 않았다: {sample}')
-        for field, hash_field, prefix in [('sample', 'source_sha256', 'samples/'),
-                                         ('pdf', 'pdf_sha256', 'pdf/')]:
+        for field, hash_field, prefix, extensions in [
+            ('sample', 'source_sha256', 'samples', {'.hwp', '.hwpx'}),
+            ('pdf', 'pdf_sha256', 'pdf', {'.pdf'}),
+        ]:
             relative = entry[field]
-            path = (root / relative).resolve()
+            name = Path(relative)
+            path = (root / name).resolve()
             digest = entry[hash_field]
-            if not relative.startswith(prefix) or not path.is_relative_to(root):
+            allowed = (root / prefix, root / 'mydocs/pr/assets')
+            if (name.is_absolute() or '..' in name.parts or name.as_posix() != relative
+                    or name.suffix.lower() not in extensions
+                    or not any((root / name).is_relative_to(folder) and path.is_relative_to(folder)
+                               for folder in allowed)):
                 raise ValueError(f'저장소 밖 또는 잘못된 등록 경로: {relative}')
             if not isinstance(digest, str) or not re.fullmatch(r'[0-9a-f]{64}', digest):
                 raise ValueError(f'SHA-256 형식 오류: {relative}')
@@ -322,7 +329,7 @@ def main():
     for p in git_pdf_paths():
         pmap.setdefault(stem(p), []).append(p)
 
-    samples = sample_paths()
+    samples = sample_paths(verified)
     # 각 정답지의 "디렉터리 주인" — 그 정답지와 같은 상대 디렉터리에 있는 같은 이름의
     # 샘플. 주인이 있으면 이름만 같은 다른 디렉터리의 샘플은 그 정답지를 넘볼 수 없다.
     owners = {}
