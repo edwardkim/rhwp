@@ -1196,7 +1196,7 @@ fn replace_paragraph_text(
                 delete_count,
             )
         } else {
-            para.delete_text_at(char_offset, delete_count)
+            para.delete_text_at_removing_owned_controls(char_offset, delete_count)
         }
     } else {
         0
@@ -1819,7 +1819,7 @@ impl DocumentCore {
         // 텍스트 삭제
         let apply_delete = |para: &mut Paragraph| {
             if preserve_memos {
-                para.delete_text_at(char_offset, count);
+                para.delete_text_at_removing_owned_controls(char_offset, count);
             } else {
                 crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
                     para,
