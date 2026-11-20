@@ -2015,8 +2015,8 @@ struct FillCursor {
     word_gap_natural_hwp: Option<i32>,
     /// 물리 프레임의 폭이 확정되면 추정 메트릭의 초과 허용을 얹지 않는다.
     allow_metric_tolerance: bool,
-    /// 같은 목록 상자에 저장된 마지막 자동 글자가 차지하는 끝 자간을 확인한다.
-    preserve_cached_terminal_ink: bool,
+    /// 문단 끝의 자동 줄바꿈은 마지막 글자의 끝 자간을 제외한 폭으로 판정한다.
+    fit_terminal_ink: bool,
     /// 등간격 탭 격자가 속한 단/셀 좌표계의 현재 줄 원점.
     tab_grid_origin_px: Option<f64>,
     finished: bool,
@@ -2041,7 +2041,7 @@ impl FillCursor {
             fs_at_last_break: 0.0,
             word_gap_natural_hwp: None,
             allow_metric_tolerance: true,
-            preserve_cached_terminal_ink: false,
+            fit_terminal_ink: false,
             tab_grid_origin_px: None,
             finished: false,
             emitted_any: false,
@@ -2759,7 +2759,7 @@ fn fill_one_interval(
                 let terminal_tracking = at_written_line_end
                     && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0;
                 let w_hwp_fit = if terminal_tracking
-                    && !cursor.preserve_cached_terminal_ink
+                    && !cursor.fit_terminal_ink
                     && cursor.lw + w_hwp
                         <= effective_width + line_break_tolerance_hwp(effective_width)
                 {
@@ -3561,6 +3561,36 @@ fn floating_anchor_font_size_px(
         .filter(|(pos, _)| range.contains(pos) || (is_last_line && *pos == text_len))
         .map(|(_, fs)| *fs)
         .fold(0.0, f64::max)
+}
+
+/// 머리말·꼬리말의 내용은 별도 영역에 그리지만 원본의 제어문자는 자신을
+/// 포함하는 본문 줄의 글자 높이에 참여한다.
+fn header_footer_anchor_font_sizes<S: Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<Vec<(usize, f64)>, S::Error> {
+    let is_header_footer =
+        |control: &Control| matches!(control, Control::Header(_) | Control::Footer(_));
+    if !para.controls.iter().any(is_header_footer) {
+        return Ok(Vec::new());
+    }
+    let positions = para.try_control_text_positions(storage)?;
+    let offsets = para.control_utf16_positions_with_storage(storage)?;
+    storage.collect(
+        para.controls
+            .iter()
+            .zip(positions)
+            .zip(offsets)
+            .filter(|((control, _), _)| is_header_footer(control))
+            .filter_map(|((_, position), offset)| {
+                let id = find_active_char_shape(&para.char_shapes, offset);
+                styles
+                    .char_styles
+                    .get(id as usize)
+                    .map(|style| (position, style.font_size))
+            }),
+    )
 }
 
 /// [#8167] 글자처럼 취급한 도형이 줄에서 차지하는 상자(HU) — 도형 크기에 바깥 여백을 더한다.
@@ -4993,6 +5023,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 글자 토큰은 크기 0 을 대체 크기(12px)로 세므로, 모든 글자가 크기 0 인 문단은
     // 줄의 글자 높이를 0 으로 되돌린다(한컴: 이 문단은 줄간격 설정만 남는다).
     let zero_size_paragraph = explicit_zero_size_paragraph(para, styles);
+    let header_footer_anchors = header_footer_anchor_font_sizes(para, styles, storage)?;
     let fallback_font_size = if para.text.is_empty() {
         para.char_shapes
             .first()
@@ -5047,17 +5078,23 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     let first_row = frame.row_count();
     let frame_checkpoint = frame.try_append_checkpoint(storage)?;
     let mut cursor = FillCursor::replay_from_boundary(&tokens, start_char, start_char == 0);
-    // 같은 목록 상자의 마지막 음절이 원본에서 별도 자동 줄을 소유하면,
-    // 음수 자간으로 더 줄어든 문단 종료 폭만으로 그 음절을 앞줄에 합치지 않는다.
-    // 기존의 강제 개행·새 문단 입력에는 저장 자동 줄이라는 근거가 없다.
-    cursor.preserve_cached_terminal_ink = start_char == 0
-        && !frame.models_exclusions()
-        && (purpose == FramePurpose::StoredMarkerTailReflow
-            || saved_marker_tail_owns_terminal_ink(
-                para,
-                &ParagraphBox::content(frame.horizontal.clone()),
-                styles,
-            ));
+    // 확정된 상자에서 저장 줄 없이 자동 조판한 문단은 마지막 음절까지
+    // 실제 글자 폭으로 담는다. 한컴 2024 인쇄의 본문과 표 칸에서 동일하다.
+    // 폭을 소비하지 않는 표식은 본문과 같은 폭을 쓴다. 명시 개행·필드 값·개체에는
+    // 종전의 끝 전진 계약을 적용한다.
+    let unsegmented_plain_paragraph = para.line_segs.is_empty()
+        && para.layout_field_values.is_empty()
+        && para.controls.iter().all(control_is_width_neutral_marker)
+        && !para.text.contains(['\n', '\r']);
+    cursor.fit_terminal_ink = unsegmented_plain_paragraph
+        || (start_char == 0
+            && !frame.models_exclusions()
+            && (purpose == FramePurpose::StoredMarkerTailReflow
+                || saved_marker_tail_owns_terminal_ink(
+                    para,
+                    &ParagraphBox::content(frame.horizontal.clone()),
+                    styles,
+                )));
     // 확정된 물리 구간은 원본 격자 폭 자체가 경계다. 추정 여유를 더하면
     // 4 HU 격자로 내린 칸에도 26 HU 초과 글자가 들어가 격자 계약이 무효화된다.
     cursor.allow_metric_tolerance = false;
@@ -5115,10 +5152,11 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                     .flatten();
                 let mut row_terminated = false;
                 // "한 줄로 입력" 문단은 글이 구간 폭을 넘어도 줄을 나누지 않는다.
-                let line_wrap_squeeze = styles
-                    .para_styles
-                    .get(para.para_shape_id as usize)
-                    .is_some_and(|style| style.line_wrap_squeeze);
+                let line_wrap_squeeze = frame.line_wrap_squeeze
+                    || styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .is_some_and(|style| style.line_wrap_squeeze);
                 let interval_width = |index: usize, interval: &std::ops::Range<i32>| {
                     if line_wrap_squeeze {
                         return UNBROKEN_LINE_WIDTH_PX;
@@ -5193,7 +5231,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                             cursor.is_first_line,
                         );
                         replay.allow_metric_tolerance = false;
-                        replay.preserve_cached_terminal_ink = cursor.preserve_cached_terminal_ink;
+                        replay.fit_terminal_ink = cursor.fit_terminal_ink;
                         replay.tab_grid_origin_px = Some(tab_grid_origin_px);
                         let filled = fill_one_interval(
                             terminal_tokens,
@@ -5239,6 +5277,12 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                     if !zero_size_paragraph {
                         maximum_font_size = maximum_font_size.max(line.max_font_size);
                     }
+                    maximum_font_size = maximum_font_size.max(floating_anchor_font_size_px(
+                        &header_footer_anchors,
+                        line.start_idx..line.end_idx,
+                        filled.termination == FillTermination::ParagraphEnd,
+                        text_chars.len(),
+                    ));
                     if filled.termination == FillTermination::ParagraphEnd {
                         maximum_font_size = maximum_font_size.max(paragraph_end_font_size);
                     }
@@ -6263,19 +6307,34 @@ fn reflow_line_segs_impl(
     split_stale_cell_reflow: bool,
     object_line_font_basis: bool,
 ) -> bool {
-    match try_reflow_line_segs_impl(
+    // 한 줄 셀을 편집하면 기존 줄의 소유권도 끝난다. 재생성된 줄은
+    // 저장 후에도 원본 한컴 줄에만 적용하는 자간 판정으로 돌아가지 않는다.
+    let edited_squeeze = paragraph_box.is_usable()
+        && paragraph_box.line_wrap_squeeze()
+        && (preserve_prefix_for_edit.is_some() || para.stored_text_partition_is_dirty());
+    let preserved = match try_reflow_line_segs_impl(
         para,
         paragraph_box,
         styles,
         dpi,
-        preserve_prefix_for_edit,
+        if edited_squeeze {
+            None
+        } else {
+            preserve_prefix_for_edit
+        },
         split_stale_cell_reflow,
         object_line_font_basis,
         &Unbounded,
     ) {
         Ok(result) => result,
         Err(never) => match never {},
+    };
+    if edited_squeeze {
+        for line in &mut para.line_segs {
+            line.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        }
     }
+    preserved
 }
 
 pub(crate) fn try_reflow_line_segs<S: Storage>(
@@ -6354,7 +6413,8 @@ fn try_reflow_line_segs_impl<S: Storage>(
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
     // "한 줄로 입력" 문단은 글이 폭을 넘어도 줄을 나누지 않는다.
-    let line_wrap_squeeze = para_style.is_some_and(|style| style.line_wrap_squeeze);
+    let line_wrap_squeeze = paragraph_box.line_wrap_squeeze()
+        || para_style.is_some_and(|style| style.line_wrap_squeeze);
     let available_width_px = if line_wrap_squeeze {
         UNBROKEN_LINE_WIDTH_PX
     } else {
@@ -6899,6 +6959,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             })
             .flatten();
     let floating_anchors = floating_anchor_char_font_sizes_with_storage(para, styles, storage)?;
+    let header_footer_anchors = header_footer_anchor_font_sizes(para, styles, storage)?;
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
     for (line_idx, lb) in line_breaks.iter().enumerate() {
@@ -6913,6 +6974,10 @@ fn try_reflow_line_segs_impl<S: Storage>(
         };
         let fs = if lb.max_font_size > 0.0 && !zero_size_paragraph {
             lb.max_font_size
+        } else if lb.start_idx == text_len && text_chars.last() == Some(&'\n') {
+            // 강제 개행 뒤의 빈 줄은 문단 끝 문자의 크기를 쓴다. 앞 줄의
+            // 가시 글자나 구조 제어문자의 크기를 문단 최대값으로 물려받지 않는다.
+            paragraph_end_font_size_px(para, styles)
         } else {
             paragraph_font_size_px(para, styles).unwrap_or(12.0)
         };
@@ -6921,6 +6986,12 @@ fn try_reflow_line_segs_impl<S: Storage>(
             &floating_anchors,
             lb.start_idx..lb.end_idx,
             lb.end_idx == text_len,
+            text_len,
+        ));
+        let fs = fs.max(floating_anchor_font_size_px(
+            &header_footer_anchors,
+            lb.start_idx..lb.end_idx,
+            line_idx + 1 == line_breaks.len(),
             text_len,
         ));
         let fs = if line_idx + 1 == line_breaks.len() {

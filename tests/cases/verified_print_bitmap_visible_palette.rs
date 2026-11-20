@@ -55,6 +55,36 @@ fn sample() -> DocumentCore {
 }
 
 #[test]
+fn rgb555_print_png_selection_changes_only_the_high_colour_picture() {
+    let input =
+        include_bytes!("../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx");
+    let mut core = DocumentCore::from_bytes(input).unwrap();
+    assert_eq!(core.page_count(), 74);
+    let image = |core: &DocumentCore, page, profile| {
+        let tree = core
+            .build_page_layer_tree_with_profile(page, profile)
+            .unwrap();
+        let json: Value = serde_json::from_str(&tree.to_json()).unwrap();
+        let mut ops = Vec::new();
+        images(&json, &mut ops);
+        assert_eq!(ops.len(), 1);
+        ops[0].clone()
+    };
+    let screen = image(&core, 18, RenderProfile::Screen);
+    let previous = image(&core, 18, RenderProfile::Print);
+    let low_colour = image(&core, 69, RenderProfile::Print);
+    core.set_print_png_rgb555(true);
+    let selected = image(&core, 18, RenderProfile::Print);
+    assert_eq!(selected["mime"], "image/jpeg");
+    assert_ne!(previous["base64"], selected["base64"]);
+    assert_eq!(previous["bbox"], selected["bbox"]);
+    assert_eq!(image(&core, 69, RenderProfile::Print), low_colour);
+    assert_eq!(image(&core, 18, RenderProfile::Screen), screen);
+    core.set_print_png_rgb555(false);
+    assert_eq!(image(&core, 18, RenderProfile::Print), previous);
+}
+
+#[test]
 fn print_picture_mask_and_area_sampling_follow_independent_output() {
     let core = sample();
     let tree = core

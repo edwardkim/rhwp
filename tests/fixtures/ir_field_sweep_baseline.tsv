@@ -276,6 +276,8 @@ hwp5rb	issue8891/1480000-201900510_facility_pollution_study.hwp	sections[].parag
 hwp5rb	issue8891/1480000-201900510_facility_pollution_study.hwp	sections[].paragraphs[].controls[].shape_attr.render_sy	1
 hwp5rb	issue8891/1480000-201900510_facility_pollution_study.hwp	sections[].paragraphs[].controls[].shape_attr.rotation_center.x	1
 hwp5rb	issue8891/1480000-201900510_facility_pollution_study.hwp	sections[].paragraphs[].controls[].shape_attr.rotation_center.y	1
+hwp5rb	issue9040/1371000-policy-research-application.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue9040/1371000-policy-research-application.hwp	sections[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue9076/textbox_unfilled_field_tac_tables.hwp	sections[].paragraphs[].controls[].text_box.paragraphs[].field_ranges[].inner_slot_count	1
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174

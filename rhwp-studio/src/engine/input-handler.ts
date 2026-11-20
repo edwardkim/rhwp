@@ -173,8 +173,6 @@ const FORMAT_COPY_PARA_KEYS: Array<keyof ParaProperties> = [
   'marginLeft',
   'marginRight',
   'indent',
-  'spacingBefore',
-  'spacingAfter',
   'headType',
   'paraLevel',
   'numberingId',
@@ -220,10 +218,6 @@ function pxToRaw2x(px: number): number {
   return Math.round(px * PX_TO_RAW_2X);
 }
 
-function pxToRaw(px: number): number {
-  return Math.round(px * PX_TO_HWPUNIT);
-}
-
 function availableDropWidthPx(pageInfo: PageInfo, pageX: number): number {
   const bodyWidth = Math.max(1, pageInfo.bodyRight - pageInfo.bodyLeft);
   const columns = pageInfo.columns?.filter((column) => column.width > 0) ?? [];
@@ -267,12 +261,13 @@ function fitDroppedImageSizeRaw(
 }
 
 function normalizeFormatCopyParaProps(props: Partial<ParaProperties>): Partial<ParaProperties> {
-  const normalized = { ...props };
+  const normalized = pickDefined(props, FORMAT_COPY_PARA_KEYS);
   if (props.marginLeft !== undefined) normalized.marginLeft = pxToRaw2x(props.marginLeft);
   if (props.marginRight !== undefined) normalized.marginRight = pxToRaw2x(props.marginRight);
   if (props.indent !== undefined) normalized.indent = pxToRaw2x(props.indent);
-  if (props.spacingBefore !== undefined) normalized.spacingBefore = pxToRaw(props.spacingBefore);
-  if (props.spacingAfter !== undefined) normalized.spacingAfter = pxToRaw(props.spacingAfter);
+  // 구 엔진의 반올림된 px는 단위 비트를 잃는다. 확인된 저장값만 복사한다.
+  if (props.spacingBeforeRaw !== undefined) normalized.spacingBefore = props.spacingBeforeRaw;
+  if (props.spacingAfterRaw !== undefined) normalized.spacingAfter = props.spacingAfterRaw;
   return normalized;
 }
 
@@ -6062,9 +6057,7 @@ export class InputHandler {
         if (fontId >= 0) charProps.fontId = fontId;
       }
     }
-    const paraProps = normalizeFormatCopyParaProps(
-      pickDefined(this.getParaProperties(), FORMAT_COPY_PARA_KEYS) as Partial<ParaProperties>,
-    );
+    const paraProps = normalizeFormatCopyParaProps(this.getParaProperties('spacing'));
     const pos = this.cursor.getPosition();
     const cellProps = pos.parentParaIndex !== undefined
       ? pickDefined(
@@ -6300,8 +6293,8 @@ export class InputHandler {
     return this.getCharPropertiesAtCursor();
   }
 
-  /** 문단 모양 대화상자용: 커서 위치의 문단 서식 조회 (커맨드 시스템용) */
-  getParaProperties(): ParaProperties {
+  /** 구 WASM의 원본 간격 조회는 셀 목록을 순회하므로 간격을 표시하거나 복사할 때만 요청한다. */
+  getParaProperties(detail?: 'spacing'): ParaProperties {
     // 머리말/꼬리말 모드
     if (this.cursor.isInHeaderFooter()) {
       const isHeader = this.cursor.headerFooterMode === 'header';
@@ -6321,15 +6314,15 @@ export class InputHandler {
     if (pos.parentParaIndex !== undefined) {
       if ((pos.cellPath?.length ?? 0) > 1) {
         return this.wasm.getCellParaPropertiesAtByPath(
-          pos.sectionIndex, pos.parentParaIndex, JSON.stringify(pos.cellPath),
+          pos.sectionIndex, pos.parentParaIndex, JSON.stringify(pos.cellPath), detail,
         );
       }
       return this.wasm.getCellParaPropertiesAt(
         pos.sectionIndex, pos.parentParaIndex, pos.controlIndex!,
-        pos.cellIndex!, pos.cellParaIndex!,
+        pos.cellIndex!, pos.cellParaIndex!, detail,
       );
     }
-    return this.wasm.getParaPropertiesAt(pos.sectionIndex, pos.paragraphIndex);
+    return this.wasm.getParaPropertiesAt(pos.sectionIndex, pos.paragraphIndex, detail);
   }
 
   /** 커서 위치의 문단 스타일 ID를 반환한다 (스타일 대화상자용) */

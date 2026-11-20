@@ -78,13 +78,12 @@ impl DocumentCore {
             }
         }
         for (section, paragraph, control, cell, _, metrics) in jobs {
-            let Some(&(width, left, right)) = metrics.get(cell) else {
+            let Some(metrics) = metrics.get(cell) else {
                 continue;
             };
-            let inner = width
-                .saturating_sub(left as i32)
-                .saturating_sub(right as i32);
-            let content = ParagraphBox::content_width_px(hwpunit_to_px(inner, self.dpi), self.dpi);
+            let inner = metrics.width.saturating_sub(metrics.horizontal_padding);
+            let content = ParagraphBox::content_width_px(hwpunit_to_px(inner, self.dpi), self.dpi)
+                .with_line_wrap_squeeze(metrics.squeeze);
             let mut repaired = false;
             if let Control::Table(table) =
                 &mut self.document.sections[section].paragraphs[paragraph].controls[control]

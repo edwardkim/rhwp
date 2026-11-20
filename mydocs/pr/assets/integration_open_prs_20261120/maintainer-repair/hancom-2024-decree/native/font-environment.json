@@ -1,0 +1,49 @@
+{
+  "id": "decree-2024-original-preserved-latin-advance",
+  "substitutions": {
+    "HCI Poppy": "Gulim",
+    "한양중고딕": "HYGothic-Medium"
+  },
+  "trueTypeFaces": [
+    "HYGothic-Medium",
+    "Gulim"
+  ],
+  "preserveSourceMetrics": true,
+  "replaceSourceMetricsFor": [
+    "한양신명조"
+  ],
+  "selectedPrograms": {
+    "한양중고딕": {
+      "query": "HY중고딕",
+      "family": "HYGothic-Medium",
+      "programId": "f19bd4435ac004182cf09af592a7353c03155fc41620d3cf8b76e556c857cfe4",
+      "trueType": true,
+      "openTypeCff": false
+    },
+    "HCI Poppy": {
+      "query": "Gulim",
+      "family": "Gulim",
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "trueType": true,
+      "openTypeCff": false
+    }
+  },
+  "documentSubstitutions": [
+    {
+      "languageSlot": 1,
+      "fontId": 9,
+      "source": "한양신명조",
+      "target": "Gulim",
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "query": "Gulim"
+    },
+    {
+      "languageSlot": 5,
+      "fontId": 6,
+      "source": "한양신명조",
+      "target": "Gulim",
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "query": "Gulim"
+    }
+  ]
+}

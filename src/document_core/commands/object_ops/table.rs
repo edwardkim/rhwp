@@ -1315,10 +1315,13 @@ impl DocumentCore {
                 Paragraph::new_empty_like(para),
             )
         };
-        let (cell_width, pad_left, pad_right) = self
+        let metrics = self
             .resolve_innermost_cell_metrics(section_idx, parent_para_idx, path)
             .ok_or_else(|| HwpError::RenderError("칸 폭을 알 수 없습니다".to_string()))?;
-        let inner_width = (cell_width - pad_left as i32 - pad_right as i32).max(0);
+        let inner_width = metrics
+            .width
+            .saturating_sub(metrics.horizontal_padding)
+            .max(0);
         let content_width =
             (inner_width - 2 * INLINE_TABLE_OUTER_MARGIN as i32).max(col_count as i32) as u32;
         let inherited_line =

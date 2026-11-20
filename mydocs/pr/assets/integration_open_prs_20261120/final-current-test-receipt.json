@@ -1,0 +1,186 @@
+{
+  "source": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+  "base": "0a437a7eefb19bfe81fc12866887e4548ea9554d",
+  "rust_checks": {
+    "suite-prepare": {
+      "exit": 0,
+      "log_sha256": "afc03c3d65ebf5d6a4d8d96c05d64bb75cecac0b593cae4947378d51c2273ec0"
+    },
+    "fmt": {
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native-clippy": {
+      "exit": 0,
+      "log_sha256": "95c7429098c707cac4ac38e753b2af63f4eb9147a6f4d8317e8d4492ed2e4606"
+    },
+    "wasm-clippy": {
+      "exit": 0,
+      "log_sha256": "ce4d880adb5d9819cde3b04295f98e02bf41bdb8a9f1e12140f7a27a9bf0b987"
+    },
+    "workspace-build": {
+      "exit": 0,
+      "log_sha256": "d9f9271ae02cf09e7c006f7a56d67310477704a1daf9a5d06ef394e10fda8e1d"
+    },
+    "workspace-clippy": {
+      "exit": 0,
+      "log_sha256": "c607d0482a60cacfb15d04c0059b7a0b0dd8a923aab9da71c6c29731d278dcbe"
+    },
+    "suite-check": {
+      "exit": 0,
+      "log_sha256": "746acb51da54c105c9b851a10896564bbe6fea040831efbfe95cdaf2d407a1f4"
+    }
+  },
+  "nextest": {
+    "run_id": "5f237ce2-fc29-423b-be8f-4fc007cdb853",
+    "binaries": 55,
+    "ran": 13839,
+    "passed": 13839,
+    "failed": 0,
+    "skipped": 45,
+    "slow": 4,
+    "seconds": "599.880",
+    "log_sha256": "19ed42766e15e1b7998de7a5b91811686ba30bdef6144e94c0e0e77ff6fc4504",
+    "minimal_macos": {
+      "os_faces": 528,
+      "non_os_faces": 0,
+      "profile_sha256": "4ed73d564855482ba49f6af2444411503baabcaa944e5defaca3c760bbf2da84"
+    }
+  },
+  "visual_sweep_python": {
+    "exit": 0,
+    "passed": 268,
+    "log_sha256": "7bf4f6b21f87e17805068e0b3f91caadd936004c5f1e6b20e19039d97165cd7a"
+  },
+  "native_skia_library": {
+    "exit": 0,
+    "workspace_binaries": 4,
+    "passed": 4034,
+    "failed": 0,
+    "ignored": 12,
+    "log_sha256": "741d5f4a9e9664f5266699d1b39204a6d407e657e42c1beddbd8ab7c567b54fb"
+  },
+  "rust_unit_test_tiers": {
+    "exit": 0,
+    "tests": 4094,
+    "modules": 295,
+    "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+  },
+  "native_skia_focused": {
+    "issue_2225_missing_picture_placeholder": {
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "filtered": 355,
+      "run_id": "4b5d6bc6-17ef-4276-84ec-da592b9d1eba",
+      "log_sha256": "863c491838fb6d13c82ddd4211bc9759cae393f679f0a99e2b9743c6e16d393d"
+    },
+    "render_p37_direct_pdf_export": {
+      "exit": 0,
+      "passed": 36,
+      "failed": 0,
+      "filtered": 313,
+      "run_id": "df5d80d5-0432-4326-8ac9-a6d5ddcae0c9",
+      "log_sha256": "0a996da10a72bce86f61e8847f566ddf4c3474f1dac34d2d63a212f79ec87cf8"
+    }
+  },
+  "rust_gate_complete": {
+    "exit": 0,
+    "normal_macos_font_inventory_before_after_sha256": "273b4f5e1efdbb29042e5031008ca80cfbb7b8296893471beb9ef6086340c975"
+  },
+  "studio_editor_sdk_shared_pdf": {
+    "exit": 0,
+    "tests": 2822,
+    "passed": 2822,
+    "failed": 0,
+    "skipped": 0,
+    "node_wasm_package": {
+      "target": "nodejs",
+      "optimized": false,
+      "sha256": {
+        "rhwp.js": "53f00732c67d7de8172487af11dca50e003e3887d451113f2ca35af843122656",
+        "rhwp_bg.wasm": "ba5cd607ba7b3d99587bc64f54a9825086467b4b49e46c9b9a3c33755381ce00"
+      }
+    },
+    "log_sha256": "578c924262ddf534726576d28b1a571b8d80f53546a92f98865ee35a1a42666d",
+    "build_log_sha256": "b5fd7f0e8e7bf679c5809d7a6366077b61d1b738895dcadcf43ca2156ae911bc"
+  },
+  "raised_protection_floor_verification": {
+    "table_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+    "raised_rows": 4,
+    "handbook_native": {
+      "status": "passed",
+      "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+      "baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+      "metric": "silhouette_raw_match_percent",
+      "backend": "native-skia",
+      "precision": "0.01 percentage points",
+      "pages": 383,
+      "regressions": []
+    },
+    "visual_sweep_python": {
+      "exit": 0,
+      "passed": 268,
+      "log_sha256": "f9aa20deaca0eecbcdc873c02721a6bd1ad382e73c18b7f69ee8a9b31c5c83fe"
+    }
+  },
+  "public_contributor_visual_gate": {
+    "status": "passed",
+    "baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+    "catalog_sha256": "21ebfc0b9044936357bbdbd61afc6378d376eefff2d7d4c2751ba50c065eaa9a",
+    "report_sha256": "ada4b79e1c1b2d6a13c4d4e7a6b7f1f7cefced59e82070cfe4b04ab3063d1340",
+    "doc_count": 4,
+    "conditions": 8,
+    "minimum_raw_percent": "99.99756",
+    "results": [
+      {
+        "document_id": "52ee61fe7201e36b",
+        "input": "samples/re-03-latin-only-hancom.hwp",
+        "backend": "native",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "52ee61fe7201e36b",
+        "input": "samples/re-03-latin-only-hancom.hwp",
+        "backend": "wasm",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "59f6ab1155623bda",
+        "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "backend": "native",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "59f6ab1155623bda",
+        "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "backend": "wasm",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "cdacd874b6e6ac66",
+        "input": "samples/pic-crop-01.hwp",
+        "backend": "native",
+        "minimum": "99.99756"
+      },
+      {
+        "document_id": "cdacd874b6e6ac66",
+        "input": "samples/pic-crop-01.hwp",
+        "backend": "wasm",
+        "minimum": "99.99756"
+      },
+      {
+        "document_id": "d03a9dde3d5dc7ac",
+        "input": "samples/shape-group-02.hwp",
+        "backend": "native",
+        "minimum": "100.0"
+      },
+      {
+        "document_id": "d03a9dde3d5dc7ac",
+        "input": "samples/shape-group-02.hwp",
+        "backend": "wasm",
+        "minimum": "100.0"
+      }
+    ]
+  }
+}

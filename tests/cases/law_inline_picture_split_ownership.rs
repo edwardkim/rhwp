@@ -16,6 +16,33 @@ fn walk<'a>(node: &'a Value, out: &mut Vec<&'a Value>) {
 }
 
 #[test]
+fn header_footer_anchors_and_the_terminal_empty_line_keep_their_own_font_heights() {
+    let input =
+        include_bytes!("../../mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx");
+    let core = rhwp::DocumentCore::from_bytes(input).unwrap();
+    let doc = core.document();
+    let paragraphs = &doc.sections[0].paragraphs;
+    let date = &paragraphs[2];
+    let [first, terminal] = date.line_segs.as_slice() else {
+        panic!("시행일과 빈 줄은 각각 하나의 물리 줄을 소유한다");
+    };
+    let heading = &paragraphs[1].line_segs[0];
+    let contact = &paragraphs[4].line_segs[0];
+    assert_eq!(first.text_height, heading.text_height);
+    assert_eq!(first.baseline_distance, heading.baseline_distance);
+    assert_eq!(terminal.text_height, contact.text_height);
+    assert_eq!(terminal.baseline_distance, contact.baseline_distance);
+    assert_eq!(
+        first.vertical_pos + first.line_height + first.line_spacing,
+        terminal.vertical_pos
+    );
+    assert_eq!(
+        terminal.vertical_pos + terminal.line_height + terminal.line_spacing,
+        paragraphs[3].line_segs[0].vertical_pos
+    );
+}
+
+#[test]
 fn paired_angle_opener_stays_with_the_following_line() {
     let input =
         include_bytes!("../../mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx");

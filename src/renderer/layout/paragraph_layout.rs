@@ -2301,6 +2301,69 @@ impl VisibleTextLineMeasure {
     }
 }
 
+/// 한 줄 셀의 자연 글자 원점을 안쪽 폭에 비례 배치한다. 글리프의 폭은 보존하고
+/// 원래 양수였던 전진은 양수로 남겨, 서로 다른 문자 경계가 같은 캐럿으로 붕괴하지 않는다.
+fn fit_cell_text_advances(line: &mut RenderNode, origin: f64, width: f64) {
+    if width <= 0.0 {
+        return;
+    }
+    let mut scale = 1.0_f64;
+    for child in &line.children {
+        let RenderNodeType::TextRun(run) = &child.node_type else {
+            continue;
+        };
+        if run.char_start.is_none() {
+            continue;
+        }
+        let offset = child.bbox.x - origin;
+        let text = run.metric_or_display_text();
+        let positions = run.replay_positions_for(text);
+        if let Some(end) = positions
+            .last()
+            .map(|end| offset + end)
+            .filter(|end| *end > width)
+        {
+            scale = scale.min(width / end);
+        }
+        // 자간은 글리프 윤곽을 줄이지 않는다. 각 가시 글자의 자연 폭도 함께 확보한다.
+        for (ch, pair) in text.chars().zip(positions.windows(2)) {
+            let start = offset + pair[0];
+            let advance = pair[1] - pair[0];
+            if !ch.is_whitespace() && start > 0.0 && advance < width {
+                scale = scale.min((width - advance) / start);
+            }
+        }
+    }
+    if scale >= 1.0 {
+        return;
+    }
+    let map_x = |x: f64| origin + (x - origin) * scale;
+    for child in &mut line.children {
+        match &mut child.node_type {
+            RenderNodeType::TextRun(run) if run.char_start.is_some() => {
+                if let Some(positions) = &mut run.layout_positions {
+                    for x in positions {
+                        *x *= scale;
+                    }
+                }
+                run.style.cell_advance_scale = Some(scale);
+                for leader in &mut run.style.tab_leaders {
+                    leader.start_x *= scale;
+                    leader.end_x *= scale;
+                }
+            }
+            RenderNodeType::Rectangle(_) => {}
+            RenderNodeType::Line(stroke) => {
+                stroke.x1 = map_x(stroke.x1);
+                stroke.x2 = map_x(stroke.x2);
+            }
+            _ => continue,
+        }
+        child.bbox.x = map_x(child.bbox.x);
+        child.bbox.width *= scale;
+    }
+}
+
 /// 가시 글줄 뒤의 장식 공백은 본문을 누르지 않고 남은 줄 폭을 소비한다.
 ///
 /// 공백과 장식은 원문에 남긴다. 음영/테두리·별도 글자모양·공백 전용 줄은
@@ -3447,6 +3510,7 @@ impl LayoutEngine {
                             .map_or(0.0, |s| s.spacing_after),
                     }),
                 None,
+                false,
             );
             return;
         }
@@ -5504,6 +5568,7 @@ impl LayoutEngine {
                 recomposed.is_some() && crate::renderer::para_has_no_stored_line_segs(para),
                 vertical_spacing.or(flow_spacing),
                 None,
+                false,
             );
         }
 
@@ -6083,6 +6148,7 @@ impl LayoutEngine {
             false,
             None,
             None,
+            false,
         )
     }
 
@@ -6110,7 +6176,12 @@ impl LayoutEngine {
         computed_body_rows: bool,
         vertical_spacing: Option<ParagraphVerticalSpacing>,
         stored_cell_content_origin: Option<f64>,
+        cell_line_wrap_squeeze: bool,
     ) -> f64 {
+        // 원본이 저장한 줄은 기존 저장 줄 배치 규칙을 따른다. 편집으로 생성한
+        // 줄과 HWPX로 저장하면서 줄 정보가 생략된 문단은 같은 셀 정책으로 맞춘다.
+        let squeeze_reflowed_cell = cell_line_wrap_squeeze
+            && para.is_some_and(crate::renderer::para_has_no_stored_line_segs);
         // 저장 vpos가 없는 것은 첫 문단의 앞 간격이 0이라는 증거가 아니다.
         // 실제 셀의 순수 재조판 텍스트는 측정/컷 원장과 같은 flow-before를 쓴다.
         // 원본 저장 줄·개체 호스트와 호출자가 확정한 부분 프레임은 그대로 둔다.
@@ -7958,8 +8029,9 @@ impl LayoutEngine {
                 });
             // 문단 「한 줄로 입력」은 줄을 나누지 않고 자간을 좁혀 한 줄에 담는다.
             // 한 줄로 조합된 이 문단의 넘침은 잘라낼 내용이 아니라 좁힐 대상이다.
-            let line_wrap_squeeze = composed.lines.len() == 1
-                && para_style.is_some_and(|style| style.line_wrap_squeeze);
+            let line_wrap_squeeze = squeeze_reflowed_cell
+                || composed.lines.len() == 1
+                    && para_style.is_some_and(|style| style.line_wrap_squeeze);
             let suppress_cell_overflow_spacing = cell_ctx.is_some()
                 && !line_wrap_squeeze
                 && total_text_width > available_width * 1.15
@@ -8159,58 +8231,64 @@ impl LayoutEngine {
                         && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
                 })
                 .map(|(_, (_, correction))| hwpunit_to_px(i32::from(*correction) * 4, self.dpi));
-            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) = if compression.is_some() {
-                (0.0, 0.0, 0.0)
-            } else if is_hancom_company_pua_logo_line {
-                // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
-                // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
-                // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
-                ((available_width - total_text_width).max(0.0), 0.0, 0.0)
-            } else if runs_all_whitespace
-                && !is_last_line_of_para
-                && !has_forced_break
+            // 실제 탭 정지와 선행 공백까지 배치한 뒤 같은 문자 경계를 paint와 커서에 전달한다.
+            let fit_cell_text = squeeze_reflowed_cell
+                && total_text_width > available_width
                 && line_tac_offsets_for_width.is_empty()
-                && !needs_justify
-                && !needs_distribute
-            {
-                // Soft wrapping can consume a row of separator spaces beyond
-                // the frame. Keep their decoration advances instead of fitting
-                // them like glyphs. Paragraph-end/forced-break spaces remain
-                // authored content and retain the normal line-fit contract.
-                (0.0, 0.0, 0.0)
-            } else {
-                compute_line_extra_spacing_with_dash_plan(
-                    comp_line,
-                    leading_space_plan.leading_spaces,
-                    line_tac_offsets_for_width
-                        .iter()
-                        .filter(|(_, width, _)| *width > 0.0)
-                        .count(),
-                    trailing_space_limit,
-                    &leading_space_plan,
-                    soft_wrap_separator_width,
-                    terminal_tracking_for_fit,
-                    &unjustified_leading_spaces,
-                    styles,
-                    visible_line_measure.as_ref(),
-                    alignment,
-                    cell_ctx.is_some(),
-                    needs_justify_spacing,
-                    false,
-                    needs_distribute,
-                    has_tabs,
-                    renders_synthetic_wrap_trailing_space,
-                    suppress_cell_overflow_spacing,
-                    converge_auto_shrink_cell,
-                    total_char_count,
-                    total_text_width,
-                    available_width,
-                    tab_width,
-                    condense,
-                    &mut dash_extra_by_run,
-                    note_line.trailing_slots,
-                )
-            };
+                && note_line.positions.is_empty();
+            let (mut extra_word_sp, extra_char_sp, extra_dash_sp) =
+                if compression.is_some() || fit_cell_text {
+                    (0.0, 0.0, 0.0)
+                } else if is_hancom_company_pua_logo_line {
+                    // 이 줄의 trailing space는 뒤의 treat-as-char logo 그림 앞 공백이다.
+                    // 회사명 자체에는 자간을 추가하지 않고 이 공백 하나가 남는 폭을 전부
+                    // 흡수하게 해야 Hancom PDF의 좌측 회사명·우측 logo 배치가 유지된다.
+                    ((available_width - total_text_width).max(0.0), 0.0, 0.0)
+                } else if runs_all_whitespace
+                    && !is_last_line_of_para
+                    && !has_forced_break
+                    && line_tac_offsets_for_width.is_empty()
+                    && !needs_justify
+                    && !needs_distribute
+                {
+                    // Soft wrapping can consume a row of separator spaces beyond
+                    // the frame. Keep their decoration advances instead of fitting
+                    // them like glyphs. Paragraph-end/forced-break spaces remain
+                    // authored content and retain the normal line-fit contract.
+                    (0.0, 0.0, 0.0)
+                } else {
+                    compute_line_extra_spacing_with_dash_plan(
+                        comp_line,
+                        leading_space_plan.leading_spaces,
+                        line_tac_offsets_for_width
+                            .iter()
+                            .filter(|(_, width, _)| *width > 0.0)
+                            .count(),
+                        trailing_space_limit,
+                        &leading_space_plan,
+                        soft_wrap_separator_width,
+                        terminal_tracking_for_fit,
+                        &unjustified_leading_spaces,
+                        styles,
+                        visible_line_measure.as_ref(),
+                        alignment,
+                        cell_ctx.is_some(),
+                        needs_justify_spacing,
+                        false,
+                        needs_distribute,
+                        has_tabs,
+                        renders_synthetic_wrap_trailing_space,
+                        suppress_cell_overflow_spacing,
+                        converge_auto_shrink_cell,
+                        total_char_count,
+                        total_text_width,
+                        available_width,
+                        tab_width,
+                        condense,
+                        &mut dash_extra_by_run,
+                        note_line.trailing_slots,
+                    )
+                };
             if compression.is_none() && !is_hancom_company_pua_logo_line {
                 if let Some(correction) = hwp3_saved_space {
                     // 저장 보정은 당시 글꼴 메트릭으로 계산한 값이다. 현재 줄 구성의
@@ -8901,6 +8979,10 @@ impl LayoutEngine {
                     .is_some_and(|measure| measure.inherited_decoration_tail)
             {
                 fit_inherited_decoration_tail(&mut line_node);
+            }
+
+            if fit_cell_text {
+                fit_cell_text_advances(&mut line_node, x_start, available_width);
             }
 
             // 원고지 구역: 글자를 칸에 놓는다. 첫 줄은 들여쓰기만큼 칸을 비운다.

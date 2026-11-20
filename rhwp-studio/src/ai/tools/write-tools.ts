@@ -11,6 +11,7 @@
  */
 import type { AiToolCall, AiToolDef } from '../provider/types.ts';
 import { validateToolInput, type ToolSchema } from './schema-validate.ts';
+import { paragraphSpacingFromPt } from '../../core/paragraph-spacing.ts';
 import { cleanDocumentText } from './untrusted.ts';
 
 const MAX_FIND_CHARS = 500;
@@ -1176,13 +1177,13 @@ function prepareFormatParagraph(host: WriteHost, input: Record<string, unknown>)
           props.lineSpacing = format.lineSpacing;
           props.lineSpacingType = 'Percent';
         }
-        // 문단 모양 대화상자와 같은 단위: 여백·들여쓰기는 pt×200(HWPUNIT 2배 저장값), 문단 간격은 pt×100.
+        // 문단 모양 대화상자와 같은 단위: 여백·들여쓰기와 포인트 문단 간격은 HWPUNIT 2배 저장값이다.
         // 들여쓰기는 양수, 내어쓰기는 음수다.
         if (format.leftMargin !== undefined) props.marginLeft = Math.round((format.leftMargin as number) * 200);
         if (format.rightMargin !== undefined) props.marginRight = Math.round((format.rightMargin as number) * 200);
         if (format.firstLineIndent !== undefined) props.indent = Math.round((format.firstLineIndent as number) * 200);
-        if (format.spaceBefore !== undefined) props.spacingBefore = Math.round((format.spaceBefore as number) * 100);
-        if (format.spaceAfter !== undefined) props.spacingAfter = Math.round((format.spaceAfter as number) * 100);
+        if (format.spaceBefore !== undefined) props.spacingBefore = paragraphSpacingFromPt(format.spaceBefore as number);
+        if (format.spaceAfter !== undefined) props.spacingAfter = paragraphSpacingFromPt(format.spaceAfter as number);
         const json = JSON.stringify(props);
         ok(cell
           ? target.applyParaFormatInCell(hit.sec, cell.parentPara, cell.ctrlIdx, cell.cellIdx, cell.cellPara, json)

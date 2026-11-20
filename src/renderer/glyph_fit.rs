@@ -39,6 +39,14 @@ pub(crate) fn glyph_fit_positions<'a>(
     layout_positions: Option<&[f64]>,
     char_positions: &'a [f64],
 ) -> std::borrow::Cow<'a, [f64]> {
+    if style.cell_advance_scale.is_some() {
+        let mut natural = style.clone();
+        natural.cell_advance_scale = None;
+        let positions = layout::compute_char_positions(replay_text, &natural);
+        return Cow::Owned(
+            glyph_fit_positions(replay_text, &natural, None, &positions).into_owned(),
+        );
+    }
     let positive_source_tracking = has_positive_source_tracking(style);
     let intrinsic = intrinsic_style(style);
     let style = intrinsic.as_ref();

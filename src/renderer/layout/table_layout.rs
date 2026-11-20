@@ -8443,6 +8443,7 @@ impl LayoutEngine {
                                 - hwpunit_to_px(para.line_segs[0].vertical_pos, self.dpi)
                         })
                         .or_else(|| stored_inline_frame.map(|_| text_y_start)),
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                 );
                 self.keep_continuation_column_top_spacing_before
                     .set(previous_keep_spacing);
@@ -8576,6 +8577,7 @@ impl LayoutEngine {
                         false,
                         None,
                         stored_text_origin,
+                        cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     );
                     has_preceding_text |= host_has_visible_text;
                 }
@@ -17815,6 +17817,19 @@ impl LayoutEngine {
                     let trailing_host_line = p.controls.iter().enumerate().find_map(|(ci, c)| {
                         matches!(c, Control::Table(_))
                             .then(|| crate::renderer::float_placement::block_table_trailing_whitespace_line_hu(p, nt, ci))
+                            .flatten()
+                    }).or_else(|| {
+                        (!text_reflowed
+                            && (self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout()))
+                            .then(|| {
+                                crate::renderer::float_placement::stored_empty_host_line_after_band(
+                                    &cell.paragraphs,
+                                    pi,
+                                    styles,
+                                    self.dpi,
+                                )
+                            })
                             .flatten()
                     });
                     let (om_top, terminal_band) = stored_frame

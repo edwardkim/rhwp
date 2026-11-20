@@ -1,0 +1,301 @@
+{
+  "references": [
+    {
+      "key": "issue9040",
+      "input": "samples/issue9040/1371000-policy-research-application.hwp",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "pdf": "pdf/issue9040/1371000-policy-research-application-2024.pdf",
+      "pdf_sha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c",
+      "pages": 10,
+      "reused_exact_mcp_2024": false,
+      "receipt": {
+        "job_id": "f3050a88-3cc7-4574-a3cc-e25c12ee3ca5",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_page_count": 10,
+        "input_preprocess": "none"
+      },
+      "bytes": 183200,
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "10"
+      }
+    },
+    {
+      "key": "squeeze",
+      "input": "samples/issue8947/36481164-squeeze-title-cell.hwpx",
+      "input_sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "pdf": "pdf/issue8947/36481164-squeeze-title-cell-2024.pdf",
+      "pdf_sha256": "600fb9974578944ad2f8f3b92d3619c17a38a2216ffa30d5fe35c81f75c5c319",
+      "pages": 2,
+      "reused_exact_mcp_2024": false,
+      "receipt": {
+        "job_id": "dc1013a2-26a6-439c-beb5-9ad47af69ac8",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_page_count": 2,
+        "input_preprocess": "none"
+      },
+      "bytes": 43266,
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "2"
+      }
+    },
+    {
+      "key": "para-squeeze",
+      "input": "samples/issue9085/facility_fee_reduction_criteria.hwpx",
+      "input_sha256": "a30ce89ad8659e14ade23ff8aea09d9e369b80058ace0ac44b9a4d14455578ff",
+      "pdf": "pdf/issue9085/facility_fee_reduction_criteria-2024.pdf",
+      "pdf_sha256": "0f0136b898e56be268501073678c1a346aa7c2228c0c88221a14deeda8147486",
+      "pages": 1,
+      "reused_exact_mcp_2024": false,
+      "receipt": {
+        "job_id": "2f8c21ec-f003-40c9-b683-7313d0a6d555",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_page_count": 1,
+        "input_preprocess": "none"
+      },
+      "bytes": 44534,
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1"
+      }
+    },
+    {
+      "key": "latin",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "pdf": "pdf/re-03-latin-only-hancom-hwp-2024.pdf",
+      "pdf_sha256": "a0aec6621268b0d7d1cd4d736aa352e12ebaea594ae08935cab69eec9071c932",
+      "pages": 1,
+      "reused_exact_mcp_2024": false,
+      "receipt": {
+        "job_id": "61251cf0-bbaa-4688-b176-0e218dce7da4",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_page_count": 1,
+        "input_preprocess": "scripts_disabled"
+      },
+      "bytes": 11749,
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1"
+      }
+    },
+    {
+      "key": "picture",
+      "input": "samples/pic-crop-01.hwp",
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf": "pdf/pic-crop-01-2024.pdf",
+      "pdf_sha256": "b8c7bb29fe7d12b0694a5d980cb0687f458d3aee7e745434f50f5af8a86b0286",
+      "pages": 1,
+      "reused_exact_mcp_2024": false,
+      "receipt": {
+        "job_id": "23f6c57b-33d5-4c08-ab06-d11410f25102",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_page_count": 1,
+        "input_preprocess": "scripts_disabled"
+      },
+      "bytes": 19221,
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1"
+      }
+    },
+    {
+      "key": "group",
+      "input": "samples/shape-group-02.hwp",
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf": "pdf/shape-group-02-hwp-2024.pdf",
+      "pdf_sha256": "65a38299255a5c9d28fa0f9cd9b3aff12d1d12cfe37b5c246a5f86de427cfb2b",
+      "pages": 1,
+      "reused_exact_mcp_2024": false,
+      "receipt": {
+        "job_id": "6c78bc75-db6d-4b15-9d91-8edfb34c5735",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_page_count": 1,
+        "input_preprocess": "scripts_disabled"
+      },
+      "bytes": 89647,
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "1"
+      }
+    },
+    {
+      "key": "decree",
+      "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "pdf": "pdf/78494-virtual-convergence-industry-decree-2024.pdf",
+      "pdf_sha256": "3cef9ce52330e33dabc45c99bf52851888eb84d1dc0b4d4bfd011caa2ad32b57",
+      "pages": 74,
+      "reused_exact_mcp_2024": true,
+      "receipt": {
+        "job_id": "4976d354-2ba9-49bf-ba24-7e40b2ef45c9",
+        "engine": "2024",
+        "hancom_version": "13.0.0.3901",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+        "pdf_page_count": 74,
+        "input_preprocess": "scripts_disabled"
+      },
+      "bytes": 721957,
+      "pdfinfo": {
+        "Creator": "Hancom PDF 1.3.0.550",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "74"
+      }
+    },
+    {
+      "key": "issue7905",
+      "input": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "pdf": "pdf/issue7905/jongbu_law-hancom-2020.pdf",
+      "pdf_sha256": "0354393927f9d995a9c85f5ace21f5192fad756b8d922f350710d040e0d66cb2",
+      "pages": 6,
+      "receipt": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+        "pdf_page_count": 6,
+        "job_id": "3ceffa87-5f92-4013-8e83-aaf3196c444a"
+      },
+      "bytes": 285887,
+      "pdfinfo": {
+        "Creator": "Hwp 2020 0.0.0.0",
+        "Producer": "Hancom PDF 1.3.0.550",
+        "Pages": "6"
+      }
+    }
+  ],
+  "independent_print_content_control": [
+    {
+      "document": "issue9040",
+      "prior_pages": 10,
+      "new_pages": 10,
+      "matched_text_pages": 5,
+      "print_text_differences": [
+        {
+          "page": 1,
+          "older_text_sha256": "9c362ad698e14a194ea1e316dbba5fcc8a89dbaea8246512bd8c5f610db3f92e",
+          "current_text_sha256": "acfb611570678c4f5ebc6723d95ff149a694f4dea3458dfc9dbfadcb4720ea91",
+          "older_text_chars": 476,
+          "current_text_chars": 476
+        },
+        {
+          "page": 2,
+          "older_text_sha256": "9f49a5cb8db4fb5b0eec0128486e08e0521881e76c20f462d5da6e54e1cc069f",
+          "current_text_sha256": "2bc3624a255f77592437820e17449f7d33447ca279a90839620a52144e16cb74",
+          "older_text_chars": 363,
+          "current_text_chars": 363
+        },
+        {
+          "page": 3,
+          "older_text_sha256": "b38a5ea0fa0f935b8dc825cf75fb832f51ccbec74d89d955f9ca4b95419d2b64",
+          "current_text_sha256": "2468e0b60f76db68556ae01d9ac036070f061333be00e5eb3a3257152346dc6f",
+          "older_text_chars": 293,
+          "current_text_chars": 293
+        },
+        {
+          "page": 4,
+          "older_text_sha256": "57551f5991e8da23e20df1dafdf69aa53533ea8c3b92964d4850d2616202c9fc",
+          "current_text_sha256": "d71406ea2d27df646f31f549bf00006352bdaa00d8c02d21540b8941b25a065b",
+          "older_text_chars": 377,
+          "current_text_chars": 377
+        },
+        {
+          "page": 5,
+          "older_text_sha256": "c663cce01e40cdf683c6058a0fcda04229d3fb14199e88d7ed5295832121a78d",
+          "current_text_sha256": "a17927da0444484999bf33c3c6e0207cb75af5e0496ee2bdb39b2ab96891aedd",
+          "older_text_chars": 449,
+          "current_text_chars": 449
+        }
+      ],
+      "candidate_print_final_page_markers": {
+        "PensionPoliciesandPoliticsinEastAsia": true,
+        "창의도시정책및거버넌스비교연구": true,
+        "한국과싱가포르사례를": true
+      }
+    },
+    {
+      "document": "squeeze",
+      "prior_pages": 2,
+      "new_pages": 2,
+      "matched_text_pages": 2,
+      "print_text_differences": []
+    },
+    {
+      "document": "para-squeeze",
+      "prior_pages": 1,
+      "new_pages": 1,
+      "matched_text_pages": 1,
+      "print_text_differences": []
+    },
+    {
+      "document": "latin",
+      "prior_pages": 1,
+      "new_pages": 1,
+      "matched_text_pages": 1,
+      "print_text_differences": []
+    },
+    {
+      "document": "picture",
+      "prior_pages": 1,
+      "new_pages": 1,
+      "matched_text_pages": 1,
+      "print_text_differences": []
+    },
+    {
+      "document": "group",
+      "prior_pages": 1,
+      "new_pages": 1,
+      "matched_text_pages": 1,
+      "print_text_differences": []
+    },
+    {
+      "document": "decree",
+      "prior_pages": 74,
+      "new_pages": 74,
+      "matched_text_pages": 72,
+      "print_text_differences": [
+        {
+          "page": 25,
+          "older_text_sha256": "cedee37980e2acd36acc5266c2de2daefefcfff71232ecc3d3355cefccb0323a",
+          "current_text_sha256": "db37a3ba46afa076a1a172ddbac2e9bb3ae0d9bfc013a1f4ebc8d995ee1d07a9",
+          "older_text_chars": 274,
+          "current_text_chars": 275
+        },
+        {
+          "page": 26,
+          "older_text_sha256": "becb6c0c7d8bafd70d0589c30909bcb2d81f5d5a202ac3fa118e00a8a594702b",
+          "current_text_sha256": "fa1e63f4194b4af5cb200ec6ec0be5c87d148a6ff950dd5862e4b8a82c7ad414",
+          "older_text_chars": 297,
+          "current_text_chars": 296
+        }
+      ]
+    }
+  ]
+}

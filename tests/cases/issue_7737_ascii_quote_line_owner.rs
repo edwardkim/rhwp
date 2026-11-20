@@ -5,6 +5,8 @@
 //! 독립 한컴 2020 Print는 첫 ASCII 작은따옴표를 둘째 줄 끝에 남긴다.
 //! 원점 검사는 양쪽 98% 이상인 같은 61쪽만 ±2px로 보호한다.
 //! 설치 글꼴·비공개 프로그램에 의존하지 않는다.
+//! 추가 관계형 검사: 한컴 2024 Print 7·16쪽의 마지막 음절과 다음 줄 소속.
+//! Native 96 DPI·2px raw는 각각 100.00%, 99.99%이며 좌표를 고정하지 않는다.
 
 use rhwp::{
     renderer::{
@@ -13,6 +15,69 @@ use rhwp::{
     },
     DocumentCore,
 };
+
+/// 검사 유형: 관계형. 표의 폭 중립 표식과 본문에서 독립 Print의 문단 끝 소속을 비교한다.
+#[test]
+fn compressed_terminal_syllable_owns_an_automatic_continuation_line() {
+    fn collect_lines(node: &RenderNode, lines: &mut Vec<String>) {
+        if matches!(&node.node_type, RenderNodeType::TextLine(_)) {
+            lines.push(
+                node.children
+                    .iter()
+                    .filter_map(|child| match &child.node_type {
+                        RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                        _ => None,
+                    })
+                    .collect(),
+            );
+        }
+        for child in &node.children {
+            collect_lines(child, lines);
+        }
+    }
+    let mut core = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx"
+    ))
+    .unwrap();
+    core.set_hangul2024_compat(true);
+    core.set_font_environment(Some(
+        FontEnvironment::from_json(
+            r#"{
+                "id": "decree-2024-terminal-ownership",
+                "substitutions": {"HCI Poppy": "Gulim", "한양중고딕": "HYGothic-Medium"},
+                "trueTypeFaces": ["Gulim", "HYGothic-Medium"],
+                "preserveSourceMetrics": true
+            }"#,
+        )
+        .unwrap(),
+    ))
+    .unwrap();
+    assert_eq!(core.page_count(), 74);
+    for (page, prefix, ending, continuation) in [
+        (7, "'정보제공형 신고'", "'에 해", "당"),
+        (16, "내용 등과 관련한 산업계", "모니터", "링"),
+    ] {
+        let tree = core.build_page_render_tree(page - 1).unwrap();
+        let mut lines = Vec::new();
+        collect_lines(&tree.root, &mut lines);
+        let mut source = lines.iter().skip_while(|line| !line.starts_with(prefix));
+        assert!(
+            source
+                .next()
+                .is_some_and(|line| line.trim_end().ends_with(ending)),
+            "{page}쪽 문단 마지막 음절 앞의 줄"
+        );
+        assert_eq!(
+            source.next().map(|line| line.trim()),
+            Some(continuation),
+            "{page}쪽 마지막 음절의 줄 소속"
+        );
+        assert!(
+            !source.any(|line| line.trim() == continuation),
+            "{page}쪽 마지막 음절 중복"
+        );
+    }
+}
 
 /// 검사 유형: 관계형. 문자·문단·줄의 소속과 수량을 보존한다.
 #[test]

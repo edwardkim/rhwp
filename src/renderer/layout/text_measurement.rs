@@ -1107,6 +1107,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
             extra_word_spacing: 0.0,
             unjustified_leading_spaces: 0,
             extra_char_spacing: 0.0,
+            cell_advance_scale: None,
             extra_dash_advance: 0.0,
             text_paint: cs.text_paint,
             outline_type: cs.outline_type,
@@ -3037,7 +3038,13 @@ pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
 /// N글자 → N+1개 경계값을 반환한다 (0번째는 0.0, N번째는 전체 폭).
 /// run 내부 상대 좌표이며, 절대 좌표는 run.bbox.x + charX[i]로 계산한다.
 pub(crate) fn compute_char_positions(text: &str, style: &TextStyle) -> Vec<f64> {
-    default_measurer().compute_char_positions(text, style)
+    let mut positions = default_measurer().compute_char_positions(text, style);
+    if let Some(scale) = style.cell_advance_scale {
+        for x in &mut positions {
+            *x *= scale;
+        }
+    }
+    positions
 }
 
 /// 실제 원점의 전진과 glyph 폭 맞춤을 구분할 HFT 굵기 간격의 존재 여부.

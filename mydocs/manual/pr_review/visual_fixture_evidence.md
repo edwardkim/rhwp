@@ -113,29 +113,26 @@ HWP/HWPX 및 50 MiB 미만 PDF는 **검증에 사용한 파일을 검토 대상 
 원본 출처·변형 방법·해시와 검증 범위를 기록한다. 정식 sample은 기존 manifest·baseline 등록 절차를 따른다.
 
 본문 첨부 PDF는 먼저 `pdfinfo`로 `Creator`, `Producer`, PDF version, 페이지 수와 페이지 크기를
-확인한다. **Windows 데스크톱 한컴에서 `Hancom PDF` 프린터로 인쇄(Print)한 PDF는 직접
-출력본과 MCP 산출본 모두 공식 대조 자료로 인정한다. `Microsoft Print to PDF`와 한컴
-웹한글기안기의 PDF는 공식 대조 자료가 아니다.** 실제 선택한 프린터와 생성 출처를 확인한다.
-웹한글기안기 PDF는 출처를 표시한 참고 자료로만 구분하며, Visual Sweep의 수용 점수·보호 TSV·
-회귀 기대값 또는 PR 승인·병합의 공식 기준으로 사용하거나 재사용하지 않는다.
-같은 원본의 유효한 데스크톱 한컴 `Hancom PDF` Print를 확보한 뒤 공식 시각 검증을 완료한다.
-기존 첨부본이 `Microsoft Print to PDF` 출력이면 참고 자료로 보존하고 공식 기준으로 재사용하지 않는다.
-PDF 형식 버전, `Creator`의 한컴 제품명·빌드, MCP engine bucket은 서로 다른 정보다.
-**특정 PDF 형식 버전이나 한컴 연도·빌드만 허용하는 목록을 두지 않는다.**
-PDF 1.4/1.6 등의 형식 버전만으로 거부·등급 하향·재변환·머지 보류하지 않는다.
+확인한다. **공식 기준 PDF는 Windows 데스크톱 한컴 2020 또는 2024에서 `Hancom PDF`
+프린터를 선택해 인쇄(Print)한 파일만 수용한다.** 수동 인쇄본과 MCP 인쇄본에 같은 기준을 적용한다.
+웹한글기안기, Cairo, `Microsoft Print to PDF`, PDF 저장·내보내기, 다른 한컴 버전의 출력은
+출처를 표시한 참고 자료로 활용할 수 있다. 공식 Visual Sweep 판정·보호 TSV·회귀 기대값에는
+한컴 2020·2024의 인쇄 결과를 사용한다.
 
-`Creator: Hwp 2020 0.0.0.0`, `Producer: Hancom PDF 1.3.0.550`, `PDF version: 1.4`도
-허용되는 생성 정보의 한 예다. `0.0.0.0`은 그 필드로 실제 한컴 빌드를 식별할 수 없다는 뜻이며,
-출력 무효의 증거가 아니다. Hwp 2022/2024 등의 표기도 예시일 뿐 허용 목록이 아니다.
-`Creator`·`Producer`가 없거나 불완전하면 제공자·생성 기록·원문 대응 등 확인 가능한 출처를
-기록한다. 메타데이터만으로 생성 제품이나 직접 출력/MCP 경로를 확정하지 않는다.
+- `Producer`가 Cairo인 기존 PDF는 같은 HWP/HWPX의 저장 제품을
+  `rhwp info --json <파일>`로 확인하고, [MCP 엔진 선택](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)에
+  따라 한컴 2020 또는 2024로 다시 인쇄한다. Cairo는 PDF 생성기를 나타내므로 그 값에서 원본
+  저장 버전이나 웹한글기안기 사용 여부를 추정하지 않는다.
+- `Creator: Hwp 2022`로 확인한 인쇄 PDF는 같은 원본을 MCP `--engine 2024`로 다시 인쇄한다.
+  새 PDF의 영수증·SHA-256·전체 쪽수를 확인하고 새 기준으로 관련 Native/fresh WASM의
+  전쪽 TSV와 대표 review·overlay를 갱신한다.
+- PDF 형식 버전과 실제 한컴 출력 제품·빌드는 별개다. `Hwp 2020 0.0.0.0` 또는
+  `Creator: Hancom PDF`처럼 빌드와 제품 세대를 확인할 수 없는 필드는 수동 인쇄 기록이나
+  MCP 영수증으로 보완한다. PDF 1.4/1.6 같은 형식 버전은 허용 제품을 판정하는 기준이 아니다.
 
-위 공식 대조 자료의 출처 조건을 충족하고, 대응 원문·페이지 범위가 확인되며 PDF를 정상적으로
-열어 비교할 수 있으면 기존 파일을 그대로 재사용한다. 저장 제품 연도와 출력 제품 연도가 다르다는 이유만으로 제외하지 않는다.
-특정 제품 버전의 동작을 주장할 때만 그 주장을 입증할 버전별 증거를 별도로 구분한다.
+허용 제품·프린터·Print 경로·동일 입력·페이지 범위와 정상 출력을 확인한 기존 파일은 재사용한다.
 기존 파일이 이미 `samples/` 등에 있으면 `pdf/`에 같은 바이트의 사본을 추가하지 않는다.
-review 문서와 비교 명령은 실제 보존 경로를 사용한다. 재변환이 필요한 사유는 원문 불일치,
-손상·실제 출력 누락·명시적 버전 비교 등 구체적인 문제로 설명하며 버전 표기를 대용으로 쓰지 않는다.
+review 문서와 비교 명령은 실제 보존 경로를 사용한다.
 
 검토 과정에서 PDF를 이미 산출하거나 복사했다면 첨부본과 **SHA-1 및 PDF version**을 비교한다.
 **재사용 가능한 첨부본과 SHA-1이 같으면 PDF 1.4/1.6 여부와 무관하게 이번 검토에서 만든 중복 PDF만
@@ -157,7 +154,9 @@ MCP 산출본과 직접 출력본 모두 PDF 1.4 등 여러 형식 버전일 수
 버전만으로 올바른 기준이라고 판정하지 않고 문제를 보고한다. 원본 HWP/HWPX가 없으면 독립 시각 검증과
 장기 재현이 불가하다는 사실을 review 문서에 명시한다.
 
-## 3.5.1 기준 PDF 미첨부 시 버전별 HWP MCP
+<a id="351-기준-pdf-미첨부-시-버전별-hwp-mcp"></a>
+
+## 3.5.1 기준 PDF 미첨부 또는 재출력 시 버전별 HWP MCP
 
 ### 원 PR이 웹한글기안기 PDF를 기준으로 제시한 경우
 
@@ -179,14 +178,13 @@ MCP 산출본과 직접 출력본 모두 PDF 1.4 등 여러 형식 버전일 수
 
 **역할 경계:** 이 절의 MCP 산출은 접근 권한이 있는 메인터너/reviewer의 보완 검증 절차다.
 일반 기여자에게 MCP 접근 또는 호출을 요구하지 않는다. 기여자는 기준 PDF가 필요한 변경에서
-검증 대상 한컴 버전으로 직접 출력한 PDF를 원본 HWP/HWPX와 함께 PR 또는 관련 issue에 첨부한다.
+한컴 2020 또는 2024에서 직접 인쇄한 PDF를 원본 HWP/HWPX와 함께 PR 또는 관련 issue에 첨부한다.
 수동·MCP 모두 **`Hancom PDF` 프린터의 Print 인쇄 경로**를 사용하며,
 `Microsoft Print to PDF`나 PDF 저장/내보내기로 대신하지 않는다.
 출력 계약·engine 2020/2024 선택은 [MCP 사용법](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
-여러 버전을 비교하거나 지원 근거로 주장하면 각 대상 버전별 PDF와 실제 제품 버전/빌드, OS,
-폰트, 출력 방법을 구분해 제출한다. 기존의 유효한 버전별 첨부본은 재사용한다.
-직접 출력본의 `-2022.pdf` 등을 아래 MCP engine bucket 때문에 `-2020.pdf`로 바꾸지 않는다.
-필요한 제품 버전의 출력 환경이나 독립 출력 자료를 확보해 검증을 완료한다. 다른 버전 출력으로 대신하지 않는다.
+여러 버전의 동작을 설명할 때는 자료의 제품 버전·빌드·OS·폰트·출력 방법과 공식 기준인지
+참고 자료인지를 구분한다. 기존 2020·2024 첨부본이 위 재사용 조건을 충족하면 그대로 사용한다.
+재출력한 PDF의 파일명에는 실제 인쇄 엔진을 적고, 기존 참고 PDF의 이름은 보존한다.
 
 위 한컴 첨부본 재사용 조건을 충족하면 PDF 버전과 무관하게 이 절의 MCP 재산출은 생략한다.
 PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있고 reviewer에게 MCP 권한이 있으면,
@@ -197,17 +195,11 @@ MCP 권한이 없거나 해당 버전의 근거를 보완할 수 없다면 기�
 rhwp info --json <원본 HWP 또는 HWPX>
 ```
 
-`lastSavedWith.product`가 `hancom-office-2024`이면 [HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의
-통합 Windows service에서 engine `2024`를 사용한다. `lastSavedWith`가 `null`이거나 product가 `null`,
-또는 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·`hancom-office-2022`이면 같은
-service의 engine `2020`을 사용한다.
-이 판정은 HWP5 `HwpSummaryInformation.revisionNumber`와 HWPX `version.xml/appVersion`의 마지막 저장
-메타데이터를 사용한다. 확장자와 파일 포맷 `version`만으로 서비스를 선택하지 않는다.
-
-PR review 기준 PDF 파일명은 engine bucket 기준으로 끝낸다. `hancom-office-2024` 저장본은
-`-2024.pdf`, `null` 또는 2022 이하 저장본은 `-2020.pdf`를 사용한다. 이 메타데이터는 원 작성 제품의
-증명이 아니며 재저장·삭제·변조될 수 있으므로, `null` 또는 product 미상 파일은 review 문서에
-그 사실을 함께 기록한다.
+[HWP MCP의 엔진 선택](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
+HWP5 `HwpSummaryInformation.revisionNumber`와 HWPX `version.xml/appVersion`는 마지막 저장
+제품을 판정하는 데 사용한다. 제품이 미상이면 저장 환경을 확인하고 결과를 review에 적는다.
+기존 `Creator: Hwp 2022` 인쇄본 교체에는 MCP 2024를 사용한다.
+기준 PDF 파일명은 실제 요청 엔진에 맞춰 `-2020.pdf` 또는 `-2024.pdf`로 끝낸다.
 
 - 새 MCP 기준 PDF를 산출한 경우에는 output에만 두지 않고 2020 bucket은 `pdf/{원본 stem}-2020.pdf`, 2024 bucket은
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
@@ -222,9 +214,9 @@ PR review 기준 PDF 파일명은 engine bucket 기준으로 끝낸다. `hancom-
 
 통합 Windows MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, 요청한 `--engine`과
 비동기 `start`·`status` 응답의 `engine` 일치, client/server byte 수와 SHA-256 일치를 확인한다.
-`null` 또는 2022 이하 저장본에는 `--engine 2020`, 2024 저장본에는 `--engine 2024`를 명시한다.
-`server.engine`은 concrete backend 식별자일 수 있으므로 저장 버전별 engine 선택의 판정 기준으로
-사용하지 않는다.
+기준 PDF에 사용한 `--engine 2020` 또는 `--engine 2024`와 그 선택 근거를 기록한다.
+`server.engine`은 concrete backend 식별자일 수 있으므로 실제 요청 엔진은
+`start`와 `status`에서 확인한다.
 `engine_profile`과 `hancom_version`은 서버가 제공할 때만 추가 증적으로 기록하며, 부재만으로 실패로
 판단하지 않는다.
 공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.

@@ -281,7 +281,7 @@ export const formatCommands: CommandDef[] = [
     execute(services) {
       const ih = services.getInputHandler();
       if (!ih) return;
-      const paraProps = ih.getParaProperties();
+      const paraProps = ih.getParaProperties('spacing');
       const sel = ih.getSelection();
       const curPos = ih.getCursorPosition();
       const range = sel ?? { start: curPos, end: curPos };
@@ -438,7 +438,7 @@ export const formatCommands: CommandDef[] = [
         try {
           baseInfo = {
             charProps: ih.getCharProperties(),
-            paraProps: ih.getParaProperties(),
+            paraProps: ih.getParaProperties('spacing'),
           };
         } catch {
           baseInfo = {};

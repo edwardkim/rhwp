@@ -40,6 +40,11 @@ pub enum RenderPathEntry {
         control_index: usize,
         paragraph_index: usize,
     },
+    /// 도형 캡션(셀 65534) 문단.
+    ShapeCaption {
+        control_index: usize,
+        paragraph_index: usize,
+    },
 }
 
 impl crate::storage::CloneWithStorage for RenderPathEntry {

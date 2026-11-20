@@ -31,6 +31,7 @@ struct PngExportArgs<'a> {
     dpi: Option<f64>,
     render_profile: rhwp::paint::RenderProfile,
     hangul2024_compat: bool,
+    print_png_rgb555: bool,
     json: bool,
     metadata_only: bool,
     render_tree_output: Option<String>,
@@ -53,6 +54,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     // 고품질 출력은 명시적인 `--profile high-quality`로 선택한다.
     let mut render_profile = rhwp::paint::RenderProfile::Screen;
     let mut hangul2024_compat = false;
+    let mut print_png_rgb555 = false;
     let mut json = false;
     let mut metadata_only = false;
     let mut render_tree_output = None;
@@ -60,6 +62,10 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--print-png-rgb555" => {
+                print_png_rgb555 = true;
+                i += 1;
+            }
             "--render-tree-output" => {
                 let Some(directory) = args.get(i + 1) else {
                     eprintln!("오류: --render-tree-output 뒤에 폴더 경로가 필요합니다.");
@@ -231,6 +237,11 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
         return Err(EXIT_USAGE);
     };
 
+    if print_png_rgb555 && render_profile != rhwp::paint::RenderProfile::Print {
+        eprintln!("오류: --print-png-rgb555는 --profile print와 함께 사용합니다.");
+        return Err(EXIT_USAGE);
+    }
+
     Ok(PngExportArgs {
         file_path,
         output_dir,
@@ -242,6 +253,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
         dpi,
         render_profile,
         hangul2024_compat,
+        print_png_rgb555,
         json,
         metadata_only,
         render_tree_output,
@@ -324,6 +336,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         dpi,
         render_profile,
         hangul2024_compat,
+        print_png_rgb555,
         json,
         metadata_only,
         render_tree_output,
@@ -348,6 +361,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
     if hangul2024_compat {
         core.set_hangul2024_compat(true);
     }
+    core.set_print_png_rgb555(print_png_rgb555);
     // 실제 공급 글꼴은 SVG/PDF와 같은 환경에서 측정·쪽수·paint에 사용한다.
     // Skia에만 font_paths를 넘기면 원본 HFT 호환 폭으로 조판한 뒤 TrueType
     // 글리프를 그려, 전각 작은따옴표의 잉크가 뒤 글자와 겹칠 수 있다.
@@ -532,6 +546,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
                         "backend": "native-skia",
                         "comparisonProfile": profile,
                         "layoutGeneration": if hangul2024_compat { "2024" } else { "2022" },
+                        "printPngRgb555": print_png_rgb555,
                         "outputDir": output_dir,
                         "pageCount": page_count,
                         "renderedCount": success,

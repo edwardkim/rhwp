@@ -34,6 +34,7 @@ import {
 } from './para-shape-tab-builders';
 import { enableDialogDrag } from './dialog-drag';
 import { populateFillSelection, updateFillControls } from './fill-selection';
+import { paragraphSpacingFromPt } from '@/core/paragraph-spacing';
 import { tabUnitsToPt } from '@/core/tab-units';
 
 import { t as i18nText } from '../i18n/index.ts';
@@ -71,7 +72,7 @@ function ptToRaw2x(pt: number): number {
   return Math.round(pt * HWPUNIT_PER_PT * 2);
 }
 
-/** pt → raw HWPUNIT (1x) — spacing/lineSpacing 적용용 */
+/** pt → raw HWPUNIT (1x) — 줄 간격 적용용 */
 function ptToRaw(pt: number): number {
   return Math.round(pt * HWPUNIT_PER_PT);
 }
@@ -89,6 +90,12 @@ function pxToRaw2x(px: number): number {
 /** px → raw HWPUNIT (1x) — 비교용 */
 function pxToRaw(px: number): number {
   return Math.round(px * 75);   // px * 72/96 * 100
+}
+
+// 구 엔진의 반올림된 px만으로는 원본의 CHAR 단위 비트를 복원할 수 없다.
+function spacingInputValue(resolvedPx?: number, legacyPx?: number): string {
+  if (resolvedPx !== undefined) return pxToPt(resolvedPx).toFixed(1);
+  return legacyPx ? '' : '0.0';
 }
 
 export class ParaShapeDialog {
@@ -662,8 +669,8 @@ export class ParaShapeDialog {
     }
 
     // 문단 간격 (px → pt)
-    this.spacingBeforeInput.value = pxToPt(p.spacingBefore ?? 0).toFixed(1);
-    this.spacingAfterInput.value = pxToPt(p.spacingAfter ?? 0).toFixed(1);
+    this.spacingBeforeInput.value = spacingInputValue(p.spacingBeforePx, p.spacingBefore);
+    this.spacingAfterInput.value = spacingInputValue(p.spacingAfterPx, p.spacingAfter);
 
     // ── 확장 탭
     const ht = p.headType || 'None';
@@ -822,12 +829,17 @@ export class ParaShapeDialog {
       : pxToRaw(p.lineSpacing ?? 0);
     if (newLS !== origLS) mods.lineSpacing = newLS;
 
-    // 문단 간격 (비교: 원본 px → HWPUNIT 1x 변환 후 비교)
-    const newSB = ptToRaw(parseFloat(this.spacingBeforeInput.value) || 0);
-    if (newSB !== pxToRaw(p.spacingBefore ?? 0)) mods.spacingBefore = newSB;
-
-    const newSA = ptToRaw(parseFloat(this.spacingAfterInput.value) || 0);
-    if (newSA !== pxToRaw(p.spacingAfter ?? 0)) mods.spacingAfter = newSA;
+    // 표시 반올림이나 다른 속성 편집만으로 원래의 CHAR 단위를 잃지 않도록 한다.
+    for (const [key, input, resolvedPx] of [
+      ['spacingBefore', this.spacingBeforeInput, p.spacingBeforePx],
+      ['spacingAfter', this.spacingAfterInput, p.spacingAfterPx],
+    ] as const) {
+      const original = spacingInputValue(resolvedPx, p[key]);
+      const pt = input.valueAsNumber;
+      if (Number.isFinite(pt) && (original === '' || pt !== Number(original))) {
+        mods[key] = paragraphSpacingFromPt(pt);
+      }
+    }
 
     // ── 확장 탭
     const newHT = this.headTypeRadios.find(r => r.checked)?.value || 'None';

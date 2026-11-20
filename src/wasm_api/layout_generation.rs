@@ -11,4 +11,9 @@ impl HwpDocument {
     pub fn set_hangul2024_compat(&mut self, enabled: bool) {
         self.core.set_hangul2024_compat(enabled);
     }
+
+    #[wasm_bindgen(js_name = setPrintPngRgb555)]
+    pub fn set_print_png_rgb555(&mut self, enabled: bool) {
+        self.core.set_print_png_rgb555(enabled);
+    }
 }

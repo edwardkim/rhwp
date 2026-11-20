@@ -1,0 +1,493 @@
+{
+  "original_pr": 9202,
+  "original_head": "ca1102c3977195fd7c919f63095facfe813e7163",
+  "checked_pr_body_sha256": "f87967d1366a57e24cf3f1dc715a034e889a33b7acdef03fa48bd3a323df7340",
+  "base": "0a437a7eefb19bfe81fc12866887e4548ea9554d",
+  "candidate": "25f9587840d09b08af2b37be178ab93379a7b9dc",
+  "pages": [
+    {
+      "document": "issue9040",
+      "backend": "native",
+      "page": 2,
+      "raw": "99.99798",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "df01b179549bae77b749820f87803b84d3737a31f2036254d8f56873e568e1cf",
+      "print_png_sha256": "82d14dbb9cf184f2edbe2af7a9f5bc0eec8dfe2079029c0cfa319d4eb7e60a05",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/native/issue9040.tsv",
+        "sha256": "cff67c8397fd442631b3c99ba6b33c6a5b159eb3e682da43f39f91de343e2082",
+        "bytes": 307
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "96.86822",
+      "visual_accuracy_proxy_percent": "43.76927",
+      "overlay_metrics_sha256": "bb4fc07025c9d72e6b2b7817a7e4821f250daa76a27d42efd168073676686d65",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-002-review.png",
+        "sha256": "e3df500e19ef1df8e8131668ff8079540597064887b1d1bf3b14cd1e1ec51ed4",
+        "bytes": 446979
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-002-overlay.png",
+        "sha256": "855c4fafd3cc4ba322dfef38527e41843349564ed272997c2ae87c63ac9ed06b",
+        "bytes": 152081
+      }
+    },
+    {
+      "document": "issue9040",
+      "backend": "native",
+      "page": 8,
+      "raw": "99.72049",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "393c40a9dd8c8c70ce836a585cff8b4dc4e7b5611ac61760783cbfce3814884e",
+      "print_png_sha256": "403901f4b09dc2578dcd3d2f30a891b126a9bbc8d84f72049aa01db172aa3626",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/native/issue9040.tsv",
+        "sha256": "cff67c8397fd442631b3c99ba6b33c6a5b159eb3e682da43f39f91de343e2082",
+        "bytes": 307
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "94.82572",
+      "visual_accuracy_proxy_percent": "36.84268",
+      "overlay_metrics_sha256": "b5a7a247701269cb2ca1299c0141f789a16ec3fbe8f569591ad28579c7d9be8f",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-008-review.png",
+        "sha256": "dd55c9549e12e69c46fd5715ef69147e02aa750f22886f413a05058bf7e39e45",
+        "bytes": 567374
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-008-overlay.png",
+        "sha256": "66d3346cadbada780b7185ce382aa7598b7fb9b119df3c0e91af6d05a45464a8",
+        "bytes": 196382
+      }
+    },
+    {
+      "document": "issue9040",
+      "backend": "native",
+      "page": 9,
+      "raw": "100.0",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "fb2855ae73fab56dfbe42cc23f263ec21fdaf3981aba1dbcbe94ca58a1d91bad",
+      "print_png_sha256": "d5b69f213e657920abe17b81e5bb3e269a8490694de2493818e289e1e3dd9995",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/native/issue9040.tsv",
+        "sha256": "cff67c8397fd442631b3c99ba6b33c6a5b159eb3e682da43f39f91de343e2082",
+        "bytes": 307
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "94.50435",
+      "visual_accuracy_proxy_percent": "35.23256",
+      "overlay_metrics_sha256": "8040bc037f1eac593ec9756e89a80fd6d29c812f6532780ff78ba70b291c21ed",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-009-review.png",
+        "sha256": "8f3c5f3b08bca5c91c7523693d38b94f2332b266f55808eb32db3d4d9aae865f",
+        "bytes": 309992
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-009-overlay.png",
+        "sha256": "14bf594785f47bbb48fb0b8e1ffbf757c78acdc8f57905c6db5ea3a3dfbaf2d7",
+        "bytes": 107361
+      }
+    },
+    {
+      "document": "issue9040",
+      "backend": "native",
+      "page": 10,
+      "raw": "99.99574",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "7c8ea2eb339f898f79fa630bdb4ef64f1372957622295210a450a85936ae4f0f",
+      "print_png_sha256": "d7d1ec85c9b69b88d581460b78489387e9b21d9f488ce6e0d3c202761f967fa3",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/native/issue9040.tsv",
+        "sha256": "cff67c8397fd442631b3c99ba6b33c6a5b159eb3e682da43f39f91de343e2082",
+        "bytes": 307
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "94.73042",
+      "visual_accuracy_proxy_percent": "33.3196",
+      "overlay_metrics_sha256": "a4dcda6845781c39c65cb564d201ece67899928669f2fd88e2b834f8202ee1af",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-010-review.png",
+        "sha256": "e3a53bbc52950b2ff78380a2fc7398c7d12a8473777f95b15fda226d594bbc6a",
+        "bytes": 423477
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-native-010-overlay.png",
+        "sha256": "4bc2d87f1490ce9960e2d7b33a97fcdcdfb08aa4d95ba026baecf1389ffd79bb",
+        "bytes": 151868
+      }
+    },
+    {
+      "document": "issue9040",
+      "backend": "wasm",
+      "page": 2,
+      "raw": "91.56133",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "95b20dfb12b6f432254b49a52bef57779e835a1cda544a3a9ac11e9adb4eb496",
+      "print_png_sha256": "82d14dbb9cf184f2edbe2af7a9f5bc0eec8dfe2079029c0cfa319d4eb7e60a05",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/wasm/issue9040.tsv",
+        "sha256": "51c6ba2c8861bee50bf5cb5e885da25d045da8425cd5ecab6fe9f98d2454ba8e",
+        "bytes": 295
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "95.67871",
+      "visual_accuracy_proxy_percent": "31.46341",
+      "overlay_metrics_sha256": "3edf061bda041b0aed3dcf9db7e2f72c1d88678e28296d88d5f1077ef3cb27ce",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-002-review.png",
+        "sha256": "283607d910d0313f1023aea296dc0a67091ebda728b86d786f91c9868251052f",
+        "bytes": 442810
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-002-overlay.png",
+        "sha256": "72197c179be22e319a4bcfd023812c4ad8aee9e9ba97635b4d458d409c350fbf",
+        "bytes": 148330
+      }
+    },
+    {
+      "document": "issue9040",
+      "backend": "wasm",
+      "page": 8,
+      "raw": "97.06297",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "a21ad3ec880e9f772d33e87529027a1444be0a2cb925c1fdb528d96c714cb9db",
+      "print_png_sha256": "403901f4b09dc2578dcd3d2f30a891b126a9bbc8d84f72049aa01db172aa3626",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/wasm/issue9040.tsv",
+        "sha256": "51c6ba2c8861bee50bf5cb5e885da25d045da8425cd5ecab6fe9f98d2454ba8e",
+        "bytes": 295
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "91.73121",
+      "visual_accuracy_proxy_percent": "14.85506",
+      "overlay_metrics_sha256": "d643fdbdb45ca73e41505cfc9829e127e5e6799e86a5c5271f4e0b9e59ed6b90",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-008-review.png",
+        "sha256": "89aaa503819d34b42400c0d91da58da6005042719587211838cb6d5b5f023927",
+        "bytes": 521069
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-008-overlay.png",
+        "sha256": "f85aa6e5f4175b2ad3103defa05104c7677ac19474f50f7c293fb99a1cd41682",
+        "bytes": 172451
+      }
+    },
+    {
+      "document": "issue9040",
+      "backend": "wasm",
+      "page": 9,
+      "raw": "99.81752",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "40871f318819dfd4f7b3566dbe277523206896db963008002a42ee92033e8677",
+      "print_png_sha256": "d5b69f213e657920abe17b81e5bb3e269a8490694de2493818e289e1e3dd9995",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/wasm/issue9040.tsv",
+        "sha256": "51c6ba2c8861bee50bf5cb5e885da25d045da8425cd5ecab6fe9f98d2454ba8e",
+        "bytes": 295
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "94.11652",
+      "visual_accuracy_proxy_percent": "31.68144",
+      "overlay_metrics_sha256": "0be9d98d62d3e7289b14733cfefc271e938aa2852a5690a50508e197cbc57e1a",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-009-review.png",
+        "sha256": "907634d0b1527421d4e0d1123c9a9d0d7b2a246a1e8c1e1d0cb0afbf6b55f451",
+        "bytes": 293046
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-009-overlay.png",
+        "sha256": "0c0b240ac72d517470c6b4d3491cf9e221f6ef45fb15161cc014051a63dd249e",
+        "bytes": 100624
+      }
+    },
+    {
+      "document": "issue9040",
+      "backend": "wasm",
+      "page": 10,
+      "raw": "99.7433",
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "independent_hancom_print_sha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "candidate_png_sha256": "783d3f776a2f17475e1db7a61256bddbea8aa00dd9ccdb188a5b9c1b8d727e13",
+      "print_png_sha256": "d7d1ec85c9b69b88d581460b78489387e9b21d9f488ce6e0d3c202761f967fa3",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9202/tables/wasm/issue9040.tsv",
+        "sha256": "51c6ba2c8861bee50bf5cb5e885da25d045da8425cd5ecab6fe9f98d2454ba8e",
+        "bytes": 295
+      },
+      "comparison_pages": 10,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "93.54237",
+      "visual_accuracy_proxy_percent": "21.02872",
+      "overlay_metrics_sha256": "36c6452dc6fe0060aad276f6d65545ba40080af8acc7426bbec5937574345923",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-010-review.png",
+        "sha256": "659467d0548e9fbfd16985b37e2d7096fd5ffcd6e317c34f309929223ebb63c0",
+        "bytes": 389633
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9202/issue9040-wasm-010-overlay.png",
+        "sha256": "6034dba31431bea0e0ae4470ac6b15330e5c75c356d88b074609d17cbef27da2",
+        "bytes": 134586
+      }
+    }
+  ],
+  "pending": [],
+  "additional": [],
+  "base_page": {
+    "document": "issue9040",
+    "backend": "native",
+    "page": 9,
+    "counts": {
+      "rhwp": 11,
+      "pdf": 10
+    },
+    "raw": 21.50629,
+    "review": {
+      "path": "mydocs/pr/assets/pr-9202/base-issue9040-native-009-review.png",
+      "sha256": "b2f2a256fef4aedaf085b63e60e3e159a5e4632ac290a414b084564b27a4d58c",
+      "bytes": 237607
+    },
+    "overlay": {
+      "path": "mydocs/pr/assets/pr-9202/base-issue9040-native-009-overlay.png",
+      "sha256": "375efbd49e7c68d24df6f09c9c04a1e7ab1afb080789320a774a7810fabfd18c",
+      "bytes": 72204
+    }
+  },
+  "hancom_2024_comparison": {
+    "engine": "2024",
+    "pages_per_backend": 10,
+    "results": [
+      {
+        "document": "issue9040",
+        "backend": "native",
+        "pdf": "pdf/issue9040/1371000-policy-research-application-2024.pdf",
+        "pdf_sha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c",
+        "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+        "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+        "tsv_sha256": "45911ec92414ad5b571bb85447f84c524f88aa2735735f45b5a13a856c31503f",
+        "tsv": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native.tsv",
+        "pages": 10,
+        "minimum_display": "99.66",
+        "representative": [
+          {
+            "page": 2,
+            "raw": 99.82805,
+            "unmatched": 93,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p002-review.png",
+              "sha256": "335e4864c0fbcce06e2ecfe1178e6298a2181ebc034bc2275652923ddd94cde7"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p002-overlay.png",
+              "sha256": "ca4294901814b9da8c72852f12ca8f8db02aea95e651d56171a46ce64238c8ed"
+            },
+            "raw_png_sha256": "5527e4bb7c75222946fa68b1fa203df4fbdc6088943d2ae114135ffd6e846d81",
+            "pdf_png_sha256": "3ee983c40e90cfce6e89227d43716d23af5a60d332900bcac535ee98e1aaf90f",
+            "pixel_match_percent": 95.81655,
+            "visual_accuracy_proxy_percent": 31.09307
+          },
+          {
+            "page": 4,
+            "raw": 99.65872,
+            "unmatched": 179,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p004-review.png",
+              "sha256": "e099a23de41979a391a0c65ff51e3e1591830f2446497830c7803b8c285af20e"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p004-overlay.png",
+              "sha256": "5a17b78a89b9715bb5830a2ef3a893e759b626f475003cba2fa9c88cce957b81"
+            },
+            "raw_png_sha256": "8953c65581b29a1eb270f74ed2de2f198c55d71285ccf256bf9dc9400927e9b1",
+            "pdf_png_sha256": "27443279296534786651b3801df3587d013126dcddcb6bff1e5ad4aa2bf39923",
+            "pixel_match_percent": 96.00165,
+            "visual_accuracy_proxy_percent": 32.0877
+          },
+          {
+            "page": 8,
+            "raw": 99.72702,
+            "unmatched": 208,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p008-review.png",
+              "sha256": "c77c6acfff5551405005caff9458b2f6b0f5ca67ca67da520d4dd5f36faef53b"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p008-overlay.png",
+              "sha256": "a2fba3471c95246f4d3cee96511df9a6806076ae7822d44463eeff7ce45d5415"
+            },
+            "raw_png_sha256": "7b6f13ce254f6a6f16cd359daccdd4c0348ff52521ed61e3d0f1e5b74e6bbf78",
+            "pdf_png_sha256": "cc43240884f209564ca8d123fcb344863fc5044d7b8fc115264dd87a86ec20dd",
+            "pixel_match_percent": 93.87968,
+            "visual_accuracy_proxy_percent": 28.44338
+          },
+          {
+            "page": 9,
+            "raw": 99.99063,
+            "unmatched": 7,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p009-review.png",
+              "sha256": "6c22d2a5e2aae4692a34b391980087f6c4141219aef28feed0df3cbb90b6e987"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p009-overlay.png",
+              "sha256": "5771fc330daf3c7c9c5efecda10682e1dabf118895cff4825958598a9f6a6487"
+            },
+            "raw_png_sha256": "6374183b1754680d6d77f2165c338554130df16a7e776d105745152da9cb0bdd",
+            "pdf_png_sha256": "500352b0212ecb3e9e35af487ef8b5a73be117c5880c9eeeba02773f48f23be2",
+            "pixel_match_percent": 94.76028,
+            "visual_accuracy_proxy_percent": 37.51723
+          },
+          {
+            "page": 10,
+            "raw": 99.99718,
+            "unmatched": 2,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p010-review.png",
+              "sha256": "3533956361a624ca4d112e2d73f092a0a4824333b964496217cbdd8228a52348"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p010-overlay.png",
+              "sha256": "5d28db050482a74b2976146d195089a78070cfa059fc0e7b877da428ee72faa9"
+            },
+            "raw_png_sha256": "ce0b0da064d43d536cdf992e6d1f7811e90613a556272b8814a85e3636c227bf",
+            "pdf_png_sha256": "14a5549905731f1004fa1979630dbf18bd5211c89f4541dfac2638567653c2d4",
+            "pixel_match_percent": 94.55924,
+            "visual_accuracy_proxy_percent": 31.64768
+          }
+        ],
+        "minimum_raw": "99.65872",
+        "minimum_page": 4,
+        "page_content": {
+          "p9": "조직도와 후속 유사 용역실적, 2010년 창의도시 정책 행",
+          "p10": "Pension Policies 시작 행은 전체 출력에 한 번만 있고 후속 행을 보존"
+        }
+      },
+      {
+        "document": "issue9040",
+        "backend": "wasm",
+        "pdf": "pdf/issue9040/1371000-policy-research-application-2024.pdf",
+        "pdf_sha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c",
+        "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+        "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+        "tsv_sha256": "b57641f33af053f6e3bc636ae15cb89a946d78e2acfe0180c084bb89dbcd1002",
+        "tsv": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm.tsv",
+        "pages": 10,
+        "minimum_display": "99.66",
+        "representative": [
+          {
+            "page": 2,
+            "raw": 99.83299,
+            "unmatched": 93,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p002-review.png",
+              "sha256": "4dcf776a544bb8cc49a826af7820bcc0842ff0448009be52a35f5fbf41d54f69"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p002-overlay.png",
+              "sha256": "e33af2fd0e70ef2a8b3d0e52d184fa032ea109f692abe4808b320a4a44fdb017"
+            },
+            "raw_png_sha256": "c94eff73e4eb38323b28f065407472549e65ccc16e22399ebeeffc40dc043d5a",
+            "pdf_png_sha256": "3ee983c40e90cfce6e89227d43716d23af5a60d332900bcac535ee98e1aaf90f",
+            "pixel_match_percent": 95.87762,
+            "visual_accuracy_proxy_percent": 34.04985
+          },
+          {
+            "page": 4,
+            "raw": 99.66454,
+            "unmatched": 179,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p004-review.png",
+              "sha256": "0992f0846b3dda1a7799ba63a2506bf5f531035cf8c53be7322fd949514df1ec"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p004-overlay.png",
+              "sha256": "19e33c6dc4df05c2031def8f6335ddc73c7fa25bc5fd49b19114666dd297ee18"
+            },
+            "raw_png_sha256": "ef5e860654d7cfcd0e56f5a3288fc71691293f1cbd3a5e7ed2fd65296fc969ce",
+            "pdf_png_sha256": "27443279296534786651b3801df3587d013126dcddcb6bff1e5ad4aa2bf39923",
+            "pixel_match_percent": 96.29092,
+            "visual_accuracy_proxy_percent": 38.07534
+          },
+          {
+            "page": 8,
+            "raw": 99.74934,
+            "unmatched": 190,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p008-review.png",
+              "sha256": "dca17256a527136320bfe33475f4ba98590ab4fc255ba85f2976add50a4476b8"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p008-overlay.png",
+              "sha256": "e90e751a0bc1eac7ef37c4dd353083626da8f6efdcabf218d7d57e469d86e6a5"
+            },
+            "raw_png_sha256": "62ed8a8a5a7f69e30a98ab3cbfa95a052073cc4a0feac433cc80eea4f7429db0",
+            "pdf_png_sha256": "cc43240884f209564ca8d123fcb344863fc5044d7b8fc115264dd87a86ec20dd",
+            "pixel_match_percent": 93.87238,
+            "visual_accuracy_proxy_percent": 27.9819
+          },
+          {
+            "page": 9,
+            "raw": 99.98937,
+            "unmatched": 8,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p009-review.png",
+              "sha256": "8ccc7e3c09d8c9f7f1dbc75fc3a31596b9bd789a3f01aa4c5f6a9bea730c7dc4"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p009-overlay.png",
+              "sha256": "422ef0bbae9ab0270ce508f5e299f8e858c030791b1102598755152e0d84da10"
+            },
+            "raw_png_sha256": "65e700d109ea4726af756626a4725d0006f5fdafa0632b7f2a87cc4b4cd739ff",
+            "pdf_png_sha256": "500352b0212ecb3e9e35af487ef8b5a73be117c5880c9eeeba02773f48f23be2",
+            "pixel_match_percent": 94.64163,
+            "visual_accuracy_proxy_percent": 36.5702
+          },
+          {
+            "page": 10,
+            "raw": 100.0,
+            "unmatched": 0,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p010-review.png",
+              "sha256": "91ab9c6ae065c675dfbf529faf4097c95d9f105c0c6b38e911eb6c9cc4130f48"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p010-overlay.png",
+              "sha256": "35e6e808f589c4b04675cbc636ecc99e750a612830fb68f3ff642a65ad90a26d"
+            },
+            "raw_png_sha256": "435b5fdff26b4ebe8ee05c9d32fa57a1484f9338718c82e9f1f90a3c35a73eb3",
+            "pdf_png_sha256": "14a5549905731f1004fa1979630dbf18bd5211c89f4541dfac2638567653c2d4",
+            "pixel_match_percent": 94.54655,
+            "visual_accuracy_proxy_percent": 31.80185
+          }
+        ],
+        "minimum_raw": "99.66454",
+        "minimum_page": 4,
+        "page_content": {
+          "p9": "조직도와 후속 유사 용역실적, 2010년 창의도시 정책 행",
+          "p10": "Pension Policies 시작 행은 전체 출력에 한 번만 있고 후속 행을 보존"
+        }
+      }
+    ],
+    "observations": [
+      "Native 9쪽과 WASM 10쪽의 review 및 overlay를 직접 판독",
+      "9쪽 조직도가 앞 빈 줄과 후속 유사 용역실적 사이에 유지",
+      "10쪽은 Pension Policies 행으로 시작하며 마지막 세 행까지 같은 순서",
+      "표 선과 글자 가장자리에는 미세한 차이가 있음"
+    ]
+  }
+}

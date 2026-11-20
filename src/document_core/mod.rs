@@ -274,6 +274,7 @@ pub struct DocumentCore {
     /// 문서 출처가 아니므로 provenance 가 아닌 여기서 들고,
     /// [`Self::effective_layout_profile`] 이 profile 에 합성한다.
     pub(crate) hangul2024_compat: bool,
+    pub(crate) print_png_rgb555: bool,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
     pub(crate) measured_tables: Vec<Vec<MeasuredTable>>,
     /// 구역별 dirty 플래그 (true = 재페이지네이션 필요)
@@ -594,6 +595,14 @@ impl DocumentCore {
         }
     }
 
+    /// 한컴 Print 장치의 PNG 압축 전 색상 변환을 조판 세대와 별도로 지정한다.
+    pub fn set_print_png_rgb555(&mut self, enabled: bool) {
+        if self.print_png_rgb555 != enabled {
+            self.print_png_rgb555 = enabled;
+            self.invalidate_page_tree_cache();
+        }
+    }
+
     /// DPI를 설정하고 스타일을 재해소한 후 재페이지네이션한다.
     pub fn set_dpi(&mut self, dpi: f64) {
         self.dpi = dpi;
@@ -631,6 +640,7 @@ impl DocumentCore {
             debug_overlay: false,
             respect_vpos_reset: false,
             hangul2024_compat: false,
+            print_png_rgb555: false,
             measured_tables: Vec::new(),
             dirty_sections: Vec::new(),
             measured_sections: Vec::new(),

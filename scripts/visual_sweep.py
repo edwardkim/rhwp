@@ -1632,6 +1632,10 @@ def render_target(
         directory.mkdir(parents=True, exist_ok=True)
 
     environment_args = ["--compat", compat]
+    rgb555_metadata = reference_print_png_rgb555(root, pdf) if rasterizer == "png" else None
+    print_png_rgb555 = rgb555_metadata is not None
+    if print_png_rgb555:
+        environment_args.append("--print-png-rgb555")
     if font_environment is not None:
         font_environment = resolve_input_path(root, font_environment)
         environment_args.extend(["--font-environment", str(font_environment)])
@@ -1650,6 +1654,9 @@ def render_target(
     else:
         provenance["raster_backend"] = "svg-" + svg_rasterizer
     provenance["layout_generation"] = compat
+    if rgb555_metadata is not None:
+        provenance["print_png_rgb555"] = True
+        provenance["print_png_rgb555_reference_metadata"] = rgb555_metadata
     if exclusion_evidence is not None:
         provenance["linked_image_exclusions"] = exclusion_evidence
     if linked_images:
@@ -1711,7 +1718,8 @@ def render_target(
                     png_module.export_wasm_png(sys.modules[__name__], root, hwp, wasm_pkg, base,
                                               selected_pages, font_paths or [], font_environment, compat,
                                               dpi, page_workers, observed_font_receipt,
-                                              linked_images=linked_images or (exclusion_evidence.get("assets", []) if exclusion_evidence else None))
+                                              linked_images=linked_images or (exclusion_evidence.get("assets", []) if exclusion_evidence else None),
+                                              print_png_rgb555=print_png_rgb555)
                 else:
                     png_module.export_native_png(sys.modules[__name__], root, hwp, rhwp_bin, base,
                                                 selected_pages, font_paths or [], environment_args,
@@ -5521,6 +5529,19 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out_path)
     return out_path
+
+
+def reference_print_png_rgb555(root: Path, pdf: Path) -> dict[str, str] | None:
+    """한컴 2022 Hancom PDF Print의 이미지 색 전달을 기준 PDF에서 선택한다."""
+    info = run(["pdfinfo", str(pdf)], cwd=root, verbose=False, encoding_errors="replace")
+    values = {
+        key.lower(): value.strip()
+        for key, value in re.findall(r"^(Creator|Producer):[ \t]*([^\r\n]*)", info.stdout, re.MULTILINE)
+    }
+    if (re.fullmatch(r"Hwp 2022(?: [0-9]+(?:\.[0-9]+)*)?", values.get("creator", ""), re.IGNORECASE)
+            and re.fullmatch(r"Hancom PDF(?: [0-9]+(?:\.[0-9]+)*)?", values.get("producer", ""), re.IGNORECASE)):
+        return values
+    return None
 
 
 def document_page_counts(root: Path, pdf: Path, export_metadata: Path) -> dict[str, int]:

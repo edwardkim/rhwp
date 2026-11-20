@@ -46,7 +46,7 @@ test('cursor-para-changed 는 문맥 갈래를 자체 구현하지 않는다', (
 
 test('문단 속성 리더는 네 문맥을 모두 덮는다', () => {
   const ih = source('src/engine/input-handler.ts');
-  const start = ih.indexOf('getParaProperties(): ParaProperties {');
+  const start = ih.indexOf('  getParaProperties(');
   assert.notEqual(start, -1, 'getParaProperties 를 찾지 못했다');
   const body = ih.slice(start, ih.indexOf('\n  }', start));
 
