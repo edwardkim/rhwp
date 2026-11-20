@@ -1561,10 +1561,13 @@ impl LayoutEngine {
         // 저장 줄이 있어도 현재 각주 영역보다 넓은 캐시는 같은 조판을 증언하지 않는다.
         // 생성 각주가 제본 여백을 빼기 전 폭을 저장한 경우 실제 영역을 재조판한다.
         let width_hu = i64::from(crate::renderer::px_to_hwpunit(area_width, self.dpi));
+        // 너비가 다른 단에서 다시 나눈 조각은 저장 줄이 아니라 새로 나눈 줄을 쓴다.
         !footnotes.is_empty()
             && footnotes.iter().all(|note| {
                 let paras = get_footnote_paragraphs(note, paragraphs);
-                !paras.is_empty()
+                note.fragment
+                    .is_none_or(|fragment| fragment.refold.is_none())
+                    && !paras.is_empty()
                     && paras.iter().all(|para| {
                         !para.line_segs.is_empty()
                             && !para.stored_text_partition_is_dirty()
@@ -1579,6 +1582,24 @@ impl LayoutEngine {
                             })
                     })
             })
+    }
+
+    /// 너비가 다른 단으로 이어받은 조각이면 그 조각이 그려지는 영역 폭으로 다시 나눈 각주 문단.
+    /// 조판이 같은 폭·같은 시작 글자로 줄을 나눠 조각의 줄 번호를 정했다.
+    fn refolded_note_paragraphs(
+        &self,
+        fn_ref: &FootnoteRef,
+        paragraphs: &[Paragraph],
+        area_width: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<Paragraph>> {
+        let at = fn_ref.fragment?.refold?;
+        Some(
+            crate::renderer::footnote_frames::refold_note_paragraphs(
+                paragraphs, at, area_width, styles, self.dpi,
+            )
+            .0,
+        )
     }
 
     pub(crate) fn estimate_footnote_area_height(
@@ -1628,9 +1649,10 @@ impl LayoutEngine {
         // 각주가 예약 영역(및 footer)을 넘을 수 있다. 마지막 각주 문단의 마지막 줄은
         // layout 경로에서도 trailing spacing을 붙이지 않는다.
         for (i, fn_ref) in footnotes.iter().enumerate() {
-            let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
+            let base = get_footnote_paragraphs(fn_ref, paragraphs);
+            let refolded = self.refolded_note_paragraphs(fn_ref, base, area_width, styles);
             total += self.footnote_paragraphs_content_height(
-                fn_paras,
+                refolded.as_deref().unwrap_or(base),
                 styles,
                 area_width,
                 fn_ref.fragment,
@@ -1780,7 +1802,9 @@ impl LayoutEngine {
         // para_index = usize::MAX - 2000 - fn_para_idx (각주 내 문단 인덱스)
         for (frame_index, fn_ref) in footnotes.iter().enumerate() {
             let i = source_indices[frame_index];
-            let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
+            let base = get_footnote_paragraphs(fn_ref, paragraphs);
+            let refolded = self.refolded_note_paragraphs(fn_ref, base, fn_area.width, styles);
+            let fn_paras = refolded.as_deref().unwrap_or(base);
             let number_text = format_footnote_number(
                 fn_ref.number,
                 &shape.number_format,
