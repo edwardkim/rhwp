@@ -1775,6 +1775,14 @@ impl DocumentCore {
             // 행의 칸도 위아래 clip 밖 줄은 그 쪽에 보이지 않으므로 고르지 않는다.
             current_clip: Option<(f64, f64, f64, f64)>,
         ) {
+            // 머리말·꼬리말은 본문 히트의 대상이 아니다. 그 안 표 칸·캡션의 셀 문맥은 머리말 문단
+            // 기준이라, 본문 주소로 돌려주면 본문에 없는 칸을 가리킨다(머리말 히트가 따로 찾는다).
+            if matches!(
+                node.node_type,
+                RenderNodeType::Header | RenderNodeType::Footer
+            ) {
+                return;
+            }
             let line_id = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
                 Some(node.id)
             } else {
@@ -4938,34 +4946,51 @@ impl DocumentCore {
     /// Issue #595: Header/Footer 노드의 bbox 는 `expand_bbox_to_children` 으로
     /// 자식 (예: 단 구분선 line) 까지 확장되어 본문 영역을 침범할 수 있음.
     /// hit 판정은 layout 의 정확한 `header_area` / `footer_area` 로 수행하여
-    /// bbox 확장과 무관하게 본질 영역만 hit.
+    /// bbox 확장과 무관하게 본질 영역만 hit. 영역보다 커서 밖까지 그린 표(캡션 포함)·글줄 위도 hit.
     pub fn hit_test_header_footer_native(
         &self,
         page_num: u32,
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
+        use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+
+        let hit = |is_header: bool| {
+            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, is_header);
+            Ok(format!(
+                "{{\"hit\":true,\"isHeader\":{},\"sectionIndex\":{},\"applyTo\":{}}}",
+                is_header, section_idx, apply_to
+            ))
+        };
+        let inside =
+            |b: &BoundingBox| x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height;
         let (page_content, _, _) = self.find_page(page_num)?;
         let layout = &page_content.layout;
-
-        // 머리말 영역 hit 판정 (layout.header_area — 정확한 머리말 범위)
-        let h = &layout.header_area;
-        if x >= h.x && x <= h.x + h.width && y >= h.y && y <= h.y + h.height {
-            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, true);
-            return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":{}}}",
-                section_idx, apply_to
-            ));
+        // 머리말·꼬리말 영역 hit 판정 (layout.header_area / footer_area — 정확한 범위)
+        for (is_header, area) in [(true, &layout.header_area), (false, &layout.footer_area)] {
+            if x >= area.x && x <= area.x + area.width && y >= area.y && y <= area.y + area.height {
+                return hit(is_header);
+            }
         }
 
-        // 꼬리말 영역 hit 판정 (layout.footer_area)
-        let f = &layout.footer_area;
-        if x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height {
-            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, false);
-            return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":{}}}",
-                section_idx, apply_to
-            ));
+        // 영역보다 큰 머리말·꼬리말 표·글줄은 영역 밖까지 그린다. 그 표(캡션 포함)·글줄 위도 머리말·꼬리말이다.
+        // 영역 밖으로 뻗은 선 같은 다른 개체는 그 자리를 머리말로 만들지 않는다(#595).
+        fn content_at(node: &RenderNode, inside: &dyn Fn(&BoundingBox) -> bool) -> bool {
+            node.children.iter().any(|child| {
+                (matches!(
+                    child.node_type,
+                    RenderNodeType::Table(_) | RenderNodeType::TextLine(_)
+                ) && inside(&child.bbox))
+                    || content_at(child, inside)
+            })
+        }
+        let tree = self.build_page_tree_cached(page_num)?;
+        for is_header in [true, false] {
+            if header_footer_node(&tree.root, is_header)
+                .is_some_and(|node| inside(&node.bbox) && content_at(node, &inside))
+            {
+                return hit(is_header);
+            }
         }
 
         Ok("{\"hit\":false}".to_string())
