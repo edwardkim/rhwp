@@ -1307,6 +1307,42 @@ impl TypesetEngine {
                     .is_some_and(|(current, previous)| {
                         current.vertical_pos < previous.vertical_pos
                     });
+            // 줄 단위로 나눌 수 없는 첫 행은 이 쪽에 통째로 남거나 통째로 넘어간다. 다음 문단의
+            // 저장 줄이 쪽을 다시 시작하면서 정확히 이 표의 점유 높이(바깥 위·아래 여백 + 선언
+            // 높이)에서 시작하면, 한/글은 표 전체를 그 문단 위 — 다음 쪽 맨 위 — 에 뒀다
+            // (30023 11→12쪽 1×2 제목 표: 호스트 vpos 61294, 다음 문단 vpos 4146 =
+            // 283 + 3580 + 283). 칸 안에서 나뉘는 행은 대상이 아니다 — 선언 높이가 조각 높이와
+            // 우연히 같을 수 있고, 그 행은 저장 재시작을 행 스캐너가 따로 읽는다.
+            let successor_restarts_below_whole_table = !first_row_splittable
+                && row_count == 1
+                && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+                && !st.profile.session_edited()
+                && !table.common.treat_as_char
+                && is_para_topbottom_float(&table.common)
+                && std::ptr::eq(row_geometry_table, table)
+                && !para.stored_text_partition_is_dirty()
+                && para
+                    .line_segs
+                    .iter()
+                    .rev()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .zip(
+                        paragraphs_all
+                            .get(para_idx + 1)
+                            .filter(|next| !next.stored_text_partition_is_dirty())
+                            .and_then(|next| {
+                                next.line_segs
+                                    .iter()
+                                    .find(|seg| !is_synthetic_line_seg(seg))
+                            }),
+                    )
+                    .is_some_and(|(host, next)| {
+                        let occupied = i64::from(table.outer_margin_top)
+                            + i64::from(table.common.height)
+                            + i64::from(table.outer_margin_bottom);
+                        next.vertical_pos < host.vertical_pos
+                            && i64::from(next.vertical_pos) == occupied
+                    });
             let first_row_content_fits_here = mt.allows_row_break_split()
                 && matches!(
                     table.common.text_wrap,
@@ -1376,6 +1412,7 @@ impl TypesetEngine {
                 || (!first_row_splittable && !first_row_force_splittable)
                 || (remaining_on_page_for_first_unit < min_content && !opening_unit_fits_here)
                 || multirow_clean_defer
+                || (successor_restarts_below_whole_table && !st.current_items.is_empty())
             {
                 // [#8652] 저장 vpos 가 되감긴 호스트(`host_starts_new_stored_page`)는 한/글이
                 // 다음 쪽에서 시작했다. 표 첫 조각을 이 쪽에 두지 못해 이월하는데 이 호출이
