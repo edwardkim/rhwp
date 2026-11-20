@@ -7,7 +7,18 @@
 [PR #9201](../../archives/pr_9201_review.md) · [PR #9202](../../archives/pr_9202_review.md) ·
 [PR #9206](../../archives/pr_9206_review.md) · [PR #9207](../../archives/pr_9207_review.md)
 
-## 공통 검증
+## 최종 제품 소스 재검증
+
+제품 소스 `3901aa782d4445efb171ec4ffb026f2a459c2daf`에서 macOS 최소 글꼴 환경의 전체
+Nextest 13,839건이 통과했다. 실패 0건, 제외 45건이며 테스트 바이너리는 55개다.
+Native·WASM Clippy, 워크스페이스 빌드·전체 타깃 Clippy, 포맷·suite 검사 및
+Visual Sweep Python 268건도 통과했다. [실행 ID와 로그 해시](final-current-test-receipt.json).
+
+최적화한 WASM을 포함한 Studio 배포본을 새 브라우저에서 열어 초기화 요청의 JS·WASM 응답
+해시를 빌드 산출물과 대조했다. 실제 편집 경로에서 캡션, 문단 모양 복사, 한 줄 셀의
+HWP·HWPX 저장 계약도 확인했다. [배포 응답과 편집 결과](final-product-consumers.json).
+
+## 초기 통합 소스 검증
 
 | 항목 | 결과 |
 | --- | --- |

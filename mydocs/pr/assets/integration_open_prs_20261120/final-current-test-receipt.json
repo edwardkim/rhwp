@@ -1,0 +1,55 @@
+{
+  "source": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+  "base": "0a437a7eefb19bfe81fc12866887e4548ea9554d",
+  "rust_checks": {
+    "suite-prepare": {
+      "exit": 0,
+      "log_sha256": "afc03c3d65ebf5d6a4d8d96c05d64bb75cecac0b593cae4947378d51c2273ec0"
+    },
+    "fmt": {
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "native-clippy": {
+      "exit": 0,
+      "log_sha256": "95c7429098c707cac4ac38e753b2af63f4eb9147a6f4d8317e8d4492ed2e4606"
+    },
+    "wasm-clippy": {
+      "exit": 0,
+      "log_sha256": "ce4d880adb5d9819cde3b04295f98e02bf41bdb8a9f1e12140f7a27a9bf0b987"
+    },
+    "workspace-build": {
+      "exit": 0,
+      "log_sha256": "d9f9271ae02cf09e7c006f7a56d67310477704a1daf9a5d06ef394e10fda8e1d"
+    },
+    "workspace-clippy": {
+      "exit": 0,
+      "log_sha256": "c607d0482a60cacfb15d04c0059b7a0b0dd8a923aab9da71c6c29731d278dcbe"
+    },
+    "suite-check": {
+      "exit": 0,
+      "log_sha256": "746acb51da54c105c9b851a10896564bbe6fea040831efbfe95cdaf2d407a1f4"
+    }
+  },
+  "nextest": {
+    "run_id": "5f237ce2-fc29-423b-be8f-4fc007cdb853",
+    "binaries": 55,
+    "ran": 13839,
+    "passed": 13839,
+    "failed": 0,
+    "skipped": 45,
+    "slow": 4,
+    "seconds": "599.880",
+    "log_sha256": "19ed42766e15e1b7998de7a5b91811686ba30bdef6144e94c0e0e77ff6fc4504",
+    "minimal_macos": {
+      "os_faces": 528,
+      "non_os_faces": 0,
+      "profile_sha256": "4ed73d564855482ba49f6af2444411503baabcaa944e5defaca3c760bbf2da84"
+    }
+  },
+  "visual_sweep_python": {
+    "exit": 0,
+    "passed": 268,
+    "log_sha256": "7bf4f6b21f87e17805068e0b3f91caadd936004c5f1e6b20e19039d97165cd7a"
+  }
+}
