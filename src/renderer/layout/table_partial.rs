@@ -7777,6 +7777,9 @@ impl LayoutEngine {
                 );
             }
         }
+        // cellzone 배경은 표 배경 위·셀 아래에 칠한다(비분할 표의 4-2와 같은 순서).
+        // 칸 상자는 배치·접기 뒤에야 정해지므로 삽입 위치만 먼저 기억한다.
+        let cellzone_background_index = table_node.children.len();
 
         let source_first_row_frame =
             self.saved_first_row_opening_frame(table, styles, self.current_body_area.get().3);
@@ -8182,6 +8185,77 @@ impl LayoutEngine {
         }
 
         if parent_owned {
+            // [#886] cellzone 배경(면색·무늬·그림)은 비분할 표(4-2)만 칠하고 조각 표는 빠뜨렸다.
+            // 쪽을 넘긴 표의 zone 칸이 셀 고유 채우기 없이 zone 채우기만 가지면 배경이 통째로
+            // 사라졌다(고베대지진 8쪽 `1995년 1월 18일` 행, 한컴 2022 Print 는 #FAFABF).
+            // 테두리와 같이 끝 주소는 칸 주소이므로 끝 칸의 span 까지가 zone 이며, 영역은 이
+            // 조각에 실제로 배치·접힌 그 zone 칸 상자들의 합집합이다.
+            let mut zone_backgrounds = Vec::new();
+            for zone in &table.zones {
+                let Some(zone_bs) = zone
+                    .border_fill_id
+                    .checked_sub(1)
+                    .and_then(|index| styles.border_styles.get(usize::from(index)))
+                else {
+                    continue;
+                };
+                let (end_row, end_col) = table
+                    .cells
+                    .iter()
+                    .find(|c| c.row == zone.end_row && c.col == zone.end_col)
+                    .map_or(
+                        (zone.end_row as usize + 1, zone.end_col as usize + 1),
+                        |c| {
+                            (
+                                c.row as usize + (c.row_span as usize).max(1),
+                                c.col as usize + (c.col_span as usize).max(1),
+                            )
+                        },
+                    );
+                let mut area: Option<(f64, f64, f64, f64)> = None;
+                for child in &table_node.children {
+                    let RenderNodeType::TableCell(meta) = &child.node_type else {
+                        continue;
+                    };
+                    let (row, col) = (meta.row as usize, meta.col as usize);
+                    if row < zone.start_row as usize
+                        || col < zone.start_col as usize
+                        || row + (meta.row_span as usize).max(1) > end_row
+                        || col + (meta.col_span as usize).max(1) > end_col
+                    {
+                        continue;
+                    }
+                    let b = child.bbox;
+                    area = Some(match area {
+                        None => (b.x, b.y, b.x + b.width, b.y + b.height),
+                        Some((x1, y1, x2, y2)) => (
+                            x1.min(b.x),
+                            y1.min(b.y),
+                            x2.max(b.x + b.width),
+                            y2.max(b.y + b.height),
+                        ),
+                    });
+                }
+                let Some((x1, y1, x2, y2)) = area else {
+                    continue;
+                };
+                zone_backgrounds.extend(
+                    Self::border_fill_background_nodes(
+                        tree,
+                        Some(zone_bs),
+                        BoundingBox::new(x1, y1, (x2 - x1).max(0.0), (y2 - y1).max(0.0)),
+                        bin_data_content,
+                    )
+                    .into_iter()
+                    .map(|mut background| {
+                        background.table_background_paint = true;
+                        background
+                    }),
+                );
+            }
+            let at = cellzone_background_index.min(table_node.children.len());
+            table_node.children.splice(at..at, zone_backgrounds);
+
             // cellzone·표 외곽 테두리 덮어쓰기를 비분할 표와 같게 적용한다. 아래의 조각 경계
             // 지우기보다 먼저 해야 열린 윗변·아랫변이 되살아나지 않는다. 그리드는 조각-지역
             // 행(`render_rows` 순서)이므로 칸·zone 행 주소를 그 공간으로 옮긴다.

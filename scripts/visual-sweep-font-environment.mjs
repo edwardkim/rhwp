@@ -9,7 +9,7 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
     const plan = typeof doc.getDocumentFontSelectionPlan === 'function'
       ? JSON.parse(doc.getDocumentFontSelectionPlan()) : {requests: [], embeddedFamilies: []};
     const requested = new Set(plan.requests.flatMap(request =>
-      [...request.primary, ...request.substitute, ...(request.publicFallback ?? [])]));
+      [...request.primary, ...request.substitute, ...(request.publicFallback ?? []), ...(request.hancomMissingDefault ?? [])]));
     const targets = new Set([
       ...Object.values(environment?.substitutions ?? {}),
       ...(environment?.documentSubstitutions ?? []).map(entry => entry.target),
@@ -62,7 +62,7 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
 }
 
 export function selectSweepProgramFaces(plan, fonts) {
-  const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute, ...(request.publicFallback ?? [])]))];
+  const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute, ...(request.publicFallback ?? []), ...(request.hancomMissingDefault ?? [])]))];
   if (names.length > 1024) throw Error('문서의 글꼴 프로그램 후보가 한도를 넘었습니다.');
   const embedded = new Set((plan.embeddedFamilies || []).map(name => name.toLowerCase()));
   const rank = face => (face.style === 'normal' ? 0 : 1000) + Math.abs(face.weight - 400);

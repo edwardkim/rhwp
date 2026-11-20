@@ -424,18 +424,21 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
         .filter(|face| face.is_embedded)
         .map(|face| normalized(&face.name))
         .collect();
-    let mut grouped = BTreeMap::<String, (Vec<String>, Vec<String>)>::new();
+    let mut grouped =
+        BTreeMap::<String, (Vec<String>, Vec<String>, Vec<String>, Vec<String>)>::new();
     for request in FontEnvironment::document_requests(doc_info) {
         let entry = grouped.entry(request.source).or_default();
         entry.0.extend(request.primary);
         entry.1.extend(request.substitute);
+        entry.2.extend(request.hancom_missing_default);
+        entry.3.extend(request.display_aliases);
     }
     let cache = cache_dir().ok();
     let mut result = NativeWebfontSupply::default();
     let mut original_programs = BTreeSet::new();
     let mut priority_paths = Vec::new();
     let mut face_paths = BTreeMap::<String, PathBuf>::new();
-    for (source, (primary, substitute)) in grouped {
+    for (source, (primary, substitute, hancom_default, display_aliases)) in grouped {
         if embedded.contains(&normalized(&source)) || primary.iter().any(|face| present(face)) {
             continue;
         }
@@ -461,10 +464,30 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
             }
             continue;
         }
+        // 공급 원장에 없는 TTF 원본은 한컴이 표시에 쓰는 기본 대체(한컴바탕)가 실제로
+        // 있으면 그 face로 그린다. 서체 분류와 무관한 일반 Noto 치환보다 앞선다.
+        // 일반 Noto 공급과 같은 표시 치환이며, 선언 이름으로 치환해 문서 대체 필드가
+        // 선택한 같은 프로그램의 TrueType 전진 소유를 원본 측정에 넘기지 않는다.
+        let hancom_face = hancom_default.iter().find(|face| present(face));
+        if let (true, Some(face)) = (generic, hancom_face) {
+            result.unavailable.push(source.clone());
+            result.mappings.insert(source, face.clone());
+            continue;
+        }
         let url = if generic {
             // 원 프로그램의 공급과 일반 문자 대체는 구분한다. 문서가 선언한
             // 설치 대체 글꼴은 유지하고, 그것도 없을 때 공개 Noto를 사용한다.
             result.unavailable.push(source.clone());
+            // [#886] 렌더러가 원 프로그램 부재 시의 표시 대체로 선언한 설치 face
+            // (요청의 `display_aliases`, 예: #6171 한양견고딕 → HY견고딕)가 있으면 공개
+            // Noto로 치환하지 않는다. SVG/Canvas(fresh WASM)·Skia는 같은 사슬로 그 face를
+            // 고르는데, 여기서 Noto로 바꾸면 Native만 가는 Regular 고딕으로 그려졌다.
+            // 원 프로그램이 없다는 진단(unavailable)은 그대로 남긴다.
+            // 한컴 기본 대체(위 분기, edwardkim/rhwp#9208)가 적용되는 원본은 공통 환경이
+            // 그 face로 치환하므로 이 분기에 오지 않는다.
+            if display_aliases.iter().any(|face| present(face)) {
+                continue;
+            }
             if present("NotoSansKR-Regular") {
                 result.generic_fallbacks.push(source.clone());
                 result.mappings.insert(source, "NotoSansKR-Regular".into());

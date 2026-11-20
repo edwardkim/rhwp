@@ -266,6 +266,13 @@ pub(crate) fn declared_original_glyph_advance_em(
     if face == "한양중고딕" && !bold && !italic && character == '\u{2022}' {
         return Some(1.0);
     }
+    // 10k 오라클 547(`pdf/issue547/online-search-rfp-2022.pdf`) 14·15쪽의 기호 슬롯
+    // 한양중고딕 HFT U+2219는 Type3 /T14(obj 129)의 ToUnicode <02>=2219, /Widths 1000,
+    // FontMatrix .001, CharProc d1 1000이다. 잉크(HFT115)는 x 335~665로 칸 가운데다.
+    // 표시용 HY중고딕(H2GTRM) 표의 U+2219 결측(0)을 반각으로 추정하지 않는다.
+    if face == "한양중고딕" && !bold && !italic && character == '\u{2219}' {
+        return Some(1.0);
+    }
     // 원본 HFT U+2027은 기존 독립 Print의 Type3 /Widths=500/1000em이다.
     // 표시용 OTF의 cmap 결측에서 일반 구두점 폭으로 내려가면 뒤 글자가 당겨진다.
     // glyph 표의 같은 반각 계약을 측정·paint가 함께 소비한다. 명시 TTF/OTF는 비대상이다.
@@ -321,6 +328,22 @@ pub(crate) fn declared_original_glyph_advance_em(
         (face == "한양중고딕" && !bold && !italic && matches!(character, '\u{2018}' | '\u{2019}'))
             .then_some(225.0 / 1000.0)
     })
+}
+
+/// 독립 Print의 CharProc 잉크가 원본 em 칸 가운데에 있는 HFT 기호의 전진(em)이다.
+/// 표시용 대체 glyph는 모양을 바꾸지 않고 이 칸 가운데에 둔다.
+///
+/// - 한양중고딕 U+2219: `pdf/issue547/online-search-rfp-2022.pdf` /T14 HFT115의
+///   `d1 1000`, 잉크 x 335~665(중심 500/1000).
+pub(crate) fn declared_original_centered_glyph_advance_em(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> Option<f64> {
+    (face == "한양중고딕" && character == '\u{2219}')
+        .then(|| declared_original_glyph_advance_em(face, bold, italic, character))
+        .flatten()
 }
 
 pub(crate) fn has_original_glyph_metrics(face: &str) -> bool {
