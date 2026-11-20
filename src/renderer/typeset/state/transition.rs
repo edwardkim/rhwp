@@ -125,6 +125,8 @@ impl TypesetState {
                 wrap_around_sw: -1,
                 wrap_around_table_para: 0,
                 wrap_around_any_seg: false,
+                wrap_around_stored_flow: false,
+                stored_flow_wrap_host: None,
                 wrap_around_derived_band: false,
                 behind_float_table_para: None,
                 next_para_first_stored_vpos: None,

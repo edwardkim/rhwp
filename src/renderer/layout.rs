@@ -13902,6 +13902,17 @@ impl LayoutEngine {
                         .and_then(crate::renderer::float_placement::stored_line_lane_probe),
                     t,
                 );
+            // 뒤 문단이 표 상자 양옆 차선에서 host 줄 바로 다음에 이어지면 host 줄의 저장
+            // 전진량이 흐름의 끝이다(조판과 같은 판정). host 의 같은 줄 조각들을 줄마다 다시
+            // 더하지 않는다.
+            let flanking_host_advance_hu =
+                crate::renderer::float_placement::flanking_successor_host_advance_hu(
+                    para,
+                    paragraphs
+                        .get(para_index + 1)
+                        .and_then(crate::renderer::float_placement::stored_line_lane_probe),
+                    t,
+                );
             if renders_outside_body {
                 let tmp_id = tree.next_id();
                 let mut tmp_node = RenderNode::new(
@@ -14093,7 +14104,13 @@ impl LayoutEngine {
                             // 가시 host 는 제외한다 — 그쪽은 host 줄의 흐름이 이미 자리를
                             // 정한다. `hwp_table_test-m.hwp` 1쪽 표(가시 host·`vOff>0`)는
                             // 정본 250.77 에 대해 251.0 으로 이미 맞고, 여백을 더하면 벗어난다.
-                            y_offset + hwpunit_to_px(om_top, self.dpi)
+                            // 뒤 문단이 표 상자 양옆 차선을 흐르는 host 는 흐름이 host 줄만
+                            // 전진하고 표는 저장 세로 오프셋의 배타 상자로 남는다(조판이 같은
+                            // 상자를 띠로 등록한다).
+                            let stored_offset_px = flanking_host_advance_hu.map_or(0.0, |_| {
+                                hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
+                            });
+                            y_offset + stored_offset_px + hwpunit_to_px(om_top, self.dpi)
                         } else {
                             y_offset
                         };
@@ -14618,6 +14635,10 @@ impl LayoutEngine {
                     flow_y
                 } else if paper_page_square_empty_top.is_some() {
                     table_y_before
+                } else if let Some(host_advance_hu) = flanking_host_advance_hu {
+                    // 뒤 문단이 표 상자 양옆 차선에서 host 줄 바로 다음에 이어진다(조판과 같은
+                    // 판정). 흐름은 host 줄만큼만 전진한다.
+                    table_y_before + hwpunit_to_px(host_advance_hu, self.dpi)
                 } else if successor_starts_beside_table {
                     // 표 원점 이동은 개체의 배타 영역이다. 표 옆 후속 줄의 흐름을
                     // 표 높이로 덮어쓰기 전에 같은 저장 차선 결과를 소비한다.
@@ -15181,7 +15202,7 @@ impl LayoutEngine {
                     bin_data_content,
                     tbl_x_right,
                 );
-                if let Some(end) = host_flow_end {
+                if let Some(end) = host_flow_end.filter(|_| flanking_host_advance_hu.is_none()) {
                     // 점유 하단과 다음 흐름 끝은 다르다. 실제 글줄이 소비한
                     // 마지막 줄간격·문단 뒤 간격을 재계산하거나 다시 더하지 않는다.
                     y_offset = y_offset.max(end);
@@ -15194,6 +15215,7 @@ impl LayoutEngine {
                     host_flow_end.is_none()
                         && host_plan.is_none()
                         && !split_host_text_owned_by_fragments
+                        && flanking_host_advance_hu.is_none()
                 }) {
                     let mut text_h = 0.0;
                     let mut last_ls = 0.0;
@@ -15208,6 +15230,16 @@ impl LayoutEngine {
                     if host_text_bottom > y_offset {
                         y_offset = host_text_bottom;
                     }
+                }
+                if flanking_host_advance_hu.is_some() {
+                    // host 줄의 저장 전진량은 줄간격까지 지난 다음 흐름 원점이다. 표 뒤 간격
+                    // 경로가 host 의 끝 줄간격·문단 뒤 간격을 다시 더하지 않는다.
+                    let mut consumed = self.paragraph_spacing_consumed.borrow_mut();
+                    let entry = consumed
+                        .entry((page_content.section_index, para_index))
+                        .or_default();
+                    entry.1 = true;
+                    entry.2 = true;
                 }
                 // [#6128] host 뿐 아니라 **뒤따르는 어울림 문단**도 표보다 아래까지
                 // 내려올 수 있다. 그 문단들은 저장 vpos 로 배치되는데(아래 띠 경로),
