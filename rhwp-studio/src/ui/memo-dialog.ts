@@ -52,7 +52,13 @@ export class MemoDialog extends ModalDialog {
     this.list.append(fresh);
     for (const memo of this.memos) {
       const option = document.createElement('option'); option.value = String(memo.id);
-      option.textContent = `${memo.parentId == null ? '' : '↳ 댓글 · '}${memo.page || '?'}쪽 · ${memo.author || '작성자 없음'} · ${memo.text.slice(0, 60)}`;
+      option.textContent = [
+        memo.parentId == null ? '' : '↳ 댓글',
+        memo.page ? `${memo.page}쪽` : '쪽 위치 없음',
+        memoLocation(memo),
+        memo.author || '작성자 없음',
+        memo.text.slice(0, 60),
+      ].filter(Boolean).join(' · ');
       this.list.append(option);
     }
     this.select(null, false);
@@ -86,4 +92,20 @@ export class MemoDialog extends ModalDialog {
     this.dialog.querySelector('.dialog-footer .dialog-btn:not(.dialog-btn-primary)')!.textContent = '닫기';
     this.text.focus();
   }
+}
+
+function memoLocation(memo: MemoInfo): string {
+  if (memo.paraIndex === null || memo.startCharIdx === null || memo.endCharIdx === null) return '';
+  const parts = [`본문 문단 ${memo.paraIndex + 1}`];
+  for (const entry of memo.path ?? []) {
+    const object = entry.type === 'cell'
+      ? `표 셀 ${entry.cellIndex + 1} (개체 ${entry.controlIndex + 1})`
+      : `글상자 (개체 ${entry.controlIndex + 1})`;
+    parts.push(`${object} 문단 ${entry.paraIndex + 1}`);
+  }
+  const start = memo.startCharIdx + 1;
+  parts.push(memo.startCharIdx === memo.endCharIdx
+    ? `글자 ${start} 앞`
+    : `글자 ${start}–${memo.endCharIdx}`);
+  return parts.join(' / ');
 }
