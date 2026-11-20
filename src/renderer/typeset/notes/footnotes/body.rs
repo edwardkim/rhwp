@@ -53,6 +53,7 @@ impl TypesetEngine {
                         end_line: 1,
                         draw_separator: false,
                         draw_number: false,
+                        refold: None,
                     }),
                 });
                 st.add_footnote_fragment_height(hwpunit_to_px(line.line_height, self.dpi), false);

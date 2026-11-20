@@ -12,24 +12,143 @@ impl TypesetState {
         note: FootnoteRef,
         height: f64,
     ) {
-        self.defer_splittable_body_footnote(note, height, Vec::new());
+        self.defer_splittable_body_footnote(note, height, Vec::new(), None);
     }
 
     /// 다음 쪽으로 넘기는 각주 조각. `lines` 는 각주 전체를 펼친 줄의
     /// (줄 높이, 줄간격)이며, 비어 있으면 조각을 통째로만 옮긴다.
+    /// `source` 가 있으면 너비가 다른 단에서 그 단 폭으로 다시 나눈다.
     fn defer_splittable_body_footnote(
         &mut self,
         note: FootnoteRef,
         height: f64,
         lines: Vec<(f64, f64)>,
+        source: Option<std::sync::Arc<Vec<crate::model::paragraph::Paragraph>>>,
     ) {
+        let width = self.footnote_area_width();
         self.data
             .deferred_body_footnotes
             .push(DeferredBodyFootnote {
                 note,
                 height,
                 lines,
+                width,
+                source,
             });
+    }
+
+    /// 각 단 아래 각주를 너비가 다른 단에 이을 수 있으면, 그 단에서 각주를 다시 나눌 스타일을 둔다.
+    /// 구역 조판마다 한 번만 복제한다.
+    pub(in crate::renderer::typeset) fn prepare_note_refold(
+        &mut self,
+        styles: &crate::renderer::typeset::ResolvedStyleSet,
+        dpi: f64,
+    ) -> bool {
+        if !self.footnote_frame_policy().continues_in_next_column() {
+            return false;
+        }
+        let layout = self
+            .data
+            .current_zone_layout
+            .as_ref()
+            .unwrap_or(&self.data.layout);
+        let widths = layout.column_areas.iter().map(|area| area.width);
+        let (low, high) = widths.fold((f64::MAX, f64::MIN), |(low, high), width| {
+            (low.min(width), high.max(width))
+        });
+        if high - low <= 0.5 {
+            return false;
+        }
+        if self.data.note_refold.is_none() {
+            self.data.note_refold = Some(NoteRefold {
+                styles: std::sync::Arc::new(styles.clone()),
+                dpi,
+            });
+        }
+        true
+    }
+
+    /// 이어받은 조각을 지금 각주 영역 폭으로 다시 나눈다(한/글 12.30). 폭이 같거나 다시 나눌
+    /// 원본이 없으면 그대로 둔다. 다시 나눈 줄은 조각의 줄 축(`FootnoteFragment::refold`)이 된다.
+    fn refold_deferred_footnote(&self, deferred: DeferredBodyFootnote) -> DeferredBodyFootnote {
+        let width = self.footnote_area_width();
+        let (Some(refold), Some(source)) =
+            (self.data.note_refold.as_ref(), deferred.source.as_ref())
+        else {
+            return deferred;
+        };
+        if deferred.lines.is_empty() || (width - deferred.width).abs() <= 0.5 {
+            return deferred;
+        }
+        let fragment = deferred.note.fragment.unwrap_or(FootnoteFragment {
+            start_line: 0,
+            end_line: deferred.lines.len(),
+            draw_separator: true,
+            draw_number: true,
+            refold: None,
+        });
+        // 지금 줄 축에서 조각의 첫 줄이 시작하는 글자부터 다시 나눈다.
+        let current = fragment.refold.map(|at| {
+            crate::renderer::footnote_frames::refold_note_paragraphs(
+                source,
+                at,
+                deferred.width,
+                &refold.styles,
+                refold.dpi,
+            )
+            .0
+        });
+        let Some(at) = current
+            .as_deref()
+            .unwrap_or(source)
+            .iter()
+            .enumerate()
+            .flat_map(|(index, para)| {
+                (0..para.line_segs.len()).map(move |line| (index, para.line_seg_text_start(line)))
+            })
+            .nth(fragment.start_line)
+        else {
+            return deferred;
+        };
+        let (paragraphs, start_line) = crate::renderer::footnote_frames::refold_note_paragraphs(
+            source,
+            at,
+            width,
+            &refold.styles,
+            refold.dpi,
+        );
+        let mut lines = Vec::new();
+        for para in &paragraphs {
+            let composed = crate::renderer::composer::compose_paragraph(para);
+            if composed.lines.is_empty() || composed.lines.len() != para.line_segs.len() {
+                return deferred;
+            }
+            lines.extend(composed.lines.iter().map(|line| {
+                (
+                    crate::renderer::hwpunit_to_px(line.line_height, refold.dpi),
+                    crate::renderer::hwpunit_to_px(line.line_spacing, refold.dpi),
+                )
+            }));
+        }
+        if start_line >= lines.len() {
+            return deferred;
+        }
+        let end_line = lines.len();
+        DeferredBodyFootnote {
+            note: FootnoteRef {
+                fragment: Some(FootnoteFragment {
+                    start_line,
+                    end_line,
+                    refold: Some(at),
+                    ..fragment
+                }),
+                ..deferred.note
+            },
+            height: note_lines_fragment_height(&lines, start_line, end_line),
+            lines,
+            width,
+            source: deferred.source,
+        }
     }
 
     /// 쪽 전환을 확정한 뒤 다음 각주 lane의 같은 조각 높이를 fit과 paint에 예약한다.
@@ -49,6 +168,7 @@ impl TypesetState {
     ) -> Result<(), S::Error> {
         let mut queue = std::mem::take(&mut self.data.deferred_body_footnotes).into_iter();
         while let Some(deferred) = queue.next() {
+            let deferred = self.refold_deferred_footnote(deferred);
             let draw_separator = deferred
                 .note
                 .fragment
@@ -86,6 +206,7 @@ impl TypesetState {
                     end_line: deferred.lines.len(),
                     draw_separator: true,
                     draw_number: true,
+                    refold: None,
                 });
         let start = fragment.start_line;
         let end = fragment.end_line.min(deferred.lines.len());
@@ -110,6 +231,8 @@ impl TypesetState {
                 }),
                 height: note_lines_fragment_height(&deferred.lines, start, split_line),
                 lines: Vec::new(),
+                width: deferred.width,
+                source: None,
             },
             DeferredBodyFootnote {
                 note: with_fragment(crate::renderer::pagination::FootnoteFragment {
@@ -117,9 +240,12 @@ impl TypesetState {
                     end_line: end,
                     draw_separator: true,
                     draw_number: false,
+                    refold: fragment.refold,
                 }),
                 height: note_lines_fragment_height(&deferred.lines, split_line, end),
                 lines: deferred.lines.clone(),
+                width: deferred.width,
+                source: deferred.source.clone(),
             },
         ))
     }
@@ -568,7 +694,12 @@ impl TypesetState {
             };
             if self.has_deferred_body_footnotes() {
                 // 앞 번호가 다음 쪽으로 넘어갔으면 뒤 번호도 그 뒤를 잇는다.
-                self.defer_splittable_body_footnote(whole, note.content_height, note.lines.clone());
+                self.defer_splittable_body_footnote(
+                    whole,
+                    note.content_height,
+                    note.lines.clone(),
+                    note.source.clone(),
+                );
             } else if self.footnote_fragment_fits_current_page(note.content_height, true, guard) {
                 self.record_current_footnote_with_storage(whole, storage)?;
                 self.add_footnote_fragment_height(note.content_height, true);
@@ -592,9 +723,15 @@ impl TypesetState {
                     },
                     split.suffix_height,
                     note.lines.clone(),
+                    note.source.clone(),
                 );
             } else {
-                self.defer_splittable_body_footnote(whole, note.content_height, note.lines.clone());
+                self.defer_splittable_body_footnote(
+                    whole,
+                    note.content_height,
+                    note.lines.clone(),
+                    note.source.clone(),
+                );
             }
             self.data
                 .line_registered_notes
@@ -628,6 +765,7 @@ impl TypesetState {
                     end_line: split_line,
                     draw_separator: true,
                     draw_number: true,
+                    refold: None,
                 },
                 prefix_height: fragment_height(0, split_line),
                 suffix: crate::renderer::pagination::FootnoteFragment {
@@ -635,6 +773,7 @@ impl TypesetState {
                     end_line: line_count,
                     draw_separator: true,
                     draw_number: false,
+                    refold: None,
                 },
                 suffix_height: fragment_height(split_line, line_count),
                 force_next_page: false,
@@ -658,6 +797,16 @@ pub(in crate::renderer::typeset) struct DeferredBodyFootnote {
     pub height: f64,
     /// 각주 전체를 펼친 줄의 (줄 높이, 줄간격). 비어 있으면 통째로만 옮긴다.
     pub lines: Vec<(f64, f64)>,
+    /// `lines` 와 조각의 줄 번호를 나눈 각주 영역 폭(px).
+    pub width: f64,
+    /// 너비가 다른 단에서 다시 나눌 각주 원본 문단. 없으면 줄을 그대로 잇는다.
+    pub source: Option<std::sync::Arc<Vec<crate::model::paragraph::Paragraph>>>,
+}
+
+/// 이어받은 각주를 다시 나눌 때 쓰는 구역의 해소 스타일.
+pub(in crate::renderer::typeset) struct NoteRefold {
+    pub styles: std::sync::Arc<crate::renderer::typeset::ResolvedStyleSet>,
+    pub dpi: f64,
 }
 
 /// 각주 줄 `start..end` 조각의 높이 — 마지막 줄 뒤 줄간격은 넣지 않는다.

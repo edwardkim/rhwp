@@ -46,6 +46,7 @@ impl TypesetState {
                 footnote_frames: Vec::new(),
                 deferred_body_footnotes: Vec::new(),
                 own_line_notes: Vec::new(),
+                note_refold: None,
                 line_registered_notes: std::collections::HashSet::new(),
                 current_footnote_body_bottom_reserved: false,
                 deferred_hwpx_note_body: false,

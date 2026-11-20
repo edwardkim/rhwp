@@ -252,6 +252,8 @@ pub(in crate::renderer::typeset) struct OwnLineNote {
     pub lines: Vec<(f64, f64)>,
     /// 저장 각주 줄 사다리가 가리키는 한/글의 쪽 나눔.
     pub stored_split: Option<NativeHwp5FootnoteFragmentSplit>,
+    /// 너비가 다른 단으로 이어받으면 그 단 폭으로 다시 나눌 각주 원본 문단.
+    pub source: Option<std::sync::Arc<Vec<Paragraph>>>,
 }
 
 // ========================================================

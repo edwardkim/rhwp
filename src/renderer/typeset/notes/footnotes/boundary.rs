@@ -25,12 +25,14 @@ pub(in crate::renderer::typeset) fn native_hwp5_two_line_footnote_fragments(
             end_line: 1,
             draw_separator: true,
             draw_number: true,
+            refold: None,
         },
         FootnoteFragment {
             start_line: 1,
             end_line: 2,
             draw_separator: true,
             draw_number: false,
+            refold: None,
         },
     ))
 }
@@ -162,12 +164,14 @@ pub(in crate::renderer::typeset) fn native_hwp5_footnote_reset_fragments(
         end_line: split_line,
         draw_separator: true,
         draw_number: true,
+        refold: None,
     };
     let suffix = FootnoteFragment {
         start_line: split_line,
         end_line: line_count,
         draw_separator: true,
         draw_number: false,
+        refold: None,
     };
     let fragment_height = |fragment: FootnoteFragment| {
         flat_lines[fragment.start_line..fragment.end_line]

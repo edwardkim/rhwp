@@ -84,3 +84,51 @@ impl Reservation {
         self.separator |= separator;
     }
 }
+
+/// 너비가 다른 단으로 이어받은 각주를 그 단 각주 영역 폭으로 다시 나눈 문단들과, 다시 나눈
+/// 첫 줄의 평탄 줄 번호(한/글 12.30: 8000·14000·20000HU 3단에서 1단 각주를 2단 폭으로 다시 나눈다).
+///
+/// `at`(각주 문단, UTF-16 위치) 앞의 줄은 저장 줄 그대로 두어 앞 조각의 줄 번호를 지키고, 그
+/// 글자부터 뒤 문단까지 `width_px` 영역 폭(문단 좌우 여백을 뺀다)으로 나눈다. 조판과 그리기가
+/// 같은 입력으로 이 함수를 불러 같은 줄을 쓴다.
+pub(crate) fn refold_note_paragraphs(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    at: (usize, u32),
+    width_px: f64,
+    styles: &super::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+) -> (Vec<crate::model::paragraph::Paragraph>, usize) {
+    use super::composer::{reflow_line_segs, reflow_line_segs_from, ParagraphBox};
+    let mut start_line = 0;
+    let refolded = paragraphs
+        .iter()
+        .enumerate()
+        .map(|(index, para)| {
+            let mut para = para.clone();
+            if index < at.0 {
+                start_line += para.line_segs.len();
+                return para;
+            }
+            let style = styles.para_styles.get(para.para_shape_id as usize);
+            let margins = style.map_or(0.0, |style| style.margin_left + style.margin_right);
+            let paragraph_box = ParagraphBox::content_width_px((width_px - margins).max(0.0), dpi);
+            let kept = if index == at.0 {
+                (0..para.line_segs.len())
+                    .take_while(|&line| para.line_seg_text_start(line) < at.1)
+                    .count()
+            } else {
+                0
+            };
+            if index == at.0 {
+                start_line += kept;
+            }
+            if kept == 0 {
+                reflow_line_segs(&mut para, paragraph_box, styles, dpi);
+            } else {
+                reflow_line_segs_from(&mut para, kept, at.1, paragraph_box, styles, dpi);
+            }
+            para
+        })
+        .collect();
+    (refolded, start_line)
+}

@@ -98,6 +98,7 @@ impl BodyFootnoteMeasure<'_> {
                     end_line: 1,
                     draw_separator: true,
                     draw_number: true,
+                    refold: None,
                 }),
                 0.0,
             )

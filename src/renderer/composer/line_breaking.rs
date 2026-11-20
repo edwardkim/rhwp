@@ -6196,6 +6196,62 @@ pub(crate) fn reflow_line_segs(
     super::equation_line_metrics::publish_regenerated_rows(para, styles);
 }
 
+/// 앞 `kept`줄은 그대로 두고, `start`(UTF-16) 글자부터 뒤를 `paragraph_box` 너비로 다시 접는다.
+///
+/// `start`는 저장 줄의 시작이 아니어도 된다. 너비가 다른 단을 거쳐 다시 나눈 각주 조각을
+/// 또 다른 너비의 단으로 이을 때, 앞 단에서 다시 나눈 줄의 시작부터 접는다
+/// (`footnote_frames::refold_note_paragraphs`). 그때 `kept`째 저장 줄은 `start` 앞에서 끝난다.
+pub(crate) fn reflow_line_segs_from(
+    para: &mut Paragraph,
+    kept: usize,
+    start: u32,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    if kept == 0 || kept > para.line_segs.len() || !paragraph_box.is_usable() {
+        return false;
+    }
+    let vertical_pos = para.line_segs.get(kept).map_or_else(
+        || {
+            let last = &para.line_segs[kept - 1];
+            last.vertical_pos + last.line_height + last.line_spacing
+        },
+        |line| line.vertical_pos,
+    );
+    let mut frame = paragraph_box.frame(vertical_pos);
+    let tail = match try_layout_paragraph_in_frame_impl(
+        para,
+        &mut frame,
+        styles,
+        dpi,
+        true,
+        FrameStart::SourceUtf16(start),
+        FramePurpose::Body,
+        &Unbounded,
+    ) {
+        Ok(Some(tail)) if !tail.is_empty() => tail,
+        Ok(_) => return false,
+        Err(never) => match never {},
+    };
+    let tail_metrics = match frame.try_project_space_metrics_since(0, &Unbounded) {
+        Ok(metrics) => metrics,
+        Err(never) => match never {},
+    };
+    let mut lines = para.line_segs[..kept].to_vec();
+    lines.extend(tail);
+    let mut metrics: Vec<_> = para
+        .layout_space_metrics
+        .iter()
+        .filter(|(position, _)| *position < start)
+        .cloned()
+        .collect();
+    metrics.extend(tail_metrics);
+    para.replace_line_segs_with_space_metrics(lines, metrics);
+    super::equation_line_metrics::publish_regenerated_rows(para, styles);
+    true
+}
+
 /// 셀 분할로 저장 폭이 stale해진 문단을 다시 조판한다.
 ///
 /// 한컴은 좁아진 셀에서만 본문 뒤의 inline control을 별도 source line으로 저장한다.
