@@ -1,0 +1,210 @@
+{
+  "source": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+  "native_sha256": "b8f93c4c40d8b79ecb9f687f0c81cc2704a2e8ac8354c866decc6f8518f14d5e",
+  "wasm_sha256": "ee3461090090fc7dad9562bdf418a65094bce5988c5efbbbdc862bdaec7826a0",
+  "wasm_js_sha256": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3",
+  "conditions": 16,
+  "pages": 46,
+  "result": [
+    {
+      "target": "group",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf_sha256": "65a38299255a5c9d28fa0f9cd9b3aff12d1d12cfe37b5c246a5f86de427cfb2b"
+    },
+    {
+      "target": "group",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf_sha256": "65a38299255a5c9d28fa0f9cd9b3aff12d1d12cfe37b5c246a5f86de427cfb2b",
+      "browsers": [
+        "Chrome/157.0.8103.80"
+      ]
+    },
+    {
+      "target": "issue7905",
+      "backend": "native",
+      "pages": 6,
+      "minimum": "98.82",
+      "tsv_sha256": "a69e9a28e57237ce58b2f09bf1b12a115680e0d5c4798e43716889b6d31ea0ad",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "pdf_sha256": "0354393927f9d995a9c85f5ace21f5192fad756b8d922f350710d040e0d66cb2"
+    },
+    {
+      "target": "issue7905",
+      "backend": "wasm",
+      "pages": 6,
+      "minimum": "98.82",
+      "tsv_sha256": "97a0b2dee69a002f9f747d368e3862c2e035ad7da763b85e9d834b41c2bd07e7",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "pdf_sha256": "0354393927f9d995a9c85f5ace21f5192fad756b8d922f350710d040e0d66cb2",
+      "browsers": [
+        "Chrome/157.0.8103.80"
+      ]
+    },
+    {
+      "target": "issue9040",
+      "backend": "native",
+      "pages": 10,
+      "minimum": "99.66",
+      "tsv_sha256": "45911ec92414ad5b571bb85447f84c524f88aa2735735f45b5a13a856c31503f",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "pdf_sha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c"
+    },
+    {
+      "target": "issue9040",
+      "backend": "wasm",
+      "pages": 10,
+      "minimum": "99.66",
+      "tsv_sha256": "b57641f33af053f6e3bc636ae15cb89a946d78e2acfe0180c084bb89dbcd1002",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+      "pdf_sha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c",
+      "browsers": [
+        "Chrome/157.0.8103.80"
+      ]
+    },
+    {
+      "target": "latin",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "pdf_sha256": "a0aec6621268b0d7d1cd4d736aa352e12ebaea594ae08935cab69eec9071c932"
+    },
+    {
+      "target": "latin",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "pdf_sha256": "a0aec6621268b0d7d1cd4d736aa352e12ebaea594ae08935cab69eec9071c932",
+      "browsers": [
+        "Chrome/157.0.8103.79"
+      ]
+    },
+    {
+      "target": "para-squeeze",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "99.97",
+      "tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "a30ce89ad8659e14ade23ff8aea09d9e369b80058ace0ac44b9a4d14455578ff",
+      "pdf_sha256": "0f0136b898e56be268501073678c1a346aa7c2228c0c88221a14deeda8147486"
+    },
+    {
+      "target": "para-squeeze",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "99.97",
+      "tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "a30ce89ad8659e14ade23ff8aea09d9e369b80058ace0ac44b9a4d14455578ff",
+      "pdf_sha256": "0f0136b898e56be268501073678c1a346aa7c2228c0c88221a14deeda8147486",
+      "browsers": [
+        "Chrome/157.0.8103.80"
+      ]
+    },
+    {
+      "target": "picture",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "99.93",
+      "tsv_sha256": "1e25801637679ef0afd3af2caa8670d39fab4f34257ae1aed124bce5d9e9a563",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf_sha256": "b8c7bb29fe7d12b0694a5d980cb0687f458d3aee7e745434f50f5af8a86b0286"
+    },
+    {
+      "target": "picture",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "99.93",
+      "tsv_sha256": "1e25801637679ef0afd3af2caa8670d39fab4f34257ae1aed124bce5d9e9a563",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf_sha256": "b8c7bb29fe7d12b0694a5d980cb0687f458d3aee7e745434f50f5af8a86b0286",
+      "browsers": [
+        "Chrome/157.0.8103.80"
+      ]
+    },
+    {
+      "target": "shape-caption",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+      "pdf_sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698"
+    },
+    {
+      "target": "shape-caption",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+      "pdf_sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698",
+      "browsers": [
+        "Chrome/157.0.8103.80"
+      ]
+    },
+    {
+      "target": "squeeze",
+      "backend": "native",
+      "pages": 2,
+      "minimum": "97.79",
+      "tsv_sha256": "e7e020d4eacb13eb71c4ce1636b225abb7c4d2f0eea0c79b0449b30588ac8991",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "pdf_sha256": "600fb9974578944ad2f8f3b92d3619c17a38a2216ffa30d5fe35c81f75c5c319"
+    },
+    {
+      "target": "squeeze",
+      "backend": "wasm",
+      "pages": 2,
+      "minimum": "97.35",
+      "tsv_sha256": "55d0572ae6ca750be0c6fe27e96a26397d15a66fdc68ca4d4727f9d5b0a58846",
+      "same_reference_rasters": true,
+      "changed_product_png_pages": [],
+      "input_sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+      "pdf_sha256": "600fb9974578944ad2f8f3b92d3619c17a38a2216ffa30d5fe35c81f75c5c319",
+      "browsers": [
+        "Chrome/157.0.8103.80"
+      ]
+    }
+  ]
+}
