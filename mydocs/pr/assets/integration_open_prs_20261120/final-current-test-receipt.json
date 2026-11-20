@@ -65,5 +65,27 @@
     "tests": 4094,
     "modules": 295,
     "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0"
+  },
+  "native_skia_focused": {
+    "issue_2225_missing_picture_placeholder": {
+      "exit": 0,
+      "passed": 2,
+      "failed": 0,
+      "filtered": 355,
+      "run_id": "4b5d6bc6-17ef-4276-84ec-da592b9d1eba",
+      "log_sha256": "863c491838fb6d13c82ddd4211bc9759cae393f679f0a99e2b9743c6e16d393d"
+    },
+    "render_p37_direct_pdf_export": {
+      "exit": 0,
+      "passed": 36,
+      "failed": 0,
+      "filtered": 313,
+      "run_id": "df5d80d5-0432-4326-8ac9-a6d5ddcae0c9",
+      "log_sha256": "0a996da10a72bce86f61e8847f566ddf4c3474f1dac34d2d63a212f79ec87cf8"
+    }
+  },
+  "rust_gate_complete": {
+    "exit": 0,
+    "normal_macos_font_inventory_before_after_sha256": "273b4f5e1efdbb29042e5031008ca80cfbb7b8296893471beb9ef6086340c975"
   }
 }
