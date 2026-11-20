@@ -2601,31 +2601,12 @@ impl SvgRenderer {
             }
         };
 
-        // 배치 위치 계산
-        let (ix, iy) = match fill_mode {
-            ImageFillMode::LeftTop => (bbox.x, bbox.y),
-            ImageFillMode::CenterTop => (bbox.x + (bbox.width - img_width) / 2.0, bbox.y),
-            ImageFillMode::RightTop => (bbox.x + bbox.width - img_width, bbox.y),
-            ImageFillMode::LeftCenter => (bbox.x, bbox.y + (bbox.height - img_height) / 2.0),
-            ImageFillMode::Center => (
-                bbox.x + (bbox.width - img_width) / 2.0,
-                bbox.y + (bbox.height - img_height) / 2.0,
-            ),
-            ImageFillMode::RightCenter => (
-                bbox.x + bbox.width - img_width,
-                bbox.y + (bbox.height - img_height) / 2.0,
-            ),
-            ImageFillMode::LeftBottom => (bbox.x, bbox.y + bbox.height - img_height),
-            ImageFillMode::CenterBottom => (
-                bbox.x + (bbox.width - img_width) / 2.0,
-                bbox.y + bbox.height - img_height,
-            ),
-            ImageFillMode::RightBottom => (
-                bbox.x + bbox.width - img_width,
-                bbox.y + bbox.height - img_height,
-            ),
-            _ => (bbox.x, bbox.y),
-        };
+        // 배치 사각형: 넘치는 축은 영역 크기로 줄인다(모든 출력 경로 공용).
+        let (ix, iy, img_width, img_height) = super::image_geometry::aligned_image_fill_rect(
+            fill_mode,
+            (bbox.x, bbox.y, bbox.width, bbox.height),
+            (img_width, img_height),
+        );
 
         // 도형 영역으로 클리핑
         let clip_id = format!("fill-clip-{}", self.next_clip_id());
