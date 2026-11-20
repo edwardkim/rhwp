@@ -518,7 +518,13 @@ impl DocumentCore {
         };
         // 한컴 기본: 셀 높이 = top + bottom padding (빈 셀 최소 높이)
         let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
-        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+        // 문단 나누기(`split_at`)는 논리 캐럿을 받는다. 글자 모양·빈 줄 서식은 그 캐럿의 글자 자리에서 읽는다.
+        let shape_offset = crate::document_core::helpers::logical_to_text_offset(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+            char_offset,
+        )
+        .0;
+        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, shape_offset);
         let rendered_row_height: u32 =
             cell_pad.top as u32 + inherited_line.line_height.max(0) as u32 + cell_pad.bottom as u32;
         let total_width: u32 = col_widths.iter().sum();
@@ -563,7 +569,7 @@ impl DocumentCore {
         // 커서 위치 문단의 속성을 기본값으로 상속 (한컴 동작 일치).
         // 혼합 글자모양 문단에서는 첫 엔트리가 아니라 커서 offset 의 글자모양이 기준이다.
         let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
+        let default_char_shape_id: u32 = current_para.char_shape_id_at(shape_offset).unwrap_or(0);
         let default_para_shape_id: u16 = current_para.para_shape_id;
         let para_shape_ids: Vec<u16> = (0..col_count)
             .map(|col| {
