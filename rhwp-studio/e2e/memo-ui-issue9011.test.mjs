@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { runTest, createNewDocument } from './helpers.mjs';
+import { runTest, createNewDocument, loadApp } from './helpers.mjs';
 
 const output = resolve('../output/issue9011');
 const state = page => page.evaluate(() => window.__wasm.getMemos().map(({
@@ -77,6 +77,18 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   });
   assert.equal(await dirty(page), false);
   await open(page);
+  const focused = () => page.evaluate(() => document.activeElement.id || document.activeElement.textContent);
+  assert.equal(await focused(), 'memo-text');
+  await page.keyboard.press('Tab');
+  assert.equal(await focused(), '반영');
+  await page.keyboard.press('Tab');
+  assert.equal(await focused(), '닫기');
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('Tab');
+  assert.equal(await focused(), '반영');
+  await page.keyboard.press('Tab');
+  assert.equal(await focused(), 'memo-text');
+  await page.keyboard.up('Shift');
   await fill(page,'취소한 초안');
   await close(page);
   assert.equal((await state(page)).length,0,'닫기는 반영하지 않은 입력을 저장하지 않는다');
@@ -180,12 +192,13 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   };
   const body = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
   await position(body, { ...body, paragraphIndex: 1 });
-  await page.click('#menu-bar .menu-item[data-menu="insert"] .menu-title');
-  await page.click('#menu-bar .md-item[data-cmd="insert:comment"]');
-  await page.waitForFunction(() => document.querySelector('#rhwp-toast-container')?.textContent.includes('한 문단'));
-  assert.equal(await page.$('#memo-text'), null, '여러 문단 선택 거절');
+  await open(page);
+  assert.equal(await page.$eval('[data-memo-dialog] option[value=""]', option => option.disabled), true);
+  assert.equal(await page.$eval('[data-memo-dialog] .dialog-btn-primary', button => button.disabled), true);
+  assert.match(await page.$eval('[data-memo-dialog] .dialog-body p', el => el.textContent), /한 문단/);
   assert.deepEqual(await state(page), []);
   assert.equal(await dirty(page), false);
+  await close(page);
 
   const cell = (cellIndex, charOffset) => ({
     sectionIndex: 0, paragraphIndex: 0, charOffset, parentParaIndex: table.paraIdx,
@@ -202,13 +215,29 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   };
   await position(body, { ...body, charOffset: 2 });
   await add('본문 선택 메모');
+  const [bodyMemo] = await state(page);
+  await position(body, { ...body, paragraphIndex: 1 });
+  await open(page);
+  assert.equal(await page.$eval('[data-memo-dialog] option[value=""]', option => option.disabled), true);
+  assert.equal(await page.$eval('#memo-text', el => el.value), bodyMemo.text);
+  await fill(page, '여러 문단 선택 중 수정한 메모');
+  await page.click('[data-memo-dialog] .dialog-btn-primary');
+  assert.deepEqual(await state(page), [{ ...bodyMemo, text: '여러 문단 선택 중 수정한 메모' }]);
+  await page.focus('#memo-text');
+  await page.keyboard.press('Tab');
+  assert.equal(await focused(), '선택한 메모 삭제');
+  await page.keyboard.press('Enter');
+  assert.deepEqual(await state(page), []);
+  await close(page);
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  assert.deepEqual(await state(page), [{ ...bodyMemo, text: '여러 문단 선택 중 수정한 메모' }]);
   await position(cell(1, 1), cell(1, 4));
   await add('둘째 셀 선택 메모');
   await position(cell(0, 0));
   await add('빈 셀 커서 메모');
 
   const expected = [
-    { text: '본문 선택 메모', author: '', sectionIndex: 0, paraIndex: 0,
+    { text: '여러 문단 선택 중 수정한 메모', author: '', sectionIndex: 0, paraIndex: 0,
       startCharIdx: 0, endCharIdx: 2, path: null },
     ...[[1, 1, 4, '둘째 셀 선택 메모'], [0, 0, 0, '빈 셀 커서 메모']].map(([cellIndex, start, end, text]) => ({
       text, author: '', sectionIndex: 0, paraIndex: table.paraIdx, startCharIdx: start,
@@ -235,6 +264,25 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
       console.log(`  ${format.toUpperCase()} ${pass}회차: 본문과 두 셀의 메모 및 대상 위치 보존`);
     }
   }
+
+  await createNewDocument(page);
+  const pageMemoOffset = await page.evaluate(async () => {
+    const text = '긴 문단의 메모 대상 문자열입니다. '.repeat(160);
+    window.__wasm.doc.insertText(0, 0, 0, text);
+    await window.__canvasView.loadDocument();
+    return text.length - 12;
+  });
+  const later = { ...body, charOffset: pageMemoOffset };
+  const actualPage = await page.evaluate(offset => window.__wasm.getCursorRect(0, 0, offset).pageIndex + 1, pageMemoOffset);
+  assert.ok(actualPage > 1, '기준 글자가 문단의 시작 쪽에 있지 않다');
+  await position(later, { ...later, charOffset: pageMemoOffset + 4 });
+  await add('뒤쪽 기준 글자의 메모');
+  await open(page);
+  const [laterMemo] = await state(page);
+  await selectMemo(page, laterMemo.id);
+  const option = await page.$eval('[data-memo-dialog] select', el => el.selectedOptions[0].textContent);
+  assert.ok(option.startsWith(`${actualPage}쪽 ·`), option);
+  await close(page);
 
   await createNewDocument(page);
   const grouped = await page.evaluate(async () => {
@@ -273,4 +321,15 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   assert.equal(await dirty(page), false);
   await close(page);
   console.log('  묶음 안 글상자: 오류 표시, 저장 바이트·dirty 유지');
+
+  await loadApp(page, '?lang=en');
+  await createNewDocument(page);
+  await open(page);
+  assert.equal(await page.$eval('[data-cmd="insert:comment"] .md-label', el => el.textContent), 'Memo');
+  assert.equal(await page.$eval('[data-memo-dialog]', el => el.getAttribute('aria-label')), 'Memo');
+  assert.equal(await page.$eval('[data-memo-dialog] select', el => el.getAttribute('aria-label')), 'Document memos');
+  assert.equal(await page.$eval('[data-memo-dialog] .dialog-btn-primary', el => el.textContent), 'Apply');
+  await page.click('[data-memo-dialog] .dialog-btn-primary');
+  assert.equal(await page.$eval('[data-memo-dialog] [role="alert"]', el => el.textContent), 'Enter memo text.');
+  await close(page);
 });

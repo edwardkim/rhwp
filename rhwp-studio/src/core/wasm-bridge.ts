@@ -1,4 +1,5 @@
 import { isHwp3Document } from './document-signature.ts';
+import { t } from '../i18n/index.ts';
 import { publishPreparedPdf } from './pdf-open';
 import { RecoveryCipher } from '../recovery/recovery-crypto';
 import init, { HwpDocument, version } from '@wasm/rhwp.js';
@@ -4011,6 +4012,35 @@ export class WasmBridge {
     return JSON.parse(this.doc.getMemoList());
   }
 
+  /** 목록에는 상위 문단 첫 쪽이 아니라 실제 기준 글자가 표시되는 쪽을 쓴다. */
+  getMemoDisplayPage(memo: MemoInfo): number | null {
+    const { sectionIndex: sec, paraIndex: para, startCharIdx: start, endCharIdx: end, path } = memo;
+    if (para === null || start === null || end === null) return null;
+    if (this.pageCount === 1) return 1;
+    try {
+      let pageIndex: number | undefined;
+      if (path?.length) {
+        const pathJson = JSON.stringify(path.map(entry => ({
+          controlIndex: entry.controlIndex,
+          cellIndex: entry.type === 'cell' ? entry.cellIndex : 0,
+          cellParaIndex: entry.paraIndex,
+        })));
+        const cellPara = path[path.length - 1].paraIndex;
+        const glyph = start === end ? undefined
+          : this.getSelectionRectsInCellByPath(sec, para, pathJson, cellPara, start, cellPara, start + 1)[0];
+        pageIndex = glyph?.pageIndex ?? this.getCursorRectByPath(sec, para, pathJson, start).pageIndex;
+      } else {
+        const from = this.textToLogicalOffset(sec, para, start);
+        const glyph = start === end ? undefined : this.getSelectionRects(sec, para, from, para, from + 1)[0];
+        pageIndex = glyph?.pageIndex ?? this.getCursorRect(sec, para, from).pageIndex;
+      }
+      return pageIndex !== undefined && Number.isInteger(pageIndex) && pageIndex >= 0
+        && pageIndex < this.pageCount ? pageIndex + 1 : null;
+    } catch {
+      return null;
+    }
+  }
+
   insertMemo(target: HyperlinkTarget, start: number, end: number, author: string, text: string): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const payload = JSON.stringify({ author, text });
@@ -4022,7 +4052,7 @@ export class WasmBridge {
     const inserted = this.getMemos().find(memo => memo.id === id);
     if (!inserted?.editable || !memoAnchorMatchesTarget(inserted, target)
       || inserted.startCharIdx !== start || inserted.endCharIdx !== end) {
-      throw new MemoEditError('이 위치에는 메모를 추가할 수 없습니다. 본문이나 일반 표 셀에서 다시 시도해 주세요.');
+      throw new MemoEditError(t('dialog.memo.unsupportedTarget'));
     }
   }
 

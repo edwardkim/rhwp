@@ -1,3 +1,4 @@
+import { t } from '../i18n/index.ts';
 import type { MemoAnchor } from './memo';
 import type { HyperlinkTarget } from './hyperlink';
 
@@ -13,7 +14,20 @@ export class MemoEditError extends Error {}
 /** WASM은 실패를 JSON으로 반환하기도 하므로 snapshot을 성공 처리하지 않는다. */
 export function requireMemoSuccess(value: string): { id?: number } {
   const result = JSON.parse(value);
-  if (result?.ok !== true) throw new MemoEditError(result?.message || '메모를 변경하지 못했습니다.');
+  if (result?.ok !== true) {
+    const messages: Record<string, string> = {
+      memo_not_found: 'dialog.memo.missing',
+      memo_invalid_range: 'dialog.memo.invalidTarget',
+      memo_overlap: 'dialog.memo.overlap',
+      memo_unsupported_place: 'dialog.memo.unsupportedTarget',
+      memo_read_only: 'dialog.memo.readOnly',
+      memo_text_too_long: 'dialog.memo.textTooLong',
+      memo_invalid_author: 'dialog.memo.invalidAuthor',
+    };
+    const key = typeof result?.code === 'string' && Object.hasOwn(messages, result.code)
+      ? messages[result.code] : 'dialog.memo.failed';
+    throw new MemoEditError(t(key), { cause: result?.message });
+  }
   return result;
 }
 
@@ -23,12 +37,12 @@ export function memoTargetPath(target: HyperlinkTarget): string {
 }
 
 export function validateMemoEdit(edit: MemoEdit, memos: readonly MemoInfo[]): void {
-  if (edit.kind !== 'remove' && !edit.text.trim()) throw new Error('메모 내용을 입력해 주세요.');
+  if (edit.kind !== 'remove' && !edit.text.trim()) throw new Error(t('dialog.memo.blank'));
   if (edit.kind === 'insert') return;
   const existing = memos.find(m => m.id === edit.id);
-  if (!existing) throw new Error('메모가 변경되거나 삭제되었습니다. 다시 열어 주세요.');
+  if (!existing) throw new Error(t('dialog.memo.missing'));
   if (edit.kind === 'remove' && memos.some(m => m.parentId === edit.id)) {
-    throw new Error('댓글이 있는 메모입니다. 댓글을 먼저 삭제해 주세요.');
+    throw new Error(t('dialog.memo.hasReplies'));
   }
-  if (!existing.editable) throw new Error('이 메모는 현재 편집할 수 없습니다.');
+  if (!existing.editable) throw new Error(t('dialog.memo.readOnly'));
 }
