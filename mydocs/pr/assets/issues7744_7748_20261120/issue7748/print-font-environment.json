@@ -1,0 +1,8 @@
+{
+  "id": "issue7748-observed-haansoft-batang",
+  "substitutions": {
+    "나눔명조": "Haansoft Batang",
+    "한컴바탕": "Haansoft Batang"
+  },
+  "trueTypeFaces": ["Haansoft Batang"]
+}

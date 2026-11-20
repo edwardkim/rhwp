@@ -1,0 +1,79 @@
+{
+  "issue7744": {
+    "sample": "samples/task2319/20544835_jinan_apt_form.hwp",
+    "sample_sha256": "515fb049d24c0f3a26b7a35d7ff99244af3837f32254f30077d9557f8c2d6b25",
+    "independent_reprint": {
+      "job": "3ccbb549-8d5b-4e8c-8124-c1b236267fbb",
+      "version": "11.0.0.9136",
+      "engine": "2020",
+      "print_method": 0,
+      "output_mode": "hancom2020_pdf_driver_one_up",
+      "sha256": "5a17b41439a1318618725af679c0ed8cc4a1247d9290c543c8ac5fdaa71f849a"
+    },
+    "pdf": "pdf/issue7744-7748/20544835_jinan_apt_form-hwp-2020.pdf",
+    "pdf_sha256": "5a17b41439a1318618725af679c0ed8cc4a1247d9290c543c8ac5fdaa71f849a",
+    "engine": "2020"
+  },
+  "issue7745": {
+    "sample": "samples/issue6892/156726122-recycling-press-release.hwpx",
+    "sample_sha256": "424f0264dcf10740d086b769f1e388cd7bd1b3e1a3cd2b140b93715a60b1eae6",
+    "independent_reprint": {
+      "job": "57add53d-5b66-4a22-9093-49067d4ddd05",
+      "version": "13.0.0.3901",
+      "engine": "2024",
+      "print_method": 0,
+      "output_mode": "frame_print_to_pdf_ex_one_up",
+      "sha256": "a48896147f44cc066ebda8730e1d6dedaaf70c7c0c8ed889ae7cf486f3f0f50e"
+    },
+    "pdf": "pdf/issue7382-regression-review/156726122-recycling-press-release-2020.pdf",
+    "pdf_sha256": "c92ad7d204afbb2db9b88f0365d43ba70f018e3cc444cdfd04ce945a1fa1ef88",
+    "engine": "2020",
+    "provenance": "mydocs/pr/assets/pr7382_20260926/stage43_regression_reference_conversions.json"
+  },
+  "issue7746": {
+    "sample": "samples/HWP5-nopassword-123456.hwpx",
+    "sample_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+    "independent_reprint": {
+      "job": "00dd0d25-a2f0-43a0-bb28-75c01d4bdaa7",
+      "version": "13.0.0.3901",
+      "engine": "2024",
+      "print_method": 0,
+      "output_mode": "frame_print_to_pdf_ex_one_up",
+      "sha256": "459dd7dd2a0a0d8c743f1922f532939f35378e99c0587fb97acb7bf6e5b94717"
+    },
+    "pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+    "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+    "engine": "2024",
+    "provenance": "mydocs/pr/archives/pr_7382_review.md"
+  },
+  "issue7747": {
+    "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "sample_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "independent_reprint": {
+      "job": "5ca40fa5-2752-4d6c-924b-2ba95fe5205c",
+      "version": "13.0.0.3901",
+      "engine": "2024",
+      "print_method": 0,
+      "output_mode": "frame_print_to_pdf_ex_one_up",
+      "sha256": "d9f770cfe630e2e00022b02614b1192fe974c0832b55345d4f0c8226638b4efc"
+    },
+    "pdf": "pdf/issue7744-7748/issue2007_nested_cell_pagination_42065-hwp-2024.pdf",
+    "pdf_sha256": "d9f770cfe630e2e00022b02614b1192fe974c0832b55345d4f0c8226638b4efc",
+    "engine": "2024"
+  },
+  "issue7748": {
+    "sample": "samples/task2146/21761835_jeonjik_exemption_table.hwp",
+    "sample_sha256": "d8e7e38b206f6e53b7d2d260115396f8a0dd94bd8b712bbc4428dc11bf66e5dc",
+    "independent_reprint": {
+      "job": "a568cdba-5382-40d4-bbfc-1f1497b87138",
+      "version": "13.0.0.3901",
+      "engine": "2024",
+      "print_method": 0,
+      "output_mode": "frame_print_to_pdf_ex_one_up",
+      "sha256": "7256ae727f9622ba0522d81d934bcfd98d4e53d6118b7e89cf0029a3dbc2186c"
+    },
+    "pdf": "pdf/issue7744-7748/21761835_jeonjik_exemption_table-hwp-2024.pdf",
+    "pdf_sha256": "7256ae727f9622ba0522d81d934bcfd98d4e53d6118b7e89cf0029a3dbc2186c",
+    "engine": "2024"
+  }
+}

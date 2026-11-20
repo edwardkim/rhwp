@@ -73,6 +73,24 @@
       "pages": 415,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
+    },
+    {
+      "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "source_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "pages": 17,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/visual-protected-baseline/manifest.json"
+    },
+    {
+      "sample": "samples/task2146/21761835_jeonjik_exemption_table.hwp",
+      "source_sha256": "d8e7e38b206f6e53b7d2d260115396f8a0dd94bd8b712bbc4428dc11bf66e5dc",
+      "pdf": "pdf/task2146/21761835_jeonjik_exemption_table-hwp-print-2020.pdf",
+      "pdf_sha256": "95487e5a7f193da6f96e8a16e0aa4ff0a39a15673a8f5dee10a78a0491fc1eb1",
+      "pages": 6,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issue_7032/README.md"
     }
   ]
 }
