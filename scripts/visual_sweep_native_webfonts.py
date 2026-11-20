@@ -261,7 +261,7 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
     postscript_aliases = _postscript_aliases(paths)
     rules, registry_sha = _rules(root)
     cache = root / 'output/pr-review/native-webfont-cache'
-    mappings, resources, unresolved, local_substitutes = {}, {}, [], []
+    mappings, resources, unresolved, local_substitutes, display_substitutes = {}, {}, [], [], []
     explicitly_mapped = set()
     if explicit_environment:
         specified = json.loads(Path(explicit_environment).read_text(encoding='utf-8'))
@@ -287,10 +287,15 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
         hancom_default = request.get('hancomMissingDefault', [])
         if not isinstance(hancom_default, list) or any(not isinstance(x, str) for x in hancom_default):
             raise ValueError('Native 한컴 기본 대체 글꼴 후보가 올바르지 않습니다')
-        group = groups.setdefault(source, {'primary': [], 'substitute': [], 'hancom_default': []})
+        display = request.get('displayAliases', [])
+        if not isinstance(display, list) or any(not isinstance(x, str) for x in display):
+            raise ValueError('Native 표시 대체 후보가 올바르지 않습니다')
+        group = groups.setdefault(
+            source, {'primary': [], 'substitute': [], 'hancom_default': [], 'display': []})
         group['primary'].extend(primary)
         group['substitute'].extend(substitute)
         group['hancom_default'].extend(hancom_default)
+        group['display'].extend(display)
     for source, group in groups.items():
         primary = group['primary']
         # 공급된 정확한 PostScript face의 하이픈 차이를 해소한다. 이때
@@ -326,6 +331,12 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
             continue
         if rule is None:
             unresolved.append(source)
+            # 렌더러 사슬이 선언한 설치 표시 대체(#6171, 예: 한양견고딕 → HY견고딕)는
+            # 공개 일반 대체보다 앞선다. Native 공급(`native_webfonts::prepare`)과 같다.
+            # 한컴 기본 대체(위 분기, edwardkim/rhwp#9208)가 적용되는 원본은 여기에 오지 않는다.
+            if any(_normal(x) in installed for x in group['display']):
+                display_substitutes.append(source)
+                continue
             url = FALLBACK
         else:
             url = rule['supply']['sourceUrl']
@@ -484,6 +495,7 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
                            'document_glyph_fallbacks': scoped_fallbacks,
                            'unmapped_sources': sorted(set(unresolved)),
                            'local_document_substitutes': sorted(set(local_substitutes)),
+                           'display_alias_substitutes': sorted(set(display_substitutes)),
                            'resources': list(resources.values()),
                            'module_sha256': _sha(Path(__file__).read_bytes())}}
     _PREPARED[key] = result
