@@ -2086,7 +2086,30 @@ impl Paragraph {
     /// char_offset은 Rust 문자(char) 인덱스이다 (바이트 인덱스가 아님).
     /// 삭제 후 char_offsets, char_shapes, line_segs, char_count가 자동 갱신된다.
     /// 반환값: 실제 삭제된 문자 수.
+    ///
+    /// 지운 글자를 차지한 컨트롤(자동 번호 자리표시자, `U+FFFC`)은 남긴다. 렌더링·파서·필드
+    /// 정리처럼 글자만 다듬는 쪽이 쓴다. 사용자 편집 지우기는
+    /// [`Self::delete_text_at_removing_owned_controls`]를 쓴다.
     pub fn delete_text_at(&mut self, char_offset: usize, count: usize) -> usize {
+        self.delete_text_range(char_offset, count, false)
+    }
+
+    /// 사용자 편집 지우기: [`Self::delete_text_at`]과 같되, 지운 글자를 차지한 컨트롤도 함께
+    /// 지운다. 캡션의 "그림 N" 번호 자리표시자를 지우면 그 자동 번호도 사라진다.
+    pub fn delete_text_at_removing_owned_controls(
+        &mut self,
+        char_offset: usize,
+        count: usize,
+    ) -> usize {
+        self.delete_text_range(char_offset, count, true)
+    }
+
+    fn delete_text_range(
+        &mut self,
+        char_offset: usize,
+        count: usize,
+        remove_owned_controls: bool,
+    ) -> usize {
         if count == 0 {
             return 0;
         }
@@ -2101,6 +2124,22 @@ impl Paragraph {
         // 실제 삭제할 문자 수 (범위 클램핑)
         let actual_count = count.min(text_len - char_offset);
         let del_end = char_offset + actual_count;
+
+        // 자동 번호의 공백 자리표시자처럼 컨트롤이 차지한 글자를 지우면 그 컨트롤도 함께 지운다.
+        // 남기면 번호가 글 뒤로 밀려 다시 그려지고, 자리표시자의 8유닛 중 7유닛이 주인 없이 남는다.
+        let owned_controls: Vec<usize> = if !remove_owned_controls {
+            Vec::new()
+        } else {
+            let positions = self.control_text_positions();
+            (0..self.controls.len())
+                .filter(|&ci| {
+                    positions.get(ci).is_some_and(|&at| {
+                        (char_offset..del_end).contains(&at)
+                            && self.control_owns_char(ci, at, &text_chars, &self.char_offsets)
+                    })
+                })
+                .collect()
+        };
 
         self.delete_nb_space_origin_range(char_offset, del_end);
 
@@ -2117,8 +2156,22 @@ impl Paragraph {
         let utf16_delta: u32 = text_chars[char_offset..del_end]
             .iter()
             .map(|c| Self::char_stream_len(*c))
-            .sum();
+            .sum::<u32>()
+            + owned_controls.len() as u32 * (CTRL_CHAR_CODE_UNITS - 1);
         let utf16_end = utf16_start + utf16_delta;
+
+        // 뒤 컨트롤부터 빼야 앞 컨트롤 번호가 그대로다. 문단 길이는 아래에서 utf16_delta로 줄인다.
+        for &ci in owned_controls.iter().rev() {
+            self.controls.remove(ci);
+            if ci < self.ctrl_data_records.len() {
+                self.ctrl_data_records.remove(ci);
+            }
+            for range in &mut self.field_ranges {
+                if range.control_idx > ci {
+                    range.control_idx -= 1;
+                }
+            }
+        }
 
         self.literal_figure_spaces
             .retain(|&position| position < char_offset || position >= del_end);
@@ -2260,6 +2313,11 @@ impl Paragraph {
             } else if end.char_idx > char_offset {
                 end.char_idx = char_offset;
             }
+        }
+
+        if !owned_controls.is_empty() {
+            self.control_mask =
+                Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
         }
 
         // 6. char_count 갱신

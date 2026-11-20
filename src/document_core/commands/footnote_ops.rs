@@ -568,7 +568,7 @@ impl DocumentCore {
         // [Task #2337] undo 재삽입용 삭제 텍스트 확보 (HF 와 동일 방식 — char 슬라이스로
         // delete_text_at 클램핑과 동일 범위). 역연산 삭제 커맨드가 사용한다.
         let deleted_text: String = fn_para.text.chars().skip(char_offset).take(count).collect();
-        fn_para.delete_text_at(char_offset, count);
+        fn_para.delete_text_at_removing_owned_controls(char_offset, count);
 
         self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
 
