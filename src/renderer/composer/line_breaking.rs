@@ -3563,6 +3563,36 @@ fn floating_anchor_font_size_px(
         .fold(0.0, f64::max)
 }
 
+/// 머리말·꼬리말의 내용은 별도 영역에 그리지만 원본의 제어문자는 자신을
+/// 포함하는 본문 줄의 글자 높이에 참여한다.
+fn header_footer_anchor_font_sizes<S: Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<Vec<(usize, f64)>, S::Error> {
+    let is_header_footer =
+        |control: &Control| matches!(control, Control::Header(_) | Control::Footer(_));
+    if !para.controls.iter().any(is_header_footer) {
+        return Ok(Vec::new());
+    }
+    let positions = para.try_control_text_positions(storage)?;
+    let offsets = para.control_utf16_positions_with_storage(storage)?;
+    storage.collect(
+        para.controls
+            .iter()
+            .zip(positions)
+            .zip(offsets)
+            .filter(|((control, _), _)| is_header_footer(control))
+            .filter_map(|((_, position), offset)| {
+                let id = find_active_char_shape(&para.char_shapes, offset);
+                styles
+                    .char_styles
+                    .get(id as usize)
+                    .map(|style| (position, style.font_size))
+            }),
+    )
+}
+
 /// [#8167] 글자처럼 취급한 도형이 줄에서 차지하는 상자(HU) — 도형 크기에 바깥 여백을 더한다.
 /// 한/글 저장 줄은 이 상자 높이를 줄 높이로 쓴다(samples HWPX 의 바깥 여백 있는 글자처럼
 /// 사각형 78줄 전부 `vertsize = 높이 + 위 + 아래 여백`). 배치도 같은 상자로 줄 안 폭과
@@ -4993,6 +5023,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 글자 토큰은 크기 0 을 대체 크기(12px)로 세므로, 모든 글자가 크기 0 인 문단은
     // 줄의 글자 높이를 0 으로 되돌린다(한컴: 이 문단은 줄간격 설정만 남는다).
     let zero_size_paragraph = explicit_zero_size_paragraph(para, styles);
+    let header_footer_anchors = header_footer_anchor_font_sizes(para, styles, storage)?;
     let fallback_font_size = if para.text.is_empty() {
         para.char_shapes
             .first()
@@ -5240,6 +5271,12 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                     if !zero_size_paragraph {
                         maximum_font_size = maximum_font_size.max(line.max_font_size);
                     }
+                    maximum_font_size = maximum_font_size.max(floating_anchor_font_size_px(
+                        &header_footer_anchors,
+                        line.start_idx..line.end_idx,
+                        filled.termination == FillTermination::ParagraphEnd,
+                        text_chars.len(),
+                    ));
                     if filled.termination == FillTermination::ParagraphEnd {
                         maximum_font_size = maximum_font_size.max(paragraph_end_font_size);
                     }
@@ -6916,6 +6953,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             })
             .flatten();
     let floating_anchors = floating_anchor_char_font_sizes_with_storage(para, styles, storage)?;
+    let header_footer_anchors = header_footer_anchor_font_sizes(para, styles, storage)?;
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
     for (line_idx, lb) in line_breaks.iter().enumerate() {
@@ -6930,6 +6968,10 @@ fn try_reflow_line_segs_impl<S: Storage>(
         };
         let fs = if lb.max_font_size > 0.0 && !zero_size_paragraph {
             lb.max_font_size
+        } else if lb.start_idx == text_len && text_chars.last() == Some(&'\n') {
+            // 강제 개행 뒤의 빈 줄은 문단 끝 문자의 크기를 쓴다. 앞 줄의
+            // 가시 글자나 구조 제어문자의 크기를 문단 최대값으로 물려받지 않는다.
+            paragraph_end_font_size_px(para, styles)
         } else {
             paragraph_font_size_px(para, styles).unwrap_or(12.0)
         };
@@ -6938,6 +6980,12 @@ fn try_reflow_line_segs_impl<S: Storage>(
             &floating_anchors,
             lb.start_idx..lb.end_idx,
             lb.end_idx == text_len,
+            text_len,
+        ));
+        let fs = fs.max(floating_anchor_font_size_px(
+            &header_footer_anchors,
+            lb.start_idx..lb.end_idx,
+            line_idx + 1 == line_breaks.len(),
             text_len,
         ));
         let fs = if line_idx + 1 == line_breaks.len() {
