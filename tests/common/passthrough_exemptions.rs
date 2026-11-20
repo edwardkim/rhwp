@@ -479,6 +479,36 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
     ),
     (
+        "commands/clipboard.rs",
+        "copy_selection_in_cell_by_path_logical_native",
+        Exempt::SessionState,
+        "경로 기반 논리 범위 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/clipboard.rs",
+        "paste_internal_in_cell_by_path_native",
+        Exempt::DelegatesTo("paste_internal_in_cell_by_path_at"),
+        "글자 캐럿으로 셀 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/clipboard.rs",
+        "paste_internal_in_cell_by_path_logical_native",
+        Exempt::DelegatesTo("paste_internal_in_cell_by_path_at"),
+        "논리 캐럿으로 셀 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_in_cell_by_path_native",
+        Exempt::DelegatesTo("paste_html_in_cell_by_path_at"),
+        "글자 캐럿으로 셀 HTML 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_in_cell_by_path_logical_native",
+        Exempt::DelegatesTo("paste_html_in_cell_by_path_at"),
+        "논리 캐럿으로 셀 HTML 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
         "commands/formatting_runs.rs",
         "get_char_shape_runs_in_cell_by_path_native",
         Exempt::SessionState,

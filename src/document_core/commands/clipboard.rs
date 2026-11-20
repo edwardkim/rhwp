@@ -252,6 +252,36 @@ fn drop_fixed_controls_after(para: &mut Paragraph, end: usize) {
     }
 }
 
+/// 셀 문단에 붙일 캐럿. 글자 자리이거나, 글자처럼 취급한 개체도 한 칸으로 센 논리 자리다.
+#[derive(Clone, Copy)]
+pub(super) enum CellCaret {
+    Text(usize),
+    Logical(usize),
+}
+
+impl CellCaret {
+    /// `split_at` 이 받는 자리. 글자 자리는 그 자리 개체 앞이다.
+    fn split_offset(self, para: &Paragraph) -> Result<usize, HwpError> {
+        match self {
+            CellCaret::Text(offset) => Ok(text_to_split_logical_offset(para, offset, false)),
+            CellCaret::Logical(logical) => {
+                caret_text_offset(para, logical)?;
+                Ok(logical)
+            }
+        }
+    }
+}
+
+/// 논리 캐럿의 (글자 자리, 그 자리 개체 뒤인지). 문단 논리 길이를 넘으면 거절한다.
+fn caret_text_offset(para: &Paragraph, logical: usize) -> Result<(usize, bool), HwpError> {
+    if logical > logical_paragraph_length(para) {
+        return Err(HwpError::RenderError(
+            "붙일 캐럿 위치를 확인해 주세요".into(),
+        ));
+    }
+    Ok(logical_to_text_offset(para, logical))
+}
+
 pub(super) fn clip_paragraph_text_range_for_clipboard(
     source: &Paragraph,
     start_char_offset: usize,
@@ -753,6 +783,64 @@ impl DocumentCore {
         )))
     }
 
+    /// cellPath가 가리키는 셀의 논리 캐럿(글자와 글자처럼 취급한 개체가 한 칸씩) 범위를 내부
+    /// 클립보드에 복사한다. 수식처럼 글자 자리를 같이 쓰는 개체의 앞뒤를 가른다: 개체 바로 뒤에서
+    /// 시작한 선택은 그 개체를 담지 않고, 바로 앞에서 끝난 선택도 담지 않는다(한/글 12.30 셀과 같다).
+    pub fn copy_selection_in_cell_by_path_logical_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        start_cell_para_idx: usize,
+        start_logical: usize,
+        end_cell_para_idx: usize,
+        end_logical: usize,
+    ) -> Result<String, HwpError> {
+        if path.is_empty() {
+            return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
+        }
+        if start_cell_para_idx > end_cell_para_idx
+            || (start_cell_para_idx == end_cell_para_idx && start_logical > end_logical)
+        {
+            return Err(HwpError::RenderError(
+                "복사할 논리 범위가 올바르지 않습니다".into(),
+            ));
+        }
+        let mut clip_paragraphs = Vec::new();
+        for cell_para_idx in start_cell_para_idx..=end_cell_para_idx {
+            let mut para_path = path.to_vec();
+            para_path.last_mut().unwrap().2 = cell_para_idx;
+            let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &para_path)?;
+            let length = logical_paragraph_length(para);
+            let from = if cell_para_idx == start_cell_para_idx {
+                start_logical
+            } else {
+                0
+            };
+            let to = if cell_para_idx == end_cell_para_idx {
+                end_logical
+            } else {
+                length
+            };
+            if from > length || to > length {
+                return Err(HwpError::RenderError(
+                    "복사할 논리 범위가 올바르지 않습니다".into(),
+                ));
+            }
+            let mut end = logical_to_text_offset(para, to);
+            // 문단 끝에서 끝나면 글자 자리 복사처럼 끝에 붙은 개체도 담는다.
+            if to == length {
+                end.1 = true;
+            }
+            clip_paragraphs.push(clip_paragraph_caret_range_for_clipboard(
+                para,
+                logical_to_text_offset(para, from),
+                end,
+            ));
+        }
+        Ok(self.store_clipboard(clip_paragraphs))
+    }
+
     /// 컨트롤 객체(표, 이미지, 도형)를 내부 클립보드에 복사한다.
     pub fn copy_control_native(
         &mut self,
@@ -1074,10 +1162,10 @@ impl DocumentCore {
         )))
     }
 
-    fn paste_paragraphs_into_cell_paragraphs(
+    pub(super) fn paste_paragraphs_into_cell_paragraphs(
         cell_paras: &mut Vec<Paragraph>,
         cell_para_idx: usize,
-        char_offset: usize,
+        caret: CellCaret,
         clip_paras: &[Paragraph],
     ) -> Result<(usize, usize), HwpError> {
         if cell_para_idx >= cell_paras.len() {
@@ -1091,8 +1179,27 @@ impl DocumentCore {
         if clip_count == 1 && clip_paras[0].controls.is_empty() {
             let clip_text = clip_paras[0].text.clone();
             let new_chars = clip_text.chars().count();
-
-            cell_paras[cell_para_idx].insert_text_from_paragraph(char_offset, &clip_paras[0]);
+            let char_offset = match caret {
+                CellCaret::Text(offset) => {
+                    cell_paras[cell_para_idx].insert_text_from_paragraph(offset, &clip_paras[0]);
+                    offset
+                }
+                CellCaret::Logical(logical) => {
+                    // 개체 바로 뒤 논리 자리면 그 개체 뒤에 넣는다.
+                    let (offset, after_control) =
+                        caret_text_offset(&cell_paras[cell_para_idx], logical)?;
+                    super::text_editing::insert_body_text_with_field_affinity(
+                        &mut cell_paras[cell_para_idx],
+                        None,
+                        0,
+                        0,
+                        offset,
+                        after_control,
+                        &clip_paras[0],
+                    );
+                    offset
+                }
+            };
 
             let clip_char_shapes = clip_paras[0].char_shapes.clone();
             let clip_char_offsets = clip_paras[0].char_offsets.clone();
@@ -1107,8 +1214,7 @@ impl DocumentCore {
             return Ok((cell_para_idx, char_offset + new_chars));
         }
 
-        let split_offset =
-            text_to_split_logical_offset(&cell_paras[cell_para_idx], char_offset, false);
+        let split_offset = caret.split_offset(&cell_paras[cell_para_idx])?;
         let right_half = cell_paras[cell_para_idx].split_at(split_offset);
         cell_paras[cell_para_idx].merge_from(&clip_paras[0]);
 
@@ -1176,7 +1282,7 @@ impl DocumentCore {
             Self::paste_paragraphs_into_cell_paragraphs(
                 cell_paras,
                 cell_para_idx,
-                char_offset,
+                CellCaret::Text(char_offset),
                 &clip_paras,
             )?
         };
@@ -1207,6 +1313,38 @@ impl DocumentCore {
         path: &[(usize, usize, usize)],
         char_offset: usize,
     ) -> Result<String, HwpError> {
+        self.paste_internal_in_cell_by_path_at(
+            section_idx,
+            parent_para_idx,
+            path,
+            CellCaret::Text(char_offset),
+        )
+    }
+
+    /// 내부 클립보드를 cellPath가 가리키는 셀 문단의 논리 캐럿(`copySelectionInCellByPathLogical`과
+    /// 같은 축)에 붙인다. 수식 같은 글자처럼 취급한 개체 바로 뒤 자리면 그 뒤에 붙인다.
+    pub fn paste_internal_in_cell_by_path_logical_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        logical_offset: usize,
+    ) -> Result<String, HwpError> {
+        self.paste_internal_in_cell_by_path_at(
+            section_idx,
+            parent_para_idx,
+            path,
+            CellCaret::Logical(logical_offset),
+        )
+    }
+
+    fn paste_internal_in_cell_by_path_at(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        caret: CellCaret,
+    ) -> Result<String, HwpError> {
         let mut clip_paras = match &self.clipboard {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
             _ => return Ok("{\"ok\":false,\"error\":\"clipboard empty\"}".to_string()),
@@ -1224,7 +1362,7 @@ impl DocumentCore {
             Self::paste_paragraphs_into_cell_paragraphs(
                 cell_paras,
                 cell_para_idx,
-                char_offset,
+                caret,
                 &clip_paras,
             )?
         };
