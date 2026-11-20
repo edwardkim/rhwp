@@ -11,9 +11,9 @@
       "page": 1,
       "raw": "100.0",
       "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
-      "independent_hancom_print_sha256": "c4443e4a6ece6d78d43a23dd68c44c87c715bdf4d70a44cb75977c46f1e983b7",
-      "candidate_png_sha256": "c4c120e0ab8ce4e568c8da81888f6747ab40aafcd394bbc184c0880b9839b9b2",
-      "print_png_sha256": "87f3dd80acf6c1a845fa1695b39173cfc9ea5916e01f8d99ac925a1be98437d6",
+      "independent_hancom_print_sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698",
+      "candidate_png_sha256": "e41f8794526c5bb1512922cce6db39e37f87ec2cf32d494507226d454018de91",
+      "print_png_sha256": "9acf223e64f81530e2c58ee0cd3fe8c0b088e94fadab77369ae7df8cd95934f7",
       "tsv": {
         "path": "mydocs/pr/assets/pr-9201/tables/native/shape-caption.tsv",
         "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
@@ -21,19 +21,25 @@
       },
       "comparison_pages": 1,
       "pages_under_raw_90": 0,
-      "pixel_match_percent": "99.90299",
-      "visual_accuracy_proxy_percent": "15.44477",
-      "overlay_metrics_sha256": "4da72728947ac78161ede473c4d92a682718d5965fe20bb3c772cf242777537d",
+      "pixel_match_percent": "99.97171",
+      "visual_accuracy_proxy_percent": "75.55771",
+      "overlay_metrics_sha256": "33a08e085f7706b6b1b17b40d8477c5356c0125dd572cbbb3fe7d6201aacf6e4",
       "review": {
         "path": "mydocs/pr/assets/pr-9201/shape-caption-native-001-review.png",
-        "sha256": "583a0d83a971c9a39e932c75876c5091f72d4f17a36d186a1f43930c4e651ea0",
-        "bytes": 36494
+        "sha256": "f37db3b9a3a748851ac8c89c74ebbafbdcd98669770541c04bf96e6851bc4462",
+        "bytes": 33680
       },
       "overlay": {
         "path": "mydocs/pr/assets/pr-9201/shape-caption-native-001-overlay.png",
-        "sha256": "c880f587c5e6c005b77b4cba71991e6430e194be5a00c602f3baed3c53b6ae1e",
-        "bytes": 25377
-      }
+        "sha256": "722a6eb79e79637130d1e6aec3c1dc1283f7cfd56d36124d737ad258d2ea329b",
+        "bytes": 22827
+      },
+      "base_tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/native/shape-caption-base.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "silhouette_raw_unmatched_pixels": 0
     },
     {
       "document": "shape-caption",
@@ -41,9 +47,9 @@
       "page": 1,
       "raw": "100.0",
       "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
-      "independent_hancom_print_sha256": "c4443e4a6ece6d78d43a23dd68c44c87c715bdf4d70a44cb75977c46f1e983b7",
-      "candidate_png_sha256": "d4fb90eb0dc53a72f484d2018d62fc6c89b046641db38dd2e9af6f53f646bf2f",
-      "print_png_sha256": "87f3dd80acf6c1a845fa1695b39173cfc9ea5916e01f8d99ac925a1be98437d6",
+      "independent_hancom_print_sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698",
+      "candidate_png_sha256": "91ffc38087927d1810e1746fa30aeda911888d55b7c8935724ea0b6d4cc99ab8",
+      "print_png_sha256": "9acf223e64f81530e2c58ee0cd3fe8c0b088e94fadab77369ae7df8cd95934f7",
       "tsv": {
         "path": "mydocs/pr/assets/pr-9201/tables/wasm/shape-caption.tsv",
         "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
@@ -51,27 +57,33 @@
       },
       "comparison_pages": 1,
       "pages_under_raw_90": 0,
-      "pixel_match_percent": "99.90501",
-      "visual_accuracy_proxy_percent": "15.46906",
-      "overlay_metrics_sha256": "a18d48e102b7b94e929e3fe8de9a699138681af2aa6e928f40a37c3200d0448d",
+      "pixel_match_percent": "99.98406",
+      "visual_accuracy_proxy_percent": "85.99606",
+      "overlay_metrics_sha256": "955561f143affd1671a71a235d5a16a7c1d38ab63e17ed8536cd85b44cb75160",
       "review": {
         "path": "mydocs/pr/assets/pr-9201/shape-caption-wasm-001-review.png",
-        "sha256": "a3770f409ffab07c2684d2c82f36c59a8e3a7b05a2269285ce07bcc70064d442",
-        "bytes": 36117
+        "sha256": "bea6d5f88e54620cd329a012479c2773b6cbf39f86b9aff4633da39f5fc9bf95",
+        "bytes": 33889
       },
       "overlay": {
         "path": "mydocs/pr/assets/pr-9201/shape-caption-wasm-001-overlay.png",
-        "sha256": "e3de0ec94491602e6dc6b0c9dbe6181d0ee758f1dfba1f00f006c1bd46e6a6fd",
-        "bytes": 25524
-      }
+        "sha256": "705661e7d1d6efdab0957c84b90187c9d6b813afef337fdbc7667bf24e459edd",
+        "bytes": 23195
+      },
+      "base_tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/wasm/shape-caption-base.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "silhouette_raw_unmatched_pixels": 0
     }
   ],
   "pending": [],
   "additional": [
     {
       "path": "mydocs/pr/assets/pr-9201/caption-p001-enlarged.png",
-      "sha256": "f2c01d6cda4afa2dd362b27b4fced130341ec37f381f0ccff72427a9c271e815",
-      "bytes": 13137
+      "sha256": "c59dc8581db7c87833cc11cb084e2171e0bc54a0cffb2f50c176df49f69bd555",
+      "bytes": 12397
     }
   ],
   "crop_at_96_dpi": [
@@ -90,21 +102,29 @@
         "backend": "native",
         "total_pages": 1,
         "minimum_raw": "100.00000",
+        "base_display_raw": "100.00",
         "runtime_sha256": {
-          "native": "ce01a6c03c64e6326cac6abbe830c6de47cd092add4cc1075ce8986de5c88f48"
-        }
+          "native": "60f8c1376ee939da6c10603b3e9a7ab4a146d37357e183ab10bef28a618445a9"
+        },
+        "product_source": "10d13c33fdec74ae7db84bc55803b33de1ebd7bc",
+        "manifest_sha256": "abb18ad7f0be89b947fa926f0b387f31c24f7d55606b4adf8729160695f47f9d"
       },
       {
         "backend": "wasm",
         "total_pages": 1,
         "minimum_raw": "100.00000",
+        "base_display_raw": "100.00",
         "runtime_sha256": {
-          "native": "ce01a6c03c64e6326cac6abbe830c6de47cd092add4cc1075ce8986de5c88f48",
-          "rhwp.js": "383dae8a9200519fc976de2b3efe146774afebb5b316b71c4701deccb2fb2bec",
-          "rhwp_bg.wasm": "4dbfe3e073bfe565f6efe5637786367ce38ccf0d9e05c281f8b174ba8c5fe0a8"
-        }
+          "native": "60f8c1376ee939da6c10603b3e9a7ab4a146d37357e183ab10bef28a618445a9",
+          "rhwp.js": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3",
+          "rhwp_bg.wasm": "f7182dddcdff484acd08732dbf5437e1807e87b350988cfda82439db7b9907f9"
+        },
+        "product_source": "1421b5291544cb0123a0ffdcd172cd44a14e6d6e",
+        "manifest_sha256": "4f7b635a40016efc17ef23da4c5f2a81389e3ed52d4146c88014ed9805640398"
       }
-    ]
+    ],
+    "compat": "2022",
+    "wasm_build": "macOS locked wasm-pack --target web, wasm-opt 완료"
   },
   "storage_result": {
     "base_exit": 1,
@@ -140,6 +160,29 @@
         }
       ],
       "initialHit": 65534
+    }
+  },
+  "reference_pdf": {
+    "path": "pdf/pr-9201/shape-caption-edit-hancom-2020.pdf",
+    "sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698",
+    "input_path": "tests/fixtures/shape_caption_cell_text/shape-caption-edit.hwp",
+    "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+    "creator": "Hwp 2020 0.0.0.0",
+    "producer": "Hancom PDF 1.3.0.550",
+    "pdfinfo_page_count": 1,
+    "mcp": {
+      "job_id": "f349c426-fa88-4df9-bf6e-8b9c314ba66d",
+      "status": "success",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_page_count": 1,
+      "input_preprocess": "scripts_disabled"
+    },
+    "superseded_reference": {
+      "producer": "cairo 1.18.0",
+      "sha256": "c4443e4a6ece6d78d43a23dd68c44c87c715bdf4d70a44cb75977c46f1e983b7"
     }
   }
 }

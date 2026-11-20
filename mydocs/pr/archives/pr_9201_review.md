@@ -33,10 +33,15 @@
 - 고정 기준의 fresh WASM은 캡션 `65534` 문단 조회에서 실패했다. 후보에서는 캡션 조회와
   삽입, 문단 나누기·합치기, 캐럿과 클릭 주소를 확인했다. HWP와 HWPX를 각각 두 번 저장·다시 열어
   주소 `65534`와 문구 `그림  검토 시작`이 보존됐다. [실제 편집 결과와 실행 해시](../assets/pr-9201/evidence.json).
-- 비교 대상은 통합 후보가 생성한 사각형과 캡션의 저장 HWP다. 동일 바이트를 한컴 2020
-  PrintToPDFEx 1-up으로 인쇄했다. 두 출력 경로의 한 쪽 raw 2px 실루엣은 100.00000%였다.
-  도형 아래 그림 번호와 캡션 끝 줄바꿈에서 문구·순서를 직접 대조했다.
-  [원본](../../../tests/fixtures/shape_caption_cell_text/shape-caption-edit.hwp) ·
+- 비교 대상은 통합 후보가 생성한 사각형과 캡션의 저장 HWP다. 기존 Cairo PDF를 교체하고
+  동일 HWP를 MCP의 한컴 2020(11.0.0.9136)에서 Hancom PDF 1-up으로 인쇄했다.
+  MCP는 Print method 0을 기록했고, PDF 메타데이터는 `Hwp 2020 0.0.0.0`과
+  `Hancom PDF 1.3.0.550`이다. 96 DPI 기준 1쪽의 raw 2px 실루엣은 고정 devel과
+  최종 후보에서 Native와 최적화한 fresh WASM 모두 100.00000%다.
+  [인쇄 기록과 해시](../assets/pr-9201/evidence.json).
+- 도형 테두리, 그림 번호, 마지막 글자의 줄 소속을 직접 대조했다. 테두리 모서리의 안티앨리어싱에
+  미세한 차이가 있다. [같은 배율 확대](../assets/pr-9201/caption-p001-enlarged.png).
+- [원본](../../../tests/fixtures/shape_caption_cell_text/shape-caption-edit.hwp) ·
   [독립 Print](../../../pdf/pr-9201/shape-caption-edit-hancom-2020.pdf) ·
   [Native TSV](../assets/pr-9201/tables/native/shape-caption.tsv) · [WASM TSV](../assets/pr-9201/tables/wasm/shape-caption.tsv).
 
