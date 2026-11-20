@@ -9799,6 +9799,32 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// cellPath가 가리키는 셀의 논리 캐럿 범위(글자와 글자처럼 취급한 개체가 한 칸씩)를 내부
+    /// 클립보드에 복사한다. 수식 같은 개체 바로 뒤에서 시작한 선택은 그 개체를 담지 않는다.
+    #[wasm_bindgen(js_name = copySelectionInCellByPathLogical)]
+    pub fn copy_selection_in_cell_by_path_logical(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_cell_para_idx: u32,
+        start_logical: u32,
+        end_cell_para_idx: u32,
+        end_logical: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.copy_selection_in_cell_by_path_logical_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_cell_para_idx as usize,
+            start_logical as usize,
+            end_cell_para_idx as usize,
+            end_logical as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 컨트롤 객체(표, 이미지, 도형)를 내부 클립보드에 복사한다.
     ///
     /// [Task #1161] `cell_path_json` 이 빈 문자열/`"[]"` 면 본문, 그 외에는 셀/글상자
@@ -9920,6 +9946,26 @@ impl HwpDocument {
             parent_para_idx as usize,
             &path,
             char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 내부 클립보드를 cellPath가 가리키는 셀 문단의 논리 캐럿에 붙인다. 반환값은
+    /// `pasteInternalInCellByPath` 와 같다(`charOffset`은 글자 자리).
+    #[wasm_bindgen(js_name = pasteInternalInCellByPathLogical)]
+    pub fn paste_internal_in_cell_by_path_logical(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        logical_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.paste_internal_in_cell_by_path_logical_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            logical_offset as usize,
         )
         .map_err(|e| e.into())
     }
@@ -10191,6 +10237,28 @@ impl HwpDocument {
             parent_para_idx as usize,
             &path,
             char_offset as usize,
+            html,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// HTML을 cellPath가 가리키는 셀 문단의 논리 캐럿에 붙인다. 반환값은
+    /// `pasteHtmlInCellByPath` 와 같다(`charOffset`은 글자 자리).
+    #[wasm_bindgen(js_name = pasteHtmlInCellByPathLogical)]
+    pub fn paste_html_in_cell_by_path_logical(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        logical_offset: u32,
+        html: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.paste_html_in_cell_by_path_logical_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            logical_offset as usize,
             html,
         )
         .map_err(|e| e.into())
