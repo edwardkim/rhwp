@@ -17994,6 +17994,10 @@ impl LayoutEngine {
                                 self.nested_plain_text_row_has_line_cuts(
                                     &row_cells,
                                     &row_units[index],
+                                    *rh > row_declared_px + 0.5 && {
+                                        let body = self.current_body_area.get().3;
+                                        body > 0.0 && *rh > body
+                                    },
                                 )
                             });
                             let row_has_blank_source_frame = row_units.iter().any(|units| {
