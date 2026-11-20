@@ -267,5 +267,227 @@
       "sha256": "375efbd49e7c68d24df6f09c9c04a1e7ab1afb080789320a774a7810fabfd18c",
       "bytes": 72204
     }
+  },
+  "hancom_2024_comparison": {
+    "engine": "2024",
+    "pages_per_backend": 10,
+    "results": [
+      {
+        "document": "issue9040",
+        "backend": "native",
+        "pdf": "pdf/issue9040/1371000-policy-research-application-2024.pdf",
+        "pdf_sha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c",
+        "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+        "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+        "tsv_sha256": "45911ec92414ad5b571bb85447f84c524f88aa2735735f45b5a13a856c31503f",
+        "tsv": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native.tsv",
+        "pages": 10,
+        "minimum_display": "99.66",
+        "representative": [
+          {
+            "page": 2,
+            "raw": 99.82805,
+            "unmatched": 93,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p002-review.png",
+              "sha256": "335e4864c0fbcce06e2ecfe1178e6298a2181ebc034bc2275652923ddd94cde7"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p002-overlay.png",
+              "sha256": "ca4294901814b9da8c72852f12ca8f8db02aea95e651d56171a46ce64238c8ed"
+            },
+            "raw_png_sha256": "5527e4bb7c75222946fa68b1fa203df4fbdc6088943d2ae114135ffd6e846d81",
+            "pdf_png_sha256": "3ee983c40e90cfce6e89227d43716d23af5a60d332900bcac535ee98e1aaf90f",
+            "pixel_match_percent": 95.81655,
+            "visual_accuracy_proxy_percent": 31.09307
+          },
+          {
+            "page": 4,
+            "raw": 99.65872,
+            "unmatched": 179,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p004-review.png",
+              "sha256": "e099a23de41979a391a0c65ff51e3e1591830f2446497830c7803b8c285af20e"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p004-overlay.png",
+              "sha256": "5a17b78a89b9715bb5830a2ef3a893e759b626f475003cba2fa9c88cce957b81"
+            },
+            "raw_png_sha256": "8953c65581b29a1eb270f74ed2de2f198c55d71285ccf256bf9dc9400927e9b1",
+            "pdf_png_sha256": "27443279296534786651b3801df3587d013126dcddcb6bff1e5ad4aa2bf39923",
+            "pixel_match_percent": 96.00165,
+            "visual_accuracy_proxy_percent": 32.0877
+          },
+          {
+            "page": 8,
+            "raw": 99.72702,
+            "unmatched": 208,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p008-review.png",
+              "sha256": "c77c6acfff5551405005caff9458b2f6b0f5ca67ca67da520d4dd5f36faef53b"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p008-overlay.png",
+              "sha256": "a2fba3471c95246f4d3cee96511df9a6806076ae7822d44463eeff7ce45d5415"
+            },
+            "raw_png_sha256": "7b6f13ce254f6a6f16cd359daccdd4c0348ff52521ed61e3d0f1e5b74e6bbf78",
+            "pdf_png_sha256": "cc43240884f209564ca8d123fcb344863fc5044d7b8fc115264dd87a86ec20dd",
+            "pixel_match_percent": 93.87968,
+            "visual_accuracy_proxy_percent": 28.44338
+          },
+          {
+            "page": 9,
+            "raw": 99.99063,
+            "unmatched": 7,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p009-review.png",
+              "sha256": "6c22d2a5e2aae4692a34b391980087f6c4141219aef28feed0df3cbb90b6e987"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p009-overlay.png",
+              "sha256": "5771fc330daf3c7c9c5efecda10682e1dabf118895cff4825958598a9f6a6487"
+            },
+            "raw_png_sha256": "6374183b1754680d6d77f2165c338554130df16a7e776d105745152da9cb0bdd",
+            "pdf_png_sha256": "500352b0212ecb3e9e35af487ef8b5a73be117c5880c9eeeba02773f48f23be2",
+            "pixel_match_percent": 94.76028,
+            "visual_accuracy_proxy_percent": 37.51723
+          },
+          {
+            "page": 10,
+            "raw": 99.99718,
+            "unmatched": 2,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p010-review.png",
+              "sha256": "3533956361a624ca4d112e2d73f092a0a4824333b964496217cbdd8228a52348"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-native-p010-overlay.png",
+              "sha256": "5d28db050482a74b2976146d195089a78070cfa059fc0e7b877da428ee72faa9"
+            },
+            "raw_png_sha256": "ce0b0da064d43d536cdf992e6d1f7811e90613a556272b8814a85e3636c227bf",
+            "pdf_png_sha256": "14a5549905731f1004fa1979630dbf18bd5211c89f4541dfac2638567653c2d4",
+            "pixel_match_percent": 94.55924,
+            "visual_accuracy_proxy_percent": 31.64768
+          }
+        ],
+        "minimum_raw": "99.65872",
+        "minimum_page": 4,
+        "page_content": {
+          "p9": "조직도와 후속 유사 용역실적, 2010년 창의도시 정책 행",
+          "p10": "Pension Policies 시작 행은 전체 출력에 한 번만 있고 후속 행을 보존"
+        }
+      },
+      {
+        "document": "issue9040",
+        "backend": "wasm",
+        "pdf": "pdf/issue9040/1371000-policy-research-application-2024.pdf",
+        "pdf_sha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c",
+        "input_sha256": "23793d8619351b9c9eb07b07790329a53865449263385cb766f0b465309eead8",
+        "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+        "tsv_sha256": "b57641f33af053f6e3bc636ae15cb89a946d78e2acfe0180c084bb89dbcd1002",
+        "tsv": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm.tsv",
+        "pages": 10,
+        "minimum_display": "99.66",
+        "representative": [
+          {
+            "page": 2,
+            "raw": 99.83299,
+            "unmatched": 93,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p002-review.png",
+              "sha256": "4dcf776a544bb8cc49a826af7820bcc0842ff0448009be52a35f5fbf41d54f69"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p002-overlay.png",
+              "sha256": "e33af2fd0e70ef2a8b3d0e52d184fa032ea109f692abe4808b320a4a44fdb017"
+            },
+            "raw_png_sha256": "c94eff73e4eb38323b28f065407472549e65ccc16e22399ebeeffc40dc043d5a",
+            "pdf_png_sha256": "3ee983c40e90cfce6e89227d43716d23af5a60d332900bcac535ee98e1aaf90f",
+            "pixel_match_percent": 95.87762,
+            "visual_accuracy_proxy_percent": 34.04985
+          },
+          {
+            "page": 4,
+            "raw": 99.66454,
+            "unmatched": 179,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p004-review.png",
+              "sha256": "0992f0846b3dda1a7799ba63a2506bf5f531035cf8c53be7322fd949514df1ec"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p004-overlay.png",
+              "sha256": "19e33c6dc4df05c2031def8f6335ddc73c7fa25bc5fd49b19114666dd297ee18"
+            },
+            "raw_png_sha256": "ef5e860654d7cfcd0e56f5a3288fc71691293f1cbd3a5e7ed2fd65296fc969ce",
+            "pdf_png_sha256": "27443279296534786651b3801df3587d013126dcddcb6bff1e5ad4aa2bf39923",
+            "pixel_match_percent": 96.29092,
+            "visual_accuracy_proxy_percent": 38.07534
+          },
+          {
+            "page": 8,
+            "raw": 99.74934,
+            "unmatched": 190,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p008-review.png",
+              "sha256": "dca17256a527136320bfe33475f4ba98590ab4fc255ba85f2976add50a4476b8"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p008-overlay.png",
+              "sha256": "e90e751a0bc1eac7ef37c4dd353083626da8f6efdcabf218d7d57e469d86e6a5"
+            },
+            "raw_png_sha256": "62ed8a8a5a7f69e30a98ab3cbfa95a052073cc4a0feac433cc80eea4f7429db0",
+            "pdf_png_sha256": "cc43240884f209564ca8d123fcb344863fc5044d7b8fc115264dd87a86ec20dd",
+            "pixel_match_percent": 93.87238,
+            "visual_accuracy_proxy_percent": 27.9819
+          },
+          {
+            "page": 9,
+            "raw": 99.98937,
+            "unmatched": 8,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p009-review.png",
+              "sha256": "8ccc7e3c09d8c9f7f1dbc75fc3a31596b9bd789a3f01aa4c5f6a9bea730c7dc4"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p009-overlay.png",
+              "sha256": "422ef0bbae9ab0270ce508f5e299f8e858c030791b1102598755152e0d84da10"
+            },
+            "raw_png_sha256": "65e700d109ea4726af756626a4725d0006f5fdafa0632b7f2a87cc4b4cd739ff",
+            "pdf_png_sha256": "500352b0212ecb3e9e35af487ef8b5a73be117c5880c9eeeba02773f48f23be2",
+            "pixel_match_percent": 94.64163,
+            "visual_accuracy_proxy_percent": 36.5702
+          },
+          {
+            "page": 10,
+            "raw": 100.0,
+            "unmatched": 0,
+            "review": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p010-review.png",
+              "sha256": "91ab9c6ae065c675dfbf529faf4097c95d9f105c0c6b38e911eb6c9cc4130f48"
+            },
+            "overlay": {
+              "path": "mydocs/pr/assets/pr-9202/hancom-2024/issue9040-wasm-p010-overlay.png",
+              "sha256": "35e6e808f589c4b04675cbc636ecc99e750a612830fb68f3ff642a65ad90a26d"
+            },
+            "raw_png_sha256": "435b5fdff26b4ebe8ee05c9d32fa57a1484f9338718c82e9f1f90a3c35a73eb3",
+            "pdf_png_sha256": "14a5549905731f1004fa1979630dbf18bd5211c89f4541dfac2638567653c2d4",
+            "pixel_match_percent": 94.54655,
+            "visual_accuracy_proxy_percent": 31.80185
+          }
+        ],
+        "minimum_raw": "99.66454",
+        "minimum_page": 4,
+        "page_content": {
+          "p9": "조직도와 후속 유사 용역실적, 2010년 창의도시 정책 행",
+          "p10": "Pension Policies 시작 행은 전체 출력에 한 번만 있고 후속 행을 보존"
+        }
+      }
+    ],
+    "observations": [
+      "Native 9쪽과 WASM 10쪽의 review 및 overlay를 직접 판독",
+      "9쪽 조직도가 앞 빈 줄과 후속 유사 용역실적 사이에 유지",
+      "10쪽은 Pension Policies 행으로 시작하며 마지막 세 행까지 같은 순서",
+      "표 선과 글자 가장자리에는 미세한 차이가 있음"
+    ]
   }
 }

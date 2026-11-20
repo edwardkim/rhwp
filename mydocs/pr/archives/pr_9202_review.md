@@ -26,13 +26,14 @@ p42의 호스트 줄에 닿고, 그 뒤 호스트 줄 높이 `1500`을 적용하
 [원본·Print와 저장 줄 설명](../../../samples/issue9040/README.md) ·
 [분할 경계 회귀](../../../tests/cases/issue_9040_empty_spacer_nested_table_band.rs).
 
-기준은 Native·fresh WASM 각각 11쪽이었다. 후보와 한컴 2020 Print 1-up은 각각 10쪽이다.
+초기 비교에서 고정 devel의 Native·fresh WASM은 각각 11쪽이었다. 후보와 기존 첨부 Print는
+각각 10쪽이었다. 기존 PDF는 파일명과 달리 `Creator: Hwp 2022 12.0.0.4547`이었다.
 기준 11쪽의 공백 제외 본문 98자는 후보 10쪽 끝에 모두 남았고 마지막 세 행 순서가 독립
 Print와 일치했다. 9쪽의 조직도 앞 빈 줄과 10쪽의 `Pension Policies`가 시작하는 행을 직접
 대조했다. 후보 전쪽 최저는 Native 99.72049%, WASM 91.56133%다. WASM 최저 2쪽 수치는
 같은 조건의 기준과 같다. 원본의 모아찍기 값은 4이며 시각 비교는 독립 1-up Print 조건이다.
 [원본 HWP](../../../samples/issue9040/1371000-policy-research-application.hwp) ·
-[독립 Print](../../../pdf/issue9040/1371000-policy-research-application-2020.pdf) ·
+[기존 대조 자료](../../../pdf/issue9040/1371000-policy-research-application-2020.pdf) ·
 [전체 TSV 위치와 파일 해시](../assets/pr-9202/evidence.json).
 
 | 조판 경계 | Native | fresh WASM |
@@ -44,10 +45,29 @@ Print와 일치했다. 9쪽의 조직도 앞 빈 줄과 10쪽의 `Pension Polici
 분할 코드와 별개의 검증 환경 보정이며 #2007 Native 17쪽 모두 정본을 복원했다.
 [보정 원인과 확대 비교](../assets/integration_open_prs_20261120/README.md#중첩-표-native의-글꼴-공급-보정).
 
+## 한컴 2024 인쇄본으로 최종 재검증
+
+동일 HWP를 MCP 한컴 2024 `13.0.0.3901`의 Hancom PDF 인쇄 1-up으로 출력했다.
+독립 PDF, Native, 최적화한 fresh WASM 모두 10쪽이다. 두 후보의 raw 최저는 4쪽에서
+각각 **99.65872%**, **99.66454%**였다. 9쪽 조직도는 앞 빈 줄 뒤에 위치하고 같은 쪽의
+후속 실적 표를 보존한다. 10쪽은 `Pension Policies`로 시작하며 이 행은 전체 출력에 한 번만
+나온다. 마지막 세 행과 표 선·글자 가장자리의 미세한 차이를 직접 대조했다. 4쪽에서는 줄 순서와 제목 배치를
+확인했고, 로마 숫자와 하이픈의 획 모양에 차이가 보였다.
+[한컴 2024 Print](../../../pdf/issue9040/1371000-policy-research-application-2024.pdf) ·
+[Native 전쪽 TSV](../assets/pr-9202/hancom-2024/issue9040-native.tsv) ·
+[fresh WASM 전쪽 TSV](../assets/pr-9202/hancom-2024/issue9040-wasm.tsv) ·
+[생산·대조 기록](../assets/pr-9202/evidence.json).
+
+| 페이지 | Native | fresh WASM |
+| --- | --- | --- |
+| 4쪽 최저 | [review](../assets/pr-9202/hancom-2024/issue9040-native-p004-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-native-p004-overlay.png) | [review](../assets/pr-9202/hancom-2024/issue9040-wasm-p004-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-wasm-p004-overlay.png) |
+| 9쪽 조직도와 후속 실적 표 | [review](../assets/pr-9202/hancom-2024/issue9040-native-p009-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-native-p009-overlay.png) | [review](../assets/pr-9202/hancom-2024/issue9040-wasm-p009-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-wasm-p009-overlay.png) |
+| 10쪽 이어지는 표 | [review](../assets/pr-9202/hancom-2024/issue9040-native-p010-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-native-p010-overlay.png) | [review](../assets/pr-9202/hancom-2024/issue9040-wasm-p010-review.png) · [overlay](../assets/pr-9202/hancom-2024/issue9040-wasm-p010-overlay.png) |
+
 ## Merge 후 contributor PR comment 계획
 
 저장 줄을 이용해 표와 뒤 행을 같은 흐름으로 복원한 기여에 감사한다. 한컴과 같은 10쪽
 결과와 기준 11쪽의 마지막 세 행이 보존된 근거를 설명한다. 통합 CI·병합 SHA·devel 반영을
-확인한 뒤 2·8·9·10쪽의 실제 Native·fresh WASM review와 overlay를 같은 SHA의 raw 이미지로
+확인한 뒤 한컴 2024 대조의 2·4·8·9·10쪽 Native·fresh WASM review와 overlay를 병합 SHA의 raw 이미지로
 게시하고 응답 해시와 게시 본문, #9040 상태를 확인한다.
 [Visual Sweep 코멘트 지침](../../manual/verification/visual_sweep_guide.md#github-merge-comment).
