@@ -1806,7 +1806,7 @@ def render_target(
             root, sources, rhwp_png_dir, dpi / 96.0, "png" if png_module else svg_rasterizer, workers=page_workers
         ):
             pairs.append((page, rhwp_png_dir / f"rhwp_{page:03d}.png", pdf_path))
-        manifest = write_silhouette_tsv(pairs, base, target.key, document_counts=document_counts,
+        manifest = write_silhouette_tsv(pairs, base, target.key, document_counts=document_counts, dpi=dpi,
                                         workers=page_workers, excluded_regions=excluded_regions,
                                         exclusion_evidence=exclusion_evidence,
                                         resume=resume and (base / "silhouette-metrics").is_dir())
@@ -5596,7 +5596,7 @@ def write_silhouette_tsv(
     *, document_counts: dict[str, int] | None = None, workers: int = 1,
     excluded_regions: dict[int, list[tuple[int, int, int, int]]] | None = None,
     exclusion_evidence: dict[str, object] | None = None,
-    resume: bool = False,
+    resume: bool = False, dpi: int | None = None,
 ) -> dict[str, object]:
     """이미지 증적을 새로 만들지 않고 같은 2px 보조 지표와 입력 해시만 저장한다."""
     if not pairs:
@@ -5686,7 +5686,8 @@ def write_silhouette_tsv(
         "key": key, "mode": "silhouette_only", "run_state": "complete",
         "requested_pages": [page for page, _, _ in pairs],
         "completed_pages": [page for page, _, _ in pairs],
-        "missing_pages": [], "tsv": str(tsv), "radius_px": 2,
+        "missing_pages": [], "tsv": str(tsv), "tsv_sha256": sha256_file(tsv),
+        "dpi": dpi, "radius_px": 2,
         "inputs": inputs, "metrics": metrics, "silhouette_method": SILHOUETTE_METHOD,
         "image_decoding": image_decoding_provenance(),
         "color_tolerance": DEFAULT_PIXEL_DIFF_THRESHOLD, "pr_review_gate": gate,

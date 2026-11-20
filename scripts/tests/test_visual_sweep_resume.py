@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import tempfile
@@ -155,6 +156,8 @@ class SilhouetteResumeTests(unittest.TestCase):
                                                 None, resume=False, **kwargs)
                 result = render_silhouette_resumable(sweep, root, target, root / 'out', 'bin', 96, 32,
                                                      None, resume=True, **kwargs)
+            self.assertEqual(result['dpi'], 96)
+            self.assertEqual(result['tsv_sha256'], hashlib.sha256(Path(result['tsv']).read_bytes()).hexdigest())
             self.assertEqual(result['completed_pages'], [1, 2, 3])
             self.assertEqual(calls, [((1,), False), ((2, 3), False), ((1,), True), ((2, 3), False)])
             self.assertEqual(len((root / 'out/doc/silhouette.tsv').read_text().splitlines()), 4)

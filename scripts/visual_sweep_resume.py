@@ -163,7 +163,7 @@ def render_silhouette_resumable(vs, root, target, out_root, rhwp_bin, dpi,
             publish(source, base / 'svg' / source.name)
     pairs.sort(key=lambda item: item[0])
     result = vs.write_silhouette_tsv(
-        pairs, base, target.key, document_counts=counts,
+        pairs, base, target.key, document_counts=counts, dpi=dpi,
         workers=kwargs.get('page_workers', 1),
         excluded_regions=kwargs.get('excluded_regions'),
         exclusion_evidence=kwargs.get('exclusion_evidence'),

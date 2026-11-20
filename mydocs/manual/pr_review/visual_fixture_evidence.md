@@ -73,6 +73,14 @@ visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두
 - `silhouette_raw_match_percent`와 `pr_review_gate`의 결과. 90% 미만이면 보정·재실행 전 `승인`으로 쓰지 않는다.
 - 사람이 확인한 결과와 PR 주장과의 관계
 
+제출한 TSV의 실제 바이트를 SHA-256으로 계산해 같은 측정의
+`silhouette_manifest.json`에 있는 `tsv_sha256`과 대조한다. 증적을 옮긴 경우에는 PR에서
+열 수 있는 TSV와 manifest의 상대 경로를 함께 기록한다. 문서 렌더링의 `dpi`,
+`provenance.hwp`·`pdf`의 해시, 실제 backend·profile·실행물·글꼴과
+`completed_pages`를 확인한다. `--png-pair` 재채점의 `dpi`는 null이며 원 렌더링 조건은
+해당 이미지를 생성한 기록에서 확인한다. 과거 manifest에 TSV 해시나 DPI가 없으면
+당시 별도로 보존한 TSV 해시와 run manifest를 사용한다.
+
 대표 review PNG는 파일 경로와 수치만 확인하지 않는다. PR comment나 archive 증적으로 쓰기 전에 실제
 이미지를 열어 다음을 확인한다.
 

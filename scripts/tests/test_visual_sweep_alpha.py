@@ -135,6 +135,8 @@ class WhitePaperAlphaTests(unittest.TestCase):
                 rows = list(csv.DictReader(stream, delimiter="\t"))
             self.assertEqual([row["tolerant_content_match_percent"] for row in rows], ["100.00"] * 2)
             manifest = json.loads((output / "silhouette_manifest.json").read_text())
+            self.assertEqual(manifest["tsv_sha256"], hashlib.sha256((output / "silhouette.tsv").read_bytes()).hexdigest())
+            self.assertIsNone(manifest["dpi"])
             self.assertEqual(manifest["radius_px"], 2)
             self.assertEqual(manifest["color_tolerance"], 32)
             self.assertEqual(manifest["image_decoding"], {
