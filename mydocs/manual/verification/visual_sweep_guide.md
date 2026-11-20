@@ -344,6 +344,37 @@ raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 �
 문제가 있는 쪽은 일반 실행으로 review PNG를 생성해 직접 검토한다.
 실루엣 보조값만으로 PR 승인이나 회귀 fixture 적합성을 판정하지 않는다.
 
+### 같은 출력으로 다시 계산하거나 중단 후 재개하기
+
+| 단계 | 재사용할 때 대조할 입력·근거 |
+|---|---|
+| 기준 PDF 래스터 | 독립 Print PDF의 바이트와 쪽 번호, DPI, PDFium·래퍼·래스터 정책, 글꼴 등 실제 실행 조건. PDF가 같아도 다른 래스터 조건의 PNG는 새로 생성한다. |
+| rhwp 쪽 출력 | 원본과 연결 자원, 실행물 또는 WASM 패키지, 실제 backend·profile·런타임·공급 글꼴, 출력 설정과 쪽. 새 실행물은 다시 렌더링한다. |
+| PNG 비교 | 같은 쪽의 두 PNG 해시, 비교 구현·제외 영역·설정·이미지 디코딩 환경. 새 지표로 재채점할 때는 보관한 PNG로 새 출력 경로에 실행한다. |
+
+`--resume`은 같은 실행 조건에서 중단된 계산을 잇는다. 기존 `run_manifest.json`과
+쪽 체크포인트가 검사하는 범위는 경로마다 다르다. 특히 호스트에 암묵적으로 설치된 글꼴이나
+브라우저 환경까지 같다고 추정해 다른 머신의 체크포인트를 이식하지 않는다.
+`--png-pair`는 호출자가 지정한 이미지 쌍을 사용하므로 원본·기준 PDF의 대응과 쪽 범위는
+호출자가 확인한다. 이미지 디코딩 기록에는 Pillow 버전·네이티브 모듈 SHA-256과 zlib 버전도
+포함된다. 이전 형식의 체크포인트는 새 출력 경로에서 다시 계산한다.
+
+#### CI에서 얻은 이미지와 실행물
+
+GitHub Actions 결과를 참조할 때는 저장소, workflow, run ID, attempt, 실제 생산 job과
+검증한 Git tree를 고정한다. 빌드 기록으로 패키지와 해당 SHA를 연결하고 실제 실행물
+digest를 대조한다. PR의 head와 테스트에 사용한 임시 merge tree가 다를 수 있다.
+재실행으로 attempt가 바뀌면 artifact와 job의 소속을 다시 확인한다.
+
+예를 들어 [devel의 Frontend package gates](https://github.com/edwardkim/rhwp/actions/runs/44270213909/job/134684787521)가 올린
+`frontend-canvas-evidence`의 `browser-baseline-report.json`에는 8개 샘플의 0번 쪽을
+`screen`으로 캡처한 Canvas2D·CanvasKit 결과가 들어 있다. 개별 행에서
+`documentDigest`, `page`, `actualBackend`, `actualProfile`, surface·fallback 및 PNG
+SHA-256을 확인한다. 이 자료의 용도는 브라우저 backend 비교다. 독립 한컴 Print 충실도에는
+같은 원본·쪽에 대한 Print 출력과 정답 PDF가 필요하다.
+[문서 변경 PR의 CI](https://github.com/edwardkim/rhwp/actions/runs/44747381421)는 merge tree
+증거만 게시했다. 생략·실패·만료한 쪽이나 job은 미측정으로 취급한다.
+
 ### upstream devel 기준 TSV와 후보 TSV 비교
 
 위 Native/fresh WASM 명령을 기준 SHA의 producer와 후보 SHA의 producer로 각각 실행한다.

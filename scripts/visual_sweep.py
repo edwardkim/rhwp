@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, features
 
 try:
     from scripts.visual_sweep_workers import ordered_page_map
@@ -542,9 +542,15 @@ def ensure_default_rhwp_binary_is_current(root: Path, rhwp_bin: str) -> None:
         )
 
 
-def image_decoding_provenance() -> dict[str, str]:
+def image_decoding_provenance() -> dict[str, str | None]:
     source = Path(__file__).with_name("visual_sweep_images.py")
-    return {"alpha_background": "#ffffff", "script_sha256": sha256_file(source)}
+    return {
+        "alpha_background": "#ffffff",
+        "script_sha256": sha256_file(source),
+        "pillow_version": Image.__version__,
+        "pillow_core_sha256": sha256_file(Path(Image.core.__file__)),
+        "zlib_version": features.version_codec("zlib"),
+    }
 
 
 def sweep_provenance(

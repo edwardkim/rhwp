@@ -52,6 +52,17 @@ class SilhouetteResumeTests(unittest.TestCase):
                 alias.symlink_to(first)
                 self.assertEqual(sweep.linked_image_records(root, [alias])[0]['name'], 'alias.gif')
 
+    def test_changed_pillow_runtime_rejects_scored_page(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "page.png"
+            Image.new("RGB", (8, 8), "white").save(image)
+            pairs = [(1, image, image)]
+            sweep.write_silhouette_tsv(pairs, root / "out", "pair")
+            with patch.object(Image, "__version__", "different-build"):
+                with self.assertRaisesRegex(SystemExit, "계산 환경"):
+                    sweep.write_silhouette_tsv(pairs, root / "out", "pair", resume=True)
+
     def test_excluded_regions_are_part_of_resume_identity(self):
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)

@@ -10,7 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, features
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "visual_sweep.py"
 SPEC = importlib.util.spec_from_file_location("visual_sweep_alpha_test", MODULE_PATH)
@@ -139,6 +139,9 @@ class WhitePaperAlphaTests(unittest.TestCase):
             self.assertEqual(manifest["color_tolerance"], 32)
             self.assertEqual(manifest["image_decoding"], {
                 "alpha_background": "#ffffff",
+                "pillow_version": Image.__version__,
+                "pillow_core_sha256": hashlib.sha256(Path(Image.core.__file__).read_bytes()).hexdigest(),
+                "zlib_version": features.version_codec("zlib"),
                 "script_sha256": hashlib.sha256(MODULE_PATH.with_name("visual_sweep_images.py").read_bytes()).hexdigest(),
             })
 
