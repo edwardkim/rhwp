@@ -296,8 +296,8 @@ export class WasmBridge {
   }
 
   invalidateCanvasMetricFonts(): void {
-    for (const family of this.hostLayoutFamilies) {
-      this.doc?.clearTextFontFamily?.(family);
+    if (this.doc) {
+      for (const family of this.hostLayoutFamilies) this.hostCanvasFonts.clearFamily(this.doc, family);
     }
     this.hostLayoutFamilies.clear();
     this.nativePuaFonts.clear(this.doc as unknown as NativePuaFontDocument | null);

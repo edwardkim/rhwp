@@ -17,6 +17,7 @@ interface CanvasHostFace {
 }
 type CanvasFontContext = Pick<CanvasRenderingContext2D, 'font' | 'measureText'>;
 interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
+  getHftOutlineFontContext?: () => string;
   clearTextFontFamily?: (family: string) => unknown;
   registerTextFontGlyphCoverage?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
   registerHftOutlineFont?: (family: string, bytes: Uint8Array, faceIndex: number) => unknown;
@@ -26,6 +27,22 @@ interface CanvasFontSourceOwner extends OrdinaryTextFontSource {
   registerPrintFontPrimary?: (family: string, bytes: Uint8Array, faceIndex: number, complete: boolean) => unknown;
   clearPrintFontPrimary?: (family: string) => unknown;
   getFontSymbolUnicodeRange?: (bytes: Uint8Array, faceIndex: number) => string;
+}
+
+interface FamilyRegistration {
+  family: string;
+  split: boolean;
+  coverage?: CanvasHostFace[];
+  outline?: { faces: CanvasHostFace[]; context: string };
+}
+
+function registrationFamilyKey(family: string): string {
+  // Match the WASM coverage and outline maps' primary family key.
+  return family.split(',', 1)[0].trim().replace(/^['"]+|['"]+$/g, '').toLowerCase();
+}
+
+function samePrograms(left: readonly CanvasHostFace[] | undefined, right: readonly CanvasHostFace[]): boolean {
+  return left?.length === right.length && left.every((face, index) => face === right[index]);
 }
 
 function isCff(face: CanvasHostFace | null | undefined): boolean {
@@ -73,6 +90,22 @@ export class HostCanvasFontSession {
   private readonly failures = new Set<string>();
   private fontSet: FontFaceSet | null = null;
   private scopedOutlines = false;
+  private registrationOwner: CanvasFontSourceOwner | null = null;
+  private readonly registrations = new Map<string, FamilyRegistration>();
+
+  clearFamily(owner: CanvasFontSourceOwner, family: string): void {
+    owner.clearTextFontFamily?.(family);
+    if (this.registrationOwner === owner) this.registrations.delete(registrationFamilyKey(family));
+  }
+
+  private setRegistrationOwner(owner: CanvasFontSourceOwner | null): void {
+    if (owner === this.registrationOwner) return;
+    const previous = this.registrationOwner;
+    this.registrationOwner = owner;
+    const registrations = [...this.registrations.values()];
+    this.registrations.clear();
+    for (const { family } of registrations) previous?.clearTextFontFamily?.(family);
+  }
 
   reset(): void {
     this.epoch += 1;
@@ -85,6 +118,7 @@ export class HostCanvasFontSession {
     this.faces.clear(); this.aliases.clear(); this.pending.clear(); this.failures.clear();
     this.generation = -1;
     this.scopedOutlines = false;
+    this.setRegistrationOwner(null);
   }
 
   diagnostics(): { loaded: number; pending: number; failed: number } {
@@ -102,48 +136,16 @@ export class HostCanvasFontSession {
       this.reset(); this.generation = generation;
       this.off = onHostFontsChanged(() => this.reset());
     }
-    this.scopedOutlines = pageOutlines && Boolean(sourceOwner?.clearTextFontOutline
+    const scopedOutlines = pageOutlines && Boolean(sourceOwner?.clearTextFontOutline
       && sourceOwner?.registerHftOutlineFontFaces);
+    this.scopedOutlines = scopedOutlines;
     if (typeof FontFace === 'undefined' || typeof document === 'undefined') return;
     this.fontSet = document.fonts;
     const epoch = this.epoch;
-    const clearedSplitFamilies = new Set<string>();
-    for (const record of records) {
-      const face = record.hostReference?.face;
-      if (!face) continue;
-      for (const family of new Set([record.family, ...record.aliases])) {
-        const candidates = resolveRendererLocalFontCandidates(family,
-          {weight: Number(face.weight ?? 400), slant: face.slant ?? 'normal'});
-        const key = family.toLowerCase();
-        if (candidates.length > 1 && !clearedSplitFamilies.has(key)) {
-          sourceOwner?.clearTextFontFamily?.(family);
-          clearedSplitFamilies.add(key);
-        }
-      }
-    }
     for (const record of records) {
       if (epoch !== this.epoch || !isCurrent()) return;
       const key = localFontFaceKey(record);
-      if (!record.hostReference || this.failures.has(key)) continue;
-      const register = (loaded: CanvasHostFace) => {
-        if (!isCurrent()) return;
-        for (const family of new Set([record.family, ...record.aliases])) {
-          const face = record.hostReference!.face;
-          const candidates = resolveRendererLocalFontCandidates(family,
-            {weight: Number(face.weight ?? 400), slant: face.slant ?? 'normal'});
-          // coverage 저장소는 같은 스타일의 여러 프로그램을 확정하지 못한다.
-          // 마지막 조각의 cmap을 family 전체의 coverage로 오인하지 않는다.
-          if (candidates.length < 2) {
-            sourceOwner?.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
-          }
-          if (!this.scopedOutlines && candidates.length < 2 && Number(record.hostReference!.face.weight ?? 400) === 400
-            && (record.hostReference!.face.slant ?? 'normal') === 'normal') {
-            sourceOwner?.registerHftOutlineFont?.(family, new Uint8Array(loaded.bytes), 0);
-          }
-        }
-      };
-      const loaded = this.faces.get(key);
-      if (loaded) { register(loaded); continue; }
+      if (!record.hostReference || this.failures.has(key) || this.faces.has(key)) continue;
       let pending = this.pending.get(key);
       if (!pending) {
         const stale = () => epoch !== this.epoch || generation !== getHostFontState().generation;
@@ -184,21 +186,77 @@ export class HostCanvasFontSession {
         this.pending.set(key, pending);
       }
       await pending;
-      const prepared = this.faces.get(key);
-      if (prepared && epoch === this.epoch) register(prepared);
     }
-    // 실제 Canvas와 같은 후보 순서를 공급한다. 혼합 형식은 기존 painter에 맡긴다.
-    if (this.scopedOutlines) return;
-    for (const family of clearedSplitFamilies) {
-      const candidates = resolveRendererLocalFontCandidates(family, {weight: 400, slant: 'normal'});
-      if (candidates.length < 2) continue;
-      const loaded = candidates.map(record => this.faces.get(localFontFaceKey(record)));
-      if (loaded.some(face => !face)) continue;
-      if (loaded.every(face => face && face.bytes.byteLength >= 4
-        && new DataView(face.bytes).getUint32(0) === 0x4f54544f)) {
-        sourceOwner?.registerHftOutlineFontCandidates?.(family,
-          loaded.map(face => new Uint8Array(face!.bytes)));
+    if (epoch !== this.epoch || !isCurrent() || !sourceOwner) return;
+    this.setRegistrationOwner(sourceOwner);
+    this.registerPreparedFamilies(records, sourceOwner, scopedOutlines);
+  }
+
+  private registerPreparedFamilies(records: readonly LocalFontRecord[], owner: CanvasFontSourceOwner,
+    scopedOutlines: boolean): void {
+    const families = new Map<string, {
+      family: string; split: boolean; coverage: CanvasHostFace[]; outline: CanvasHostFace[];
+    }>();
+    for (const record of records) {
+      const face = record.hostReference?.face;
+      if (!face) continue;
+      const style = { weight: Number(face.weight ?? 400), slant: face.slant ?? 'normal' };
+      const loaded = this.faces.get(localFontFaceKey(record));
+      for (const family of new Set([record.family, ...record.aliases])) {
+        const key = registrationFamilyKey(family);
+        const split = resolveRendererLocalFontCandidates(family, style).length > 1;
+        if (!split && !loaded) continue;
+        const entry = families.get(key) ?? { family, split: false, coverage: [], outline: [] };
+        families.set(key, entry);
+        // A split style's last cmap cannot represent the entire family.
+        if (split) entry.split = true;
+        else if (loaded) {
+          if (!entry.coverage.includes(loaded)) entry.coverage.push(loaded);
+          if (style.weight === 400 && style.slant === 'normal') entry.outline = [loaded];
+        }
       }
+    }
+
+    let outlineContext: string | undefined;
+    for (const [key, { family, split, coverage, outline }] of families) {
+      const previous = this.registrations.get(key);
+      const sameCoverage = samePrograms(previous?.coverage, coverage);
+      const clear = split && (!previous?.split || !sameCoverage);
+      if (clear) this.clearFamily(owner, family);
+      const registration: FamilyRegistration = clear || !previous ? { family, split } : previous;
+      registration.split = split;
+      this.registrations.set(key, registration);
+      if (!sameCoverage || clear) {
+        registration.coverage = undefined;
+        for (const loaded of coverage) {
+          owner.registerTextFontGlyphCoverage?.(family, new Uint8Array(loaded.bytes), 0);
+        }
+        registration.coverage = coverage;
+      }
+      if (scopedOutlines) continue;
+
+      let outlines = outline;
+      if (split) {
+        // Use the same order as Canvas. Mixed formats stay with the existing painter.
+        const candidates = resolveRendererLocalFontCandidates(family, { weight: 400, slant: 'normal' });
+        const loaded = candidates.map(record => this.faces.get(localFontFaceKey(record)));
+        if (loaded.length > 1 && loaded.every((face): face is CanvasHostFace => Boolean(face) && isCff(face))) {
+          outlines = loaded;
+        }
+      }
+      if (!outlines.length) continue;
+      // Only CFF can leave a persistent HFT outline. Its eligibility also depends on the
+      // current document font declarations and selection environment, even after a rejected call.
+      const context = isCff(outlines[0]) ? (outlineContext ??= owner.getHftOutlineFontContext?.()) : '';
+      if (context !== undefined && registration.outline?.context === context
+        && samePrograms(registration.outline.faces, outlines)) continue;
+      registration.outline = undefined;
+      if (outlines.length === 1) {
+        owner.registerHftOutlineFont?.(family, new Uint8Array(outlines[0].bytes), 0);
+      } else {
+        owner.registerHftOutlineFontCandidates?.(family, outlines.map(face => new Uint8Array(face.bytes)));
+      }
+      if (context !== undefined) registration.outline = { faces: outlines, context };
     }
   }
 
@@ -243,7 +301,12 @@ export class HostCanvasFontSession {
       return operation();
     } finally {
       for (const family of primaries) owner.clearPrintFontPrimary!(family);
-      for (const family of installed) owner.clearTextFontOutline!(family);
+      for (const family of installed) {
+        owner.clearTextFontOutline!(family);
+        const registration = this.registrationOwner === owner
+          ? this.registrations.get(registrationFamilyKey(family)) : undefined;
+        if (registration) registration.outline = undefined;
+      }
     }
   }
 
