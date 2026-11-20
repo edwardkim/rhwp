@@ -304,7 +304,9 @@ async function verifyLayoutEnvironment(page) {
       source = 'CFF'; revision++; notify(); const cff = await prepare();
       const opaque = JSON.parse(JSON.stringify(cff));
       for (const program of Object.values(opaque.selectedPrograms ?? {})) program.programId = 'opaque-host-id';
+      const certifiedContext = doc.getHftOutlineFontContext();
       originalSet(JSON.stringify(opaque));
+      checks.push(['outline-context-tracks-program-identity', doc.getHftOutlineFontContext() !== certifiedContext]);
       doc.clearTextFontFamily(family);
       checks.push(['opaque-identity-not-certified', doc.registerHftOutlineFont(family, new Uint8Array(decode('CFF')), 0) === false]);
       originalSet(JSON.stringify(cff));
