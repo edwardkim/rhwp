@@ -1,6 +1,7 @@
 import type { CommandDef } from '../types';
 import { hyperlinkRange } from '@/core/hyperlink';
-import { validateMemoEdit } from '@/core/memo-editor';
+import { StudioCommandError } from '@/core/command-error';
+import { MemoEditError, validateMemoEdit } from '@/core/memo-editor';
 import { MemoDialog } from '@/ui/memo-dialog';
 import { showToast } from '@/ui/toast';
 import { t } from '../../i18n/index.ts';
@@ -31,16 +32,21 @@ export const memoCommand: CommandDef = {
         if (edit.kind === 'update' && memos.find(m => m.id === edit.id)?.text === edit.text) return memos;
         const before = ih.hasSelection() ? structuredClone(ih.getSelection()) : null;
         let applied = false;
-        ih.executeOperation({ kind: 'snapshot', operationType: 'editMemo',
-          selectionBefore: before ? { ...before, blockPhase: null } : null,
-          operation: wasm => {
-            if (edit.kind === 'insert') wasm.insertMemo(range.target, range.start, range.end, edit.author, edit.text);
-            else if (edit.kind === 'update') wasm.updateMemo(edit.id, edit.text);
-            else wasm.removeMemo(edit.id);
-            applied = true;
-            return range.pos;
-          },
-        });
+        try {
+          ih.executeOperation({ kind: 'snapshot', operationType: 'editMemo',
+            selectionBefore: before ? { ...before, blockPhase: null } : null,
+            operation: wasm => {
+              if (edit.kind === 'insert') wasm.insertMemo(range.target, range.start, range.end, edit.author, edit.text);
+              else if (edit.kind === 'update') wasm.updateMemo(edit.id, edit.text);
+              else wasm.removeMemo(edit.id);
+              applied = true;
+              return range.pos;
+            },
+          });
+        } catch (error) {
+          if (error instanceof StudioCommandError && error.cause instanceof MemoEditError) throw error.cause;
+          throw error;
+        }
         if (!applied) throw new Error('메모를 반영하지 못했습니다.');
         memos = services.wasm.getMemos(); fingerprint = JSON.stringify(memos);
         return memos;

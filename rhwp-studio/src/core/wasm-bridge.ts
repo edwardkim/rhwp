@@ -13,8 +13,8 @@ import type { CanvasMetricDocument } from './canvas-metric-session';
 import { requireCharShapeRunsDocument, parseCharShapeRuns, validateCharShapeRuns } from './char-shape-runs';
 import type { CharShapeRun } from './types';
 import type { HyperlinkTarget, HyperlinkContext } from './hyperlink';
-import type { MemoAnchor } from './memo';
-import { requireMemoSuccess, memoTargetPath, type MemoInfo } from './memo-editor';
+import { memoAnchorMatchesTarget, type MemoAnchor } from './memo';
+import { MemoEditError, requireMemoSuccess, memoTargetPath, type MemoInfo } from './memo-editor';
 import * as wasmExports from '@wasm/rhwp.js';
 import { inspectFontSymbols } from './wasm-font-symbol-coverage';
 import { hasPdfImportCapability } from './pdf-import-capability';
@@ -3979,9 +3979,16 @@ export class WasmBridge {
   insertMemo(target: HyperlinkTarget, start: number, end: number, author: string, text: string): void {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const payload = JSON.stringify({ author, text });
-    requireMemoSuccess(target.cellPath.length
+    const { id } = requireMemoSuccess(target.cellPath.length
       ? this.doc.insertMemoByPath(target.section, target.para, memoTargetPath(target), start, end, payload)
       : this.doc.insertMemo(target.section, target.para, start, end, payload));
+    // 범용 경로 API는 묶음 안 글상자처럼 메모 목록에서 관리할 수 없는 개체도 편집할 수 있다.
+    // 목록에서 같은 위치를 확인할 수 없으면 snapshot의 실패 경로로 삽입을 되돌린다.
+    const inserted = this.getMemos().find(memo => memo.id === id);
+    if (!inserted?.editable || !memoAnchorMatchesTarget(inserted, target)
+      || inserted.startCharIdx !== start || inserted.endCharIdx !== end) {
+      throw new MemoEditError('이 위치에는 메모를 추가할 수 없습니다. 본문이나 일반 표 셀에서 다시 시도해 주세요.');
+    }
   }
 
   updateMemo(id: number, text: string): void {

@@ -8,10 +8,13 @@ export interface MemoInfo extends MemoAnchor {
 export type MemoEdit = { kind: 'insert'; author: string; text: string }
   | { kind: 'update'; id: number; text: string } | { kind: 'remove'; id: number };
 
+export class MemoEditError extends Error {}
+
 /** WASM은 실패를 JSON으로 반환하기도 하므로 snapshot을 성공 처리하지 않는다. */
-export function requireMemoSuccess(value: string): void {
+export function requireMemoSuccess(value: string): { id?: number } {
   const result = JSON.parse(value);
-  if (result?.ok !== true) throw new Error(result?.message || '메모를 변경하지 못했습니다.');
+  if (result?.ok !== true) throw new MemoEditError(result?.message || '메모를 변경하지 못했습니다.');
+  return result;
 }
 
 export function memoTargetPath(target: HyperlinkTarget): string {
