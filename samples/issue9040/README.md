@@ -19,9 +19,8 @@
 
 - 회귀 계약: 전체 10쪽. 9쪽 조직도는 칸 조각 안, 앞 빈 줄 아래. 9쪽은 「창의도시 정책」 행까지, 10쪽은 「Pension Policies」 행부터.
 - 바이트 정본: [MANIFEST.json](MANIFEST.json)의 SHA-256과 크기
-- 기준 엔진: **2020** — `rhwp info --json` 의 `lastSavedWith.product` 가 없음(`5.7.6.3019`)이라
-  저장소 정책의 2022 이하 버킷이다.
+- 기준 인쇄: MCP **한컴 2024 `13.0.0.3901`**, Hancom PDF 1-up, Print method 0.
+  기존 `-2020.pdf`의 실제 `Creator`가 한컴 2022였으므로 동일 원본을 다시 인쇄했다.
 
-기준 PDF: [`pdf/issue9040/1371000-policy-research-application-2020.pdf`](../../pdf/issue9040/1371000-policy-research-application-2020.pdf)
-— 211,993 bytes, SHA-256 `3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93`,
-Creator `Hwp 2022 12.0.0.4547`(engine 2020 profile), 10쪽.
+[기준 PDF](../../pdf/issue9040/1371000-policy-research-application-2024.pdf) — 183200바이트, 10쪽.
+[인쇄 작업 ID·원본과 PDF 해시](../../mydocs/pr/assets/integration_open_prs_20261120/official-print-references.json)를 참조한다.

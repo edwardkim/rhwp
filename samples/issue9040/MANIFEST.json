@@ -15,11 +15,11 @@
         "product": null,
         "version": "5.7.6.3019"
       },
-      "referenceEngine": "2020",
-      "referencePdf": "pdf/issue9040/1371000-policy-research-application-2020.pdf",
-      "referencePdfSha256": "3743187b2091bf8a90c2166b1a85020fd0b0160051873470d1c164fbfd99ba93",
+      "referenceEngine": "2024",
+      "referencePdf": "pdf/issue9040/1371000-policy-research-application-2024.pdf",
+      "referencePdfSha256": "ed6bf0c884995752d3f1b31f0dde90ea95a9fcd41c4068c7c741a1d5fb24fc4c",
       "referencePdfPageCount": 10,
-      "contract": "pi=107 의 5×4 RowBreak 표 4행 둘째 칸은 7~9쪽에 나뉜다. 9쪽 조각은 쪽 되감김 문단 p40 에서 열리고, 빈 줄 p40·p41 뒤에 글자 없는 p42 의 자리차지 조직도 표(23×9), 그 아래 p42 호스트 줄과 빈 줄 p43 이 온다. 조각은 표 띠를 한 번만 담고 조직도는 p41 아래에서 시작한다. 9쪽은 「2. 유사 용역실적」 표의 「창의도시 정책」 행까지, 10쪽은 「Pension Policies」 행부터 담는다. 전체 10쪽으로 한/글 engine 2020 Print 와 같다."
+      "contract": "pi=107 의 5×4 RowBreak 표 4행 둘째 칸은 7~9쪽에 나뉜다. 9쪽 조각은 쪽 되감김 문단 p40 에서 열리고, 빈 줄 p40·p41 뒤에 글자 없는 p42 의 자리차지 조직도 표(23×9), 그 아래 p42 호스트 줄과 빈 줄 p43 이 온다. 조각은 표 띠를 한 번만 담고 조직도는 p41 아래에서 시작한다. 9쪽은 「2. 유사 용역실적」 표의 「창의도시 정책」 행까지, 10쪽은 「Pension Policies」 행부터 담는다. 전체 10쪽으로 한/글 2024 Hancom PDF Print 와 같다."
     }
   ]
 }
