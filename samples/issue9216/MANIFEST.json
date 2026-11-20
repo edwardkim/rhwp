@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9216,
+  "title": "칸 첫 문단 바로 뒤의 저장 재시작을 쪽 경계로 보지 않아 중첩 표 행을 통째로 넘긴다",
+  "entries": [
+    {
+      "path": "samples/issue9216/regulatory-impact-nested-row-restart.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9216",
+      "originalFilename": "55025_규제영향분석서.hwp",
+      "bytes": 36352,
+      "sha256": "cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": null
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9216/regulatory-impact-nested-row-restart-2020.pdf",
+      "referencePdfSha256": "cea4db2e6c969edd99cc437d69a91cd49804e17530f2b36694465ce73ed28ee3",
+      "referencePdfPageCount": 10,
+      "contract": "pi=37 은 RowBreak 1×1 표이고 칸 안에 3×3 중첩 표가 있다. 중첩 표 3행 가운데 칸의 저장 줄은 p[0] vpos 0·1624·3248, p[1] vpos 0(높이 600·간격 152), p[2] vpos 752·2376·4000 이다. p[1] 이 0 으로 돌아가고 p[2] 가 p[1] 의 끝에서 이어지므로 p[0] 뒤가 쪽 경계다. p[0] 글은 4쪽, p[2] 글은 5쪽에 있고, 5쪽의 다음 제목 문단(pi=40)은 이어진 표 조각 아래에 있다. 전체 10쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}
