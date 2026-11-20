@@ -112,7 +112,8 @@ fn each_column_overflow_continues_in_next_column_on_same_page() {
     // 뒤 문단이 없어도 같은 쪽 2단에 잇는다.
     let tail = open("overflow-e2-tail.hwp");
     assert_eq!(tail.page_count(), 1);
-    let (rest, _) = page(&tail, 0).notes_at(412.0).expect("2단 각주 영역");
+    let tail_page = page(&tail, 0);
+    let (rest, _) = tail_page.notes_at(412.0).expect("2단 각주 영역");
     assert!(
         rest.starts_with("가305") && rest.ends_with("가345"),
         "{rest}"
