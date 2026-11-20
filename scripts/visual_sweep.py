@@ -1562,7 +1562,6 @@ def render_target(
     compat: str = "2022",
     page_workers: int = 4,
     rasterizer: str = "svg",
-    print_png_rgb555: bool = False,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1633,6 +1632,8 @@ def render_target(
         directory.mkdir(parents=True, exist_ok=True)
 
     environment_args = ["--compat", compat]
+    rgb555_metadata = reference_print_png_rgb555(root, pdf) if rasterizer == "png" else None
+    print_png_rgb555 = rgb555_metadata is not None
     if print_png_rgb555:
         environment_args.append("--print-png-rgb555")
     if font_environment is not None:
@@ -1653,8 +1654,9 @@ def render_target(
     else:
         provenance["raster_backend"] = "svg-" + svg_rasterizer
     provenance["layout_generation"] = compat
-    if print_png_rgb555:
+    if rgb555_metadata is not None:
         provenance["print_png_rgb555"] = True
+        provenance["print_png_rgb555_reference_metadata"] = rgb555_metadata
     if exclusion_evidence is not None:
         provenance["linked_image_exclusions"] = exclusion_evidence
     if linked_images:
@@ -5529,6 +5531,19 @@ def make_contact_sheet(compare_pages: list[Path], out_path: Path) -> Path:
     return out_path
 
 
+def reference_print_png_rgb555(root: Path, pdf: Path) -> dict[str, str] | None:
+    """한컴 2022 Hancom PDF Print의 이미지 색 전달을 기준 PDF에서 선택한다."""
+    info = run(["pdfinfo", str(pdf)], cwd=root, verbose=False, encoding_errors="replace")
+    values = {
+        key.lower(): value.strip()
+        for key, value in re.findall(r"^(Creator|Producer):[ \t]*([^\r\n]*)", info.stdout, re.MULTILINE)
+    }
+    if (re.fullmatch(r"Hwp 2022(?: [0-9]+(?:\.[0-9]+)*)?", values.get("creator", ""), re.IGNORECASE)
+            and re.fullmatch(r"Hancom PDF(?: [0-9]+(?:\.[0-9]+)*)?", values.get("producer", ""), re.IGNORECASE)):
+        return values
+    return None
+
+
 def document_page_counts(root: Path, pdf: Path, export_metadata: Path) -> dict[str, int]:
     """선택한 래스터 개수와 구별한 원본 두 문서의 전체 쪽수를 읽는다."""
     rhwp_count = load_json_object(export_metadata, "전체 쪽수").get("pageCount")
@@ -5935,8 +5950,6 @@ def main() -> None:
         "--compat", choices=("2022", "2024"), default="2022",
         help="기준 PDF의 실제 한컴 조판 세대. 2020 Print는 2022, 2024 Print는 2024로 명시하며 원문에서 자동 추정하지 않습니다.",
     )
-    parser.add_argument("--print-png-rgb555", action="store_true",
-                        help="독립 Print에서 확인된 RGB555 압축 전 변환을 직접 PNG 출력에 적용합니다.")
     parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
@@ -6062,8 +6075,6 @@ def main() -> None:
     else:
         selected = list(TARGETS.values())
     selected = dedupe_target_keys([*selected, *custom_targets])
-    if args.print_png_rgb555 and (args.rasterizer != "png" or len(selected) != 1):
-        parser.error("--print-png-rgb555는 직접 PNG 비교 대상 하나에 지정합니다.")
     if any(safe_target_key(target.key) == "required-handbook-8153-native" for target in selected):
         parser.error("required-handbook-8153-native은 필수 편람 검사의 예약 대상 이름입니다.")
     exclusions, evidence = (load_linked_image_exclusions(args.linked_image_exclusions)
@@ -6087,7 +6098,6 @@ def main() -> None:
             resume=args.resume, rhwp_bin=args.rhwp_bin, dpi=args.dpi,
             compat=args.compat, rasterizer=args.rasterizer, wasm_pkg=args.wasm_pkg,
             linked_images=image_records,
-            print_png_rgb555=args.print_png_rgb555,
         )
     re_review_targets: list[str] = []
     for target in selected:
@@ -6114,7 +6124,6 @@ def main() -> None:
             compat=args.compat,
             page_workers=args.page_workers,
             rasterizer=args.rasterizer,
-            print_png_rgb555=args.print_png_rgb555,
         )
         if not args.silhouette_only:
             options['silhouette_only'] = False

@@ -426,6 +426,7 @@ class RasterDispatchTests(unittest.TestCase):
             out = root / 'out'
             sweep.update_root_summary(out, {'key': 'case', 'pr_review_gate': {'status': 'passed'}})
             with (patch.object(sweep, 'sweep_provenance', return_value={}),
+                  patch.object(sweep, 'reference_print_png_rgb555', return_value=None),
                   patch.object(sweep, 'run_manifest_for_target', return_value={}),
                   patch.object(sweep, 'load_note_shape', return_value={}),
                   patch.object(sweep, 'default_sweep_font_paths', return_value=[]),
