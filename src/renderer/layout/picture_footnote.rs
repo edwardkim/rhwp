@@ -1164,6 +1164,88 @@ impl LayoutEngine {
                 ctx.as_ref(),
                 styles,
             );
+            self.layout_caption_floating_tables(
+                tree,
+                parent_node,
+                para,
+                &caption_area,
+                para_y_before_layout,
+                bin_data_content,
+                styles,
+            );
+        }
+    }
+
+    /// 캡션 문단에 걸린 떠 있는 표(글자처럼 취급 아님)를 그린다.
+    ///
+    /// 캡션 문단도 일반 문단이라 표 컨트롤을 가질 수 있다. 글자처럼 취급 표는 문단 조판이
+    /// 줄 안에 그리지만, 떠 있는 표는 줄 구성에 들어가지 않아 여기서 따로 놓는다(같은 자리의
+    /// 그림은 [`Self::layout_caption_topbottom_pictures`]). 표 위끝은 걸린 문단의 저장 줄
+    /// 위끝 + 문단 기준 세로 오프셋 + 바깥 위 여백이다.
+    ///
+    /// 글이 있는 문단에 걸린 표는 대상이 아니다. 자리차지 표는 그 문단의 글줄을 표 아래로
+    /// 밀어야 하는데 캡션 조판은 글줄을 표와 무관하게 놓으므로, 표만 그리면 글과 겹친다.
+    #[allow(clippy::too_many_arguments)]
+    fn layout_caption_floating_tables(
+        &self,
+        tree: &mut PageLayoutContext,
+        parent_node: &mut RenderNode,
+        para: &Paragraph,
+        caption_area: &LayoutRect,
+        para_y: f64,
+        bin_data_content: &[BinDataContent],
+        styles: &ResolvedStyleSet,
+    ) {
+        let anchor_y = para
+            .line_segs
+            .first()
+            .filter(|seg| seg.vertical_pos >= 0)
+            .map(|seg| caption_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi))
+            .unwrap_or(para_y);
+        let host_align = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|ps| ps.alignment)
+            .unwrap_or(Alignment::Left);
+        if para
+            .text
+            .chars()
+            .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+        {
+            return;
+        }
+        for ctrl in &para.controls {
+            let Control::Table(table) = ctrl else {
+                continue;
+            };
+            // 자기 캡션을 가진 표는 캡션 띠만큼 격자가 내려가고 뒤 캡션 문단도 그 아래로
+            // 밀린다. 캡션 조판은 아직 그 흐름을 갖지 않으므로 여기서 그리지 않는다.
+            if table.common.treat_as_char || table.caption.is_some() {
+                continue;
+            }
+            let vertical_offset = if matches!(table.common.vert_rel_to, VertRelTo::Para) {
+                hwpunit_to_px(
+                    crate::renderer::float_placement::signed_hwpunit(table.common.vertical_offset),
+                    self.dpi,
+                )
+            } else {
+                0.0
+            };
+            let top = anchor_y
+                + vertical_offset
+                + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+            self.layout_embedded_table(
+                tree,
+                parent_node,
+                table,
+                styles,
+                caption_area,
+                top,
+                None,
+                bin_data_content,
+                host_align,
+                None,
+            );
         }
     }
 
