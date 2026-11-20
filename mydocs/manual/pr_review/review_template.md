@@ -60,10 +60,10 @@ collaborator·maintainer의 조판·렌더링 PR review에는
 실제 사용한 HWP/HWPX·한컴 기준 PDF의 저장소 경로, 출처·SHA-256·검토 commit 포함
 여부를 적는다. 실행한 명령과 대상 head·통과/실패/미실행 범위를 구분한다. 조판 원칙,
 focused·전체 회귀·lint·Native/WASM·시각 검증 중 적용되는 것을 기록한다.
-원 PR이 웹한글기안기 출력 PDF를 기준이라고 명시했다면
-[웹한글기안기 PDF 처리](visual_fixture_evidence.md#원-pr이-웹한글기안기-pdf를-기준으로-제시한-경우)에 따라
-해당 PDF의 판정 제외와 동일 입력의 데스크톱 Print 재검증을 명시한다. 실제 한컴 출력 제품·빌드와
-MCP engine 또는 수동 Print 확인을 연결하며, 저장 제품 연도를 출력 제품 연도로 바꾸어 쓰지 않는다.
+공식 기준 PDF에는 데스크톱 한컴 2020·2024의 `Hancom PDF` Print 출처를 적는다.
+기존 웹한글기안기·Cairo·`Hwp 2022` PDF가 있으면
+[재출력과 출처 확인](visual_fixture_evidence.md#35-시각-검증-원칙)에 따라 공식 판정에 사용한
+새 PDF와 동일 입력의 재검증 결과를 연결한다. 출력 제품·빌드와 MCP 영수증 또는 수동 인쇄 기록을 적는다.
 50 MiB 이상 PDF는 PR에서 제외하고 로컬 경로·바이트 수·SHA-256·출처·전체 쪽수와
 [대용량 PDF 로컬 보관 확인](intake_and_review.md#28-검증-입력-커밋-확인)을 기록한다.
 

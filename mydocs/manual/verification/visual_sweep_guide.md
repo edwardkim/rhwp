@@ -23,12 +23,13 @@ collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공
 해결 불가능한 실제 글꼴 차이는 아래 [PR 제출 예외](#해결-불가능한-글꼴의-pr-제출-예외)로 90% 미만이어도 제출할 수 있다.
 쪽수·페이지 분할 변경은 전체 문서를 비교하며 평균값·높은 페이지 선별로 미달을 숨기지 않는다.
 기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
-**한컴 웹한글기안기의 PDF는 공식 대조 자료가 아니다.** 참고 자료의 점수를 공식 Visual Sweep
-판정·보호 TSV·회귀 기대값으로 사용하지 않는다. 같은 원본의 Windows 데스크톱 한컴에서
-**`Hancom PDF` 프린터로 인쇄(Print)**한 PDF를 확보하고 실제 제품·버전·프린터·출력 경로를
-확인한 뒤 비교한다. **`Microsoft Print to PDF` 출력은 공식 비교 자료로 사용하지 않는다.**
-[기준 PDF 출처 확인](../pr_review/visual_fixture_evidence.md#원-pr이-웹한글기안기-pdf를-기준으로-제시한-경우)을 따른다.
-MCP는 저장 제품에 따라 engine 2020/2024를 명시하고, 수동 출력도 PDF 저장/내보내기 대신 인쇄를 쓴다.
+공식 대조 자료는 같은 원본을 Windows 데스크톱 **한컴 2020 또는 2024의 `Hancom PDF`
+프린터로 인쇄(Print)**한 PDF만 사용한다. 실제 제품·버전·프린터·출력 경로를 확인한다.
+웹한글기안기, Cairo, `Microsoft Print to PDF`, PDF 저장·내보내기, 다른 한컴 버전의
+출력은 출처를 명시한 참고 자료로 활용한다.
+Cairo는 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022`는 MCP 2024로 다시
+인쇄한 후 전쪽을 비교한다.
+[기준 PDF 출처와 재출력](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)을 따른다.
 작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존한다.
 최종 제출용 TSV는 PR 본문에 전체 원문을 넣거나, 본문 크기 제한 시 원본 asset의 링크로 제출한다.
 아래 [본문 삽입·저장소 링크](#tsv-원문-본문-삽입과-저장소-링크)를 따른다. 실행 로그·중간 JSON은 Git에 커밋하지 않는다.
