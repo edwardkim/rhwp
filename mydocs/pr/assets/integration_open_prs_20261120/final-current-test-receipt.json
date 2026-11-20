@@ -104,5 +104,24 @@
     },
     "log_sha256": "578c924262ddf534726576d28b1a571b8d80f53546a92f98865ee35a1a42666d",
     "build_log_sha256": "b5fd7f0e8e7bf679c5809d7a6366077b61d1b738895dcadcf43ca2156ae911bc"
+  },
+  "raised_protection_floor_verification": {
+    "table_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+    "raised_rows": 4,
+    "handbook_native": {
+      "status": "passed",
+      "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+      "baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+      "metric": "silhouette_raw_match_percent",
+      "backend": "native-skia",
+      "precision": "0.01 percentage points",
+      "pages": 383,
+      "regressions": []
+    },
+    "visual_sweep_python": {
+      "exit": 0,
+      "passed": 268,
+      "log_sha256": "f9aa20deaca0eecbcdc873c02721a6bd1ad382e73c18b7f69ee8a9b31c5c83fe"
+    }
   }
 }

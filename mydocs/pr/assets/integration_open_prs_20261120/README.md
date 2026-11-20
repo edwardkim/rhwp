@@ -25,6 +25,9 @@ HWP·HWPX 저장 계약도 확인했다. [배포 응답과 편집 결과](final-
 정본 보호 입력도 Native·fresh WASM 각각 23조건·2,023쪽을 대조했다. 전체 하락·누락은 0쪽이며
 시행령 19쪽과 #7905 시행규칙 1쪽의 공식 표시값이 두 출력 경로에서 올랐다.
 [전쪽 검증과 생산자 신원](final-protected/validation.json) · [상승 쪽 review·overlay](final-protected/gain-reviews/README.md).
+상승한 네 값을 정본 하한에 반영했다. 새 하한으로 필수 편람 HWPX Native 383쪽 결과를 다시
+판정해 하락 0쪽을 확인했고, Python 검사 268건도 통과했다.
+[하한 갱신 영수증](../visual-protected-baseline/updates/integration-open-prs-20261120.json).
 
 ## 초기 통합 소스 검증
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-  "baseline_sha256": "2c9bb270ad515144500cfceeb8b3020abc8cbc7ae6b800a30bd15f829f822a92",
+  "baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
   "qualification_source": "4e0b20d2922953ee7ab9a1716ac819b921fe484b",
   "documents": [
     {

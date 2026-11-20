@@ -1,0 +1,47 @@
+{
+  "previous_table_sha256": "2c9bb270ad515144500cfceeb8b3020abc8cbc7ae6b800a30bd15f829f822a92",
+  "table_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+  "evidence_commit": "57fd9bb6e2",
+  "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+  "native_sha256": "b8f93c4c40d8b79ecb9f687f0c81cc2704a2e8ac8354c866decc6f8518f14d5e",
+  "wasm_sha256": "ee3461090090fc7dad9562bdf418a65094bce5988c5efbbbdc862bdaec7826a0",
+  "wasm_js_sha256": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3",
+  "conditions": 46,
+  "compared_rows": 4046,
+  "declines": [],
+  "increases": [
+    {
+      "logical_key": "issue7905",
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "native",
+      "page": 1,
+      "previous": "99.97",
+      "current": "99.99"
+    },
+    {
+      "logical_key": "issue7905",
+      "document_id": "a8e95b4accc79fa8",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "native",
+      "page": 19,
+      "previous": "99.74",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "wasm",
+      "page": 19,
+      "previous": "99.74",
+      "current": "100.00"
+    }
+  ],
+  "accepted_at": "2026-11-20T18:59:35.468943+09:00"
+}
