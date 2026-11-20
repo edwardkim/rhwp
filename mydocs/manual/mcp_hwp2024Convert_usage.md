@@ -70,6 +70,29 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 기존 `Creator: Hwp 2022` 인쇄본 교체에는 `2024`를 사용한다. PR review 증적의 파일명은
 실제 요청한 엔진에 따라 `-2020.pdf` 또는 `-2024.pdf`로 지정한다.
 
+### Print 영수증을 남기고 다시 확인하기
+
+저장소 루트에서 `tools/refresh_oracle_pdfs.py`의 기존 갱신 명령에
+`--receipt-dir mydocs/pr/assets/<issue>/print-receipts`를 추가하면 실제로 인쇄한 job마다
+JSON 하나가 생성된다. 전송한 원본 사본의 SHA-256, 성공 상태의 엔진·제품 빌드·인쇄 방법,
+job ID와 내려받은 PDF의 SHA-256을 보존한다. 인쇄 조건이나 다운로드 해시가 맞지 않으면
+PDF를 교체하기 전에 실패한다. 기존 PDF를 건너뛴 경우에는 영수증을 생성하지 않는다.
+PDF 게시와 영수증 게시 사이에 중단된 경우 새 영수증 유무를 확인하고, 필요하면 해당
+`--source`만 `--refresh-existing`으로 다시 인쇄한다.
+
+기여자는 PR에 실제 영수증의 저장소 상대 경로를 연결한다. 리뷰어는 그 경로를 셸 변수
+`receipt_path`에 지정하고 다음 명령을 실행한 뒤
+`pairs`에서 같은 원본·PDF 경로의 `status`, `sampleHash`, `pdfHash`, `print`를 대조한다.
+해시 불일치는 보고서에 기록된다. OS·공급 글꼴·용지 조건은 별도 실행 근거를 함께 남긴다.
+
+```sh
+python3 tools/oracle_public/audit_print_pairs.py --repo-root . \
+  --receipts "$receipt_path" \
+  --output output/print-audit.json
+```
+
+실제 기록 형식은 [34쌍의 보존 영수증](../pr/assets/hyunmyungjanelee_20261112/mcp-print-reference/receipts.json)에서 확인할 수 있다.
+
 ## 개요
 
 - MCP server 이름: `hwp2024Convert`

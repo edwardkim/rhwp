@@ -14,7 +14,9 @@ endpoint별 한 작업씩만 병렬로 실행한다. 성공한 결과만 `pdf/`�
 """
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import ExitStack
 from datetime import datetime
+import hashlib
 import json
 import os
 import pathlib
@@ -31,6 +33,7 @@ TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
+from oracle_public.audit_print_pairs import digest, print_details
 from oracle_pdf_selection import (
     canonical_filename,
     canonical_pdf_path,
@@ -185,15 +188,46 @@ def nested_value(data, key):
     return None
 
 
+def make_print_receipt(source, snapshot, destination, produced, job_id, engine, status, download):
+    """성공한 같은 job의 인쇄 조건과 실제 전송·다운로드 바이트를 연결한다."""
+    result = status.get('result')
+    if (status.get('status') not in ('success', 'succeeded') or status.get('job_id') != job_id
+            or not isinstance(result, dict)):
+        raise RuntimeError('성공 상태에서 같은 job의 Print 결과를 확인할 수 없다')
+    fields = ('engine', 'hancom_version', 'pdf_print_method', 'pdf_output_mode',
+              'pdf_page_count', 'preprocess')
+    origin = {'kind': 'MCP Print', 'engine': engine, 'job_id': job_id,
+              'print_result': {k: result[k] for k in fields if k in result}}
+    if print_details(origin) is None:
+        raise RuntimeError('이 job의 독립 Print 경로를 확인할 수 없다')
+    pdf_sha = digest(produced)
+    if (download.get('status') != 'success' or download.get('job_id') != job_id
+            or download.get('size') != produced.stat().st_size or download.get('sha256') != pdf_sha):
+        raise RuntimeError('다운로드 기록과 실제 PDF가 일치하지 않는다')
+    source_sha = digest(snapshot)
+    if digest(source) != source_sha:
+        raise RuntimeError('Print 실행 중 원본 바이트가 변경됐다')
+    root = pathlib.Path.cwd()
+    record = {'input': source.resolve().relative_to(root).as_posix(), 'input_sha256': source_sha,
+              'pdf': destination.resolve().relative_to(root).as_posix(), 'pdf_sha256': pdf_sha,
+              'origin': origin}
+    return (json.dumps({'cases': [record]}, ensure_ascii=False, indent=2) + '\n').encode('utf-8')
+
+
 def convert_one(args, source, engine, destination, logger, env_file, lane):
     output_name = destination.name
     with tempfile.TemporaryDirectory(prefix='rhwp-oracle-pdf-') as temp_dir:
         logger.emit('INFO', 'MCP start: lane=%s source=%s output=%s engine=%s' %
                     (lane, source, destination, engine))
+        submitted = pathlib.Path(source)
+        if args.receipt_dir is not None:
+            submitted = pathlib.Path(temp_dir) / 'input' / submitted.name
+            submitted.parent.mkdir()
+            shutil.copyfile(source, submitted)
         started = time.monotonic()
         start_response = run_mcp(
             mcp_command(args, env_file, 'start', [
-                '--input', source,
+                '--input', str(submitted),
                 '--target', 'pdf',
                 '--engine', engine,
                 '--output-filename', output_name,
@@ -253,14 +287,26 @@ def convert_one(args, source, engine, destination, logger, env_file, lane):
             'MCP download lane=%s job_id=%s' % (lane, job_id),
             logger,
         )
-        del download_response
         produced = pathlib.Path(temp_dir) / output_name
         if not produced.is_file() or produced.stat().st_size == 0:
             raise RuntimeError('%s: MCP가 유효한 PDF를 저장하지 않았다' % source)
         destination.parent.mkdir(parents=True, exist_ok=True)
-        temporary = destination.with_suffix(destination.suffix + '.tmp')
-        shutil.copy2(produced, temporary)
-        os.replace(temporary, destination)
+        with ExitStack() as cleanup:
+            pdf_stage = cleanup.enter_context(tempfile.TemporaryDirectory(dir=destination.parent))
+            staged_pdf = pathlib.Path(pdf_stage) / output_name
+            shutil.copyfile(produced, staged_pdf)
+            if args.receipt_dir is not None:
+                receipt = make_print_receipt(pathlib.Path(source), submitted, destination, staged_pdf,
+                                             job_id, engine, status_response, download_response)
+                args.receipt_dir.mkdir(parents=True, exist_ok=True)
+                receipt_stage = cleanup.enter_context(tempfile.TemporaryDirectory(dir=args.receipt_dir))
+                staged_receipt = pathlib.Path(receipt_stage) / 'receipt.json'
+                staged_receipt.write_bytes(receipt)
+                receipt_path = args.receipt_dir / (hashlib.sha256(receipt).hexdigest() + '.json')
+            os.replace(staged_pdf, destination)
+            if args.receipt_dir is not None:
+                os.replace(staged_receipt, receipt_path)
+                logger.emit('INFO', 'Print 영수증: %s' % receipt_path)
         logger.emit('INFO', 'MCP 성공: source=%s output=%s bytes=%d elapsed=%.1fs job_id=%s' %
                     (source, destination, destination.stat().st_size,
                      time.monotonic() - started, job_id))
@@ -391,6 +437,8 @@ def main():
     parser.add_argument('--migrate-success-log',
                         help='기존 MCP 성공 로그의 검증된 source/output 기록만 새 canonical 이름으로 이관')
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--receipt-dir', type=pathlib.Path,
+                        help='실제 Print 조건·입출력 바이트를 확인한 성공 job별 감사 JSON을 저장할 디렉터리')
     parser.add_argument('--log-file', help='시각·상세 MCP 로그 파일(환경 파일의 내용은 기록하지 않음)')
     args = parser.parse_args()
 
