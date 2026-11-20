@@ -1,0 +1,27 @@
+{
+  "id": "regulatory-2024-gulim-retain",
+  "substitutions": {},
+  "trueTypeFaces": [
+    "Gulim"
+  ],
+  "preserveSourceMetrics": true,
+  "replaceSourceMetricsFor": [],
+  "documentSubstitutions": [
+    {
+      "languageSlot": 1,
+      "fontId": 12,
+      "source": "한양신명조",
+      "target": "Gulim",
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "query": "Gulim"
+    },
+    {
+      "languageSlot": 5,
+      "fontId": 10,
+      "source": "한양신명조",
+      "target": "Gulim",
+      "programId": "4b29170743307f3145dd37b0dba180ec74ff6c7896aaf0a48f0890f81c7aea52",
+      "query": "Gulim"
+    }
+  ]
+}

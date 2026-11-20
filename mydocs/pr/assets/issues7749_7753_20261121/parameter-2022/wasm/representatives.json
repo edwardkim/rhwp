@@ -1,0 +1,14 @@
+[
+  {
+    "page": 1,
+    "raw": 100.0,
+    "overlay": "overlay_001.png",
+    "review": "review_001.png"
+  },
+  {
+    "page": 44,
+    "raw": 100.0,
+    "overlay": "overlay_044.png",
+    "review": "review_044.png"
+  }
+]

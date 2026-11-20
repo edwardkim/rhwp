@@ -128,10 +128,9 @@ fn anchor_ownership_follows_the_cell_after_serialization_order_changes() {
     assert_eq!(core.page_count(), 4);
 }
 
-/// 같은 셀 소유 규칙이 적용되는 기존 그림5의 실제 최종 높이·캡션 대조다.
-/// 전체11쪽의 다른 배치 차이를 이 정상 대조의 통과로 면제하지 않는다.
+/// 한컴 2024 Print 11쪽의 그림 5는 나란한 두 그림과 그 아래 합친 캡션 셀을 사용한다.
 #[test]
-fn liver_picture_row_and_caption_keep_the_independent_pdf_frame() {
+fn liver_picture_row_and_caption_keep_the_independent_pdf_ownership() {
     fn host_table(node: &RenderNode) -> Option<&RenderNode> {
         if matches!(&node.node_type, RenderNodeType::Table(table)
             if table.para_index == Some(237) && table.control_index == Some(0))
@@ -167,20 +166,33 @@ fn liver_picture_row_and_caption_keep_the_independent_pdf_frame() {
         .collect();
     assert_eq!(picture_cells.len(), 2);
     // 큰 그림13135HU와 실효 셀 여백282HU가 공유 행의 최소 점유를 정한다.
-    for cell in picture_cells {
+    for cell in &picture_cells {
         assert!(
             (cell.bbox.height - (13135.0 + 282.0) / 75.0).abs() < 0.1,
             "다른 셀의 빈 앵커 줄을 그림 위에 더하지 않는다: {:?}",
             cell.bbox
         );
+        let image = cell
+            .children
+            .iter()
+            .find(|node| matches!(node.node_type, RenderNodeType::Image(_)))
+            .expect("각 셀이 자기 그림을 소유한다");
+        assert!(image.bbox.y >= cell.bbox.y);
+        assert!(image.bbox.y + image.bbox.height <= cell.bbox.y + cell.bbox.height);
     }
-    let caption = caption_line(table).expect("그림5 캡션 보존");
-    // 원본 한컴2024 PDF11쪽 가시 글자 상단267.621053px.
-    assert!(
-        (caption.bbox.y - 267.621053).abs() < 0.5,
-        "독립 그림5 캡션 위치: {:?}",
-        caption.bbox
-    );
+    let caption_cell = table
+        .children
+        .iter()
+        .find(|node| {
+            matches!(&node.node_type, RenderNodeType::TableCell(cell)
+                if cell.row == 1 && cell.col == 0 && cell.col_span == 2)
+        })
+        .expect("두 그림 아래 합친 캡션 셀");
+    let caption = caption_line(caption_cell).expect("그림 5 캡션 보존");
+    assert!(picture_cells
+        .iter()
+        .all(|cell| caption.bbox.y >= cell.bbox.y + cell.bbox.height));
+    assert!(caption.bbox.y + caption.bbox.height <= caption_cell.bbox.y + caption_cell.bbox.height);
 }
 
 /// 실제 빈 줄의 점유 끝과 저장 간격을 함께 검사한다. 빈 문자열도 공간을 소유한다.

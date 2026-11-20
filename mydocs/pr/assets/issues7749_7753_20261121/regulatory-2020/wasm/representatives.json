@@ -1,0 +1,20 @@
+[
+  {
+    "page": 15,
+    "raw": 99.46676,
+    "overlay": "overlay_015.png",
+    "review": "review_015.png"
+  },
+  {
+    "page": 30,
+    "raw": 99.8625,
+    "overlay": "overlay_030.png",
+    "review": "review_030.png"
+  },
+  {
+    "page": 31,
+    "raw": 99.98889,
+    "overlay": "overlay_031.png",
+    "review": "review_031.png"
+  }
+]

@@ -48,7 +48,6 @@ samples/hwp3-sample16-hwp5-2010.hwp	body,off_canvas,oracle,overflow_cell,render_
 samples/hwp3-sample16-hwp5.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7721,7723
 samples/hwp3-sample16-hwp5.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7722
 samples/hwpctl_API_v2.4.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7731
-samples/hwpctl_ParameterSetID_Item_v1.2.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7750
 samples/hwpspec.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7772
 samples/hwpx/156160455-social-pig-farm-income.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7770,7775
 samples/hwpx_sample2.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7830
@@ -62,7 +61,6 @@ samples/issue1949_giant_cell_nested_tables_perf.hwp	body,off_canvas,oracle,overf
 samples/issue1949_giant_cell_nested_tables_perf.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7813
 samples/issue2006/1790387_prep_final_report.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8044
 samples/issue2439/issue2439_repeat_table_overlap.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7739,7769,7780,7781
-samples/issue3637/regulatory_impact_nested_table_escape.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7749
 samples/issue4514/sample1-repro.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7808
 samples/issue5584/3232693_employment_support_criteria.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7822
 samples/issue5699/37787_regulatory_impact.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7777
@@ -74,7 +72,6 @@ samples/issue6023/30269_reform_recommendation.hwp	body,off_canvas,oracle,overflo
 samples/issue6025/3232693_employment_support_criteria.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7822
 samples/issue6111/56345_regulatory_impact_analysis.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7806
 samples/issue6575/tac_picture_line_top.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7864
-samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7749
 samples/issue6712/중국어_2026년 8호 가정통신문_여름철 영유아 감염병 예방.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7789
 samples/issue6778/156757920-animal-welfare-husbandry-guidelines.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7767
 samples/issue6797/156160455-social-pig-farm-income.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7770
@@ -107,8 +104,6 @@ samples/task2146/21761835_jeonjik_exemption_table.hwp	body,off_canvas,overflow_c
 samples/task2319/20544835_jinan_apt_form.hwp	body,off_canvas,oracle,overflow_cell,render_page	7744
 samples/task2430/1382000_domestic_violence_survey.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7831
 samples/복학원서.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7756
-samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7753
-samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7753
 tests/fixtures/hml/exambank_math_equations_min.hml	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7785
 tests/fixtures/issue6923/148738070_wrapper_table_stored_page_frame.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7823
 tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7771

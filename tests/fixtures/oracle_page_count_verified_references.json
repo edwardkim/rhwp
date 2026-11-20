@@ -91,6 +91,51 @@
       "pages": 6,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/issue_7032/README.md"
+    },
+    {
+      "sample": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "source_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "pdf": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+      "pdf_sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+      "pages": 31,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+      "source_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "pdf": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+      "pdf_sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+      "pages": 31,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "source_sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e",
+      "pdf": "pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf",
+      "pdf_sha256": "b23d4836b9d1eb8dd9582e5541aeca34dfb54718d5829b21af4f7969085dd746",
+      "pages": 74,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "source_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+      "pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "pdf_sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+      "pages": 215,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "source_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+      "pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+      "pages": 215,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
     }
   ]
 }
