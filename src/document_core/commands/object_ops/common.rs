@@ -517,6 +517,23 @@ impl DocumentCore {
             .controls
             .get_mut(control_idx)
             .ok_or_else(|| HwpError::RenderError("컨트롤 범위 초과".to_string()))?;
+        Self::set_line_endpoints(ctrl, start_x, start_y, end_x, end_y)?;
+
+        section.raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.update_connectors_in_section(section_idx);
+
+        Ok("{\"ok\":true}".to_string())
+    }
+    /// 직선의 시작/끝점을 글로벌 HWPUNIT 좌표로 정한다(위치·크기·저장 끝점을 함께 맞춘다).
+    fn set_line_endpoints(
+        ctrl: &mut Control,
+        start_x: i32,
+        start_y: i32,
+        end_x: i32,
+        end_y: i32,
+    ) -> Result<(), HwpError> {
         let line = match ctrl {
             Control::Shape(ref mut s) => match s.as_mut() {
                 ShapeObject::Line(ref mut l) => l,
@@ -546,12 +563,41 @@ impl DocumentCore {
         line.drawing.shape_attr.rotation_center.x = w / 2;
         line.drawing.shape_attr.rotation_center.y = h / 2;
         line.drawing.shape_attr.raw_rendering = Vec::new();
+        Ok(())
+    }
 
-        section.raw_stream = None;
-        self.recompose_section(section_idx);
+    /// 직선 끝점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 직선(`cell_path_json` 경로 문단의 컨트롤)을 옮긴다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn move_line_endpoint_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        control_idx: usize,
+        start_x: i32,
+        start_y: i32,
+        end_x: i32,
+        end_y: i32,
+    ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path_json(cell_path_json)?;
+        {
+            let section = self
+                .document
+                .sections
+                .get_mut(section_idx)
+                .ok_or_else(|| HwpError::RenderError("구역 범위 초과".to_string()))?;
+            let para = Self::resolve_cell_paragraph_mut(section, parent_para_idx, &path)?;
+            let ctrl = para
+                .controls
+                .get_mut(control_idx)
+                .ok_or_else(|| HwpError::RenderError("컨트롤 범위 초과".to_string()))?;
+            Self::set_line_endpoints(ctrl, start_x, start_y, end_x, end_y)?;
+            section.raw_stream = None;
+        }
+        self.finish_loaded_source_cache_after_object_edit(section_idx);
         self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
         self.update_connectors_in_section(section_idx);
-
         Ok("{\"ok\":true}".to_string())
     }
     pub(crate) fn first_char_or_nul(value: &str) -> char {
