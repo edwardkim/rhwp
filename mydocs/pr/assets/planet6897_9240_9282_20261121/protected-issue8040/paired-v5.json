@@ -1,0 +1,87 @@
+{
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "sin_graphic_program_sha256": "e1a8b7ed54994d9d193ffc9e9f2b5de2d9d103c7886c467a14cab8271c81b6be",
+  "paired_conditions": [
+    {
+      "key": "issue8040-insert",
+      "backend": "native",
+      "pages": 4,
+      "tsv": "issue8040-insert-native.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "140fc6b91a98564a6b8faed82ac0cb10e630378edc0781a623a6fbedd31fdb3e",
+      "fixed_base_manifest_sha256": "0834138af377ea40daa499e5e083ce17f85bc3927b1421d0cd17287212a084d6",
+      "candidate_manifest_sha256": "813cd8297772eeb4aa755375b9756b940f5ec966b2f6837b0ec033ea007e233a",
+      "fixed_base_producer_hashes": {
+        "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519"
+      },
+      "candidate_producer_hashes": {
+        "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417"
+      },
+      "same_run_conditions": true,
+      "tsv_byte_identical": true
+    },
+    {
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "pages": 4,
+      "tsv": "issue8040-insert-wasm.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "f3c32e16acfbfea33a394c5ac925b5f7b65bdf33e0e59b73b349596371415aa5",
+      "fixed_base_manifest_sha256": "8a4f3ac0bdb47960dc0b4134637292e5a8a6b16bc12eeef501509f94fbabccc7",
+      "candidate_manifest_sha256": "f873fa1032cee4c490c2cf8dd8bfd4e1a056d814d765e061d1733962a82fa3e9",
+      "fixed_base_producer_hashes": {
+        "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+        "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+        "rhwp_bg.wasm": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd"
+      },
+      "candidate_producer_hashes": {
+        "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417",
+        "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+        "rhwp_bg.wasm": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f"
+      },
+      "same_run_conditions": true,
+      "tsv_byte_identical": true
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "native",
+      "pages": 4,
+      "tsv": "issue8040-insert-delete-native.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "140fc6b91a98564a6b8faed82ac0cb10e630378edc0781a623a6fbedd31fdb3e",
+      "fixed_base_manifest_sha256": "fc81c048496a79e26efd5448ccd1536a50c87f2fe938ee2f44e2506080210cef",
+      "candidate_manifest_sha256": "0368d4ddd79557068e41030cffb0a86f8d7a97500b1e0c7d14bfda26c4264df0",
+      "fixed_base_producer_hashes": {
+        "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519"
+      },
+      "candidate_producer_hashes": {
+        "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417"
+      },
+      "same_run_conditions": true,
+      "tsv_byte_identical": true
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "pages": 4,
+      "tsv": "issue8040-insert-delete-wasm.tsv",
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "f3c32e16acfbfea33a394c5ac925b5f7b65bdf33e0e59b73b349596371415aa5",
+      "fixed_base_manifest_sha256": "5cd0a950f45a9d831f8c14210fc32b10f8a41e4767169be96683806228fd0b75",
+      "candidate_manifest_sha256": "445937d4559f6b06470c361f6aeb0022995a5989fb8e47f817b5c16bd59766c8",
+      "fixed_base_producer_hashes": {
+        "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+        "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+        "rhwp_bg.wasm": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd"
+      },
+      "candidate_producer_hashes": {
+        "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417",
+        "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+        "rhwp_bg.wasm": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f"
+      },
+      "same_run_conditions": true,
+      "tsv_byte_identical": true
+    }
+  ]
+}
