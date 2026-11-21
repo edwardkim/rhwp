@@ -2351,7 +2351,10 @@ fn measure_scalar_advance<'a>(
                 )
             })
             .flatten();
-        let old_glyph_metric = (cluster_len[i] > 1)
+        // 표시용 원 glyph를 선택해도 저장 HFT의 전진폭 계약은 유지한다.
+        // 실제 프로그램의 hmtx는 자연 메트릭을 요청했거나 HFT가 아닌 경로에서만 쓴다.
+        let old_glyph_metric = (cluster_len[i] > 1
+            && (!style.source_font_is_hft || style.natural_program_metrics))
             .then(|| {
                 crate::renderer::pua_glyph::source_program_glyph(
                     style,
