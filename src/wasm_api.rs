@@ -5561,6 +5561,34 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 직선 끝점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 직선 (글로벌 HWPUNIT 좌표).
+    /// `cell_path_json`은 `setCellShapePropertiesByPath`와 같은 경로다.
+    #[wasm_bindgen(js_name = moveLineEndpointByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn move_line_endpoint_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        cell_path_json: &str,
+        ci: u32,
+        sx: i32,
+        sy: i32,
+        ex: i32,
+        ey: i32,
+    ) -> Result<String, JsValue> {
+        self.move_line_endpoint_by_path_native(
+            sec as usize,
+            parent_para as usize,
+            cell_path_json,
+            ci as usize,
+            sx,
+            sy,
+            ex,
+            ey,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// `moveLineEndpoint` 의 options object 변형 (#1413).
     ///
     /// options JSON 키: `{ sec, para, ci, sx, sy, ex, ey }` (좌표는 i32). positional 과 동일 동작.
