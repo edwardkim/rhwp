@@ -43,6 +43,10 @@ impl TableReflowOwners {
         self.remove(key)
     }
 
+    pub(crate) fn owns_cell_text_reflow(&self, key: &TableTextReflowKey) -> bool {
+        self.cell_text.contains(key)
+    }
+
     pub(crate) fn has_cell_text(&self) -> bool {
         !self.cell_text.is_empty()
     }

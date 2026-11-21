@@ -323,13 +323,15 @@ impl LayoutEngine {
                 if j == start && !allow_force_progress && exceeds_budget {
                     break;
                 }
-                if self.should_defer_overflowing_top_and_bottom_entry(
-                    u,
-                    j,
-                    start,
-                    h,
-                    content_budget,
-                ) {
+                if self.inline_picture_line_needs_next_fragment(cell, u, h, content_budget)
+                    || self.should_defer_overflowing_top_and_bottom_entry(
+                        u,
+                        j,
+                        start,
+                        h,
+                        content_budget,
+                    )
+                {
                     break;
                 }
                 h += u.height;
