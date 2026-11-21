@@ -1,0 +1,638 @@
+[
+  {
+    "document": "spec13",
+    "backend": "native",
+    "page": 8,
+    "crop_96dpi": [
+      294,
+      356,
+      466,
+      402
+    ],
+    "sheet": 1
+  },
+  {
+    "document": "spec13",
+    "backend": "native",
+    "page": 16,
+    "crop_96dpi": [
+      483,
+      724,
+      655,
+      770
+    ],
+    "sheet": 1
+  },
+  {
+    "document": "spec13",
+    "backend": "native",
+    "page": 17,
+    "crop_96dpi": [
+      140,
+      136,
+      312,
+      182
+    ],
+    "sheet": 1
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 2,
+    "crop_96dpi": [
+      584,
+      502,
+      756,
+      548
+    ],
+    "sheet": 1
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 16,
+    "crop_96dpi": [
+      526,
+      724,
+      698,
+      770
+    ],
+    "sheet": 1
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 17,
+    "crop_96dpi": [
+      509,
+      128,
+      681,
+      174
+    ],
+    "sheet": 1
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 18,
+    "crop_96dpi": [
+      306,
+      940,
+      478,
+      986
+    ],
+    "sheet": 2
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 21,
+    "crop_96dpi": [
+      320,
+      954,
+      492,
+      1000
+    ],
+    "sheet": 2
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 23,
+    "crop_96dpi": [
+      304,
+      895,
+      476,
+      941
+    ],
+    "sheet": 2
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 28,
+    "crop_96dpi": [
+      288,
+      914,
+      460,
+      960
+    ],
+    "sheet": 2
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 50,
+    "crop_96dpi": [
+      289,
+      952,
+      461,
+      998
+    ],
+    "sheet": 2
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 64,
+    "crop_96dpi": [
+      303,
+      922,
+      475,
+      968
+    ],
+    "sheet": 2
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 67,
+    "crop_96dpi": [
+      138,
+      864,
+      310,
+      910
+    ],
+    "sheet": 3
+  },
+  {
+    "document": "spec13",
+    "backend": "wasm",
+    "page": 71,
+    "crop_96dpi": [
+      206,
+      430,
+      378,
+      476
+    ],
+    "sheet": 3
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 5,
+    "crop_96dpi": [
+      30,
+      721,
+      202,
+      767
+    ],
+    "sheet": 3
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 6,
+    "crop_96dpi": [
+      470,
+      282,
+      642,
+      328
+    ],
+    "sheet": 3
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 8,
+    "crop_96dpi": [
+      25,
+      925,
+      197,
+      971
+    ],
+    "sheet": 3
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 11,
+    "crop_96dpi": [
+      25,
+      354,
+      197,
+      400
+    ],
+    "sheet": 3
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 12,
+    "crop_96dpi": [
+      25,
+      856,
+      197,
+      902
+    ],
+    "sheet": 4
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 13,
+    "crop_96dpi": [
+      25,
+      236,
+      197,
+      282
+    ],
+    "sheet": 4
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 15,
+    "crop_96dpi": [
+      25,
+      152,
+      197,
+      198
+    ],
+    "sheet": 4
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 16,
+    "crop_96dpi": [
+      352,
+      990,
+      524,
+      1036
+    ],
+    "sheet": 4
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 26,
+    "crop_96dpi": [
+      359,
+      318,
+      531,
+      364
+    ],
+    "sheet": 4
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 27,
+    "crop_96dpi": [
+      200,
+      286,
+      372,
+      332
+    ],
+    "sheet": 4
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 28,
+    "crop_96dpi": [
+      19,
+      137,
+      191,
+      183
+    ],
+    "sheet": 5
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 31,
+    "crop_96dpi": [
+      19,
+      278,
+      191,
+      324
+    ],
+    "sheet": 5
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 33,
+    "crop_96dpi": [
+      19,
+      137,
+      191,
+      183
+    ],
+    "sheet": 5
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 36,
+    "crop_96dpi": [
+      19,
+      195,
+      191,
+      241
+    ],
+    "sheet": 5
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 37,
+    "crop_96dpi": [
+      444,
+      444,
+      616,
+      490
+    ],
+    "sheet": 5
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 38,
+    "crop_96dpi": [
+      19,
+      195,
+      191,
+      241
+    ],
+    "sheet": 5
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 40,
+    "crop_96dpi": [
+      19,
+      765,
+      191,
+      811
+    ],
+    "sheet": 6
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 41,
+    "crop_96dpi": [
+      19,
+      859,
+      191,
+      905
+    ],
+    "sheet": 6
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 44,
+    "crop_96dpi": [
+      137,
+      927,
+      309,
+      973
+    ],
+    "sheet": 6
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 45,
+    "crop_96dpi": [
+      19,
+      137,
+      191,
+      183
+    ],
+    "sheet": 6
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 49,
+    "crop_96dpi": [
+      88,
+      454,
+      260,
+      500
+    ],
+    "sheet": 6
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 66,
+    "crop_96dpi": [
+      19,
+      137,
+      191,
+      183
+    ],
+    "sheet": 6
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 67,
+    "crop_96dpi": [
+      226,
+      782,
+      398,
+      828
+    ],
+    "sheet": 7
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 68,
+    "crop_96dpi": [
+      230,
+      202,
+      402,
+      248
+    ],
+    "sheet": 7
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 69,
+    "crop_96dpi": [
+      19,
+      227,
+      191,
+      273
+    ],
+    "sheet": 7
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 70,
+    "crop_96dpi": [
+      19,
+      314,
+      191,
+      360
+    ],
+    "sheet": 7
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 71,
+    "crop_96dpi": [
+      19,
+      137,
+      191,
+      183
+    ],
+    "sheet": 7
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 72,
+    "crop_96dpi": [
+      226,
+      964,
+      398,
+      1010
+    ],
+    "sheet": 7
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 73,
+    "crop_96dpi": [
+      244,
+      686,
+      416,
+      732
+    ],
+    "sheet": 8
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 74,
+    "crop_96dpi": [
+      469,
+      264,
+      641,
+      310
+    ],
+    "sheet": 8
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 76,
+    "crop_96dpi": [
+      19,
+      214,
+      191,
+      260
+    ],
+    "sheet": 8
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 81,
+    "crop_96dpi": [
+      19,
+      220,
+      191,
+      266
+    ],
+    "sheet": 8
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 83,
+    "crop_96dpi": [
+      19,
+      488,
+      191,
+      534
+    ],
+    "sheet": 8
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 84,
+    "crop_96dpi": [
+      19,
+      137,
+      191,
+      183
+    ],
+    "sheet": 8
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 85,
+    "crop_96dpi": [
+      152,
+      886,
+      324,
+      932
+    ],
+    "sheet": 9
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 86,
+    "crop_96dpi": [
+      143,
+      962,
+      315,
+      1008
+    ],
+    "sheet": 9
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 87,
+    "crop_96dpi": [
+      32,
+      988,
+      204,
+      1034
+    ],
+    "sheet": 9
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 88,
+    "crop_96dpi": [
+      104,
+      977,
+      276,
+      1023
+    ],
+    "sheet": 9
+  },
+  {
+    "document": "chemical",
+    "backend": "wasm",
+    "page": 97,
+    "crop_96dpi": [
+      19,
+      220,
+      191,
+      266
+    ],
+    "sheet": 9
+  }
+]

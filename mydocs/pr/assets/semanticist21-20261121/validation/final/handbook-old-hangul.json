@@ -1,5 +1,5 @@
 {
-  "source": "7e5ed8907a359ccc4315f2d3ea25053a9ada1b4d",
+  "source": "521f69d19da9176e7947ceb318cf9838bec5ca75",
   "before_source": "703a908900cda5b7c572e4ced24aa47d4dee5824",
   "dpi": 96,
   "raw_definition": "2px silhouette before boundary color reconciliation",
@@ -248,5 +248,31 @@
   ],
   "document_pages_each": 383,
   "all_pages": "protected-pages.tsv",
-  "zoom": "handbook-old-hangul.png"
+  "zoom": "handbook-old-hangul.png",
+  "full_document_measurements": {
+    "handbook-hwp": {
+      "native": {
+        "pages": 383,
+        "min_raw_percent": "99.96504",
+        "page": 130
+      },
+      "wasm": {
+        "pages": 383,
+        "min_raw_percent": "99.96448",
+        "page": 130
+      }
+    },
+    "handbook-hwpx": {
+      "native": {
+        "pages": 383,
+        "min_raw_percent": "99.96504",
+        "page": 130
+      },
+      "wasm": {
+        "pages": 383,
+        "min_raw_percent": "99.96448",
+        "page": 130
+      }
+    }
+  }
 }
