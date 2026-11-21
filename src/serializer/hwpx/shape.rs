@@ -1110,7 +1110,7 @@ where
 // =====================================================================
 
 /// `<hp:lineShape>` — `parse_line_shape_attr` 의 역매핑.
-/// alpha 는 파서 미적재 → "0" 고정 방출. headStyle/tailStyle 은 bit 10~21 에서 복원한다(#2956).
+/// alpha 는 한컴처럼 0~255 정수다. headStyle/tailStyle 은 bit 10~21 에서 복원한다(#2956).
 pub(crate) fn write_line_shape<W: Write>(
     w: &mut Writer<W>,
     bl: &ShapeBorderLine,
@@ -1151,8 +1151,9 @@ where
         2 => "SQUARE",
         _ => "ROUND",
     };
-    let head_fill_b = bl.attr & 0x8000_0000 != 0;
-    let tail_fill_b = bl.attr & 0x4000_0000 != 0;
+    // HWP5와 렌더러처럼 시작(head) 채움은 bit 30, 끝(tail) 채움은 bit 31이다.
+    let head_fill_b = bl.attr & 0x4000_0000 != 0;
+    let tail_fill_b = bl.attr & 0x8000_0000 != 0;
     let headfill = bool01(head_fill_b);
     let tailfill = bool01(tail_fill_b);
     let head_style = arrow_style_str((bl.attr >> 10) & 0x3F, head_fill_b);
@@ -1164,6 +1165,7 @@ where
         2 => "INNER",
         _ => "NORMAL",
     };
+    let alpha = xml_value(storage, bl.alpha)?;
     empty_tag_with_storage(
         w,
         "hp:lineShape",
@@ -1179,7 +1181,7 @@ where
             ("headSz", head_sz),
             ("tailSz", tail_sz),
             ("outlineStyle", outline),
-            ("alpha", "0"),
+            ("alpha", &alpha),
         ],
         storage,
     )
@@ -1424,7 +1426,8 @@ fn fill_alpha_str_with_storage<S: crate::storage::Storage>(
 where
     S::Error: std::fmt::Display,
 {
-    super::utils::xml_value(storage, alpha as f64 / 255.0)
+    // 한컴 12.30처럼 0~255 정수로 쓴다(투명도 30% → 77).
+    super::utils::xml_value(storage, alpha)
 }
 
 /// `<hp:shadow>` — `parse_shape_shadow_attr` 의 역매핑.
@@ -1840,13 +1843,14 @@ mod tests {
         assert_eq!(line_shape_style(none_with_flat_end_cap), "NONE");
     }
 
-    /// #2956: attr 에 파싱된 화살표 끝 모양(bit 16~21, 채움 bit 30)이 저장 시
-    /// "NORMAL" 로 하드코딩되지 않고 보존돼야 한다.
+    /// #2956: attr 에 파싱된 화살표 끝 모양(bit 16~21, 채움 bit 31)이 저장 시
+    /// "NORMAL" 로 하드코딩되지 않고 보존돼야 한다. 끝 채움은 HWP5·렌더러처럼 bit 31이다
+    /// (한/글 12.30이 채운 시작·빈 끝 화살표를 HWP에 bit 30만 켜서 저장한다).
     #[test]
     fn task2956_line_shape_arrow_style_preserved() {
         use crate::model::style::ShapeBorderLine;
-        // tail = FILLED_DIAMOND(4) + tail_fill(bit30)
-        let attr = (4u32 << 16) | (1 << 30);
+        // tail = FILLED_DIAMOND(4) + tail_fill(bit31)
+        let attr = (4u32 << 16) | (1 << 31);
         let bl = ShapeBorderLine {
             attr,
             ..Default::default()

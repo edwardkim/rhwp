@@ -1000,6 +1000,9 @@ pub struct ShapeBorderLine {
     pub attr: u32,
     /// 아웃라인 스타일 (0: normal, 1: outer, 2: inner)
     pub outline_style: u8,
+    /// 선 투명도 (0=불투명 ~ 255=투명). HWP는 SHAPE_COMPONENT의 인스턴스 ID 다음 바이트,
+    /// HWPX는 `lineShape@alpha` 정수다(한컴 12.30의 개체 속성 > 투명도 설정).
+    pub alpha: u8,
 }
 
 /// 글자 모양 수정 사항 (None이면 해당 속성 변경 안 함)

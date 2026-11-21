@@ -16,6 +16,8 @@ mod picture_inline_migration;
 /// 개체 속성 JSON 입구 검사 (#9019).
 mod props_check;
 mod shape;
+#[cfg(test)]
+mod shape_alpha_tests;
 mod table;
 mod table_creation;
 

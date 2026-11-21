@@ -47,7 +47,7 @@ const U32: PropKind = PropKind::Int(0, u32::MAX as i64);
 const VERT_REL_TO: &[&str] = &["Paper", "Page", "Para"];
 const HORZ_REL_TO: &[&str] = &["Paper", "Page", "Column", "Para"];
 const VERT_ALIGN: &[&str] = &["Top", "Center", "Bottom"];
-const HORZ_ALIGN: &[&str] = &["Left", "Center", "Right"];
+const HORZ_ALIGN: &[&str] = &["Left", "Center", "Right", "Inside", "Outside"];
 const TEXT_WRAP: &[&str] = &[
     "Square",
     "Tight",
@@ -140,12 +140,16 @@ pub(crate) const SHAPE_PROPS: &[PropSpec] = &[
     prop("vertFlip", PropKind::Bool),
     prop("borderColor", COLOR),
     prop("borderWidth", I32),
+    prop("lineAlpha", PropKind::Int(0, u8::MAX as i64)),
     prop("lineType", BITS6),
     prop("lineEndShape", BITS4),
     prop("arrowStart", BITS6),
     prop("arrowEnd", BITS6),
     prop("arrowStartSize", BITS4),
     prop("arrowEndSize", BITS4),
+    prop("arrowStartFill", PropKind::Bool),
+    prop("arrowEndFill", PropKind::Bool),
+    prop("arcType", PropKind::Int(0, 2)),
     prop("fillType", PropKind::Enum(FILL_TYPE)),
     prop("fillBgColor", COLOR),
     prop("fillPatColor", COLOR),
