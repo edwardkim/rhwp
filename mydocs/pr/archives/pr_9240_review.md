@@ -51,6 +51,8 @@
 
 최신 제품 코드 `19646e69fc9`의 Studio에서 2·8쪽 화면·인쇄 12건을 다시 확인했다. Canvas2D 실제 출력은 12건이며 그중 8건은 CanvasKit 요청이 글꼴 준비 단계에서 대체된 결과다. 전체 60건의 초기화 응답이 새 WASM 해시와 일치했다. [Studio 최신 빌드 검증 영수증](../assets/planet6897_9240_9282_20261121/validation/actual-studio-v4.json)
 
+최신 제품 코드 `19646e69fc9`에서 원 HFT 3종을 제외한 Native·fresh WASM 64쪽을 각각 다시 검증했다. 1쪽은 두 경로 모두 94.93%이며 fresh WASM에 등록된 표시 대체는 HY견고딕이다. [최신 검증 기록](../assets/planet6897_9240_9282_20261121/886-no-original/v4/evidence.json) · [1쪽 review](../assets/planet6897_9240_9282_20261121/886-no-original/v4/wasm-review-001.png) · [overlay](../assets/planet6897_9240_9282_20261121/886-no-original/v4/wasm-overlay-001.png)
+
 ## Merge 후 원 PR 코멘트
 
 통합 merge SHA의 원본 출력·한컴 PDF raster·review·overlay를 해당 주장 페이지별로 고정하여 본문에 표시한다. 실제 CI와 사용한 한컴 Print 제품 및 MCP 영수증을 함께 남긴다.
