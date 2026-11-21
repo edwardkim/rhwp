@@ -175,6 +175,9 @@ pub(super) fn consumed_prefix_before_float(
     {
         return None;
     }
+    if let Some(base) = accepted_terminal_cell_axis(st, paragraphs, para_index) {
+        return Some(base);
+    }
     let first = match st.current_items.first() {
         None if st.current_height == 0.0 => para_index,
         Some(
@@ -335,4 +338,70 @@ pub(super) fn accepted_source_prefix_origin(
         return None;
     }
     consumed_prefix_before_float(st, paragraphs, para_index)
+}
+
+/// 종료한 셀 조각이 인증한 단 축을 뒤의 연속 원본 사다리에 전달한다.
+fn accepted_terminal_cell_axis(
+    st: &super::TypesetState,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+) -> Option<i32> {
+    let PageItem::PartialTable {
+        para_index: host,
+        start_row: 0,
+        end_row: 1,
+        is_continuation: true,
+        start_cut,
+        end_cut,
+        is_block_split: false,
+        start_cut_is_block: false,
+        row_cursor_is_nested: false,
+        ..
+    } = st.current_items.first()?
+    else {
+        return None;
+    };
+    if start_cut.len() != 1 || start_cut[0] == 0 || !end_cut.is_empty() {
+        return None;
+    }
+    let origin = st.paragraph_origins.get(host)?;
+    if origin.flow_start != 0.0
+        || origin.spacing_before != 0.0
+        || origin.source_vpos_base <= 0
+        || !origin.flow_end.is_finite()
+    {
+        return None;
+    }
+    let first = host.checked_add(1)?;
+    let source = paragraphs.get(first)?.line_segs.first()?.vertical_pos;
+    let expected_end = source.checked_sub(origin.source_vpos_base)?;
+    let precision = hwpunit_to_px(2, st.layout.dpi);
+    if (hwpunit_to_px(expected_end, st.layout.dpi) - origin.flow_end).abs() > precision {
+        return None;
+    }
+    let mut previous = None;
+    for paragraph in paragraphs.get(first..=para_index)? {
+        if paragraph.column_type != ColumnBreakType::None
+            || paragraph.stored_text_partition_is_dirty()
+            || paragraph.cell_format_vpos_dirty
+            || paragraph.source_line_seg_vertical_pos.is_some()
+            || paragraph.line_segs.is_empty()
+        {
+            return None;
+        }
+        for line in &paragraph.line_segs {
+            if super::is_synthetic_line_seg(line)
+                || previous.is_some_and(|vpos| line.vertical_pos < vpos)
+            {
+                return None;
+            }
+            previous = Some(line.vertical_pos);
+        }
+    }
+    let source_top = paragraphs.get(para_index)?.line_segs.first()?.vertical_pos;
+    let expected_start = hwpunit_to_px(
+        source_top.checked_sub(origin.source_vpos_base)?,
+        st.layout.dpi,
+    );
+    ((expected_start - st.current_height).abs() <= precision).then_some(origin.source_vpos_base)
 }

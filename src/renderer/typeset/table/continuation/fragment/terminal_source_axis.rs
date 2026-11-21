@@ -88,10 +88,13 @@ impl TypesetEngine {
         if expected.is_none_or(|end| (end - st.current_height).abs() > hwpunit_to_px(2, self.dpi)) {
             return;
         }
-        st.record_vpos_page_origin(Some(base));
-        st.record_vpos_lazy_origin(None);
-        st.record_vpos_column_anchor(0.0);
+        st.record_paragraph_origin(crate::renderer::pagination::ParagraphOrigin {
+            paragraph_index: input.source.para_index,
+            spacing_before: 0.0,
+            source_vpos_base: base,
+            flow_start: 0.0,
+            flow_end: st.current_height,
+        });
         st.record_stored_column_origin(Some((base, 0.0)));
-        st.record_vpos_origin_provenance(true);
     }
 }
