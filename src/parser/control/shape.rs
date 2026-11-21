@@ -619,15 +619,15 @@ fn parse_shape_component_full(data: &[u8]) -> ShapeComponentParsed {
         (0, 0, 0, 0)
     };
 
-    // 인스턴스 ID (4바이트) + 예약 (1바이트) + 그림자 투명도 (1바이트) = 6바이트
+    // 인스턴스 ID (4바이트) + 선 투명도 (1바이트) + 그림자 투명도 (1바이트) = 6바이트
     let inst_id = if r.remaining() >= 4 {
         r.read_u32().unwrap_or(0)
     } else {
         0
     };
     if r.remaining() >= 1 {
-        let _ = r.read_u8();
-    } // 예약 (skip)
+        border.alpha = r.read_u8().unwrap_or(0);
+    }
     let shadow_alpha = if r.remaining() >= 1 {
         r.read_u8().unwrap_or(0)
     } else {
@@ -925,6 +925,7 @@ fn parse_picture(common: CommonObjAttr, shape_attr: ShapeComponentAttr, data: &[
         width: pic.border_width,
         attr: border_attr_raw,
         outline_style: 0,
+        alpha: 0,
     };
 
     // 꼭짓점 좌표 (4개씩)

@@ -140,6 +140,18 @@ pub fn parse_color_str(s: &str) -> u32 {
 }
 
 /// 속성 값을 bool로 파싱 ("true", "1" → true)
+/// HWPX 채우기·선의 `alpha`(0=불투명 ~ 255=투명). 한컴 12.30은 0~255 정수로 쓴다
+/// (투명도 30% → 77). 소수점이 있는 값은 예전 rhwp 저장본처럼 0.0~1.0 비율로 읽는다.
+pub fn parse_alpha_byte(raw: &str) -> Option<u8> {
+    let raw = raw.trim();
+    let value = raw.parse::<f64>().ok().filter(|v| v.is_finite())?;
+    Some(if raw.contains('.') {
+        (value.clamp(0.0, 1.0) * 255.0).round() as u8
+    } else {
+        value.clamp(0.0, 255.0).round() as u8
+    })
+}
+
 pub fn parse_bool(attr: &quick_xml::events::attributes::Attribute) -> bool {
     let s = attr_str(attr);
     s == "true" || s == "1"
