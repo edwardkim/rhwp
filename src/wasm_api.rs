@@ -9875,6 +9875,24 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 내부 클립보드를 본문 논리 캐럿(`insertTextLogical` 과 같은 축)에 붙인다.
+    ///
+    /// 각주·글자처럼 취급한 개체 바로 뒤에서도 그 뒤에 붙인다. 반환값은 `pasteInternal` 과 같다.
+    #[wasm_bindgen(js_name = pasteInternalLogical)]
+    pub fn paste_internal_logical(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        logical_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.paste_internal_logical_native(
+            section_idx as usize,
+            para_idx as usize,
+            logical_offset as usize,
+        )
+        .map_err(|error| error.into())
+    }
+
     /// 순수 서식 글 조각을 본문 논리 캐럿의 누름틀 안팎 소속으로 붙인다.
     #[wasm_bindgen(js_name = pasteInternalTextLogical)]
     pub fn paste_internal_text_logical(
