@@ -88,6 +88,37 @@ export class HwpDocument {
         wasm.__wbg_hwpdocument_free(ptr, 0);
     }
     /**
+     * 주소 문단의 `start`부터 같은 문단 목록 `end_para` 문단의 `end`까지를 블록 책갈피로 감싼다.
+     * @param {string} place_json
+     * @param {number} start
+     * @param {number} end_para
+     * @param {number} end
+     * @param {string} name
+     * @returns {string}
+     */
+    addBlockBookmark(place_json, start, end_para, end, name) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(place_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_addBlockBookmark(this.__wbg_ptr, ptr0, len0, start, end_para, end, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * 책갈피 추가
      * @param {number} sec
      * @param {number} para
@@ -113,6 +144,36 @@ export class HwpDocument {
             return getStringFromWasm0(ptr2, len2);
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
+     * 주소 문단(`getBookmarks`의 `place` 꼴 JSON: 본문·표 셀·글상자·캡션·각주·미주·머리말·꼬리말·바탕쪽)의
+     * 글자 자리에 보통 책갈피를 넣는다.
+     * @param {string} place_json
+     * @param {number} char_offset
+     * @param {string} name
+     * @returns {string}
+     */
+    addBookmarkAt(place_json, char_offset, name) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(place_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_addBookmarkAt(this.__wbg_ptr, ptr0, len0, char_offset, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
         }
     }
     /**
@@ -1709,6 +1770,32 @@ export class HwpDocument {
             return getStringFromWasm0(ptr1, len1);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 주소 문단의 보통·블록 책갈피를 지운다. 블록은 감싼 글을 남긴다.
+     * @param {string} place_json
+     * @param {number} ctrl_idx
+     * @returns {string}
+     */
+    deleteBookmarkAt(place_json, ctrl_idx) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(place_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_deleteBookmarkAt(this.__wbg_ptr, ptr0, len0, ctrl_idx);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -10929,6 +11016,35 @@ export class HwpDocument {
         }
     }
     /**
+     * 주소 문단의 보통·블록 책갈피 이름을 바꾼다.
+     * @param {string} place_json
+     * @param {number} ctrl_idx
+     * @param {string} new_name
+     * @returns {string}
+     */
+    renameBookmarkAt(place_json, ctrl_idx, new_name) {
+        let deferred4_0;
+        let deferred4_1;
+        try {
+            const ptr0 = passStringToWasm0(place_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ptr1 = passStringToWasm0(new_name, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_renameBookmarkAt(this.__wbg_ptr, ptr0, len0, ctrl_idx, ptr1, len1);
+            var ptr3 = ret[0];
+            var len3 = ret[1];
+            if (ret[3]) {
+                ptr3 = 0; len3 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred4_0 = ptr3;
+            deferred4_1 = len3;
+            return getStringFromWasm0(ptr3, len3);
+        } finally {
+            wasm.__wbindgen_free(deferred4_0, deferred4_1, 1);
+        }
+    }
+    /**
      * 필드 이름을 바꾼다 — 누름틀과 셀 필드를 모두 다룬다.
      *
      * `updateClickHereProps` 는 누름틀 전용이라 셀 필드에서 `{"ok":false}` 를 돌려준다.
@@ -12766,6 +12882,27 @@ export class HwpDocument {
         }
     }
     /**
+     * 문단 번호 정의의 10수준 값을 통째로 바꾼다(한/글 '문단 번호/개요 번호 사용자 정의 모양').
+     *
+     * numberingId는 1부터이고 0이면 새로 만든다. 고친 정의는 번호가 그대로라 그 번호를 가리키는
+     * 문단 모양·구역 개요 번호가 함께 바뀐다(한/글 개요 번호 모양처럼). json은
+     * `{"levels":[{"format":"^1.","numberFormat":0,"start":1,"align":0,"useInstWidth":true,
+     * "autoIndent":true,"widthAdjust":0,"textOffset":50,"charShape":null}, …]}`(수준 10개 또는 7개).
+     * 반환값: Numbering ID (1-based)
+     * @param {number} numbering_id
+     * @param {string} json
+     * @returns {number}
+     */
+    setNumbering(numbering_id, json) {
+        const ptr0 = passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_setNumbering(this.__wbg_ptr, numbering_id, ptr0, len0);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0];
+    }
+    /**
      * 문단 번호 정의의 한 수준에 번호 글자 모양을 단다(한/글 '문단 번호 사용자 정의 모양'의 글자 모양 지정).
      *
      * numberingId는 1부터, level은 0부터다. json은 applyCharFormat의 글자 속성과 바탕 글자 모양
@@ -13020,6 +13157,24 @@ export class HwpDocument {
         } finally {
             wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
+    }
+    /**
+     * 인쇄 작업 문맥을 선택한다. 일반 화면과 원본 문서에는 반영하지 않는다.
+     * @param {string | null} [json]
+     */
+    setPrintJobContext(json) {
+        var ptr0 = isLikeNone(json) ? 0 : passStringToWasm0(json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_setPrintJobContext(this.__wbg_ptr, ptr0, len0);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
+    }
+    /**
+     * @param {boolean} enabled
+     */
+    setPrintPngRgb555(enabled) {
+        wasm.hwpdocument_setPrintPngRgb555(this.__wbg_ptr, enabled);
     }
     /**
      * 구역 정의(SectionDef)를 변경하고 재페이지네이션한다.
@@ -14795,6 +14950,9 @@ function __wbg_get_imports() {
         }, arguments); },
         __wbg_fill_33944400e9c94f79: function(arg0) {
             arg0.fill();
+        },
+        __wbg_fill_65aea4147bd18bc9: function(arg0, arg1) {
+            arg0.fill(__wbindgen_enum_CanvasWindingRule[arg1]);
         },
         __wbg_fill_99bc71dde47c30ec: function(arg0, arg1, arg2) {
             arg0.fill(arg1, __wbindgen_enum_CanvasWindingRule[arg2]);

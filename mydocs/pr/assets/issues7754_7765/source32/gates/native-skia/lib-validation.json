@@ -1,0 +1,44 @@
+{
+  "production_source": "2f46647df16da00365b22a1364cdc0b28b8344bc",
+  "started": 1795282749.642048,
+  "results": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "12"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source32-native-suite-0.log",
+      "exit_code": 0,
+      "seconds": 957.966491725063
+    },
+    {
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source32-native-suite-1.log",
+      "exit_code": 4,
+      "seconds": 718.9488920059521
+    }
+  ],
+  "ended": 1795284426.7265182
+}
