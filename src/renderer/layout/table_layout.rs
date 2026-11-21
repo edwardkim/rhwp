@@ -18330,14 +18330,25 @@ impl LayoutEngine {
                                         }
                                     }
 
-                                    let projected_advance =
-                                        if row_has_plain_line_cuts && !fragment.terminal {
-                                            reflowed_nested_row::shared_closing_line_advance(
-                                                &row_units, &fragment,
-                                            )
-                                        } else {
-                                            0.0
-                                        };
+                                    // 저장된 글줄이 다음 쪽의 원점에서 다시 시작하는
+                                    // 경우에도 그 줄까지의 간격은 닫는 조각에 속하지 않는다.
+                                    let next_starts_source_frame = row_has_plain_source_boundary
+                                        && driver_units.get(fragment_index + 1).is_some_and(
+                                            |next| {
+                                                next.page_frame_reset_before
+                                                    && next.stored_frame_break_before
+                                            },
+                                        );
+                                    let projected_advance = if (row_has_plain_line_cuts
+                                        || next_starts_source_frame)
+                                        && !fragment.terminal
+                                    {
+                                        reflowed_nested_row::shared_closing_line_advance(
+                                            &row_units, &fragment,
+                                        )
+                                    } else {
+                                        0.0
+                                    };
                                     units.push(CellUnit {
                                         height: uh,
                                         following_line_advance: projected_advance,

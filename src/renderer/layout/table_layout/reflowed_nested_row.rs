@@ -55,8 +55,8 @@ pub(super) fn continuation_closing_advance(
         && same_row(&units[start - 1])
         && same_row(&units[start])
         && same_row(next)
-        && !next.hard_break_before
-        && !next.stored_frame_break_before)
+        && ((!next.hard_break_before && !next.stored_frame_break_before)
+            || (next.page_frame_reset_before && next.stored_frame_break_before)))
         .then_some(last.following_line_advance.min(last.height))
 }
 
