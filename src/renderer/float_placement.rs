@@ -62,6 +62,7 @@ pub(crate) use stored_nested_before_host::{
 };
 pub(crate) use stored_nested_closing_host::stored_nested_host_closes_after_previous_line;
 pub(crate) use stored_nested_terminal_line::stored_nested_terminal_host_line_height_hu;
+pub(crate) use stored_row_picture_frame::stored_picture_only_cell_height_hu;
 mod stored_cut_outer_frame;
 mod stored_header_frame;
 pub(crate) use stored_cut_outer_frame::stored_hwpx_cut_owns_outer_frame;
@@ -78,7 +79,8 @@ mod picture_anchor;
 mod square_lane;
 pub(crate) use picture_anchor::stored_picture_anchor_delta;
 pub(crate) use square_lane::{
-    square_successor_starts_beside_table, stored_line_lane_probe, StoredLineLaneProbe,
+    flanking_successor_host_advance_hu, square_successor_starts_beside_table,
+    stored_line_lane_probe, stored_rows_flank_square_table, StoredLineLaneProbe,
 };
 mod stored_text_page_frame;
 pub(crate) use stored_text_page_frame::{stored_text_page_frame, StoredTextPageFrame};
@@ -368,6 +370,8 @@ pub(crate) fn stored_table_terminal_suffix_start(
     None
 }
 
+mod topbottom_stack;
+pub(crate) use topbottom_stack::cell_text_host_topbottom_stack;
 mod empty_successor;
 pub(crate) use empty_successor::{
     stored_empty_host_line_after_band, stored_empty_successor_advance,
@@ -452,12 +456,18 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
         if padding.top < 0 || padding.bottom < 0 {
             return None;
         }
+        let picture_band = table
+            .common
+            .treat_as_char
+            .then(|| stored_picture_only_cell_height_hu(cell))
+            .flatten();
         let mut last_end = None;
         for para in &cell.paragraphs {
             let contents_valid = if para.controls.is_empty() {
                 para.column_type == ColumnBreakType::None
             } else {
-                stored_row_picture_frame::controls_preserve_stored_picture_lines(para)
+                picture_band.is_some()
+                    || stored_row_picture_frame::controls_preserve_stored_picture_lines(para)
             };
             if !contents_valid
                 || para.stored_text_partition_is_dirty()
@@ -478,7 +488,10 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
                 last_end = Some(line.vertical_pos.checked_add(line.line_height)?);
             }
         }
-        let physical_height = last_end?
+        // 떠 있는 그림이 폭 없는 호스트 줄을 흡수하면, 그 줄의 크기 대신
+        // 그림 띠가 행을 닫는다. 전체 표 선언 높이와 같은 경우에만 채택한다.
+        let physical_height = picture_band
+            .unwrap_or(last_end?)
             .checked_add(i32::from(padding.top))?
             .checked_add(i32::from(padding.bottom))?;
         rows[row] = rows[row].max(physical_height);

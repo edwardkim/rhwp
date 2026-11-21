@@ -22,6 +22,14 @@ pub(in crate::renderer::typeset) fn place(
 ) -> bool {
     if st.following_wrap_active() && !has_table {
         let band = st.following_wrap_band();
+        if st.following_wrap_is_stored_flow()
+            && wrap_match::stored_rows_flank_anchor_table(para, paragraphs, band)
+        {
+            // host 의 저장 사다리가 host 줄만 전진한 띠다. 모든 저장 조각이 표 상자 옆에
+            // 놓인 뒤 문단은 띠에 흡수되지 않고 자기 높이를 소비한다. 띠는 열어 둔다.
+            st.register_following_wrap_anchor(para_idx, wrap_match::picture_anchor(band));
+            return false;
+        }
         let wrap_match::WrapMatch {
             matched,
             is_empty_para,

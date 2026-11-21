@@ -1641,6 +1641,18 @@ impl HwpDocument {
             .map_err(|e| JsValue::from_str(&e.to_string()))
     }
 
+    /// 인쇄 작업 문맥을 선택한다. 일반 화면과 원본 문서에는 반영하지 않는다.
+    #[wasm_bindgen(js_name = setPrintJobContext)]
+    pub fn set_print_job_context_json(&mut self, json: Option<String>) -> Result<(), JsValue> {
+        let context = json
+            .as_deref()
+            .map(crate::document_core::PrintJobContext::from_json)
+            .transpose()
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        self.core.set_print_job_context(context);
+        Ok(())
+    }
+
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
     ///
     /// `mode` 는 `"default"` 또는 `"compat"` 를 받는다. 빈 문자열은 `"default"` 로 처리한다.

@@ -115,6 +115,11 @@ pub struct DocumentFontSelectionRequest {
     /// 선언 이름을 무조건 정규화하는 alias와 구분한다.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub public_fallback: Vec<String>,
+    /// 원 프로그램과 문서 대체가 모두 없을 때 한컴이 표시에 쓰는 기본 대체 글꼴.
+    /// 글꼴 공급자가 원장 밖 원본의 일반 표시 대체로만 소비한다. 프로그램 선택·
+    /// 측정 원천을 바꾸는 `public_fallback` 선택 경로와 구분한다.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub hancom_missing_default: Vec<String>,
 }
 
 /// 출력 호스트가 실제로 로드한 프로그램. 형식 미확인 시 HFT 메트릭을 유지한다.
@@ -190,6 +195,53 @@ fn may_select_hft_program(font: &crate::model::style::Font, language: usize) -> 
                     language,
                 )
                 .is_some()))
+}
+
+/// 한컴이 설치되지 않은 TTF 선언을 그릴 때 쓰는 기본 대체 글꼴이다.
+///
+/// 독립 한컴 2022 Print 두 건이 같은 선택을 보인다. 둘 다 문서 대체 필드(`attr & 0x80`)가
+/// 없는 TTF(`alt_type = 1`) 선언이고, 생성 PC에 원 프로그램이 없었다.
+///
+/// - 10k 오라클 547(`samples/issue547/`): `문체부 바탕체`(기본 이름 `MBatang`) 본문 전체가
+///   PDF의 `Haansoft Batang` CID TrueType으로 출력된다.
+/// - 10k 오라클 728: 이름에 명조·바탕이 없는 `HY울릉도L` 제목도 `Haansoft Batang`이다.
+///
+/// 서체 분류(명조·고딕)로 고르지 않는다. 원 프로그램·문서 대체가 있으면 그 선택이 우선한다.
+/// 이 대체는 일반 Noto 공급과 같은 표시 치환이다(`preserveSourceMetrics`). 원본 표에 없는
+/// 글자(547의 `-`)는 표시 프로그램으로 재며, 독립 Print 4쪽 `  - ` 뒤 원점 125.28px 과 맞는다.
+const HANCOM_MISSING_TTF_DEFAULT: &str = "한컴바탕";
+
+/// 문서 대체도, rhwp가 아는 원본 별칭·HFT 공급도 없는 비내장 TTF 선언만 해당한다.
+/// HFT·유형 미상 선언과 확인된 HFT 이름은 한컴 내장 프로그램이 그리므로 제외한다.
+fn hancom_missing_ttf_default_applies(
+    font: &crate::model::style::Font,
+    decision: &super::style_resolver::FontNameDecision,
+    language: usize,
+) -> bool {
+    font.alt_type == 1
+        && !font.is_embedded
+        && font.native_program.is_none()
+        && decision.subst_font.is_none()
+        && decision.substitution_boundary.is_none()
+        && super::font_rule_layout_name_projection::find_font_rule_layout_name(
+            "rust-style-resolution.hft",
+            &font.name,
+            language,
+        )
+        .is_none()
+        && !hancom_builtin_hft_name(&font.name)
+}
+
+/// TTF로 선언돼도 한컴이 내장 HFT로 그리는 이름이다. 독립 한컴 2020 Print
+/// `pdf/issue1891/80168_regulatory_analysis-hwpx-2020.pdf` 4쪽은 TTF 선언·대체 없는
+/// `한양신명조` 본문(`<신설>`, `제4조(사업시행예정…`)을 Type3 /T10 으로 출력한다.
+/// 원 HFT 메트릭을 가진 이름과 같은 한양 HFT 계열은 한컴 기본 대체 대상이 아니다.
+fn hancom_builtin_hft_name(name: &str) -> bool {
+    super::font_metrics_data::legacy_hft_metric_face(name).is_some()
+        || matches!(
+            name,
+            "한양신명조" | "한양중고딕" | "한양견명조" | "한양견고딕" | "한양궁서" | "한양그래픽"
+        )
 }
 
 // 생략은 기존 메트릭 계약을 유지한다. 명시 false는 자연 프로그램 선택이며,
@@ -303,24 +355,32 @@ impl FontEnvironment {
                         primary_names.push(name);
                     }
                 }
+                let public_fallback =
+                    super::font_rule_layout_name_projection::find_font_rule_layout_name(
+                        "rust-style-resolution.missing-program",
+                        &font.name,
+                        language,
+                    )
+                    .filter(|rule| {
+                        rule.conditions.availability
+                            == Some("primary-and-document-substitute-missing")
+                    })
+                    .map(|rule| program_names(rule.target_face_or_policy))
+                    .unwrap_or_default();
+                let hancom_missing_default =
+                    if hancom_missing_ttf_default_applies(font, &decision, language) {
+                        program_names(HANCOM_MISSING_TTF_DEFAULT)
+                    } else {
+                        Vec::new()
+                    };
                 requests.push((
                     language,
                     font_id,
                     DocumentFontSelectionRequest {
                         source: font.name.clone(),
                         primary: primary_names,
-                        public_fallback:
-                            super::font_rule_layout_name_projection::find_font_rule_layout_name(
-                                "rust-style-resolution.missing-program",
-                                &font.name,
-                                language,
-                            )
-                            .filter(|rule| {
-                                rule.conditions.availability
-                                    == Some("primary-and-document-substitute-missing")
-                            })
-                            .map(|rule| program_names(rule.target_face_or_policy))
-                            .unwrap_or_default(),
+                        public_fallback,
+                        hancom_missing_default,
                         substitute: decision
                             .subst_font
                             .as_deref()
@@ -351,6 +411,9 @@ impl FontEnvironment {
             BTreeMap::<String, Option<(AvailableFontProgram, Option<&'static str>)>>::new();
         let embedded = Self::embedded_program_names(doc_info);
         let mut slot_candidates = Vec::new();
+        // 원 프로그램·문서 대체·공개 대체가 모두 없는 TTF 원본의 한컴 기본 대체.
+        // 표시 face 치환만 기록하며 프로그램 선택(TrueType 전진 소유)은 만들지 않는다.
+        let mut display_defaults = BTreeMap::<String, Option<String>>::new();
         for (language_slot, font_id, request) in Self::document_requests_with_slots(doc_info) {
             let original_names = program_names(&request.source);
             // 원 프로그램의 설치 별칭 안에서만 TTF → CFF OpenType 순서를 적용한다.
@@ -367,6 +430,7 @@ impl FontEnvironment {
                     }
                 })
                 .or_else(|| request.primary.iter().find_map(|name| resolve(name)));
+            let primary_present = primary.is_some();
             let candidate = if let Some(program) = primary {
                 // 원본 선언은 HFT지만 실제로 준비된 동일 주 프로그램은 TTF일 수 있다.
                 // 존재 확인으로 끝내지 않고 프로그램 신원을 공통 스타일 해소에 전달한다.
@@ -407,6 +471,28 @@ impl FontEnvironment {
                             })
                     })
             };
+            if candidate.is_none()
+                && !primary_present
+                && !public_fallback_blocked_sources.contains(&request.source)
+            {
+                let display = request
+                    .hancom_missing_default
+                    .iter()
+                    .find(|name| {
+                        resolve(name).is_some_and(|program| !embedded.contains(&program.family))
+                    })
+                    .cloned();
+                display_defaults
+                    .entry(request.source.clone())
+                    .and_modify(|previous| {
+                        if *previous != display {
+                            *previous = None;
+                        }
+                    })
+                    .or_insert(display);
+            } else {
+                display_defaults.insert(request.source.clone(), None);
+            }
             slot_candidates.push((
                 language_slot,
                 font_id,
@@ -538,6 +624,21 @@ impl FontEnvironment {
                 query: Some(program.query),
                 selection_rule: rule.map(str::to_owned),
             });
+        }
+        for (source, display) in display_defaults {
+            let Some(display) = display else {
+                continue;
+            };
+            // 다른 슬롯이 프로그램을 선택한 원본은 그 선택이 소유한다.
+            if substitutions.contains_key(&source) || !Self::valid_name(&display) {
+                continue;
+            }
+            digest.update(b"hancom-missing-default\0");
+            for value in [&source, &display] {
+                digest.update(value.as_bytes());
+                digest.update([0]);
+            }
+            substitutions.insert(source, display);
         }
         if (substitutions.is_empty() && document_substitutions.is_empty())
             || substitutions.len() > MAX_FONT_SUBSTITUTIONS

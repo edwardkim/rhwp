@@ -5644,6 +5644,27 @@ impl TypesetEngine {
             st.advance_flow_by(pre_height);
             // 저장 줄이 없는 host 면 뒤 재조판 문단이 표 상자를 직접 피한다.
             st.register_page_anchored_square_table(para_idx, ctrl_idx, para, table);
+        } else if let Some(host_advance_hu) = is_wrap_around_table
+            .then(|| {
+                crate::renderer::float_placement::flanking_successor_host_advance_hu(
+                    para,
+                    st.next_para_lane_probe,
+                    table,
+                )
+            })
+            .flatten()
+        {
+            // 뒤 문단의 저장 줄이 표 상자 양옆 차선에서 host 줄 바로 다음에 이어진다. 흐름은
+            // host 줄만큼만 전진하고, 표 상자(세로 오프셋·바깥 여백 포함)는 배타 띠로 남는다.
+            let origin = st.current_height + pre_height;
+            let frame_bottom = origin
+                + hwpunit_to_px(signed_vertical_offset, self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi)
+                + hwpunit_to_px(table.common.height as i32, self.dpi)
+                + hwpunit_to_px(i32::from(table.outer_margin_bottom), self.dpi);
+            st.register_square_band(origin, frame_bottom);
+            st.advance_flow_by(pre_height + hwpunit_to_px(host_advance_hu, self.dpi));
+            st.record_stored_flow_wrap_host(para_idx);
         } else if is_wrap_around_table
             && crate::renderer::float_placement::square_successor_starts_beside_table(
                 para,

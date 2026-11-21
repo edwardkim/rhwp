@@ -114,7 +114,21 @@ fn verified_technical_symbol_entry(metric: &FontMetric, ch: char) -> Option<(boo
     Some((present[index], widths[index]))
 }
 
+/// MT.TTF(d1050921…ff44)의 Unicode cmap에는 공백을 제외한 ASCII가 없다.
+/// HBATANG.TTF(bef63718…4068)는 그 전 범위를 제공하며 독립 Print는 같은 공급자를 쓴다.
+/// 12쪽의 U+2024도 HBATANG에서 178/1024em이며, 두 위치에서 인쇄 전진을 확인했다.
+fn mbatang_print_missing_glyph(ch: char) -> bool {
+    ch.is_ascii_graphic() || matches!(ch, '·' | '․' | '◦' | '「' | '」')
+}
+
 pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Option<bool> {
+    if mbatang_print_missing_glyph(ch) && !metric.bold && !metric.italic {
+        match (metric.name, metric.em_size) {
+            ("MBatang", 1000) => return Some(false),
+            ("Haansoft Batang", 1024) => return Some(true),
+            _ => {}
+        }
+    }
     // batang.TTC 0ea38ac5… 및 84b0ba79…의 BatangChe regular cmap 결측이다.
     // 독립 Print는 같은 선언 체인의 Haansoft Batang으로 U+257A를 그린다.
     // 실제 제공 프로그램의 hit와 명시적 HFT 계약은 호출자의 우선순위를 유지한다.
@@ -152,6 +166,9 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
             // Batang regular cmap에 U+2024·U+2027이 모두 없다. 후자의 공급자도
             // 화학 원본 27쪽의 독립 Print xref28·glyph7(178/1024em)로 확인했다.
             ("Batang", 1024, false, false) => return Some(false),
+            // 9213 한컴 2024 Print 15쪽의 BatangChe U+2027만 동일한
+            // Haansoft Batang glyph로 공급한다. 다른 문자와 스타일은 유지한다.
+            ("BatangChe", 1024, false, false) if ch == '\u{2027}' => return Some(false),
             // H2GTRE.TTF ca822120…5c234의 실제 cmap 결측이다.
             // 독립 Print에서 HBATANG 공급을 확인한 U+2027만 해소한다.
             ("HYGothic-Extra", 1024, false, false) if ch == '\u{2027}' => {

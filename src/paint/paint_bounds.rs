@@ -342,6 +342,13 @@ fn with_shadow(bounds: BoundingBox, shadow: Option<&ShadowStyle>) -> BoundingBox
     let Some(shadow) = shadow else {
         return bounds;
     };
+    // 평행 그림자는 재생과 같은 이동량(기본 이동량 + 저장 offset)만큼 옮긴 도형이다.
+    if let Some((dx, dy)) = super::parallel_shadow::offset_px(shadow) {
+        return union(
+            bounds,
+            BoundingBox::new(bounds.x + dx, bounds.y + dy, bounds.width, bounds.height),
+        );
+    }
     let offset = BoundingBox::new(
         bounds.x + shadow.offset_x,
         bounds.y + shadow.offset_y,

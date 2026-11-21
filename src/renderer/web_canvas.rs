@@ -2774,7 +2774,7 @@ impl Renderer for WebCanvasRenderer {
         let old_hangul_font = font_setup.old_hangul_descriptor();
         self.ctx.set_font(font);
 
-        let symbol_sources = super::implicit_symbol::sources(&metric_source, text);
+        let symbol_sources = super::implicit_symbol::sources(&metric_source, text, style);
         // 클러스터 분할
         let clusters = contextual_text::coalesce(split_into_clusters(text));
 
@@ -4599,37 +4599,13 @@ impl WebCanvasRenderer {
                     }
                 };
 
-                let (ix, iy) = match mode {
-                    ImageFillMode::LeftTop => (bbox.x, bbox.y),
-                    ImageFillMode::CenterTop => (bbox.x + (bbox.width - img_width) / 2.0, bbox.y),
-                    ImageFillMode::RightTop => (bbox.x + bbox.width - img_width, bbox.y),
-                    ImageFillMode::LeftCenter => {
-                        (bbox.x, bbox.y + (bbox.height - img_height) / 2.0)
-                    }
-                    ImageFillMode::Center => (
-                        bbox.x + (bbox.width - img_width) / 2.0,
-                        bbox.y + (bbox.height - img_height) / 2.0,
-                    ),
-                    ImageFillMode::RightCenter => (
-                        bbox.x + bbox.width - img_width,
-                        bbox.y + (bbox.height - img_height) / 2.0,
-                    ),
-                    ImageFillMode::LeftBottom => (bbox.x, bbox.y + bbox.height - img_height),
-                    ImageFillMode::CenterBottom => (
-                        bbox.x + (bbox.width - img_width) / 2.0,
-                        bbox.y + bbox.height - img_height,
-                    ),
-                    ImageFillMode::RightBottom => (
-                        bbox.x + bbox.width - img_width,
-                        bbox.y + bbox.height - img_height,
-                    ),
-                    ImageFillMode::TileAll
-                    | ImageFillMode::TileHorzTop
-                    | ImageFillMode::TileHorzBottom
-                    | ImageFillMode::TileVertLeft
-                    | ImageFillMode::TileVertRight => (bbox.x, bbox.y),
-                    _ => (bbox.x, bbox.y),
-                };
+                // 정렬 배치 사각형: 넘치는 축은 영역 크기로 줄인다(모든 출력 경로 공용).
+                let (ix, iy, placed_width, placed_height) =
+                    super::image_geometry::aligned_image_fill_rect(
+                        mode,
+                        (bbox.x, bbox.y, bbox.width, bbox.height),
+                        (img_width, img_height),
+                    );
 
                 // Canvas에서 클리핑 적용
                 self.ctx.save();
@@ -4675,8 +4651,8 @@ impl WebCanvasRenderer {
                         }
                     }
                     _ => {
-                        // 배치 모드: 원본 크기로 지정 위치에 배치
-                        self.draw_image(data, ix, iy, img_width, img_height);
+                        // 배치 모드: 공용 배치 사각형에 그린다.
+                        self.draw_image(data, ix, iy, placed_width, placed_height);
                     }
                 }
 

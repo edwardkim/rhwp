@@ -29,6 +29,8 @@ mod native_pua_fonts;
 pub use native_pua_fonts::NativePuaFontRequest;
 mod font_environment;
 mod host_font_environment;
+mod print_job;
+pub use print_job::PrintJobContext;
 mod loaded_frame_restore;
 mod table_reflow_owners;
 mod tac_host_rows;
@@ -275,6 +277,7 @@ pub struct DocumentCore {
     /// [`Self::effective_layout_profile`] 이 profile 에 합성한다.
     pub(crate) hangul2024_compat: bool,
     pub(crate) print_png_rgb555: bool,
+    print_job_context: Option<PrintJobContext>,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
     pub(crate) measured_tables: Vec<Vec<MeasuredTable>>,
     /// 구역별 dirty 플래그 (true = 재페이지네이션 필요)
@@ -603,6 +606,15 @@ impl DocumentCore {
         }
     }
 
+    /// 같은 인쇄 작업에서 사용할 파일명·현지 시각을 전달한다.
+    pub fn set_print_job_context(&mut self, context: Option<PrintJobContext>) {
+        if self.print_job_context != context {
+            self.print_job_context = context;
+            self.layer_tree_json_cache.borrow_mut().clear();
+            self.page_layer_tree_cache.borrow_mut().clear();
+        }
+    }
+
     /// DPI를 설정하고 스타일을 재해소한 후 재페이지네이션한다.
     pub fn set_dpi(&mut self, dpi: f64) {
         self.dpi = dpi;
@@ -641,6 +653,7 @@ impl DocumentCore {
             respect_vpos_reset: false,
             hangul2024_compat: false,
             print_png_rgb555: false,
+            print_job_context: None,
             measured_tables: Vec::new(),
             dirty_sections: Vec::new(),
             measured_sections: Vec::new(),

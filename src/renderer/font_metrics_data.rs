@@ -190,9 +190,14 @@ pub(crate) fn verified_program_glyph_fallback_families(face: &str) -> &'static [
     // 독립 개인정보 Print의 같은 제목도 휴먼명조 사이에서 이 기호만
     // Haansoft Batang으로 출력한다. 이름 별칭은 기존 메트릭 선택기가 해소한다.
     match find_metric(face, false, false).map(|found| found.metric.name) {
-        Some("HumanMyeongJo" | "DotumChe" | "HYSinMyeongJo-Medium" | "HYHeadLine-Medium") => {
-            &["Haansoft Batang"]
-        }
+        Some(
+            "HumanMyeongJo"
+            | "DotumChe"
+            | "HYSinMyeongJo-Medium"
+            | "HYHeadLine-Medium"
+            | "MBatang"
+            | "BatangChe",
+        ) => &["Haansoft Batang"],
         // Gulim U+2024의 측정도 아래 verified_missing_glyph_supplier가
         // HDOTUM에 맡긴다. 같은 공급자를 실제 paint 후보에도 전달한다.
         // [#8619] Dotum 도 같은 gulim.ttc 의 U+2024 결측이며 독립 Print 는 HDOTUM 으로 그린다.
@@ -208,6 +213,14 @@ pub(crate) fn verified_missing_glyph_supplier(
     ch: char,
 ) -> Option<&'static str> {
     match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
+        // 독립 한컴 2024 Print online-search-rfp의 5·6쪽은 MBatang에 없는
+        // 영문·숫자·구두점을 한컴바탕으로 그린다. 원본 한글의 공급은 유지한다.
+        ("MBatang", 1000, false, false, ch) if mbatang_print_missing_glyph(ch) => {
+            Some("Haansoft Batang")
+        }
+        // batang.TTC(0ea38ac5…c2c8)의 BatangChe face에는 U+2027이 없다.
+        // 독립 한컴 2024 Print labor-survey-2022h1 15쪽의 공급자도 한컴바탕이다.
+        ("BatangChe", 1024, false, false, '\u{2027}') => Some("Haansoft Batang"),
         // arial.ttf b2374214…abfd의 cmap에는 두 점이 없다. 명시적 Arial
         // 대조군의 독립 한컴2020 Print는 두 문자 모두 HBATANG으로 출력한다.
         // Arial의 다른 문자나 다른 weight/style의 공급자는 변경하지 않는다.
@@ -302,6 +315,8 @@ fn resolve_projected_metric_alias(name: &str) -> (&str, Option<&'static str>) {
         // 같은 설치 글꼴의 내장 폭 표는 영문 family 이름으로 수록돼 있다.
         // YNCH05.TTF의 숫자 1은 530/1000em이며 한컴 PDF도 이 폭을 쓴다.
         None if name == "양재난초체M" => ("Yj NANCHO Medium", None),
+        // MT.TTF의 한국어 face와 영문 메트릭 이름은 같은 프로그램이다.
+        None if name == "문체부 바탕체" => ("MBatang", None),
         None => (name, None),
     }
 }
@@ -447,6 +462,7 @@ fn static_metric_alias(name: &str) -> Option<&'static str> {
     match find_font_rule_layout_metric(name) {
         Some(rule) => Some(rule.target_face_or_policy),
         None if name == "양재난초체M" => Some("Yj NANCHO Medium"),
+        None if name == "문체부 바탕체" => Some("MBatang"),
         None => None,
     }
 }
