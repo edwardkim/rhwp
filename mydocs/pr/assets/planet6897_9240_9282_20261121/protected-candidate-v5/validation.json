@@ -2540,7 +2540,7 @@
   "catalog_path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
   "catalog_manifest_sha256": "00a6f427ddb3ac9b9cd0e69e3a1112bbdd3cb8c03e85b09d7b5bae0c215fe504",
   "fixed_base_comparison": "pending",
-  "protected_floor_raise": "pending_same_condition_validation",
+  "protected_floor_raise": "unchanged_same_condition_fixed_base_already_reproduces_observed_score",
   "capture_checkout_audit": {
     "transient_checkout": "c871fd4dc3e2127abe421b022ba44d60fb27a8eb",
     "integration_parent_checkout": "815a78a440d4c0c655220a7ea9cd8e02100275cf",
@@ -2633,5 +2633,6 @@
       "rhwp_bg.wasm": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f"
     },
     "result": "캡처 중 별도 로컬 검토 브랜치가 잠시 체크아웃되었다. 해당 checkout의 제품 소스를 빌드하거나 소비하지 않았으며 캡처 46건의 고정 생산물 SHA, 입력/Hancom Print와 sweep 소비 경로가 원 PR 5건에 해당한다."
-  }
+  },
+  "protected_floor_raise_evidence": "decree-wasm-paired.json"
 }
