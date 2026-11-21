@@ -43,3 +43,22 @@ Native의 이전 보호표23문서2023쪽은32쪽 하락으로 실패했다. 원
 
 디스크에는 종료한 작업 소유 frozen probe library의 바이트 동일11개만 hard link로
 중복 제거했다. 모든 경로·SHA는 유지했고 약2GB를 확보했다. 공용 Cargo target에는 손대지 않았다.
+
+## 2026-11-22 KST: 고정 소스33 검증 생산물과 조건 복원
+
+후보를 `task/7754-nine-fidelity-devel`의 `adaa1963674e1a69c4369b80160ac6eb873bec1b`로
+고정했다. 새 기준5665와 후보의 최적화 Native 빌드는 각각 exit0이며, 기준 최적화 WASM도
+완료했다. 후보 최적화 WASM과 이후 전쪽 비교·전체 Rust 검증은 진행 중이다.
+이 시점에는 소스33의 시각 수치나 전체 회귀 통과를 아직 선언하지 않는다.
+
+기준 Native 실행 파일 SHA-256은
+`c02d7932b79f712bb07e435445a8bd0f69998d6bcef1eea7226fbb26281e63e1`,
+후보는 `14d4ae261ee487dfa3603e13b928f16d38326462b31d828d56b0d7f4670bb6bb`다.
+실제 빌드 명령은 `cargo build --locked --profile release-test --target-dir target/pr-review
+--features native-skia --bin rhwp`이며 두 생산물은 별도로 고정했다.
+
+영월 Native 설정의 누락된 캐시 JSON은 보존된 명시 설정과 같은 실행의 웹폰트 매핑을
+정본 알고리즘으로 합쳐 복원했다. 기준 SHA-256과 정확히 일치하며, 정식 증거는
+`mydocs/pr/assets/issues7754_7765/source33/font-environments/`에 보존했다.
+설정 복원과 글꼴 프로그램 확보·실제 시각 통과는 구분한다. outline의 이전 Native 설정과
+일부 기준 글꼴 바이트의 동일성은 계속 확인한다.
