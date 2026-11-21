@@ -84,3 +84,35 @@ SVG와 layer가 사용하는지도 비교한다. 과거 #677의 전체 SVG 해�
 후속 갱신했으며 assertion은 두 실행에서 같다. 이 선행 직접 harness는 최종 Cargo 수집·전체 회귀를
 대체하지 않는다. Native opt-level0 진단과 최적화 Native의64쪽 PNG는64/64쪽 바이트가 같아
 직전 진단의 직접 판독도 같은 출력으로 재사용했다.
+
+## 암호 문서와 폰트 추적의 회귀 복원
+
+실제 암호 HWPX24쪽을 평문 대응본과 별도로 두 경로에서 렌더링했다. 각 경로의24쪽 PNG는
+암호/평문 대응본 사이에서 모두 바이트가 같다. 실제 암호 원본은 Native 최저98.29%, fresh WASM
+최저98.22%이며 독립 Print24쪽과 일치한다. `issue7754/actual-encrypted-validation.json`에
+실제 입력 SHA·생산물·stdin 전달 명령을 기록하고 `issue7754/{native,wasm}/`에 원본 TSV와
+PNG-pair manifest를 보존했다. pair manifest의 DPI가 null인 것은 재채점 경로의 표시이며 실제
+렌더는96DPI·compat2024·Print다. fixture 비밀번호를 명령행·검증 증거에 넣지 않는다.
+
+`hwpx_password_fixture`·`armor_cli_contract`·`mcp_password_contract`의 잘못된23쪽 전제는
+독립24쪽으로 복원했다. 암호·평문 대응본의 모든24쪽 공개 문자 런도 비교해 내용·순서·소유를
+보호한다. 원래의 인증 실패·암호 비노출·응답·다른 포맷 계약은 유지한다.
+
+월간 수출입19쪽은 양쪽 최저99.18%, 온새미로 HWP/HWPX 각각46쪽은 양쪽 최저99.98%다.
+143E1쪽99.94%와 함께 기존 #4961의4개 원본에서 `renderPinsDeferredToIssue7445`를 제거했다.
+이미 유효했던607문자·41문자 및 counts/status·프로필은 유지한다. 전체 layoutHash를 새 값으로
+재고정하는 대신 공개 런의 전체 문자·순서·단일 기록·실제 원본 문자 주소를 검사한다.
+
+이관됐던 exact-face까지 같은 소유 검사를 처음 실행하면서 새 비교기의 잘못된 전제를 확인했다.
+머리말·각주의 usize::MAX 주변 가상 문단은 실제 본문 주소가 아니다. Native와 WASM의
+예약값 크기가 다름을 확인하고 `unavailable`·null 오프셋을 검사한다. 생성 번호1./2.는 독립
+Print와 원본 번호 스타일 문단3/11에서 확인한다. 공개 문자 배치가 생성 번호의 문단 주소를
+생략하는 것과 trace가 문맥 문단을 알려 주는 것을 혼동하지 않는다. 65534 셀 주소의 표 caption은
+원본 caption의 실제 내용과 공개 런을 대조하고, 지원되지 않는 raw 주소를 만들어 내지 않는다.
+주소가 없는 자동 꼬리말도 모든 문자를 검사하며 `unavailable` 계약을 유지한다. 원본 tcps 이후의
+확정 불가능한 주소를 complete로 바꾸지 않는 기존 검사도 유지한다.
+
+최적화 Native 라이브러리의 최소 글꼴 집중 실행은 API·CLI·MCP·폰트 추적24 PASS/0 FAIL,
+6.32초다. 같은 fresh WASM의 Node contract/E2E16 PASS/0 FAIL,12.02초다. 원본 로그는
+`regression-checks/password-fonttrace-native.txt`, `regression-checks/font-trace-node.txt`다.
+이 선행 확인과 정식 Cargo 전체 검증은 구분한다. 글꼴 파일을 테스트 자원으로 추가하지 않았다.

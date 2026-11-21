@@ -323,11 +323,13 @@
       "--bin",
       "rhwp"
     ],
-    "exit_code": 0
+    "exit_code": 0,
+    "role": "fixed upstream/devel baseline before this task",
+    "source_commit": "d7b5286cbf6401678a70eed3d66236a68dd2a72c"
   },
   "regression_registration_minimum": 98,
   "preferred_match": 100,
-  "rust_implementation_changed": false,
+  "rust_implementation_changed": true,
   "manual_prints": [
     {
       "issue": "7755",
@@ -353,6 +355,13 @@
     }
   ],
   "active_reference_overrides": {
-    "7755": "pdf/issue7755/market-2017-manual-print-2024.pdf"
-  }
+    "7755": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    "7756": "pdf/issue7756/bokhak-original-print-2024.pdf",
+    "7757": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+    "7761": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+    "7765-hwp": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+    "7765-hwpx": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf"
+  },
+  "snapshot_initial_rust_implementation_changed": false,
+  "current_producer_evidence": "mydocs/pr/assets/issues7754_7765/source32/README.md"
 }
