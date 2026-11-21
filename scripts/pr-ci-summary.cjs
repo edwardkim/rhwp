@@ -43,7 +43,8 @@ function summary(pull, reports) {
     const runLink = '[시도 ' + attempt + '](' + url + '/attempts/' + attempt + ')';
     let hasDetails = evidence.length > 0;
     for (const entry of evidence) {
-      const point = entry.point.replace(/[^\p{L}\p{N} _./()%×:+,-]/gu, ' ').slice(0, 300);
+      const point = entry.point.slice(0, 300).split('\n').slice(0, 4)
+        .map(line => line.replace(/[^\p{L}\p{N} _./()%×↔:+,-]/gu, ' ')).join('`<br>`');
       measurements.push({rank:entry.rank, row:'| ' + entry.name + ' | ' + entry.result +
         ' | `' + point + '` | ' + entry.link + ' |'});
     }

@@ -269,13 +269,13 @@ class RenderDiffEvidenceTests(unittest.TestCase):
         self.assertEqual((index["schema_version"], index["run_id"], index["run_attempt"]), (1,12,2))
         rows = index["comparisons"]
         self.assertEqual(rows["direct"]["result"], "1/1쪽 기준 초과")
-        self.assertIn("+0.410%p", rows["direct"]["point"])
+        self.assertIn("0.410%p 초과", rows["direct"]["point"])
         self.assertEqual(rows["browser"]["role"], "reference")
         self.assertEqual(rows["canvas"]["result"], "결과 미확인")
         self.assertEqual(rows["readiness"]["metrics"]["missing_samples"], ["B"])
         for row in rows.values():
             self.assertIn(EVIDENCE.code(row["result"]), markdown)
-            self.assertIn(EVIDENCE.code(row["point"]), markdown)
+            self.assertIn("<br>".join(map(EVIDENCE.code, row["point"].splitlines())), markdown)
             self.assertTrue(set(row["evidence"]).issubset(index["files"]))
 
     def test_print_sweep_needs_explicit_complete_matching_evidence(self):

@@ -127,14 +127,16 @@ def worst_page(rows, key=None, flag=None):
             'dimensions': [comparison.get(k) for k in ('referenceWidth','referenceHeight','pdfWidth','pdfHeight')]}
 
 
-def review_point(worst, limit=None):
+def review_point(worst, limit=None, failed=False):
     if not worst:
         return ''
-    text = f"{worst['document']} {worst['page']}쪽 {worst['diff_ratio']:.3%}"
+    document = " ".join(worst['document'].splitlines())
+    label = '실패 쪽 최대 픽셀 차이율' if failed else '최대 픽셀 차이율'
+    text = f"{document} {worst['page']}쪽\n{label} {worst['diff_ratio']:.3%}"
     if limit is not None:
-        text += f' / 허용 {limit:.3%}'
+        text += f' (허용 {limit:.3%})'
         if worst['diff_ratio'] > limit:
-            text += f" (+{100 * (worst['diff_ratio'] - limit):.3f}%p)"
+            text += f" / {100 * (worst['diff_ratio'] - limit):.3f}%p 초과"
     return text
 
 
@@ -219,9 +221,9 @@ def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs
     worst = worst_page(canvas_rows, flag=lambda r: r.get('pass') is False)
     total = len(canvas_rows)
     complete = total and passed + failed == total
-    point = review_point(worst, canvas_limit)
+    point = review_point(worst, canvas_limit, failed > 0)
     if worst and worst['diff_pixels'] is not None:
-        point += f" / {worst['diff_pixels']}픽셀"
+        point += f" / 차이 픽셀 {worst['diff_pixels']}개"
     comparison('canvas', 'Canvas 시각 비교', 'gate',
                (f'{failed}/{total}쪽 판정 실패' if failed else f'{passed}/{total}쪽 통과') if complete else '결과 미확인',
                point or 'results.json', 0 if failed else 3 if complete else 1,
@@ -235,7 +237,7 @@ def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs
     point = review_point(worst)
     if worst and all(type(n) is int for n in worst['dimensions']):
         a,b,c,d = worst['dimensions']
-        point += f' ({a}×{b} / {c}×{d})'
+        point += f'\n비교 크기 {a}×{b} ↔ {c}×{d}'
     result = f'참고 경고 {warnings}/{compared}쪽' if compared else '결과 미확인'
     if errors:
         result += f', 측정 오류 {errors}쪽'
@@ -263,7 +265,7 @@ def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs
     if direct_errors:
         result += f', 측정 오류 {direct_errors}쪽'
     comparison('direct', '직접 PDF ↔ 호환 PDF', 'gate' if pdf_config.get('directPdfGate') else 'reference',
-               result, review_point(worst, limit) or 'pdf-results.json', 0 if direct_failures else 2 if direct_count else 1,
+               result, review_point(worst, limit, failed > 0) or 'pdf-results.json', 0 if direct_failures else 2 if direct_count else 1,
                dict(compared=direct_count, total=total, failures=direct_failures, errors=direct_errors, limit=limit, worst=worst),
                [(r['fixture'],r['pageIndex']+1) for r in direct_rows if r.get('directComparison')], [pdf,f'{DIFF}/pdf-summary.md'])
 
@@ -276,9 +278,9 @@ def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs
     ids = {r['sampleId'] for r in checks}
     targets = {s['id'] for s in baseline.get('manifest',{}).get('samples',[]) if s.get('canvaskitReadinessGate')}
     absent = sorted(targets - ids)
-    point = ' / '.join(absent[:3]) or readiness.get('criteria',{}).get('profile','screen')
+    point = ' / '.join(absent[:3]) or '프로필 ' + readiness.get('criteria',{}).get('profile','screen')
     if gpu:
-        point += f' / GPU 확인 {sum(gpu)}개'
+        point += f'\nGPU 사용 확인 {sum(gpu)}개'
     result = '결과 미확인'
     if counts.get('total'):
         result = f"{counts['passed']}/{counts['total']}개 통과"
@@ -310,7 +312,7 @@ def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs
         backend_name = provenance['raster_backend']
         comparison('print:' + directory, 'Visual Sweep ' + backend_name, 'print',
                    f'90% 미달 {low}/{len(metrics)}쪽',
-                   f"{provenance['hwp']['path']} {worst['page']}쪽 {worst[raw]:.2f}%",
+                   f"{provenance['hwp']['path']} {worst['page']}쪽\n최저 실루엣 일치율 {worst[raw]:.2f}%",
                    0 if low else 3, dict(below_90=low, measured_pages=len(metrics),
                    measured_commit=provenance['git_head'], backend=backend_name, source=provenance['hwp'],
                    oracle=provenance['pdf'], document_page_counts=data.get('pr_review_gate',{}).get('document_page_counts')),
@@ -374,7 +376,8 @@ def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs
                 '| --- | --- | --- |']
     order = ['direct', 'browser', 'canvas', 'readiness'] + [k for k in comparisons if k.startswith('print:')]
     for item in sorted((comparisons[k] for k in order), key=lambda r: r['priority']):
-        overview.append('| ' + ' | '.join(code(item[k]) for k in ('name','result','point')) + ' |')
+        point = '<br>'.join(code(line) for line in item['point'].splitlines())
+        overview.append(f"| {code(item['name'])} | {code(item['result'])} | {point} |")
     return index, '\n'.join(overview + [''] + lines) + '\n'
 
 

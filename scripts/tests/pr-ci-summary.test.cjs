@@ -100,7 +100,7 @@ with zipfile.ZipFile(out,'w') as z:
     z.writestr('evidence.json',json.dumps({'schema_version':1,'run_id':2,'run_attempt':2,
         'run_url':'https://github.com/example/rhwp/actions/runs/2/attempts/2',
         'pr_head':'a'*40,'tested_sha':'c'*40,'comparisons':{
-            'direct':{'result':'1/1쪽 기준 초과','point':'A 1쪽 2.410% / 허용 2.000% (+0.410%p)','priority':0},
+            'direct':{'result':'1/1쪽 기준 초과','point':'A 1쪽\\n실패 쪽 최대 픽셀 차이율 2.410% (허용 2.000%) / 0.410%p 초과','priority':0},
             'readiness':{'result':'1/2개 통과, 누락 1개','point':'B','priority':1}}}))
 sys.stdout.buffer.write(out.getvalue())
 `]);
@@ -116,6 +116,8 @@ sys.stdout.buffer.write(out.getvalue())
   const [direct,browser,canvas,kit] = await collect();
   assert.equal(direct.result,'1/1쪽 기준 초과');
   assert.match(direct.point,/2.410%.*2.000%.*0.410%p/);
+  const body = summary(pull, [{name:'Render Diff', run, evidence:[direct]}]);
+  assert.match(body, /A 1쪽`<br>`실패 쪽 최대 픽셀 차이율/);
   assert.match(direct.link,/artifacts\/91/);
   assert.equal(browser.result,'결과 미확인');
   assert.equal(canvas.result,'결과 미확인');
