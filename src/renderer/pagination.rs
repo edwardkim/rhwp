@@ -23,11 +23,15 @@ pub(crate) fn page_starts_with_hidden_empty_lines(
     items: &[PageItem],
     hidden: &std::collections::HashSet<usize>,
     source_prefix_already_suppressed: bool,
+    stored_ladder_keeps_line: bool,
 ) -> bool {
     // 저장 줄이 없는 빈 문단은 실제 줄 상자를 소유할 수 있다. 저장 쪽의
     // 숨김 표식으로 추정하지 않고 기존 빈 문단 배치에 맡긴다.
     !source_prefix_already_suppressed
         && !para.line_segs.is_empty()
+        // 한/글이 저장한 사다리가 이 빈 줄의 전진을 이미 계상했으면 한/글은 이 줄을 감추지
+        // 않았다. 저장 조판을 그대로 따른다.
+        && !stored_ladder_keeps_line
         // 명시 쪽·구역 나누기를 소유한 문단은 사용자가 만든 줄 상자를
         // 유지한다. 저장 조판에서 추정한 자동 경계만 숨김 대상이 될 수 있다.
         && (!matches!(
@@ -41,6 +45,56 @@ pub(crate) fn page_starts_with_hidden_empty_lines(
             .chars()
             .all(|c| c.is_control() || c.is_whitespace())
         && page_has_only_hidden_empty_lines(items, hidden)
+}
+
+/// 쪽 첫 빈 문단의 저장 줄을 다음 문단의 저장 첫 줄이 「이 줄 위치 + 줄 높이 + 줄간격 + 이
+/// 문단 뒤 간격 + 다음 문단 앞 간격」에서 이어받으면, 한/글은 이 빈 줄을 감추지 않고 줄 상자를
+/// 남겼다(빈 줄 감추기 구역에서도 한/글 2020 Print 가 이 자리에 다음 내용을 둔다: 과업지시서
+/// 2쪽 빈 줄 0 + 1800 + 1080 = 「목 차」 2880, 시장구조조사 100쪽 0 + 1000 + 300 + 앞 간격
+/// 3320 = 「제3절 소결」 4620). 감춘 줄이면 다음 줄은 이 줄의 전진 없이 이어진다. 합성 줄은
+/// 저장 증거가 아니다.
+pub(crate) fn stored_ladder_keeps_empty_line(
+    para: &Paragraph,
+    next: Option<&Paragraph>,
+    para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
+    dpi: f64,
+) -> bool {
+    use crate::model::paragraph::LineSeg;
+    let (Some(next), [line]) = (next, para.line_segs.as_slice()) else {
+        return false;
+    };
+    let Some(next_line) = next.line_segs.first() else {
+        return false;
+    };
+    if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || next_line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || para.stored_text_partition_is_dirty()
+        || next.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+        || next.cell_format_vpos_dirty
+    {
+        return false;
+    }
+    let spacing = |p: &Paragraph, before: bool| {
+        para_styles
+            .get(p.para_shape_id as usize)
+            .map_or(0, |style| {
+                crate::renderer::px_to_hwpunit(
+                    if before {
+                        style.spacing_before
+                    } else {
+                        style.spacing_after
+                    },
+                    dpi,
+                )
+            })
+    };
+    let kept_end = i64::from(line.vertical_pos)
+        + i64::from(line.line_height)
+        + i64::from(line.line_spacing)
+        + i64::from(spacing(para, false))
+        + i64::from(spacing(next, true));
+    (i64::from(next_line.vertical_pos) - kept_end).abs() <= 1
 }
 
 pub(crate) fn page_has_only_hidden_empty_lines(

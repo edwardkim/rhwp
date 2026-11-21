@@ -966,6 +966,9 @@ impl TypesetState {
         self.data.next_para_is_empty_float_table_anchor = empty_float;
         self.data.next_para_is_plain_text = plain_text;
     }
+    pub(in crate::renderer::typeset) fn observe_stored_empty_line_ladder(&mut self, keeps: bool) {
+        self.data.stored_ladder_keeps_empty_line = keeps;
+    }
     pub(in crate::renderer::typeset) fn enter_column_definition(&mut self, count: u16) {
         self.data.col_count = count;
     }
