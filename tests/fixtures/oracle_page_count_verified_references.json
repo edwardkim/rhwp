@@ -136,6 +136,24 @@
       "pages": 215,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp",
+      "source_sha256": "bd45ac8a92eefc77695a0800130215452cd83f9a2f312e41d4c09385e31857f2",
+      "pdf": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf",
+      "pdf_sha256": "83b9986558d2bc36686944beedde8463af16de996ebcd8216a35b9cc698dcbc4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "samples/issue5140-version-boundary/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+      "source_sha256": "7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3",
+      "pdf": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf",
+      "pdf_sha256": "77b4f67f348aa4ce825845c8635e1219152d4a53fde3bb5a321dedf1bb783909",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "samples/issue5140-version-boundary/README.md"
     }
   ]
 }
