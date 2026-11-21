@@ -81,10 +81,10 @@ fn partial_summary_patch_keeps_other_fields() {
 
 #[test]
 fn editing_title_preserves_unrelated_metadata_xml_after_hwpx_round_trip() {
-    const UNKNOWN: &str = r#"<opf:meta name="extension" vendor="example"><![CDATA[A < B]]><v:extra xmlns:v="urn:example">x</v:extra></opf:meta>"#;
+    const UNKNOWN: &str = r#"<opf:meta name="extension" vendor="example"><![CDATA[A < B </opf:metadata>]]><v:extra xmlns:v="urn:example"><opf:meta name="creator">wrong</opf:meta></v:extra></opf:meta>"#;
     let mut doc = open("field-01.hwp");
     let metadata = format!(
-        r#"<opf:metadata><opf:title>old</opf:title>{UNKNOWN}<opf:meta name="creator" content="text"><![CDATA[A & B]]></opf:meta></opf:metadata>"#
+        r#"<opf:metadata xml:lang="ko"><opf:title>old</opf:title><opf:meta name="subject"/>   {UNKNOWN}<opf:meta name="creator" content="text"><![CDATA[A & B]]></opf:meta></opf:metadata>"#
     );
     let entries = &mut doc.document_mut().hwpx_aux_entries;
     entries.retain(|(path, _)| path != "Contents/content.hpf");
@@ -97,6 +97,7 @@ fn editing_title_preserves_unrelated_metadata_xml_after_hwpx_round_trip() {
         .hwpx_aux_entry("Contents/content.hpf")
         .unwrap();
     assert!(std::str::from_utf8(hpf).unwrap().contains(UNKNOWN));
+    assert_eq!(reopened.document_summary().subject.as_deref(), Some(""));
     assert_eq!(reopened.document_summary().author.as_deref(), Some("A & B"));
     assert_eq!(reopened.document_summary().title.as_deref(), Some("new"));
 }

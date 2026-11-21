@@ -344,54 +344,52 @@ fn attr_value(e: &quick_xml::events::BytesStart<'_>, key: &str) -> Option<String
     )
 }
 
-fn metadata_range(hpf: &str) -> Option<(usize, usize)> {
-    let open = hpf.find("<opf:metadata")?;
-    let rest = &hpf[open..];
-    let gt = rest.find('>')?;
-    if rest.as_bytes()[gt - 1] == b'/' {
-        return Some((open, open + gt + 1));
-    }
-    let close = rest.find("</opf:metadata>")? + "</opf:metadata>".len();
-    Some((open, open + close))
-}
+use crate::parser::hwpx::content::metadata_range;
 
-/// `<opf:metadata>` 의 값을 `(이름, 값)` 으로 푼다. 제목·언어는 `title`·`language` 다.
+/// OPF metadata reads only direct child fields. An extension can contain names
+/// that also occur at the package level.
 fn metadata_entries(block: &str) -> Vec<(String, String)> {
     let mut reader = Reader::from_str(block);
-    let mut out: Vec<(String, String)> = Vec::new();
-    let mut current: Option<String> = None;
+    let mut out = Vec::new();
     loop {
-        match reader.read_event() {
-            Ok(Event::Start(e)) | Ok(Event::Empty(e)) => {
+        let Ok(event) = reader.read_event() else {
+            break;
+        };
+        let empty = matches!(event, Event::Empty(_));
+        match event {
+            Event::Start(e) if e.name().as_ref() == "opf:metadata" => continue,
+            Event::Start(e) | Event::Empty(e) => {
                 let name = match e.name().as_ref() {
-                    "opf:title" => Some("title".to_string()),
-                    "opf:language" => Some("language".to_string()),
+                    "opf:title" => Some(String::from("title")),
+                    "opf:language" => Some(String::from("language")),
                     "opf:meta" => attr_value(&e, "name"),
                     _ => None,
                 };
+                let mut value = String::new();
+                if !empty {
+                    loop {
+                        match reader.read_event() {
+                            Ok(Event::Text(t)) => value.push_str(t.as_ref()),
+                            Ok(Event::CData(t)) => value.push_str(t.as_ref()),
+                            Ok(Event::GeneralRef(r)) => value.push_str(
+                                &crate::parser::hwpx::section::decode_xml_general_ref(&r),
+                            ),
+                            Ok(Event::Start(child)) => {
+                                if reader.read_to_end(child.name()).is_err() {
+                                    return out;
+                                }
+                            }
+                            Ok(Event::End(_)) => break,
+                            Err(_) | Ok(Event::Eof) => return out,
+                            _ => {}
+                        }
+                    }
+                }
                 if let Some(name) = name {
-                    out.push((name.clone(), String::new()));
-                    current = Some(name);
+                    out.push((name, value));
                 }
             }
-            Ok(Event::Text(t)) => {
-                if let (Some(_), Some(last)) = (&current, out.last_mut()) {
-                    last.1.push_str(t.as_ref());
-                }
-            }
-            Ok(Event::CData(data)) => {
-                if let (Some(_), Some(last)) = (&current, out.last_mut()) {
-                    last.1.push_str(data.as_ref());
-                }
-            }
-            Ok(Event::GeneralRef(r)) => {
-                if let (Some(_), Some(last)) = (&current, out.last_mut()) {
-                    last.1
-                        .push_str(&crate::parser::hwpx::section::decode_xml_general_ref(&r));
-                }
-            }
-            Ok(Event::End(_)) => current = None,
-            Ok(Event::Eof) | Err(_) => break,
+            Event::End(_) | Event::Eof => break,
             _ => {}
         }
     }
