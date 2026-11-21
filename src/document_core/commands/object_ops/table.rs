@@ -1932,6 +1932,37 @@ impl DocumentCore {
         }
         Ok("{\"ok\":true}".to_string())
     }
+    /// 표 셀·글상자·머리말/꼬리말 안 도형에 글상자를 붙이거나 뗀다(본문은 `set_text_box_at`).
+    /// 경로는 `setCellShapePropertiesByPath`와 같다. 반환은 `{"ok":바뀜}`이고, 그리기 개체가 아니면 까닭을 준다.
+    pub fn set_text_box_at_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+        attach: bool,
+    ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path_json(cell_path_json)?;
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = Self::resolve_cell_paragraph_mut(section, parent_para_idx, &path)?;
+        let changed = match crate::document_core::queries::hwpctrl_sets::toggle_shape_text_box(
+            para.controls.get_mut(inner_control_idx),
+            attach,
+        ) {
+            Ok(changed) => changed,
+            Err(reason) => return Ok(format!("{{\"ok\":false,\"reason\":\"{}\"}}", reason)),
+        };
+        if changed {
+            section.raw_stream = None;
+            self.finish_loaded_source_cache_after_object_edit(section_idx);
+            self.paginate_if_needed();
+            self.invalidate_page_tree_cache();
+        }
+        Ok(format!("{{\"ok\":{}}}", changed))
+    }
+
     pub fn set_cell_shape_properties_by_path_native(
         &mut self,
         section_idx: usize,

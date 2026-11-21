@@ -1660,30 +1660,15 @@ impl DocumentCore {
             .paragraphs
             .get_mut(para_idx)
             .ok_or_else(|| HwpError::InvalidField(format!("문단 {} 없음", para_idx)))?;
-        let Some(Control::Shape(shape)) = para.controls.get_mut(control_index) else {
-            return Ok(r#"{"ok":false,"reason":"그리기 개체가 아니다"}"#.to_string());
-        };
-        let Some(drawing) = shape.drawing_mut() else {
-            return Ok(r#"{"ok":false,"reason":"글상자를 담을 수 없는 개체다"}"#.to_string());
-        };
-        let changed = if attach {
-            if drawing.text_box.is_some() {
-                false
-            } else {
-                drawing.text_box = Some(TextBox {
-                    paragraphs: vec![Paragraph::new_empty()],
-                    ..Default::default()
-                });
-                true
+        match toggle_shape_text_box(para.controls.get_mut(control_index), attach) {
+            Ok(changed) => {
+                if changed {
+                    section.raw_stream = None;
+                }
+                Ok(format!("{{\"ok\":{}}}", changed))
             }
-        } else {
-            drawing.text_box.take().is_some()
-        };
-        if changed {
-            drawing.sync_text_box_storage_bit();
-            section.raw_stream = None;
+            Err(reason) => Ok(format!("{{\"ok\":false,\"reason\":\"{}\"}}", reason)),
         }
-        Ok(format!("{{\"ok\":{}}}", changed))
     }
 
     /// 캡션 붙이기 — 웹한글컨트롤 `Run("ShapeObjAttachCaption")`.
@@ -2458,6 +2443,34 @@ impl DocumentCore {
         let (_, lists) = self.collect_fields_and_lists();
         cursor_paragraph(self, &lists, list_id, para_in_list)
     }
+}
+
+/// 그리기 개체에 빈 글상자를 붙이거나 뗀다. 바뀌었으면 true, 개체가 글상자를 담을 수 없으면 Err(까닭).
+pub(crate) fn toggle_shape_text_box(
+    ctrl: Option<&mut Control>,
+    attach: bool,
+) -> Result<bool, &'static str> {
+    let Some(Control::Shape(shape)) = ctrl else {
+        return Err("그리기 개체가 아니다");
+    };
+    let Some(drawing) = shape.drawing_mut() else {
+        return Err("글상자를 담을 수 없는 개체다");
+    };
+    let changed = if attach {
+        drawing.text_box.is_none() && {
+            drawing.text_box = Some(TextBox {
+                paragraphs: vec![Paragraph::new_empty()],
+                ..Default::default()
+            });
+            true
+        }
+    } else {
+        drawing.text_box.take().is_some()
+    };
+    if changed {
+        drawing.sync_text_box_storage_bit();
+    }
+    Ok(changed)
 }
 
 #[cfg(test)]
