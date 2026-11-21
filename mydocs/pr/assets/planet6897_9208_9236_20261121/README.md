@@ -31,3 +31,5 @@ Studio·공용 JS 테스트 2,820건이 통과했고 2건은 제외됐다.
 [현재 검증 영수증](current-validation.json).
 
 [검증 입력·Print PDF·TSV의 커밋 바이트 대조](submission-inputs.json).
+
+중첩 표는 `H2GTRM.TTF` 기호 공급 조건에서 Native와 fresh WASM 각 17쪽의 TSV가 기존 보호 TSV와 일치했다. 같은 글꼴 조건의 고정 base 대조는 별도로 남았다. [중첩 표 결과](nested-hy-gothic-validation.json).

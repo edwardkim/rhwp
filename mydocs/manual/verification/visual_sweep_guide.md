@@ -396,6 +396,8 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 일반 기여자의 비공개 원본 글꼴 보유 의무를 추가하지 않는다.
 다른 호스트의 수용 결과를 Mac에서 비교할 때는 누락된 기준 글꼴을 먼저 확보한다.
 환경 차이를 하락 허용 사유로 쓰거나 점수가 높은 대체 글꼴을 임의로 선택하지 않는다.
+중첩 표 `issue2007_nested_cell_pagination_42065.hwp`에는
+[한양중고딕 기호 공급 조건](#중첩-표-보호-문서의-한양중고딕-기호-공급)을 적용한다.
 
 1. 정본 manifest의 해당 데이터셋 `source.evidence_commit`에서 `condition_evidence`를 읽고
    기록된 SHA-256을 확인한다. 최신 작업 폴더의 같은 이름 JSON으로 대신하지 않는다.
@@ -514,6 +516,26 @@ TTF → TTC의 해당 face → OpenType 프로그램 순서로 수행하고, 원
 
 비공개 글꼴 바이너리는 제출하지 않는다. 검증용 공급 파일은 ignored output에 두고 출처와
 프로그램 대응 근거만 기록한다. 일반 기여자에게 비공개 원본 보유를 요구하는 규칙은 아니다.
+
+### 중첩 표 보호 문서의 한양중고딕 기호 공급
+
+[`issue2007_nested_cell_pagination_42065.hwp`](../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp)의
+`※`(U+203B)는 원본 기호 슬롯에 `한양중고딕`으로 지정되어 있다. 유사한 기호 모양이나 한컴 Print의
+Type 3 글꼴 이름으로 원본 글꼴을 추정하기 전에 원본의 문자 위치, 글자 모양, 기호 슬롯을 확인한다.
+
+Native와 fresh WASM 모두 기존 한양중고딕 OTF 공급을 유지하고, 그 프로그램에 빠진 기호는
+`H2GTRM.TTF`(`HY중고딕`, family `HYGothic-Medium`, PostScript `H2gtrM`)에서 공급한다.
+실제 파일의 이름과 U+203B의 cmap을 확인한 뒤, 개별 `--font-path`에 파일을 먼저 지정하고
+나머지 글꼴 디렉터리를 뒤에 지정한다.
+
+이 문서의 [이전 글꼴 환경](../../pr/assets/jinho-von-choi-20261114/font-supply/nested-symbol-slot-environment.json)을
+검증용으로 복사하고 `glyphFallbacks`의 `HY Junggothic`과 `한양중고딕` 항목을 각각
+`["HYGothic-Medium"]`으로 지정한다. 이전 환경과 당시 증적은 보존한다. 이 문서의 새 검증에는
+`RHWPIndependentHFTSymbols.otf`를 공급하지 않는다. 다른 문서의 글꼴 매핑은 각 원본과 독립 Print로 확인한다.
+
+[한컴 2020 Print](../../../pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf)와
+compat 2022, 96 DPI로 17쪽 전체를 비교한다. 5쪽의 `※` 세 곳을 직접 판독하고,
+고정 base와 후보에 같은 글꼴 조건을 적용해 전쪽 TSV와 기존 보호 하한을 대조한다.
 
 ### macOS 외부 연결 그림 공급
 
