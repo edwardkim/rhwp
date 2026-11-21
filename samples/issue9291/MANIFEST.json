@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9291,
+  "title": "빈 줄 감추기 구역에서 한/글 저장 사다리가 자리를 남긴 쪽 첫 빈 줄까지 지워 쪽 본문이 위로 당겨진다",
+  "entries": [
+    {
+      "path": "samples/issue9291/geumjeong-task-order-page-start-empty-line.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9291",
+      "originalFilename": "3350000-202300004_D0150006-1-000_과업지시서(금정구청사 중장기기본구상용역).hwp",
+      "bytes": 81920,
+      "sha256": "862b6675734f5fb6fb365800c3aa84519631c063a9c2ee24c103ea0985294545",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.0.0.13462"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9291/geumjeong-task-order-page-start-empty-line-2020.pdf",
+      "referencePdfSha256": "d3d6e42a5c712865a3e4276cd2010aa53a55e5a58d684329293484bb34d20a06",
+      "referencePdfPageCount": 14,
+      "contract": "전체 14쪽으로 한/글 Print 와 같다. 구역 정의는 빈 줄 감추기(bit 19)를 켠다. 2쪽을 여는 빈 문단 pi=21(vpos 0, 줄 높이 1800, 줄간격 1080) 다음 문단 pi=22 의 저장 vpos 2880 은 빈 줄의 전진을 계상한 사다리이므로 빈 줄을 지우지 않는다. 「목 차」 줄 윗변 − 본문 윗변 = 2880HU(38.4px). 다음 문단이 빈 줄과 같은 vpos 에 저장된 반례에서는 빈 줄을 감춘다."
+    }
+  ]
+}
