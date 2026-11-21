@@ -1,0 +1,10 @@
+page	tolerant_content_match_percent	below_90	silhouette_raw_match_percent	silhouette_boundary_reconciled_pixels
+1	99.96	0	99.96	0
+2	99.99	0	99.99	0
+3	99.47	0	99.47	0
+4	88.69	1	87.77	1188
+5	99.73	0	99.73	10
+6	98.83	0	98.82	7
+7	98.96	0	98.96	2
+8	99.40	0	99.38	32
+9	99.19	0	99.19	0
