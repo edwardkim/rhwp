@@ -489,6 +489,7 @@ class WorkflowPromotionExecutionPolicyTests(unittest.TestCase):
         ".github/workflows/gym-release-gate.yml",
         ".github/workflows/native-host-package.yml",
         ".github/workflows/oracle-public-advisory.yml",
+        ".github/workflows/pr-ci-summary.yml",
         ".github/workflows/proptest-roundtrip.yml",
         ".github/workflows/release-binary.yml",
         ".github/workflows/npm-publish.yml",

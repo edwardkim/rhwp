@@ -847,3 +847,9 @@ gh workflow enable <workflow-file> --repo edwardkim/rhwp
 새 GitHub 운영 절차가 생기면 먼저 이 문서의 기존 등급과 수명주기로 표현할 수 있는지 확인한다. 별도
 매뉴얼이 필요하면 이 문서에 경계와 라우팅만 추가한다. 정보구조 또는 canonical 관계를 바꾸면
 [문서 링크와 메타데이터 로컬 검사](markdown_link_check_guide.md)를 실행한다.
+
+## PR CI 요약 코멘트
+
+devel 대상 PR에는 CI, CodeQL, Render Diff의 현재 head·run·attempt를 확인한 보고 코멘트 하나를 유지한다. 실패 job과 실제 완료된 시각 검증 단계는 GitHub 실행 기록에 연결한다. 개별 실행 기록이 없는 경우에는 그 범위를 표시한다. 이 코멘트의 게시 여부는 병합 판정에 사용하지 않는다.
+
+보고 workflow는 기본 브랜치의 코드만 실행하며 PR 첨부 파일을 내려받지 않는다. 기본 브랜치 반영 뒤 실제 PR에서 최초 코멘트 ID와 재실행 뒤 ID가 같은지 확인한다.

@@ -36,7 +36,7 @@ function summary(pull, reports) {
     for (const job of jobs) {
       const link = url + '/job/' + job.id;
       if (FAILED.has(job.conclusion) || job.conclusion === 'cancelled') {
-        const label = job.name.replace(/[^\p{L}\p{N} ._()/:-]/gu, ' ').slice(0, 120);
+        const label = job.name.replace(/[^\p{L}\p{N} ._()/&:-]/gu, ' ').slice(0, 120);
         lines.push('  - [' + label + '](' + link + ') · ' + state(job));
       }
       for (const step of job.steps || []) {
