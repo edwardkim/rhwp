@@ -1,10 +1,11 @@
-//! 관계형 검사. 본문 각주 번호가 차지하는 폭, 단별 줄 소속, 각주 영역과 캐럿을 확인한다.
-//! 근거 갱신 2026-11-21 10:57 KST. 직전 커밋 fb144c2ecc, 커밋 시각 2026-11-20 15:18:40 KST.
-//! 한컴 2020 독립 Print와 96 DPI 원시 2px 실루엣을 비교했다. 세 원본은 각각 1쪽이다.
-//! Native/fresh WASM 일치율은 c2-eachColumn 99.02%/97.77%, c2-rightColumn 100%/100%,
-//! c3u-eachColumn 99.26%/98.48%다. 전쪽 최저는 Native 99.02%, WASM 97.77%다.
-//! 독립 기준은 pdf/pr9234-footnote-columns, 본문·각주 확대와 쪽별 수치는
-//! mydocs/pr/assets/semanticist21-20261121/footnotes에 보존한다.
+//! 관계형 검사. 본문 각주 번호의 폭, 단별 줄 소속과 각주 간격, 편집 캐럿을 확인한다.
+//! 근거 갱신 2026-11-21 18:19 KST. 직전 커밋 3afac61dc22b, 커밋 시각 2026-11-21 11:06:38 KST.
+//! 2026-11-21에 한컴 2020 독립 Print와 96 DPI, 2px raw 실루엣을 비교했다.
+//! c2-eachColumn, c2-rightColumn, c3u-eachColumn은 각각 1쪽이며 세 원본 모두
+//! Native와 fresh WASM이 100.00%다. 두 단 원본의 마지막 각주는 Print에서 양쪽 단의
+//! 기준선이 같고, 각주가 두 개인 단에만 원본의 주석 사이 간격이 한 번 들어간다.
+//! 독립 표본은 pdf/pr9234-footnote-columns, 쪽별 값과 확대 판독은
+//! mydocs/pr/assets/semanticist21-20261121/footnotes 및 validation/final/feature-pages.tsv에 있다.
 //!
 //! 너비가 다른 세 단의 원본은 각주 번호가 포함된 첫 두 단의 저장 줄이 실제 폭을 넘는다.
 //! 처음 열기·본문 편집·두 저장 형식 재열기에서 같은 줄에 참조와 본문을 배치해야 한다.
@@ -99,6 +100,37 @@ fn each_column_notes_draw_under_their_own_column() {
             assert!((area.y + area.h - found[0].0.y - found[0].0.h).abs() < 0.5);
         }
     }
+}
+
+#[test]
+fn each_column_places_the_final_note_line_at_the_bottom_of_its_frame() {
+    let doc = open("c2-eachColumn.hwp");
+    let tree = json(doc.get_page_render_tree(0).unwrap());
+    let frames: Vec<_> = tree["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|node| node["type"] == "FootnoteArea")
+        .collect();
+    assert_eq!(frames.len(), 2);
+    let lines = |frame: &Value| -> Vec<(f64, f64)> {
+        frame["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|node| node["type"] == "TextLine")
+            .map(|node| {
+                let bounds = &node["bbox"];
+                (bounds["y"].as_f64().unwrap(), bounds["h"].as_f64().unwrap())
+            })
+            .collect()
+    };
+    let left = lines(frames[0]);
+    let right = lines(frames[1]);
+    assert_eq!((left.len(), right.len()), (1, 2));
+    // 한컴 Print에서 1번·3번의 기준선이 같고, 2번과 3번 사이에는 원본의 주석 간격이 있다.
+    assert!((left[0].0 - right[1].0).abs() < 0.2);
+    assert!(right[0].0 + right[0].1 < right[1].0);
 }
 
 #[test]

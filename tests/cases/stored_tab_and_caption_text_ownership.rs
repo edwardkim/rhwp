@@ -1,8 +1,9 @@
 //! 관계형 검사. 목차 탭의 앞 글자 전진과 가운데 정렬 캡션의 끝 공백 소유를 원본 대조군과 비교한다.
-//! 주석 갱신 2026-11-21 17:07 KST. 2018년 형식 사양서 1.3 독립 한컴 Print, 96 DPI, 2px raw.
-//! 11월 21일 탭 보정본의 71쪽 최저는 Native·fresh WASM 모두 99.92%다. 2·4쪽은 모두
-//! 100.00%, 62쪽은 모두 99.97%였다. 캡션 보정 후 측정은 같은 사양서의 전쪽 TSV에 기록한다.
-//! 원본·기준 PDF와 확대 판독은 mydocs/pr/assets/semanticist21-20261121/validation/README.md 참조.
+//! 주석 갱신 2026-11-21 18:23 KST. 직전 커밋 2fdba749ce64, 커밋 시각 2026-11-21 17:32:54 KST.
+//! 2026-11-21에 2018년 형식 사양서 1.3의 독립 한컴 PDF와 96 DPI, 2px raw 실루엣을 비교했다.
+//! 71쪽 전체의 최저는 Native와 fresh WASM 모두 99.92%다. 목차 2·4쪽과 캡션 62쪽은
+//! 두 백엔드 모두 100.00%다. 원본·PDF·확대 판독과 전쪽 TSV의 경로는
+//! mydocs/pr/assets/semanticist21-20261121/validation/README.md에 있다.
 
 use rhwp::{
     model::{control::Control, style::UnderlineType},
