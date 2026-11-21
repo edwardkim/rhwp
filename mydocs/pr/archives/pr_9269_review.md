@@ -48,6 +48,15 @@
 
 최신 제품 코드 `19646e69fc9`의 Studio에서 12·15·21·43쪽 화면·인쇄 24건을 다시 확인했다. Canvas2D 실제 출력은 24건이며 그중 16건은 CanvasKit 요청이 글꼴 준비 단계에서 대체된 결과다. 전체 60건의 초기화 응답이 새 WASM 해시와 일치했다. [Studio 최신 빌드 검증 영수증](../assets/planet6897_9240_9282_20261121/validation/actual-studio-v4.json)
 
+### OLE 편집·저장 보존
+
+같은 제품 코드의 CLI에서 검증 사본을 편집해 저장하고, 다시 열어 편집·재저장한 뒤 한 번 더 열었다.
+HWP는 두 저장본 모두 원본의 26바이트 OLE 레코드 두 개와 BinData 바이트를 보존했다.
+HWP에서 만든 HWPX도 같은 순서로 두 번 저장했다. OLE 인스턴스 ID, 크기,
+테두리, BinData 참조와 바이트가 유지됐다. 두 형식에서 모두 편집 문자열이 최종 재열기 때 한 번만
+검색됐으며, 각 저장의 `--verify` 결과도 IR 차이 0건이었다.
+[반복 저장과 독립 CFB·ZIP 검사 결과](../assets/planet6897_9240_9282_20261121/validation/ole-repeat-save-v4.json)
+
 ## Merge 후 원 PR 코멘트
 
 통합 merge SHA의 원본 출력·한컴 PDF raster·review·overlay를 해당 주장 페이지별로 고정하여 본문에 표시한다. 실제 CI와 사용한 한컴 Print 제품 및 MCP 영수증을 함께 남긴다.
