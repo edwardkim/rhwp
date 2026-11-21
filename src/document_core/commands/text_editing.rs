@@ -3385,6 +3385,7 @@ impl DocumentCore {
                             reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                         }
                     }
+                    cell_para.cell_lines_edited = true;
                 }
             }
             Some(Control::Shape(shape)) if cell_idx == 65534 => {
@@ -3757,6 +3758,7 @@ impl DocumentCore {
         };
         // 셀 내용 상자 — 열이 없으므로 미스냅.
         reflow_line_segs(cell_para, paragraph_box, &styles, dpi);
+        cell_para.cell_lines_edited = true;
     }
 
     /// [#2755] path 기반 셀 문단 vpos 재계산 (깊이 ≥ 2 중첩 표 지원).

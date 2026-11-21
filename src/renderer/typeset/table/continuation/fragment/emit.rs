@@ -1629,7 +1629,6 @@ impl TypesetEngine {
             && split_block_start.is_none()
             && end_row > cursor_row
             && table_footnotes.is_empty()
-            && !st.profile.session_edited()
             && mt.allows_row_break_split()
             && (row_geometry_table.cells.iter().any(|cell| {
                 cell.row_span > 1
