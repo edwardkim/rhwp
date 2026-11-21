@@ -18009,10 +18009,7 @@ impl LayoutEngine {
                                 self.nested_plain_text_row_has_line_cuts(
                                     &row_cells,
                                     &row_units[index],
-                                    *rh > row_declared_px + 0.5 && {
-                                        let body = self.current_body_area.get().3;
-                                        body > 0.0 && *rh > body
-                                    },
+                                    !row_has_plain_source_boundary && *rh > row_declared_px + 0.5,
                                 )
                             });
                             let row_has_blank_source_frame = row_units.iter().any(|units| {
@@ -18212,9 +18209,17 @@ impl LayoutEngine {
                                         }
                                     }
 
+                                    let projected_advance =
+                                        if row_has_plain_line_cuts && !fragment.terminal {
+                                            reflowed_nested_row::shared_closing_line_advance(
+                                                &row_units, &fragment,
+                                            )
+                                        } else {
+                                            0.0
+                                        };
                                     units.push(CellUnit {
                                         height: uh,
-                                        following_line_advance: 0.0,
+                                        following_line_advance: projected_advance,
                                         reflowed_line_slot: false,
                                         hard_break_before,
                                         stored_frame_break_before,
@@ -21207,6 +21212,11 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        if let Some(advance) =
+            reflowed_nested_row::continuation_closing_advance(units, start_cut, end_cut)
+        {
+            return advance;
+        }
         if let Some(trim) =
             self.stored_inline_picture_opening_tail(table, cell, units, start_cut, end_cut)
         {

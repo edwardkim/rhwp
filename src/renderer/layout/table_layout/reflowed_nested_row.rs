@@ -11,6 +11,55 @@ pub(super) struct NestedRowFlowEdges {
     pub after: f64,
 }
 
+/// A row can give up only the part of its last line advance shared by all
+/// child cells at this cut. A cell already closed before this unit contributes
+/// no new extent. Keep the full band if any still-open cell has no new cut.
+pub(super) fn shared_closing_line_advance(
+    children: &[std::sync::Arc<Vec<CellUnit>>],
+    cut: &NestedTableUnitCut,
+) -> f64 {
+    children
+        .iter()
+        .zip(&cut.start_cut)
+        .zip(&cut.end_cut)
+        .filter(|((units, start), _)| **start < units.len())
+        .map(|((units, start), end)| {
+            if end > start && *end < units.len() {
+                units[*end - 1].following_line_advance
+            } else {
+                0.0
+            }
+        })
+        .reduce(f64::min)
+        .unwrap_or(0.0)
+}
+
+/// The parent page has reopened this row inside its child text. Its last
+/// visible line stops at its own box, before the advance to the next page.
+pub(super) fn continuation_closing_advance(
+    units: &[CellUnit],
+    start: usize,
+    end: usize,
+) -> Option<f64> {
+    if start == 0 || start >= end || end >= units.len() {
+        return None;
+    }
+    let last = &units[end - 1];
+    let same_row = |unit: &CellUnit| {
+        last.nested_row.is_some()
+            && unit.nested_row == last.nested_row
+            && unit.para_idx == last.para_idx
+    };
+    let next = &units[end];
+    (last.following_line_advance > 0.0
+        && same_row(&units[start - 1])
+        && same_row(&units[start])
+        && same_row(next)
+        && !next.hard_break_before
+        && !next.stored_frame_break_before)
+        .then_some(last.following_line_advance.min(last.height))
+}
+
 impl LayoutEngine {
     /// 실제 재귀 글줄 컷 또는 저장 글줄이 없는 호스트의 재조판 행만 재귀 프레임을 연다.
     /// 저장 호스트의 원자 행은 기존 행 조각 경로가 첫 물리 프레임과 문단 범위를 소유한다.
@@ -102,17 +151,15 @@ impl LayoutEngine {
         &self,
         row_cells: &[&Cell],
         driver_units: &[CellUnit],
-        outgrows_page: bool,
+        outgrows_declared_frame: bool,
     ) -> bool {
         // 현재 재조판한 글줄의 컷을 부모에 전달한다. 원본 저장 행을 단지 여러 줄이라는
         // 이유로 다시 나누지 않는다. 원본의 명시적 재시작은 별도 source 경로가 소유한다.
         //
-        // 선언 높이를 넘어 자란 행이 본문 높이보다도 길면 그 저장 줄은 한/글이 둔 쪽 프레임이
-        // 아니다. 한/글은 쪽을 넘는 행을 저장할 때 다음 쪽 첫 줄에서 vpos를 되감고, rhwp가 편집으로
-        // 지은 줄에는 되감김이 없다. 그 행을 원자로 두면 다음 쪽 머리에 통째로 놓여 넘친 줄이
-        // 쪽 밖으로 잘린다. 한/글 12.30은 쪽 경계에서 "나눔" 표의 그런 행을 글줄 사이에서 나눈다.
+        // 저장된 재시작 경계가 없는 행이 선언 높이보다 자라면 실제 줄 경계를
+        // 부모에도 전달한다. 남은 쪽에 수용할 컷은 부모의 실제 예산으로 정한다.
         driver_units.len() > 1
-            && (outgrows_page || driver_units.iter().any(|unit| unit.reflowed_line_slot))
+            && (outgrows_declared_frame || driver_units.iter().any(|unit| unit.reflowed_line_slot))
             && driver_units
                 .iter()
                 .all(|unit| unit.nested_row.is_none() && unit.vis_start < unit.vis_end)

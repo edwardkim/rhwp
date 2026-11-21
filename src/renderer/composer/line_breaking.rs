@@ -3640,7 +3640,9 @@ pub(crate) fn inline_control_size_hwp_with_storage<S: crate::storage::Storage>(
     Ok({
         let (width, height) = match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => {
-                super::inline_picture_occupied_size_hu(pic)
+                super::inline_picture_metrics::inline_picture_occupied_size_hu_with_storage(
+                    pic, storage,
+                )?
             }
             Control::Shape(shape) if shape.common().treat_as_char => tac_shape_box_hu(shape),
             Control::Table(table) if table.common.treat_as_char => {
