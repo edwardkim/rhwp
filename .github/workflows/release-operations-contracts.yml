@@ -48,4 +48,4 @@ jobs:
             scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
       - name: Execute CI impact policy without repository writes
         run: |
-          node --test scripts/tests/ci-impact-*.test.cjs scripts/tests/ci-workflow-evidence.test.cjs
+          node --test scripts/tests/ci-impact-*.test.cjs scripts/tests/ci-workflow-evidence.test.cjs scripts/tests/pr-ci-summary.test.cjs
