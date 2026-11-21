@@ -175,3 +175,24 @@ fresh WASM의 같은 영역을 확대 판독했다. 33쪽 raw는 Native99.99/WAS
 실제0건으로 조였다. `issue7755/p106-compact-lines-review.png`를 세 출력으로 직접 확인했다.
 이 쪽 raw는 Native/fresh WASM 각각99.94%다. 원본 로그·일반 설정·진단 원문을
 `regression-checks/restored-corpus-*`에 보존한다. 최종 Cargo 전수 검증은 계속 진행한다.
+
+## 소스32의 9개 이슈 전체 측정 종료
+
+10개 평문 원본 합계583쪽을 Native와 최적화 fresh WASM에서 모두 측정했다.
+전쪽 최저는 Native98.08%, fresh WASM98.11%이며98% 미만·누락·쪽수 불일치는 없다.
+공식100.00% 표시는 각각384쪽과378쪽이다. 실제 암호 원본24쪽을 별도로 포함하면 각607쪽이며
+암호/평문 PNG는 같은 경로에서24/24쪽 바이트가 같다. 이 숫자는 고정 생산 소스32의 결과다.
+
+시장구조조사는 사용자가 제공한 수동 한컴2024 Print315쪽과 compat2022로 대조했다.
+두 경로 모두 최저98.40%, 표시100.00%는 Native211쪽·WASM212쪽이다. Native의 원본
+manifest와 fresh WASM의10개 원본 chunk manifest·TSV를 `issue7755/`에 보존했다.
+WASM 통합 TSV는1~315쪽이 정확히 한 번씩 있고, 원본 chunk마다 원문·PDF 전체315쪽
+대조를 확인한다. `chunked-manifest.json`은 원본 chunk 영수증의 집계이며 단일 실행의
+manifest로 위장하지 않는다. `qualified-documents.json`과 두 `*-full-final-validation.json`에
+실제 종료·생산물·명령·입력 SHA를 기록했다.
+
+Native공식3종·fmt·workspace all-targets Clippy는 완료했다. 전체 nextest는 컴파일 중
+최신 devel 유입으로 취소했으며0건 실행이다. 이를 전체 회귀 통과로 집계하지 않는다.
+이전 보호표의 Native23문서 전2023쪽은32쪽 하락으로 실패했다. 원문은
+`gates/protected-native-prior-baseline/`에 보존하고, 최신 devel의 새 생산물과 상향 보호표로
+다시 검증한다. 새 기준에서 이 결과들을 재사용해 완료로 선언하지 않는다.
