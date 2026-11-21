@@ -76,7 +76,9 @@ pub(super) fn closed_float_reset_is_stale(
             )?;
         let declared_height = i64::from(table.common.height).checked_add(caption)?;
         let declared_height = i32::try_from(declared_height).ok()?;
-        let origin = host.line_segs.first()?.vertical_pos;
+        let origin = host
+            .layout_stored_first_origin
+            .unwrap_or(host.line_segs.first()?.vertical_pos);
         let frame = ParagraphFloatPlacement::from_empty_stored_ladder_host(
             host,
             guide,
@@ -89,15 +91,41 @@ pub(super) fn closed_float_reset_is_stale(
         )?;
         // 공유 프레임의 원본 등식은 ±2 HWPUNIT의 저장 양자화만 허용한다.
         let precision = hwpunit_to_px(2, dpi);
-        let guide_top = hwpunit_to_px(guide_line.vertical_pos, dpi);
+        let guide_top = hwpunit_to_px(
+            guide
+                .layout_stored_first_origin
+                .unwrap_or(guide_line.vertical_pos),
+            dpi,
+        );
         if (frame.occupied_bottom - guide_top).abs() > precision {
             return None;
         }
         Some((current_height - frame.occupied_bottom).abs() > precision)
     }
     // 다른 단/zone으로 재기준한 축은 원본 쪽 좌표와 직접 비교하지 않는다.
-    profile.hwp5_origin_hwpx()
-        && !profile.session_edited()
-        && source_frame_base == Some(0)
-        && inspect(paragraphs, para_index, current_items, current_height, dpi) == Some(true)
+    let certificate =
+        (profile.hwp5_origin_hwpx() && !profile.session_edited() && source_frame_base == Some(0))
+            .then(|| inspect(paragraphs, para_index, current_items, current_height, dpi))
+            .flatten();
+    if std::env::var("RHWP_DIAG_RESET_OWNER")
+        .is_ok_and(|filter| filter == "all" || filter.parse().ok() == Some(para_index))
+    {
+        let source = |index: usize| {
+            paragraphs.get(index).map(|paragraph| {
+                (
+                    paragraph.line_segs.first(),
+                    paragraph.layout_stored_first_origin,
+                    paragraph
+                        .source_line_seg_vertical_pos
+                        .as_ref()
+                        .map(Vec::len),
+                    paragraph.controls.len(),
+                    paragraph.text.is_empty(),
+                    paragraph.column_type,
+                )
+            })
+        };
+        eprintln!("RESET_OWNER pi={para_index} origin={} base={source_frame_base:?} current={current_height} certificate={certificate:?} host={:?} guide={:?} tail={:?}", profile.hwp5_origin_hwpx(), source(para_index.saturating_sub(2)), source(para_index.saturating_sub(1)), &current_items[current_items.len().saturating_sub(3)..]);
+    }
+    certificate == Some(true)
 }
