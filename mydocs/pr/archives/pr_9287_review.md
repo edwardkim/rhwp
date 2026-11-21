@@ -3,8 +3,8 @@
 ## 판정
 
 **검증 진행 중.** 고정 devel과 통합 후보에서 원본 전체 9쪽의 SVG를 대조했다. 4쪽의 WMF 변환을
-복구했고 나머지 8쪽 SVG는 바이트 단위로 같다. 한컴 Print와의 Native·fresh WASM 전쪽 일치율 및
-최소 글꼴 회귀 결과는 추가 확인이 필요하다.
+복구했고 나머지 8쪽 SVG는 바이트 단위로 같다. 공식 한컴 Print의 Native 전쪽 최저값은 99.78%다.
+fresh WASM 전쪽 일치율과 최소 글꼴 회귀는 확인 중이다.
 
 ## 접수와 통합
 
@@ -40,3 +40,19 @@
 
 통합 시각 검증은 공식 2020 Print를 기준으로 Visual Sweep `--compat 2022 --dpi 96`의 2px raw 실루엣을
 비교한다. 원 PR의 한컴 2022 기준 측정은 해당 head의 참고 이력이다.
+
+## 통합 Native 검증
+
+고정 devel과 WMF 통합 후보에 동일한 입력·Print PDF·글꼴 공급과 래스터 조건을 적용했다. 4쪽은
+**86.99% → 99.93%**이며, 후보 전쪽 최저는 **9쪽 99.78%**다. 기준보다 하락한 쪽은 없다.
+4쪽 하단의 그림 네 조각이 모두 보이며 기준 PDF의 순서와 구성을 유지한다.
+[Native 검증 영수증](../assets/planet6897_9240_9282_20261121/wmf-9285/native/validation.json) ·
+[기준 TSV](../assets/planet6897_9240_9282_20261121/wmf-9285/native/base-silhouette.tsv) ·
+[후보 TSV](../assets/planet6897_9240_9282_20261121/wmf-9285/native/silhouette.tsv)
+
+- 고정 devel 4쪽 [review](../assets/planet6897_9240_9282_20261121/wmf-9285/native/base-review-004.png) ·
+  [overlay](../assets/planet6897_9240_9282_20261121/wmf-9285/native/base-overlay-004.png)
+- 통합 후보 4쪽 [review](../assets/planet6897_9240_9282_20261121/wmf-9285/native/review-004.png) ·
+  [overlay](../assets/planet6897_9240_9282_20261121/wmf-9285/native/overlay-004.png) ·
+  [실제 출력](../assets/planet6897_9240_9282_20261121/wmf-9285/native/raw-004.png) ·
+  [한컴 Print 래스터](../assets/planet6897_9240_9282_20261121/wmf-9285/native/pdf-004.png)
