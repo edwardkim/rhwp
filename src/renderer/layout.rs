@@ -15449,10 +15449,25 @@ impl LayoutEngine {
                 para_start_y.insert(para_index, y_offset);
             }
         } else {
+            // 조판이 이 표의 host 줄 원점을 확정했으면 문단 원점은 그 줄 위에서 이 문단의 문단 앞
+            // 간격을 뺀 자리다. 앞 문단의 문단 뒤 간격을 아직 더하지 않은 흐름 위치를 같은 문단의
+            // 다른 개체의 기준으로 남기지 않는다.
+            let confirmed_host_origin = ctx
+                .paragraph_float_placements
+                .get(&(para_index, control_index))
+                .and_then(|placement| placement.stored_host_origin)
+                .map(|origin| {
+                    let spacing_before = paragraphs
+                        .get(para_index)
+                        .and_then(|para| styles.para_styles.get(para.para_shape_id as usize))
+                        .map_or(0.0, |style| style.spacing_before);
+                    col_area.y + origin - spacing_before
+                });
             para_start_y.insert(
                 para_index,
                 tac_in_front_decoration_line_shift
                     .map(|_| y_offset_before_tac_in_front_decoration_shift)
+                    .or(confirmed_host_origin)
                     .unwrap_or(y_offset),
             );
         }
