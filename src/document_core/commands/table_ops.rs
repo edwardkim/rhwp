@@ -2429,6 +2429,7 @@ impl DocumentCore {
         let original_width = table.common.width;
         let original_height = table.common.height;
         let original_row_height_sum: u32 = table.get_row_heights().iter().sum();
+        let columns_before = table.column_bounds();
         let mut applied_width_delta: i64 = 0;
         let mut applied_height_delta: i64 = 0;
         for update in updates {
@@ -2446,6 +2447,12 @@ impl DocumentCore {
                 cell.height =
                     (cell.height as i32 + update.height_delta).max(MIN_CELL_SIZE as i32) as u32;
                 applied_height_delta += i64::from(cell.height) - i64::from(old_height);
+            }
+        }
+        // 일부 줄의 칸 너비만 바꿔 줄마다 경계가 달라지면 한컴처럼 그 경계로 열 격자를 나눈다.
+        if let Some(before) = columns_before {
+            if updates.iter().any(|u| u.width_delta != 0) && table.column_bounds().is_none() {
+                table.regrid_columns_from_widths(&before);
             }
         }
         table.update_ctrl_dimensions();

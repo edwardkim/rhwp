@@ -4256,11 +4256,39 @@ impl DocumentCore {
                         }
                     }
 
+                    // 칸·글상자 안 표는 문단·컨트롤 번호가 그 안쪽 문단 기준이라 본문 주소와 겹친다.
+                    // 표 노드의 경로는 마지막 마디가 표 자신(`nested_table_meta`)이므로 그 앞까지를
+                    // 그림·도형처럼 표가 든 칸의 경로(parentParaIdx·cellPath)로 낸다.
+                    let container = table_node
+                        .cell_context
+                        .as_ref()
+                        .filter(|ctx| {
+                            ctx.path.len() > 1
+                                && ctx.path.last().map(|e| e.control_index)
+                                    == table_node.control_index
+                        })
+                        .map(|ctx| {
+                            let path = ctx.path[..ctx.path.len() - 1]
+                                .iter()
+                                .map(|e| {
+                                    format!(
+                                        "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                                        e.control_index, e.cell_index, e.cell_para_index
+                                    )
+                                })
+                                .collect::<Vec<_>>()
+                                .join(",");
+                            format!(
+                                ",\"parentParaIdx\":{},\"cellPath\":[{path}]",
+                                public_para(ctx.parent_para_index)
+                            )
+                        })
+                        .unwrap_or_default();
                     controls.push(format!(
-                        "{{\"type\":\"table\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"rowCount\":{},\"colCount\":{}{}{},\"cells\":[{}]}}",
+                        "{{\"type\":\"table\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"rowCount\":{},\"colCount\":{}{}{}{},\"cells\":[{}]}}",
                         node.bbox.x, node.bbox.y, node.bbox.width, node.bbox.height,
                         table_node.row_count, table_node.col_count,
-                        doc_coords, layer_str,
+                        doc_coords, container, layer_str,
                         cells.join(",")
                     ));
                     // Table 내부도 탐색 (셀 내 수식 등 수집)
