@@ -1320,6 +1320,7 @@ static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
 
 /// 저장 줄의 재구성에 사용할 수 있는 실제 원본 전진 표인가.
 /// KoPub Dotum Light의 전진은 독립 Print와 TTF에서 확인했다(#7765).
+/// 맑은 고딕 regular도 원 TTF의 cmap·hmtx와 정적 표를 대조했다.
 /// 글꼴의 모든 문자를 인증하지 않으며 검증된 범위만 별도로 확인한다.
 pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bool) -> bool {
     let face = face.trim();
@@ -1328,7 +1329,15 @@ pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bo
         && (matches!(face, "KoPub돋움체 Light" | "KoPubDotum Light" | "KoPub Dotum Light")
             // 같은 Light 프로그램의 설치 조회 이름도 동일한 검증 범위를 쓴다.
             // Medium/Bold·World와 계열 이름만 같은 프로그램은 인증하지 않는다.
-            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face))
+            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face)
+            || matches!(face, "맑은 고딕" | "Malgun Gothic"))
+}
+
+fn verified_source_projection_character(face: &str, ch: char) -> bool {
+    (' '..='~').contains(&ch)
+        || ('가'..='힣').contains(&ch)
+        || (!matches!(face.trim(), "맑은 고딕" | "Malgun Gothic")
+            && super::kopub_symbol_metrics::advance_em(true, false, ch).is_some())
 }
 
 pub(crate) fn verified_source_projection_text(
@@ -1338,11 +1347,9 @@ pub(crate) fn verified_source_projection_text(
     text: &str,
 ) -> bool {
     verified_source_projection_face(face, bold, italic)
-        && text.chars().all(|ch| {
-            (' '..='~').contains(&ch)
-                || ('가'..='힣').contains(&ch)
-                || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
-        })
+        && text
+            .chars()
+            .all(|ch| verified_source_projection_character(face, ch))
 }
 
 /// 원 프로그램의 확인된 결측을 같은 선언 체인의 실제 폭 공급자가 해소한 경우다.
@@ -1355,10 +1362,7 @@ pub(crate) fn verified_source_projection_text_with_fallback(style: &TextStyle, t
         return false;
     }
     text.chars().all(|ch| {
-        if (' '..='~').contains(&ch)
-            || ('가'..='힣').contains(&ch)
-            || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
-        {
+        if verified_source_projection_character(primary, ch) {
             return true;
         }
         if font_metrics_data::verified_named_program_has_glyph(
