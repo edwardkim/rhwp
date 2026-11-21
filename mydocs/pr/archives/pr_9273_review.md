@@ -2,7 +2,7 @@
 
 ## 통합 후보의 검토 결과
 
-**메인테이너 보정 후 수용 가능.** 70줄로 편집한 중첩 표가 한컴과 같은 21·58·70줄에서 끊긴다. CBTA 문서 59쪽의 뒤 문단도 354.0px에 위치한다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록했다.
+**메인테이너 보정 후 수용 가능.** 70줄로 편집한 중첩 표가 한컴과 같은 21·58·70줄에서 끊긴다. CBTA 문서 59쪽의 뒤 문단도 354.0px에 위치한다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](pr_9292_review.md)에 기록했다.
 
 ## 2026-11-21 메인테이너 보완 착수
 
@@ -12,7 +12,7 @@
 
 ## 메인테이너 보완 검증 중간 결과
 
-30줄 입력은 두 저장 형식에서 모두 한컴 3쪽, Native 4쪽이다. 70줄은 모두 4쪽이지만 4쪽 Native 87.15%이고, 한컴은 2쪽 줄 21, 3쪽 줄 58에서 끝난다. 한컴 재저장본의 줄과 원본의 분할 예산을 대조 중이다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)
+30줄 입력은 두 저장 형식에서 모두 한컴 3쪽, Native 4쪽이다. 70줄은 모두 4쪽이지만 4쪽 Native 87.15%이고, 한컴은 2쪽 줄 21, 3쪽 줄 58에서 끝난다. 한컴 재저장본의 줄과 원본의 분할 예산을 대조 중이다. [쪽별 비교 원장](../assets/semanticist21-20261121/maintainer-comparison.tsv)
 
 ## 최신 devel 병합 후 재검증
 
@@ -24,7 +24,7 @@
 
 ## 독립 Print와 두 렌더러 대조
 
-제품 소스 `c6fb9159bf`에서 측정했다. 편집 직후와 HWP·HWPX 재열기를 구분해 두 렌더러에서 각각 21쪽을 대조했다. 30줄 편집본의 2쪽은 Native 99.97482%, fresh WASM 100.00000%이며, 70줄의 2쪽도 같은 값이다. 70줄의 실제 쪽 경계는 21·58·70줄이다. 저장 재열기까지 포함한 전체 최저는 Native 98.05486%, fresh WASM 97.94231%다. [페이지별 입력·PDF 해시와 raw 측정값](assets/semanticist21-20261121/nested-row-split/pages.tsv)
+제품 소스 `c6fb9159bf`에서 측정했다. 편집 직후와 HWP·HWPX 재열기를 구분해 두 렌더러에서 각각 21쪽을 대조했다. 30줄 편집본의 2쪽은 Native 99.97482%, fresh WASM 100.00000%이며, 70줄의 2쪽도 같은 값이다. 70줄의 실제 쪽 경계는 21·58·70줄이다. 저장 재열기까지 포함한 전체 최저는 Native 98.05486%, fresh WASM 97.94231%다. [페이지별 입력·PDF 해시와 raw 측정값](../assets/semanticist21-20261121/nested-row-split/pages.tsv)
 
 ### 59쪽 표 뒤 문단의 회귀
 
@@ -48,19 +48,19 @@
 
 `c862dcc652`에서 측정과 배치가 함께 쓰는 저장 높이 판정을 보완했다. 자식 표의 글줄을 편집하면 부모 칸의 마지막 저장 줄은 편집 전의 끝을 가리킨다. 이때 실제 자식 표를 포함해 계산한 높이를 사용한다. 저장본의 평문 행이 다음 쪽 원점에서 다시 시작할 때는 자식 칸들이 함께 소유한 마지막 줄간격을 부모 컷에 전달한다.
 
-한컴 2020에서 다시 저장한 HWPX에 30줄과 70줄을 입력한 후 두 형식으로 저장했다. 앞선 후보에서 달랐던 세로 좌표 116건이 모두 독립 한컴 재저장본과 일치했다. HWP·HWPX 각각의 편집 직후와 재열기에서 200개 줄별 캐럿은 같은 쪽에 있었고 셀을 벗어난 캐럿은 0개다. 70줄 문서의 58번째 줄은 3쪽, 59번째 줄은 4쪽에 놓였다. [쪽 소속과 저장 좌표 200행](assets/semanticist21-20261121/nested-row-split/hwpx-edited-lines.tsv)
+한컴 2020에서 다시 저장한 HWPX에 30줄과 70줄을 입력한 후 두 형식으로 저장했다. 앞선 후보에서 달랐던 세로 좌표 116건이 모두 독립 한컴 재저장본과 일치했다. HWP·HWPX 각각의 편집 직후와 재열기에서 200개 줄별 캐럿은 같은 쪽에 있었고 셀을 벗어난 캐럿은 0개다. 70줄 문서의 58번째 줄은 3쪽, 59번째 줄은 4쪽에 놓였다. [쪽 소속과 저장 좌표 200행](../assets/semanticist21-20261121/nested-row-split/hwpx-edited-lines.tsv)
 
 ### 3쪽 마지막 줄과 두 괘선
 
 70줄을 입력한 문서의 3쪽에서 줄 58의 쪽 소속은 맞았지만, 재열기 시 바깥 표 아래 괘선이 글자 위를 지나갔다. 한컴 PDF의 벡터 좌표를 96 DPI로 환산하면 안쪽 괘선 중심은 1,000.03px, 바깥 괘선 중심은 1,003.86px다. 보완 전 재열기에서는 바깥 괘선이 안쪽보다 3.2px 높았다.
 
-자식 표의 글줄 행을 중간에서 열고 닫을 때, 자식 행의 분할 상자는 마지막 줄에서 다음 쪽으로 넘어가는 전진을 이미 제외했다. 부모가 그 전진을 한 번 더 빼면서 괘선을 위로 그렸다. `703a908900`에서 같은 자식 컷의 물리 높이와 블록 표의 위·아래 바깥여백을 부모의 수용 높이와 정렬 높이에 함께 적용했다. 수정 후 HWP·HWPX 편집 직후와 재열기에서 두 괘선 사이 간격은 3.8px다. [보완 전후의 실제 줄·괘선 좌표](assets/semanticist21-20261121/nested-row-split/edited/frame-contract.tsv)
+자식 표의 글줄 행을 중간에서 열고 닫을 때, 자식 행의 분할 상자는 마지막 줄에서 다음 쪽으로 넘어가는 전진을 이미 제외했다. 부모가 그 전진을 한 번 더 빼면서 괘선을 위로 그렸다. `703a908900`에서 같은 자식 컷의 물리 높이와 블록 표의 위·아래 바깥여백을 부모의 수용 높이와 정렬 높이에 함께 적용했다. 수정 후 HWP·HWPX 편집 직후와 재열기에서 두 괘선 사이 간격은 3.8px다. [보완 전후의 실제 줄·괘선 좌표](../assets/semanticist21-20261121/nested-row-split/edited/frame-contract.tsv)
 
 ## 최신 제품 소스의 기능 검증
 
-70줄로 편집한 중첩 표가 한컴과 같은 21·58·70줄에서 끊긴다. CBTA 문서 59쪽의 뒤 문단도 354.0px에 위치한다. 같은 원본의 3쪽 실루엣은 Native 100.00%, fresh WASM 100.00%다. [Native 비교](assets/semanticist21-20261121/validation/final/representative/pr9273/native/review_003.png) · [WASM 비교](assets/semanticist21-20261121/validation/final/representative/pr9273/wasm/review_003.png) [17건 통합 검토](semanticist21_20261121_review.md)
+70줄로 편집한 중첩 표가 한컴과 같은 21·58·70줄에서 끊긴다. CBTA 문서 59쪽의 뒤 문단도 354.0px에 위치한다. 같은 원본의 3쪽 실루엣은 Native 100.00%, fresh WASM 100.00%다. [Native 비교](../assets/semanticist21-20261121/validation/final/representative/pr9273/native/review_003.png) · [WASM 비교](../assets/semanticist21-20261121/validation/final/representative/pr9273/wasm/review_003.png) [17건 통합 검토](pr_9292_review.md)
 
-원본 HWP와 한컴이 재저장한 HWPX에 각각 30줄·70줄을 입력하고, 편집 직후와 HWP·HWPX 저장 후 재열기를 대조했다. 각 백엔드의 전 42쪽에서 한컴 Print 대비 최저 raw는 Native 98.00640%, fresh WASM 97.86924%다. 한컴 HWPX에서 편집한 200개 줄의 저장 원점과 재열기 후 캐럿의 쪽 소속도 일치했다. [두 형식의 검증 결과](assets/semanticist21-20261121/nested-row-split/edited/README.md) · [가장자리 확대 비교](assets/semanticist21-20261121/nested-row-split/edited/nested-last-line.png)
+원본 HWP와 한컴이 재저장한 HWPX에 각각 30줄·70줄을 입력하고, 편집 직후와 HWP·HWPX 저장 후 재열기를 대조했다. 각 백엔드의 전 42쪽에서 한컴 Print 대비 최저 raw는 Native 98.00640%, fresh WASM 97.86924%다. 한컴 HWPX에서 편집한 200개 줄의 저장 원점과 재열기 후 캐럿의 쪽 소속도 일치했다. [두 형식의 검증 결과](../assets/semanticist21-20261121/nested-row-split/edited/README.md) · [가장자리 확대 비교](../assets/semanticist21-20261121/nested-row-split/edited/nested-last-line.png)
 
 ## 병합 후 기여자 PR 댓글 계획
 
@@ -68,11 +68,15 @@
 
 대표 페이지의 Native raw는 100.00%, 확대 확인할 자동 진단 항목은 0개다. fresh WASM은 100.00%, 0개다. 상세 색상과 안티앨리어싱은 인쇄 엔진에 따라 달라 96 DPI의 2px raw와 실제 잉크·위치를 함께 판독했다.
 
-임시 비교 파일은 로컬 `output/pr-review/semanticist21-20261121/resume-1407/protection-correction/verified-entry-count/representative/`에 있다. 댓글에서는 병합 커밋의 원본 이미지를 사용한다. [검증 방법](../manual/verification/visual_sweep_guide.md#github-merge-comment)
+임시 비교 파일은 로컬 `output/pr-review/semanticist21-20261121/resume-1407/protection-correction/verified-entry-count/representative/`에 있다. 댓글에서는 병합 커밋의 원본 이미지를 사용한다. [검증 방법](../../manual/verification/visual_sweep_guide.md#github-merge-comment)
 
 | 출력 | 비교 패널 | 겹침 |
 | --- | --- | --- |
-| native | [비교](assets/semanticist21-20261121/validation/final/representative/pr9273/native/review_003.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9273/native/overlay_003.png) |
-| wasm | [비교](assets/semanticist21-20261121/validation/final/representative/pr9273/wasm/review_003.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9273/wasm/overlay_003.png) |
+| native | [비교](../assets/semanticist21-20261121/validation/final/representative/pr9273/native/review_003.png) | [겹침](../assets/semanticist21-20261121/validation/final/representative/pr9273/native/overlay_003.png) |
+| wasm | [비교](../assets/semanticist21-20261121/validation/final/representative/pr9273/wasm/review_003.png) | [겹침](../assets/semanticist21-20261121/validation/final/representative/pr9273/wasm/overlay_003.png) |
 
 댓글 본문의 이미지 URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/semanticist21-20261121/validation/final/representative/pr9273/` 아래의 해당 파일로 고정한다. 실제 병합 SHA로 바꿔 원 PR에 UTF-8 본문 파일을 게시한 뒤, GitHub API를 통해 본문과 이미지 해시를 확인한다.
+
+## 통합 결과
+
+2026년 11월 22일 02시 15분(KST)에 [통합 PR #9292](https://github.com/edwardkim/rhwp/pull/9292)를 `devel`에 병합했다. 원 기여 커밋 `b1047824674564474907e76972100fb6a072e699`이 병합 이력에 포함된 것을 확인했다. [원 PR #9273](https://github.com/edwardkim/rhwp/pull/9273) · [병합 커밋 `0adeca439f`](https://github.com/edwardkim/rhwp/commit/0adeca439f1481e7245a344b7713d7d563df2ace) · [전체 CI와 검토](pr_9292_review.md)
