@@ -11,6 +11,7 @@ use crate::renderer::{
 
 /// HWPX에 옮긴 저장 reset은 원본 HWP5의 쪽 원점이다. 현재 수용한 표의
 /// 끝이 원본 안내줄과 달라졌다면 그 reset을 현재 쪽의 경계로 빌리지 않는다.
+/// 빈 후속 줄을 수용하기 전과 그 줄 상자를 실제 소비한 뒤를 함께 인증한다.
 /// 잔여 fit이나 채움률이 아니라 같은 원본 상자·실제 소비 위치를 인증한다.
 pub(super) fn closed_float_reset_is_stale(
     profile: LayoutCompatibilityProfile,
@@ -39,6 +40,7 @@ pub(super) fn closed_float_reset_is_stale(
         if current.column_type != ColumnBreakType::None
             || !current.controls.is_empty()
             || current.line_segs.first()?.vertical_pos != 0
+            || super::is_synthetic_line_seg(current.line_segs.first()?)
             || current.stored_text_partition_is_dirty()
             || current.cell_format_vpos_dirty
             || !guide.text.is_empty()
@@ -50,17 +52,24 @@ pub(super) fn closed_float_reset_is_stale(
             || guide.source_line_seg_vertical_pos.is_some()
             || super::is_synthetic_line_seg(guide_line)
             || guide_line.line_height <= 0
+            || guide_line.line_spacing < 0
             || !current_height.is_finite()
-            || current_items
-                .iter()
-                .any(|item| super::page_item_para_index(item) == Some(guide_index))
         {
             return None;
         }
-        let Some(PageItem::Table {
+        let (table_item, guide_consumed) = match current_items {
+            [.., table @ PageItem::Table { .. }] => (table, false),
+            [.., table @ PageItem::Table { .. }, PageItem::FullParagraph { para_index }]
+                if *para_index == guide_index =>
+            {
+                (table, true)
+            }
+            _ => return None,
+        };
+        let PageItem::Table {
             para_index: owner,
             control_index,
-        }) = current_items.last()
+        } = table_item
         else {
             return None;
         };
@@ -100,7 +109,28 @@ pub(super) fn closed_float_reset_is_stale(
         if (frame.occupied_bottom - guide_top).abs() > precision {
             return None;
         }
-        Some((current_height - frame.occupied_bottom).abs() > precision)
+        let host_shift =
+            hwpunit_to_px(host.line_segs.first()?.vertical_pos, dpi) - hwpunit_to_px(origin, dpi);
+        let current_guide_top = hwpunit_to_px(guide_line.vertical_pos, dpi);
+        if (frame.occupied_bottom + host_shift - current_guide_top).abs() > precision {
+            return None;
+        }
+        let guide_advance = if guide_consumed {
+            hwpunit_to_px(
+                guide_line
+                    .line_height
+                    .checked_add(guide_line.line_spacing)?,
+                dpi,
+            )
+        } else {
+            0.0
+        };
+        // 항목에 남았다는 사실은 높이 소비의 증거가 아니다. 숨긴 guide나
+        // 미전진 항목은 현재 줄 끝에 도달하지 않았으므로 인증하지 않는다.
+        if (current_height - (current_guide_top + guide_advance)).abs() > precision {
+            return None;
+        }
+        Some((current_height - (guide_top + guide_advance)).abs() > precision)
     }
     // 다른 단/zone으로 재기준한 축은 원본 쪽 좌표와 직접 비교하지 않는다.
     let certificate =
