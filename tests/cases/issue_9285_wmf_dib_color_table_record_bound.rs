@@ -1,9 +1,10 @@
 //! 관계형·고정형 — [#9285] WMF DIB 의 색상표 길이는 담는 레코드의 크기로 정한다. 색상표 없이 저장된 1비트 DIB 를 색상표가 있는 것으로 읽지 않는다.
-//! 주석 갱신: 2026-11-21 19:30 KST (새 파일)
+//! 주석 갱신: 2026-11-21 20:28 KST
 //!
 //! 입력: 산업통상자원부 보도자료 공개 문서(「제4차 어린이제품 안전관리 기본계획 발표」, HWPX,
 //! `appVersion="11, 0, 0, 8658"`, 9쪽) `samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx`.
-//! 기준: 한컴 Print PDF `pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf`(9쪽).
+//! 기준: Windows 데스크톱 한컴 2020 `11.0.0.9136` Hancom PDF Print
+//! `pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf`(9쪽).
 //!
 //! 4쪽 1×4 표 셋째 칸의 그림 `BinData/image7.wmf` 는 그림 조각 넷을 `META_DIBSTRETCHBLT` 쌍(마스크
 //! `SRCPAINT` + 그림 `SRCAND`)으로 싣는다. 마스크는 512×512 1비트 DIB 이고 레코드의 DIB 영역은
@@ -15,12 +16,8 @@
 //!   같은 비트에 흑백 색상표(0 = 검정, 1 = 흰색)를 명시한 WMF 의 결과와 같다.
 //! - 관계형(실문서): 모든 쪽의 SVG 에 변환하지 못한 WMF 원본(`image/x-wmf`)이 남지 않는다.
 //!
-//! 측정(2026-11-21, 이 파일과 같은 커밋의 코드, base = upstream/devel `d7b5286cbf`,
-//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
-//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
-//! - Native: 9쪽 / 9쪽, 4쪽 99.15(base 87.77), 전쪽 최저 98.82(6쪽)
-//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 9쪽 / 9쪽, 4쪽 99.51, 전쪽 최저 99.25(7쪽)
-//! - 증거: `mydocs/pr/assets/issue_9285/`(native·wasm 전쪽 TSV, 4쪽 review·overlay PNG)
+//! 원 PR의 한컴 2022 비교값은 참고 측정으로 보존한다. 4쪽은 Native 99.15%, fresh WASM 99.51%였다.
+//! 통합 검증의 기준과 출처는 `mydocs/pr/assets/planet6897_9240_9282_20261121/wmf-9285/print-verification.json`에 기록한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
