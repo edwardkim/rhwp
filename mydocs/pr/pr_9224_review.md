@@ -27,3 +27,7 @@ HWPX의 `Contents/content.hpf`에 값이 `editorial note`인 CDATA 메타 항목
 원 [PR #9224](https://github.com/edwardkim/rhwp/pull/9224)의 head는 `527ceb0bc3374aa0d6e173142d6b0d840f27d689`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 제목만 바꾼 HWPX에서 별개의 CDATA 메타데이터가 사라진다. 2월 30일을 입력하면 HWP와 HWPX가 서로 다른 날짜를 반환한다. 알 수 없는 메타데이터를 보존하고 유효하지 않은 날짜를 거절하는지 두 형식 저장 후 재열기로 검증한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+제목만 바꾼 뒤 중첩 확장 XML과 CDATA를 HWPX 재열기에서 확인했다. 윤년 2000년 2월 29일은 수용되고 1900년 2월 29일·2026년 2월 30일은 다른 요약 칸 변경 전 거절됐다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

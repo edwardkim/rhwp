@@ -27,3 +27,7 @@
 원 [PR #9235](https://github.com/edwardkim/rhwp/pull/9235)의 head는 `d77ecdbe5b647a99e09895a2f52fd9440632b465`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 활성 누름틀 앞의 감추기 부호를 일괄 삭제한 뒤 C를 입력하면 누름틀 값은 AB에 머문다. 개별 삭제 대조군은 ABC다. 부호 일괄 삭제 뒤 활성 필드 주소를 갱신하고 이어지는 편집과 저장 결과를 검증한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+활성 필드 앞 감추기 삭제 후 글자를 입력해 값 ABC를 확인했다. 공통 주소 갱신과 같은 입력의 정식 회귀가 통과했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

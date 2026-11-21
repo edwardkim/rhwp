@@ -27,3 +27,7 @@
 원 [PR #9238](https://github.com/edwardkim/rhwp/pull/9238)의 head는 `debc6ac352b76de0a9071b5177a82ee92be2f8c0`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 화면 조판 부호를 켜면 새 번호 뒤의 c·d가 명시적 Print 출력에서도 각각 30px씩 밀린다. Screen 표시를 Print의 문자 배치에서 분리하고 두 프로필의 글자 좌표를 독립 확인한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+동일 문서에서 조판 부호 표시를 켜고 끈 Print SVG가 바이트 단위로 동일했다. Screen은 별도로 생성해서 비교했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

@@ -27,3 +27,7 @@
 원 [PR #9231](https://github.com/edwardkim/rhwp/pull/9231)의 head는 `e052d5212e457e382b8268d0a36362f6c290a233`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 화면에서 그림을 숨기면 명시적으로 지정한 Print 출력에서도 그림이 사라지고 자리표시선이 생긴다. 화면 표시 상태를 Print에 적용하지 않도록 보완하고 양 프로필을 같은 문서로 대조한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+동일 문서에서 그림 표시를 껐을 때 Screen은 그림 0개·자리표시선 6개, Print는 그림 1개·자리표시선 0개였다. 표시를 다시 켜면 두 프로필 모두 그림 1개였다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

@@ -27,3 +27,7 @@
 원 [PR #9222](https://github.com/edwardkim/rhwp/pull/9222)의 head는 `2badf48da70b42edc3753f4c06c1d5bb634e57f8`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 그림 자원이 없는 문서에서도 그림 채우기 ID 177을 받아들인다. 같은 도형을 저장하고 다시 열면 HWP는 177, HWPX는 0이 된다. 유효한 그림 자원만 참조하도록 검증하고, 거절 시 기존 속성과 양 형식 저장 결과가 보존되는지 확인한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+없는 그림 ID 177을 설정하면 오류를 반환한다. HWP·HWPX 저장 후 재열기에서 모두 해당 ID가 없고 이미지 자원 수도 0임을 확인했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

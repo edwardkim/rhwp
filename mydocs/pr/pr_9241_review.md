@@ -5,3 +5,7 @@
 원 [PR #9241](https://github.com/edwardkim/rhwp/pull/9241)의 head는 `7ec3e1e94fe323a03180af574f739ae17da1cdd6`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 묶음 크기와 자식 도형의 변환·왕복 관계 검사는 있으나 실제 손잡이로 편집한 원본·한컴 Print·Native 및 fresh WASM 전쪽 결과가 제출되지 않았다. 직선·그림·사각형·타원이 섞인 묶음을 늘린 동일 상태의 독립 출력과 두 렌더러의 전쪽 TSV 및 자식 경계를 대조한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+실제 크기 조정 API로 만든 묶음을 HWP·HWPX로 저장했다. 독립 Print와 Native를 파일별로 비교했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

@@ -5,3 +5,7 @@
 원 [PR #9265](https://github.com/edwardkim/rhwp/pull/9265)의 head는 `0a94a8710270d219590a5ae73678df0f220cbd64`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 인접한 수식 사이에 캐럿을 놓고 내부 붙여넣기할 때 입력이 어느 수식 뒤로 가는지 확인했다. 공개 선언에 pasteInternalLogical도 빠져 있다. 인접 개체 사이의 논리 위치를 보존하고 본문 붙여넣기 및 공개 선언을 검증한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+두 인접한 수식 사이에 X를 본문 내부 붙여넣기로 삽입하면 가[수식]X[수식]나가 된다. 새 관계 검사가 통과했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

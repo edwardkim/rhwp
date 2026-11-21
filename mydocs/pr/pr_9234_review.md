@@ -25,3 +25,7 @@
 원 [PR #9234](https://github.com/edwardkim/rhwp/pull/9234)의 head는 `fb144c2ecceee9f7db6288629121ed521257c16f`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 다단 각주의 클릭·캐럿 및 너비 변경 회귀는 있으나 원본 및 폭 변경·편집 상태에 대응하는 독립 PDF와 양 backend 전쪽 시각 결과가 필요하다. 동일한 편집 상태의 한컴 Print와 Native·fresh WASM 전쪽 TSV 및 각주 영역 확대 대조를 보완한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+11개 원본의 한컴 2020 독립 Print를 확보했다. 3단 원본의 본문 저장 줄 시작은 단 1에서 0·34·42, 단 2에서 0·32였다. 한컴 재저장 줄은 각각 0·31·40, 0·30이며 동일 Print 기준 Native는 89.87%에서 99.26%로 달라졌다. 편집·단 수·여백 변경 4개 상태 6쪽의 Native 최저는 99.63%다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

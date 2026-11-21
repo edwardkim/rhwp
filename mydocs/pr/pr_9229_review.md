@@ -27,3 +27,7 @@
 원 [PR #9229](https://github.com/edwardkim/rhwp/pull/9229)의 head는 `4714549cc641fd511a9646a1f9efb4102e7ea46f`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 직선 끝점을 이동한 중첩 개체는 반복 저장 후에도 좌표를 보존한다. 추적 중인 공개 타입 선언에서는 moveLineEndpointByPath를 사용할 수 없다. 공개 선언을 생성된 WASM 서명과 맞추고 직접 임포트하는 TypeScript 소비 예제로 검증한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+공개 TypeScript 선언에서 직접 가져온 소비 예제의 새 API 17개가 strict 컴파일을 통과했다. 표와 글상자 속 직선 끝점은 각각 HWP·HWPX를 두 번 다시 열어도 (7000, 0, 0, 4000)을 유지했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

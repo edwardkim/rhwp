@@ -29,3 +29,7 @@ GitHub Lint에서 source-side test 수가 4,094개에서 4,102개로 증가하�
 원 [PR #9220](https://github.com/edwardkim/rhwp/pull/9220)의 head는 `01811f5acd316df971cdde73b965b0a82873025a`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 현재 devel과 캡션 편집 및 배치 코드 두 곳에서 충돌한다. 원 head의 lint에서 소스 내부 테스트 4,102개가 상한 4,094개를 초과했다. 기존 도형 캡션 셀 주소와 새 캡션 동작을 모두 보존해 충돌을 해소하고 테스트 배치·lint와 캡션 독립 Print 및 Native·fresh WASM 전쪽 결과를 확인한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+캡션 검사 8건을 공개 편집 API를 사용하는 통합 검사로 옮겼다. 모두 실행됐고 devel 대비 RustUnitTier 검사도 4,094건으로 통과했다. 독립 Print와 대조하면 셀 그림과 달리 글자처럼 취급한 머리말 그림·캡션 안 그림의 실제 출력에 차이가 남는다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)

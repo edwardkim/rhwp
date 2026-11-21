@@ -27,3 +27,7 @@
 원 [PR #9215](https://github.com/edwardkim/rhwp/pull/9215)의 head는 `710f46dcfe9d94de1060f418f6c06806c48bec5e`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
 
 기존 머리말 감추기가 있는 상태에서 잘못된 표 셀로 옮길 때 오류를 반환하면서 기존 감추기까지 지운다. 새 대상의 유효성을 확인한 뒤 상태를 변경하고 실패 전후 기존 감추기가 보존되는 회귀를 추가한다.
+
+## 메인테이너 보완 검증 중간 결과
+
+잘못된 셀 경로에 감추기를 옮기는 입력을 다시 실행했다. 오류 뒤에도 원래 본문 감추기와 속성이 보존됐다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)
