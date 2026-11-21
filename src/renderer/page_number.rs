@@ -238,6 +238,97 @@ impl PageControlEvents {
     }
 }
 
+/// 감추기 조판 부호 하나의 자리와 그것이 적용되는 구역 안 쪽 번호.
+/// `path` 가 비면 본문 문단이고, 아니면 그 문단의 표 셀 경로(컨트롤·셀·셀 문단)다.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct PageHideSource {
+    pub page: usize,
+    pub para: usize,
+    pub path: Vec<(usize, usize, usize)>,
+    pub control: usize,
+}
+
+/// 구역의 감추기 조판 부호를 문서 순서로 모은다. 쪽 매핑은 조판(`PageControlEvents`)과 같다.
+pub(crate) fn page_hide_sources(
+    pages: &[PageContent],
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> Vec<PageHideSource> {
+    use crate::model::control::Control;
+    fn walk(
+        para: &crate::model::paragraph::Paragraph,
+        page: usize,
+        top: usize,
+        path: &mut Vec<(usize, usize, usize)>,
+        out: &mut Vec<PageHideSource>,
+    ) {
+        for (ci, control) in para.controls.iter().enumerate() {
+            match control {
+                Control::PageHide(_) => out.push(PageHideSource {
+                    page,
+                    para: top,
+                    path: path.clone(),
+                    control: ci,
+                }),
+                Control::Table(table) => {
+                    for (cell_idx, cell) in table.cells.iter().enumerate() {
+                        for (cpi, cell_para) in cell.paragraphs.iter().enumerate() {
+                            path.push((ci, cell_idx, cpi));
+                            walk(cell_para, page, top, path, out);
+                            path.pop();
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut by_paragraph: std::collections::HashMap<usize, Vec<(usize, &PageItem)>> =
+        std::collections::HashMap::new();
+    for (page_index, page) in pages.iter().enumerate() {
+        for item in page.column_contents.iter().flat_map(|col| &col.items) {
+            if !matches!(item, PageItem::EndnoteSeparator { .. }) {
+                by_paragraph
+                    .entry(item.para_index())
+                    .or_default()
+                    .push((page_index, item));
+            }
+        }
+    }
+    let mut out = Vec::new();
+    for (pi, para) in paragraphs.iter().enumerate() {
+        let items = by_paragraph.get(&pi).map(Vec::as_slice).unwrap_or(&[]);
+        for (ci, control) in para.controls.iter().enumerate() {
+            if !matches!(control, Control::PageHide(_) | Control::Table(_)) {
+                continue;
+            }
+            let page = match control_page_with_storage(para, ci, items, &crate::storage::Unbounded)
+            {
+                Ok(page) => page.unwrap_or(usize::MAX),
+                Err(never) => match never {},
+            };
+            match control {
+                Control::PageHide(_) => out.push(PageHideSource {
+                    page,
+                    para: pi,
+                    path: Vec::new(),
+                    control: ci,
+                }),
+                Control::Table(table) => {
+                    // 셀 안 감추기는 조판처럼 표가 처음 놓인 쪽에 적용한다.
+                    for (cell_idx, cell) in table.cells.iter().enumerate() {
+                        for (cpi, cell_para) in cell.paragraphs.iter().enumerate() {
+                            let mut path = vec![(ci, cell_idx, cpi)];
+                            walk(cell_para, page, pi, &mut path, &mut out);
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+    out
+}
+
 fn item_starts(item: &PageItem) -> bool {
     match item {
         PageItem::FullParagraph { .. } | PageItem::Table { .. } | PageItem::Shape { .. } => true,
