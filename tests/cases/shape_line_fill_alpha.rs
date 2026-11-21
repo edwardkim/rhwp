@@ -1,16 +1,16 @@
-//! 도형 개체 속성의 선(투명도·화살표 채움)·호 테두리·가로 정렬과 채우기 투명도를 검사한다.
+//! 관계형. 도형 개체 속성의 선(투명도·화살표 채움)·호 테두리·가로 정렬과 채우기 투명도를 검사한다.
 //! 선 투명도(HWP 인스턴스 ID 다음 바이트, HWPX `lineShape@alpha`)와 HWPX 채우기 투명도는 한/글
 //! 12.30처럼 0~255 정수다. 한/글에서 선 투명도 50%·채우기 30%를 준 사각형은 HWPX에
 //! `lineShape alpha="128"`·`winBrush alpha="77"`로, HWP에 같은 바이트로 저장된다.
 
-use crate::document_core::DocumentCore;
+use rhwp::document_core::DocumentCore;
 
 /// 빈 문서 첫 문단의 첫 도형(구역·단 정의 다음) 컨트롤 번호.
 fn shape_control(core: &DocumentCore) -> usize {
-    core.document.sections[0].paragraphs[0]
+    core.document().sections[0].paragraphs[0]
         .controls
         .iter()
-        .position(|control| matches!(control, crate::model::control::Control::Shape(_)))
+        .position(|control| matches!(control, rhwp::model::control::Control::Shape(_)))
         .expect("도형")
 }
 
@@ -88,7 +88,7 @@ fn hwpx_writes_alpha_as_hancom_integers() {
 
 #[test]
 fn hancom_integer_alpha_is_a_byte() {
-    use crate::parser::hwpx::utils::parse_alpha_byte;
+    use rhwp::parser::hwpx::utils::parse_alpha_byte;
     assert_eq!(parse_alpha_byte("77"), Some(77));
     assert_eq!(parse_alpha_byte("128"), Some(128));
     assert_eq!(parse_alpha_byte("0"), Some(0));
