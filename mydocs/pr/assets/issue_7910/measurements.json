@@ -1,0 +1,339 @@
+{
+  "buildSource": "d5321686b81b397ae56b576c2f79241f24602ddb",
+  "dpi": 96,
+  "radiusPx": 2,
+  "nativeBinarySha256": "cc23e7e67aad167e9a571c81f9a3b3dd006ab536cf2bb5dd0c9272835908411f",
+  "wasmBinarySha256": "14e85b2859dae6bb18281b9ecf6716536f5a389b50a286227d0bf1eb2831480a",
+  "hancom2024CrossCheck": {
+    "pdf": "pdf/issue7910/original-hwp-2024.pdf",
+    "sha256": "a6a9a20fe096a50f2fbc31146519655726bced04fc1db9fe08823ff0a45c2330",
+    "print": {
+      "job_id": "8279487c-d41d-4273-8399-6451099f1e0b",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_page_count": 2,
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2024_pdf_driver_one_up"
+    }
+  },
+  "measurements": [
+    {
+      "fixture": "tests/fixtures/issue7909/repro_footer_picture.hwp",
+      "fixtureSha256": "fc8a3f77a60368e2cd2db578456d32e3b73fee8b90a920c0ba2304bd12bf2078",
+      "pdf": "pdf/issue7910/original-hwp-2020.pdf",
+      "pdfSha256": "12bf31ee34c27df890cf0c57db5369e05f25505fe199c7ea48e62b561b0d4973",
+      "print": {
+        "job_id": "5057449e-6e99-4c35-a59a-22880606d3b5",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.17,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/original-hwp.tsv",
+          "sha256": "5d90fc79986f610b8782c99bd834e49826137e3bba691c1fd9527252212acc24"
+        },
+        "wasm": {
+          "pages": [
+            99.18,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/original-hwp.tsv",
+          "sha256": "d6e76a6058985cdc187f9fcb424d8cb4f7771751124be23066ea1c58200e3ef4"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7909/control_footer_nopicture.hwp",
+      "fixtureSha256": "6fd1e3de8fe899982d2ebaba37718bea91741bbf07828d7f7234dd07e8abb7c4",
+      "pdf": "pdf/issue7910/control-hwp-2020.pdf",
+      "pdfSha256": "cce353ff037203ec328a1bf697fb9b30fff8c3c59616adbeba95dc3362c777bc",
+      "print": {
+        "job_id": "9038ac5d-2714-4195-ba2f-57381313e5c7",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.04,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/control-hwp.tsv",
+          "sha256": "ee50e0d87d23d003cf64e04cd044d7298d87c6792e7acdf63da92a84533b58b1"
+        },
+        "wasm": {
+          "pages": [
+            99.05,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/control-hwp.tsv",
+          "sha256": "d02bbf0fb30fcbe40ee355b3eb9ebfa3a85f483040ca109c1d8b8e75423d9b2f"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/hancom-original.hwpx",
+      "fixtureSha256": "c128fb0b019a0cca5f1e0fdcfb67d48650745e6fb2c9bdbd0548915e7d541729",
+      "pdf": "pdf/issue7910/original-hwpx-2020.pdf",
+      "pdfSha256": "0600adc2c672763bdbda9dec1bc40d221cd48f64aad5e3f53e1a6786e9e39064",
+      "print": {
+        "job_id": "9ebf8337-9d6a-4bc1-a1ed-9da0686511e3",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.17,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/original-hwpx.tsv",
+          "sha256": "5d90fc79986f610b8782c99bd834e49826137e3bba691c1fd9527252212acc24"
+        },
+        "wasm": {
+          "pages": [
+            99.18,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/original-hwpx.tsv",
+          "sha256": "d6e76a6058985cdc187f9fcb424d8cb4f7771751124be23066ea1c58200e3ef4"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/no-auto.hwp",
+      "fixtureSha256": "bca3885ffbc057b5cfc55ce3a059e7d77d678c5a74adae7b7d5bafadc2073944",
+      "pdf": "pdf/issue7910/no-auto-hwp-2020.pdf",
+      "pdfSha256": "e84c9a20e74ebb261c93327710d6de157ee46fafe9aeefbe967d1932a6c05c8b",
+      "print": {
+        "job_id": "6f0d791d-453b-4539-bddf-48bc6c531d26",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.17,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/no-auto-hwp.tsv",
+          "sha256": "5d90fc79986f610b8782c99bd834e49826137e3bba691c1fd9527252212acc24"
+        },
+        "wasm": {
+          "pages": [
+            99.18,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/no-auto-hwp.tsv",
+          "sha256": "d6e76a6058985cdc187f9fcb424d8cb4f7771751124be23066ea1c58200e3ef4"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/no-auto.hwpx",
+      "fixtureSha256": "20586c39b7be8fe4a7716921d835160bb72b2968d3bee0eb5f35a9183ab4e973",
+      "pdf": "pdf/issue7910/no-auto-hwpx-2020.pdf",
+      "pdfSha256": "b9140be372e7745139b2e285a3ad272d380af2081a936f568bd4fa2ef341242e",
+      "print": {
+        "job_id": "71c60e21-6d71-432c-a66c-697cbd2b8742",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.17,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/no-auto-hwpx.tsv",
+          "sha256": "5d90fc79986f610b8782c99bd834e49826137e3bba691c1fd9527252212acc24"
+        },
+        "wasm": {
+          "pages": [
+            99.18,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/no-auto-hwpx.tsv",
+          "sha256": "d6e76a6058985cdc187f9fcb424d8cb4f7771751124be23066ea1c58200e3ef4"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/no-picture.hwp",
+      "fixtureSha256": "6c019f93851ee701413d8d39df6e5fa56bff6e41e9078641df522f163f3a792b",
+      "pdf": "pdf/issue7910/no-picture-hwp-2020.pdf",
+      "pdfSha256": "b568f56cf1883b0a6876e367a0aa421cbbc6e43c080053e60adf0f4872fc62f9",
+      "print": {
+        "job_id": "61e1e34b-8bfc-4f9f-8bac-ec5ec30a9c2f",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.11,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/no-picture-hwp.tsv",
+          "sha256": "c549041148606f21c404fe02d301a2f674e8184ee6962bf6e5226e66e4e0ca98"
+        },
+        "wasm": {
+          "pages": [
+            99.12,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/no-picture-hwp.tsv",
+          "sha256": "9388c4e1bb26a174c91d968af1aa68f45f496b4414f938336b970e0174fe44ba"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/no-picture.hwpx",
+      "fixtureSha256": "54bc902442f00ad87b932da31578e534725c75eea1b81a6679f4a449dc52ddee",
+      "pdf": "pdf/issue7910/no-picture-hwpx-2020.pdf",
+      "pdfSha256": "8e79c092a6332a92b93b4f72049a68e890064609121207f1ffcd57ed7b169082",
+      "print": {
+        "job_id": "2835deac-40ba-413a-a444-50b99b0869d4",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.11,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/no-picture-hwpx.tsv",
+          "sha256": "c549041148606f21c404fe02d301a2f674e8184ee6962bf6e5226e66e4e0ca98"
+        },
+        "wasm": {
+          "pages": [
+            99.12,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/no-picture-hwpx.tsv",
+          "sha256": "9388c4e1bb26a174c91d968af1aa68f45f496b4414f938336b970e0174fe44ba"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/no-rect.hwp",
+      "fixtureSha256": "02d084618154840e8d495292ed0cce80e626825def069b13710208bbd17d9257",
+      "pdf": "pdf/issue7910/no-rect-hwp-2020.pdf",
+      "pdfSha256": "6a56020cf83bd296f88eaadefb746bddbbc455a8e486c9d871fbe2e8e72fc1e4",
+      "print": {
+        "job_id": "89487c97-ae07-46e2-ba1b-888858a36652",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.12,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/no-rect-hwp.tsv",
+          "sha256": "9388c4e1bb26a174c91d968af1aa68f45f496b4414f938336b970e0174fe44ba"
+        },
+        "wasm": {
+          "pages": [
+            99.13,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/no-rect-hwp.tsv",
+          "sha256": "1d7fde9cefc3d7419884ac710e77c6cfb343dca9c2c1e9f102f5dd9b0ad5d24b"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/no-rect.hwpx",
+      "fixtureSha256": "143a14f1811e2db7202541b1382e428388ff5db889c3293d0afd35b73e0fe8d8",
+      "pdf": "pdf/issue7910/no-rect-hwpx-2020.pdf",
+      "pdfSha256": "cdf94f556930b38263346a31606c9b8739f469db0d10a8d0813eae2b84d1508f",
+      "print": {
+        "job_id": "b80b2e02-20af-4144-af4a-7a1602b40275",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 2,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.12,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/no-rect-hwpx.tsv",
+          "sha256": "9388c4e1bb26a174c91d968af1aa68f45f496b4414f938336b970e0174fe44ba"
+        },
+        "wasm": {
+          "pages": [
+            99.13,
+            100.0
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/no-rect-hwpx.tsv",
+          "sha256": "1d7fde9cefc3d7419884ac710e77c6cfb343dca9c2c1e9f102f5dd9b0ad5d24b"
+        }
+      }
+    },
+    {
+      "fixture": "tests/fixtures/issue7910/no-final-body-paragraph.hwpx",
+      "fixtureSha256": "b9a34da6629817e84fbadc1b5ff554b399a5840292021ee793c9109a6b11509e",
+      "pdf": "pdf/issue7910/last-body-paragraph-removed-2020.pdf",
+      "pdfSha256": "eb021bf7062c85c0259b53ee77cc1af8d49eabba4dc0bea47b64e50814174e84",
+      "print": {
+        "job_id": "0cd4553d-6da9-4fac-bcad-930ceff03eba",
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_page_count": 1,
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "metrics": {
+        "native": {
+          "pages": [
+            99.17
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/native/last-body-paragraph-removed.tsv",
+          "sha256": "594d3975949dd9b9d1fe48d08ea0baf7a9c39a88f72a7b9c2d145238db108fc0"
+        },
+        "wasm": {
+          "pages": [
+            99.18
+          ],
+          "tsv": "mydocs/pr/assets/issue_7910/wasm/last-body-paragraph-removed.tsv",
+          "sha256": "97fb84e23d40d5a5a2d9538bb629d548820e39d835ffbd947e59bb1467a0b79a"
+        }
+      }
+    }
+  ]
+}
