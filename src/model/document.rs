@@ -338,6 +338,17 @@ pub struct Section {
     pub raw_provenance: Option<crate::model::raw_provenance::SectionSeal>,
 }
 
+/// HWP5 구역 정의 속성 bit 20-21 값과 쪽 번호 종류(`page_num_type`, 1=홀수·2=짝수)를 서로 바꾼다.
+/// 한컴 12.30은 HWP에 홀수 시작을 2, 짝수 시작을 1로 쓴다(HWPX `ODD`·`EVEN` 저장본을 HWP로 저장해 확인).
+/// 서로 맞바꾸기라 읽기와 쓰기에 함께 쓴다.
+pub fn hwp_page_num_type(value: u8) -> u8 {
+    match value {
+        1 => 2,
+        2 => 1,
+        other => other,
+    }
+}
+
 /// 구역 정의 (HWPTAG_CTRL_HEADER - 'secd')
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct SectionDef {

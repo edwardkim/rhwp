@@ -3482,7 +3482,8 @@ impl DocumentCore {
         set_bit(flags, 0x00080000, sd.hide_empty_line); // bit 19
                                                         // bit 20-21: 쪽 번호 종류
         *flags &= !0x00300000; // clear bits 20-21
-        *flags |= ((sd.page_num_type as u32) & 0x03) << 20;
+        *flags |=
+            (u32::from(crate::model::document::hwp_page_num_type(sd.page_num_type)) & 0x03) << 20;
 
         // paragraphs[0]의 Control::SectionDef에도 동기화
         let updated_sd = section.section_def.clone();

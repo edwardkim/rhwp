@@ -156,3 +156,30 @@ fn hwp_save_puts_column_def_right_after_section_def() {
         core.document().sections[0].paragraphs[0].text
     );
 }
+
+/// `hancom-even-start.hwp`: 둘째 구역을 짝수 시작으로 둔 시험 문서를 한컴 12.30이 HWP로 저장한 것.
+/// 한컴은 HWP 구역 정의 속성 bit 20-21에 짝수를 1, 홀수를 2로 쓴다.
+#[test]
+fn hwp_page_start_bits_follow_hancom() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/section_settings_hancom/hancom-even-start.hwp");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).unwrap()).unwrap();
+    let kind = |core: &DocumentCore, section: usize| {
+        let def: serde_json::Value =
+            serde_json::from_str(&core.get_section_def_native(section).unwrap()).unwrap();
+        def["pageNumType"].as_u64().unwrap()
+    };
+    assert_eq!(kind(&core, 1), 2);
+    assert_eq!(page_numbers(&core), [1, 2, 4, 5]);
+
+    core.set_section_def_native(1, r#"{"pageNumType":1}"#)
+        .unwrap();
+    let saved = core.export_hwp_with_adapter_snapshot().unwrap();
+    let reopened = DocumentCore::from_bytes(&saved).unwrap();
+    assert_eq!(kind(&reopened, 1), 1);
+    assert_eq!(
+        (reopened.document().sections[1].section_def.flags >> 20) & 0x03,
+        2
+    );
+    assert_eq!(page_numbers(&reopened), [1, 2, 3, 4]);
+}
