@@ -1654,6 +1654,12 @@ pub(crate) fn fit_measured_table_nested_tail_to_declared_height_with_storage<
                     paragraph.text.trim().is_empty()
                         && paragraph.controls.is_empty()
                         && paragraph.line_segs.len() <= 1
+                        // 양의 저장 원점은 child 뒤에서 공간을 소비하는 실제 줄이다.
+                        // 빈 문자열이라는 이유로 reset으로 취급해 높이를 회수하지 않는다.
+                        && paragraph
+                            .line_segs
+                            .first()
+                            .is_none_or(|line| line.vertical_pos == 0)
                 })
                 && !child.common.treat_as_char
                 && child.row_count == 1
