@@ -17,7 +17,7 @@
       },
       "referenceEngine": "2020",
       "referencePdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
-      "referencePdfSha256": "975e799947cd2d3f66f7687fc05b8513cfcb1d84580f5591cb0b146d15825fc8",
+      "referencePdfSha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
       "referencePdfPageCount": 9,
       "contract": "전체 9쪽으로 한/글 Print 와 같다. 4쪽 1×4 표 셋째 칸의 그림 BinData/image7.wmf 는 색상표 없는 512×512 1비트 마스크 DIB 넷을 META_DIBSTRETCHBLT(SRCPAINT)로 싣는다. 이 WMF 가 변환되어 모든 쪽의 SVG 에 변환하지 못한 WMF 원본(image/x-wmf)이 남지 않는다."
     }
