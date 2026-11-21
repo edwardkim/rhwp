@@ -1451,3 +1451,46 @@ fn char_overlap_with_border_keeps_charsz_reduction() {
         "border_type=4 는 사각 테두리를 그린다: {output}"
     );
 }
+
+#[test]
+fn test_svg_image_keeps_jpeg_pixels_upright_like_hancom() {
+    use base64::Engine as _;
+    use image::{ImageFormat, RgbImage};
+    use std::io::Cursor;
+    // 브라우저는 SVG <image>의 JPEG EXIF 방향을 적용한다. 한/글처럼 바이트 그대로 그리게 방향을 1로 둔다.
+    let mut jpeg = Vec::new();
+    RgbImage::new(2, 1)
+        .write_to(&mut Cursor::new(&mut jpeg), ImageFormat::Jpeg)
+        .expect("JPEG 인코딩");
+    // II, IFD0 = 방향(0x0112, SHORT, 1개) 6
+    let tiff: [u8; 26] = [
+        b'I', b'I', 42, 0, 8, 0, 0, 0, 1, 0, 0x12, 0x01, 3, 0, 1, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 0,
+    ];
+    let mut app1 = vec![0xFF, 0xE1];
+    app1.extend_from_slice(&((tiff.len() + 8) as u16).to_be_bytes());
+    app1.extend_from_slice(b"Exif\0\0");
+    app1.extend_from_slice(&tiff);
+    let mut rotated = jpeg[..2].to_vec();
+    rotated.extend_from_slice(&app1);
+    rotated.extend_from_slice(&jpeg[2..]);
+    let image = PageBackgroundImage {
+        data: rotated.clone(),
+        fill_mode: ImageFillMode::FitToSize,
+        brightness: 0,
+        contrast: 0,
+        effect: crate::model::image::ImageEffect::RealPic,
+    };
+    let mut renderer = SvgRenderer::new();
+    renderer.begin_page(200.0, 100.0);
+    renderer.render_page_background_image(&image, &BoundingBox::new(0.0, 0.0, 100.0, 50.0));
+    let output = renderer.output();
+    let prefix = "data:image/jpeg;base64,";
+    let start = output.find(prefix).expect("JPEG data URI") + prefix.len();
+    let end = start + output[start..].find('"').expect("data URI 끝");
+    let shown = base64::engine::general_purpose::STANDARD
+        .decode(&output[start..end])
+        .expect("base64");
+    let mut expected = rotated;
+    expected[2 + 10 + 18] = 1;
+    assert_eq!(shown, expected);
+}

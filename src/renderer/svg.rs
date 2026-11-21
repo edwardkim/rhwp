@@ -2012,7 +2012,10 @@ impl SvgRenderer {
         } else {
             render_mime
         };
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(render_bytes);
+        // 브라우저가 JPEG EXIF 방향으로 돌려 그리지 않게 한/글처럼 바이트 그대로의 방향을 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(render_bytes);
+        let base64_data = base64::engine::general_purpose::STANDARD
+            .encode(upright.as_deref().unwrap_or(render_bytes));
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
 
         let effect_filter_id = if preserve_color_watermark || adjustments_baked {
@@ -2340,7 +2343,10 @@ impl SvgRenderer {
                 .push_str(&format!("<g opacity=\"{}\">\n", opacity));
         }
 
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_data);
+        // 브라우저가 JPEG EXIF 방향으로 돌려 그리지 않게 한/글처럼 바이트 그대로의 방향을 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(&render_data);
+        let base64_data = base64::engine::general_purpose::STANDARD
+            .encode(upright.as_deref().unwrap_or(&render_data));
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
 
         let fill_mode = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
@@ -4403,7 +4409,10 @@ impl Renderer for SvgRenderer {
             } else {
                 (std::borrow::Cow::Borrowed(data), mime_type)
             };
-        let base64_data = base64::engine::general_purpose::STANDARD.encode(&*render_data);
+        // 브라우저가 JPEG EXIF 방향으로 돌려 그리지 않게 한/글처럼 바이트 그대로의 방향을 둔다.
+        let upright = crate::renderer::image_resolver::upright_jpeg(&render_data);
+        let base64_data = base64::engine::general_purpose::STANDARD
+            .encode(upright.as_deref().unwrap_or(&render_data));
         let data_uri = format!("data:{};base64,{}", render_mime, base64_data);
         self.output.push_str(&format!(
             "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"none\" href=\"{}\"/>\n",
