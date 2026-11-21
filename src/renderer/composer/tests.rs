@@ -377,14 +377,14 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
     let mut clean_probe = para.clone();
     clean_probe.replace_line_segs(clean_probe.line_segs.clone());
     let clean_composed = compose_paragraph(&clean_probe);
+    let mut clean_frame = ParagraphBox::content(0..width_hwp).frame(0);
     assert!(!stored_rows_are_stale(
         &clean_composed,
         &clean_probe,
         inner_width,
         &styles,
-        false
+        &clean_frame
     ));
-    let mut clean_frame = ParagraphBox::content(0..width_hwp).frame(0);
     assert!(matches!(
         line_breaking::resolve_stored_line_segs_in_frame(
             &clean_probe,
@@ -400,12 +400,12 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
         Some(line_breaking::StoredRowResolution::Stored)
     ));
 
-    let stale = stored_rows_are_stale(&composed, &para, inner_width, &styles, false);
+    let mut dirty_frame = ParagraphBox::content(0..width_hwp).frame(0);
+    let stale = stored_rows_are_stale(&composed, &para, inner_width, &styles, &dirty_frame);
     assert!(
         stale,
         "the mutation bit, not overflow magnitude, is decisive"
     );
-    let mut dirty_frame = ParagraphBox::content(0..width_hwp).frame(0);
     assert!(matches!(
         line_breaking::resolve_stored_line_segs_in_frame(
             &para,

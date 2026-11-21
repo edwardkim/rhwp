@@ -705,14 +705,14 @@ pub(crate) fn stored_rows_are_stale(
     para: &Paragraph,
     inner_width_px: f64,
     styles: &ResolvedStyleSet,
-    line_wrap_squeeze: bool,
+    frame: &LayoutFrame,
 ) -> bool {
     match stored_rows_are_stale_with_storage(
         composed,
         para,
         inner_width_px,
         styles,
-        line_wrap_squeeze,
+        frame,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
@@ -727,6 +727,7 @@ fn stored_footnote_row_overflows<S: crate::storage::Storage>(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     inner_width: f64,
+    frame: &LayoutFrame,
     storage: &S,
 ) -> Result<bool, S::Error> {
     let count = composed.lines.len();
@@ -736,6 +737,18 @@ fn stored_footnote_row_overflows<S: crate::storage::Storage>(
             .iter()
             .any(|control| matches!(control, Control::Footnote(_)))
         || stored_row_fragments::crosses_physical_frame(para)
+        || count != para.line_segs.len()
+        || inner_width <= 0.0
+        // 내어쓰기·문단 머리·여러 슬롯이 있는 저장 줄의 segment_width는 본문이
+        // 실제로 쓸 수 있는 폭과 다르다. 이런 줄의 캐시는 저장 프레임 판정에 맡긴다.
+        || !frame.exclusions.is_empty()
+        || para.line_segs.iter().any(|seg| {
+            seg.tag & (LineSeg::TAG_IMPLEMENTATION_PROPERTY | LineSeg::TAG_INDENTATION
+                | LineSeg::TAG_PARAGRAPH_HEAD | LineSeg::TAG_AUTO_HYPHENATION) != 0
+                || seg.column_start != para.line_segs[0].column_start
+                || seg.segment_width != para.line_segs[0].segment_width
+        })
+
     {
         return Ok(false);
     }
@@ -803,7 +816,11 @@ fn stored_footnote_row_overflows<S: crate::storage::Storage>(
         if minimum > line.segment_width
             && minimum > crate::renderer::px_to_hwpunit(inner_width, dpi)
         {
-            return Ok(true);
+            // 저장 줄 전체가 번호를 빼고 채운 결과와 같아야, 번호 누락으로
+            // 옛 줄이 만들어졌다는 근거가 있다. 정상 저장 줄의 글꼴 추정 오차를 보존한다.
+            return line_breaking::stored_rows_match_without_footnote_advances(
+                para, frame, styles, dpi, storage,
+            );
         }
     }
     Ok(false)
@@ -816,7 +833,7 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
     styles: &ResolvedStyleSet,
     // "한 줄로 입력"(SQUEEZE) 칸. 한/글은 저장 줄 하나에 글을 밀어 넣고 넘치면 겹쳐 찍으므로
     // 과밀만으로는 저장 줄 나눔이 낡았다고 보지 않는다.
-    line_wrap_squeeze: bool,
+    frame: &LayoutFrame,
     storage: &S,
 ) -> Result<bool, S::Error> {
     Ok({
@@ -838,8 +855,8 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
         {
             return Ok(false);
         }
-        if !line_wrap_squeeze
-            && stored_footnote_row_overflows(composed, para, styles, inner_width_px, storage)?
+        if !frame.line_wrap_squeeze
+            && stored_footnote_row_overflows(composed, para, styles, inner_width_px, frame, storage)?
         {
             return Ok(true);
         }
@@ -861,7 +878,7 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
         // [#SQUEEZE] "한 줄로 입력" 칸은 과밀 저장 줄이 정상이다(36481164 「건 명」 칸:
         // 저장 한 줄 19808HU 에 글 약 1.9배 — 한컴 Print 는 한 줄에 겹쳐 찍는다). #2525 의 근거
         // (hwpx-02 5쪽 135자)는 본문 문단이라 이 예외와 겹치지 않는다.
-        for l in composed.lines.iter().filter(|_| !line_wrap_squeeze) {
+        for l in composed.lines.iter().filter(|_| !frame.line_wrap_squeeze) {
             if estimate_composed_line_width_with_storage(l, styles, storage)? > inner_width_px * 1.8
                 && !line_overflow_is_leader_fill_with_storage(l, styles, inner_width_px, storage)?
             {

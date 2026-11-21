@@ -77,6 +77,15 @@ pub(crate) fn flow_inline_controls_with_storage<S: crate::storage::Storage>(
     styles: &ResolvedStyleSet,
     storage: &S,
 ) -> Result<Vec<FlowInlineControl>, S::Error> {
+    measured_flow_controls(para, styles, storage, true)
+}
+
+pub(super) fn measured_flow_controls<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+    include_footnote_advances: bool,
+) -> Result<Vec<FlowInlineControl>, S::Error> {
     Ok({
         if para.controls.is_empty() {
             return Ok(Vec::new());
@@ -97,6 +106,9 @@ pub(crate) fn flow_inline_controls_with_storage<S: crate::storage::Storage>(
                         return None;
                     }
                     if let Control::Footnote(note) = control {
+                        if !include_footnote_advances {
+                            return None;
+                        }
                         let style_id =
                             super::find_active_char_shape(&para.char_shapes, utf16_position);
                         let advance = crate::renderer::layout::note_reference_advance(
