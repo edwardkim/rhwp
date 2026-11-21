@@ -294,6 +294,7 @@ fn test_serialize_para_shape_roundtrip() {
         break_latin_word: None,
         hwpx_plain_para_margin: false,
         hwpx_plain_para_margin_physical: false,
+        hwpx_default_horizontal_margins: None,
     };
 
     let data = serialize_para_shape(&ps);
@@ -690,6 +691,7 @@ fn test_serialize_doc_info_roundtrip() {
         break_latin_word: None,
         hwpx_plain_para_margin: false,
         hwpx_plain_para_margin_physical: false,
+        hwpx_default_horizontal_margins: None,
     });
     doc_info.styles.push(Style {
         raw_data: None,

@@ -3,7 +3,8 @@
 use super::{line_breaking, ParagraphBox, ResolvedStyleSet};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 
-/// 구판 writer가 캐시에 사용한 이전 저장 단위를 공통 여백 해석기로 복원한다.
+/// 구판 writer의 fallback 원본을 공통 여백 해석기로 복원한다.
+/// 출처가 없는 이전 판본은 기존 2배 저장 단위 계약을 유지한다.
 /// px 값을 배로 늘리면 하위 단위 비트가 CHAR인 음수 값의 의미가 달라진다.
 pub(crate) fn previous_margin_styles(
     doc_info: &crate::model::document::DocInfo,
@@ -28,15 +29,21 @@ pub(crate) fn previous_margin_styles_with_storage<S: crate::storage::Storage>(
         let mut previous =
             crate::storage::optional(crate::storage::try_clone(current, storage), failure)?;
         for (raw, style) in doc_info.para_shapes.iter().zip(&mut previous.para_styles) {
-            let px = |value: i32| {
-                value.checked_mul(2).map(|value| {
-                    crate::renderer::style_resolver::paragraph_margin_hwpunit(value, doc_info) * dpi
-                        / crate::renderer::HWPUNIT_PER_INCH
-                })
+            let [left, right, indent] = match raw.hwpx_default_horizontal_margins {
+                Some(margins) => margins,
+                None => [
+                    raw.margin_left.checked_mul(2)?,
+                    raw.margin_right.checked_mul(2)?,
+                    raw.indent.checked_mul(2)?,
+                ],
             };
-            style.margin_left = px(raw.margin_left)?;
-            style.margin_right = px(raw.margin_right)?;
-            style.indent = px(raw.indent)?;
+            let px = |value: i32| {
+                crate::renderer::style_resolver::paragraph_margin_hwpunit(value, doc_info) * dpi
+                    / crate::renderer::HWPUNIT_PER_INCH
+            };
+            style.margin_left = px(left);
+            style.margin_right = px(right);
+            style.indent = px(indent);
         }
         Some(previous)
     })
@@ -97,7 +104,7 @@ fn current_rows_with_storage<S: crate::storage::Storage>(
 
 /// 호출자가 구판 marker·XML 여백 단위를 확인한 뒤에만 사용하는 문맥 인증이다.
 /// 현재 폭에 더 적은 줄이 들어간다는 사실만으로 정상 저장 캐시를 버리지 않는다.
-/// 이전 2배 여백으로 구성한 모든 줄 경계가 원본과 정확히 같아야 한다.
+/// 이전 원본 여백으로 구성한 모든 줄 경계가 원본과 정확히 같아야 한다.
 fn has_previous_margin_partition(
     source: &Paragraph,
     width: f64,
