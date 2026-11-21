@@ -46,6 +46,17 @@
 
 ## 후속 처리 상태
 
-[현재 후보의 검증 영수증](../assets/planet6897_9208_9236_20261121/current-validation.json)에 정본 보호 진행과 남은 조건을 기록했다. 최종 CI와 병합 SHA는 확정 후 기록한다.
+[현재 후보의 검증 영수증](../assets/planet6897_9208_9236_20261121/current-validation.json)에 로컬 제품 검증 결과를 기록했다. [통합 PR #9283](https://github.com/edwardkim/rhwp/pull/9283)의 [코드 head CI](https://github.com/edwardkim/rhwp/actions/runs/44881574506)와 [연계 검사](../assets/planet6897_9208_9236_20261121/integration-code-ci.json)를 통과했다.
 
 Studio 실제 인쇄 프로필의 5쪽을 Canvas2D, CanvasKit 호환 및 기본 경로로 캡처했다. 각 경로의 실제 백엔드가 요청값과 일치했다. [실제 Studio 검증](../assets/planet6897_9208_9236_20261121/current-studio-consumption.json).
+
+메인터너 보정 커밋은 [`6b905d0697`](https://github.com/edwardkim/rhwp/commit/6b905d0697d013655d47c29617ba29a432e12c37)다.
+
+## Merge 후 contributor PR comment 계획
+
+표의 마지막 줄과 다음 쪽의 첫 문단 소속을 확인했습니다. 칸의 마지막 글줄 뒤 간격을 바로잡아 이어지는 표와 후속 표의 시작 위치를 보정했습니다.
+
+해당 문서의 데스크톱 한컴 Hancom PDF Print와 최신 후보의 Native·fresh WASM 비교를 기록한다. 통합 병합 SHA에서 다음 쪽의 review·overlay 바이트를 확인한 뒤 원 PR에 표시한다.
+
+- Native · 4쪽 100.00% ([review](../assets/planet6897_9208_9236_20261121/cases/9221/native/review/review_004.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9221/native/overlay/overlay_004.png)), 5쪽 99.79% ([review](../assets/planet6897_9208_9236_20261121/cases/9221/native/review/review_005.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9221/native/overlay/overlay_005.png)).
+- fresh WASM · 4쪽 100.00% ([review](../assets/planet6897_9208_9236_20261121/cases/9221/wasm/review/review_004.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9221/wasm/overlay/overlay_004.png)), 5쪽 99.62% ([review](../assets/planet6897_9208_9236_20261121/cases/9221/wasm/review/review_005.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9221/wasm/overlay/overlay_005.png)).

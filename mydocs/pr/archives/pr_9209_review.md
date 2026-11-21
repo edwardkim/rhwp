@@ -57,4 +57,15 @@ fresh WASM에서도 후보와 Print가 46쪽이었다. 분할 구간 23·24·25�
 
 ## 후속 처리 상태
 
-[현재 후보의 검증 영수증](../assets/planet6897_9208_9236_20261121/current-validation.json)에 정본 보호 진행과 남은 조건을 기록했다. 최종 CI와 병합 SHA는 확정 후 기록한다.
+[현재 후보의 검증 영수증](../assets/planet6897_9208_9236_20261121/current-validation.json)에 로컬 제품 검증 결과를 기록했다. [통합 PR #9283](https://github.com/edwardkim/rhwp/pull/9283)의 [코드 head CI](https://github.com/edwardkim/rhwp/actions/runs/44881574506)와 [연계 검사](../assets/planet6897_9208_9236_20261121/integration-code-ci.json)를 통과했다.
+
+메인터너 보정 커밋은 [`6b905d0697`](https://github.com/edwardkim/rhwp/commit/6b905d0697d013655d47c29617ba29a432e12c37)다.
+
+## Merge 후 contributor PR comment 계획
+
+나뉜 표의 다음 조각과 둘째 표의 쪽 경계를 확인했습니다. 43쪽 그림 두 개가 46쪽으로 밀리는 문제는 칸에 저장된 종이 기준과 소유 쪽을 유지해 보정했습니다.
+
+해당 문서의 데스크톱 한컴 Hancom PDF Print와 최신 후보의 Native·fresh WASM 비교를 기록한다. 통합 병합 SHA에서 다음 쪽의 review·overlay 바이트를 확인한 뒤 원 PR에 표시한다.
+
+- Native · 23쪽 99.89% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/native/review/review_023.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/native/overlay/overlay_023.png)), 43쪽 98.37% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/native/review/review_043.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/native/overlay/overlay_043.png)), 44쪽 99.96% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/native/review/review_044.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/native/overlay/overlay_044.png)), 45쪽 98.43% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/native/review/review_045.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/native/overlay/overlay_045.png)).
+- fresh WASM · 23쪽 99.89% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/review/review_023.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/overlay/overlay_023.png)), 43쪽 98.36% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/review/review_043.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/overlay/overlay_043.png)), 44쪽 99.96% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/review/review_044.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/overlay/overlay_044.png)), 45쪽 98.42% ([review](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/review/review_045.png) · [overlay](../assets/planet6897_9208_9236_20261121/cases/9209/wasm/overlay/overlay_045.png)).
