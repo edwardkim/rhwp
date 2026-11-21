@@ -8530,6 +8530,7 @@ impl LayoutEngine {
                             paragraphs.get(*para_index + 1),
                             has_host_line,
                             col_content.paragraph_float_placements.get(&(*para_index, *control_index)),
+                            styles,
                             self.dpi,
                         )
                     }

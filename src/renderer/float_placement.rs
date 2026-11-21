@@ -4986,14 +4986,23 @@ pub(crate) fn stored_terminal_empty_line_gap(
 
 /// The first whole table and any host line share one stored column origin.
 /// Source coordinates remain separate from the accepted relative placement.
+///
+/// 쪽 첫 저장 줄이 문단 앞 간격만큼 내려 있고 다음 문단까지 간격 사다리가 닫히면 저장 원점은
+/// 0이다. 쪽을 문단으로 열든 표로 열든 같은 규칙이므로, 표 항목이 단을 여는 조판·배치·저장 TAC
+/// 프레임이 모두 이 조회를 쓴다(156731281 3쪽: 붙임 표 host 줄 1500 = 앞 간격, 다음 줄 5400 =
+/// 1500 + 1500 + 900 + 앞 간격 1500, 한/글 Print 의 본문도 원점 0 기준).
 pub(crate) fn stored_table_column_origin(
     para: &Paragraph,
     next: Option<&Paragraph>,
     has_host_line: bool,
     placement: Option<&ParagraphFloatPlacement>,
+    styles: &super::style_resolver::ResolvedStyleSet,
     dpi: f64,
 ) -> Option<i32> {
     let source = para.line_segs.first()?.vertical_pos;
+    if super::stored_page_origin::stored_first_margin_is_page_relative(para, next, styles, dpi) {
+        return Some(0);
+    }
     if has_host_line && super::composer::stored_tac_host_frame(para).is_none() {
         placement
             .and_then(|placement| placement.stored_host_origin)
