@@ -720,6 +720,95 @@ pub(crate) fn stored_rows_are_stale(
     }
 }
 
+/// 각주 본문과 별도로, 원본 줄이 소유한 참조 번호의 전진은 본문 폭을 차지한다.
+/// 줄 끝 공백은 다음 줄로 넘치지 않으며, 내부 공백은 문단의 압축 가능량까지 허용한다.
+fn stored_footnote_row_overflows<S: crate::storage::Storage>(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    inner_width: f64,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    let count = composed.lines.len();
+    if count < 2
+        || !para
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::Footnote(_)))
+        || stored_row_fragments::crosses_physical_frame(para)
+    {
+        return Ok(false);
+    }
+    let dpi = styles.resolved_dpi.unwrap_or(crate::renderer::DEFAULT_DPI);
+    let condense = styles
+        .para_styles
+        .get(para.para_shape_id as usize)
+        .map_or(0, |style| style.condense_min_space);
+    let mut advances = storage.vec(count)?;
+    advances.resize(count, 0.0);
+    for (control, raw) in para
+        .controls
+        .iter()
+        .zip(para.control_utf16_positions_with_storage(storage)?)
+    {
+        if let Control::Footnote(note) = control {
+            let row = para
+                .line_segs
+                .partition_point(|seg| para.line_seg_text_start_of(seg.text_start) <= raw)
+                .saturating_sub(1);
+            advances[row] += crate::renderer::layout::note_reference_advance(
+                control,
+                note.number,
+                styles,
+                find_active_char_shape(&para.char_shapes, raw),
+            );
+        }
+    }
+    'rows: for (line, markers) in composed.lines.iter().zip(advances).take(count - 1) {
+        if markers == 0.0 || line.has_line_break || line.segment_width <= 0 {
+            continue;
+        }
+        let mut used = markers;
+        let mut trailing = true;
+        let mut savings = 0;
+        for run in line.runs.iter().rev() {
+            let text = effective_text_for_metrics(run);
+            if text.contains(['\t', '\u{ad}']) {
+                continue 'rows;
+            }
+            let text = if trailing {
+                text.trim_end_matches(' ')
+            } else {
+                text
+            };
+            if text.is_empty() {
+                continue;
+            }
+            trailing = false;
+            let mut style = run.try_text_style(styles, storage)?;
+            used += estimate_text_width(text, &style);
+            style.letter_spacing = 0.0;
+            let spaces = text.bytes().filter(|byte| *byte == b' ').count() as i64;
+            if spaces > 0 && condense > 0 {
+                savings += spaces
+                    * line_breaking::condense_space_budget_for_px(
+                        estimate_text_width(" ", &style),
+                        condense,
+                        dpi,
+                    );
+            }
+        }
+        let minimum = crate::renderer::px_to_hwpunit(used, dpi)
+            - line_breaking::whole_space_savings_hwp(savings);
+        if minimum > line.segment_width
+            && minimum > crate::renderer::px_to_hwpunit(inner_width, dpi)
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
 pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
     composed: &ComposedParagraph,
     para: &Paragraph,
@@ -748,6 +837,11 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
             || composed.lines.len() != para.line_segs.len()
         {
             return Ok(false);
+        }
+        if !line_wrap_squeeze
+            && stored_footnote_row_overflows(composed, para, styles, inner_width_px, storage)?
+        {
+            return Ok(true);
         }
         // [#2525] 비마스킹 대형 과밀: 저장 lineseg 이 장평 반영 실폭
         // (estimate_composed_line_width 는 ts.ratio 를 자체 반영) 기준으로도 내폭을

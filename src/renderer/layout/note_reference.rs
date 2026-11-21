@@ -12,13 +12,16 @@ pub(super) struct Reference {
     pub run: TextRunNode,
 }
 
-pub(super) fn reference(
+fn marker_styles(
     control: Option<&Control>,
     number: u16,
     styles: &ResolvedStyleSet,
     style_id: u32,
-    control_index: usize,
-) -> Reference {
+) -> (
+    crate::renderer::note_marker::FormattedMarker,
+    TextStyle,
+    TextStyle,
+) {
     let generated = paragraph_layout::note_marker_from_control(control, number);
     let base_style = resolved_to_text_style(styles, style_id, generated.language_index);
     let mut paint = base_style.clone();
@@ -54,6 +57,31 @@ pub(super) fn reference(
     paint.engrave = false;
     paint.emphasis_dot = 0;
     paint.shade_color = u32::MAX;
+    (generated, base_style, paint)
+}
+
+/// 줄 채움과 표시가 같은 장식 문자와 글꼴의 최종 전진을 소비한다.
+pub(crate) fn note_reference_advance(
+    control: &Control,
+    number: u16,
+    styles: &ResolvedStyleSet,
+    style_id: u32,
+) -> f64 {
+    let (generated, _, paint) = marker_styles(Some(control), number, styles, style_id);
+    compute_char_positions(&generated.text, &paint)
+        .last()
+        .copied()
+        .unwrap_or(0.0)
+}
+
+pub(super) fn reference(
+    control: Option<&Control>,
+    number: u16,
+    styles: &ResolvedStyleSet,
+    style_id: u32,
+    control_index: usize,
+) -> Reference {
+    let (generated, base_style, paint) = marker_styles(control, number, styles, style_id);
     let positions = compute_char_positions(&generated.text, &paint);
     let width = positions.last().copied().unwrap_or(0.0);
     let run = TextRunNode {

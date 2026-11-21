@@ -4091,7 +4091,8 @@ pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
             || (crate::renderer::para_has_no_stored_line_segs(para)
                 && crate::model::border_paint::is_cell_frame_paint(control))
             || (remeasured && matches!(control, Control::Equation(eq) if eq.common.treat_as_char))
-            || (remeasured && matches!(control, Control::Footnote(_)))
+            // 각주 본문은 단 아래에 따로 놓이고 참조 번호만 본문 폭을 소비한다.
+            || matches!(control, Control::Footnote(_))
     })
 }
 

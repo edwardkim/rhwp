@@ -96,6 +96,28 @@ pub(crate) fn flow_inline_controls_with_storage<S: crate::storage::Storage>(
                     if matches!(control, Control::Table(_)) {
                         return None;
                     }
+                    if let Control::Footnote(note) = control {
+                        let style_id =
+                            super::find_active_char_shape(&para.char_shapes, utf16_position);
+                        let advance = crate::renderer::layout::note_reference_advance(
+                            control,
+                            note.number,
+                            styles,
+                            style_id,
+                        );
+                        let dpi = styles.resolved_dpi.unwrap_or(crate::renderer::DEFAULT_DPI);
+                        // 위 첨자 참조의 전진은 본문 줄에, 각주 내용의 높이는 단 아래에 속한다.
+                        return (text_len > 0 && char_position <= text_len).then_some(
+                            FlowInlineControl {
+                                char_position,
+                                utf16_position,
+                                width_hwp: px_to_hwpunit(advance, dpi),
+                                height_hwp: 0,
+                                baseline_distance_hwp: None,
+                                spacing_height_hwp: None,
+                            },
+                        );
+                    }
                     if let Control::Ruby(ruby) = control {
                         let (width_hwp, height_hwp, baseline) =
                             ruby_flow_size(para, ruby, utf16_position, styles)?;
