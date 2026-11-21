@@ -192,13 +192,27 @@ impl DocumentCore {
         para_idx: usize,
         remap: impl FnOnce(usize) -> Option<usize>,
     ) {
+        Self::remap_active_field_control(active_field, section_idx, para_idx, &[], remap);
+    }
+
+    pub(crate) fn remap_active_field_control(
+        active_field: &mut Option<crate::document_core::ActiveFieldInfo>,
+        section_idx: usize,
+        para_idx: usize,
+        parent_path: &[(usize, usize, usize)],
+        remap: impl FnOnce(usize) -> Option<usize>,
+    ) {
         let Some(active) = active_field.as_mut() else {
             return;
         };
         if active.section_idx != section_idx || active.para_idx != para_idx {
             return;
         }
-        let owner = match active.cell_path.as_mut().and_then(|path| path.first_mut()) {
+        let path = active.cell_path.as_deref_mut().unwrap_or_default();
+        if !path.starts_with(parent_path) {
+            return;
+        }
+        let owner = match path.get_mut(parent_path.len()) {
             Some((control_idx, _, _)) => control_idx,
             None => &mut active.control_idx,
         };

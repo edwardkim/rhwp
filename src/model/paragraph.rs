@@ -3315,6 +3315,25 @@ impl Paragraph {
         active: Option<usize>,
         after_inline_control: bool,
     ) -> usize {
+        self.replace_text_at_control_boundary(
+            char_offset,
+            delete_count,
+            text,
+            active,
+            after_inline_control,
+            None,
+        )
+    }
+
+    pub(crate) fn replace_text_at_control_boundary(
+        &mut self,
+        char_offset: usize,
+        delete_count: usize,
+        text: &str,
+        active: Option<usize>,
+        after_inline_control: bool,
+        next_control: Option<usize>,
+    ) -> usize {
         /// 갭 하나의 슬롯. 직렬화기가 같은 갭 안에서 내는 순서대로 늘어놓는다.
         #[derive(Clone, Copy, PartialEq)]
         enum Slot {
@@ -3437,13 +3456,16 @@ impl Paragraph {
                 ))
             };
             // 글자 수를 넘는 자리는 문단 끝 개체 뒤를 가리킨다(`insert_text_at` 과 같은 뜻).
-            let preferred = if char_offset > len {
-                (char_offset - len).min(gap.len())
-            } else if after_inline_control {
-                gap.len()
-            } else {
-                gap.iter().position(object).unwrap_or(gap.len())
-            };
+            let preferred =
+                if let Some(index) = next_control.and_then(|ci| order(Slot::Control(ci))) {
+                    index
+                } else if char_offset > len {
+                    (char_offset - len).min(gap.len())
+                } else if after_inline_control {
+                    gap.len()
+                } else {
+                    gap.iter().position(object).unwrap_or(gap.len())
+                };
             let misses = |m: usize, level: u8| {
                 (wants.iter())
                     .filter(|&&(l, begin, end, inside)| {

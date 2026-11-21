@@ -611,7 +611,21 @@ impl DocumentCore {
                     }
                 }
             }
-            // 패스스루 저장을 끊어 지운 결과가 저장에 남게 한다.
+            if let Erase::Control(removed) | Erase::Field(removed) | Erase::Hyperlink(removed, _) =
+                code.erase
+            {
+                Self::remap_active_field_control(
+                    &mut self.active_field,
+                    code.section,
+                    code.para,
+                    &steps,
+                    |index| match index.cmp(&removed) {
+                        std::cmp::Ordering::Less => Some(index),
+                        std::cmp::Ordering::Equal => None,
+                        std::cmp::Ordering::Greater => Some(index - 1),
+                    },
+                );
+            }
             self.document.sections[code.section].raw_stream = None;
             sections.push(code.section);
             if steps.is_empty() {

@@ -160,3 +160,19 @@ fn control_pasted_right_after_note_gives_caret_character_shape_to_its_empty_para
         "개체 아래 빈 문단은 캐럿 글자 모양을 잇는다"
     );
 }
+
+#[test]
+fn paste_between_adjacent_inline_objects_uses_the_selected_gap() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native().unwrap();
+    core.insert_text_native(0, 0, 0, "가나X").unwrap();
+    core.split_paragraph_native(0, 0, 2, None).unwrap();
+    for equation in ["x", "y"] {
+        core.insert_equation_native(0, 0, 1, equation, 1000, 0)
+            .unwrap();
+    }
+    assert_eq!(marked(&core, 0), "가[ob][ob]나");
+    core.copy_selection_logical_native(0, 1, 0, 1, 1).unwrap();
+    core.paste_internal_logical_native(0, 0, 2).unwrap();
+    assert_eq!(marked(&core, 0), "가[ob]X[ob]나");
+}

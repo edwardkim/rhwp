@@ -396,3 +396,27 @@ fn erasing_a_multi_paragraph_table_of_contents_keeps_its_text() {
         assert!(clean(&reopened));
     }
 }
+
+#[test]
+fn active_field_keeps_next_typed_character_after_erasing_an_earlier_mark() {
+    let mut doc = rhwp::wasm_api::HwpDocument::create_empty();
+    doc.create_blank_document_native().unwrap();
+    doc.insert_text_native(0, 0, 0, "앞  뒤").unwrap();
+    doc.insert_click_here_field_at(0, 0, 2, "안내문", "메모", "남을 필드", true)
+        .unwrap();
+    doc.set_field_value_by_name("남을 필드", "AB").unwrap();
+    doc.set_page_hide_native(0, 0, true, false, false, false, false, false)
+        .unwrap();
+    let fields: serde_json::Value = serde_json::from_str(&doc.get_field_list_json()).unwrap();
+    let end = fields[0]["endCharIdx"].as_u64().unwrap() as usize;
+    assert!(doc.set_active_field(0, 0, end));
+    assert_eq!(
+        doc.erase_control_codes_native(&["감추기".into()], None)
+            .unwrap(),
+        1
+    );
+    doc.insert_text_native(0, 0, end, "C").unwrap();
+    let field: serde_json::Value =
+        serde_json::from_str(&doc.get_field_value_by_name("남을 필드").unwrap()).unwrap();
+    assert_eq!(field["value"], "ABC");
+}

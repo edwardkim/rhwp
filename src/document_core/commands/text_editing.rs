@@ -1425,18 +1425,32 @@ pub(super) fn insert_body_text_with_field_affinity(
     section_idx: usize,
     para_idx: usize,
     char_offset: usize,
-    after_inline_control: bool,
+    logical: Option<usize>,
     source: &Paragraph,
 ) {
     let active = active_field_control(active_field, section_idx, para_idx, None);
-    replace_paragraph_text(
-        para,
-        char_offset,
-        0,
-        &source.text,
-        active,
-        after_inline_control,
-    );
+    let after =
+        logical.is_some_and(|offset| super::super::helpers::logical_to_text_offset(para, offset).1);
+    // A text offset and a before/after flag cannot address the gap between two objects.
+    let next_control = logical.filter(|_| after).and_then(|offset| {
+        para.controls
+            .iter()
+            .zip(para.logical_control_positions())
+            .position(|(ctrl, slot)| slot == offset && ctrl.is_logical_inline())
+    });
+    if next_control.is_some() {
+        para.replace_text_at_control_boundary(
+            char_offset,
+            0,
+            &source.text,
+            active,
+            after,
+            next_control,
+        );
+        para.invalidate_layout_inputs();
+    } else {
+        replace_paragraph_text(para, char_offset, 0, &source.text, active, after);
+    }
     para.inherit_inserted_text_controls(source, char_offset);
 }
 

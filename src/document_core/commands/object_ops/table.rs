@@ -1987,6 +1987,7 @@ impl DocumentCore {
         inner_control_idx: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        self.validate_image_fill_reference(props_json)?;
         let path = Self::parse_cell_path_json(cell_path_json)?;
         let caption_styles = self.resolve_render_styles();
         let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());

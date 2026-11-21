@@ -1512,6 +1512,22 @@ impl DocumentCore {
             .map(|tree| tree.as_ref().clone())
     }
 
+    fn with_profile_page_tree<T>(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+        read: impl FnOnce(&PageRenderTree) -> Result<T, HwpError>,
+    ) -> Result<T, HwpError> {
+        if !profile.shows_editor_visuals() && (self.show_control_codes || !self.show_pictures) {
+            // The screen cache can contain placeholders or spacing for editor marks.
+            let tree = self.build_page_tree_with_header_footer_override(page_num, None, false);
+            self.layout_engine
+                .set_show_control_codes(self.show_control_codes);
+            return read(&tree?);
+        }
+        self.with_page_tree_cached(page_num, read)
+    }
+
     fn build_canvas_page_layer_tree_shared_with_profile(
         &self,
         page_num: u32,
@@ -1534,7 +1550,7 @@ impl DocumentCore {
         let mut prior_print_solid_fill = false;
         if profile == RenderProfile::Print {
             for previous in 0..page_num {
-                if self.with_page_tree_cached(previous, |tree| {
+                if self.with_profile_page_tree(previous, profile, |tree| {
                     Ok(LayerBuilder::page_has_print_solid_fill(
                         tree,
                         hangul2024_print,
@@ -1560,7 +1576,7 @@ impl DocumentCore {
             clip_enabled: self.clip_enabled,
             debug_overlay: show_editor_visuals && self.debug_overlay,
         };
-        let layer_tree = self.with_page_tree_cached(page_num, |tree| {
+        let layer_tree = self.with_profile_page_tree(page_num, profile, |tree| {
             let mut used_font_slots = Vec::new();
             let mut nodes = vec![&tree.root];
             while let Some(node) = nodes.pop() {
@@ -8396,6 +8412,7 @@ impl DocumentCore {
         let tree = self.build_page_tree_with_header_footer_override(
             page_num,
             Some((section_idx, is_header, apply_to)),
+            true,
         )?;
         *self.header_footer_preview_tree_cache.borrow_mut() = Some((key, tree.clone()));
         Ok(tree)
@@ -8403,13 +8420,14 @@ impl DocumentCore {
 
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
-        self.build_page_tree_with_header_footer_override(page_num, None)
+        self.build_page_tree_with_header_footer_override(page_num, None, true)
     }
 
     fn build_page_tree_with_header_footer_override(
         &self,
         page_num: u32,
         header_footer_override: Option<(usize, bool, u8)>,
+        show_editor_visuals: bool,
     ) -> Result<PageRenderTree, HwpError> {
         if let Some(error) = &self.body_page_field_error {
             return Err(HwpError::RenderError(error.clone()));
@@ -8425,7 +8443,7 @@ impl DocumentCore {
             .set_show_transparent_borders(self.show_transparent_borders);
         self.layout_engine.set_clip_enabled(self.clip_enabled);
         self.layout_engine
-            .set_show_control_codes(self.show_control_codes);
+            .set_show_control_codes(show_editor_visuals && self.show_control_codes);
         // [#2403] 소스분기 파생 일원화 — paginate_pass 와 동일하게 layout_profile
         // 단일 소유 (Issue #1770 규칙 승계). set_layout_profile 의 결합 부수효과
         // (variant → flow spacing_before)는 다음 줄이 종전 순서대로 덮어쓴다.
@@ -8736,7 +8754,7 @@ impl DocumentCore {
         // 두 그림의 미세한 세로 스케일 차이로 인한 잔상(이중 라인) 제거.
         // build 직후 1회만 적용 — 모든 렌더러(SVG/Canvas/Skia/HTML/Layer) 공통.
         tree.clip_overlapping_same_bin_images();
-        if !self.show_pictures {
+        if show_editor_visuals && !self.show_pictures {
             crate::renderer::hidden_pictures::hide_pictures(&mut tree);
         }
         Ok(tree)

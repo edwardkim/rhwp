@@ -139,3 +139,17 @@ fn logical_cell_clipboard_rejects_offsets_past_paragraph() {
         .is_err());
     assert_eq!(cell(&core, para, ctrl, 0), "가[eq]나");
 }
+
+#[test]
+fn html_text_between_adjacent_cell_equations_keeps_both_neighbors() {
+    let (mut core, para, ctrl) = fixture();
+    let path = [(ctrl, 0, 0)];
+    core.copy_selection_in_cell_by_path_logical_native(0, para, &path, 0, 1, 0, 2)
+        .unwrap();
+    core.paste_internal_in_cell_by_path_logical_native(0, para, &path, 2)
+        .unwrap();
+    assert_eq!(cell(&core, para, ctrl, 0), "가[eq][eq]나");
+    core.paste_html_in_cell_by_path_logical_native(0, para, &path, 2, "X")
+        .unwrap();
+    assert_eq!(cell(&core, para, ctrl, 0), "가[eq]X[eq]나");
+}

@@ -79,6 +79,45 @@ fn partial_summary_patch_keeps_other_fields() {
     }
 }
 
+#[test]
+fn editing_title_preserves_unrelated_metadata_xml_after_hwpx_round_trip() {
+    const UNKNOWN: &str = r#"<opf:meta name="extension" vendor="example"><![CDATA[A < B]]><v:extra xmlns:v="urn:example">x</v:extra></opf:meta>"#;
+    let mut doc = open("field-01.hwp");
+    let metadata = format!(
+        r#"<opf:metadata><opf:title>old</opf:title>{UNKNOWN}<opf:meta name="creator" content="text"><![CDATA[A & B]]></opf:meta></opf:metadata>"#
+    );
+    let entries = &mut doc.document_mut().hwpx_aux_entries;
+    entries.retain(|(path, _)| path != "Contents/content.hpf");
+    entries.push(("Contents/content.hpf".into(), metadata.into_bytes()));
+    doc.set_document_summary_json(r#"{"title":"new"}"#).unwrap();
+    let bytes = doc.export_hwpx().unwrap();
+    let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+    let hpf = reopened
+        .document()
+        .hwpx_aux_entry("Contents/content.hpf")
+        .unwrap();
+    assert!(std::str::from_utf8(hpf).unwrap().contains(UNKNOWN));
+    assert_eq!(reopened.document_summary().author.as_deref(), Some("A & B"));
+    assert_eq!(reopened.document_summary().title.as_deref(), Some("new"));
+}
+
+#[test]
+fn invalid_timestamp_leaves_summary_unchanged() {
+    let mut doc = open("field-01.hwp");
+    doc.set_document_summary_json(r#"{"createdAt":"2000-02-29T00:00:00Z"}"#)
+        .unwrap();
+    let before = doc.document_summary();
+    for invalid in [
+        "1900-02-29T00:00:00Z",
+        "2026-02-30T00:00:00Z",
+        "2026/10/10T00:00:00Z",
+    ] {
+        let patch = serde_json::json!({"title": "changed", "createdAt": invalid});
+        assert!(doc.set_document_summary_json(&patch.to_string()).is_err());
+        assert_eq!(doc.document_summary(), before);
+    }
+}
+
 /// 머리말 안 그림도 표·그림·글상자 수와 그림 목록에 든다.
 #[test]
 fn header_pictures_are_counted_and_listed_with_their_page() {

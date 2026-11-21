@@ -952,7 +952,7 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
-        self.paste_internal_at_caret_native(section_idx, para_idx, char_offset, false)
+        self.paste_internal_at_caret_native(section_idx, para_idx, char_offset, None)
     }
 
     /// 순수 서식 글 조각은 본문 논리 캐럿과 일반 입력의 필드 소속을 따른다.
@@ -976,8 +976,8 @@ impl DocumentCore {
                 "붙일 캐럿 위치를 확인해 주세요".into(),
             ));
         }
-        let (text, after_control) = logical_to_text_offset(para, logical_offset);
-        self.paste_internal_at_caret_native(section_idx, para_idx, text, after_control)
+        let (text, _) = logical_to_text_offset(para, logical_offset);
+        self.paste_internal_at_caret_native(section_idx, para_idx, text, Some(logical_offset))
     }
 
     /// 내부 클립보드를 본문 논리 캐럿(`insertTextLogical` 과 같은 축)에 붙인다.
@@ -1006,10 +1006,15 @@ impl DocumentCore {
             matches!(clipboard.paragraphs.as_slice(), [only] if only.controls.is_empty())
         });
         if text_fragment {
-            let (text, after_control) = logical_to_text_offset(para, logical_offset);
-            return self.paste_internal_at_caret_native(section_idx, para_idx, text, after_control);
+            let (text, _) = logical_to_text_offset(para, logical_offset);
+            return self.paste_internal_at_caret_native(
+                section_idx,
+                para_idx,
+                text,
+                Some(logical_offset),
+            );
         }
-        self.paste_internal_at_caret_native(section_idx, para_idx, logical_offset, false)
+        self.paste_internal_at_caret_native(section_idx, para_idx, logical_offset, None)
     }
 
     fn paste_internal_at_caret_native(
@@ -1017,7 +1022,7 @@ impl DocumentCore {
         section_idx: usize,
         para_idx: usize,
         char_offset: usize,
-        after_control: bool,
+        logical: Option<usize>,
     ) -> Result<String, HwpError> {
         let mut clip_paras = match &self.clipboard {
             Some(c) if !c.paragraphs.is_empty() => c.paragraphs.clone(),
@@ -1058,7 +1063,7 @@ impl DocumentCore {
                 section_idx,
                 para_idx,
                 char_offset,
-                after_control,
+                logical,
                 &clip_paras[0],
             );
 
@@ -1186,15 +1191,14 @@ impl DocumentCore {
                 }
                 CellCaret::Logical(logical) => {
                     // 개체 바로 뒤 논리 자리면 그 개체 뒤에 넣는다.
-                    let (offset, after_control) =
-                        caret_text_offset(&cell_paras[cell_para_idx], logical)?;
+                    let (offset, _) = caret_text_offset(&cell_paras[cell_para_idx], logical)?;
                     super::text_editing::insert_body_text_with_field_affinity(
                         &mut cell_paras[cell_para_idx],
                         None,
                         0,
                         0,
                         offset,
-                        after_control,
+                        Some(logical),
                         &clip_paras[0],
                     );
                     offset

@@ -1,10 +1,10 @@
 //! 캡션 너비 변경 뒤 다시 줄 나누기, '여백 부분까지 너비 확대',
 //! 글자처럼 취급 그림과 셀 안 그림의 캡션 자리를 한컴 12.30 기준으로 검사한다.
 
-use crate::document_core::DocumentCore;
-use crate::model::control::Control;
-use crate::renderer::layout::CellContext;
-use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::layout::CellContext;
+use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 fn blank() -> DocumentCore {
     let mut core = DocumentCore::new_empty();
@@ -46,7 +46,7 @@ fn caption_lines(core: &DocumentCore) -> Vec<(BoundingBox, Option<CellContext>)>
             walk(child, out);
         }
     }
-    let tree = core.build_page_tree(0).expect("쪽 트리");
+    let tree = core.build_page_render_tree(0).expect("쪽 트리");
     let mut out = Vec::new();
     walk(&tree.root, &mut out);
     out
@@ -61,7 +61,7 @@ fn image_boxes(core: &DocumentCore) -> Vec<BoundingBox> {
             walk(child, out);
         }
     }
-    let tree = core.build_page_tree(0).expect("쪽 트리");
+    let tree = core.build_page_render_tree(0).expect("쪽 트리");
     let mut out = Vec::new();
     walk(&tree.root, &mut out);
     out
@@ -101,8 +101,8 @@ fn floating_picture(core: &mut DocumentCore, props: &str) -> (usize, usize) {
     (para, ctrl)
 }
 
-fn picture(core: &DocumentCore, para: usize, ctrl: usize) -> &crate::model::image::Picture {
-    match &core.document.sections[0].paragraphs[para].controls[ctrl] {
+fn picture(core: &DocumentCore, para: usize, ctrl: usize) -> &rhwp::model::image::Picture {
+    match &core.document().sections[0].paragraphs[para].controls[ctrl] {
         Control::Picture(picture) => picture,
         other => panic!("그림이 아님: {other:?}"),
     }
@@ -158,7 +158,7 @@ fn narrowing_a_side_caption_rewraps_its_text() {
                         .commands
                         .iter()
                         .filter_map(|command| match command {
-                            crate::model::text_clip::ClipCommand::Line(_, y) => Some(*y),
+                            rhwp::model::text_clip::ClipCommand::Line(_, y) => Some(*y),
                             _ => None,
                         })
                         .fold(f64::MIN, f64::max)
@@ -171,7 +171,7 @@ fn narrowing_a_side_caption_rewraps_its_text() {
     }
     let mut bottoms = Vec::new();
     clips(
-        &core.build_page_tree(0).expect("쪽 트리").root,
+        &core.build_page_render_tree(0).expect("쪽 트리").root,
         &mut bottoms,
     );
     assert!(!bottoms.is_empty());
@@ -324,7 +324,7 @@ fn first_cell_box(core: &DocumentCore) -> BoundingBox {
         }
         node.children.iter().find_map(walk)
     }
-    walk(&core.build_page_tree(0).expect("쪽 트리").root).expect("셀")
+    walk(&core.build_page_render_tree(0).expect("쪽 트리").root).expect("셀")
 }
 
 #[test]
@@ -355,7 +355,7 @@ fn header_picture_caption(treat_as_char: bool, new_caption: bool) {
             format!(r#"{{"treatAsChar":{treat_as_char},{CAPTION}}}"#)
         },
     );
-    let picture = core.document.sections[0].paragraphs[para].controls[ctrl].clone();
+    core.copy_control_native(0, para, &[], ctrl).unwrap();
     core.create_header_footer_native(0, true, 0)
         .expect("머리말");
     let info: serde_json::Value = serde_json::from_str(
@@ -367,17 +367,8 @@ fn header_picture_caption(treat_as_char: bool, new_caption: bool) {
     let host = info["paraIndex"].as_u64().expect("paraIndex") as usize;
     let hf = info["controlIndex"].as_u64().expect("controlIndex") as usize;
     // 한컴 12.30에서 머리말에 넣은 그림처럼, 캡션 달린 그림을 머리말 첫 문단 맨 앞 컨트롤로 둔다.
-    let Control::Header(header) = &mut core.document.sections[0].paragraphs[host].controls[hf]
-    else {
-        panic!("머리말이 아니다");
-    };
-    let first = &mut header.paragraphs[0];
-    first.controls.insert(0, picture);
-    first.shift_for_inline_control_insert(0, 0);
-    first.char_count += 8;
-    core.document.sections[0].raw_stream = None;
-    core.mark_section_dirty(0);
-    core.paginate_if_needed();
+    core.paste_internal_in_cell_by_path_native(0, host, &[(hf, 0, 0)], 0)
+        .expect("머리말에 그림 붙여넣기");
     if new_caption {
         core.set_header_footer_picture_properties_native(
             0,
@@ -407,7 +398,7 @@ fn header_picture_caption(treat_as_char: bool, new_caption: bool) {
         }
         node.children.iter().find_map(header_caption)
     }
-    let tree = core.build_page_tree(0).expect("쪽 트리");
+    let tree = core.build_page_render_tree(0).expect("쪽 트리");
     let header_node = tree
         .root
         .children
@@ -450,24 +441,18 @@ fn captioned_picture_inside_a_caption_survives_hwp_round_trip() {
     let caption = r#"{"hasCaption":true,"captionDirection":"Bottom","captionVertAlign":"Top","captionWidth":8504,"captionSpacing":850}"#;
     let mut core = blank();
     let (para, ctrl) = floating_picture(&mut core, caption);
-    let mut inner = core.document.sections[0].paragraphs[para].controls[ctrl].clone();
-    if let Control::Picture(pic) = &mut inner {
-        pic.common.treat_as_char = true;
-    }
-    let Control::Picture(outer) = &mut core.document.sections[0].paragraphs[para].controls[ctrl]
-    else {
-        panic!("그림이 아니다");
-    };
-    let first = &mut outer.caption.as_mut().expect("캡션").paragraphs[0];
-    let end = first.text.chars().count();
-    let at = first.controls.len();
-    first.controls.push(inner);
-    first.shift_for_inline_control_insert(at, end);
-    first.char_count += 8;
-    core.document.sections[0].raw_stream = None;
-
+    core.set_picture_properties_native(0, para, ctrl, r#"{"treatAsChar":true}"#)
+        .unwrap();
+    core.copy_control_native(0, para, &[], ctrl).unwrap();
+    core.set_picture_properties_native(0, para, ctrl, r#"{"treatAsChar":false}"#)
+        .unwrap();
+    let end = core
+        .get_cell_paragraph_length_native(0, para, ctrl, 0, 0)
+        .unwrap();
+    core.paste_internal_in_cell_by_path_native(0, para, &[(ctrl, 0, 0)], end)
+        .unwrap();
     let reopened = DocumentCore::from_bytes(&core.export_hwp_native().expect("HWP")).expect("열기");
-    let Control::Picture(outer) = &reopened.document.sections[0].paragraphs[para].controls[ctrl]
+    let Control::Picture(outer) = &reopened.document().sections[0].paragraphs[para].controls[ctrl]
     else {
         panic!("바깥 그림이 아니다");
     };

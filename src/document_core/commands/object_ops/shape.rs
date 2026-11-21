@@ -377,6 +377,23 @@ impl DocumentCore {
             common_json, tb_json, extra_json, round_json, connector_json, caption_json
         ))
     }
+    pub(super) fn validate_image_fill_reference(&self, props: &str) -> Result<(), HwpError> {
+        if let Some(id) = crate::document_core::helpers::json_u32(props, "imageBinDataId") {
+            let valid = id
+                .checked_sub(1)
+                .and_then(|index| self.document.doc_info.bin_data_list.get(index as usize))
+                .is_some_and(|entry| {
+                    entry.data_type != crate::model::bin_data::BinDataType::Storage
+                });
+            if !valid {
+                return Err(HwpError::InvalidField(format!(
+                    "문서에 없는 그림 자원: {id}"
+                )));
+            }
+        }
+        Ok(())
+    }
+
     /// 글상자(Shape) 속성 변경 (네이티브).
     pub fn set_shape_properties_native(
         &mut self,
@@ -389,6 +406,7 @@ impl DocumentCore {
 
         let caption_styles = self.resolve_render_styles();
         let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
+        self.validate_image_fill_reference(props_json)?;
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
         let caption_width_before = shape_caption_text_width(shape);
 

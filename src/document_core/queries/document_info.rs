@@ -239,13 +239,34 @@ fn filetime_to_iso(ft: u64) -> String {
 /// `YYYY-MM-DDTHH:MM:SSZ` → FILETIME. 꼴이 다르면 `None`.
 fn iso_to_filetime(iso: &str) -> Option<u64> {
     let b = iso.as_bytes();
-    if b.len() != 20 || b[4] != b'-' || b[7] != b'-' || b[10] != b'T' || b[19] != b'Z' {
+    if b.len() != 20
+        || b[4] != b'-'
+        || b[7] != b'-'
+        || b[10] != b'T'
+        || b[13] != b':'
+        || b[16] != b':'
+        || b[19] != b'Z'
+    {
         return None;
     }
-    let num = |r: std::ops::Range<usize>| iso.get(r)?.parse::<i64>().ok();
+    let num = |r: std::ops::Range<usize>| {
+        let digits = iso.get(r)?;
+        digits
+            .bytes()
+            .all(|b| b.is_ascii_digit())
+            .then(|| digits.parse::<i64>().ok())
+            .flatten()
+    };
     let (y, m, d) = (num(0..4)?, num(5..7)?, num(8..10)?);
     let (hh, mm, ss) = (num(11..13)?, num(14..16)?, num(17..19)?);
-    if !(1..=12).contains(&m) || !(1..=31).contains(&d) || hh > 23 || mm > 59 || ss > 60 {
+    let days_in_month = match m {
+        2 if y % 4 == 0 && (y % 100 != 0 || y % 400 == 0) => 29,
+        2 => 28,
+        4 | 6 | 9 | 11 => 30,
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        _ => return None,
+    };
+    if !(1..=days_in_month).contains(&d) || hh > 23 || mm > 59 || ss > 59 {
         return None;
     }
     // Howard Hinnant, days_from_civil.
@@ -358,6 +379,11 @@ fn metadata_entries(block: &str) -> Vec<(String, String)> {
                     last.1.push_str(t.as_ref());
                 }
             }
+            Ok(Event::CData(data)) => {
+                if let (Some(_), Some(last)) = (&current, out.last_mut()) {
+                    last.1.push_str(data.as_ref());
+                }
+            }
             Ok(Event::GeneralRef(r)) => {
                 if let (Some(_), Some(last)) = (&current, out.last_mut()) {
                     last.1
@@ -395,67 +421,101 @@ fn summary_from_metadata(block: &str) -> DocumentSummary {
     }
 }
 
-/// 한컴 12.30 이 쓰는 차례로 `<opf:metadata>` 를 다시 짓는다. 모르는 `opf:meta` 는 끝에 둔다.
+/// 새 블록에서는 한컴이 쓰는 순서를 따르고, 기존 블록에서는 수정한 직계 자식만 교체한다.
 fn write_metadata(original: Option<&str>, summary: &DocumentSummary) -> String {
-    let escape = |v: &str| quick_xml::escape::escape(v).into_owned();
-    let entries = original.map(metadata_entries).unwrap_or_default();
-    let language = entries
-        .iter()
-        .find(|(n, _)| n == "language")
-        .map(|(_, v)| v.clone())
-        .filter(|v| !v.is_empty())
-        .unwrap_or_else(|| "ko".to_string());
-    let value = |v: &Option<String>| v.clone().unwrap_or_default();
-    let mut out = String::from("<opf:metadata>");
-    let title = value(&summary.title);
-    if title.is_empty() {
-        out.push_str("<opf:title/>");
-    } else {
-        // 한컴 12.30 은 앞뒤 공백이 있는 제목에 공백 보존 표시를 단다.
-        let space = if title.trim() != title {
-            r#" xml:space="preserve""#
-        } else {
-            ""
-        };
-        out.push_str(&format!("<opf:title{space}>{}</opf:title>", escape(&title)));
-    }
-    out.push_str(&format!(
-        "<opf:language>{}</opf:language>",
-        escape(&language)
-    ));
-    let known = [
-        ("creator", value(&summary.author)),
-        ("subject", value(&summary.subject)),
-        ("description", value(&summary.comments)),
-        ("lastsaveby", value(&summary.last_saved_by)),
-        ("CreatedDate", value(&summary.created_at)),
-        ("ModifiedDate", value(&summary.last_saved_at)),
-        ("date", value(&summary.date)),
-        ("keyword", value(&summary.keywords)),
+    let mut fields = [
+        ("title", summary.title.as_deref()),
+        ("creator", summary.author.as_deref()),
+        ("subject", summary.subject.as_deref()),
+        ("description", summary.comments.as_deref()),
+        ("lastsaveby", summary.last_saved_by.as_deref()),
+        ("CreatedDate", summary.created_at.as_deref()),
+        ("ModifiedDate", summary.last_saved_at.as_deref()),
+        ("date", summary.date.as_deref()),
+        ("keyword", summary.keywords.as_deref()),
     ];
-    let unknown = entries
-        .iter()
-        .filter(|(n, _)| n != "title" && n != "language" && known.iter().all(|(k, _)| k != n))
-        .cloned();
-    for (name, v) in known
-        .iter()
-        .map(|(n, v)| (n.to_string(), v.clone()))
-        .chain(unknown)
-    {
-        if v.is_empty() {
-            out.push_str(&format!(
-                r#"<opf:meta name="{}" content="text"/>"#,
-                escape(&name)
-            ));
-        } else {
-            out.push_str(&format!(
-                r#"<opf:meta name="{}" content="text">{}</opf:meta>"#,
-                escape(&name),
-                escape(&v)
-            ));
+    fn element(name: &str, value: &str) -> String {
+        let escaped = quick_xml::escape::escape(value);
+        match (name, value.is_empty()) {
+            ("title", true) => "<opf:title/>".into(),
+            ("title", false) => {
+                let space = if value.trim() == value {
+                    ""
+                } else {
+                    r#" xml:space="preserve""#
+                };
+                format!("<opf:title{space}>{escaped}</opf:title>")
+            }
+            (_, true) => format!(r#"<opf:meta name="{name}" content="text"/>"#),
+            (_, false) => format!(r#"<opf:meta name="{name}" content="text">{escaped}</opf:meta>"#),
+        }
+    }
+    let Some(block) = original else {
+        let mut out = String::from("<opf:metadata>");
+        for (name, value) in fields {
+            out.push_str(&element(name, value.unwrap_or_default()));
+            if name == "title" {
+                out.push_str("<opf:language>ko</opf:language>");
+            }
+        }
+        out.push_str("</opf:metadata>");
+        return out;
+    };
+
+    let mut reader = Reader::from_str(block);
+    let mut copied = 0;
+    let mut out = String::new();
+    loop {
+        let start = reader.buffer_position() as usize;
+        let Ok(event) = reader.read_event() else {
+            return block.to_owned();
+        };
+        let empty = matches!(event, Event::Empty(_));
+        match event {
+            Event::Start(e) if start == 0 && e.name().as_ref() == "opf:metadata" => continue,
+            Event::Empty(e) if start == 0 && e.name().as_ref() == "opf:metadata" => {
+                // 보존할 자식이 없는 블록도 루트 속성과 선언은 유지한다.
+                out.push_str(block[..reader.buffer_position() as usize].trim_end_matches("/>"));
+                out.push('>');
+                copied = reader.buffer_position() as usize;
+                break;
+            }
+            Event::Start(e) | Event::Empty(e) => {
+                let key = match e.name().as_ref() {
+                    "opf:title" => Some(String::from("title")),
+                    "opf:meta" => attr_value(&e, "name"),
+                    _ => None,
+                };
+                if !empty && reader.read_to_end(e.name()).is_err() {
+                    return block.to_owned();
+                }
+                if let Some((name, field)) = fields
+                    .iter_mut()
+                    .find(|(name, _)| Some(*name) == key.as_deref())
+                {
+                    if let Some(value) = field.take() {
+                        out.push_str(&block[copied..start]);
+                        out.push_str(&element(name, value));
+                        copied = reader.buffer_position() as usize;
+                    }
+                }
+            }
+            Event::End(e) if e.name().as_ref() == "opf:metadata" => {
+                out.push_str(&block[copied..start]);
+                copied = reader.buffer_position() as usize;
+                break;
+            }
+            Event::Eof => return block.to_owned(),
+            _ => {}
+        }
+    }
+    for (name, value) in fields {
+        if let Some(value) = value {
+            out.push_str(&element(name, value));
         }
     }
     out.push_str("</opf:metadata>");
+    out.push_str(&block[copied..]);
     out
 }
 
@@ -538,7 +598,7 @@ impl DocumentCore {
     /// 문서 요약을 고친다. `patch` 에서 `Some` 인 칸만 바꾸고 HWP 스트림과 HWPX metadata 를 함께 쓴다.
     pub fn update_document_summary(&mut self, patch: DocumentSummary) {
         let mut summary = self.document_summary();
-        summary.merge(patch);
+        summary.merge(patch.clone());
         let doc = &mut self.document;
         let mut wrote = false;
         for (path, data) in doc.extra_streams.iter_mut() {
@@ -562,7 +622,7 @@ impl DocumentCore {
                 let hpf = String::from_utf8_lossy(bytes).into_owned();
                 let rebuilt = match metadata_range(&hpf) {
                     Some((s, e)) => {
-                        let meta = write_metadata(Some(&hpf[s..e]), &summary);
+                        let meta = write_metadata(Some(&hpf[s..e]), &patch);
                         format!("{}{}{}", &hpf[..s], meta, &hpf[e..])
                     }
                     None => match hpf

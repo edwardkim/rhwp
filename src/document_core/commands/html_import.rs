@@ -242,7 +242,7 @@ impl DocumentCore {
                     section_idx,
                     para_idx,
                     text_offset,
-                    after_control,
+                    Some(char_offset),
                     &parsed_paras[0],
                 );
                 text_offset

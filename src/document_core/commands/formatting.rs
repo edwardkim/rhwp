@@ -2848,6 +2848,15 @@ impl DocumentCore {
         if para_idx >= self.document.sections[section_idx].paragraphs.len() {
             return Err(HwpError::RenderError("문단 범위 초과".to_string()));
         }
+        // Resolve the complete destination before removing any existing page marks.
+        let target = if cell_path.is_empty() {
+            &self.document.sections[section_idx].paragraphs[para_idx]
+        } else {
+            self.resolve_paragraph_by_path(section_idx, para_idx, cell_path)?
+        };
+        if char_offset > target.text.chars().count() {
+            return Err(HwpError::RenderError("글자 위치 범위 초과".into()));
+        }
         let mut cell_path = cell_path.to_vec();
         // 한 문단 안에서 뒤 조판 부호부터 지워야 앞 컨트롤 번호가 그대로 남는다.
         sources.sort_by_key(|source| {
