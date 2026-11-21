@@ -17205,7 +17205,17 @@ impl LayoutEngine {
                     // collapse를 유지한다(hwpx_sample2.hwp: 500~600/1000HU).
                     // 다음 문단이 중첩 control을 host하면 그 vpos는 control 배치
                     // 좌표이므로 빈 Enter의 독립 줄박스 증거로 사용하지 않는다.
-                    || preserve_forward_stored_empty_spacer);
+                    || preserve_forward_stored_empty_spacer
+                    // 마지막 빈 줄은 앞 줄의 전진으로 닫히고, 개체의 첫 물리 상자가
+                    // 원본 사다리의 실제 페이지 분할을 입증한다.
+                    || (authenticated_hwpx_frame
+                        && pi + 1 == para_count
+                        && cell.height as i64
+                            == i64::from(cell.effective_vertical_padding_hu(&table.padding))
+                        && self.declared_nested_opening_frame_reset(table).is_some()
+                        && empty_line_flow::closed_stored_empty_line_owns_advance(
+                            cell, pi, styles, self.dpi,
+                        )));
             // 저장 프레임의 빈 오버레이만 접는다. 물리 프레임을 갱신한 빈
             // 문단은 현재 줄 상자와 앞 간격을 소유하며 유닛에서 지울 수 없다.
             let legacy_single_cell_empty_spacer = !text_reflowed
@@ -23505,8 +23515,10 @@ impl LayoutEngine {
         let mut reset_count = 0usize;
         let mut in_paragraph_reset_count = 0usize;
         let mut previous_frame_end: Option<i32> = None;
+        let mut previous_line_position = 0;
         let mut preceding_frame_end = 0i32;
         let mut trailing_frame_end = 0i32;
+        let mut first_reset_frame_end = None;
         for paragraph in &cell.paragraphs {
             for (seg_idx, seg) in paragraph
                 .line_segs
@@ -23520,6 +23532,9 @@ impl LayoutEngine {
                 if previous_frame_end
                     .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
                 {
+                    if reset_count == 0 && previous_line_position > 0 && seg.vertical_pos == 0 {
+                        first_reset_frame_end = previous_frame_end;
+                    }
                     reset_count += 1;
                     if seg_idx > 0 {
                         in_paragraph_reset_count += 1;
@@ -23532,10 +23547,33 @@ impl LayoutEngine {
                     trailing_frame_end = trailing_frame_end.max(frame_end);
                 }
                 previous_frame_end = Some(frame_end);
+                previous_line_position = seg.vertical_pos;
             }
         }
 
-        self.direct_hwpx_cell_has_progressing_source_frames(cell)
+        // 단일 셀 RowBreak는 셀 높이에 안 여백만 기록하고 개체 높이에 첫 물리
+        // 조각을 저장할 수 있다. 라인 잉크의 끝과 안 여백이 그 높이를 정확히
+        // 닫을 때 저장 프레임으로 인정한다. 문단 로컬 줄 원점의 0은 제외한다.
+        let vertical_padding = i64::from(cell.effective_vertical_padding_hu(&table.padding));
+        let declared_opening_frame = table.row_count == 1
+            && table.col_count == 1
+            && table.cells.len() == 1
+            && i64::from(cell.height) == vertical_padding
+            && first_reset_frame_end.is_some_and(|end| {
+                i64::from(end) + vertical_padding == i64::from(table.common.height)
+            })
+            && cell.paragraphs.iter().all(|para| {
+                para.controls.is_empty()
+                    && !para.line_segs.is_empty()
+                    && para.line_segs.iter().all(|line| {
+                        line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                            && line.vertical_pos >= 0
+                            && line.line_height > 0
+                    })
+            });
+        declared_opening_frame
+            || self.direct_hwpx_cell_has_progressing_source_frames(cell)
             || reset_count >= 2
             || (reset_count == 1 && {
                 let declared_height = cell.height as i32;
@@ -26139,6 +26177,26 @@ impl LayoutEngine {
 
     /// 원본 문단 내부에서 재개하는 표 프레임의 위 여백. 예약과 paint가
     /// 같은 컷·앵커를 읽으며 첫 조각의 양수 개체 오프셋은 다시 적용하지 않는다.
+    pub(crate) fn declared_opening_frame_starts_at_cut(
+        &self,
+        table: &crate::model::table::Table,
+        cut: &[usize],
+        styles: &ResolvedStyleSet,
+    ) -> bool {
+        let ([start], [cell]) = (cut, table.cells.as_slice()) else {
+            return false;
+        };
+        let Some(restart) = self.declared_nested_opening_frame_reset(table) else {
+            return false;
+        };
+        self.cell_units(cell, table, styles)
+            .get(*start)
+            .is_some_and(|unit| {
+                unit.para_idx == restart && unit.vis_start == 0 && unit.stored_frame_break_before
+            })
+    }
+
+    /// 문단을 나눠 이어받은 저장 다중 행 표도 같은 바깥 위 여백을 소비한다.
     pub(crate) fn intra_paragraph_rowbreak_reopens_outer_top(
         &self,
         host: &Paragraph,
@@ -28027,38 +28085,49 @@ impl LayoutEngine {
             return None;
         }
         let remaining = (total - offset).max(0.0);
-        let flow_height = (if let Some(physical) = stored_text_physical_height {
-            physical
-        } else if let Some(physical) = saved_nested_frame {
-            let child = nested.expect("saved nested frame owner");
-            physical
-                + hwpunit_to_px(
-                    i32::from(child.outer_margin_top) + i32::from(child.outer_margin_bottom),
-                    self.dpi,
+        let stored_continuation_height =
+            nested.zip(recursive_cut.as_ref()).and_then(|(child, cut)| {
+                self.stored_nested_continuation_before_line(
+                    table,
+                    cell,
+                    child,
+                    cut,
+                    &units[lo..hi],
+                    styles,
                 )
-        } else if let Some(physical) = stored_block_frame {
-            physical
-        } else if terminal_table_before_host_successor {
-            flow_visible + terminal_host_line_spacing
-        } else if recursive_cut.is_some() {
-            nested
-                .filter(|_| offset > 0.0)
-                .and_then(|child| {
-                    self.plain_nested_continuation_frame_height(
-                        child,
-                        recursive_cut.as_ref().expect("recursive cut"),
-                        styles,
+            });
+        let flow_height =
+            (if let Some(physical) = stored_text_physical_height.or(stored_continuation_height) {
+                physical
+            } else if let Some(physical) = saved_nested_frame {
+                let child = nested.expect("saved nested frame owner");
+                physical
+                    + hwpunit_to_px(
+                        i32::from(child.outer_margin_top) + i32::from(child.outer_margin_bottom),
+                        self.dpi,
                     )
-                })
-                .unwrap_or(flow_visible)
-        } else if terminal_single_cell_tail {
-            visible_height
-        } else if is_offset_continuation && !compensate_first_visible {
-            flow_visible + first_visible_content_height
-        } else {
-            flow_visible.min(remaining)
-        }) + self
-            .mixed_plain_child_boundary_spacing(cell, &units, lo, hi, para_idx);
+            } else if let Some(physical) = stored_block_frame {
+                physical
+            } else if terminal_table_before_host_successor {
+                flow_visible + terminal_host_line_spacing
+            } else if recursive_cut.is_some() {
+                nested
+                    .filter(|_| offset > 0.0)
+                    .and_then(|child| {
+                        self.plain_nested_continuation_frame_height(
+                            child,
+                            recursive_cut.as_ref().expect("recursive cut"),
+                            styles,
+                        )
+                    })
+                    .unwrap_or(flow_visible)
+            } else if terminal_single_cell_tail {
+                visible_height
+            } else if is_offset_continuation && !compensate_first_visible {
+                flow_visible + first_visible_content_height
+            } else {
+                flow_visible.min(remaining)
+            }) + self.mixed_plain_child_boundary_spacing(cell, &units, lo, hi, para_idx);
         // 행 범위는 픽셀 오프셋에서 유도한다. 종전에는 `0..1` 로 고정해, 2행 이상
         // 중첩 표가 텍스트와 문단을 공유하면 연속 페이지가 **행 0 만** 다시 그리고
         // 뒤 행의 내용이 어느 페이지에도 나오지 않았다 (75544 pi=527: 2행 표,
@@ -29077,7 +29146,50 @@ impl LayoutEngine {
                         // 사용해, 내용 종료와 별개인 빈 물리 예약은 유지한다.
                         let trailing =
                             self.projected_cut_trailing_advance(child, &cut, styles, purpose);
-                        extra += (child_height - reserved_flow).max(-trailing);
+                        // 투명 자식의 다음 쪽 줄간격은 넘기고, 보이는 부모는
+                        // 실제 자식 끝 뒤에 자신의 아래 안 여백을 소유한다.
+                        let parent_closing_padding = match (
+                            purpose,
+                            child.cells.as_slice(),
+                            cut.start_cut.as_slice(),
+                            cut.end_cut.as_slice(),
+                        ) {
+                            (
+                                row_physical_band::CutHeight::Occupied,
+                                [child_cell],
+                                [start],
+                                [end],
+                            ) if self.stored_transparent_child_closing_advance(
+                                child,
+                                child_cell,
+                                &self.cell_units(child_cell, child, styles),
+                                *start,
+                                *end,
+                                styles,
+                            ) > 0.0 =>
+                            {
+                                self.nested_source_frame_bottom_padding(
+                                    table, cell, &units, lo, hi, styles,
+                                )
+                            }
+                            _ => 0.0,
+                        };
+                        let stored_continuation_height = self
+                            .stored_nested_continuation_before_line(
+                                table,
+                                cell,
+                                child,
+                                &cut,
+                                &units[lo..hi],
+                                styles,
+                            );
+                        extra += stored_continuation_height.map_or_else(
+                            || {
+                                (child_height - reserved_flow).max(-trailing)
+                                    + parent_closing_padding
+                            },
+                            |height| height - reserved_flow,
+                        );
                         // 자식의 실제 상자가 셀 최소 높이를 늘린 경우 부모 행도
                         // 측정 단계와 같은 원래 안 여백을 예약한다. 선언 높이에
                         // 종속된 paint padding guard를 전역 변경하지 않는다.
@@ -29627,6 +29739,11 @@ impl LayoutEngine {
             }
         }
         if !start_cut.is_empty() && end_cut.is_empty() {
+            if row == 0 {
+                if let Some(height) = self.stored_wrapper_closing_height(table, start_cut, styles) {
+                    return height;
+                }
+            }
             if let Some((source_cut, height)) =
                 self.stored_empty_prefix_row_closing_frame(table, row, styles)
             {

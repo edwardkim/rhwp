@@ -971,10 +971,61 @@ impl TypesetEngine {
 
         // `terminal_successor_gap`: 끝 조각 뒤 문단이 증언한 공통 간격이 있으면
         // paint와 같은 흐름 끝을 사용하고 호스트 아래 간격으로 다시 덮어쓰지 않는다.
+        let fragment_flow_start = st.current_height;
         let commit_fragment = |st: &mut TypesetState,
                                owner_height: f64,
                                terminal: bool,
                                terminal_successor_gap: Option<f64>| {
+            let relocated_successor =
+                (terminal && !is_continuation && cursor_row == 0 && start_cut.is_empty())
+                    .then_some(input.prepared.relocated_picture_successor)
+                    .flatten();
+            let wrapper_top = fragment_flow_start + host_before_overhead + vert_offset_overhead;
+            let wrapper_successor = (terminal
+                && is_continuation
+                && cursor_row == 0
+                && !start_cut_is_block
+                && st.col_count == 1
+                && fragment_flow_start == 0.0
+                && !crate::renderer::typeset::para_has_visible_text(input.source.paragraph))
+            .then(|| {
+                let (_, next) = st.table_flow_successor(para_idx, input.source.paragraphs_all)?;
+                let line = next.line_segs.first()?;
+                if next.column_type != crate::model::paragraph::ColumnBreakType::None
+                    || !next.controls.is_empty()
+                    || next.stored_text_partition_is_dirty()
+                    || next.cell_format_vpos_dirty
+                    || is_synthetic_line_seg(line)
+                    || line.vertical_pos <= 0
+                    || line.is_first_line_of_page()
+                    || line.is_first_line_of_column()
+                {
+                    return None;
+                }
+                let before = styles
+                    .para_styles
+                    .get(next.para_shape_id as usize)?
+                    .spacing_before;
+                let top = hwpunit_to_px(line.vertical_pos, self.dpi);
+                let end = top - before;
+                let visible_bottom = wrapper_top
+                    + layout_engine
+                        .stored_wrapper_terminal_visible_end(table, start_cut, styles)?;
+                (end >= visible_bottom && end < st.current_height).then_some((top, end))
+            })
+            .flatten();
+            let stored_successor = relocated_successor.or(wrapper_successor);
+            let wrapper_placement = wrapper_successor.map(|_| {
+                crate::renderer::float_placement::ParagraphFloatPlacement {
+                    flow: crate::renderer::float_placement::ParagraphFloatFlow::Exclusion,
+                    anchor_y: fragment_flow_start,
+                    stored_host_origin: None,
+                    stored_successor_line_origin: None,
+                    table_left: None,
+                    table_top: wrapper_top,
+                    occupied_bottom: wrapper_top,
+                }
+            });
             let accepted_sibling_frame = (terminal && siblings_emitted)
                 .then_some(terminal_successor_gap)
                 .flatten()
@@ -991,7 +1042,10 @@ impl TypesetEngine {
                         occupied_bottom: top,
                     }
                 });
-            if let Some(mut placement) = fragment_placement.or(accepted_sibling_frame) {
+            if let Some(mut placement) = fragment_placement
+                .or(accepted_sibling_frame)
+                .or(wrapper_placement)
+            {
                 // 끝 조각이 아닌 컷은 후속 문단을 소유할 수 없다. 끝 조각의 원본 원점은
                 // 유지하되, 간격을 소비하는 경로에서는 최종 수용한 물리 하단과 일치해야 한다.
                 if !terminal {
@@ -1043,6 +1097,12 @@ impl TypesetEngine {
                         }
                     }
                 }
+                if let Some((top, end)) = stored_successor {
+                    // 보이는 자식 뒤의 다음 줄을 원본이 확정했다. 바깥 표의
+                    // 오래된 상자 높이는 paint에만 남기고 흐름에 다시 더하지 않는다.
+                    placement.stored_successor_line_origin = Some(top);
+                    placement.occupied_bottom = end;
+                }
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
                 st.align_flow_to(successor_flow_end.unwrap_or(
                     placement.occupied_bottom
@@ -1063,6 +1123,9 @@ impl TypesetEngine {
                         }),
                     });
                 }
+            }
+            if let Some((_, end)) = stored_successor {
+                st.align_flow_to(end);
             }
             // 글줄을 따로 소유하지 않는 호스트의 마지막 개체가 끝나면,
             // 수용한 조각·캡션·바깥여백의 최종 흐름 끝도 배치에 전달한다.
@@ -1169,6 +1232,7 @@ impl TypesetEngine {
                 // 마지막 행의 물리 높이를 바꾼 결과는 조각 배치에서 소비한다.
                 // 통째 표로 되돌리면 원래 행 높이가 복원되어 예약 하단을 넘는다.
                 && end_row_height_override.is_none()
+                && input.prepared.relocated_picture_caption_rows.is_none()
             {
                 // 한 쪽에 통째로 든 첫 조각도 끝 조각이다. 문단 기준 자리차지 표가 호스트 글줄을
                 // 지나 놓이면 뒤 문단 줄은 표 상자(위 오프셋·바깥 여백 포함) 아래 자기 저장 줄에

@@ -1,0 +1,718 @@
+{
+  "key": "regulatory-2024",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/silhouette.tsv",
+  "tsv_sha256": "cc1084b4a101e38007bdeeb2c704b2b403ed09b7b2748b11590fb5a55d05815a",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "6214b2904e3c6b90a94904d592c9677260d2b01780bdcba317b608d11941f3c7",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-001.png",
+      "pdf_sha256": "c1efd814c9030ab73655fe83da64f6e9508f04b37b5361f14c1bccee0b6c10f4"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "01a75c5421d44ae02f8c41165a6326aaa5531818e317424e432d63bc7d394860",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-002.png",
+      "pdf_sha256": "54995547b70709ca115015a83a23113b9f51e725766d035297ee6491065b031b"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "2f2467c58f1624ca29abf0d580f927f58c05fed95ef9b0106f5c43b4609b30fb",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-003.png",
+      "pdf_sha256": "8a28826beefaa09968d5db1d85d7f076fc4a5a529ee4fcd0b4b64c4a7b3d1a5a"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "33627678dd2552590956db6efe728532795ca4d08148aaa2549001d683971f72",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-004.png",
+      "pdf_sha256": "927ae2d438d343b18608b9a4978d7191a1dc3fb7a872cdc9f39957fff68b4959"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "469a6410918b8ccb780f508e56d4d788d33111da906a41937cfaaaca469dc47e",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-005.png",
+      "pdf_sha256": "ddf2ddcdfbec7603b2407e9b5309b5aa359fea7cb273ff1cedf8f232cb1e1f1a"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "f63a903378dcca31e03b0a05d72131514a7ae364f8787d120e6c1f7d09df3bf1",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-006.png",
+      "pdf_sha256": "afd4dd7637126d67fb0eac88bb86e6c34fbd85e71f3f24d90060dce98e233385"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "4e1dc35c7ee563b653a7a8ed0bcce39d13f30d8e2a0893893be24bcdc1653c14",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-007.png",
+      "pdf_sha256": "46a113d10f7335d522ae58e8c18d446f49101a814b4072df6e987590116bbe76"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "8a4be419bc661e35cf6542a8f19820e5945673fbb87144002ea5068700492a04",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-008.png",
+      "pdf_sha256": "bbcb6c2052c48e5cecb8384ad107defab79183c01dc498b805625818ec953d38"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "77ad767bd21cec9fee16ff82086d8504aa93bd927442b5bc2dd697c1d403759b",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-009.png",
+      "pdf_sha256": "45db4a3b33c350f2f9de7d707700c734fc5b52fcb0903125363e90d9d06ca7f9"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "1a0010372cde93a43790ba9666666db6853bb29d2e6bbd5bbe919b061ad92dbf",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-010.png",
+      "pdf_sha256": "9ce42480d95c0d5cb1ffcfc8fdd43e84b13c57dc02056f0f3e203890ed3f7a71"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "24c661b81117a309f39c05b904ff83ab77b41d55cd11a7a3a650a7c820c88e48",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-011.png",
+      "pdf_sha256": "6782a36f1cc043c20e3c4e2a07d039ba3de90b8cf09803b55d627d40fc66f3f2"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "d2a2a2fe5a7cb0acf8a1d2ffacd7b53ec19267b069a822e9af18ce44c1f386f0",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-012.png",
+      "pdf_sha256": "55df8d376ae4506e670613243180d0e8fb048e20a5cb9eb4224db6512e0b3e2e"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "884c44dbc431c9eaa42085c520af8018ca662f8b1eb37cd0b4c00da9524f05b6",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-013.png",
+      "pdf_sha256": "91f1ba982606262f44213c684a864b042bba5654efc8c54957071bc75e9b6c7f"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "7451d1c6657f8a0d21728896a3a1ad8fb9e382683f44cb57f32d4e634bac2acd",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-014.png",
+      "pdf_sha256": "8fbc6dadeb325d31e5caed04ff4099b7c4f49a065557b76df43aee5373df58dd"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "84c8dd7d9d0196ccb403730d58ba2e55764ec9ad9eb9ea49c470a999798639f0",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-015.png",
+      "pdf_sha256": "21a42a1c66f85b81216b49d10346e37b623f56919159d41348dbe7cc1df4d349"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "cd6e09043b23b21621a85ec580e8c33ce1900a31b7427ea70bf22a77c9ed0c7d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-016.png",
+      "pdf_sha256": "923bc8990ace2c1b73f89cab0cd2689ace1f71c238cb3e86d934f3f21e2a621f"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "a435fd50fe131a974b67960c58872e9e05505a374694562645e767c7fe5359ec",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-017.png",
+      "pdf_sha256": "580419e0007d6c1fa182ce5ea0a1e5b8596ec5b8a10ebe71fb96c6871e4cf2df"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "6e025101cffc7057c04e3cc77d77cb556d7fc390bc1b5a167308e4a1a2071480",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-018.png",
+      "pdf_sha256": "155d582a1a78061d093354859485923d2d224bd000ea8a14723aca3e9f7b01ab"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "bd32eb1a7f093a989ac3d7a1a6036548a13cc2d770cbb38d66c52738f798dc59",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-019.png",
+      "pdf_sha256": "2ac19393580f46eee16edd496ba1a83d66061ea6f5aaf01e846da34c51c844be"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "694b2a88c16d8dadf220afc777ecb4e34831f5da9ff51e69d758a9e4fbd68570",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-020.png",
+      "pdf_sha256": "d1a4a4a6e5dbe1d2e5de256cc2aa3e9b91e270c12a39891fc6d9d7dac242e545"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "157727f9b6576962b161589b350f933cd4cfc13aa045c6bb620364ddd21b2f5b",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-021.png",
+      "pdf_sha256": "9dcd2913f576dd09783afc984e81036a361d9089d360cf095803d19e51949922"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "65daecbb56df86518eaf9c8037147d9326433ae60a16aa2e4bc27a10528b0147",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-022.png",
+      "pdf_sha256": "72f171557cda5c77bc5a3c8713080f82b21f387ebd5a4d402a52c8192d07a02c"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "4b8549b909f41216e4b4142b4bca5b3ce1339c5fc494acb2b20ad18fa62cd14d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-023.png",
+      "pdf_sha256": "2d148c5df01e0a8c146891c31ef4ffa259b4467e52ead3539f511055a9c24454"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "c74305f6e02570161378baad25e6016c7c22a60a7384c8d8c55c33516bcb0163",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-024.png",
+      "pdf_sha256": "df07c76b8afb514b941904ceb47430c5803b84306b56b6ac930a6fe1c9e833d6"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "9b102748528afe7d9283e608cb25602578f8469c996e2c6dcff8401386e90636",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-025.png",
+      "pdf_sha256": "80b052cbd1d15e7c8995dc352966c5afce86ccc103667ec0b322bfc5303b1323"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "d769bd455803d4b023bc457d6a62323bab7445235ee231a7acaa670b750d8aae",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-026.png",
+      "pdf_sha256": "10fe82de6b71a5c288a8bd09076d07e55178bee6d455a54633f9943689c051aa"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "52c7ed836f9822e8cb0516f6e0e1a9b5ff2de7ca9f8ac4e794816b7f5914ccac",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-027.png",
+      "pdf_sha256": "f2396af2c3ab5aec912b7aea18c93e9fa5514030894c5bdc671d438c1f35cdf1"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "d956cd5abf0200739ae1702b80deafd2de5a869b14b5a5fcaf3bb8ba5aab8003",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-028.png",
+      "pdf_sha256": "234e2dee1d763a653839ee09e744d596f541489e5a4c44e7ff63b01ea602b1bc"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "cdaa9df9028a4bd03d8f752cc16df4089691234f590972e97d2560185644fb2c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-029.png",
+      "pdf_sha256": "52e782f73a8f5efd5d174e38ce1561e6d2a521f145d8266f6e45864f1b201900"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "1366da2e8a31fb21a207550fa016731d6c7225828807bccd59f3249c79ccae17",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-030.png",
+      "pdf_sha256": "e331443aa8439e4788a209b7e506756ad2a03987bd161e55f0064e2c4c11f1b0"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "e9cca931de79911aa09db62dfe7d0492db64a3698f4918c117e278f5b6cbe158",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/pdf_png/pdf-031.png",
+      "pdf_sha256": "abe1af209b91d1bea8b99d0afb83bd6933b5a915df1c55aceb684bc85b114817"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9313,
+      "silhouette_raw_unmatched_pixels": 28,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 40759,
+      "tolerant_content_match_percent": 99.9313
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.94532,
+      "silhouette_raw_unmatched_pixels": 61,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 111564,
+      "tolerant_content_match_percent": 99.94532
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99913,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 114516,
+      "tolerant_content_match_percent": 99.99913
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98738,
+      "silhouette_raw_unmatched_pixels": 4,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 31698,
+      "tolerant_content_match_percent": 99.98738
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.64735,
+      "silhouette_raw_unmatched_pixels": 274,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77698,
+      "tolerant_content_match_percent": 99.64735
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 93912,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8936,
+      "silhouette_raw_unmatched_pixels": 54,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 50751,
+      "tolerant_content_match_percent": 99.8936
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.24968,
+      "silhouette_raw_unmatched_pixels": 337,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44914,
+      "tolerant_content_match_percent": 99.24968
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97809,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 22825,
+      "tolerant_content_match_percent": 99.97809
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.94563,
+      "silhouette_raw_unmatched_pixels": 17,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 31269,
+      "tolerant_content_match_percent": 99.94563
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.93037,
+      "silhouette_raw_unmatched_pixels": 15,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 21543,
+      "tolerant_content_match_percent": 99.93037
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.60925,
+      "silhouette_raw_unmatched_pixels": 124,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 31734,
+      "tolerant_content_match_percent": 99.60925
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.42652,
+      "silhouette_raw_unmatched_pixels": 590,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 102880,
+      "tolerant_content_match_percent": 99.42652
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89812,
+      "silhouette_raw_unmatched_pixels": 118,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 115818,
+      "tolerant_content_match_percent": 99.89812
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.87564,
+      "silhouette_raw_unmatched_pixels": 124,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99710,
+      "tolerant_content_match_percent": 99.87564
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97217,
+      "silhouette_raw_unmatched_pixels": 22,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 79047,
+      "tolerant_content_match_percent": 99.97217
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95809,
+      "silhouette_raw_unmatched_pixels": 31,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 73971,
+      "tolerant_content_match_percent": 99.95809
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97036,
+      "silhouette_raw_unmatched_pixels": 21,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 70848,
+      "tolerant_content_match_percent": 99.97036
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98783,
+      "silhouette_raw_unmatched_pixels": 11,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90383,
+      "tolerant_content_match_percent": 99.98783
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.96256,
+      "silhouette_raw_unmatched_pixels": 19,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 50749,
+      "tolerant_content_match_percent": 99.96256
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.94006,
+      "silhouette_raw_unmatched_pixels": 17,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 28362,
+      "tolerant_content_match_percent": 99.94006
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.70706,
+      "silhouette_raw_unmatched_pixels": 180,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61447,
+      "tolerant_content_match_percent": 99.70706
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.8012,
+      "silhouette_raw_unmatched_pixels": 40,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 20121,
+      "tolerant_content_match_percent": 99.8012
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97043,
+      "silhouette_raw_unmatched_pixels": 18,
+      "silhouette_boundary_reconciled_pixels": 10,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60871,
+      "tolerant_content_match_percent": 99.98686
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.24007,
+      "silhouette_raw_unmatched_pixels": 652,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 85797,
+      "tolerant_content_match_percent": 99.24007
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82563,
+      "silhouette_raw_unmatched_pixels": 124,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71113,
+      "tolerant_content_match_percent": 99.82563
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98039,
+      "silhouette_raw_unmatched_pixels": 17,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 86710,
+      "tolerant_content_match_percent": 99.98039
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98801,
+      "silhouette_raw_unmatched_pixels": 9,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 75074,
+      "tolerant_content_match_percent": 99.98801
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99352,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 77135,
+      "tolerant_content_match_percent": 99.99352
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82138,
+      "silhouette_raw_unmatched_pixels": 124,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 69423,
+      "tolerant_content_match_percent": 99.82138
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 68159,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 31,
+      "pdf": 31
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62"
+    },
+    "pdf": {
+      "path": "output/pr-review/issues7749-7753/print-reference/regulatory-2024.pdf",
+      "sha256": "b269aaef5287b530f5adb3c37fff011ef7a1e836dd3edb67748f453fb869811a"
+    },
+    "git_head": "ec8515f1d8d52353f1e5092eb080ab2619de55e7",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "82f70d33e4f415946722e93e436706cf49e2de65d1e576218d8f36d33bf42532"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-rhwp",
+      "path": "output/pr-review/issues7749-7753/candidate-v13-rhwp",
+      "sha256": "4db00c9818f0b9b12fe8dde8b2c7d3667e529fb3ceb8eaf5ca658da32bfa8758"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "1699cde44bfe4e90baf3a1fd1662d6219cdd096687419cdc25bd5c673db277ff",
+    "layout_generation": "2024",
+    "font_environment": {
+      "path": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/regulatory-print-font-probe/wasm-font-environment.json",
+      "sha256": "ed671d7e6601bdf6e77110e1dd11d3bcb2d737f7940b9dacbf3bbf3da905969e"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-wasm/rhwp.js",
+          "sha256": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-wasm/rhwp_bg.wasm",
+          "sha256": "fa4bd73967a7c35cd64e458f51a88156dc8711f8ef528d963e81595f9d56af59"
+        }
+      ],
+      "exporter_sha256": "d3c2e7992112ec7afd89ca0856d5e847f35ac3899d6b38e06f2c64dae9fba788",
+      "font_registration_sha256": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/regulatory-print-font-probe/wasm-programs/Gulim.ttf",
+          "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-full-wasm/regulatory-2024/sweep/regulatory-2024/silhouette-checkpoint.json"
+}

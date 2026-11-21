@@ -110,8 +110,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
-    // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
-    "hwpctl_ParameterSetID_Item_v1.2.hwp",
     // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
     "pr-1674.hwp",
     // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
@@ -132,12 +130,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     // #6778: 한컴2024 재출력 전12쪽도 최저17.50287%로 본문 배율·소속이 다르다.
     // 인쇄 방식4를 rhwp 출력에 반영하지 않는 전체 피델리티는 #7445에서 복원한다.
     "issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
-    // 보정160에서 #7445로 이관한 31쪽 정본/32쪽 출력의 중첩 표 문서다.
-    // 선택 쪽 최저25.15773%이며 이번 25쪽의 추가 넘침도 전체 피델리티 복원 범위다.
-    "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
-    // #6697과 원본 바이트가 같고 별도 한컴 PDF도 31쪽이다. 현 head의 29~31쪽
-    // 최저23.93271%로 확인한 동일 #7445 범위이며 이 경로만 추가로 제외한다.
-    "issue3637/regulatory_impact_nested_table_escape.hwpx",
     // #7445로 이관한 86712 원본의 정상 HWP에서 재생성한 HWPX다.
     // 이 입력의 본문 넘침 회귀만 이관하며 파싱·저장 및 다른 문서는 유지한다.
     "issue1891/86712_regulatory_analysis.hwpx",

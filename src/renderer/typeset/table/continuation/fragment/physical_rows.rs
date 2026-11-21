@@ -351,6 +351,11 @@ impl TypesetEngine {
     ) -> Option<Vec<f64>> {
         let table = source.row_geometry_table;
         let layout = &prepared.layout_engine;
+        if cursor.row == 0 && !cursor.is_continuation && physical_start_cut.is_empty() {
+            if let Some(rows) = prepared.relocated_picture_caption_rows {
+                return Some(rows.to_vec());
+            }
+        }
         if let Some(frame) = cursor
             .stored_block_frame
             .as_ref()

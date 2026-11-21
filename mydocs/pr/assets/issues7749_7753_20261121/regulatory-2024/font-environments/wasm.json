@@ -1,0 +1,27 @@
+{
+  "id": "regulatory-2024-gulim-original-advance-wasm",
+  "substitutions": {},
+  "trueTypeFaces": [
+    "Gulim"
+  ],
+  "preserveSourceMetrics": true,
+  "replaceSourceMetricsFor": [],
+  "documentSubstitutions": [
+    {
+      "languageSlot": 1,
+      "fontId": 12,
+      "source": "한양신명조",
+      "target": "Gulim",
+      "programId": "sweep-6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+      "query": "Gulim"
+    },
+    {
+      "languageSlot": 5,
+      "fontId": 10,
+      "source": "한양신명조",
+      "target": "Gulim",
+      "programId": "sweep-6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+      "query": "Gulim"
+    }
+  ]
+}

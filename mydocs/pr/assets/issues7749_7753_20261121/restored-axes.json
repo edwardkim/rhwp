@@ -1,0 +1,42 @@
+{
+  "source": "ec8515f1d8d52353f1e5092eb080ab2619de55e7",
+  "font_environment": "minimal-public-fonts",
+  "body_bottom_tolerance_px": 2,
+  "documents": {
+    "regulatory-3637": {
+      "pages": 31,
+      "body_overflow_bottom": 0,
+      "off_canvas": 0,
+      "text_overlap": 0,
+      "cell_overflow_lines": 0
+    },
+    "regulatory-6697": {
+      "pages": 31,
+      "body_overflow_bottom": 0,
+      "off_canvas": 0,
+      "text_overlap": 0,
+      "cell_overflow_lines": 0
+    },
+    "parameter": {
+      "pages": 74,
+      "body_overflow_bottom": 0,
+      "off_canvas": 0,
+      "text_overlap": 0,
+      "cell_overflow_lines": 0
+    },
+    "research-hwp": {
+      "pages": 215,
+      "body_overflow_bottom": 0,
+      "off_canvas": 0,
+      "text_overlap": 0,
+      "cell_overflow_lines": 0
+    },
+    "research-hwpx": {
+      "pages": 215,
+      "body_overflow_bottom": 0,
+      "off_canvas": 0,
+      "text_overlap": 0,
+      "cell_overflow_lines": 0
+    }
+  }
+}

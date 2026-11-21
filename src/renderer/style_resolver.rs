@@ -317,6 +317,30 @@ pub(crate) fn resolve_styles_with_environment(
                             |source| env.preserves_source_metrics_for(source),
                         )
                     });
+                    // 한컴 2024 Print의 한양신명조→굴림 대체는 실제 굴림 잉크를
+                    // 쓰되 숫자는 원본 반각으로 전진한다. 같은 원본에 굴림을
+                    // 직접 선언한 대조군의 숫자는 굴림 자체 전진을 사용한다.
+                    if lang == 1
+                        && profile.hangul2024_layout()
+                        && profile.hwpx_stored_layout()
+                        && !profile.session_edited()
+                        && preserve_source_metrics
+                        && original.embedded != Some(true)
+                        && original.requested_face.as_deref() == Some("한양신명조")
+                        && matches!(target, "Gulim" | "굴림")
+                        && environment.is_some_and(|env| {
+                            env.selects_true_type(target)
+                                && env
+                                    .selected_program_identity_for(
+                                        "한양신명조",
+                                        lang,
+                                        shape.font_ids[lang],
+                                    )
+                                    .is_some()
+                        })
+                    {
+                        style.latin_decimal_halfwidth = true;
+                    }
                     // 같은 이름의 실제 주 TrueType 프로그램은 표시용 대체가 아니다.
                     // 검증된 폭과 실제 선택을 확인한 경우 그 프로그램이 전진을 소유한다.
                     // 원 HFT 프로그램 출처가 있거나 치환 경계를 건넌 대체 face는 보존한다.
@@ -1102,6 +1126,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_print_text_device_frame,
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_natural_program_metrics: vec![false; LANG_COUNT],
+        latin_decimal_halfwidth: false,
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         explicit_latin_slot,

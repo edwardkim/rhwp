@@ -601,8 +601,20 @@ impl TypesetEngine {
         // 계산된 호스트 배치는 이미 현재 글줄의 점유 끝으로 인증됐다.
         // 저장 줄 전용 질의로 다시 거부하면 편집 후 호스트가 표 뒤에 중복 방출된다.
         // 빈 개체 앵커는 계산 줄이 있어도 별도 텍스트 공간을 소유하지 않는다.
+        let stored_empty_lead = st.profile.hwpx_stored_layout()
+            && !st.profile.session_edited()
+            && unconstrained_host_placement.is_some_and(|placement| {
+                placement.stored_host_origin.is_some()
+                    && placement.flow == crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+            })
+            && paragraphs_all.get(para_idx + 1).is_some_and(|next| {
+                crate::renderer::float_placement::ParagraphFloatPlacement::stored_empty_offset_host_owns_line(
+                    para, table, ctrl_idx, next,
+                )
+            });
         let host_owns_opening_line = (fmt.computed_host_lines.is_some()
             && para_has_non_whitespace_text(para))
+            || stored_empty_lead
             || crate::renderer::float_placement::partial_table_opening_host_owns_lead(
                 para, table, ctrl_idx, false,
             );
@@ -1179,12 +1191,10 @@ impl TypesetEngine {
             // 를 가질 때 (line_count == 1 → is_row_splittable=false 라 의도 분할 불가)
             // 한컴은 page 경계에서 셀 빈 영역을 자르고 다음 페이지로 연속 렌더한다.
             // can_intra_split 이고 첫 행이 가용 공간보다 큰 force-split 케이스로 분기.
-            // 빈 host의 단일 RowBreak 그림 표는 셀 안 그림의 실제 높이가 표 선언 높이보다
-            // 커도, 다음 문단의 저장 vpos가 되감기면 새 물리 페이지에서 시작한다. 이를
-            // 일반 1×1 force-split으로 처리하면 남은 공간에 표 상자만 두고 그림을 위로
-            // 끌어올린다(정책연구용역 보고서 그림 23: PDF p24 → rhwp p23). 한 페이지에
-            // 통째로 들어가는 native HWP 및 original HWPX 저장 그림 표에만 적용해,
-            // 실제로 페이지보다 큰 1×1 표의 셀 내부 분할 계약은 보존한다.
+            // 빈 호스트 그림 표는 다음 문단의 저장 vpos가 되감기고 첫 그림도
+            // 현재 쪽에 들어가지 않으면 새 물리 쪽에서 시작한다. 그림과 캡션을
+            // 별도 행에 저장해도 캡션만 뒤 쪽에 넘길 근거가 되지 않는다.
+            // 실제로 한 쪽보다 큰 그림과 나눌 수 있는 본문 행은 컷을 유지한다.
             let rewound_empty_figure_float_should_defer =
                 (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
                     && !table.common.treat_as_char
@@ -1194,17 +1204,20 @@ impl TypesetEngine {
                         crate::model::table::TablePageBreak::RowBreak
                     )
                     && !para_has_visible_text(para)
-                    && table.row_count == 1
-                    && table.col_count == 1
-                    && table.cells.len() == 1
-                    && table.cells.iter().any(|cell| {
-                        cell.paragraphs.iter().any(|cell_para| {
-                            cell_para
-                                .controls
-                                .iter()
-                                .any(|control| matches!(control, Control::Picture(_)))
-                        })
-                    })
+                    && ((table.row_count == 1
+                        && table.col_count == 1
+                        && table.cells.len() == 1
+                        && table.cells.iter().any(|cell| {
+                            cell.paragraphs.iter().any(|cell_para| {
+                                cell_para
+                                    .controls
+                                    .iter()
+                                    .any(|control| matches!(control, Control::Picture(_)))
+                            })
+                        }))
+                        || (!first_row_splittable
+                            && !native_picture_caption_fits_actual_footnote_boundary
+                            && is_two_row_picture_caption_rowbreak_table(table)))
                     && para
                         .line_segs
                         .iter()
@@ -1757,7 +1770,61 @@ impl TypesetEngine {
         } else {
             0.0
         };
+        let relocated_picture_frame = (st.pages.len(), st.current_column)
+            != flow_position_before_defer
+            && st.current_items.is_empty()
+            && st.col_count == 1
+            && !st.profile.session_edited()
+            && (st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
+            && std::ptr::eq(table, row_geometry_table)
+            && !self.render_normalization.table_text_reflowed(table);
+        let relocated_picture_caption_rows = relocated_picture_frame
+            .then(|| {
+                crate::renderer::float_placement::stored_relocated_picture_caption_rows(
+                    para,
+                    table,
+                    paragraphs_all.get(para_idx + 1)?,
+                    self.dpi,
+                )
+            })
+            .flatten()
+            .filter(|rows| {
+                rows.iter().sum::<f64>()
+                    + hwpunit_to_px(
+                        i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
+                        self.dpi,
+                    )
+                    <= st.available_height()
+            });
+        let relocated_picture_successor = relocated_picture_frame
+            .then(|| {
+                let next = paragraphs_all.get(para_idx + 1)?;
+                let top = if let Some(rows) = relocated_picture_caption_rows {
+                    rows.iter().sum::<f64>()
+                        + hwpunit_to_px(
+                            i32::from(table.outer_margin_top)
+                                + i32::from(table.outer_margin_bottom),
+                            self.dpi,
+                        )
+                } else {
+                    crate::renderer::float_placement::stored_relocated_picture_successor_origin(
+                        true,
+                        para,
+                        table,
+                        Some(next),
+                        self.dpi,
+                    )?
+                };
+                let before = styles
+                    .para_styles
+                    .get(next.para_shape_id as usize)?
+                    .spacing_before;
+                (top >= before && top <= st.available_height()).then_some((top, top - before))
+            })
+            .flatten();
         let prepared = BlockTableContinuationPreparedState {
+            relocated_picture_caption_rows,
+            relocated_picture_successor,
             computed_host_tail,
             first_anchor_offset_consumed,
             opening_rowspan_block_cuts_after_first_row,

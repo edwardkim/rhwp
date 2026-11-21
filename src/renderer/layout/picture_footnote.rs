@@ -53,6 +53,12 @@ struct FootnoteParagraphPlacement<'a> {
     block_table: Option<FootnoteBlockTableFrame<'a>>,
 }
 
+struct FootnoteLineMetrics {
+    box_height: f64,
+    flow_height: f64,
+    spacing: f64,
+}
+
 fn fragment_line_bounds(fragment: Option<FootnoteFragment>, total_lines: usize) -> (usize, usize) {
     match fragment {
         Some(fragment) => {
@@ -1361,10 +1367,12 @@ impl LayoutEngine {
     /// 일 때만 개입하므로 저장 LINE_SEG 를 가진 각주는 종전 그대로다(#2112 계약).
     fn footnote_line_metrics(
         &self,
-        comp_line: &ComposedLine,
-        para_style_id: u16,
+        paragraph: &Paragraph,
+        composed: &ComposedParagraph,
+        line_index: usize,
         styles: &ResolvedStyleSet,
-    ) -> (f64, f64) {
+    ) -> FootnoteLineMetrics {
+        let comp_line = &composed.lines[line_index];
         let raw_lh = hwpunit_to_px(comp_line.line_height, self.dpi);
         let raw_ls = hwpunit_to_px(comp_line.line_spacing, self.dpi);
         let max_fs = comp_line
@@ -1372,12 +1380,45 @@ impl LayoutEngine {
             .iter()
             .map(|run| run.line_box_font_size(styles))
             .fold(0.0f64, f64::max);
-        let para_style = styles.para_styles.get(para_style_id as usize);
+        let para_style = styles.para_styles.get(composed.para_style_id as usize);
         let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
         let ls_type = para_style
             .map(|s| s.line_spacing_type)
             .unwrap_or(LineSpacingType::Percent);
-        crate::renderer::corrected_line_metrics(raw_lh, raw_ls, max_fs, ls_type, ls_val)
+        let (box_height, spacing) =
+            crate::renderer::corrected_line_metrics(raw_lh, raw_ls, max_fs, ls_type, ls_val);
+        // 각주 일반 줄의 paint도 저장 원점 차이로 전진한다. 큰 줄 상자를
+        // 예약에 다시 더하면 하단에 붙은 각주 전체가 위로 움직인다.
+        let flow_height = paragraph
+            .line_segs
+            .get(line_index)
+            .zip(paragraph.line_segs.get(line_index + 1))
+            .filter(|(current, next)| {
+                !paragraph.stored_text_partition_is_dirty()
+                    && composed.lines.len() == paragraph.line_segs.len()
+                    && (current.tag | next.tag)
+                        & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        == 0
+                    && !composed.inline_controls.iter().any(|control| {
+                        control.line_index == line_index
+                            && matches!(
+                                control.control_type,
+                                crate::renderer::composer::InlineControlType::Table
+                                    | crate::renderer::composer::InlineControlType::Shape
+                            )
+                    })
+            })
+            .and_then(|(current, next)| {
+                crate::renderer::stored_line_flow_height(
+                    current, next, box_height, spacing, max_fs, self.dpi, false,
+                )
+            })
+            .unwrap_or(box_height);
+        FootnoteLineMetrics {
+            box_height,
+            flow_height,
+            spacing,
+        }
     }
 
     fn footnote_block_table<'a>(
@@ -1565,14 +1606,13 @@ impl LayoutEngine {
         let mut advance =
             top_offset + body_height + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
         let (trailing_line_spacing, line_left_offset) = if table.common.treat_as_char {
-            let line = composed.lines.first()?;
-            let (line_height, line_spacing) =
-                self.footnote_line_metrics(line, composed.para_style_id, styles);
+            composed.lines.first()?;
+            let metrics = self.footnote_line_metrics(para, composed, 0, styles);
             // The line and its table occupy one box. If actual cell demand grows,
             // reserve that demand rather than clipping it into the saved line.
-            advance = advance.max(line_height);
+            advance = advance.max(metrics.box_height);
             (
-                line_spacing,
+                metrics.spacing,
                 Some(self.footnote_tac_table_line_left(
                     para, composed, styles, table, &measured, 0, area_width,
                 )),
@@ -1637,9 +1677,9 @@ impl LayoutEngine {
             if let Some(block) = block_table.as_mut() {
                 let number_line_height = composed.lines.first().map_or_else(
                     || hwpunit_to_px(400, self.dpi),
-                    |line| {
-                        self.footnote_line_metrics(line, composed.para_style_id, styles)
-                            .0
+                    |_| {
+                        self.footnote_line_metrics(para, composed, 0, styles)
+                            .box_height
                     },
                 );
                 block.advance = block.advance.max(number_line_height);
@@ -1816,15 +1856,11 @@ impl LayoutEngine {
             } else if composed.lines.is_empty() {
                 total += hwpunit_to_px(400, self.dpi);
             } else {
-                for (index, line) in composed.lines[selected_start..selected_end]
-                    .iter()
-                    .enumerate()
-                {
-                    let (height, spacing) =
-                        self.footnote_line_metrics(line, composed.para_style_id, styles);
-                    total += height;
-                    if para_start + selected_start + index + 1 < end_line {
-                        total += spacing;
+                for index in selected_start..selected_end {
+                    let metrics = self.footnote_line_metrics(para, &composed, index, styles);
+                    total += metrics.flow_height;
+                    if para_start + index + 1 < end_line {
+                        total += metrics.spacing;
                     }
                 }
             }
@@ -2363,8 +2399,9 @@ impl LayoutEngine {
             // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값.
             // [#5708] 저장 LINE_SEG 가 없는 문단의 폴백(400 HWPUNIT = 5.33px)은 글자보다
             // 작아 줄이 겹치므로 문단 줄간격 설정으로 보정한다.
-            let (line_height, corrected_line_spacing) =
-                self.footnote_line_metrics(comp_line, composed.para_style_id, styles);
+            let metrics =
+                self.footnote_line_metrics(paragraph, composed, line_start + offset, styles);
+            let line_height = metrics.box_height;
             let raw_baseline = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
             // 베이스라인도 같은 비율로 따라간다 — 줄 상자만 키우면 글자가 상자 위로 뜬다.
             let baseline = if line_height > 0.0
@@ -2504,11 +2541,9 @@ impl LayoutEngine {
             // 누적하지 않는다 — 다음 각주와의 간격은 between-notes 값이 책임하므로
             // 이중 합산을 피하기 위함.
             let is_last_line = offset + 1 >= line_end - line_start;
-            if is_last_selected_line && is_last_line {
-                y += line_height;
-            } else {
-                let line_spacing_px = corrected_line_spacing;
-                y += line_height + line_spacing_px;
+            y += metrics.flow_height;
+            if !is_last_selected_line || !is_last_line {
+                y += metrics.spacing;
             }
         }
 
