@@ -25,3 +25,9 @@
 #9278의 6·7쪽은 이어지는 표가 맡은 쪽과 후속 표의 아래 선을 검사한다. #9282의 2쪽은 같은 문단에 있는 표 줄과 도형 줄의 순서와 각 위쪽 경계를 검사한다. 해당 페이지의 Native와 fresh WASM 모두 공식 표시값 100.00%를 확인했다. 독립 Print 좌표의 허용 오차는 ±1px다.
 
 [#9278 전쪽 TSV·좌표](coordinate-evidence/9272/evidence.json) · [#9282 전쪽 TSV·좌표](coordinate-evidence/9279/evidence.json)
+
+## WMF 통합 후 다시 확인한 범위
+
+제품 코드 `19646e69fc9`를 포함한 `9d6eee31ea`의 전체 nextest 13,876건과 Native Skia 4,034건이 통과했다. Native/WASM Clippy, 워크스페이스 빌드·Clippy, 검사 매니페스트도 완료했다. Studio는 같은 제품 코드로 다시 빌드한 WASM의 초기화 응답 60건을 확인했다. [Rust 검증 결과](validation/rust-v4.json) · [Studio 검증 결과](validation/actual-studio-v4.json)
+
+기존 보호값보다 낮게 관측한 fresh WASM 32쪽의 입력·Print PDF·글꼴 공급·래스터 조건을 고정해 `devel`과 후보를 비교했다. 32쪽 모두 PNG 바이트가 같았다. 이 결과는 해당 쪽의 코드 변경 영향 대조이며 보호값 재현은 별도로 확인 중이다. #8040은 원본에 기록된 신그래픽체를 공급한 별도 전쪽 대조에서 보호값을 되찾았다. [32쪽 대조 결과](validation/protected-wasm-observed-declines-v4.json) · [#8040 글꼴 공급과 전쪽 TSV](protected-issue8040/README.md)
