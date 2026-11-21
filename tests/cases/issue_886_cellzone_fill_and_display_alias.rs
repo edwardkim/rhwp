@@ -1,26 +1,17 @@
-//! 관계형·고정형: 쪽을 넘긴 표 조각의 cellzone 배경이 zone 칸을 덮고 칸보다 먼저 칠해지는 관계와
-//! 표시 대체 글꼴의 공급 순서(관계형), 독립 Print 와 같은 전체 쪽수(고정형).
-//! 주석 갱신: 2026-11-20T17:30:00+09:00 (직전 파일 변경 커밋 2026-11-20T12:41:08+09:00
-//! `e5b0653461`, edwardkim/rhwp#9208 위로 rebase).
-//! 측정일 2026-11-20, 제품 코드 edwardkim/rhwp#9208 head `7733e209cf`(base upstream/devel
-//! `36ae26d6f6`) + 이 변경. 최초 측정(upstream/devel `0a437a7eef` + 이 변경)과 전쪽 TSV·
-//! 1·8쪽 review/overlay PNG 가 바이트 단위로 같다.
-//! 96 DPI, Native Skia/fresh WASM Canvas, `visual_sweep.py --silhouette-only --compat 2022`의
-//! `silhouette_raw_match_percent`(색상 경계 보정 전 2px 내용 실루엣,
-//! `threshold_boundary_color_support_v1`), 글꼴 `RHWP_FONT_PATH` 공급 34종.
-//! 입력 `samples/issue886/1660000-201400009-kobe-earthquake.hwp`;
-//! 독립 Print `pdf/issue886/1660000-201400009-kobe-earthquake-2022.pdf`(한컴 2022 12.0.0.4547).
-//! 전체 64쪽(독립 Print 64쪽), 전쪽 최저 Native 94.93% / fresh WASM 94.19%(둘 다 1쪽).
-//! 주장 8쪽 raw: Native 99.99% / fresh WASM 100.00%(수정 전 Native 88.77%).
-//! 주장 1쪽 raw: Native 94.93% / fresh WASM 94.19%(수정 전 Native 85.00%).
-//! 증거: `mydocs/pr/assets/issue_886/{native,wasm,base-native}/*_silhouette.tsv`,
-//! 1·8쪽 review/overlay `mydocs/pr/assets/issue_886/{native,wasm}/{review,overlay}/`.
-//! 1쪽 남은 차이는 원 HFT 한양견고딕 대신 표시 대체 HY견고딕의 글자 모양이다.
-//! 절대 px 좌표는 고정하지 않는다(관계 검사만).
+//! 관계형: 표 조각의 cellzone 포함·도색 순서, 글상자 목차 쪽번호 소속,
+//! 원 HFT 부재 시 표시 대체 글꼴의 공급 순서.
+//! 고정형: 독립 Print의 전체 64쪽과 2쪽 목차 쪽번호 x, 8쪽 zone 배경 위쪽 y(96 DPI, ±2px).
+//! 주석 갱신: 2026-11-21 19:04 KST.
+//! 입력 `samples/issue886/1660000-201400009-kobe-earthquake.hwp`.
+//! 기준 `pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf`(Hancom PDF Print 64쪽).
+//! 측정(2026-11-21, 통합 코드 `cef9ff9acc`, Visual Sweep 96 DPI·compat 2022, 원 HFT 공급):
+//! Native/fresh WASM 2쪽 raw 99.87/99.87%, 8쪽 99.99/99.99%, 전쪽 최저 98.12/98.15%.
+//! 1쪽 원 HFT 부재 조건의 남은 차이는 표시 대체 HY견고딕의 자형으로, 글꼴 공급 관계로 검사한다.
+//! 증거: `mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/886/`.
 //!
 //! 원인: 구역 2 문단 49의 26행×3열 표는 7~8쪽에 걸친다. 18행 `1995년 1월 18일 수요일` 칸(병합
 //! 3열)의 고유 테두리/배경(bf=8)은 채우기가 없고, 표의 cellzone (18,0)~(18,0) 이 bf=36
-//! (면색 #FAFABF)을 준다. 한컴 2022 Print 8쪽은 이 행을 노랗게 칠한다. rhwp 는 비분할 표
+//! (면색 #FAFABF)을 준다. 한컴 2020 Print 8쪽은 이 행을 노랗게 칠한다. rhwp 는 비분할 표
 //! 경로(`table_layout` 4-2)에서만 zone 배경을 칠하고 조각 표(`table_partial`)는 zone 테두리만
 //! 덮어써, 이어진 조각에 놓인 zone 배경이 통째로 빠졌다.
 //!
@@ -43,12 +34,24 @@ use rhwp::DocumentCore;
 const SAMPLE: &str = "samples/issue886/1660000-201400009-kobe-earthquake.hwp";
 const SECTION: usize = 2;
 const PARA: usize = 49;
-/// 독립 한컴 2022 Print(`pdf/issue886/1660000-201400009-kobe-earthquake-2022.pdf`)의 쪽수.
+/// 독립 한컴 2020 Print의 쪽수.
 const PRINT_PAGES: u32 = 64;
+const PRINT_COORDINATE_TOLERANCE_PX: f64 = 2.0;
 
 fn core() -> DocumentCore {
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    DocumentCore::from_bytes(&std::fs::read(path).expect("required fixture")).expect("HWP parse")
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).expect("required fixture"))
+        .expect("HWP parse");
+    core.set_hangul2024_compat(false);
+    core
+}
+
+fn assert_print_coordinate(pixel: f64, point: f64, label: &str) {
+    let expected = point * 96.0 / 72.0;
+    assert!(
+        (pixel - expected).abs() <= PRINT_COORDINATE_TOLERANCE_PX,
+        "{label}: {pixel:.2}px, 독립 Print {expected:.2}px"
+    );
 }
 
 fn table(core: &DocumentCore) -> &Table {
@@ -159,6 +162,7 @@ fn issue_886_partial_table_paints_cellzone_fill() {
                 "zone 칸이 표의 이어받은 조각({}쪽)에 놓인다",
                 page + 1
             );
+            assert_eq!(page + 1, 8, "1월 18일의 zone은 Print 8쪽에 놓인다");
             for (cell_index, cell) in cells {
                 let fill = node.children.iter().enumerate().find(|(_, child)| {
                     matches!(&child.node_type, RenderNodeType::Rectangle(rect)
@@ -182,11 +186,38 @@ fn issue_886_partial_table_paints_cellzone_fill() {
                     fill.bbox,
                     cell.bbox
                 );
+                assert_print_coordinate(fill.bbox.y, 215.284, "8쪽 zone 배경 위");
                 checked = true;
             }
         }
     }
     assert!(checked, "zone 칸을 그린 조각을 찾았다");
+}
+
+fn collect_chapter_three_page_number(node: &RenderNode, numbers: &mut Vec<BoundingBox>) {
+    if matches!(&node.node_type, RenderNodeType::TextRun(run)
+        if run.para_index == Some(8) && run.text == "16"
+            && run.cell_context.as_ref().is_some_and(|context| context.in_textbox))
+    {
+        numbers.push(node.bbox);
+    }
+    for child in &node.children {
+        collect_chapter_three_page_number(child, numbers);
+    }
+}
+
+#[test]
+fn issue_886_textbox_toc_leader_keeps_the_print_page_number_origin() {
+    let core = core();
+    let tree = core.build_page_render_tree(1).expect("2쪽 목차");
+    let mut numbers = Vec::new();
+    collect_chapter_three_page_number(&tree.root, &mut numbers);
+    assert_eq!(
+        numbers.len(),
+        1,
+        "제3장 쪽번호는 목차 글상자에 한 번 그린다"
+    );
+    assert_print_coordinate(numbers[0].x, 471.12, "2쪽 제3장 쪽번호 원점");
 }
 
 /// 공개 Noto 프로그램의 `name` 표만 바꿔 다른 family 로 등록되는 합성 글꼴을 만든다.
