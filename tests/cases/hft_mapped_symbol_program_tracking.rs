@@ -1,5 +1,5 @@
 //! 검사 유형: 관계형(기호 프로그램·본문 꾸밈 분리), 고정형(독립 Print 474쪽의 마지막 기호 원점 ±2 CSSpx).
-//! 주석 갱신: 2026-11-09T13:33:56+09:00.
+//! 주석 갱신: 2026-11-22T17:01:25+09:00.
 //! 실물 474쪽: 2026-11-09 B4 Native/fresh WASM raw 99.88894%, 96 DPI·compat2022·2px.
 //! 독립 Print pdf/issue8371/hwp3-sample10-2020.pdf, SHA310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918.
 //! 두 경로의 같은 쪽 review·overlay를 직접 판독했다. 합성 검사는 독립 기호 프로그램의 소유 관계다.
@@ -70,6 +70,7 @@ fn bmp_and_plane15_source_rule_share_the_same_symbol_program() {
         "원시 HWP5 별칭에도 같은 기호 전진을 사용한다"
     );
 }
+
 #[test]
 fn literal_unicode_rule_keeps_its_own_program_contract() {
     let s = style("한양중고딕 (HFT)", true);
