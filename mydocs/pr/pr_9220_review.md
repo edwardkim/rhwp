@@ -2,7 +2,7 @@
 
 ## 통합 후보의 검토 결과
 
-캡션의 줄바꿈·아래 여백·셀·머리말·캡션 속 그림을 여덟 개 저장본으로 검증했다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록한다.
+**메인테이너 보정 후 수용 가능.** 캡션의 줄바꿈·아래 여백·셀·머리말·캡션 속 그림을 여덟 개 저장본으로 검증했다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록했다.
 
 ## 접수 당시 판정
 
@@ -55,3 +55,18 @@ GitHub Lint에서 source-side test 수가 4,094개에서 4,102개로 증가하�
 캡션의 줄바꿈·아래 여백·셀·머리말·캡션 속 그림을 여덟 개 저장본으로 검증했다. 같은 원본의 1쪽 실루엣은 Native 99.57%, fresh WASM 99.57%다. [Native 비교](assets/semanticist21-20261121/validation/final/representative/pr9220/native/review_001.png) · [WASM 비교](assets/semanticist21-20261121/validation/final/representative/pr9220/wasm/review_001.png) [17건 통합 검토](semanticist21_20261121_review.md)
 
 기여자가 `b9eb3eae43`에서 기존 캡션 head와 최신 devel `d7b5286cbf`를 병합했다. 두 충돌의 최종 코드를 대조했다. 그림 캡션 편집은 원본의 캡션 폭과 여백을 `CellReflowMetrics`에 전달하며, 배치는 바깥 여백 확장과 본문 캡션 여부를 각각 계산한다. 통합 후보와 차이는 지역 변수에 폭을 저장하는 방식과 독립 계산 두 개의 순서였다. 두 부모와 새 기여 head를 모두 포함한 병합 커밋은 `45c312d2cf`다. 병합 전후의 Git 트리는 모두 `34ca6fe4d22cc0d82bb6f90db40a291963991dea`였다.
+
+## 병합 후 기여자 PR 댓글 계획
+
+각 출력에서 8쪽을 확인했다. 전쪽 최저 raw는 Native 99.56569%, fresh WASM 99.56616%다. 대표 페이지는 `caption-narrowing_a_side_caption_rewraps_its_text` 1쪽이다. 줄어든 옆 캡션 너비에 맞춰 텍스트가 다시 나뉘고 그림과 캡션은 같은 셀에 남는다.
+
+대표 페이지의 Native raw는 99.57%, 확대 확인할 자동 진단 항목은 0개다. fresh WASM은 99.57%, 0개다. 상세 색상과 안티앨리어싱은 인쇄 엔진에 따라 달라 96 DPI의 2px raw와 실제 잉크·위치를 함께 판독했다.
+
+임시 비교 파일은 로컬 `output/pr-review/semanticist21-20261121/resume-1407/protection-correction/verified-entry-count/representative/`에 있다. 댓글에서는 병합 커밋의 원본 이미지를 사용한다. [검증 방법](../manual/verification/visual_sweep_guide.md#github-merge-comment)
+
+| 출력 | 비교 패널 | 겹침 |
+| --- | --- | --- |
+| native | [비교](assets/semanticist21-20261121/validation/final/representative/pr9220/native/review_001.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9220/native/overlay_001.png) |
+| wasm | [비교](assets/semanticist21-20261121/validation/final/representative/pr9220/wasm/review_001.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9220/wasm/overlay_001.png) |
+
+댓글 본문의 이미지 URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/semanticist21-20261121/validation/final/representative/pr9220/` 아래의 해당 파일로 고정한다. 실제 병합 SHA로 바꿔 원 PR에 UTF-8 본문 파일을 게시한 뒤, GitHub API를 통해 본문과 이미지 해시를 확인한다.

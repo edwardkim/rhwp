@@ -2,7 +2,7 @@
 
 ## 통합 후보의 검토 결과
 
-글자가 없는 펼침과 포갬 상태를 각각 HWPX로 저장해 두 인쇄 결과를 확인했다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록한다.
+**독립 인쇄 검증 보완 후 수용 가능.** 글자가 없는 펼침과 포갬 상태를 각각 HWPX로 저장해 두 인쇄 결과를 확인했다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록했다.
 
 ## 2026-11-21 메인테이너 보완 착수
 
@@ -17,3 +17,22 @@
 ## 독립 Print와 두 렌더러 대조
 
 제품 소스 `c6fb9159bf`에서 측정했다. 빈 문자열에 각각 펼침(`SPREAD`)과 포갬(`OVERLAP`)을 설정한 두 저장 입력을 한컴 2020에서 각각 인쇄했다. 두 입력의 1쪽이 Native와 fresh WASM 모두 100.00000%다. [페이지별 입력·PDF 해시와 raw 측정값](assets/semanticist21-20261121/empty-overlap/pages.tsv)
+
+## 최신 제품 소스의 기능 검증
+
+글자가 없는 펼침과 포갬 상태를 각각 HWPX로 저장해 두 인쇄 결과를 확인했다. 같은 원본의 1쪽 실루엣은 Native 100.00%, fresh WASM 100.00%다. [Native 비교](assets/semanticist21-20261121/validation/final/representative/pr9271/native/review_001.png) · [WASM 비교](assets/semanticist21-20261121/validation/final/representative/pr9271/wasm/review_001.png) [17건 통합 검토](semanticist21_20261121_review.md)
+
+## 병합 후 기여자 PR 댓글 계획
+
+각 출력에서 2쪽을 확인했다. 전쪽 최저 raw는 Native 100.00000%, fresh WASM 100.00000%다. 대표 페이지는 `overlap-true-hwpx` 1쪽이다. 글자가 없는 겹침 상태에서 앞뒤 글자가 보존된다. 펼침과 겹침의 두 저장본에서 독립 인쇄본과 비교했다.
+
+대표 페이지의 Native raw는 100.00%, 확대 확인할 자동 진단 항목은 0개다. fresh WASM은 100.00%, 0개다. 상세 색상과 안티앨리어싱은 인쇄 엔진에 따라 달라 96 DPI의 2px raw와 실제 잉크·위치를 함께 판독했다.
+
+임시 비교 파일은 로컬 `output/pr-review/semanticist21-20261121/resume-1407/protection-correction/verified-entry-count/representative/`에 있다. 댓글에서는 병합 커밋의 원본 이미지를 사용한다. [검증 방법](../manual/verification/visual_sweep_guide.md#github-merge-comment)
+
+| 출력 | 비교 패널 | 겹침 |
+| --- | --- | --- |
+| native | [비교](assets/semanticist21-20261121/validation/final/representative/pr9271/native/review_001.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9271/native/overlay_001.png) |
+| wasm | [비교](assets/semanticist21-20261121/validation/final/representative/pr9271/wasm/review_001.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9271/wasm/overlay_001.png) |
+
+댓글 본문의 이미지 URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/semanticist21-20261121/validation/final/representative/pr9271/` 아래의 해당 파일로 고정한다. 실제 병합 SHA로 바꿔 원 PR에 UTF-8 본문 파일을 게시한 뒤, GitHub API를 통해 본문과 이미지 해시를 확인한다.

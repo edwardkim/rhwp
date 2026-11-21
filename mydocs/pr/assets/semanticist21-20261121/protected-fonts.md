@@ -14,7 +14,7 @@ Native가 사용하는 식별 값은 파일 전체와 컬렉션 face index 4바�
 
 형식 사양서 Native 71쪽을 대조하면 기존 하한에 못 미친 쪽은 8·16·17쪽이다. 8쪽 제목의 한산뜻돋움 굵게는 Print의 사용 글리프 29개 모두 로컬 파일과 윤곽·수평 메트릭·힌팅 명령이 일치했다. 16쪽 Arial의 사용 글리프 29개는 로컬 7.05·7.07 모두 윤곽과 수평 메트릭이 일치했고, 개별 힌팅 명령 일치는 1개였다. 글꼴 파일을 전부 확보했다거나 잔여 차이가 모두 글꼴에서 비롯됐다고 판정할 근거는 없다.
 
-HCI Poppy의 독립 한컴 2020 문자표는 글꼴 설명에 Gulim을 담은 CID TrueType으로 인쇄됐다. 이 출력은 원본 HFT 윤곽의 공급 근거에서 제외한다. 보호 정본과 허용치는 변경하지 않았다.
+HCI Poppy의 독립 한컴 2020 문자표는 글꼴 설명에 Gulim을 담은 CID TrueType으로 인쇄됐다. 이 출력은 원본 HFT 윤곽의 공급 근거에서 제외한다. 이 단계의 점수는 당시 보호 정본과 허용치로 평가했다.
 
 ## 독립 문자표의 복원 범위
 
@@ -39,3 +39,15 @@ HCI Poppy의 독립 한컴 2020 문자표는 글꼴 설명에 Gulim을 담은 CI
 문자 치환을 제거한 뒤 71쪽의 Native와 fresh WASM 실루엣은 모두 100.00%였다. 확대하면 WASM은 ‘ᄒᆞᆫ’만 옛한글 대체 글꼴로 그렸다. Canvas 호출에서도 이 음절의 첫 글꼴은 `RHWP Old Hangul`이었다. 공식 인쇄본의 함초롬돋움과 브라우저에 적재한 보통 굵기 함초롬돋움 두 버전은 U+F53A의 윤곽 명령, 전진폭 970, 왼쪽 베어링 168이 모두 같다. [인쇄본과 공급 프로그램의 글리프 대조](print-primary-source-font.json)
 
 브라우저는 같은 스타일에 후보 파일이 둘이면 글꼴 전체의 글리프 목록을 등록하지 않는다. 대신 인쇄에 사용할 첫 프로그램은 실제 FontFace 선택 순서에 따라 등록한다. 인쇄 시 일반 자소 선택으로 원 글리프를 찾지 못하면 이 등록 정보에서 해당 글리프의 윤곽을 확인해 같은 프로그램으로 그린다. 첫 프로그램이 그 글자를 지원하지 않고 같은 글꼴 이름의 다른 후보가 미확인이면 기존 옛한글 조합을 사용한다.
+
+## 최종 인쇄 대조
+
+제품 소스 `521f69d19d`에서 형식 사양서 71쪽과 화학물질 표시 기준 103쪽을 각각 Native와 fresh WASM으로 인쇄했다. 처음 보호 하한에 미달한 형식 사양서 Native 3행과 WASM 11행의 보완 후 최저는 각각 100.00%와 99.92%였다. 화학 문서 WASM 39행의 최저는 99.88%였다. 원문 표기, 인쇄된 윤곽과 자리, 페이지별 하한을 함께 대조했다. [두 문서 전쪽 348행](validation/final/devel-protected-pairs.tsv) · [원문과 인쇄 글리프 확대](validation/final/araea-source-and-rendering.png) · [화학 문서 49쪽 여는따옴표](validation/final/chemical-p49-opening-quote.png)
+
+두 문서를 측정할 때 실제로 사용한 각 파일의 공급 순서와 SHA-256을 네 조건별로 보존했다. 형식 사양서는 Native 18개·WASM 19개, 화학 문서는 양쪽 각 54개다. Native의 형식 사양서는 자동으로 구성한 환경을 사용했다. 화학 문서의 두 백엔드는 각각 명시한 환경에서 실행했다. [공급 순서와 파일 해시](validation/final/font-supply/programs.tsv) · [형식 사양서 Native 환경](validation/final/font-supply/spec13-native.json) · [화학 문서 Native 환경](validation/final/font-supply/chemical-native.json) · [화학 문서 WASM 환경](validation/final/font-supply/chemical-wasm.json) · [독립 HFT 문자표 재현 절차](../../../manual/verification/hft_original_font_supply.md)
+
+### 행정업무운영 편람 43쪽의 한컴바탕
+
+편람 HWP와 HWPX는 KoPub돋움체 Light 다음 대체 글꼴로 한컴바탕을 지정한다. 원문의 세 자모 U+1112·U+119E·U+11AB가 사용하는 옛한글 음절은 두 한컴 Print의 내장 글꼴에서 U+F53A의 윤곽으로 확인됐다. 두 PDF의 글리프와 한컴바탕 원본은 윤곽과 전진폭 1,024/1,024 em이 일치한다. 문서의 자간을 적용한 전진폭은 980 HWPUNIT이다. 현대 음절 ‘한’은 원래 글꼴의 전진폭을 사용한다.
+
+브라우저에서 HWP는 U+F53A를 텍스트로 그렸고, HWPX는 윤곽을 직접 그렸다. 실제 Canvas에서 얻은 HWPX의 닫힌 윤곽 5개와 선분·곡선 84개를 PDF 내장 글리프와 대조했다. HWP에서 뒤의 ‘글’까지 거리는 11.40px에서 13.05px로 바뀌었고, HWPX에서도 보정 후 거리는 13.05px였다. 96 DPI에서 43쪽의 fresh WASM raw는 두 형식 모두 99.98515%에서 100.00000%가 됐고, Native는 두 형식 모두 100.00000%였다. [측정값과 글꼴 해시](validation/final/handbook-old-hangul.json) · [한컴 Print와 수정 전후 확대](validation/final/handbook-old-hangul.png)

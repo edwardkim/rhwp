@@ -1,0 +1,127 @@
+{
+  "source": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+  "devel": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "full_regression": 13946,
+  "default_skipped": 45,
+  "native_official": 4071,
+  "studio_passed": 2822,
+  "native_binary_sha256": "d3fcb8f43cecae77530c38ef29968d9d120fad7751604b348d898f4ce0b056b4",
+  "frontend": {
+    "core_source": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+    "raw_wasm": "1adda8fb830e71d2dec2ce70f53a0ba1cfb5e27b7afcffb8b1e828b337a55fb5",
+    "node_wasm": "bf1067fba097a3dde37c3c84126eab1c5619ab9f64e69afa13d1b65f013277d7",
+    "web_wasm": "4327fe4dfdee45a5fdb64b9638ffcc5ee10e4904f5fdd5cfc60b60d7e4567bcb",
+    "bindgen": "0.2.127",
+    "public_apis": 17
+  },
+  "rust_gates": [
+    "final-minimal-fonts",
+    "suite-prepare",
+    "suite-precheck",
+    "focused-source",
+    "full-regression",
+    "native-lib",
+    "native-issue_2225_missing_picture_placeholder",
+    "native-render_p37_direct_pdf_export",
+    "release-build",
+    "release-lib",
+    "doc-test",
+    "fmt",
+    "clippy-all",
+    "unit-tiers",
+    "suite-manifest"
+  ],
+  "rust_counts": {
+    "full-regression": {
+      "passed": 13946,
+      "ignored_or_skipped": 45
+    },
+    "focused-source": {
+      "passed": 44,
+      "ignored_or_skipped": 1407
+    },
+    "native-lib": {
+      "passed": 4033,
+      "ignored_or_skipped": 12
+    },
+    "native-issue_2225_missing_picture_placeholder": {
+      "passed": 2,
+      "ignored_or_skipped": 362
+    },
+    "native-render_p37_direct_pdf_export": {
+      "passed": 36,
+      "ignored_or_skipped": 303
+    },
+    "release-lib": {
+      "passed": 3976,
+      "ignored_or_skipped": 12
+    },
+    "doc-test": {
+      "passed": 8,
+      "ignored_or_skipped": 3
+    }
+  },
+  "public_contributor_conditions": 8,
+  "minimum_font_programs": [
+    "DejaVuMathTeXGyre.ttf",
+    "DejaVuSans-Bold.ttf",
+    "DejaVuSans-BoldOblique.ttf",
+    "DejaVuSans-ExtraLight.ttf",
+    "DejaVuSans-Oblique.ttf",
+    "DejaVuSans.ttf",
+    "DejaVuSansCondensed-Bold.ttf",
+    "DejaVuSansCondensed-BoldOblique.ttf",
+    "DejaVuSansCondensed-Oblique.ttf",
+    "DejaVuSansCondensed.ttf",
+    "DejaVuSansMono-Bold.ttf",
+    "DejaVuSansMono-BoldOblique.ttf",
+    "DejaVuSansMono-Oblique.ttf",
+    "DejaVuSansMono.ttf",
+    "DejaVuSerif-Bold.ttf",
+    "DejaVuSerif-BoldItalic.ttf",
+    "DejaVuSerif-Italic.ttf",
+    "DejaVuSerif.ttf",
+    "DejaVuSerifCondensed-Bold.ttf",
+    "DejaVuSerifCondensed-BoldItalic.ttf",
+    "DejaVuSerifCondensed-Italic.ttf",
+    "DejaVuSerifCondensed.ttf",
+    "NotoSansKR-ExtraLight.ttf",
+    "NotoSansKR-Regular.ttf",
+    "NotoSansSymbols2-Regular.ttf",
+    "RHWPOldHangul-Regular.otf",
+    "RHWPPublicBatang-Regular.ttf"
+  ],
+  "handbook_pages": 383,
+  "handbook_min_raw": "99.97",
+  "handbook_perfect_pages": 382,
+  "feature_pages_per_backend": {
+    "native": 57,
+    "wasm": 57
+  },
+  "merged_feature_controls_per_backend": {
+    "native": 1059,
+    "wasm": 1059
+  },
+  "final_generated_harness_verification": {
+    "source": "3be32a741cffdf100c6870a28fb606b33bce1851",
+    "checked": "2026-11-22T01:35:21+09:00",
+    "previous_manifest_sha256": "130fe08c45eb5b3a1eff05cd5d8c3982ffc0e18e9a54fb52ab383186d7ec2322",
+    "final_manifest_sha256": "b91e57abd1fafa8e36e59b76fc2524b9e21dde1e3ec7edffcfda9c818eaa8958",
+    "source_modules": 2450,
+    "reassigned_without_changing_membership": 1544,
+    "full_test_names_confirmed": 13946,
+    "same_test_names_and_multiplicity": true,
+    "refreshed_gates": [
+      "suite-prepare",
+      "suite-precheck",
+      "focused-source",
+      "full-regression",
+      "native-issue_2225_missing_picture_placeholder",
+      "native-render_p37_direct_pdf_export",
+      "fmt",
+      "clippy-all",
+      "suite-manifest"
+    ],
+    "product_source": "521f69d19da9176e7947ceb318cf9838bec5ca75"
+  }
+}

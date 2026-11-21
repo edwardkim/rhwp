@@ -1,10 +1,12 @@
-# 17건 통합 후보의 보호 문서 및 최신 devel 검증
+# 17건 통합 후보의 최초 보호 검증과 원인 조사
+
+최초 측정에서 발견한 53행을 기준으로 보완을 시작했다. 이후 최신 `devel`과 기여자의 캡션 커밋을 반영한 제품 소스 `521f69d19d`에서 53행과 전체 4,046행을 다시 측정해 모두 공식 하한을 충족했다. [최신 결과와 개별 PR 검토](../../../semanticist21_20261121_review.md) · [같은 입력으로 측정한 최신 devel과 후보](final/devel-protected-pairs.tsv)
 
 2026년 11월 21일에 `devel`의 `ca231d64f4`와 제품 소스 `143f804aef`를 별도 빌드 디렉터리에서 컴파일했다. 두 Native 실행 파일과 두 최적화 WASM의 SHA-256, 각 입력·독립 인쇄본·공급 글꼴의 식별값은 [검증 조건](validation.json)에 있다. `5fceeb61c4`에서 기여자의 새 캡션 검사 커밋을 반영했고, `f40c194638`에서는 테스트의 근거 주석을 보강했다. 두 변경 후 제품 소스는 같다.
 
 ## 공식 하한과 비교
 
-공식 [보호표](../../visual-protected-baseline/final.tsv)의 SHA-256은 `5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756`이다. 23개 문서의 Native 2,023쪽과 fresh WASM 2,023쪽을 정본의 문서·쪽·백엔드와 연결해 96 DPI에서 비교했다. 지표는 색상 경계 보정 전 2px 실루엣의 공식 두 자리 표시값이다. [전쪽 비교표](protected-pages.tsv)
+최초 검증에서 사용한 보호표의 SHA-256은 `5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756`이다. 23개 문서의 Native 2,023쪽과 fresh WASM 2,023쪽을 정본의 문서·쪽·백엔드와 연결해 96 DPI에서 비교했다. 지표는 색상 경계 보정 전 2px 실루엣의 공식 두 자리 표시값이다. [전쪽 비교표](protected-pages.tsv) · [당시 보호표](https://github.com/edwardkim/rhwp/blob/ca231d64f43f19da1d1d1aec4cf26a05b817aa22/mydocs/pr/assets/visual-protected-baseline/final.tsv)
 
 | 결과 | 행 수 |
 | --- | ---: |

@@ -15,4 +15,4 @@ pr	contributor_head	branch	base	reviewers	closing_issue_count
 9265	0a94a8710270d219590a5ae73678df0f220cbd64	fix/logical-caret-paste-after-marks	devel	edwardkim	0
 9270	3be4f59be784ca6a174ac88ab0d4224ee3435c0d	feat/cell-logical-caret-clipboard	devel	edwardkim	0
 9271	b6922ffed647ec34f0789da0dc329ef9e11cee9c	fix/empty-overlap-zero-width	devel	edwardkim	0
-9273	7d8d6dc56caaef30893e1ed1cb6442a27597dfee	fix/nested-row-page-split	devel	edwardkim	0
+9273	b1047824674564474907e76972100fb6a072e699	fix/nested-row-page-split	devel	edwardkim	0

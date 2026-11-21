@@ -1,6 +1,8 @@
 # semanticist21의 편집 기능 PR 17건 검토
 
-2026년 11월 21일 재개한 범위는 아래 원 PR 17건이다. `edwardkim`이 각 건의 리뷰어다. 원 PR [17건의 최신 head](assets/semanticist21-20261121/reviewed-heads.tsv)가 모두 로컬 병합 커밋 `5fceeb61c4`의 조상임을 확인했다. `devel`의 [#9277](https://github.com/edwardkim/rhwp/pull/9277)까지 반영한 기준은 `ca231d64f43f19da1d1d1aec4cf26a05b817aa22`, 제품 소스는 `143f804aef`다.
+2026년 11월 21~22일, 리뷰어가 `edwardkim`인 원 PR 17건을 검토했다. 기여자가 갱신한 #9220과 #9273을 포함해 원 head 17개를 병합 이력에 보존했다. 최신 기준은 #9277과 #9283을 포함한 `d7b5286cbf6401678a70eed3d66236a68dd2a72c`이다. 공통 제품 소스 `521f69d19da9176e7947ceb318cf9838bec5ca75`에서 원 사례와 새 기준의 대조군을 다시 실행했다. [원 PR별 head와 리뷰어](assets/semanticist21-20261121/reviewed-heads.tsv)
+
+17건 모두 통합 후보로 수용할 수 있다. 원 PR별 판정과 보완한 내용은 아래 검토 문서 첫머리에 기록했다.
 
 ## 기능별 검증
 
@@ -24,20 +26,52 @@
 | [#9271](pr_9271_review.md) | 글자가 없는 펼침과 포갬 상태를 각각 HWPX로 저장해 두 인쇄 결과를 확인했다. |
 | [#9273](pr_9273_review.md) | 70줄로 편집한 중첩 표가 한컴과 같은 21·58·70줄에서 끊긴다. CBTA 문서 59쪽의 뒤 문단도 354.0px에 위치한다. |
 
-## 최종 제품 소스에서 다시 측정한 출력
+## 원 사례와 편집·저장 후 재열기
 
-후보 Native 실행 파일과 `devel` 실행 파일은 별도 Cargo 빌드 디렉터리에서 만들었다. 후보 Native SHA-256은 `ee8ab70dbdcc64d675ac4e23393e330c591db0ac3a1fda4003f565954246ce36`, 최적화 WASM은 `beebef992b260d91dbaa564f781a3b89892c8931d2225cbfc8746d3a89de241d`다. 브라우저가 실제로 받은 WASM 응답의 해시도 확인했다.
+각 입력과 한컴 Print PDF의 SHA-256을 대조한 후 같은 원본을 Native Skia와 새로 빌드한 WASM Canvas에서 열었다. 일치율은 96 DPI에서 2px 이내의 내용을 비교한 색상 경계 보정 전 실루엣 값이다. 저장된 파일을 열기 전의 실시간 편집 상태도 별도로 측정했다. [입력·독립 PDF·렌더링 이미지의 쪽별 근거 114행](assets/semanticist21-20261121/validation/final/feature-pages.tsv)
 
-| 대상 | 백엔드별 쪽수 | Native 최저 | fresh WASM 최저 |
+| 검증 대상 | 백엔드별 쪽수 | Native 최저 | fresh WASM 최저 |
 | --- | ---: | ---: | ---: |
-| [다단 각주 원본과 편집·저장본](assets/semanticist21-20261121/footnotes/pages.tsv) | 24 | 98.38628% | 97.77180% |
-| [그림 캡션](assets/semanticist21-20261121/captions/pages.tsv) | 8 | 99.53757% | 99.59184% |
-| [중첩 표 편집과 저장 재열기](assets/semanticist21-20261121/nested-row-split/pages.tsv) | 21 | 98.05486% | 97.94231% |
-| [크기를 바꾼 그룹 도형](assets/semanticist21-20261121/resized-group/pages.tsv) | 2 | 100.00000% | 100.00000% |
-| [빈 글자 겹침](assets/semanticist21-20261121/empty-overlap/pages.tsv) | 2 | 100.00000% | 100.00000% |
+| 다단 각주 원본과 편집·저장본 | 24 | 99.25640% | 99.25632% |
+| 그림 캡션 | 8 | 99.56569% | 99.56616% |
+| 중첩 표 편집과 저장 재열기 | 21 | 98.06894% | 98.06533% |
+| 크기를 바꾼 그룹 도형 | 2 | 100.00000% | 100.00000% |
+| 빈 글자 겹침 | 2 | 100.00000% | 100.00000% |
 
-입력과 독립 PDF의 SHA-256을 대조하고 최종 후보에서 114행을 재측정했다. 다섯 표의 정밀값과 재측정값이 모두 일치한다. 행정업무운영 편람 Native 383쪽은 정본 하락 0쪽이며 공개 문서 4종의 Native·fresh WASM 공통 검사 8건도 통과했다. 글꼴 프로그램과 과거 보호값 재현 범위는 [보호 문서 글꼴 검증](assets/semanticist21-20261121/protected-fonts.md)에 기록했다.
+#9234의 단별 각주 원본에서 왼쪽과 오른쪽의 마지막 줄 기준선이 같아졌다. 오른쪽 두 각주 사이에는 원본에 저장된 283 HWPUNIT 간격이 있다. 같은 조건에서 Native와 WASM 모두 이 원본의 1쪽 일치율이 97.47%에서 100.00%가 됐다. [각주별 좌표와 같은 영역의 확대 비교](assets/semanticist21-20261121/footnotes/README.md)
 
-## 보호 문서 추가 보완
+Native 실행 파일의 SHA-256은 `d3fcb8f43cecae77530c38ef29968d9d120fad7751604b348d898f4ce0b056b4`, 브라우저가 실제로 받은 최적화 WASM은 `4327fe4dfdee45a5fdb64b9638ffcc5ee10e4904f5fdd5cfc60b60d7e4567bcb`다. 편람 HWPX Native 383쪽의 최저는 99.97%이고, 382쪽은 100.00%였다.
 
-보호 23종의 4,046행 중 형식 사양서 14행과 화학물질 표시 기준 39행이 공식 하한보다 0.01~0.07%p 낮았다. 같은 글꼴 공급으로 비교한 해당 페이지의 최신 devel과 후보는 픽셀이 같았다. 11월 21일 메인테이너는 이 53행도 예외 없이 보완하기로 결정했다. 원본 글자·인쇄 글리프·실제 배치 및 그리기를 대조하고 두 문서 전쪽을 다시 검증한다. 보완 전의 결과와 확대 비교를 보존했다. [보호 전쪽 비교 및 최신 devel 대조](assets/semanticist21-20261121/validation/README.md)
+## 보호 문서의 기존 미달 53행
+
+보호 4,046행 전부 기존 공식 하한에 도달했다. 하락 0건, 누락 0건, 상승 75건이다. 형식 사양서 10·71쪽은 원문의 아래아가 복원됐고, 11쪽의 현대어 ‘한글’은 보존됐다. [전쪽 판정과 확대 근거](assets/semanticist21-20261121/validation/final/README.md)
+
+형식 사양서의 Native 3행과 WASM 11행, 화학물질 표시 기준의 WASM 39행이 처음 측정에서 공식 하한보다 0.01~0.07%p 낮았다. 독립 인쇄본과 글꼴 윤곽을 대조해 원본 글리프의 전진·잉크 위치, WMF 인쇄 메트릭, 저장 탭과 캡션 공백, 종이의 인쇄 좌표를 보완했다. 형식 사양서 71쪽과 화학 문서 103쪽을 두 백엔드에서 다시 렌더링한 결과 53행 모두 하한을 충족했다. [보완 전후 348행과 이미지 해시](assets/semanticist21-20261121/validation/final/devel-protected-pairs.tsv) · [원인별 독립 근거](assets/semanticist21-20261121/validation/README.md)
+
+## 최신 devel의 기능 보존
+
+#9277에서 반영한 문서 640쪽, CBTA 204쪽, #9283의 조판 수정 215쪽을 각각 최신 devel과 후보에서 다시 열었다. Native와 fresh WASM에서 각각 1,059쪽의 렌더 트리가 모두 같고, 새로 들어온 표 분할·그림 배치·글꼴 선택 기능이 보존됐다. 일반 대조군의 독립 Print 대비 최저는 98.21527%와 98.21930%다. #9209의 17~23쪽에는 기존부터 한컴 Print와 표의 왼쪽 괘선이 약 1.9px 어긋난 부분이 있다. 이번 보완으로 바뀐 텍스트의 인쇄 배율은 한컴 PDF의 행렬과 일치한다. [쪽별 대조와 실제 그리기 명령](assets/semanticist21-20261121/validation/final/rebase-inspection/README.md)
+
+## 원 PR에서 언급한 이슈
+
+2026년 11월 22일 0시 31분(KST)에 GitHub에서 다시 확인한 원 PR 17건의 자동 종료 연결은 0건이었다. 본문이 참조한 이슈 중 수식 선택, 묶음 개체 setter, 긴 각주 겹침 건은 이미 종료됐다. [#595](https://github.com/edwardkim/rhwp/issues/595) · [#6740](https://github.com/edwardkim/rhwp/issues/6740) · [#9014](https://github.com/edwardkim/rhwp/issues/9014)
+
+#9241의 대조군과 관련된 개체 속성 저장·Undo 항등성 이슈는 계속 열려 있다. [#6806](https://github.com/edwardkim/rhwp/issues/6806)
+
+## 최종 로컬 검사
+
+최소 글꼴 환경의 Rust 전체 회귀 13,946건, Native 공식 검사 4,071건과 Studio 2,822건을 통과했다. 편람 HWPX Native 383쪽의 최저 raw는 99.97%이고, 382쪽은 100.00%다. [검사별 실행 결과와 검증한 바이너리](assets/semanticist21-20261121/validation/final/checks.json)
+
+## 중첩 표의 저장 형식별 검증
+
+원본 HWP와 한컴에서 다시 저장한 HWPX에 각각 30줄·70줄을 입력했다. 편집 직후와 HWP·HWPX 재열기의 전 42쪽씩을 한컴 Print와 비교한 최저값은 Native 98.00640%, fresh WASM 97.86924%다. 3쪽은 58번째 줄과 아래 괘선을 포함하며 4쪽은 59번째 줄에서 시작한다. [전쪽 수치와 실제 파일](assets/semanticist21-20261121/nested-row-split/edited/README.md) · [200개 캐럿과 저장 원점](assets/semanticist21-20261121/nested-row-split/edited/caret-and-reopen.tsv)
+
+## 각주와 편람의 최종 대조
+
+원 HWP와 각각 HWP·HWPX로 저장해 다시 연 문서를 한컴에서 인쇄했다. 세 상태 모두 2쪽 첫 단에서 세 번째 문단과 참조 번호가 함께 보이고, 이월된 각주 본문이 원래 순서대로 이어졌다. Native·fresh WASM 각 6쪽 모두 raw 100.00000%였다. [각주 본문과 참조](assets/semanticist21-20261121/footnotes/right-column-body.tsv)
+
+편람 43쪽의 옛한글에서 문서가 지정한 한컴바탕의 글리프와 자간을 적용했다. 한컴의 내장 글꼴과 실제 HWPX Canvas 윤곽 5개·선분과 곡선 84개가 일치했다. HWP와 HWPX 모두 43쪽의 Native·fresh WASM raw는 100.00000%다. [해당 글리프의 독립 인쇄 근거](assets/semanticist21-20261121/validation/final/handbook-old-hangul.json)
+
+## 보호 하한 갱신 후 확인
+
+최신 devel 보호표의 4,046행 중 실측값이 오른 75행을 새 하한에 반영했다. 갱신한 보호표로 편람 383쪽과 공개 문서 4종의 Native·WASM 8개 조건을 다시 렌더링해 통과했다. 최종 테스트 묶음을 다시 생성한 뒤 Rust 회귀 13,946건을 재실행했다. 묶음을 바꾸기 전후로 실행한 테스트 이름과 횟수가 모두 일치했다. 기본 실행에서 제외된 45건은 별도 집계했다. [이전값과 새 값 및 재검증 결과](assets/visual-protected-baseline/updates/semanticist21-20261121.json)
