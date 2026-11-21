@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "baseline": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+  "baseline_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "metric": "silhouette_raw_match_percent",
+  "backend": "native-skia",
+  "precision": "0.01 percentage points",
+  "pages": 383,
+  "regressions": [],
+  "webfont_fallback": [],
+  "elapsed_seconds": 243.248,
+  "product_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "native_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+  "all_pages_tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+  "input": {
+    "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+    "sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6"
+  },
+  "reference_pdf": {
+    "path": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+    "sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e"
+  },
+  "comparison_profile": "print",
+  "layout_generation": "2024",
+  "minimum_display": "99.97",
+  "displayed_100": 382,
+  "all_page_scores_equal_to_pre_wmf_candidate": true
+}
