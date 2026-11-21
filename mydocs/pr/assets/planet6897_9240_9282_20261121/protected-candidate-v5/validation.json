@@ -2,7 +2,7 @@
   "base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
   "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
   "catalog_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
-  "candidate_only": true,
+  "candidate_only": false,
   "expected_conditions": 46,
   "expected_pages": 4046,
   "complete_conditions": 46,
@@ -1633,7 +1633,7 @@
       "dpi": 96,
       "candidate_score_minimum": "99.97",
       "candidate_tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
-      "candidate_manifest_sha256": "ad94218edbdded0a096717ccf171b442ee88b3dd6dc980796ced3c0e42a4b681",
+      "candidate_manifest_sha256": "a5ba43f88000df571240cc2ff7494740ef03b0faf1d9bfa30cdb0dc0b8ac3d3e",
       "accepted_font_supply_count": 61,
       "candidate_inventory_count": 1219,
       "accepted_inventory_program_hashes_missing": [
@@ -1673,21 +1673,22 @@
         "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d",
         "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f"
       ],
-      "font_environment_sha256": null,
+      "font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
       "candidate_tsv": "native/handbook-hwpx.tsv",
       "producer_hashes": {
         "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417"
       },
       "recorded_raster_backend": "native-skia",
       "comparison_profile": "print",
-      "capture_git_head": "6f047093ffbfc8154ab2ffbb677ac723f5305d23",
+      "capture_git_head": "c6e9ef9f5e24bc8fb68ca933c6ab4786522417d1",
       "accepted_condition_evidence": {
         "evidence_commit": "bd26dedc3ee867bd32a847006bf3bb35d81a2a7e",
         "evidence_path": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
         "evidence_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a"
       },
       "candidate_inventory_sha256": "f358f9f1ce649586261d99dbbf4ec9307929c4f8de6bb72dbc958472c996e434",
-      "accepted_font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      "accepted_font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+      "prior_default_handbook_manifest_sha256": "ad94218edbdded0a096717ccf171b442ee88b3dd6dc980796ced3c0e42a4b681"
     },
     {
       "key": "handbook-hwpx",
@@ -2539,7 +2540,7 @@
   ],
   "catalog_path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
   "catalog_manifest_sha256": "00a6f427ddb3ac9b9cd0e69e3a1112bbdd3cb8c03e85b09d7b5bae0c215fe504",
-  "fixed_base_comparison": "pending",
+  "fixed_base_comparison": "fixed-base-comparison.json",
   "protected_floor_raise": "unchanged_same_condition_fixed_base_already_reproduces_observed_score",
   "capture_checkout_audit": {
     "transient_checkout": "c871fd4dc3e2127abe421b022ba44d60fb27a8eb",
