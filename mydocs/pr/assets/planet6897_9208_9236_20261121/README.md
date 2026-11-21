@@ -16,7 +16,7 @@
 
 각 경로의 215쪽이 모두 98% 이상이다. 새 후보의 전체 Rust 회귀는 13,864건 통과, 실패 0건, 기존 제외 45건이다.
 제품별 TSV와 대표 review·overlay는 개별 기록에 있다. [리베이스 시각 비교](rebase-claims-validation.json).
-정본 보호의 남은 797쪽을 검증한 뒤 통합 PR을 제출한다. [리베이스 전 검증 영수증](candidate-validation.json).
+정본 보호 46조건·4,046쪽에서 하락·누락 0쪽을 확인했다. [최종 보호 검증](final-protection/validation.json).
 
 <!-- current-validation -->
 
@@ -24,12 +24,10 @@
 Studio·공용 JS 테스트 2,820건이 통과했고 2건은 제외됐다.
 리베이스로 반영된 #9277의 5개 독립 Print 조건은 Native와 fresh WASM 각각 566쪽이 98% 이상이다.
 규제영향분석서 2024의 WASM은 Print에 쓰인 글꼴을 공급한 뒤 전 31쪽을 재출력했다. 최저 99.27%다.
-정본 보호 통과 집계는 Native 21/23, fresh WASM 22/23이다.
-수용 검증을 마친 정본 43조건·3,249쪽의 하락은 0쪽이다. 화학 문서의 표시값은 Native 17쪽, fresh WASM 13쪽에서 상승했다.
+정본 보호는 Native와 fresh WASM 각각 23조건을 통과했다. 화학 문서의 표시값은 Native 17쪽과 fresh WASM 13쪽에서 상승했다.
 기여자 공통 보호 8조건과 편람 전용 Native 383쪽 게이트를 통과했다.
-중첩 표의 Native·WASM과 sample10의 Native 총 797쪽에는 정본 글꼴 환경을 확보해야 한다.
-[현재 검증 영수증](current-validation.json).
+[제품 검증 영수증](current-validation.json) · [정본 보호 전쪽 검증](final-protection/validation.json).
 
 [검증 입력·Print PDF·TSV의 커밋 바이트 대조](submission-inputs.json).
 
-중첩 표는 `H2GTRM.TTF` 기호 공급 조건에서 Native와 fresh WASM 각 17쪽의 TSV가 기존 보호 TSV와 일치했다. 같은 글꼴 조건의 고정 base 대조는 별도로 남았다. [중첩 표 결과](nested-hy-gothic-validation.json).
+중첩 표는 `H2GTRM.TTF` 기호 공급 조건에서 Native와 fresh WASM 각 17쪽의 TSV가 기존 보호 TSV와 일치했다. sample10 Native 763쪽은 Print에서 확인한 Haansoft Batang의 기호 공급 조건을 적용했다. 중첩 표와 sample10의 고정 기준·후보 TSV 및 PNG를 전쪽 대조해 차이 0쪽을 확인했다. [중첩 표 결과](nested-hy-gothic-validation.json) · [최종 보호 검증](final-protection/validation.json).
