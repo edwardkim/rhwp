@@ -961,3 +961,15 @@ opt-level 0의 선행 진단이며 최종 최적화 Native 검증으로 대신 �
 `source32-native-full-state.json`, `source32-wasm-full-state.json`,
 `source32-optimized-wasm-state.json`, `source30-32-full-comparison.json`,
 `source32-preservation-controls/state.json`이다. 최종 수용 증거는 정식 asset으로 이관한다.
+
+
+## dash 회귀 복원과 Native 선택기 점검
+
+소스 32의 동일 생산물에서 기존 dash 회귀 5개를 복원하고 최소 글꼴 환경에서
+5 PASS/0 FAIL(5.93초), 경고 없음으로 확인했다. 독립 Print의 em 전진을 재측정하고
+33·34쪽의 같은 영역을 Native/fresh WASM과 직접 대조했다. 전역 px 끝점 핀만 실제
+셀 포함 관계로 바꾸고 나머지 유효한 기존 계약은 유지했다. 세부 근거는 source32 asset README다.
+
+Native Skia lib 검증은 root 3853 PASS/12 ignored, 내부 라이브러리 182 PASS로 종료했다.
+다음 공식 placeholder 선택기는 새 정식 검사 추가로 derive된 suite와 생성 파일이 달라
+0 tests/exit4로 종료했다. 통과로 기록하지 않고 생성기를 갱신한 뒤 실제 검사 실행을 다시 한다.

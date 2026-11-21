@@ -116,3 +116,21 @@ Print와 원본 번호 스타일 문단3/11에서 확인한다. 공개 문자 �
 6.32초다. 같은 fresh WASM의 Node contract/E2E16 PASS/0 FAIL,12.02초다. 원본 로그는
 `regression-checks/password-fonttrace-native.txt`, `regression-checks/font-trace-node.txt`다.
 이 선행 확인과 정식 Cargo 전체 검증은 구분한다. 글꼴 파일을 테스트 자원으로 추가하지 않았다.
+
+## dash 회귀 다섯 건 복원
+
+86712 HWPX의 기존 `issue_5804_dash_leader_glyphs` 세 검사와
+`issue_5830_dash_leader_last_line` 두 검사를 복원했다. 글리프 수·em 전진 대역·
+치환 선 미출력은 독립 Print와 일치하는 기존 계약을 유지한다. 전역 오른쪽 px 핀은
+실제 소유 셀 안에 dash 런이 포함되는 관계로 바꿨다. 공유 helper는 실제 선택 프로그램
+metadata를 공급하며 설치 글꼴을 요구하지 않는다.
+
+독립 PDF 33쪽의 네 런은 0.49857·0.51280·0.49874·0.56977em, 34쪽의 세 런은
+0.57260·0.57260·0.56960em이다. 원래 em 허용 대역을 변경하지 않았다.
+`issue7765-hwpx/dash-p033-review.png`와 `dash-p034-review.png`에서 Print·Native·
+fresh WASM의 같은 영역을 확대 판독했다. 33쪽 raw는 Native99.99/WASM99.98%,
+34쪽은 양쪽99.97%다. 글리프와 끝점·표 행·뒤 문단을 함께 확인했다.
+
+최적화 Native 라이브러리 최소 글꼴 집중 실행은 경고 없이 5 PASS/0 FAIL, 5.93초다.
+`regression-checks/dash-native-minfont.{json,txt}`에 실제 명령과 결과를 보존한다.
+최종 Cargo 자동 수집 및 전체 회귀 검증은 별도로 완료한다.
