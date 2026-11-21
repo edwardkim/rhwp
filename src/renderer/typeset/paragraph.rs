@@ -203,7 +203,7 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
     fmt: &FormattedParagraph,
     paragraphs: &[Paragraph],
     styles: &ResolvedStyleSet,
-    line_count: usize,
+    entry_line_count: usize,
     base_available: f64,
     safety: SplitSafety,
     forced_page_break_line: Option<usize>,
@@ -219,7 +219,7 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
 ) -> Result<(), S::Error> {
     let dpi = engine.dpi;
     let mut destination_format = None;
-    let entry_line_count = line_count;
+    // 목적지 단의 가용 폭으로 다시 조판하면 그 단에서 소비할 줄 수가 달라진다.
     let mut line_count = entry_line_count;
     // 줄 단위 분할 루프
     let mut cursor_line = st.take_prefilled_line_prefix(para_idx);
