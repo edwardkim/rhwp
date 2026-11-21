@@ -934,3 +934,30 @@ PageItem에 전달한다. 배치도 같은 계획과 같은 child cut을 소비�
 레이블·아래 테두리를 독립 Print와 같은 배율로 확대 대조했다. 27쪽은 다음 종류 문장으로
 시작하며 28·29쪽 소속도 유지한다. 확대 비교는 `source32-p26-lower-comparison.png`다.
 최종 전쪽 Native·최적화 fresh WASM·정식 회귀 등록·전체 검증은 계속 수행한다.
+
+## 소스 32의 전체 교차 검증
+
+Native 진단 전체 sweep은 exit 0, 236.83초, 독립 Print와 같은 64/64쪽이다.
+전쪽 최저 98.69%, 표시 100.00%는 22쪽이며 98% 미만은 없다. 소스 30과 전쪽 TSV를
+대조하면 26쪽만 97.36 → 100.00%로 변하고 다른 63쪽은 동일하다. 이 결과는 root
+opt-level 0의 선행 진단이며 최종 최적화 Native 검증으로 대신 보고하지 않는다.
+
+최적화 fresh WASM은 소스 `2f46647df16da00365b22a1364cdc0b28b8344bc`에서 빌드 exit 0,
+583.85초다. 고정한 `rhwp_bg.wasm` SHA-256은
+`00206b93702fa10fc92203713a15d5992fee487cbcf9b9e996c605726489e4a8`이고 JS는
+`23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08`이다.
+전체 sweep은 exit 0, 313.48초, 같은 64/64쪽이며 전쪽 최저 98.69%, 표시 100.00%는
+15쪽이다. 자동 로그의 반올림 전 exact100 개수와 TSV의 공식 두 자리 표시 개수를
+혼동하지 않는다. 26쪽과 다음 조각의 내용 소유·독립 PDF 판독 근거는 앞 절을 따른다.
+
+소스 30 → 32의 정상 보존 대조는 원본 HWP·현재 writer HWPX·package 1.2 HWPX의
+10·11·21·25·26·27·28·52쪽과 76076 HWP의 34·81·82쪽에서 수행했다.
+4개 입력 모두 쪽수와 각 PNG SHA-256이 전후 동일하다. package 1.2의 전체 쪽수는
+독립 PDF와 다르므로 정상 보존 대조일 뿐 전체 피델리티 통과를 주장하지 않는다.
+
+최적화 Native 빌드는 같은 생산 소스를 동결한 상태로 진행 중이다. 이후 9개 이슈의
+나머지 전쪽 Native/fresh WASM을 새 생산물로 재검증하고, 정식 회귀 복원과 최종 전체
+검증을 계속한다. 근거는 ignored `output/pr-review/issue7754-nine/`의
+`source32-native-full-state.json`, `source32-wasm-full-state.json`,
+`source32-optimized-wasm-state.json`, `source30-32-full-comparison.json`,
+`source32-preservation-controls/state.json`이다. 최종 수용 증거는 정식 asset으로 이관한다.
