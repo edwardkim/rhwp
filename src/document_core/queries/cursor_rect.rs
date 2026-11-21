@@ -26,6 +26,34 @@ fn header_footer_node(
     })
 }
 
+/// 쪽 렌더 트리의 각주 영역들. 다단 쪽은 각 단 아래·오른쪽 단 아래 배치에 따라 영역이 여럿이다.
+fn footnote_area_nodes(
+    root: &crate::renderer::render_tree::RenderNode,
+) -> Vec<&crate::renderer::render_tree::RenderNode> {
+    use crate::renderer::render_tree::RenderNodeType;
+    root.children
+        .iter()
+        .filter(|child| matches!(child.node_type, RenderNodeType::FootnoteArea))
+        .collect()
+}
+
+/// 점을 품은 각주 영역, 없으면 상자까지 가장 가까운 영역.
+fn footnote_area_at(
+    root: &crate::renderer::render_tree::RenderNode,
+    x: f64,
+    y: f64,
+) -> Option<&crate::renderer::render_tree::RenderNode> {
+    let distance = |node: &crate::renderer::render_tree::RenderNode| {
+        let b = &node.bbox;
+        let dx = (b.x - x).max(x - (b.x + b.width)).max(0.0);
+        let dy = (b.y - y).max(y - (b.y + b.height)).max(0.0);
+        dx.hypot(dy)
+    };
+    footnote_area_nodes(root)
+        .into_iter()
+        .min_by(|a, b| distance(a).total_cmp(&distance(b)))
+}
+
 /// 묶음 개체(GSO Group)인가. 자식 Image 노드는 외곽 Group의 control_index를 물려받는다.
 fn is_group_shape_control(ctrl: &Control) -> bool {
     matches!(
@@ -5886,12 +5914,8 @@ impl DocumentCore {
 
         let tree = self.build_page_tree(page_num)?;
 
-        let fn_node = tree
-            .root
-            .children
-            .iter()
-            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea));
-        let fn_node = match fn_node {
+        // 다단 쪽은 단마다 각주 영역이 있으므로 누른 자리의 영역을 고른다.
+        let fn_node = match footnote_area_at(&tree.root, x, y) {
             Some(n) => n,
             None => return Ok("{\"hit\":false}".to_string()),
         };
@@ -6115,14 +6139,11 @@ impl DocumentCore {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
-        let Some(fn_node) = tree
-            .root
-            .children
-            .iter()
-            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea))
-        else {
+        // 한 각주가 다단 쪽의 여러 영역에 이어질 수 있어 모든 영역에서 모은다.
+        let fn_nodes = footnote_area_nodes(&tree.root);
+        if fn_nodes.is_empty() {
             return Ok("[]".to_string());
-        };
+        }
 
         #[derive(Clone)]
         struct FnRunInfo {
@@ -6178,7 +6199,9 @@ impl DocumentCore {
         }
 
         let mut runs = Vec::new();
-        collect_runs(fn_node, footnote_index, &mut runs);
+        for fn_node in fn_nodes {
+            collect_runs(fn_node, footnote_index, &mut runs);
+        }
         runs.sort_by(|a, b| {
             a.fn_para_idx
                 .cmp(&b.fn_para_idx)
@@ -6536,18 +6559,12 @@ impl DocumentCore {
 
         let tree = self.build_page_tree(page_num)?;
 
-        let fn_node = tree
-            .root
-            .children
-            .iter()
-            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea));
-        let fn_node = match fn_node {
-            Some(n) => n,
-            None => {
-                return Err(HwpError::RenderError(
-                    "각주 영역을 찾을 수 없습니다".to_string(),
-                ))
-            }
+        // 다단 쪽은 단마다 각주 영역이 있으므로 모든 영역에서 이 각주의 줄을 찾는다.
+        let fn_nodes = footnote_area_nodes(&tree.root);
+        let Some(&first_area) = fn_nodes.first() else {
+            return Err(HwpError::RenderError(
+                "각주 영역을 찾을 수 없습니다".to_string(),
+            ));
         };
 
         let marker_para = usize::MAX - 2000 - fn_para_idx;
@@ -6593,7 +6610,9 @@ impl DocumentCore {
         }
 
         let mut runs: Vec<FnCursorRun> = Vec::new();
-        collect_cursor_runs(fn_node, footnote_index, marker_para, &mut runs);
+        for fn_node in &fn_nodes {
+            collect_cursor_runs(fn_node, footnote_index, marker_para, &mut runs);
+        }
 
         if runs.is_empty() {
             // 폴백: 번호 TextRun(char_start=None) 뒤의 위치를 찾기
@@ -6623,7 +6642,10 @@ impl DocumentCore {
                 }
                 None
             }
-            if let Some((x, y, h)) = find_number_run_end(fn_node, footnote_index, marker_para) {
+            if let Some((x, y, h)) = fn_nodes
+                .iter()
+                .find_map(|fn_node| find_number_run_end(fn_node, footnote_index, marker_para))
+            {
                 return Ok(format!(
                     "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
                     page_num, x, y, h
@@ -6631,7 +6653,7 @@ impl DocumentCore {
             }
             return Ok(format!(
                 "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                page_num, fn_node.bbox.x, fn_node.bbox.y, 12.0
+                page_num, first_area.bbox.x, first_area.bbox.y, 12.0
             ));
         }
 

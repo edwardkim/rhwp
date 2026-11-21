@@ -4890,13 +4890,18 @@ impl DocumentCore {
             }
         }
 
-        if self.body_wrap_width(section_idx) != wrap_width_before {
+        let wrap_changed = self.body_wrap_width(section_idx) != wrap_width_before;
+        if wrap_changed {
             self.reflow_body_paragraphs_in_section(section_idx);
         }
 
         // 조판 갱신
         self.document.sections[section_idx].raw_stream = None;
         self.rebuild_section(section_idx);
+        // 단 폭이 바뀌면 각주 영역 폭도 바뀐다. 한/글처럼 이미 있는 각주도 새 폭으로 다시 나눈다.
+        if wrap_changed {
+            self.reflow_body_footnotes(section_idx);
+        }
 
         Ok("{\"ok\":true}".to_string())
     }
