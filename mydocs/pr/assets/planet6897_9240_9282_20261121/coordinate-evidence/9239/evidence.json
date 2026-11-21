@@ -1,0 +1,80 @@
+{
+  "source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "dpi": 96,
+  "raw_metric": "silhouette_raw_match_percent",
+  "origin": "페이지 좌상단",
+  "expected_coordinates_unit": "PDF point",
+  "expected_coordinates": {
+    "12": {
+      "title_table_top": 87.86,
+      "title_table_bottom": 123.59
+    },
+    "15": {
+      "chart_outer_bounds": [
+        59.968,
+        477.797,
+        528.196,
+        597.426
+      ]
+    },
+    "21": {
+      "chart_outer_bounds": [
+        56.61,
+        244.652,
+        535.632,
+        478.996
+      ]
+    },
+    "43": {
+      "caption_table_first_full_width_rule": 122.63
+    }
+  },
+  "tolerance_px": 2,
+  "backends": {
+    "native": {
+      "pages": 62,
+      "minimum_display": "98.87",
+      "displayed_100": 16,
+      "selected_display_raw": {
+        "11": "99.99",
+        "12": "99.97",
+        "15": "99.98",
+        "16": "99.97",
+        "21": "99.94",
+        "24": "98.87",
+        "43": "99.56"
+      },
+      "tsv_sha256": "ff3abd370b3dd4dff98bca0fc5fc31c413c24466ca2a0f317531ac10ee0b47ce",
+      "visual_sweep_manifest_sha256": "e140b7794f0a24f184bade0839d4f388516f243a03b016bc0b846fe38209fa57",
+      "native_sha256": "6e1935067e80877fc7cb54e49acaa02a3f3ed8a6c6adf428a4530d6933ba29d9"
+    },
+    "wasm": {
+      "pages": 62,
+      "minimum_display": "98.86",
+      "displayed_100": 15,
+      "selected_display_raw": {
+        "11": "99.99",
+        "12": "99.97",
+        "15": "99.89",
+        "16": "99.97",
+        "21": "99.98",
+        "24": "98.86",
+        "43": "99.61"
+      },
+      "tsv_sha256": "9320f8d36fe2a75cfc73dcbb2b9cd0e2e2dc4f6d6e1d7cf59c2082945db6dd24",
+      "visual_sweep_manifest_sha256": "ef4fd35a7d27114cf4f2b084641e09e71fe612293f491e808f576b5bd892fa64",
+      "wasm_sha256": "18b88fdf2ace019f31d29e00aeef74093860c4aa8f750b1d93b1c435cc2962de",
+      "wasm_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "build": "macOS locked web --no-opt"
+    }
+  },
+  "input": {
+    "path": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+    "sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+    "sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151"
+  },
+  "comparison_profile": "print"
+}

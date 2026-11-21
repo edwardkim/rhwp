@@ -1,10 +1,10 @@
 //! 관계형·고정형 — [#9272] 나뉜 표 끝 조각 바로 아래의 빈 줄은 그 쪽에서 줄 상자를 차지하고, 되감긴 다음 표는 다음 쪽에 놓인다.
-//! 주석 갱신: 2026-11-21 09:13 KST (새 파일)
+//! 주석 갱신: 2026-11-21 18:23 KST.
 //!
 //! 입력: 산업통상자원부 입법예고 공개 문서(「불공정무역행위조사 및 산업피해구제에 관한 법률 시행령
 //! 일부개정령(안)」, HWPX, 한컴오피스 2020 저장, 7쪽)
 //! `samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx`.
-//! 기준: 한컴 Print PDF `pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2020.pdf`(7쪽).
+//! 기준: 한컴 2024 Print PDF `pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf`(7쪽).
 //!
 //! 문단 31 은 15×2 RowBreak 신구조문 대비표이고 6쪽에 행 12..15 끝 조각이 584.2px 에서 끝난다.
 //! 문단 32~42 는 빈 문단 11개이며 저장 `vpos` 가 43813HU(= 584.2px)부터 2560HU 간격이다 — 표 끝
@@ -13,17 +13,16 @@
 //! 까지 들고 문단 42(69413+1600)는 7쪽 맨 위 줄이 된다.
 //! 수정 전 rhwp 는 뒤 앵커(문단 43)가 되감겼다는 이유로 문단 32~42 를 옛 좌표의 안내 줄로 보고
 //! 높이 없이 감춰, 문단 43 의 표가 6쪽 대비표 위에 겹치고 7쪽이 비었다.
-//! - 고정형: 전체 쪽수 7(= PDF).
+//! - 고정형: 전체 쪽수 7과 6·7쪽 핵심 표의 아래쪽 경계(96 DPI, ±1px).
 //! - 관계형: 6쪽에 문단 32~41 의 줄 상자가 하나씩 있고 대비표 끝 조각 아래에서 위→아래 순서로
 //!   겹치지 않으며 쪽 상자 안에 있다. 문단 43 의 표는 6쪽에 없고 7쪽에 있으며, 7쪽에서 문단 42 의
 //!   줄이 문단 44 의 줄보다 위에 있다.
 //!
-//! 측정(2026-11-21, 이 파일과 같은 커밋의 코드, base = upstream/devel `2480af27df`,
-//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
-//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
-//! - Native: 7쪽 / 7쪽, 6쪽 98.66(base 85.58), 7쪽 99.59(base 0.62), 전쪽 최저 97.38(3쪽)
-//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 7쪽 / 7쪽, 6쪽 99.94, 7쪽 99.82, 전쪽 최저 99.82(7쪽)
-//! - 증거: `mydocs/pr/assets/issue_9272/`(native·wasm 전쪽 TSV, 6·7쪽 review·overlay PNG)
+//! 측정(2026-11-21, 통합 코드 `cef9ff9acc`, Visual Sweep 96 DPI·compat 2024):
+//! Native/fresh WASM 양쪽 모두 7쪽, 최저 99.98%(1쪽), 6·7쪽 100.00%.
+//! 6·7쪽 확대 판독으로 두 표의 아래 선을 확인했다. 독립 PDF 페이지 좌상단 기준으로
+//! 6쪽 y=505.72pt, 7쪽 y=499.49pt를 96 DPI px로 환산했다.
+//! 증거: `mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/9272/`.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -33,6 +32,8 @@ use std::path::Path;
 const SAMPLE: &str = "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx";
 /// 한컴 Print PDF 의 쪽수.
 const PDF_PAGES: u32 = 7;
+const PRINT_TAIL_BOTTOM_PX: f64 = 674.30;
+const PRINT_REWOUND_BOTTOM_PX: f64 = 665.99;
 /// 쪽을 넘어온 신구조문 대비표(15×2)의 문단.
 const SPLIT_TABLE_PARA: usize = 31;
 /// 대비표 끝 조각 아래 6쪽에 남는 빈 문단.
@@ -96,7 +97,8 @@ fn collect_body(node: &RenderNode, tables: &mut Vec<TableBox>, lines: &mut Vec<L
 fn open() -> DocumentCore {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("fixture 누락 {SAMPLE}: {e}"));
-    let core = DocumentCore::from_bytes(&bytes).expect("문서 열기");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("문서 열기");
+    core.set_hangul2024_compat(true);
     assert_eq!(
         core.page_count(),
         PDF_PAGES,
@@ -123,6 +125,10 @@ fn empty_lines_right_below_the_table_tail_keep_their_line_boxes() {
 
     let page_box = page.root.bbox;
     let mut previous_bottom = tail.bbox.y + tail.bbox.height;
+    assert!(
+        (previous_bottom - PRINT_TAIL_BOTTOM_PX).abs() <= 1.0,
+        "6쪽 대비표 아래 {previous_bottom:.2}px, 한컴 Print {PRINT_TAIL_BOTTOM_PX:.2}px"
+    );
     for para in KEPT_EMPTY_PARAS {
         let owned: Vec<_> = lines.iter().filter(|line| line.para == para).collect();
         assert_eq!(
@@ -170,6 +176,11 @@ fn rewound_table_after_the_empty_lines_starts_on_the_next_page() {
     assert!(
         rewound[0].text.contains("산업통상자원부") && rewound[0].text.contains("연"),
         "문단 43 표의 칸 글이 7쪽에 그려져야 한다"
+    );
+    let table_bottom = rewound[0].bbox.y + rewound[0].bbox.height;
+    assert!(
+        (table_bottom - PRINT_REWOUND_BOTTOM_PX).abs() <= 1.0,
+        "7쪽 후속 표 아래 {table_bottom:.2}px, 한컴 Print {PRINT_REWOUND_BOTTOM_PX:.2}px"
     );
     assert!(
         tables.iter().all(|t| t.para != Some(SPLIT_TABLE_PARA)),
