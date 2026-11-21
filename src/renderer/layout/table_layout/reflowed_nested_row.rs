@@ -111,8 +111,16 @@ impl LayoutEngine {
         // 아니다. 한/글은 쪽을 넘는 행을 저장할 때 다음 쪽 첫 줄에서 vpos를 되감고, rhwp가 편집으로
         // 지은 줄에는 되감김이 없다. 그 행을 원자로 두면 다음 쪽 머리에 통째로 놓여 넘친 줄이
         // 쪽 밖으로 잘린다. 한/글 12.30은 쪽 경계에서 "나눔" 표의 그런 행을 글줄 사이에서 나눈다.
+        //
+        // 다음 쪽에 통째로 들어갈 행도 한/글은 쪽 바닥에서 나눈다. 저장 줄로는 한/글이 한 쪽에 둔
+        // 행과 가릴 수 없으므로, 이 세션의 편집이 지은 칸 줄(`cell_lines_edited`)이 있는 행만 그렇게
+        // 나눈다. 저장할 때는 그 나눔 자리를 한/글처럼 되감아 적는다(`nested_row_page_starts`).
         driver_units.len() > 1
-            && (outgrows_page || driver_units.iter().any(|unit| unit.reflowed_line_slot))
+            && (outgrows_page
+                || driver_units.iter().any(|unit| unit.reflowed_line_slot)
+                || row_cells
+                    .iter()
+                    .any(|cell| cell.paragraphs.iter().any(|p| p.cell_lines_edited)))
             && driver_units
                 .iter()
                 .all(|unit| unit.nested_row.is_none() && unit.vis_start < unit.vis_end)

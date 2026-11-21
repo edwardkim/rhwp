@@ -206,8 +206,14 @@ impl LayoutEngine {
         let [line] = host.line_segs.as_slice() else {
             return None;
         };
+        // 다른 표나 안쪽 표를 편집한 세션에서도 이 표 칸의 저장 줄과 첫 상자는 그대로다.
+        // 이 표의 칸 줄을 다시 지었을 때만 원본 종료선을 버린다.
         if !profile.hwp5_stored_pagination_layout()
-            || profile.session_edited()
+            || (profile.session_edited()
+                && table
+                    .cells
+                    .iter()
+                    .any(|cell| cell.paragraphs.iter().any(|para| para.cell_lines_edited)))
             || host.stored_text_partition_is_dirty()
             || host.cell_format_vpos_dirty
             || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0

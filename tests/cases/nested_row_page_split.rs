@@ -75,12 +75,11 @@ fn drawn_y(doc: &HwpDocument, page: u32, text: &str) -> Option<f64> {
 }
 
 /// 줄마다 캐럿이 본문 안에 있고 그 자리에 그 줄이 그려지며, 쪽은 뒤로만 간다.
-/// 행은 둘째 쪽(쪽 번호 1)에서 시작하고(통째로 넘기지 않는다) 마지막 줄은 넷째 쪽이다.
-/// `first_break`가 있으면 그 줄부터 셋째 쪽이다(한/글 인쇄의 첫 나눔 자리).
-fn assert_split(doc: &HwpDocument, first_break: Option<usize>) {
-    assert_eq!(doc.page_count(), 4);
+/// 행은 둘째 쪽(쪽 번호 1)에서 시작하고(통째로 넘기지 않는다) `first_break` 줄부터 셋째 쪽이며
+/// (한/글 인쇄의 첫 나눔 자리), 마지막 줄은 끝 쪽에 있다.
+fn assert_split(doc: &HwpDocument, lines: usize, first_break: usize, pages: u32) {
     let mut previous = 0;
-    for para in 1..=70 {
+    for para in 1..=lines {
         let (page, y, h) = caret(doc, para);
         assert!(
             y >= BODY_TOP - 0.5 && y + h <= BODY_BOTTOM + 0.5,
@@ -100,18 +99,61 @@ fn assert_split(doc: &HwpDocument, first_break: Option<usize>) {
         1,
         "행이 둘째 쪽에서 시작하지 않고 통째로 넘어갔다"
     );
-    assert_eq!(caret(doc, 70).0, 3);
-    if let Some(first) = first_break {
-        assert_eq!(caret(doc, first - 1).0, 1);
-        assert_eq!(caret(doc, first).0, 2, "줄 {first}부터 셋째 쪽이어야 한다");
-    }
+    assert_eq!(caret(doc, first_break - 1).0, 1);
+    assert_eq!(
+        caret(doc, first_break).0,
+        2,
+        "줄 {first_break}부터 셋째 쪽이어야 한다"
+    );
+    assert_eq!(doc.page_count(), pages, "한/글 인쇄와 쪽 수가 다르다");
+    assert_eq!(caret(doc, lines).0, u64::from(pages) - 1);
 }
 
-/// 편집한 문서는 한/글 인쇄의 쪽 자리까지 대지 않는다. 편집하면 앞 행의 이어진 조각이
-/// 줄어 둘째 쪽에 줄이 더 들어간다(별개 문제).
+/// 한/글 12.30 인쇄: 70줄은 22줄부터 셋째 쪽이고 4쪽, 30줄은 22줄부터 셋째 쪽이고 3쪽이다.
+const HANCOM: [(usize, usize, u32); 2] = [(70, 22, 4), (30, 22, 3)];
+
 #[test]
 fn row_longer_than_page_splits_at_lines() {
-    assert_split(&grown(70), None);
+    assert_split(&grown(70), 70, 22, 4);
+}
+
+/// 다음 쪽에 통째로 들어갈 행도 한/글처럼 통째로 넘기지 않고 쪽 바닥에서 나눈다.
+#[test]
+fn row_that_fits_next_page_still_splits_at_page_bottom() {
+    assert_split(&grown(30), 30, 22, 3);
+}
+
+/// 다른 칸에 글자를 쳐도 쪽에서 나뉜 앞 행(바깥 표 ‘사업개요’ 행)의 이어진 조각은
+/// 선언 높이를 지킨다.
+#[test]
+fn typing_keeps_earlier_split_row_height() {
+    let continued = |doc: &HwpDocument| {
+        fn walk(node: &Value, depth: usize) -> Option<f64> {
+            let depth = depth + usize::from(node["type"] == "Table");
+            if node["type"] == "Cell" && depth == 1 && node["row"] == 6 {
+                return node["bbox"]["h"].as_f64();
+            }
+            node["children"]
+                .as_array()?
+                .iter()
+                .find_map(|child| walk(child, depth))
+        }
+        walk(
+            &serde_json::from_str(&doc.get_page_render_tree(1).unwrap()).unwrap(),
+            0,
+        )
+        .unwrap()
+    };
+    let mut doc =
+        HwpDocument::from_bytes(&std::fs::read("samples/inner-table-01.hwp").unwrap()).unwrap();
+    let opened = continued(&doc);
+    doc.insert_text_in_cell_by_path_api(0, 0, &path(0), 0, "x")
+        .unwrap();
+    let typed = continued(&doc);
+    assert!(
+        (typed - opened).abs() < 0.5,
+        "글자 하나를 치자 이어진 조각이 {opened:.1}에서 {typed:.1}로 바뀌었다"
+    );
 }
 
 #[test]
@@ -129,12 +171,57 @@ fn click_on_continued_part_reaches_that_line() {
 
 #[test]
 fn saved_hwp_reopens_split_where_hancom_breaks() {
-    let saved = grown(70).export_hwp().unwrap();
-    assert_split(&HwpDocument::from_bytes(&saved).unwrap(), Some(22));
+    for (lines, first_break, pages) in HANCOM {
+        let saved = grown(lines).export_hwp().unwrap();
+        assert_split(
+            &HwpDocument::from_bytes(&saved).unwrap(),
+            lines,
+            first_break,
+            pages,
+        );
+    }
 }
 
 #[test]
 fn saved_hwpx_reopens_split_where_hancom_breaks() {
-    let saved = grown(70).export_hwpx().unwrap();
-    assert_split(&HwpDocument::from_bytes(&saved).unwrap(), Some(22));
+    for (lines, first_break, pages) in HANCOM {
+        let saved = grown(lines).export_hwpx().unwrap();
+        assert_split(
+            &HwpDocument::from_bytes(&saved).unwrap(),
+            lines,
+            first_break,
+            pages,
+        );
+    }
+}
+
+/// HWPX 저장본에서 `줄 n` 칸 문단 첫 줄의 vertpos.
+fn saved_vpos(hwpx: &[u8], line: usize) -> i64 {
+    use std::io::Read;
+    let mut zip = zip::ZipArchive::new(std::io::Cursor::new(hwpx)).unwrap();
+    let mut xml = String::new();
+    zip.by_name("Contents/section0.xml")
+        .unwrap()
+        .read_to_string(&mut xml)
+        .unwrap();
+    let rest = &xml[xml.find(&format!("<hp:t>줄 {line}</hp:t>")).unwrap()..];
+    let rest = &rest[rest.find("vertpos=\"").unwrap() + 9..];
+    rest[..rest.find('"').unwrap()].parse().unwrap()
+}
+
+/// 저장본은 한/글처럼 나뉜 쪽의 첫 칸 줄을 원점(vpos 0)으로 되감고 그 뒤 줄을 거기서 잇는다
+/// (한/글 12.30이 저장한 30줄 HWPX: `줄 21` 36960, `줄 22` 0, `줄 23` 1760).
+#[test]
+fn saved_rows_restart_at_page_break_like_hancom() {
+    let hancom = [(21, 36960), (22, 0), (23, 1760)];
+    let saved = grown(30).export_hwpx().unwrap();
+    for (line, vpos) in hancom {
+        assert_eq!(saved_vpos(&saved, line), vpos, "줄 {line}");
+    }
+    // 다시 연 HWP를 다시 저장해도 되감김이 그대로 남는다.
+    let reopened = HwpDocument::from_bytes(&grown(30).export_hwp().unwrap()).unwrap();
+    let saved = reopened.export_hwpx().unwrap();
+    for (line, vpos) in hancom {
+        assert_eq!(saved_vpos(&saved, line), vpos, "다시 저장한 줄 {line}");
+    }
 }
