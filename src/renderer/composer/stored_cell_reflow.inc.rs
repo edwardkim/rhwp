@@ -84,12 +84,13 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band_with_storag
             return Ok(None);
         }
         // loader가 만든 합성 줄은 원본 저장 캐시가 아니다. 독립 개체가 없는
-        // 본문과 프레임이 소유하는 TAC 표 host는 현재 슬롯/폭으로 다시 구성한다.
+        // 본문·각주 참조와 프레임이 소유하는 TAC 표 host는 현재 슬롯/폭으로 다시 구성한다.
         // 옛 합성 줄을 수용하면 뒤의 폭 0 기준 문자가 차지한 줄이 사라진다.
         let fresh_body = if !para.line_segs.is_empty()
             && (para.controls.is_empty()
                 || (!stored_geometry_policy.preserve_hwp3_origins
-                    && line_breaking::supports_tac_table_band_frame_controls(para)))
+                    && (line_breaking::supports_tac_table_band_frame_controls(para)
+                        || line_breaking::is_footnote_text_host(para))))
             && crate::renderer::para_has_no_stored_line_segs(para)
         {
             let mut body = storage.clone_paragraph(para)?;

@@ -3882,6 +3882,19 @@ pub(crate) fn control_is_width_neutral_marker(control: &Control) -> bool {
     inline_control_size_hwp(control).is_none() && !control_owns_a_layout_box(control)
 }
 
+/// 본문 글과 각주 참조만 줄 폭을 소비하는 문단. 각주 내용은 별도 영역에 조판한다.
+pub(crate) fn is_footnote_text_host(para: &Paragraph) -> bool {
+    let mut has_note = false;
+    for control in &para.controls {
+        match control {
+            Control::Footnote(_) => has_note = true,
+            marker if control_is_width_neutral_marker(marker) => {}
+            _ => return false,
+        }
+    }
+    has_note
+}
+
 /// Controls that resolve their own geometry, inline or floating, and therefore
 /// have a layout owner that is not this frame.
 ///

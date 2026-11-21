@@ -49,6 +49,23 @@ use crate::renderer::style_resolver::ResolvedStyleSet;
 use metrics::FormattedParagraph;
 use stored_lines::{next_boundary_reverts_spacing_trim, spacing_trim_restorable};
 
+/// 단에 실제로 수용한 본문 줄을 각주 등록과 그리기가 같은 문자 컷으로 소비한다.
+fn record_note_body_rows<S: crate::storage::Storage>(
+    st: &mut TypesetState,
+    para_idx: usize,
+    fmt: &FormattedParagraph,
+    storage: &S,
+) -> Result<(), S::Error> {
+    if let Some(composed) = fmt
+        .computed_paragraph
+        .as_ref()
+        .filter(|rows| !rows.footnote_positions.is_empty())
+    {
+        st.record_computed_paragraph(para_idx, composed, storage)?;
+    }
+    Ok(())
+}
+
 /// 다단 fit은 단별 저장 줄 축에서 후행 간격을 별도로 계상한다.
 /// 전역 본문 축이 없다는 이유만으로 그 간격을 다시 더하면 단이 조기에 닫힌다.
 /// 실제 dirty 사다리·빈 float lane·후속 스냅 철회는 여전히 복원 불가로 소비한다.
@@ -153,7 +170,7 @@ pub(super) fn place_split_paragraph(
     current_page_vpos_base: Option<i32>,
     is_tac_picture_stack: bool,
     require_full_advance: bool,
-    dpi: f64,
+    engine: &super::TypesetEngine,
 ) {
     match place_split_paragraph_with_storage(
         st,
@@ -170,7 +187,8 @@ pub(super) fn place_split_paragraph(
         current_page_vpos_base,
         is_tac_picture_stack,
         require_full_advance,
-        dpi,
+        st.inline_flow_column().width,
+        engine,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
@@ -195,13 +213,35 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
     current_page_vpos_base: Option<i32>,
     is_tac_picture_stack: bool,
     require_full_advance: bool,
-    dpi: f64,
+    mut formatted_width: f64,
+    engine: &super::TypesetEngine,
     storage: &S,
 ) -> Result<(), S::Error> {
+    let dpi = engine.dpi;
+    let mut destination_format = None;
+    let entry_line_count = line_count;
+    let mut line_count = entry_line_count;
     // 줄 단위 분할 루프
     let mut cursor_line = st.take_prefilled_line_prefix(para_idx);
     let mut on_entry_page = true;
     let _: () = while cursor_line < line_count {
+        let width = st.inline_flow_column().width;
+        if cursor_line == 0 && width != formatted_width {
+            destination_format =
+                columns::refold_unplaced_note_host(para, engine, styles, width, storage)?;
+            let destination = destination_format.as_ref();
+            line_count = destination.map_or(entry_line_count, FormattedParagraph::line_count);
+            flow::collect_own_line_notes(
+                st,
+                engine,
+                para_idx,
+                para,
+                destination.unwrap_or(fmt),
+                styles,
+            );
+            formatted_width = width;
+        }
+        let fmt = destination_format.as_ref().unwrap_or(fmt);
         let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
         let fmt = confirmed.as_ref().unwrap_or(fmt);
         let reserve = if on_entry_page {
@@ -497,6 +537,7 @@ pub(super) fn place_split_paragraph_with_storage<S: crate::storage::Storage>(
         let fragment_slack = fragment
             .content_height
             .map_or(0.0, |content| (fragment.height - content).max(0.0));
+        record_note_body_rows(st, para_idx, fmt, storage)?;
         st.commit_split_paragraph_fragment_with_storage(fragment, storage)?;
         st.register_own_line_notes_with_storage(
             para_idx,
@@ -660,6 +701,7 @@ pub(super) fn place_fitted_paragraph_with_storage<S: crate::storage::Storage>(
     )?;
     let after_overheight_whole_float =
         st.starts_after_overheight_whole_float(paragraphs, para_idx, dpi);
+    record_note_body_rows(st, para_idx, fmt, storage)?;
     st.insert_fitted_paragraph_with_storage(para_idx, defer_preceding_float, storage)?;
     let stored_successor_flow =
         content::stored_successor_flow(st, para, fmt, paragraphs, styles, para_idx, dpi);
@@ -1013,7 +1055,7 @@ pub(super) fn place_after_failed_fit(
         super::notes::footnotes::boundary::NativeHwp5FootnoteBodyBoundary,
     >,
     current_page_vpos_base: Option<i32>,
-    dpi: f64,
+    engine: &super::TypesetEngine,
 ) {
     match place_after_failed_fit_with_storage(
         st,
@@ -1033,7 +1075,7 @@ pub(super) fn place_after_failed_fit(
         forced_page_break_line,
         native_hwp5_existing_footnote_boundary,
         current_page_vpos_base,
-        dpi,
+        engine,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
@@ -1061,9 +1103,11 @@ pub(super) fn place_after_failed_fit_with_storage<S: crate::storage::Storage>(
         super::notes::footnotes::boundary::NativeHwp5FootnoteBodyBoundary,
     >,
     current_page_vpos_base: Option<i32>,
-    dpi: f64,
+    engine: &super::TypesetEngine,
     storage: &S,
 ) -> Result<(), S::Error> {
+    let dpi = engine.dpi;
+    let formatted_width = st.inline_flow_column().width;
     let original_fmt = fmt;
     let confirmed = spacing::confirmed_format(st, para_idx, fmt, paragraphs);
     let fmt = confirmed.as_ref().unwrap_or(fmt);
@@ -1181,7 +1225,8 @@ pub(super) fn place_after_failed_fit_with_storage<S: crate::storage::Storage>(
         current_page_vpos_base,
         is_tac_picture_stack,
         require_full_advance,
-        dpi,
+        formatted_width,
+        engine,
         storage,
     )?;
 
