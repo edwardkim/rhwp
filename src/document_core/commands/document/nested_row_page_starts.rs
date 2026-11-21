@@ -33,6 +33,14 @@ fn continuous_lines(paragraphs: &[Paragraph]) -> bool {
     })
 }
 
+/// HWP와 HWPX 양쪽에서 실제로 편집한 칸만 찾는다. 편집하지 않은 표는 저장 예산을 쓰지 않는다.
+fn contains_edited_cell(table: &Table) -> bool {
+    table.cells.iter().any(|cell| cell.paragraphs.iter().any(|paragraph| {
+        paragraph.cell_lines_edited
+            || paragraph.controls.iter().any(|control| matches!(control, Control::Table(child) if contains_edited_cell(child)))
+    }))
+}
+
 impl DocumentCore {
     pub(crate) fn nested_row_page_starts(&self) -> Vec<NestedRowPageStart> {
         match self.nested_row_page_starts_with_storage(&Unbounded) {
@@ -46,13 +54,13 @@ impl DocumentCore {
         storage: &S,
     ) -> Result<Vec<NestedRowPageStart>, S::Error> {
         let mut starts = Vec::new();
-        if !self.effective_layout_profile().session_edited() {
-            return Ok(starts);
-        }
         for (section_idx, section) in self.document.sections.iter().enumerate() {
             for (para_idx, paragraph) in section.paragraphs.iter().enumerate() {
                 for (control_idx, control) in paragraph.controls.iter().enumerate() {
                     if let Control::Table(table) = control {
+                        if !contains_edited_cell(table) {
+                            continue;
+                        }
                         let mut path = storage.collect([(control_idx, 0, 0)])?;
                         self.collect_nested_row_page_starts(
                             (section_idx, para_idx),
