@@ -1,0 +1,33 @@
+{
+  "source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "excluded_hft_program_files": [
+    "ENGGT.otf",
+    "ENGGTI.otf",
+    "HGGGT.otf"
+  ],
+  "isolation": "기존 설치 글꼴을 삭제하지 않고 3개 원본을 뺀 공급 디렉터리를 사용했다. macOS Seatbelt로 설치 폴더와 폰트 broker를 차단했다.",
+  "wasm_browser": "상위 Seatbelt를 상속한 진단 Chrome에서 중첩 sandbox만 생략했다.",
+  "fixed_pixel_checks_for_page_1": false,
+  "backends": {
+    "native": {
+      "pages": 64,
+      "page1_raw": "94.93",
+      "supplied_file_count": 1213,
+      "tsv_sha256": "44cf26069ba6a4d74901548d3b6abdf5ad5ea8f7dbd5c83f848fad84aa69b975",
+      "actual_display_alias_sources": [
+        "한양견고딕"
+      ]
+    },
+    "wasm": {
+      "pages": 64,
+      "page1_raw": "94.93",
+      "supplied_file_count": 1213,
+      "tsv_sha256": "34e7caa6ee8a360810363b5cb70175132107c6a3187ecbe4792a44a80f39dcad",
+      "loaded_hy_gyeongothic_source_hashes": [
+        "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+        "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8",
+        "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234"
+      ]
+    }
+  }
+}
