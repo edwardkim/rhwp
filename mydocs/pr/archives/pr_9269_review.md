@@ -61,6 +61,12 @@ HWP에서 만든 HWPX도 같은 순서로 두 번 저장했다. OLE 인스턴스
 저장본 5개가 독립 CFB·ZIP 검사를 마친 기존 산출물과 바이트 단위로 같았다.
 [최신 Native 반복 저장 영수증](../assets/planet6897_9240_9282_20261121/validation/ole-repeat-save-v5.json)
 
+최신 Native에서 OLE·EMF 보정의 원본 출력과 기준 이미지를 같은 전쪽 실행에서 보존했다. [SHA 검증 기록](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/ole-claim-media-v5.json)
+
+- 15쪽 [Native 원본 PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/raw_015.png) · [한컴 Print PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/reference_015.png).
+- 16쪽 [Native 원본 PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/raw_016.png) · [한컴 Print PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/reference_016.png).
+- 21쪽 [Native 원본 PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/raw_021.png) · [한컴 Print PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/reference_021.png).
+
 ## Merge 후 contributor PR comment 계획
 
 - [#9239](https://github.com/edwardkim/rhwp/issues/9239) 원본의 12쪽 제목 표와 43쪽 캡션에 걸린 떠 있는 표를 한컴 2020 Hancom PDF Print에서 대조한다. 11쪽 각주 영역을 제목 표가 침범하지 않고 43쪽의 내부 표가 한 번만 보이는지 확인한 결과를 적는다.
