@@ -27,8 +27,12 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 
 ## 기준 PDF 인쇄 계약
 
-조판·렌더링 검증의 기준 PDF는 **원본 저장 버전에 맞는 한컴의 Print 인쇄 경로**로 출력한다.
-MCP는 아래 표의 `2020`/`2024` engine을 명시하고 `start → status → download`로 산출한다.
+조판·렌더링 검증의 공식 기준 PDF는 **Windows 데스크톱 한컴 2020 또는 2024의
+`Hancom PDF` Print 인쇄본**을 사용한다. MCP는 `2020`/`2024` engine을 명시하고
+`start → status → download`로 산출한다.
+기존 `Producer`가 Cairo이면 같은 원본의 저장 제품을 확인한 뒤 위 엔진 선택 규칙으로
+다시 인쇄한다. 기존 `Creator: Hwp 2022` 인쇄본은 같은 입력을 `--engine 2024`로 다시
+인쇄한다. 원본의 저장 제품 판정과 기존 PDF의 실제 출력 제품 판정은 별개다.
 `--target pdf`는 결과 형식 지정이므로 이것만으로 Print 실행을 입증하지는 않는다.
 서비스 실행 증거에서 실제 한컴 제품/빌드와 Print 경로를 확인해 기록한다. 확인할 수 없으면
 출력 방법은 미검증이며, 성공 job·PDF Creator·파일명만으로 Print 출력으로 간주하지 않는다.
@@ -43,11 +47,11 @@ MCP는 아래 표의 `2020`/`2024` engine을 명시하고 `start → status → 
   모아 찍기·맞춰 찍기·용지 재지정이 검증 대상이면 설정과 비교 범위를 별도로 기록한다.
 - 입력 SHA-256·저장 제품 판정, 실제 한컴 제품/빌드·OS·글꼴, Print 출력 방법과 인쇄 설정,
   PDF SHA-256·전체 쪽수, MCP engine·job 식별자를 증적에 연결한다. 인증 정보는 기록하지 않는다.
-- 기존 PDF도 같은 원본·버전·Print 출력 출처를 확인한 경우 재사용한다.
-  PDF 형식 버전이나 Creator 표기의 연도만으로 승인하거나 폐기하지 않는다.
-- 일반 기여자는 MCP 권한 없이 본인의 해당 버전 한컴에서 직접 Print 출력해 제출할 수 있다.
-  여러 제품 버전을 비교하면 각 버전의 Print PDF를 구분한다. 직접 출력본은 실제 제품 버전으로
-  이름 붙이고, 아래 MCP의 `2020`/`2024` bucket 명칭으로 바꾸지 않는다.
+- 기존 PDF는 같은 원본, 한컴 2020·2024 중 실제 출력 제품, `Hancom PDF` 인쇄 경로를
+  확인한 경우 재사용한다. PDF 형식 버전은 이 출력 제품 판정과 별개다.
+- 일반 기여자는 MCP 권한 없이 한컴 2020 또는 2024에서 직접 Print 출력해 제출할 수 있다.
+  직접 출력본은 실제 출력 제품으로 이름 붙인다. 여러 제품의 동작을 다루면 비교 자료별
+  버전과 용도를 구분한다.
 
 편집 동작을 검증할 때도 동일하게 편집한 저장본을 해당 한컴에서 열어 Print PDF를 만든다.
 기준 PDF가 없다는 이유로 조판 변경의 Visual Sweep을 비해당으로 처리하지 않는다.
@@ -62,8 +66,32 @@ MCP는 아래 표의 `2020`/`2024` engine을 명시하고 `start → status → 
 | `hancom-office-2022` | `2020` | `<원본-stem>-2020.pdf` |
 | 그 밖의 product이며 2022 이하 저장본으로 확인됨 | `2020` | `<원본-stem>-2020.pdf` |
 
-즉 PR review 증적에는 `-2018.pdf`, `-2022.pdf`를 만들지 않는다. `2024`로 확인된 저장본만
-`-2024.pdf`를 사용하고, 2022 이하 저장본은 `-2020.pdf`로 통일한다. 저장 환경 미상은 먼저 확인한다.
+표는 새 기준을 원본 저장 제품으로 선택하거나 Cairo 출력을 교체할 때 적용한다.
+기존 `Creator: Hwp 2022` 인쇄본 교체에는 `2024`를 사용한다. PR review 증적의 파일명은
+실제 요청한 엔진에 따라 `-2020.pdf` 또는 `-2024.pdf`로 지정한다.
+
+### Print 영수증을 남기고 다시 확인하기
+
+저장소 루트에서 `tools/refresh_oracle_pdfs.py`의 기존 갱신 명령에
+`--receipt-dir mydocs/pr/assets/<issue>/print-receipts`를 추가하면 실제로 인쇄한 job마다
+JSON 하나가 생성된다. 전송한 원본 사본의 SHA-256, 성공 상태의 엔진·제품 빌드·인쇄 방법,
+job ID와 내려받은 PDF의 SHA-256을 보존한다. 인쇄 조건이나 다운로드 해시가 맞지 않으면
+PDF를 교체하기 전에 실패한다. 기존 PDF를 건너뛴 경우에는 영수증을 생성하지 않는다.
+PDF 게시와 영수증 게시 사이에 중단된 경우 새 영수증 유무를 확인하고, 필요하면 해당
+`--source`만 `--refresh-existing`으로 다시 인쇄한다.
+
+기여자는 PR에 실제 영수증의 저장소 상대 경로를 연결한다. 리뷰어는 그 경로를 셸 변수
+`receipt_path`에 지정하고 다음 명령을 실행한 뒤
+`pairs`에서 같은 원본·PDF 경로의 `status`, `sampleHash`, `pdfHash`, `print`를 대조한다.
+해시 불일치는 보고서에 기록된다. OS·공급 글꼴·용지 조건은 별도 실행 근거를 함께 남긴다.
+
+```sh
+python3 tools/oracle_public/audit_print_pairs.py --repo-root . \
+  --receipts "$receipt_path" \
+  --output output/print-audit.json
+```
+
+실제 기록 형식은 [34쌍의 보존 영수증](../pr/assets/hyunmyungjanelee_20261112/mcp-print-reference/receipts.json)에서 확인할 수 있다.
 
 ## 개요
 
@@ -75,8 +103,8 @@ MCP는 아래 표의 `2020`/`2024` engine을 명시하고 `start → status → 
 - 지원 출력: `pdf`, `hwp`, `hwpx`
 - 지원 방향: `.hwp → pdf|hwp|hwpx`, `.hwpx → pdf|hwp`
 - 지원 engine: `2020`(실제 HOffice110), `2024`(HOffice130), 기본값 `2024`
-- PR review 기준 PDF 이름: `lastSavedWith.product`가 `hancom-office-2024`이면 `-2024.pdf`,
-  2022 이하로 확인된 저장본은 `-2020.pdf`. 저장 제품이 `null`이면 저장 환경부터 확인한다.
+- PR review 기준 PDF 이름: 위 인쇄 계약에 따라 선택한 엔진의 연도를 붙여
+  `-2020.pdf` 또는 `-2024.pdf`로 저장한다.
 - 선택적 암호 문서: MCP tool의 `password` 또는 CLI의 비공개 `--password-file`
 - 비동기 tool: `start_local_document_conversion`, `get_local_conversion_status`,
   `save_local_conversion_result`
@@ -615,10 +643,9 @@ open·PDF smoke가 통과하기 전까지는 원본 제공자에게 양식 없�
 변환 결과에서 다음을 확인한다.
 
 - `status: success`
-- `engine`: `start`와 `status` 응답에서 요청한 engine과 일치해야 한다. PR review 기준 PDF에서는
-  `lastSavedWith.product`가 `hancom-office-2024`인 파일만 `2024`를 명시하고, `null` 또는 2022 이하
-  저장본은 `2020`을 명시한다. 결과 PDF 파일명도 같은 bucket을 따라 각각 `-2024.pdf`,
-  `-2020.pdf`로 끝낸다.
+- `engine`: `start`와 `status` 응답에서 요청한 engine과 일치해야 한다. PR review 기준 PDF는
+  [기준 PDF 인쇄 계약](#기준-pdf-인쇄-계약)에 따라 `2020` 또는 `2024`를 명시한다. 결과 파일명에는
+  요청한 엔진의 연도를 붙인다.
 - `server.engine`: 서버가 반환할 수 있는 concrete backend 식별자다. 요청한 engine과의 일치 여부를
   판정하는 값으로 사용하지 않는다. 현재 배포의 2024 backend는
   `hancom-2024-direct-host`를 반환한다.

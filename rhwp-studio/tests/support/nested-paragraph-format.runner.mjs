@@ -134,6 +134,23 @@ for (const depth of [2, 3]) {
     } finally { reopened.free(); }
   }
   history.clear(wasm);
+  // 구 WASM처럼 일반 조회에 간격 원본이 없어도 커서 이동은 문서 전체를 순회하지 않는다.
+  const pathJson = JSON.stringify(path);
+  doc.applyParaFormatInCellByPath(anchor.sec, anchor.para, pathJson, '{"spacingBefore":3000}');
+  const read = doc.getCellParaPropertiesAtByPath.bind(doc);
+  doc.getCellParaPropertiesAtByPath = (...args) => {
+    const { spacingBeforePx, spacingAfterPx, spacingBeforeRaw, spacingAfterRaw, ...legacy } = JSON.parse(read(...args));
+    return JSON.stringify(legacy);
+  };
+  const cursorModel = doc.getCursorModel.bind(doc);
+  let scans = 0;
+  doc.getCursorModel = () => { scans++; return cursorModel(); };
+  wasm.getCellParaPropertiesAtByPath(anchor.sec, anchor.para, pathJson);
+  assert.equal(scans, 0);
+  const spacing = wasm.getCellParaPropertiesAtByPath(anchor.sec, anchor.para, pathJson, 'spacing');
+  assert.equal(spacing.spacingBeforeRaw, 3000);
+  assert.equal(spacing.spacingBeforePx, 20);
+  assert.equal(scans, 1);
   doc.free();
 }
 // 기존 flat API의 캡션 특수 인덱스도 공통 원점 갱신을 거친다.

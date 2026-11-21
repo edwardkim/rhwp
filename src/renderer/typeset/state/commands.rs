@@ -660,6 +660,11 @@ impl TypesetState {
         self.data.wrap_around_sw = -1;
         self.data.wrap_around_any_seg = false;
         self.data.wrap_around_derived_band = false;
+        self.data.wrap_around_stored_flow = false;
+    }
+    /// 표 배치가 host 줄만 전진시켰다. 이 host 가 여는 밴드 옆의 문단은 흡수하지 않는다.
+    pub(in crate::renderer::typeset) fn record_stored_flow_wrap_host(&mut self, para_index: usize) {
+        self.data.stored_flow_wrap_host = Some(para_index);
     }
     pub(in crate::renderer::typeset) fn arm_control_wrap(
         &mut self,
@@ -673,6 +678,7 @@ impl TypesetState {
         self.data.wrap_around_table_para = para_index;
         self.data.wrap_around_any_seg = any_segment;
         self.data.wrap_around_derived_band = false;
+        self.data.wrap_around_stored_flow = self.data.stored_flow_wrap_host == Some(para_index);
     }
     pub(in crate::renderer::typeset) fn protect_current_ladder_floor(&mut self) {
         self.data.ladder_band_floor = self.data.ladder_band_floor.max(self.data.current_height);

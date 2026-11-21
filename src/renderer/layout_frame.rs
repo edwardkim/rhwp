@@ -356,6 +356,7 @@ impl ParagraphBox {
         // [#7408] `effective()` 가 원점을 접었으면 그 사실을 프레임이 알아야 한다.
         // 모르면 저장 행의 **참 원점**을 접힌 0 과 그대로 견주어 반드시 어긋난다.
         frame.origin_is_authoritative = self.origin_is_derivable;
+        frame.line_wrap_squeeze = self.line_wrap_squeeze;
         frame
     }
 
@@ -484,6 +485,7 @@ pub(crate) struct LayoutFrame {
     pub(crate) minimum_width: i32,
     /// 저장 HWPX의 KoPub 양쪽 정렬 줄은 공백을 글꼴 전진폭까지 줄일 수 있다.
     pub(crate) kopub_justified_space: bool,
+    pub(crate) line_wrap_squeeze: bool,
     /// [#7408] horizontal.start가 이 문단의 실제 원점인지 나타낸다.
     /// ParagraphBox가 목록 문단 원점을 보류하면 effective()는 0..width로 접지만,
     /// 저장 LineSeg는 실제 column_start를 유지한다. 같은 폭을 원점 차이로 기각하면
@@ -495,7 +497,7 @@ pub(crate) struct LayoutFrame {
     /// [`ParagraphBox::content_width_px`]가 내용 폭을 4 HWPUNIT 격자로 내린다(#7412).
     rows: Vec<PhysicalRow>,
 }
-crate::storage::clone_fields!(LayoutFrame, {horizontal, top, exclusions, current_intervals, next_geometry_event, minimum_width, kopub_justified_space, origin_is_authoritative, rows});
+crate::storage::clone_fields!(LayoutFrame, {horizontal, top, exclusions, current_intervals, next_geometry_event, minimum_width, kopub_justified_space, line_wrap_squeeze, origin_is_authoritative, rows});
 
 /// Snapshot for operations that only carve geometry and append physical rows.
 /// Previously committed rows and immutable frame geometry remain in the frame.
@@ -518,6 +520,7 @@ impl LayoutFrame {
             next_geometry_event: None,
             minimum_width: MINIMUM_USABLE_INTERVAL_HWP,
             kopub_justified_space: false,
+            line_wrap_squeeze: false,
             origin_is_authoritative: true,
             rows: Vec::new(),
         }
@@ -1192,6 +1195,7 @@ mod tests {
             next_geometry_event: None,
             minimum_width: 1,
             kopub_justified_space: false,
+            line_wrap_squeeze: false,
             origin_is_authoritative: true,
             rows: Vec::new(),
         }

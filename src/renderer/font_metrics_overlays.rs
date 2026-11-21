@@ -15,10 +15,11 @@ pub(crate) fn implicit_symbol_advance_em(character: char) -> Option<f64> {
     }
     match character {
         '\u{F09E}' | '\u{F0A0}' => Some(312.0 / 1000.0),
-        // 웹한글기안기 인쇄는 Wingdings 원문자·흰 원·체크 상자를 문서 글꼴과
-        // 상관없이 Haan Wings로 그린다. 내장 글꼴 폭: 0x80~0x95·0xA1 /W891,
-        // 0xFE /W892 (1000 단위). 표시용 ①·○·☑ 의 전각 폭을 빌리지 않는다.
-        '\u{F080}'..='\u{F095}' | '\u{F0A1}' => Some(891.0 / 1000.0),
+        // 웹한글기안기 인쇄는 Wingdings 원문자·체크 상자를 문서 글꼴과
+        // 상관없이 Haan Wings로 그린다. 내장 글꼴 폭: 0x80~0x95 /W891,
+        // 0xFE /W892 (1000 단위). 표시용 ①·☑ 의 전각 폭을 빌리지 않는다.
+        // 0xA1 고리는 독립 한컴 Print 윤곽(1825/2048)을 implicit_symbol이 소유한다.
+        '\u{F080}'..='\u{F095}' => Some(891.0 / 1000.0),
         '\u{F0FE}' => Some(892.0 / 1000.0),
         // 독립 한컴 2020 Print issue8680: Wingdings-Regular CID9 /W385.
         // 표시용 U+1F8AD를 공급하는 Noto 글꼴의 356/1000 폭으로 바꾸지 않는다.
@@ -67,6 +68,18 @@ static ORIGINAL_GLYPH_METRICS: &[OriginalGlyphMetric] = &[
         character: '≤',
         advance_units: 1000,
         em_units: 1000,
+    },
+    // #9217 한컴 2024 Print 10·14쪽의 휴먼명조 HFT U+FFED.
+    // 사각형 원점 705에서 공백 없이 뒤따르는 한글 원점 822까지 117 장치
+    // 단위(1em)다. 표시용 한컴바탕의 반각 hmtx는 뒤 글자 원점을 결정하지
+    // 않는다. 같은 Print 대조군의 반각 화살표·원은 기존 반각을 유지한다.
+    OriginalGlyphMetric {
+        face: "휴먼명조",
+        bold: false,
+        italic: false,
+        character: '\u{FFED}',
+        advance_units: 1,
+        em_units: 1,
     },
     // 80168 구판 HWPX의 한컴2020 Print 30쪽 T10(Type3, xref348):
     // ToUnicode1630의 code79→00B7, Widths1629=384, FontMatrix.001.
@@ -263,7 +276,17 @@ pub(crate) fn declared_original_glyph_advance_em(
     // 화학 원본의 독립 한컴2020 Print T11 U+2022는 /Widths와 d1이
     // 모두1000/1000em이다. 표시용 중고딕 프로그램의 cmap 결측 때문에
     // 이 원본 전진을 반각으로 추정하지 않는다. 동명 TTF·다른 style은 별개다.
-    if face == "한양중고딕" && !bold && !italic && character == '\u{2022}' {
+    // #9217 한컴2024 Print 3쪽 T10의 U+2023도 /Widths=1000, FontMatrix=.001이다.
+    // 세 문단에서 삼각형 원점부터 뒤 한글 원점까지 실제로 1em 전진한다.
+    if face == "한양중고딕" && !bold && !italic && matches!(character, '\u{2022}' | '\u{2023}')
+    {
+        return Some(1.0);
+    }
+    // 10k 오라클 547(`pdf/issue547/online-search-rfp-2022.pdf`) 14·15쪽의 기호 슬롯
+    // 한양중고딕 HFT U+2219는 Type3 /T14(obj 129)의 ToUnicode <02>=2219, /Widths 1000,
+    // FontMatrix .001, CharProc d1 1000이다. 잉크(HFT115)는 x 335~665로 칸 가운데다.
+    // 표시용 HY중고딕(H2GTRM) 표의 U+2219 결측(0)을 반각으로 추정하지 않는다.
+    if face == "한양중고딕" && !bold && !italic && character == '\u{2219}' {
         return Some(1.0);
     }
     // 원본 HFT U+2027은 기존 독립 Print의 Type3 /Widths=500/1000em이다.
@@ -321,6 +344,22 @@ pub(crate) fn declared_original_glyph_advance_em(
         (face == "한양중고딕" && !bold && !italic && matches!(character, '\u{2018}' | '\u{2019}'))
             .then_some(225.0 / 1000.0)
     })
+}
+
+/// 독립 Print의 CharProc 잉크가 원본 em 칸 가운데에 있는 HFT 기호의 전진(em)이다.
+/// 표시용 대체 glyph는 모양을 바꾸지 않고 이 칸 가운데에 둔다.
+///
+/// - 한양중고딕 U+2219: `pdf/issue547/online-search-rfp-2022.pdf` /T14 HFT115의
+///   `d1 1000`, 잉크 x 335~665(중심 500/1000).
+pub(crate) fn declared_original_centered_glyph_advance_em(
+    face: &str,
+    bold: bool,
+    italic: bool,
+    character: char,
+) -> Option<f64> {
+    (face == "한양중고딕" && character == '\u{2219}')
+        .then(|| declared_original_glyph_advance_em(face, bold, italic, character))
+        .flatten()
 }
 
 pub(crate) fn has_original_glyph_metrics(face: &str) -> bool {

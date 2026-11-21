@@ -69,9 +69,9 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
     {
         return None;
     }
-    let (visible, quantized) = print_tone::decode_transfer_pixels(source, format, Some(bounds))?;
     let requested = print_codec::requested_quality(width_points, width);
     let quality = if requested > 70 {
+        let (visible, _) = print_tone::decode_transfer_pixels(source, format, Some(bounds))?;
         print_codec::quality_for_palette(
             requested,
             print_codec::palette_len(&image::DynamicImage::ImageRgba8(visible).to_rgb8()),
@@ -90,9 +90,9 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
         || {
             let rgba = super::decode_image_with_format_limited(source, format)?.to_rgba8();
             let resized = print_prefilter::resize_opaque_window(&rgba, bounds, (width, height))?;
-            print_alpha::encode_planes_with_palette(resized, quality, quantized, |channel, _| {
-                channel
-            })
+            // 재표본화한 창은 원본 팔레트에 들어가는 그림도 공통 RGB555
+            // 표면을 거친다. 분리하지 않은 원본색의 팔레트 판정은 유지한다.
+            print_alpha::encode_planes(resized, quality, |channel, _| channel)
         },
     )?;
     Some(ResolvedImagePayload {

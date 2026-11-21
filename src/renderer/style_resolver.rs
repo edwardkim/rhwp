@@ -317,6 +317,30 @@ pub(crate) fn resolve_styles_with_environment(
                             |source| env.preserves_source_metrics_for(source),
                         )
                     });
+                    // 한컴 2024 Print의 한양신명조→굴림 대체는 실제 굴림 잉크를
+                    // 쓰되 숫자는 원본 반각으로 전진한다. 같은 원본에 굴림을
+                    // 직접 선언한 대조군의 숫자는 굴림 자체 전진을 사용한다.
+                    if lang == 1
+                        && profile.hangul2024_layout()
+                        && profile.hwpx_stored_layout()
+                        && !profile.session_edited()
+                        && preserve_source_metrics
+                        && original.embedded != Some(true)
+                        && original.requested_face.as_deref() == Some("한양신명조")
+                        && matches!(target, "Gulim" | "굴림")
+                        && environment.is_some_and(|env| {
+                            env.selects_true_type(target)
+                                && env
+                                    .selected_program_identity_for(
+                                        "한양신명조",
+                                        lang,
+                                        shape.font_ids[lang],
+                                    )
+                                    .is_some()
+                        })
+                    {
+                        style.latin_decimal_halfwidth = true;
+                    }
                     // 같은 이름의 실제 주 TrueType 프로그램은 표시용 대체가 아니다.
                     // 검증된 폭과 실제 선택을 확인한 경우 그 프로그램이 전진을 소유한다.
                     // 원 HFT 프로그램 출처가 있거나 치환 경계를 건넌 대체 face는 보존한다.
@@ -372,40 +396,70 @@ pub(crate) fn resolve_styles_with_environment(
                     {
                         style.font_families_print_text_device_frame[lang] = true;
                     }
+                    // 표시용 TrueType을 명시해도 검증된 옛 face의 폭을 보존할 수 있다.
+                    // 한컴 Print는 HCI Poppy를 TTF로 기록한 문서에서도 대체 face로
+                    // 글리프를 찍고 원 HFT의 숫자·구두점 전진을 사용한다.
+                    let verified_legacy_widths_with_explicit_fallback =
+                        original.requested_face.as_deref().is_some_and(|face| {
+                            hft_program_metric_face(&face)
+                                && has_own_metric_table(&face, style.bold, style.italic)
+                                && original.normalized_face.as_deref() != Some(target)
+                                && environment.is_some_and(|env| {
+                                    env.replacement(face) == Some(target)
+                                        && env
+                                            .canonical_selection_rule_for(
+                                                face,
+                                                lang,
+                                                shape.font_ids[lang],
+                                            )
+                                            .is_none()
+                                })
+                        });
+                    let source_face = original.requested_face.as_deref();
+                    let source_metric_table = source_face.and_then(|face| {
+                        crate::renderer::font_metrics_data::legacy_hft_metric_face(face).or_else(
+                            || {
+                                has_own_metric_table(&face, style.bold, style.italic)
+                                    .then_some(face)
+                            },
+                        )
+                    });
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
                         && preserve_source_metrics
                         && (original.alt_type == Some(2)
-                            || style.font_families_source_hft[lang])
+                            || style.font_families_source_hft[lang]
+                            || verified_legacy_widths_with_explicit_fallback)
                         && original.embedded != Some(true)
-                        && original.requested_face.as_deref().is_some_and(|face| {
-                            crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
-                                || has_own_metric_table(&face, style.bold, style.italic)
-                                || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
-                        });
+                        && (source_metric_table.is_some()
+                            || source_face.is_some_and(
+                                crate::renderer::font_metrics_data::has_declared_original_glyph_metrics,
+                            ));
                     if keep_source_metrics
                         && source_font.is_none_or(|face| face.native_program.is_none())
                     {
-                        style.font_families_metric_face[lang] = original
-                            .requested_face
-                            .as_deref()
-                            .and_then(|face| {
-                                crate::renderer::font_metrics_data::legacy_hft_metric_face(face)
-                                    .or_else(|| {
-                                        has_own_metric_table(&face, style.bold, style.italic)
-                                            .then_some(face)
-                                    })
-                            })
-                            .map(str::to_owned);
+                        style.font_families_metric_face[lang] =
+                            source_metric_table.map(str::to_owned);
                     }
-                    let explicit_true_type = !keep_source_metrics
-                        && environment.is_some_and(|env| env.selects_true_type(target));
+                    let declared_true_type =
+                        environment.is_some_and(|env| env.selects_true_type(target));
+                    let explicit_true_type = !keep_source_metrics && declared_true_type;
                     let explicit_replacement = environment.is_some_and(|env| {
                         decision
                             .requested_face
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
+                    // 개별 원본 글리프의 폭은 유지할 수 있지만, 그 사실만으로
+                    // 명시적 TrueType 대체에 원 HFT의 그래픽 프레임을 적용하지 않는다.
+                    // 실제 정적 TrueType 공급은 출력 레이어에서 자기 프레임을 선택한다.
+                    if explicit_replacement
+                        && declared_true_type
+                        && keep_source_metrics
+                        && source_metric_table.is_none()
+                    {
+                        style.font_families_hft_print_frame[lang] = false;
+                    }
                     // 기존 명시 공급의 윤곽은 전진 칸에 눌러 그리지 않는다(#8188).
                     // 생략된 설정의 기존 전진/leader와 명시 자연 전진은 별도로 선택한다.
                     style.font_families_preserve_glyph_ink[lang] =
@@ -816,6 +870,12 @@ fn resolved_space_advance_em(
                 .get(1)
                 .and_then(Option::as_deref)
                 .and_then(|face| {
+                    // 한양중고딕 고유 프로그램의 굵은 공백은 별도의 작은
+                    // 장치 전진을 쓴다. 독립 한컴 2020 출력에서 연속 음절과
+                    // 1·3개의 공백을 대조했다. 반각 공백·실제 TrueType과 구분한다.
+                    if face == "한양중고딕" && bold && !italic {
+                        return Some(0.052);
+                    }
                     crate::renderer::font_metrics_data::declared_original_glyph_advance_em(
                         face, bold, italic, ' ',
                     )
@@ -1076,6 +1136,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_print_text_device_frame,
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_natural_program_metrics: vec![false; LANG_COUNT],
+        latin_decimal_halfwidth: false,
         font_families_hft_fullwidth_dot,
         ascii_punct_latin_slot,
         explicit_latin_slot,

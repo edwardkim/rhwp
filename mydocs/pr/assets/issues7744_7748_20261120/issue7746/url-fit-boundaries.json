@@ -1,0 +1,38 @@
+[
+  {
+    "condense": 15,
+    "width_hwp": 39056,
+    "hancom": false,
+    "native": false
+  },
+  {
+    "condense": 15,
+    "width_hwp": 39060,
+    "hancom": false,
+    "native": false
+  },
+  {
+    "condense": 15,
+    "width_hwp": 39064,
+    "hancom": false,
+    "native": false
+  },
+  {
+    "condense": 15,
+    "width_hwp": 39072,
+    "hancom": true,
+    "native": true
+  },
+  {
+    "condense": 17,
+    "width_hwp": 38964,
+    "hancom": true,
+    "native": true
+  },
+  {
+    "condense": 17,
+    "width_hwp": 38968,
+    "hancom": true,
+    "native": true
+  }
+]

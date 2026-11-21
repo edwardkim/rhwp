@@ -1,0 +1,932 @@
+{
+  "base": "ca231d64f43f19da1d1d1aec4cf26a05b817aa22",
+  "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+  "rust_exit_codes": {
+    "suites-prepare": 0,
+    "fmt": 0,
+    "nextest": 0,
+    "native-skia-lib": 0,
+    "native-skia-placeholder": 0,
+    "native-skia-direct-export": 0,
+    "clippy-root": 0,
+    "clippy-wasm": 0,
+    "workspace-build": 0,
+    "clippy-all-targets": 0,
+    "suites-check": 0,
+    "release-build": 0,
+    "release-lib": 0,
+    "doc-test": 0,
+    "unit-tiers": 0
+  },
+  "canonical_baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+  "public_visual_checks": {
+    "contributor_conditions": 8,
+    "handbook_native_pages": 383,
+    "handbook_regressions": []
+  },
+  "nextest": {
+    "pass": 13864,
+    "fail": 0,
+    "skip": 45,
+    "wall_seconds": 647.07
+  },
+  "studio_browser": {
+    "print_dialog": 0,
+    "PR_9221_render_paths": 0
+  },
+  "source_pr_claims": {
+    "native": [
+      {
+        "case": "9208",
+        "pages": 22,
+        "minimum": "99.68",
+        "passed": true
+      },
+      {
+        "case": "9209",
+        "pages": 46,
+        "minimum": "98.37",
+        "passed": true
+      },
+      {
+        "case": "9214",
+        "pages": 32,
+        "minimum": "99.20",
+        "passed": true
+      },
+      {
+        "case": "9218",
+        "pages": 45,
+        "minimum": "99.55",
+        "passed": true
+      },
+      {
+        "case": "9219",
+        "pages": 14,
+        "minimum": "99.87",
+        "passed": true
+      },
+      {
+        "case": "9221",
+        "pages": 10,
+        "minimum": "99.79",
+        "passed": true
+      },
+      {
+        "case": "9227",
+        "pages": 3,
+        "minimum": "100.00",
+        "passed": true
+      },
+      {
+        "case": "9232",
+        "pages": 21,
+        "minimum": "99.91",
+        "passed": true
+      },
+      {
+        "case": "9236",
+        "pages": 22,
+        "minimum": "98.56",
+        "passed": true
+      }
+    ],
+    "wasm": [
+      {
+        "case": "9208",
+        "pages": 22,
+        "minimum": "99.68",
+        "passed": true
+      },
+      {
+        "case": "9209",
+        "pages": 46,
+        "minimum": "98.36",
+        "passed": true
+      },
+      {
+        "case": "9214",
+        "pages": 32,
+        "minimum": "99.18",
+        "passed": true
+      },
+      {
+        "case": "9218",
+        "pages": 45,
+        "minimum": "99.59",
+        "passed": true
+      },
+      {
+        "case": "9219",
+        "pages": 14,
+        "minimum": "99.87",
+        "passed": true
+      },
+      {
+        "case": "9221",
+        "pages": 10,
+        "minimum": "99.62",
+        "passed": true
+      },
+      {
+        "case": "9227",
+        "pages": 3,
+        "minimum": "100.00",
+        "passed": true
+      },
+      {
+        "case": "9232",
+        "pages": 21,
+        "minimum": "99.90",
+        "passed": true
+      },
+      {
+        "case": "9236",
+        "pages": 22,
+        "minimum": "98.51",
+        "passed": true
+      }
+    ]
+  },
+  "incoming_PR_9277": {
+    "comparison": "Hancom desktop Print 2020 and 2024; macOS capture; 98% floor",
+    "cases": {
+      "native": [
+        {
+          "case": "regulatory-2020",
+          "pages": 31,
+          "minimum": "98.70",
+          "passes_floor_and_page_count": true
+        },
+        {
+          "case": "regulatory-2024",
+          "pages": 31,
+          "minimum": "99.24",
+          "passes_floor_and_page_count": true
+        },
+        {
+          "case": "parameter",
+          "pages": 74,
+          "minimum": "100.00",
+          "passes_floor_and_page_count": true
+        },
+        {
+          "case": "research-hwp",
+          "pages": 215,
+          "minimum": "98.37",
+          "passes_floor_and_page_count": true
+        },
+        {
+          "case": "research-hwpx",
+          "pages": 215,
+          "minimum": "98.37",
+          "passes_floor_and_page_count": true
+        }
+      ],
+      "wasm": [
+        {
+          "case": "regulatory-2020",
+          "pages": 31,
+          "minimum": "98.68",
+          "passes_floor_and_page_count": true
+        },
+        {
+          "case": "regulatory-2024",
+          "pages": 31,
+          "minimum": "99.27",
+          "passes_floor_and_page_count": true,
+          "original_incomplete_font_supply_minimum": "85.06",
+          "supplemented_tsv_sha256": "e543092f246c0e405e044c013c45db0d578a891840115d5675d922b8984580b0"
+        },
+        {
+          "case": "parameter",
+          "pages": 74,
+          "minimum": "100.00",
+          "passes_floor_and_page_count": true
+        },
+        {
+          "case": "research-hwp",
+          "pages": 215,
+          "minimum": "98.96",
+          "passes_floor_and_page_count": true
+        },
+        {
+          "case": "research-hwpx",
+          "pages": 215,
+          "minimum": "99.01",
+          "passes_floor_and_page_count": true
+        }
+      ]
+    }
+  },
+  "protected_exact_conditions": [
+    {
+      "document": "decree",
+      "backend": "native",
+      "pages": 74,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "sample16-hwp2024",
+      "backend": "native",
+      "pages": 64,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "handbook-hwpx",
+      "backend": "native",
+      "pages": 383,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "yeongwol",
+      "backend": "native",
+      "pages": 4,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-body-list-typed",
+      "backend": "native",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "handbook-hwp",
+      "backend": "native",
+      "pages": 383,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "backend": "native",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "sample16-hwpx",
+      "backend": "native",
+      "pages": 64,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "sample16-hwp2022",
+      "backend": "native",
+      "pages": 64,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-re-03-latin",
+      "backend": "native",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "angle-narrow",
+      "backend": "native",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "outline",
+      "backend": "native",
+      "pages": 9,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "issue8040-insert",
+      "backend": "native",
+      "pages": 4,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "issue7905",
+      "backend": "native",
+      "pages": 6,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "backend": "native",
+      "pages": 4,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "backend": "native",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-shape-group-02",
+      "backend": "native",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "pages": 103,
+      "qualified": true,
+      "diff": [
+        {
+          "page": 5,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 6,
+          "floor": "99.96",
+          "candidate": "100.00"
+        },
+        {
+          "page": 11,
+          "floor": "99.98",
+          "candidate": "100.00"
+        },
+        {
+          "page": 12,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 13,
+          "floor": "99.98",
+          "candidate": "100.00"
+        },
+        {
+          "page": 14,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 15,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 16,
+          "floor": "99.75",
+          "candidate": "100.00"
+        },
+        {
+          "page": 26,
+          "floor": "99.98",
+          "candidate": "99.99"
+        },
+        {
+          "page": 27,
+          "floor": "99.86",
+          "candidate": "100.00"
+        },
+        {
+          "page": 37,
+          "floor": "99.97",
+          "candidate": "100.00"
+        },
+        {
+          "page": 52,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 59,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 68,
+          "floor": "99.75",
+          "candidate": "100.00"
+        },
+        {
+          "page": 72,
+          "floor": "99.91",
+          "candidate": "99.97"
+        },
+        {
+          "page": 73,
+          "floor": "99.79",
+          "candidate": "99.96"
+        },
+        {
+          "page": 91,
+          "floor": "99.76",
+          "candidate": "99.99"
+        }
+      ]
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "pages": 71,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "outline-demo",
+      "backend": "native",
+      "pages": 3,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "outline-minimal",
+      "backend": "native",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "pages": 74,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "sample16-hwp2024",
+      "backend": "wasm",
+      "pages": 64,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "handbook-hwpx",
+      "backend": "wasm",
+      "pages": 383,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "yeongwol",
+      "backend": "wasm",
+      "pages": 4,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-body-list-typed",
+      "backend": "wasm",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "handbook-hwp",
+      "backend": "wasm",
+      "pages": 383,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "backend": "wasm",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "sample16-hwpx",
+      "backend": "wasm",
+      "pages": 64,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "sample16-hwp2022",
+      "backend": "wasm",
+      "pages": 64,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-re-03-latin",
+      "backend": "wasm",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "angle-narrow",
+      "backend": "wasm",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "outline",
+      "backend": "wasm",
+      "pages": 9,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "issue8040-insert",
+      "backend": "wasm",
+      "pages": 4,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "issue7905",
+      "backend": "wasm",
+      "pages": 6,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "sample10",
+      "backend": "wasm",
+      "pages": 763,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "backend": "wasm",
+      "pages": 4,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "backend": "wasm",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "seo-shape-group-02",
+      "backend": "wasm",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "pages": 103,
+      "qualified": true,
+      "diff": [
+        {
+          "page": 6,
+          "floor": "99.97",
+          "candidate": "100.00"
+        },
+        {
+          "page": 11,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 13,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 14,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 16,
+          "floor": "99.90",
+          "candidate": "100.00"
+        },
+        {
+          "page": 27,
+          "floor": "99.97",
+          "candidate": "100.00"
+        },
+        {
+          "page": 37,
+          "floor": "99.98",
+          "candidate": "100.00"
+        },
+        {
+          "page": 52,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 59,
+          "floor": "99.99",
+          "candidate": "100.00"
+        },
+        {
+          "page": 68,
+          "floor": "99.78",
+          "candidate": "100.00"
+        },
+        {
+          "page": 72,
+          "floor": "99.95",
+          "candidate": "99.97"
+        },
+        {
+          "page": 73,
+          "floor": "99.80",
+          "candidate": "99.95"
+        },
+        {
+          "page": 91,
+          "floor": "99.71",
+          "candidate": "99.98"
+        }
+      ]
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "pages": 71,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "outline-demo",
+      "backend": "wasm",
+      "pages": 3,
+      "qualified": true,
+      "diff": []
+    },
+    {
+      "document": "outline-minimal",
+      "backend": "wasm",
+      "pages": 1,
+      "qualified": true,
+      "diff": []
+    }
+  ],
+  "protected_passed": {
+    "native": 21,
+    "wasm": 22
+  },
+  "protected_pages_passed": 3249,
+  "protected_gains_pending_acceptance": [
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 5,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 6,
+      "floor": "99.96",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 11,
+      "floor": "99.98",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 12,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 13,
+      "floor": "99.98",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 14,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 15,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 16,
+      "floor": "99.75",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 26,
+      "floor": "99.98",
+      "candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 27,
+      "floor": "99.86",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 37,
+      "floor": "99.97",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 52,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 59,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 68,
+      "floor": "99.75",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 72,
+      "floor": "99.91",
+      "candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 73,
+      "floor": "99.79",
+      "candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": 91,
+      "floor": "99.76",
+      "candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 6,
+      "floor": "99.97",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 11,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 13,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 14,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 16,
+      "floor": "99.90",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 27,
+      "floor": "99.97",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 37,
+      "floor": "99.98",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 52,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 59,
+      "floor": "99.99",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 68,
+      "floor": "99.78",
+      "candidate": "100.00"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 72,
+      "floor": "99.95",
+      "candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 73,
+      "floor": "99.80",
+      "candidate": "99.95"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": 91,
+      "floor": "99.71",
+      "candidate": "99.98"
+    }
+  ],
+  "studio_unit": {
+    "exit": 0,
+    "pass": 2820,
+    "fail": 0,
+    "skip": 2
+  },
+  "protected_known_missing": [
+    {
+      "document": "nested",
+      "backend": "native",
+      "pages": 17,
+      "required": "RHWPIndependentHFTSymbols.otf",
+      "sha256": "0d8a86af7aa5e07ce4b761864eafef9e91c5f70f9f397016b2b0edf6b00c97db"
+    },
+    {
+      "document": "nested",
+      "backend": "wasm",
+      "pages": 17,
+      "required": "RHWPIndependentHFTSymbols.otf",
+      "sha256": "0d8a86af7aa5e07ce4b761864eafef9e91c5f70f9f397016b2b0edf6b00c97db"
+    },
+    {
+      "document": "sample10",
+      "backend": "native",
+      "pages": 763,
+      "required": "accepted Native font environment JSON",
+      "sha256": "a133e6de02a876ea3346a1a36440d2a2ca9d38c801e96a97c6b6ff016f44c9f3"
+    }
+  ],
+  "gate_exit_codes": {
+    "rust-gates": 0,
+    "protected-native-driver": 0,
+    "protected-wasm-driver": 0,
+    "contributor-gate": 0,
+    "handbook-gate": 0,
+    "rust-supplemental": 0,
+    "studio-build": 0
+  }
+}

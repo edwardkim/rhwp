@@ -45,6 +45,7 @@ pub struct LayerBuilder {
     image_frames: HashMap<NodeId, ImagePaintFrame>,
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
+    print_png_rgb555: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
     prior_print_solid_fill: bool,
     hangul2024_print: bool,
@@ -67,6 +68,7 @@ impl LayerBuilder {
             image_frames: HashMap::new(),
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
+            print_png_rgb555: false,
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
             hangul2024_print: false,
@@ -94,6 +96,11 @@ impl LayerBuilder {
     /// 그림 색의 출력 세대를 장치 픽셀 값과 독립적으로 전달한다.
     pub fn with_hancom2024_print_bitmap(mut self, enabled: bool) -> Self {
         self.hancom2024_print_bitmap = enabled && self.profile == RenderProfile::Print;
+        self
+    }
+
+    pub(crate) fn with_print_png_rgb555(mut self, enabled: bool) -> Self {
+        self.print_png_rgb555 = enabled;
         self
     }
 
@@ -152,6 +159,15 @@ impl LayerBuilder {
         tree: &PageRenderTree,
         fonts: &[EmbeddedFontFace<'_>],
     ) -> PageLayerTree {
+        self.build_with_print_footer(tree, fonts, None)
+    }
+
+    pub(crate) fn build_with_print_footer(
+        &mut self,
+        tree: &PageRenderTree,
+        fonts: &[EmbeddedFontFace<'_>],
+        footer: Option<super::automatic_print_footer::AutomaticPrintFooter<'_>>,
+    ) -> PageLayerTree {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
             && (super::metafile::has_wmf(&tree.root)
@@ -185,11 +201,19 @@ impl LayerBuilder {
             }
         }
         self.image_reference_origin = first_column(&tree.root).unwrap_or((0.0, 0.0));
+        let logical_width = page_width;
         let (page_width, page_height) = context.output_size();
         self.page_context = Some(context);
         self.image_frames.clear();
 
         let mut children = self.build_children(&tree.root);
+        if self.profile == RenderProfile::Print {
+            if let Some(footer) =
+                footer.and_then(|footer| footer.layer(logical_width, self.layout_dpi))
+            {
+                children.push(footer);
+            }
+        }
         if self.print_crop_marks {
             // 한컴 Print의 재단선은 종이 네 모서리를 중심으로 10mm씩 뻗는다.
             // 종이 바깥 부분은 출력 장치가 자르며 화면 조판에는 참여하지 않는다.
@@ -602,6 +626,7 @@ impl LayerBuilder {
                                             &image,
                                             frame,
                                             self.layout_dpi,
+                                            self.print_png_rgb555,
                                         )
                                     })
                                     .flatten()

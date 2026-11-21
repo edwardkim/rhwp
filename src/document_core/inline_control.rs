@@ -665,18 +665,20 @@ impl DocumentCore {
                 _ => {}
             }
         }
-        let Some((width, left, right)) = Self::cell_metrics_for_control(control, cell) else {
+        let Some(metrics) = Self::cell_metrics_for_control(control, cell) else {
             return;
         };
         let para = paragraph_mut(&mut self.document.sections[address.section], address, false)
             .expect("검증한 내부 문단");
         let style = self.styles.para_styles.get(para.para_shape_id as usize);
-        let available = crate::renderer::hwpunit_to_px(width, self.dpi)
-            - crate::renderer::hwpunit_to_px(left as i32 + right as i32, self.dpi)
-            - style.map_or(0.0, |style| style.margin_left + style.margin_right);
+        let available = crate::renderer::hwpunit_to_px(
+            metrics.width.saturating_sub(metrics.horizontal_padding),
+            self.dpi,
+        ) - style.map_or(0.0, |style| style.margin_left + style.margin_right);
         crate::renderer::composer::reflow_line_segs(
             para,
-            crate::renderer::composer::ParagraphBox::content_width_px(available.max(0.0), self.dpi),
+            crate::renderer::composer::ParagraphBox::content_width_px(available.max(0.0), self.dpi)
+                .with_line_wrap_squeeze(metrics.squeeze),
             &self.styles,
             self.dpi,
         );

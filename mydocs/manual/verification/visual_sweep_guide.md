@@ -23,12 +23,13 @@ collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공
 해결 불가능한 실제 글꼴 차이는 아래 [PR 제출 예외](#해결-불가능한-글꼴의-pr-제출-예외)로 90% 미만이어도 제출할 수 있다.
 쪽수·페이지 분할 변경은 전체 문서를 비교하며 평균값·높은 페이지 선별로 미달을 숨기지 않는다.
 기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
-**한컴 웹한글기안기의 PDF는 공식 대조 자료가 아니다.** 참고 자료의 점수를 공식 Visual Sweep
-판정·보호 TSV·회귀 기대값으로 사용하지 않는다. 같은 원본의 Windows 데스크톱 한컴에서
-**`Hancom PDF` 프린터로 인쇄(Print)**한 PDF를 확보하고 실제 제품·버전·프린터·출력 경로를
-확인한 뒤 비교한다. **`Microsoft Print to PDF` 출력은 공식 비교 자료로 사용하지 않는다.**
-[기준 PDF 출처 확인](../pr_review/visual_fixture_evidence.md#원-pr이-웹한글기안기-pdf를-기준으로-제시한-경우)을 따른다.
-MCP는 저장 제품에 따라 engine 2020/2024를 명시하고, 수동 출력도 PDF 저장/내보내기 대신 인쇄를 쓴다.
+공식 대조 자료는 같은 원본을 Windows 데스크톱 **한컴 2020 또는 2024의 `Hancom PDF`
+프린터로 인쇄(Print)**한 PDF만 사용한다. 실제 제품·버전·프린터·출력 경로를 확인한다.
+웹한글기안기, Cairo, `Microsoft Print to PDF`, PDF 저장·내보내기, 다른 한컴 버전의
+출력은 출처를 명시한 참고 자료로 활용한다.
+Cairo는 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022`는 MCP 2024로 다시
+인쇄한 후 전쪽을 비교한다.
+[기준 PDF 출처와 재출력](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)을 따른다.
 작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존한다.
 최종 제출용 TSV는 PR 본문에 전체 원문을 넣거나, 본문 크기 제한 시 원본 asset의 링크로 제출한다.
 아래 [본문 삽입·저장소 링크](#tsv-원문-본문-삽입과-저장소-링크)를 따른다. 실행 로그·중간 JSON은 Git에 커밋하지 않는다.
@@ -189,6 +190,12 @@ web package를 빌드해야 한다. API가 없는 과거 bundle은 검증을 중
 `--resume`으로 섞을 수 없다. 자세한 세대 근거는
 [CLI 조판 세대](../cli_commands.md#조판-세대---compat)를 따른다.
 
+직접 PNG 비교는 기준 PDF의 `Creator`가 `Hwp 2022`이고 `Producer`가
+`Hancom PDF`이면 고색수 불투명 PNG의 RGB555 변환을 자동 적용한다. 같은 원본을
+한컴 2020에서 인쇄하면 원래 RGB를 사용한 것이 확인됐다. 두 경우의 조판 세대는
+`--compat 2022`다. Native와 WASM에 같은 설정을 전달하며, 판단에 사용한 PDF
+메타데이터는 실행 기록에 보존한다.
+
 ### PDF 래스터의 물리 DPI와 출력 버퍼
 
 PDF 기준 PNG는 용지의 point 좌표에 양 축 동일한 `dpi/72` 행렬을 적용한다.
@@ -209,7 +216,10 @@ RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
 `silhouette_raw_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
-미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
+미달 쪽을 상쇄하지 않는다. 정확히 90%는 자동 검사 하한을 충족한다.
+제출 전에는 Native·fresh WASM 전쪽에서 조판·렌더링 차이를 98% 이상으로 보정하고, 가능한 쪽은
+100%까지 개선한다. 동일한 글꼴을 확보해 적용할 수 없어 그 차이만 남은 쪽은
+[페이지별 제출 판정](visual_verification_governance.md#페이지별-tsv와-pr-재검토-필수-조건)에 따라 근거를 기록한다.
 
 `re_review_required` 상태에서는 새 PR 생성과 열린 PR의 승인·통합을 보류한다.
 작성자는 원본·독립 한컴 Print PDF·overlay를 대조해 원인을 수정하고 새 head에서 다시 산출한다.
@@ -306,13 +316,14 @@ WASM은 같은 원문·PDF에 `--wasm-pkg pkg`와 검증한 `--rhwp-bin`을 명�
 
 TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며,
 `silhouette_raw_match_percent`, `silhouette_boundary_reconciled_pixels`를 뒤에 함께 기록한다.
-**90% gate·devel 대비 하락·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
+**90% gate·devel 대비 하락·98% 제출·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
+98% 제출 및 px 회귀 기준은 TSV에 표시된 소수 둘째 자리 값으로 판정하고 `98.00`부터 충족한다.
 `below_90`도 raw 기준이다. 첫 번째 점수 열의 색상 경계 보정값은 진단용이며 판정을 대신하지 않는다.
 TSV의 일치율은 소수점 셋째 자리에서 반올림해 둘째 자리까지 표시한다. `100.00`은 실제 값이
 정확히 100%라는 뜻이 아니며, `90.00`으로 표시된 쪽도 원래 값이 90% 미만이면 `below_90=1`이다.
 overlay의 일치율도 동일한 입력의 `silhouette_raw_match_percent`를 소수점 둘째 자리까지 표시한다.
 색상 경계 보정값은 overlay에 함께 표시하지 않으며 진단 지표에서 확인한다.
-정확한 점수와 90%·98%·100% 및 기준 대비 하락 판정에는 같은 실행의
+정확한 점수와 90% gate 및 일반 devel 대비 하락 판정에는 같은 실행의
 `silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
 단, collaborator·maintainer의 [정본 보호 TSV 비교](visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)는
 해당 정본이 지정한 공식 두 자리 표시값으로 상승·동일 여부를 판정한다. 일반 사용자·외부 contributor에게
@@ -337,6 +348,37 @@ raw도2px 이웃을 허용하며, RGB까지 동일해야 하는 엄격 픽셀 �
 문제가 있는 쪽은 일반 실행으로 review PNG를 생성해 직접 검토한다.
 실루엣 보조값만으로 PR 승인이나 회귀 fixture 적합성을 판정하지 않는다.
 
+### 같은 출력으로 다시 계산하거나 중단 후 재개하기
+
+| 단계 | 재사용할 때 대조할 입력·근거 |
+|---|---|
+| 기준 PDF 래스터 | 독립 Print PDF의 바이트와 쪽 번호, DPI, PDFium·래퍼·래스터 정책, 글꼴 등 실제 실행 조건. PDF가 같아도 다른 래스터 조건의 PNG는 새로 생성한다. |
+| rhwp 쪽 출력 | 원본과 연결 자원, 실행물 또는 WASM 패키지, 실제 backend·profile·런타임·공급 글꼴, 출력 설정과 쪽. 새 실행물은 다시 렌더링한다. |
+| PNG 비교 | 같은 쪽의 두 PNG 해시, 비교 구현·제외 영역·설정·이미지 디코딩 환경. 새 지표로 재채점할 때는 보관한 PNG로 새 출력 경로에 실행한다. |
+
+`--resume`은 같은 실행 조건에서 중단된 계산을 잇는다. 기존 `run_manifest.json`과
+쪽 체크포인트가 검사하는 범위는 경로마다 다르다. 특히 호스트에 암묵적으로 설치된 글꼴이나
+브라우저 환경까지 같다고 추정해 다른 머신의 체크포인트를 이식하지 않는다.
+`--png-pair`는 호출자가 지정한 이미지 쌍을 사용하므로 원본·기준 PDF의 대응과 쪽 범위는
+호출자가 확인한다. 이미지 디코딩 기록에는 Pillow 버전·네이티브 모듈 SHA-256과 zlib 버전도
+포함된다. 이전 형식의 체크포인트는 새 출력 경로에서 다시 계산한다.
+
+#### CI에서 얻은 이미지와 실행물
+
+GitHub Actions 결과를 참조할 때는 저장소, workflow, run ID, attempt, 실제 생산 job과
+검증한 Git tree를 고정한다. 빌드 기록으로 패키지와 해당 SHA를 연결하고 실제 실행물
+digest를 대조한다. PR의 head와 테스트에 사용한 임시 merge tree가 다를 수 있다.
+재실행으로 attempt가 바뀌면 artifact와 job의 소속을 다시 확인한다.
+
+예를 들어 [devel의 Frontend package gates](https://github.com/edwardkim/rhwp/actions/runs/44270213909/job/134684787521)가 올린
+`frontend-canvas-evidence`의 `browser-baseline-report.json`에는 8개 샘플의 0번 쪽을
+`screen`으로 캡처한 Canvas2D·CanvasKit 결과가 들어 있다. 개별 행에서
+`documentDigest`, `page`, `actualBackend`, `actualProfile`, surface·fallback 및 PNG
+SHA-256을 확인한다. 이 자료의 용도는 브라우저 backend 비교다. 독립 한컴 Print 충실도에는
+같은 원본·쪽에 대한 Print 출력과 정답 PDF가 필요하다.
+[문서 변경 PR의 CI](https://github.com/edwardkim/rhwp/actions/runs/44747381421)는 merge tree
+증거만 게시했다. 생략·실패·만료한 쪽이나 job은 미측정으로 취급한다.
+
 ### upstream devel 기준 TSV와 후보 TSV 비교
 
 위 Native/fresh WASM 명령을 기준 SHA의 producer와 후보 SHA의 producer로 각각 실행한다.
@@ -354,6 +396,8 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 일반 기여자의 비공개 원본 글꼴 보유 의무를 추가하지 않는다.
 다른 호스트의 수용 결과를 Mac에서 비교할 때는 누락된 기준 글꼴을 먼저 확보한다.
 환경 차이를 하락 허용 사유로 쓰거나 점수가 높은 대체 글꼴을 임의로 선택하지 않는다.
+중첩 표 `issue2007_nested_cell_pagination_42065.hwp`에는
+[한양중고딕 기호 공급 조건](#중첩-표-보호-문서의-한양중고딕-기호-공급)을 적용한다.
 
 1. 정본 manifest의 해당 데이터셋 `source.evidence_commit`에서 `condition_evidence`를 읽고
    기록된 SHA-256을 확인한다. 최신 작업 폴더의 같은 이름 JSON으로 대신하지 않는다.
@@ -472,6 +516,26 @@ TTF → TTC의 해당 face → OpenType 프로그램 순서로 수행하고, 원
 
 비공개 글꼴 바이너리는 제출하지 않는다. 검증용 공급 파일은 ignored output에 두고 출처와
 프로그램 대응 근거만 기록한다. 일반 기여자에게 비공개 원본 보유를 요구하는 규칙은 아니다.
+
+### 중첩 표 보호 문서의 한양중고딕 기호 공급
+
+[`issue2007_nested_cell_pagination_42065.hwp`](../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp)의
+`※`(U+203B)는 원본 기호 슬롯에 `한양중고딕`으로 지정되어 있다. 유사한 기호 모양이나 한컴 Print의
+Type 3 글꼴 이름으로 원본 글꼴을 추정하기 전에 원본의 문자 위치, 글자 모양, 기호 슬롯을 확인한다.
+
+Native와 fresh WASM 모두 기존 한양중고딕 OTF 공급을 유지하고, 그 프로그램에 빠진 기호는
+`H2GTRM.TTF`(`HY중고딕`, family `HYGothic-Medium`, PostScript `H2gtrM`)에서 공급한다.
+실제 파일의 이름과 U+203B의 cmap을 확인한 뒤, 개별 `--font-path`에 파일을 먼저 지정하고
+나머지 글꼴 디렉터리를 뒤에 지정한다.
+
+이 문서의 [이전 글꼴 환경](../../pr/assets/jinho-von-choi-20261114/font-supply/nested-symbol-slot-environment.json)을
+검증용으로 복사하고 `glyphFallbacks`의 `HY Junggothic`과 `한양중고딕` 항목을 각각
+`["HYGothic-Medium"]`으로 지정한다. 이전 환경과 당시 증적은 보존한다. 이 문서의 새 검증에는
+`RHWPIndependentHFTSymbols.otf`를 공급하지 않는다. 다른 문서의 글꼴 매핑은 각 원본과 독립 Print로 확인한다.
+
+[한컴 2020 Print](../../../pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf)와
+compat 2022, 96 DPI로 17쪽 전체를 비교한다. 5쪽의 `※` 세 곳을 직접 판독하고,
+고정 base와 후보에 같은 글꼴 조건을 적용해 전쪽 TSV와 기존 보호 하한을 대조한다.
 
 ### macOS 외부 연결 그림 공급
 
@@ -664,10 +728,10 @@ fidelity 원장을 함께 보존해야 한다.
 
 ```bash
 venv/bin/python scripts/visual_sweep.py \
-  --file-target reg80168 samples/80168_regulatory_analysis.hwp pdf/80168_regulatory_analysis-2022.pdf \
+  --file-target reg80168 samples/80168_regulatory_analysis.hwp pdf/80168_regulatory_analysis-hwp-2024.pdf \
   --rhwp-bin target/pr-review/debug/rhwp \
   --wasm-pkg /path/to/new-web-pkg \
-  --pages 21,49,75-77,108-109 --dpi 96 --out output/wasm-review
+  --pages 21,49,75-77,108-109 --compat 2024 --dpi 96 --out output/wasm-review
 ```
 
 직접 PNG 경로는 `--font-path`의 실제 name/weight/face-index를 읽어 Canvas가 요청한 family
@@ -775,9 +839,11 @@ mode와 해당 디렉터리의 폰트 파일 hash가 바뀌면 `--resume`은 이
 메트릭은 서로 다르므로 임의로 치환하지 않는다. base/후보와 Native/fresh WASM 모두 같은
 원본 프로그램·우선순위로 다시 출력하고, 글꼴 공급 전의 미달 결과와 구분해 기록한다.
 
+같은 원본을 한컴 2020 또는 2024의 `Hancom PDF` 프린터로 인쇄한 경로를 지정한다.
+
 ```bash
 venv/bin/python scripts/visual_sweep.py \
-  --file-target bold samples/issue2470/36382471_masked.hwpx pdf/issue2470/36382471_masked-2022.pdf \
+  --file-target bold samples/issue2470/36382471_masked.hwpx "${BOLD_PRINT_PDF:?기준 PDF 경로를 지정하세요}" \
   --rhwp-bin target/pr-review/release-test/rhwp --pages 1,2 \
   --embed-fonts=full --font-path /path/to/private/validated-font-subsets --out output/bold-review
 ```
@@ -833,13 +899,13 @@ Sweep은 Native/WASM의 선택 SVG를 캡처하거나 resume checkpoint를 재�
 # 같은 원본·독립 Print PDF를 네 작업자로 전쪽 비교
 python3 scripts/visual_sweep.py --silhouette-only --page-workers 4 \
   --rhwp-bin target/pr-review/release-test/rhwp --embed-fonts full \
-  --file-target kps samples/kps-ai.hwp pdf/kps-ai-2022.pdf \
+  --file-target kps samples/kps-ai.hwp "${KPS_PRINT_PDF:?한컴 2020 또는 2024 인쇄본을 지정하세요}" \
   --out output/pr-review/kps-four-workers
 
 # 메모리가 부족하거나 순차 결과와 비교할 때
 python3 scripts/visual_sweep.py --silhouette-only --page-workers 1 \
   --rhwp-bin target/pr-review/release-test/rhwp --embed-fonts full \
-  --file-target kps samples/kps-ai.hwp pdf/kps-ai-2022.pdf \
+  --file-target kps samples/kps-ai.hwp "${KPS_PRINT_PDF:?한컴 2020 또는 2024 인쇄본을 지정하세요}" \
   --out output/pr-review/kps-one-worker
 ```
 
@@ -854,6 +920,9 @@ WASM PNG와 SVG 캡처 작업자마다 Chrome 하나를 재사용하고 동시�
 사용하므로 가용 메모리가 부족하면 `--page-workers 2` 또는 `1`로 줄인다.
 
 #### 실제 문서의 순차·병렬 비교
+
+아래 기록은 당시 파일과 실행 조건으로 측정한 성능 자료다. 새 PR의 기준 PDF에는
+[한컴 2020·2024 인쇄 출처 확인 절차](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)를 적용한다.
 
 2026-10-14 직접 PNG 경로를 `samples/table-vpos-01.hwp`와 독립 Print
 `pdf/table-vpos-01-hwp-2020.pdf`의 전체5쪽·96dpi·같은 공급 글꼴로 비교했다.

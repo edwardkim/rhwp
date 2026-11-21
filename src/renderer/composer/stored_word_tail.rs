@@ -18,6 +18,21 @@ pub(crate) fn projects_current_marker_geometry(
             .is_some_and(|marker| marker.marker_visible)
 }
 
+/// 원본과 같은 가로 상자에서 고정 글머리표 칸과 저장 줄 높이가 일치한다.
+pub(crate) fn stored_fixed_bullet_keeps_rows(
+    para: &Paragraph,
+    box_: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    stored_rows_match_paragraph_box(para, box_)
+        && crate::renderer::layout::list_marker_geometry(para, styles).is_some_and(|marker| {
+            marker.uses_fixed_bullet_cell
+                && para.line_segs[0].line_height
+                    >= (marker.line_font_size_px * 7200.0 / dpi).round() as i32
+        })
+}
+
 /// 현재 번호·글머리표의 크기와 본문 시작을 공통 채움에 함께 반영한다.
 /// 줄 수가 같아도 마커 뒤의 문자 소속은 바뀔 수 있다. 가로 캐시만 갱신할
 /// 때에는 같은 높이의 원본 물리 줄 슬롯을 보존한다.
@@ -62,7 +77,9 @@ pub(crate) fn project_current_marker_geometry_rows_with_storage<S: crate::storag
         let minimum_height = (marker.line_font_size_px * 7200.0 / dpi).round() as i32;
         let first = para.line_segs.first()?;
         let marker_changes_height = first.line_height < minimum_height;
-        if !marker_changes_height && para.line_segs.len() < 2 {
+        // 문서가 글머리표 칸을 지정했고 그 높이도 이미 포함했다면
+        // 원래 가로 상자에서 저장한 줄 경계를 같은 칸으로 다시 계산할 이유가 없다.
+        if !marker_changes_height && (marker.uses_fixed_bullet_cell || para.line_segs.len() < 2) {
             return None;
         }
         let mut frame = box_.frame(first.vertical_pos);
@@ -72,8 +89,9 @@ pub(crate) fn project_current_marker_geometry_rows_with_storage<S: crate::storag
             ),
             failure,
         )??;
-        let changed_partition = rows.len() == para.line_segs.len()
-            && rows
+        let same_line_count = rows.len() == para.line_segs.len();
+        let changed_partition = !same_line_count
+            || rows
                 .iter()
                 .zip(&para.line_segs)
                 .any(|(fresh, stored)| fresh.text_start != stored.text_start);
@@ -88,10 +106,12 @@ pub(crate) fn project_current_marker_geometry_rows_with_storage<S: crate::storag
             }
             // 같은 수·높이의 슬롯에서 문자 경계만 새 마커 기하로 옮긴다.
             // 원본 프레임 원점과 명시적 쪽/단 경계를 재래핑의 부산물로 바꾸지 않는다.
-            for (fresh, stored) in rows.iter_mut().zip(&para.line_segs) {
-                let text_start = fresh.text_start;
-                *fresh = stored.clone();
-                fresh.text_start = text_start;
+            if same_line_count {
+                for (fresh, stored) in rows.iter_mut().zip(&para.line_segs) {
+                    let text_start = fresh.text_start;
+                    *fresh = stored.clone();
+                    fresh.text_start = text_start;
+                }
             }
         }
         if rows

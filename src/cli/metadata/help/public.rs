@@ -35,6 +35,7 @@ pub(super) fn print() {
     println!("      --font-style            @font-face local() 참조 삽입 (폰트 데이터 미포함)");
     println!("      --embed-fonts           폰트 서브셋 임베딩 (사용 글자만 base64)");
     println!("      --embed-fonts=full      폰트 전체 임베딩 (base64)");
+    println!("      --print-job-context <JSON> 자동 인쇄 바닥글용 파일명과 현지 시각");
     println!("      --font-path <경로>      폰트 파일 탐색 경로 (여러 번 지정 가능)");
     println!("      --json                  산출물 매니페스트를 JSON으로 stdout에 출력");
     println!();
@@ -61,6 +62,8 @@ pub(super) fn print() {
     println!("      --json                 stdout에 PNG 산출물·전체 쪽수 JSON만 출력");
     println!("      --metadata-only        PNG 없이 전체 쪽수 JSON만 출력");
     println!("      --render-tree-output <폴더> 같은 문서의 선택 쪽 render tree를 함께 저장");
+    println!("      --print-png-rgb555     Print의 불투명 PNG 압축에 RGB555 장치색을 적용");
+    println!("      --print-job-context <JSON> 자동 인쇄 바닥글용 파일명과 현지 시각");
     println!("      --font-environment <JSON> 조판/출력의 명시적 글꼴 환경 적용");
     println!("      -o, --output <폴더>     출력 폴더 (기본: output/)");
     println!("      -p, --page <번호>       선택 쪽 (0부터 시작, 여러 번 지정 가능)");

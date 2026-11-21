@@ -2170,7 +2170,15 @@ impl HeightMeasurer {
                 !self.session_edited && (self.is_native_hwp5 || self.hwpx_stored_layout),
             )
             .map(|hu| hwpunit_to_px(hu, self.dpi))
-            .unwrap_or(0.0);
+            .unwrap_or(0.0)
+            .max(
+                (!self.session_edited && (self.is_native_hwp5 || self.hwpx_stored_layout))
+                    .then(|| {
+                        crate::renderer::float_placement::cell_text_host_topbottom_stack(paragraphs)
+                    })
+                    .flatten()
+                    .map_or(0.0, |stack| hwpunit_to_px(stack.extent_hu, self.dpi)),
+            );
         // [Task #2226] 같은 문단에 TopAndBottom flow 개체가 있으면 첫 seg vpos 는
         // 개체에 밀려난 줄 위치라 문단 시작이 아니다 — para_top 을 사다리(이전
         // 문단 extent, 첫 문단 0)로 잡아야 개체 오프셋(문단 기준)과 원점이 맞는다.

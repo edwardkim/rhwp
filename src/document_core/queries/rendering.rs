@@ -1524,7 +1524,26 @@ impl DocumentCore {
         }
         // 앞쪽 Print 이력을 읽기 전에 요청한 쪽 자체의 범위를 확인한다.
         // 잘못된 요청의 오류를 중간 페이지 번호로 바꾸지 않는다.
-        self.find_page(page_num)?;
+        let (print_page, _, _) = self.find_page(page_num)?;
+        let print_footer = self
+            .print_job_context
+            .as_ref()
+            .filter(|_| profile == RenderProfile::Print && self.document.print_auto_footer())
+            .and_then(|job| {
+                let section = self.document.sections.get(print_page.section_index)?;
+                let layout = &print_page.layout;
+                let bottom_margin =
+                    f64::from(section.section_def.page_def.margin_bottom) * self.dpi / 7200.0;
+                Some(crate::paint::automatic_print_footer::AutomaticPrintFooter {
+                    file_name: job.file_name(),
+                    local_date_time: job.local_date_time(),
+                    page_number: print_page.page_number,
+                    page_count: self.page_count(),
+                    left: layout.body_area.x,
+                    right: layout.body_area.x + layout.body_area.width,
+                    bottom_margin_top: layout.page_height - bottom_margin,
+                })
+            });
         let _overflows = self.layout_engine.take_overflows();
         let idx = page_num as usize;
         // Print의 fill 이후 device CTM 정밀도는 문서 paint 순서의 상태다.
@@ -1744,12 +1763,13 @@ impl DocumentCore {
                 )
                 .with_metafile_device_pixel_width(metafile_pixel)
                 .with_hancom2024_print_bitmap(self.hangul2024_compat)
+                .with_print_png_rgb555(self.print_png_rgb555)
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch)
                 .with_prior_print_solid_fill(prior_print_solid_fill)
                 .with_hangul2024_print(hangul2024_print)
                 .with_print_crop_marks(self.document.print_crop_marks());
-            Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
+            Ok(builder.build_with_print_footer(tree, &embedded_fonts, print_footer))
         })?;
         let layer_tree = Arc::new(layer_tree);
         {
@@ -6870,6 +6890,19 @@ impl DocumentCore {
                     paragraph_index: cell_para_idx,
                 }
             }
+            Control::Shape(shape) if cell_idx == super::super::TABLE_CAPTION_CELL_SENTINEL => {
+                let valid = Self::shape_caption_ref(shape)
+                    .is_some_and(|caption| cell_para_idx < caption.paragraphs.len());
+                if !valid {
+                    return Err(HwpError::RenderError(format!(
+                        "render normalization shape-caption path mismatch: control={control_idx} para={cell_para_idx}"
+                    )));
+                }
+                RenderPathEntry::ShapeCaption {
+                    control_index: control_idx,
+                    paragraph_index: cell_para_idx,
+                }
+            }
             Control::Shape(shape) => {
                 let valid = super::super::helpers::get_textbox_at(shape, cell_idx)
                     .is_some_and(|textbox| cell_para_idx < textbox.paragraphs.len());
@@ -9915,6 +9948,8 @@ mod tests {
                     paragraphs: vec![Paragraph::default()],
                     ..Default::default()
                 }),
+                // 글상자와 캡션을 함께 가진 도형: 셀 0은 글상자, 셀 65534는 캡션이다.
+                caption: Some(caption()),
                 ..Default::default()
             },
             ..Default::default()
@@ -9954,6 +9989,14 @@ mod tests {
             .expect("shape textbox path");
         core.mark_render_normalization_path_dirty(0, 0, 2, 0, 0)
             .expect("picture caption path");
+        core.mark_render_normalization_path_dirty(
+            0,
+            0,
+            1,
+            crate::document_core::TABLE_CAPTION_CELL_SENTINEL,
+            0,
+        )
+        .expect("shape caption path");
 
         let entries = core
             .render_normalization
@@ -9988,6 +10031,13 @@ mod tests {
             entry,
             RenderPathEntry::PictureCaption {
                 control_index: 2,
+                paragraph_index: 0
+            }
+        )));
+        assert!(entries.iter().any(|entry| matches!(
+            entry,
+            RenderPathEntry::ShapeCaption {
+                control_index: 1,
                 paragraph_index: 0
             }
         )));

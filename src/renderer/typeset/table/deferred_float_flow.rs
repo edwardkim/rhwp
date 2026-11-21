@@ -195,19 +195,7 @@ impl TypesetEngine {
                 break;
             }
             if let Some(host_vpos) = host_stored {
-                if next.stored_text_partition_is_dirty()
-                    || next.line_segs.is_empty()
-                    || next.line_segs.iter().any(is_synthetic_line_seg)
-                {
-                    break;
-                }
-                let band_top = host_vpos.saturating_add(v_off);
-                let first = next.line_segs[0].vertical_pos;
-                let last = next.line_segs.last().expect("저장 줄");
-                // 저장 사다리가 이 문단을 host 뒤, 개체 띠 위에 두었을 때만 채운다.
-                if first <= host_vpos
-                    || last.vertical_pos.saturating_add(last.line_height) > band_top
-                {
+                if !stored_paragraph_fits_float_gap(next, host_vpos, v_off) {
                     break;
                 }
             } else if !crate::renderer::para_has_no_stored_line_segs(next)
@@ -289,4 +277,31 @@ impl TypesetEngine {
         st.mark_prefilled_paragraph(next_idx);
         true
     }
+}
+
+/// 저장 글줄 끝이 원본 호스트 뒤, 자리차지 표의 위끝 앞에 속하는지 확인한다.
+pub(in crate::renderer::typeset) fn stored_paragraph_fits_float_gap(
+    paragraph: &Paragraph,
+    host_vpos: i32,
+    offset: i32,
+) -> bool {
+    if !paragraph.controls.is_empty()
+        || paragraph.column_type != ColumnBreakType::None
+        || paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+        || paragraph.line_segs.iter().any(is_synthetic_line_seg)
+    {
+        return false;
+    }
+    paragraph
+        .line_segs
+        .first()
+        .zip(paragraph.line_segs.last())
+        .is_some_and(|(first, last)| {
+            first.vertical_pos > host_vpos
+                && !first.is_first_line_of_page()
+                && !first.is_first_line_of_column()
+                && last.vertical_pos.saturating_add(last.line_height)
+                    <= host_vpos.saturating_add(offset)
+        })
 }

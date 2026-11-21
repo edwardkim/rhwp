@@ -51,6 +51,11 @@ output/poc/**/*.tsv -whitespace
 .claude/skills/rhwp-visual-regression/fixtures/tsv/*.tsv -whitespace
 .claude/skills/rhwp-visual-regression/references/_gen_pack.py -whitespace
 
+# 원 PR #9208·#9218의 출력 증적은 CRLF 줄바꿈과 원래 바이트를 보존한다.
+mydocs/pr/assets/issue_547/*/online-search-rfp_silhouette.tsv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+mydocs/pr/assets/issue_614/*/issue614_silhouette.tsv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+mydocs/pr/assets/issue_614/*/wingdings_pua_symbols_silhouette.tsv -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+
 # 이 파일은 재현용 unified diff 자체다. 내부 hunk의 공백 문맥은 패치 문법이므로
 # Git의 일반 source-whitespace 검사를 적용하지 않는다.
 mydocs/report/task3798/trimcap_experiment.patch -whitespace

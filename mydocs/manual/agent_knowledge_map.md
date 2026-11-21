@@ -326,7 +326,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 `edit set-cell` 은 `oldText` 때문에 `untrustedContent:true`,
 `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 344개 필드
+### 2-2. 전수 사전 — 345개 필드
 
 `capabilities` 의 `recordFields` 고유 **334개**와 그 밖의 실측·참조 필드를 합친
 342개다. `등장 명령` 은 자기서술
@@ -765,6 +765,7 @@ Gym은 에이전트 능력 벤치마크다. 결과만으로 한컴 조판 동등
 | `backend` | string | PDF 백엔드(`svg`·`direct`) 또는 PNG 백엔드(`native-skia`) | `export-pdf`·`export-png` |
 | `comparisonProfile` | string | 출력 프로필(`screen`·`print`). 기본 screen, PDF 시각 비교는 print | `export-png` |
 | `layoutGeneration` | string | 적용한 한컴 호환 조판 세대(`2022`·`2024`) | `export-png` |
+| `printPngRgb555` | bool | `--print-png-rgb555`로 고색수 불투명 PNG에 인쇄 장치색 변환을 요청했는가 | `export-png` |
 | `mime` | string | 썸네일 MIME. **`.png` 로 저장해도 원본이 GIF 면 `image/gif`** (실측) | `thumbnail` |
 | `doclangVersion` | string | DocLang 판본 | `export-doclang` |
 | `assetsDir` / `assetCount` | string / number | 이진 자원 폴더와 개수 | `export-doclang` |

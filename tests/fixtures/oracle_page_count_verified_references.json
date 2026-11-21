@@ -46,6 +46,96 @@
       "pages": 1,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/issues7733_7738_20261117/input-audit.json"
+    },
+    {
+      "sample": "samples/rowbreak-problem-pages.hwpx",
+      "source_sha256": "4ccc321e7eb146f28b768654502a128ba1ae408238fd1ed37d51e963732eb5b0",
+      "pdf": "pdf/rowbreak-problem-pages-hwpx-2020.pdf",
+      "pdf_sha256": "e3dc7bb21707f92e42e83808023bf155f62475fc4eb0e0498709d03986c5afe5",
+      "pages": 18,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
+    },
+    {
+      "sample": "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
+      "source_sha256": "398d03a5d5e4d6e857086be532d6d9ed0cec9c8ad06f95c17bbb7f83056ae860",
+      "pdf": "pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf",
+      "pdf_sha256": "f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79",
+      "pages": 103,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp",
+      "source_sha256": "623b00d56beffc45d27c5bf23911bdc49d3a541ded8aecbb323d0716a2bc9f4e",
+      "pdf": "mydocs/pr/assets/issue7445/education-curriculum-map/current-source-hancom2020-print.pdf",
+      "pdf_sha256": "82fe8eefecbf3ad5176549976a8cd486ac0bb9c113e7ac34510a69ee6ccbf17f",
+      "pages": 415,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7739_7743_20261119/analysis.md"
+    },
+    {
+      "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "source_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "pages": 17,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/visual-protected-baseline/manifest.json"
+    },
+    {
+      "sample": "samples/task2146/21761835_jeonjik_exemption_table.hwp",
+      "source_sha256": "d8e7e38b206f6e53b7d2d260115396f8a0dd94bd8b712bbc4428dc11bf66e5dc",
+      "pdf": "pdf/task2146/21761835_jeonjik_exemption_table-hwp-print-2020.pdf",
+      "pdf_sha256": "95487e5a7f193da6f96e8a16e0aa4ff0a39a15673a8f5dee10a78a0491fc1eb1",
+      "pages": 6,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issue_7032/README.md"
+    },
+    {
+      "sample": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+      "source_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "pdf": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+      "pdf_sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+      "pages": 31,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+      "source_sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62",
+      "pdf": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+      "pdf_sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+      "pages": 31,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "source_sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e",
+      "pdf": "pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf",
+      "pdf_sha256": "b23d4836b9d1eb8dd9582e5541aeca34dfb54718d5829b21af4f7969085dd746",
+      "pages": 74,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "source_sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113",
+      "pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+      "pdf_sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+      "pages": 215,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "source_sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c",
+      "pdf": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+      "pdf_sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+      "pages": 215,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
     }
   ]
 }

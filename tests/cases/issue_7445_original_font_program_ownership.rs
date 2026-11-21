@@ -279,6 +279,51 @@ fn measured_original_glyph_survives_legacy_type1_display_fallback() {
 fn core_with_palatino_program() -> DocumentCore {
     core("Palatino Linotype", "A/A·", None)
 }
+
+#[test]
+fn explicit_display_fallback_can_preserve_verified_poppy_advances() {
+    // 관계형 검사. 한컴 2024 Print에서 굴림 하이픈은 HCI Poppy의 전진으로 찍혔다.
+    let mut document = core("HCI Poppy", "A-A", None);
+    let mut source = document.document().clone();
+    for fonts in &mut source.doc_info.font_faces {
+        for font in fonts {
+            font.subst_font = Some(rhwp::model::style::SubstFont {
+                face: "Palatino Linotype".into(),
+                font_type: 1,
+                ..Default::default()
+            });
+        }
+    }
+    document.set_document(source);
+    let original = document.export_hwpx_native().unwrap();
+    let declare_gulim = |document: &mut DocumentCore, preserve_source_metrics| {
+        let profile = serde_json::json!({
+            "id": "explicit-gulim-poppy-display",
+            "substitutions": {"HCI Poppy": "Gulim"},
+            "trueTypeFaces": ["Gulim"],
+            "preserveSourceMetrics": preserve_source_metrics
+        });
+        document
+            .set_font_environment(Some(
+                FontEnvironment::from_json(&profile.to_string()).unwrap(),
+            ))
+            .unwrap();
+    };
+
+    declare_gulim(&mut document, true);
+    let preserved = record(&document, "-");
+    assert_eq!(preserved["document"]["altType"], 1);
+    assert_eq!(preserved["layoutName"]["normalizedFace"], "Gulim");
+    assert_eq!(preserved["layoutMetric"]["aliasResolvedFace"], "HCI Poppy");
+
+    declare_gulim(&mut document, false);
+    let natural = record(&document, "-");
+    assert_eq!(natural["layoutName"]["normalizedFace"], "Gulim");
+    assert_eq!(natural["layoutMetric"]["aliasResolvedFace"], "Gulim");
+    assert!(advance(&preserved) < advance(&natural));
+    assert_eq!(document.export_hwpx_native().unwrap(), original);
+}
+
 #[test]
 fn explicit_true_type_program_keeps_its_own_slash_advance() {
     let mut core = core("HCI Poppy", "A/A·", None);

@@ -305,6 +305,8 @@ HWP/HWPX → SVG.
 - `--profile <프로필>` — layer 출력 프로필(공통 옵션 참조). 생략 시에도
   `render_page_svg_native`가 `RenderProfile::Screen`의 `PageLayerTree`를 직접 재생한다.
   인쇄 등가 산출물이 필요하면 `--profile print`(또는 `high-quality`)를 명시한다.
+  `--print-job-context <JSON 파일>`은 인쇄 프로필에서 문서의 자동 바닥글 설정을 재현한다.
+  JSON의 `fileName`에는 인쇄 작업의 파일명만, `printedAt`에는 시간대가 포함된 RFC 3339 일시를 넣는다.
   font style/embedding도 같은 screen layer tree를 소비하며, production routing은
   `RHWP_RENDER_PATH` 같은 환경변수로 legacy backend를 고르지 않는다.
   **제약**: `--font-style`/`--embed-fonts` 와 함께 사용할 수 없다(오류 종료).
@@ -324,6 +326,10 @@ HWP/HWPX → PNG(Skia raster, AI 파이프라인/VLM 연동). 상세: [export_pn
 - `--vlm-target <프리셋>` — claude / gpt4v-low / gpt4v-high(gpt4v) / gemini / qwen-vl(qwen) / llava
 - `--profile <프로필>` — **기본 `screen`**. 인쇄 비교에는 `--profile print`를 명시한다.
   Print에서는 편집 화면 안내문·미지정 그림 placeholder를 제외한다.
+- `--print-job-context <JSON 파일>` — `--profile print`에서 문서의 자동 바닥글을 재현한다.
+  인쇄 작업 정보의 JSON 형식은 위 SVG 명령과 같다.
+- `--print-png-rgb555` — `--profile print`에서 JPEG로 전달하는 고색수 불투명 PNG에
+  한컴 Print 장치의 RGB555 변환을 적용한다. 독립 인쇄에서 이 변환을 확인한 경우 지정한다.
 - `--compat 2022|2024` — 목표 한글 조판 세대. [조판 세대](#조판-세대-compat)
 
 > 네이티브 `gpu` 옵션과 `export-png-gpu`·`gpu-info` 명령은 제거되었습니다.

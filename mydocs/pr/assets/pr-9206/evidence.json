@@ -1,0 +1,34 @@
+{
+  "original_pr": 9206,
+  "original_head": "f12f4e7d847acc37c1b8f9257b709b4f110cd3cf",
+  "checked_pr_body_sha256": "b7b142c66e7f9b730fc01a0ec2700ff8b178e0f504006a2d9329d5b6c8ae3f82",
+  "base": "0a437a7eefb19bfe81fc12866887e4548ea9554d",
+  "candidate": "25f9587840d09b08af2b37be178ab93379a7b9dc",
+  "pages": [],
+  "pending": [],
+  "additional": [
+    {
+      "path": "mydocs/pr/assets/pr-9206/studio-production-spacing.png",
+      "sha256": "8749bbecb8c8c22e0d9cf2bdb7dea02a7c4177ec5c01908029bf5945e04450af",
+      "bytes": 78345
+    }
+  ],
+  "storage_result": {
+    "base_values": {
+      "prev": 750,
+      "next": 500,
+      "left": 2000
+    },
+    "candidate_values": {
+      "prev": 1500,
+      "next": 1000,
+      "left": 2000
+    },
+    "candidate_dialog": {
+      "above_pt": 5,
+      "below_pt": 0,
+      "left_pt": 20
+    },
+    "hancom_reopened_input_sha256": "0c0bce3fb9acafb543346d0f5e111e43111add566483d2070dad8e7640a35c6b"
+  }
+}

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import tempfile
@@ -51,6 +52,17 @@ class SilhouetteResumeTests(unittest.TestCase):
                 alias = root / 'alias.gif'
                 alias.symlink_to(first)
                 self.assertEqual(sweep.linked_image_records(root, [alias])[0]['name'], 'alias.gif')
+
+    def test_changed_pillow_runtime_rejects_scored_page(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            image = root / "page.png"
+            Image.new("RGB", (8, 8), "white").save(image)
+            pairs = [(1, image, image)]
+            sweep.write_silhouette_tsv(pairs, root / "out", "pair")
+            with patch.object(Image, "__version__", "different-build"):
+                with self.assertRaisesRegex(SystemExit, "계산 환경"):
+                    sweep.write_silhouette_tsv(pairs, root / "out", "pair", resume=True)
 
     def test_excluded_regions_are_part_of_resume_identity(self):
         with tempfile.TemporaryDirectory() as raw:
@@ -144,6 +156,8 @@ class SilhouetteResumeTests(unittest.TestCase):
                                                 None, resume=False, **kwargs)
                 result = render_silhouette_resumable(sweep, root, target, root / 'out', 'bin', 96, 32,
                                                      None, resume=True, **kwargs)
+            self.assertEqual(result['dpi'], 96)
+            self.assertEqual(result['tsv_sha256'], hashlib.sha256(Path(result['tsv']).read_bytes()).hexdigest())
             self.assertEqual(result['completed_pages'], [1, 2, 3])
             self.assertEqual(calls, [((1,), False), ((2, 3), False), ((1,), True), ((2, 3), False)])
             self.assertEqual(len((root / 'out/doc/silhouette.tsv').read_text().splitlines()), 4)

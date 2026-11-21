@@ -1516,6 +1516,29 @@ export class WasmBridge {
     return this.withPortableMetrics(() => d.renderPageSvgWithProfile!(pageNum, profile));
   }
 
+  withPrintJobContext<T>(operation: () => T): T {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      setPrintJobContext?: (json?: string) => void;
+    };
+    if (!doc.setPrintJobContext) return operation();
+    const time = new Date();
+    const offset = -time.getTimezoneOffset();
+    const digits = (value: number) => String(value).padStart(2, '0');
+    const local = new Date(time.getTime() + offset * 60_000).toISOString().slice(0, -1);
+    const zone = (offset < 0 ? '-' : '+') + digits(Math.floor(Math.abs(offset) / 60))
+      + ':' + digits(Math.abs(offset) % 60);
+    // 로드 경로와 편집기의 문서명은 유지하고 인쇄 바닥글에는 파일명만 넘긴다.
+    const leaf = this.fileName.split(/[/\\]/).pop()?.replace(/\p{Cc}/gu, '') ?? '';
+    const fileName = leaf.trim() ? Array.from(leaf).slice(0, 255).join('') : '문서.hwp';
+    doc.setPrintJobContext(JSON.stringify({ fileName, printedAt: local + zone }));
+    try {
+      return operation();
+    } finally {
+      doc.setPrintJobContext();
+    }
+  }
+
   getCursorRect(sec: number, para: number, charOffset: number): CursorRect {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCursorRect(sec, para, charOffset));
@@ -3290,14 +3313,64 @@ export class WasmBridge {
 
   // ─── 문단 서식 API ──────────────────────────────────────
 
-  getParaPropertiesAt(sec: number, para: number): ParaProperties {
-    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse(this.doc.getParaPropertiesAt(sec, para));
+  /** 구 WASM의 문단 조회값은 raw를 px로 바꾼 뒤 반올림한다. 단위 비트는
+   * 한글컨트롤의 원본 ParameterSet에서 읽고, 공개 조회 필드는 그대로 보존한다. */
+  private withLegacyParaSpacing(props: ParaProperties, listId: number, para: number): ParaProperties {
+    const doc = this.doc;
+    if (!doc || typeof doc.getParaShapeSet !== 'function') return props;
+    const { PrevSpacing, NextSpacing } = JSON.parse(doc.getParaShapeSet(listId, para));
+    if (!Number.isInteger(PrevSpacing) || !Number.isInteger(NextSpacing)) return props;
+    const usesChar = PrevSpacing % 2 !== 0 || NextSpacing % 2 !== 0;
+    const base = usesChar ? JSON.parse(doc.getStyleDetail(0)).charProps?.fontSize : undefined;
+    const charUnit = (base > 0 ? base : 1000) / 200;
+    const toPx = (raw: number) => {
+      const hu = raw % 2 === 0 ? raw / 2 : (raw - 1) / 2 * charUnit;
+      return hu / 75;
+    };
+    return {
+      ...props,
+      spacingBeforeRaw: PrevSpacing,
+      spacingAfterRaw: NextSpacing,
+      spacingBeforePx: toPx(PrevSpacing),
+      spacingAfterPx: toPx(NextSpacing),
+    };
   }
 
-  getCellParaPropertiesAt(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number): ParaProperties {
+  getParaPropertiesAt(sec: number, para: number, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse(this.doc.getCellParaPropertiesAt(sec, parentPara, controlIdx, cellIdx, cellParaIdx));
+    const props = JSON.parse(this.doc.getParaPropertiesAt(sec, para));
+    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
+    let rootPara = para;
+    for (let i = 0; i < sec; i++) rootPara += this.doc.getParagraphCount(i);
+    return this.withLegacyParaSpacing(props, 0, rootPara);
+  }
+
+  private legacyCellParaSpacing(props: ParaProperties, section: number, parentPara: number, path: CellPathEntry[]): ParaProperties {
+    const doc = this.doc;
+    if (!doc || typeof doc.getCursorModel !== 'function') return props;
+    const { lists } = JSON.parse(doc.getCursorModel()) as { lists: {
+      listId: number; sectionIndex: number; hostListId: number; hostPara: number;
+      controlIndex: number; cellIndex: number;
+    }[] };
+    let list = 0;
+    let para = parentPara;
+    for (const cell of path) {
+      const entry = lists.find(l => l.sectionIndex === section && l.hostListId === list &&
+        l.hostPara === para && l.controlIndex === cell.controlIndex && l.cellIndex === cell.cellIndex);
+      if (!entry) return props;
+      list = entry.listId;
+      para = cell.cellParaIndex;
+    }
+    return this.withLegacyParaSpacing(props, list, para);
+  }
+
+  getCellParaPropertiesAt(sec: number, parentPara: number, controlIdx: number, cellIdx: number, cellParaIdx: number, detail?: 'spacing'): ParaProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const props = JSON.parse(this.doc.getCellParaPropertiesAt(sec, parentPara, controlIdx, cellIdx, cellParaIdx));
+    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
+    return this.legacyCellParaSpacing(props, sec, parentPara, [
+      { controlIndex: controlIdx, cellIndex: cellIdx, cellParaIndex: cellParaIdx },
+    ]);
   }
 
   setNumberingRestart(sec: number, para: number, mode: number, startNum: number): string {
@@ -3305,9 +3378,11 @@ export class WasmBridge {
     return (this.doc as any).setNumberingRestart(sec, para, mode, startNum);
   }
 
-  getCellParaPropertiesAtByPath(sec: number, parentPara: number, pathJson: string): ParaProperties {
+  getCellParaPropertiesAtByPath(sec: number, parentPara: number, pathJson: string, detail?: 'spacing'): ParaProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse(this.doc.getCellParaPropertiesAtByPath(sec, parentPara, pathJson));
+    const props = JSON.parse(this.doc.getCellParaPropertiesAtByPath(sec, parentPara, pathJson));
+    if (detail !== 'spacing' || props.spacingBeforePx !== undefined) return props;
+    return this.legacyCellParaSpacing(props, sec, parentPara, JSON.parse(pathJson));
   }
 
   applyParaFormatInCellByPath(sec: number, parentPara: number, pathJson: string, propsJson: string): string {

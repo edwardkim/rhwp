@@ -1,0 +1,191 @@
+{
+  "studio_bundle": {
+    "head": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+    "package_wasm_sha256": "ee3461090090fc7dad9562bdf418a65094bce5988c5efbbbdc862bdaec7826a0",
+    "package_glue_sha256": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3",
+    "built_asset": "assets/rhwp_bg-DRG2y7E5.wasm",
+    "built_wasm_sha256": "ee3461090090fc7dad9562bdf418a65094bce5988c5efbbbdc862bdaec7826a0",
+    "consumers": [
+      "import-worker-eZNZKtdo.js",
+      "index-CYLHJAvz.js"
+    ]
+  },
+  "node_shape_caption": {
+    "results": [
+      {
+        "method": "exportHwp",
+        "save": 1,
+        "caption": "그림  검토 시작",
+        "cellIndex": 65534
+      },
+      {
+        "method": "exportHwp",
+        "save": 2,
+        "caption": "그림  검토 시작",
+        "cellIndex": 65534
+      },
+      {
+        "method": "exportHwpx",
+        "save": 1,
+        "caption": "그림  검토 시작",
+        "cellIndex": 65534
+      },
+      {
+        "method": "exportHwpx",
+        "save": 2,
+        "caption": "그림  검토 시작",
+        "cellIndex": 65534
+      }
+    ],
+    "initialHit": 65534
+  },
+  "browser_repeated_save": {
+    "before": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "after": [
+      3000,
+      2000,
+      20,
+      13.333333333333334
+    ],
+    "roundtrip": [
+      {
+        "format": "hwp",
+        "exports": [
+          {
+            "bytes": 13312,
+            "cellText": true,
+            "otherText": true,
+            "cellWrap": [
+              1,
+              0
+            ],
+            "spacing": [
+              3000,
+              2000
+            ],
+            "caretSameLine": true
+          },
+          {
+            "bytes": 13312,
+            "cellText": true,
+            "otherText": true,
+            "cellWrap": [
+              1,
+              0
+            ],
+            "spacing": [
+              3000,
+              2000
+            ],
+            "caretSameLine": true
+          }
+        ]
+      },
+      {
+        "format": "hwpx",
+        "exports": [
+          {
+            "bytes": 8111,
+            "cellText": true,
+            "otherText": true,
+            "cellWrap": [
+              1,
+              0
+            ],
+            "spacing": [
+              3000,
+              2000
+            ],
+            "caretSameLine": true
+          },
+          {
+            "bytes": 8111,
+            "cellText": true,
+            "otherText": true,
+            "cellWrap": [
+              1,
+              0
+            ],
+            "spacing": [
+              3000,
+              2000
+            ],
+            "caretSameLine": true
+          }
+        ]
+      }
+    ]
+  },
+  "browser_paragraph_format_copy": {
+    "sourceRaw": [
+      3000,
+      2000
+    ],
+    "beforePaste": [
+      [
+        0,
+        0
+      ],
+      [
+        800,
+        400
+      ]
+    ],
+    "afterPaste": [
+      [
+        3000,
+        2000
+      ],
+      [
+        800,
+        400
+      ]
+    ],
+    "stored": [
+      {
+        "format": "hwp",
+        "cellRaw": [
+          [
+            3000,
+            2000
+          ],
+          [
+            800,
+            400
+          ]
+        ]
+      },
+      {
+        "format": "hwpx",
+        "cellRaw": [
+          [
+            3000,
+            2000
+          ],
+          [
+            800,
+            400
+          ]
+        ]
+      }
+    ],
+    "undoRedo": "passed",
+    "producer": {
+      "rhwp.js": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3",
+      "rhwp_bg.wasm": "ee3461090090fc7dad9562bdf418a65094bce5988c5efbbbdc862bdaec7826a0"
+    }
+  },
+  "production_browser_initialization": {
+    "source": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+    "chrome": "Chrome/157.0.8103.80",
+    "initializedAssets": {
+      "assets/index-CYLHJAvz.js": "b561b2487e9009b10e7198f6adc8d66ee6985bfbaff44d56192d77fa1c032d63",
+      "assets/rhwp_bg-DRG2y7E5.wasm": "ee3461090090fc7dad9562bdf418a65094bce5988c5efbbbdc862bdaec7826a0"
+    }
+  }
+}

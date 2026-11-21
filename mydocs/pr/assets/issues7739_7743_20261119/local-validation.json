@@ -1,0 +1,110 @@
+{
+  "production_source": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
+  "verification_head": "32ace74e7295d26631492da204ebbd8863082b2a",
+  "platform": "macOS arm64",
+  "build_jobs": 8,
+  "test_threads": 8,
+  "regression_fonts": "RHWP_FONT_PATH 제거 및 시스템 글꼴만 노출한 별도 macOS sandbox 프로세스",
+  "checks": {
+    "focused-nextest": {
+      "exit": 0,
+      "log_sha256": "23589b16a2234ddca9ae184aa23be06d33288643fd82a56bfa4e3c798477f15e",
+      "summary": [
+        "Summary [  11.584s] 45 tests run: 45 passed, 13831 skipped"
+      ]
+    },
+    "final-overlap-retest": {
+      "exit": 0,
+      "log_sha256": "d8027b3c91f71573dc5a76291f6fc05ea8ae5cb25bf819b1a22aaebe9cbb3fdc",
+      "summary": [
+        "Summary [   0.723s] 2 tests run: 2 passed, 13874 skipped"
+      ]
+    },
+    "final-full-nextest": {
+      "exit": 0,
+      "log_sha256": "c99154050ebdef6391649285033aa281d1204352306e381d3c15f8389ecc59aa",
+      "summary": [
+        "Summary [ 575.959s] 13831 tests run: 13831 passed (2 slow), 45 skipped"
+      ]
+    },
+    "final-native-skia-lib": {
+      "exit": 0,
+      "log_sha256": "1745182faae0cc9eaf1768b4f8f9d1fc88a1f5130407a45f8b3a161d247b60f9",
+      "summary": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 15.03s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "final-native-skia-placeholder": {
+      "exit": 0,
+      "log_sha256": "c624f823dfc4002a11d6e2c7f1029e73a5edeb74d6a6d32e14d18d5e4455ae24",
+      "summary": [
+        "Summary [   3.726s] 2 tests run: 2 passed, 351 skipped"
+      ]
+    },
+    "final-native-skia-direct-pdf": {
+      "exit": 0,
+      "log_sha256": "3776b4b86991f56570bd729ace660f8234df65e2b0d4b93fd9f817439ff37039",
+      "summary": [
+        "Summary [   5.531s] 36 tests run: 36 passed, 321 skipped"
+      ]
+    },
+    "final-fmt": {
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "native-clippy": {
+      "exit": 0,
+      "log_sha256": "6ae6556182922da71dfe1739d5eb459fb64c22dbb20c441b1eca28faf5d533e0",
+      "summary": []
+    },
+    "wasm-clippy": {
+      "exit": 0,
+      "log_sha256": "6a8404bb4626deeb84340186b8357c2f30e79287c64a73cff184250bf1e3e656",
+      "summary": []
+    },
+    "workspace-build": {
+      "exit": 0,
+      "log_sha256": "32d5a9b1e598fd9df049399df4d2881d9a92165de9326a9525a2cd2c08d6b7ed",
+      "summary": []
+    },
+    "final-workspace-clippy": {
+      "exit": 0,
+      "log_sha256": "5fa44842812fa5d0b18c3cfe741f6a0c0ff7d65fbf27319397cece4098e0ca45",
+      "summary": []
+    },
+    "final-test-registry": {
+      "exit": 0,
+      "log_sha256": "b2d131c2bcbc1cbe3ec4fe44d4d1e1196940c47ca7e18dd95387e623adeecc99",
+      "summary": [
+        "[RustTestSuite] 확인 완료: 2439 sources / 10068 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2136081..2140420"
+      ]
+    },
+    "final-unit-tiers": {
+      "exit": 0,
+      "log_sha256": "b0d22c7e9e78b2de09250df5931d136093b5d2ad3c7474ab5c37aa9c3dc75ad0",
+      "summary": [
+        "[RustUnitTier] 확인 완료: 4094 tests / 295 modules / ready 0 / support 85 / white-box 4005 / cfg support items 28"
+      ]
+    }
+  },
+  "edit_save_reopen": {
+    "source": "education curriculum HWP",
+    "operation": "본문 첫 문단에 검증용 세 글자 삽입",
+    "steps": [
+      "HWP 편집·저장·재열기",
+      "HWP 재저장·재열기",
+      "HWP→HWPX 저장·재열기",
+      "HWPX 재저장·재열기"
+    ],
+    "pages": 415,
+    "edit_match_count": 1,
+    "hwp_resave_ir_diff": 0,
+    "hwpx_resave_ir_diff": 0,
+    "strike_attributes_preserved": 425,
+    "tracked_sample_changed": false
+  }
+}

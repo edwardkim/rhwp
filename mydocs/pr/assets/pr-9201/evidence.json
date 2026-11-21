@@ -1,0 +1,188 @@
+{
+  "original_pr": 9201,
+  "original_head": "77cd2377e562349ff4b0d4fbbf7f9ecf64b90a47",
+  "checked_pr_body_sha256": "9bc51665d2377067c1eff47e643f03a786dd01cc4022495f85edc7558ea1b574",
+  "base": "0a437a7eefb19bfe81fc12866887e4548ea9554d",
+  "candidate": "25f9587840d09b08af2b37be178ab93379a7b9dc",
+  "pages": [
+    {
+      "document": "shape-caption",
+      "backend": "native",
+      "page": 1,
+      "raw": "100.0",
+      "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+      "independent_hancom_print_sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698",
+      "candidate_png_sha256": "e41f8794526c5bb1512922cce6db39e37f87ec2cf32d494507226d454018de91",
+      "print_png_sha256": "9acf223e64f81530e2c58ee0cd3fe8c0b088e94fadab77369ae7df8cd95934f7",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/native/shape-caption.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "comparison_pages": 1,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "99.97171",
+      "visual_accuracy_proxy_percent": "75.55771",
+      "overlay_metrics_sha256": "33a08e085f7706b6b1b17b40d8477c5356c0125dd572cbbb3fe7d6201aacf6e4",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-native-001-review.png",
+        "sha256": "f37db3b9a3a748851ac8c89c74ebbafbdcd98669770541c04bf96e6851bc4462",
+        "bytes": 33680
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-native-001-overlay.png",
+        "sha256": "722a6eb79e79637130d1e6aec3c1dc1283f7cfd56d36124d737ad258d2ea329b",
+        "bytes": 22827
+      },
+      "base_tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/native/shape-caption-base.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "silhouette_raw_unmatched_pixels": 0
+    },
+    {
+      "document": "shape-caption",
+      "backend": "wasm",
+      "page": 1,
+      "raw": "100.0",
+      "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+      "independent_hancom_print_sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698",
+      "candidate_png_sha256": "91ffc38087927d1810e1746fa30aeda911888d55b7c8935724ea0b6d4cc99ab8",
+      "print_png_sha256": "9acf223e64f81530e2c58ee0cd3fe8c0b088e94fadab77369ae7df8cd95934f7",
+      "tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/wasm/shape-caption.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "comparison_pages": 1,
+      "pages_under_raw_90": 0,
+      "pixel_match_percent": "99.98406",
+      "visual_accuracy_proxy_percent": "85.99606",
+      "overlay_metrics_sha256": "955561f143affd1671a71a235d5a16a7c1d38ab63e17ed8536cd85b44cb75160",
+      "review": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-wasm-001-review.png",
+        "sha256": "bea6d5f88e54620cd329a012479c2773b6cbf39f86b9aff4633da39f5fc9bf95",
+        "bytes": 33889
+      },
+      "overlay": {
+        "path": "mydocs/pr/assets/pr-9201/shape-caption-wasm-001-overlay.png",
+        "sha256": "705661e7d1d6efdab0957c84b90187c9d6b813afef337fdbc7667bf24e459edd",
+        "bytes": 23195
+      },
+      "base_tsv": {
+        "path": "mydocs/pr/assets/pr-9201/tables/wasm/shape-caption-base.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+        "bytes": 132
+      },
+      "silhouette_raw_unmatched_pixels": 0
+    }
+  ],
+  "pending": [],
+  "additional": [
+    {
+      "path": "mydocs/pr/assets/pr-9201/caption-p001-enlarged.png",
+      "sha256": "c59dc8581db7c87833cc11cb084e2171e0bc54a0cffb2f50c176df49f69bd555",
+      "bytes": 12397
+    }
+  ],
+  "crop_at_96_dpi": [
+    0,
+    0,
+    122,
+    165
+  ],
+  "crop_scale": 4,
+  "measurement": {
+    "dpi": 96,
+    "comparison_radius_px": 2,
+    "reference": "Hancom Office 2020 Print 1-up",
+    "backends": [
+      {
+        "backend": "native",
+        "total_pages": 1,
+        "minimum_raw": "100.00000",
+        "base_display_raw": "100.00",
+        "runtime_sha256": {
+          "native": "60f8c1376ee939da6c10603b3e9a7ab4a146d37357e183ab10bef28a618445a9"
+        },
+        "product_source": "10d13c33fdec74ae7db84bc55803b33de1ebd7bc",
+        "manifest_sha256": "abb18ad7f0be89b947fa926f0b387f31c24f7d55606b4adf8729160695f47f9d"
+      },
+      {
+        "backend": "wasm",
+        "total_pages": 1,
+        "minimum_raw": "100.00000",
+        "base_display_raw": "100.00",
+        "runtime_sha256": {
+          "native": "60f8c1376ee939da6c10603b3e9a7ab4a146d37357e183ab10bef28a618445a9",
+          "rhwp.js": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3",
+          "rhwp_bg.wasm": "f7182dddcdff484acd08732dbf5437e1807e87b350988cfda82439db7b9907f9"
+        },
+        "product_source": "1421b5291544cb0123a0ffdcd172cd44a14e6d6e",
+        "manifest_sha256": "4f7b635a40016efc17ef23da4c5f2a81389e3ed52d4146c88014ed9805640398"
+      }
+    ],
+    "compat": "2022",
+    "wasm_build": "macOS locked wasm-pack --target web, wasm-opt 완료"
+  },
+  "storage_result": {
+    "base_exit": 1,
+    "base_error": "렌더링 오류: 셀 문단 접근 실패: sec=0, para=0, ctrl=2, cell=65534, cellPara=0",
+    "base_log_sha256": "ae5fb858e3afc9812c0cab07835a8c0679a347590a71aa71483a0fbb04b2e466",
+    "candidate_exit": 0,
+    "candidate_log_sha256": "c1ace61bd38d7cded854b3e66079977184c869f45111f2feed718a50b28581fd",
+    "candidate_checks": {
+      "results": [
+        {
+          "method": "exportHwp",
+          "save": 1,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        },
+        {
+          "method": "exportHwp",
+          "save": 2,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        },
+        {
+          "method": "exportHwpx",
+          "save": 1,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        },
+        {
+          "method": "exportHwpx",
+          "save": 2,
+          "caption": "그림  검토 시작",
+          "cellIndex": 65534
+        }
+      ],
+      "initialHit": 65534
+    }
+  },
+  "reference_pdf": {
+    "path": "pdf/pr-9201/shape-caption-edit-hancom-2020.pdf",
+    "sha256": "d75e1a6ea3b5a48c6d536ddb66caa41a9338e86dd8980f82d197293319040698",
+    "input_path": "tests/fixtures/shape_caption_cell_text/shape-caption-edit.hwp",
+    "input_sha256": "5f83b504382feeca9410756bdcbdbe0bc11531f0472054fdb64697a0f7ba533c",
+    "creator": "Hwp 2020 0.0.0.0",
+    "producer": "Hancom PDF 1.3.0.550",
+    "pdfinfo_page_count": 1,
+    "mcp": {
+      "job_id": "f349c426-fa88-4df9-bf6e-8b9c314ba66d",
+      "status": "success",
+      "engine": "2020",
+      "hancom_version": "11.0.0.9136",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+      "pdf_page_count": 1,
+      "input_preprocess": "scripts_disabled"
+    },
+    "superseded_reference": {
+      "producer": "cairo 1.18.0",
+      "sha256": "c4443e4a6ece6d78d43a23dd68c44c87c715bdf4d70a44cb75977c46f1e983b7"
+    }
+  }
+}

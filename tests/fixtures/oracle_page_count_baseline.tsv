@@ -24,6 +24,7 @@ samples/basic/Worldcup_FIFA2010_32.hwp	1	1
 samples/basic/calendar_year.hwp	1	1
 samples/basic/english.hwp	1	1
 samples/basic/interview.hwp	2	2
+samples/basic/issue2007_nested_cell_pagination_42065.hwp	17	17
 samples/basic/request.hwp	1	1
 samples/basic/shortcut.hwp	7	7
 samples/basic/sungeo.hwp	94	94
@@ -120,6 +121,7 @@ samples/hwp3-sample5.hwp	64	64
 samples/hwp_table_test-m.hwp	3	3
 samples/hwp_table_test.hwp	3	3
 samples/hwpctl_Action_Table__v1.1.hwp	16	16
+samples/hwpctl_ParameterSetID_Item_v1.2.hwp	74	74
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	9	9
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	9	9
 samples/hwpx/2024년 2분기 해외직접투자 보도자료ff.hwpx	9	9
@@ -209,6 +211,7 @@ samples/issue3587/d-pi2-import.hwpx	1	1
 samples/issue3587/d-pi4-import.hwp	1	1
 samples/issue3587/d-pi4-import.hwpx	1	1
 samples/issue3637/press_release_split_cell_nested_table.hwpx	12	12
+samples/issue3637/regulatory_impact_nested_table_escape.hwpx	31	31
 samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
@@ -335,6 +338,7 @@ samples/issue6037/원형대원형-계열추가-데이터추가.hwpx	1	1
 samples/issue6037/원형대원형-계열추가.hwp	1	1
 samples/issue6037/원형대원형-계열추가.hwpx	1	1
 samples/issue6111/56345_regulatory_impact_analysis.hwp	21	20
+samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx	31	31
 samples/issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	204	204
 samples/issue6929/148776468_search_ad_terms_press_release.hwp	17	18
 samples/issue6936/bold-faces.hwp	1	1
@@ -500,6 +504,7 @@ samples/task2098/page_bottom_fixed_anchor_margin_split.hwpx	1	1
 samples/task2098/page_bottom_fixed_anchor_vpos0.hwpx	1	1
 samples/task2136/neartop_reset_sb2500.hwpx	1	1
 samples/task2137/156618554_petfood_press.hwp	1	1
+samples/task2146/21761835_jeonjik_exemption_table.hwp	6	6
 samples/task2243/156631374_taxi_press.hwpx	1	1
 samples/task2243/36382819_gyeoljae_pm_traffic.hwpx	3	3
 samples/task2243/36386907_gyeoljae_sewoon.hwpx	5	5
@@ -517,7 +522,8 @@ samples/셀보호2.hwp	1	1
 samples/셀보호2.hwpx	1	1
 samples/수식-문자처럼취급-아님.hwp	1	1
 samples/수식-문자처럼취급-아님.hwpx	1	1
-samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	215	221
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp	215	215
+samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx	215	215
 samples/추진일정.hwp	1	1
 samples/추진일정.hwpx	1	1
 samples/통합재정통계(2010.11월).hwp	1	1
@@ -684,3 +690,5 @@ samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp	103	103
 samples/pr4093/outline_navigation_panel_demo.hwpx	3	3
 samples/pr4093/outline_navigation_table_cell_number.hwpx	1	1
 samples/한글문서파일형식_5.0_revision1.3.hwp	71	71
+mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp	415	415
+samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	103	103

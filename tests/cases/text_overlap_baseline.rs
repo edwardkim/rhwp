@@ -269,26 +269,16 @@ const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&str] = &[
     "issue5699/37787_regulatory_impact.hwp",
     // #7445: 전52쪽 최저39.97%, 렌더링 회귀는 전체 피델리티 개선 후 복원.
     "issue1853_caption_precedes_body_split.hwpx",
-    // #7445: 전74쪽 최저22.71%, 전체 피델리티 개선 후 회귀 복원.
-    "hwpctl_ParameterSetID_Item_v1.2.hwp",
     // #7445: pr-1674 HWP 전35쪽 최저54.09%, 렌더링 회귀 보류.
     "pr-1674.hwp",
     // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
     "hwpx/156160455-social-pig-farm-income.hwpx",
-    // #7445: 전31쪽 최저16.17%, 15쪽 본문 누락을 확인한 규제영향분석서.
-    "issue3637/regulatory_impact_nested_table_escape.hwpx",
-    // #7749: 위 원본과 SHA-256이 같은 80550 경로. 사용자 요청으로 렌더링 회귀를 이관한다.
-    "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
     // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
     "86712_regulatory_analysis.hwp",
     // #7445 동일 원문 피델리티 이관 및 사용자 지시: 렌더링 회귀에서 제외한다.
     "issue1891/86712_regulatory_analysis.hwpx",
-    "issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
     "issue1937_rowbreak_footnote_overpagination.hwp",
     "task1749/saved_bounds_cumulative_page_break.hwpx",
-    "rowbreak-problem-pages.hwpx",
-    "issue6795/1341000-201100013-cyber-university-application.hwp",
-    "task2319/20544835_jinan_apt_form.hwp",
 ];
 
 /// 확장자로 샘플을 재귀 수집해 루트 기준 상대 경로(슬래시)로 돌려준다.

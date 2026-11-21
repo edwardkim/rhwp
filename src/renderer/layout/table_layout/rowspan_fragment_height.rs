@@ -59,6 +59,9 @@ impl LayoutEngine {
         } else {
             row_heights.to_vec()
         };
+        let independent_opening_row = start_cut.is_empty()
+            && start_row_height_override.is_none()
+            && self.stored_ordinary_row_closes_content(table, cursor_row, styles);
         for row in cursor_row..row_heights.len() {
             // 부분 시작 행은 컷/override의 상자를 유지한다. 뒤 행 요구에도 그
             // 실제 상자를 사용하므로 호출자에서 제거할 보정을 여기에 선반영하지 않는다.
@@ -104,7 +107,16 @@ impl LayoutEngine {
                 adjusted_preceding_rows |= relief
                     .iter()
                     .any(|&(affected, _)| start.max(cursor_row) <= affected && affected < row);
-                let remaining = if let Some(before) = accepted {
+                let remaining = if row == cursor_row
+                    && start < row
+                    && independent_opening_row
+                    && previous.is_some_and(|carry| {
+                        self.accepted_text_span_exhausted(table, cell, carry, styles)
+                    }) {
+                    has_actual_owner = true;
+                    any_crossing = true;
+                    0.0
+                } else if let Some(before) = accepted {
                     has_actual_owner = true;
                     any_crossing |= before > 0.5;
                     required - before - actual_others

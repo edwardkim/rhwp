@@ -156,3 +156,21 @@ python tools/oracle_public/test_fatten_catalog.py
 
 cheap 스윕은 `rhwp dump-pages` 를 부르지 않는다. 한컴 PDF 쪽수와 파일
 크기만 잰다. 목표 줄 수는 산출물 실측이며, 주석으로 부풀리지 않는다.
+
+### 독립 Print 기록 대조
+
+저장소 루트에서 다음 명령으로 기존 resolver 후보와 지정한 Print 생성 기록을 대조한다.
+
+```sh
+python3 tools/oracle_public/audit_print_pairs.py --repo-root . \
+  --receipts mydocs/pr/assets/hyunmyungjanelee_20261112/mcp-print-reference/receipts.json \
+  --output output/oracle-print-audit.json
+```
+
+`pairs`는 기존 후보와 기록에 명시된 원본·PDF 경로 쌍의 합집합이다.
+`resolverCandidate`와 `resolverUnmatched`는 기존 resolver의 선택을 나타낸다.
+두 파일의 실제 SHA-256이 기록과 일치하고 지원하는 MCP Print 결과 또는 수동 Print
+확인 기록이 있을 때만 `verified`이다. `mismatch`는 기록과 현재 바이트가 다른 경우,
+`unavailable`은 확인할 파일에 접근할 수 없는 경우, `candidate`는 증거가 부족한 경우다.
+동일 경로 쌍의 중복 기록은 입력 오류로 처리한다. 수동 확인과 MCP 출력은 `print.kind`로
+구분한다. 기록에 없는 글꼴, 용지 조건이나 페이지별 시각 일치 여부는 이 도구로 판정할 수 없다.

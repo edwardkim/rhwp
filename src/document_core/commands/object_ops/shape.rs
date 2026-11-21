@@ -27,7 +27,7 @@ impl DocumentCore {
         }
     }
 
-    fn shape_caption_mut(shape: &mut ShapeObject) -> &mut Option<Caption> {
+    pub(crate) fn shape_caption_mut(shape: &mut ShapeObject) -> &mut Option<Caption> {
         match shape {
             ShapeObject::Line(s) => &mut s.drawing.caption,
             ShapeObject::Rectangle(s) => &mut s.drawing.caption,

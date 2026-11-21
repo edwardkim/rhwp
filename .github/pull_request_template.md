@@ -5,9 +5,10 @@
 > 검토 대상 commit에 입력 파일을 포함하고 본문에 SHA 고정 다운로드 링크를 적어주세요.
 > 기존 저장소 파일은 그 경로를 재사용합니다. 스크린샷·PDF·TSV·생성 코드만으로 대신할 수 없습니다.
 
-> **조판 변경: 전체 페이지 TSV에서 한 페이지라도 90% 미만이면 PR을 재검토하세요.**
-> 정확히 90%는 통과합니다. 미달·누락·측정 불가·전체 쪽수 불일치는 새 PR 생성과 열린 PR의
-> 승인·통합을 보류하고, 수정한 새 head에서 재검증합니다. 평균값·대표 페이지 점수로 대신하지 않습니다.
+> **조판 변경: 글꼴로 설명되지 않는 차이는 Native·fresh WASM 전쪽 98% 이상으로 보정한 뒤 제출하세요.**
+> TSV의 소수 둘째 자리 표시값으로 판정합니다. 가능한 쪽은 100%까지 개선합니다.
+> 미달·누락·측정 불가·전체 쪽수 불일치가 있으면 PR 생성·승인·통합을 보류하고 새 head에서 재검증합니다.
+> 평균값·대표 페이지 점수로 대신하지 않습니다.
 > [TSV 산출 명령](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#실루엣-보조값만-빠르게-tsv-산출)에 따라 전체 Native TSV·fresh WASM TSV와 대표 PNG를 제출합니다.
 > 최종 TSV 전체 원문을 본문에 넣을 수 있습니다. 본문 크기 제한 시 `mydocs/pr/assets/issue_<이슈번호>/<문서이름>_silhouette.tsv` 등에 원본을 커밋하고 정확한 head SHA의 raw 다운로드 링크로 제출합니다. Native/fresh WASM·base/후보를 구분합니다.
 > 해결 불가능한 실제 글꼴 차이는 [정식 예외 계약](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 증거와 판정이 필요합니다.
@@ -36,12 +37,12 @@ Refs #
 - [ ] Rust 변경 시: 범위에 해당하는 focused·전체 integration·Native Skia 회귀 및 시각 검증 수행
 - [ ] 저장 결과 영향 변경 시(리베이스 여부 무관): 실제 제품 경로에서 편집 → 저장 → 다시 열기 → 재저장 → 다시 열기로 변경 내용과 기존 내용·참조 보존을 확인하고, 지원 저장 형식·변경한 교차 저장 경로·중요 경계의 회귀 검사와 결과를 기록함 ([일반 기능·반복 저장 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#편집저장열기-기능과-반복-저장-검증)). 비해당이면 실제 소비 경로의 근거를 적음
 - [ ] 조판 영향 변경 시: 실제 검증할 HWP/HWPX를 검토 대상 commit에 포함하고 본문에 SHA 고정 다운로드 링크·재현 상태·대응 페이지를 기재함. 생성 입력도 HWP/HWPX로 저장해 제공하며 입력 미첨부 시 PR을 보류함
-- [ ] 조판 영향 여부를 실제 소비 경로로 판단했고, 영향이 있으면 Native/fresh WASM Visual Sweep·페이지별 TSV·직접 review/overlay 확인 완료 (한 페이지라도 **90% 미만** 또는 측정 불가이면 본인 branch에서 수정·재실행; 정확히 90%는 통과)
+- [ ] 조판 영향이 있으면 Native/fresh WASM 전쪽 TSV와 review/overlay를 확인함. 글꼴로 설명되지 않는 차이를 양쪽 모두 **전쪽 98% 이상**으로 보정했고 가능한 쪽은 100%까지 개선함. 동일한 글꼴을 확보해 적용할 수 없어 그 차이만 남은 쪽은 기준 및 실제 사용 글꼴·공급 시도·영향 쪽·확대 근거를 첨부함
 - [ ] 전체 Native/fresh WASM TSV 원문을 본문에 넣고 게시 후 API로 확인했거나, 본문 크기 제한 시 asset 원본의 SHA 고정 raw 링크를 넣고 다운로드 바이트·SHA-256이 생성 원본과 같은지 확인함 ([저장소 보존·링크 예시](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#tsv-원문-본문-삽입과-저장소-링크))
 - [ ] 렌더링 회귀 추가·변경 시: 같은 원본·독립 한컴 Print PDF의 관련 모든 페이지에서 Native/fresh WASM 최저 **90% 이상**을 먼저 확인했고, 절대 px 좌표·고정 px 영역 대신 문단·줄·개체의 소유·순서·보존·포함·겹침 관계를 검사함 (기존 회귀 실패 시 **원본 출력 보정 → 90% 이상 확인 → 필요한 검사 변경**; 글꼴 예외로 이 선행 조건을 면제하지 않음)
 - [ ] 90% 통과 후에도 변경 영역·알려진 차이·사용자 지적 영역을 독립 Print PDF와 Native/fresh WASM의 같은 배율로 확대 대조하여 수식 모양·장평·기준선·첨자·장식 및 관계 기호·본문·보기 번호·탭·줄 사이 간격을 확인했고, 점수와 직접 판독 결과를 별도로 기록함 ([확대 판독 절차](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/pr_review/visual_fixture_evidence.md#90-통과-후-수식간격의-확대-판독))
 - [ ] 90% 미만의 해결 불가능한 글꼴 문제로 제출한다면 [글꼴 예외 계약](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#해결-불가능한-글꼴의-pr-제출-예외)의 공급 시도·배치/쪽수 일치 근거와 `font_mismatch_exception` 기록 첨부 (TSV 원값 유지, 측정 누락·배치 결함은 면제하지 않음)
-- [ ] 기준 PDF는 원본 저장 버전에 맞는 한컴 **Print 인쇄 경로**로 출력했고, 제품/빌드·인쇄 설정·출처 확인 ([MCP 2020/2024 및 수동 출력 계약](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약))
+- [ ] 기준 PDF는 데스크톱 한컴 2020 또는 2024에서 **`Hancom PDF` 프린터로 인쇄**했으며, `pdfinfo`의 `Creator`·`Producer`·쪽수와 실제 인쇄 출처 확인. Cairo·2022 출력은 공식 비교에서 제외하며, 교체한 경우 새 출력 기록 첨부 ([MCP 2020/2024 및 수동 출력 계약](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약))
 - [ ] 새 integration test는 원본을 `tests/cases/*.rs`에만 추가했고 `tests/generated/`, `tests/suites/manifest.json`, 일반 PR의 Cargo generated test target을 포함하지 않음 (`--sync-cargo-targets` 메인터너 registry PR은 marker 블록만 예외)
 - [ ] `src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]` 변경 시: `node scripts/rust-unit-test-tiers.mjs --check --base-ref <검증한-PR-base-SHA>` 통과 (무생성 검사)
 - [ ] Studio 변경 시: [테스트 전용 unit 또는 fresh dev WASM package 검증](https://github.com/edwardkim/rhwp/blob/devel/CONTRIBUTING.md#프런트엔드-변경-검증) 통과, 브라우저 동작 변경 시 관련 E2E·실제 동작 확인 · 명령/결과:
@@ -116,16 +117,17 @@ push 뒤 raw 파일을 실제 다운로드해 원본 해시를 대조하고, PR 
 <!-- 입력마다 Native/fresh WASM 두 행을 반복합니다. 대표 이미지의 점수와 검증 범위 전체의 최저값을 구분하세요.
 검증 source SHA·Native binary/fresh WASM 해시·인쇄 프로필·글꼴 공급과 실제 빌드 옵션도 위 환경 정보에 적습니다. -->
 
-| 입력·기준 Print PDF | TSV 출력 경로 | 검증 페이지 범위/전체 쪽수 | 최저 일치율·페이지 | 90% 미만/누락/측정 불가 쪽 | 결과·증적 출처 |
+| 입력·기준 Print PDF | TSV 출력 경로 | 검증 페이지 범위/전체 쪽수 | 최저 일치율·페이지 | 98% 미만/누락/측정 불가 쪽 | 결과·증적 출처 |
 | --- | --- | --- | --- | --- | --- |
 | | Native | | | | |
 | | fresh WASM | | | | |
 
-<!-- 검증 범위의 한 페이지라도 90% 미만·누락·측정 불가이거나 필수 Native/fresh WASM 경로 미실행이면
-PR 생성·제출 갱신·검토 요청을 하지 않습니다. 시간 제약·기존 차이·부분 개선·추후 검증 등의 사유로 허용하지 않습니다.
+<!-- 글꼴로 설명되지 않는 98% 미만 쪽, 누락·측정 불가, 필수 Native/fresh WASM 경로 미실행이 있으면
+PR 생성·제출 갱신·검토 요청을 보류합니다. 시간 제약·기존 차이·부분 개선·추후 검증 등의 사유로 허용하지 않습니다.
 실패/미실행 사유는 제출 전 로컬 작업 기록이며 PR 제출 허가가 아닙니다. 자기 branch에서 수정·재실행해 통과한 뒤 본문을 완성합니다.
 평균값·높은 페이지 선별·단순 글꼴 차이 추정·CI 녹색으로 면제하지 않습니다. 쪽수/분할 변경은 전체 페이지를 비교합니다.
-공급으로 해결 불가능한 실제 글꼴 차이만 위 계약의 예외로 제출하고 근거·미달 쪽·최종 font_mismatch_exception을 명시합니다. -->
+동일한 글꼴을 확보해 적용할 수 없고 그 글꼴 차이가 유일한 원인이면 근거와 영향 쪽을 기록합니다.
+90% 미만이면 위 계약을 적용하고 최종 font_mismatch_exception을 명시합니다. -->
 <!-- PR #7697의 증적 구성처럼 대표 입력·페이지마다 아래 소제목/표/판독 묶음을 반복합니다.
 https://github.com/edwardkim/rhwp/pull/7697
 같은 입력·쪽의 Native/fresh WASM review/standalone overlay 네 이미지를 한 표에서 바로 대조하게 합니다.

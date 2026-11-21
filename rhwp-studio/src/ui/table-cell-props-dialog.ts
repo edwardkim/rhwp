@@ -1277,6 +1277,11 @@ export class TableCellPropsDialog extends ModalDialog {
     this.updateCellPaddingState();
     this.setButtonGroupActive(this.cellVAlignBtns, cp.verticalAlign);
     this.setButtonGroupActive(this.cellTextDirBtns, cp.textDirection);
+    const ih = this.services?.getInputHandler();
+    const path = ih?.isInTableObjectSelection() ? ih.getSelectedTableRef()?.cellPath : ih?.getCursorPosition().cellPath;
+    // 이 대화상자는 flat 셀 주소로 저장한다. 중첩 표의 바깥 셀에 적용하지 않는다.
+    this.cellSingleLineCheck.disabled = cp.lineWrap === undefined || (path?.length ?? 0) > 1;
+    this.cellSingleLineCheck.checked = cp.lineWrap === 1;
     this.cellHeaderCheck.checked = cp.isHeader;
     this.cellProtectCheck.checked = cp.cellProtect ?? false;
     this.cellFieldNameInput.value = cp.fieldName ?? '';
@@ -1375,6 +1380,9 @@ export class TableCellPropsDialog extends ModalDialog {
     if (activeVAlign >= 0) newCellProps.verticalAlign = activeVAlign;
     const activeTextDir = this.cellTextDirBtns.findIndex(b => b.classList.contains('active'));
     if (activeTextDir >= 0) newCellProps.textDirection = activeTextDir;
+    if (!this.cellSingleLineCheck.disabled && this.cellSingleLineCheck.checked !== (this.cellProps.lineWrap === 1)) {
+      newCellProps.lineWrap = this.cellSingleLineCheck.checked ? 1 : 0;
+    }
     newCellProps.isHeader = this.cellHeaderCheck.checked;
     newCellProps.cellProtect = this.cellProtectCheck.checked;
     newCellProps.fieldName = this.cellFieldNameInput.value;

@@ -1,5 +1,5 @@
 //! 관계형: 공개 웹폰트 변환과 Native 로컬 우선 공급 계약을 검사한다.
-//! 주석 갱신: 2026-11-17T09:40:53+09:00; 직전 파일 변경: d7dff4f8f3bb15ae431f98205b9d73f5ac471021 (2026-11-15T09:58:22+09:00).
+//! 주석 갱신: 2026-11-19T19:41:38+09:00; 직전 파일 변경: 1da7afbd64 (2026-11-17T09:57:29+09:00).
 //! 합성 글꼴 입력 검사이며 실물 페이지의 일치율이나 고정 px를 주장하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -196,7 +196,14 @@ fn local_face_wins_and_generic_fallback_does_not_claim_to_supply_the_unknown_ori
         supply.paths.is_empty(),
         "로컬 원본이 있으면 다운로드하지 않음"
     );
-    let unknown = document_with_face("RHWP Missing Font 8533");
+    // 일반 공급 계약은 유형 미상 원본으로 확인한다. TTF 선언·대체 없는 원본은 한컴 기본
+    // 대체(한컴바탕)가 설치된 host에서 그 face가 앞선다(planet6897/rhwp-issue-docs#547).
+    let mut unknown = document_with_face("RHWP Missing Font 8533");
+    let mut document = unknown.document().clone();
+    for face in document.doc_info.font_faces.iter_mut().flatten() {
+        face.alt_type = 0;
+    }
+    unknown.set_document(document);
     let generic = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("ttfs/opensource/NotoSansKR-Regular.ttf");
     let supply = prepare(&unknown.document().doc_info, &[generic]).unwrap();

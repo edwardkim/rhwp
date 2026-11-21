@@ -1576,20 +1576,20 @@ fn space_is_line_leading(text_chars: &[char], line_start: usize, space_idx: usiz
         .is_none_or(|before| before.iter().all(|c| *c == ' '))
 }
 
-/// 공백 하나를 condense 로 줄일 수 있는 폭. `space_width_hwp` 는 자간 **적용 전** 폭이다
-/// (`BreakToken::Space::condense_base`).
-fn condense_space_savings_hwp(space_width_hwp: i32, condense_min_space: u8) -> i32 {
-    if condense_min_space == 0 || space_width_hwp <= 0 {
-        return 0;
-    }
-    let shrink_percent = condense_min_space.min(75) as i32;
-    space_width_hwp * shrink_percent / 100
+/// 자간 적용 전 공백 폭에서 구한 압축 예산. 줄의 모든 공백을 합산하기 전에는
+/// HWPUNIT의 100분의 1까지 유지한다.
+fn condense_space_budget(space_width_hwp: i32, percent: u8) -> i64 {
+    i64::from(space_width_hwp.max(0)) * i64::from(percent.min(75))
+}
+
+pub(crate) fn whole_space_savings_hwp(budget: i64) -> i32 {
+    (budget / 100).clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
 }
 
 /// 실제 배치도 줄 수용과 같은 원본 HU 공백 예산을 소비한다.
-pub(crate) fn condense_space_savings_px(space_width_px: f64, percent: u8, dpi: f64) -> f64 {
+pub(crate) fn condense_space_budget_for_px(space_width_px: f64, percent: u8, dpi: f64) -> i64 {
     let source_width = to_hwp(space_width_px * crate::renderer::DEFAULT_DPI / dpi);
-    crate::renderer::hwpunit_to_px(condense_space_savings_hwp(source_width, percent), dpi)
+    condense_space_budget(source_width, percent)
 }
 
 fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
@@ -1906,6 +1906,37 @@ fn list_marker_breaker_box(
         .map_or((0.0, indent_px), |geometry| geometry.breaker_box(indent_px))
 }
 
+/// 현재 상자와 같은 저장 목록에서 별도 줄에 남은 마지막 음절은
+/// 문단 끝 음수 자간을 되돌린 실제 폭으로 흡수 여부를 판정한다.
+fn saved_marker_tail_owns_terminal_ink(
+    para: &Paragraph,
+    paragraph_box: &ParagraphBox,
+    styles: &ResolvedStyleSet,
+) -> bool {
+    if para.line_segs.len() < 2
+        || !para.controls.is_empty()
+        || para.stored_text_partition_is_dirty()
+        || para.text.contains(['\n', '\r'])
+        || super::stored_row_fragments::crosses_physical_frame(para)
+        || para
+            .line_segs
+            .iter()
+            .any(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        || !super::stored_word_tail::projects_current_marker_geometry(para, paragraph_box, styles)
+    {
+        return false;
+    }
+    let visible = para.text.trim_end();
+    visible
+        .char_indices()
+        .next_back()
+        .is_some_and(|(index, ch)| {
+            ('\u{ac00}'..='\u{d7a3}').contains(&ch)
+                && visible[..index].encode_utf16().count()
+                    == para.line_seg_text_start(para.line_segs.len() - 1) as usize
+        })
+}
+
 /// 토큰이 줄에 들어가는가 — 문단 `condense`(공백 최소값) 규칙 포함.
 ///
 /// [#7418] 한/글은 공백을 condense% 까지 줄여 **이미 시작한 낱말**의 글자를 더 담는다.
@@ -1922,14 +1953,14 @@ fn list_marker_breaker_box(
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
     token_width: FitWidthHwp,
-    space_savings_hwp: i32,
+    space_budget: i64,
     effective_width_hwp: i32,
     new_word_natural_before_hwp: Option<i32>,
 ) -> bool {
     text_token_fits_in_line_with_tolerance_hwp(
         current_width_hwp,
         token_width,
-        space_savings_hwp,
+        whole_space_savings_hwp(space_budget),
         effective_width_hwp,
         new_word_natural_before_hwp,
         line_break_tolerance_hwp(effective_width_hwp),
@@ -1971,19 +2002,21 @@ struct FillCursor {
     initial_start_idx: usize,
     line_start_idx: usize,
     lw: i32,
-    line_space_savings: i32,
+    line_condense_budget: i64,
     line_max_fs: f64,
     is_first_line: bool,
     last_break_token_idx: Option<usize>,
     last_break_char_idx: usize,
     width_at_last_break: i32,
-    space_savings_at_last_break: i32,
+    condense_budget_at_last_break: i64,
     fs_at_last_break: f64,
     /// [#7418] 마지막으로 소비한 토큰이 이 줄의 공백이면, 그 공백 묶음 직전까지의 자연폭.
     /// 다음 글자 토큰이 새 낱말을 시작하는지와 그때 줄이 자연폭 안인지를 판정한다.
     word_gap_natural_hwp: Option<i32>,
     /// 물리 프레임의 폭이 확정되면 추정 메트릭의 초과 허용을 얹지 않는다.
     allow_metric_tolerance: bool,
+    /// 문단 끝의 자동 줄바꿈은 마지막 글자의 끝 자간을 제외한 폭으로 판정한다.
+    fit_terminal_ink: bool,
     /// 등간격 탭 격자가 속한 단/셀 좌표계의 현재 줄 원점.
     tab_grid_origin_px: Option<f64>,
     finished: bool,
@@ -1998,16 +2031,17 @@ impl FillCursor {
             initial_start_idx,
             line_start_idx: initial_start_idx,
             lw: 0,
-            line_space_savings: 0,
+            line_condense_budget: 0,
             line_max_fs: 0.0,
             is_first_line: initial_is_first_line,
             last_break_token_idx: None,
             last_break_char_idx: 0,
             width_at_last_break: 0,
-            space_savings_at_last_break: 0,
+            condense_budget_at_last_break: 0,
             fs_at_last_break: 0.0,
             word_gap_natural_hwp: None,
             allow_metric_tolerance: true,
+            fit_terminal_ink: false,
             tab_grid_origin_px: None,
             finished: false,
             emitted_any: false,
@@ -2241,11 +2275,11 @@ fn fill_one_interval(
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Option<FilledInterval> {
     let allow_metric_tolerance = cursor.allow_metric_tolerance;
-    let fits_physical_line = |current, token, savings, width, word| {
+    let fits_physical_line = |current, token, space_budget, width, word| {
         text_token_fits_in_line_with_tolerance_hwp(
             current,
             token,
-            savings,
+            whole_space_savings_hwp(space_budget),
             width,
             word,
             if allow_metric_tolerance {
@@ -2345,7 +2379,7 @@ fn fill_one_interval(
                     && fits_physical_line(
                         cursor.lw,
                         FitWidthHwp(to_hwp(*width)),
-                        cursor.line_space_savings,
+                        cursor.line_condense_budget,
                         eff_w(cursor.is_first_line),
                         None,
                     )
@@ -2354,7 +2388,7 @@ fn fill_one_interval(
                     cursor.last_break_char_idx = *idx + 1;
                     // 전진은 0이다. 다음 줄로 넘길 때 표시 하이픈 폭을 빼지 않는다.
                     cursor.width_at_last_break = cursor.lw;
-                    cursor.space_savings_at_last_break = cursor.line_space_savings;
+                    cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                     cursor.fs_at_last_break = size;
                 }
                 cursor.line_max_fs = size;
@@ -2369,7 +2403,7 @@ fn fill_one_interval(
                 };
                 cursor.line_start_idx = *idx + 1;
                 cursor.lw = 0;
-                cursor.line_space_savings = 0;
+                cursor.line_condense_budget = 0;
                 cursor.line_max_fs = 0.0;
                 cursor.is_first_line = false;
                 cursor.last_break_token_idx = None;
@@ -2431,7 +2465,7 @@ fn fill_one_interval(
                     };
                     cursor.line_start_idx = end_idx;
                     cursor.lw = 0;
-                    cursor.line_space_savings = 0;
+                    cursor.line_condense_budget = 0;
                     cursor.line_max_fs = 0.0;
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
@@ -2457,7 +2491,7 @@ fn fill_one_interval(
                         };
                         cursor.line_start_idx = cursor.last_break_char_idx;
                         cursor.lw -= cursor.width_at_last_break;
-                        cursor.line_space_savings -= cursor.space_savings_at_last_break;
+                        cursor.line_condense_budget -= cursor.condense_budget_at_last_break;
                         result
                     } else {
                         let result = LineBreakResult {
@@ -2468,7 +2502,7 @@ fn fill_one_interval(
                         };
                         cursor.line_start_idx = *idx;
                         cursor.lw = 0;
-                        cursor.line_space_savings = 0;
+                        cursor.line_condense_budget = 0;
                         cursor.line_max_fs = *max_font_size;
                         result
                     };
@@ -2492,7 +2526,7 @@ fn fill_one_interval(
                 cursor.last_break_token_idx = Some(ti);
                 cursor.last_break_char_idx = *idx;
                 cursor.width_at_last_break = cursor.lw;
-                cursor.space_savings_at_last_break = cursor.line_space_savings;
+                cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                 cursor.fs_at_last_break = cursor.line_max_fs;
                 cursor.lw = next_tab_hwp;
                 cursor.token_index += 1;
@@ -2511,19 +2545,23 @@ fn fill_one_interval(
                 let space_hwp = to_hwp(*width);
                 // [#7418] 줄 맨 앞 공백은 condense 로 줄지 않는다.
                 let leading = space_is_line_leading(text_chars, cursor.line_start_idx, *idx);
-                let space_savings = if leading {
+                let space_budget = if leading {
                     0
                 } else {
-                    condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space)
+                    condense_space_budget(to_hwp(*condense_base), condense_min_space)
                 };
                 if let Some(cut) = overflowing_space_cut(
                     cursor.line_start_idx,
                     *idx,
                     cursor.lw + space_hwp,
-                    cursor.line_space_savings + space_savings,
+                    whole_space_savings_hwp(cursor.line_condense_budget + space_budget),
                     eff_w(cursor.is_first_line),
-                    (*inline_width > 0.0)
-                        .then(|| (cursor.lw + to_hwp(*inline_width), cursor.line_space_savings)),
+                    (*inline_width > 0.0).then(|| {
+                        (
+                            cursor.lw + to_hwp(*inline_width),
+                            whole_space_savings_hwp(cursor.line_condense_budget),
+                        )
+                    }),
                 )
                 .filter(|_| {
                     !first_interword_separator(tokens, ti, text_chars, cursor.line_start_idx)
@@ -2586,7 +2624,7 @@ fn fill_one_interval(
                     cursor.line_start_idx = cut;
                     cursor.lw = if absorbed { 0 } else { space_hwp };
                     // 넘어간 공백은 새 줄의 맨 앞 공백이다.
-                    cursor.line_space_savings = 0;
+                    cursor.line_condense_budget = 0;
                     cursor.line_max_fs = if absorbed { 0.0 } else { *max_font_size };
                     cursor.is_first_line = false;
                     cursor.last_break_token_idx = None;
@@ -2610,13 +2648,13 @@ fn fill_one_interval(
                 cursor.last_break_token_idx = Some(ti);
                 cursor.last_break_char_idx = *idx;
                 cursor.width_at_last_break = cursor.lw;
-                cursor.space_savings_at_last_break = cursor.line_space_savings;
+                cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                 cursor.fs_at_last_break = cursor.line_max_fs;
                 if cursor.word_gap_natural_hwp.is_none() && !leading {
                     cursor.word_gap_natural_hwp = Some(cursor.lw);
                 }
                 cursor.lw += space_hwp;
-                cursor.line_space_savings += space_savings;
+                cursor.line_condense_budget += space_budget;
                 cursor.token_index += 1;
             }
             BreakToken::Text {
@@ -2699,7 +2737,7 @@ fn fill_one_interval(
                     cursor.last_break_token_idx = Some(ti - 1);
                     cursor.last_break_char_idx = *start_idx;
                     cursor.width_at_last_break = cursor.lw;
-                    cursor.space_savings_at_last_break = cursor.line_space_savings;
+                    cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                     cursor.fs_at_last_break = cursor.line_max_fs;
                 }
                 if *max_font_size > cursor.line_max_fs {
@@ -2722,8 +2760,10 @@ fn fill_one_interval(
                         !matches!(token, BreakToken::Space { inline_width, .. } if *inline_width == 0.0)
                     })
                     .is_none_or(|token| matches!(token, BreakToken::LineBreak { .. }));
-                let w_hwp_fit = if at_written_line_end
-                    && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0
+                let terminal_tracking = at_written_line_end
+                    && fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx) < 0;
+                let w_hwp_fit = if terminal_tracking
+                    && !cursor.fit_terminal_ink
                     && cursor.lw + w_hwp
                         <= effective_width + line_break_tolerance_hwp(effective_width)
                 {
@@ -2739,7 +2779,7 @@ fn fill_one_interval(
                 let token_fits = fits_physical_line(
                     cursor.lw,
                     w_hwp_fit.with_pair_adjustment(pair_adjustment_hwp),
-                    cursor.line_space_savings,
+                    cursor.line_condense_budget,
                     effective_width,
                     new_word_natural,
                 );
@@ -2777,7 +2817,7 @@ fn fill_one_interval(
                         cursor.last_break_token_idx = Some(ti);
                         cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
                         cursor.width_at_last_break = cursor.lw + w_hwp; // 이 글자 폭 포함
-                        cursor.space_savings_at_last_break = cursor.line_space_savings;
+                        cursor.condense_budget_at_last_break = cursor.line_condense_budget;
                         cursor.fs_at_last_break = cursor.line_max_fs;
                     }
                 }
@@ -2806,12 +2846,8 @@ fn fill_one_interval(
                             }
                             cursor.line_start_idx = next_start;
                             cursor.lw = recalc_width_hwp(tokens, ti, next_start);
-                            cursor.line_space_savings = recalc_space_savings_hwp(
-                                tokens,
-                                ti,
-                                next_start,
-                                condense_min_space,
-                            );
+                            cursor.line_condense_budget =
+                                recalc_condense_budget(tokens, ti, next_start, condense_min_space);
                             cursor.line_max_fs = *max_font_size;
                             cursor.is_first_line = false;
                             cursor.last_break_token_idx = None;
@@ -2821,7 +2857,7 @@ fn fill_one_interval(
                             if detached_tail.is_some() || cursor.lw > eff_w(false) {
                                 cursor.token_index = first_token_at_or_after(tokens, next_start);
                                 cursor.lw = 0;
-                                cursor.line_space_savings = 0;
+                                cursor.line_condense_budget = 0;
                                 if let Some(BreakToken::Text { start_idx, .. }) =
                                     tokens.get(cursor.token_index)
                                 {
@@ -2868,7 +2904,7 @@ fn fill_one_interval(
                                         0
                                     },
                                 ),
-                                cursor.line_space_savings,
+                                cursor.line_condense_budget,
                                 eff_w(false),
                                 new_word_natural_before_hwp(tokens, ti, cursor.line_start_idx),
                             ) {
@@ -2881,7 +2917,7 @@ fn fill_one_interval(
                                 });
                             }
 
-                            cursor.line_space_savings = 0;
+                            cursor.line_condense_budget = 0;
                             cursor.last_break_token_idx = None;
                             cursor.fallback_char_idx = Some(*start_idx);
                             cursor.emitted_any = true;
@@ -2893,7 +2929,7 @@ fn fill_one_interval(
                     }
 
                     // 토큰에 저장된 개별 글자 폭을 HWPUNIT로 변환
-                    cursor.line_space_savings = 0;
+                    cursor.line_condense_budget = 0;
                     cursor.last_break_token_idx = None;
                     cursor.fallback_char_idx = Some(*start_idx);
                     continue;
@@ -2941,14 +2977,14 @@ fn fill_lines_before_cursor(
     let mut results = Vec::new();
     let mut line_start_idx = initial_start_idx;
     let mut lw = 0i32; // HWPUNIT 정수 누적
-    let mut line_space_savings = 0i32;
+    let mut line_condense_budget = 0i64;
     let mut line_max_fs = 0.0f64;
     let mut is_first_line = initial_is_first_line;
 
     let mut last_break_token_idx: Option<usize> = None;
     let mut last_break_char_idx: usize = 0;
     let mut width_at_last_break = 0i32;
-    let mut space_savings_at_last_break = 0i32;
+    let mut condense_budget_at_last_break = 0i64;
     let mut fs_at_last_break = 0.0f64;
 
     let eff_w = |first: bool| -> i32 {
@@ -2978,12 +3014,15 @@ fn fill_lines_before_cursor(
             } => {
                 line_max_fs = line_max_fs.max(*max_font_size);
                 if *idx > line_start_idx
-                    && lw + to_hwp(*width) - line_space_savings <= eff_w(is_first_line)
+                    && condensed_line_width_hwp(
+                        lw + to_hwp(*width),
+                        whole_space_savings_hwp(line_condense_budget),
+                    ) <= eff_w(is_first_line)
                 {
                     last_break_token_idx = Some(ti);
                     last_break_char_idx = *idx + 1;
                     width_at_last_break = lw;
-                    space_savings_at_last_break = line_space_savings;
+                    condense_budget_at_last_break = line_condense_budget;
                     fs_at_last_break = line_max_fs;
                 }
             }
@@ -2996,7 +3035,7 @@ fn fill_lines_before_cursor(
                 });
                 line_start_idx = *idx + 1;
                 lw = 0;
-                line_space_savings = 0;
+                line_condense_budget = 0;
                 line_max_fs = 0.0;
                 is_first_line = false;
                 last_break_token_idx = None;
@@ -3022,7 +3061,7 @@ fn fill_lines_before_cursor(
                         });
                         line_start_idx = last_break_char_idx;
                         lw = lw - width_at_last_break;
-                        line_space_savings -= space_savings_at_last_break;
+                        line_condense_budget -= condense_budget_at_last_break;
                     } else {
                         results.push(LineBreakResult {
                             start_idx: line_start_idx,
@@ -3032,7 +3071,7 @@ fn fill_lines_before_cursor(
                         });
                         line_start_idx = *idx;
                         lw = 0;
-                        line_space_savings = 0;
+                        line_condense_budget = 0;
                         line_max_fs = *max_font_size;
                     }
                     is_first_line = false;
@@ -3044,7 +3083,7 @@ fn fill_lines_before_cursor(
                     last_break_token_idx = Some(ti);
                     last_break_char_idx = *idx;
                     width_at_last_break = lw;
-                    space_savings_at_last_break = line_space_savings;
+                    condense_budget_at_last_break = line_condense_budget;
                     fs_at_last_break = line_max_fs;
                     lw = next_tab_hwp;
                 }
@@ -3062,13 +3101,13 @@ fn fill_lines_before_cursor(
                 last_break_token_idx = Some(ti);
                 last_break_char_idx = *idx;
                 width_at_last_break = lw;
-                space_savings_at_last_break = line_space_savings;
+                condense_budget_at_last_break = line_condense_budget;
                 fs_at_last_break = line_max_fs;
                 let space_hwp = to_hwp(*width);
                 lw += space_hwp;
                 if !space_is_line_leading(text_chars, line_start_idx, *idx) {
-                    line_space_savings +=
-                        condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
+                    line_condense_budget +=
+                        condense_space_budget(to_hwp(*condense_base), condense_min_space);
                 }
             }
             BreakToken::Text {
@@ -3088,7 +3127,7 @@ fn fill_lines_before_cursor(
                     last_break_token_idx = Some(ti - 1);
                     last_break_char_idx = *start_idx;
                     width_at_last_break = lw;
-                    space_savings_at_last_break = line_space_savings;
+                    condense_budget_at_last_break = line_condense_budget;
                     fs_at_last_break = line_max_fs;
                 }
                 if *max_font_size > line_max_fs {
@@ -3105,7 +3144,7 @@ fn fill_lines_before_cursor(
                 let token_fits = text_token_fits_line_hwp(
                     lw,
                     FitWidthHwp(w_hwp),
-                    line_space_savings,
+                    line_condense_budget,
                     effective_width,
                     new_word_natural,
                 );
@@ -3121,14 +3160,14 @@ fn fill_lines_before_cursor(
                         last_break_token_idx = Some(ti);
                         last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
                         width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
-                        space_savings_at_last_break = line_space_savings;
+                        condense_budget_at_last_break = line_condense_budget;
                         fs_at_last_break = line_max_fs;
                     }
                 }
                 if !text_token_fits_line_hwp(
                     lw,
                     FitWidthHwp(w_hwp),
-                    line_space_savings,
+                    line_condense_budget,
                     effective_width,
                     new_word_natural,
                 ) {
@@ -3146,12 +3185,8 @@ fn fill_lines_before_cursor(
                             }
                             line_start_idx = next_start;
                             lw = recalc_width_hwp(tokens, ti, next_start);
-                            line_space_savings = recalc_space_savings_hwp(
-                                tokens,
-                                ti,
-                                next_start,
-                                condense_min_space,
-                            );
+                            line_condense_budget =
+                                recalc_condense_budget(tokens, ti, next_start, condense_min_space);
                             line_max_fs = *max_font_size;
                             is_first_line = false;
                             last_break_token_idx = None;
@@ -3170,7 +3205,7 @@ fn fill_lines_before_cursor(
                             if text_token_fits_line_hwp(
                                 lw,
                                 FitWidthHwp(w_hwp),
-                                line_space_savings,
+                                line_condense_budget,
                                 eff_w(false),
                                 new_word_natural_before_hwp(tokens, ti, line_start_idx),
                             ) {
@@ -3198,7 +3233,7 @@ fn fill_lines_before_cursor(
                         is_first_line = false;
                     }
                     lw = remaining_w;
-                    line_space_savings = 0;
+                    line_condense_budget = 0;
                     line_max_fs = remaining_fs;
                     last_break_token_idx = None;
                     continue;
@@ -3262,14 +3297,14 @@ fn recalc_width_hwp(tokens: &[BreakToken], current_token_idx: usize, new_line_st
     w
 }
 
-/// 줄 바꿈 지점 이후 공백 압축 가능 폭 재계산 (HWPUNIT)
-fn recalc_space_savings_hwp(
+/// 이월된 줄의 공백 압축 예산을 다시 모은다 (HWPUNIT의 100분의 1).
+fn recalc_condense_budget(
     tokens: &[BreakToken],
     current_token_idx: usize,
     new_line_start: usize,
     condense_min_space: u8,
-) -> i32 {
-    let mut w = 0i32;
+) -> i64 {
+    let mut budget = 0i64;
     // [#7418] 줄 맨 앞 공백(첫 글자 토큰 앞)은 줄지 않는다.
     let mut line_has_text = false;
     for t in &tokens[..current_token_idx] {
@@ -3277,7 +3312,7 @@ fn recalc_space_savings_hwp(
             BreakToken::Space {
                 idx, condense_base, ..
             } if *idx >= new_line_start && line_has_text => {
-                w += condense_space_savings_hwp(to_hwp(*condense_base), condense_min_space);
+                budget += condense_space_budget(to_hwp(*condense_base), condense_min_space);
             }
             BreakToken::Text { start_idx, .. } if *start_idx >= new_line_start => {
                 line_has_text = true;
@@ -3285,7 +3320,7 @@ fn recalc_space_savings_hwp(
             _ => {}
         }
     }
-    w
+    budget
 }
 
 /// 뒤 ASCII 낱말이 한 줄을 넘을 때 끊는 자리 토큰 끝의 줄머리 금칙 묶음 앞에서 줄을 끝낼
@@ -3525,6 +3560,36 @@ fn floating_anchor_font_size_px(
         .filter(|(pos, _)| range.contains(pos) || (is_last_line && *pos == text_len))
         .map(|(_, fs)| *fs)
         .fold(0.0, f64::max)
+}
+
+/// 머리말·꼬리말의 내용은 별도 영역에 그리지만 원본의 제어문자는 자신을
+/// 포함하는 본문 줄의 글자 높이에 참여한다.
+fn header_footer_anchor_font_sizes<S: Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+) -> Result<Vec<(usize, f64)>, S::Error> {
+    let is_header_footer =
+        |control: &Control| matches!(control, Control::Header(_) | Control::Footer(_));
+    if !para.controls.iter().any(is_header_footer) {
+        return Ok(Vec::new());
+    }
+    let positions = para.try_control_text_positions(storage)?;
+    let offsets = para.control_utf16_positions_with_storage(storage)?;
+    storage.collect(
+        para.controls
+            .iter()
+            .zip(positions)
+            .zip(offsets)
+            .filter(|((control, _), _)| is_header_footer(control))
+            .filter_map(|((_, position), offset)| {
+                let id = find_active_char_shape(&para.char_shapes, offset);
+                styles
+                    .char_styles
+                    .get(id as usize)
+                    .map(|style| (position, style.font_size))
+            }),
+    )
 }
 
 /// [#8167] 글자처럼 취급한 도형이 줄에서 차지하는 상자(HU) — 도형 크기에 바깥 여백을 더한다.
@@ -4735,7 +4800,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
     // [#7160] 저장 줄이 없는 글자처럼 취급 표 host 는 이 채움이 유일한 소유자다.
     let supported = match purpose {
-        FramePurpose::Body => {
+        FramePurpose::Body | FramePurpose::StoredMarkerTailReflow => {
             supports_picture_band_frame_controls(para)
                 || supports_cached_body_frame_controls(para)
                 || supports_inline_form_frame_controls(para)
@@ -4957,6 +5022,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 글자 토큰은 크기 0 을 대체 크기(12px)로 세므로, 모든 글자가 크기 0 인 문단은
     // 줄의 글자 높이를 0 으로 되돌린다(한컴: 이 문단은 줄간격 설정만 남는다).
     let zero_size_paragraph = explicit_zero_size_paragraph(para, styles);
+    let header_footer_anchors = header_footer_anchor_font_sizes(para, styles, storage)?;
     let fallback_font_size = if para.text.is_empty() {
         para.char_shapes
             .first()
@@ -5011,6 +5077,23 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     let first_row = frame.row_count();
     let frame_checkpoint = frame.try_append_checkpoint(storage)?;
     let mut cursor = FillCursor::replay_from_boundary(&tokens, start_char, start_char == 0);
+    // 확정된 상자에서 저장 줄 없이 자동 조판한 문단은 마지막 음절까지
+    // 실제 글자 폭으로 담는다. 한컴 2024 인쇄의 본문과 표 칸에서 동일하다.
+    // 폭을 소비하지 않는 표식은 본문과 같은 폭을 쓴다. 명시 개행·필드 값·개체에는
+    // 종전의 끝 전진 계약을 적용한다.
+    let unsegmented_plain_paragraph = para.line_segs.is_empty()
+        && para.layout_field_values.is_empty()
+        && para.controls.iter().all(control_is_width_neutral_marker)
+        && !para.text.contains(['\n', '\r']);
+    cursor.fit_terminal_ink = unsegmented_plain_paragraph
+        || (start_char == 0
+            && !frame.models_exclusions()
+            && (purpose == FramePurpose::StoredMarkerTailReflow
+                || saved_marker_tail_owns_terminal_ink(
+                    para,
+                    &ParagraphBox::content(frame.horizontal.clone()),
+                    styles,
+                )));
     // 확정된 물리 구간은 원본 격자 폭 자체가 경계다. 추정 여유를 더하면
     // 4 HU 격자로 내린 칸에도 26 HU 초과 글자가 들어가 격자 계약이 무효화된다.
     cursor.allow_metric_tolerance = false;
@@ -5068,10 +5151,11 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                     .flatten();
                 let mut row_terminated = false;
                 // "한 줄로 입력" 문단은 글이 구간 폭을 넘어도 줄을 나누지 않는다.
-                let line_wrap_squeeze = styles
-                    .para_styles
-                    .get(para.para_shape_id as usize)
-                    .is_some_and(|style| style.line_wrap_squeeze);
+                let line_wrap_squeeze = frame.line_wrap_squeeze
+                    || styles
+                        .para_styles
+                        .get(para.para_shape_id as usize)
+                        .is_some_and(|style| style.line_wrap_squeeze);
                 let interval_width = |index: usize, interval: &std::ops::Range<i32>| {
                     if line_wrap_squeeze {
                         return UNBROKEN_LINE_WIDTH_PX;
@@ -5146,6 +5230,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                             cursor.is_first_line,
                         );
                         replay.allow_metric_tolerance = false;
+                        replay.fit_terminal_ink = cursor.fit_terminal_ink;
                         replay.tab_grid_origin_px = Some(tab_grid_origin_px);
                         let filled = fill_one_interval(
                             terminal_tokens,
@@ -5191,6 +5276,12 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
                     if !zero_size_paragraph {
                         maximum_font_size = maximum_font_size.max(line.max_font_size);
                     }
+                    maximum_font_size = maximum_font_size.max(floating_anchor_font_size_px(
+                        &header_footer_anchors,
+                        line.start_idx..line.end_idx,
+                        filled.termination == FillTermination::ParagraphEnd,
+                        text_chars.len(),
+                    ));
                     if filled.termination == FillTermination::ParagraphEnd {
                         maximum_font_size = maximum_font_size.max(paragraph_end_font_size);
                     }
@@ -5700,9 +5791,31 @@ pub(crate) fn resolve_stored_line_segs_in_frame_with_storage<S: crate::storage::
             // A rejected row cannot remain the provenance template for fresh rows:
             // placement/empty flags describe the stored physical rows, not this
             // frame's newly carved projection.
+            // 같은 목록 상자의 마지막 자동 줄이라는 증거는 행 플래그와 별개다.
+            // 캐시를 지우기 전에 폭 판정에 필요한 이 사실만 보존해, 탐색과
+            // 실제 발행이 같은 글줄 경계를 사용하도록 한다.
+            let purpose = if !frame.models_exclusions()
+                && saved_marker_tail_owns_terminal_ink(
+                    para,
+                    &ParagraphBox::content(frame.horizontal.clone()),
+                    styles,
+                ) {
+                FramePurpose::StoredMarkerTailReflow
+            } else {
+                FramePurpose::Body
+            };
             reflow_input.line_segs.clear();
-            layout_paragraph_in_frame_with_storage(&reflow_input, frame, styles, dpi, storage)?
-                .map(|_| StoredRowResolution::Reflowed)
+            try_layout_paragraph_in_frame_impl(
+                &reflow_input,
+                frame,
+                styles,
+                dpi,
+                true,
+                FrameStart::Scalar(0),
+                purpose,
+                storage,
+            )?
+            .map(|_| StoredRowResolution::Reflowed)
         })
     })();
     if resolved.is_err() {
@@ -6193,19 +6306,34 @@ fn reflow_line_segs_impl(
     split_stale_cell_reflow: bool,
     object_line_font_basis: bool,
 ) -> bool {
-    match try_reflow_line_segs_impl(
+    // 한 줄 셀을 편집하면 기존 줄의 소유권도 끝난다. 재생성된 줄은
+    // 저장 후에도 원본 한컴 줄에만 적용하는 자간 판정으로 돌아가지 않는다.
+    let edited_squeeze = paragraph_box.is_usable()
+        && paragraph_box.line_wrap_squeeze()
+        && (preserve_prefix_for_edit.is_some() || para.stored_text_partition_is_dirty());
+    let preserved = match try_reflow_line_segs_impl(
         para,
         paragraph_box,
         styles,
         dpi,
-        preserve_prefix_for_edit,
+        if edited_squeeze {
+            None
+        } else {
+            preserve_prefix_for_edit
+        },
         split_stale_cell_reflow,
         object_line_font_basis,
         &Unbounded,
     ) {
         Ok(result) => result,
         Err(never) => match never {},
+    };
+    if edited_squeeze {
+        for line in &mut para.line_segs {
+            line.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        }
     }
+    preserved
 }
 
 pub(crate) fn try_reflow_line_segs<S: Storage>(
@@ -6284,7 +6412,8 @@ fn try_reflow_line_segs_impl<S: Storage>(
     let (marker_hang_px, indent_px) = list_marker_breaker_box(para, styles, indent_px);
     let available_width_px = (paragraph_box.width_px(dpi) - marker_hang_px).max(1.0);
     // "한 줄로 입력" 문단은 글이 폭을 넘어도 줄을 나누지 않는다.
-    let line_wrap_squeeze = para_style.is_some_and(|style| style.line_wrap_squeeze);
+    let line_wrap_squeeze = paragraph_box.line_wrap_squeeze()
+        || para_style.is_some_and(|style| style.line_wrap_squeeze);
     let available_width_px = if line_wrap_squeeze {
         UNBROKEN_LINE_WIDTH_PX
     } else {
@@ -6829,6 +6958,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
             })
             .flatten();
     let floating_anchors = floating_anchor_char_font_sizes_with_storage(para, styles, storage)?;
+    let header_footer_anchors = header_footer_anchor_font_sizes(para, styles, storage)?;
     let preserved_prefix_len = preserved_prefix.len();
     let mut new_line_segs: Vec<LineSeg> = preserved_prefix;
     for (line_idx, lb) in line_breaks.iter().enumerate() {
@@ -6843,6 +6973,10 @@ fn try_reflow_line_segs_impl<S: Storage>(
         };
         let fs = if lb.max_font_size > 0.0 && !zero_size_paragraph {
             lb.max_font_size
+        } else if lb.start_idx == text_len && text_chars.last() == Some(&'\n') {
+            // 강제 개행 뒤의 빈 줄은 문단 끝 문자의 크기를 쓴다. 앞 줄의
+            // 가시 글자나 구조 제어문자의 크기를 문단 최대값으로 물려받지 않는다.
+            paragraph_end_font_size_px(para, styles)
         } else {
             paragraph_font_size_px(para, styles).unwrap_or(12.0)
         };
@@ -6851,6 +6985,12 @@ fn try_reflow_line_segs_impl<S: Storage>(
             &floating_anchors,
             lb.start_idx..lb.end_idx,
             lb.end_idx == text_len,
+            text_len,
+        ));
+        let fs = fs.max(floating_anchor_font_size_px(
+            &header_footer_anchors,
+            lb.start_idx..lb.end_idx,
+            line_idx + 1 == line_breaks.len(),
             text_len,
         ));
         let fs = if line_idx + 1 == line_breaks.len() {

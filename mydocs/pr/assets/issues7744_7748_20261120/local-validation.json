@@ -1,0 +1,116 @@
+{
+  "product_source": "72ae15825b9a8bdcf21099099a7d19ce94e30aab",
+  "regression_source": "7227851d657a60d14a5ae3b284b960a1cf9d9e9a",
+  "target_dir": "target/pr-review",
+  "minimal_font_programs": [
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "rust": {
+    "focused": {
+      "command": "cargo nextest run --locked --cargo-profile release-test --tests --no-fail-fast -E <renderer and restored regression filters>",
+      "minimal_font_environment": true,
+      "exit": 0,
+      "summary": [
+        "Finished `release-test` profile [optimized] target(s) in 45m 59s",
+        "Summary [  14.961s] 57 tests run: 57 passed, 13837 skipped"
+      ],
+      "full_log_sha256": "3cd5e26800bf854096164707f4d7bd7c60858bfded9cd1ed031af6e1622c5a1f"
+    },
+    "nextest": {
+      "command": "cargo nextest run --locked --cargo-profile release-test --tests --test-threads 12 --no-fail-fast",
+      "minimal_font_environment": true,
+      "exit": 0,
+      "summary": [
+        "Finished `release-test` profile [optimized] target(s) in 6.68s",
+        "Summary [1217.082s] 13849 tests run: 13849 passed (10 slow), 45 skipped"
+      ],
+      "full_log_sha256": "29ffdffdb73b4f2fa5007db6e78b4fb217ca76dd80126e3962ae0038edd4e32d"
+    },
+    "native-clippy": {
+      "command": "cargo clippy --locked -- -D warnings",
+      "minimal_font_environment": false,
+      "exit": 0,
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 13s"
+      ],
+      "full_log_sha256": "ae6cd5efac28f65d95d40d66c2f4836ef4e25084b2e9d9312f04b15fee08a27b"
+    },
+    "wasm-clippy": {
+      "command": "cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings",
+      "minimal_font_environment": false,
+      "exit": 0,
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 54s"
+      ],
+      "full_log_sha256": "29f46c1888d9a4e380e3651be9513c93b9ec5bbda41fa1033b7565dc5769dab8"
+    },
+    "workspace-build": {
+      "command": "cargo build --locked --workspace",
+      "minimal_font_environment": false,
+      "exit": 0,
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 4m 05s"
+      ],
+      "full_log_sha256": "ac577b34808228bd1866c27d95b6ca0f92253dc07e32068f57b593dc838729e5"
+    },
+    "workspace-clippy": {
+      "command": "cargo clippy --locked --workspace --all-targets -- -D warnings",
+      "minimal_font_environment": false,
+      "exit": 0,
+      "summary": [
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 4m 02s"
+      ],
+      "full_log_sha256": "85fe54f5832b89f7c2fa246fc771f791c300947ef49176344a2eed8669bbe6e1"
+    },
+    "native-skia-lib": {
+      "command": "cargo test --locked --profile release-test --features native-skia --lib -- --test-threads 12",
+      "minimal_font_environment": true,
+      "exit": 0,
+      "summary": [
+        "Finished `release-test` profile [optimized] target(s) in 12m 01s",
+        "test result: ok. 3853 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 27.32s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ],
+      "full_log_sha256": "82b82c29c3668cdc91c695162b1d8577496cc9c756eca86947faec0d851349dc"
+    },
+    "native-skia-picture": {
+      "command": "node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --features native-skia",
+      "minimal_font_environment": true,
+      "exit": 0,
+      "summary": [
+        "Finished `release-test` profile [optimized] target(s) in 10m 28s",
+        "Summary [   0.664s] 2 tests run: 2 passed, 340 skipped"
+      ],
+      "full_log_sha256": "25b8ca16572aa79c8dcdc2dcb069eb13b80c237e4f8302205d467239d9256d9d"
+    },
+    "native-skia-direct-pdf": {
+      "command": "node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --features native-skia",
+      "minimal_font_environment": true,
+      "exit": 0,
+      "summary": [
+        "Finished `release-test` profile [optimized] target(s) in 33.75s",
+        "Summary [   0.333s] 36 tests run: 36 passed, 323 skipped"
+      ],
+      "full_log_sha256": "6aff4ae3160a71fdae32e881c2557df9414fabf2a71a14247f5ebb10533eead4"
+    }
+  },
+  "rustfmt": {
+    "command": "cargo fmt --all -- --check",
+    "exit": 0
+  },
+  "mandatory_handbook_native": {
+    "pages": 383,
+    "regressions": [],
+    "status": "passed"
+  },
+  "contributor_visual_protection": {
+    "conditions": 8,
+    "status": "passed"
+  }
+}

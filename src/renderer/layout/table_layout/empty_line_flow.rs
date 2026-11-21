@@ -8,26 +8,25 @@ use crate::model::{
 
 /// 연속된 저장 사다리의 원점으로 빈 줄 자체의 점유를 확인한다.
 /// 형제 셀의 유무는 이 줄 상자의 흐름 소유를 바꾸지 않는다.
-fn closed_stored_empty_line_owns_advance(
+pub(super) fn closed_stored_empty_line_owns_advance(
     cell: &Cell,
-    unit: &CellUnit,
+    index: usize,
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> bool {
-    if cell.dirty_flag || unit.vis_start != 0 || unit.vis_end != 1 {
+    if cell.dirty_flag {
         return false;
     }
-    let Some(previous) = unit
-        .para_idx
+    let Some(previous) = index
         .checked_sub(1)
         .and_then(|index| cell.paragraphs.get(index))
     else {
         return false;
     };
-    let Some(paragraph) = cell.paragraphs.get(unit.para_idx) else {
+    let Some(paragraph) = cell.paragraphs.get(index) else {
         return false;
     };
-    let next = cell.paragraphs.get(unit.para_idx + 1);
+    let next = cell.paragraphs.get(index + 1);
     if !previous.controls.is_empty()
         || !paragraph.controls.is_empty()
         || [Some(previous), Some(paragraph), next]
@@ -227,7 +226,9 @@ impl LayoutEngine {
         }
         // 실제 종료 줄은 뒤 문단이 없어도 앞 저장 메트릭의 닫힘으로 소유를 증명한다.
         if unit.owns_stored_closing_line
-            || closed_stored_empty_line_owns_advance(cell, unit, styles, self.dpi)
+            || (unit.vis_start == 0
+                && unit.vis_end == 1
+                && closed_stored_empty_line_owns_advance(cell, unit.para_idx, styles, self.dpi))
             || self.closed_nested_frame_owns_following_empty_line(cell, table, unit, styles)
         {
             return true;

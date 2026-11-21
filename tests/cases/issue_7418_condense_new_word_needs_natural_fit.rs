@@ -577,3 +577,49 @@ fn list_marker_head_places_first_and_following_lines() {
         mismatched.join("\n")
     );
 }
+
+#[test]
+fn legacy_hwpx_url_and_continuation_share_the_print_line_breaks() {
+    use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+    fn rendered_paragraph_lines(root: &RenderNode, para_index: usize) -> Vec<String> {
+        let mut lines = Vec::new();
+        let mut pending = vec![root];
+        while let Some(node) = pending.pop() {
+            if matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(para_index))
+            {
+                lines.push(
+                    node.children
+                        .iter()
+                        .filter_map(|child| match &child.node_type {
+                            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                            _ => None,
+                        })
+                        .collect(),
+                );
+            } else {
+                pending.extend(node.children.iter().rev());
+            }
+        }
+        lines
+    }
+
+    // 한컴 2024의 12쪽 끝과 13쪽 시작에서 문장 순서와 줄 소속을 확인했다.
+    // 공백 압축 예산을 공백마다 절삭하면 URL이 둘째 줄로 밀린다.
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/HWP5-nopassword-123456.hwpx");
+    let bytes = std::fs::read(path).expect("검증 원본");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("원본 읽기");
+    core.set_hangul2024_compat(true);
+    let page12 = core.build_page_render_tree(11).expect("12쪽");
+    let page13 = core.build_page_render_tree(12).expect("13쪽");
+    let lines12 = rendered_paragraph_lines(&page12.root, 182);
+    let lines13 = rendered_paragraph_lines(&page13.root, 182);
+
+    assert_eq!(lines12.len(), 4, "{lines12:?}");
+    assert!(lines12[0].trim_end().ends_with("있는 URL"), "{lines12:?}");
+    assert!(lines12[1].starts_with("페이지를 "), "{lines12:?}");
+    assert!(lines12[2].starts_with("있습니다."), "{lines12:?}");
+    assert!(lines12[3].trim_end().ends_with("미리 확인"), "{lines12:?}");
+    assert_eq!(lines13, ["해 보고 수정할 수 있습니다."]);
+}

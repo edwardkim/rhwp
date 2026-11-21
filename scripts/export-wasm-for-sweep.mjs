@@ -22,6 +22,8 @@ async function main() {
   if (!['2022', '2024'].includes(compat)) throw Error('조판 세대는 2022 또는 2024여야 합니다.');
   const environmentJson = process.argv.includes('--font-environment')
     ? readFileSync(option('--font-environment'), 'utf8') : null;
+  const printJobJson = process.argv.includes('--print-job-context')
+    ? readFileSync(option('--print-job-context'), 'utf8') : null;
   // 임의 파일 경로를 HTTP 요청으로 받아 열지 않는다.
   const files = new Map([
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
@@ -47,7 +49,7 @@ async function main() {
     });
     const page = await browser.newPage();
     await page.goto(`http://127.0.0.1:${server.address().port}`);
-    const info = await page.evaluate(async ({ environmentJson, compat }) => {
+    const info = await page.evaluate(async ({ environmentJson, printJobJson, compat }) => {
       const module = await import('/rhwp.js');
       await module.default({ module_or_path: '/rhwp_bg.wasm' });
       globalThis.sweepDocument = new module.HwpDocument(new Uint8Array(await (await fetch('/source')).arrayBuffer()));
@@ -56,8 +58,9 @@ async function main() {
       }
       globalThis.sweepDocument.setHangul2024Compat(compat === '2024');
       if (environmentJson !== null) globalThis.sweepDocument.setFontEnvironment(environmentJson);
+      if (printJobJson !== null) globalThis.sweepDocument.setPrintJobContext(printJobJson);
       return { pageCount: globalThis.sweepDocument.pageCount(), version: module.version(), layoutGeneration: compat };
-    }, { environmentJson, compat });
+    }, { environmentJson, printJobJson, compat });
     if (!Number.isInteger(info.pageCount) || info.pageCount < 1) throw Error('WASM이 빈 문서를 반환했습니다.');
     for (const folder of ['raw_svg', 'render_tree']) mkdirSync(join(output, folder), { recursive: true });
     const pages = [];

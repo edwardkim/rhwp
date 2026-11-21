@@ -1,0 +1,393 @@
+{
+  "status": "requires_pagination_review",
+  "backend": "wasm",
+  "baseline_output_pages": 22,
+  "hancom_print_pages": 21,
+  "candidate_output_pages": 21,
+  "same_text_on_corresponding_pages": 21,
+  "producer": {
+    "configured": "../rhwp-base",
+    "path": "output/pr-review/planet6897-9208-9236/rebase-cb85758e/rhwp-base",
+    "sha256": "12992a6615ddec69089f71a85e7db1a1b981e180e5cb126d1f8a5bd81f7a9e20"
+  },
+  "pages": [
+    {
+      "print_page": 1,
+      "base_pages": [
+        1
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        1108
+      ],
+      "candidate_characters": 1108,
+      "base_png_sha256": [
+        "6e5766029070af41334145e43c3feea8211f7c00672d5a7072f23fd01bc99de8"
+      ],
+      "base_raw": "99.90494",
+      "candidate_raw": "99.90494",
+      "candidate_minus_base_pp": "0.00000"
+    },
+    {
+      "print_page": 2,
+      "base_pages": [
+        2
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        791
+      ],
+      "candidate_characters": 791,
+      "base_png_sha256": [
+        "79a4a4daa3ecd7b5573753f0eeb75b0fd5c1d7b31dae166aad5ffa3fa8ed9275"
+      ],
+      "base_raw": "99.99904",
+      "candidate_raw": "99.99904",
+      "candidate_minus_base_pp": "0.00000"
+    },
+    {
+      "print_page": 3,
+      "base_pages": [
+        3
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        662
+      ],
+      "candidate_characters": 662,
+      "base_png_sha256": [
+        "40e376458734e06be1fe3e14720cfca1abbc4c0bf16d9da1b28928b04f1c550e"
+      ],
+      "base_raw": "99.9625",
+      "candidate_raw": "99.9625",
+      "candidate_minus_base_pp": "0.0000"
+    },
+    {
+      "print_page": 4,
+      "base_pages": [
+        4
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        751
+      ],
+      "candidate_characters": 751,
+      "base_png_sha256": [
+        "8c125cdb3399cd53ad3232699632de94f195a82cdd81595a3b977422d1a1dcef"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 5,
+      "base_pages": [
+        5
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        589
+      ],
+      "candidate_characters": 589,
+      "base_png_sha256": [
+        "6fdbe76dab45beb497147bd131646f0d8c57227ba189049cd050470e91b026be"
+      ],
+      "base_raw": "99.98979",
+      "candidate_raw": "99.98979",
+      "candidate_minus_base_pp": "0.00000"
+    },
+    {
+      "print_page": 6,
+      "base_pages": [
+        6,
+        7
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        655,
+        146
+      ],
+      "candidate_characters": 801,
+      "base_png_sha256": [
+        "73ac15b5b219de7b564c77254196cf61a46fd79089f1b12391c2bf9bca5b453c",
+        "ee71c2436e1eb202c29d6040246b974578bdfd43d972d996c309d8cc1e3e581f"
+      ]
+    },
+    {
+      "print_page": 7,
+      "base_pages": [
+        8
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        543
+      ],
+      "candidate_characters": 543,
+      "base_png_sha256": [
+        "4b0167fbe79ae7a413463d143c6a5eab4bd52bfe5c4cfb7d3ca486baac994756"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 8,
+      "base_pages": [
+        9
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        436
+      ],
+      "candidate_characters": 436,
+      "base_png_sha256": [
+        "de6fbeee463ed40a7127b57b731700deb7198299f3ef17bb30a84c4cc7aecdc0"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 9,
+      "base_pages": [
+        10
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        563
+      ],
+      "candidate_characters": 563,
+      "base_png_sha256": [
+        "6d03c6cdbed11b43986846e4067e9e57f420845e96984e30bcc132d5ff4e27c8"
+      ],
+      "base_raw": "99.97404",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.02596"
+    },
+    {
+      "print_page": 10,
+      "base_pages": [
+        11
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        672
+      ],
+      "candidate_characters": 672,
+      "base_png_sha256": [
+        "a3a4a48b49d26dcc3ed9c5cf7564d1b22fa90ad52f9355cb4cce43f3833776ee"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 11,
+      "base_pages": [
+        12
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        465
+      ],
+      "candidate_characters": 465,
+      "base_png_sha256": [
+        "c0f31a8888ec824fe1c6765afeabeaeb03f9b3d437f7ce70c65e3025d7fce0bb"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 12,
+      "base_pages": [
+        13
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        481
+      ],
+      "candidate_characters": 481,
+      "base_png_sha256": [
+        "e554e46dad15f87fa335546bceb1b87896fd18d6df7778ecdf2a902977fe2ca7"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 13,
+      "base_pages": [
+        14
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        484
+      ],
+      "candidate_characters": 484,
+      "base_png_sha256": [
+        "910c503b5e52c51b9fe34dc2119cf00ab1134a94587b60d2ef0cd197136bcca4"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 14,
+      "base_pages": [
+        15
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        523
+      ],
+      "candidate_characters": 523,
+      "base_png_sha256": [
+        "00973f32087fe9774a04bf61f036217649ffe173cb228cbadba2a8c73f14881b"
+      ],
+      "base_raw": "99.76144",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.23856"
+    },
+    {
+      "print_page": 15,
+      "base_pages": [
+        16
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        393
+      ],
+      "candidate_characters": 393,
+      "base_png_sha256": [
+        "1c22a8e7557c27f2376a0d52479b897d71a55a1b716603277b4152a392f6737a"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 16,
+      "base_pages": [
+        17
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        455
+      ],
+      "candidate_characters": 455,
+      "base_png_sha256": [
+        "369bbc2f7266d40e9cf0b274241f1fabf7813e4f54ed7f4584ae6143e96175ec"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 17,
+      "base_pages": [
+        18
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        468
+      ],
+      "candidate_characters": 468,
+      "base_png_sha256": [
+        "1481e58c5b69ba3c917d99024cb7f3f82819d294830a9cbd46283ccf4aaf5832"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 18,
+      "base_pages": [
+        19
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        656
+      ],
+      "candidate_characters": 656,
+      "base_png_sha256": [
+        "d9f25f1cc0de0a1b2f5d46fb57341a5a8d46d7502f5e9e23f6a17f76a04ad917"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 19,
+      "base_pages": [
+        20
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        530
+      ],
+      "candidate_characters": 530,
+      "base_png_sha256": [
+        "78ab7d4c1526c55803600a566e531d6f9f9576d4e3d903404e9f60f4c714c90a"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    },
+    {
+      "print_page": 20,
+      "base_pages": [
+        21
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        538
+      ],
+      "candidate_characters": 538,
+      "base_png_sha256": [
+        "53b3736888f5882fdcdca2d6501af13f6bb1036e0b2bd8d049375db04c18878f"
+      ],
+      "base_raw": "99.99417",
+      "candidate_raw": "99.99418",
+      "candidate_minus_base_pp": "0.00001"
+    },
+    {
+      "print_page": 21,
+      "base_pages": [
+        22
+      ],
+      "normalized_render_text_identical": true,
+      "same_characters": true,
+      "base_characters": [
+        534
+      ],
+      "candidate_characters": 534,
+      "base_png_sha256": [
+        "a798273847e48c28547e19bac707030a7c497a8297a53e4e2f78002d8f939b3e"
+      ],
+      "base_raw": "100.0",
+      "candidate_raw": "100.0",
+      "candidate_minus_base_pp": "0.0"
+    }
+  ]
+}

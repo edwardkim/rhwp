@@ -10,6 +10,8 @@ use crate::model::{
 pub(crate) struct StoredCellFlowPictureFrame {
     pub top_hu: i32,
     pub bottom_hu: i32,
+    /// 다음 문단의 첫 저장 줄이 이 그림 바닥에서 시작한다(뒤 문단이 띠를 닫는다).
+    pub closed_by_next_line: bool,
 }
 
 /// 앞 내용 또는 다음 저장 글줄이 닫는 실제 셀 그림은 같은 흐름 원점을 쓴다.
@@ -63,7 +65,29 @@ pub(crate) fn stored_cell_flow_picture_frame(
                 && super::topbottom_flow_vertical_offset_hu(common).checked_add(height_hu)
                     == Some(next.line_segs[0].vertical_pos)
         });
+    // 호스트 줄 원점 + 양수 오프셋 + 그림 높이 = 다음 문단의 첫 저장 줄이면 그 그림 띠는
+    // 뒤 문단이 닫는다. 호스트에 글이 있든 뒤 문단이 글자처럼 취급 그림 줄이든 같은 흐름이다.
+    let signed_offset = super::signed_hwpunit(common.vertical_offset);
+    let closed_by_next_line = signed_offset >= 0
+        && !common.allow_overlap
+        && common.vert_align == crate::model::shape::VertAlign::Top
+        && common.margin.top == 0
+        && common.margin.bottom == 0
+        && para
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Picture(p) if !p.common.treat_as_char))
+            .count()
+            == 1
+        && paragraphs.get(index + 1).is_some_and(|next| {
+            para.line_segs[0]
+                .vertical_pos
+                .checked_add(signed_offset)
+                .and_then(|top| top.checked_add(height_hu))
+                == Some(next.line_segs[0].vertical_pos)
+        });
     if !first_closed_frame
+        && !closed_by_next_line
         && !paragraphs[..index].iter().any(|p| {
             !p.text.trim().is_empty()
                 || p.controls
@@ -83,14 +107,19 @@ pub(crate) fn stored_cell_flow_picture_frame(
     if top_hu < 0 || bottom_hu <= top_hu {
         return None;
     }
-    Some(StoredCellFlowPictureFrame { top_hu, bottom_hu })
+    Some(StoredCellFlowPictureFrame {
+        top_hu,
+        bottom_hu,
+        closed_by_next_line,
+    })
 }
 
 pub(crate) fn stored_cell_flow_picture_extent_hu(
     paragraphs: &[Paragraph],
     stored_layout: bool,
 ) -> Option<i32> {
-    paragraphs
+    let mut closed_by_next_line = false;
+    let picture_end = paragraphs
         .iter()
         .enumerate()
         .flat_map(|(index, para)| {
@@ -99,8 +128,18 @@ pub(crate) fn stored_cell_flow_picture_extent_hu(
                     return None;
                 };
                 stored_cell_flow_picture_frame(paragraphs, index, picture, stored_layout)
-                    .map(|frame| frame.bottom_hu)
             })
         })
-        .max()
+        .map(|frame| {
+            closed_by_next_line |= frame.closed_by_next_line;
+            frame.bottom_hu
+        })
+        .max()?;
+    // 뒤 문단이 그림 띠를 닫은 칸은 줄 전진의 합이 띠를 세지 못한다. 같은 저장 사다리의
+    // 마지막 줄 끝이 칸 내용의 끝이다(프레임 인증이 사다리의 온전함과 단조 증가를 확인했다).
+    let content_end = closed_by_next_line
+        .then(|| super::stored_cell_content_extent_hu(paragraphs))
+        .flatten()
+        .unwrap_or(picture_end);
+    Some(picture_end.max(content_end))
 }

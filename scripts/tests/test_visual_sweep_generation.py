@@ -11,6 +11,29 @@ from scripts.tests.test_visual_sweep import SWEEP
 
 
 class GenerationTests(unittest.TestCase):
+    def test_print_png_colour_comes_from_reference_metadata(self):
+        pdf = Path("file-with-2020-in-its-name.pdf")
+        producer = "Hancom PDF 1.3.0.550"
+        cases = (
+            ("Hwp 2022 0.0.0.0", producer, True),
+            ("Hwp 2020 0.0.0.0", producer, False),
+            ("Hwp 2024 13.0.0.3901", producer, False),
+            ("Hwp 2022 0.0.0.0", "Microsoft: Print To PDF", False),
+            ("Hwp 2022 0.0.0.0", "cairo 1.15.12", False),
+            ("", producer, False),
+        )
+        for creator, vendor, expected in cases:
+            with self.subTest(creator=creator, producer=vendor):
+                info = f"Creator: {creator}\r\nProducer: {vendor}\r\nPages: 74\r\n"
+                with patch.object(SWEEP, "run", return_value=subprocess.CompletedProcess(
+                    ["pdfinfo"], 0, info, ""
+                )) as run:
+                    selected = SWEEP.reference_print_png_rgb555(Path("."), pdf)
+                run.assert_called_once_with(
+                    ["pdfinfo", str(pdf)], cwd=Path("."), verbose=False, encoding_errors="replace"
+                )
+                self.assertEqual(selected, {"creator": creator, "producer": vendor} if expected else None)
+
     def test_native_svg_and_tree_use_the_same_generation(self):
         with tempfile.TemporaryDirectory() as folder:
             base = Path(folder)

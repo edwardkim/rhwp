@@ -1,0 +1,236 @@
+[
+  {
+    "document": "squeeze",
+    "backend": "native",
+    "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+    "pages": 2,
+    "minimum_display": "97.79",
+    "input_sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+    "pdf_sha256": "600fb9974578944ad2f8f3b92d3619c17a38a2216ffa30d5fe35c81f75c5c319",
+    "tsv_sha256": "e7e020d4eacb13eb71c4ce1636b225abb7c4d2f0eea0c79b0449b30588ac8991",
+    "input": "samples/issue8947/36481164-squeeze-title-cell.hwpx",
+    "print_pdf": "pdf/issue8947/36481164-squeeze-title-cell-2024.pdf",
+    "receipt": {
+      "job_id": "dc1013a2-26a6-439c-beb5-9ad47af69ac8",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_page_count": 2,
+      "input_preprocess": "none"
+    },
+    "tsv": "squeeze-native.tsv",
+    "representative": [
+      {
+        "page": 1,
+        "raw_percent": 98.26977,
+        "unmatched_pixels": 1788,
+        "pixel_match_percent": 90.60007,
+        "visual_accuracy_proxy_percent": 18.96477,
+        "raw": {
+          "file": "squeeze-native-001-raw.png",
+          "sha256": "29dc229425ab40fafc3991d810dea12d8281d124f53e53461ea7adb4576f458a"
+        },
+        "pdf": {
+          "file": "squeeze-native-001-pdf.png",
+          "sha256": "a68e16394c70de174ae4904ed6857cbed15e2e4bc89e22b334cceae785f0f88a"
+        },
+        "review": {
+          "file": "squeeze-native-001-review.png",
+          "sha256": "b778d27a3bee35bef1dbefb2d8a8a3f3163d811901eec371c852de3f66ffda0a"
+        },
+        "overlay": {
+          "file": "squeeze-native-001-overlay.png",
+          "sha256": "6a93c3ac2f8a80a180571d7271a1fabe9b5208f5ccd2d29cb70182ca8cf31447"
+        }
+      },
+      {
+        "page": 2,
+        "raw_percent": 97.78644,
+        "unmatched_pixels": 460,
+        "pixel_match_percent": 98.57218,
+        "visual_accuracy_proxy_percent": 38.79024,
+        "raw": {
+          "file": "squeeze-native-002-raw.png",
+          "sha256": "0fd013c1eda9541be220f27e70cc7be06abbebe2b4ad5cba2995aa23fc3f9079"
+        },
+        "pdf": {
+          "file": "squeeze-native-002-pdf.png",
+          "sha256": "a4e36ca46ee5439069f1e33ade61281d37b3f9db395a421d71542eb73197c766"
+        },
+        "review": {
+          "file": "squeeze-native-002-review.png",
+          "sha256": "da7594abfbb35e57d23423dde0594e8d0ce332e8c58ea42aa37e51ef56f1a00d"
+        },
+        "overlay": {
+          "file": "squeeze-native-002-overlay.png",
+          "sha256": "1d167d67d3ea5fa79bd56d573ea658c0b81df4b061ca993f36cbe859c27a5b53"
+        }
+      }
+    ]
+  },
+  {
+    "document": "squeeze",
+    "backend": "wasm",
+    "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+    "pages": 2,
+    "minimum_display": "97.35",
+    "input_sha256": "7cb752425acbb9eaebb144e6f27a895d2d3eabc6fbc6b3059d0c9dce6c46640b",
+    "pdf_sha256": "600fb9974578944ad2f8f3b92d3619c17a38a2216ffa30d5fe35c81f75c5c319",
+    "tsv_sha256": "55d0572ae6ca750be0c6fe27e96a26397d15a66fdc68ca4d4727f9d5b0a58846",
+    "input": "samples/issue8947/36481164-squeeze-title-cell.hwpx",
+    "print_pdf": "pdf/issue8947/36481164-squeeze-title-cell-2024.pdf",
+    "receipt": {
+      "job_id": "dc1013a2-26a6-439c-beb5-9ad47af69ac8",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_page_count": 2,
+      "input_preprocess": "none"
+    },
+    "tsv": "squeeze-wasm.tsv",
+    "representative": [
+      {
+        "page": 1,
+        "raw_percent": 98.31083,
+        "unmatched_pixels": 1780,
+        "pixel_match_percent": 90.23379,
+        "visual_accuracy_proxy_percent": 17.43549,
+        "raw": {
+          "file": "squeeze-wasm-001-raw.png",
+          "sha256": "8b1277fcd0e16e6b4176c638e5cd64c3fa6a8a22bd7c55613ff53947f70e483d"
+        },
+        "pdf": {
+          "file": "squeeze-wasm-001-pdf.png",
+          "sha256": "a68e16394c70de174ae4904ed6857cbed15e2e4bc89e22b334cceae785f0f88a"
+        },
+        "review": {
+          "file": "squeeze-wasm-001-review.png",
+          "sha256": "53b98d3a9fc8ed053f74b99b55b6c1ca4d43e186653a41a789c12f832894367e"
+        },
+        "overlay": {
+          "file": "squeeze-wasm-001-overlay.png",
+          "sha256": "f3d0b4ad77c77b5503e766fee1dd3e89cfdcb10f1bfbdb589f00a5a5e146d16c"
+        }
+      },
+      {
+        "page": 2,
+        "raw_percent": 97.35252,
+        "unmatched_pixels": 561,
+        "pixel_match_percent": 98.43142,
+        "visual_accuracy_proxy_percent": 34.0538,
+        "raw": {
+          "file": "squeeze-wasm-002-raw.png",
+          "sha256": "6a2e74f3a27501cdaae299b4f30ad2c8fba1f3d323468766a709c5ecae0db4e8"
+        },
+        "pdf": {
+          "file": "squeeze-wasm-002-pdf.png",
+          "sha256": "a4e36ca46ee5439069f1e33ade61281d37b3f9db395a421d71542eb73197c766"
+        },
+        "review": {
+          "file": "squeeze-wasm-002-review.png",
+          "sha256": "b35c39b56fe4b5b0011ff14096912e10309f8495ea99a3ab0aeb600651f17d98"
+        },
+        "overlay": {
+          "file": "squeeze-wasm-002-overlay.png",
+          "sha256": "4bdf749b385697e5314759870e3b823c1145c2f5ad736edf18371d61ac204f75"
+        }
+      }
+    ]
+  },
+  {
+    "document": "para-squeeze",
+    "backend": "native",
+    "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+    "pages": 1,
+    "minimum_display": "99.97",
+    "input_sha256": "a30ce89ad8659e14ade23ff8aea09d9e369b80058ace0ac44b9a4d14455578ff",
+    "pdf_sha256": "0f0136b898e56be268501073678c1a346aa7c2228c0c88221a14deeda8147486",
+    "tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+    "input": "samples/issue9085/facility_fee_reduction_criteria.hwpx",
+    "print_pdf": "pdf/issue9085/facility_fee_reduction_criteria-2024.pdf",
+    "receipt": {
+      "job_id": "2f8c21ec-f003-40c9-b683-7313d0a6d555",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_page_count": 1,
+      "input_preprocess": "none"
+    },
+    "tsv": "para-squeeze-native.tsv",
+    "representative": [
+      {
+        "page": 1,
+        "raw_percent": 99.96591,
+        "unmatched_pixels": 28,
+        "pixel_match_percent": 94.26829,
+        "visual_accuracy_proxy_percent": 37.8301,
+        "raw": {
+          "file": "para-squeeze-native-001-raw.png",
+          "sha256": "5e09b7c2355d513bfea672a303b01f2b055c40594fd99aa14696d2e0064b252d"
+        },
+        "pdf": {
+          "file": "para-squeeze-native-001-pdf.png",
+          "sha256": "97ade02174c8e59b8cbd78830054b4ddc6772ff0ce1e7b488ec9f8a46fcae641"
+        },
+        "review": {
+          "file": "para-squeeze-native-001-review.png",
+          "sha256": "ab5c3e3b0ee8df53ad7cd359686d38c24eac72e7a0059d3310556c50a873f0e6"
+        },
+        "overlay": {
+          "file": "para-squeeze-native-001-overlay.png",
+          "sha256": "16780361d4025ce967081e3ec6f70e5f1a9381b361b20908a0209e5ab09ccbc2"
+        }
+      }
+    ]
+  },
+  {
+    "document": "para-squeeze",
+    "backend": "wasm",
+    "source_head": "984e8e84010223d0aa4f145ede06908139c7cfe2",
+    "pages": 1,
+    "minimum_display": "99.97",
+    "input_sha256": "a30ce89ad8659e14ade23ff8aea09d9e369b80058ace0ac44b9a4d14455578ff",
+    "pdf_sha256": "0f0136b898e56be268501073678c1a346aa7c2228c0c88221a14deeda8147486",
+    "tsv_sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99",
+    "input": "samples/issue9085/facility_fee_reduction_criteria.hwpx",
+    "print_pdf": "pdf/issue9085/facility_fee_reduction_criteria-2024.pdf",
+    "receipt": {
+      "job_id": "2f8c21ec-f003-40c9-b683-7313d0a6d555",
+      "engine": "2024",
+      "hancom_version": "13.0.0.3901",
+      "pdf_print_method": 0,
+      "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+      "pdf_page_count": 1,
+      "input_preprocess": "none"
+    },
+    "tsv": "para-squeeze-wasm.tsv",
+    "representative": [
+      {
+        "page": 1,
+        "raw_percent": 99.96668,
+        "unmatched_pixels": 28,
+        "pixel_match_percent": 94.5204,
+        "visual_accuracy_proxy_percent": 41.9037,
+        "raw": {
+          "file": "para-squeeze-wasm-001-raw.png",
+          "sha256": "e382c01c748cbef2d71997db581270812db77c3028db52bb0f24998817c619c2"
+        },
+        "pdf": {
+          "file": "para-squeeze-wasm-001-pdf.png",
+          "sha256": "97ade02174c8e59b8cbd78830054b4ddc6772ff0ce1e7b488ec9f8a46fcae641"
+        },
+        "review": {
+          "file": "para-squeeze-wasm-001-review.png",
+          "sha256": "592a8e4c78125ca39df92b087cb5061b08cfbe2f935013bae43917257cb78aec"
+        },
+        "overlay": {
+          "file": "para-squeeze-wasm-001-overlay.png",
+          "sha256": "21d4069ea050ea2fcc7321980d1d5bfd125c0e80fddcd4ef2041bb6495097880"
+        }
+      }
+    ]
+  }
+]

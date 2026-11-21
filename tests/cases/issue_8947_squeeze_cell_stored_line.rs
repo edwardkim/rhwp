@@ -1,5 +1,7 @@
 //! 관계형 — [#8947] 한 줄로 입력(lineWrap=SQUEEZE) 칸의 과밀 저장 줄은 다시 나누지 않는다.
-//! 주석 갱신: 2026-11-11 20:10 KST (새 파일)
+//! 주석 갱신: 2026-11-19 02:44 KST (직전 변경 bef571dc9a, 2026-11-11 19:00:10 KST).
+//! 원본 재측정(2026-11-19, 같은 PDF·96 DPI): 2쪽 Native 98.21/98.06%, WASM 95.46/97.24%.
+//! 편집·재개봉 검사는 원본의 건명 칸을 사용해 셀 내부 포함·글자 순서·문자 경계를 검증한다.
 //!
 //! 입력: 공개 결재문서 36481164(한컴오피스 2020 저장) 원본. 1쪽 15×30 표의 「건 명」 칸(`name="제목"`,
 //! `lineWrap="SQUEEZE"`)에 글 「물품매입요구서(응봉공원 노후시설물 정비사업 관급자재 구매, 금액수정)」가
@@ -125,4 +127,104 @@ fn break_title_cell_rewraps_the_overfull_stored_line() {
         lines >= 2,
         "자동 줄바꿈 칸에서 과밀 저장 줄({lines}줄)은 다시 나눠야 한다(#2525)"
     );
+}
+
+// 원본 저장 줄을 편집하면 새 텍스트의 모든 문자 경계가 한 줄 안에 있어야 한다.
+// 탭을 포함하면 저장 시 줄 캐시도 생략되므로 재개봉 경로까지 검사한다.
+#[test]
+fn edited_title_fits_one_line_with_distinct_character_boundaries_after_save() {
+    use serde_json::Value;
+
+    fn check(core: &DocumentCore, expected: &str) {
+        let layout: Value =
+            serde_json::from_str(&core.get_page_text_layout_native(0).unwrap()).unwrap();
+        let cells: Value = serde_json::from_str(
+            &core
+                .get_table_cell_bboxes_at_page_native(0, 2, 1, 0)
+                .unwrap(),
+        )
+        .unwrap();
+        let cell = cells
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|c| c["cellIdx"] == 1)
+            .unwrap();
+        let left = cell["x"].as_f64().unwrap();
+        let right = left + cell["w"].as_f64().unwrap();
+        let runs: Vec<_> = layout["runs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|r| r["parentParaIdx"] == 2 && r["controlIdx"] == 1 && r["cellIdx"] == 1)
+            .collect();
+        let text: String = runs.iter().map(|r| r["text"].as_str().unwrap()).collect();
+        assert_eq!(text, expected);
+        for run in &runs {
+            assert_eq!(run["y"], runs[0]["y"]);
+            let x = run["x"].as_f64().unwrap();
+            assert!(x >= left && x + run["w"].as_f64().unwrap() <= right);
+            assert!(run["charX"]
+                .as_array()
+                .unwrap()
+                .windows(2)
+                .all(|pair| pair[0].as_f64().unwrap() < pair[1].as_f64().unwrap()));
+        }
+    }
+
+    for (separator, enable_after_edit) in [(" ", false), ("\t", false), ("\t", true)] {
+        let prefix = " ".repeat(20) + &format!("iiilll{separator}Long cell contents ").repeat(7);
+        let mut core = DocumentCore::from_bytes(&sample_bytes()).unwrap();
+        let rhwp::model::control::Control::Table(table) =
+            &core.document().sections[0].paragraphs[2].controls[1]
+        else {
+            panic!("건 명 표")
+        };
+        let expected = prefix.clone() + &table.cells[1].paragraphs[0].text;
+        if enable_after_edit {
+            core.set_cell_properties_native(0, 2, 1, 1, r#"{"lineWrap":0}"#)
+                .unwrap();
+        }
+        core.insert_text_in_cell_native(0, 2, 1, 1, 0, 0, &prefix)
+            .unwrap();
+        if enable_after_edit {
+            core.set_cell_properties_native(0, 2, 1, 1, r#"{"lineWrap":1}"#)
+                .unwrap();
+        }
+        check(&core, &expected);
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            check(&DocumentCore::from_bytes(&bytes).unwrap(), &expected);
+        }
+    }
+}
+
+#[test]
+fn cell_line_wrap_partial_update_preserves_neighbors_and_rejects_invalid_values() {
+    let mut core = DocumentCore::from_bytes(&sample_bytes()).unwrap();
+    let props = |core: &DocumentCore, cell| -> serde_json::Value {
+        serde_json::from_str(
+            &core
+                .get_cell_properties_by_cell_path_native(0, 2, &[(1, 0, 0)], cell)
+                .unwrap(),
+        )
+        .unwrap()
+    };
+    let neighbor = props(&core, 0);
+    core.set_cell_properties_native(0, 2, 1, 1, r#"{"lineWrap":2}"#)
+        .unwrap();
+    core.set_cell_properties_native(0, 2, 1, 1, r#"{"isHeader":true}"#)
+        .unwrap();
+    assert_eq!(props(&core, 1)["lineWrap"], 2);
+    for value in ["-1", "3", "257", "1.5", "null", r#""1""#] {
+        let update = format!(r#"{{"isHeader":false,"lineWrap":{value}}}"#);
+        assert!(core
+            .set_cell_properties_native(0, 2, 1, 1, &update)
+            .is_err());
+        assert_eq!(props(&core, 1)["isHeader"], true);
+        assert_eq!(props(&core, 1)["lineWrap"], 2);
+    }
+    assert_eq!(props(&core, 0), neighbor);
 }

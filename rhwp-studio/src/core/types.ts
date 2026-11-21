@@ -409,6 +409,10 @@ export interface ParaProperties {
   indent?: number;           // px (96dpi, zoom=1 기준, ResolvedParaStyle)
   spacingBefore?: number;    // px (96dpi, zoom=1 기준)
   spacingAfter?: number;     // px (96dpi, zoom=1 기준)
+  spacingBeforePx?: number;  // Resolved layout distance, including CHAR units
+  spacingAfterPx?: number;
+  spacingBeforeRaw?: number; // Exact stored units for format copy
+  spacingAfterRaw?: number;
   paraShapeId?: number;
   // 확장 탭 속성
   headType?: string;         // 'None'|'Outline'|'Number'|'Bullet'
@@ -457,6 +461,7 @@ export interface BorderLineInfo {
 
 /** WASM getCellProperties() 반환 타입 — HWPUNIT 원본값 */
 export interface CellProperties {
+  lineWrap?: number;  // BREAK=0, SQUEEZE=1, KEEP=2
   /** Explicit source-paint replacement intent: left, right, top, bottom. */
   borderPaintSides?: boolean[];
   width: number;

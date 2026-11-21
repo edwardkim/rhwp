@@ -66,16 +66,6 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
     })
 }
 
-/// 색과 coverage를 따로 표본화하는 공통 payload를 생성한다.
-/// 복원한 straight RGB와 원본 PArgb의 색 전달 계약은 호출자가 구분한다.
-pub(super) fn encode_planes(
-    rgba: image::RgbaImage,
-    quality: u8,
-    color: impl Fn(u8, u8) -> u8,
-) -> Option<Vec<u8>> {
-    encode_planes_with_palette(rgba, quality, true, color)
-}
-
 /// PNG의 부드러운 가장자리 Print는 무손실 RGB 평면과 1bit 마스크를 따로 보낸다.
 /// 색은 효과 전 원 alpha의 전달색이며, 새 coverage로 다시 premultiply하지 않는다.
 pub(super) fn encode_effect_planes(
@@ -104,10 +94,11 @@ pub(super) fn encode_effect_planes(
     Some(bytes)
 }
 
-pub(super) fn encode_planes_with_palette(
+/// 색과 coverage를 따로 표본화하는 공통 RGB555 payload를 생성한다.
+/// 복원한 straight RGB와 원본 PArgb의 색 전달 계약은 호출자가 구분한다.
+pub(super) fn encode_planes(
     mut rgba: image::RgbaImage,
     quality: u8,
-    quantize: bool,
     color: impl Fn(u8, u8) -> u8,
 ) -> Option<Vec<u8>> {
     let (width, height) = rgba.dimensions();
@@ -121,9 +112,7 @@ pub(super) fn encode_planes_with_palette(
         }
         pixel[3] = 255;
     }
-    if quantize {
-        super::print_rgb555::quantize(rgba.as_mut(), width, height)?;
-    }
+    super::print_rgb555::quantize(rgba.as_mut(), width, height)?;
     let jpeg = print_codec::encode_rgb(image::DynamicImage::ImageRgba8(rgba).to_rgb8(), quality)?;
     let pixels = print_tone::decode_jpeg_fill_rgb(&jpeg)?.into_raw();
     let mut combined = Vec::with_capacity(mask.len() * 4);

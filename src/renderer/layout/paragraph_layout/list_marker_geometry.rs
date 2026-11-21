@@ -17,6 +17,8 @@ pub(crate) struct ListMarkerGeometry {
     pub marker_dx_px: f64,
     /// 영역과 표시 문자열이 모두 있어 마커를 그린다.
     pub marker_visible: bool,
+    /// 글리프 실측 폭 대신 문서가 정한 글머리표 칸을 예약한다.
+    pub uses_fixed_bullet_cell: bool,
 }
 
 impl ListMarkerGeometry {
@@ -92,6 +94,29 @@ pub(super) fn head_marker_text_style(
         }
         _ => resolved_to_text_style(styles, id, lang),
     }
+}
+
+/// 글자 모양을 참조하지 않는(표 39 `0xFFFFFFFF`) **글머리표**의 마커 스타일.
+///
+/// 독립 한컴 Print는 이 글머리표를 문단 끝 글자 모양의 글꼴·크기로 그리되 진하게는 적용하지
+/// 않는다([정오표 41](../../../../mydocs/tech/hwp_spec_errata.md)). 끝 모양이 진하게인
+/// `samples/issue614` 2쪽(16pt, 진하게)의 Wingdings ○와 `hwpx/20260909-para-table` 1쪽의
+/// `-`(본문 HCRDotum-Bold, 마커 HCRDotum)는 모두 채움만으로 그려진다. 문단 번호는
+/// 같은 참조 없음에서도 끝 모양의 진하게를 유지하므로(`synam-001` 4쪽 MalgunGothicBold)
+/// 번호·개요에는 적용하지 않는다.
+pub(super) fn unreferenced_bullet_marker_style(
+    styles: &ResolvedStyleSet,
+    end_id: u32,
+    text: &str,
+) -> Option<TextStyle> {
+    let mut end = styles.char_styles.get(end_id as usize)?.clone();
+    end.bold = false;
+    Some(char_style_to_text_style(
+        styles,
+        &end,
+        end_id,
+        marker_lang(text),
+    ))
 }
 
 /// 마커 뒤 거리는 별도 속성이므로 문자열 마지막 글자 뒤 자간은 번호 너비에 넣지 않는다.
@@ -203,5 +228,6 @@ pub(super) fn list_marker_geometry_for(
         rest_line_px,
         marker_dx_px: align_dx - area_px,
         marker_visible: area_px > 0.0 && !text.is_empty(),
+        uses_fixed_bullet_cell: nominal_bullet,
     }
 }

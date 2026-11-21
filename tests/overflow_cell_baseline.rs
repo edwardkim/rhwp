@@ -51,11 +51,6 @@ const DEFERRED_CELL_OVERFLOW_FIXTURES: &[&str] = &[
     "table_giant_cell_overfill.hwpx",
     "issue5792/2700727_animal_facility_standards.hwpx",
     "issue6035/cgmp_evaluation_table.hwpx",
-    // #7445 / #7749: 같은 80550 원본의 두 경로. 원문은 보존하고 실패한 셀 넘침 판정만 이관.
-    "issue3637/regulatory_impact_nested_table_escape.hwpx",
-    "issue6697/80550-agricultural-machinery-act-amendment.hwpx",
-    // #7445: 전74쪽 시각 기준 미달 문서는 렌더링 원장에서 제외한다.
-    "hwpctl_ParameterSetID_Item_v1.2.hwp",
 ];
 
 /// #7751로 이관한 편람 HWP의 셀 넘침 검사는 원장에서 제거한다.

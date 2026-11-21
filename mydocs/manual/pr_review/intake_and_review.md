@@ -146,13 +146,11 @@ Cargo 성공은 시각 검증 판정을 대체하지 않는다. 다음 중 하�
 이 경우 review 문서의 최종 판정을 `승인`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
 
 - 기존 기준 PDF를 [재사용 규칙](visual_fixture_evidence.md#35-시각-검증-원칙)에 따라 먼저 확인한다.
-  **한컴 웹한글기안기 PDF는 공식 대조 자료가 아니므로 기존 첨부본도 공식 기준으로 재사용하지 않는다.**
-  공식 기준은 데스크톱 한컴의 **`Hancom PDF` 프린터 인쇄(Print)**이며,
-  **`Microsoft Print to PDF` 출력도 공식 비교에서 제외한다.** 실제 프린터 출처를 확인한다.
-  [출처 확인과 데스크톱 Print 기준 확보](visual_fixture_evidence.md#원-pr이-웹한글기안기-pdf를-기준으로-제시한-경우)를 따른다.
-  PDF 형식 버전·Creator의 연도/빌드만으로 제외하거나 MCP 재변환을 요구하지 않는다. 기존 기준이
-  없을 때 `rhwp info --json`으로 MCP engine을 선택해 보완 산출하고, visual sweep 대표 PNG와
-  요약 지표를 실제로 열어 확인한다.
+  공식 기준은 데스크톱 한컴 2020·2024의 **`Hancom PDF` 프린터 인쇄(Print)**다.
+  기존 웹한글기안기·Cairo·`Microsoft Print to PDF`·다른 제품 출력은 공식 판정에서 제외한다.
+  Cairo는 원본 저장 제품에 따라 MCP 2020·2024로, `Creator: Hwp 2022`는 MCP 2024로
+  다시 인쇄한다. [기준 PDF 재사용·재출력 절차](visual_fixture_evidence.md#35-시각-검증-원칙)를
+  적용한 뒤 전쪽 TSV와 대표 review·overlay를 확인한다.
 - 이미 PR branch에 포함된 기준 PDF/PNG를 쓰는 경우에도, 그 파일을 직접 열어 PR 주장의 페이지·영역이
   해결됐는지 확인하고, 원본·기준·검토 asset의 경로와 SHA-256을 review 문서에 적는다.
 - 직접 시각 검증을 수행하지 못하면 최종 판정은 `머지 보류`로 적고, "원 PR 제공

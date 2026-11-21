@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `295f7774a65d722e1fcc965910628dad3e43c9620a3d0181f7388cec111d6f9a`.
+- TSV SHA-256: `2c9bb270ad515144500cfceeb8b3020abc8cbc7ae6b800a30bd15f829f822a92`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -147,3 +147,20 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 일반 기여자 공통 4개 문서 검사나 편람 383쪽의 실행 범위를 확대하지 않는다.
 
 최종 제품 `0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0`로 Native/fresh WASM **4,046행**을 대조했다. 하락·누락은 0행이며 상승 0행을 반영했다. 전쪽 조건과 산출물은 [최종 보호 검증](../issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json)에 기록했다.
+
+## 2026-11-20 #7739–#7743 최종 검증의 상승분 반영
+
+같은 제품 소스의 46조건·4,046행을 대조하여 하락·누락 없이 상승한 1행을 반영했다. 상승한 문서의 해당 백엔드 전쪽 결과를 수용했다.
+[전쪽 검증](../issues7739_7743_20261119/protected-validation.json) · [갱신 영수증](updates/issues7739-7743-20261120.json)
+
+## 2026-11-20 원 PR 네 건 통합의 보호 하한 상향
+
+최종 제품 `3901aa782d`에서 정본과 동일한 조건으로 Native·fresh WASM
+46조건·4,046쪽을 대조했다. 하락과 누락은 0쪽이며, 공식 두 자리 값이 상승한
+4쪽을 새 하한으로 반영했다.
+[최종 전쪽 검증](../integration_open_prs_20261120/final-protected/validation.json) ·
+[갱신 영수증](updates/integration-open-prs-20261120.json).
+
+## 2026-11-21 조판 PR 9건 통합 검토
+
+46조건 4,046쪽에서 하락·누락 0쪽을 확인하고 화학 문서의 Native 17쪽과 fresh WASM 13쪽을 상향했다. 중첩 표와 sample10은 원본 및 독립 Print에 맞춘 기호 공급으로 고정 기준과 후보의 전쪽 출력을 비교했다. [검증 결과](../planet6897_9208_9236_20261121/final-protection/validation.json) · [갱신 영수증](updates/planet6897-9208-9236-20261121.json).
