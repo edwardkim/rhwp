@@ -132,5 +132,13 @@
     "log_sha256": "c22645d6f8b562dbd080331b3e720a19e2a0f6900925ae09fec678694e37c36a"
   },
   "suite_manifest": "[RustTestSuite] 확인 완료: 2457 sources / 10114 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2149321..2153996",
-  "unit_tier_check": "[RustUnitTier] 확인 완료: 4094 tests / 295 modules / ready 0 / support 85 / white-box 4005 / cfg support items 28"
+  "unit_tier_check": "[RustUnitTier] 확인 완료: 4094 tests / 295 modules / ready 0 / support 85 / white-box 4005 / cfg support items 28",
+  "page_count_oracle": {
+    "registration_commit": "a9ee83ba5e6f71fc76dfa87c24a6be7a232795aa",
+    "passed": 16,
+    "failed": 0,
+    "skipped": 307,
+    "log_sha256": "ffa01e09713617af0feed15d922d828ba0a0eaac1f53374298d079be37e62185",
+    "registration_evidence": "new-sample-oracles.json"
+  }
 }
