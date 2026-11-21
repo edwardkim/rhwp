@@ -1,0 +1,251 @@
+[
+  {
+    "recordId": "page:0:run:4:char:0",
+    "source": {
+      "status": "complete",
+      "sectionIndex": 0,
+      "paragraphIndex": 1,
+      "nestedPath": [],
+      "runIndex": 4,
+      "charOffset": 0,
+      "character": "ᄒ",
+      "codePoint": 4370,
+      "charShapeId": 1
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "한양견고딕",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "한양견고딕",
+      "normalizedFace": "HY Gyeongothic",
+      "cssFamilyChain": [
+        "HY Gyeongothic",
+        "한양견고딕"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "한양견고딕",
+          "output": "HY Gyeongothic",
+          "reason": "declared-program-a2952db593aa839b792f28470be6938dc34df5de31d79861b658b8e0e6eac763"
+        }
+      ]
+    },
+    "layoutMetric": {
+      "requestedFace": "HY Gyeongothic",
+      "aliasResolvedFace": "HY Gyeongothic",
+      "matchKind": "none",
+      "metricEntry": null,
+      "characterMatch": "notApplicable",
+      "widthSource": "heuristicFullwidth",
+      "baseAdvanceHwpunit": 3000,
+      "transforms": [],
+      "finalAdvanceHwpunit": 3000
+    },
+    "paint": {
+      "native": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "HY Gyeongothic,한양견고딕",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "nativeRendererSnapshotRequired"
+        ]
+      },
+      "canvas2d": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "HY Gyeongothic,한양견고딕",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      },
+      "canvaskit": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "HY Gyeongothic,한양견고딕",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      }
+    },
+    "provenance": [
+      {
+        "candidateId": "candidate.28970f1984ed0e4ce06d",
+        "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+        "sourceOwner": "rust-measurement",
+        "relationType": "unknown",
+        "evidenceStatus": "inferred",
+        "knownLimitations": [
+          "The predicate selects advances; it does not prove glyph identity.",
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift"
+      }
+    ],
+    "oracle": {
+      "status": "declared",
+      "profileId": "declared-program-a2952db593aa839b792f28470be6938dc34df5de31d79861b658b8e0e6eac763",
+      "knownLimitations": [
+        "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+      ]
+    }
+  },
+  {
+    "recordId": "page:0:run:33:char:0",
+    "source": {
+      "status": "complete",
+      "sectionIndex": 0,
+      "paragraphIndex": 8,
+      "nestedPath": [],
+      "runIndex": 33,
+      "charOffset": 47,
+      "character": "󰎠",
+      "codePoint": 983968,
+      "charShapeId": 2
+    },
+    "document": {
+      "languageSlot": 0,
+      "inheritedLanguageSlot": null,
+      "face": "한양신명조",
+      "altType": 2,
+      "embedded": false,
+      "substFont": null
+    },
+    "layoutName": {
+      "requestedFace": "한양신명조",
+      "normalizedFace": "HY Sinmyeongjo",
+      "cssFamilyChain": [
+        "HY Sinmyeongjo",
+        "한양신명조"
+      ],
+      "steps": [
+        {
+          "kind": "fontEnvironment",
+          "input": "한양신명조",
+          "output": "HY Sinmyeongjo",
+          "reason": "declared-program-a2952db593aa839b792f28470be6938dc34df5de31d79861b658b8e0e6eac763"
+        }
+      ]
+    },
+    "layoutMetric": {
+      "requestedFace": "한양신명조 (HFT)",
+      "aliasResolvedFace": "한양신명조 (HFT)",
+      "matchKind": "exact",
+      "metricEntry": 626,
+      "characterMatch": "miss",
+      "widthSource": "heuristicFullwidth",
+      "baseAdvanceHwpunit": 1000,
+      "transforms": [
+        {
+          "kind": "ratio",
+          "input": "13.333333333333334",
+          "output": "0.98",
+          "reason": "documentCharacterWidthRatio"
+        },
+        {
+          "kind": "letterSpacing",
+          "input": "-0.6666666666666667",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        },
+        {
+          "kind": "extraCharacterSpacing",
+          "input": "-1.8822904296874907",
+          "output": null,
+          "reason": "layoutSpacingAdjustment"
+        }
+      ],
+      "finalAdvanceHwpunit": 790
+    },
+    "paint": {
+      "native": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "HY Sinmyeongjo,한양신명조",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "nativeRendererSnapshotRequired"
+        ]
+      },
+      "canvas2d": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "HY Sinmyeongjo,한양신명조",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      },
+      "canvaskit": {
+        "status": "unsupported",
+        "certainty": "unsupported",
+        "requested": "HY Sinmyeongjo,한양신명조",
+        "candidates": [],
+        "resolved": null,
+        "source": null,
+        "capabilities": [],
+        "failures": [
+          "studioSnapshotRequired"
+        ]
+      }
+    },
+    "provenance": [
+      {
+        "candidateId": "candidate.28970f1984ed0e4ce06d",
+        "ruleId": "rule.rust-measurement.28970f1984ed0e4ce06d",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.28970f1984ed0e4ce06d",
+        "sourceOwner": "rust-measurement",
+        "relationType": "unknown",
+        "evidenceStatus": "inferred",
+        "knownLimitations": [
+          "The predicate selects advances; it does not prove glyph identity.",
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift"
+      },
+      {
+        "candidateId": "candidate.2627e3f07b81472e07ad",
+        "ruleId": "rule.rust-metric.2627e3f07b81472e07ad",
+        "evidenceAnchor": "mydocs/tech/investigations/issue-4939/font_rule_candidates.json#candidate.2627e3f07b81472e07ad",
+        "sourceOwner": "rust-metric",
+        "relationType": "metric-entry",
+        "evidenceStatus": "verified-by-test",
+        "knownLimitations": [
+          "W1 source digest predates the Stage 2 trace-only refactor; rerun the collector before promoting evidence status."
+        ],
+        "reason": "ledgerSourceDrift"
+      }
+    ],
+    "oracle": {
+      "status": "declared",
+      "profileId": "declared-program-a2952db593aa839b792f28470be6938dc34df5de31d79861b658b8e0e6eac763",
+      "knownLimitations": [
+        "Caller-declared environment; backend font availability and PDF equivalence are not verified."
+      ]
+    }
+  }
+]
