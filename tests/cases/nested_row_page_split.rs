@@ -1,4 +1,9 @@
-//! 쪽보다 긴 중첩 표 한 행을 쪽 경계의 글줄 사이에서 나눈다.
+//! 관계형·고정형 회귀 — 중첩 표의 줄·캐럿 소속과 독립 Print의 쪽 경계를 확인한다.
+//! 주석 갱신 2026-11-21T12:08:29+09:00.
+//! 직전 파일 변경 7d8d6dc56caaef30893e1ed1cb6442a27597dfee 2026-11-21T06:06:13+09:00.
+//! 표 70줄을 편집한 직후 전 4쪽 최저 Native 98.29830% / fresh WASM 98.26549%. 96 DPI, 2px raw.
+//! 2쪽의 1~21줄, 3쪽의 22~58줄, 4쪽의 59~70줄을 같은 편집 상태의 한컴 2020 Print와 대조했다.
+//! 근거: pdf/pr9273-nested-row-split/nested-70-hwp-2020.pdf 및 mydocs/pr/pr_9273_review.md.
 //!
 //! `samples/inner-table-01.hwp`의 바깥 표 마지막 칸에 든 12×2 안쪽 표(둘 다 쪽 경계에서 "나눔")의
 //! ‘SFR-CLOUD-001’ 칸 뒤에 `줄 1`…`줄 70` 문단을 더하면 그 행이 쪽보다 길어진다. 한/글 12.30 Mac은
@@ -8,9 +13,6 @@
 
 use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
-
-const BODY_TOP: f64 = 132.3;
-const BODY_BOTTOM: f64 = 1009.1;
 
 fn path(para: usize) -> String {
     format!(
@@ -46,7 +48,7 @@ fn caret(doc: &HwpDocument, para: usize) -> (u64, f64, f64) {
 }
 
 /// 쪽 그림에서 글이 `text`인 글줄의 y.
-fn drawn_y(doc: &HwpDocument, page: u32, text: &str) -> Option<f64> {
+fn drawn_y(tree: &Value, text: &str) -> Option<f64> {
     fn joined(node: &Value) -> String {
         let own = if node["type"] == "TextRun" {
             node["text"].as_str().unwrap_or_default().to_string()
@@ -68,50 +70,49 @@ fn drawn_y(doc: &HwpDocument, page: u32, text: &str) -> Option<f64> {
             .iter()
             .find_map(|child| walk(child, text))
     }
-    walk(
-        &serde_json::from_str(&doc.get_page_render_tree(page).unwrap()).unwrap(),
-        text,
-    )
+    walk(tree, text)
 }
 
-/// 줄마다 캐럿이 본문 안에 있고 그 자리에 그 줄이 그려지며, 쪽은 뒤로만 간다.
-/// 행은 둘째 쪽(쪽 번호 1)에서 시작하고(통째로 넘기지 않는다) 마지막 줄은 넷째 쪽이다.
-/// `first_break`가 있으면 그 줄부터 셋째 쪽이다(한/글 인쇄의 첫 나눔 자리).
-fn assert_split(doc: &HwpDocument, first_break: Option<usize>) {
+/// 한컴 Print의 줄 소속으로 세 조각의 경계를 검사한다. 캐럿·그리기 모두
+/// 실제 본문 상자 안에서 같은 줄을 가리켜야 한다.
+fn assert_split(doc: &HwpDocument) {
     assert_eq!(doc.page_count(), 4);
-    let mut previous = 0;
+    let trees: Vec<Value> = (0..doc.page_count())
+        .map(|page| serde_json::from_str(&doc.get_page_render_tree(page).unwrap()).unwrap())
+        .collect();
     for para in 1..=70 {
         let (page, y, h) = caret(doc, para);
+        let expected = match para {
+            1..=21 => 1,
+            22..=58 => 2,
+            _ => 3,
+        };
+        assert_eq!(page, expected, "줄 {para}의 인쇄 쪽이 달라졌다");
+        let tree = &trees[page as usize];
+        let body = tree["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|node| node["type"] == "Body")
+            .unwrap();
+        let top = body["bbox"]["y"].as_f64().unwrap();
+        let bottom = top + body["bbox"]["h"].as_f64().unwrap();
         assert!(
-            y >= BODY_TOP - 0.5 && y + h <= BODY_BOTTOM + 0.5,
+            y >= top - 0.5 && y + h <= bottom + 0.5,
             "줄 {para}의 캐럿이 {page}쪽 본문 밖 y {y:.1}에 있다"
         );
-        assert!(page >= previous, "줄 {para}가 앞 쪽 {page}로 돌아갔다");
-        previous = page;
-        let drawn = drawn_y(doc, page as u32, &format!("줄 {para}"))
+        let drawn = drawn_y(tree, &format!("줄 {para}"))
             .unwrap_or_else(|| panic!("줄 {para}가 {page}쪽에 그려지지 않았다"));
         assert!(
             (drawn - y).abs() < h,
             "줄 {para}: 그림 y {drawn:.1}과 캐럿 y {y:.1}이 다르다"
         );
     }
-    assert_eq!(
-        caret(doc, 1).0,
-        1,
-        "행이 둘째 쪽에서 시작하지 않고 통째로 넘어갔다"
-    );
-    assert_eq!(caret(doc, 70).0, 3);
-    if let Some(first) = first_break {
-        assert_eq!(caret(doc, first - 1).0, 1);
-        assert_eq!(caret(doc, first).0, 2, "줄 {first}부터 셋째 쪽이어야 한다");
-    }
 }
 
-/// 편집한 문서는 한/글 인쇄의 쪽 자리까지 대지 않는다. 편집하면 앞 행의 이어진 조각이
-/// 줄어 둘째 쪽에 줄이 더 들어간다(별개 문제).
 #[test]
 fn row_longer_than_page_splits_at_lines() {
-    assert_split(&grown(70), None);
+    assert_split(&grown(70));
 }
 
 #[test]
@@ -130,11 +131,11 @@ fn click_on_continued_part_reaches_that_line() {
 #[test]
 fn saved_hwp_reopens_split_where_hancom_breaks() {
     let saved = grown(70).export_hwp().unwrap();
-    assert_split(&HwpDocument::from_bytes(&saved).unwrap(), Some(22));
+    assert_split(&HwpDocument::from_bytes(&saved).unwrap());
 }
 
 #[test]
 fn saved_hwpx_reopens_split_where_hancom_breaks() {
     let saved = grown(70).export_hwpx().unwrap();
-    assert_split(&HwpDocument::from_bytes(&saved).unwrap(), Some(22));
+    assert_split(&HwpDocument::from_bytes(&saved).unwrap());
 }

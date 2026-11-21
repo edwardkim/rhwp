@@ -12,4 +12,4 @@
 
 ## 독립 Print와 두 렌더러 대조
 
-제품 소스 `c6fb9159bf`에서 측정했다. 겹침 테두리 유무를 나눈 두 저장 입력을 한컴 2020에서 각각 인쇄했다. 두 입력의 1쪽이 Native와 fresh WASM 모두 100.00000%다. [페이지별 입력·PDF 해시와 raw 측정값](assets/semanticist21-20261121/empty-overlap/pages.tsv)
+제품 소스 `c6fb9159bf`에서 측정했다. 빈 문자열에 각각 펼침(`SPREAD`)과 포갬(`OVERLAP`)을 설정한 두 저장 입력을 한컴 2020에서 각각 인쇄했다. 두 입력의 1쪽이 Native와 fresh WASM 모두 100.00000%다. [페이지별 입력·PDF 해시와 raw 측정값](assets/semanticist21-20261121/empty-overlap/pages.tsv)

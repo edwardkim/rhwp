@@ -18019,7 +18019,11 @@ impl LayoutEngine {
                                 self.nested_plain_text_row_has_line_cuts(
                                     &row_cells,
                                     &row_units[index],
-                                    !row_has_plain_source_boundary && *rh > row_declared_px + 0.5,
+                                    // 저장 개체가 행 경계에서 닫히면 그 행의 소유권은
+                                    // 원본 조각에 있다. 측정 높이 차이만으로 이를 다시 자르지 않는다.
+                                    !row_has_plain_source_boundary
+                                        && stored_object_frame_row.is_none()
+                                        && *rh > row_declared_px + 0.5,
                                 )
                             });
                             let row_has_blank_source_frame = row_units.iter().any(|units| {
