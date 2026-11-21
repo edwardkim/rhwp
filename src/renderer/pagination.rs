@@ -51,15 +51,19 @@ pub(crate) fn page_starts_with_hidden_empty_lines(
 /// 문단 뒤 간격 + 다음 문단 앞 간격」에서 이어받으면, 한/글은 이 빈 줄을 감추지 않고 줄 상자를
 /// 남겼다(빈 줄 감추기 구역에서도 한/글 2020 Print 가 이 자리에 다음 내용을 둔다: 과업지시서
 /// 2쪽 빈 줄 0 + 1800 + 1080 = 「목 차」 2880, 시장구조조사 100쪽 0 + 1000 + 300 + 앞 간격
-/// 3320 = 「제3절 소결」 4620). 감춘 줄이면 다음 줄은 이 줄의 전진 없이 이어진다. 합성 줄은
-/// 저장 증거가 아니다.
+/// 3320 = 「제3절 소결」 4620). 감춘 줄이면 다음 줄은 이 줄의 전진 없이 이어진다. 합성 줄과
+/// 파서가 누적해 만든 사다리(`saved_ladder` 거짓 — HWP3 원본)는 저장 증거가 아니다.
 pub(crate) fn stored_ladder_keeps_empty_line(
+    saved_ladder: bool,
     para: &Paragraph,
     next: Option<&Paragraph>,
     para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
     dpi: f64,
 ) -> bool {
     use crate::model::paragraph::LineSeg;
+    if !saved_ladder {
+        return false;
+    }
     let (Some(next), [line]) = (next, para.line_segs.as_slice()) else {
         return false;
     };
@@ -2115,6 +2119,7 @@ crate::storage::clone_fields!(PaginationOpts, {hide_empty_line, respect_vpos_res
 #[derive(Debug, Clone, Copy, Default)]
 struct PaginationSourceContext {
     source_uses_inline_field_reset: bool,
+    saved_vertical_ladder: bool,
     hwp3_converted_missing_lineseg: bool,
     stored_geometry_policy: crate::model::provenance::StoredGeometryPolicy,
     stored_body_layout: bool,
@@ -2129,6 +2134,7 @@ impl PaginationSourceContext {
             source_uses_inline_field_reset: profile.hwpx_stored_layout()
                 || hwp3_converted_missing_lineseg,
             hwp3_converted_missing_lineseg,
+            saved_vertical_ladder: profile.saved_vertical_ladder(),
             stored_geometry_policy: profile.stored_geometry_policy(),
             stored_body_layout: !profile.session_edited()
                 && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout()),
@@ -2138,6 +2144,7 @@ impl PaginationSourceContext {
     fn from_public_variant(is_hwp3_variant: bool) -> Self {
         Self {
             source_uses_inline_field_reset: is_hwp3_variant,
+            saved_vertical_ladder: !is_hwp3_variant,
             hwp3_converted_missing_lineseg: is_hwp3_variant,
             stored_geometry_policy: is_hwp3_variant.into(),
             stored_body_layout: false,
