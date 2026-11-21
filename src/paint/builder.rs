@@ -378,8 +378,8 @@ impl LayerBuilder {
                     placeholder.kind
                         == crate::renderer::render_tree::PlaceholderKind::MissingPicture
                 }
-                // #8858 그림 미지정과 #8957 미해결 연결 그림의 편집용 표시를 제외한다.
-                RenderNodeType::Image(image) => image.is_nonprinting_picture_placeholder(),
+                // 편집용 미지정·연결 그림 표시와 Print가 지원하지 않는 Picture 코덱.
+                RenderNodeType::Image(image) => image.is_nonprinting_picture(),
                 _ => false,
             }
         {

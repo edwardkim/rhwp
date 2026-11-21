@@ -1071,7 +1071,27 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                 storage,
             )?,
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
-            font_space_em: cs.font_space_em,
+            font_space_em: cs.font_space_em.or_else(|| {
+                // 정적 공백 계약이 없을 때도 원본 useFontSpace 선언을 잃지 않는다.
+                // 실제 선택한 동일 프로그램만 해소하며 generic fallback을 재지정하지 않는다.
+                if !styles
+                    .source_char_shapes
+                    .get(char_style_id as usize)?
+                    .use_font_space
+                {
+                    return None;
+                }
+                let identity = cs.font_families_primary_program.get(1).copied().flatten()?;
+                styles
+                    .native_pua_fonts
+                    .get_otf_for_source(
+                        cs.font_family_for_lang(1),
+                        cs.bold,
+                        cs.italic,
+                        styles.native_otf_metrics_source_ttf(char_style_id, 1),
+                    )?
+                    .selected_program_space_advance_em(&identity)
+            }),
             inherited_half_space_em: false,
             layout_half_space: false,
             layout_half_space_em: {

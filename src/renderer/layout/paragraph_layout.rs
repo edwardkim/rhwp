@@ -72,6 +72,8 @@ mod inline_table_geometry;
 pub(crate) use inline_table_geometry::InlineTableParagraphGeometry;
 mod inline_text_advance;
 mod stored_textbox_frame;
+mod stored_wrap_frame;
+use stored_wrap_frame::full_width_line_box as stored_full_width_line_box;
 mod tab_frame;
 /// 분배 정렬도 다음 글자가 없는 마지막 글리프의 실제 점유 끝을 기준으로 한다.
 /// 마지막 개체 앞 공백과 표시/중첩/주석 제어가 소유한 폭은 일반 글자의 자간으로
@@ -3341,33 +3343,6 @@ const TAC_OBJECT_ASCENT_RATIO: f64 = 0.85;
 mod endnote_prefix;
 pub(crate) use endnote_prefix::leading_endnote_prefix_geometry;
 mod inline_picture_alignment;
-
-/// [#7548] 문단의 전폭 저장 줄(가장 넓은 원본 줄)의 시작 cs 와 끝(cs+sw).
-/// 모든 줄이 같은 폭이면(좁혀진 줄이 없으면) None — 기준으로 쓸 대비가 없다.
-fn stored_full_width_line_box(para: &Paragraph) -> Option<(i32, i32)> {
-    // 같은 vpos 를 공유하는 세그먼트(개체 양옆으로 갈린 한 줄)는 전폭 기준이 될 수 없다.
-    let original: Vec<_> = para
-        .line_segs
-        .iter()
-        .filter(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && seg.segment_width > 0)
-        .filter(|seg| {
-            para.line_segs
-                .iter()
-                .filter(|other| other.vertical_pos == seg.vertical_pos)
-                .count()
-                == 1
-        })
-        .collect();
-    let widest = original.iter().map(|seg| seg.segment_width).max()?;
-    if original.iter().all(|seg| seg.segment_width == widest) {
-        return None;
-    }
-    let full = original
-        .iter()
-        .filter(|seg| seg.segment_width == widest)
-        .min_by_key(|seg| seg.column_start)?;
-    Some((full.column_start, full.column_start + full.segment_width))
-}
 
 impl LayoutEngine {
     /// [#8653] TAC 표만 담은 문단의 한 저장 줄을 소유한 다른 표(저장 밴드 = 그 표의 바깥
@@ -7567,11 +7542,32 @@ impl LayoutEngine {
                 && cell_ctx.is_none()
                 && cs_is_own_margin
                 && (stored_tac_assignment.is_some() || line_has_inline_tac_table);
+            let stored_wrap_column_frame = uses_stored_segment_geometry
+                && cell_ctx.is_none()
+                && self.is_body_flow_col_area(col_area)
+                && wrap_anchor.is_none()
+                // 배제 개체는 앞 문단이 소유할 수도 있다. 현재 줄의 배제 증거와
+                // 원본 전폭 줄의 좌표계 인증을 함께 쓰며 소유 문단을 추측하지 않는다.
+                && (has_picture_shape_square_wrap
+                    || precomputed_body_wrap_line
+                    || body_square_wrap_stored_line)
+                && para.is_some_and(|source| {
+                    stored_wrap_frame::owns_column_row(
+                        source,
+                        comp_line.column_start,
+                        comp_line.segment_width,
+                        &crate::renderer::composer::ParagraphBox::body_for_style(
+                            col_area.width,
+                            para_style,
+                            self.dpi,
+                        ),
+                    )
+                });
             let (effective_margin_left, effective_margin_right) = if physical_frame_rows {
                 // 프레임 구간에는 문단 여백·배제가 이미 들어 있지만, 채움이
                 // 별도로 차감한 들여쓰기는 글자 원점과 가용 폭에도 한 번 적용한다.
                 (line_indent, 0.0)
-            } else if stored_inline_own_margin || stored_textbox_line {
+            } else if stored_inline_own_margin || stored_textbox_line || stored_wrap_column_frame {
                 // 유효한 저장 줄의 시작·폭은 완성된 프레임이다. 문단 여백을
                 // 다시 적용하지 않고 별도 줄 들여쓰기만 소비한다.
                 (line_indent, 0.0)

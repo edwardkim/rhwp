@@ -1638,6 +1638,18 @@ pub(crate) fn lookup_font_name_in_environment(
                 if query != target && !preserves_hft_alias {
                     decision.css_family_chain.retain(|face| face != query);
                     decision.css_family_chain.insert(0, query.to_string());
+                } else if query != target
+                    && preserves_hft_alias
+                    && decision.requested_face.as_deref().is_some_and(|source| {
+                        environment
+                            .selected_program_identity_for(source, lang_index, font_id)
+                            .is_some()
+                    })
+                    && !decision.css_family_chain.iter().any(|face| face == query)
+                {
+                    // 주 프로그램의 순서는 유지한다. 같은 실제 조회 별칭을 공유하는
+                    // 한글·영문 분리 프로그램은 주 face의 결측 글리프를 공급할 수 있다.
+                    decision.css_family_chain.insert(1, query.to_string());
                 }
             }
             let canonical_rule = decision.requested_face.as_deref().and_then(|source| {

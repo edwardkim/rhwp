@@ -130,6 +130,26 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 선택한 주 프로그램 자체의 공백 전진. 뒤 fallback의 공백은 사용하지 않는다.
+    /// useFontSpace의 원본 선언을 확인한 호출자만 사용한다.
+    pub(crate) fn selected_program_space_advance_em(
+        &self,
+        identity: &super::font_environment::FontProgramIdentity,
+    ) -> Option<f64> {
+        let program = self.programs.iter().find(|program| {
+            identity.matches(
+                &program.source_digest,
+                &program.selection_digest,
+                program.source_face_index,
+            )
+        })?;
+        let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
+        let glyph = face.glyph_index(' ').filter(|glyph| glyph.0 != 0)?;
+        let advance = face.glyph_hor_advance(glyph)?;
+        let em = face.units_per_em();
+        (em > 0).then(|| f64::from(advance) / f64::from(em))
+    }
+
     /// 뒤 대체 후보가 아닌 실제 주 프로그램의 cmap을 확인한다.
     /// 같은 family의 기준 파일 결측보다 현재 공급한 프로그램의 hit가 우선한다.
     pub(crate) fn primary_has_glyph(&self, character: char) -> Option<bool> {
