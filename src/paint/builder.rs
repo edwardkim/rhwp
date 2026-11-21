@@ -10,7 +10,8 @@ use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
 use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{
-    BoundingBox, ControlCode, NodeId, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
+    BoundingBox, ControlCode, GroupNode, NodeId, PageRenderTree, RectangleNode, RenderNode,
+    RenderNodeType,
 };
 use std::collections::HashMap;
 
@@ -371,6 +372,28 @@ impl LayerBuilder {
             }
         {
             return None;
+        }
+
+        // 기울인 도형은 원래 크기로 그린 몸체·글·그림자를 한 변환 묶음으로 기울인다.
+        if let Some(skew) = node_skew(node) {
+            let mut local = node.clone();
+            clear_skew(&mut local);
+            let child = self.build_node(&local)?;
+            let mut group = LayerNode::group(
+                node.bbox,
+                Some(node.id),
+                vec![child],
+                CacheHint::None,
+                GroupKind::Group(GroupNode {
+                    paint_transform: Some(skew),
+                    section_index: None,
+                    para_index: None,
+                    control_index: None,
+                }),
+            )
+            .with_layer(node.layer);
+            group.bounds = group.visual_bounds(true);
+            return Some(group);
         }
 
         if let Some(parts) = super::parallel_shadow::split(node) {
@@ -1146,6 +1169,24 @@ fn text_run_ops(
         ));
     }
     ops
+}
+
+fn node_skew(node: &RenderNode) -> Option<[f64; 6]> {
+    match &node.node_type {
+        RenderNodeType::Rectangle(rect) => rect.transform.skew,
+        RenderNodeType::Ellipse(ellipse) => ellipse.transform.skew,
+        RenderNodeType::Path(path) => path.transform.skew,
+        _ => None,
+    }
+}
+
+fn clear_skew(node: &mut RenderNode) {
+    match &mut node.node_type {
+        RenderNodeType::Rectangle(rect) => rect.transform.skew = None,
+        RenderNodeType::Ellipse(ellipse) => ellipse.transform.skew = None,
+        RenderNodeType::Path(path) => path.transform.skew = None,
+        _ => {}
+    }
 }
 
 #[cfg(test)]
