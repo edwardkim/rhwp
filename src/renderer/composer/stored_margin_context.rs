@@ -3,6 +3,15 @@
 use super::{line_breaking, ParagraphBox, ResolvedStyleSet};
 use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 
+fn trace_margin_context(source: &Paragraph) -> bool {
+    std::env::var("RHWP_DIAG_MARGIN_CONTEXT").is_ok_and(|filter| {
+        filter == "all"
+            || filter
+                .split(',')
+                .any(|value| value.parse().ok() == Some(source.para_shape_id))
+    })
+}
+
 /// 구판 writer의 fallback 원본을 공통 여백 해석기로 복원한다.
 /// 출처가 없는 이전 판본은 기존 2배 저장 단위 계약을 유지한다.
 /// px 값을 배로 늘리면 하위 단위 비트가 CHAR인 음수 값의 의미가 달라진다.
@@ -144,12 +153,16 @@ fn has_previous_margin_partition_with_storage<S: crate::storage::Storage>(
     let starts = |rows: &[LineSeg]| storage.collect(rows.iter().map(|line| line.text_start));
     let source_starts = storage
         .collect((0..source.line_segs.len()).map(|index| source.line_seg_text_start(index)))?;
+    let trace = trace_margin_context(source);
     let Some((current, _)) =
         current_rows_with_storage(source, width, styles, dpi, 0, body, storage)?
     else {
         return Ok(false);
     };
     if starts(&current)? == source_starts {
+        if trace {
+            eprintln!("MARGIN_CONTEXT shape={} body={body} width={width} current_equals_source starts={source_starts:?}", source.para_shape_id);
+        }
         return Ok(false);
     }
     let previous_style = previous.para_styles.get(source.para_shape_id as usize);
@@ -158,17 +171,25 @@ fn has_previous_margin_partition_with_storage<S: crate::storage::Storage>(
     } else {
         ParagraphBox::content_for_style(width, previous_style, dpi)
     };
-    if !line_breaking::stored_rows_reproduce_frame_expectation_with_storage(
-        source,
-        &mut previous_box.frame(0),
-        previous,
-        dpi,
-        storage,
-    )? {
+    let previous_frame_matches =
+        line_breaking::stored_rows_reproduce_frame_expectation_with_storage(
+            source,
+            &mut previous_box.frame(0),
+            previous,
+            dpi,
+            storage,
+        )?;
+    if !previous_frame_matches && !trace {
         return Ok(false);
     }
     match current_rows_with_storage(source, width, previous, dpi, 0, body, storage)? {
-        Some((rows, _)) => Ok(starts(&rows)? == source_starts),
+        Some((rows, _)) => {
+            let previous_starts = starts(&rows)?;
+            if trace {
+                eprintln!("MARGIN_CONTEXT shape={} body={body} width={width} previous_frame={previous_frame_matches} indent={} previous_indent={} source={source_starts:?} current={:?} previous={previous_starts:?} first={:?}", source.para_shape_id, style.indent, previous_style.map_or(0.0, |style| style.indent), starts(&current)?, source.line_segs.first());
+            }
+            Ok(previous_frame_matches && previous_starts == source_starts)
+        }
         None => Ok(false),
     }
 }
@@ -285,6 +306,16 @@ pub(crate) fn project_cell_with_storage<S: crate::storage::Storage>(
     storage: &S,
 ) -> Result<Option<Vec<Paragraph>>, S::Error> {
     crate::storage::with_optional(|failure| {
+        for paragraph in original {
+            if trace_margin_context(paragraph) && is_plain_original(paragraph, styles) {
+                let _ = crate::storage::optional(
+                    has_previous_margin_partition_with_storage(
+                        paragraph, width, styles, previous, dpi, false, storage,
+                    ),
+                    failure,
+                )?;
+            }
+        }
         if original.first()?.line_segs.first()?.vertical_pos != 0
             || original.iter().any(|para| !is_plain_original(para, styles))
             || !original.iter().any(|para| {

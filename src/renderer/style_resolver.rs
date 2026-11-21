@@ -679,6 +679,7 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
     styles: &mut ResolvedStyleSet,
     storage: &S,
 ) -> Result<(), S::Error> {
+    let trace_source_program = std::env::var("RHWP_DIAG_SOURCE_PROGRAM").ok();
     styles.source_program_projection_slots = Default::default();
     // [#8639] 한/글은 변경 추적 설정(`HWPTAG_TRACKCHANGE` · `<hh:trackchageConfig flags>`)에
     // 0x08 이 있으면 가로 상자가 같은 저장 줄을 그대로 쓰고, 없을 때만 현재 글꼴로 다시
@@ -722,6 +723,12 @@ fn refresh_source_program_projection_slots_with_storage<S: storage::Storage>(
                 continue;
             };
             let primary = primary_font_name(style.font_family_for_lang(language));
+            if trace_source_program
+                .as_ref()
+                .is_some_and(|filter| filter == "all" || font.name.contains(filter))
+            {
+                eprintln!("SOURCE_PROGRAM shape={shape_id} lang={language} source={:?} primary={primary:?} alt={} embedded={} native={} subst={:?} metric={:?} original_glyph={:?} trusted={} verified={} source_ttf={}", font.name, font.alt_type, font.is_embedded, font.native_program.is_some(), font.subst_font.as_ref().map(|subst| (subst.font_type, &subst.face)), style.metric_face_for_lang(language), style.original_glyph_metric_face_for_lang(language), style.font_metric_trusted_for_lang(language), super::layout::verified_source_projection_face(primary, style.bold, style.italic), style.source_ttf_for_lang(language));
+            }
             if font.alt_type != 1
                 || font.is_embedded
                 || font.native_program.is_some()
