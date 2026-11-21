@@ -306,6 +306,36 @@ class RenderDiffEvidenceTests(unittest.TestCase):
         ):
             self.assertNotIn("silhouette.tsv", self.index_zip(bad_entries, sweep_dirs=[key], pr_head="b" * 40))
 
+    def test_summary_retains_detailed_reports_with_and_without_index(self):
+        import os
+        import subprocess
+        import tempfile
+        import textwrap
+
+        step = WORKFLOW_PATH.read_text().split("      - name: Add render diff summary\n", 1)[1]
+        command = textwrap.dedent(step.split("        run: |\n", 1)[1])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            reports = ["rhwp-studio/e2e/screenshots/render-diff/summary.md",
+                       "rhwp-studio/e2e/screenshots/render-diff/pdf-summary.md",
+                       "output/renderer-baseline/canvaskit-readiness/baseline-report.md",
+                       "output/render-diff-build/summary.md"]
+            for path in reports:
+                (root / path).parent.mkdir(parents=True, exist_ok=True)
+                (root / path).write_text(path)
+            target = root / "summary"
+            for indexed in (False, True):
+                target.write_text("")
+                if indexed:
+                    (root / "output/render-diff-build/evidence.md").write_text("INDEX")
+                subprocess.run(["bash", "-eu", "-c", command], check=True, cwd=root,
+                               env={**os.environ, "ARTIFACT_URL": "", "GITHUB_STEP_SUMMARY": str(target)})
+                summary = target.read_text()
+                folded = summary.split("<details>", 1)[1].split("</details>", 1)[0]
+                for path in reports:
+                    self.assertIn(path, folded)
+                self.assertEqual("INDEX" in summary.split("<details>", 1)[0], indexed)
+
     def test_workflow_uses_the_uploaded_index_and_keeps_native_record_advisory(self):
         workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
         native = workflow.split("      - name: Record native CLI build evidence\n", 1)[1].split("\n\n", 1)[0]

@@ -127,3 +127,14 @@ sys.stdout.buffer.write(out.getvalue())
   assert.ok((await collect()).every(row=>row.result==='결과 미확인'));
   assert.equal(downloads,1);
 });
+
+test('선택된 Render Diff의 비교 단계가 모두 생략되면 일반 CI 통과로 요약하지 않는다', async () => {
+  const jobs = [{name:'Canvas visual diff', id:44, conclusion:'success',
+    steps:['Run canvas visual diff and PDF report','Run selected CanvasKit readiness gate']
+      .map(name => ({name,conclusion:'skipped'}))}];
+  const evidence = await renderEvidence({}, {}, run, jobs, pull.base.repo.html_url);
+  const text = summary(pull, [{name:'Render Diff',run,jobs,evidence}]);
+  assert.match(text,/Render Diff \| 측정 생략 \| `시각 비교 0건` \| \[작업 로그\]/);
+  assert.doesNotMatch(text,/일반 CI/);
+  assert.deepEqual(await renderEvidence({}, {}, run, [], pull.base.repo.html_url), []);
+});

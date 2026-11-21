@@ -54,9 +54,13 @@ async function renderEvidence(github, params, run, jobs, base) {
   if (!job) return [];
   const expected = REPORTS.filter(([name]) => job.steps?.some(s => s.name === name &&
     ['success', 'failure'].includes(s.conclusion))).flatMap(([, reports]) => reports);
-  if (!expected.length) return [];
-
   const runUrl = base + '/actions/runs/' + run.id;
+  if (!expected.length) {
+    const skipped = REPORTS.every(([name]) => job.steps?.some(s => s.name === name && s.conclusion === 'skipped'));
+    if (!skipped) return [];
+    return [{name:'Render Diff', result:'측정 생략', point:'시각 비교 0건', rank:1,
+      link:'[작업 로그](' + runUrl + '/job/' + job.id + ')'}];
+  }
   const uploadStep = name => job.steps.find(s => s.name === name && s.conclusion === 'success');
   const upload = uploadStep('Upload render diff index');
   const api = github.rest.actions;

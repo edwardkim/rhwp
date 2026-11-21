@@ -1001,9 +1001,9 @@ jobs:
           fi
           if [ -f output/render-diff-build/evidence.md ]; then
             cat output/render-diff-build/evidence.md >> "$GITHUB_STEP_SUMMARY"
-            exit 0
           fi
           cd rhwp-studio
+          details_open=false
           for summary in \
             e2e/screenshots/render-diff/summary.md \
             e2e/screenshots/render-diff/pdf-summary.md \
@@ -1011,7 +1011,14 @@ jobs:
             ../output/render-diff-build/summary.md
           do
             if [ -f "$summary" ]; then
+              if [ "$details_open" = false ]; then
+                printf '\n<details><summary>페이지별 결과 및 진단</summary>\n\n' >> "$GITHUB_STEP_SUMMARY"
+                details_open=true
+              fi
               cat "$summary" >> "$GITHUB_STEP_SUMMARY"
               printf '\n\n' >> "$GITHUB_STEP_SUMMARY"
             fi
           done
+          if [ "$details_open" = true ]; then
+            printf '</details>\n' >> "$GITHUB_STEP_SUMMARY"
+          fi
