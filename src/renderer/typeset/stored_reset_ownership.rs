@@ -167,19 +167,24 @@ pub(super) fn consumed_prefix_before_float(
     paragraphs: &[Paragraph],
     para_index: usize,
 ) -> Option<i32> {
-    if let Some(origin) = accepted_source_prefix_origin(st, paragraphs, para_index) {
-        return Some(origin);
-    }
     if !st.profile.hwp5_origin_hwpx()
         || st.profile.session_edited()
         || st.col_count != 1
-        || !st.current_items.is_empty()
-        || st.current_height != 0.0
         || st.current_zone_y_offset != 0.0
         || st.current_endnote_flow
     {
         return None;
     }
+    let first = match st.current_items.first() {
+        None if st.current_height == 0.0 => para_index,
+        Some(
+            PageItem::Table {
+                para_index: first, ..
+            }
+            | PageItem::FullParagraph { para_index: first },
+        ) if *first <= para_index => *first,
+        _ => return None,
+    };
     let page = st
         .pages
         .iter()
@@ -192,7 +197,7 @@ pub(super) fn consumed_prefix_before_float(
     let PageItem::FullParagraph { para_index: before } = column.items.last()? else {
         return None;
     };
-    if before.checked_add(1)? != para_index {
+    if before.checked_add(1)? != first {
         return None;
     }
     let valid = |paragraph: &Paragraph| {
@@ -207,13 +212,34 @@ pub(super) fn consumed_prefix_before_float(
                     && line.line_spacing >= 0
             })
     };
-    let current = paragraphs.get(para_index)?;
+    let current = paragraphs.get(first)?;
     if !valid(current) {
         return None;
     }
     let origin = current.line_segs.first()?.vertical_pos;
     if origin <= 0 {
         return None;
+    }
+    if !st.current_items.is_empty()
+        && st.vpos_page_base != Some(origin)
+        && st
+            .paragraph_origins
+            .get(&first)
+            .is_none_or(|frame| frame.source_vpos_base != origin || frame.flow_start != 0.0)
+    {
+        return None;
+    }
+    let mut previous = None;
+    for paragraph in paragraphs.get(first..=para_index)? {
+        if !valid(paragraph) {
+            return None;
+        }
+        for line in &paragraph.line_segs {
+            if previous.is_some_and(|vpos| line.vertical_pos < vpos) {
+                return None;
+            }
+            previous = Some(line.vertical_pos);
+        }
     }
     let mut expected = origin;
     let mut reset = *before;
@@ -241,7 +267,7 @@ pub(super) fn consumed_prefix_before_float(
         |item| matches!(item, PageItem::FullParagraph { para_index } if *para_index == guide_index),
     )?;
     // 실제 앞 쪽이 prefix의 모든 문단을 온전히 소유하며 감추지 않았다.
-    if column.items.len() - guide_position - 1 != para_index - reset
+    if column.items.len() - guide_position - 1 != first - reset
         || column.items[guide_position + 1..].iter().enumerate().any(|(offset, item)| {
             !matches!(item, PageItem::FullParagraph { para_index } if *para_index == reset + offset)
                 || st.hidden_empty_paras.contains(&(reset + offset))
@@ -299,46 +325,14 @@ pub(super) fn record_consumed_prefix_origin(
     }
 }
 
-/// 실제 첫 표가 확정한 원본 단 축은 같은 저장 사다리의 후속 표도 공유한다.
+/// 실제 첫 문단·표가 수용한 원본 단 축은 같은 사다리의 후속 float도 공유한다.
 pub(super) fn accepted_source_prefix_origin(
     st: &super::TypesetState,
     paragraphs: &[Paragraph],
     para_index: usize,
 ) -> Option<i32> {
-    if !st.profile.hwp5_origin_hwpx() || st.profile.session_edited() || st.col_count != 1 {
+    if st.current_items.is_empty() {
         return None;
     }
-    let PageItem::Table {
-        para_index: first, ..
-    } = st.current_items.first()?
-    else {
-        return None;
-    };
-    let origin = st.paragraph_origins.get(first)?;
-    if origin.flow_start != 0.0
-        || origin.source_vpos_base <= 0
-        || st.vpos_page_base != Some(origin.source_vpos_base)
-    {
-        return None;
-    }
-    let mut previous = None;
-    for paragraph in paragraphs.get(*first..=para_index)? {
-        if paragraph.column_type != ColumnBreakType::None
-            || paragraph.stored_text_partition_is_dirty()
-            || paragraph.cell_format_vpos_dirty
-            || paragraph.source_line_seg_vertical_pos.is_some()
-            || paragraph.line_segs.is_empty()
-        {
-            return None;
-        }
-        for line in &paragraph.line_segs {
-            if super::is_synthetic_line_seg(line)
-                || previous.is_some_and(|vpos| line.vertical_pos < vpos)
-            {
-                return None;
-            }
-            previous = Some(line.vertical_pos);
-        }
-    }
-    Some(origin.source_vpos_base)
+    consumed_prefix_before_float(st, paragraphs, para_index)
 }
