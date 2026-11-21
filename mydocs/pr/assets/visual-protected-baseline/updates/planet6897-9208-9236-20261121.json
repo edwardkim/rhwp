@@ -1,0 +1,255 @@
+{
+  "previous_table_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+  "table_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+  "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+  "native_sha256": "670c531fc4fa88ccff57c620900a83350bee05d314d4f777c8819de243efbc93",
+  "wasm_sha256": "61a04d5bfbad43d355e12c4683ba03eb1adc10d1d631948158ee6ff7a808a219",
+  "wasm_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+  "conditions": 46,
+  "compared_rows": 4046,
+  "declines": [],
+  "increases": [
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 5,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 6,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 11,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 12,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 13,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 14,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 15,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 16,
+      "previous": "99.75",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 26,
+      "previous": "99.98",
+      "current": "99.99"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 27,
+      "previous": "99.86",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 37,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 52,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 59,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 68,
+      "previous": "99.75",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 72,
+      "previous": "99.91",
+      "current": "99.97"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 73,
+      "previous": "99.79",
+      "current": "99.96"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 91,
+      "previous": "99.76",
+      "current": "99.99"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 11,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 13,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 14,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 16,
+      "previous": "99.90",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 27,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 37,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 52,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 59,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 68,
+      "previous": "99.78",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 72,
+      "previous": "99.95",
+      "current": "99.97"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 73,
+      "previous": "99.80",
+      "current": "99.95"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 91,
+      "previous": "99.71",
+      "current": "99.98"
+    }
+  ],
+  "accepted_at": "2026-11-21T16:41:02.609001+09:00"
+}
