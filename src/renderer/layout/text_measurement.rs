@@ -1035,6 +1035,7 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                 .get(lang_index)
                 .copied()
                 .unwrap_or(false),
+            latin_decimal_halfwidth: lang_index == 1 && cs.latin_decimal_halfwidth,
             isolated_jamo_font: styles.isolated_jamo_font.or_else(|| {
                 matches!(
                     cs.font_family_for_lang(lang_index)
@@ -2211,6 +2212,14 @@ fn char_width_decision_with_hft_tracking<'a>(
     let (base_width_raw, width_source, metric, character_match) = if let Some(w) = font_space_width
     {
         (w, "useFontSpace", None, "notApplicable")
+    } else if c.is_ascii_digit() && style.latin_decimal_halfwidth {
+        em_exact = Some(0.5);
+        (
+            quantize_hwp_px(font_size * 0.5),
+            "measuredOriginalGlyph",
+            None,
+            "exact",
+        )
     } else if let Some(em) = style
         .native_pua_metrics
         .as_ref()

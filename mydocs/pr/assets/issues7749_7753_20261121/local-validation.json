@@ -1,0 +1,184 @@
+{
+  "validated_head": "dd2f0a83ac83be203163abcd3669ace3c9ebd9fa",
+  "full_nextest_test_snapshot": "1722836b78a343b34cd6e15423c4e4b923678c6d",
+  "renderer_source": "ec8515f1d8d52353f1e5092eb080ab2619de55e7",
+  "base": "2480af27df441ffd199cc24602afddbd2d13dcfe",
+  "host": "ubuntu-ted",
+  "captured_at": "2026-11-21T09:31:06+09:00",
+  "cargo_target": "target/pr-review",
+  "rust_tests_font_environment": "minimum-public-fonts",
+  "rust_test_fonts": [
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "renderer_producers": {
+    "native": "4db00c9818f0b9b12fe8dde8b2c7d3667e529fb3ceb8eaf5ca658da32bfa8758",
+    "wasm": {
+      "package.json": "d4d58453e79b115c23d643d2f354b9d4710b26fe393549b5a8bb2f636d7903e3",
+      "rhwp.d.ts": "6311df3944ea615a49959d4b361dba2d5525b94e810954d3b4a4b113e28cc56e",
+      "rhwp.js": "d2961dafb2c470968a7376d577d434f4257ca34195c9b4cc14fb6f3f1f57a8f3",
+      "rhwp_bg.wasm": "fa4bd73967a7c35cd64e458f51a88156dc8711f8ef528d963e81595f9d56af59",
+      "rhwp_bg.wasm.d.ts": "d34ac5a67648cb80cd7f64146db6df93a07d6d665ae8cfd3d516553091c02ae9"
+    }
+  },
+  "checks": {
+    "skia-lib": {
+      "command": "bash /home/tsjang/rhwp/output/pr-review/issues7749-7753/validation-tools/minimal-font-run.sh cargo test --locked --profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --lib",
+      "exit_code": 0,
+      "log_sha256": "1cb625575a0d559f9010de0b64208f0c9df59b42f97b9396d4ce5ee4e6e71d7a",
+      "summary": [
+        "test result: ok. 3853 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 31.93s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "clippy-native": {
+      "command": "cargo clippy --locked --target-dir /home/tsjang/rhwp/target/pr-review -- -D warnings",
+      "exit_code": 0,
+      "log_sha256": "0875eec6352b3b43f3d50693bc27f00865db3710c09f82ec88195435611d9e08",
+      "summary": [
+        "Checking rhwp v0.9.1 (/home/tsjang/rhwp)",
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 2m 26s"
+      ]
+    },
+    "clippy-wasm": {
+      "command": "cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown --target-dir /home/tsjang/rhwp/target/pr-review -- -D warnings",
+      "exit_code": 0,
+      "log_sha256": "8dfb39df85b7c8b55ae1e5d4014699544180c6b9a6d565a185cc7ca1288b5f34",
+      "summary": [
+        "Checking rhwp v0.9.1 (/home/tsjang/rhwp)",
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 56s"
+      ]
+    },
+    "prepare-tests": {
+      "command": "node scripts/rust-test-suite-manifest.mjs --prepare",
+      "exit_code": 0,
+      "log_sha256": "9a0e19d548160e8bd3b60fff7f0382c0041203ce8342e75a96a47987062e0951",
+      "summary": [
+        "[RustTestSuite] 새 test source 없음",
+        "[RustTestSuite] 생성: 28 harnesses, 20 exceptions",
+        "[RustTestSuite] 확인 완료: 2442 sources / 10082 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2138646..2142987"
+      ]
+    },
+    "suite-manifest": {
+      "command": "node scripts/rust-test-suite-manifest.mjs --check --base-ref 2480af27df441ffd199cc24602afddbd2d13dcfe",
+      "exit_code": 0,
+      "log_sha256": "6670db2da8e6b77263e3731a2f831be6c341ef6e9f0ce0cf581223b52c425855",
+      "summary": [
+        "[RustTestSuite] 확인 완료: 2442 sources / 10082 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2138646..2142987"
+      ]
+    },
+    "diff-check": {
+      "command": "git diff --check 2480af27df441ffd199cc24602afddbd2d13dcfe HEAD",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "rustfmt": {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "focused": {
+      "command": "bash /home/tsjang/rhwp/output/pr-review/issues7749-7753/validation-tools/minimal-font-run.sh node scripts/run-rust-test.mjs issue_7749_7753_print_ownership -- --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia",
+      "exit_code": 0,
+      "log_sha256": "093950d3a058cbce0a1b97a375e9ab2ffbe856f3aeb51c35578230d9a183ed24",
+      "summary": [
+        "Summary [   2.214s] 5 tests run: 5 passed, 328 skipped"
+      ]
+    },
+    "focused-comment-fix": {
+      "command": "bash /home/tsjang/rhwp/output/pr-review/issues7749-7753/validation-tools/minimal-font-run.sh node scripts/run-rust-test.mjs issue_7749_7753_print_ownership -- --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia",
+      "exit_code": 0,
+      "log_sha256": "d146e22d1af3b31dc9c780bcd8d8c2cc7c3e8f88e2351cbf1d2a97f907773694",
+      "summary": [
+        "Summary [   2.119s] 5 tests run: 5 passed, 355 skipped"
+      ]
+    },
+    "nextest": {
+      "command": "bash /home/tsjang/rhwp/output/pr-review/issues7749-7753/validation-tools/minimal-font-run.sh cargo nextest run --locked --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --tests --test-threads 12 --no-fail-fast",
+      "exit_code": 0,
+      "log_sha256": "27fbdf927b6f57ec57b2fbff667bdf9b8f4ddba17b378524db0d5c63eec6cdda",
+      "summary": [
+        "Summary [1056.875s] 13854 tests run: 13854 passed (9 slow), 45 skipped"
+      ]
+    },
+    "skia-picture": {
+      "command": "bash /home/tsjang/rhwp/output/pr-review/issues7749-7753/validation-tools/minimal-font-run.sh node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia",
+      "exit_code": 0,
+      "log_sha256": "c0d6f8df749aa274a08f662fdd613bcac68fae94beb5b70d7a692629712d0e25",
+      "summary": [
+        "Summary [   0.700s] 2 tests run: 2 passed, 357 skipped"
+      ]
+    },
+    "skia-pdf": {
+      "command": "bash /home/tsjang/rhwp/output/pr-review/issues7749-7753/validation-tools/minimal-font-run.sh node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia",
+      "exit_code": 0,
+      "log_sha256": "7461b0687b99719613b82891e8cfc8f1ba23639af0efebe497cca51549f84a53",
+      "summary": [
+        "Summary [   0.337s] 36 tests run: 36 passed, 310 skipped"
+      ]
+    },
+    "workspace-build": {
+      "command": "cargo build --locked --workspace --target-dir /home/tsjang/rhwp/target/pr-review",
+      "exit_code": 0,
+      "log_sha256": "582c10498767062b5a9f18f4adb1eb836025c72d73bf6f03989514058cf37beb",
+      "summary": [
+        "Compiling rhwp v0.9.1 (/home/tsjang/rhwp)",
+        "Compiling rhwp-native-ffi v0.1.0 (/home/tsjang/rhwp/bindings/Native)",
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 5m 50s"
+      ]
+    },
+    "clippy-workspace": {
+      "command": "cargo clippy --locked --workspace --all-targets --target-dir /home/tsjang/rhwp/target/pr-review -- -D warnings",
+      "exit_code": 0,
+      "log_sha256": "982290007b1f81e9b2c9d8c62dd881d81df1871a6f5a039471b4e81697c447a0",
+      "summary": [
+        "Checking rhwp v0.9.1 (/home/tsjang/rhwp)",
+        "Checking rhwp-native-ffi v0.1.0 (/home/tsjang/rhwp/bindings/Native)",
+        "Finished `dev` profile [unoptimized + debuginfo] target(s) in 1m 16s"
+      ]
+    },
+    "studio-ts": {
+      "command": "npm --prefix rhwp-studio exec -- tsc --noEmit --project /home/tsjang/rhwp/rhwp-studio/tsconfig.json",
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "studio-tests": {
+      "command": "timeout --foreground 12m bash /home/tsjang/rhwp/output/pr-review/issues7749-7753/validation-tools/studio-bounded-test.sh",
+      "exit_code": 0,
+      "log_sha256": "b7f2eef81aa9f385b55ddf3e3a5b5b387fb2a3209fad16d278766f814092c6a4",
+      "summary": [
+        "ℹ tests 2822",
+        "ℹ pass 2822",
+        "ℹ fail 0",
+        "ℹ cancelled 0",
+        "ℹ skipped 0"
+      ]
+    }
+  },
+  "post_nextest_doc_comment_formatting": {
+    "path": "tests/cases/issue_7749_7753_print_ownership.rs",
+    "prior_file_commit": "1722836b78a343b34cd6e15423c4e4b923678c6d",
+    "prior_file_commit_at": "2026-11-21T07:55:25+09:00",
+    "doc_comments_only": true,
+    "test_body_sha256": "1e89a0bc716a455e0ed5c0aa5204c737990889146c76cc08b93fb81105e74fd8",
+    "source_head": "dd2f0a83ac83be203163abcd3669ace3c9ebd9fa",
+    "first_clippy_exit_code": 101,
+    "first_clippy_log_sha256": "ebc625677e603708fa8246b87ae97509747c74466164f2aca15d6a0cd822a43a"
+  },
+  "studio_retry": {
+    "first_attempt_exit_code": 1,
+    "first_attempt_log_sha256": "2e5bc5a45a6087c00773e08c64ba38f58b83c75935c39d35a131da912bd998b9",
+    "stalled_test": "print-bitmap-profile-routing.test.ts",
+    "isolated_passed": 8,
+    "retry_test_concurrency": 4
+  },
+  "doc_tests_exit_code": 0
+}

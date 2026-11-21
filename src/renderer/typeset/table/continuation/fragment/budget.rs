@@ -164,7 +164,7 @@ impl TypesetEngine {
         let source_cut_opens_outer_top = is_continuation
             && st.current_height <= 0.5
             && std::ptr::eq(row_geometry_table, table)
-            && prepared
+            && (prepared
                 .layout_engine
                 .intra_paragraph_rowbreak_reopens_outer_top(
                     para,
@@ -172,7 +172,20 @@ impl TypesetEngine {
                     cursor_row,
                     start_cut,
                     input.source.styles,
-                );
+                )
+                || (cursor_row == 0
+                    && !input.start.start_cut_is_block
+                    && (prepared.layout_engine.declared_opening_frame_starts_at_cut(
+                        table,
+                        start_cut,
+                        input.source.styles,
+                    ) || prepared
+                        .layout_engine
+                        .stored_nested_wrapper_cut_reopens_outer_top(
+                            table,
+                            start_cut,
+                            input.source.styles,
+                        ))));
         let source_body_frame_opens_outer_top = st.current_height <= 0.5
             && (prepared
                 .layout_engine

@@ -2179,6 +2179,24 @@ impl TypesetEngine {
                             self.dpi,
                         )
                     })
+                    .or_else(|| {
+                        // 한 개의 표가 글 중간에 있어도 모든 저장 호스트 줄이 표 앞에
+                        // 놓이면 중첩 표와 동일한 앵커를 쓴다.
+                        if st.profile.session_edited()
+                            || !(st.profile.hwpx_stored_layout()
+                                || st.profile.hwp5_stored_pagination_layout())
+                            || has_preceding_coanchored_float
+                            || para.controls.iter().filter(|control| {
+                                matches!(control, Control::Table(_))
+                            }).count() != 1
+                        {
+                            return None;
+                        }
+                        crate::renderer::float_placement::ParagraphFloatPlacement::from_stored_inner_host(
+                            para, table, ctrl_idx, source_text_origin?,
+                            whole_placement_height, self.dpi,
+                        )
+                    })
                     .map(|mut placement| {
                         placement.stored_host_origin = source_text_origin;
                         placement
@@ -2246,6 +2264,26 @@ impl TypesetEngine {
                     ),
                     _ => placement,
                 }
+            })
+            .or_else(|| {
+                if st.profile.session_edited()
+                    || !st.profile.hwpx_stored_layout()
+                    || self.render_normalization.table_text_reflowed(table)
+                {
+                    return None;
+                }
+                use crate::renderer::float_placement::ParagraphFloatPlacement;
+                if !ParagraphFloatPlacement::stored_empty_offset_host_owns_line(
+                    para, table, ctrl_idx, paragraphs_all.get(para_idx + 1)?,
+                ) {
+                    return None;
+                }
+                let origin = source_text_origin?;
+                let mut placement = ParagraphFloatPlacement::from_empty_stored_offset_host(
+                    para, table, ctrl_idx, origin, whole_placement_height, self.dpi,
+                )?;
+                placement.stored_host_origin = Some(origin);
+                Some(placement)
             })
             .or_else(|| {
                 if !st.profile.hwp5_stored_pagination_layout()
@@ -2892,6 +2930,32 @@ impl TypesetEngine {
         {
             if let Some(placement) = resolved_host_placement {
                 st.record_paragraph_float_placement((para_idx, ctrl_idx), placement);
+                // 통째 들어가는 표도 같은 선행 글줄과 자리차지 띠를 공유한다.
+                // 원본이 표 앞에 둔 후속 줄은 표를 처리하기 전에 한 번 소비한다.
+                let first_gap_successor = para.line_segs.first().zip(paragraphs_all.get(para_idx + 1))
+                    .is_some_and(|(host, next)| {
+                        super::super::deferred_float_flow::stored_paragraph_fits_float_gap(
+                            next, host.vertical_pos, signed_hwpunit(table.common.vertical_offset),
+                        )
+                    });
+                if is_first_placed
+                    && is_last_placed
+                    && !st.profile.session_edited()
+                    && placement.stored_host_origin.is_some()
+                    && matches!(placement.flow,
+                        crate::renderer::float_placement::ParagraphFloatFlow::Exclusion
+                            | crate::renderer::float_placement::ParagraphFloatFlow::NextLine)
+                    && crate::renderer::float_placement::ParagraphFloatPlacement::stored_host_lines_are_valid(
+                        para, table, ctrl_idx,
+                    )
+                    && st.defer_host_line_item_para != Some(para_idx)
+                    && first_gap_successor
+                    && self.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
+                {
+                    self.fill_float_band_gap_successors(
+                        st, para_idx, para, table, placement.table_top, paragraphs_all, composed_all, styles,
+                    );
+                }
             }
             // RowBreak 표를 통째 수용해도 빈 호스트의 흐름 전용 하단여백은
             // 사라지지 않는다. fit에서는 면제하되, 별도 프레임이 소유하지 않는

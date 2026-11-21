@@ -8221,6 +8221,8 @@ mod tests {
             source_text_first_frame_height: None,
             source_terminal_suffix_start: None,
             source_single_cell_row_frames: None,
+            relocated_picture_caption_rows: None,
+            relocated_picture_successor: None,
             host_frame: (0, 0, 0.0_f64.to_bits()),
             row_count: 3,
             cell_spacing: 0.0,

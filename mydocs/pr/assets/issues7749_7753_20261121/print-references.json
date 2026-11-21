@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "datasets": {
+    "regulatory-2020": {
+      "input": {
+        "path": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+        "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62"
+      },
+      "print": {
+        "path": "pdf/issue7382-regression-review/80550-agricultural-machinery-act-amendment-2020.pdf",
+        "sha256": "4e3e656a70bc1a0ba1314f949b0f35ae057266b6a25921c6dc417c8c26f587ad",
+        "pages": 31,
+        "engine": "2020",
+        "compat": "2022"
+      }
+    },
+    "regulatory-2024": {
+      "input": {
+        "path": "samples/issue3637/regulatory_impact_nested_table_escape.hwpx",
+        "sha256": "e7b147f7cea66c97bed79085a3d89c2656037e0f711232f659ed3c7344984f62"
+      },
+      "print": {
+        "path": "pdf/issue7749/regulatory-impact-2024-print.pdf",
+        "sha256": "b269aaef5287b530f5adb3c37fff011ef7a1e836dd3edb67748f453fb869811a",
+        "pages": 31,
+        "engine": "2024",
+        "compat": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "job_id": "94d66329-3999-49a1-b2d5-64bd08a638a5",
+        "completed_at": "2026-11-20T15:59:20.541Z",
+        "print_method": 0,
+        "output_mode": "frame_print_to_pdf_ex_one_up",
+        "input_preprocess": "none"
+      }
+    },
+    "parameter-2022": {
+      "input": {
+        "path": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+        "sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e"
+      },
+      "print": {
+        "path": "pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf",
+        "sha256": "b23d4836b9d1eb8dd9582e5541aeca34dfb54718d5829b21af4f7969085dd746",
+        "pages": 74,
+        "engine": "2022 12.0.0.4426",
+        "compat": "2022"
+      }
+    },
+    "parameter": {
+      "input": {
+        "path": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+        "sha256": "76645c03f0372529bad746e9287cb04efc86c6b1aa57963caae4a1c3c004c39e"
+      },
+      "print": {
+        "path": "pdf/issue7750/hwpctl_ParameterSetID_Item_v1.2-2024-print.pdf",
+        "sha256": "6c45419d71b2a6ed1caac498252b5be55dbd5f9efb460b074778c6b0ecae60f3",
+        "pages": 74,
+        "engine": "2024",
+        "compat": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwp",
+        "job_id": "da701e83-436f-4b1d-874d-cd0ccf2f4fa9",
+        "completed_at": "2026-11-20T16:00:30.322Z",
+        "print_method": 0,
+        "output_mode": "frame_print_to_pdf_ex_one_up",
+        "input_preprocess": "scripts_disabled"
+      }
+    },
+    "research-hwp": {
+      "input": {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+      },
+      "print": {
+        "path": "pdf/issue7753/policy-donor-screening-hwp-2024-print.pdf",
+        "sha256": "fed7aef74005a175baac87ad1415be126b881633390ec04b6b557447c164060d",
+        "pages": 215,
+        "engine": "2024",
+        "compat": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwp",
+        "job_id": "36702f25-49b5-4484-bd18-4bc5a9a0fc67",
+        "completed_at": "2026-11-20T18:05:04.086Z",
+        "print_method": 0,
+        "output_mode": "frame_print_to_pdf_ex_one_up",
+        "input_preprocess": "scripts_disabled"
+      },
+      "archived_print": {
+        "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwp-2024.pdf",
+        "sha256": "b87a6f945fdf752ce603f8aa7b50dbccd38a8dea783e2581acee8a3f6af35916",
+        "pages": 215,
+        "engine": "2024",
+        "compat": "2024"
+      }
+    },
+    "research-hwpx": {
+      "input": {
+        "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+        "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+      },
+      "print": {
+        "path": "pdf/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구)-hwpx-2024.pdf",
+        "sha256": "cae18473f18916305893ec4bac2ce9e734df1364868c441df1afc4d087547d59",
+        "pages": 215,
+        "engine": "2024",
+        "compat": "2024"
+      },
+      "cross_check": {
+        "path": null,
+        "sha256": "563f3159c231503ad4f7c5b59adf9b6828fd406cce22d8901f20e0dc7f156dbe",
+        "pages": 215,
+        "engine": "2024",
+        "compat": "2024",
+        "hancom_version": "13.0.0.3901",
+        "backend": "hwp-managed-direct-dll-host",
+        "input_format": "hwpx",
+        "job_id": "fa47a9b2-ace4-4321-a2c3-e61605936217",
+        "completed_at": "2026-11-20T18:02:42.942Z",
+        "print_method": 0,
+        "output_mode": "frame_print_to_pdf_ex_one_up",
+        "input_preprocess": "none"
+      }
+    }
+  }
+}

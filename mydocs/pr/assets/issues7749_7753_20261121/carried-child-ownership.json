@@ -1,0 +1,59 @@
+{
+  "pages": {
+    "29": {
+      "title": 0,
+      "table": 0
+    },
+    "30": {
+      "title": 1,
+      "table": 0
+    },
+    "31": {
+      "title": 0,
+      "table": 1
+    }
+  },
+  "off_page_cell_line_diagnostics": 0,
+  "source": "ec8515f1d8d52353f1e5092eb080ab2619de55e7",
+  "source_input": "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+  "command": [
+    "/home/tsjang/rhwp/output/pr-review/issues7749-7753/candidate-v13-rhwp",
+    "export-png",
+    "samples/issue6697/80550-agricultural-machinery-act-amendment.hwpx",
+    "--profile",
+    "print",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--json",
+    "-p",
+    "28",
+    "-p",
+    "29",
+    "-p",
+    "30",
+    "--render-tree-output",
+    "/home/tsjang/rhwp/output/pr-review/issues7749-7753/triage/p30-ownership/v13",
+    "-o",
+    "/home/tsjang/rhwp/output/pr-review/issues7749-7753/triage/p30-ownership/v13"
+  ],
+  "base": {
+    "diagnostic_count": 73
+  },
+  "candidate-v12": {
+    "diagnostic_count": 73
+  },
+  "saved_child_owner": {
+    "parent_paragraph": 208,
+    "host_paragraph": 40,
+    "previous_page_end_cut": 57,
+    "owned_title_unit": 56,
+    "carried_table_first_unit": 57
+  },
+  "reference": {
+    "source": "Hancom Print 2020 and 2024",
+    "title_page": 30,
+    "child_table_page": 31
+  }
+}
