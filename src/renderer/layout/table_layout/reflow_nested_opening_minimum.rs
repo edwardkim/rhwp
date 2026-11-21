@@ -1,7 +1,7 @@
 //! 첫 중첩 셀 컷의 내용과 선언 최소의 빈 물리 공간을 함께 예약한다.
 
 use super::{LayoutEngine, ResolvedStyleSet};
-use crate::model::{control::Control, table::Table, table::TablePageBreak};
+use crate::model::{control::Control, shape::VertAlign, table::Table, table::TablePageBreak};
 use crate::renderer::hwpunit_to_px;
 
 impl LayoutEngine {
@@ -67,7 +67,11 @@ impl LayoutEngine {
             };
             if children.next().is_some()
                 || !host.text.trim().is_empty()
-                || !super::reflow_nested_band::owns_constrained_row_frame(host, child)
+                || !crate::renderer::float_placement::is_para_topbottom_float(&child.common)
+                || !child.common.flow_with_text
+                || child.common.allow_overlap
+                || child.common.vert_align != VertAlign::Top
+                || child.caption.is_some()
                 || child.row_count != 1
                 || child.col_count != 1
                 || child_cell.row_span != 1
@@ -98,11 +102,18 @@ impl LayoutEngine {
                 i32::from(child.outer_margin_top) + i32::from(child.outer_margin_bottom),
                 self.dpi,
             );
-            let parent_height = (minimum + top + bottom + outer).min(available);
+            let lead = hwpunit_to_px(
+                crate::renderer::float_placement::topbottom_flow_vertical_offset_hu(&child.common),
+                self.dpi,
+            ) + styles
+                .para_styles
+                .get(host.para_shape_id as usize)?
+                .spacing_before;
+            let parent_height = (minimum + lead + top + bottom + outer).min(available);
             if parent_height <= selected_height {
                 return None;
             }
-            let last_row_height = parent_height - top - bottom - outer;
+            let last_row_height = parent_height - lead - top - bottom - outer;
             if last_row_height < content {
                 return None;
             }
