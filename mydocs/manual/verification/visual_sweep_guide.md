@@ -1611,11 +1611,10 @@ jq -r '.pages[] | [.page, .visual_accuracy_proxy_percent, .ink_match_percent, .p
   | sort -t $'\t' -k2,2n
 ```
 
-예를 들어 HWP 97 안내문의 `가. ᄒᆞᆫ글 드라이버 사용`은 rhwp render tree에 표준 옛자모가
-남아 있고, 기준 PDF에는 제품명 `한글`로 보일 수 있다. 이 경우 HWP3 parser만 바꾸거나 모든
-`ᄒᆞᆫ`을 현대화하면 실제 옛한글 문서를 훼손할 수 있다. **문서·CharShape·PDF로 증명된 제품명
-context만** paint-time projection 후보로 삼고, 일반 옛한글과 다른 문서는 negative regression으로
-보호한다.
+HWP 97 안내문의 아래아는 제품명에서도 유지된다. 한컴 2020 Print의 1·3·19쪽을
+확대하면 ‘ᄒᆞᆫ글’의 중성에 점이 보인다. 같은 문서에서 현대 ‘한’도 쓰인다.
+PDF의 글리프 윤곽과 원문의 문자·글자 모양을 함께 대조한다.
+[원본별 확대 판독](../../pr/assets/semanticist21-20261121/protected-fonts.md#표-안에-저장된-아래아)
 
 ## 결과 해석
 

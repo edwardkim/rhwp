@@ -5365,10 +5365,6 @@ impl LayoutEngine {
         );
         tree.root.children.push(footer_node);
 
-        // composer를 거치지 않고 직접 만들어진 표 셀/머리말 TextRun까지 같은
-        // 한컴 PDF 표시 계약을 적용한다. 원문 IR과 char offset은 변경하지 않는다.
-        tree.apply_legacy_hancom_product_display_projection();
-
         // [#6121] 셀 안 anchored 개체 ↔ 셀 본문 텍스트 페인트 순서 정합.
         Self::settle_cell_anchored_objects(&mut tree.root);
 
