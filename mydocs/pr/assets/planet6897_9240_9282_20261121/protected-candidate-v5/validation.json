@@ -2540,5 +2540,98 @@
   "catalog_path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
   "catalog_manifest_sha256": "00a6f427ddb3ac9b9cd0e69e3a1112bbdd3cb8c03e85b09d7b5bae0c215fe504",
   "fixed_base_comparison": "pending",
-  "protected_floor_raise": "pending_same_condition_validation"
+  "protected_floor_raise": "pending_same_condition_validation",
+  "capture_checkout_audit": {
+    "transient_checkout": "c871fd4dc3e2127abe421b022ba44d60fb27a8eb",
+    "integration_parent_checkout": "815a78a440d4c0c655220a7ea9cd8e02100275cf",
+    "affected_captures": [
+      {
+        "key": "sample16-hwp2024",
+        "backend": "native",
+        "pages": 64
+      },
+      {
+        "key": "sample16-hwp2024",
+        "backend": "wasm",
+        "pages": 64
+      },
+      {
+        "key": "angle-narrow",
+        "backend": "native",
+        "pages": 1
+      },
+      {
+        "key": "angle-narrow",
+        "backend": "wasm",
+        "pages": 1
+      },
+      {
+        "key": "outline-minimal",
+        "backend": "native",
+        "pages": 1
+      },
+      {
+        "key": "outline-minimal",
+        "backend": "wasm",
+        "pages": 1
+      },
+      {
+        "key": "seo-body-list-typed",
+        "backend": "native",
+        "pages": 1
+      },
+      {
+        "key": "seo-body-list-typed",
+        "backend": "wasm",
+        "pages": 1
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "backend": "native",
+        "pages": 1
+      },
+      {
+        "key": "seo-helvetica-styles",
+        "backend": "wasm",
+        "pages": 1
+      },
+      {
+        "key": "seo-pic-crop-01",
+        "backend": "native",
+        "pages": 1
+      },
+      {
+        "key": "seo-pic-crop-01",
+        "backend": "wasm",
+        "pages": 1
+      }
+    ],
+    "checkout_diff_paths": [
+      "mydocs/pr/assets/issue_8495/badge_native_overlay_p1.png",
+      "mydocs/pr/assets/issue_8495/badge_native_review_p1.png",
+      "mydocs/pr/assets/issue_8495/badge_native_silhouette.tsv",
+      "mydocs/pr/assets/issue_8495/badge_wasm_overlay_p1.png",
+      "mydocs/pr/assets/issue_8495/badge_wasm_review_p1.png",
+      "mydocs/pr/assets/issue_8495/badge_wasm_silhouette.tsv",
+      "mydocs/pr/assets/issue_8495/base/badge_native_review_p1.png",
+      "mydocs/pr/assets/issue_8495/base/badge_native_silhouette.tsv",
+      "pdf/issue8495/council-badge-para-float-sibling-origin-2020.pdf",
+      "samples/issue8495/MANIFEST.json",
+      "samples/issue8495/README.md",
+      "samples/issue8495/council-badge-para-float-sibling-origin.hwp",
+      "src/renderer/layout.rs",
+      "tests/cases/issue_8495_para_float_sibling_host_origin.rs",
+      "tests/fixtures/ir_field_sweep_baseline.tsv"
+    ],
+    "shared_sweep_script_sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb",
+    "wasm_png_exporter_sha256s": [
+      "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9"
+    ],
+    "binary_and_package_sha256": {
+      "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417",
+      "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "rhwp_bg.wasm": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f"
+    },
+    "result": "캡처 중 별도 로컬 검토 브랜치가 잠시 체크아웃되었다. 해당 checkout의 제품 소스를 빌드하거나 소비하지 않았으며 캡처 46건의 고정 생산물 SHA, 입력/Hancom Print와 sweep 소비 경로가 원 PR 5건에 해당한다."
+  }
 }

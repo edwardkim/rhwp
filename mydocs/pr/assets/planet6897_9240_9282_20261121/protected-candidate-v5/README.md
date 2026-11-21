@@ -5,3 +5,5 @@
 시행령 `78494-virtual-convergence-industry-decree.hwpx`의 fresh WASM 8쪽에서 **99.99% → 100.00%**를 관측했다. 본문, 영향평가 표, 쪽번호가 한컴 Print의 같은 쪽에 있다. 글꼴 공급 설정의 기록 해시가 수용 당시와 달라 동일 조건 검증을 마친 뒤 하한 상향 여부를 결정한다. [74쪽 TSV](wasm/decree.tsv) · [8쪽 review](decree-wasm-review_008.png) · [8쪽 overlay](decree-wasm-overlay_008.png)
 
 이 기록은 후보와 기존 정본의 점수 차이를 확인한 결과다. 동일 공급 조건의 고정 base 대조 및 수용 당시의 공급 환경 확인은 별도로 진행 중이다.
+
+캡처 중 별도 로컬 검토 브랜치의 checkout SHA가 일부 영수증에 기록됐다. 출력은 이 검토용으로 앞서 고정한 Native 실행 파일과 WASM 패키지를 사용했다. 자료를 읽는 sweep과 exporter, 보호 입력·Print의 신원을 대조했다. [checkout 및 출력 신원 감사](validation.json)
