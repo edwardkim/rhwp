@@ -1,14 +1,13 @@
-//! 다단 쪽의 단 각주 위치(각 단 아래·오른쪽 단 아래)와 각주 영역 편집 조회.
+//! 관계형 검사. 본문 각주 번호가 차지하는 폭, 단별 줄 소속, 각주 영역과 캐럿을 확인한다.
+//! 근거 갱신 2026-11-21 10:57 KST. 직전 커밋 fb144c2ecc, 커밋 시각 2026-11-20 15:18:40 KST.
+//! 한컴 2020 독립 Print와 96 DPI 원시 2px 실루엣을 비교했다. 세 원본은 각각 1쪽이다.
+//! Native/fresh WASM 일치율은 c2-eachColumn 99.02%/97.77%, c2-rightColumn 100%/100%,
+//! c3u-eachColumn 99.26%/98.48%다. 전쪽 최저는 Native 99.02%, WASM 97.77%다.
+//! 독립 기준은 pdf/pr9234-footnote-columns, 본문·각주 확대와 쪽별 수치는
+//! mydocs/pr/assets/semanticist21-20261121/footnotes에 보존한다.
 //!
-//! 고정 문서는 rhwp로 만든 2·3단 문서이고, 한/글 12.30 Mac이 열어 PDF로 인쇄한 좌표와 맞댔다
-//! (2026-11-18). 각 단 아래면 단마다 그 단의 각주를 단 폭으로 단 아래에 그리고 구분선도 단마다
-//! 긋는다. 오른쪽 단 아래면 모든 각주를 오른쪽 단 폭 영역 하나에 그린다.
-//! - `c2-eachColumn.hwp`: 2단, 1단 각주 1개, 2단 각주 2개. 한/글 각주 글 왼쪽 113.4·412.0px.
-//! - `c3u-eachColumn.hwp`: 단 너비 8000·14000·20000HU의 3단, 단마다 각주. 113.4·238.6·436.6px.
-//! - `c2-rightColumn.hwp`: `c2-eachColumn`을 오른쪽 단 아래로 바꾼 것. 세 각주 모두 412.0px.
-//!
-//! 한 쪽에 각주 영역이 여럿이므로 누르기·캐럿·선택 조회는 그 각주가 있는 영역을 써야 한다.
-//! 각주를 고치면 그 각주를 그리는 영역 폭으로 줄을 나누고, 단 각주 위치를 바꾸면 새 폭으로 다시 나눈다.
+//! 너비가 다른 세 단의 원본은 각주 번호가 포함된 첫 두 단의 저장 줄이 실제 폭을 넘는다.
+//! 처음 열기·본문 편집·두 저장 형식 재열기에서 같은 줄에 참조와 본문을 배치해야 한다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::wasm_api::HwpDocument;
@@ -70,18 +69,31 @@ fn areas(doc: &HwpDocument, page: u32) -> Vec<(Area, usize)> {
 
 #[test]
 fn each_column_notes_draw_under_their_own_column() {
-    for (name, lefts) in [
-        ("c2-eachColumn.hwp", &[113.4, 412.0][..]),
-        ("c3u-eachColumn.hwp", &[113.4, 238.6, 436.6][..]),
-        ("c2-rightColumn.hwp", &[412.0][..]),
+    for (name, owners) in [
+        ("c2-eachColumn.hwp", &[0, 1][..]),
+        ("c3u-eachColumn.hwp", &[0, 1, 2][..]),
+        ("c2-rightColumn.hwp", &[1][..]),
     ] {
         let doc = open(name);
+        let tree = json(doc.get_page_render_tree(0).unwrap());
+        let body = tree["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|n| n["type"] == "Body")
+            .unwrap();
+        let columns = body["children"].as_array().unwrap();
         let found = areas(&doc, 0);
-        assert_eq!(found.len(), lefts.len(), "{name}: 각주 영역 수");
-        for ((area, _), left) in found.iter().zip(lefts) {
+        assert_eq!(found.len(), owners.len(), "{name}");
+        for ((area, _), owner) in found.iter().zip(owners) {
+            let column = &columns[*owner]["bbox"];
             assert!(
-                (area.x - left).abs() < 0.5,
-                "{name}: 영역 왼쪽 {area:?} != {left}"
+                (area.x - column["x"].as_f64().unwrap()).abs() < 0.5,
+                "{name}: {owner}"
+            );
+            assert!(
+                (area.w - column["w"].as_f64().unwrap()).abs() < 0.5,
+                "{name}: {owner}"
             );
             // 모든 영역이 본문 아래 끝에 붙는다.
             assert!((area.y + area.h - found[0].0.y - found[0].0.h).abs() < 0.5);
@@ -228,4 +240,62 @@ fn column_and_margin_changes_refold_existing_notes() {
         refolded_narrow(narrow_lines, body_lines),
         "여백을 늘린 뒤 {narrow_lines}줄, 본문 폭 {body_lines}줄"
     );
+}
+
+/// 한컴 Print의 세 단 본문을 줄 단위로 읽어 참조 번호의 위치까지 대조한다.
+fn assert_original_body(doc: &HwpDocument) {
+    let tree = json(doc.get_page_render_tree(0).unwrap());
+    let body = tree["children"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .find(|n| n["type"] == "Body")
+        .unwrap();
+    let columns = body["children"].as_array().unwrap();
+    let expected: &[&[&str]] = &[
+        &["1단 #본문입니", "다. 각주를 단", "문장입니다"],
+        &["2단 #본문입니다.# 각주를", "단 문장입니다"],
+        &["3단 #본문입니다. 각주를 단 문장입니", "다..."],
+    ];
+    assert_eq!(doc.page_count(), 1);
+    assert_eq!(columns.len(), expected.len());
+    for (column, printed) in columns.iter().zip(expected) {
+        assert_eq!(column["type"], "Column");
+        let lines: Vec<_> = column["children"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter(|n| n["type"] == "TextLine")
+            .map(|line| {
+                let mut text = String::new();
+                for run in line["children"].as_array().unwrap() {
+                    match run["type"].as_str() {
+                        Some("TextRun") => text.push_str(run["text"].as_str().unwrap()),
+                        Some("FnMarker") => text.push('#'),
+                        _ => {}
+                    }
+                }
+                text.trim_end().to_owned()
+            })
+            .collect();
+        assert_eq!(lines.as_slice(), *printed);
+    }
+}
+
+#[test]
+fn original_body_wraps_references_on_open_edit_and_reopen() {
+    let mut doc = open("c3u-eachColumn.hwp");
+    assert_original_body(&doc);
+    for para in 0..3 {
+        let end = doc.document().sections[0].paragraphs[para]
+            .text
+            .chars()
+            .count();
+        doc.insert_text_native(0, para, end, "X").unwrap();
+        doc.delete_text_native(0, para, end, 1).unwrap();
+    }
+    assert_original_body(&doc);
+    for bytes in [doc.export_hwp().unwrap(), doc.export_hwpx().unwrap()] {
+        assert_original_body(&HwpDocument::from_bytes(&bytes).unwrap());
+    }
 }
