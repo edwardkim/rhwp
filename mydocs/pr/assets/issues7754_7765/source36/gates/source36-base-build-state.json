@@ -1,0 +1,98 @@
+{
+  "started": 1795302380.050675,
+  "pid": 1626643,
+  "base": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "results": [
+    {
+      "label": "candidate-contract-build",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "/home/tsjang/rhwp/tests/cases/issue_7754_split_hft_program_contract.rs",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-contract-tests",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-native-library/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out",
+        "--test",
+        "--cfg",
+        "feature=\"native-skia\""
+      ],
+      "exit_code": 0,
+      "seconds": 31.641978841042146,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-candidate-contract-build.log"
+    },
+    {
+      "label": "candidate-contract-run",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font/run.sh",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-contract-tests",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "seconds": 0.44003643305040896,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-candidate-contract-run.log"
+    },
+    {
+      "label": "base-native",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "source_tree": "f08ec44a4db58c404649a8455532bce9cac29747",
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "exit_code": 0,
+      "seconds": 99.45591153204441,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-native-build.log",
+      "binary": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized",
+      "binary_sha256": "97ae20cc86799d72e8d4388112f6e74c6c1b395f8f1c81bad088f2e6b3144a44",
+      "library_sha256": "a22e1d7da7c96a6278136c98eaff000a17bc154c74ea2196558402236e7cd0ef"
+    },
+    {
+      "label": "base-wasm",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "source_tree": "f08ec44a4db58c404649a8455532bce9cac29747",
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27"
+      ],
+      "exit_code": 0,
+      "seconds": 1304.7132553411648,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-base-wasm-build.log",
+      "files": {
+        "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+        "rhwp.d.ts": "985c06df3fce8aab4b32aa738846faabd192a39c8683499bc3ae54b28d725d87",
+        "rhwp_bg.wasm": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+        "rhwp_bg.wasm.d.ts": "5319daa097f7715b53b00540d1b9e96c58a6853ba3f5c8f69e1963eb085664ac"
+      }
+    }
+  ],
+  "initial_setup_failure": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-base-build-initial-state.json",
+  "contract_reuse": "Frozen source36 public-API build and all 3 tests passed before the sparse-worktree manifest setup failure.",
+  "running": null,
+  "candidate": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "candidate_producer_state_sha256": "404ba95c6a168a87839c458dea66589a4400ac93063186514a9042d64c21340b",
+  "completed": true,
+  "ended": 1795303790.220889
+}
