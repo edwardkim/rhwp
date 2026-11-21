@@ -422,6 +422,32 @@ review-only 재사용에서는 검증한 code candidate와 실행 신원을 확�
 처음 정책을 바꾸는 PR은 trusted base의 기존 분류에 따라 Full CI가 실행될 수 있다.
 그 실행 시간을 frontend-only 선택 실행의 개선 실측으로 보고하지 않는다.
 
+#### Render Diff와 Visual Sweep 결과 찾기
+
+Actions 실행의 해당 시도에서 `Canvas visual diff` 작업 요약을 열면 비교 종류, 기존 판정 또는 참고 결과,
+실제 비교한 문서·쪽, 근거 파일의 경로와 SHA-256을 확인할 수 있다. 같은 색인은 `render-diff-artifacts`의
+`output/render-diff-build/evidence.md`에 포함된다. 요약의 다운로드 링크는 해당 작업이 올린 artifact ID를
+가리킨다. Canvas legacy/layer, Direct/compatibility PDF, CanvasKit readiness는 각각 기존 gate 결과를
+기록한다. Canvas와 compatibility PDF raster 비교는 참고용이다.
+
+`build.json`의 source SHA는 실제 WASM 빌드에 사용한 checkout을 뜻한다. PR head와 합친 커밋을 빌드하면
+두 SHA가 다를 수 있다. `consumption/`에는 브라우저가 받은 WASM 해시, `native-build.txt`에는 Native PDF
+CLI의 빌드 소스와 실행 파일 해시가 있다. 이전 artifact는 남아 있는 기록만 표시한다.
+
+ZIP이나 압축을 푼 디렉터리에 같은 색인 명령을 실행할 수 있다. 아래 예는 run `44925877031`의 첫 번째 시도다.
+
+```sh
+python3 scripts/render_diff_evidence.py render-diff-artifacts.zip \
+  --run-url https://github.com/edwardkim/rhwp/actions/runs/44925877031/attempts/1 \
+  --pr-head f0f9fc76b4306aef9571467e1a3453eee6e68ff4
+```
+
+실제로 실행한 [Print Visual Sweep](verification/visual_sweep_guide.md)의 실루엣 결과를 함께 찾으려면
+입력 루트 아래 결과 디렉터리를 `--print-sweep <상대 경로>`로 지정한다. Native와 fresh WASM에 대해
+반복 지정할 수 있다. Print 출처가 기록된 완료 manifest와 쪽 목록·raw 일치율이 같은 `silhouette.tsv`가 함께 있어야
+두 파일이 표시된다. 기준 PDF의 인쇄 출처와 PR 판정은 Visual Sweep 절차에 따라 확인한다.
+색인 명령은 기존 파일만 읽으므로 비교·빌드·캡처를 다시 실행할 필요가 없다.
+
 ### 7.5 workflow PR의 후행 review 기록
 
 후속 기록은 [옵션 2: 원 PR 병합 후 별도 기록 PR](pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로

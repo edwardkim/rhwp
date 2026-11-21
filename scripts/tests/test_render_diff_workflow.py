@@ -1,11 +1,20 @@
 from __future__ import annotations
 
-import unittest
+import hashlib
 import importlib.util
+import io
+import json
+import unittest
 from pathlib import Path
+from zipfile import Path as ZipPath, ZipFile
 
 
 WORKFLOW_PATH = Path(__file__).resolve().parents[2] / ".github/workflows/render-diff.yml"
+EVIDENCE_SPEC = importlib.util.spec_from_file_location(
+    "render_diff_evidence", Path(__file__).resolve().parents[1] / "render_diff_evidence.py"
+)
+EVIDENCE = importlib.util.module_from_spec(EVIDENCE_SPEC)
+EVIDENCE_SPEC.loader.exec_module(EVIDENCE)
 
 
 class RenderDiffTriggerPolicyTests(unittest.TestCase):
@@ -186,6 +195,95 @@ class WasmBuildMeasurementTests(unittest.TestCase):
         for name in ("deploy-pages", "npm-publish"):
             self.assertIn("python3 scripts/measure_render_diff_wasm.py --profile release --build-mode standard",
                           (repo / f".github/workflows/{name}.yml").read_text())
+
+
+class RenderDiffEvidenceTests(unittest.TestCase):
+    def index_zip(self, entries, **options):
+        buffer = io.BytesIO()
+        with ZipFile(buffer, "w") as archive:
+            for name, data in entries.items():
+                archive.writestr(name, data if isinstance(data, str) else json.dumps(data))
+        with ZipFile(buffer) as archive:
+            return EVIDENCE.render_index(ZipPath(archive), **options)
+
+    def test_report_roles_use_recorded_results_and_only_measured_pages(self):
+        canvas = {"results": [{"fixture": "a.hwp", "pageIndex": 0, "pass": False}]}
+        index = self.index_zip({
+            f"{EVIDENCE.DIFF}/results.json": canvas,
+            f"{EVIDENCE.DIFF}/pdf-results.json": {
+                "config": {"directPdfEnabled": True, "directPdfGate": True},
+                "results": [
+                    {"fixture": "a.hwp", "pageIndex": 0, "exceedsReportThreshold": True,
+                     "reportComparison": {"diffRatio": 0.9}, "directExpected": True,
+                     "directComparison": {"diffRatio": 0.01}, "directGateFailed": False},
+                    {"fixture": "missing.hwp", "pageIndex": 0, "reportError": "load-fixture",
+                     "directExpected": True, "directError": "load-fixture"},
+                ],
+            },
+            f"{EVIDENCE.READINESS}/browser/browser-baseline-report.json": {
+                "canvaskitReadinessGate": {"summary": {"passed": 1, "failed": 0, "missing": 1}},
+                "results": [{"file": "selected.hwp", "page": 2, "readinessGateRequired": True},
+                            {"file": "reference.hwp", "page": 2, "readinessGateRequired": False}],
+            },
+            f"{EVIDENCE.BUILD}/build.json": {"source_sha": "built", "artifacts": {
+                "rhwp_bg.wasm": {"sha256": "built-wasm"},
+            }},
+            f"{EVIDENCE.BUILD}/consumption/browser.json": {"matched": False},
+        }, pr_head="submitted")
+        self.assertIn("Render Diff gate | 0 passed, 1 failed", index)
+        self.assertIn("Reference | 1 warnings, 1 errors", index)
+        self.assertIn("Render Diff gate | 1/2 compared, 1 failures", index)
+        self.assertIn("Readiness gate | 1 passed, 0 failed, 1 missing | <code>selected.hwp</code> p3", index)
+        self.assertNotIn("missing.hwp", index)
+        self.assertNotIn("reference.hwp", index)
+        canvas_digest = hashlib.sha256(json.dumps(canvas).encode()).hexdigest()
+        self.assertIn(f"results.json</code> <code>{canvas_digest}", index)
+        self.assertIn("PR head <code>submitted", index)
+        self.assertIn("WASM build source <code>built", index)
+        self.assertIn("Browser WASM consumption (mismatched)", index)
+        self.assertIn("Native PDF build record Unavailable", index)
+        self.assertNotIn("silhouette.tsv", index)
+
+    def test_print_sweep_needs_explicit_complete_matching_evidence(self):
+        manifest = {"mode": "silhouette_only", "run_state": "complete", "completed_pages": [1, 3],
+                    "metrics": [{"page": 1, "silhouette_raw_match_percent": 99.8999},
+                                {"page": 3, "silhouette_raw_match_percent": 98.5}],
+                    "pr_review_gate": {"status": "not_evaluated"}, "provenance": {
+                        "comparison_profile": "print", "raster_backend": "native-png",
+                        "hwp": {"path": "original.hwpx", "sha256": "input"},
+                        "pdf": {"path": "print.pdf", "sha256": "reference"},
+                    }}
+        key = "output/native"
+        tsv = "page\tsilhouette_raw_match_percent\n1\t99.90\n3\t98.50\n"
+        entries = {f"{key}/silhouette_manifest.json": manifest, f"{key}/silhouette.tsv": tsv}
+        self.assertNotIn("silhouette.tsv", self.index_zip(entries))
+        linked = self.index_zip(entries, sweep_dirs=[key])
+        self.assertIn("<code>not_evaluated</code> | <code>original.hwpx</code> p1, 3", linked)
+        self.assertIn(f"{key}/silhouette.tsv</code> <code>{hashlib.sha256(tsv.encode()).hexdigest()}", linked)
+        for bad_entries in (
+            {f"{key}/silhouette_manifest.json": manifest},
+            {**entries, f"{key}/silhouette.tsv": tsv.replace("3\t", "2\t")},
+            {**entries, f"{key}/silhouette.tsv": tsv.replace("98.50", "99.50")},
+            {**entries, f"{key}/silhouette_manifest.json": {**manifest, "run_state": "incomplete"}},
+            {**entries, f"{key}/silhouette_manifest.json": {**manifest, "provenance": {}}},
+        ):
+            self.assertNotIn("silhouette.tsv", self.index_zip(bad_entries, sweep_dirs=[key]))
+
+    def test_workflow_uses_the_uploaded_index_and_keeps_native_record_advisory(self):
+        workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+        native = workflow.split("      - name: Record native CLI build evidence\n", 1)[1].split("\n\n", 1)[0]
+        index = workflow.split("      - name: Index existing visual comparison evidence\n", 1)[1].split("\n\n", 1)[0]
+        upload = workflow.split("      - name: Upload render diff artifacts\n", 1)[1].split("\n\n", 1)[0]
+        summary = workflow.split("      - name: Add render diff summary\n", 1)[1]
+        self.assertIn("continue-on-error: true", native)
+        self.assertIn("RHWP_RENDER_DIFF_RHWP_BIN", native)
+        self.assertIn("continue-on-error: true", index)
+        self.assertIn("$GITHUB_RUN_ATTEMPT", index)
+        self.assertNotIn("--print-sweep", index)
+        self.assertIn("output/render-diff-build/evidence.md", index)
+        self.assertIn("output/render-diff-build/", upload)
+        self.assertIn('cat output/render-diff-build/evidence.md >> "$GITHUB_STEP_SUMMARY"', summary)
+        self.assertIn("steps.render-artifacts.outputs.artifact-url", summary)
 
 
 if __name__ == "__main__":
