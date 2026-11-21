@@ -389,6 +389,7 @@ impl Paginator {
         let is_hwp3_variant = opts.is_hwp3_variant;
         let source_uses_inline_field_reset = source_context.source_uses_inline_field_reset;
         let hwp3_converted_missing_lineseg = source_context.hwp3_converted_missing_lineseg;
+        let saved_vertical_ladder = source_context.saved_vertical_ladder;
         let stored_geometry_policy = source_context.stored_geometry_policy;
         // [Task #1007] 페이지 본문 영역 높이 (HWPUNIT) — variant cross-paragraph
         // vpos reset 감지 THRESHOLD 계산용.
@@ -748,6 +749,7 @@ impl Paginator {
                         &st.current_items,
                         &hidden_empty_paras,
                         super::stored_ladder_keeps_empty_line(
+                            saved_vertical_ladder,
                             para,
                             paragraphs.get(para_idx + 1),
                             para_styles,

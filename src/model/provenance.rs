@@ -158,6 +158,16 @@ impl LayoutCompatibilityProfile {
         self.hwp3_native_layout
     }
 
+    /// [#9291] 저장 줄의 세로 사다리(vpos)가 한/글이 저장한 값인지 여부.
+    ///
+    /// HWP3 원본(과 rhwp 가 HWP3 에서 만든 HWPX)에는 HWP5 LINE_SEG 가 없어 파서가 한글97
+    /// 쪽 y 와 줄 높이·줄간격을 누적해 vpos 를 만든다. 그 사다리는 구성상 항상 닫히므로
+    /// 한/글이 어떤 줄의 전진을 계상했는지 알리는 저장 증거가 아니다. HWP3 를 한/글이 HWP5
+    /// 로 저장한 변환본의 vpos 는 한/글 저장값이다.
+    pub fn saved_vertical_ladder(&self) -> bool {
+        !self.hwp3_native_layout
+    }
+
     /// Stored LineSeg horizontal origins whose legacy HWP3 provenance is not
     /// reproducible from the common ParaShape alone. This covers native HWP3
     /// and HWP3-lineage conversion layouts, while keeping the decision out of
