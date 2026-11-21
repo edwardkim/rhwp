@@ -53,3 +53,22 @@ Native 최저 99.50%, fresh WASM 최저 99.48%이며 누락이 없다.
 확인했고, 실제 사용한 `release-test/deps/librhwp.rlib`로 고쳐 재실행했다.
 원 Native CLI와 fresh WASM 생산물·실제 문서 수치는 잘못된 보조 복사본을 사용하지 않았다.
 검증에 성공한 라이브러리의 해시는 `builds-corrected-libraries.json`에서 추적한다.
+
+## 소스 36의 보정 후 실행과 정식 Native 연결
+
+소스 36 최적화 Native 라이브러리에서 위 세 합성 계약은 3 PASS/0 FAIL이다.
+정식 근거는
+`mydocs/pr/assets/issues7754_7765/source36/gates/split-hft-contract-after.json`에 있다.
+기본 suite에서 Native feature가 꺼진 채 수집되는 것만으로 paint 검사를 실행한 것으로
+보지 않았다. 세 검사 전체를 기존 Native CI 호출 대상인
+`tests/cases/issue_8153_print_glyph_geometry.rs::split_hft_original_programs`로 이관했다.
+assertion 본문은 동일하며, 기존 함수·기대값은 유지했다. 별도 workflow 호출은 추가하지 않았다.
+이관 경로와 동등성 및 최종 정식 실행의 대기 상태는 `source36/gates/regression-native-routing.json`에 있다.
+
+추가 실물 검사는 같은 원본을 실제 CLI로 출력하고 1쪽의 원 문단 여백·내용 순서와
+2쪽의 옛한글·후속 글자 원점을 검사한다. 빈 명시 환경으로 원 HFT 메트릭을 유지하므로
+설치 글꼴이나 네트워크에 의존하지 않는다. 소스 33에서는 여백 검사가 206.7px 대
+160.1px로 실패했고, 소스 36에서는 두 검사 모두 통과했다. 독립 좌표·전쪽 수치·판독
+근거는 `mydocs/pr/assets/issues7754_7765/source36/`에 있다. DocumentCore를 추가로 직접
+링크하려던 진단의 E0463은 현재 공유 dependency와 동결 rlib의 링크 준비 실패로
+기록하며 테스트의 실패나 통과로 계산하지 않았다. 정식 Cargo 검증은 별도로 수행한다.
