@@ -2,9 +2,9 @@
 
 ## 판정
 
-**검증 진행 중.** 고정 devel과 통합 후보에서 원본 전체 9쪽의 SVG를 대조했다. 4쪽의 WMF 변환을
-복구했고 나머지 8쪽 SVG는 바이트 단위로 같다. 공식 한컴 Print의 Native 전쪽 최저값은 99.78%다.
-fresh WASM 전쪽 일치율과 최소 글꼴 회귀는 확인 중이다.
+**원 PR 변경 검증 완료.** 고정 devel과 통합 후보에서 원본 전체 9쪽의 SVG를 대조했다. 4쪽의 WMF 변환을
+복구했고 나머지 8쪽 SVG는 바이트 단위로 같다. 공식 한컴 Print 전쪽 최저값은 Native 99.78%, fresh WASM
+99.66%다. 통합 후보 전체의 회귀와 보호 문서 검증은 확인 중이다.
 
 ## 접수와 통합
 
@@ -56,3 +56,19 @@ fresh WASM 전쪽 일치율과 최소 글꼴 회귀는 확인 중이다.
   [overlay](../assets/planet6897_9240_9282_20261121/wmf-9285/native/overlay-004.png) ·
   [실제 출력](../assets/planet6897_9240_9282_20261121/wmf-9285/native/raw-004.png) ·
   [한컴 Print 래스터](../assets/planet6897_9240_9282_20261121/wmf-9285/native/pdf-004.png)
+
+## 통합 fresh WASM 검증
+
+고정 devel의 Canvas 내보내기는 그림 디코딩 오류로 중단돼 전쪽 점수가 없다. 통합 후보는 새로 빌드한
+WASM을 사용해 9쪽을 모두 출력했다. 4쪽은 **99.80%**, 후보 전쪽 최저는 **99.66%**다. 4쪽 하단의
+그림 네 조각을 실제 출력과 한컴 Print에서 각각 확인했다.
+[WASM 검증 영수증](../assets/planet6897_9240_9282_20261121/wmf-9285/wasm/validation.json) ·
+[후보 TSV](../assets/planet6897_9240_9282_20261121/wmf-9285/wasm/silhouette.tsv)
+
+- 통합 후보 4쪽 [review](../assets/planet6897_9240_9282_20261121/wmf-9285/wasm/review-004.png) ·
+  [overlay](../assets/planet6897_9240_9282_20261121/wmf-9285/wasm/overlay-004.png) ·
+  [실제 출력](../assets/planet6897_9240_9282_20261121/wmf-9285/wasm/raw-004.png) ·
+  [한컴 Print 래스터](../assets/planet6897_9240_9282_20261121/wmf-9285/wasm/pdf-004.png)
+
+최소 글꼴 환경에서 이 PR의 두 검사를 포함한 집중 회귀 12건을 통과했다. 신규 HWPX의 세 탐지기 검사도
+한 건을 실제로 실행해 통과했다.
