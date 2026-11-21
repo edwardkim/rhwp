@@ -1,0 +1,65 @@
+{
+  "command": "rhwp export-svg <fixture> --compat 2022 --json -o <output>",
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "native_binary_sha256": {
+    "base": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+    "candidate": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892"
+  },
+  "pages": [
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_001.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_002.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_003.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_004.svg",
+      "base_original_wmf_count": 1,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": false
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_005.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_006.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_007.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_008.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    },
+    {
+      "page_svg": "child-product-safety-plan-wmf-mask-dib_009.svg",
+      "base_original_wmf_count": 0,
+      "candidate_original_wmf_count": 0,
+      "identical_svg": true
+    }
+  ]
+}
