@@ -198,3 +198,29 @@ fn horizontal_inside_and_outside_alignment_is_set() {
     set(&mut core, r#"{"horzAlign":"Inside"}"#);
     assert_eq!(shape_props(&core)["horzAlign"], "Inside");
 }
+
+/// 한/글 12.30은 채운 마름모 시작 화살표를 `headStyle="EMPTY_DIAMOND" headfill="1"`로 저장하고
+/// `FILLED_DIAMOND`는 읽지 못해 화살표를 그리지 않는다.
+#[test]
+fn hwpx_writes_filled_arrow_as_hancom_does() {
+    let mut core = shape_core("line");
+    set(
+        &mut core,
+        r#"{"arrowStart":4,"arrowStartFill":true,"arrowEnd":5,"arrowEndFill":false}"#,
+    );
+    let bytes = core.export_hwpx_native().expect("HWPX");
+    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("zip");
+    let mut xml = String::new();
+    std::io::Read::read_to_string(
+        &mut archive.by_name("Contents/section0.xml").expect("section0"),
+        &mut xml,
+    )
+    .expect("읽기");
+    assert!(
+        xml.contains(
+            r#"headStyle="EMPTY_DIAMOND" tailStyle="EMPTY_CIRCLE" headfill="1" tailfill="0""#
+        ),
+        "{xml}"
+    );
+    assert!(!xml.contains("FILLED_"), "{xml}");
+}

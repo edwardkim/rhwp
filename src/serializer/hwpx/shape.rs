@@ -1156,8 +1156,8 @@ where
     let tail_fill_b = bl.attr & 0x8000_0000 != 0;
     let headfill = bool01(head_fill_b);
     let tailfill = bool01(tail_fill_b);
-    let head_style = arrow_style_str((bl.attr >> 10) & 0x3F, head_fill_b);
-    let tail_style = arrow_style_str((bl.attr >> 16) & 0x3F, tail_fill_b);
+    let head_style = arrow_style_str((bl.attr >> 10) & 0x3F);
+    let tail_style = arrow_style_str((bl.attr >> 16) & 0x3F);
     let head_sz = arrow_size_str((bl.attr >> 22) & 0x0F);
     let tail_sz = arrow_size_str((bl.attr >> 26) & 0x0F);
     let outline = match bl.outline_style {
@@ -1188,17 +1188,16 @@ where
 }
 
 /// HWP5 화살표 모양 값(hwplib LineArrowShape, `arrow_type_from_hwp` 참조) →
-/// OWPML Core `ArrowType` 역매핑. fill 은 채움 여부(bit 30/31)다.
-fn arrow_style_str(v: u32, fill: bool) -> &'static str {
+/// OWPML Core `ArrowType` 역매핑. 채움은 headfill·tailfill(bit 30/31)이 따로 맡는다.
+/// 한/글 12.30은 채운 마름모·원·사각형도 `EMPTY_*`와 채움 1로 저장하고, `FILLED_*` 이름은
+/// 읽지 못해 화살표를 그리지 않는다.
+fn arrow_style_str(v: u32) -> &'static str {
     match v {
         1 => "ARROW",
         2 => "SPEAR",
         3 => "CONCAVE_ARROW",
-        4 if fill => "FILLED_DIAMOND",
         4 => "EMPTY_DIAMOND",
-        5 if fill => "FILLED_CIRCLE",
         5 => "EMPTY_CIRCLE",
-        6 if fill => "FILLED_BOX",
         6 => "EMPTY_BOX",
         _ => "NORMAL",
     }
@@ -1849,7 +1848,7 @@ mod tests {
     #[test]
     fn task2956_line_shape_arrow_style_preserved() {
         use crate::model::style::ShapeBorderLine;
-        // tail = FILLED_DIAMOND(4) + tail_fill(bit31)
+        // tail = 채운 마름모: 모양 4 + tail_fill(bit31)
         let attr = (4u32 << 16) | (1 << 31);
         let bl = ShapeBorderLine {
             attr,
@@ -1859,7 +1858,7 @@ mod tests {
         write_line_shape(&mut w, &bl).expect("write_line_shape");
         let xml = String::from_utf8(w.into_inner()).unwrap();
         assert!(
-            xml.contains("tailStyle=\"FILLED_DIAMOND\""),
+            xml.contains("tailStyle=\"EMPTY_DIAMOND\"") && xml.contains("tailfill=\"1\""),
             "화살표 끝 모양이 소실됨: {xml}"
         );
     }
