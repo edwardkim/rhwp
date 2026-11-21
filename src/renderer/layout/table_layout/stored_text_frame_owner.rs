@@ -11,7 +11,6 @@ impl LayoutEngine {
     fn original_stored_table_frame_is_usable(&self, table: &Table, frame_reflowed: bool) -> bool {
         let profile = self.profile.get();
         (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
-            && !profile.session_edited()
             && !table.common.treat_as_char
             && table.layout_page_break() == TablePageBreak::RowBreak
             && table.common.height > 0
