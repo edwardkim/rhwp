@@ -838,6 +838,26 @@ impl HwpDocument {
         .map_err(JsValue::from)
     }
 
+    /// 문서 내 지속 HFT 윤곽 등록의 소유 판정에 쓰이는 선언과 현재 환경.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = getHftOutlineFontContext)]
+    pub fn get_hft_outline_font_context(&self) -> Result<String, JsValue> {
+        let faces: Vec<Vec<_>> = self
+            .document()
+            .doc_info
+            .font_faces
+            .iter()
+            .map(|language| {
+                language
+                    .iter()
+                    .map(|face| (face.name.as_str(), face.alt_type == 2))
+                    .collect()
+            })
+            .collect();
+        serde_json::to_string(&(faces, self.resolved_font_environment()))
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
     /// 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
     #[wasm_bindgen(js_name = registerHftOutlineFont)]
     pub fn register_hft_outline_font(
