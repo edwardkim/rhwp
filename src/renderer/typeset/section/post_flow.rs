@@ -357,7 +357,7 @@ impl TypesetEngine {
                         st.record_stored_column_origin(Some((origin, 0.0)));
                     }
                     if para_float_table {
-                        st.seed_whole_table_column_origin(para_idx, paragraphs);
+                        st.seed_whole_table_column_origin(para_idx, paragraphs, styles);
                     }
                     if let Some(frame) = accepted_tac_frame {
                         st.record_vpos_page_origin(Some(frame.source_origin_hu));
