@@ -40,6 +40,8 @@
 
 실제 Studio에서 주장 경계 9쪽의 화면·인쇄 출력을 확인했다. Canvas2D 실제 선택 50건 중 32건은 CanvasKit 글꼴 준비 실패에 따른 정상 대체이고, CanvasKit compat 2건과 default 2건은 각 backend가 직접 렌더했다. 브라우저 초기화 응답 54건의 WASM 해시를 빌드와 대조했다. [Studio 검증 영수증](../assets/planet6897_9240_9282_20261121/validation/actual-studio.json)
 
+최신 제품 코드 `19646e69fc9`의 Studio에서 2쪽 화면·인쇄 6건을 다시 확인했다. Canvas2D 실제 출력은 2건이며 그중 0건은 CanvasKit 요청이 글꼴 준비 단계에서 대체된 결과다. CanvasKit 직접 출력은 4건이다. 전체 60건의 초기화 응답이 새 WASM 해시와 일치했다. [Studio 최신 빌드 검증 영수증](../assets/planet6897_9240_9282_20261121/validation/actual-studio-v4.json)
+
 ## Merge 후 원 PR 코멘트
 
 통합 merge SHA의 원본 출력·한컴 PDF raster·review·overlay를 해당 주장 페이지별로 고정하여 본문에 표시한다. 실제 CI와 사용한 한컴 Print 제품 및 MCP 영수증을 함께 남긴다.
