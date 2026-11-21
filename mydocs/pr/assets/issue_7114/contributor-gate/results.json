@@ -1,0 +1,80 @@
+{
+  "baseline_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "catalog_sha256": "e99c857a5c4d4bb73fb771605f485701d6c888f82618f6d235487d3656e5ca11",
+  "script_sha256": "4988748fa9706e9817d843d421eebbeb934c81b89aa2e0391b89698ccc7f407a",
+  "status": "passed",
+  "results": [
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "tsv": "re-03-latin-only-hancom/native/silhouette.tsv",
+      "review": "re-03-latin-only-hancom/native/review.png",
+      "overlay": "re-03-latin-only-hancom/native/overlay.png"
+    },
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "tsv": "re-03-latin-only-hancom/wasm/silhouette.tsv",
+      "review": "re-03-latin-only-hancom/wasm/review.png",
+      "overlay": "re-03-latin-only-hancom/wasm/overlay.png"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "tsv": "angle-2400/native/silhouette.tsv",
+      "review": "angle-2400/native/review.png",
+      "overlay": "angle-2400/native/overlay.png"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "tsv": "angle-2400/wasm/silhouette.tsv",
+      "review": "angle-2400/wasm/review.png",
+      "overlay": "angle-2400/wasm/overlay.png"
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "99.99756",
+      "tsv": "pic-crop-01/native/silhouette.tsv",
+      "review": "pic-crop-01/native/review.png",
+      "overlay": "pic-crop-01/native/overlay.png"
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "99.99756",
+      "tsv": "pic-crop-01/wasm/silhouette.tsv",
+      "review": "pic-crop-01/wasm/review.png",
+      "overlay": "pic-crop-01/wasm/overlay.png"
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "tsv": "shape-group-02/native/silhouette.tsv",
+      "review": "shape-group-02/native/review.png",
+      "overlay": "shape-group-02/native/overlay.png"
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "tsv": "shape-group-02/wasm/silhouette.tsv",
+      "review": "shape-group-02/wasm/review.png",
+      "overlay": "shape-group-02/wasm/overlay.png"
+    }
+  ]
+}

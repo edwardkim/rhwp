@@ -34,3 +34,14 @@ Native에서도 렌더 전에 저장하면 116쪽이었다.
 | --- | --- | --- |
 | HWP | `667ed25e8943c471429eda16e6b5d57892a4e6e0a106e1a3e7846cb5f629f335` | `fd94af210f172b48d9b1690f067ccad5f7eb17002898f47f9ce3ef2091c09ae8` |
 | HWPX | `9ea27e3c9cc78efc0eba5e79dd19adc5a4089bd659831def07b4ebe1c0af1eed` | `84953359b3b39d9bc5a2258ecff94b216e380d11264925ec9c951954429e4878` |
+
+## 출력 경로와 보호 검사
+
+fresh WASM을 연결한 Studio에서 실제 키 입력 후 파일 메뉴로 저장했다. HWP와
+HWPX 각각 입력 직후 지연 페이지네이션이 남았고, 저장이 이를 한 번 완료했다.
+재열기와 재저장 모두 115쪽이었고, 변경 영역의 숫자·그림·이어받기 소속이 같았다.
+같은 HWP 입력의 인쇄 미리보기도 지연 페이지네이션을 한 번 완료하고 115쪽을 준비했다.
+
+편람 HWPX Native 383쪽과 공통 보호 문서 4종의 Native·fresh WASM 전쪽에서
+각 기준의 하락이 없었다. [편람 전쪽 TSV](handbook-native.tsv),
+[공통 보호 결과·전쪽 TSV·대표 이미지 목록](contributor-gate/results.json)
