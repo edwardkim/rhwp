@@ -1,10 +1,17 @@
-//! 관계형·고정형 회귀 — 중첩 표의 줄·캐럿 소속과 독립 Print의 쪽 경계를 확인한다.
-//! 주석 갱신 2026-11-21T20:06:00+09:00.
-//! 직전 통합 파일 변경 143f804aef0e44db5e7a87f4ab55645bb57e79b9 2026-11-21T12:29:46+09:00.
-//! 표 70줄을 편집한 직후 전 4쪽 최저 Native 98.29830% / fresh WASM 98.26549%. 96 DPI, 2px raw.
-//! 30줄 편집 직후 전 3쪽 최저 Native 98.2508% / fresh WASM 98.2153%. 두 형식 재열기 최저 98.0549% / 97.9423%.
-//! 2쪽의 1~21줄, 3쪽의 22~58줄, 4쪽의 59~70줄을 같은 편집 상태의 한컴 2020 Print와 대조했다.
-//! 근거: pdf/pr9273-nested-row-split/nested-70-hwp-2020.pdf 및 mydocs/pr/pr_9273_review.md.
+//! 관계형·고정형 회귀 — 중첩 표의 줄·캐럿·괘선 순서와 독립 Print 쪽 경계를 확인한다.
+//! 주석 갱신 2026-11-21T21:35:59+09:00.
+//! 직전 파일 변경 c522f226f0fe8420c1afa09d10de0899373765aa 2026-11-21T20:10:46+09:00.
+//! 96 DPI, 2px raw. 편집 직후와 HWP·HWPX 저장 재열기를 한컴 2020 Print의 전쪽과 대조했다.
+//! 원본 HWP 30줄 전 3쪽의 세 상태 최저 Native 98.21581%, fresh WASM 98.21996%.
+//! 원본 HWP 70줄 전 4쪽의 세 상태 최저 Native 98.27731%, fresh WASM 98.26031%.
+//! 한컴 재저장 HWPX 30줄 전 3쪽의 세 상태 최저 Native 98.00640%, fresh WASM 97.86924%.
+//! 한컴 재저장 HWPX 70줄 전 4쪽의 세 상태 최저 Native 98.59903%, fresh WASM 98.37997%.
+//! HWP 30줄의 경계 2쪽에서 세 상태 최저 Native 100.00000%, fresh WASM 99.93413%.
+//! HWP 70줄의 경계 3쪽에서 세 상태 최저 Native 100.00000%, fresh WASM 100.00000%.
+//! 한컴 HWPX 30줄의 경계 2쪽에서 세 상태 최저 Native 100.00000%, fresh WASM 99.94565%.
+//! 한컴 HWPX 70줄의 경계 3쪽에서 세 상태 최저 Native 100.00000%, fresh WASM 100.00000%.
+//! 70줄 사례 3쪽의 58번째 글줄 아래에 안쪽·바깥 괘선이 순서대로 놓인다.
+//! 근거: mydocs/pr/assets/semanticist21-20261121/nested-row-split/edited/pages.tsv 및 같은 폴더의 확대 PNG.
 //!
 //! `samples/inner-table-01.hwp`의 바깥 표 마지막 칸에 든 12×2 안쪽 표(둘 다 쪽 경계에서 "나눔")의
 //! ‘SFR-CLOUD-001’ 칸 뒤에 `줄 1`…`줄 70` 문단을 더하면 그 행이 쪽보다 길어진다. 한/글 12.30 Mac은
@@ -23,8 +30,11 @@ fn path(para: usize) -> String {
 
 /// ‘SFR-CLOUD-001’ 칸 끝에 `줄 1`…`줄 n` 문단을 더한다.
 fn grown(lines: usize) -> HwpDocument {
-    let mut doc =
-        HwpDocument::from_bytes(&std::fs::read("samples/inner-table-01.hwp").unwrap()).unwrap();
+    grown_from(&std::fs::read("samples/inner-table-01.hwp").unwrap(), lines)
+}
+
+fn grown_from(source: &[u8], lines: usize) -> HwpDocument {
+    let mut doc = HwpDocument::from_bytes(source).unwrap();
     for i in 0..lines {
         let len = doc
             .get_cell_paragraph_length_by_path(0, 0, &path(i))
@@ -90,6 +100,9 @@ fn assert_split(doc: &HwpDocument, lines: usize, pages: u32) {
         };
         assert_eq!(page, expected, "줄 {para}의 인쇄 쪽이 달라졌다");
         let tree = &trees[page as usize];
+        if lines == 70 && para == 58 {
+            assert_closing_borders(tree, y + h);
+        }
         let body = tree["children"]
             .as_array()
             .unwrap()
@@ -221,6 +234,53 @@ fn saved_rows_restart_at_page_break_like_hancom() {
             assert_saved_page_origins(&saved, lines);
             let reopened = HwpDocument::from_bytes(&saved).unwrap();
             assert_saved_page_origins(&reopened.export_hwpx().unwrap(), lines);
+        }
+    }
+}
+
+/// 중간 쪽에는 글줄을 이어받은 안쪽 표와 그 조각을 감싼 바깥 표가 있다.
+/// 한컴 Print에서는 마지막 글줄 아래에 안쪽 괘선, 그 아래에 바깥 괘선이 온다.
+fn assert_closing_borders(tree: &Value, line_bottom: f64) {
+    fn collect(node: &Value, positions: &mut Vec<f64>) {
+        let Some(children) = node["children"].as_array() else {
+            return;
+        };
+        if node["type"] == "Table" {
+            let bottom = children
+                .iter()
+                .filter(|child| child["type"] == "Line")
+                .map(|child| &child["bbox"])
+                .filter(|bbox| bbox["w"].as_f64().unwrap() > bbox["h"].as_f64().unwrap())
+                .map(|bbox| bbox["y"].as_f64().unwrap())
+                .reduce(f64::max)
+                .expect("표의 아래 괘선");
+            positions.push(bottom);
+        }
+        for child in children {
+            collect(child, positions);
+        }
+    }
+    let mut positions = Vec::new();
+    collect(tree, &mut positions);
+    let [outer, inner] = positions.as_slice() else {
+        panic!("중간 쪽의 바깥·안쪽 표 괘선 {positions:?}");
+    };
+    assert!(
+        line_bottom <= *inner && inner < outer,
+        "글줄 끝 {line_bottom}, 안쪽 괘선 {inner}, 바깥 괘선 {outer}"
+    );
+}
+
+#[test]
+fn hancom_resaved_hwpx_keeps_nested_lines_and_frame_on_edit_and_reopen() {
+    let source = std::fs::read("tests/fixtures/nested-row-split/inner-table-01-2020.hwpx").unwrap();
+    for (lines, pages) in [(30, 3), (70, 4)] {
+        let doc = grown_from(&source, lines);
+        assert_split(&doc, lines, pages);
+        for saved in [doc.export_hwp().unwrap(), doc.export_hwpx().unwrap()] {
+            assert_saved_page_origins(&saved, lines);
+            let reopened = HwpDocument::from_bytes(&saved).unwrap();
+            assert_split(&reopened, lines, pages);
         }
     }
 }
