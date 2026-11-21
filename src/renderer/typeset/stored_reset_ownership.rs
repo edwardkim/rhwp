@@ -159,3 +159,136 @@ pub(super) fn closed_float_reset_is_stale(
     }
     certificate == Some(true)
 }
+
+/// 앞 실제 쪽이 자동 reset 뒤의 연속 저장 prefix를 전량 소비한 경우,
+/// 다음 float가 다시 쓸 수 없는 원본 단의 선행 높이(HWPUNIT).
+pub(super) fn consumed_prefix_before_float(
+    st: &super::TypesetState,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+) -> Option<i32> {
+    if !st.profile.hwp5_origin_hwpx()
+        || st.profile.session_edited()
+        || st.col_count != 1
+        || !st.current_items.is_empty()
+        || st.current_height != 0.0
+        || st.current_zone_y_offset != 0.0
+        || st.current_endnote_flow
+    {
+        return None;
+    }
+    let page = st
+        .pages
+        .iter()
+        .rev()
+        .find(|page| !page.column_contents.is_empty())?;
+    if page.section_index != st.section_index {
+        return None;
+    }
+    let column = page.column_contents.last()?;
+    let PageItem::FullParagraph { para_index: before } = column.items.last()? else {
+        return None;
+    };
+    if before.checked_add(1)? != para_index {
+        return None;
+    }
+    let valid = |paragraph: &Paragraph| {
+        paragraph.column_type == ColumnBreakType::None
+            && !paragraph.stored_text_partition_is_dirty()
+            && !paragraph.cell_format_vpos_dirty
+            && paragraph.source_line_seg_vertical_pos.is_none()
+            && !paragraph.line_segs.is_empty()
+            && paragraph.line_segs.iter().all(|line| {
+                !super::is_synthetic_line_seg(line)
+                    && line.line_height > 0
+                    && line.line_spacing >= 0
+            })
+    };
+    let current = paragraphs.get(para_index)?;
+    if !valid(current) {
+        return None;
+    }
+    let origin = current.line_segs.first()?.vertical_pos;
+    if origin <= 0 {
+        return None;
+    }
+    let mut expected = origin;
+    let mut reset = *before;
+    loop {
+        let paragraph = paragraphs.get(reset)?;
+        if !valid(paragraph) || !paragraph.controls.is_empty() {
+            return None;
+        }
+        let last = paragraph.line_segs.last()?;
+        let end = last
+            .vertical_pos
+            .checked_add(last.line_height)?
+            .checked_add(last.line_spacing)?;
+        if end != expected {
+            return None;
+        }
+        expected = paragraph.line_segs.first()?.vertical_pos;
+        if expected == 0 {
+            break;
+        }
+        reset = reset.checked_sub(1)?;
+    }
+    let guide_index = reset.checked_sub(1)?;
+    let guide_position = column.items.iter().rposition(
+        |item| matches!(item, PageItem::FullParagraph { para_index } if *para_index == guide_index),
+    )?;
+    // 실제 앞 쪽이 prefix의 모든 문단을 온전히 소유하며 감추지 않았다.
+    if column.items.len() - guide_position - 1 != para_index - reset
+        || column.items[guide_position + 1..].iter().enumerate().any(|(offset, item)| {
+            !matches!(item, PageItem::FullParagraph { para_index } if *para_index == reset + offset)
+                || st.hidden_empty_paras.contains(&(reset + offset))
+        })
+        || st.hidden_empty_paras.contains(&guide_index)
+    { return None; }
+    let PageItem::Table {
+        para_index: host,
+        control_index,
+    } = column.items.get(guide_position.checked_sub(1)?)?
+    else {
+        return None;
+    };
+    let accepted = column
+        .paragraph_float_placements
+        .get(&(*host, *control_index))?;
+    let guide = paragraphs.get(guide_index)?.line_segs.first()?;
+    let consumed_end = accepted.occupied_bottom
+        + hwpunit_to_px(
+            guide.line_height.checked_add(guide.line_spacing)?,
+            st.layout.dpi,
+        );
+    closed_float_reset_is_stale(
+        st.profile,
+        paragraphs,
+        reset,
+        &column.items[..=guide_position],
+        Some(0),
+        consumed_end,
+        st.layout.dpi,
+    )
+    .then_some(origin)
+}
+
+/// 측정에서 확정한 단 원점을 paint와 뒤 문단의 저장 좌표 소비에 전달한다.
+pub(super) fn record_consumed_prefix_origin(
+    st: &mut super::TypesetState,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+    placement: Option<ParagraphFloatPlacement>,
+) {
+    if let Some((base, placement)) =
+        consumed_prefix_before_float(st, paragraphs, para_index).zip(placement)
+    {
+        st.record_paragraph_origin(crate::renderer::pagination::ParagraphOrigin {
+            paragraph_index: para_index,
+            spacing_before: 0.0,
+            source_vpos_base: base,
+            flow_start: 0.0,
+            flow_end: placement.occupied_bottom,
+        });
+    }
+}
