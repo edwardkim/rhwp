@@ -14,6 +14,7 @@ mod reflow_external_flow;
 pub(in crate::renderer) use reflow_external_cut::ReflowExternalCutFrame;
 mod reflow_fragment_content;
 mod reflow_nested_band;
+mod reflow_nested_opening_minimum;
 mod reflowed_nested_row;
 mod row_block_cut;
 mod row_defaults;
