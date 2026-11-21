@@ -250,9 +250,6 @@ pub(crate) fn verified_missing_glyph_supplier(
         // CID 글꼴로 출력한다. U+2027도 화학 원본의 독립2020 Print에서 같은
         // 공급자와 178/1024em 전진을 확인했다. 다른 weight/style은 추정하지 않는다.
         ("Batang", 1024, false, false, '\u{2024}' | '\u{2027}') => Some("Haansoft Batang"),
-        // 같은 TTC의 고정폭 바탕체도 U+2027이 없다. 독립 Print의 바탕체 본문에서
-        // 이 점은 HBATANG의 178/1024em 글리프로 그려지고 뒤 한글은 바탕체로 돌아간다.
-        ("BatangChe", 1024, false, false, '\u{2027}') => Some("Haansoft Batang"),
         // H2GTRE.TTF(ca822120…5c234)에는 U+2027이 없다. 화학 원본의
         // 독립 한컴2020 Print는 견고딕 제목 사이의 이 문자만 HBATANG
         // glyph7(178/1024em)로 출력한다. HFT·다른 스타일은 별개다.
