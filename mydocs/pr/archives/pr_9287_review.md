@@ -76,3 +76,10 @@ WASM을 사용해 9쪽을 모두 출력했다. 4쪽은 **99.80%**, 후보 전쪽
 ## 실제 Studio 출력
 
 최신 제품 코드 `19646e69fc9`의 Studio에서 4쪽 화면·인쇄 6건을 다시 확인했다. Canvas2D 실제 출력은 6건이며 그중 4건은 CanvasKit 요청이 글꼴 준비 단계에서 대체된 결과다. 전체 60건의 초기화 응답이 새 WASM 해시와 일치했다. [Studio 최신 빌드 검증 영수증](../assets/planet6897_9240_9282_20261121/validation/actual-studio-v4.json)
+
+## Merge 후 contributor PR comment 계획
+
+- [#9285](https://github.com/edwardkim/rhwp/issues/9285) 재현 문서 4쪽의 WMF 그림 네 조각을 한컴 2020 Hancom PDF Print에서 대응시킨다. Native와 fresh WASM 4쪽의 review와 overlay를 표시한다.
+- 색상표가 없는 1비트 레코드에서 다음 레코드의 시작을 밀지 않게 한 기여 내용을 적는다. 고정 WASM은 디코딩 실패 상태로 표시하고, 후보는 9쪽 전쪽의 일치율을 제시한다.
+
+[Visual Sweep 공식 코멘트 절차](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 연결한다. 통합 merge SHA에 실제 포함된 원본 출력·한컴 PDF 래스터·review·overlay만 사용한다. 최신 CI와 원본 및 Print 영수증, 실제 확인한 쪽수와 자동 비교 수치, 직접 판독 결론을 함께 기록한다. 게시 전에 PNG 원격 응답과 검증 자산의 SHA를 대조한다.

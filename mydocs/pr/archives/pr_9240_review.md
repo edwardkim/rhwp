@@ -53,6 +53,10 @@
 
 최신 제품 코드 `19646e69fc9`에서 원 HFT 3종을 제외한 Native·fresh WASM 64쪽을 각각 다시 검증했다. 1쪽은 두 경로 모두 94.93%이며 fresh WASM에 등록된 표시 대체는 HY견고딕이다. [최신 검증 기록](../assets/planet6897_9240_9282_20261121/886-no-original/v4/evidence.json) · [1쪽 review](../assets/planet6897_9240_9282_20261121/886-no-original/v4/wasm-review-001.png) · [overlay](../assets/planet6897_9240_9282_20261121/886-no-original/v4/wasm-overlay-001.png)
 
-## Merge 후 원 PR 코멘트
+## Merge 후 contributor PR comment 계획
 
-통합 merge SHA의 원본 출력·한컴 PDF raster·review·overlay를 해당 주장 페이지별로 고정하여 본문에 표시한다. 실제 CI와 사용한 한컴 Print 제품 및 MCP 영수증을 함께 남긴다.
+- [#886](https://github.com/planet6897/rhwp-issue-docs/issues/886)의 1쪽 제목에서 원 HFT가 있을 때와 없을 때의 표시를 각각 설명한다. 8쪽의 노란 배경 띠 두 곳은 원 PR이 복구한 영역이다. 기존 [#9277](https://github.com/edwardkim/rhwp/pull/9277)의 표 조각 그리드에서 배경을 한 번만 칠하도록 통합한 이유를 함께 알린다. 2쪽 목차 우측 탭은 메인터너가 보정한 경계로 명시한다.
+- #886은 Windows 데스크톱 한컴 2020 Hancom PDF Print의 64쪽을 사용한다. [#547](https://github.com/edwardkim/rhwp/issues/547)은 원 PR이 개선 또는 보존을 주장한 별도 입력이므로, 독립 한컴 2024 Hancom PDF Print 22쪽과 2·21·22쪽을 따로 대조하고 해당 PNG를 표시한다.
+- 첫 코멘트에 #886의 1·8쪽, 메인터너 보정인 2쪽, #547의 2·21·22쪽에 해당하는 review와 overlay를 넣는다. 원 HFT 미설치 조건은 전쪽 결과와 1쪽의 실제 대체 글꼴을 따로 설명한다.
+
+[Visual Sweep 공식 코멘트 절차](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 연결한다. 통합 merge SHA에 실제 포함된 원본 출력·한컴 PDF 래스터·review·overlay만 사용한다. 최신 CI와 원본 및 Print 영수증, 실제 확인한 쪽수와 자동 비교 수치, 직접 판독 결론을 함께 기록한다. 게시 전에 PNG 원격 응답과 검증 자산의 SHA를 대조한다.

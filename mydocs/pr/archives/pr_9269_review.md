@@ -61,6 +61,9 @@ HWP에서 만든 HWPX도 같은 순서로 두 번 저장했다. OLE 인스턴스
 저장본 5개가 독립 CFB·ZIP 검사를 마친 기존 산출물과 바이트 단위로 같았다.
 [최신 Native 반복 저장 영수증](../assets/planet6897_9240_9282_20261121/validation/ole-repeat-save-v5.json)
 
-## Merge 후 원 PR 코멘트
+## Merge 후 contributor PR comment 계획
 
-통합 merge SHA의 원본 출력·한컴 PDF raster·review·overlay를 해당 주장 페이지별로 고정하여 본문에 표시한다. 실제 CI와 사용한 한컴 Print 제품 및 MCP 영수증을 함께 남긴다.
+- [#9239](https://github.com/edwardkim/rhwp/issues/9239) 원본의 12쪽 제목 표와 43쪽 캡션에 걸린 떠 있는 표를 한컴 2020 Hancom PDF Print에서 대조한다. 11쪽 각주 영역을 제목 표가 침범하지 않고 43쪽의 내부 표가 한 번만 보이는지 확인한 결과를 적는다.
+- 볼 수 있는 경계가 각각 달라 11·12·43쪽과 메인터너 보정의 15·16·21쪽을 따로 표시한다. OLE와 EMF 글자 위치를 보정한 이유, 두 번 실제 편집·저장·재열기로 OLE 참조를 확인한 결과를 포함한다.
+
+[Visual Sweep 공식 코멘트 절차](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 연결한다. 통합 merge SHA에 실제 포함된 원본 출력·한컴 PDF 래스터·review·overlay만 사용한다. 최신 CI와 원본 및 Print 영수증, 실제 확인한 쪽수와 자동 비교 수치, 직접 판독 결론을 함께 기록한다. 게시 전에 PNG 원격 응답과 검증 자산의 SHA를 대조한다.

@@ -42,6 +42,9 @@
 
 최신 제품 코드 `19646e69fc9`의 Studio에서 2쪽 화면·인쇄 6건을 다시 확인했다. Canvas2D 실제 출력은 2건이며 그중 0건은 CanvasKit 요청이 글꼴 준비 단계에서 대체된 결과다. CanvasKit 직접 출력은 4건이다. 전체 60건의 초기화 응답이 새 WASM 해시와 일치했다. [Studio 최신 빌드 검증 영수증](../assets/planet6897_9240_9282_20261121/validation/actual-studio-v4.json)
 
-## Merge 후 원 PR 코멘트
+## Merge 후 contributor PR comment 계획
 
-통합 merge SHA의 원본 출력·한컴 PDF raster·review·overlay를 해당 주장 페이지별로 고정하여 본문에 표시한다. 실제 CI와 사용한 한컴 Print 제품 및 MCP 영수증을 함께 남긴다.
+- [#9279](https://github.com/edwardkim/rhwp/issues/9279) 재현 문서 2쪽에서 담당 부서 표와 같은 문단에 있는 로고 줄의 위 위치를 한컴 2024 Hancom PDF Print와 대조한다. 표와 로고가 함께 보이는 2쪽 review와 overlay를 표시한다.
+- 문단 뒤 간격이 마지막 저장 줄 뒤에 놓이고 표 바로 뒤에 추가되지 않는 관계를 확인한 결과를 적는다. 3쪽 전쪽의 Native와 fresh WASM 수치, Studio의 실제 backend 결과를 각각 표시한다.
+
+[Visual Sweep 공식 코멘트 절차](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 연결한다. 통합 merge SHA에 실제 포함된 원본 출력·한컴 PDF 래스터·review·overlay만 사용한다. 최신 CI와 원본 및 Print 영수증, 실제 확인한 쪽수와 자동 비교 수치, 직접 판독 결론을 함께 기록한다. 게시 전에 PNG 원격 응답과 검증 자산의 SHA를 대조한다.
