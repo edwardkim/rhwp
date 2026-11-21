@@ -128,6 +128,9 @@ Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 �
 [기준 글꼴의 확보·이관·실제 선택 확인](visual_sweep_guide.md#macos에서-정본-보호-문서의-글꼴-공급-재현)을
 먼저 수행한다. 누락된 기준 글꼴을 확보해 같은 조건으로 다시 비교하며, 환경 차이를
 이 절의 하락 금지에 대한 예외로 취급하지 않는다.
+동명 프로그램의 버전과 실제 출력 글리프도
+[공급·선택 확인 절차](visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)로 확인한다.
+점수 재현과 수용 당시 공급 조건의 동일성은 각각 입증한다.
 
 1. 정본 보호 TSV와 manifest의 commit SHA·경로·SHA-256을 고정한다. manifest의
    `table_sha256`을 확인하고, 입력 SHA·기준 PDF SHA·compat·DPI가 일치하는 `document_id`의
