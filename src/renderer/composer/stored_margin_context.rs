@@ -80,8 +80,8 @@ fn current_rows_with_storage<S: crate::storage::Storage>(
     storage: &S,
 ) -> Result<Option<(Vec<LineSeg>, Vec<(u32, super::SpaceMetric)>)>, S::Error> {
     crate::storage::with_optional(|failure| {
-        let mut input = crate::storage::optional(storage.clone_paragraph(source), failure)?;
-        input.line_segs.clear();
+        // 새 Frame의 fill은 저장 줄을 수용하지 않는다. 원본 줄은 들여쓰기와
+        // terminal-ink·provenance 계약의 입력이므로 삭제하지 않는다.
         let style = styles.para_styles.get(source.para_shape_id as usize);
         let box_ = if body {
             ParagraphBox::body_for_style(width, style, dpi)
@@ -91,7 +91,7 @@ fn current_rows_with_storage<S: crate::storage::Storage>(
         let mut frame = box_.frame(top);
         let rows = crate::storage::optional(
             line_breaking::layout_paragraph_in_frame_with_storage(
-                &input, &mut frame, styles, dpi, storage,
+                source, &mut frame, styles, dpi, storage,
             ),
             failure,
         )??;
