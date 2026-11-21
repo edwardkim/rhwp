@@ -1,0 +1,42 @@
+{
+  "source": "4a2aeda0be95642c642da903350263477dbdaef0",
+  "basis": "쪽수가 다른 고정 기준의 같은 번호 실루엣 수치는 채택하지 않았다. 독립 Print와 후보의 전체 쪽수, 실제 대응 본문과 분할 지점 증적을 검토했다.",
+  "findings": [
+    {
+      "pr": 9209,
+      "backend": "native",
+      "evidence": "output/pr-review/planet6897-9208-9236/rebase-cb85758e/final-4a2aeda0/pagination-9209-native-aligned.json",
+      "base_pages": 45,
+      "candidate_pages": 46,
+      "print_pages": 46,
+      "inspection": "전체 연결 순서: 후보 23~25쪽의 첫 표 마무리, 뒤 표 시작과 다음 쪽의 이어짐. 그 밖의 43쪽도 렌더 트리 본문 일치."
+    },
+    {
+      "pr": 9232,
+      "backend": "native",
+      "evidence": "output/pr-review/planet6897-9208-9236/rebase-cb85758e/final-4a2aeda0/pagination-9232-native-final/report.json",
+      "base_pages": 22,
+      "candidate_pages": 21,
+      "print_pages": 21,
+      "inspection": "이전 7쪽의 마지막 표와 아래 설명이 후보와 독립 Print 6쪽 같은 위치에 있다. 해당 내용의 누락·중복은 없었다."
+    },
+    {
+      "pr": 9209,
+      "backend": "wasm",
+      "evidence": "output/pr-review/planet6897-9208-9236/rebase-cb85758e/final-4a2aeda0/pagination-9209-wasm-aligned.json",
+      "base_pages": 45,
+      "candidate_pages": 46,
+      "print_pages": 46,
+      "inspection": "전체 연결 순서: 후보 23~25쪽의 첫 표 마무리, 뒤 표 시작과 다음 쪽의 이어짐. 그 밖의 43쪽도 렌더 트리 본문 일치."
+    },
+    {
+      "pr": 9232,
+      "backend": "wasm",
+      "evidence": "output/pr-review/planet6897-9208-9236/rebase-cb85758e/final-4a2aeda0/pagination-9232-wasm-final/report.json",
+      "base_pages": 22,
+      "candidate_pages": 21,
+      "print_pages": 21,
+      "inspection": "이전 7쪽의 마지막 표와 아래 설명이 후보와 독립 Print 6쪽 같은 위치에 있다. 해당 내용의 누락·중복은 없었다."
+    }
+  ]
+}

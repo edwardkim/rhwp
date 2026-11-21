@@ -1,0 +1,182 @@
+{
+  "product_source": "b0bd2a1e715292726e52c819cb55ffa38cd84c56",
+  "reason": "원본 HFT 글꼴 U+2022의 paint 범위를 앞선 전쪽 렌더 트리에서 점검했다.",
+  "page_count_per_backend": 215,
+  "cases": [
+    {
+      "pull_request": 9208,
+      "native": {
+        "page_count": 22,
+        "minimum_displayed_percent": "99.68",
+        "tsv_sha256": "f7188ca571f912dd95b84e622675566692bc008629cd057fbee5576ba5555c40",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 22,
+        "minimum_displayed_percent": "99.68",
+        "tsv_sha256": "6599d8e4740d171f14e3b00d6e9f2178c11277e7ac6f9106b83ac6e48d37607f",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9209,
+      "native": {
+        "page_count": 46,
+        "minimum_displayed_percent": "98.37",
+        "tsv_sha256": "6a3d069a3eae0d82020deb05725ce5e196a06e8ade6675af7989e03d178d4f50",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 46,
+        "minimum_displayed_percent": "98.36",
+        "tsv_sha256": "b8430d45f0b55e46d3e772d0475538ded4706b486a4a44d3e1a723e06ba18ce3",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9214,
+      "native": {
+        "page_count": 32,
+        "minimum_displayed_percent": "99.20",
+        "tsv_sha256": "ff75cb7f8d8c75b00884ae1d40bc8e2a00bfa5c601bbd0709292334239d0e653",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 32,
+        "minimum_displayed_percent": "99.18",
+        "tsv_sha256": "455b88900a06493f24fc8586bc9e9cd46fa584d086ee4b482c662f4cba1a57f1",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9218,
+      "native": {
+        "page_count": 45,
+        "minimum_displayed_percent": "99.55",
+        "tsv_sha256": "35e3eb8b10a0a52a098492b3b8b3cfadd913a7d64cc0138a96470037951f14ca",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 45,
+        "minimum_displayed_percent": "99.59",
+        "tsv_sha256": "a5de48bcf318bac7a9d6d37260adac1f376690f88389f17656a18fb117835480",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9219,
+      "native": {
+        "page_count": 14,
+        "minimum_displayed_percent": "99.87",
+        "tsv_sha256": "fe533392892a74a795a8b9c38df611274fb597ade86707399e422dbd689c90a4",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 14,
+        "minimum_displayed_percent": "99.87",
+        "tsv_sha256": "c11fbe17d03edf2476ad2ca20b27eee00c934a2aba0e0cc4a77a2c586d14ff3a",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9221,
+      "native": {
+        "page_count": 10,
+        "minimum_displayed_percent": "99.14",
+        "tsv_sha256": "1605ceb90c91034e7d29a720c9f3f048636ee58b845dfe4a9fcb269e6445f201",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 10,
+        "minimum_displayed_percent": "99.23",
+        "tsv_sha256": "9ab5e3a7a4f2a1ccf3c11667fa9ba7995952eed5de25a2a7536c0c592234dd5c",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9227,
+      "native": {
+        "page_count": 3,
+        "minimum_displayed_percent": "100.00",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 3,
+        "minimum_displayed_percent": "100.00",
+        "tsv_sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9232,
+      "native": {
+        "page_count": 21,
+        "minimum_displayed_percent": "99.91",
+        "tsv_sha256": "bc2ba5140b5192b61b81ddbaecc2185cb62991312c69b2639c8518d6ce8106e8",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      },
+      "wasm": {
+        "page_count": 21,
+        "minimum_displayed_percent": "99.90",
+        "tsv_sha256": "20998953c184d2f3eef99ae3ab37951085e62fbc82608ff9490d4608076c8bf8",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "paint_change_has_no_matching_text",
+        "candidate_pages_in_paint_scope": []
+      }
+    },
+    {
+      "pull_request": 9236,
+      "native": {
+        "page_count": 22,
+        "minimum_displayed_percent": "98.56",
+        "tsv_sha256": "2945b35725eb6211667ed1345cca1a3021388f9c0417eab456829bb29bc4fcef",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "matched_latest_all_pages",
+        "candidate_pages_in_paint_scope": [
+          2
+        ]
+      },
+      "wasm": {
+        "page_count": 22,
+        "minimum_displayed_percent": "98.51",
+        "tsv_sha256": "f7ecb475908c4d4a49512775b041d2d13cf80f6d29cebb341aede8155f762d6c",
+        "prior_producer": "4a2aeda0be95642c642da903350263477dbdaef0",
+        "current_relevance": "matched_latest_all_pages",
+        "candidate_pages_in_paint_scope": [
+          2
+        ]
+      }
+    }
+  ]
+}
