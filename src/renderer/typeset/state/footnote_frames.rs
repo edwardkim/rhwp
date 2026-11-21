@@ -79,6 +79,35 @@ impl TypesetState {
         true
     }
 
+    /// 오른쪽 단 아래 각주를 앞 단에서 등록할 때의 fit. 그 단 본문은 오른쪽 단 프레임을
+    /// 쓰지 않고 오른쪽 단 본문은 아직 없으므로 프레임이 단 높이 안에 드는지만 본다.
+    /// 프레임이 단을 다 채우면 오른쪽 단 본문은 다음 쪽으로 밀린다(한/글 12.30).
+    pub(in crate::renderer::typeset) fn uncharged_footnote_frame_fits(
+        &self,
+        content: f64,
+        separator: bool,
+        capacity: f64,
+    ) -> Option<bool> {
+        let policy = self.footnote_frame_policy();
+        if policy.spans_page() || policy.charges_column(self.data.current_column) {
+            return None;
+        }
+        let frame = self
+            .data
+            .footnote_frames
+            .get(usize::from(policy.target(self.data.current_column)))
+            .copied()
+            .unwrap_or_default();
+        let projected = frame.projected(
+            content,
+            1,
+            separator,
+            self.data.footnote_separator_overhead,
+            self.data.footnote_between_notes_margin,
+        );
+        Some(projected <= capacity + 0.5)
+    }
+
     pub(in crate::renderer::typeset) fn projected_scoped_footnote_height(
         &self,
         content: f64,

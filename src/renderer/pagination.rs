@@ -976,6 +976,10 @@ pub struct FootnoteFragment {
     pub end_line: usize,
     pub draw_separator: bool,
     pub draw_number: bool,
+    /// 너비가 다른 단으로 이어받아 다시 나눈 조각이면 다시 나누기 시작한 (각주 문단, UTF-16 위치).
+    /// 그 글자부터 뒤 줄을 조각이 그려지는 각주 영역 폭으로 다시 나눈 줄 목록이
+    /// `start_line..end_line`의 축이다(`footnote_frames::refold_note_paragraphs`).
+    pub refold: Option<(usize, u32)>,
 }
 crate::storage::clone_copy!(FootnoteFragment);
 
