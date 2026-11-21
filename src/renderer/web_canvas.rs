@@ -3088,7 +3088,10 @@ impl Renderer for WebCanvasRenderer {
                                     cluster_str,
                                     cluster_advance,
                                     metrics.width() * ratio,
-                                    Some(ink_width * ratio),
+                                    Some((
+                                        -metrics.actual_bounding_box_left() * ratio,
+                                        ink_width * ratio,
+                                    )),
                                     pin_ascii_advance,
                                 )
                             })

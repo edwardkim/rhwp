@@ -3665,10 +3665,19 @@ impl Renderer for SvgRenderer {
         let visual_positions =
             super::text_direction::VisualTextPositions::for_style(text, &char_positions, style);
         let cluster_x = |index: usize, cluster: &str| {
+            let ink_dx = super::glyph_fit::hft_quote_ink_offset(style, cluster, |em| {
+                let (advance, left) = style
+                    .native_otf_metrics
+                    .as_ref()?
+                    .primary_truetype_horizontal_metrics(cluster.chars().next()?)?;
+                Some((advance * em, left * em))
+            })
+            .unwrap_or_default();
             visual_positions
                 .as_ref()
                 .and_then(|p| p.span_origin(index, index + cluster.chars().count()))
                 .unwrap_or(char_positions[index])
+                + ink_dx
         };
         let clusters = if visual_positions.is_some() {
             super::contextual_text::coalesce(split_into_clusters(text))

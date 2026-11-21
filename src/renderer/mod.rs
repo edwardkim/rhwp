@@ -333,7 +333,7 @@ pub(crate) fn canvas_cluster_fit(
     cluster: &str,
     layout_cluster_advance: f64,
     visual_width: f64,
-    ink_width: Option<f64>,
+    ink: Option<(f64, f64)>,
     pin_ascii_advance: bool,
 ) -> Option<(f64, f64)> {
     glyph_fit::canvas_cluster_fit(
@@ -341,7 +341,7 @@ pub(crate) fn canvas_cluster_fit(
         cluster,
         layout_cluster_advance,
         visual_width,
-        ink_width,
+        ink,
         pin_ascii_advance,
     )
 }
@@ -4732,27 +4732,27 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(3.0), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 3.0)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∘", 6.0, 12.0, Some(3.0), false),
+            canvas_cluster_fit(&style, "∘", 6.0, 12.0, Some((0.0, 3.0)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.4), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 6.4)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.8), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 6.8)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "A", 6.0, 12.0, Some(3.0), false),
+            canvas_cluster_fit(&style, "A", 6.0, 12.0, Some((0.0, 3.0)), false),
             None
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(9.0), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 9.0)), false),
             None
         );
 
@@ -4791,7 +4791,7 @@ mod tests {
         // 고정폭 원 글꼴의 `1` 칸(0.5em)에 대체 글꼴의 좁은 `1`(0.25em).
         // 종전에는 2배로 늘려 굵은 글자처럼 보였다.
         assert_eq!(
-            canvas_cluster_fit(&style, "1", 8.0, 4.0, Some(2.0), true),
+            canvas_cluster_fit(&style, "1", 8.0, 4.0, Some((0.0, 2.0)), true),
             Some((1.0, 2.0))
         );
         // HFT 자동 쪽번호(`fixed_glyph_advances`)는 원본 폭 점유 계약을 유지한다.
@@ -4807,17 +4807,17 @@ mod tests {
         // 종전에는 상자를 칸에 맞춰 0.375배로 눌렀다. 잉크가 칸에 들어가므로
         // 누르지 않고 상자를 칸 가운데에 둔다.
         assert_eq!(
-            canvas_cluster_fit(&style, "•", 6.0, 16.0, Some(4.0), false),
+            canvas_cluster_fit(&style, "•", 6.0, 16.0, Some((0.0, 4.0)), false),
             Some((1.0, -5.0))
         );
         // 잉크가 칸보다 넓으면 잉크만 칸 폭에 맞춘다 (상자 폭 배율보다 덜 누른다).
         assert_eq!(
-            canvas_cluster_fit(&style, "μ", 6.0, 16.0, Some(8.0), false),
+            canvas_cluster_fit(&style, "μ", 6.0, 16.0, Some((0.0, 8.0)), false),
             Some((0.75, -3.0))
         );
         // 한글 음절은 상자를 채우는 glyph라 종전대로 상자 폭을 맞춘다.
         assert_eq!(
-            canvas_cluster_fit(&style, "가", 6.0, 16.0, Some(4.0), false),
+            canvas_cluster_fit(&style, "가", 6.0, 16.0, Some((0.0, 4.0)), false),
             Some((0.375, 0.0))
         );
         verified_font_glyph_ink_preserves_natural_width_without_explicit_fit();

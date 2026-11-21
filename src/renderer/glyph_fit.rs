@@ -128,6 +128,38 @@ pub(crate) fn terminal_underline_positions(
     Some(positions)
 }
 
+/// 한양중고딕 HFT의 좁은 따옴표는 원래 잉크의 왼쪽 베어링을 가진다.
+/// 한컴 2020 독립 문자표의 1,000단위 글리프 경계에서 여는 글자는 71, 닫는 글자는 60이다.
+/// 더 넓은 대체 프로그램을 그릴 때 외곽과 다음 글자의 원점을 각각 보존한다.
+pub(crate) fn hft_quote_ink_offset(
+    style: &TextStyle,
+    cluster: &str,
+    measure: impl FnOnce(f64) -> Option<(f64, f64)>,
+) -> Option<f64> {
+    let bearing = match cluster {
+        "‘" | "“" => 71.0,
+        "’" | "”" => 60.0,
+        _ => return None,
+    };
+    if !style.source_font_is_hft
+        || style.bold
+        || style.italic
+        || style.natural_program_metrics
+        || style.metric_font_family.as_deref() != Some("한양중고딕 (HFT)")
+    {
+        return None;
+    }
+    let (size, _) = style.script_draw_metrics(style.effective_font_size(), 0.0);
+    let em = size * style.ratio_draw_params(1.0).1;
+    let source = super::font_metrics_data::find_metric("한양중고딕 (HFT)", false, false)?.metric;
+    let width = f64::from(source.get_width(cluster.chars().next()?)?);
+    let (physical_advance, physical_bearing) = measure(em)?;
+    (physical_advance.is_finite()
+        && physical_advance > em * width / f64::from(source.em_size)
+        && physical_bearing.is_finite())
+    .then_some(em * bearing / 1000.0 - physical_bearing)
+}
+
 /// Canvas 폰트의 glyph를 레이아웃 advance 칸에 놓을 `(가로 배율, x 이동)`을 계산한다.
 ///
 /// 양수 문자 간격은 다음 cluster의 시작 위치를 바꾸는 값이므로 glyph 폭 맞춤과
@@ -150,9 +182,13 @@ pub(crate) fn canvas_cluster_fit(
     cluster: &str,
     layout_cluster_advance: f64,
     visual_width: f64,
-    ink_width: Option<f64>,
+    ink: Option<(f64, f64)>,
     pin_ascii_advance: bool,
 ) -> Option<(f64, f64)> {
+    if let Some(dx) = hft_quote_ink_offset(style, cluster, |_| Some((visual_width, ink?.0))) {
+        return Some((1.0, dx));
+    }
+    let ink_width = ink.map(|(_, width)| width);
     // 원 HFT의 중심 막대와 표시용 glyph의 자연 전진은 서로 다른 소유다.
     // 좁은 표시 glyph는 원래 모양 그대로 원본 em 칸 가운데에 놓는다.
     // 자간·배분 간격은 뒤 원점만 옮기며 이 intrinsic 칸의 중심을 바꾸지 않는다.

@@ -855,7 +855,10 @@ impl SkiaTextReplay<'_> {
                                         cluster,
                                         advance,
                                         f64::from(natural_width * ratio),
-                                        Some(f64::from(ink.width() * ratio)),
+                                        Some((
+                                            f64::from(ink.left * ratio),
+                                            f64::from(ink.width() * ratio),
+                                        )),
                                         pin_ascii_advance,
                                     )
                                 })
