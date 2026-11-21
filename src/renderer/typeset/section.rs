@@ -245,6 +245,14 @@ impl TypesetEngine {
                     }
                 }
             }
+            st.observe_stored_empty_line_ladder(
+                crate::renderer::pagination::stored_ladder_keeps_empty_line(
+                    para,
+                    paragraphs.get(para_idx + 1),
+                    &styles.para_styles,
+                    self.dpi,
+                ),
+            );
             // [#4533 HWP3] 자리차지 밴드 비예약 판별용 — 표 경로 포함 전 문단 공통.
             st.observe_following_paragraph(
                 paragraphs.get(para_idx + 1).and_then(|p| {

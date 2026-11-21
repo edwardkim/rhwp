@@ -747,6 +747,12 @@ impl Paginator {
                         para,
                         &st.current_items,
                         &hidden_empty_paras,
+                        super::stored_ladder_keeps_empty_line(
+                            para,
+                            paragraphs.get(para_idx + 1),
+                            para_styles,
+                            self.dpi,
+                        ),
                     )
                 {
                     hidden_empty_lines += 1;
