@@ -753,6 +753,12 @@ impl Paginator {
                                 para_idx,
                                 super::super::px_to_hwpunit(st.layout.body_area.height, self.dpi),
                             ),
+                        super::stored_ladder_keeps_empty_line(
+                            para,
+                            paragraphs.get(para_idx + 1),
+                            para_styles,
+                            self.dpi,
+                        ),
                     )
                 {
                     hidden_empty_lines += 1;

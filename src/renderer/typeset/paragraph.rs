@@ -1592,6 +1592,7 @@ fn try_absorb_empty_page_start_with_storage<S: crate::storage::Storage>(
                     para_idx,
                     crate::renderer::px_to_hwpunit(st.layout.body_area.height, st.layout.dpi),
                 ),
+            st.stored_ladder_keeps_empty_line,
         )
     {
         st.commit_counted_hidden_paragraph_with_storage(para_idx, storage)?;
