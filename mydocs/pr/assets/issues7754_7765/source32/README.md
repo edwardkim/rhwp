@@ -1,0 +1,62 @@
+# 9개 이관 이슈 — 소스 32의 최적화 교차 검증
+
+생산 소스는 `2f46647df16da00365b22a1364cdc0b28b8344bc`다. 이후 문서·테스트 커밋은
+생산 소스를 바꾸지 않는다. Native와 최적화 fresh WASM의 빌드 명령·소스 파일 해시·실행물
+해시는 `native-producer.json`, `wasm-producer.json`에 고정했다. WASM은 `--no-opt`가
+없는 locked wrapper의 release 빌드다. Native는 opt-level 3의 release-test 빌드다.
+
+- Native SHA-256: `3836895000bbe4544802ff4bebb52a0a5ef7dfa3c4a049b07f06d4bd341336d7`.
+- WASM SHA-256: `00206b93702fa10fc92203713a15d5992fee487cbcf9b9e996c605726489e4a8`.
+- JS SHA-256: `23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08`.
+
+`qualified-documents.json`은 실제 완료한 원본별 실행만 담는다. 문서별 `native/`·`wasm/`에는
+전쪽 TSV 원본과 `silhouette_manifest.json`을 그대로 보존했다. 원래 출력 경로를 유지한 manifest의
+`tsv_sha256`과 복사한 TSV를 대조했다. 진단·실행 당시 repository head와 실제 생산 소스 SHA를
+구분한다. 이 목록은 전체 9개 이슈의 완료나 최종 전체 Rust·보호 검증 통과를 뜻하지 않는다.
+
+측정은 2026-11-22 KST, 96 DPI, Print profile, PDFium, 색상 경계 보정 전 2px 내용 실루엣이다.
+판정에는 TSV의 공식 두 자리 표시값을 쓴다. 98% 미만 쪽을 평균으로 상쇄하지 않는다.
+원본·독립 Hancom PDF Print의 출처는 상위 `input-provenance.json`을 따른다.
+
+| 원본 | 전체 쪽수 | Native 최저 | fresh WASM 최저 | 회귀에서 보호하는 주요 범위 |
+| --- | ---: | ---: | ---: | --- |
+| 복학원서 HWP | 1 | 99.00% | 98.99% | 원서·서명·접수증의 소유·내용 순서, 중복 효과 없는 워터마크 |
+| distribution_doc | 3 | 99.78% | 99.80% | host 단위 문구의 다음 줄에 놓이는 표, 들여쓰기, 제목·목록 소속 |
+| 143E433F503322BD33 HWP | 1 | 99.94% | 99.94% | 다단 본문·OLE·각주와 문자별 폰트 추적의 원본 소유 |
+| 86712 구판 HWPX | 64 | 98.69% | 98.69% | 저장 원점·빈 줄 소유, 재조판 행의 실제 컷과 자식 첫 최소 상자 |
+
+## 직접 판독과 회귀 복원
+
+`issue7756/issue7756-p001-detail.png`는 독립 Print·Native·WASM의 접수증 영역이다.
+같은 배율로 점선·제목·본문·날짜·날인·하단 안내의 순서와 위치를 확인했다. Latin 글리프의
+윤곽과 serif/sans 모양에는 차이가 남으므로 100% 일치로 표현하지 않는다. `issue_938`의 기존
+SVG PNG·톤 검사는 유지하고, 이관됐던 layer 검사를 복원했다. 이미 bake된 PNG에는
+`realPic`, brightness 0, contrast 0이 맞다. 예전 grayScale/-50/70 요구는 효과를 이중 적용하므로
+원 해결 코드 `3aeaa5ba94`와 후속 `e5d3049199`의 계약에 맞춰 바로잡았다. 같은 PNG 바이트를
+SVG와 layer가 사용하는지도 비교한다. 과거 #677의 전체 SVG 해시 역할은 원서·서명·수신인·
+점선·접수증 표의 내용·포함·앞뒤 순서로 보호한다. 기존 PUA 원문·표시 검사(#948 등)는 유지한다.
+
+`issue7757/issue7757-p003-detail.png`는 예산 표와 단위 문구·후속 안내다. 세 출력 모두 같은
+내용과 줄·표 순서를 확인했다. 공식 기준은 기존 Microsoft Print PDF가 아니라 상위 provenance의
+한컴 2020 Print다. 3쪽은 두 경로 모두 100.00%이며, 독립 PDF의 왼쪽 괘선은 약90.83 CSSpx다.
+복원한 표 왼쪽 검사는 ±2px, 기존 유효한 단위 문구 ±1px 검사는 유지한다. host 문구가 표보다
+앞에 있고 표가 본문 안에 있는 관계 및 정상 같은 줄 표·제목/목록 대조도 유지한다.
+
+`issue7759/issue7759-p001-detail.png`에서 제목, 양쪽 단의 줄·차트·삽입 그림과 뒤 본문을
+대조했다. 폰트 추적의 절대 layoutHash 재고정 대신 원본 문자 주소와 공개 런의 내용·순서·
+문자별 단일 소유 계약을 복원한다. 해당 정식 검사의 실행 결과는 후속 기록에 추가한다.
+
+86712 HWPX는 단계 2의 원본 바이트·독립 Print 실험과 같은 입력이다. 전쪽 Native 진단에서
+소스 30→32는 26쪽만 97.36→100.00%이며 나머지63쪽은 같다. 최적화 Native·WASM에서도
+전쪽64쪽이 98% 이상이다. `regulatory-hwpx-font-environment.json`은 같은 최적화 Native의
+별도26쪽 출력에서 수집한 실제 선택 프로그램 metadata이며 글꼴 바이트나 설치 경로는 없다.
+설치 글꼴 없는 회귀에서는 이를 명시적으로 공급해 검증된 내장 메트릭의 줄 소유를 검사한다.
+시각 결과에는 실제 원본 TTF → 해당 TTC face → OTF 순서를 적용했으며 선택 순서를 바꾸지 않았다.
+
+## 집중 실행의 한계
+
+최적화 Native 라이브러리로 `rustc --test` harness를 만들고 최소 글꼴 bwrap에서 관련 정식
+여섯 파일을 실행했다. 복원 전14 PASS/0 FAIL, 복원 뒤18 PASS/0 FAIL(4.50초)다.
+추가된 네 함수는 복학원서 layer·접수증 관계 두 건과 배포용 표 배치 두 건이다.
+이 실행은 선행 확인이며 최종 Cargo 자동 수집 suite·전체 nextest·Native Skia 3종·브라우저·
+편람·보호 TSV를 대체하지 않는다. 전체 검증 결과는 실제 종료 뒤 별도로 기록한다.

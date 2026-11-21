@@ -49,3 +49,22 @@
 
 - `tests/cases/issue_7755_market_flow_content.rs`: `da2fb2b200c877bbe02f353915954f8e8f03636d20f3998221215325e29cd73b`.
 - `tests/cases/issue_6761_stored_vpos_rewind_page_break.rs`: `17e492b39ed6fe8f31d763b42e0a200f52b5be13839ee62bc028b34f703aa037`.
+
+## #7756·#7757의 최적화 출력과 회귀 복원
+
+같은 생산 소스 `2f46647df1`의 최적화 Native/fresh WASM으로 복학원서1쪽
+99.00/98.99%, distribution_doc3쪽 최저99.78/99.80%를 확인했다. 원본·독립 Print와
+같은 영역을 확대 판독하고 `mydocs/pr/assets/issues7754_7765/source32/`에 전쪽 TSV,
+원본 manifest·생산물 해시·대표 상세 비교를 보존했다. 143E HWP1쪽과 구판86712HWPX64쪽도
+같은 수용 조건을 확인했다. 나머지 전쪽 검증과 전체 목표는 계속 진행한다.
+
+#938 layer의 잘못된 이중 효과 기대값을 원 해결·후속 코드와 대조한 뒤 neutral bake 계약으로
+복원했다. 기존 SVG 톤 검사는 유지하고 SVG/layer의 PNG 일치도 검사한다. 과거 #677 전체 SVG
+해시는 원서·서명·수신인·점선·접수증의 내용·포함·순서로 보호한다. 기존 #948의 PUA 계약은 유지한다.
+#7160의 이관된 두 배치 함수를 복원했다. 독립 한컴2020 Print에서 읽은3쪽 괘선90.83px를
+±2px로 검사하고 기존 유효한 단위 문구·정상 같은 줄 표·제목/목록 소속 검사는 유지했다.
+
+최소 글꼴 환경의 직접 harness는 복원 전14 PASS/0 FAIL, 복원 뒤18 PASS/0 FAIL,
+4.50초다. root 라이브러리는 최적화 Native이며 설치 글꼴을 공급하지 않았다. 최종 Cargo suite와
+전체 검증을 대신하지 않는다. source-only Native Clippy도 exit0(312.21초)이며 WASM Clippy와
+workspace 빌드는 순차 실행 중이다. 현재 새 PR·원격 push·merge는 아직 하지 않았다.
