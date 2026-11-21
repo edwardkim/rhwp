@@ -216,6 +216,10 @@ samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
 samples/issue4889/18098267_nested_fragment_origin.hwp	3	3
+# 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-대조군.hwpx	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwpx	1	1
