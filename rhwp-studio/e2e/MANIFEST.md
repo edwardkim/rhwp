@@ -74,6 +74,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `embed-field-events.test.mjs` | 상시 | active | `field-focus-events-v1` 누름틀 진입·변경·이탈 이벤트가 부모 페이지까지 오고 같은 누름틀 안 이동·해지 후는 무알림, 문서 교체 이탈·동일 ID 재진입 | field-01.hwp | npm e2e:field-events |  |
 | `embed-svg-profile.test.mjs` | 상시 | active | SDK SVG 4종 profile·기존 경로·인쇄 안내문 제외·내용/Undo 보존 | field-01.hwp | 수동 | 독립 Print PDF와 별도 Visual Sweep |
 | `embed-save-ack.test.mjs` | 상시 | active | Task #2660 호스트 저장 완료 통지와 dirty/autosave 정리 계약 | footnote-01.hwp | 수동 |  |
+| `embed-password-save.test.mjs` | 상시 | active | #5987 암호 보호 저장, 리비전 확인, draft 수명, HWP5/HWPX 재열기와 HWP3 변환 | footnote-01.hwp, HWP3-password-123456.hwp | npm e2e:embed-password-save |  |
 | `embed-transport.test.mjs` | 상시 | active | Issue #2186 @rhwp/editor MessageChannel v1 iframe transport | — | npm e2e:embed |  |
 | `export-hwpx.test.mjs` | 상시 | active | Issue #557 — npm/editor RPC + Wrapper 에 exportHwpx / exportHwpVeri | — | 수동 |  |
 | `footnote-delete-confirm.test.mjs` | 상시 | active | #598 본문 각주 삭제 확인창/취소/Undo | footnote-01.hwp | 수동 |  |
