@@ -108,6 +108,8 @@ pub struct ChartPartEntry {
 /// 1-pass 스캔으로 구축되는 직렬화 컨텍스트.
 #[derive(Debug)]
 pub struct SerializeContext {
+    /// HWP5 before 5.0.1.6 uses measured legacy BMP codes in paragraph text.
+    pub(super) legacy_body_symbols: bool,
     pub char_shape_ids: IdPool<u32>,
     pub para_shape_ids: IdPool<u16>,
     pub border_fill_ids: IdPool<u16>,
@@ -187,6 +189,7 @@ pub struct SerializeContext {
 impl Default for SerializeContext {
     fn default() -> Self {
         Self {
+            legacy_body_symbols: false,
             char_shape_ids: IdPool::default(),
             line_segs_on_hwpx_axis: false,
             line_segs_on_paragraph_axis: false,
@@ -234,7 +237,10 @@ impl SerializeContext {
     where
         S::Error: std::fmt::Display,
     {
-        let mut ctx = Self::default();
+        let mut ctx = Self {
+            legacy_body_symbols: super::body_symbols::uses_legacy_body_symbols(doc),
+            ..Self::default()
+        };
         ctx.char_shape_ids.reservation = reservation.clone();
         ctx.para_shape_ids.reservation = reservation.clone();
         ctx.border_fill_ids.reservation = reservation.clone();

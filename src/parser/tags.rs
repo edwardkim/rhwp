@@ -292,26 +292,19 @@ pub const OWPML_FIELD_TYPE_BY_COMMAND: &[(&str, &str)] = &[
     ("MEMO/", "MEMO"),
 ];
 
-/// [#5140] 한컴 사용자 정의 기호의 **두 포맷 간 사상**.
+/// [#5140] Measured Hancom BMP symbol to supplementary PUA lookup.
 ///
-/// 같은 글자를 HWP5 는 BMP 단일 유닛 `0xA000 | X` 로, HWPX 는 평면 15 보충 PUA
-/// `U+F0000 | X` 로 싣는다. 한글은 두 표기를 서로 사상하지만 rhwp 는 값을 그대로 옮겨
-/// h2x 산출에서 글자가 Yi 음절(U+A8xx 등)로 깨졌다.
-///
-/// **IR 정본은 HWP5 쪽 사영(`0xA000 | X`)이다.** 그래야 HWP5 파서·직렬화기가 무변경이고
-/// (코퍼스 다수) HWPX 파서·직렬화기만 대칭으로 사상하면 h2x·x2h 가 함께 닫힌다.
-///
-/// **범위가 아니라 실측 값 집합인 이유**: `0xA000..=0xABFF` 는 유니코드에서 Yi·Lisu·
-/// Syloti Nagri 가 쓰는 실제 블록이고, 한글도 이 구간을 무조건 사상하지 않는다.
-/// 반례 실측 — `08103` 의 `0xA813` 은 영어 단어 중간(`spectro?scopy`)에 있고 글자모양의
-/// 글꼴이 `맑은 고딕`(한컴 사설 영역이 없는 글꼴)인데, 한글은 이 글자를 평면 15 로 옮기지
-/// 않고 `U+A813` 그대로 낸다. 범위로 밀면 그 글자가 깨진다.
+/// This measured lookup is not a rule for every HWP5 or HWPX body. Modern HWP5
+/// (5.0.1.6 and later) and HWPX retain their Unicode text; the HWPX writer applies
+/// a separate versioned body policy. The original 08103/A813 non-conversion
+/// observation did not establish its version or a universal exclusion. Keep this
+/// lookup unchanged for composeText, whose version rule needs separate evidence.
 ///
 /// 10k 코퍼스 실측(HWP5 원본 6,432개): `0xA000..=0xABFF` 단일 유닛을 쓰는 문서 73건 중
 /// 아래 값들이 한글 출력에서 평면 15 로 확인됐다. 두 경로에서 모았다 —
 ///
 /// - **본문 텍스트**(`PARA_TEXT` → `hp:t`): 23개 값이 2,857 / 2,863 = 99.8% 를 덮는다.
-///   나머지는 컨트롤 인라인 payload 오독(한글 출력 없음)이거나 위 `0xA813` 반례다.
+///   나머지는 컨트롤 인라인 payload 오독(한글 출력 없음)이거나 당시 `0xA813` 보존 관찰이다.
 /// - **글자겹침**(`tcps` → `hp:compose/@composeText`): 06190·06638·08403·08396 을 한글
 ///   SaveAs HWPX 로 떠서 대조했더니 29개 값이 **107/107 전량** 평면 15 로 갔다(BMP 유지 0).
 ///

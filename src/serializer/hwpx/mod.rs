@@ -8,6 +8,7 @@
 //! - Stage 4: 그림(Picture) + BinData
 //! - Stage 5: 도형·필드 + 대형 실문서 스모크
 
+mod body_symbols;
 pub mod canonical_defaults;
 pub mod char_shape_tables;
 pub mod char_shapes;
