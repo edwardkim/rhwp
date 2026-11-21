@@ -248,6 +248,51 @@ pub(super) fn consumed_prefix_before_float(
     let mut reset = *before;
     loop {
         let paragraph = paragraphs.get(reset)?;
+        if !paragraph.controls.is_empty() {
+            // 실제 앞 쪽이 전체 float와 그 뒤의 빈 prefix를 이미 소비했다.
+            // 저장본에서는 표의 끝 조각이 다음 원본 쪽에 남아 후속 줄이 양수
+            // 원점에서 시작할 수 있다. 현재 전체 표는 앞 쪽에 닫혔으므로 그
+            // 옛 끝 조각의 높이를 현재 단의 후속 float에 다시 더하지 않는다.
+            // 0 reset과 달리 guide의 선언 높이를 추정하지 않고 실제 소유를 읽는다.
+            let prefix = reset.checked_add(1)?;
+            let first_tail = paragraphs.get(prefix)?;
+            let source_tail = first_tail.line_segs.first()?.vertical_pos;
+            let source_host = paragraph
+                .layout_stored_first_origin
+                .unwrap_or(paragraph.line_segs.first()?.vertical_pos);
+            let position = column.items.iter().rposition(|item| {
+                matches!(item, PageItem::Table { para_index, .. } if *para_index == reset)
+            })?;
+            let PageItem::Table { control_index, .. } = &column.items[position] else {
+                return None;
+            };
+            let Control::Table(table) = paragraph.controls.get(*control_index)? else {
+                return None;
+            };
+            let accepted = column
+                .paragraph_float_placements
+                .get(&(reset, *control_index))?;
+            let owns_prefix = prefix < first
+                && column.items.len() - position - 1 == first - prefix
+                && column.items[position + 1..].iter().enumerate().all(|(offset, item)| {
+                    let owner = prefix + offset;
+                    matches!(item, PageItem::FullParagraph { para_index } if *para_index == owner)
+                        && !st.hidden_empty_paras.contains(&owner)
+                        && paragraphs.get(owner).is_some_and(|p| {
+                            valid(p) && p.controls.is_empty() && p.text.is_empty()
+                        })
+                });
+            return (valid(paragraph)
+                && paragraph.text.is_empty()
+                && source_tail > 0
+                && source_tail < source_host
+                && crate::renderer::float_placement::is_para_topbottom_float(&table.common)
+                && table.common.flow_with_text
+                && accepted.occupied_bottom.is_finite()
+                && accepted.occupied_bottom > accepted.table_top
+                && owns_prefix)
+                .then_some(origin);
+        }
         if !valid(paragraph) || !paragraph.controls.is_empty() {
             return None;
         }
