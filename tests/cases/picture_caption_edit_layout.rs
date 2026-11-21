@@ -1,3 +1,18 @@
+//! 관계형·고정형 검사. 그림과 캡션의 줄·여백·셀 소유 및 합성 입력에서 그림의 시작 영역을 검사한다.
+//! 주석 갱신 2026-11-21T15:21:50+09:00. 직전 파일 변경 82f43831f492beb7f3ec8c3d4cde946225b0f150 2026-11-21T10:04:32+09:00.
+//! 2026-11-21 한컴 2020 독립 인쇄본과 96 DPI에서 색상 경계 보정 전 2px 실루엣을 측정했다.
+//! 아래는 쪽 순서대로 Native Skia와 fresh WASM Canvas2D의 raw 일치율(%)이다.
+//! `caption-captioned_picture_inside_a_caption_survives_hwp_round_trip.hwp` 1쪽. Native [100.00000], WASM [100.00000].
+//! `caption-cell_picture_caption_lines_address_the_caption.hwp` 1쪽. Native [99.60976], WASM [99.90272].
+//! `caption-header-false-false.hwp` 1쪽. Native [100.00000], WASM [100.00000].
+//! `caption-header-true-false.hwp` 1쪽. Native [100.00000], WASM [100.00000].
+//! `caption-header-true-true.hwp` 1쪽. Native [100.00000], WASM [100.00000].
+//! `caption-include_margin_widens_a_bottom_caption_to_the_outer_margins.hwp` 1쪽. Native [100.00000], WASM [100.00000].
+//! `caption-inline_picture_caption_starts_under_the_picture.hwp` 1쪽. Native [100.00000], WASM [100.00000].
+//! `caption-narrowing_a_side_caption_rewraps_its_text.hwp` 1쪽. Native [99.53757], WASM [99.59184].
+//! 이 범위의 전쪽 최저는 Native 99.53757%, WASM 99.59184%다.
+//! 입력·PDF 해시와 쪽별 근거는 `mydocs/pr/assets/semanticist21-20261121/captions/pages.tsv`에 있다.
+//!
 //! 캡션 너비 변경 뒤 다시 줄 나누기, '여백 부분까지 너비 확대',
 //! 글자처럼 취급 그림과 셀 안 그림의 캡션 자리를 한컴 12.30 기준으로 검사한다.
 
