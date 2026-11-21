@@ -53,6 +53,10 @@
 
 최신 제품 코드 `19646e69fc9`에서 원 HFT 3종을 제외한 Native·fresh WASM 64쪽을 각각 다시 검증했다. 1쪽은 두 경로 모두 94.93%이며 fresh WASM에 등록된 표시 대체는 HY견고딕이다. [최신 검증 기록](../assets/planet6897_9240_9282_20261121/886-no-original/v4/evidence.json) · [1쪽 review](../assets/planet6897_9240_9282_20261121/886-no-original/v4/wasm-review-001.png) · [overlay](../assets/planet6897_9240_9282_20261121/886-no-original/v4/wasm-overlay-001.png)
 
+## 최신 Native·fresh WASM 전쪽 확인
+
+제품 소스 `65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35`의 Native와 fresh WASM을 각각 사용해 전쪽 64쪽을 다시 출력했다. 공식 두 자리 raw 실루엣의 최저값은 Native **98.12%**, fresh WASM **98.15%**다. 이전 검토에서 비교한 모든 쪽의 RHWP 및 Print PNG 픽셀, TSV가 이번 결과와 일치했다. [최신 전쪽 비교 및 생산물 SHA](../assets/planet6897_9240_9282_20261121/validation/claims-v5.json)
+
 ## Merge 후 contributor PR comment 계획
 
 - [#886](https://github.com/planet6897/rhwp-issue-docs/issues/886)의 1쪽 제목에서 원 HFT가 있을 때와 없을 때의 표시를 각각 설명한다. 8쪽의 노란 배경 띠 두 곳은 원 PR이 복구한 영역이다. 기존 [#9277](https://github.com/edwardkim/rhwp/pull/9277)의 표 조각 그리드에서 배경을 한 번만 칠하도록 통합한 이유를 함께 알린다. 2쪽 목차 우측 탭은 메인터너가 보정한 경계로 명시한다.
