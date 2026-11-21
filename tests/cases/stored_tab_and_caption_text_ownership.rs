@@ -1,9 +1,10 @@
-//! 관계형 검사. 목차 탭의 앞 글자 전진과 가운데 정렬 캡션의 끝 공백 소유를 원본 대조군과 비교한다.
-//! 주석 갱신 2026-11-21 18:23 KST. 직전 커밋 2fdba749ce64, 커밋 시각 2026-11-21 17:32:54 KST.
-//! 2026-11-21에 2018년 형식 사양서 1.3의 독립 한컴 PDF와 96 DPI, 2px raw 실루엣을 비교했다.
-//! 71쪽 전체의 최저는 Native와 fresh WASM 모두 99.92%다. 목차 2·4쪽과 캡션 62쪽은
-//! 두 백엔드 모두 100.00%다. 원본·PDF·확대 판독과 전쪽 TSV의 경로는
-//! mydocs/pr/assets/semanticist21-20261121/validation/README.md에 있다.
+//! 관계형 검사. 저장 탭 전진, 캡션 끝 공백의 소유와 원문에 있는 아래아·현대 음절의 표시를 확인한다.
+//! 주석 갱신 2026-11-21 19:44 KST. 직전 파일 변경 65285ecbaddc, 2026-11-21 18:27:20 KST.
+//! 2026-11-21 형식 사양서 1.3 원 HWP와 독립 한컴 PDF를 96 DPI에서 비교한 2px raw 실루엣이다.
+//! 전 71쪽 최저는 Native 99.92193%, fresh WASM 99.92202%다.
+//! Native/fresh WASM 2쪽 100.00000%/100.00000%, 4쪽 100.00000%/100.00000%, 62쪽 100.00000%/100.00000%.
+//! Native/fresh WASM 10쪽 100.00000%/100.00000%, 11쪽 100.00000%/100.00000%, 71쪽 100.00000%/100.00000%.
+//! TSV·확대 판독은 mydocs/pr/assets/semanticist21-20261121/validation/final/README.md를 참조한다.
 
 use rhwp::{
     model::{control::Control, style::UnderlineType},
@@ -156,4 +157,43 @@ fn underline_owns_the_trailing_space_after_a_centered_caption_number() {
         (original_start - control_start).abs() < 1e-6,
         "두 캡션의 보이는 제목 원점"
     );
+}
+
+#[test]
+fn source_araea_and_modern_han_remain_distinct_in_body_and_table_text() {
+    fn matching_line(node: &RenderNode, needle: &str) -> Option<(String, String)> {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            let mut source = String::new();
+            let mut drawn = String::new();
+            for child in &node.children {
+                if let RenderNodeType::TextRun(run) = &child.node_type {
+                    source.push_str(&run.text);
+                    drawn.push_str(run.display_or_text());
+                }
+            }
+            if source.contains(needle) {
+                return Some((source, drawn));
+            }
+        }
+        node.children
+            .iter()
+            .find_map(|child| matching_line(child, needle))
+    }
+
+    let core = original();
+    for (page, needle) in [
+        (9, "이후에 출시된 ᄒᆞᆫ글 제품군"),
+        (10, "내부 코드는 한글,"),
+        (70, "ᄒᆞᆫ글 문서 파일 구조"),
+    ] {
+        let tree = core.build_page_render_tree(page).expect("형식 사양서 쪽");
+        let (source, drawn) = matching_line(&tree.root, needle).expect("원문이 있는 줄");
+        // 한양 PUA와 세 옛자모는 같은 아래아 글리프를 표현한다.
+        assert_eq!(
+            drawn.replace('\u{f53a}', "ᄒᆞᆫ"),
+            source.replace('\u{f53a}', "ᄒᆞᆫ"),
+            "{}쪽 본문 또는 표의 인쇄 문자열",
+            page + 1
+        );
+    }
 }
