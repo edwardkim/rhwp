@@ -526,6 +526,8 @@ graph TB
 
 rhwp 기여자들의 개발과 유지보수 활동을 지원해 주신 OpenAI에 감사드립니다.
 
+We thank OpenAI for supporting rhwp contributors in their development and maintenance work.
+
 ## Notice
 
 본 제품은 한글과컴퓨터의 한글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.
