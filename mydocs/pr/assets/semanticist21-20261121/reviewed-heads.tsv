@@ -1,7 +1,7 @@
 pr	contributor_head	branch	base	reviewers	closing_issue_count
 9211	ba76940d0568efb26e19148be49961767c4e2ae4	pr/header-overflow-hit	devel	edwardkim	0
 9215	710f46dcfe9d94de1060f418f6c06806c48bec5e	pr/page-hide	devel	edwardkim	0
-9220	81c9afd75b9156c82136f10e791a396c7b89bec4	pr/caption-width-margin	devel	edwardkim	0
+9220	b9eb3eae431927e5e5dff0eaf348210cf487e437	pr/caption-width-margin	devel	edwardkim	0
 9222	2badf48da70b42edc3753f4c06c1d5bb634e57f8	pr/shape-fill-textbox	devel	edwardkim	0
 9224	527ceb0bc3374aa0d6e173142d6b0d840f27d689	pr/doc-info	devel	edwardkim	0
 9229	4714549cc641fd511a9646a1f9efb4102e7ea46f	pr/line-endpoint-path	devel	edwardkim	0

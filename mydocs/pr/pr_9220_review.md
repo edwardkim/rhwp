@@ -49,3 +49,9 @@ GitHub Lint에서 source-side test 수가 4,094개에서 4,102개로 증가하�
 2026년 11월 21일 기여자가 `01811f5acd`에 `81c9afd75b`를 추가해 캡션 검사 8개를 `tests/cases/caption_edit.rs`로 옮겼다. 통합 후보에서는 이미 `tests/cases/picture_caption_edit_layout.rs`로 옮겨 회귀 묶음 006에 등록했다. 두 파일의 검사 이름과 assertion을 대조했다. 차이는 머리말과 캡션 안 그림을 준비하는 방법이었다. 기여자 버전은 문서 모델에 개체를 넣고, 메인테이너 버전은 공개 복사·붙여넣기 API로 같은 상태를 만든다.
 
 같은 후보 라이브러리와 최소 글꼴 환경에서 두 파일을 각각 컴파일해 8건씩 통과했다. 이미 등록한 파일을 사용하는 병합 커밋 `5fceeb61c4`에 원 기여자의 새 커밋을 보존했다. 병합 전후 전체 Git 트리는 `a62c0341f5b7d4fa46c08922046a7bf74bfbba23`로 같다. 각 검사에서 사용하는 인쇄본과 페이지별 결과는 [캡션 검증표](assets/semanticist21-20261121/captions/pages.tsv)에 있다.
+
+## 최신 제품 소스의 기능 검증
+
+캡션의 줄바꿈·아래 여백·셀·머리말·캡션 속 그림을 여덟 개 저장본으로 검증했다. 같은 원본의 1쪽 실루엣은 Native 99.57%, fresh WASM 99.57%다. [Native 비교](assets/semanticist21-20261121/validation/final/representative/pr9220/native/review_001.png) · [WASM 비교](assets/semanticist21-20261121/validation/final/representative/pr9220/wasm/review_001.png) [17건 통합 검토](semanticist21_20261121_review.md)
+
+기여자가 `b9eb3eae43`에서 기존 캡션 head와 최신 devel `d7b5286cbf`를 병합했다. 두 충돌의 최종 코드를 대조했다. 그림 캡션 편집은 원본의 캡션 폭과 여백을 `CellReflowMetrics`에 전달하며, 배치는 바깥 여백 확장과 본문 캡션 여부를 각각 계산한다. 통합 후보와 차이는 지역 변수에 폭을 저장하는 방식과 독립 계산 두 개의 순서였다. 두 부모와 새 기여 head를 모두 포함한 병합 커밋은 `45c312d2cf`다. 병합 전후의 Git 트리는 모두 `34ca6fe4d22cc0d82bb6f90db40a291963991dea`였다.
