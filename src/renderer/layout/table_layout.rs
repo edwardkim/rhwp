@@ -9652,8 +9652,23 @@ impl LayoutEngine {
                                 let cell_bottom = (content_cell_y + cell_h)
                                     .min(inner_area.y + inner_area.height)
                                     .max(cell_top);
-                                if pic_h <= (cell_bottom - cell_top) + 0.5 {
-                                    pic_y.clamp(cell_top, (cell_bottom - pic_h).max(cell_top))
+                                // 한컴 12.30처럼 아래 캡션도 칸 안에 들도록 캡션 띠까지 함께 묶는다.
+                                // 위 캡션은 저장 세로 오프셋이 자리를 정하므로 건드리지 않는다.
+                                let below = match pic.caption.as_ref() {
+                                    Some(caption)
+                                        if caption.direction
+                                            == crate::model::shape::CaptionDirection::Bottom =>
+                                    {
+                                        self.calculate_caption_height(&pic.caption, styles)
+                                            + hwpunit_to_px(caption.spacing as i32, self.dpi)
+                                    }
+                                    _ => 0.0,
+                                };
+                                if pic_h + below <= (cell_bottom - cell_top) + 0.5 {
+                                    pic_y.clamp(
+                                        cell_top,
+                                        (cell_bottom - pic_h - below).max(cell_top),
+                                    )
                                 } else {
                                     pic_y
                                 }

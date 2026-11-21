@@ -1039,6 +1039,30 @@ pub struct Caption {
     pub paragraphs: Vec<Paragraph>,
 }
 
+impl Caption {
+    /// 위·아래 캡션의 '여백 부분까지 너비 확대'가 개체 왼쪽보다 앞서 여는 폭(왼쪽 바깥 여백).
+    pub fn margin_extension_left(&self, margin: &Padding) -> HwpUnit {
+        match self.direction {
+            CaptionDirection::Top | CaptionDirection::Bottom if self.include_margin => {
+                margin.left.max(0) as HwpUnit
+            }
+            _ => 0,
+        }
+    }
+
+    /// 캡션 글의 줄 폭. 한컴처럼 왼쪽·오른쪽은 캡션 크기, 위·아래는 개체 폭이고
+    /// '여백 부분까지 너비 확대'면 왼쪽·오른쪽 바깥 여백까지 넓힌다.
+    pub fn text_width(&self, object_width: HwpUnit, margin: &Padding) -> HwpUnit {
+        match self.direction {
+            CaptionDirection::Left | CaptionDirection::Right => self.width,
+            _ if self.include_margin => object_width
+                .saturating_add(margin.left.max(0) as HwpUnit)
+                .saturating_add(margin.right.max(0) as HwpUnit),
+            _ => object_width,
+        }
+    }
+}
+
 /// 캡션 방향
 #[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum CaptionDirection {

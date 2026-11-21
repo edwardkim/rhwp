@@ -528,6 +528,8 @@ impl DocumentCore {
             .ok()
             .map(|pic| picture_band_geometry(&pic.common));
 
+        let caption_styles = self.resolve_render_styles();
+        let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
         let (
             caption_created,
             caption_removed,
@@ -539,7 +541,15 @@ impl DocumentCore {
             // [Task #1151 v2] tac false→true migration 검출용 snapshot.
             let was_tac = pic.common.treat_as_char;
             let had_caption = pic.caption.is_some();
+            let caption_width_before = picture_caption_text_width(pic);
             let caption_created = Self::apply_picture_props_inner(pic, props_json);
+            reflow_picture_caption_if_width_changed(
+                pic,
+                caption_width_before,
+                &caption_styles,
+                dpi,
+                hwp3_layout,
+            );
             let now_tac = pic.common.treat_as_char;
             // tac 토글이 enum 에만 반영되고 packed attr 이 낡으면 직렬화가 옛 앵커를
             // 되살린다 — 여기서 즉시 동기화 (migrate 경로는 rel_to 갱신 후 재동기화).
@@ -693,8 +703,7 @@ impl DocumentCore {
     /// [Task #825] 머리말/꼬리말 안 그림 속성 변경.
     /// path: section[si].paragraphs[outer_para].controls[outer_ctrl] = Header/Footer
     ///       → .paragraphs[inner_para].controls[inner_ctrl] = Picture
-    /// 캡션 신규 생성은 본 함수에서 미지원 (현 dialog UI 가 머리말 picture 캡션
-    /// 변경을 노출하지 않음). caption_created 검출 시 NotSupported 에러.
+    /// 캡션을 새로 달면 본문 setter처럼 자동 번호를 다시 매긴다.
     pub fn set_header_footer_picture_properties_native(
         &mut self,
         section_idx: usize,
@@ -705,6 +714,7 @@ impl DocumentCore {
         props_json: &str,
     ) -> Result<String, HwpError> {
         let styles = self.resolve_render_styles();
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
         let width = self.picture_host_width(section_idx, None)?;
         let caption_created;
         {
@@ -757,7 +767,15 @@ impl DocumentCore {
             // 한다. 머리말/꼬리말 경로는 이 마이그레이션이 누락되어 있었음 — tac on 시
             // 그림 높이가 줄 높이에 반영되지 않아 렌더 시 그림이 겹치거나 잘림.
             let was_tac = pic.common.treat_as_char;
+            let caption_width_before = picture_caption_text_width(pic);
             caption_created = Self::apply_picture_props_inner(pic, props_json);
+            reflow_picture_caption_if_width_changed(
+                pic,
+                caption_width_before,
+                &styles,
+                self.dpi,
+                hwp3_layout,
+            );
             let now_tac = pic.common.treat_as_char;
             // 본문 setter 와 같은 이유로 여기서도 packed attr 을 동기화한다 —
             // 머리말/꼬리말 경로도 같은 tac 토글 마이그레이션을 수행한다 (Issue #3781).
@@ -785,15 +803,15 @@ impl DocumentCore {
                 }
             }
         }
+        // 한컴 12.30처럼 머리말·꼬리말 그림에도 캡션을 새로 단다. 본문 setter처럼 자동 번호를 다시 매긴다.
         if caption_created {
-            return Err(HwpError::RenderError(
-                "머리말/꼬리말 그림에 캡션 신규 생성은 본 버전에서 지원하지 않습니다".to_string(),
-            ));
+            crate::parser::assign_auto_numbers(&mut self.document);
         }
         let section = &mut self.document.sections[section_idx];
         section.raw_stream = None;
         self.recompose_section(section_idx);
         self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
         self.event_log.push(DocumentEvent::PictureResized {
             section: section_idx,
             para: outer_para_idx,
@@ -2026,6 +2044,34 @@ impl DocumentCore {
             "\"paraIdx\":{},\"controlIdx\":{},\"logicalOffset\":{}",
             para_idx, new_ctrl_idx, logical_after
         )))
+    }
+}
+
+/// 그림 캡션 글 폭. 캡션이 없으면 None이다.
+pub(crate) fn picture_caption_text_width(pic: &crate::model::image::Picture) -> Option<u32> {
+    pic.caption
+        .as_ref()
+        .map(|caption| caption.text_width(pic.common.width, &pic.common.margin))
+}
+
+/// 속성 변경으로 캡션 글 폭이 바뀌었으면(새 캡션 포함) 캡션 글을 새 폭으로 다시 줄 나눈다.
+pub(crate) fn reflow_picture_caption_if_width_changed(
+    pic: &mut crate::model::image::Picture,
+    before: Option<u32>,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
+    let after = picture_caption_text_width(pic);
+    if let (Some(width), Some(caption)) = (after.filter(|_| after != before), pic.caption.as_mut())
+    {
+        super::super::text_editing::reflow_caption_to_width(
+            caption,
+            width,
+            styles,
+            dpi,
+            is_hwp3_variant,
+        );
     }
 }
 
