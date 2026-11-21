@@ -1,7 +1,7 @@
 //! HTML 붙여넣기 + HTML 파싱 관련 native 메서드
 
 use super::super::helpers::*;
-use super::clipboard::text_to_split_logical_offset;
+use super::clipboard::CellCaret;
 
 mod cell_flow;
 mod inline_content;
@@ -515,56 +515,6 @@ impl DocumentCore {
         Self::normalize_html_paragraphs_for_cell_paste(parsed_paras)
     }
 
-    fn paste_html_paragraphs_into_cell_paragraphs(
-        cell_paras: &mut Vec<Paragraph>,
-        cell_para_idx: usize,
-        char_offset: usize,
-        parsed_paras: &[Paragraph],
-    ) -> Result<(usize, usize), HwpError> {
-        if cell_para_idx >= cell_paras.len() {
-            return Err(HwpError::RenderError(format!(
-                "셀 문단 {} 범위 초과",
-                cell_para_idx
-            )));
-        }
-
-        let clip_count = parsed_paras.len();
-        if clip_count == 1 && parsed_paras[0].controls.is_empty() {
-            let clip_text = parsed_paras[0].text.clone();
-            let new_chars = clip_text.chars().count();
-
-            cell_paras[cell_para_idx].insert_text_from_paragraph(char_offset, &parsed_paras[0]);
-
-            let clip_char_shapes = parsed_paras[0].char_shapes.clone();
-            let clip_char_offsets = parsed_paras[0].char_offsets.clone();
-            Self::apply_clipboard_char_shapes_to_para(
-                &mut cell_paras[cell_para_idx],
-                char_offset,
-                &clip_char_shapes,
-                &clip_char_offsets,
-                new_chars,
-            );
-
-            return Ok((cell_para_idx, char_offset + new_chars));
-        }
-
-        // 셀 캐럿은 글자 위치다. split_at 이 한 칸으로 세는 컨트롤과 같은 기준으로 바꿔 넘긴다.
-        let split_offset =
-            text_to_split_logical_offset(&cell_paras[cell_para_idx], char_offset, false);
-        let right_half = cell_paras[cell_para_idx].split_at(split_offset);
-        cell_paras[cell_para_idx].merge_from(&parsed_paras[0]);
-
-        let mut insert_idx = cell_para_idx + 1;
-        for parsed_para in parsed_paras.iter().skip(1) {
-            cell_paras.insert(insert_idx, parsed_para.clone());
-            insert_idx += 1;
-        }
-
-        let last_para_idx = insert_idx - 1;
-        let merge_point = cell_paras[last_para_idx].merge_from(&right_half);
-        Ok((last_para_idx, merge_point))
-    }
-
     /// HTML 문자열을 파싱하여 셀 내부 캐럿 위치에 삽입한다. 셀 캐럿 `char_offset` 은 글자 위치다.
     pub fn paste_html_in_cell_native(
         &mut self,
@@ -602,10 +552,10 @@ impl DocumentCore {
                 .get_mut(cell_idx)
                 .ok_or_else(|| HwpError::RenderError(format!("셀 {} 범위 초과", cell_idx)))?
                 .paragraphs;
-            Self::paste_html_paragraphs_into_cell_paragraphs(
+            Self::paste_paragraphs_into_cell_paragraphs(
                 cell_paras,
                 cell_para_idx,
-                char_offset,
+                CellCaret::Text(char_offset),
                 &parsed_paras,
             )?
         };
@@ -645,6 +595,42 @@ impl DocumentCore {
         char_offset: usize,
         html: &str,
     ) -> Result<String, HwpError> {
+        self.paste_html_in_cell_by_path_at(
+            section_idx,
+            parent_para_idx,
+            path,
+            CellCaret::Text(char_offset),
+            html,
+        )
+    }
+
+    /// HTML을 cellPath가 가리키는 셀 문단의 논리 캐럿에 붙인다. 수식 같은 글자처럼 취급한 개체
+    /// 바로 뒤 자리면 그 뒤에 붙인다.
+    pub fn paste_html_in_cell_by_path_logical_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        logical_offset: usize,
+        html: &str,
+    ) -> Result<String, HwpError> {
+        self.paste_html_in_cell_by_path_at(
+            section_idx,
+            parent_para_idx,
+            path,
+            CellCaret::Logical(logical_offset),
+            html,
+        )
+    }
+
+    fn paste_html_in_cell_by_path_at(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        caret: CellCaret,
+        html: &str,
+    ) -> Result<String, HwpError> {
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
@@ -658,10 +644,10 @@ impl DocumentCore {
         let (last_para_idx, merge_point) = {
             let cell_paras =
                 self.get_cell_paragraphs_mut_by_path(section_idx, parent_para_idx, path)?;
-            Self::paste_html_paragraphs_into_cell_paragraphs(
+            Self::paste_paragraphs_into_cell_paragraphs(
                 cell_paras,
                 cell_para_idx,
-                char_offset,
+                caret,
                 &parsed_paras,
             )?
         };
