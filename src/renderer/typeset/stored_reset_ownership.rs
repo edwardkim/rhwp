@@ -167,6 +167,9 @@ pub(super) fn consumed_prefix_before_float(
     paragraphs: &[Paragraph],
     para_index: usize,
 ) -> Option<i32> {
+    if let Some(origin) = accepted_source_prefix_origin(st, paragraphs, para_index) {
+        return Some(origin);
+    }
     if !st.profile.hwp5_origin_hwpx()
         || st.profile.session_edited()
         || st.col_count != 1
@@ -280,6 +283,9 @@ pub(super) fn record_consumed_prefix_origin(
     para_index: usize,
     placement: Option<ParagraphFloatPlacement>,
 ) {
+    if !st.current_items.is_empty() {
+        return;
+    }
     if let Some((base, placement)) =
         consumed_prefix_before_float(st, paragraphs, para_index).zip(placement)
     {
@@ -291,4 +297,48 @@ pub(super) fn record_consumed_prefix_origin(
             flow_end: placement.occupied_bottom,
         });
     }
+}
+
+/// 실제 첫 표가 확정한 원본 단 축은 같은 저장 사다리의 후속 표도 공유한다.
+pub(super) fn accepted_source_prefix_origin(
+    st: &super::TypesetState,
+    paragraphs: &[Paragraph],
+    para_index: usize,
+) -> Option<i32> {
+    if !st.profile.hwp5_origin_hwpx() || st.profile.session_edited() || st.col_count != 1 {
+        return None;
+    }
+    let PageItem::Table {
+        para_index: first, ..
+    } = st.current_items.first()?
+    else {
+        return None;
+    };
+    let origin = st.paragraph_origins.get(first)?;
+    if origin.flow_start != 0.0
+        || origin.source_vpos_base <= 0
+        || st.vpos_page_base != Some(origin.source_vpos_base)
+    {
+        return None;
+    }
+    let mut previous = None;
+    for paragraph in paragraphs.get(*first..=para_index)? {
+        if paragraph.column_type != ColumnBreakType::None
+            || paragraph.stored_text_partition_is_dirty()
+            || paragraph.cell_format_vpos_dirty
+            || paragraph.source_line_seg_vertical_pos.is_some()
+            || paragraph.line_segs.is_empty()
+        {
+            return None;
+        }
+        for line in &paragraph.line_segs {
+            if super::is_synthetic_line_seg(line)
+                || previous.is_some_and(|vpos| line.vertical_pos < vpos)
+            {
+                return None;
+            }
+            previous = Some(line.vertical_pos);
+        }
+    }
+    Some(origin.source_vpos_base)
 }
