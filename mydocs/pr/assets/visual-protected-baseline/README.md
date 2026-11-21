@@ -47,6 +47,9 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.74% | 99.73% |
 | [outline_navigation_table_cell_number.hwpx](<../../../../samples/pr4093/outline_navigation_table_cell_number.hwpx>) | 1 | 100.00% | 100.00% |
 
+`exam-social-insert.hwp`와 `exam-social-insert-delete.hwp`는 캡처 전에
+[#8040 신그래픽체 공급 절차](../../../manual/verification/visual_sweep_guide.md#8040-삽입삽입-삭제-보호-문서의-신그래픽체-공급)를 확인한다.
+
 ## 2026-11-15 PR #9075 검토의 상승분 반영
 
 동일한 최종 제품 소스 `43adf3f7fe412e71797456887e2be44b8ef8d14f`의 Native/fresh WASM
