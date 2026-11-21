@@ -2351,26 +2351,39 @@ fn measure_scalar_advance<'a>(
                 )
             })
             .flatten();
-        let old_glyph_metric = cluster_glyph
-            .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
-            .and_then(|glyph| {
-                style
-                    .selected_primary_font_program
-                    .and_then(|_| {
-                        font_metrics_data::old_hangul_syllable_advance_em(
-                            css_primary_face(display_family),
-                            style.bold,
-                            style.italic,
-                            glyph,
-                        )
-                    })
-                    .map(|em| (glyph, em, None))
-                    .or_else(|| {
-                        if latin.is_some() {
-                            return None;
-                        }
-                        font_metrics_data::declared_old_hangul_fallback(style, glyph)
-                            .map(|(metric, em)| (glyph, em, Some(metric)))
+        let old_glyph_metric = (cluster_len[i] > 1)
+            .then(|| {
+                crate::renderer::pua_glyph::source_program_glyph(
+                    style,
+                    &chars[i..i + usize::from(cluster_len[i])]
+                        .iter()
+                        .collect::<String>(),
+                )
+            })
+            .flatten()
+            .map(|(glyph, advance)| (glyph, advance, None))
+            .or_else(|| {
+                cluster_glyph
+                    .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
+                    .and_then(|glyph| {
+                        style
+                            .selected_primary_font_program
+                            .and_then(|_| {
+                                font_metrics_data::old_hangul_syllable_advance_em(
+                                    css_primary_face(display_family),
+                                    style.bold,
+                                    style.italic,
+                                    glyph,
+                                )
+                            })
+                            .map(|em| (glyph, em, None))
+                            .or_else(|| {
+                                if latin.is_some() {
+                                    return None;
+                                }
+                                font_metrics_data::declared_old_hangul_fallback(style, glyph)
+                                    .map(|(metric, em)| (glyph, em, Some(metric)))
+                            })
                     })
             });
         let metric_character = cluster_glyph

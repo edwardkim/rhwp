@@ -12,7 +12,10 @@ pub(super) fn is_full_paragraph_row(
     segment_width: i32,
     paragraph_box: &ParagraphBox,
 ) -> bool {
-    if para.stored_text_partition_is_dirty() || para.cell_format_vpos_dirty {
+    if !paragraph_box.origin_is_derivable()
+        || para.stored_text_partition_is_dirty()
+        || para.cell_format_vpos_dirty
+    {
         return false;
     }
     let horizontal = paragraph_box.effective();

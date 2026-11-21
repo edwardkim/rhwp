@@ -121,6 +121,7 @@ struct NativeOtfProgram {
     static_truetype: bool,
     visible_notdef_advance: Option<f64>,
     verified_hft_bold_tracking: bool,
+    visible_old_hangul_advances: Arc<BTreeMap<char, f64>>,
 }
 
 impl PartialEq for NativeOtfMetrics {
@@ -134,6 +135,27 @@ impl PartialEq for NativeOtfMetrics {
 }
 
 impl NativeOtfMetrics {
+    /// 분할 프로그램을 실제 공급 순서로 읽되 앞 프로그램의 자모를 건너뛰지 않는다.
+    /// 원 자모를 지원하는 face는 기존 shaping이 소유한다. 그 전의 동일 family
+    /// 프로그램이 호환 음절을 공급할 때만 그 프로그램의 hmtx를 함께 반환한다.
+    pub(crate) fn compatibility_cluster_advance(&self, cluster: &str, glyph: char) -> Option<f64> {
+        for program in &self.programs {
+            let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
+            if cluster
+                .chars()
+                .any(|ch| face.glyph_index(ch).is_some_and(|id| id.0 != 0))
+            {
+                return None;
+            }
+            if face.glyph_index(glyph).is_some_and(|id| id.0 != 0) {
+                // compact SFNT에는 윤곽이 없다. 등록 전 원 프로그램에서 확인한
+                // 가시 glyph의 전진만 소비하고, 빈 cmap 소유자를 건너뛰지 않는다.
+                return program.visible_old_hangul_advances.get(&glyph).copied();
+            }
+        }
+        None
+    }
+
     /// 선택한 주 프로그램 자체의 공백 전진. 뒤 fallback의 공백은 사용하지 않는다.
     /// useFontSpace의 원본 선언을 확인한 호출자만 사용한다.
     pub(crate) fn selected_program_space_advance_em(
@@ -391,6 +413,16 @@ impl NativePuaFonts {
             .filter(|bounds| bounds.x_min < bounds.x_max && bounds.y_min < bounds.y_max)
             .and_then(|_| face.glyph_hor_advance(notdef))
             .map(|advance| f64::from(advance) / f64::from(face.units_per_em()));
+        let visible_old_hangul_advances = (0xe000..=0xf8ff)
+            .filter_map(char::from_u32)
+            .filter_map(|character| {
+                super::pua_oldhangul::map_pua_old_hangul(character)?;
+                let glyph = face.glyph_index(character).filter(|id| id.0 != 0)?;
+                face.glyph_bounding_box(glyph)?;
+                let width = face.glyph_hor_advance(glyph)?;
+                (width > 0).then(|| (character, f64::from(width) / f64::from(face.units_per_em())))
+            })
+            .collect();
         let source_digest: [u8; 32] = Sha256::digest(bytes).into();
         let source_face_index = face_index;
         // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
@@ -467,6 +499,7 @@ impl NativePuaFonts {
             static_truetype,
             visible_notdef_advance,
             verified_hft_bold_tracking,
+            visible_old_hangul_advances: Arc::new(visible_old_hangul_advances),
         });
         self.otf_programs
             .entry(family.to_owned())
