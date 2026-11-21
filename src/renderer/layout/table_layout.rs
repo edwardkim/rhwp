@@ -8169,6 +8169,9 @@ impl LayoutEngine {
                                 prior, line_idx,
                             )
                     })
+                })
+                || cell.paragraphs[..=cp_idx].windows(2).any(|pair| {
+                    stored_plain_text_paragraph_frame_reset(&pair[0], &pair[1], styles, self.dpi)
                 });
             // [#7416] 앞 문단의 저장 줄 사다리를 버리고 다시 조판해 **줄 수가 달라졌으면**,
             // 뒤 문단들의 저장 vpos 는 버린 사다리의 줄 수를 전제로 적힌 값이다. 그 값을
@@ -8194,6 +8197,11 @@ impl LayoutEngine {
             let use_saved_cell_para_vpos = use_top_vpos_anchor
                 || trust_stored_cell_flow
                 || has_initial_tac_shape_host(&cell.paragraphs);
+            if std::env::var("RHWP_DIAG_CELL_ANCHOR").is_ok_and(|filter| {
+                filter == "all" || filter.split(',').any(|id| id.parse::<u32>() == Ok(table.common.instance_id))
+            }) {
+                eprintln!("CELL_ANCHOR id={} cp={cp_idx} current={para_y} inner={inner_height} source={:?} rows={}/{} restart={local_vpos_restart_seen} anchor={has_stored_para_anchor} saved={use_saved_cell_para_vpos} single_column={} block_flow={stored_block_flow} frame_reflowed={}", table.common.instance_id, para.line_segs.first().map(|line| line.vertical_pos), composed.lines.len(), para.line_segs.len(), single_column_flow.is_some(), self.render_normalization.borrow().cell_frame_reflowed(table, cell));
+            }
             if std::env::var("RHWP_DIAG_5601B").is_ok() && trust_stored_cell_flow {
                 eprintln!(
                     "DIAG5601B cp={cp_idx} use={use_saved_cell_para_vpos} anchor={has_stored_para_anchor} restart={local_vpos_restart_seen} para_y_in={para_y:.1} first_vpos={:?}",
