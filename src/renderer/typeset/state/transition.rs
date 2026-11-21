@@ -126,6 +126,8 @@ impl TypesetState {
                 wrap_around_sw: -1,
                 wrap_around_table_para: 0,
                 wrap_around_any_seg: false,
+                wrap_around_stored_flow: false,
+                stored_flow_wrap_host: None,
                 wrap_around_derived_band: false,
                 behind_float_table_para: None,
                 next_para_first_stored_vpos: None,
@@ -935,7 +937,16 @@ impl TypesetState {
                 // 표는 자기 배치 경로(place_table_with_text)가 있으므로 제외한다.
                 _ => continue,
             };
-            if common.treat_as_char || !matches!(common.text_wrap, TextWrap::TopAndBottom) {
+            // 단 폭을 채운 어울림 개체는 옆에 글 차선이 없어 자리차지 밴드와 같이 글줄을
+            // 아래로 민다. 리셋된 첫 줄의 자리(문단 위끝부터 줄 높이)가 밴드와 겹치는데
+            // 저장 줄이 새 쪽 맨 위에 있으면, 밴드는 그 쪽에 없다 — 떠나는 쪽에 남았다.
+            let column_wide_square_band = !common.treat_as_char
+                && matches!(common.text_wrap, TextWrap::Square)
+                && matches!(common.vert_rel_to, VertRelTo::Para)
+                && self.column_wide_square_band_pushed_reset_line(para, common);
+            if common.treat_as_char
+                || !(matches!(common.text_wrap, TextWrap::TopAndBottom) || column_wide_square_band)
+            {
                 continue;
             }
             // [#7696] 쪽·종이 기준 개체는 흐름이 아니라 떠나는 쪽의 절대 위치에 밴드를 만든다.
@@ -1011,7 +1022,12 @@ impl TypesetState {
                 continue;
             }
             let height = hwpunit_to_px(common.height as i32, dpi)
-                + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
+                + hwpunit_to_px(i32::from(common.margin.bottom), dpi)
+                + if column_wide_square_band {
+                    hwpunit_to_px(common.vertical_offset as i32, dpi)
+                } else {
+                    0.0
+                };
             if height <= 0.0
                 || self.data.layout.body_area.y + self.data.current_height + height
                     > self.data.layout.page_height + 0.5
@@ -1027,6 +1043,40 @@ impl TypesetState {
                 .page_tail_spilled_floats
                 .insert((para_idx, ctrl_idx));
         }
+    }
+
+    /// 문단·단 기준으로 단 폭을 채운 어울림 개체가 리셋된 첫 줄의 자리와 겹치는가.
+    fn column_wide_square_band_pushed_reset_line(
+        &self,
+        para: &Paragraph,
+        common: &crate::model::shape::CommonObjAttr,
+    ) -> bool {
+        use crate::model::shape::HorzRelTo;
+        let Some(first) = para.line_segs.first() else {
+            return false;
+        };
+        let dpi = self.data.layout.dpi;
+        let column_width = self.inline_flow_column().width;
+        let left = hwpunit_to_px(
+            common.horizontal_offset as i32 - i32::from(common.margin.left),
+            dpi,
+        );
+        let right = hwpunit_to_px(
+            (common.horizontal_offset as i32)
+                .saturating_add(common.width as i32)
+                .saturating_add(i32::from(common.margin.right)),
+            dpi,
+        );
+        let top = common.vertical_offset as i32;
+        let bottom = top.saturating_add(common.height as i32);
+        matches!(common.horz_rel_to, HorzRelTo::Para | HorzRelTo::Column)
+            && left <= 0.5
+            && right + 0.5 >= column_width
+            && first.vertical_pos == 0
+            && first.line_height > 0
+            && top >= 0
+            && top < first.line_height
+            && bottom > 0
     }
 
     #[track_caller]

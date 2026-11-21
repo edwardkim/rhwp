@@ -9,7 +9,7 @@ export interface DocumentFontSelectionPlan {
   environmentId: string | null;
   supportsSourceMetricOverrides?: boolean;
   embeddedFamilies?: string[];
-  requests: Array<{ source: string; primary: string[]; substitute: string[]; publicFallback?: string[] }>;
+  requests: Array<{ source: string; primary: string[]; substitute: string[]; publicFallback?: string[]; hancomMissingDefault?: string[] }>;
 }
 
 interface LoadedProgram {
@@ -162,7 +162,8 @@ export async function prepareDeclaredFontPrograms(
   inspect?: FontSymbolInspector,
 ): Promise<DeclaredFontProgramSnapshot> {
   const empty = (): DeclaredFontProgramSnapshot => ({ programs: [], publicFallbackBlockedSources: [] });
-  const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute]))];
+  // 한컴 기본 대체(한컴바탕)는 설치된 local 프로그램만 조회한다. 선택은 Rust가 소유한다.
+  const names = [...new Set(plan.requests.flatMap(request => [...request.primary, ...request.substitute, ...(request.hancomMissingDefault ?? [])]))];
   if (names.length > 1024 || typeof FontFace === 'undefined') return empty();
   if (!isCurrent()) return empty();
   await prepareDocumentLocalFontPrograms(plan.requests.map(request => request.source));

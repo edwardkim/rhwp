@@ -106,6 +106,10 @@ impl TypesetState {
         self.data.wrap_around_derived_band
     }
 
+    pub(super) fn following_wrap_is_stored_flow(&self) -> bool {
+        self.data.wrap_around_stored_flow
+    }
+
     pub(super) fn following_wrap_layout(&self) -> &crate::renderer::page_layout::PageLayoutInfo {
         &self.data.layout
     }
@@ -140,6 +144,7 @@ impl TypesetState {
         self.data.wrap_around_sw = -1;
         self.data.wrap_around_any_seg = false;
         self.data.wrap_around_derived_band = false;
+        self.data.wrap_around_stored_flow = false;
         self.close_square_band();
     }
 
@@ -307,6 +312,7 @@ impl TypesetState {
         self.data.wrap_around_table_para = para_idx;
         self.data.wrap_around_any_seg = true;
         self.data.wrap_around_derived_band = false;
+        self.data.wrap_around_stored_flow = false;
     }
 
     pub(super) fn register_host_wrap_anchor(
@@ -325,6 +331,7 @@ impl TypesetState {
         self.data.wrap_around_table_para = para_idx;
         self.data.wrap_around_any_seg = false;
         self.data.wrap_around_derived_band = true;
+        self.data.wrap_around_stored_flow = false;
     }
 
     /// 강제 경계 준비 뒤의 문단 흐름 힌트에 사용할 현재 상태의 profile.
@@ -584,6 +591,61 @@ impl TypesetState {
             has_items: !self.data.current_items.is_empty(),
             current_height: self.data.current_height,
         }
+    }
+
+    /// 같은 문단에서 이미 열었던 표가 현재 쪽에 이어질 때 고정 장식을
+    /// 그 표의 첫 조각에 추가한다. 문단의 흐름 높이는 변경하지 않는다.
+    pub(super) fn place_paper_overlay_on_opening_table_fragment<S: crate::storage::Storage>(
+        &mut self,
+        para_idx: usize,
+        ctrl_idx: usize,
+        storage: &S,
+    ) -> Result<bool, S::Error> {
+        let Some(table_control) =
+            self.data
+                .current_items
+                .iter()
+                .rev()
+                .find_map(|item| match item {
+                    PageItem::PartialTable {
+                        para_index,
+                        control_index,
+                        is_continuation: true,
+                        ..
+                    } if *para_index == para_idx && *control_index < ctrl_idx => {
+                        Some(*control_index)
+                    }
+                    _ => None,
+                })
+        else {
+            return Ok(false);
+        };
+        let section = self.data.section_index;
+        let first_column = self
+            .data
+            .pages
+            .iter_mut()
+            .rev()
+            .take_while(|page| page.section_index == section)
+            .flat_map(|page| &mut page.column_contents)
+            .find(|column| {
+                column.items.iter().any(|item| {
+                    matches!(item, PageItem::PartialTable {
+                    para_index, control_index, is_continuation: false, ..
+                } if *para_index == para_idx && *control_index == table_control)
+                })
+            });
+        if let Some(column) = first_column {
+            storage.push(
+                &mut column.items,
+                PageItem::Shape {
+                    para_index: para_idx,
+                    control_index: ctrl_idx,
+                },
+            )?;
+            return Ok(true);
+        }
+        Ok(false)
     }
 
     /// 단/쪽 전환 뒤 현재 페이지에 항목을 추가하고 기존 우선순위대로 높이를 반영한다.

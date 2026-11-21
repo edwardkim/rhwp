@@ -369,6 +369,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "현재 세션의 Print 이미지 색상 옵션을 설정하고 출력 캐시만 비운다. 저장 문서의 IR과 원본 스트림은 유지한다.",
     ),
     (
+        "mod.rs",
+        "set_print_job_context",
+        Exempt::SessionState,
+        "인쇄 작업의 파일명·현지 시각과 출력 레이어 캐시만 갱신한다. 원본 DocInfo와 본문 스트림은 유지한다.",
+    ),
+    (
         "queries/rendering.rs",
         "begin_deferred_pagination",
         Exempt::SessionState,

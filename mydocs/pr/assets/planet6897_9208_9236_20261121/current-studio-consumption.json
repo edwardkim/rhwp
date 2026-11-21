@@ -1,0 +1,42 @@
+{
+  "source_sha": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+  "PR_9236": {
+    "source_sha": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+    "package_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+    "browser_js_response_sha256": "32944961c50663be5fdb6ecccc2149355ccc143139a87bad25ed586bf76a1694",
+    "only_expected_vite_url_rewrite": true,
+    "wasm_initialization_sha256": "61a04d5bfbad43d355e12c4683ba03eb1adc10d1d631948158ee6ff7a808a219",
+    "print_preview_pages": 22,
+    "print_state_restored": true
+  },
+  "PR_9221": {
+    "browser_version": "Chrome/157.0.8103.80",
+    "scope": "representative",
+    "results": [
+      {
+        "page": 5,
+        "documentDigest": "sha256:cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+        "backend": "canvas2d",
+        "actualBackend": "canvas2d",
+        "actualProfile": "print",
+        "fontFallback": null
+      },
+      {
+        "page": 5,
+        "documentDigest": "sha256:cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+        "backend": "canvaskit-compat",
+        "actualBackend": "canvaskit-compat",
+        "actualProfile": "print",
+        "fontFallback": null
+      },
+      {
+        "page": 5,
+        "documentDigest": "sha256:cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+        "backend": "canvaskit-default",
+        "actualBackend": "canvaskit-default",
+        "actualProfile": "print",
+        "fontFallback": null
+      }
+    ]
+  }
+}

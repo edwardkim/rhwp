@@ -1540,7 +1540,26 @@ impl DocumentCore {
         }
         // 앞쪽 Print 이력을 읽기 전에 요청한 쪽 자체의 범위를 확인한다.
         // 잘못된 요청의 오류를 중간 페이지 번호로 바꾸지 않는다.
-        self.find_page(page_num)?;
+        let (print_page, _, _) = self.find_page(page_num)?;
+        let print_footer = self
+            .print_job_context
+            .as_ref()
+            .filter(|_| profile == RenderProfile::Print && self.document.print_auto_footer())
+            .and_then(|job| {
+                let section = self.document.sections.get(print_page.section_index)?;
+                let layout = &print_page.layout;
+                let bottom_margin =
+                    f64::from(section.section_def.page_def.margin_bottom) * self.dpi / 7200.0;
+                Some(crate::paint::automatic_print_footer::AutomaticPrintFooter {
+                    file_name: job.file_name(),
+                    local_date_time: job.local_date_time(),
+                    page_number: print_page.page_number,
+                    page_count: self.page_count(),
+                    left: layout.body_area.x,
+                    right: layout.body_area.x + layout.body_area.width,
+                    bottom_margin_top: layout.page_height - bottom_margin,
+                })
+            });
         let _overflows = self.layout_engine.take_overflows();
         let idx = page_num as usize;
         // Print의 fill 이후 device CTM 정밀도는 문서 paint 순서의 상태다.
@@ -1766,7 +1785,7 @@ impl DocumentCore {
                 .with_prior_print_solid_fill(prior_print_solid_fill)
                 .with_hangul2024_print(hangul2024_print)
                 .with_print_crop_marks(self.document.print_crop_marks());
-            Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
+            Ok(builder.build_with_print_footer(tree, &embedded_fonts, print_footer))
         })?;
         let layer_tree = Arc::new(layer_tree);
         {

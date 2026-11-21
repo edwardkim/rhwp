@@ -160,3 +160,7 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 4쪽을 새 하한으로 반영했다.
 [최종 전쪽 검증](../integration_open_prs_20261120/final-protected/validation.json) ·
 [갱신 영수증](updates/integration-open-prs-20261120.json).
+
+## 2026-11-21 조판 PR 9건 통합 검토
+
+46조건 4,046쪽에서 하락·누락 0쪽을 확인하고 화학 문서의 Native 17쪽과 fresh WASM 13쪽을 상향했다. 중첩 표와 sample10은 원본 및 독립 Print에 맞춘 기호 공급으로 고정 기준과 후보의 전쪽 출력을 비교했다. [검증 결과](../planet6897_9208_9236_20261121/final-protection/validation.json) · [갱신 영수증](updates/planet6897-9208-9236-20261121.json).

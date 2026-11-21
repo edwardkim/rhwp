@@ -348,7 +348,8 @@ impl SkiaTextReplay<'_> {
                 let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
-                let symbol_sources = crate::renderer::implicit_symbol::sources(metric_source, text);
+                let symbol_sources =
+                    crate::renderer::implicit_symbol::sources(metric_source, text, style);
                 let metric_text = crate::renderer::composer::display_projection_metric_text(
                     metric_source,
                     text,
@@ -564,26 +565,36 @@ impl SkiaTextReplay<'_> {
                                 (2.0 * rx) as f32,
                                 (2.0 * ry) as f32,
                             );
-                            if let Some(scale) = shape.inner_scale() {
-                                let (ix, iy) = (rx * scale, ry * scale);
-                                let inner = skia_safe::Rect::new(
-                                    (cx - ix) as f32,
-                                    (cy - iy) as f32,
-                                    (cx + ix) as f32,
-                                    (cy + iy) as f32,
-                                );
-                                let contour = |r| {
-                                    if shape.is_ellipse() {
-                                        skia_safe::RRect::new_oval(r)
+                            match shape {
+                                crate::renderer::implicit_symbol::InkShape::Ellipse => {
+                                    canvas.draw_oval(bounds, &text_paint);
+                                }
+                                crate::renderer::implicit_symbol::InkShape::Rectangle => {
+                                    canvas.draw_rect(bounds, &text_paint);
+                                }
+                                crate::renderer::implicit_symbol::InkShape::Ring { inner }
+                                | crate::renderer::implicit_symbol::InkShape::Frame { inner } => {
+                                    let (irx, iry) = (rx * inner, ry * inner);
+                                    let hole = skia_safe::Rect::from_xywh(
+                                        (cx - irx) as f32,
+                                        (cy - iry) as f32,
+                                        (2.0 * irx) as f32,
+                                        (2.0 * iry) as f32,
+                                    );
+                                    let mut outline = skia_safe::PathBuilder::new();
+                                    if matches!(
+                                        shape,
+                                        crate::renderer::implicit_symbol::InkShape::Ring { .. }
+                                    ) {
+                                        outline.add_oval(bounds, None, None);
+                                        outline.add_oval(hole, None, None);
                                     } else {
-                                        skia_safe::RRect::new_rect(r)
+                                        outline.add_rect(bounds, None, None);
+                                        outline.add_rect(hole, None, None);
                                     }
-                                };
-                                canvas.draw_drrect(contour(bounds), contour(inner), &text_paint);
-                            } else if shape.is_ellipse() {
-                                canvas.draw_oval(bounds, &text_paint);
-                            } else {
-                                canvas.draw_rect(bounds, &text_paint);
+                                    outline.set_fill_type(skia_safe::PathFillType::EvenOdd);
+                                    canvas.draw_path(&outline.detach(), &text_paint);
+                                }
                             }
                             continue;
                         }

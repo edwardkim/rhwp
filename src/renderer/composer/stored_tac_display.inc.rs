@@ -325,6 +325,12 @@ pub(crate) fn caption_height_px_in_context_with_storage<S: crate::storage::Stora
         return Ok(0.0);
     }
 
+    // 여러 문단의 저장 줄이 한 사다리로 닫히면 그 끝이 캡션 높이다. 문단 사이 전진은 앞 문단
+    // 마지막 줄의 줄 간격(음수 포함)이고, 줄 높이만 더하면 그 간격을 잃는다.
+    if let Some(extent) = stored_closed_caption_extent_hu(caption) {
+        return Ok(hwpunit_to_px(extent, dpi));
+    }
+
     // line_segs가 비어 컴포즈로 대체할 때 쓰는 기본 줄 높이(HWPUNIT).
     const DEFAULT_LINE_HEIGHT_HWPUNIT: i32 = 400;
 
@@ -365,6 +371,38 @@ pub(crate) fn caption_height_px_in_context_with_storage<S: crate::storage::Stora
         }
     }
     Ok(line_seg_height.max(composed_height))
+}
+
+/// 캡션 문단이 둘 이상이고 모든 줄이 원본 저장 줄이며, 각 문단의 첫 줄이 앞 문단 마지막 줄의
+/// `vpos + 줄 높이 + 줄 간격` 에서 정확히 시작하면 마지막 줄 끝(HWPUNIT)을 돌려준다.
+/// 재조판 줄·문단 간격이 낀 사다리·되감긴 사다리는 종전 산식에 남긴다.
+fn stored_closed_caption_extent_hu(caption: &Caption) -> Option<i32> {
+    use crate::model::paragraph::LineSeg;
+    if caption.paragraphs.len() < 2 {
+        return None;
+    }
+    let mut expected: Option<i32> = None;
+    let mut end = 0;
+    for para in &caption.paragraphs {
+        if para.line_segs.is_empty()
+            || para.stored_text_partition_is_dirty()
+            || para.cell_format_vpos_dirty
+        {
+            return None;
+        }
+        for line in &para.line_segs {
+            if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+                || line.line_height <= 0
+                || line.vertical_pos < 0
+                || expected.is_some_and(|top| top != line.vertical_pos)
+            {
+                return None;
+            }
+            end = line.vertical_pos.checked_add(line.line_height)?;
+            expected = Some(end.checked_add(line.line_spacing)?);
+        }
+    }
+    (caption.paragraphs[0].line_segs[0].vertical_pos == 0 && end > 0).then_some(end)
 }
 
 /// 도형 캡션 선택은 실제 배치와 흐름 측정이 같은 속성을 소비한다.

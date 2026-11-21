@@ -159,6 +159,15 @@ impl LayerBuilder {
         tree: &PageRenderTree,
         fonts: &[EmbeddedFontFace<'_>],
     ) -> PageLayerTree {
+        self.build_with_print_footer(tree, fonts, None)
+    }
+
+    pub(crate) fn build_with_print_footer(
+        &mut self,
+        tree: &PageRenderTree,
+        fonts: &[EmbeddedFontFace<'_>],
+        footer: Option<super::automatic_print_footer::AutomaticPrintFooter<'_>>,
+    ) -> PageLayerTree {
         if self.profile == RenderProfile::Print
             && !fonts.is_empty()
             && (super::metafile::has_wmf(&tree.root)
@@ -192,11 +201,19 @@ impl LayerBuilder {
             }
         }
         self.image_reference_origin = first_column(&tree.root).unwrap_or((0.0, 0.0));
+        let logical_width = page_width;
         let (page_width, page_height) = context.output_size();
         self.page_context = Some(context);
         self.image_frames.clear();
 
         let mut children = self.build_children(&tree.root);
+        if self.profile == RenderProfile::Print {
+            if let Some(footer) =
+                footer.and_then(|footer| footer.layer(logical_width, self.layout_dpi))
+            {
+                children.push(footer);
+            }
+        }
         if self.print_crop_marks {
             // 한컴 Print의 재단선은 종이 네 모서리를 중심으로 10mm씩 뻗는다.
             // 종이 바깥 부분은 출력 장치가 자르며 화면 조판에는 참여하지 않는다.

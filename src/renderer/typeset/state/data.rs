@@ -336,6 +336,11 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 비-TAC Picture/Shape Square wrap: any_seg_matches만으로 후속 문단 판정 허용.
     /// 그림의 lineseg는 첫 seg cs=0일 수 있어 전체 seg 중 하나라도 일치하면 흡수.
     pub(in crate::renderer::typeset) wrap_around_any_seg: bool,
+    /// 밴드를 연 host 의 저장 사다리가 host 줄만 전진했다. 표 상자 옆의 뒤 문단은 띠에
+    /// 흡수되지 않고 자기 높이를 소비한다.
+    pub(in crate::renderer::typeset) wrap_around_stored_flow: bool,
+    /// 표 배치가 host 줄만 전진시킨 host 문단. 이 문단이 여는 밴드가 위 상태를 받는다.
+    pub(in crate::renderer::typeset) stored_flow_wrap_host: Option<usize>,
     /// [#6175] 밴드가 호스트 문단의 저장 사다리가 아니라 어울림 개체의 기하에서
     /// 유도됐다 — 개체 종류(묶음 포함)와 무관하게 뒤따르는 문단을 개체 옆으로 흘린다.
     pub(in crate::renderer::typeset) wrap_around_derived_band: bool,

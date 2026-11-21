@@ -48,16 +48,20 @@ fn recolor(style: &mut ShapeStyle, shadow: &ShadowStyle, has_gradient: bool) {
     style.shadow = None;
 }
 
-pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
-    let shadow = shadow_style(node)?;
+/// 평행 그림자의 실제 이동량. 기본 이동량에 저장 offset을 더한 값이며,
+/// 그림자 레이어의 재생과 잉크 경계 계산이 함께 소비한다.
+pub(super) fn offset_px(shadow: &ShadowStyle) -> Option<(f64, f64)> {
     let (x, y) = crate::model::shape::shadow::parallel_preset_hu(shadow.shadow_type)?;
     let offset = (
         crate::renderer::hwpunit_to_px(x, crate::renderer::DEFAULT_DPI) + shadow.offset_x,
         crate::renderer::hwpunit_to_px(y, crate::renderer::DEFAULT_DPI) + shadow.offset_y,
     );
-    if !offset.0.is_finite() || !offset.1.is_finite() {
-        return None;
-    }
+    (offset.0.is_finite() && offset.1.is_finite()).then_some(offset)
+}
+
+pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
+    let shadow = shadow_style(node)?;
+    let offset = offset_px(shadow)?;
 
     let mut body = node.clone();
     clear_shadow(&mut body);

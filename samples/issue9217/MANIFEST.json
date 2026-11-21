@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9217,
+  "title": "평행 그림자의 기본 이동량이 잉크 경계에서 빠져 본문 clip 에 그림자가 잘린다",
+  "entries": [
+    {
+      "path": "samples/issue9217/research-task-order-toc-shadow.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9217",
+      "originalFilename": "1320000-201800025_D0150006-1-000_3. 연구용역 과업지시서(검사 독점적 영장 신청권의 합리적 개선방향).hwp",
+      "bytes": 226304,
+      "sha256": "242072435d9c1c38ed496a1a3402e16fb904662b395cbe0fc7f3940e8959dd42",
+      "lastSavedWith": {
+        "product": "hancom-office-2010",
+        "version": null
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9217/research-task-order-toc-shadow-2020.pdf",
+      "referencePdfSha256": "2ff3412577a02231f4b075fcbce8702e812e910e8d40e93e589c64cd638f54c7",
+      "referencePdfPageCount": 14,
+      "contract": "2쪽 pi=15 는 글자처럼 취급한 묶음 개체이고 그 안의 목차 사각형(폭 47591HU, 본문 폭 45128HU 보다 넓다)이 오른쪽 아래 평행 그림자를 가진다. 평행 그림자는 기본 이동량 600HU 에 저장 offset(0)을 더한 만큼 옮긴 도형이므로, 사각형을 그만큼 옮긴 상자가 본문 clip 안에 있어야 한다. 전체 14쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}

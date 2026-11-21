@@ -161,6 +161,17 @@ pub(in crate::renderer::typeset) fn anchor_table_has_absolute_frame(
         })
 }
 
+/// 뒤 문단의 모든 저장 조각이 밴드를 연 host 의 어울림 표 상자 옆에 놓였는가.
+pub(in crate::renderer::typeset) fn stored_rows_flank_anchor_table(
+    para: &Paragraph,
+    paragraphs: &[Paragraph],
+    band: WrapBand,
+) -> bool {
+    paragraphs.get(band.anchor_para).is_some_and(|host| {
+        crate::renderer::float_placement::stored_rows_flank_square_table(host, para)
+    })
+}
+
 pub(in crate::renderer::typeset) fn picture_anchor(band: WrapBand) -> WrapAnchorRef {
     WrapAnchorRef {
         anchor_para_index: band.anchor_para,

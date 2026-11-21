@@ -284,9 +284,13 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
         substitute = request.get('substitute', [])
         if not isinstance(substitute, list) or any(not isinstance(x, str) for x in substitute):
             raise ValueError('Native 대체 글꼴 후보가 올바르지 않습니다')
-        group = groups.setdefault(source, {'primary': [], 'substitute': []})
+        hancom_default = request.get('hancomMissingDefault', [])
+        if not isinstance(hancom_default, list) or any(not isinstance(x, str) for x in hancom_default):
+            raise ValueError('Native 한컴 기본 대체 글꼴 후보가 올바르지 않습니다')
+        group = groups.setdefault(source, {'primary': [], 'substitute': [], 'hancom_default': []})
         group['primary'].extend(primary)
         group['substitute'].extend(substitute)
+        group['hancom_default'].extend(hancom_default)
     for source, group in groups.items():
         primary = group['primary']
         # 공급된 정확한 PostScript face의 하이픈 차이를 해소한다. 이때
@@ -311,6 +315,14 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
             local_substitutes.append(source)
             if rule is None:
                 unresolved.append(source)
+            continue
+        # 원장에 없는 TTF 원본은 rhwp 글꼴 계획의 한컴 기본 대체(한컴바탕)가 공급 경로에
+        # 있으면 그 face로 치환한다. 서체 분류와 무관한 일반 Noto 치환보다 앞선다.
+        # 선언 이름 순서(한컴바탕 먼저)를 유지한다. Native 공급과 같은 표시 치환이다.
+        hancom = next((x for x in group['hancom_default'] if _normal(x) in installed), None)
+        if rule is None and hancom is not None:
+            unresolved.append(source)
+            mappings[source] = hancom
             continue
         if rule is None:
             unresolved.append(source)

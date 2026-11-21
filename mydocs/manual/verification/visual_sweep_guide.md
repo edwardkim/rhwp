@@ -216,7 +216,10 @@ RHWP 조판 개선으로 바꾸어 보고하지 않는다. 실루엣 임계값·
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
 `silhouette_raw_match_percent`(2px 이웃 관용 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
-미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
+미달 쪽을 상쇄하지 않는다. 정확히 90%는 자동 검사 하한을 충족한다.
+제출 전에는 Native·fresh WASM 전쪽에서 조판·렌더링 차이를 98% 이상으로 보정하고, 가능한 쪽은
+100%까지 개선한다. 동일한 글꼴을 확보해 적용할 수 없어 그 차이만 남은 쪽은
+[페이지별 제출 판정](visual_verification_governance.md#페이지별-tsv와-pr-재검토-필수-조건)에 따라 근거를 기록한다.
 
 `re_review_required` 상태에서는 새 PR 생성과 열린 PR의 승인·통합을 보류한다.
 작성자는 원본·독립 한컴 Print PDF·overlay를 대조해 원인을 수정하고 새 head에서 다시 산출한다.
@@ -313,13 +316,14 @@ WASM은 같은 원문·PDF에 `--wasm-pkg pkg`와 검증한 `--rhwp-bin`을 명�
 
 TSV의 첫 세 열은 `page`, `tolerant_content_match_percent`, `below_90`이며,
 `silhouette_raw_match_percent`, `silhouette_boundary_reconciled_pixels`를 뒤에 함께 기록한다.
-**90% gate·devel 대비 하락·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
+**90% gate·devel 대비 하락·98% 제출·98% px 회귀 판정은 모두 `silhouette_raw_match_percent`를 쓴다.**
+98% 제출 및 px 회귀 기준은 TSV에 표시된 소수 둘째 자리 값으로 판정하고 `98.00`부터 충족한다.
 `below_90`도 raw 기준이다. 첫 번째 점수 열의 색상 경계 보정값은 진단용이며 판정을 대신하지 않는다.
 TSV의 일치율은 소수점 셋째 자리에서 반올림해 둘째 자리까지 표시한다. `100.00`은 실제 값이
 정확히 100%라는 뜻이 아니며, `90.00`으로 표시된 쪽도 원래 값이 90% 미만이면 `below_90=1`이다.
 overlay의 일치율도 동일한 입력의 `silhouette_raw_match_percent`를 소수점 둘째 자리까지 표시한다.
 색상 경계 보정값은 overlay에 함께 표시하지 않으며 진단 지표에서 확인한다.
-정확한 점수와 90%·98%·100% 및 기준 대비 하락 판정에는 같은 실행의
+정확한 점수와 90% gate 및 일반 devel 대비 하락 판정에는 같은 실행의
 `silhouette_manifest.json`에 기록된 페이지별 정밀값을 사용한다.
 단, collaborator·maintainer의 [정본 보호 TSV 비교](visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)는
 해당 정본이 지정한 공식 두 자리 표시값으로 상승·동일 여부를 판정한다. 일반 사용자·외부 contributor에게
@@ -392,6 +396,8 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 일반 기여자의 비공개 원본 글꼴 보유 의무를 추가하지 않는다.
 다른 호스트의 수용 결과를 Mac에서 비교할 때는 누락된 기준 글꼴을 먼저 확보한다.
 환경 차이를 하락 허용 사유로 쓰거나 점수가 높은 대체 글꼴을 임의로 선택하지 않는다.
+중첩 표 `issue2007_nested_cell_pagination_42065.hwp`에는
+[한양중고딕 기호 공급 조건](#중첩-표-보호-문서의-한양중고딕-기호-공급)을 적용한다.
 
 1. 정본 manifest의 해당 데이터셋 `source.evidence_commit`에서 `condition_evidence`를 읽고
    기록된 SHA-256을 확인한다. 최신 작업 폴더의 같은 이름 JSON으로 대신하지 않는다.
@@ -510,6 +516,26 @@ TTF → TTC의 해당 face → OpenType 프로그램 순서로 수행하고, 원
 
 비공개 글꼴 바이너리는 제출하지 않는다. 검증용 공급 파일은 ignored output에 두고 출처와
 프로그램 대응 근거만 기록한다. 일반 기여자에게 비공개 원본 보유를 요구하는 규칙은 아니다.
+
+### 중첩 표 보호 문서의 한양중고딕 기호 공급
+
+[`issue2007_nested_cell_pagination_42065.hwp`](../../../samples/basic/issue2007_nested_cell_pagination_42065.hwp)의
+`※`(U+203B)는 원본 기호 슬롯에 `한양중고딕`으로 지정되어 있다. 유사한 기호 모양이나 한컴 Print의
+Type 3 글꼴 이름으로 원본 글꼴을 추정하기 전에 원본의 문자 위치, 글자 모양, 기호 슬롯을 확인한다.
+
+Native와 fresh WASM 모두 기존 한양중고딕 OTF 공급을 유지하고, 그 프로그램에 빠진 기호는
+`H2GTRM.TTF`(`HY중고딕`, family `HYGothic-Medium`, PostScript `H2gtrM`)에서 공급한다.
+실제 파일의 이름과 U+203B의 cmap을 확인한 뒤, 개별 `--font-path`에 파일을 먼저 지정하고
+나머지 글꼴 디렉터리를 뒤에 지정한다.
+
+이 문서의 [이전 글꼴 환경](../../pr/assets/jinho-von-choi-20261114/font-supply/nested-symbol-slot-environment.json)을
+검증용으로 복사하고 `glyphFallbacks`의 `HY Junggothic`과 `한양중고딕` 항목을 각각
+`["HYGothic-Medium"]`으로 지정한다. 이전 환경과 당시 증적은 보존한다. 이 문서의 새 검증에는
+`RHWPIndependentHFTSymbols.otf`를 공급하지 않는다. 다른 문서의 글꼴 매핑은 각 원본과 독립 Print로 확인한다.
+
+[한컴 2020 Print](../../../pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf)와
+compat 2022, 96 DPI로 17쪽 전체를 비교한다. 5쪽의 `※` 세 곳을 직접 판독하고,
+고정 base와 후보에 같은 글꼴 조건을 적용해 전쪽 TSV와 기존 보호 하한을 대조한다.
 
 ### macOS 외부 연결 그림 공급
 

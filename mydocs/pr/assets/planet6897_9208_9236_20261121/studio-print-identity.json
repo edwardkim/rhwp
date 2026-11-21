@@ -1,0 +1,9 @@
+{
+  "source_sha": "b0bd2a1e715292726e52c819cb55ffa38cd84c56",
+  "package_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+  "browser_js_response_sha256": "32944961c50663be5fdb6ecccc2149355ccc143139a87bad25ed586bf76a1694",
+  "vite_source_map_source_matches_rewrite": true,
+  "expected_vite_url_rewrite_only": true,
+  "actual_wasm_response_exact": "8d6b6db5772878e224749f8b12d460c8a62a4d9ca080049965cad45cb0beba10",
+  "print_preview_result": "passed"
+}
