@@ -21,8 +21,12 @@ class PostmergeDurationWorkflowTests(unittest.TestCase):
         ci = (WORKFLOWS / 'ci.yml').read_text(encoding='utf-8')
         pr_ignored = re.search(r'^    paths-ignore:\n((?:^      .*\n)+)', ci, re.M)[1]
         ci_patterns = re.findall(r"^      - '([^']+)'$", pr_ignored, re.M)
+        # These paths still reach PR preflight but do not need a duration refresh.
+        refresh_only_exclusions = {
+            'AGENTS.md', 'CLAUDE.md', 'README.md', 'README_EN.md', 'llms.txt', 'mydocs/**',
+        }
         self.assertEqual({p[1:] for p in patterns if p.startswith('!')},
-                         set(ci_patterns) | {'AGENTS.md', 'CLAUDE.md', 'llms.txt', 'mydocs/**'})
+                         set(ci_patterns) | refresh_only_exclusions)
         self.assertEqual([p for p in patterns if not p.startswith('!')][1:], [
             'mydocs/tech/canvaskit-parity-implementation.md',
             'mydocs/tech/text-ir-v2.md',
@@ -43,7 +47,7 @@ class PostmergeDurationWorkflowTests(unittest.TestCase):
 
         # 추가·수정·삭제된 문서, 문서 경로 간 이동 및 문서 증적 묶음.
         for paths in [
-            ['README.md'], ['AGENTS.md', 'CLAUDE.md', 'llms.txt', 'LICENSE'],
+            ['README.md'], ['README_EN.md'], ['AGENTS.md', 'CLAUDE.md', 'llms.txt', 'LICENSE'],
             ['mydocs/manual/mcp_hwp2024Convert_usage.md'],
             ['mydocs/pr/assets/issue_8277/native.tsv', 'mydocs/pr/assets/issue_8277/review.png'],
             ['mydocs/old.md', 'mydocs/archive/new.md'],
@@ -61,6 +65,9 @@ class PostmergeDurationWorkflowTests(unittest.TestCase):
             with self.subTest(runs=path):
                 self.assertTrue(runs([path]))
                 self.assertTrue(runs(['mydocs/manual/example.md', path]))
+        for readme in ('README.md', 'README_EN.md'):
+            with self.subTest(mixed=readme):
+                self.assertTrue(runs([readme, 'src/lib.rs']))
         self.assertIn('\n  workflow_dispatch:\n', text)
 
     def test_devel_push_subscribers_are_metadata_only(self):
