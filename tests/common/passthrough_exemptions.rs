@@ -400,6 +400,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
          선행 편집 뮤테이터가 이미 무효화했다.",
     ),
     (
+        "queries/document_info.rs",
+        "update_document_summary",
+        Exempt::SurgicalRawEdit,
+        "문서 요약은 구역·DocInfo 밖 저장 자리다. HWP 요약 스트림(extra_streams)과 HWPX content.hpf metadata 원문을 직접 고쳐 쓴다.",
+    ),
+    (
+        "queries/document_info.rs",
+        "set_document_summary_json",
+        Exempt::SurgicalRawEdit,
+        "JSON 을 풀어 update_document_summary 로 요약 원문만 고쳐 쓴다. 구역·DocInfo 패스스루와 무관하다.",
+    ),
+    (
         "queries/memo_query.rs",
         "insert_memo_at",
         Exempt::DelegatesTo("insert_memo_at_checked"),
