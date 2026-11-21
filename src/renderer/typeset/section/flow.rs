@@ -290,6 +290,14 @@ impl TypesetEngine {
                     st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
+            let body_row_after_square = controls::wrap_flow::empty_body_row_after_square(
+                st,
+                para_idx,
+                para,
+                composed.get(para_idx),
+                styles,
+                formatted.spacing_before,
+            );
             if !self.typeset_inline_flow_with_storage(
                 st,
                 para_idx,
@@ -308,6 +316,18 @@ impl TypesetEngine {
                     is_last_in_section,
                     storage,
                 )?;
+            }
+            if let Some((composed, body_box)) = body_row_after_square.filter(|_| {
+                !st.hidden_empty_paras.contains(&para_idx)
+                    && matches!(st.current_items.last(), Some(PageItem::FullParagraph { para_index })
+                        if *para_index == para_idx)
+            }) {
+                // 글자 없는 한 줄은 너비만 바뀐다. fit에서 쓴 높이와 줄간격을 유지한다.
+                let mut body_row = crate::storage::try_clone(composed, storage)?;
+                body_row.lines[0].column_start = body_box.start;
+                body_row.lines[0].segment_width = body_box.end - body_box.start;
+                st.current_column_wrap_anchors.remove(&para_idx);
+                st.record_computed_paragraph(para_idx, &body_row, storage)?;
             }
             if let Some(origin) = opening_float_line.filter(|_| {
                 opening_page == (st.pages.len(), st.current_column)
