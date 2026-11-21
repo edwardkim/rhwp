@@ -57,6 +57,10 @@ HWP에서 만든 HWPX도 같은 순서로 두 번 저장했다. OLE 인스턴스
 검색됐으며, 각 저장의 `--verify` 결과도 IR 차이 0건이었다.
 [반복 저장과 독립 CFB·ZIP 검사 결과](../assets/planet6897_9240_9282_20261121/validation/ole-repeat-save-v4.json)
 
+이중선 보정을 반영한 제품 코드 `65b6fe383c`에서도 같은 저장 순서를 재실행했다. HWP·HWPX의
+저장본 5개가 독립 CFB·ZIP 검사를 마친 기존 산출물과 바이트 단위로 같았다.
+[최신 Native 반복 저장 영수증](../assets/planet6897_9240_9282_20261121/validation/ole-repeat-save-v5.json)
+
 ## Merge 후 원 PR 코멘트
 
 통합 merge SHA의 원본 출력·한컴 PDF raster·review·overlay를 해당 주장 페이지별로 고정하여 본문에 표시한다. 실제 CI와 사용한 한컴 Print 제품 및 MCP 영수증을 함께 남긴다.
