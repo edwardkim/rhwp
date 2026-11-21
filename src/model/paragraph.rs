@@ -150,7 +150,7 @@ pub struct Paragraph {
     /// 컨트롤 목록 (표, 그림, 각주 등)
     pub controls: Vec<Control>,
     /// 각 컨트롤에 대응하는 CTRL_DATA 레코드 (라운드트립 보존용)
-    /// controls[i]에 대응하는 CTRL_DATA가 있으면 ctrl_data_records[i] = Some(data)
+    /// 그림 개체의 경우 최상위 SHAPE_COMPONENT의 자식이다. CTRL_HEADER 직속 데이터는 개체가 보존한다.
     pub ctrl_data_records: Vec<Option<Vec<u8>>>,
     /// char_count의 최상위 비트 (bit 31) 파싱값.
     /// HWP5 저장기는 현재 list scope의 마지막 문단 여부로 bit 31을 재생성한다.

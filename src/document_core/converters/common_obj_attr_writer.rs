@@ -129,6 +129,7 @@ mod tests {
             locked: false,
             numbering_type: crate::model::shape::ObjectNumberingType::None,
             drop_cap_style: crate::model::shape::DropCapStyle::None,
+            hwp5_header_ctrl_data: None,
         }
     }
 

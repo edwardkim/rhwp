@@ -27,7 +27,7 @@ use crate::parser::tags;
 /// Control을 CTRL_HEADER 레코드(+자식)로 직렬화
 ///
 /// `ctrl_data_record`: 원본의 CTRL_DATA 레코드 데이터 (라운드트립 보존용).
-/// CTRL_HEADER 바로 다음에 삽입된다.
+/// 그림 개체에서는 최상위 SHAPE_COMPONENT의 자식이며, 헤더의 데이터는 개체가 보존한다.
 pub fn serialize_control(
     ctrl: &Control,
     level: u16,
@@ -1564,10 +1564,17 @@ fn try_serialize_picture_control<S: crate::storage::Storage>(
     records: &mut Vec<Record>,
     storage: &S,
 ) -> Result<(), S::Error> {
+    let drop_cap = pic.common.drop_cap_style.hwp5_ctrl_data();
+    let (header_data, component_data) = shape_ctrl_data(
+        &pic.common,
+        ctrl_data_record,
+        drop_cap.as_ref().map(|p| p.as_slice()),
+    );
     let mut header = storage.binary(&ControlPayload::Common(&pic.common))?;
     set_caption_attr_bit(&mut header, pic.caption.is_some());
     let record = try_make_ctrl_record(tags::CTRL_GEN_SHAPE, level, &header, storage)?;
     storage.push(records, record)?;
+    try_ctrl_data_record(header_data, level + 1, records, storage)?;
     if let Some(caption) = &pic.caption {
         try_serialize_caption(caption, level + 1, records, storage)?;
     }
@@ -1578,7 +1585,7 @@ fn try_serialize_picture_control<S: crate::storage::Storage>(
         records,
         storage,
     )?;
-    try_ctrl_data_record(ctrl_data_record, level + 2, records, storage)?;
+    try_ctrl_data_record(component_data, level + 2, records, storage)?;
     try_payload_record(
         ControlPayload::Picture(pic),
         tags::HWPTAG_SHAPE_COMPONENT_PICTURE,
@@ -1790,18 +1797,26 @@ fn write_picture_soft_edge<W: std::io::Write>(
 // 도형 ('gso ' + Shape)
 // ============================================================
 
-/// 그리기 개체의 CTRL_DATA를 (CTRL_HEADER 아래, SHAPE_COMPONENT 아래) 차례로 고른다.
-///
-/// 첫 글자 장식은 모델(`drop_cap_style`)에서 다시 만들어 한/글 12.30처럼 두 곳에 같은
-/// 파라미터 셋을 싣는다. 장식이 아닌 다른 원본 CTRL_DATA는 종전대로 SHAPE_COMPONENT 아래에만 둔다.
+/// 원본의 레코드 소유권을 보존한다. 첫 글자 장식을 편집한 경우에만
+/// 한/글의 두 장식 슬롯을 갱신하며, 다른 용도의 ParameterSet은 덮어쓰지 않는다.
 fn shape_ctrl_data<'a>(
-    record: Option<&'a [u8]>,
+    common: &'a CommonObjAttr,
+    component: Option<&'a [u8]>,
     drop_cap: Option<&'a [u8]>,
 ) -> (Option<&'a [u8]>, Option<&'a [u8]>) {
-    match record {
-        Some(data) if DropCapStyle::from_hwp5_ctrl_data(data).is_none() => (None, Some(data)),
-        _ => (drop_cap, drop_cap),
+    let header = common.hwp5_header_ctrl_data.as_deref();
+    let original_style = [header, component]
+        .into_iter()
+        .flatten()
+        .find(|data| DropCapStyle::from_hwp5_ctrl_data(data).is_some());
+    if original_style == drop_cap {
+        return (header, component);
     }
+    let update_style = |slot: Option<&'a [u8]>| match slot {
+        Some(data) if DropCapStyle::from_hwp5_ctrl_data(data).is_none() => Some(data),
+        _ => drop_cap,
+    };
+    (update_style(header), update_style(component))
 }
 
 fn serialize_shape_control(
@@ -1826,11 +1841,14 @@ fn serialize_shape_control(
         return;
     }
     let drop_cap = shape.common().drop_cap_style.hwp5_ctrl_data();
-    let (synthesized_ctrl_data, ctrl_data_record) =
-        shape_ctrl_data(ctrl_data_record, drop_cap.as_ref().map(|d| d.as_slice()));
+    let (header_data, component_data) = shape_ctrl_data(
+        shape.common(),
+        ctrl_data_record,
+        drop_cap.as_ref().map(|p| p.as_slice()),
+    );
 
-    let emit_top_level_synthesized_ctrl_data = |records: &mut Vec<Record>| {
-        if let Some(data) = synthesized_ctrl_data {
+    let emit_header_data = |records: &mut Vec<Record>| {
+        if let Some(data) = header_data {
             records.push(Record {
                 tag_id: tags::HWPTAG_CTRL_DATA,
                 level: level + 1,
@@ -1842,7 +1860,7 @@ fn serialize_shape_control(
 
     // CTRL_DATA를 SHAPE_COMPONENT 자식으로 배치하는 헬퍼
     let emit_ctrl_data = |records: &mut Vec<Record>| {
-        if let Some(data) = ctrl_data_record {
+        if let Some(data) = component_data {
             records.push(Record {
                 tag_id: tags::HWPTAG_CTRL_DATA,
                 level: level + 2,
@@ -1861,7 +1879,7 @@ fn serialize_shape_control(
     // `$pic`(그림)과 **동일한 30B LIST_HEADER** 를 SHAPE_COMPONENT 앞에 쓴다
     // (`samples/3-09월_교육_통합_2023.hwp`, `samples/draw-group.hwp` 실측).
     //
-    // 호출 위치는 반드시 `emit_top_level_synthesized_ctrl_data` **뒤**여야 한다 —
+    // 호출 위치는 반드시 `emit_header_data` **뒤**여야 한다 —
     // `parse_caption` 은 `records[1..]` 전체를 캡션 문단으로 넘기므로, 캡션과
     // SHAPE_COMPONENT 사이에 CTRL_DATA 가 끼면 문단 파싱이 오염된다.
     //
@@ -1884,7 +1902,7 @@ fn serialize_shape_control(
                     group.caption.is_some(),
                 ),
             ));
-            emit_top_level_synthesized_ctrl_data(records);
+            emit_header_data(records);
             emit_caption(&group.caption, records);
             // 그룹 컨테이너: SHAPE_COMPONENT + 자식 수 + 자식 ctrl_id 목록 (한컴 호환)
             records.push(Record {
@@ -1913,6 +1931,7 @@ fn serialize_shape_control(
                     ole.caption.is_some(),
                 ),
             ));
+            emit_header_data(records);
             // 캡션 (SHAPE_COMPONENT 앞, level+1)
             if let Some(ref caption) = ole.caption {
                 serialize_caption(caption, level + 1, records);
@@ -2023,13 +2042,16 @@ fn try_serialize_shape_control<S: crate::storage::Storage>(
         }
     };
     let drop_cap = common.drop_cap_style.hwp5_ctrl_data();
-    let (synthesized, data) =
-        shape_ctrl_data(ctrl_data_record, drop_cap.as_ref().map(|d| d.as_slice()));
+    let (header_data, data) = shape_ctrl_data(
+        common,
+        ctrl_data_record,
+        drop_cap.as_ref().map(|p| p.as_slice()),
+    );
     let mut header = storage.binary(&ControlPayload::Common(common))?;
     set_caption_attr_bit(&mut header, caption.is_some());
     let record = try_make_ctrl_record(tags::CTRL_GEN_SHAPE, level, &header, storage)?;
     storage.push(records, record)?;
-    try_ctrl_data_record(synthesized, level + 1, records, storage)?;
+    try_ctrl_data_record(header_data, level + 1, records, storage)?;
     if let Some(caption) = caption {
         try_serialize_caption(caption, level + 1, records, storage)?;
     }
