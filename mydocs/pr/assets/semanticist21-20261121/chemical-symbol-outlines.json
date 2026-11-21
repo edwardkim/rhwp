@@ -1,0 +1,38 @@
+[
+  {
+    "code": "U+2022",
+    "style": "Regular",
+    "source_ref": "T1",
+    "reference_ref": "T11",
+    "unit": 1000,
+    "metrics": [
+      1000,
+      316
+    ],
+    "type3_sha256": "2506433f6422778c6963a3dcbf11c311df80b06e75aad7a49a64e9be6c25a16a"
+  },
+  {
+    "code": "U+25CB",
+    "style": "Regular",
+    "source_ref": "T1",
+    "reference_ref": "T11",
+    "unit": 1000,
+    "metrics": [
+      1000,
+      189
+    ],
+    "type3_sha256": "fad77514f6f7cd6fff71b55ed68032a52664b0fa8a766bf691eb1c0a30762863"
+  },
+  {
+    "code": "U+2022",
+    "style": "Bold",
+    "source_ref": "T2",
+    "reference_ref": "T18",
+    "unit": 1000,
+    "metrics": [
+      1000,
+      306
+    ],
+    "type3_sha256": "36336da1807fda3149b7c1ea4191e94ed9a2c0781fb00b03724c1d5c16d65c90"
+  }
+]
