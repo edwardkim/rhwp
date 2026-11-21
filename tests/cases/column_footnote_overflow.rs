@@ -1,17 +1,20 @@
 //! 관계형·고정형 검사. 단별 각주의 소속과 본문 흐름, 한컴 인쇄본의 쪽수와 각주 줄 수를 검사한다.
-//! 주석 갱신 2026-11-21T15:21:50+09:00. 직전 파일 변경 c5cbd9851e24832d037fe0ec69fbbb8ac21e3dae 2026-11-21T01:52:33+09:00.
-//! 2026-11-21 한컴 2020 독립 인쇄본과 96 DPI에서 색상 경계 보정 전 2px 실루엣을 측정했다.
-//! 아래는 쪽 순서대로 Native Skia와 fresh WASM Canvas2D의 raw 일치율(%)이다.
-//! `overflow-e2.hwp` 1쪽. Native [99.92815], WASM [99.82405].
-//! `overflow-e2-flow.hwp` 2쪽. Native [99.95731, 100.00000], WASM [99.89647, 100.00000].
-//! `overflow-e2-tail.hwp` 1쪽. Native [100.00000], WASM [100.00000].
-//! `overflow-r2.hwp` 2쪽. Native [100.00000, 100.00000], WASM [100.00000, 100.00000].
-//! `overflow-r2-flow.hwp` 2쪽. Native [100.00000, 100.00000], WASM [100.00000, 100.00000].
-//! `overflow-r3u.hwp` 2쪽. Native [99.72393, 98.38628], WASM [99.76023, 98.28754].
-//! `refold-e3u.hwp` 1쪽. Native [99.82714], WASM [99.60840].
-//! `refold-e3u-chain.hwp` 2쪽. Native [100.00000, 100.00000], WASM [100.00000, 100.00000].
-//! 이 범위의 전쪽 최저는 Native 98.38628%, WASM 98.28754%다.
-//! 입력·PDF 해시와 쪽별 근거는 `mydocs/pr/assets/semanticist21-20261121/footnotes/pages.tsv`에 있다.
+//! 주석 갱신 2026-11-21T22:45+09:00. 직전 파일 변경 f40c194638fb44a40b164a46f533da0e0432d0d3, 2026-11-21T15:22:59+09:00.
+//! 2026-11-21 독립 한컴 2020 Print와 96 DPI에서 측정한 2px raw 실루엣이다.
+//! 원본별 전체 쪽을 순서대로 적었다. 각 목록의 길이는 원본과 독립 인쇄본의 쪽수다.
+//! `overflow-e2` 1쪽. Native [100.00000], fresh WASM [100.00000].
+//! `overflow-e2-flow` 2쪽. Native [99.25640, 100.00000], fresh WASM [99.25632, 100.00000].
+//! `overflow-e2-tail` 1쪽. Native [100.00000], fresh WASM [100.00000].
+//! `overflow-r2` 2쪽. Native [100.00000, 100.00000], fresh WASM [100.00000, 100.00000].
+//! `overflow-r2-flow` 2쪽. Native [99.29316, 100.00000], fresh WASM [99.28710, 100.00000].
+//! `overflow-r3u` 2쪽. Native [100.00000, 100.00000], fresh WASM [100.00000, 100.00000].
+//! `refold-e3u` 1쪽. Native [100.00000], fresh WASM [100.00000].
+//! `refold-e3u-chain` 2쪽. Native [100.00000, 100.00000], fresh WASM [100.00000, 100.00000].
+//! `overflow-r3u-resaved-hwp` 2쪽. Native [100.00000, 100.00000], fresh WASM [100.00000, 100.00000].
+//! `overflow-r3u-resaved-hwpx` 2쪽. Native [100.00000, 100.00000], fresh WASM [100.00000, 100.00000].
+//! 전쪽 최저는 Native 99.25640%, fresh WASM 99.25632%다.
+//! 입력·Print 해시, 쪽별 측정과 오른쪽 단의 전후 비교는
+//! `mydocs/pr/assets/semanticist21-20261121/footnotes/right-column-body.tsv`와 같은 폴더의 PNG에 있다.
 //!
 //! 다단 쪽에서 단 각주 영역을 넘치는 각주를 잇는 자리.
 //!
@@ -196,26 +199,81 @@ fn right_column_overflow_takes_whole_right_column_and_pushes_its_body() {
 
 #[test]
 fn right_column_overflow_queues_later_notes_behind_continuation() {
-    let doc = open("overflow-r3u.hwp");
-    assert_eq!(doc.page_count(), 2);
-    let first = page(&doc, 0);
-    assert_eq!(first.notes.len(), 1);
-    let (notes, _) = first.notes_at(436.6).expect("오른쪽 단 각주 영역");
-    assert!(
-        notes.starts_with("나1 ") && !notes.contains("2단 각주"),
-        "{notes}"
-    );
-    assert!(
-        first.body_at(436.6).is_none(),
-        "오른쪽 단 본문은 다음 쪽으로"
-    );
-    let second = page(&doc, 1);
-    let (rest, _) = second.notes_at(436.6).expect("2쪽 오른쪽 단 각주 영역");
-    let (two, three) = (rest.find("2단 각주"), rest.find("3단 각주"));
-    assert!(
-        !rest.starts_with("나1 ") && two.is_some() && two < three,
-        "이어받은 조각 뒤에 2·3단 각주: {rest}"
-    );
+    // 본문 글자 사이의 표식도 보존해, 글은 남고 각주만 잘못된 단으로 가는 경우를 구분한다.
+    fn body_lines(doc: &HwpDocument, page: u32) -> Vec<Vec<String>> {
+        fn children(node: &Value) -> impl Iterator<Item = &Value> {
+            node["children"].as_array().into_iter().flatten()
+        }
+        let tree: Value = serde_json::from_str(&doc.get_page_render_tree(page).unwrap()).unwrap();
+        let mut columns = Vec::new();
+        for column in children(&tree)
+            .filter(|node| node["type"] == "Body")
+            .flat_map(children)
+        {
+            let lines: Vec<String> = children(column)
+                .filter(|node| node["type"] == "TextLine")
+                .map(|line| {
+                    children(line)
+                        .map(|run| {
+                            if run["type"] == "FnMarker" {
+                                "[각주]"
+                            } else {
+                                run["text"].as_str().unwrap_or_default()
+                            }
+                        })
+                        .collect()
+                })
+                .collect();
+            if !lines.is_empty() {
+                columns.push(lines);
+            }
+        }
+        columns
+    }
+
+    let original = open("overflow-r3u.hwp");
+    let hwp = HwpDocument::from_bytes(&original.export_hwp().unwrap()).unwrap();
+    let hwpx = HwpDocument::from_bytes(&original.export_hwpx().unwrap()).unwrap();
+    for (state, doc) in [
+        ("원본", &original),
+        ("HWP 재열기", &hwp),
+        ("HWPX 재열기", &hwpx),
+    ] {
+        assert_eq!(doc.page_count(), 2, "{state}");
+        assert_eq!(
+            body_lines(doc, 0),
+            [
+                vec!["1단[각주] 본문입니", "다"],
+                vec!["2단[각주] 본문입니다."]
+            ],
+            "{state}: 한컴 Print 1쪽의 좁은 첫 단과 두 번째 단"
+        );
+        assert_eq!(
+            body_lines(doc, 1),
+            [vec!["3단[각주] 본문입니", "다.."]],
+            "{state}: 세 번째 문단 전체와 각주 참조가 새 쪽의 첫 단 폭으로 이어진다"
+        );
+        let first = page(doc, 0);
+        assert_eq!(first.notes.len(), 1, "{state}");
+        let (notes, _) = first.notes_at(436.6).expect("오른쪽 단 각주 영역");
+        assert!(
+            notes.starts_with("나1 ") && !notes.contains("2단 각주"),
+            "{state}: {notes}"
+        );
+        assert!(
+            first.body_at(436.6).is_none(),
+            "{state}: 오른쪽 단 본문은 다음 쪽으로"
+        );
+        let second = page(doc, 1);
+        let (rest, _) = second.notes_at(436.6).expect("2쪽 오른쪽 단 각주 영역");
+        let end = rest.find("나400").expect("첫 각주의 끝");
+        let two = rest.find("2단 각주").expect("두 번째 각주");
+        let three = rest.find("3단 각주").expect("세 번째 각주");
+        assert!(
+            !rest.starts_with("나1 ") && end < two && two < three,
+            "{state}: {rest}"
+        );
+    }
 }
 
 #[test]
