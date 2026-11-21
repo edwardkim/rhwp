@@ -7,6 +7,8 @@ last_verified: 2026-07-30
 
 # Task #3486 Stage 11 — HWP3 제품명 옛한글 glyph의 의미 판별
 
+**2026-11-21 판독 정정.** 아래의 제품명 현대화 해석은 당시 인쇄본과 한컴 2020·2024 인쇄본을 확대해 다시 확인했다. 안내문의 제품명에도 아래아가 인쇄되어 있다. [원문과 인쇄본의 재검증](../../pr/assets/semanticist21-20261121/protected-fonts.md#표-안에-저장된-아래아)
+
 - 이슈: [#3486](https://github.com/edwardkim/rhwp/issues/3486)
 - 작업 기준: `devel` (`42e1f125dae664bf50f2053784b5e0a213bea2e2`; PR branch는 최종 준비 시 생성)
 - 선행 커밋: `d79e38fde` (Stage 10: 24쪽 Canvas/PDF 직접 대조와 bitmap 경계 보정)

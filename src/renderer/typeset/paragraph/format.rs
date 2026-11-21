@@ -286,8 +286,8 @@ pub(in crate::renderer::typeset) fn format_paragraph_for_flow_with_storage<
     let computed_paragraph = recomposed
         .as_ref()
         .filter(|comp| {
-            crate::renderer::para_has_no_stored_line_segs(para)
-                && para.controls.is_empty()
+            ((crate::renderer::para_has_no_stored_line_segs(para) && para.controls.is_empty())
+                || crate::renderer::composer::is_footnote_text_host(para))
                 && !para.stored_text_partition_is_dirty()
                 && !para.cell_format_vpos_dirty
                 && !comp.lines.is_empty()

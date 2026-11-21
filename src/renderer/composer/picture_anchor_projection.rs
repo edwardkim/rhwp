@@ -6,6 +6,7 @@ use crate::model::{control::Control, paragraph::Paragraph};
 pub(super) enum FramePurpose {
     Body,
     StoredMarkerTailReflow,
+    VerifyUnmeasuredFootnotes,
     PictureAnchor,
 }
 

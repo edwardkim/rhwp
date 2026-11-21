@@ -13,16 +13,45 @@ pub(crate) fn inline_picture_size_hu(picture: &Picture) -> (i32, i32) {
 /// 독립 한컴 재저장본도 위·아래 여백을 포함한 높이로 LineSeg를 발행한다.
 /// 실제 잉크 배치는 기존 원점에서 같은 여백 안쪽을 소비한다.
 pub(crate) fn inline_picture_occupied_size_hu(picture: &Picture) -> (i32, i32) {
-    let (width, height) = inline_picture_size_hu(picture);
+    match inline_picture_occupied_size_hu_with_storage(picture, &crate::storage::Unbounded) {
+        Ok(bounds) => bounds,
+        Err(never) => match never {},
+    }
+}
+
+pub(super) fn inline_picture_occupied_size_hu_with_storage<S: crate::storage::Storage>(
+    picture: &Picture,
+    storage: &S,
+) -> Result<(i32, i32), S::Error> {
+    use crate::model::shape::CaptionDirection;
+    use crate::renderer::{px_to_hwpunit, DEFAULT_DPI};
+    let (width, mut height) = inline_picture_size_hu(picture);
+    if let Some(caption) = picture.caption.as_ref().filter(|caption| {
+        !caption.paragraphs.is_empty()
+            && matches!(
+                caption.direction,
+                CaptionDirection::Top | CaptionDirection::Bottom
+            )
+    }) {
+        let caption_height = super::caption_height_px_in_context_with_storage(
+            &picture.caption,
+            None,
+            DEFAULT_DPI,
+            storage,
+        )?;
+        height = height
+            .saturating_add(i32::from(caption.spacing))
+            .saturating_add(px_to_hwpunit(caption_height, DEFAULT_DPI));
+    }
     let margin = &picture.common.margin;
-    (
+    Ok((
         width
             .saturating_add(i32::from(margin.left))
             .saturating_add(i32::from(margin.right)),
         height
             .saturating_add(i32::from(margin.top))
             .saturating_add(i32::from(margin.bottom)),
-    )
+    ))
 }
 
 /// HWP 5.0 표 44의 세로 정렬점. 줄 구성과 실제 그림 원점이 같은 값을 사용한다.

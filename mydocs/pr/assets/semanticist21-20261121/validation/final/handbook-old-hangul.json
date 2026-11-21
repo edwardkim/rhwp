@@ -1,0 +1,278 @@
+{
+  "source": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+  "before_source": "703a908900cda5b7c572e4ced24aa47d4dee5824",
+  "dpi": 96,
+  "raw_definition": "2px silhouette before boundary color reconciliation",
+  "checks": [
+    {
+      "document": "handbook-hwp",
+      "backend": "native",
+      "page": 43,
+      "source_input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "source_reference_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "before_raw": 100.0,
+      "silhouette_raw_match_percent": 100.0,
+      "source_metric": {
+        "requestedFace": "Haansoft Batang",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "exact",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "declaredOldHangulFallbackMetric",
+        "baseAdvanceHwpunit": 1000,
+        "transforms": [
+          {
+            "kind": "letterSpacing",
+            "input": "-0.26666666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 980
+      },
+      "before_png_sha256": "6bb8b2a7a4757d887c4b5b0d9fc6b39daa4a3fe99f5b95712f88afb745cb45a5",
+      "after_png_sha256": "9a1baf602781b62ecb05685e134b8fa06fc9d8284dab5ca142868f7145f92a02",
+      "reference_png_sha256": "a1f1bf1380f0d79c9009a467b87ab530be570897c1462b33cdec13e7c3b663f2"
+    },
+    {
+      "document": "handbook-hwp",
+      "backend": "wasm",
+      "page": 43,
+      "source_input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "source_reference_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "before_raw": 99.98515,
+      "silhouette_raw_match_percent": 100.0,
+      "source_metric": {
+        "requestedFace": "Haansoft Batang",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "exact",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "declaredOldHangulFallbackMetric",
+        "baseAdvanceHwpunit": 1000,
+        "transforms": [
+          {
+            "kind": "letterSpacing",
+            "input": "-0.26666666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 980
+      },
+      "before_png_sha256": "861b36869b5d7689c4f9adef3b94d7e3986bc5b1968397d3775f264fc2e82390",
+      "after_png_sha256": "21058c421ea319f19c5ab45ebdfa600b0bef6bac955394367f8f3e945d5945ae",
+      "reference_png_sha256": "a1f1bf1380f0d79c9009a467b87ab530be570897c1462b33cdec13e7c3b663f2",
+      "before_canvas": {
+        "characters": [
+          "ᄒᆞᆫ",
+          "글"
+        ],
+        "origin_px": [
+          602.2023009849436,
+          678.813926515104
+        ],
+        "next_origin_px": [
+          613.6033056144151,
+          678.813926515104
+        ],
+        "x_advance_px": 11.401004629471572,
+        "font": "13.333px \"RHWP Old Hangul\", \"KoPub돋움체 Light\", KoPub돋움체, \"Haansoft Batang\", \"Noto Sans KR ExtraLight\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR\", \"Noto Sans CJK KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif"
+      },
+      "after_canvas": {
+        "characters": [
+          "",
+          "글"
+        ],
+        "origin_px": [
+          600.5507661210795,
+          678.813926515104
+        ],
+        "next_origin_px": [
+          613.6033056144151,
+          678.813926515104
+        ],
+        "x_advance_px": 13.052539493335644,
+        "font": "13.333px \"KoPub돋움체 Light\", KoPub돋움체, \"Haansoft Batang\", \"Noto Sans KR ExtraLight\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR\", \"Noto Sans CJK KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif"
+      }
+    },
+    {
+      "document": "handbook-hwpx",
+      "backend": "native",
+      "page": 43,
+      "source_input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "source_reference_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "before_raw": 100.0,
+      "silhouette_raw_match_percent": 100.0,
+      "source_metric": {
+        "requestedFace": "한컴바탕",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "exact",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "declaredOldHangulFallbackMetric",
+        "baseAdvanceHwpunit": 1000,
+        "transforms": [
+          {
+            "kind": "letterSpacing",
+            "input": "-0.26666666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 980
+      },
+      "before_png_sha256": "6bb8b2a7a4757d887c4b5b0d9fc6b39daa4a3fe99f5b95712f88afb745cb45a5",
+      "after_png_sha256": "9a1baf602781b62ecb05685e134b8fa06fc9d8284dab5ca142868f7145f92a02",
+      "reference_png_sha256": "a1f1bf1380f0d79c9009a467b87ab530be570897c1462b33cdec13e7c3b663f2"
+    },
+    {
+      "document": "handbook-hwpx",
+      "backend": "wasm",
+      "page": 43,
+      "source_input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "source_reference_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "before_raw": 99.98515,
+      "silhouette_raw_match_percent": 100.0,
+      "source_metric": {
+        "requestedFace": "한컴바탕",
+        "aliasResolvedFace": "Haansoft Batang",
+        "matchKind": "exact",
+        "metricEntry": 6,
+        "characterMatch": "hit",
+        "widthSource": "declaredOldHangulFallbackMetric",
+        "baseAdvanceHwpunit": 1000,
+        "transforms": [
+          {
+            "kind": "letterSpacing",
+            "input": "-0.26666666666666666",
+            "output": null,
+            "reason": "layoutSpacingAdjustment"
+          }
+        ],
+        "finalAdvanceHwpunit": 980
+      },
+      "before_png_sha256": "3d6d5742f3141b65c59bc8fe09ffb6ca5a0d9a135c6cb848409799dd61242793",
+      "after_png_sha256": "1641427bacc4a5dc13187570a18960c742d3d61613516d8fd416daad10696c8c",
+      "reference_png_sha256": "a1f1bf1380f0d79c9009a467b87ab530be570897c1462b33cdec13e7c3b663f2",
+      "after_canvas": {
+        "kind": "fill-outline",
+        "source_glyph": "U+F53A",
+        "paint_font_verified_by": "normalized contour segments compared to the independently embedded Hancom PDF glyph",
+        "contours": 5,
+        "segments": 84,
+        "normalized_em_decimal_places": 5,
+        "normalized_contours_sha256": "8c7ad59caf0046276d9df28be4e253a771a5dd8bdb97461fc3ace830d0d48b07",
+        "font_outline_sha256": "912964c572b63af01b4efee91f3ec9f43fe7af50e83e791ebec69326cef1aeb2",
+        "origin_px": [
+          600.5507661210795,
+          678.813926515104
+        ],
+        "next_origin_px": [
+          613.6033056144151,
+          678.813926515104
+        ],
+        "x_advance_px": 13.052539493335644,
+        "ink_bounds": [
+          602.8139443802721,
+          668.181280970923,
+          611.5024678121151,
+          679.7513352417685
+        ]
+      }
+    }
+  ],
+  "hancom_print": [
+    {
+      "document": "handbook-hwp",
+      "page": 43,
+      "reference": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "reference_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "pdf_face": "Haansoft Batang",
+      "pdf_gid": 21,
+      "pdf_origin_pt": [
+        450.8399963378906,
+        509.1600036621094
+      ],
+      "next_origin_pt": [
+        460.67999267578125,
+        509.1600036621094
+      ],
+      "next_codepoint": "U+AE00",
+      "paint_glyph": "U+F53A",
+      "source_codepoints": [
+        "U+1112",
+        "U+119E",
+        "U+11AB"
+      ],
+      "subset_sha256": "265f43194e2b07edc73d2f595fe129f9b6c8966fb61bca4fc1e6e17abb317ebc",
+      "source_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "outline_sha256": "912964c572b63af01b4efee91f3ec9f43fe7af50e83e791ebec69326cef1aeb2",
+      "hmtx": [
+        1024,
+        173
+      ],
+      "em": 1024
+    },
+    {
+      "document": "handbook-hwpx",
+      "page": 43,
+      "reference": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "reference_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "pdf_face": "Haansoft Batang",
+      "pdf_gid": 21,
+      "pdf_origin_pt": [
+        450.8399963378906,
+        509.1600036621094
+      ],
+      "next_origin_pt": [
+        460.67999267578125,
+        509.1600036621094
+      ],
+      "next_codepoint": "U+AE00",
+      "paint_glyph": "U+F53A",
+      "source_codepoints": [
+        "U+1112",
+        "U+119E",
+        "U+11AB"
+      ],
+      "subset_sha256": "265f43194e2b07edc73d2f595fe129f9b6c8966fb61bca4fc1e6e17abb317ebc",
+      "source_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05",
+      "outline_sha256": "912964c572b63af01b4efee91f3ec9f43fe7af50e83e791ebec69326cef1aeb2",
+      "hmtx": [
+        1024,
+        173
+      ],
+      "em": 1024
+    }
+  ],
+  "document_pages_each": 383,
+  "all_pages": "protected-pages.tsv",
+  "zoom": "handbook-old-hangul.png",
+  "full_document_measurements": {
+    "handbook-hwp": {
+      "native": {
+        "pages": 383,
+        "min_raw_percent": "99.96504",
+        "page": 130
+      },
+      "wasm": {
+        "pages": 383,
+        "min_raw_percent": "99.96448",
+        "page": 130
+      }
+    },
+    "handbook-hwpx": {
+      "native": {
+        "pages": 383,
+        "min_raw_percent": "99.96504",
+        "page": 130
+      },
+      "wasm": {
+        "pages": 383,
+        "min_raw_percent": "99.96448",
+        "page": 130
+      }
+    }
+  }
+}

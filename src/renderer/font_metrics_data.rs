@@ -46,6 +46,48 @@ mod hangul_jamo;
 pub(crate) fn uses_hangul_jamo_overlay(metric: &FontMetric, character: char) -> bool {
     hangul_jamo::width(metric, character).is_some()
 }
+/// 실제 선택한 주 글꼴의 음절 폭을 일반 한글과 같은 단위로 반환한다.
+pub(crate) fn old_hangul_syllable_advance_em(
+    family: &str,
+    bold: bool,
+    italic: bool,
+    glyph: char,
+) -> Option<f64> {
+    let found = find_metric(family, bold, italic)?;
+    let width = hangul_jamo::compatibility_syllable_width(found.metric, glyph)?;
+    Some(f64::from(width) / f64::from(found.metric.em_size))
+}
+
+/// 원본 주 프로그램의 cmap과 문서가 지정한 바로 다음 face의 hmtx로
+/// 옛한글 한 음절의 공급자를 결정한다. 미등록 프로그램은 결측으로 간주하지 않는다.
+pub(crate) fn declared_old_hangul_fallback(
+    style: &super::TextStyle,
+    glyph: char,
+) -> Option<(MetricLookupDecision<'_>, f64)> {
+    let cluster = super::pua_oldhangul::map_pua_old_hangul(glyph)?;
+    let primary = style.native_otf_metrics.as_ref()?;
+    if style.source_font_is_hft
+        || primary.primary_has_glyph(glyph) != Some(false)
+        || cluster
+            .iter()
+            .any(|&ch| primary.primary_has_glyph(ch) != Some(false))
+    {
+        return None;
+    }
+    let supplier = style
+        .font_family
+        .split(',')
+        .nth(1)?
+        .trim()
+        .trim_matches(['\'', '"']);
+    let selected = find_metric_decision(supplier, style.bold, style.italic)?;
+    let width = hangul_jamo::compatibility_syllable_width(selected.metric, glyph)?;
+    Some((
+        selected,
+        f64::from(width) / f64::from(selected.metric.em_size),
+    ))
+}
+
 #[path = "font_metric_symbol_slot_chars.rs"]
 mod symbol_slot_chars;
 

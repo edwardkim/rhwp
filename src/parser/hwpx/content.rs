@@ -8,6 +8,37 @@ use quick_xml::Reader;
 
 use super::HwpxError;
 
+/// Byte range of the package's direct metadata child (or a detached metadata
+/// block). Use XML event boundaries so comments, CDATA and quoted attribute
+/// values cannot truncate the bytes retained by the editor and serializer.
+pub(crate) fn metadata_range(xml: &str) -> Option<(usize, usize)> {
+    let mut reader = Reader::from_str(xml);
+    let mut in_package = false;
+    loop {
+        let start = reader.buffer_position() as usize;
+        let event = reader.read_event().ok()?;
+        let empty = matches!(event, Event::Empty(_));
+        match event {
+            Event::Start(tag) if !in_package && tag.name().as_ref() == "opf:package" => {
+                in_package = true;
+            }
+            Event::Start(tag) | Event::Empty(tag) => {
+                if !empty {
+                    reader.read_to_end(tag.name()).ok()?;
+                }
+                if tag.name().as_ref() == "opf:metadata" {
+                    return Some((start, reader.buffer_position() as usize));
+                }
+                if !in_package {
+                    return None;
+                }
+            }
+            Event::End(_) | Event::Eof => return None,
+            _ => {}
+        }
+    }
+}
+
 /// 패키지 내 파일 항목
 #[derive(Debug, Clone)]
 pub struct PackageItem {

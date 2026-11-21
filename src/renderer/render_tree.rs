@@ -6,7 +6,7 @@
 use serde::Serialize;
 use std::ops::{Deref, DerefMut};
 
-use super::composer::{legacy_hancom_product_display_text, CharOverlapInfo};
+use super::composer::CharOverlapInfo;
 use super::layout::CellContext;
 use super::shaping_publication::{
     HorizontalShapingPageSidecars, HorizontalShapingRunDecision, HorizontalShapingRunRange,
@@ -2505,37 +2505,6 @@ impl PageRenderTree {
         self.frame.next_id()
     }
 
-    /// 한컴 PDF가 현대 글리프로 인쇄하는 닫힌 레거시 제품명 어휘를 최종 화면
-    /// 문자열에만 투영한다.
-    ///
-    /// 본문은 composer에서 이미 처리하지만, 표 셀·머리말처럼 `TextRunNode`를
-    /// 직접 만드는 경로는 composer를 거치지 않는다. 렌더 트리 완성 뒤 한 번
-    /// 순회하면 두 경로가 같은 표시 계약을 지키면서도 `text`/offset은 원문대로
-    /// 보존한다. 일반 옛한글이나 CharOverlap 런은 건드리지 않는다.
-    pub(crate) fn apply_legacy_hancom_product_display_projection(&mut self) {
-        fn visit(node: &mut RenderNode) {
-            if let RenderNodeType::TextRun(run) = &mut node.node_type {
-                if run.char_overlap.is_none() {
-                    // PUA `U+F53A`처럼 실제 옛한글을 display_text에서 `ᄒᆞᆫ`으로
-                    // 확장한 경우는 product convention이 아니다. raw model text에
-                    // 닫힌 제품명이 있을 때만 기존 화면 문자열(있다면 PUA 확장본)을
-                    // 다시 투영한다.
-                    if legacy_hancom_product_display_text(&run.text).is_some() {
-                        let source = run.display_or_text();
-                        if let Some(display) = legacy_hancom_product_display_text(source) {
-                            run.display_text = Some(display);
-                        }
-                    }
-                }
-            }
-            for child in &mut node.children {
-                visit(child);
-            }
-        }
-
-        visit(&mut self.root);
-    }
-
     /// 동일 `bin_data_id` 를 가진 ImageNode 가 세로로 인접 겹칠 때,
     /// 트리 순서상 먼저 그려지는 (z 가 작은) 쪽의 bbox/crop 을 위에 덮는
     /// (z 가 큰) 쪽의 top 까지 축소한다.
@@ -2739,95 +2708,6 @@ mod tests {
         let mut tree = PageRenderTree::new(0, 793.7, 1122.5);
         assert_eq!(tree.next_id(), 1);
         assert_eq!(tree.next_id(), 2);
-    }
-
-    #[test]
-    fn legacy_hancom_product_projection_covers_direct_text_runs_only() {
-        fn text_run(id: NodeId, text: &str) -> RenderNode {
-            RenderNode::new(
-                id,
-                RenderNodeType::TextRun(TextRunNode {
-                    text: text.to_owned(),
-                    style: TextStyle::default(),
-                    char_shape_id: None,
-                    para_shape_id: None,
-                    section_index: None,
-                    para_index: None,
-                    char_start: None,
-                    cell_context: None,
-                    is_para_end: false,
-                    is_line_break_end: false,
-                    rotation: 0.0,
-                    is_vertical: false,
-                    char_overlap: None,
-                    border_fill_id: 0,
-                    baseline: 0.0,
-                    field_marker: FieldMarkerType::None,
-                    layout_positions: None,
-                    display_text: None,
-                }),
-                BoundingBox::new(0.0, 0.0, 1.0, 1.0),
-            )
-        }
-
-        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
-        let product_id = tree.next_id();
-        tree.root.children.push(text_run(product_id, "ᄒᆞᆫ글 97"));
-        let general_old_hangul_id = tree.next_id();
-        tree.root
-            .children
-            .push(text_run(general_old_hangul_id, "ᄒᆞᆫ겨울은 일반 옛한글이다"));
-
-        tree.apply_legacy_hancom_product_display_projection();
-
-        let RenderNodeType::TextRun(product) = &tree.root.children[0].node_type else {
-            panic!("expected product text run");
-        };
-        assert_eq!(product.text, "ᄒᆞᆫ글 97", "원문/offset 공간은 보존한다");
-        assert_eq!(product.display_text.as_deref(), Some("한글 97"));
-
-        let RenderNodeType::TextRun(general_old_hangul) = &tree.root.children[1].node_type else {
-            panic!("expected general old-Hangul text run");
-        };
-        assert_eq!(general_old_hangul.display_text, None);
-    }
-
-    #[test]
-    fn legacy_hancom_product_projection_does_not_rewrite_pua_old_hangul() {
-        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
-        let id = tree.next_id();
-        tree.root.children.push(RenderNode::new(
-            id,
-            RenderNodeType::TextRun(TextRunNode {
-                text: "\u{f53a}글".to_owned(),
-                style: TextStyle::default(),
-                char_shape_id: None,
-                para_shape_id: None,
-                section_index: None,
-                para_index: None,
-                char_start: None,
-                cell_context: None,
-                is_para_end: false,
-                is_line_break_end: false,
-                rotation: 0.0,
-                is_vertical: false,
-                char_overlap: None,
-                border_fill_id: 0,
-                baseline: 0.0,
-                field_marker: FieldMarkerType::None,
-                layout_positions: None,
-                display_text: Some("ᄒᆞᆫ글".to_owned()),
-            }),
-            BoundingBox::new(0.0, 0.0, 1.0, 1.0),
-        ));
-
-        tree.apply_legacy_hancom_product_display_projection();
-
-        let RenderNodeType::TextRun(pua_old_hangul) = &tree.root.children[0].node_type else {
-            panic!("expected PUA old-Hangul text run");
-        };
-        assert_eq!(pua_old_hangul.text, "\u{f53a}글");
-        assert_eq!(pua_old_hangul.display_text.as_deref(), Some("ᄒᆞᆫ글"));
     }
 
     #[test]

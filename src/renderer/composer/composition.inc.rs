@@ -459,6 +459,7 @@ fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
         } else {
             storage.copy_slice(&para.tab_extended)?
         },
+        is_caption: table_owner == caption_paragraph::BlockTableOwner::Paragraph,
         horizontal_shaping: None,
         frame_geometry: None,
     };
@@ -486,7 +487,7 @@ fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
     // PUA 테두리 숫자(사각형/원형 안의 숫자) → CharOverlap 런으로 변환
     try_convert_pua_enclosed_numbers(&mut composed, storage)?;
 
-    // Hanyang-PUA 옛한글 / 한컴 PUA와 legacy 제품명 표시 문자열 변환 (렌더링·측정용)
+    // Hanyang-PUA 옛한글 / 한컴 PUA의 표시 문자열 변환 (렌더링·측정용)
     // 제어 표기의 소프트 하이픈만 줄 끝에 표시한다. 모델 글자와 offset은 유지한다.
     let soft_hyphen_control = para.control_mask & (1u32 << 0x0018) != 0;
     try_convert_pua_display_text(&mut composed, soft_hyphen_control, metric_styles, storage)?;

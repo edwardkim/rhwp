@@ -1,0 +1,263 @@
+{
+  "source": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+  "previous": "da7586ceadad98e30300eb3c06000e2f1b2e310b",
+  "visual_rows": [
+    {
+      "document": "spec13",
+      "page": 71,
+      "print_line": "글 문서 파일 구조 5.0 ",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        274,
+        440,
+        317,
+        470
+      ],
+      "png_sha256": [
+        "e34c1f8bb79097c21d2a2edf17f2875a29b660467348fe27b4d2ce150df2faa9",
+        "0bc58b34c0a29a4bf79c68517fa66249424db483fddb03c9ab1f842269cbe0c9",
+        "4458d0e98c7d8342d4b4401849997a09503052154407c7afa6a012c6c31641ee",
+        "e2b0dd4f82bdcfe8c03c76f199b4090012aff30ee54ef02fc572843b5084a29e",
+        "0ce9f5ac8481449d644e0f00959eec5126fd8228074cd8db1f5a51ed73cee0cb"
+      ],
+      "different_RGB_pixels_to_reference": [
+        457,
+        382,
+        457,
+        383
+      ]
+    },
+    {
+      "document": "spec13",
+      "page": 10,
+      "print_line": "글의 문서 파일은 사용자가 따로 지정하지 않는 한 .HWP를 기본 확장자로 가진다. 문서 파일에 ",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        139,
+        156,
+        174,
+        178
+      ],
+      "png_sha256": [
+        "e863790bcff3ecf0b6a5229728472d19b485f1ed6c115075dca6df6b67b2fce1",
+        "5e203ed4da9ca248c20e337a50245899779deba2e237e1aa842c8cf5b4c4e490",
+        "06b24202a7735ea81f5f7100e5580d263e589c7d003d226bc2bec265ea30315b",
+        "e97eafbcff56589eee8b4ccb9aa3e86eaa88ece5ae4499d043afa796debd95b2",
+        "14ca121a1b5cb40616ef87197f2334531f6ede2c764f1f6f5396ad2973b241ef"
+      ],
+      "different_RGB_pixels_to_reference": [
+        237,
+        237,
+        225,
+        234
+      ]
+    },
+    {
+      "document": "spec13",
+      "page": 10,
+      "print_line": "글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 글 제품군(글 워디안, 글 2002, 글 ",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        440,
+        227,
+        474,
+        249
+      ],
+      "png_sha256": [
+        "e863790bcff3ecf0b6a5229728472d19b485f1ed6c115075dca6df6b67b2fce1",
+        "5e203ed4da9ca248c20e337a50245899779deba2e237e1aa842c8cf5b4c4e490",
+        "06b24202a7735ea81f5f7100e5580d263e589c7d003d226bc2bec265ea30315b",
+        "e97eafbcff56589eee8b4ccb9aa3e86eaa88ece5ae4499d043afa796debd95b2",
+        "14ca121a1b5cb40616ef87197f2334531f6ede2c764f1f6f5396ad2973b241ef"
+      ],
+      "different_RGB_pixels_to_reference": [
+        200,
+        171,
+        200,
+        171
+      ]
+    },
+    {
+      "document": "spec13",
+      "page": 11,
+      "print_line": "WCHAR는 글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 글의 내부 코드는 한글, ",
+      "print_char": "U+D55C",
+      "crop_96dpi": [
+        641,
+        637,
+        675,
+        659
+      ],
+      "png_sha256": [
+        "beb2e75a4d6423ed55be0702da5dcadc2167dfb5e3b8acbbed8e4411dceb645f",
+        "5559f8b2342c57ad6208488ce180483bdfd118ef9678711b5016a13eb0e04582",
+        "b0b849ca0ce241d2d421c54a6452896076e51b04e9cb0754c21b82ecc0ed150b",
+        "9881174cc8c12f5857aaa0916649f270fbf3db4cd58b58948ba173f5e9617b31",
+        "25225190db0b173ae0f2b79de6e140f17f1eae499e675c212054f46b0b91578f"
+      ],
+      "different_RGB_pixels_to_reference": [
+        216,
+        216,
+        217,
+        217
+      ]
+    },
+    {
+      "document": "manual",
+      "page": 1,
+      "print_line": "​",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        256,
+        151,
+        318,
+        207
+      ],
+      "png_sha256": [
+        "a395bd44c18842bb89135af2466b1702660d805c9495b868a9f1350f9dd093f7",
+        "7426675fc9a5fcd0984f1695105ab60842dcaa5b5fb063fa4c5287a66583fe9c",
+        "3dfb9c4ad6192c92e354ef2d392c83bbb989dbfd6c5832d3d9074d028ad69481",
+        "139d9b0eff89bfa29e6138c208a9045b7fb4914f6b6c3dd029401a0478f1cab5",
+        "dc4c2ea7091719c3fd33af07aaa616664d0d50d07d2872f48e8c70fc35a1055b"
+      ],
+      "different_RGB_pixels_to_reference": [
+        964,
+        943,
+        964,
+        943
+      ]
+    },
+    {
+      "document": "manual",
+      "page": 3,
+      "print_line": "​",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        150,
+        125,
+        194,
+        159
+      ],
+      "png_sha256": [
+        "c4a6a9737193b4f7c670790207efcd6a31302447e875875c5305b49981083768",
+        "c025bf7d0d9a2c20bca7110a106536006bc09d32878cb4cf5ce3493e76df37e5",
+        "bfd17440b81c749f0a0c5c79f2f6713a41e363886aa64d74b76846a547968c88",
+        "b29d6635e749f75c1453789d4a841bbc782f7ce91261ff487e33d6e443a868d2",
+        "194a5edb54f8db109fe400bc6dd30aeaf9a5a87ad58463dd54f1feec38448df2"
+      ],
+      "different_RGB_pixels_to_reference": [
+        424,
+        344,
+        424,
+        344
+      ]
+    },
+    {
+      "document": "manual",
+      "page": 19,
+      "print_line": "메일, ​",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        199,
+        761,
+        234,
+        786
+      ],
+      "png_sha256": [
+        "8726a0f73052c6559b9e60ef07d7d3aa451face5392da04175736b604f422193",
+        "0085acf3323aa001f76b38991f18493bd4b240ec5323508a62fddf805cb819c9",
+        "bc0d254237b6d97a876331afb12a0cfe97c004ea3c221de2dde00b1c7f3f6014",
+        "5d9d39044aba6ea0aa290bcfb75c8c398d99dc421e0f1c79e2a3a878c9984238",
+        "91a0ec09200bc5c5d4fe9089b374f690874c4f85c91afd8c3bf5ed14df527990"
+      ],
+      "different_RGB_pixels_to_reference": [
+        200,
+        172,
+        200,
+        172
+      ]
+    },
+    {
+      "document": "HWP3",
+      "page": 1,
+      "print_line": "​",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        256,
+        151,
+        318,
+        207
+      ],
+      "png_sha256": [
+        "23ce5253762903a7ac51619a843443c8345adcf32234c7d687a6e61c01e0b77d",
+        "5d3c28a9a56333a6c02c534fa855c57ef9a5525bc28551e895a6f1bab187c8a6",
+        "a022600ca6910a07230003f68d23dec2c5436901220bafe25418581c225e303a",
+        "3e9cdaf15a3872e8d1277c171d63b483c18b01e5a3fcbdb7b0054e7e45642721",
+        "bae6f2f3c99dcd7c81ace99b89037228f9004b412fdfd7a295b9f2c85ce7e282"
+      ],
+      "different_RGB_pixels_to_reference": [
+        964,
+        943,
+        964,
+        943
+      ]
+    },
+    {
+      "document": "HWP3",
+      "page": 19,
+      "print_line": "​",
+      "print_char": "U+F53A",
+      "crop_96dpi": [
+        150,
+        125,
+        194,
+        159
+      ],
+      "png_sha256": [
+        "d29a60c415ea12d0ccbd8d1497edf7c1f08f139bbb5c9d9de21bebe923b77778",
+        "35eff316929086dde7fa681063bad9259b7284d3864b18e7d6d68cffb65871ba",
+        "25345a392a6911d95056c1aaa1bef7d3063017e199eda77635a211d0a71c9c61",
+        "c1aad85b601967ead2db0574fbd6653f1399451e130428367bd1032a07fe166c",
+        "6e8c2bb94dea278c179e9479830b55c37a4086bf710c8578e5927d22894a8bfa"
+      ],
+      "different_RGB_pixels_to_reference": [
+        417,
+        322,
+        417,
+        322
+      ]
+    }
+  ],
+  "manual_prints": [
+    {
+      "path": "pdf/issue8304/HWP3-password-123456-print-2020.pdf",
+      "sha256": "279effba40fd2fe3bff6682cd6ee272cc9f49ca3fb1616f929871672637a8348",
+      "pages": 24,
+      "literal_occurrences": {
+        "글": 186,
+        "메일": 6,
+        "팩스": 16,
+        "소프트": 2,
+        "한글": 46,
+        "한메일": 0,
+        "한팩스": 3,
+        "한소프트": 0
+      }
+    },
+    {
+      "path": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+      "sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+      "pages": 24,
+      "literal_occurrences": {
+        "글": 186,
+        "메일": 6,
+        "팩스": 16,
+        "소프트": 2,
+        "한글": 46,
+        "한메일": 0,
+        "한팩스": 3,
+        "한소프트": 0
+      }
+    }
+  ]
+}

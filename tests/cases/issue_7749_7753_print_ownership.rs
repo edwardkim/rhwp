@@ -1,6 +1,9 @@
 //! 관계형·고정형 회귀 — 저장 줄과 표·그림·각주의 쪽 소속 및 독립 Print 전체 쪽수.
-//! 주석 갱신 2026-11-21T09:21:39+09:00.
-//! 직전 파일 변경 `1722836b78a343b34cd6e15423c4e4b923678c6d` (2026-11-21T07:55:25+09:00).
+//! 주석 갱신 2026-11-21T12:08:29+09:00.
+//! 직전 파일 변경 ca231d64f43f19da1d1d1aec4cf26a05b817aa22 2026-11-21T10:11:20+09:00.
+//! #9234 각주 대조군 83쪽의 96 DPI 2px raw는 HWP Native 99.96% / fresh WASM 99.99%, HWPX 99.99% / 99.99%.
+//! 전 215쪽 최저는 HWP 98.95% / 98.93%, HWPX 98.99% / 99.00%.
+//! 근거: mydocs/pr/assets/semanticist21-20261121/footnotes/saved-indent-control.tsv 및 같은 위치의 확대 PNG.
 //! 측정 source `ec8515f1d8d52353f1e5092eb080ab2619de55e7`. 실루엣 96 DPI, 색 경계 보정 전 2px raw.
 //! 아래 결과는 Native / fresh WASM 순서다.
 //!
@@ -316,5 +319,31 @@ fn table_and_reserved_footnotes_follow_their_print_pages() {
                 "{extension} {page}쪽 각주 78 소속"
             );
         }
+    }
+}
+
+/// 한컴 Print 83쪽의 참조 127 뒤 본문은 저장 내어쓰기 줄을 그대로 사용한다.
+#[test]
+fn hanging_indent_after_footnote_keeps_its_saved_body_rows() {
+    for extension in ["hwp", "hwpx"] {
+        let core = report(extension);
+        let page = core.build_page_render_tree(82).expect("정책연구 83쪽");
+        let body = find_node(&page.root, |node| {
+            matches!(node.node_type, RenderNodeType::Body { .. })
+        })
+        .expect("본문");
+        let mut nodes = Vec::new();
+        visible_nodes(body, &mut nodes);
+        let lines: Vec<_> = nodes
+            .into_iter()
+            .filter(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+            .map(compact_text)
+            .collect();
+        assert!(
+            lines.windows(2).any(|pair| pair[0].contains("ACCORD")
+                && pair[0].ends_with("EU지")
+                && pair[1].starts_with("침2010/53/EU")),
+            "{extension}에서 각주 번호가 저장 내어쓰기 줄의 끝을 바꾸었다"
+        );
     }
 }

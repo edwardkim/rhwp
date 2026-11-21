@@ -413,7 +413,7 @@ impl DocumentCore {
             .skip(actual_offset)
             .take(count)
             .collect();
-        hf_para.delete_text_at(actual_offset, count);
+        hf_para.delete_text_at_removing_owned_controls(actual_offset, count);
 
         // 리플로우
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);

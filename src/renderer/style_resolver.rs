@@ -387,15 +387,24 @@ pub(crate) fn resolve_styles_with_environment(
                         && (metric_widths_verified_face(target)
                             || verified_source_alias
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
-                    // 원문 유형 선언이나 자동 대체만으로 text device 좌표를
-                    // 부여하지 않는다. 실제 원 primary를 선택한 세션만 같은
-                    // 자격을 사용하며 원문의 source_ttf는 변경하지 않는다.
+                    // 원래 TTF 슬롯에서 주 프로그램 자체를 확인하면 같은 인쇄 장치
+                    // 좌표를 쓴다. 폭 표의 유무는 전진의 소유만 결정한다. 대체 쿼리,
+                    // 내장 face와 자연 전진 선택은 이 경로로 인증하지 않는다.
+                    let selected_source_truetype = original.alt_type == Some(1)
+                        && original.substitution_boundary.is_none()
+                        && source_font.is_some_and(|face| face.native_program.is_none())
+                        && style.font_families_primary_program[lang].is_some()
+                        && environment.is_some_and(|env| env.selects_true_type(target));
                     if preserve_source_metrics
                         && original.embedded != Some(true)
                         && primary_true_type_program
                     {
                         style.font_families_print_text_device_frame[lang] = true;
                     }
+                    style.font_families_source_dc_frame[lang] = preserve_source_metrics
+                        && original.embedded != Some(true)
+                        && selected_source_truetype
+                        && !primary_true_type_program;
                     // 표시용 TrueType을 명시해도 검증된 옛 face의 폭을 보존할 수 있다.
                     // 한컴 Print는 HCI Poppy를 TTF로 기록한 문서에서도 대체 face로
                     // 글리프를 찍고 원 HFT의 숫자·구두점 전진을 사용한다.
@@ -1134,6 +1143,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_verified_hft_bold_tracking,
         font_families_hft_print_frame,
         font_families_print_text_device_frame,
+        font_families_source_dc_frame: [false; LANG_COUNT],
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_natural_program_metrics: vec![false; LANG_COUNT],
         latin_decimal_halfwidth: false,

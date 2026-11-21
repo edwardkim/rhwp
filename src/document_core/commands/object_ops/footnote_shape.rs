@@ -420,11 +420,16 @@ impl DocumentCore {
             .sections
             .get_mut(section_idx)
             .ok_or_else(|| invalid(format!("구역 인덱스 {} 범위 초과", section_idx)))?;
+        let placement = section.section_def.footnote_shape.placement;
         apply_props(&mut section.section_def.footnote_shape, props)?;
+        let placement_changed = section.section_def.footnote_shape.placement != placement;
         section.raw_stream = None;
         self.sync_section_def_controls_from_section(section_idx);
         self.recompose_section(section_idx);
         self.refresh_footnote_numbers(section_idx);
+        if placement_changed {
+            self.reflow_body_footnotes(section_idx);
+        }
         Ok(json_ok())
     }
 

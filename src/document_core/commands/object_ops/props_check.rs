@@ -160,6 +160,7 @@ pub(crate) const SHAPE_PROPS: &[PropSpec] = &[
     prop("shadowColor", COLOR),
     prop("shadowOffsetX", I32),
     prop("shadowOffsetY", I32),
+    prop("shadowAlpha", PropKind::Int(0, u8::MAX as i64)),
     prop("tbMarginLeft", I16),
     prop("tbMarginRight", I16),
     prop("tbMarginTop", I16),

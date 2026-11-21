@@ -286,7 +286,8 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
             current_page_vpos_base,
             false,
             strict_after_empty_host_float,
-            dpi,
+            st.inline_flow_column().width,
+            engine,
             storage,
         )?;
         return Ok(());
@@ -409,7 +410,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
         forced_page_break_line,
         native_hwp5_existing_footnote_boundary,
         current_page_vpos_base,
-        dpi,
+        engine,
         storage,
     )?;
 
@@ -418,7 +419,7 @@ pub(in crate::renderer::typeset) fn place_with_storage<S: crate::storage::Storag
 
 /// 문단의 본문 각주와 참조 줄을 모은다. 줄 대응은 저장 줄 상자가 측정 줄과
 /// 일대일일 때만 쓴다(재조판 줄은 저장 text_start 와 다른 컷을 가진다).
-fn collect_own_line_notes(
+pub(super) fn collect_own_line_notes(
     st: &mut TypesetState,
     engine: &TypesetEngine,
     para_idx: usize,
@@ -427,10 +428,36 @@ fn collect_own_line_notes(
     styles: &ResolvedStyleSet,
 ) {
     let mut notes = Vec::new();
-    if fmt.line_count() == 0 || fmt.line_count() != para.line_segs.len() {
+    // 저장 줄이 없는 문단(HWPX 저장은 rhwp가 지은 줄을 내지 않는다)은 측정한 줄의 글자 컷으로
+    // 참조 줄을 찾는다. 다시 열자마자 넘치는 각주도 고친 뒤처럼 줄 단위로 나눈다.
+    let no_stored_host = if para.line_segs.is_empty() {
+        fmt.host_composition.as_deref()
+    } else {
+        None
+    };
+    let composed_lines = fmt
+        .computed_paragraph
+        .as_ref()
+        .or(no_stored_host)
+        .map(|composed| composed.lines.as_slice())
+        .filter(|lines| lines.len() == fmt.line_count());
+    if fmt.line_count() == 0
+        || (fmt.line_count() != para.line_segs.len()
+            && composed_lines.is_none()
+            && !(para.line_segs.is_empty() && fmt.line_count() == 1))
+    {
         st.replace_own_line_notes(notes);
         return;
     }
+    let control_positions = composed_lines.map(|_| para.control_text_positions());
+    let control_line = |control_index: usize| match (composed_lines, &control_positions) {
+        (Some(lines), Some(positions)) => {
+            let position = *positions.get(control_index)?;
+            lines.iter().rposition(|line| line.char_start <= position)
+        }
+        _ if para.line_segs.is_empty() => Some(0),
+        _ => crate::renderer::layout::control_line_seg_index(para, control_index),
+    };
     let stored_profile =
         st.profile.hwpx_stored_layout() || st.profile.hwp5_stored_pagination_layout();
     let measure =
@@ -445,8 +472,7 @@ fn collect_own_line_notes(
         {
             continue;
         }
-        let Some(line) = crate::renderer::layout::control_line_seg_index(para, control_index)
-        else {
+        let Some(line) = control_line(control_index) else {
             continue;
         };
         let block_content_height = measure.block_content_height(st, footnote, None);
@@ -484,6 +510,7 @@ fn collect_own_line_notes(
                         end_line,
                         draw_separator: true,
                         draw_number: start_line == 0,
+                        refold: None,
                     }),
                 )
             };
@@ -511,6 +538,23 @@ fn collect_own_line_notes(
                 }
             }
         }
+        // 각 단 아래 각주가 너비가 다른 단으로 넘치면 한/글처럼 그 단 폭으로 다시 나눈다.
+        // 개체가 든 각주는 줄 높이가 개체 측정에 달려 있어 앞 단 줄을 그대로 잇는다.
+        let source = (block_content_height.is_none()
+            && !lines.is_empty()
+            && footnote.paragraphs.iter().all(|note_para| {
+                note_para.controls.iter().all(|control| {
+                    !matches!(
+                        control,
+                        crate::model::control::Control::Table(_)
+                            | crate::model::control::Control::Picture(_)
+                            | crate::model::control::Control::Shape(_)
+                            | crate::model::control::Control::Equation(_)
+                    )
+                })
+            })
+            && st.prepare_note_refold(styles, engine.dpi))
+        .then(|| std::sync::Arc::new(footnote.paragraphs.clone()));
         notes.push(crate::renderer::typeset::OwnLineNote {
             para_index: para_idx,
             line,
@@ -519,6 +563,7 @@ fn collect_own_line_notes(
             content_height,
             lines,
             stored_split,
+            source,
         });
     }
     st.replace_own_line_notes(notes);

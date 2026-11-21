@@ -1,0 +1,5 @@
+stage	backend	silhouette_raw_match_percent	left_last_y	right_first_y	right_last_y	right_note_gap_px
+before	native	97.47	995.8	978.7	992.0	-0.0
+before	wasm	97.47	995.8	978.7	992.0	-0.0
+after	native	100.00	995.8	978.7	995.8	3.8
+after	wasm	100.00	995.8	978.7	995.8	3.8

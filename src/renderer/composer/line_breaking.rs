@@ -3640,7 +3640,9 @@ pub(crate) fn inline_control_size_hwp_with_storage<S: crate::storage::Storage>(
     Ok({
         let (width, height) = match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => {
-                super::inline_picture_occupied_size_hu(pic)
+                super::inline_picture_metrics::inline_picture_occupied_size_hu_with_storage(
+                    pic, storage,
+                )?
             }
             Control::Shape(shape) if shape.common().treat_as_char => tac_shape_box_hu(shape),
             Control::Table(table) if table.common.treat_as_char => {
@@ -3880,6 +3882,19 @@ pub(crate) fn control_is_width_neutral_marker(control: &Control) -> bool {
     inline_control_size_hwp(control).is_none() && !control_owns_a_layout_box(control)
 }
 
+/// 본문 글과 각주 참조만 줄 폭을 소비하는 문단. 각주 내용은 별도 영역에 조판한다.
+pub(crate) fn is_footnote_text_host(para: &Paragraph) -> bool {
+    let mut has_note = false;
+    for control in &para.controls {
+        match control {
+            Control::Footnote(_) => has_note = true,
+            marker if control_is_width_neutral_marker(marker) => {}
+            _ => return false,
+        }
+    }
+    has_note
+}
+
 /// Controls that resolve their own geometry, inline or floating, and therefore
 /// have a layout owner that is not this frame.
 ///
@@ -4089,7 +4104,8 @@ pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
             || (crate::renderer::para_has_no_stored_line_segs(para)
                 && crate::model::border_paint::is_cell_frame_paint(control))
             || (remeasured && matches!(control, Control::Equation(eq) if eq.common.treat_as_char))
-            || (remeasured && matches!(control, Control::Footnote(_)))
+            // 각주 본문은 단 아래에 따로 놓이고 참조 번호만 본문 폭을 소비한다.
+            || matches!(control, Control::Footnote(_))
     })
 }
 
@@ -4786,6 +4802,40 @@ enum FrameStart {
 /// "한 줄로 입력" 문단의 줄 채움 폭. 어떤 글도 넘지 않을 만큼 크고 HWPUNIT 환산에서 넘치지 않는다.
 const UNBROKEN_LINE_WIDTH_PX: f64 = 1.0e6;
 
+pub(super) fn stored_rows_match_without_footnote_advances<S: Storage>(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    let mut trial = crate::storage::try_clone(frame, storage)?;
+    let rows = try_layout_paragraph_in_frame_impl(
+        para,
+        &mut trial,
+        styles,
+        dpi,
+        true,
+        FrameStart::Scalar(0),
+        FramePurpose::VerifyUnmeasuredFootnotes,
+        storage,
+    )?;
+    Ok(rows.is_some_and(|rows| {
+        let extent = |line: &LineSeg| {
+            (
+                line.column_start,
+                line.segment_width,
+                line.tag & LineSeg::TAG_INDENTATION,
+            )
+        };
+        rows.len() == para.line_segs.len()
+            && rows.iter().zip(&para.line_segs).all(|(computed, stored)| {
+                computed.text_start == para.line_seg_text_start_of(stored.text_start)
+                    && extent(computed) == extent(stored)
+            })
+    }))
+}
+
 fn try_layout_paragraph_in_frame_impl<S: Storage>(
     para: &Paragraph,
     frame: &mut LayoutFrame,
@@ -4800,7 +4850,9 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
     // [#7160] 저장 줄이 없는 글자처럼 취급 표 host 는 이 채움이 유일한 소유자다.
     let supported = match purpose {
-        FramePurpose::Body | FramePurpose::StoredMarkerTailReflow => {
+        FramePurpose::Body
+        | FramePurpose::StoredMarkerTailReflow
+        | FramePurpose::VerifyUnmeasuredFootnotes => {
             supports_picture_band_frame_controls(para)
                 || supports_cached_body_frame_controls(para)
                 || supports_inline_form_frame_controls(para)
@@ -4896,7 +4948,9 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
     // Keep Equation width and height ownership with the current scalar
     // `FlowInlineControl` path. A non-TAC Picture deliberately contributes no
     // inline token: it is represented by the caller's exclusion instead.
-    let mut inline_controls = if let Some((_, controls)) = projected.as_ref() {
+    let mut inline_controls = if purpose == FramePurpose::VerifyUnmeasuredFootnotes {
+        inline_control_flow::measured_flow_controls(para, styles, storage, false)?
+    } else if let Some((_, controls)) = projected.as_ref() {
         storage.copy_slice(controls)?
     } else if para.line_segs.is_empty() && supports_tac_table_band_frame_controls(para) {
         // [#7160] 저장 줄이 없는 TAC 표 host 는 표 폭까지 줄 경계 판정에 넣는다.
@@ -6237,6 +6291,62 @@ pub(crate) fn reflow_line_segs(
 ) {
     let _ = reflow_line_segs_impl(para, paragraph_box, styles, dpi, None, false, true);
     super::equation_line_metrics::publish_regenerated_rows(para, styles);
+}
+
+/// 앞 `kept`줄은 그대로 두고, `start`(UTF-16) 글자부터 뒤를 `paragraph_box` 너비로 다시 접는다.
+///
+/// `start`는 저장 줄의 시작이 아니어도 된다. 너비가 다른 단을 거쳐 다시 나눈 각주 조각을
+/// 또 다른 너비의 단으로 이을 때, 앞 단에서 다시 나눈 줄의 시작부터 접는다
+/// (`footnote_frames::refold_note_paragraphs`). 그때 `kept`째 저장 줄은 `start` 앞에서 끝난다.
+pub(crate) fn reflow_line_segs_from(
+    para: &mut Paragraph,
+    kept: usize,
+    start: u32,
+    paragraph_box: ParagraphBox,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> bool {
+    if kept == 0 || kept > para.line_segs.len() || !paragraph_box.is_usable() {
+        return false;
+    }
+    let vertical_pos = para.line_segs.get(kept).map_or_else(
+        || {
+            let last = &para.line_segs[kept - 1];
+            last.vertical_pos + last.line_height + last.line_spacing
+        },
+        |line| line.vertical_pos,
+    );
+    let mut frame = paragraph_box.frame(vertical_pos);
+    let tail = match try_layout_paragraph_in_frame_impl(
+        para,
+        &mut frame,
+        styles,
+        dpi,
+        true,
+        FrameStart::SourceUtf16(start),
+        FramePurpose::Body,
+        &Unbounded,
+    ) {
+        Ok(Some(tail)) if !tail.is_empty() => tail,
+        Ok(_) => return false,
+        Err(never) => match never {},
+    };
+    let tail_metrics = match frame.try_project_space_metrics_since(0, &Unbounded) {
+        Ok(metrics) => metrics,
+        Err(never) => match never {},
+    };
+    let mut lines = para.line_segs[..kept].to_vec();
+    lines.extend(tail);
+    let mut metrics: Vec<_> = para
+        .layout_space_metrics
+        .iter()
+        .filter(|(position, _)| *position < start)
+        .cloned()
+        .collect();
+    metrics.extend(tail_metrics);
+    para.replace_line_segs_with_space_metrics(lines, metrics);
+    super::equation_line_metrics::publish_regenerated_rows(para, styles);
+    true
 }
 
 /// 셀 분할로 저장 폭이 stale해진 문단을 다시 조판한다.

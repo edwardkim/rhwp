@@ -11369,6 +11369,14 @@ pub(crate) fn stored_cell_pushed_line_block_extent_hu(paragraphs: &[Paragraph]) 
             _ => false,
         })
     });
+    // 자식 표의 글줄이 바뀌면 호스트의 옛 끝으로 현재 조각의 높이를 닫을 수 없다.
+    if !pushed
+        || paragraphs.iter().flat_map(|para| &para.controls).any(
+            |control| matches!(control, Control::Table(child) if child.has_edited_cell_lines()),
+        )
+    {
+        return None;
+    }
     // 저장 끝은 칸 내용이 한 프레임에 이어 저장됐을 때만 내용 높이다. 쪽을 넘는 칸은 조각마다
     // vpos 를 0 부터 다시 저장하므로(#1949 115쪽 거대 칸) 마지막 줄 끝이 내용 높이가 아니다.
     let mut previous = i32::MIN;
@@ -11380,7 +11388,7 @@ pub(crate) fn stored_cell_pushed_line_block_extent_hu(paragraphs: &[Paragraph]) 
             previous = line.vertical_pos;
             ordered
         });
-    if pushed && continuous {
+    if continuous {
         stored_cell_content_extent_hu(paragraphs)
     } else {
         None

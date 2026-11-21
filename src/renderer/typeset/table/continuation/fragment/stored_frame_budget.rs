@@ -377,7 +377,6 @@ impl TypesetEngine {
     ) -> Option<StoredPartialFragment> {
         let source = input.source;
         if !(st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout())
-            || st.profile.session_edited()
             || source.paragraph.stored_text_partition_is_dirty()
             || source.paragraph.cell_format_vpos_dirty
             || !input
@@ -394,6 +393,16 @@ impl TypesetEngine {
         // 저장 상자는 바깥 간격을 포함하고 `available`은 이미 그 간격을 뺀
         // 행 예산이다. 같은 단위로 제한한 뒤 전체 조각 상자를 복원한다.
         let row_capacity = (saved_frame?.0 - outer).max(0.0).min(available);
+        if st.profile.session_edited()
+            && self.render_normalization.frame_prefix_reflowed(
+                source.row_geometry_table,
+                &input.prepared.cut_row_heights,
+                input.prepared.cell_spacing,
+                row_capacity,
+            )
+        {
+            return None;
+        }
         let height = row_capacity + outer;
         let mut before = 0.0;
         let mut complete_last_row = None;

@@ -104,6 +104,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 지금 배치 중인 문단의 본문 각주와 그 참조가 든 줄. 분할 판정이 앞 줄의
     /// 각주 높이를 뒤 줄보다 먼저 예약하고, 조각 확정 때 그 쪽에 등록한다.
     pub(in crate::renderer::typeset) own_line_notes: Vec<crate::renderer::typeset::OwnLineNote>,
+    /// 너비가 다른 단으로 이어받은 각주를 그 단 폭으로 다시 나눌 스타일. 그런 단이 없으면 비어 있다.
+    pub(in crate::renderer::typeset) note_refold: Option<super::notes::NoteRefold>,
     /// 분할 조각 확정 때 이미 등록한 (문단, 컨트롤) 각주. 컨트롤 순회는 건너뛴다.
     pub(in crate::renderer::typeset) line_registered_notes:
         std::collections::HashSet<(usize, usize)>,
