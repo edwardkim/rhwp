@@ -1,5 +1,5 @@
 //! 관계형·고정형: 원본별 실제 산식·본문·대안 표·분할 조각의 내용 소유와 포함을 보호한다.
-//! 주석 갱신: 2026-11-22T03:20:00+09:00; 직전 파일 변경: 2026-10-04T19:03:36+09:00, 731de9e1b4bb946d76f35108ed7e186ebe4ebecb.
+//! 주석 갱신: 2026-11-22T04:38:36+09:00; 이동 전 직전 변경: 2026-11-22T03:38:32+09:00, d54d21d54532bd086bffef1574ece96cbc81bd9a.
 //! 측정: 2026-11-22 KST, Print·compat2024·96DPI·PDFium·보정 전2px raw.
 //! HWP 전64쪽 최저 Native98.08/WASM98.11%; HWPX 전64쪽 양쪽98.69%.
 //! 대상4~8·10·11·26·28·29·32·33쪽: HWP 양쪽100.00%(27쪽98.18/98.16%);
@@ -210,7 +210,7 @@ fn issue_2279_saved_equation_split_keeps_source_lines_on_each_page() {
                 .unwrap(),
             )
             .unwrap();
-            c.set_font_environment(Some(rhwp::renderer::font_environment::FontEnvironment::from_json(include_str!("../mydocs/pr/assets/issues7754_7765/source32/regulatory-hwpx-font-environment.json")).unwrap())).unwrap();
+            c.set_font_environment(Some(rhwp::renderer::font_environment::FontEnvironment::from_json(include_str!("../../mydocs/pr/assets/issues7754_7765/source32/regulatory-hwpx-font-environment.json")).unwrap())).unwrap();
             c
         } else {
             core()
@@ -342,7 +342,7 @@ fn issue_2279_saved_comparison_table_fragments_stay_inside_body() {
         .unwrap();
         doc.set_hangul2024_compat(true);
         if sample.ends_with(".hwpx") {
-            doc.set_font_environment(Some(rhwp::renderer::font_environment::FontEnvironment::from_json(include_str!("../mydocs/pr/assets/issues7754_7765/source32/regulatory-hwpx-font-environment.json")).unwrap())).unwrap();
+            doc.set_font_environment(Some(rhwp::renderer::font_environment::FontEnvironment::from_json(include_str!("../../mydocs/pr/assets/issues7754_7765/source32/regulatory-hwpx-font-environment.json")).unwrap())).unwrap();
         }
         for page in [3, 4, 5, 6, 7, 25, 31, 32] {
             let tree = doc.build_page_render_tree(page).unwrap();
