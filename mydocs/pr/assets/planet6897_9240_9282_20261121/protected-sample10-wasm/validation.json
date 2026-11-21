@@ -142,5 +142,39 @@
     "overlay-757.png": "bdd6de1f75325729a5865662f95b96f86bf07b32765b9dcdf54ff9339793e137",
     "review-474.png": "66b5c2be3094d3fb5e8bfa7a2ce20d01934e0ec0ea8babbb0a35ef9300322def",
     "review-757.png": "50637cbb7c4369250c1e546114ad7e07f15f255f519712af4d0e5182c0fb4958"
+  },
+  "fixed_base_comparison": {
+    "base_source": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+    "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+    "pages": 763,
+    "paired_conditions_equal": true,
+    "fixed_base_producer_hashes": {
+      "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+      "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "rhwp_bg.wasm": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd"
+    },
+    "fixed_base_tsv_sha256": "72e9dd8ac17a7ac33e52e4106bb48fdba83627cc31b47e8ab15c40b9a801598c",
+    "candidate_tsv_sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5",
+    "fixed_base_capture_manifest_sha256": "0b948c7d81c0b9005c986eccf9cfde4a9e2c283eafc1126f9b5d03fb66acf97d",
+    "candidate_capture_manifest_sha256": "6477be8ec141d0a33e545bf36d6333ad5a33be9c295e8d26e69c0edc9f7ce5be",
+    "fixed_base_below_protected": [
+      {
+        "page": 474,
+        "protected": "100.00",
+        "actual": "99.96"
+      }
+    ],
+    "candidate_below_protected": [],
+    "page_score_differences": [
+      {
+        "page": 474,
+        "fixed_base": "99.96",
+        "candidate": "100.00"
+      }
+    ],
+    "review_and_overlay_sha256": {
+      "fixed-base-review-474.png": "16accb76e235e37a2b3e26ed1d7ad0042c9f59bd7515bbdc82767155a6d4e3b8",
+      "fixed-base-overlay-474.png": "8884da2d8775094a7a4dbc7bb636c404abea8d3e3db426c0c418da9ef5d33867"
+    }
   }
 }
