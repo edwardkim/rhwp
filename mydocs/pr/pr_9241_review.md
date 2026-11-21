@@ -9,3 +9,7 @@
 ## 메인테이너 보완 검증 중간 결과
 
 실제 크기 조정 API로 만든 묶음을 HWP·HWPX로 저장했다. 독립 Print와 Native를 파일별로 비교했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)
+
+## 독립 Print와 두 렌더러 대조
+
+제품 소스 `c6fb9159bf`에서 측정했다. 크기를 바꾼 묶음을 HWP와 HWPX로 각각 저장하고 다시 열었다. 두 파일 각각의 한컴 2020 Print와 대조한 1쪽이 Native와 fresh WASM 모두 100.00000%다. [페이지별 입력·PDF 해시와 raw 측정값](assets/semanticist21-20261121/resized-group/pages.tsv)

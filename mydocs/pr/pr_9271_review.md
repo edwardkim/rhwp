@@ -9,3 +9,7 @@
 ## 메인테이너 보완 검증 중간 결과
 
 빈 글자 겹침의 두 입력을 각각 HWPX로 저장하고 한컴으로 인쇄했다. 두 경우 모두 Native 1쪽은 raw 100.00%다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)
+
+## 독립 Print와 두 렌더러 대조
+
+제품 소스 `c6fb9159bf`에서 측정했다. 겹침 테두리 유무를 나눈 두 저장 입력을 한컴 2020에서 각각 인쇄했다. 두 입력의 1쪽이 Native와 fresh WASM 모두 100.00000%다. [페이지별 입력·PDF 해시와 raw 측정값](assets/semanticist21-20261121/empty-overlap/pages.tsv)
