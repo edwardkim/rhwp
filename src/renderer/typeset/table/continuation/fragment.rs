@@ -14,6 +14,7 @@ mod physical_rows;
 mod scan;
 mod stored_block_frames;
 mod stored_frame_budget;
+mod terminal_source_axis;
 
 pub(super) struct FragmentProfile {
     pub(super) enabled: bool,
