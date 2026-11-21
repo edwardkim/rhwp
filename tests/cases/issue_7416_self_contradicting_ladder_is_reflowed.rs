@@ -1,3 +1,10 @@
+//! 관계형·고정형 회귀. 셀 31의 문단별 줄 소속과 한컴 기준 쪽수를 보호한다.
+//! 주석 갱신 2026-11-22T05:01:13+09:00 / 직전 파일 커밋 2026-10-05T01:57:56+09:00 (5b10b384faa9b455374084dee0f14fc9d132ed7e).
+//! 2026-11-22 측정. PDFium 96 DPI, 색상 경계 보정 전 2px 실루엣 raw.
+//! 원본 HWP와 한컴 저장 HWPX 각각 1쪽. 양쪽 160%와 140% 편집·두 차례 HWP/HWPX 재열기의
+//! 1쪽 및 전쪽 최저는 Native와 fresh WASM 모두 100.00%다.
+//! 근거는 mydocs/pr/assets/issue_7407/README.md의 원본별 TSV와 확대 비교다.
+//!
 //! [#7416] 제 선언 폭과 **모순되는** 저장 줄 사다리는 믿지 않고 다시 조판한다.
 //!
 //! # 무엇이 깨져 있었나
@@ -216,4 +223,101 @@ fn a_saturated_hancom_ladder_is_kept_as_stored() {
         missing.is_empty(),
         "포화된 한/글 사다리가 수용되지 않았다 — 빠진 줄={missing:?}"
     );
+}
+
+fn collect_cell_runs(node: &RenderNode, runs: &mut Vec<(usize, f64, f64, String)>) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        if let Some(cell) = run.cell_context.as_ref().filter(|cell| {
+            run.section_index == Some(0)
+                && cell.parent_para_index == 0
+                && cell.outermost_control() == Some(2)
+                && cell.outermost_cell() == Some(CELL)
+                && cell.path.len() == 1
+        }) {
+            let text: String = run.text.chars().filter(|c| !c.is_whitespace()).collect();
+            if !text.is_empty() {
+                runs.push((
+                    cell.path[0].cell_para_index,
+                    node.bbox.y + run.baseline,
+                    node.bbox.x,
+                    text,
+                ));
+            }
+        }
+    }
+    for child in &node.children {
+        collect_cell_runs(child, runs);
+    }
+}
+
+fn rendered_cell_rows(core: &DocumentCore) -> Vec<(usize, String)> {
+    let mut runs = Vec::new();
+    let tree = core.build_page_render_tree(0).expect("셀 편집 렌더 트리");
+    collect_cell_runs(&tree.root, &mut runs);
+    runs.sort_by(|a, b| a.1.total_cmp(&b.1).then_with(|| a.2.total_cmp(&b.2)));
+    let mut rows: Vec<(usize, f64, String)> = Vec::new();
+    for (para, baseline, _, text) in runs {
+        match rows.last_mut() {
+            Some((owner, y, row)) if *owner == para && (*y - baseline).abs() < 0.01 => {
+                row.push_str(&text);
+            }
+            _ => rows.push((para, baseline, text)),
+        }
+    }
+    rows.into_iter()
+        .map(|(para, _, text)| (para, text))
+        .collect()
+}
+
+#[test]
+fn spacing_edit_uses_the_hancom_partition_of_the_cell() {
+    let hancom = load(HANCOM);
+    let expected: Vec<_> = stored_lines(&hancom)
+        .into_iter()
+        .enumerate()
+        .flat_map(|(para, rows)| rows.into_iter().map(move |text| (para, text)))
+        .filter(|(_, text)| !text.is_empty())
+        .collect();
+
+    for input in [ORIGINAL, HANCOM] {
+        let mut doc = load(input);
+        doc.begin_batch_native().expect("배치 시작");
+        for i in 0..10 {
+            doc.apply_para_format_in_cell_native(0, 0, 2, CELL, i, r#"{"lineSpacing":140}"#)
+                .expect("셀 줄간격 적용");
+        }
+        doc.end_batch_native().expect("배치 종료");
+        assert_eq!(doc.page_count(), hancom.page_count(), "{input} 편집 쪽수");
+        assert_eq!(
+            rendered_cell_rows(&doc),
+            expected,
+            "{input} 편집 후 줄 소속"
+        );
+
+        for (format, export) in [
+            (
+                "HWP",
+                DocumentCore::export_hwp_native as fn(&DocumentCore) -> _,
+            ),
+            ("HWPX", DocumentCore::export_hwpx_native),
+        ] {
+            let mut data = export(&doc).expect("편집본 저장");
+            for round in 1..=2 {
+                let reopened = DocumentCore::from_bytes(&data).expect("편집본 다시 열기");
+                assert_eq!(
+                    reopened.page_count(),
+                    hancom.page_count(),
+                    "{input}의 {format} {round}회차 재열기 쪽수"
+                );
+                assert_eq!(
+                    rendered_cell_rows(&reopened),
+                    expected,
+                    "{input}의 {format} {round}회차 재열기 후 줄 소속"
+                );
+                if round == 1 {
+                    data = export(&reopened).expect("재열기 결과 저장");
+                }
+            }
+        }
+    }
 }
