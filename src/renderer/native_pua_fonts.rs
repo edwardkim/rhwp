@@ -36,10 +36,10 @@ const EXISTING_SUPPORTED_SYMBOLS: [char; 11] = [
 /// 원본 글꼴이 공급된 HWP3 괘선도 같은 측정·paint 경로에서 원 glyph를 쓴다.
 /// 앞선 11개 기호의 공급 순서는 유지하고, 독립 한컴 저장값 77개 중 기존 2개를
 /// 제외한 75개만 추가한다. 방향·굵기·점선의 Unicode 추정으로 IR을 바꾸지 않는다.
-pub const SUPPORTED_SYMBOLS: [char; 86] = with_hwp3_line_symbols();
+pub const SUPPORTED_SYMBOLS: [char; 87] = with_hwp3_line_symbols();
 
-const fn with_hwp3_line_symbols() -> [char; 86] {
-    let mut symbols = ['\0'; 86];
+const fn with_hwp3_line_symbols() -> [char; 87] {
+    let mut symbols = ['\0'; 87];
     let mut count = 0;
     while count < EXISTING_SUPPORTED_SYMBOLS.len() {
         symbols[count] = EXISTING_SUPPORTED_SYMBOLS[count];
@@ -67,6 +67,10 @@ const fn with_hwp3_line_symbols() -> [char; 86] {
         }
         row += 1;
     }
+    // 기존 86개 공급자 탐색 순서는 유지한다. Enter 키의 원 프로그램이
+    // 실제 공급된 경우에만 같은 glyph와 전진폭을 쓰고, 없으면 의미 대체한다.
+    symbols[count] = '\u{F03A0}';
+    count += 1;
     assert!(count == symbols.len());
     symbols
 }

@@ -7464,6 +7464,20 @@ impl LayoutEngine {
             // 정확히 설명하면 일반 문단 상자를 쓴다. 그림의 존재만으로 cs를 단 원점에
             // 더하면 문단 여백을 다시 적용해 본문·글머리표·탭이 함께 오른쪽으로 밀린다.
             // 실제 배제 lane은 아래의 세로 band/저장 조각 근거로 계속 보존한다.
+            let stored_row_is_full_paragraph_frame = cell_ctx.is_none()
+                && para.is_some_and(|source| {
+                    stored_wrap_frame::is_full_paragraph_row(
+                        source,
+                        line_idx,
+                        comp_line.column_start,
+                        comp_line.segment_width,
+                        &crate::renderer::composer::ParagraphBox::body_for_style(
+                            col_area.width,
+                            para_style,
+                            self.dpi,
+                        ),
+                    )
+                });
             let stored_row_is_own_margin_to_column_end = cell_ctx.is_none()
                 && comp_line.column_start.abs_diff(own_margin_hu) <= 1
                 && stored_line_reaches_column_end(
@@ -7476,7 +7490,8 @@ impl LayoutEngine {
                 || synthetic_band_carved_row
                 || (stored_geometry_source
                     && ((has_picture_shape_square_wrap
-                        && !stored_row_is_own_margin_to_column_end)
+                        && !stored_row_is_own_margin_to_column_end
+                        && !stored_row_is_full_paragraph_frame)
                         || (line_has_inline_tac_table && !inline_tac_segment_is_paragraph_width)
                         || precomputed_body_wrap_line
                         || empty_stored_wrap_line
