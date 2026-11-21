@@ -43,6 +43,10 @@
 
 최신 제품 코드 `19646e69fc9`의 Studio에서 6·7쪽 화면·인쇄 12건을 다시 확인했다. Canvas2D 실제 출력은 12건이며 그중 8건은 CanvasKit 요청이 글꼴 준비 단계에서 대체된 결과다. 전체 60건의 초기화 응답이 새 WASM 해시와 일치했다. [Studio 최신 빌드 검증 영수증](../assets/planet6897_9240_9282_20261121/validation/actual-studio-v4.json)
 
+## 최신 Native·fresh WASM 전쪽 확인
+
+제품 소스 `65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35`의 Native와 fresh WASM을 각각 사용해 전쪽 7쪽을 다시 출력했다. 공식 두 자리 raw 실루엣의 최저값은 Native **99.98%**, fresh WASM **99.98%**다. 이전 검토에서 비교한 모든 쪽의 RHWP 및 Print PNG 픽셀, TSV가 이번 결과와 일치했다. [최신 전쪽 비교 및 생산물 SHA](../assets/planet6897_9240_9282_20261121/validation/claims-v5.json)
+
 ## Merge 후 contributor PR comment 계획
 
 - [#9272](https://github.com/edwardkim/rhwp/issues/9272) 재현 문서의 6쪽 분할 표 아래 빈 줄과 7쪽 후속 표의 소속을 한컴 2024 Hancom PDF Print와 비교한 결과를 적는다. 6·7쪽 review와 overlay를 함께 표시한다.

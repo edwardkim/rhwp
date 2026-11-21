@@ -67,6 +67,10 @@ HWP에서 만든 HWPX도 같은 순서로 두 번 저장했다. OLE 인스턴스
 - 16쪽 [Native 원본 PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/raw_016.png) · [한컴 Print PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/reference_016.png).
 - 21쪽 [Native 원본 PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/raw_021.png) · [한컴 Print PNG](../assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/reference_021.png).
 
+## 최신 Native·fresh WASM 전쪽 확인
+
+제품 소스 `65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35`의 Native와 fresh WASM을 각각 사용해 전쪽 62쪽을 다시 출력했다. 공식 두 자리 raw 실루엣의 최저값은 Native **98.87%**, fresh WASM **98.86%**다. 이전 검토에서 비교한 모든 쪽의 RHWP 및 Print PNG 픽셀, TSV가 이번 결과와 일치했다. [최신 전쪽 비교 및 생산물 SHA](../assets/planet6897_9240_9282_20261121/validation/claims-v5.json)
+
 ## Merge 후 contributor PR comment 계획
 
 - [#9239](https://github.com/edwardkim/rhwp/issues/9239) 원본의 12쪽 제목 표와 43쪽 캡션에 걸린 떠 있는 표를 한컴 2020 Hancom PDF Print에서 대조한다. 11쪽 각주 영역을 제목 표가 침범하지 않고 43쪽의 내부 표가 한 번만 보이는지 확인한 결과를 적는다.
