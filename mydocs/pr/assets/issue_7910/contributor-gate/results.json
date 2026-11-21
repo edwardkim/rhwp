@@ -1,0 +1,77 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/re-03-latin-only-hancom/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/re-03-latin-only-hancom/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/angle-2400/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/angle-2400/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/pic-crop-01/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/pic-crop-01/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/shape-group-02/native/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "tsv": "contributor-gate/shape-group-02/wasm/silhouette.tsv",
+      "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+    }
+  ]
+}

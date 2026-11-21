@@ -41,3 +41,5 @@ HWP 5.0 사양의 `HWPTAG_PARA_LINE_SEG`는 줄 배치 캐시다. 원본의 세 
 [인쇄 영수증·원본과 바이너리 SHA-256·TSV](measurements.json)과 [편람 383쪽 Native TSV](handbook-native.tsv)를 보존했다. 1·2쪽 원본과 삭제 변형의 review·overlay를 확대해서 머리말, 표, 오른쪽 글줄과 꼬리말을 확인했다. 편람 검사 383쪽의 최저 raw는 99.97%이고 보호값 하락은 없었다.
 
 본문 3~9번 빈 문단의 소속과 순서는 표 셀의 같은 번호와 구분해 본문 직속 렌더 트리에서 검사했다. 기존 WASM 커서 조회는 이 입력의 본문 번호 3~6에 대해 같은 번호인 셀 글줄을 반환한다. `84dee82a`의 한컴 저장 HWPX와 수정 후 HWP/HWPX에서 같은 좌표로 재현됐다. 이 변경의 WASM 커서 검사는 표 옆 마지막 줄, 표 아래의 전폭 줄, 둘째 쪽의 마지막 빈 문단을 확인했다.
+
+기여자 공통 보호 검사는 4개 문서의 Native·fresh WASM 8건을 모두 통과했다. 두 자리 raw 표시값은 모두 100.00%였다. [공통 보호 결과와 TSV 원본](contributor-gate/results.json).
