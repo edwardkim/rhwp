@@ -850,6 +850,6 @@ gh workflow enable <workflow-file> --repo edwardkim/rhwp
 
 ## PR CI 요약 코멘트
 
-devel 대상 PR에는 CI, CodeQL, Render Diff의 현재 head·run·attempt를 확인한 보고 코멘트 하나를 유지한다. 실패 job과 실제 완료된 시각 검증 단계는 GitHub 실행 기록에 연결한다. 고정된 검사 표에 상태와 시도별 링크를 표시하며, 해당 head에서 실행을 찾지 못하면 «실행 기록 없음»으로 표시한다. «최근 실행 갱신»은 표에 포함된 GitHub 실행의 가장 최근 updated_at을 UTC로 표시한다. 이 코멘트의 게시 여부는 병합 판정에 사용하지 않는다.
+devel 대상 PR에는 CI, CodeQL, Render Diff의 현재 head·run·attempt를 확인한 보고 코멘트 하나를 유지한다. 실패 job과 실제 완료된 시각 검증 단계는 GitHub 실행 기록에 연결한다. 검사, 결과, 항목, 근거를 한 표에 표시한다. 실패 단계와 취소 작업을 먼저 표시하고 해당 head에서 확인한 실행만 포함한다. «최근 실행 갱신»은 표에 포함된 GitHub 실행의 가장 최근 updated_at을 UTC로 표시한다. 이 코멘트의 게시 여부는 병합 판정에 사용하지 않는다.
 
 보고 workflow는 기본 브랜치의 코드만 실행하며 PR 첨부 파일을 내려받지 않는다. 기본 브랜치 반영 뒤 실제 PR에서 최초 코멘트 ID와 재실행 뒤 ID가 같은지 확인한다.

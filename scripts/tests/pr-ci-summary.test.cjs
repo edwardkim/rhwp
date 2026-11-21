@@ -17,8 +17,8 @@ test('실패 job과 완료한 시각 단계만 연결한다', () => {
     {name:'test',id:3,status:'completed',conclusion:'failure',steps:[
       {name:'Run frontend Canvas gates',conclusion:'success'},
       {name:'Run selected CanvasKit readiness gate',conclusion:'skipped'}]}]}]);
-  assert.match(text,/^### CI 요약$/m); assert.match(text,/\| CI \| 실패 \|/); assert.match(text,/\/job\/3/);
-  assert.match(text,/Run frontend Canvas gates/); assert.doesNotMatch(text,/CanvasKit/);
+  assert.match(text,/^### PR 검증 결과$/m); assert.match(text,/\| CI \| 실패 \|/); assert.match(text,/\/job\/3/);
+  assert.match(text,/\| CI \| 완료 \| 프런트엔드 Canvas 검사 \| \[검사 로그\]/); assert.doesNotMatch(text,/CanvasKit/);
 });
 
 test('GitHub가 PR 연결을 제공하면 번호, base SHA와 head 브랜치를 대조한다', () => {
@@ -33,10 +33,10 @@ test('GitHub가 PR 연결을 제공하면 번호, base SHA와 head 브랜치를 
 test('일부 실행과 재시도에서도 표와 제목을 유지하고 최신 실행 시각을 쓴다', () => {
   const reports = selectRuns(pull, [{...run, updated_at: '2026-11-21T18:30:47Z'}]);
   const text = summary(pull, reports);
-  assert.match(text, /^### CI 요약$/m);
-  assert.match(text, /\| CI \| 통과 \| \[시도 2\]/);
-  assert.match(text, /\| CodeQL \| 실행 기록 없음 \| — \|/);
-  assert.match(text, /\| Render Diff \| 실행 기록 없음 \| — \|/);
+  assert.match(text, /^### PR 검증 결과$/m);
+  assert.match(text, /\| CI \| 통과 \| 전체 실행 \| \[시도 2\]/);
+  assert.doesNotMatch(text, /CodeQL|Render Diff/);
+  assert.equal(text.split('\n').filter(line => line.startsWith('|')).length, 3);
   assert.match(text, /최근 실행 갱신 2026-11-21 18:30:47 UTC$/);
   assert.doesNotMatch(text, /실패하거나 취소된 작업|완료된 시각 검사/);
   assert.equal(summary(pull, reports), text);
