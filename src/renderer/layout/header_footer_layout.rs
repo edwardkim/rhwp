@@ -4,16 +4,15 @@ use super::*;
 
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
-    /// 머리말·꼬리말 문단 글줄에 든 글자처럼 취급 그림의 아래 캡션을 그 그림 바로 아래에 그린다
-    /// (한컴 12.30). 캡션 글줄은 머리말 표 칸처럼 머리말 문단이 뿌리인 [(그림, 0, 캡션 문단)] 문맥을
-    /// 가져 머리말 히트·셀 경로 API가 그 캡션 글에 닿는다. 그린 캡션의 바닥을 돌려준다.
-    /// ponytail: 아래 캡션만 그린다. 위·옆 캡션은 그림을 옮겨야 해 아직 그리지 않는다.
-    fn layout_header_footer_tac_captions(
+    /// 글줄이 실제로 출력한 그림 원점에서 아래 캡션을 배치하고 편집 경로를 이어 준다.
+    pub(super) fn layout_inline_picture_bottom_captions(
         &self,
         tree: &mut PageLayoutContext,
         area_node: &mut RenderNode,
         para: &Paragraph,
-        para_index: usize,
+        emitted_para: usize,
+        first_node: usize,
+        parent_context: &CellContext,
         styles: &ResolvedStyleSet,
         area: &LayoutRect,
         bin_data_content: &[BinDataContent],
@@ -41,10 +40,20 @@ impl LayoutEngine {
             {
                 continue;
             }
-            // 글줄 배치는 머리말 문단 번호를 usize::MAX - i 로 적는다(머리말 노드 후처리가 되돌린다).
-            let Some(image) = image_box(area_node, usize::MAX - para_index, ci) else {
+            let Some(image) = area_node.children[first_node..]
+                .iter()
+                .filter(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+                .find_map(|node| image_box(node, emitted_para, ci))
+            else {
                 continue;
             };
+            let mut context = parent_context.clone();
+            context.path.push(CellPathEntry {
+                control_index: ci,
+                cell_index: 0,
+                cell_para_index: 0,
+                text_direction: 0,
+            });
             let ext_left = hwpunit_to_px(
                 caption.margin_extension_left(&pic.common.margin) as i32,
                 self.dpi,
@@ -66,16 +75,7 @@ impl LayoutEngine {
                 image.width + ext_w,
                 cap_y,
                 bin_data_content,
-                Some(CellContext {
-                    in_textbox: false,
-                    parent_para_index: para_index,
-                    path: vec![CellPathEntry {
-                        control_index: ci,
-                        cell_index: 0,
-                        cell_para_index: 0,
-                        text_direction: 0,
-                    }],
-                }),
+                Some(context),
                 None,
             );
             bottom = bottom.max(cap_y + self.calculate_caption_height(&pic.caption, styles));
@@ -440,11 +440,13 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         None, // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                     );
-                    y_offset = y_offset.max(self.layout_header_footer_tac_captions(
+                    y_offset = y_offset.max(self.layout_inline_picture_bottom_captions(
                         tree,
                         area_node,
                         para,
-                        i,
+                        usize::MAX - i,
+                        0,
+                        &CellContext { parent_para_index: i, path: Vec::new(), in_textbox: false },
                         styles,
                         area,
                         bin_data_content,

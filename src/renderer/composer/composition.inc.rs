@@ -459,6 +459,7 @@ fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
         } else {
             storage.copy_slice(&para.tab_extended)?
         },
+        is_caption: table_owner == caption_paragraph::BlockTableOwner::Paragraph,
         horizontal_shaping: None,
         frame_geometry: None,
     };

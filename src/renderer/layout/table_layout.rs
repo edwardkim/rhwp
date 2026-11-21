@@ -31061,6 +31061,7 @@ mod row_cut_tests {
             tac_controls: Vec::new(),
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            is_caption: false,
             horizontal_shaping: None,
             frame_geometry: None,
         }

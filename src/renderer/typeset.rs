@@ -7341,6 +7341,7 @@ mod tests {
             tac_controls: vec![(0, 20000, 0)],
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            is_caption: false,
             horizontal_shaping: None,
             frame_geometry: None,
         };

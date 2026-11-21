@@ -1257,6 +1257,19 @@ impl LayoutEngine {
                 }
             }
 
+            if let Some(context) = ctx.as_ref() {
+                self.layout_inline_picture_bottom_captions(
+                    tree,
+                    parent_node,
+                    para,
+                    0,
+                    first_caption_node,
+                    context,
+                    styles,
+                    &caption_area,
+                    bin_data_content,
+                );
+            }
             self.layout_caption_topbottom_pictures(
                 tree,
                 parent_node,

@@ -254,6 +254,8 @@ crate::storage::clone_fields!(InlineControl, {line_index, control_index, control
 /// 구성된 문단
 #[derive(Debug, Clone)]
 pub struct ComposedParagraph {
+    /// 캡션은 셀 주소를 쓰지만 셀 배치 후처리가 없으므로 스스로 글줄의 그림을 그린다.
+    pub(crate) is_caption: bool,
     /// 줄별 텍스트
     pub lines: Vec<ComposedLine>,
     /// 문단 스타일 ID
@@ -279,7 +281,7 @@ pub struct ComposedParagraph {
     pub(crate) horizontal_shaping:
         Option<std::sync::Arc<crate::renderer::shaping_paragraph::HorizontalShapingLineOutcome>>,
 }
-crate::storage::clone_fields!(ComposedParagraph, {lines, para_style_id, inline_controls, numbering_text, tac_controls, footnote_positions, tab_extended, frame_geometry, horizontal_shaping});
+crate::storage::clone_fields!(ComposedParagraph, {is_caption, lines, para_style_id, inline_controls, numbering_text, tac_controls, footnote_positions, tab_extended, frame_geometry, horizontal_shaping});
 
 /// Renderer-session cache for the expensive stored single-line overflow probe.
 ///

@@ -12200,7 +12200,8 @@ impl LayoutEngine {
                         && super::control_line_seg_index(p, *ci) == Some(vars.line_idx)
                 })
         });
-        let empty_line_tac_allowed = cell_ctx.is_none()
+        let empty_line_tac_allowed = composed.is_caption
+            || cell_ctx.is_none()
             || is_caption_cell_context(cell_ctx.as_ref())
             || owns_boundary_tac
             || generated_picture_row;
@@ -13396,6 +13397,7 @@ mod trailing_tac_width_tests {
             tac_controls: Vec::new(),
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            is_caption: false,
             horizontal_shaping: None,
             frame_geometry: None,
         }
