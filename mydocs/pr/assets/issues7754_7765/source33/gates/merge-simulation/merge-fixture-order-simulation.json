@@ -1,0 +1,26 @@
+{
+  "original_head": "e6895accbe23daa2e57fa73c48bc9fe61c55ee57",
+  "other_head": "b4faa9e6d6633ce0fed56cd0540eea5ea01c3645",
+  "simulation_commit": "b1baddfbb7d0caee69ba6414fabcbc5aeb7bccf5",
+  "tree": "4cb19710b1bd556bce1c0f91a09e6989aff15baa",
+  "exit_code": 0,
+  "changes": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "operation": "Move only the issue7754..7765 appended block before existing content; retain every row and comment."
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "operation": "Move only the issue7754..7765 appended block before existing content; retain every row and comment."
+    },
+    {
+      "path": "tests/fixtures/overflow_cell_baseline.tsv",
+      "operation": "Move only the issue7754..7765 appended block before existing content; retain every row and comment."
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_verified_references.json",
+      "operation": "Move only ten task-owned reference records to the beginning; preserve all field values and other record order."
+    }
+  ],
+  "semantics_unchanged": true
+}
