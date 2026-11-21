@@ -26,7 +26,7 @@ pub(super) struct PictureBandGeometry {
     vert_rel_to: u8,
     horz_align: u8,
     vert_align: u8,
-    treat_as_char: bool,
+    pub(super) treat_as_char: bool,
     text_wrap: u8,
     margin: (i16, i16, i16, i16),
 }
