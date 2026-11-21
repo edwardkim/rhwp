@@ -293,6 +293,37 @@ pub(super) fn cell_vpos_resets(previous: &Paragraph, current: &Paragraph) -> boo
     }
 }
 
+/// 개체 캡션 글을 캡션 글 폭(`Caption::text_width`)으로 다시 줄 나눈다. 한컴 12.30은 캡션
+/// 크기·위치·'여백 부분까지 너비 확대'나 개체 폭을 바꾸면 캡션 글을 새 폭으로 다시 줄바꿈하고
+/// 그 폭을 캡션 글 최대 폭(lastWidth)으로 저장한다.
+pub(crate) fn reflow_caption_to_width(
+    caption: &mut crate::model::shape::Caption,
+    width_hu: u32,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
+    caption.max_width = width_hu;
+    let width_px = crate::renderer::hwpunit_to_px(width_hu as i32, dpi);
+    for para in &mut caption.paragraphs {
+        let style = styles.para_styles.get(para.para_shape_id as usize);
+        reflow_line_segs(
+            para,
+            ParagraphBox::content_for_style(width_px, style, dpi),
+            styles,
+            dpi,
+        );
+    }
+    recalculate_cell_paragraph_vpos(
+        &mut caption.paragraphs,
+        0,
+        None,
+        styles,
+        dpi,
+        is_hwp3_variant,
+    );
+}
+
 pub(super) fn recalculate_cell_paragraph_vpos(
     paragraphs: &mut [Paragraph],
     start_para: usize,
@@ -1211,7 +1242,7 @@ fn replace_paragraph_text(
                 delete_count,
             )
         } else {
-            para.delete_text_at(char_offset, delete_count)
+            para.delete_text_at_removing_owned_controls(char_offset, delete_count)
         }
     } else {
         0
@@ -1394,18 +1425,32 @@ pub(super) fn insert_body_text_with_field_affinity(
     section_idx: usize,
     para_idx: usize,
     char_offset: usize,
-    after_inline_control: bool,
+    logical: Option<usize>,
     source: &Paragraph,
 ) {
     let active = active_field_control(active_field, section_idx, para_idx, None);
-    replace_paragraph_text(
-        para,
-        char_offset,
-        0,
-        &source.text,
-        active,
-        after_inline_control,
-    );
+    let after =
+        logical.is_some_and(|offset| super::super::helpers::logical_to_text_offset(para, offset).1);
+    // A text offset and a before/after flag cannot address the gap between two objects.
+    let next_control = logical.filter(|_| after).and_then(|offset| {
+        para.controls
+            .iter()
+            .zip(para.logical_control_positions())
+            .position(|(ctrl, slot)| slot == offset && ctrl.is_logical_inline())
+    });
+    if next_control.is_some() {
+        para.replace_text_at_control_boundary(
+            char_offset,
+            0,
+            &source.text,
+            active,
+            after,
+            next_control,
+        );
+        para.invalidate_layout_inputs();
+    } else {
+        replace_paragraph_text(para, char_offset, 0, &source.text, active, after);
+    }
     para.inherit_inserted_text_controls(source, char_offset);
 }
 
@@ -1834,7 +1879,7 @@ impl DocumentCore {
         // 텍스트 삭제
         let apply_delete = |para: &mut Paragraph| {
             if preserve_memos {
-                para.delete_text_at(char_offset, count);
+                para.delete_text_at_removing_owned_controls(char_offset, count);
             } else {
                 crate::document_core::queries::memo_query::delete_text_at_keeping_memos(
                     para,
@@ -3385,6 +3430,7 @@ impl DocumentCore {
                             reflow_line_segs(cell_para, paragraph_box.clone(), &styles, self.dpi);
                         }
                     }
+                    cell_para.cell_lines_edited = true;
                 }
             }
             Some(Control::Shape(shape)) if cell_idx == 65534 => {
@@ -3651,7 +3697,10 @@ impl DocumentCore {
                 ))
             }
             Control::Picture(pic) => {
-                Some(CellReflowMetrics::new(pic.common.width as i32, 0, 0, false))
+                let width = pic.caption.as_ref().map_or(pic.common.width, |caption| {
+                    caption.text_width(pic.common.width, &pic.common.margin)
+                });
+                Some(CellReflowMetrics::new(width as i32, 0, 0, false))
             }
             _ => None,
         }
@@ -3757,6 +3806,7 @@ impl DocumentCore {
         };
         // 셀 내용 상자 — 열이 없으므로 미스냅.
         reflow_line_segs(cell_para, paragraph_box, &styles, dpi);
+        cell_para.cell_lines_edited = true;
     }
 
     /// [#2755] path 기반 셀 문단 vpos 재계산 (깊이 ≥ 2 중첩 표 지원).
@@ -4890,13 +4940,18 @@ impl DocumentCore {
             }
         }
 
-        if self.body_wrap_width(section_idx) != wrap_width_before {
+        let wrap_changed = self.body_wrap_width(section_idx) != wrap_width_before;
+        if wrap_changed {
             self.reflow_body_paragraphs_in_section(section_idx);
         }
 
         // 조판 갱신
         self.document.sections[section_idx].raw_stream = None;
         self.rebuild_section(section_idx);
+        // 단 폭이 바뀌면 각주 영역 폭도 바뀐다. 한/글처럼 이미 있는 각주도 새 폭으로 다시 나눈다.
+        if wrap_changed {
+            self.reflow_body_footnotes(section_idx);
+        }
 
         Ok("{\"ok\":true}".to_string())
     }
@@ -6489,14 +6544,45 @@ impl DocumentCore {
                     }
                 }
                 Some(Control::Shape(shape)) => {
-                    let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
-                        .ok_or_else(|| {
+                    if cell_idx == super::super::TABLE_CAPTION_CELL_SENTINEL {
+                        &mut Self::shape_caption_mut(shape)
+                            .as_mut()
+                            .ok_or_else(|| {
+                                HwpError::RenderError(format!(
+                                    "경로[{}]: 도형에 캡션이 없습니다",
+                                    i
+                                ))
+                            })?
+                            .paragraphs
+                    } else {
+                        let text_box = super::super::helpers::get_textbox_at_mut(shape, cell_idx)
+                            .ok_or_else(|| {
                             HwpError::RenderError(format!(
                                 "경로[{}]: controls[{}]가 텍스트 글상자가 아닙니다",
                                 i, ctrl_idx
                             ))
                         })?;
-                    &mut text_box.paragraphs
+                        &mut text_box.paragraphs
+                    }
+                }
+                // 각주·미주는 셀 0이다(머리말·꼬리말과 같은 꼴).
+                Some(Control::Footnote(note)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 각주의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    &mut note.paragraphs
+                }
+                Some(Control::Endnote(note)) => {
+                    if cell_idx != 0 {
+                        return Err(HwpError::RenderError(format!(
+                            "경로[{}]: 미주의 cell_index는 0이어야 합니다 ({})",
+                            i, cell_idx
+                        )));
+                    }
+                    &mut note.paragraphs
                 }
                 Some(Control::Picture(pic)) => {
                     if cell_idx != 0 {

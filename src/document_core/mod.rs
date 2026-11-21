@@ -50,7 +50,8 @@ pub use commands::paragraph_block::{
     TEMPLATE_REQUEST_MAX_BYTES,
 };
 pub use commands::{
-    check_picture_props, check_shape_props, ComposeHost, TableColumnWidths, TableCreationOptions,
+    check_picture_props, check_shape_props, ComposeHost, ControlCode, TableColumnWidths,
+    TableCreationOptions,
 };
 pub mod converters;
 pub(crate) mod html_table_import;
@@ -264,6 +265,8 @@ pub struct DocumentCore {
     pub(crate) show_control_codes: bool,
     /// 투명선 표시 여부
     pub(crate) show_transparent_borders: bool,
+    /// 편집 화면에 그림을 그릴지(한컴 보기 > 그림). 끄면 그림 자리만 표시한다.
+    pub(crate) show_pictures: bool,
     /// 편집 화면의 바탕쪽을 흐리게 그릴지(한컴: 편집 화면에서는 본문보다 흐리게, 인쇄는 본래 모양)
     pub(crate) dim_master_pages: bool,
     /// 잘림 보기 (body/셀 클리핑 활성화 여부)
@@ -647,6 +650,7 @@ impl DocumentCore {
             annotate_metric_font: false,
             show_control_codes: false,
             show_transparent_borders: false,
+            show_pictures: true,
             dim_master_pages: false,
             clip_enabled: true,
             debug_overlay: false,

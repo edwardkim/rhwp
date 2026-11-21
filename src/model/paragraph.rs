@@ -206,6 +206,10 @@ pub struct Paragraph {
     /// 맨 앞이면 저장 사본에만 쪽 원점 vpos를 적는다. 직렬화하지 않는다.
     #[serde(skip_serializing)]
     pub stored_flow_shifted: bool,
+    /// 이 세션의 편집이 다시 지은 셀 글줄. 파일에서 읽은 줄은 한/글이 쪽 경계에서 나눈
+    /// 행의 저장 프레임일 수 있지만, 편집이 지은 줄은 그런 프레임이 아니다. 직렬화하지 않는다.
+    #[serde(skip_serializing)]
+    pub cell_lines_edited: bool,
     /// [#7436] 번호·개요 문단의 번호 문자열(본문과의 거리 공백 포함).
     ///
     /// 번호는 문서 순서의 계수기에서 정해지는데, 줄 나눔은 문단 하나만 보고 줄을 채운다.
@@ -1410,6 +1414,18 @@ impl Paragraph {
         );
     }
 
+    /// 제목 차례 표시 하나를 그 8유닛 자리와 함께 걷어낸다.
+    pub(crate) fn remove_title_mark(&mut self, index: usize) {
+        if index >= self.title_marks.len() {
+            return;
+        }
+        let char_idx = self.title_marks.remove(index).char_idx;
+        self.remove_leading_gap_slot(char_idx);
+        if !self.title_marks.is_empty() {
+            self.control_mask |= 1u32 << 0x0008;
+        }
+    }
+
     /// `char_idx` 글자 앞 갭의 첫 슬롯(8유닛)을 걷어낸다.
     ///
     /// 나누기로 잘린 누름틀의 끝 표지처럼 다른 문단으로 간 슬롯 자리에 쓴다. 남겨 두면 그
@@ -2086,7 +2102,30 @@ impl Paragraph {
     /// char_offset은 Rust 문자(char) 인덱스이다 (바이트 인덱스가 아님).
     /// 삭제 후 char_offsets, char_shapes, line_segs, char_count가 자동 갱신된다.
     /// 반환값: 실제 삭제된 문자 수.
+    ///
+    /// 지운 글자를 차지한 컨트롤(자동 번호 자리표시자, `U+FFFC`)은 남긴다. 렌더링·파서·필드
+    /// 정리처럼 글자만 다듬는 쪽이 쓴다. 사용자 편집 지우기는
+    /// [`Self::delete_text_at_removing_owned_controls`]를 쓴다.
     pub fn delete_text_at(&mut self, char_offset: usize, count: usize) -> usize {
+        self.delete_text_range(char_offset, count, false)
+    }
+
+    /// 사용자 편집 지우기: [`Self::delete_text_at`]과 같되, 지운 글자를 차지한 컨트롤도 함께
+    /// 지운다. 캡션의 "그림 N" 번호 자리표시자를 지우면 그 자동 번호도 사라진다.
+    pub fn delete_text_at_removing_owned_controls(
+        &mut self,
+        char_offset: usize,
+        count: usize,
+    ) -> usize {
+        self.delete_text_range(char_offset, count, true)
+    }
+
+    fn delete_text_range(
+        &mut self,
+        char_offset: usize,
+        count: usize,
+        remove_owned_controls: bool,
+    ) -> usize {
         if count == 0 {
             return 0;
         }
@@ -2101,6 +2140,22 @@ impl Paragraph {
         // 실제 삭제할 문자 수 (범위 클램핑)
         let actual_count = count.min(text_len - char_offset);
         let del_end = char_offset + actual_count;
+
+        // 자동 번호의 공백 자리표시자처럼 컨트롤이 차지한 글자를 지우면 그 컨트롤도 함께 지운다.
+        // 남기면 번호가 글 뒤로 밀려 다시 그려지고, 자리표시자의 8유닛 중 7유닛이 주인 없이 남는다.
+        let owned_controls: Vec<usize> = if !remove_owned_controls {
+            Vec::new()
+        } else {
+            let positions = self.control_text_positions();
+            (0..self.controls.len())
+                .filter(|&ci| {
+                    positions.get(ci).is_some_and(|&at| {
+                        (char_offset..del_end).contains(&at)
+                            && self.control_owns_char(ci, at, &text_chars, &self.char_offsets)
+                    })
+                })
+                .collect()
+        };
 
         self.delete_nb_space_origin_range(char_offset, del_end);
 
@@ -2117,8 +2172,22 @@ impl Paragraph {
         let utf16_delta: u32 = text_chars[char_offset..del_end]
             .iter()
             .map(|c| Self::char_stream_len(*c))
-            .sum();
+            .sum::<u32>()
+            + owned_controls.len() as u32 * (CTRL_CHAR_CODE_UNITS - 1);
         let utf16_end = utf16_start + utf16_delta;
+
+        // 뒤 컨트롤부터 빼야 앞 컨트롤 번호가 그대로다. 문단 길이는 아래에서 utf16_delta로 줄인다.
+        for &ci in owned_controls.iter().rev() {
+            self.controls.remove(ci);
+            if ci < self.ctrl_data_records.len() {
+                self.ctrl_data_records.remove(ci);
+            }
+            for range in &mut self.field_ranges {
+                if range.control_idx > ci {
+                    range.control_idx -= 1;
+                }
+            }
+        }
 
         self.literal_figure_spaces
             .retain(|&position| position < char_offset || position >= del_end);
@@ -2260,6 +2329,11 @@ impl Paragraph {
             } else if end.char_idx > char_offset {
                 end.char_idx = char_offset;
             }
+        }
+
+        if !owned_controls.is_empty() {
+            self.control_mask =
+                Self::compute_control_mask_for(&self.text, &self.controls, &self.field_ranges);
         }
 
         // 6. char_count 갱신
@@ -2758,6 +2832,7 @@ impl Paragraph {
             layout_rebased_body_axis: false,
             // 갈라진 문단은 앞 문단의 새 저장 줄에 이어 계산된다.
             stored_flow_shifted: false,
+            cell_lines_edited: false,
             layout_cell_grid: None,
             // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
             hwpx_axis_shift: 0,
@@ -3245,6 +3320,25 @@ impl Paragraph {
         active: Option<usize>,
         after_inline_control: bool,
     ) -> usize {
+        self.replace_text_at_control_boundary(
+            char_offset,
+            delete_count,
+            text,
+            active,
+            after_inline_control,
+            None,
+        )
+    }
+
+    pub(crate) fn replace_text_at_control_boundary(
+        &mut self,
+        char_offset: usize,
+        delete_count: usize,
+        text: &str,
+        active: Option<usize>,
+        after_inline_control: bool,
+        next_control: Option<usize>,
+    ) -> usize {
         /// 갭 하나의 슬롯. 직렬화기가 같은 갭 안에서 내는 순서대로 늘어놓는다.
         #[derive(Clone, Copy, PartialEq)]
         enum Slot {
@@ -3367,13 +3461,16 @@ impl Paragraph {
                 ))
             };
             // 글자 수를 넘는 자리는 문단 끝 개체 뒤를 가리킨다(`insert_text_at` 과 같은 뜻).
-            let preferred = if char_offset > len {
-                (char_offset - len).min(gap.len())
-            } else if after_inline_control {
-                gap.len()
-            } else {
-                gap.iter().position(object).unwrap_or(gap.len())
-            };
+            let preferred =
+                if let Some(index) = next_control.and_then(|ci| order(Slot::Control(ci))) {
+                    index
+                } else if char_offset > len {
+                    (char_offset - len).min(gap.len())
+                } else if after_inline_control {
+                    gap.len()
+                } else {
+                    gap.iter().position(object).unwrap_or(gap.len())
+                };
             let misses = |m: usize, level: u8| {
                 (wants.iter())
                     .filter(|&&(l, begin, end, inside)| {

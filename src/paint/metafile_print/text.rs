@@ -58,14 +58,40 @@ pub(super) fn prepare(
     let database = fonts.database();
     let mut edits = Vec::new();
     let mut markers = Vec::new();
+    let user_clips: std::collections::HashSet<_> = xml
+        .descendants()
+        .filter(|node| {
+            node.has_tag_name("clipPath")
+                && node.attribute("clipPathUnits").unwrap_or("userSpaceOnUse") == "userSpaceOnUse"
+        })
+        .filter_map(|node| node.attribute("id"))
+        .collect();
     for node in xml.descendants().filter(|node| node.has_tag_name("text")) {
-        // 원본의 회전·글자 clip은 기존 SVG가 소유한다. 제거해 출력하지 않는다.
+        // 장치 글자 원점과 기존 SVG의 좌표 변환을 중복 적용하지 않는다.
         if node.ancestors().any(|parent| {
-            ["transform", "clip-path", "mask", "opacity"]
+            ["transform", "mask", "opacity"]
                 .iter()
                 .any(|name| parent.has_attribute(*name))
-        }) {
+        }) || node
+            .ancestors()
+            .skip(1)
+            .any(|parent| parent.has_attribute("clip-path"))
+        {
             return None;
+        }
+        // WMF의 글자 clip은 GDI 논리 창에 고정되어 있다. 글자 윤곽을 얻을 때만
+        // 분리하고, 아래에서 원래 clip을 장치 글자 변환의 바깥에 다시 씌운다.
+        let clip = node.attribute("clip-path");
+        if let Some(clip) = clip {
+            let id = clip.strip_prefix("url(#")?.strip_suffix(')')?;
+            if !user_clips.contains(id) {
+                return None;
+            }
+            edits.extend(xml::attributes(
+                source,
+                node,
+                &[("clip-path", "none".into())],
+            )?);
         }
         let id = node.attribute("id")?.to_owned();
         let window = xml::numbers::<8>(node.attribute("data-rhwp-wmf-window")?)?;
@@ -142,8 +168,38 @@ pub(super) fn prepare(
                     .map(|(span, pair)| metrics.advance(&contents(*span), pair[1] - pair[0]))
                     .collect::<Option<Vec<_>>>()
             })();
-            Some((advances, synthetic_bold))
+            let baseline = (|| {
+                let edge = node.attribute("data-rhwp-wmf-cell-edge")?;
+                let reference = xml::number(node, "data-rhwp-wmf-reference-y")?;
+                if source_font[0] >= 0.0 || source_font[2..4] != [0.0, 0.0] {
+                    return None;
+                }
+                let (_, scale) = frame.device_scale((window[2], window[3]))?;
+                let ppem = (-source_font[0] * scale).round();
+                if !(1.0..=f64::from(u16::MAX)).contains(&ppem) {
+                    return None;
+                }
+                let (top, bottom) =
+                    crate::paint::gdi_font_metrics::cell_extents(&face, ppem as u16)?;
+                let offset = match edge {
+                    "top" => top,
+                    "bottom" => bottom,
+                    _ => return None,
+                };
+                Some(reference + (f64::from(offset) / scale).round())
+            })();
+            Some((advances, synthetic_bold, baseline))
         })??;
+        if let Some(baseline) = selected.2 {
+            edits.extend(xml::attributes(
+                source,
+                node,
+                &[
+                    ("y", baseline.to_string()),
+                    ("dominant-baseline", "alphabetic".into()),
+                ],
+            )?);
+        }
         if let (Some(advances), Some(positions)) = (selected.0, positions) {
             if let Some(first) = positions.first() {
                 let mut current = *first;
@@ -175,6 +231,7 @@ pub(super) fn prepare(
             id,
             node.range(),
             contents(node),
+            clip,
             Marker {
                 pdf,
                 window,
@@ -215,7 +272,7 @@ pub(super) fn prepare(
         .filter_map(|node| Some((node.attribute("id")?, node)))
         .collect::<std::collections::HashMap<_, _>>();
     let mut replacements = Vec::new();
-    for (id, range, text, marker) in markers {
+    for (id, range, text, clip, marker) in markers {
         let body = if let Some(group) = groups.get(id.as_str()) {
             written.get(group.range())?
         } else if text.trim().is_empty() {
@@ -225,10 +282,15 @@ pub(super) fn prepare(
         };
         // 그림·mask defs는 원래 SVG를 보존한다. writer의 전체 문서를 다시
         // 사용하면 원본 pattern 격자와 공유 image/use의 프레임이 사라진다.
-        replacements.push((
-            range,
-            format!("<g {ATTRIBUTE}=\"{}\">{body}</g>", marker.encode()),
-        ));
+        let glyphs = format!("<g {ATTRIBUTE}=\"{}\">{body}</g>", marker.encode());
+        let clipped = match clip {
+            Some(clip) => format!(
+                "<g clip-path=\"{}\">{glyphs}</g>",
+                quick_xml::escape::escape(clip)
+            ),
+            None => glyphs,
+        };
+        replacements.push((range, clipped));
     }
     Some(xml::apply(source, replacements)?.into_bytes())
 }

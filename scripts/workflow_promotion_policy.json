@@ -349,6 +349,26 @@
       ],
       "evidencePath": ".github/workflows/npm-publish.yml"
     },
+    ".github/workflows/pr-ci-summary.yml": {
+      "requiredSkippedJobs": [],
+      "requiredArtifacts": [],
+      "allowedEvents": [
+        "workflow_dispatch"
+      ],
+      "allowedActors": [
+        "edwardkim"
+      ],
+      "executionMode": "contracts-only",
+      "evidencePath": ".github/workflows/ci.yml",
+      "sensitiveSurfaces": [
+        "permissions"
+      ],
+      "requiredJobs": [
+        "CI preflight",
+        "Build & Test",
+        "release-operations-contracts / Release operations contracts"
+      ]
+    },
     ".github/workflows/ci-impact-policy.yml": {
       "requiredSkippedJobs": [],
       "requiredArtifacts": [],

@@ -49,6 +49,22 @@ impl SVGPlayer {
         self
     }
 
+    /// 원본 문자 셀의 기준점을 기록한다. 실제 글꼴을 준비한 인쇄 단계에서만 소비한다.
+    fn with_text_reference(&self, text: Node, y: i16) -> Node {
+        if self.source_contract.is_none() || self.context_current.text_align_update_cp {
+            return text;
+        }
+        let edge = match self.context_current.text_align_vertical {
+            VerticalTextAlignmentMode::VTA_TOP => "top",
+            VerticalTextAlignmentMode::VTA_BOTTOM => "bottom",
+            _ => return text,
+        };
+        text.set("data-rhwp-wmf-cell-edge", edge).set(
+            "data-rhwp-wmf-reference-y",
+            self.context_current.window.to_device(0.0, f32::from(y)).1,
+        )
+    }
+
     #[inline]
     fn issue_definition_id(&self) -> String {
         format!("defs{}", self.definitions.len())
@@ -1107,6 +1123,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
             text = text.set("filter", url_string(format!("#{id}").as_str()));
         }
 
+        let text = self.with_text_reference(text, record.y);
         self.push_element(record_number, text);
 
         Ok(self)
@@ -1694,6 +1711,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let (text, styles) = self.object_selected.font.set_props(text, &point);
         let text = text.set("style", styles.join(""));
 
+        let text = self.with_text_reference(text, record.y_start);
         self.push_element(record_number, text);
 
         Ok(self)

@@ -675,15 +675,28 @@ impl LayoutEngine {
         // (`layout_body_picture` 의 캡션 방출부와 같은 규칙).
         if let Some(ref caption) = picture.caption {
             use crate::model::shape::CaptionVertAlign;
+            // '여백 부분까지 너비 확대'면 위·아래 캡션이 왼쪽·오른쪽 바깥 여백까지 넓어진다(한컴 12.30).
+            let ext_left = hwpunit_to_px(
+                caption.margin_extension_left(&picture.common.margin) as i32,
+                self.dpi,
+            );
+            let ext_w = hwpunit_to_px(
+                caption.text_width(picture.common.width, &picture.common.margin) as i32
+                    - picture.common.width as i32,
+                self.dpi,
+            )
+            .max(0.0);
             let (cap_x, cap_w, cap_y) = match caption.direction {
                 CaptionDirection::Top => (
-                    pic_x,
-                    pic_width,
+                    pic_x - ext_left,
+                    pic_width + ext_w,
                     (pic_y - caption_top_offset).max(container.y),
                 ),
-                CaptionDirection::Bottom => {
-                    (pic_x, pic_width, pic_y + pic_height + caption_spacing)
-                }
+                CaptionDirection::Bottom => (
+                    pic_x - ext_left,
+                    pic_width + ext_w,
+                    pic_y + pic_height + caption_spacing,
+                ),
                 CaptionDirection::Left | CaptionDirection::Right => {
                     let cw = hwpunit_to_px(caption.width as i32, self.dpi);
                     let cx = if caption.direction == CaptionDirection::Left {
@@ -703,18 +716,34 @@ impl LayoutEngine {
                     (cx, cw, cy)
                 }
             };
-            let caption_cell_ctx = cell_ctx.cloned().or_else(|| {
-                para_index.map(|pi| super::CellContext {
-                    in_textbox: false,
-                    parent_para_index: pi,
-                    path: vec![super::CellPathEntry {
-                        control_index: control_index.unwrap_or(0),
-                        cell_index: 0,
-                        cell_para_index: 0,
-                        text_direction: 0,
-                    }],
+            // 셀·글상자 안 그림의 캡션은 그 셀 경로 끝에 그림 캡션(셀 0) 마디를 더한다.
+            // 셀 경로만 넘기면 캡션 글줄이 그림을 품은 셀 문단을 가리켜 캡션에 캐럿이 들지 않는다.
+            let caption_cell_ctx = cell_ctx
+                .cloned()
+                .map(|mut ctx| {
+                    if let Some(control) = control_index {
+                        ctx.path.push(super::CellPathEntry {
+                            control_index: control,
+                            cell_index: 0,
+                            cell_para_index: 0,
+                            text_direction: 0,
+                        });
+                    }
+                    ctx
                 })
-            });
+                .or_else(|| {
+                    para_index.map(|pi| super::CellContext {
+                        in_textbox: false,
+                        parent_para_index: pi,
+                        path: vec![super::CellPathEntry {
+                            control_index: control_index.unwrap_or(0),
+                            cell_index: 0,
+                            cell_para_index: 0,
+                            text_direction: 0,
+                        }],
+                    })
+                });
+            let caption_first = parent_node.children.len();
             self.layout_caption(
                 tree,
                 parent_node,
@@ -732,6 +761,15 @@ impl LayoutEngine {
                     control_index,
                     CaptionControlKind::Image,
                 ),
+            );
+            Self::clip_side_caption(
+                parent_node,
+                caption_first,
+                caption,
+                cap_x,
+                cap_w,
+                pic_y,
+                pic_y + pic_height,
             );
         }
 
@@ -981,11 +1019,26 @@ impl LayoutEngine {
         // 캡션 렌더링
         if let Some(ref caption) = picture.caption {
             use crate::model::shape::CaptionVertAlign;
+            // '여백 부분까지 너비 확대'면 위·아래 캡션이 왼쪽·오른쪽 바깥 여백까지 넓어진다(한컴 12.30).
+            let ext_left = hwpunit_to_px(
+                caption.margin_extension_left(&picture.common.margin) as i32,
+                self.dpi,
+            );
+            let ext_w = hwpunit_to_px(
+                caption.text_width(picture.common.width, &picture.common.margin) as i32
+                    - picture.common.width as i32,
+                self.dpi,
+            )
+            .max(0.0);
             let (cap_x, cap_w, cap_y) = match caption.direction {
-                CaptionDirection::Top => (adjusted_pic_x, pic_width, base_y + margin_top),
+                CaptionDirection::Top => (
+                    adjusted_pic_x - ext_left,
+                    pic_width + ext_w,
+                    base_y + margin_top,
+                ),
                 CaptionDirection::Bottom => (
-                    adjusted_pic_x,
-                    pic_width,
+                    adjusted_pic_x - ext_left,
+                    pic_width + ext_w,
                     pic_y + pic_height + caption_spacing,
                 ),
                 CaptionDirection::Left | CaptionDirection::Right => {
@@ -1017,6 +1070,7 @@ impl LayoutEngine {
                     text_direction: 0,
                 }],
             };
+            let caption_first = parent_node.children.len();
             self.layout_caption(
                 tree,
                 parent_node,
@@ -1034,6 +1088,15 @@ impl LayoutEngine {
                     Some(control_index),
                     CaptionControlKind::Image,
                 ),
+            );
+            Self::clip_side_caption(
+                parent_node,
+                caption_first,
+                caption,
+                cap_x,
+                cap_w,
+                pic_y,
+                pic_y + pic_height,
             );
         }
 
@@ -1068,6 +1131,46 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> f64 {
         super::super::composer::caption_height_px_in_context(caption, Some(styles), self.dpi)
+    }
+
+    /// 한컴 12.30은 왼쪽·오른쪽 캡션을 개체 높이에서 잘라 그린다(넘친 줄은 개체 아래 경계에서
+    /// 잘린다). `first`부터 덧붙은 캡션 노드에 그 높이의 자름 상자를 단다.
+    pub(crate) fn clip_side_caption(
+        parent_node: &mut RenderNode,
+        first: usize,
+        caption: &Caption,
+        x: f64,
+        width: f64,
+        top: f64,
+        bottom: f64,
+    ) {
+        if !matches!(
+            caption.direction,
+            CaptionDirection::Left | CaptionDirection::Right
+        ) {
+            return;
+        }
+        // 가로로는 자르지 않도록 캡션 칸보다 넉넉히 둔다.
+        let (left, right, bottom) = (x - width, x + width * 2.0, bottom.max(top));
+        let clip = {
+            use crate::model::text_clip::{ClipCommand, TextClipPath};
+            TextClipPath {
+                commands: vec![
+                    ClipCommand::Move(left, top),
+                    ClipCommand::Line(right, top),
+                    ClipCommand::Line(right, bottom),
+                    ClipCommand::Line(left, bottom),
+                    ClipCommand::Close,
+                ],
+                even_odd: false,
+            }
+        };
+        let first = first.min(parent_node.children.len());
+        for node in &mut parent_node.children[first..] {
+            if node.paint_clip.is_none() {
+                node.paint_clip = Some(vec![clip.clone()]);
+            }
+        }
     }
 
     /// 캡션을 레이아웃한다.
@@ -1154,6 +1257,19 @@ impl LayoutEngine {
                 }
             }
 
+            if let Some(context) = ctx.as_ref() {
+                self.layout_inline_picture_bottom_captions(
+                    tree,
+                    parent_node,
+                    para,
+                    0,
+                    first_caption_node,
+                    context,
+                    styles,
+                    &caption_area,
+                    bin_data_content,
+                );
+            }
             self.layout_caption_topbottom_pictures(
                 tree,
                 parent_node,
@@ -1601,10 +1717,13 @@ impl LayoutEngine {
         // 저장 줄이 있어도 현재 각주 영역보다 넓은 캐시는 같은 조판을 증언하지 않는다.
         // 생성 각주가 제본 여백을 빼기 전 폭을 저장한 경우 실제 영역을 재조판한다.
         let width_hu = i64::from(crate::renderer::px_to_hwpunit(area_width, self.dpi));
+        // 너비가 다른 단에서 다시 나눈 조각은 저장 줄이 아니라 새로 나눈 줄을 쓴다.
         !footnotes.is_empty()
             && footnotes.iter().all(|note| {
                 let paras = get_footnote_paragraphs(note, paragraphs);
-                !paras.is_empty()
+                note.fragment
+                    .is_none_or(|fragment| fragment.refold.is_none())
+                    && !paras.is_empty()
                     && paras.iter().all(|para| {
                         !para.line_segs.is_empty()
                             && !para.stored_text_partition_is_dirty()
@@ -1619,6 +1738,24 @@ impl LayoutEngine {
                             })
                     })
             })
+    }
+
+    /// 너비가 다른 단으로 이어받은 조각이면 그 조각이 그려지는 영역 폭으로 다시 나눈 각주 문단.
+    /// 조판이 같은 폭·같은 시작 글자로 줄을 나눠 조각의 줄 번호를 정했다.
+    fn refolded_note_paragraphs(
+        &self,
+        fn_ref: &FootnoteRef,
+        paragraphs: &[Paragraph],
+        area_width: f64,
+        styles: &ResolvedStyleSet,
+    ) -> Option<Vec<Paragraph>> {
+        let at = fn_ref.fragment?.refold?;
+        Some(
+            crate::renderer::footnote_frames::refold_note_paragraphs(
+                paragraphs, at, area_width, styles, self.dpi,
+            )
+            .0,
+        )
     }
 
     pub(crate) fn estimate_footnote_area_height(
@@ -1668,9 +1805,10 @@ impl LayoutEngine {
         // 각주가 예약 영역(및 footer)을 넘을 수 있다. 마지막 각주 문단의 마지막 줄은
         // layout 경로에서도 trailing spacing을 붙이지 않는다.
         for (i, fn_ref) in footnotes.iter().enumerate() {
-            let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
+            let base = get_footnote_paragraphs(fn_ref, paragraphs);
+            let refolded = self.refolded_note_paragraphs(fn_ref, base, area_width, styles);
             total += self.footnote_paragraphs_content_height(
-                fn_paras,
+                refolded.as_deref().unwrap_or(base),
                 styles,
                 area_width,
                 fn_ref.fragment,
@@ -1815,8 +1953,10 @@ impl LayoutEngine {
         // section_index = footnote_index (footnotes 배열 인덱스)
         // para_index = usize::MAX - 2000 - fn_para_idx (각주 내 문단 인덱스)
         for (frame_index, fn_ref) in footnotes.iter().enumerate() {
-            let i = source_indices[frame_index];
-            let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
+            let marker_section = source_indices[frame_index];
+            let base = get_footnote_paragraphs(fn_ref, paragraphs);
+            let refolded = self.refolded_note_paragraphs(fn_ref, base, fn_area.width, styles);
+            let fn_paras = refolded.as_deref().unwrap_or(base);
             let number_text = format_footnote_number(
                 fn_ref.number,
                 &shape.number_format,
@@ -1833,7 +1973,6 @@ impl LayoutEngine {
 
             for (p_idx, para) in fn_paras.iter().enumerate() {
                 let composed = compose_footnote_paragraph(para, fn_area.width, styles, self.dpi);
-                let marker_section = i; // footnote_index
                 let marker_para = usize::MAX - 2000 - p_idx; // 각주 내 문단 인덱스
                                                              // 각주 번호 스타일용 기본 char_shape_id (빈/비빈 문단 모두 동일)
                 let base_cs_id = para
@@ -2134,7 +2273,7 @@ impl LayoutEngine {
             }
 
             // 각주 간 간격
-            if i + 1 < footnotes.len() {
+            if frame_index + 1 < footnotes.len() {
                 y += hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi);
             }
         }

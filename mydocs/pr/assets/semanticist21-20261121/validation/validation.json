@@ -1,0 +1,774 @@
+{
+  "devel": "ca231d64f43f19da1d1d1aec4cf26a05b817aa22",
+  "source": "143f804aef",
+  "protected_baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+  "candidate_native": "ee8ab70dbdcc64d675ac4e23393e330c591db0ac3a1fda4003f565954246ce36",
+  "candidate_wasm": "beebef992b260d91dbaa564f781a3b89892c8931d2225cbfc8746d3a89de241d",
+  "devel_native": "cb1b95ea10f42f0292993b9e1fbe72aef06dc56decc7e48ce4b10831ff98b759",
+  "devel_wasm": "899308cdfb0d6a209f707d1efa9d76abf0ce073ef79b6c963740344ae7090ef2",
+  "contributor": [
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "document_id": "52ee61fe7201e36b",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": []
+    },
+    {
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "document_id": "52ee61fe7201e36b",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": []
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "document_id": "59f6ab1155623bda",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": []
+    },
+    {
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "document_id": "59f6ab1155623bda",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": []
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "99.99756",
+      "regressions": []
+    },
+    {
+      "input": "samples/pic-crop-01.hwp",
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "99.99756",
+      "regressions": []
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "native",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": []
+    },
+    {
+      "input": "samples/shape-group-02.hwp",
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "wasm",
+      "status": "passed",
+      "minimum": "100.0",
+      "regressions": []
+    }
+  ],
+  "handbook": {
+    "status": "passed",
+    "pages": 383,
+    "regressions": [],
+    "metric": "silhouette_raw_match_percent",
+    "baseline_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756"
+  },
+  "protected": [
+    {
+      "document": "yeongwol",
+      "backend": "native",
+      "input": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "pdf": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "pages": 4,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "5354cd74afcf2bcfb394e86653e908593ca5a7f536c749812348c018b6d4dcbf",
+        "environment_sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d"
+      }
+    },
+    {
+      "document": "yeongwol",
+      "backend": "wasm",
+      "input": "samples/issue5699/20099369_yeongwol_forms.hwp",
+      "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "pdf": "pdf/issue7642-failed-inputs-followup-20261011/20099369_yeongwol_forms-2020.pdf",
+      "pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "pages": 4,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "5354cd74afcf2bcfb394e86653e908593ca5a7f536c749812348c018b6d4dcbf",
+        "environment_sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d"
+      }
+    },
+    {
+      "document": "seo-body-list-typed",
+      "backend": "native",
+      "input": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "pdf": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-body-list-typed",
+      "backend": "wasm",
+      "input": "tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp",
+      "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "pdf": "pdf/issue8109/print/body-list-typed-hwp-2020.pdf",
+      "pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "handbook-hwp",
+      "backend": "native",
+      "input": "samples/2025 행정업무운영 편람(최종).hwp",
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "pages": 383,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "bd6f697aa950ed20adbab7b57dcf20857cee23bfeb77f69d38b5e767ac4cc2bf",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "handbook-hwp",
+      "backend": "wasm",
+      "input": "samples/2025 행정업무운영 편람(최종).hwp",
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2024.pdf",
+      "pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "pages": 383,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "bd6f697aa950ed20adbab7b57dcf20857cee23bfeb77f69d38b5e767ac4cc2bf",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "backend": "native",
+      "input": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "pdf": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "backend": "wasm",
+      "input": "tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp",
+      "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "pdf": "pdf/issue8109/print/control-styles-hwp-2020.pdf",
+      "pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ec32f36d5f7bdf68f9261c9820ea37d147a1ede78ecbaef81b2db03ae32770db",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "sample16-hwpx",
+      "backend": "native",
+      "input": "samples/hwp3-sample16-hwp5.hwpx",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "pages": 64,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+      }
+    },
+    {
+      "document": "sample16-hwpx",
+      "backend": "wasm",
+      "input": "samples/hwp3-sample16-hwp5.hwpx",
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "pdf": "pdf/hwp3-sample16-hwp5-hwpx-2024.pdf",
+      "pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "pages": 64,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
+      }
+    },
+    {
+      "document": "sample16-hwp2022",
+      "backend": "native",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "pdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "pages": 64,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+      }
+    },
+    {
+      "document": "sample16-hwp2022",
+      "backend": "wasm",
+      "input": "samples/hwp3-sample16-hwp5-2022.hwp",
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "pdf": "pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf",
+      "pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "pages": 64,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
+      }
+    },
+    {
+      "document": "seo-re-03-latin",
+      "backend": "native",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "pdf": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-re-03-latin",
+      "backend": "wasm",
+      "input": "samples/re-03-latin-only-hancom.hwp",
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "pdf": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+      "pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "angle-narrow",
+      "backend": "native",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "pdf": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "angle-narrow",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+      "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "pdf": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+      "pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline",
+      "backend": "native",
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "pages": 9,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "7d064f79fd6f1fdeff20bd2a1bfa42d9b9e5c9d77fa6ff9d3db9dae7f8d181a1",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline",
+      "backend": "wasm",
+      "input": "samples/task3307/issue3307_outline_number.hwpx",
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "pdf": "pdf/task3307/issue3307_outline_number-2020.pdf",
+      "pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "pages": 9,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "7d064f79fd6f1fdeff20bd2a1bfa42d9b9e5c9d77fa6ff9d3db9dae7f8d181a1",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert",
+      "backend": "native",
+      "input": "samples/pr8040/exam-social-insert.hwp",
+      "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "pdf": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "pages": 4,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert",
+      "backend": "wasm",
+      "input": "samples/pr8040/exam-social-insert.hwp",
+      "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "pdf": "pdf/pr8040/exam-social-insert-2020.pdf",
+      "pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "pages": 4,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "nested",
+      "backend": "native",
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "pages": 17,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "33c8bd7781a3fbcde3d59ef6860e5f8be30e493617e02b42ece9da5859c423d1",
+        "environment_sha256": "93f9b17725871ff485807485ac848a4abc193ba79f88cf3076441966a1ed9965"
+      }
+    },
+    {
+      "document": "nested",
+      "backend": "wasm",
+      "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "pdf": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "pages": 17,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "33c8bd7781a3fbcde3d59ef6860e5f8be30e493617e02b42ece9da5859c423d1",
+        "environment_sha256": "93f9b17725871ff485807485ac848a4abc193ba79f88cf3076441966a1ed9965"
+      }
+    },
+    {
+      "document": "sample16-hwp2024",
+      "backend": "native",
+      "input": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "pdf": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "pages": 64,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+      }
+    },
+    {
+      "document": "sample16-hwp2024",
+      "backend": "wasm",
+      "input": "samples/hwp3-sample16-hwp5-2024.hwp",
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "pdf": "pdf/hwp3-sample16-hwp5-2024-hwp-2024.pdf",
+      "pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "pages": 64,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4d39463bafa0842e75c8061b1431b01f7710484e2925fac92447b307907699c0",
+        "environment_sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
+      }
+    },
+    {
+      "document": "handbook-hwpx",
+      "backend": "native",
+      "input": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "pages": 383,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "a9b7ff1276ae9f8f102d1d9118e5c571ed21319d573d2c586c36a2524f92f09f",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "handbook-hwpx",
+      "backend": "wasm",
+      "input": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2024.pdf",
+      "pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "pages": 383,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "a9b7ff1276ae9f8f102d1d9118e5c571ed21319d573d2c586c36a2524f92f09f",
+        "environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
+      }
+    },
+    {
+      "document": "issue7905",
+      "backend": "native",
+      "input": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "pdf": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "pages": 6,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "6de4759984a89f800c5838b60b969acf02833862058003ea717b2e47a3115e5c",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue7905",
+      "backend": "wasm",
+      "input": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "pdf": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law_hancom2018_print.pdf",
+      "pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "pages": 6,
+      "compat": "2024",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "6de4759984a89f800c5838b60b969acf02833862058003ea717b2e47a3115e5c",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "sample10",
+      "backend": "native",
+      "input": "samples/hwp3-sample10.hwp",
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "pdf": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "pages": 763,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ce00fcab6f0859ff8d4323a439dcde1e0c2196204b99311abf399f4dfeb648d3",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "sample10",
+      "backend": "wasm",
+      "input": "samples/hwp3-sample10.hwp",
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "pdf": "pdf/issue8371/hwp3-sample10-2020.pdf",
+      "pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "pages": 763,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ce00fcab6f0859ff8d4323a439dcde1e0c2196204b99311abf399f4dfeb648d3",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "backend": "native",
+      "input": "samples/pr8040/exam-social-insert-delete.hwp",
+      "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "pdf": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "pages": 4,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "issue8040-insert-delete",
+      "backend": "wasm",
+      "input": "samples/pr8040/exam-social-insert-delete.hwp",
+      "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "pdf": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+      "pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "pages": 4,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "3a1220e6e622658e1f1b15fde16680980e44bd7ba69f581f318588c4ad4ccfb5",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "backend": "native",
+      "input": "samples/pic-crop-01.hwp",
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf": "pdf/pic-crop-01-2022.pdf",
+      "pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-pic-crop-01",
+      "backend": "wasm",
+      "input": "samples/pic-crop-01.hwp",
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "pdf": "pdf/pic-crop-01-2022.pdf",
+      "pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-shape-group-02",
+      "backend": "native",
+      "input": "samples/shape-group-02.hwp",
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf": "pdf/shape-group-02-hwp-2020.pdf",
+      "pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "seo-shape-group-02",
+      "backend": "wasm",
+      "input": "samples/shape-group-02.hwp",
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "pdf": "pdf/shape-group-02-hwp-2020.pdf",
+      "pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "c418a81bf16743a82940d19adb009848712f55e00b4582b392b5db23172ed2ce",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "pages": 103,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "bf3d91ff282ef16e101b47116d35d0d3dfc2714382c3c5466245baf24ae1b22c",
+        "environment_sha256": "374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa"
+      }
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "input": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "pages": 103,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "bf3d91ff282ef16e101b47116d35d0d3dfc2714382c3c5466245baf24ae1b22c",
+        "environment_sha256": "d31081d4da1a713143035483b80ada9533cbe84be8a6edde24efa794d784183b"
+      }
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+      "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "pages": 71,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "5a691a3257902d1bbb21987664ddd84c13d33013206a384aafa3187d084e37a3",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "input": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+      "pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "pages": 71,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "521bb49347a3c3c6ab762421e90b08dd855d822669d130ae0ba0d840bb31b696",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline-demo",
+      "backend": "native",
+      "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+      "pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "pages": 3,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4f7ab73863f0e0592ad7a5b833294bb3adc3efa17348169d18c326f75a4d474a",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline-demo",
+      "backend": "wasm",
+      "input": "samples/pr4093/outline_navigation_panel_demo.hwpx",
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_panel_demo-2020.pdf",
+      "pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "pages": 3,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "4f7ab73863f0e0592ad7a5b833294bb3adc3efa17348169d18c326f75a4d474a",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "pdf": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "pages": 74,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "be2c5daccb663865d0314e5e6fbfaf56d20caeb9c36664734adfb7378befd70d",
+        "environment_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab"
+      }
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "input": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "pdf": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "pages": 74,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "be2c5daccb663865d0314e5e6fbfaf56d20caeb9c36664734adfb7378befd70d",
+        "environment_sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252"
+      }
+    },
+    {
+      "document": "outline-minimal",
+      "backend": "native",
+      "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ae5a763a9fd4e173925744b4ec5f866d5764cd62416c193f21c495fcc3dfe062",
+        "environment_sha256": null
+      }
+    },
+    {
+      "document": "outline-minimal",
+      "backend": "wasm",
+      "input": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "pdf": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "pages": 1,
+      "compat": "2022",
+      "dpi": 96,
+      "fonts": {
+        "programs_sha256": "ae5a763a9fd4e173925744b4ec5f866d5764cd62416c193f21c495fcc3dfe062",
+        "environment_sha256": null
+      }
+    }
+  ]
+}

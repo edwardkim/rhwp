@@ -1204,6 +1204,7 @@ jobs:
           node --test scripts/tests/ci-workflow-evidence.test.cjs
           node --test scripts/tests/collect-postmerge-duration-data.test.mjs
           python3 -m unittest scripts/tests/test_postmerge_duration_workflow.py
+          node --test scripts/tests/pr-ci-summary.test.cjs
           node --test scripts/tests/ci-impact-report.test.cjs
           python3 -m unittest scripts/tests/test_ci_impact_workflow.py
 

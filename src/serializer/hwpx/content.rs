@@ -52,9 +52,8 @@ fn extract_script_items(original: &str) -> Vec<(String, String)> {
 }
 
 fn extract_metadata_block(original: &str) -> Option<&str> {
-    let open = original.find("<opf:metadata>")?;
-    let close = original[open..].find("</opf:metadata>")? + open + "</opf:metadata>".len();
-    Some(&original[open..close])
+    let (start, end) = crate::parser::hwpx::content::metadata_range(original)?;
+    Some(&original[start..end])
 }
 
 /// content.hpf XML 생성

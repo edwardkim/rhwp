@@ -28,9 +28,6 @@ const SOURCE_HAN: &[u8] = include_bytes!("../../ttfs/opensource/RHWPOldHangul-Re
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
-// `ᄒᆞᆫ글`은 legacy 제품명 display projection 대상이므로 최초 direct-text lane의
-// 양성 fixture로 쓰지 않는다. 이 문자열은 같은 옛한글 자모 shaping을 요구하지만
-// model text와 replay text가 동일하다.
 const TEXT: &str = "ᄒᆞᆫ말";
 
 fn core_with_surface(
@@ -1084,7 +1081,7 @@ fn issue_4969_common_alternative_preserves_declared_size_and_shared_page_geometr
 fn issue_4969_q2_d4_b_rejected_surfaces_keep_only_legacy_text() {
     let cases = [
         (TEXT, Alignment::Center, 0),
-        ("ᄒᆞᆫ글", Alignment::Left, 0),
+        ("\u{f53a}글", Alignment::Left, 0),
         (TEXT, Alignment::Left, 2),
     ];
     for (text, alignment, char_border_fill_id) in cases {

@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `2c9bb270ad515144500cfceeb8b3020abc8cbc7ae6b800a30bd15f829f822a92`.
+- TSV SHA-256: `b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -41,10 +41,10 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [issue3307_outline_number.hwpx](<../../../../samples/task3307/issue3307_outline_number.hwpx>) | 9 | 100.00% | 100.00% |
 | [body-list-typed-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp>) | 1 | 100.00% | 100.00% |
 | [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 100.00% | 100.00% |
-| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.75% | 99.71% |
-| [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.69% | 99.67% |
+| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.88% | 99.88% |
+| [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.92% | 99.92% |
 | [outline_navigation_panel_demo.hwpx](<../../../../samples/pr4093/outline_navigation_panel_demo.hwpx>) | 3 | 100.00% | 100.00% |
-| [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.74% | 99.73% |
+| [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.98% | 99.98% |
 | [outline_navigation_table_cell_number.hwpx](<../../../../samples/pr4093/outline_navigation_table_cell_number.hwpx>) | 1 | 100.00% | 100.00% |
 
 ## 2026-11-15 PR #9075 검토의 상승분 반영
@@ -164,3 +164,7 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 ## 2026-11-21 조판 PR 9건 통합 검토
 
 46조건 4,046쪽에서 하락·누락 0쪽을 확인하고 화학 문서의 Native 17쪽과 fresh WASM 13쪽을 상향했다. 중첩 표와 sample10은 원본 및 독립 Print에 맞춘 기호 공급으로 고정 기준과 후보의 전쪽 출력을 비교했다. [검증 결과](../planet6897_9208_9236_20261121/final-protection/validation.json) · [갱신 영수증](updates/planet6897-9208-9236-20261121.json).
+
+## 2026-11-21 semanticist21 편집 PR 17건
+
+보호 23종의 Native와 fresh WASM 총 4,046행을 다시 측정했다. 모든 행이 기존 하한 이상이며 상승한 75행을 반영했다. [전쪽 결과](../semanticist21-20261121/validation/final/protected-pages.tsv) · [변경한 행](updates/semanticist21-20261121.json)

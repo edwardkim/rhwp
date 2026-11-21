@@ -9,11 +9,9 @@ pub(crate) fn stored_continuous_span_prefixes_hu(
     table: &Table,
     cell: &Cell,
     original_stored_layout: bool,
-    session_edited: bool,
     table_reflowed: bool,
 ) -> Option<Vec<(i32, i32)>> {
     if !original_stored_layout
-        || session_edited
         || table_reflowed
         || table.common.treat_as_char
         || table.common.text_wrap != TextWrap::TopAndBottom

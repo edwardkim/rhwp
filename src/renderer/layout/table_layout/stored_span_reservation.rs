@@ -16,7 +16,6 @@ impl LayoutEngine {
             table,
             cell,
             profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout(),
-            profile.session_edited(),
             self.render_normalization
                 .borrow()
                 .cell_frame_reflowed(table, cell),

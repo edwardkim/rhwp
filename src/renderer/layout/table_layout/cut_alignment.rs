@@ -15,6 +15,16 @@ impl LayoutEngine {
         let units = self.cell_units(cell, table, styles);
         let lo = start.min(units.len());
         let window = &units[lo..end.clamp(lo, units.len())];
+        if let Some(height) = self.continued_plain_child_frame_height(
+            cell,
+            &units,
+            lo,
+            lo + window.len(),
+            styles,
+            super::row_physical_band::CutHeight::Occupied,
+        ) {
+            return height;
+        }
         if window.iter().any(|unit| {
             unit.mixed_nested_fragment
                 || unit.nested_row.is_some()

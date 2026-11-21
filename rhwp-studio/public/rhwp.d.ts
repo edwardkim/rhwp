@@ -35,6 +35,23 @@ export class DocumentExport {
 export class HwpDocument {
     free(): void;
     [Symbol.dispose](): void;
+    getShowPictures(): boolean;
+    setShowPictures(enabled: boolean): void;
+    moveLineEndpointByPath(sec: number, parent_para: number, cell_path_json: string, ci: number, sx: number, sy: number, ex: number, ey: number): string;
+    getDocumentSummary(): string;
+    setDocumentSummary(json: string): string;
+    getBinDataList(): string;
+    getLicenseMark(): string;
+    getObjectCount(): string;
+    getControlCodes(kinds_json: string): string;
+    eraseControlCodes(kinds_json: string, indices_json: string): string;
+    setTextBoxAtByPath(section_idx: number, parent_para_idx: number, cell_path_json: string, inner_control_idx: number, attach: boolean): string;
+    getPageHidesOnPage(page: number): string;
+    setPageHideOnPage(page: number, para: number, cell_path_json: string, char_offset: number, hide_header: boolean, hide_footer: boolean, hide_master: boolean, hide_border: boolean, hide_fill: boolean, hide_page_num: boolean): string;
+    pasteInternalLogical(section_idx: number, para_idx: number, logical_offset: number): string;
+    copySelectionInCellByPathLogical(section_idx: number, parent_para_idx: number, path_json: string, start_cell_para_idx: number, start_logical: number, end_cell_para_idx: number, end_logical: number): string;
+    pasteInternalInCellByPathLogical(section_idx: number, parent_para_idx: number, path_json: string, logical_offset: number): string;
+    pasteHtmlInCellByPathLogical(section_idx: number, parent_para_idx: number, path_json: string, logical_offset: number, html: string): string;
     /**
      * 책갈피 추가
      */
@@ -3180,6 +3197,23 @@ export interface InitOutput {
     readonly documentexport_hasBytes: (a: number) => number;
     readonly documentexport_takeBytes: (a: number) => [number, number, number, number];
     readonly extractThumbnail: (a: number, b: number) => any;
+    readonly hwpdocument_pasteHtmlInCellByPathLogical: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
+    readonly hwpdocument_pasteInternalInCellByPathLogical: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly hwpdocument_copySelectionInCellByPathLogical: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
+    readonly hwpdocument_pasteInternalLogical: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_setPageHideOnPage: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number, k: number, l: number) => [number, number, number, number];
+    readonly hwpdocument_getPageHidesOnPage: (a: number, b: number) => [number, number, number, number];
+    readonly hwpdocument_setTextBoxAtByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
+    readonly hwpdocument_eraseControlCodes: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
+    readonly hwpdocument_getControlCodes: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly hwpdocument_getObjectCount: (a: number) => [number, number];
+    readonly hwpdocument_getLicenseMark: (a: number) => [number, number];
+    readonly hwpdocument_getBinDataList: (a: number) => [number, number];
+    readonly hwpdocument_setDocumentSummary: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly hwpdocument_getDocumentSummary: (a: number) => [number, number];
+    readonly hwpdocument_moveLineEndpointByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number, j: number) => [number, number, number, number];
+    readonly hwpdocument_setShowPictures: (a: number, b: number) => void;
+    readonly hwpdocument_getShowPictures: (a: number) => number;
     readonly hwpdocument_addBookmark: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_applyCellBorderFillIds: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_applyCellStyle: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => [number, number, number, number];
