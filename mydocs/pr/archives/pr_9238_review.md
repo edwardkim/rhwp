@@ -2,7 +2,7 @@
 
 ## 통합 후보의 검토 결과
 
-**메인테이너 보정 후 수용 가능.** 편집 화면에서 두 글자 사이의 조판 부호를 켜고 끈 두 상태의 Print SVG가 바이트 단위로 일치한다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록했다.
+**메인테이너 보정 후 수용 가능.** 편집 화면에서 두 글자 사이의 조판 부호를 켜고 끈 두 상태의 Print SVG가 바이트 단위로 일치한다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](pr_9292_review.md)에 기록했다.
 
 ## 접수 당시 판정
 
@@ -34,8 +34,12 @@
 
 ## 메인테이너 보완 검증 중간 결과
 
-동일 문서에서 조판 부호 표시를 켜고 끈 Print SVG가 바이트 단위로 동일했다. Screen은 별도로 생성해서 비교했다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)
+동일 문서에서 조판 부호 표시를 켜고 끈 Print SVG가 바이트 단위로 동일했다. Screen은 별도로 생성해서 비교했다. [쪽별 비교 원장](../assets/semanticist21-20261121/maintainer-comparison.tsv)
 
 ## 병합 후 기여자 PR 댓글 계획
 
 두 글자 사이의 조판 부호가 화면의 제자리에 한 번 표시됩니다. 화면의 표시 옵션을 바꾸어도 인쇄에서 뒤 글자가 밀리지 않고, 켜고 끈 상태의 Print SVG가 바이트 단위로 같았습니다. 통합 PR과 확정된 병합 커밋, 이 PR의 검토 기록을 함께 연결한다.
+
+## 통합 결과
+
+2026년 11월 22일 02시 15분(KST)에 [통합 PR #9292](https://github.com/edwardkim/rhwp/pull/9292)를 `devel`에 병합했다. 원 기여 커밋 `debc6ac352b76de0a9071b5177a82ee92be2f8c0`이 병합 이력에 포함된 것을 확인했다. [원 PR #9238](https://github.com/edwardkim/rhwp/pull/9238) · [병합 커밋 `0adeca439f`](https://github.com/edwardkim/rhwp/commit/0adeca439f1481e7245a344b7713d7d563df2ace) · [전체 CI와 검토](pr_9292_review.md)

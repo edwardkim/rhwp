@@ -2,11 +2,11 @@
 
 ## 통합 후보의 검토 결과
 
-**메인테이너 보정 후 수용 가능.** 너비가 다른 세 단의 본문과 각주 참조가 처음 열기·편집·두 형식 다시 열기에서 한컴과 같은 줄에 남는다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록했다.
+**메인테이너 보정 후 수용 가능.** 너비가 다른 세 단의 본문과 각주 참조가 처음 열기·편집·두 형식 다시 열기에서 한컴과 같은 줄에 남는다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](pr_9292_review.md)에 기록했다.
 
 ## 본문 줄바꿈 보완 결과
 
-너비가 다른 세 단의 본문 줄바꿈과 각주 참조를 보완했다. 한컴 2020 Print 대비 원본의 Native 일치율은 89.87%에서 99.26%, 최적화한 fresh WASM은 89.59%에서 98.48%로 올랐다. 이 수치는 본문 줄바꿈을 처음 보완했을 때 측정했다. [원본·편집본 검증](assets/semanticist21-20261121/footnotes/README.md)
+너비가 다른 세 단의 본문 줄바꿈과 각주 참조를 보완했다. 한컴 2020 Print 대비 원본의 Native 일치율은 89.87%에서 99.26%, 최적화한 fresh WASM은 89.59%에서 98.48%로 올랐다. 이 수치는 본문 줄바꿈을 처음 보완했을 때 측정했다. [원본·편집본 검증](../assets/semanticist21-20261121/footnotes/README.md)
 
 ## 접수와 검토 범위
 
@@ -32,7 +32,7 @@
 
 ## 메인테이너 보완 검증 중간 결과
 
-11개 원본의 한컴 2020 독립 Print를 확보했다. 3단 원본의 본문 저장 줄 시작은 단 1에서 0·34·42, 단 2에서 0·32였다. 한컴 재저장 줄은 각각 0·31·40, 0·30이며 동일 Print 기준 Native는 89.87%에서 99.26%로 달라졌다. 편집·단 수·여백 변경 4개 상태 6쪽의 Native 최저는 99.63%다. [쪽별 비교 원장](assets/semanticist21-20261121/maintainer-comparison.tsv)
+11개 원본의 한컴 2020 독립 Print를 확보했다. 3단 원본의 본문 저장 줄 시작은 단 1에서 0·34·42, 단 2에서 0·32였다. 한컴 재저장 줄은 각각 0·31·40, 0·30이며 동일 Print 기준 Native는 89.87%에서 99.26%로 달라졌다. 편집·단 수·여백 변경 4개 상태 6쪽의 Native 최저는 99.63%다. [쪽별 비교 원장](../assets/semanticist21-20261121/maintainer-comparison.tsv)
 
 ## 최신 devel 병합 후 재검증
 
@@ -50,7 +50,7 @@
 
 ## 최신 제품 소스의 기능 검증
 
-너비가 다른 세 단의 본문과 각주 참조가 처음 열기·편집·두 형식 다시 열기에서 한컴과 같은 줄에 남는다. 같은 원본의 1쪽 실루엣은 Native 100.00%, fresh WASM 100.00%다. [Native 비교](assets/semanticist21-20261121/validation/final/representative/pr9234/native/review_001.png) · [WASM 비교](assets/semanticist21-20261121/validation/final/representative/pr9234/wasm/review_001.png) [17건 통합 검토](semanticist21_20261121_review.md)
+너비가 다른 세 단의 본문과 각주 참조가 처음 열기·편집·두 형식 다시 열기에서 한컴과 같은 줄에 남는다. 같은 원본의 1쪽 실루엣은 Native 100.00%, fresh WASM 100.00%다. [Native 비교](../assets/semanticist21-20261121/validation/final/representative/pr9234/native/review_001.png) · [WASM 비교](../assets/semanticist21-20261121/validation/final/representative/pr9234/wasm/review_001.png) [17건 통합 검토](pr_9292_review.md)
 
 ## 병합 후 기여자 PR 댓글 계획
 
@@ -58,11 +58,15 @@
 
 대표 페이지의 Native raw는 100.00%, 확대 확인할 자동 진단 항목은 0개다. fresh WASM은 100.00%, 0개다. 상세 색상과 안티앨리어싱은 인쇄 엔진에 따라 달라 96 DPI의 2px raw와 실제 잉크·위치를 함께 판독했다.
 
-임시 비교 파일은 로컬 `output/pr-review/semanticist21-20261121/resume-1407/protection-correction/verified-entry-count/representative/`에 있다. 댓글에서는 병합 커밋의 원본 이미지를 사용한다. [검증 방법](../manual/verification/visual_sweep_guide.md#github-merge-comment)
+임시 비교 파일은 로컬 `output/pr-review/semanticist21-20261121/resume-1407/protection-correction/verified-entry-count/representative/`에 있다. 댓글에서는 병합 커밋의 원본 이미지를 사용한다. [검증 방법](../../manual/verification/visual_sweep_guide.md#github-merge-comment)
 
 | 출력 | 비교 패널 | 겹침 |
 | --- | --- | --- |
-| native | [비교](assets/semanticist21-20261121/validation/final/representative/pr9234/native/review_001.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9234/native/overlay_001.png) |
-| wasm | [비교](assets/semanticist21-20261121/validation/final/representative/pr9234/wasm/review_001.png) | [겹침](assets/semanticist21-20261121/validation/final/representative/pr9234/wasm/overlay_001.png) |
+| native | [비교](../assets/semanticist21-20261121/validation/final/representative/pr9234/native/review_001.png) | [겹침](../assets/semanticist21-20261121/validation/final/representative/pr9234/native/overlay_001.png) |
+| wasm | [비교](../assets/semanticist21-20261121/validation/final/representative/pr9234/wasm/review_001.png) | [겹침](../assets/semanticist21-20261121/validation/final/representative/pr9234/wasm/overlay_001.png) |
 
 댓글 본문의 이미지 URL은 `https://raw.githubusercontent.com/edwardkim/rhwp/<merge-commit-sha>/mydocs/pr/assets/semanticist21-20261121/validation/final/representative/pr9234/` 아래의 해당 파일로 고정한다. 실제 병합 SHA로 바꿔 원 PR에 UTF-8 본문 파일을 게시한 뒤, GitHub API를 통해 본문과 이미지 해시를 확인한다.
+
+## 통합 결과
+
+2026년 11월 22일 02시 15분(KST)에 [통합 PR #9292](https://github.com/edwardkim/rhwp/pull/9292)를 `devel`에 병합했다. 원 기여 커밋 `fb144c2ecceee9f7db6288629121ed521257c16f`이 병합 이력에 포함된 것을 확인했다. [원 PR #9234](https://github.com/edwardkim/rhwp/pull/9234) · [병합 커밋 `0adeca439f`](https://github.com/edwardkim/rhwp/commit/0adeca439f1481e7245a344b7713d7d563df2ace) · [전체 CI와 검토](pr_9292_review.md)
