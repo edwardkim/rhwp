@@ -1,10 +1,14 @@
 //! 관계형 검사. 저장 탭 전진, 캡션 끝 공백의 소유와 원문에 있는 아래아·현대 음절의 표시를 확인한다.
-//! 주석 갱신 2026-11-21 19:44 KST. 직전 파일 변경 65285ecbaddc, 2026-11-21 18:27:20 KST.
+//! 주석 갱신 2026-11-21T23:03+09:00. 직전 파일 변경 c439e7afdb5a75e18724b57ca40b981af800f013, 2026-11-21T19:44:53+09:00.
 //! 2026-11-21 형식 사양서 1.3 원 HWP와 독립 한컴 PDF를 96 DPI에서 비교한 2px raw 실루엣이다.
 //! 전 71쪽 최저는 Native 99.92193%, fresh WASM 99.92202%다.
 //! Native/fresh WASM 2쪽 100.00000%/100.00000%, 4쪽 100.00000%/100.00000%, 62쪽 100.00000%/100.00000%.
 //! Native/fresh WASM 10쪽 100.00000%/100.00000%, 11쪽 100.00000%/100.00000%, 71쪽 100.00000%/100.00000%.
 //! TSV·확대 판독은 mydocs/pr/assets/semanticist21-20261121/validation/final/README.md를 참조한다.
+//! 2026-11-21 편람 HWP·HWPX 각 383쪽 중 43쪽을 독립 한컴 Print와 96 DPI로 대조했다.
+//! 두 형식의 43쪽은 Native·fresh WASM 모두 raw 100.00000%다. 옛한글 공급자의
+//! 한 음절 전진과 현대 음절의 기본 전진을 저장소의 Latin-only 글꼴로 구분한다.
+//! 글리프 윤곽과 전쪽 TSV 경로는 `mydocs/pr/assets/semanticist21-20261121/validation/final/handbook-old-hangul.json`에 있다.
 
 use rhwp::{
     model::{control::Control, style::UnderlineType},
@@ -196,4 +200,45 @@ fn source_araea_and_modern_han_remain_distinct_in_body_and_table_text() {
             page + 1
         );
     }
+}
+
+#[test]
+fn old_hangul_fallback_uses_the_declared_suppliers_cluster_advance() {
+    use rhwp::renderer::{
+        layout::{EmbeddedTextMeasurer, TextMeasurer},
+        native_pua_fonts::NativePuaFonts,
+        TextStyle,
+    };
+    let mut fonts = NativePuaFonts::default();
+    let primary = "Latin-only test program";
+    fonts
+        .register_otf_for_source(
+            primary,
+            false,
+            false,
+            true,
+            include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf"),
+            0,
+        )
+        .unwrap();
+    let mut style = TextStyle {
+        font_family: "KoPub돋움체 Light,Haansoft Batang".into(),
+        font_size: 1000.0,
+        ..Default::default()
+    };
+    let positions =
+        |s: &TextStyle, text: &str| EmbeddedTextMeasurer.compute_char_positions(text, s);
+    let ordinary = positions(&style, "한");
+    let unconfirmed = positions(&style, "ᄒᆞᆫ");
+    style.native_otf_metrics = fonts.get_otf_for_source(primary, false, false, true);
+    // 독립 Print의 HBATANG 실제 글리프 hmtx는 1024/1024 em. 세 자모가 한 번 전진한다.
+    assert_eq!(
+        positions(&style, "ᄒᆞᆫ"),
+        [0.0, style.font_size, style.font_size, style.font_size]
+    );
+    assert!(unconfirmed[1] < style.font_size);
+    assert_eq!(positions(&style, "한"), ordinary);
+    // 앞선 미확인 공급자를 뛰어넘어 뒤 한컴바탕의 전진을 빌리지 않는다.
+    style.font_family = "KoPub돋움체 Light,Unknown Test Face,Haansoft Batang".into();
+    assert_eq!(positions(&style, "ᄒᆞᆫ"), unconfirmed);
 }
