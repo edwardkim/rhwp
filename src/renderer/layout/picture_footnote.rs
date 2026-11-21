@@ -1953,7 +1953,7 @@ impl LayoutEngine {
         // section_index = footnote_index (footnotes 배열 인덱스)
         // para_index = usize::MAX - 2000 - fn_para_idx (각주 내 문단 인덱스)
         for (frame_index, fn_ref) in footnotes.iter().enumerate() {
-            let i = source_indices[frame_index];
+            let marker_section = source_indices[frame_index];
             let base = get_footnote_paragraphs(fn_ref, paragraphs);
             let refolded = self.refolded_note_paragraphs(fn_ref, base, fn_area.width, styles);
             let fn_paras = refolded.as_deref().unwrap_or(base);
@@ -1973,7 +1973,6 @@ impl LayoutEngine {
 
             for (p_idx, para) in fn_paras.iter().enumerate() {
                 let composed = compose_footnote_paragraph(para, fn_area.width, styles, self.dpi);
-                let marker_section = i; // footnote_index
                 let marker_para = usize::MAX - 2000 - p_idx; // 각주 내 문단 인덱스
                                                              // 각주 번호 스타일용 기본 char_shape_id (빈/비빈 문단 모두 동일)
                 let base_cs_id = para
@@ -2274,7 +2273,7 @@ impl LayoutEngine {
             }
 
             // 각주 간 간격
-            if i + 1 < footnotes.len() {
+            if frame_index + 1 < footnotes.len() {
                 y += hwpunit_to_px(shape.between_notes_margin_hu() as i32, self.dpi);
             }
         }
