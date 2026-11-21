@@ -2202,18 +2202,19 @@ impl VisibleTextLineMeasure {
         // 같은 해소 글자 모양에서 이어진 공백만 본문의 말미다. 밑줄이
         // 같아도 글꼴·크기·자간 등이 다른 입력란은 독립 점유를 가진다.
         // 원본 ID가 달라도 동일한 글자 모양으로 나눈 run은 같은 소유다.
+        // 앞쪽 필드의 표시 숫자는 그 뒤 본문과 끝 공백 사이의 서식 소유를 끊지 않는다.
+        // 끝 공백 바로 앞이 필드인 경우에만 일반 본문의 장식을 상속하지 않는다.
         let visible_style = line
             .runs
             .iter()
-            .all(|run| !run.inserted_control_text && run.display_text.is_none())
-            .then(|| {
-                line.runs
-                    .iter()
-                    .rev()
-                    .find(|run| run.text.chars().any(|ch| !ch.is_whitespace()))
-                    .and_then(|run| styles.char_styles.get(run.char_style_id as usize))
+            .rev()
+            .find(|run| {
+                run.inserted_control_text
+                    || run.display_text.is_some()
+                    || run.text.chars().any(|ch| !ch.is_whitespace())
             })
-            .flatten();
+            .filter(|run| !run.inserted_control_text && run.display_text.is_none())
+            .and_then(|run| styles.char_styles.get(run.char_style_id as usize));
         let mut inherited_decoration_tail = false;
         let mut coherent_tail_style = true;
         for (run, (text, style)) in line.runs.iter().zip(&mut runs).rev() {
