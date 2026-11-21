@@ -1927,15 +1927,17 @@ impl LayoutEngine {
         // 같은 원점을 소비하도록 실제 좌표를 만들기 전에 한 번 이동한다.
         // 묶음 자식은 renderingInfo가 정한 본체 원점을 그대로 보존한다.
         let (base_x, base_y) = if !matrix_positioned {
+            let unit = self.dpi / super::super::HWPUNIT_PER_INCH;
             let origin = shape.drawing().and_then(|drawing| {
-                crate::model::shape::shadow::parallel_body_origin_hu(
+                crate::model::shape::shadow::body_origin_hu(
                     drawing.shadow_type,
                     drawing.shadow_offset_x,
                     drawing.shadow_offset_y,
+                    w / unit,
+                    h / unit,
                 )
             });
             origin.map_or((base_x, base_y), |(x, y)| {
-                let unit = self.dpi / super::super::HWPUNIT_PER_INCH;
                 (base_x + x * unit, base_y + y * unit)
             })
         } else {

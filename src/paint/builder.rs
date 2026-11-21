@@ -380,7 +380,7 @@ impl LayerBuilder {
                 node.bbox,
                 Some(node.id),
                 vec![
-                    super::parallel_shadow::translated(shadow, parts.offset),
+                    super::parallel_shadow::transformed(shadow, parts.matrix),
                     body,
                 ],
                 CacheHint::None,
