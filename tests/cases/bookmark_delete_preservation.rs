@@ -12,6 +12,7 @@ fn fields(core: &DocumentCore) -> Value {
     for value in values.as_array_mut().unwrap() {
         value.as_object_mut().unwrap().remove("startPos");
         value.as_object_mut().unwrap().remove("endPos");
+        value.as_object_mut().unwrap().remove("controlIndex");
     }
     values
 }
