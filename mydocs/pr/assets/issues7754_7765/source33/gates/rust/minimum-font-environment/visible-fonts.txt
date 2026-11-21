@@ -1,0 +1,5 @@
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/RHWPOldHangul-Regular.otf
+/home/tsjang/rhwp/ttfs/opensource/RHWPPublicBatang-Regular.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansKR-ExtraLight.ttf
+/home/tsjang/rhwp/ttfs/opensource/NotoSansSymbols2-Regular.ttf

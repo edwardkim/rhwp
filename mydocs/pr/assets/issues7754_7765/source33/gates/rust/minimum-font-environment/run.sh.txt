@@ -1,0 +1,11 @@
+#!/bin/sh
+exec bwrap --ro-bind /usr /usr --symlink usr/bin /bin --symlink usr/lib /lib --symlink usr/lib64 /lib64 \
+ --ro-bind /etc /etc --proc /proc --dev /dev --ro-bind /sys /sys --bind /tmp /tmp \
+ --dir /home/tsjang --bind /home/tsjang/rhwp /home/tsjang/rhwp \
+ --bind /home/tsjang/.cargo /home/tsjang/.cargo --ro-bind /home/tsjang/.rustup /home/tsjang/.rustup \
+ --tmpfs /usr/share/fonts --tmpfs /usr/local/share/fonts --tmpfs /home/tsjang/rhwp/ttfs \
+ --ro-bind /home/tsjang/rhwp/ttfs/opensource /home/tsjang/rhwp/ttfs/opensource \
+ --ro-bind /home/tsjang/rhwp/ttfs/redistributable/happiness-sans/HappinessSansVF.ttf /home/tsjang/rhwp/ttfs/redistributable/happiness-sans/HappinessSansVF.ttf \
+ --setenv HOME /home/tsjang --setenv FONTCONFIG_FILE /home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font/fonts.conf \
+ --unsetenv RHWP_FONT_PATH --chdir /home/tsjang/rhwp \
+ sh -c 'fc-list -f "%{file}\n" > output/pr-review/issue7754-nine/minimal-font/visible-fonts.txt; exec "$@"' sh "$@"

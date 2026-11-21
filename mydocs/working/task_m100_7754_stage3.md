@@ -137,3 +137,12 @@ Native 공식 lib 컴파일 중 스왑이 가득 찬 것을 확인해 보호 swe
 배포용 문서 해당 쪽의 raw는 양쪽 100.00%이며 전쪽 최저와 구분했다. 143E는
 Native 99.93%, WASM 99.94%로 기록했다. PNG·입력·PDF의 신원과 실제 판독 내용은
 `source33/direct-review/`에 연결했다.
+
+## Native 공식 lib 종료
+
+소스 33의 필터 없는 Native `cargo test --features native-skia --lib`는 컴파일
+31분 23초 뒤 root 3,851개와 내부 library 182개가 통과했다. 합계 4,033 PASS,
+0 FAIL, 기존 ignored 12개다. 실제 명령·최소 글꼴 환경·원문 로그는
+`source33/gates/rust/`에 보존했다. 자원 조절에 사용한 바깥 sweep 스케줄러 3개는
+lib 게이트 종료 후 자동 재개됐다. placeholder·직접 PDF·Clippy·workspace build·전체
+nextest는 아직 이 lib 통과에 포함하지 않는다.
