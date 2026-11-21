@@ -1,5 +1,9 @@
 # PR #9241 검토 — fix(shape): 묶음 크기를 바꾸면 한컴처럼 자식도 묶음 상자를 따라 늘고 준다
 
+## 통합 후보의 검토 결과
+
+그룹 도형 크기를 바꾼 HWP와 HWPX를 다시 열어 한컴 인쇄본과 대조했다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록한다.
+
 ## 2026-11-21 메인테이너 보완 착수
 
 원 [PR #9241](https://github.com/edwardkim/rhwp/pull/9241)의 head는 `7ec3e1e94fe323a03180af574f739ae17da1cdd6`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.

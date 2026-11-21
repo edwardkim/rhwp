@@ -1,5 +1,9 @@
 # PR #9270 검토 — feat(clipboard): 수식이 든 셀 문단의 논리 캐럿 복사·붙이기
 
+## 통합 후보의 검토 결과
+
+셀 HTML 붙여넣기에서도 같은 캐럿 경계와 수식·글자 순서가 보존된다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록한다.
+
 ## 2026-11-21 메인테이너 보완 착수
 
 원 [PR #9270](https://github.com/edwardkim/rhwp/pull/9270)의 head는 `3be4f59be784ca6a174ac88ab0d4224ee3435c0d`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.

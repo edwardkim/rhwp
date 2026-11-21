@@ -1,5 +1,9 @@
 # PR #9246 검토 — fix(typeset): 단 영역을 넘친 각 단 아래 각주는 같은 쪽 다음 단에 잇고, 오른쪽 단 아래 각주는 오른쪽 단을 다 쓴다
 
+## 통합 후보의 검토 결과
+
+다단 각주의 다음 단 이월과 오른쪽 단의 가용 폭을 원본·편집본의 모든 쪽에서 대조했다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록한다.
+
 ## 2026-11-21 메인테이너 보완 착수
 
 원 [PR #9246](https://github.com/edwardkim/rhwp/pull/9246)의 head는 `c5cbd9851e24832d037fe0ec69fbbb8ac21e3dae`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.

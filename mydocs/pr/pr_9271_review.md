@@ -1,5 +1,9 @@
 # PR #9271 검토 — fix(char-overlap): 글자 없는 테두리 없는 포갠 겹침은 폭 없이 캐럿 한 칸만 둔다
 
+## 통합 후보의 검토 결과
+
+글자가 없는 펼침과 포갬 상태를 각각 HWPX로 저장해 두 인쇄 결과를 확인했다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록한다.
+
 ## 2026-11-21 메인테이너 보완 착수
 
 원 [PR #9271](https://github.com/edwardkim/rhwp/pull/9271)의 head는 `b6922ffed647ec34f0789da0dc329ef9e11cee9c`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.

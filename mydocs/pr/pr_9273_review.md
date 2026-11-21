@@ -1,5 +1,9 @@
 # PR #9273 검토 — fix(table): 쪽보다 길게 자란 중첩 표 행을 쪽 경계의 글줄 사이에서 나눈다
 
+## 통합 후보의 검토 결과
+
+70줄로 편집한 중첩 표가 한컴과 같은 21·58·70줄에서 끊긴다. CBTA 문서 59쪽의 뒤 문단도 354.0px에 위치한다. 공통 회귀와 보호 문서의 판정은 [17건 통합 검토](semanticist21_20261121_review.md)에 기록한다.
+
 ## 2026-11-21 메인테이너 보완 착수
 
 원 [PR #9273](https://github.com/edwardkim/rhwp/pull/9273)의 head는 `7d8d6dc56caaef30893e1ed1cb6442a27597dfee`이다. GitHub에서 담당 리뷰어 `edwardkim`을 확인했다. 기준 devel은 `2480af27df`이다.
