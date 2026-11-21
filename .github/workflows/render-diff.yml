@@ -962,7 +962,8 @@ jobs:
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT"
           index=$(mktemp)
           trap 'rm -f "$index"' EXIT
-          python3 scripts/render_diff_evidence.py . --run-url "$run_url" --pr-head "$PR_HEAD" > "$index"
+          python3 scripts/render_diff_evidence.py . --run-url "$run_url" --pr-head "$PR_HEAD" \
+            --tested-sha "$(git rev-parse HEAD)" --json-output output/render-diff-build/evidence.json > "$index"
           mv "$index" output/render-diff-build/evidence.md
 
       - name: Upload render diff artifacts
@@ -977,6 +978,16 @@ jobs:
             output/render-diff-build/
             output/renderer-baseline/canvaskit-readiness/
             target/rhwp-studio-vite.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload render diff index
+        if: ${{ always() && steps.pdf-raster-runtime.outputs.available == 'true' }}
+        continue-on-error: true
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: render-diff-index-${{ github.run_id }}-${{ github.run_attempt }}
+          path: output/render-diff-build/evidence.json
           if-no-files-found: ignore
           retention-days: 14
 

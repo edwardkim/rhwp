@@ -34,7 +34,7 @@ test('일부 실행과 재시도에서도 표와 제목을 유지하고 최신 �
   const reports = selectRuns(pull, [{...run, updated_at: '2026-11-21T18:30:47Z'}]);
   const text = summary(pull, reports);
   assert.match(text, /^### PR 검증 결과$/m);
-  assert.match(text, /\| CI \| 통과 \| 전체 실행 \| \[시도 2\]/);
+  assert.match(text, /\| 일반 CI \| 통과 \| 전체 실행 \| \[CI 시도 2\]/);
   assert.doesNotMatch(text, /CodeQL|Render Diff/);
   assert.equal(text.split('\n').filter(line => line.startsWith('|')).length, 3);
   assert.match(text, /최근 실행 갱신 2026-11-21 18:30:47 UTC$/);
@@ -73,4 +73,55 @@ test('fork PR의 실제 head 재확인, 봇 코멘트 한 건 유지, 이전 이
   runs[0]={...run,run_attempt:3,conclusion:'failure'}; await publish(args);
   assert.match(comments[1].body,/시도 3/); assert.equal(edits,1);
   headMoved=true; runs[0]={...run,run_attempt:4}; await publish(args); assert.equal(edits,1);
+});
+
+test('실패한 작업과 집계 작업이 함께 실패하면 원래 실패 단계만 표시한다', () => {
+  const failedJob = (name, step) => ({name, id:3, status:'completed', conclusion:'failure',
+    steps:[{name:step,conclusion:'failure'}]});
+  const jobs = [failedJob('Frontend package gates', 'Run Studio unit tests'),
+    failedJob('Build & Test', 'Check Build & Test worker results')];
+  const text = summary(pull, [{name:'CI', run:{...run,conclusion:'failure'}, jobs}]);
+  assert.match(text, /Run Studio unit tests/);
+  assert.doesNotMatch(text, /worker results|전체 실행/);
+});
+
+const {renderEvidence} = require('../pr-ci-render-artifact.cjs');
+const {spawnSync} = require('node:child_process');
+test('현재 시도의 측정 파일만 집계하고 기준 초과·누락을 구분한다', async () => {
+  const time = '2026-11-21T12:00:00Z';
+  const step = name => ({name, conclusion:'success', started_at:time, completed_at:time});
+  const job = {id:44,name:'Canvas visual diff',steps:[
+    step('Run canvas visual diff and PDF report'),step('Run selected CanvasKit readiness gate'),
+    step('Upload render diff index')]};
+  const zip = spawnSync('python3', ['-c',`
+import io,json,sys,zipfile
+out=io.BytesIO()
+with zipfile.ZipFile(out,'w') as z:
+    z.writestr('evidence.json',json.dumps({'schema_version':1,'run_id':2,'run_attempt':2,
+        'run_url':'https://github.com/example/rhwp/actions/runs/2/attempts/2',
+        'pr_head':'a'*40,'tested_sha':'c'*40,'comparisons':{
+            'direct':{'result':'1/1쪽 기준 초과','point':'A 1쪽 2.410% / 허용 2.000% (+0.410%p)','priority':0},
+            'readiness':{'result':'1/2개 통과, 누락 1개','point':'B','priority':1}}}))
+sys.stdout.buffer.write(out.getvalue())
+`]);
+  assert.equal(zip.status, 0);
+  const artifact = {id:91,name:'render-diff-index-2-2',expired:false,size_in_bytes:zip.stdout.length,
+    created_at:time,workflow_run:{id:run.id,head_sha:run.head_sha}};
+  let downloads = 0;
+  const api = {listWorkflowRunArtifacts:()=>[artifact], downloadArtifact:()=>{
+    downloads++; return {data:zip.stdout};
+  }};
+  const github = {rest:{actions:api},paginate:(method,params)=>method(params)};
+  const collect = () => renderEvidence(github, {}, run, [job], pull.base.repo.html_url);
+  const [direct,browser,canvas,kit] = await collect();
+  assert.equal(direct.result,'1/1쪽 기준 초과');
+  assert.match(direct.point,/2.410%.*2.000%.*0.410%p/);
+  assert.match(direct.link,/artifacts\/91/);
+  assert.equal(browser.result,'결과 미확인');
+  assert.equal(canvas.result,'결과 미확인');
+  assert.match(kit.result,/1\/2개 통과, 누락 1개/);
+  assert.match(kit.point,/B/);
+  artifact.created_at = '2026-11-20T12:00:00Z';
+  assert.ok((await collect()).every(row=>row.result==='결과 미확인'));
+  assert.equal(downloads,1);
 });

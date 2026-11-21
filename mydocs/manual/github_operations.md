@@ -439,7 +439,8 @@ ZIP이나 압축을 푼 디렉터리에 같은 색인 명령을 실행할 수 �
 ```sh
 python3 scripts/render_diff_evidence.py render-diff-artifacts.zip \
   --run-url https://github.com/edwardkim/rhwp/actions/runs/44925877031/attempts/1 \
-  --pr-head f0f9fc76b4306aef9571467e1a3453eee6e68ff4
+  --pr-head f0f9fc76b4306aef9571467e1a3453eee6e68ff4 \
+  --tested-sha 83835e4daf912fc4af47c69f415a72bf61b6aa94 --json-output evidence.json
 ```
 
 실제로 실행한 [Print Visual Sweep](verification/visual_sweep_guide.md)의 실루엣 결과를 함께 찾으려면
@@ -876,6 +877,8 @@ gh workflow enable <workflow-file> --repo edwardkim/rhwp
 
 ## PR CI 요약 코멘트
 
-devel 대상 PR에는 CI, CodeQL, Render Diff의 현재 head·run·attempt를 확인한 보고 코멘트 하나를 유지한다. 실패 job과 실제 완료된 시각 검증 단계는 GitHub 실행 기록에 연결한다. 검사, 결과, 항목, 근거를 한 표에 표시한다. 실패 단계와 취소 작업을 먼저 표시하고 해당 head에서 확인한 실행만 포함한다. «최근 실행 갱신»은 표에 포함된 GitHub 실행의 가장 최근 updated_at을 UTC로 표시한다. 이 코멘트의 게시 여부는 병합 판정에 사용하지 않는다.
+devel 대상 PR에는 CI, CodeQL, Render Diff의 현재 head·run·attempt를 확인한 보고 코멘트 하나를 유지한다. 실패 job과 실제 완료된 시각 검증 단계는 GitHub 실행 기록에 연결한다. 검증 항목, 결과, 리뷰 포인트, 근거를 한 표에 표시한다. 실패 단계와 취소 작업을 먼저 표시하고 해당 head에서 확인한 실행만 포함한다. «최근 실행 갱신»은 표에 포함된 GitHub 실행의 가장 최근 updated_at을 UTC로 표시한다. 이 코멘트의 게시 여부는 병합 판정에 사용하지 않는다.
 
-보고 workflow는 기본 브랜치의 코드만 실행하며 PR 첨부 파일을 내려받지 않는다. 기본 브랜치 반영 뒤 실제 PR에서 최초 코멘트 ID와 재실행 뒤 ID가 같은지 확인한다.
+Render Diff는 `output/render-diff-build/evidence.json`(schema_version 1)을 수치와 출처의 공통 색인으로 쓴다. `run_id`, `run_attempt`, `pr_head`, `tested_sha`로 실행을 구별한다. `comparisons`의 검사별 `metrics`, `pages`, `evidence` 및 `files`의 경로별 SHA-256을 사용하면 Markdown 없이 결과를 읽을 수 있다. 빌드와 실행 증거는 `build`, `native_build`, `consumption`에 기록한다. 실제 측정이 확인된 Print만 포함하며, 측정 커밋과 TSV 해시·쪽·점수가 일치해야 한다.
+
+보고 workflow는 현재 attempt가 올린 소형 `render-diff-index-<run_id>-<attempt>`의 JSON만 읽는다. 압축을 디스크에 풀거나 PR 코드를 실행하지 않는다. 결과 파일이 없는 완료 단계는 결과 미확인으로 표시한다. 기본 브랜치 반영 뒤 실제 PR에서 최초 코멘트 ID와 재실행 뒤 ID가 같은지 확인한다.

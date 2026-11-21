@@ -244,20 +244,57 @@ class RenderDiffEvidenceTests(unittest.TestCase):
         self.assertIn("Native PDF build record Unavailable", index)
         self.assertNotIn("silhouette.tsv", index)
 
+    def test_machine_index_and_actions_share_gate_and_reference_results(self):
+        entries = {
+            f"{EVIDENCE.DIFF}/pdf-results.json": {
+                "config": {"directPdfEnabled": True, "directPdfGate": True, "directMaxDiffRatio": 0.02},
+                "results": [{"fixture": "a.hwp", "pageIndex": 0, "directExpected": True,
+                             "exceedsReportThreshold": True, "reportComparison": {"diffRatio": 0.56},
+                             "directGateFailed": True, "directComparison": {"diffRatio": 0.0241}}]},
+            f"{EVIDENCE.READINESS}/browser/browser-baseline-report.json": {
+                "canvaskitReadinessGate": {"summary": {"total": 2, "evaluated": 1, "passed": 1,
+                                                       "failed": 0, "missing": 1},
+                                          "checks": [{"sampleId": "A", "activeBackend": "canvaskit"}]}},
+            f"{EVIDENCE.READINESS}/baseline-report.json": {
+                "manifest": {"samples": [{"id": k, "canvaskitReadinessGate": True} for k in ("A","B")]}}
+        }
+        buffer = io.BytesIO()
+        with ZipFile(buffer, "w") as archive:
+            for name, value in entries.items():
+                archive.writestr(name, json.dumps(value))
+        with ZipFile(buffer) as archive:
+            index, markdown = EVIDENCE.build_index(ZipPath(archive),
+                run_url="https://github.com/example/test/actions/runs/12/attempts/2",
+                pr_head="a"*40, tested_sha="b"*40)
+        self.assertEqual((index["schema_version"], index["run_id"], index["run_attempt"]), (1,12,2))
+        rows = index["comparisons"]
+        self.assertEqual(rows["direct"]["result"], "1/1쪽 기준 초과")
+        self.assertIn("+0.410%p", rows["direct"]["point"])
+        self.assertEqual(rows["browser"]["role"], "reference")
+        self.assertEqual(rows["canvas"]["result"], "결과 미확인")
+        self.assertEqual(rows["readiness"]["metrics"]["missing_samples"], ["B"])
+        for row in rows.values():
+            self.assertIn(EVIDENCE.code(row["result"]), markdown)
+            self.assertIn(EVIDENCE.code(row["point"]), markdown)
+            self.assertTrue(set(row["evidence"]).issubset(index["files"]))
+
     def test_print_sweep_needs_explicit_complete_matching_evidence(self):
         manifest = {"mode": "silhouette_only", "run_state": "complete", "completed_pages": [1, 3],
                     "metrics": [{"page": 1, "silhouette_raw_match_percent": 99.8999},
                                 {"page": 3, "silhouette_raw_match_percent": 98.5}],
                     "pr_review_gate": {"status": "not_evaluated"}, "provenance": {
                         "comparison_profile": "print", "raster_backend": "native-png",
-                        "hwp": {"path": "original.hwpx", "sha256": "input"},
-                        "pdf": {"path": "print.pdf", "sha256": "reference"},
+                        "hwp": {"path": "original.hwpx", "sha256": "d" * 64},
+                        "pdf": {"path": "print.pdf", "sha256": "e" * 64},
                     }}
         key = "output/native"
         tsv = "page\tsilhouette_raw_match_percent\n1\t99.90\n3\t98.50\n"
+        manifest["provenance"]["git_head"] = "b" * 40
+        manifest["tsv_sha256"] = hashlib.sha256(tsv.encode()).hexdigest()
         entries = {f"{key}/silhouette_manifest.json": manifest, f"{key}/silhouette.tsv": tsv}
         self.assertNotIn("silhouette.tsv", self.index_zip(entries))
-        linked = self.index_zip(entries, sweep_dirs=[key])
+        self.assertNotIn("silhouette.tsv", self.index_zip(entries, sweep_dirs=[key], pr_head="c" * 40))
+        linked = self.index_zip(entries, sweep_dirs=[key], pr_head="b" * 40)
         self.assertIn("<code>not_evaluated</code> | <code>original.hwpx</code> p1, 3", linked)
         self.assertIn(f"{key}/silhouette.tsv</code> <code>{hashlib.sha256(tsv.encode()).hexdigest()}", linked)
         for bad_entries in (
@@ -267,7 +304,7 @@ class RenderDiffEvidenceTests(unittest.TestCase):
             {**entries, f"{key}/silhouette_manifest.json": {**manifest, "run_state": "incomplete"}},
             {**entries, f"{key}/silhouette_manifest.json": {**manifest, "provenance": {}}},
         ):
-            self.assertNotIn("silhouette.tsv", self.index_zip(bad_entries, sweep_dirs=[key]))
+            self.assertNotIn("silhouette.tsv", self.index_zip(bad_entries, sweep_dirs=[key], pr_head="b" * 40))
 
     def test_workflow_uses_the_uploaded_index_and_keeps_native_record_advisory(self):
         workflow = WORKFLOW_PATH.read_text(encoding="utf-8")

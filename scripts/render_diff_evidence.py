@@ -5,6 +5,8 @@ import argparse
 import csv
 import hashlib
 import json
+import math
+import re
 from collections import defaultdict
 from html import escape
 from itertools import groupby
@@ -66,7 +68,7 @@ def result_counts(rows, passed):
     return f'{passes} passed, {failures} failed, {len(rows) - passes - failures} unreported'
 
 
-def print_sweep(root, directory):
+def print_sweep(root, directory, allowed_commits):
     # The producer writes these siblings. Recorded absolute paths from a runner
     # are not portable, and a PNG-pair diagnostic has no Print provenance.
     path = PurePosixPath(directory)
@@ -79,7 +81,15 @@ def print_sweep(root, directory):
     pages = data.get('completed_pages', [])
     if (data.get('run_state') != 'complete' or data.get('mode') != 'silhouette_only'
             or provenance.get('comparison_profile') != 'print'
+            or not provenance.get('raster_backend') or data.get('missing_pages')
             or not pages or not file_exists(root / tsv)):
+        return None
+    if (not re.fullmatch(r'[0-9a-f]{40}', provenance.get('git_head', ''))
+            or provenance['git_head'] not in allowed_commits
+            or data.get('tsv_sha256') != digest(root / tsv)):
+        return None
+    if any(not re.fullmatch(r'[0-9a-f]{64}', provenance.get(name, {}).get('sha256', ''))
+           for name in ('hwp', 'pdf')):
         return None
     if any(not provenance.get(name, {}).get(field) for name in ('hwp', 'pdf')
            for field in ('path', 'sha256')):
@@ -90,6 +100,8 @@ def print_sweep(root, directory):
         if not {'page', raw}.issubset(reader.fieldnames or []):
             return None
         tsv_metrics = [(item['page'], item[raw]) for item in reader]
+    if any(not isinstance(r.get(raw), (int, float)) or not 0 <= r[raw] <= 100 for r in data.get('metrics', [])):
+        return None
     recorded_metrics = [(str(item['page']), f'{item[raw]:.2f}') for item in data.get('metrics', [])]
     if (tsv_metrics != recorded_metrics or [page for page, _ in tsv_metrics] != list(map(str, pages))
             or len(set(pages)) != len(pages) or min(pages) < 1):
@@ -97,7 +109,36 @@ def print_sweep(root, directory):
     return data, manifest, tsv
 
 
-def render_index(root, *, run_url=None, pr_head=None, sweep_dirs=()):
+def worst_page(rows, key=None, flag=None):
+    candidates = []
+    for item in rows:
+        comparison = item.get(key) if key else item
+        if not comparison:
+            continue
+        ratio = comparison.get('diffRatio')
+        if type(ratio) not in (int, float) or not math.isfinite(ratio) or not 0 <= ratio <= 1:
+            continue
+        candidates.append((bool(flag and flag(item)), ratio, item, comparison))
+    if not candidates:
+        return None
+    _, ratio, item, comparison = max(candidates, key=lambda entry: entry[:2])
+    return {'document': item['fixture'], 'page': item['pageIndex'] + 1, 'diff_ratio': ratio,
+            'diff_pixels': comparison.get('diffPixels'),
+            'dimensions': [comparison.get(k) for k in ('referenceWidth','referenceHeight','pdfWidth','pdfHeight')]}
+
+
+def review_point(worst, limit=None):
+    if not worst:
+        return ''
+    text = f"{worst['document']} {worst['page']}쪽 {worst['diff_ratio']:.3%}"
+    if limit is not None:
+        text += f' / 허용 {limit:.3%}'
+        if worst['diff_ratio'] > limit:
+            text += f" (+{100 * (worst['diff_ratio'] - limit):.3f}%p)"
+    return text
+
+
+def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs=()):
     lines = ['### Visual comparison evidence', '']
     if run_url:
         lines.append(f'- Actions attempt {code(run_url)}')
@@ -108,6 +149,12 @@ def render_index(root, *, run_url=None, pr_head=None, sweep_dirs=()):
         '| --- | --- | --- | --- | --- |',
     ])
     files = {}
+    comparisons = {}
+    def comparison(key, name, role, result, point, priority, metrics, pages, paths):
+        comparisons[key] = dict(name=name, role=role, result=result, point=point,
+                                priority=priority, metrics=metrics, pages=list(pages),
+                                evidence=[path for path in paths if file_exists(root / path)])
+
 
     def evidence(*paths):
         present = [path for path in paths if file_exists(root / path)]
@@ -166,15 +213,109 @@ def render_index(root, *, run_url=None, pr_head=None, sweep_dirs=()):
     row('CanvasKit readiness (screen)', 'Readiness gate', readiness_status, scope(readiness_scope),
         browser, f'{READINESS}/baseline-report.md')
 
+    canvas_limit = read_json(root / canvas).get('config', {}).get('maxDiffRatio')
+    passed = sum(item.get('pass') is True for item in canvas_rows)
+    failed = sum(item.get('pass') is False for item in canvas_rows)
+    worst = worst_page(canvas_rows, flag=lambda r: r.get('pass') is False)
+    total = len(canvas_rows)
+    complete = total and passed + failed == total
+    point = review_point(worst, canvas_limit)
+    if worst and worst['diff_pixels'] is not None:
+        point += f" / {worst['diff_pixels']}픽셀"
+    comparison('canvas', 'Canvas 시각 비교', 'gate',
+               (f'{failed}/{total}쪽 판정 실패' if failed else f'{passed}/{total}쪽 통과') if complete else '결과 미확인',
+               point or 'results.json', 0 if failed else 3 if complete else 1,
+               dict(passed=passed, failed=failed, total=total, worst=worst, limit=canvas_limit),
+               [(r['fixture'], r['pageIndex']+1) for r in canvas_rows], [canvas, f'{DIFF}/summary.md'])
+
+    warnings = sum(bool(r.get('exceedsReportThreshold')) for r in pdf_rows)
+    errors = sum(bool(r.get('reportError') or not r.get('reportComparison')) for r in pdf_rows)
+    compared = len(pdf_rows) - errors
+    worst = worst_page(pdf_rows, 'reportComparison')
+    point = review_point(worst)
+    if worst and all(type(n) is int for n in worst['dimensions']):
+        a,b,c,d = worst['dimensions']
+        point += f' ({a}×{b} / {c}×{d})'
+    result = f'참고 경고 {warnings}/{compared}쪽' if compared else '결과 미확인'
+    if errors:
+        result += f', 측정 오류 {errors}쪽'
+    comparison('browser', '브라우저 ↔ 호환 PDF', 'reference', result, point or 'pdf-results.json',
+               1 if errors or not compared else 3, dict(compared=compared, warnings=warnings, errors=errors, worst=worst),
+               [(r['fixture'],r['pageIndex']+1) for r in pdf_rows if r.get('reportComparison')], [pdf,f'{DIFF}/pdf-summary.md'])
+
+    limit = pdf_config.get('directMaxDiffRatio')
+    worst = worst_page(direct_rows, 'directComparison', lambda r: r.get('directGateFailed'))
+    total = len(direct_rows)
+    direct_errors = total - direct_count
+    failed = sum(bool(r.get('directComparison') and r.get('directGateFailed')) for r in direct_rows)
+    if not pdf_config.get('directPdfEnabled'):
+        result = '비활성' if pdf_report else '결과 미확인'
+    elif not direct_count:
+        result = '결과 미확인'
+    elif not pdf_config.get('directPdfGate'):
+        result = f'참고 비교 {direct_count}쪽'
+    elif failed:
+        exceeded = sum(bool(r.get('directGateFailed')) and r['directComparison']['diffRatio'] > limit
+                       for r in direct_rows if r.get('directComparison') and limit is not None)
+        result = f'{failed}/{total}쪽 기준 초과' if exceeded == failed else f'{failed}/{total}쪽 판정 실패'
+    else:
+        result = f'{direct_count}/{total}쪽 통과'
+    if direct_errors:
+        result += f', 측정 오류 {direct_errors}쪽'
+    comparison('direct', '직접 PDF ↔ 호환 PDF', 'gate' if pdf_config.get('directPdfGate') else 'reference',
+               result, review_point(worst, limit) or 'pdf-results.json', 0 if direct_failures else 2 if direct_count else 1,
+               dict(compared=direct_count, total=total, failures=direct_failures, errors=direct_errors, limit=limit, worst=worst),
+               [(r['fixture'],r['pageIndex']+1) for r in direct_rows if r.get('directComparison')], [pdf,f'{DIFF}/pdf-summary.md'])
+
+    baseline_path = f'{READINESS}/baseline-report.json'
+    baseline = read_json(root / baseline_path)
+    diagnostics = baseline.get('performance', {}).get('canvaskitSurfaceDiagnostics', [])
+    gpu = [r['usedGpuSurfaceCount'] for r in diagnostics if r.get('backend') == 'canvaskit-default'
+           and r.get('profile') == 'screen' and type(r.get('usedGpuSurfaceCount')) is int]
+    checks = readiness.get('checks', [])
+    ids = {r['sampleId'] for r in checks}
+    targets = {s['id'] for s in baseline.get('manifest',{}).get('samples',[]) if s.get('canvaskitReadinessGate')}
+    absent = sorted(targets - ids)
+    point = ' / '.join(absent[:3]) or readiness.get('criteria',{}).get('profile','screen')
+    if gpu:
+        point += f' / GPU 확인 {sum(gpu)}개'
+    result = '결과 미확인'
+    if counts.get('total'):
+        result = f"{counts['passed']}/{counts['total']}개 통과"
+        if counts['missing']:
+            result += f", 누락 {counts['missing']}개"
+        if counts['failed']:
+            result += f", 실패 {counts['failed']}건"
+    comparison('readiness', 'CanvasKit 전환 검사', 'readiness', result, point if counts else 'baseline-report.json',
+               0 if counts.get('failed') else 1 if not counts or counts.get('missing') else 3,
+               dict(**counts, missing_samples=absent, gpu_confirmed=sum(gpu) if gpu else None),
+               readiness_scope, [browser,baseline_path,f'{READINESS}/baseline-report.md'])
+    evidence(baseline_path)
+    comparisons['readiness']['metrics']['active_backends'] = sorted({
+        check['activeBackend'] for check in checks if check.get('activeBackend')})
+
+
     incomplete_sweeps = []
     for directory in sweep_dirs:
-        sweep = print_sweep(root, directory)
+        sweep = print_sweep(root, directory, {pr_head, tested_sha})
         if sweep is None:
             incomplete_sweeps.append(directory)
             continue
         data, manifest, tsv = sweep
         provenance = data['provenance']
-        backend = code(provenance.get('raster_backend', 'unreported'))
+        metrics = data['metrics']
+        raw = 'silhouette_raw_match_percent'
+        worst = min(metrics, key=lambda r: r[raw])
+        low = sum(r[raw] < 90 for r in metrics)
+        backend_name = provenance['raster_backend']
+        comparison('print:' + directory, 'Visual Sweep ' + backend_name, 'print',
+                   f'90% 미달 {low}/{len(metrics)}쪽',
+                   f"{provenance['hwp']['path']} {worst['page']}쪽 {worst[raw]:.2f}%",
+                   0 if low else 3, dict(below_90=low, measured_pages=len(metrics),
+                   measured_commit=provenance['git_head'], backend=backend_name, source=provenance['hwp'],
+                   oracle=provenance['pdf'], document_page_counts=data.get('pr_review_gate',{}).get('document_page_counts')),
+                   [(provenance['hwp']['path'],page) for page in data['completed_pages']], [manifest,tsv])
+        backend = code(backend_name)
         status = code(data.get('pr_review_gate', {}).get('status', 'unreported'))
         measured = scope((provenance['hwp']['path'], page) for page in data['completed_pages'])
         reference = code(provenance['pdf']['path'])
@@ -202,19 +343,43 @@ def render_index(root, *, run_url=None, pr_head=None, sweep_dirs=()):
     records = sorted(
         (item.name for item in consumption.iterdir() if item.is_file() and item.name.endswith('.json'))
     ) if consumption.is_dir() else []
+    consumption_records = []
     for name in records:
         path = f'{BUILD}/consumption/{name}'
         record = read_json(root / path)
+        consumption_records.append(dict(path=path, matched=record.get('matched')))
         status = {True: 'matched', False: 'mismatched'}.get(record.get('matched'), 'unreported')
         lines.append(f'- Browser WASM consumption ({status}) {evidence(path)}')
-    native = evidence(f'{BUILD}/native-build.txt')
+    native_path = f'{BUILD}/native-build.txt'
+    native = evidence(native_path)
+    native_build = {}
+    if file_exists(root / native_path):
+        for line in (root / native_path).read_bytes().decode().splitlines():
+            key, _, value = line.partition(' ')
+            if key == 'source_sha' or key == 'sha256':
+                native_build[key] = value.split()[0]
     modes = sorted({item['rhwpMode'] for item in pdf_rows if item.get('rhwpMode')})
     lines.append(f"- Native PDF build record {native}. Execution mode {', '.join(map(code, modes)) or 'unreported'}.")
 
     if files:
         lines.extend(['', '#### Evidence paths and SHA-256', ''])
         lines.extend(f'- {code(path)} {code(checksum)}' for path, checksum in files.items())
-    return '\n'.join(lines) + '\n'
+    run = re.search(r'/actions/runs/(\d+)/attempts/(\d+)$', run_url or '')
+    index = dict(schema_version=1, run_id=int(run[1]) if run else None,
+                 run_attempt=int(run[2]) if run else None, native_build=native_build or None,
+                 consumption=consumption_records, run_url=run_url, pr_head=pr_head, tested_sha=tested_sha,
+                 comparisons=comparisons, files=files, build=build, incomplete_print_sweeps=incomplete_sweeps)
+    # The Actions overview and PR comment both display these projection fields.
+    overview = ['### PR 검증 결과', '', '| 검증 항목 | 결과 | 리뷰 포인트 |',
+                '| --- | --- | --- |']
+    order = ['direct', 'browser', 'canvas', 'readiness'] + [k for k in comparisons if k.startswith('print:')]
+    for item in sorted((comparisons[k] for k in order), key=lambda r: r['priority']):
+        overview.append('| ' + ' | '.join(code(item[k]) for k in ('name','result','point')) + ' |')
+    return index, '\n'.join(overview + [''] + lines) + '\n'
+
+
+def render_index(root, **options):
+    return build_index(root, **options)[1]
 
 
 def main():
@@ -224,14 +389,18 @@ def main():
     parser.add_argument('--pr-head', help='PR head SHA from Actions metadata')
     parser.add_argument('--print-sweep', action='append', default=[], metavar='DIR',
                         help='existing Print silhouette result directory, relative to input')
+    parser.add_argument('--tested-sha', help='checkout actually used by the measurement job')
+    parser.add_argument('--json-output', type=Path, help='write the versioned machine-readable evidence index')
     args = parser.parse_args()
-    options = {'run_url': args.run_url, 'pr_head': args.pr_head, 'sweep_dirs': args.print_sweep}
+    options = {'run_url': args.run_url, 'pr_head': args.pr_head, 'sweep_dirs': args.print_sweep, 'tested_sha': args.tested_sha}
     if args.input.is_dir():
-        index = render_index(args.input, **options)
+        index, markdown = build_index(args.input, **options)
     else:
         with ZipFile(args.input) as archive:
-            index = render_index(ZipPath(archive), **options)
-    print(index, end='')
+            index, markdown = build_index(ZipPath(archive), **options)
+    if args.json_output:
+        args.json_output.write_text(json.dumps(index, ensure_ascii=False, allow_nan=False) + '\n', encoding='utf-8')
+    print(markdown, end='')
 
 
 if __name__ == '__main__':
