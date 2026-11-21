@@ -1,6 +1,6 @@
 # semanticist21의 편집 기능 PR 17건 검토
 
-2026년 11월 21일 재개한 범위는 아래 원 PR 17건이다. `edwardkim`이 각 건의 리뷰어다. 통합 후보는 기여자의 각 head를 이력에 보존했다. `devel`의 [#9277](https://github.com/edwardkim/rhwp/pull/9277)까지 반영한 기준은 `ca231d64f43f19da1d1d1aec4cf26a05b817aa22`, 제품 소스는 `143f804aef`다.
+2026년 11월 21일 재개한 범위는 아래 원 PR 17건이다. `edwardkim`이 각 건의 리뷰어다. 원 PR [17건의 최신 head](assets/semanticist21-20261121/reviewed-heads.tsv)가 모두 로컬 병합 커밋 `5fceeb61c4`의 조상임을 확인했다. `devel`의 [#9277](https://github.com/edwardkim/rhwp/pull/9277)까지 반영한 기준은 `ca231d64f43f19da1d1d1aec4cf26a05b817aa22`, 제품 소스는 `143f804aef`다.
 
 ## 기능별 검증
 
