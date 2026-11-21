@@ -29,7 +29,7 @@ Native Skia의 제품 소스는 `85aeed7b3e9437d369bb8e85c92637e1b0fd8a86`이고
 | `pic-crop-01` | [TSV](contributor/pic-crop-01/native/silhouette.tsv) · [review](contributor/pic-crop-01/native/review.png) · [overlay](contributor/pic-crop-01/native/overlay.png) | [TSV](contributor/pic-crop-01/wasm/silhouette.tsv) · [review](contributor/pic-crop-01/wasm/review.png) · [overlay](contributor/pic-crop-01/wasm/overlay.png) |
 | `shape-group-02` | [TSV](contributor/shape-group-02/native/silhouette.tsv) · [review](contributor/shape-group-02/native/review.png) · [overlay](contributor/shape-group-02/native/overlay.png) | [TSV](contributor/shape-group-02/wasm/silhouette.tsv) · [review](contributor/shape-group-02/wasm/review.png) · [overlay](contributor/shape-group-02/wasm/overlay.png) |
 
-## 최신 devel 대조
+## 선행 devel 대조
 
 기준은 `5665e538292a0686a912f6a4d8950c55be89929a`다. Native 실행 파일의 소스 `0adeca439f1481e7245a344b7713d7d563df2ace`와 이 커밋 사이에는 제품 코드·글꼴·검증 입력 변경이 없다. 기준 WASM은 #7910에서 같은 devel을 빌드한 패키지를 사용했다. `wasm-opt`의 종료 결과와 패키지 SHA-256 `1e627a0d2b985118e9a81acf9d63b138d4267823655fde3781002fd6c1d1c842`를 확인했고, 수정본은 SHA-256 `665978390def368e01324a73f55df66df9ef84c530d83e249fd8b921261a6c6d`다.
 
@@ -40,3 +40,13 @@ Native Skia의 제품 소스는 `85aeed7b3e9437d369bb8e85c92637e1b0fd8a86`이고
 | 정상 HWPX를 140%로 편집 | [100.00%](devel/native/control/140-batch.tsv) | [100.00%](devel/wasm/control/140-batch.tsv) | 100.00% |
 
 기준 fresh WASM의 원본 140%는 [두 번째 HWP 재열기](devel/wasm/original/140-hwp-reopen-2.tsv)와 [두 번째 HWPX 재열기](devel/wasm/original/140-hwpx-reopen-2.tsv)에서도 각각 91.47%였다. [같은 영역의 한컴 Print와 WASM 수정 전후 확대](devel/wasm/140-before-after.png)
+
+## 제출 시점 devel 재대조
+
+`1a27faacff48ea7329e76ce8eca15aa9ca8aa877`의 Native와 최적화 WASM을 새로 빌드했다. #9304의 그림 저장과 #9302의 Studio 변경이 반영된 기준이다. 후보와 최신 기준의 병합 시뮬레이션에서 새 제품·회귀 코드 43개 경로가 최신 기준과 동일했다.
+
+동일 입력·인쇄본·글꼴·96 DPI에서 두 입력과 두 backend의 각 8가지 상태를 다시 대조했다. 원본 140% 기준은 Native 91.62%, fresh WASM 91.47%였고 HWP·HWPX의 두 번째 재열기도 같은 값이었다. 수정본의 해당 상태와 160% 정상 대조는 모두 100.00%다. 32행 중 기준 대비 하락은 0행이다.
+
+- [정밀값 32행 대조](devel-latest/comparison.tsv)
+- [원본 140% Native 기준 TSV](devel-latest/native/original/140-batch.tsv) · [원본 140% fresh WASM 기준 TSV](devel-latest/wasm/original/140-batch.tsv)
+- 기준 Native 실행 파일 SHA-256 `fd74472e57b23d4d38622286aa83ee48047fc1788cd67751e73a6c6188c34c8e` · 기준 fresh WASM SHA-256 `40e2f59d7cabacfe361266e63859f0b2c2b9ca04fbf36666c5a63572c3e1ecc1`
