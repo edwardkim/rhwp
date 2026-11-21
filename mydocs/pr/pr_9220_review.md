@@ -37,3 +37,5 @@ GitHub Lint에서 source-side test 수가 4,094개에서 4,102개로 증가하�
 ## 최신 devel 병합 후 재검증
 
 최신 devel의 #9277을 반영한 후보 `bbd1d7b90d`에서 편집으로 생성한 8가지 HWP를 각각 한컴 2020 Print와 대조했다. Native 전쪽 최저는 99.54%다. 본문 그림에 캡션을 달기, 캡션이 있는 그림을 머리말에 복사하기, 머리말에 복사한 뒤 캡션을 달기, 캡션 안 그림의 두 번째 캡션은 각각 100.00%다. 마지막 사례에서는 안쪽 그림과 ‘그림 2’ 표시도 확인했다. 머리말에서 캡션을 추가한 사례는 setter 보정 후 생성한 파일로 측정했다.
+
+같은 HWP 8개를 fresh WASM Canvas로 인쇄한 결과 전쪽 최저 99.59%다. 머리말에 복사한 뒤 캡션을 단 경우와 캡션 속 그림은 양쪽 모두 100.00%다. [입력·한컴 PDF 해시 및 Native/WASM 쪽별 수치](assets/semanticist21-20261121/captions/pages.tsv) · [각 상태의 독립 Print](../../pdf/pr9220-picture-captions)
