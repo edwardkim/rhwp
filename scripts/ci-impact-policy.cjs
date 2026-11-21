@@ -29,8 +29,6 @@ const CI_PULL_REQUEST_PATHS_IGNORE = [
   'CONVENTIONS.md',
   'GEMINI.md',
   'QWEN.md',
-  'README.md',
-  'README_EN.md',
   'ROADMAP.md',
   'SECURITY.md',
   'THIRD_PARTY.md',
@@ -342,7 +340,7 @@ function isAllowedReviewFile(file) {
     !normalized.previous_filename.startsWith('mydocs/')
     || RENDER_CONTRACT_DOC_PATHS.has(normalized.previous_filename)
   )) return false;
-  if (normalized.filename === 'AGENTS.md' || normalized.filename === 'CLAUDE.md') {
+  if (['AGENTS.md', 'CLAUDE.md', 'README.md', 'README_EN.md'].includes(normalized.filename)) {
     return !normalized.previous_filename
       && (normalized.status === 'added' || normalized.status === 'modified');
   }

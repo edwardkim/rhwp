@@ -1254,11 +1254,13 @@ mod support;
                 self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_aggregate_accepts_canonical_promotion_only_after_gate_success(self) -> None:
-        accepted = self._run_aggregate(
-            CANONICAL_PROMOTION="true",
-            PROMOTION_RESULT="success",
-        )
-        self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
+        for fast_pass in ("false", "true"):
+            accepted = self._run_aggregate(
+                FAST_PASS=fast_pass,
+                CANONICAL_PROMOTION="true",
+                PROMOTION_RESULT="success",
+            )
+            self.assertEqual(accepted.returncode, 0, accepted.stdout + accepted.stderr)
 
         rejected_cases = {
             "canonical-gate-skipped": {
@@ -1274,10 +1276,11 @@ mod support;
                 "PROMOTION_RESULT": "skipped",
             },
         }
-        for name, env in rejected_cases.items():
-            with self.subTest(case=name):
-                result = self._run_aggregate(**env)
-                self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
+        for fast_pass in ("false", "true"):
+            for name, env in rejected_cases.items():
+                with self.subTest(case=name, fast_pass=fast_pass):
+                    result = self._run_aggregate(FAST_PASS=fast_pass, **env)
+                    self.assertNotEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_aggregate_rejects_axis_result_mismatches(self) -> None:
         cases = {

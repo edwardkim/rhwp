@@ -62,8 +62,9 @@ Cargo profile·검사 명령·assertion·required check는 그대로 유지한�
 Duration 갱신기는 새 B/C/D/E 네 실측을 소비하며, 이전 B/C/D 세 실측은 trusted Jobs API에
 E caller가 없는 과거 실행임을 확인한 경우에만 구 layout으로 읽는다. 새 layout에서 E 누락은 실패다.
 
-루트 `AGENTS.md`·`CLAUDE.md`만 added/modified한 PR은 다섯 workflow의 review-only fast-pass와
-trusted policy가 같은 규칙을 사용한다. 코드·workflow와 함께 변경하거나 rename·삭제하면 이
+루트 `AGENTS.md`·`CLAUDE.md`·`README.md`·`README_EN.md`만 added/modified한 PR은
+다섯 workflow의 review-only fast-pass와 trusted policy가 같은 규칙을 사용한다.
+코드·workflow와 함께 변경하거나 rename·삭제하면 이
 루트 문서 허용 항목으로 우회할 수 없다. [정확한 허용 범위](pr_review/review_only_fast_pass.md)를 따른다.
 
 ## 1. 목적과 범위

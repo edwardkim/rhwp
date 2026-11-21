@@ -582,7 +582,7 @@ test('actual completion audit keeps unresolved listing absent without fabricatin
 });
 
 test('actual completion audit does not poll workflows excluded by path policy', async () => {
-  const { calls } = await executeCollection({ files: [{ filename: 'README.md', status: 'modified' }], missingLists: 10 });
+  const { calls } = await executeCollection({ files: [{ filename: 'CHANGELOG.md', status: 'modified' }], missingLists: 10 });
   assert.equal(calls.lists, 1); assert.equal(calls.sleeps, 0);
 });
 
@@ -599,7 +599,7 @@ test('actual completion audit returns present running or failed workflows withou
 
 // #8267: run each real workflow preflight with a complete PR file list.
 for (const workflow of ['ci.yml', 'codeql.yml', 'render-diff.yml', 'adapter-diff.yml', 'proptest-roundtrip.yml']) {
-  test(`#8267 ${workflow}: root instruction documents fast-pass; source and rename do not`, async () => {
+  test(`${workflow}: root review documents fast-pass; source and rename do not`, async () => {
     const lines = readWorkflow(workflow).split('          script: |\n')[1].split('\n');
     const script = [];
     for (const line of lines) {
@@ -607,16 +607,24 @@ for (const workflow of ['ci.yml', 'codeql.yml', 'render-diff.yml', 'adapter-diff
       script.push(line.slice(12));
     }
     const { isAllowedReviewFile, selectReviewOnlyCandidate, workflowRunExpected } = require('../ci-impact-policy.cjs');
-    for (const filename of ['AGENTS.md', 'CLAUDE.md']) {
+    for (const [filename, expectedWorkflows] of [
+      ['AGENTS.md', ['CI', 'CodeQL', 'Render Diff']],
+      ['CLAUDE.md', ['CI', 'CodeQL', 'Render Diff']],
+      ['README.md', ['CI']],
+      ['README_EN.md', ['CI']],
+    ]) {
       for (const check of ['CI', 'CodeQL', 'Render Diff']) {
-        assert.equal(workflowRunExpected(check, [{ filename, status: 'modified' }]), true);
+        assert.equal(workflowRunExpected(check, [{ filename, status: 'modified' }]), expectedWorkflows.includes(check), `${filename}: ${check}`);
       }
       for (const [files, accepted] of [
         [[{ filename, status: 'modified' }], true],
         [[{ filename, status: 'added' }], true],
+        [[{ filename, status: 'modified' }, { filename: 'mydocs/pr/readme-review.md', status: 'added' }], true],
+        [[{ filename: 'README.md', status: 'modified' }, { filename: 'README_EN.md', status: 'modified' }], true],
         [[{ filename, status: 'modified' }, { filename: 'src/lib.rs', status: 'modified' }], false],
         [[{ filename, status: 'removed' }], false],
         [[{ filename, previous_filename: 'src/lib.rs', status: 'renamed' }], false],
+        [[{ filename: 'mydocs/renamed.md', previous_filename: filename, status: 'renamed' }], false],
         [[{ filename: `tools/${filename}`, status: 'modified' }], false],
       ]) {
         const outputs = {}, errors = [];

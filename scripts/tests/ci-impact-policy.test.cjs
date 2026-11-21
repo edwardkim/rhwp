@@ -556,7 +556,8 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
     triggerItems('render-diff.yml', '  pull_request:\n', '  workflow_dispatch:\n'),
     RENDER_DIFF_PULL_REQUEST_PATHS,
   );
-  assert.equal(workflowRunExpected('CI', [{ filename: 'README.md' }]), false);
+  assert.equal(workflowRunExpected('CI', [{ filename: 'README.md' }]), true);
+  assert.equal(workflowRunExpected('CI', [{ filename: 'README_EN.md' }]), true);
   assert.equal(workflowRunExpected('CodeQL', [{ filename: 'assets/logo/icon.svg' }]), false);
   assert.equal(workflowRunExpected('CI', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('CodeQL', [{ filename: 'samples/new-reference.hwp' }]), true);

@@ -127,7 +127,7 @@ jobs:
               )) {
                 return false;
               }
-              if (filename === 'AGENTS.md' || filename === 'CLAUDE.md') {
+              if (['AGENTS.md', 'CLAUDE.md', 'README.md', 'README_EN.md'].includes(filename)) {
                 return !file.previous_filename
                   && (file.status === 'added' || file.status === 'modified');
               }
