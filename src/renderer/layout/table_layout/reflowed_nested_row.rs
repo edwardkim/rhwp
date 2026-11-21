@@ -159,7 +159,11 @@ impl LayoutEngine {
         // 저장된 재시작 경계가 없는 행이 선언 높이보다 자라면 실제 줄 경계를
         // 부모에도 전달한다. 남은 쪽에 수용할 컷은 부모의 실제 예산으로 정한다.
         driver_units.len() > 1
-            && (outgrows_declared_frame || driver_units.iter().any(|unit| unit.reflowed_line_slot))
+            && (outgrows_declared_frame
+                || driver_units.iter().any(|unit| unit.reflowed_line_slot)
+                || row_cells
+                    .iter()
+                    .any(|cell| cell.paragraphs.iter().any(|para| para.cell_lines_edited)))
             && driver_units
                 .iter()
                 .all(|unit| unit.nested_row.is_none() && unit.vis_start < unit.vis_end)

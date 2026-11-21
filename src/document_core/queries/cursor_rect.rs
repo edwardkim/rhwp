@@ -3884,22 +3884,43 @@ impl DocumentCore {
         char_offset: usize,
         hint_page: Option<u32>,
     ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path(path_json)?;
+        self.locate_cell_cursor(
+            section_idx,
+            parent_para_idx,
+            &path,
+            char_offset,
+            hint_page,
+            Some(path_json),
+        )
+        .map(|(_, rect)| rect)
+    }
+
+    /// 저장은 실제 글줄의 쪽만 사용한다. UI는 빈 칸에서도 근사 캐럿을 표시할 수 있다.
+    pub(crate) fn locate_cell_cursor(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+        hint_page: Option<u32>,
+        ui_path_json: Option<&str>,
+    ) -> Result<(u32, String), HwpError> {
         use crate::renderer::layout::{CellContext, CellPathEntry};
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let path = Self::parse_cell_path(path_json)?;
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
 
-        let _para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &path)?;
+        let _para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, path)?;
 
         // 머리말·꼬리말 표는 그 머리말·꼬리말 노드 안에서, 머리말 문단을 뿌리로 한 경로로 찾는다.
         // 그 노드의 칸 글은 머리말 문단 번호를 부모 문단으로 갖는다. 구역 번호는 본문 것이 아니므로
         // 본문 문단을 읽는 보정(`repair_unwrapped_wrapper_cell_context`)이 닿지 않게 둔다.
-        let header_footer = self.header_footer_path_root(section_idx, parent_para_idx, &path);
+        let header_footer = self.header_footer_path_root(section_idx, parent_para_idx, path);
         let (search_section, search_parent, path) = match header_footer {
-            Some(_) => (usize::MAX, path[0].2, path[1..].to_vec()),
+            Some(_) => (usize::MAX, path[0].2, &path[1..]),
             None => (section_idx, parent_para_idx, path),
         };
 
@@ -4157,28 +4178,33 @@ impl DocumentCore {
                 root,
                 search_section,
                 search_parent,
-                &path,
+                path,
                 char_offset,
                 page_num,
             ) {
-                return Ok(hit);
+                return Ok((page_num, hit));
             }
             if let Some((pi, x, y, h, cell_bounds)) = find_cursor_by_path(
                 self,
                 root,
                 search_section,
                 search_parent,
-                &path,
+                path,
                 char_offset,
                 page_num,
                 None,
                 None,
                 None,
             ) {
-                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
+                return Ok((pi, format_cursor_rect_json(pi, x, y, h, cell_bounds)));
             }
         }
 
+        let Some(path_json) = ui_path_json else {
+            return Err(HwpError::RenderError(
+                "실제 칸 줄의 쪽을 찾을 수 없습니다".into(),
+            ));
+        };
         // fallback: 아무 TextRun이라도 찾기
         for &page_num in &pages {
             let Some(tree) = page_root(page_num)? else {
@@ -4284,13 +4310,13 @@ impl DocumentCore {
                 root,
                 search_section,
                 search_parent,
-                &path,
+                path,
                 page_num,
                 None,
                 None,
                 None,
             ) {
-                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
+                return Ok((pi, format_cursor_rect_json(pi, x, y, h, cell_bounds)));
             }
         }
 
