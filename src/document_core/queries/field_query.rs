@@ -43,6 +43,8 @@ pub struct FieldInfo {
     pub value: String,
     /// field_ranges에서의 인덱스
     pub field_range_index: usize,
+    /// 그 문단에서 필드 컨트롤의 번호. 같은 글자 자리의 필드를 가르는 주소다. 셀 이름 필드는 없다.
+    pub control_index: Option<usize>,
     /// 필드가 속한 리스트 아이디 (한글 커서 좌표계 — [`ListEntry`] 참고)
     pub list_id: u32,
     /// 그 리스트 안에서의 문단 번호
@@ -349,7 +351,7 @@ impl DocumentCore {
                 let (start_char_idx, end_char_idx) = field_range_bounds(self, fi)
                     .unwrap_or((0, fi.value.chars().count()));
                 format!(
-                    "{{\"fieldId\":{},\"fieldType\":\"{}\",\"cellField\":{},\"name\":{},\"guide\":{},\"command\":{},\"value\":{},\"location\":{},\"startCharIdx\":{},\"endCharIdx\":{},\"editableInForm\":{},\"listId\":{},\"paraInList\":{},\"startPos\":{},\"endPos\":{}}}",
+                    "{{\"fieldId\":{},\"fieldType\":\"{}\",\"cellField\":{},\"name\":{},\"guide\":{},\"command\":{},\"value\":{},\"location\":{},\"startCharIdx\":{},\"endCharIdx\":{},\"editableInForm\":{},\"listId\":{},\"paraInList\":{},\"startPos\":{},\"endPos\":{}{}}}",
                     fi.field.field_id,
                     fi.field.field_type_str(),
                     // 셀 구역 이름(가상 필드)과 문단 안 누름틀은 다른 것이다. `fieldType` 은 둘 다
@@ -368,6 +370,9 @@ impl DocumentCore {
                     fi.para_in_list,
                     fi.start_pos,
                     fi.end_pos,
+                    fi.control_index
+                        .map(|ci| format!(",\"controlIndex\":{ci}"))
+                        .unwrap_or_default(),
                 )
             })
             .collect();
@@ -1545,13 +1550,14 @@ fn field_info_at_in_para(para: &Paragraph, char_offset: usize) -> String {
             }
             let guide = field.guide_text().unwrap_or("");
             return format!(
-                "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":true,\"guideName\":{},\"editableInForm\":{}}}",
+                "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":true,\"guideName\":{},\"editableInForm\":{},\"controlIndex\":{}}}",
                 field.field_id,
                 field.field_type_str(),
                 fr.start_char_idx,
                 fr.end_char_idx,
                 json_escape(guide),
                 field.is_editable_in_form(),
+                fr.control_idx,
             );
         }
     }
@@ -1567,7 +1573,7 @@ fn field_info_at_in_para(para: &Paragraph, char_offset: usize) -> String {
                 let is_guide = fr.start_char_idx == fr.end_char_idx;
                 let guide = field.guide_text().unwrap_or("");
                 return format!(
-                    "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":{},\"guideName\":{},\"editableInForm\":{}}}",
+                    "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":{},\"guideName\":{},\"editableInForm\":{},\"controlIndex\":{}}}",
                     field.field_id,
                     field.field_type_str(),
                     fr.start_char_idx,
@@ -1575,6 +1581,7 @@ fn field_info_at_in_para(para: &Paragraph, char_offset: usize) -> String {
                     is_guide,
                     json_escape(guide),
                     field.is_editable_in_form(),
+                    fr.control_idx,
                 );
             }
         }
@@ -1616,6 +1623,7 @@ fn collect_fields_from_paragraph(
                 location: base_location.clone(),
                 value,
                 field_range_index: fri,
+                control_index: Some(fr.control_idx),
                 list_id,
                 para_in_list,
                 start_pos: field_content_start(para, fri),
@@ -1690,6 +1698,7 @@ fn collect_fields_from_paragraph(
                             location: loc,
                             value,
                             field_range_index: 0,
+                            control_index: None,
                             // 셀 필드는 셀 리스트 그 자체를 가리킨다 — 커서는 첫 문단 0 위치다.
                             list_id: cell_list_id,
                             para_in_list: 0,
@@ -2042,13 +2051,17 @@ pub(crate) fn field_content_start(para: &Paragraph, field_range_index: usize) ->
     let control_positions = para.control_text_positions();
     let mut units = own.start_char_idx + tab_padding(para, own.start_char_idx);
 
+    // 같은 글자 자리의 슬롯은 컨트롤 차례로 놓인다. 자기 FIELD_BEGIN 뒤의 것은 세지 않는다.
+    let before_own = |pos: usize, ci: usize| {
+        pos < own.start_char_idx || (pos == own.start_char_idx && ci < own.control_idx)
+    };
     for (ci, ctrl) in para.controls.iter().enumerate() {
         if matches!(ctrl, Control::Field(_)) {
             continue;
         }
         if control_positions
             .get(ci)
-            .is_some_and(|pos| *pos <= own.start_char_idx)
+            .is_some_and(|pos| before_own(*pos, ci))
         {
             units += ctrl_stream_units(ctrl);
         }
@@ -2058,10 +2071,14 @@ pub(crate) fn field_content_start(para: &Paragraph, field_range_index: usize) ->
         if i == field_range_index {
             continue; // 자기 것은 아래에서 시작 코드만 더한다
         }
-        if fr.start_char_idx <= own.start_char_idx {
+        if before_own(fr.start_char_idx, fr.control_idx) {
             units += EXTENDED_CTRL_UNITS;
         }
-        if fr.end_char_idx <= own.start_char_idx {
+        // 앞 글자에서 끝난 필드의 끝, 또는 같은 자리에서 자기보다 먼저 열고 닫힌 빈 필드의 끝.
+        if fr.end_char_idx < own.start_char_idx
+            || (fr.end_char_idx == own.start_char_idx
+                && (fr.start_char_idx < own.start_char_idx || fr.control_idx < own.control_idx))
+        {
             units += EXTENDED_CTRL_UNITS;
             if fr.start_char_idx == fr.end_char_idx {
                 units += guide_units(para, fr.control_idx);

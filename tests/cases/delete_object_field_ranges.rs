@@ -7,9 +7,10 @@ use serde_json::Value;
 fn fields(core: &DocumentCore) -> Value {
     let mut fields: Value = serde_json::from_str(&core.get_field_list_json()).unwrap();
     for field in fields.as_array_mut().unwrap() {
-        // 개체 슬롯이 빠지면 HWP 원시 좌표는 달라져도 본문 글자 범위는 그대로다.
+        // 개체 슬롯이 빠지면 HWP 원시 좌표와 컨트롤 번호는 달라져도 본문 글자 범위는 그대로다.
         field.as_object_mut().unwrap().remove("startPos");
         field.as_object_mut().unwrap().remove("endPos");
+        field.as_object_mut().unwrap().remove("controlIndex");
     }
     fields
 }
