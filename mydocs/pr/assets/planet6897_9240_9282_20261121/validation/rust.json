@@ -56,7 +56,15 @@
     "failed": 0,
     "ignored": 12
   },
-  "suite_manifest": "2456 sources, 10110 test attributes, 48 integration targets",
+  "suite_manifest": {
+    "source_count": 2456,
+    "static_test_attributes": 10111,
+    "generated_suite_count": 28,
+    "separate_targets": 20,
+    "registered_targets": 48,
+    "generated_sources_same_before_and_after_prepare": 2439,
+    "exit": 0
+  },
   "unit_tier_exit": 0,
   "handbook_native_gate": {
     "pages": 383,
