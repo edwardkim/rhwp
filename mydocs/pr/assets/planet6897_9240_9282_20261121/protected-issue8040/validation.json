@@ -1,0 +1,201 @@
+{
+  "font_family": "SinGraphic",
+  "font_file_sha256": "e1a8b7ed54994d9d193ffc9e9f2b5de2d9d103c7886c467a14cab8271c81b6be",
+  "native_program_id": "c8a21806907be6b0765efb30809f65a576ae4714a5317f625b0cef25e9d00d37",
+  "coverage": 12285,
+  "protected_catalog_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "results": [
+    {
+      "backend": "native",
+      "mode": "stored-plus-auto",
+      "document": "issue8040-insert",
+      "export_exit": 0,
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "140fc6b91a98564a6b8faed82ac0cb10e630378edc0781a623a6fbedd31fdb3e",
+      "page1_png_sha256": "b5838a79c43010f7b101e9f940bf1fbf553914f44681aff1e36e4de78ff6e95a",
+      "pages": [
+        {
+          "page": 1,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 2,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 3,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 4,
+          "protected": "99.99",
+          "observed": "99.99",
+          "passes": true
+        }
+      ],
+      "tsv": "issue8040-insert-native.tsv",
+      "font_environment": "native-font-environment.json",
+      "fixture": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74"
+      },
+      "native_binary_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892"
+    },
+    {
+      "backend": "native",
+      "mode": "stored-plus-auto",
+      "document": "issue8040-insert-delete",
+      "export_exit": 0,
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "140fc6b91a98564a6b8faed82ac0cb10e630378edc0781a623a6fbedd31fdb3e",
+      "page1_png_sha256": "b5838a79c43010f7b101e9f940bf1fbf553914f44681aff1e36e4de78ff6e95a",
+      "pages": [
+        {
+          "page": 1,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 2,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 3,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 4,
+          "protected": "99.99",
+          "observed": "99.99",
+          "passes": true
+        }
+      ],
+      "tsv": "issue8040-insert-delete-native.tsv",
+      "font_environment": "native-font-environment.json",
+      "fixture": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d"
+      },
+      "native_binary_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892"
+    },
+    {
+      "backend": "wasm",
+      "mode": "stored-plus-auto",
+      "document": "issue8040-insert",
+      "export_exit": 0,
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "f3c32e16acfbfea33a394c5ac925b5f7b65bdf33e0e59b73b349596371415aa5",
+      "page1_png_sha256": "2e430499c140ed7b386aba6c02fbd9328ff4d25a342c8270bf6df42f00f972c4",
+      "pages": [
+        {
+          "page": 1,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 2,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 3,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 4,
+          "protected": "99.99",
+          "observed": "99.99",
+          "passes": true
+        }
+      ],
+      "tsv": "issue8040-insert-wasm.tsv",
+      "font_environment": "wasm-font-environment.json",
+      "fixture": {
+        "path": "samples/pr8040/exam-social-insert.hwp",
+        "sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-2020.pdf",
+        "sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74"
+      },
+      "native_binary_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+      "wasm_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc"
+    },
+    {
+      "backend": "wasm",
+      "mode": "stored-plus-auto",
+      "document": "issue8040-insert-delete",
+      "export_exit": 0,
+      "tsv_sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+      "font_environment_sha256": "f3c32e16acfbfea33a394c5ac925b5f7b65bdf33e0e59b73b349596371415aa5",
+      "page1_png_sha256": "2e430499c140ed7b386aba6c02fbd9328ff4d25a342c8270bf6df42f00f972c4",
+      "pages": [
+        {
+          "page": 1,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 2,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 3,
+          "protected": "100.00",
+          "observed": "100.00",
+          "passes": true
+        },
+        {
+          "page": 4,
+          "protected": "99.99",
+          "observed": "99.99",
+          "passes": true
+        }
+      ],
+      "tsv": "issue8040-insert-delete-wasm.tsv",
+      "font_environment": "wasm-font-environment.json",
+      "fixture": {
+        "path": "samples/pr8040/exam-social-insert-delete.hwp",
+        "sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr8040/exam-social-insert-delete-2020.pdf",
+        "sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d"
+      },
+      "native_binary_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+      "wasm_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc"
+    }
+  ],
+  "errors": [],
+  "product_sha": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "print_profile": "print",
+  "dpi": 96,
+  "compat": "2022",
+  "radius_px": 2
+}
