@@ -4684,6 +4684,43 @@ mod tests {
     use std::io::Cursor;
 
     #[test]
+    fn hft_quotes_keep_their_ink_inside_the_original_cell_with_a_wide_substitute() {
+        let style = TextStyle {
+            source_font_is_hft: true,
+            metric_font_family: Some("한양중고딕 (HFT)".into()),
+            ..Default::default()
+        };
+        // #8697 한컴 Print 4쪽 Type3와 독립 문자표, HY중고딕 regular의 hmtx.
+        for (quote, source_advance, source_left, substitute_left) in [
+            ("‘", 225.0, 71.0, 829.0),
+            ("’", 225.0, 60.0, 103.0),
+            ("“", 375.0, 71.0, 651.0),
+            ("”", 375.0, 60.0, 100.0),
+        ] {
+            let mut em = 0.0;
+            let offset = glyph_fit::hft_quote_ink_offset(&style, quote, |size| {
+                em = size;
+                Some((size, size * substitute_left / 1024.0))
+            })
+            .expect("원래 HFT 칸보다 넓은 대체 글리프");
+            let painted_left = em * substitute_left / 1024.0 + offset;
+            assert!((painted_left - em * source_left / 1000.0).abs() < 1e-9);
+            assert!(
+                glyph_fit::hft_quote_ink_offset(&style, quote, |size| {
+                    Some((size * source_advance / 1000.0, size * source_left / 1000.0))
+                })
+                .is_none(),
+                "원래 프로그램의 잉크 위치를 보존한다"
+            );
+        }
+        let ttf = TextStyle {
+            source_font_is_hft: false,
+            ..style
+        };
+        assert!(glyph_fit::hft_quote_ink_offset(&ttf, "“", |_| Some((16.0, 10.0))).is_none());
+    }
+
+    #[test]
     fn positive_distribution_spacing_is_not_part_of_glyph_fit_advance() {
         let positive = TextStyle {
             extra_char_spacing: 12.0,
@@ -4800,7 +4837,7 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            canvas_cluster_fit(&fixed, "1", 8.0, 4.0, Some(2.0), true),
+            canvas_cluster_fit(&fixed, "1", 8.0, 4.0, Some((0.0, 2.0)), true),
             Some((2.0, 0.0))
         );
         // 전각 대체 글꼴의 `•`: 상자 16px, 잉크 4px, 칸 6px.
