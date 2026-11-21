@@ -11,3 +11,5 @@
 
 - Native [글꼴 환경](native-font-environment.json) · [삽입](issue8040-insert-native.tsv) · [삽입·삭제](issue8040-insert-delete-native.tsv)
 - fresh WASM [글꼴 환경](wasm-font-environment.json) · [삽입](issue8040-insert-wasm.tsv) · [삽입·삭제](issue8040-insert-delete-wasm.tsv)
+
+최종 제품 후보와 고정 `devel`에 동일한 신그래픽체 파일과 검증 설정을 적용해, 삽입본·삽입 삭제본의 Native와 fresh WASM **4조건·16쪽**을 대조했다. 각 후보 TSV는 고정 기준 TSV 및 위에 연결한 기존 TSV와 바이트 단위로 일치한다. [조건·생산물·TSV 해시 대조](paired-v5.json)
