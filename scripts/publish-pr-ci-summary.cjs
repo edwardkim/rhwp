@@ -47,7 +47,7 @@ async function publish({github, context}) {
   if (own?.body === body) return;
   if (signature(reports) !== signature(await currentRuns())) return;
   const latest = (await api.pulls.get({...params,pull_number:pull.number})).data;
-  if (!matches(latest) || latest.head.sha !== pull.head.sha) return;
+  if (!matches(latest) || latest.head.sha !== pull.head.sha || latest.base.sha !== pull.base.sha) return;
   if (own) await api.issues.updateComment({...params,comment_id:own.id,body});
   else await api.issues.createComment({...issue,body});
 }

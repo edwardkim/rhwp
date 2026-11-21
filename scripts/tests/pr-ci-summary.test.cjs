@@ -1,7 +1,7 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
 const { selectRuns, summary } = require('../pr-ci-summary.cjs');
-const pull = { number: 1, base: {ref: 'devel', repo: {html_url: 'https://github.com/example/rhwp'}},
+const pull = { number: 1, base: {ref: 'devel', sha: 'b'.repeat(40), repo: {html_url: 'https://github.com/example/rhwp'}},
   head: {sha: 'a'.repeat(40), ref: 'branch', repo: {full_name: 'contributor/rhwp'}} };
 const run = { id: 2, run_attempt: 2, name: 'CI', path: '.github/workflows/ci.yml', event: 'pull_request',
   head_sha: pull.head.sha, head_branch: 'branch', head_repository: pull.head.repo,
@@ -17,8 +17,42 @@ test('실패 job과 완료한 시각 단계만 연결한다', () => {
     {name:'test',id:3,status:'completed',conclusion:'failure',steps:[
       {name:'Run frontend Canvas gates',conclusion:'success'},
       {name:'Run selected CanvasKit readiness gate',conclusion:'skipped'}]}]}]);
-  assert.match(text,/CI 요약 · 실패/); assert.match(text,/\/job\/3/);
+  assert.match(text,/^### CI 요약$/m); assert.match(text,/\| CI \| 실패 \|/); assert.match(text,/\/job\/3/);
   assert.match(text,/Run frontend Canvas gates/); assert.doesNotMatch(text,/CanvasKit/);
+});
+
+test('GitHub가 PR 연결을 제공하면 번호, base SHA와 head 브랜치를 대조한다', () => {
+  const association = {number: pull.number, base: {ref: pull.base.ref, sha: pull.base.sha},
+    head: {ref: pull.head.ref}};
+  const associated = {...run, pull_requests: [association]};
+  assert.equal(selectRuns(pull, [associated])[0].run, associated);
+  const stale = {...association, base: {...association.base, sha: 'c'.repeat(40)}};
+  assert.equal(selectRuns(pull, [{...run, pull_requests: [stale]}])[0].run, null);
+});
+
+test('일부 실행과 재시도에서도 표와 제목을 유지하고 최신 실행 시각을 쓴다', () => {
+  const reports = selectRuns(pull, [{...run, updated_at: '2026-11-21T18:30:47Z'}]);
+  const text = summary(pull, reports);
+  assert.match(text, /^### CI 요약$/m);
+  assert.match(text, /\| CI \| 통과 \| \[시도 2\]/);
+  assert.match(text, /\| CodeQL \| 실행 기록 없음 \| — \|/);
+  assert.match(text, /\| Render Diff \| 실행 기록 없음 \| — \|/);
+  assert.match(text, /최근 실행 갱신 2026-11-21 18:30:47 UTC$/);
+  assert.doesNotMatch(text, /실패하거나 취소된 작업|완료된 시각 검사/);
+  assert.equal(summary(pull, reports), text);
+});
+
+test('동시 실행, 취소, 건너뜀의 행을 유지하고 오래된 실행 시각으로 돌아가지 않는다', () => {
+  const reports = [
+    {name: 'CI', run: {...run, status: 'in_progress', conclusion: null, updated_at: '2026-11-22T01:02:03Z'}},
+    {name: 'CodeQL', run: {...run, conclusion: 'cancelled', updated_at: '2026-11-21T23:59:59Z'}},
+    {name: 'Render Diff', run: {...run, conclusion: 'skipped'}},
+  ];
+  const text = summary(pull, reports);
+  assert.match(text, /\| CI \| 진행 중 \|/);
+  assert.match(text, /\| CodeQL \| 취소 \|/);
+  assert.match(text, /\| Render Diff \| 건너뜀 \|/);
+  assert.match(text, /최근 실행 갱신 2026-11-22 01:02:03 UTC$/);
 });
 
 const publish = require('../publish-pr-ci-summary.cjs');

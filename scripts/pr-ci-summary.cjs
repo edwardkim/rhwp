@@ -10,7 +10,7 @@ function selectRuns(pull, runs) {
     name,
     run: selectLatestWorkflowRun(runs, {
       name, path, headSha: pull.head.sha, headBranch: pull.head.ref,
-      headRepository: pull.head.repo.full_name, pullNumber: pull.number, baseRef: pull.base.ref,
+      headRepository: pull.head.repo.full_name, pullNumber: pull.number, baseRef: pull.base.ref, baseSha: pull.base.sha,
     }),
   }));
 }
@@ -23,27 +23,44 @@ function state(run) {
 }
 
 function summary(pull, reports) {
-  const states = reports.map(({run}) => state(run));
-  const outcome = ['실패', '취소', '진행 중', '결과 확인 필요'].find(s => states.includes(s))
-    || (states.every(s => s === '통과') ? '통과' : '일부 실행만 확인');
   const base = pull.base.repo.html_url;
-  const lines = [MARKER, '### CI 요약 · ' + outcome, '', '커밋 `' + pull.head.sha + '`', ''];
+  const sha = pull.head.sha;
+  const lines = [
+    MARKER, '### CI 요약', '', '대상 커밋 [`' + sha.slice(0, 12) + '`](' + base + '/commit/' + sha + ')',
+    '', '| 검사 | 상태 | 실행 기록 |', '| --- | --- | --- |',
+  ];
+  const problems = [];
+  const visual = [];
+  let latestUpdate = 0;
   for (const {name, run, jobs = []} of reports) {
-    if (!run) { lines.push('- ' + name + ' · 실행 기록 없음'); continue; }
+    if (!run) {
+      lines.push('| ' + name + ' | 실행 기록 없음 | — |');
+      continue;
+    }
     const url = base + '/actions/runs/' + run.id;
-    lines.push('- [' + name + ' · 실행 ' + run.id + ', 시도 ' + run.run_attempt + '](' +
-      url + '/attempts/' + run.run_attempt + ') · ' + state(run));
+    const attempt = run.run_attempt;
+    lines.push('| ' + name + ' | ' + state(run) + ' | [시도 ' + attempt + '](' +
+      url + '/attempts/' + attempt + ') |');
+    const updated = Date.parse(run.updated_at);
+    if (Number.isFinite(updated)) latestUpdate = Math.max(latestUpdate, updated);
+
     for (const job of jobs) {
       const link = url + '/job/' + job.id;
       if (FAILED.has(job.conclusion) || job.conclusion === 'cancelled') {
         const label = job.name.replace(/[^\p{L}\p{N} ._()/&:-]/gu, ' ').slice(0, 120);
-        lines.push('  - [' + label + '](' + link + ') · ' + state(job));
+        problems.push('- ' + name + ' (' + state(job) + ') [' + label + '](' + link + ')');
       }
       for (const step of job.steps || []) {
         if (VISUAL_STEPS.has(step.name) && step.conclusion === 'success')
-          lines.push('  - [' + step.name + '](' + link + ') · 실행 완료');
+          visual.push('- ' + name + ' [' + step.name + '](' + link + ')');
       }
     }
+  }
+  if (problems.length) lines.push('', '**실패하거나 취소된 작업**', '', ...problems);
+  if (visual.length) lines.push('', '**완료된 시각 검사**', '', ...visual);
+  if (latestUpdate) {
+    const timestamp = new Date(latestUpdate).toISOString().slice(0, 19).replace('T', ' ');
+    lines.push('', '최근 실행 갱신 ' + timestamp + ' UTC');
   }
   return lines.join('\n');
 }
