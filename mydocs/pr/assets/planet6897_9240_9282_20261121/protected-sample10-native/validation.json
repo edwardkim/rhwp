@@ -66,5 +66,36 @@
     "overlay-757.png": "f7cc60c160a52013686aa511a86b787278fb231e8616e9c3fae87ca9280ff7d3",
     "review-474.png": "d89db765c69c642ff221e236f012010ac2ca40735b967f01efe40e9de097c563",
     "review-757.png": "517af9ac1720ff64508ce847730c771bd0e899d490e6e93f99fde6a7be61a554"
+  },
+  "fixed_base_comparison": {
+    "key": "sample10",
+    "backend": "native",
+    "protected_conditions": 46,
+    "base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+    "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+    "same_run_conditions": true,
+    "page_count": 763,
+    "candidate_tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+    "fixed_base_tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+    "candidate_producer": {
+      "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417"
+    },
+    "fixed_base_producer": {
+      "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519"
+    },
+    "devel_declines_over_2pp": [],
+    "display_score_changes": [],
+    "inspected_pages": [
+      {
+        "page": 474,
+        "fixed_base": "100.00",
+        "candidate": "100.00"
+      },
+      {
+        "page": 757,
+        "fixed_base": "99.57",
+        "candidate": "99.57"
+      }
+    ]
   }
 }
