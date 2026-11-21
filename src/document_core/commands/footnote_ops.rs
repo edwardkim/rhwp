@@ -14,7 +14,7 @@ use crate::renderer::composer::{reflow_line_segs, restamp_indentation, Paragraph
 
 impl DocumentCore {
     /// 구역의 각주 번호를 문서 순서대로 1부터 다시 매긴다.
-    fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
+    pub(crate) fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
         let section = &mut self.document.sections[section_idx];
         let mut footnote_number = 1u16;
         for para in &mut section.paragraphs {

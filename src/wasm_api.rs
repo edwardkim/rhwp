@@ -6997,6 +6997,35 @@ impl HwpDocument {
         self.controls_json()
     }
 
+    /// 한컴 조판 부호 지우기·찾아가기의 자리 — `kinds_json`(한컴 목록 이름 배열) 갈래를
+    /// 본문·표 셀·글상자·캡션·머리말·꼬리말·각주·미주까지 문서 차례로 준다.
+    #[wasm_bindgen(js_name = getControlCodes)]
+    pub fn get_control_codes(&self, kinds_json: &str) -> Result<String, JsValue> {
+        let kinds: Vec<String> =
+            serde_json::from_str(kinds_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        serde_json::to_string(&self.core.control_codes_native(&kinds))
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// 한컴 조판 부호 지우기. `indices_json` 이 `null` 이면 갈래의 자리를 모두, 배열이면
+    /// `getControlCodes` 가 준 차례 번호의 것만 지운다. `{"ok":true,"count":n}`.
+    #[wasm_bindgen(js_name = eraseControlCodes)]
+    pub fn erase_control_codes(
+        &mut self,
+        kinds_json: &str,
+        indices_json: &str,
+    ) -> Result<String, JsValue> {
+        let kinds: Vec<String> =
+            serde_json::from_str(kinds_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let indices: Option<Vec<usize>> =
+            serde_json::from_str(indices_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let count = self
+            .core
+            .erase_control_codes_native(&kinds, indices.as_deref())
+            .map_err(JsValue::from)?;
+        Ok(format!("{{\"ok\":true,\"count\":{count}}}"))
+    }
+
     /// 컨트롤 하나를 지운다 — 웹한글컨트롤 `DeleteCtrl`.
     #[wasm_bindgen(js_name = deleteControlAt)]
     pub fn delete_control_at_api(

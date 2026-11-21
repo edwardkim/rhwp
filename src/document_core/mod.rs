@@ -48,7 +48,8 @@ pub use commands::paragraph_block::{
     TEMPLATE_REQUEST_MAX_BYTES,
 };
 pub use commands::{
-    check_picture_props, check_shape_props, ComposeHost, TableColumnWidths, TableCreationOptions,
+    check_picture_props, check_shape_props, ComposeHost, ControlCode, TableColumnWidths,
+    TableCreationOptions,
 };
 pub mod converters;
 pub(crate) mod html_table_import;
