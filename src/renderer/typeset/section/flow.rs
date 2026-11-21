@@ -1,6 +1,7 @@
 //! 구역 문단 처리의 place_paragraph_flow 단계. 조건·예약·발행 순서를 유지한다.
 use crate::renderer::typeset::{
-    hwpunit_to_px, is_synthetic_line_seg, native_hwp5_first_footnote_overlap_break_line, notes,
+    controls::wrap_flow, hwpunit_to_px, is_synthetic_line_seg,
+    native_hwp5_first_footnote_overlap_break_line, notes,
     original_hwpx_tac_filled_page_keeps_short_trail, synth_square_wrap_rects, ComposedParagraph,
     Control, Issue2424TypesetProfile, MeasuredTable, PageDef, PageItem, Paragraph,
     ResolvedStyleSet, TypesetEngine, TypesetState,
@@ -290,7 +291,7 @@ impl TypesetEngine {
                     st.advance_column_or_new_page_with_storage(storage)?;
                 }
             }
-            let body_row_after_square = controls::wrap_flow::empty_body_row_after_square(
+            let body_row_after_square = wrap_flow::empty_body_row_after_square(
                 st,
                 para_idx,
                 para,
@@ -322,12 +323,7 @@ impl TypesetEngine {
                     && matches!(st.current_items.last(), Some(PageItem::FullParagraph { para_index })
                         if *para_index == para_idx)
             }) {
-                // 글자 없는 한 줄은 너비만 바뀐다. fit에서 쓴 높이와 줄간격을 유지한다.
-                let mut body_row = crate::storage::try_clone(composed, storage)?;
-                body_row.lines[0].column_start = body_box.start;
-                body_row.lines[0].segment_width = body_box.end - body_box.start;
-                st.current_column_wrap_anchors.remove(&para_idx);
-                st.record_computed_paragraph(para_idx, &body_row, storage)?;
+                st.record_square_blank_body_row(para_idx, composed, body_box, storage)?;
             }
             if let Some(origin) = opening_float_line.filter(|_| {
                 opening_page == (st.pages.len(), st.current_column)
