@@ -1,5 +1,7 @@
 //! 검사 유형: 관계형 — 원 PUA·표시 기호·기호 프로그램·전진폭의 소유를 구분한다.
-//! 주석 갱신: 2026-11-12T20:27:00+09:00.
+//! 주석 갱신: 2026-11-21T16:26:00+09:00. 직전 파일 변경 2026-11-13T01:05:55+09:00, 31a4225757.
+//! 원 기호·유니코드 대조 1/1쪽, Native 99.91% / fresh WASM 98.89% (96 DPI, 2px raw).
+//! 전쪽 측정 및 확대: mydocs/pr/assets/semanticist21-20261121/validation/README.md.
 //! 시각 근거: 보정 전 8fe7d1fb8b, 96 DPI·2px raw, Native 99.54% / fresh WASM 99.50%.
 //! 현재 기준: 독립 한컴 2020 11.0.0.9136 Print
 //! `pdf/issue8680/wingdings_pua_symbols-hwpx-2020.pdf`. 아래 웹 출력 설명은 이력이다.
@@ -189,8 +191,27 @@ fn wingdings_pua_circled_digits_are_painted_with_visible_symbols() {
     for s in ["⓪", "⑩", "⓿", "❶", "❿"] {
         assert_eq!(count(s), 1, "Wingdings 0x80~0x95 대역 {s}");
     }
-    // 0xA1 세 개 + 일반 ○ 세 개
-    assert_eq!(count("○"), 6, "Wingdings 0xA1 은 ○ 크기의 흰 원이다");
+    assert_eq!(count("○"), 3, "일반 ○ 세 개는 본문 글꼴의 문자로 그린다");
+    let document = roxmltree::Document::parse(&svg).unwrap();
+    let source_circles = document
+        .descendants()
+        .filter(|node| {
+            node.has_tag_name("path")
+                && node.attribute("fill-rule") == Some("evenodd")
+                && node
+                    .attribute("d")
+                    .is_some_and(|path| path.matches('M').count() == 2)
+                && node.next_sibling_element().is_some_and(|label| {
+                    label.has_tag_name("text")
+                        && label.attribute("fill-opacity") == Some("0")
+                        && label.text() == Some("○")
+                })
+        })
+        .count();
+    assert_eq!(
+        source_circles, 3,
+        "원 PUA 세 개는 외곽과 안쪽이 있는 원으로 그린다"
+    );
 }
 
 #[test]

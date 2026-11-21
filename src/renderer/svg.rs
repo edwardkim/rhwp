@@ -42,17 +42,35 @@ fn implicit_symbol_svg(
     ry: f64,
     attrs: &str,
 ) -> String {
-    match shape {
-        super::implicit_symbol::InkShape::Ellipse => format!(
-            "<ellipse cx=\"{cx:.4}\" cy=\"{cy:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" {attrs}/>\n"
-        ),
-        super::implicit_symbol::InkShape::Rectangle => format!(
+    if let Some(scale) = shape.inner_scale() {
+        let contour = |rx: f64, ry: f64| {
+            let left = cx - rx;
+            let right = cx + rx;
+            if shape.is_ellipse() {
+                format!("M {left:.4} {cy:.4} A {rx:.4} {ry:.4} 0 1 1 {right:.4} {cy:.4} A {rx:.4} {ry:.4} 0 1 1 {left:.4} {cy:.4} Z")
+            } else {
+                format!(
+                    "M {left:.4} {:.4} H {right:.4} V {:.4} H {left:.4} Z",
+                    cy - ry,
+                    cy + ry
+                )
+            }
+        };
+        format!(
+            "<path d=\"{} {}\" fill-rule=\"evenodd\" {attrs}/>\n",
+            contour(rx, ry),
+            contour(rx * scale, ry * scale)
+        )
+    } else if shape.is_ellipse() {
+        format!("<ellipse cx=\"{cx:.4}\" cy=\"{cy:.4}\" rx=\"{rx:.4}\" ry=\"{ry:.4}\" {attrs}/>\n")
+    } else {
+        format!(
             "<rect x=\"{:.4}\" y=\"{:.4}\" width=\"{:.4}\" height=\"{:.4}\" {attrs}/>\n",
             cx - rx,
             cy - ry,
             2.0 * rx,
             2.0 * ry,
-        ),
+        )
     }
 }
 

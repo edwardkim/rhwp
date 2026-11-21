@@ -18,12 +18,26 @@ pub(super) fn paint(
         return false;
     };
     ctx.begin_path();
-    match shape {
-        crate::renderer::implicit_symbol::InkShape::Ellipse => {
-            let _ = ctx.ellipse(x + cx, y + cy, rx, ry, 0.0, 0.0, std::f64::consts::TAU);
+    if shape.is_ellipse() {
+        let _ = ctx.ellipse(x + cx, y + cy, rx, ry, 0.0, 0.0, std::f64::consts::TAU);
+        if let Some(scale) = shape.inner_scale() {
+            ctx.move_to(x + cx + rx * scale, y + cy);
+            let _ = ctx.ellipse_with_anticlockwise(
+                x + cx,
+                y + cy,
+                rx * scale,
+                ry * scale,
+                0.0,
+                0.0,
+                -std::f64::consts::TAU,
+                true,
+            );
         }
-        crate::renderer::implicit_symbol::InkShape::Rectangle => {
-            ctx.rect(x + cx - rx, y + cy - ry, 2.0 * rx, 2.0 * ry);
+    } else {
+        ctx.rect(x + cx - rx, y + cy - ry, 2.0 * rx, 2.0 * ry);
+        if let Some(scale) = shape.inner_scale() {
+            let (ix, iy) = (rx * scale, ry * scale);
+            ctx.rect(x + cx + ix, y + cy - iy, -2.0 * ix, 2.0 * iy);
         }
     }
     ctx.fill();

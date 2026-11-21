@@ -564,13 +564,26 @@ impl SkiaTextReplay<'_> {
                                 (2.0 * rx) as f32,
                                 (2.0 * ry) as f32,
                             );
-                            match shape {
-                                crate::renderer::implicit_symbol::InkShape::Ellipse => {
-                                    canvas.draw_oval(bounds, &text_paint);
-                                }
-                                crate::renderer::implicit_symbol::InkShape::Rectangle => {
-                                    canvas.draw_rect(bounds, &text_paint);
-                                }
+                            if let Some(scale) = shape.inner_scale() {
+                                let (ix, iy) = (rx * scale, ry * scale);
+                                let inner = skia_safe::Rect::new(
+                                    (cx - ix) as f32,
+                                    (cy - iy) as f32,
+                                    (cx + ix) as f32,
+                                    (cy + iy) as f32,
+                                );
+                                let contour = |r| {
+                                    if shape.is_ellipse() {
+                                        skia_safe::RRect::new_oval(r)
+                                    } else {
+                                        skia_safe::RRect::new_rect(r)
+                                    }
+                                };
+                                canvas.draw_drrect(contour(bounds), contour(inner), &text_paint);
+                            } else if shape.is_ellipse() {
+                                canvas.draw_oval(bounds, &text_paint);
+                            } else {
+                                canvas.draw_rect(bounds, &text_paint);
                             }
                             continue;
                         }

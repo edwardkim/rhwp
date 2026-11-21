@@ -12,10 +12,32 @@ use super::TextStyle;
 pub(crate) enum InkShape {
     Ellipse,
     Rectangle,
+    HollowEllipse,
+    HollowRectangle,
+}
+
+impl InkShape {
+    pub(crate) fn is_ellipse(self) -> bool {
+        matches!(self, Self::Ellipse | Self::HollowEllipse)
+    }
+
+    /// 안쪽 윤곽과 바깥 윤곽의 지름 비. 한컴 Print의 Wingdings 원 프로그램 값이다.
+    pub(crate) fn inner_scale(self) -> Option<f64> {
+        match self {
+            Self::HollowEllipse => Some(1184.0 / 1480.0),
+            Self::HollowRectangle => Some(1086.0 / 1480.0),
+            _ => None,
+        }
+    }
 }
 
 pub(crate) fn advance_em(source: char) -> Option<f64> {
-    matches!(source, '\u{f09f}' | '\u{f0a7}').then_some(937.0 / 2048.0)
+    match source {
+        '\u{f09f}' | '\u{f0a7}' => Some(937.0 / 2048.0),
+        // Wingdings /W891. 고정 글머리표 칸의 예약은 list_marker_geometry가 맡는다.
+        '\u{f06f}' | '\u{f0a1}' => Some(1825.0 / 2048.0),
+        _ => None,
+    }
 }
 
 /// 일대일 표시 투영만 원 주소를 연결한다. 옛한글 확장 등은 추측하지 않는다.
@@ -34,18 +56,21 @@ pub(crate) fn ink(
     index: usize,
     style: &TextStyle,
 ) -> Option<(InkShape, f64, f64, f64, f64)> {
-    let shape = match sources?.get(index).copied()? {
-        '\u{f09f}' => InkShape::Ellipse,
-        '\u{f0a7}' => InkShape::Rectangle,
+    let (shape, center_x, radius) = match sources?.get(index).copied()? {
+        '\u{f09f}' => (InkShape::Ellipse, 469.0, 296.0),
+        '\u{f0a7}' => (InkShape::Rectangle, 469.0, 296.0),
+        // 화학물질 표시 기준의 Wingdings CID4·CID3. U+25A1·U+25CB는 본문 글꼴을 쓴다.
+        '\u{f06f}' => (InkShape::HollowRectangle, 913.0, 740.0),
+        '\u{f0a1}' => (InkShape::HollowEllipse, 913.0, 740.0),
         _ => return None,
     };
     let size = style.script_font_size(style.font_size);
     let ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
     Some((
         shape,
-        size * ratio * (469.0 / 2048.0),
+        size * ratio * (center_x / 2048.0),
         -size * (740.0 / 2048.0),
-        size * ratio * (296.0 / 2048.0),
-        size * (296.0 / 2048.0),
+        size * ratio * (radius / 2048.0),
+        size * (radius / 2048.0),
     ))
 }
