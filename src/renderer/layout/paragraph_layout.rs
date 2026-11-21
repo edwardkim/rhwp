@@ -6264,8 +6264,20 @@ impl LayoutEngine {
         // typeset.rs::format_paragraph 측 동일 제거 — solo_zone_pad (zone 전환 패딩) 만 유지.
         let tab_width =
             styles.default_tab_width(para_style.map(|s| s.default_tab_width).unwrap_or(0.0));
-        let tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
+        let mut tab_stops = para_style.map(|s| s.tab_stops.clone()).unwrap_or_default();
         let auto_tab_right = para_style.map(|s| s.auto_tab_right).unwrap_or(false);
+        let bounded_textbox_leader = cell_ctx
+            .as_ref()
+            .filter(|context| context.in_textbox)
+            .and_then(|_| {
+                tab_frame::bounded_textbox_leader(
+                    composed,
+                    para?,
+                    &mut tab_stops,
+                    col_area.width - margin_right,
+                )
+            });
+        let composed = bounded_textbox_leader.as_ref().unwrap_or(composed);
 
         // [Task #489] 비-TAC Picture/Shape with wrap=Square 보유 여부.
         // 한컴은 어울림 그림이 있는 paragraph 의 LINE_SEG.cs/sw 를 그림 너비만큼 좁혀
