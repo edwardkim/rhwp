@@ -247,6 +247,7 @@ impl TypesetEngine {
             }
             st.observe_stored_empty_line_ladder(
                 crate::renderer::pagination::stored_ladder_keeps_empty_line(
+                    self.profile.get().saved_vertical_ladder(),
                     para,
                     paragraphs.get(para_idx + 1),
                     &styles.para_styles,
