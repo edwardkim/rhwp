@@ -61,6 +61,45 @@ pub(super) fn continuation_closing_advance(
 }
 
 impl LayoutEngine {
+    /// 같은 자식 글줄 행의 중간에서 열고 닫는 블록 조각. 자식 RowCut이 이미
+    /// 마지막 줄의 전진을 제외했으므로 부모는 그 상자와 실제 바깥 여백만 소비한다.
+    pub(super) fn continued_plain_child_frame_height(
+        &self,
+        cell: &Cell,
+        units: &[CellUnit],
+        start: usize,
+        end: usize,
+        styles: &ResolvedStyleSet,
+        purpose: super::row_physical_band::CutHeight,
+    ) -> Option<f64> {
+        use crate::model::control::Control;
+        use crate::model::shape::TextWrap;
+        use crate::renderer::hwpunit_to_px;
+
+        continuation_closing_advance(units, start, end)?;
+        let paragraph = cell.paragraphs.get(units[start].para_idx)?;
+        let mut children = paragraph
+            .controls
+            .iter()
+            .filter_map(|control| match control {
+                Control::Table(child) => Some(child.as_ref()),
+                _ => None,
+            });
+        let child = children.next()?;
+        if children.next().is_some()
+            || child.common.treat_as_char
+            || !child.common.flow_with_text
+            || child.common.text_wrap != TextWrap::TopAndBottom
+        {
+            return None;
+        }
+        let cut = Self::nested_row_projection_cut(&units[start..end])?;
+        let margins = i32::from(child.outer_margin_top) + i32::from(child.outer_margin_bottom);
+        Some(
+            self.nested_cut_height(child, &cut, styles, purpose) + hwpunit_to_px(margins, self.dpi),
+        )
+    }
+
     /// 실제 재귀 글줄 컷 또는 저장 글줄이 없는 호스트의 재조판 행만 재귀 프레임을 연다.
     /// 저장 호스트의 원자 행은 기존 행 조각 경로가 첫 물리 프레임과 문단 범위를 소유한다.
     pub(super) fn nested_row_run_uses_recursive_frame(

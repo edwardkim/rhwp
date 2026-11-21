@@ -152,6 +152,11 @@ impl LayoutEngine {
         if cell.text_direction != 0 {
             return None;
         }
+        if let Some(height) =
+            self.continued_plain_child_frame_height(cell, units, start, end, styles, purpose)
+        {
+            return Some(height);
+        }
         // 혼합 스트림은 자체 소스 투영과 물리 예약을 함께 발행한다.
         // mixed_nested_recursive도 그 투영의 속성이며 nested_row의 행 컷과
         // 같은 주소가 아니다. 기존 공통 컷 장부가 점유와 수용량을 소비하게
