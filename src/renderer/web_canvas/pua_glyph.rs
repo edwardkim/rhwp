@@ -20,6 +20,31 @@ impl WebCanvasRenderer {
         pua_glyph::candidate(text)
             .into_iter()
             .chain(pua_glyph::fallback_candidate(text))
-            .find(|&glyph| fonts.print_primary_glyph(style, glyph).is_some())
+            .find(|&glyph| {
+                if fonts.print_primary_glyph(style, glyph).is_some() {
+                    return true;
+                }
+                // 줄 측정과 같은 공급자가 적재한 가시 글리프인지 확인한다.
+                // 알려지지 않은 앞 face를 건너뛰어 CSS의 실제 선택을 바꾸지 않는다.
+                let Some((metric, _)) =
+                    crate::renderer::font_metrics_data::declared_old_hangul_fallback(style, glyph)
+                else {
+                    return false;
+                };
+                let coverage = &fonts.pua_coverage;
+                coverage
+                    .text_faces
+                    .select(
+                        &style.font_family,
+                        &glyph.to_string(),
+                        style.is_visually_bold(),
+                        style.italic,
+                    )
+                    .is_some_and(|face| {
+                        face.predecessors_known
+                            && face.family.eq_ignore_ascii_case(metric.requested_name)
+                            && coverage.glyph(&face.family, text) == Some(glyph)
+                    })
+            })
     }
 }

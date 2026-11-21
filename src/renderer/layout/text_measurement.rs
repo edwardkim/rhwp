@@ -2267,15 +2267,25 @@ fn char_width_decision_with_hft_tracking<'a>(
             .flatten();
         let old_glyph_metric = cluster_glyph
             .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
-            .filter(|_| style.selected_primary_font_program.is_some())
             .and_then(|glyph| {
-                font_metrics_data::old_hangul_syllable_advance_em(
-                    css_primary_face(display_family),
-                    style.bold,
-                    style.italic,
-                    glyph,
-                )
-                .map(|em| (glyph, em))
+                style
+                    .selected_primary_font_program
+                    .and_then(|_| {
+                        font_metrics_data::old_hangul_syllable_advance_em(
+                            css_primary_face(display_family),
+                            style.bold,
+                            style.italic,
+                            glyph,
+                        )
+                    })
+                    .map(|em| (glyph, em, None))
+                    .or_else(|| {
+                        if latin.is_some() {
+                            return None;
+                        }
+                        font_metrics_data::declared_old_hangul_fallback(style, glyph)
+                            .map(|(metric, em)| (glyph, em, Some(metric)))
+                    })
             });
         let metric_character = cluster_glyph
             .filter(|glyph| ('가'..='힣').contains(glyph))
@@ -2354,10 +2364,15 @@ fn char_width_decision_with_hft_tracking<'a>(
             embedded.width_source = "canonicalHangulMetric";
             measurement_character = Some(metric_character);
         }
-        if let Some((glyph, em)) = old_glyph_metric {
+        if let Some((glyph, em, fallback)) = old_glyph_metric {
             embedded.width_px = Some(quantize_hwp_px(font_size * em));
             embedded.em_fraction = Some(em);
-            embedded.width_source = "sourceOldHangulMetric";
+            embedded.width_source = if let Some(metric) = fallback {
+                embedded.metric = Some(metric);
+                "declaredOldHangulFallbackMetric"
+            } else {
+                "sourceOldHangulMetric"
+            };
             embedded.character_match = "hit";
             measurement_character = Some(glyph);
         }

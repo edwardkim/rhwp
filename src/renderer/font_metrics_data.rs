@@ -58,6 +58,36 @@ pub(crate) fn old_hangul_syllable_advance_em(
     Some(f64::from(width) / f64::from(found.metric.em_size))
 }
 
+/// 원본 주 프로그램의 cmap과 문서가 지정한 바로 다음 face의 hmtx로
+/// 옛한글 한 음절의 공급자를 결정한다. 미등록 프로그램은 결측으로 간주하지 않는다.
+pub(crate) fn declared_old_hangul_fallback(
+    style: &super::TextStyle,
+    glyph: char,
+) -> Option<(MetricLookupDecision<'_>, f64)> {
+    let cluster = super::pua_oldhangul::map_pua_old_hangul(glyph)?;
+    let primary = style.native_otf_metrics.as_ref()?;
+    if style.source_font_is_hft
+        || primary.primary_has_glyph(glyph) != Some(false)
+        || cluster
+            .iter()
+            .any(|&ch| primary.primary_has_glyph(ch) != Some(false))
+    {
+        return None;
+    }
+    let supplier = style
+        .font_family
+        .split(',')
+        .nth(1)?
+        .trim()
+        .trim_matches(['\'', '"']);
+    let selected = find_metric_decision(supplier, style.bold, style.italic)?;
+    let width = hangul_jamo::compatibility_syllable_width(selected.metric, glyph)?;
+    Some((
+        selected,
+        f64::from(width) / f64::from(selected.metric.em_size),
+    ))
+}
+
 #[path = "font_metric_symbol_slot_chars.rs"]
 mod symbol_slot_chars;
 
