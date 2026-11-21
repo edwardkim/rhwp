@@ -335,6 +335,14 @@ impl DeviceIndependentBitmap {
                 .collect(),
             _ => unreachable!(),
         };
+        // 색상표 없이 저장된 1비트 DIB 는 흑백 비트맵이다: 0 = 검정, 1 = 흰색.
+        let palette = if palette.is_empty()
+            && matches!(bit_count, crate::wmf::parser::BitCount::BI_BITCOUNT_1)
+        {
+            vec![vec![0x00, 0x00, 0x00], vec![0xFF, 0xFF, 0xFF]]
+        } else {
+            palette
+        };
 
         let new_bit_count = crate::wmf::parser::BitCount::BI_BITCOUNT_5;
         // [fuzz] 폭은 파일 값이라 32비트 usize(WASM)에서 곱이 넘칠 수 있다 — 포화시킨다.
