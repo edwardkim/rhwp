@@ -22,5 +22,31 @@
       "operation": "Move only ten task-owned reference records to the beginning; preserve all field values and other record order."
     }
   ],
-  "semantics_unchanged": true
+  "semantics_unchanged": true,
+  "post_apply_semantic_validation": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "effective_records": 180,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "20de206dc980b15258de08d795a95d33ef4ee0d2e7305bd66ea02a15e62e4664"
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "effective_records": 74,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "67046d636efd8a2c64ea65b2317a4c09abf9c85a396948754cfc685bd4ae04e1"
+    },
+    {
+      "path": "tests/fixtures/overflow_cell_baseline.tsv",
+      "effective_records": 20,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "d6ae688dc0f1b414f0f78d9e102224eb0526cc4002f9a49df1c8274ab0d590e4"
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_verified_references.json",
+      "effective_records": 25,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "dae2d08cb4550d168b73ba170a3be2e20de29918495d84d619037b98d2d21509"
+    }
+  ]
 }
