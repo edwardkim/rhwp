@@ -6605,7 +6605,10 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
         let (row_block_start, row_block_end) =
             compute_row_blocks_with_storage(table, row_heights.len(), storage)?;
         if std::env::var("RHWP_DIAG_MEASURED_TABLE").is_ok_and(|filter| {
-            filter == "all" || filter.split(',').any(|id| id.parse::<u32>() == Ok(table.common.instance_id))
+            filter == "all"
+                || filter
+                    .split(',')
+                    .any(|id| id.parse::<u32>() == Ok(table.common.instance_id))
         }) {
             eprintln!("MEASURED_TABLE id={} depth={depth} total={total_height} rows={row_heights:?} frames={row_frame_heights:?} reflowed={}", table.common.instance_id, self.render_normalization.table_text_reflowed(table));
         }

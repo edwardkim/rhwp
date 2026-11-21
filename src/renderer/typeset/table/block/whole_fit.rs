@@ -351,9 +351,11 @@ impl TypesetEngine {
             })?;
         // 앞 실제 쪽이 소비한 원본 prefix는 이 단에서 다시 점유하지 않는다.
         // 같은 변환 결과를 fit·예약·paint가 사용한다.
-        let consumed = crate::renderer::typeset::stored_reset_ownership::consumed_prefix_before_float(
-            st, paragraphs, para_idx,
-        ).map_or(0.0, |origin| hwpunit_to_px(origin, self.dpi));
+        let consumed =
+            crate::renderer::typeset::stored_reset_ownership::consumed_prefix_before_float(
+                st, paragraphs, para_idx,
+            )
+            .map_or(0.0, |origin| hwpunit_to_px(origin, self.dpi));
         let origin = st.current_zone_y_offset + consumed;
         placement.anchor_y -= origin;
         placement.table_top -= origin;

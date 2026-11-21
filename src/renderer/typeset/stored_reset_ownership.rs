@@ -260,9 +260,9 @@ pub(super) fn consumed_prefix_before_float(
             let source_host = paragraph
                 .layout_stored_first_origin
                 .unwrap_or(paragraph.line_segs.first()?.vertical_pos);
-            let position = column.items.iter().rposition(|item| {
-                matches!(item, PageItem::Table { para_index, .. } if *para_index == reset)
-            })?;
+            let position = column.items.iter().rposition(
+                |item| matches!(item, PageItem::Table { para_index, .. } if *para_index == reset),
+            )?;
             let PageItem::Table { control_index, .. } = &column.items[position] else {
                 return None;
             };
