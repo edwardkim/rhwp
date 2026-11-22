@@ -552,5 +552,200 @@
         "sha256": "cf023d68c01dab729e31fd49b5f0d1d15b2dc920d2e6c41516962a2b18d5d8c3"
       }
     }
+  },
+  "ordinary_plain_matrix_comparison": {
+    "conditions": {
+      "base-native": {
+        "producer_source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+        "program_sha256": "169c8a00b73a4373db37cde92819840dffea77164a84085fe4b50784628b8d53",
+        "same_as_encrypted_png": 23,
+        "same_reference_png": 24,
+        "same_raw_scores_as_encrypted": 24,
+        "full_matrix_tsv_sha256": "05795cae4b73f75879694c5919f8c4cff29b72ed51652be876d56c5a32a13d68",
+        "full_matrix_manifest_sha256": "fb3535949d8d6627f786d06adde76704be4ee568abccdbc600ff96a289384c66",
+        "pages": 24,
+        "matrix_different_png_pages": [
+          {
+            "page": 10,
+            "encrypted_png_sha256": "a9c7caed429d3070f8d333263c677bfb77ef4d61d79e44d127f8875403cff714",
+            "main_plain_png_sha256": "388b8dc501afaff6983be2608fc08edf18b85068e0e149288ac5aee39de4a4e8",
+            "mode_before": "RGBA",
+            "mode_after": "RGBA",
+            "changed_decoded_pixels": 262,
+            "diff_bboxes": [
+              [
+                178,
+                199,
+                193,
+                436
+              ],
+              [
+                178,
+                199,
+                193,
+                436
+              ]
+            ]
+          }
+        ],
+        "same_decoded_pixels_pages": 23
+      },
+      "candidate-native": {
+        "producer_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "program_sha256": "c214cd39c5b6cba08e80852de8cccdbbed58965595d8900b06be1d04960eef4d",
+        "same_as_encrypted_png": 23,
+        "same_reference_png": 24,
+        "same_raw_scores_as_encrypted": 24,
+        "full_matrix_tsv_sha256": "9cad751c922ad3fb43bce95b6c86d9755d0e67e30645d6e5f5f2dde5fb3b7b0c",
+        "full_matrix_manifest_sha256": "87cfc38fdda66b6d6d1dd3ab650a7779654c7de53026e17b78760c32cd6d5307",
+        "pages": 24,
+        "matrix_different_png_pages": [
+          {
+            "page": 10,
+            "encrypted_png_sha256": "94b63ee94bafd1f66b5e5f72e7ca3e4e770772fab39b5fda25600604cb1b55e6",
+            "main_plain_png_sha256": "68e3abc1e756cf1d771aa05c28dafab1e9174153f19ba676e3ec656130fed338",
+            "mode_before": "RGBA",
+            "mode_after": "RGBA",
+            "changed_decoded_pixels": 262,
+            "diff_bboxes": [
+              [
+                178,
+                199,
+                193,
+                436
+              ],
+              [
+                178,
+                199,
+                193,
+                436
+              ]
+            ]
+          }
+        ],
+        "same_decoded_pixels_pages": 23
+      },
+      "base-wasm": {
+        "producer_source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+        "program_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+        "same_as_encrypted_png": 23,
+        "same_reference_png": 24,
+        "same_raw_scores_as_encrypted": 24,
+        "full_matrix_tsv_sha256": "e848e949c215aedc15cb8ca4268c31cc7daf0c9980d449779ca87717cd2e5a26",
+        "full_matrix_manifest_sha256": "d2c3e28e8b77a7eb7a524f0f562c466f5255e6e9cc472c525e1212f3b668250b",
+        "pages": 24,
+        "matrix_different_png_pages": [
+          {
+            "page": 10,
+            "encrypted_png_sha256": "dc11c040108242080b346153b619d1c1943fc55293df9b52466ad57d95d3199c",
+            "main_plain_png_sha256": "6da4ac72e95bd9e99f3b270a5db42e70272d2554e3df8939320a8bdaa8659ffd",
+            "mode_before": "RGBA",
+            "mode_after": "RGBA",
+            "changed_decoded_pixels": 252,
+            "diff_bboxes": [
+              [
+                178,
+                200,
+                193,
+                436
+              ],
+              [
+                178,
+                200,
+                193,
+                436
+              ]
+            ]
+          }
+        ],
+        "same_decoded_pixels_pages": 23
+      },
+      "candidate-wasm": {
+        "producer_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "program_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "same_as_encrypted_png": 23,
+        "same_reference_png": 24,
+        "same_raw_scores_as_encrypted": 24,
+        "full_matrix_tsv_sha256": "cf023d68c01dab729e31fd49b5f0d1d15b2dc920d2e6c41516962a2b18d5d8c3",
+        "full_matrix_manifest_sha256": "0f589e0097ee103ad7b853276b06040481c4c4b60c363998ce30f47987bce44f",
+        "pages": 24,
+        "matrix_different_png_pages": [
+          {
+            "page": 10,
+            "encrypted_png_sha256": "517a043ef74211ced92f8ab6e2f28809fa251d5db7d87655373e6c30d61e3941",
+            "main_plain_png_sha256": "fbcaf000a2bc63b3cddcbc27f5291112cac017a0c5bec2f1c3ec8a78ef185f4d",
+            "mode_before": "RGBA",
+            "mode_after": "RGBA",
+            "changed_decoded_pixels": 252,
+            "diff_bboxes": [
+              [
+                178,
+                200,
+                193,
+                436
+              ],
+              [
+                178,
+                200,
+                193,
+                436
+              ]
+            ]
+          }
+        ],
+        "same_decoded_pixels_pages": 23
+      }
+    },
+    "shared_pixel_deltas": {
+      "native": {
+        "base_and_candidate_signed_pixel_delta_sha256": "0a68665a117114bcd40dc098cfbaf71c0114ce66c3f1ba7205541ff3f8985dc9",
+        "different_page": 10,
+        "changed_pixels_per_role": 262
+      },
+      "wasm": {
+        "base_and_candidate_signed_pixel_delta_sha256": "76c88084b37763f73ee1e4f306ff46862e5c8d60029b8d860d091c2d6f90db31",
+        "different_page": 10,
+        "changed_pixels_per_role": 252
+      }
+    },
+    "fresh_wasm_symbol_registration": {
+      "base": {
+        "symbol_positions_match": true,
+        "symbol_runs": 4,
+        "registered_family": "HCI Poppy",
+        "parity_registration_sha256": [
+          "049e15f3c5ec7b3ffbcdeed8fed73bd8cbf5aa9820015f2621ed5ad785e68078",
+          "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        ],
+        "full_matrix_registration_sha256": [
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        ]
+      },
+      "candidate": {
+        "symbol_positions_match": true,
+        "symbol_runs": 4,
+        "registered_family": "HCI Poppy",
+        "parity_registration_sha256": [
+          "049e15f3c5ec7b3ffbcdeed8fed73bd8cbf5aa9820015f2621ed5ad785e68078",
+          "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        ],
+        "full_matrix_registration_sha256": [
+          "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385",
+          "ad78b2ee6458dcbef0b373b1ca7b3ddfb6ddd1610eda331ebd88d486e0556341"
+        ]
+      }
+    },
+    "preview": {
+      "path": "hand-symbol-print-comparison.png",
+      "sha256": "a81c38bbb87ead2ec68209c7bc50be7e9c93599403d7b3b730d37d8fa6b17cfe",
+      "crop_px": [
+        164,
+        180,
+        209,
+        454
+      ]
+    },
+    "observation_ko": "별도 암호 검증과 전쪽 평문 실행을 대조하니 10쪽의 파란 손가락 기호 네 개에 획 윤곽 차이가 있었다. Native와 fresh WASM에서 각 경로의 기준·후보 차이 위치와 RGB 변화량이 같았다. 전쪽 실행의 후보 fresh WASM PNG는 리베이스 직전 전쪽 실행과 일치했다."
   }
 }

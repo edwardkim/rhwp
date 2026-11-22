@@ -122,6 +122,10 @@ CanvasKit의 사전 검사 한도인 128쪽을 넘는 네 조건에서 실제 Ca
 Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
 [암호 HWPX 쪽별 TSV와 PNG 해시](../verification/issue7754-nine-fidelity/after-pr9322/issue7754-encrypted-parity/validation.json)
 
+별도 암호 검증을 전쪽 평문 실행과도 대조했다. 두 실행 사이에서 24쪽의 실루엣 값은
+모두 같았다. 10쪽의 파란 손가락 기호 네 개에서만 획 윤곽이 달랐고, 그 픽셀 변화가 각 경로의
+현재 기준과 후보에서 정확히 일치했다. fresh WASM 글꼴 등록 기록과 확대 비교를 증빙에 담았다.
+
 #9318의 OLE 입력은 새 기준과 후보의 Native·fresh WASM에서 HWP와 HWPX로 각각 두 번
 편집·저장하고 다시 열었다. 변환본과 편집본 20개의 독립 CFB·XML 검사에서 두 OLE 개체의
 속성과 payload가 일치했으며 편집한 텍스트도 보존됐다.
