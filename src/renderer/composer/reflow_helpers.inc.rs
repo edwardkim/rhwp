@@ -7,7 +7,7 @@ fn estimate_regenerated_line_text_width(
     style: &TextStyle,
     regenerated_line_space_metric: bool,
 ) -> f64 {
-    let measured = estimate_text_width_unrounded(text, style);
+    let measured = crate::renderer::layout::line_break_text_width(text, style);
     if !regenerated_line_space_metric {
         return measured;
     }

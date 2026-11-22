@@ -4154,7 +4154,7 @@ pub(crate) use text_measurement::{
     estimate_text_width_exact, estimate_text_width_unrounded,
     estimate_text_width_unrounded_with_storage, extract_tab_leaders_with_extended,
     find_next_tab_stop, hancom_regenerated_space_width, has_hft_bold_tracking, is_cjk_char,
-    is_halfwidth_cjk_quote, kopub_declared_space_em, kopub_space_advance_em,
+    is_halfwidth_cjk_quote, kopub_declared_space_em, kopub_space_advance_em, line_break_text_width,
     resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
     trace_char_width_decisions, try_resolved_to_text_style, verified_source_projection_face,
     verified_source_projection_text, verified_source_projection_text_with_fallback,

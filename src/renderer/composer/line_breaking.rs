@@ -11,8 +11,8 @@ use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph,
 use crate::model::style::{Alignment, HeadType, LineSpacingType};
 use crate::renderer::equation_tac_flow::indent_leaves_line_room_hwp;
 use crate::renderer::layout::{
-    estimate_text_width, estimate_text_width_unrounded, glyph_letter_spacing_advance,
-    hancom_regenerated_space_width, is_cjk_char, kopub_space_advance_em, resolved_letter_spacing,
+    estimate_text_width, glyph_letter_spacing_advance, hancom_regenerated_space_width, is_cjk_char,
+    kopub_space_advance_em, line_break_text_width, resolved_letter_spacing,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::style_resolver::storage::{Storage, Unbounded};
@@ -440,7 +440,7 @@ impl SpaceMetric {
     fn space_advance(self, style: &crate::renderer::TextStyle) -> f64 {
         let mut selected = style.clone();
         self.apply_to_style(&mut selected);
-        estimate_text_width_unrounded(" ", &selected)
+        line_break_text_width(" ", &selected)
     }
 }
 
@@ -569,7 +569,7 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 &mut tokens,
                 BreakToken::DiscretionaryHyphen {
                     idx: i,
-                    width: estimate_text_width_unrounded("-", &style),
+                    width: line_break_text_width("-", &style),
                     max_font_size: token_line_font_size(styles, shape),
                 },
             )?;
@@ -801,7 +801,7 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
                 let cluster_end = hangul_jamo_cluster_end(text_chars, i);
                 let mut single = [0u8; 4];
                 let display = metric_display(&text_chars[i..cluster_end], &mut single, storage)?;
-                let mut w = estimate_text_width_unrounded(&display, &ts)
+                let mut w = line_break_text_width(&display, &ts)
                     + (i..cluster_end)
                         .map(|idx| inline_width_px_at(inline_controls, idx, styles))
                         .sum::<f64>();
@@ -1026,7 +1026,7 @@ fn try_tokenize_paragraph_with_regenerated_space_metric<
 fn reflow_scalar_width(ch: char, style: &crate::renderer::TextStyle) -> f64 {
     let display = super::verified_pua_replay_scalar(ch).unwrap_or(ch);
     let mut bytes = [0u8; 4];
-    estimate_text_width_unrounded(display.encode_utf8(&mut bytes), style)
+    line_break_text_width(display.encode_utf8(&mut bytes), style)
 }
 
 /// 토큰 텍스트의 폭을 글자별 언어 인식 측정으로 합산한다.
@@ -1145,8 +1145,8 @@ fn try_measure_token_chars<S: crate::renderer::style_resolver::storage::Storage>
         // 원문과 언어 슬롯은 유지하고 paint와 같은 1:1 표시 글리프로 잰다.
         let mut single = [0u8; 4];
         let display = metric_display(&chars[offset..cluster_end], &mut single, storage)?;
-        let width = estimate_text_width_unrounded(&display, &ts)
-            + inline_width_px_at(inline_controls, idx, styles);
+        let width =
+            line_break_text_width(&display, &ts) + inline_width_px_at(inline_controls, idx, styles);
         total += width;
         if retain_widths {
             char_widths.push(width);
