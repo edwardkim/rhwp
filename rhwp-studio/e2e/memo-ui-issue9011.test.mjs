@@ -190,6 +190,11 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
       input.focus();
     }, { start, end });
   };
+  const toggleMemoView = cmd => page.evaluate(id => {
+    document.querySelector('#menu-bar .menu-item[data-menu="view"] .menu-title')
+      .dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    document.querySelector('.md-item[data-cmd="' + id + '"]').click();
+  }, cmd);
   const body = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
   await position(body, { ...body, paragraphIndex: 1 });
   await open(page);
@@ -277,6 +282,38 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
       console.log(`  ${format.toUpperCase()} ${pass}회차: 본문과 두 셀의 메모 및 대상 위치 보존`);
     }
   }
+
+  const beforeMargin = await state(page);
+  const saveBytes = () => page.evaluate(() => [...window.__wasm.exportHwpx()]);
+  const beforePreview = await saveBytes();
+  await toggleMemoView('view:memo-margin');
+  await page.waitForFunction(() => document.querySelectorAll('.memo-margin-cards button').length === 3);
+  assert.equal(await page.$$('.memo-margin-guides polyline').then(lines => lines.length), 0);
+  await toggleMemoView('view:memo-guides');
+  await page.waitForFunction(() => document.querySelectorAll('.memo-margin-guides polyline').length === 3);
+  const geometry = () => page.evaluate(() => {
+    const viewport = document.querySelector('#scroll-container').getBoundingClientRect();
+    const cards = [...document.querySelectorAll('.memo-margin-cards button')]
+      .map(button => button.getBoundingClientRect()).sort((a, b) => a.top - b.top);
+    return cards.every((card, index) => card.left >= viewport.right &&
+      (index === 0 || card.top >= cards[index - 1].bottom));
+  });
+  assert.equal(await geometry(), true, '여백 상자는 본문과 다른 메모를 덮지 않는다');
+  await page.evaluate(() => window.__canvasView.getViewportManager().setZoom(1.2));
+  await page.waitForFunction(() => window.__canvasView.getViewportManager().getZoom() === 1.2
+    && document.querySelector('.memo-margin-guides polyline'));
+  assert.equal(await geometry(), true, '확대 후에도 여백 상자는 분리된다');
+  await page.click('.memo-margin-cards button');
+  const awaitMemoText = await page.$eval('#memo-text', el => el.value);
+  assert.ok(beforeMargin.some(memo => memo.text === awaitMemoText), '카드에서 해당 메모를 연다');
+  await close(page);
+  await toggleMemoView('view:memo-guides');
+  await page.waitForFunction(() => !document.querySelector('.memo-margin-guides polyline'));
+  await toggleMemoView('view:memo-margin');
+  await page.waitForSelector('.memo-margin', { hidden: true });
+  assert.deepEqual(await state(page), beforeMargin);
+  assert.deepEqual(await saveBytes(), beforePreview, '보기 상태는 저장 내용에 기록되지 않는다');
+  assert.equal(await dirty(page), false);
 
   await createNewDocument(page);
   const pageMemoOffset = await page.evaluate(async () => {

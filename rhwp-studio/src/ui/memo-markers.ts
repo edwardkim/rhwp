@@ -3,6 +3,7 @@ import type { MemoInfo } from '@/core/memo-editor';
 import type { CursorRect } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CanvasView } from '@/view/canvas-view';
+import { MemoMargin } from './memo-margin';
 import { t } from '../i18n/index.ts';
 
 export interface MemoMark {
@@ -21,6 +22,7 @@ export function installMemoMarkers(
   layer.className = 'memo-marker-layer';
   content.append(layer);
   const virtual = canvas.getVirtualScroll();
+  const margin = new MemoMargin(container, bus, open, schedule);
   let marks: MemoMark[] | null = null;
   let generation = -1;
   let scheduled = false;
@@ -54,6 +56,7 @@ export function installMemoMarkers(
       button.remove();
       buttons.delete(id);
     }
+    const located = [];
     const bottom = new Map<number, number>();
     for (const { memo, rect } of [...visible].sort((a, b) => a.rect.y - b.rect.y)) {
       let button = buttons.get(memo.id);
@@ -75,8 +78,15 @@ export function installMemoMarkers(
       bottom.set(page, top + 20);
       const right = virtual.getPageLeftResolved(page, scrollContent.clientWidth) + virtual.getPageWidth(page);
       button.style.left = `${right - 20}px`;
-      button.style.top = `${top}px`;
+      button.style.top = String(top) + 'px';
+      located.push({
+        memo,
+        x: right - virtual.getPageWidth(page) + rect.x * zoom,
+        y: desired + rect.height * zoom / 2,
+        edge: right - 20,
+      });
     }
+    margin.update(located);
   }
 
   function schedule() {
