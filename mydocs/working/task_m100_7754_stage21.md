@@ -13,10 +13,13 @@
 자신의 측정값을 쓴다. 버전별 기호의 표시·저장 처리와 기존 87개 기호의 공급 순서도 보존했다.
 
 [원 PR 검증 자료](../pr/assets/pr9280/README.md)의 Native·WASM 37쪽씩 원본 TSV 74개와
-집중 14종의 입력·독립 한컴 PDF 해시를 새 base의 Git 객체에 대조했다. 원 PR 생산 소스
+37종의 입력·독립 한컴 Print PDF 해시를 새 base의 Git 객체에 대조했다. 원 PR 생산 소스
 `9595602fe1024fc314bb0c9918a8f7343a91bb75`의 Rust·Studio·스크립트 입력은 새 base와
 같았다. 이 기록은 #9322 검증 입력의 출처다. 새 후보의 실제 출력, HWP 버전 경계에서의
 HWPX 저장·재열기, 결합 부호의 내용·편집 위치와 실제 화면·인쇄 backend는 새 base와 비교한다.
+
+리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
+하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
 Stage 20의 보호 검증과 원래 아홉 이슈의 증빙은 이전 기준과 생산 SHA에 연결한다. 새 base와
 후보에서 동일한 Harness와 글꼴·연결 그림 공급으로 원래 대상, 보호 정본, #9318·#9322 기능을
