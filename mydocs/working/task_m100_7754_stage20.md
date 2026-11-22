@@ -39,6 +39,10 @@ Native·fresh WASM 8조건이 모두 통과했다. 전쪽 공식 표시값은 10
 후보의 제목과 본문이 빈 줄 묶음 아래로 복원됐다. 제목의 첫 잉크 행은 새 base의 217px에서
 한컴 Print와 같은 279px로 옮겨졌다. [원본 PNG와 측정 근거](../verification/issue7754-nine-fidelity/studio/market-page100-screen/review.json)
 
+고정 좌표·치수 회귀에 쓰는 안내서 2쪽과 규제분석 HWP 10·28·29쪽, HWPX 26쪽을 최종 생산본의
+Native·fresh WASM으로 재대조했다. 안내서 2쪽은 양쪽 99.99%, 규제분석 네 쪽은 양쪽 100.00%다.
+[전쪽 TSV와 확대 판독](../verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/review.json)
+
 보호 fresh WASM의 첫 `sample10` 실행은 연결 그림 옵션을 빠뜨려 1쪽 raw가 31.61%였다.
 [기존 지침](../manual/verification/visual_sweep_guide.md#macos-외부-연결-그림-공급)과
 [수용 기록](../pr/assets/issue8856/final-20261110/sample10-linked-assets.json)에 따라
