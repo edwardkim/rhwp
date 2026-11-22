@@ -1,0 +1,34 @@
+{
+  "old_base": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "latest_devel": "bd3cd171331e80e79881dc8e9ed37f837ef6be77",
+  "same_production_tests_and_tools": true,
+  "comparison_command": [
+    "git",
+    "diff",
+    "--exit-code",
+    "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+    "upstream/devel",
+    "--",
+    "src",
+    "crates",
+    "build_scripts",
+    ".cargo",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain.toml",
+    "build.rs",
+    "tests",
+    "scripts"
+  ],
+  "changed_files": [
+    "README.md",
+    "README_EN.md",
+    "mydocs/orders/20261122.md",
+    "mydocs/pr/archives/pr_9299_review.md",
+    "mydocs/pr/assets/pr9299/en-1280.png",
+    "mydocs/pr/assets/pr9299/en-390.png",
+    "mydocs/pr/assets/pr9299/ko-1280.png",
+    "mydocs/pr/assets/pr9299/ko-390.png"
+  ],
+  "sync_status": "Fetched only; rebase pending producer completion."
+}
