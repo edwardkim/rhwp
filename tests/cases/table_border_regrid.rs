@@ -1,4 +1,12 @@
-//! 관계형. 칸 안 표의 쪽 개체 목록 경로와, 한 줄의 칸 경계만 옮길 때의 열 격자 나누기.
+//! 관계형. 중첩 표의 소유 경로와 행 경계를 옮긴 뒤의 열 격자를 비교한다.
+//! 주석 갱신 2026-11-23 04:40 KST (+0900) · 직전 파일 변경 2026-11-22T01:42:43+09:00 (eeff0619f5fa5a8b53c9b7779423ccba7fa74754).
+//! 2026-11-23 한컴 Print 대조. 96 DPI, 보정 전 2px 실루엣 raw의 전체 쪽 최저값(Native / fresh WASM).
+//! nested-table-hwp 전체 1쪽 100.00% / 100.00%.
+//! nested-table-hwpx 전체 1쪽 100.00% / 100.00%.
+//! single-row-resize-hwp 전체 1쪽 100.00% / 100.00%.
+//! single-row-resize-hwpx 전체 1쪽 100.00% / 100.00%.
+//! 같은 동작을 실제 파일로 저장한 인쇄 대조군이다. 합성 모델의 값은 테스트가 구성한 입력과 독립 기대값으로 검사한다.
+//! 전쪽 결과와 원본은 mydocs/pr/assets/semanticist21-20261123-table-notes-shadows/focus-pages.tsv 및 hancom-print.tsv에 기록했다.
 //!
 //! - 칸 안 표는 쪽 개체 목록(`getPageControlLayout`)에 바깥 표 칸까지의 `cellPath`로 나온다.
 //!   경로가 없으면 칸 문단 번호(0)·컨트롤 번호로만 나와 본문 문단 0의 표처럼 읽힌다.

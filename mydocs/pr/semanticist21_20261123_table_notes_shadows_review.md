@@ -29,3 +29,9 @@
 같은 도구로 기준 devel과 후보의 WASM을 각각 새로 빌드했다. 후보의 `HwpDocument`는 기준의 이름 있는 메서드 609개를 모두 제공한다. 표 셀·글상자의 각주·미주를 입력하거나 번호, 커서와 소유 경로를 읽는 메서드 다섯 개가 추가됐다. Studio의 공개 JavaScript와 TypeScript 선언을 이 빌드에서 생성했다. 별도 TypeScript 소비자가 다섯 메서드를 엄격 모드로 읽는 검사도 통과했다. [양쪽 패키지·공개 API 대조](assets/semanticist21-20261123-table-notes-shadows/public-api.json)
 
 후보에서 표·도형·주석을 편집해 저장한 HWP 8개와 HWPX 8개를 다시 열었다. 파일 16개 모두 한컴 Print에 사용한 원본과 SHA-256이 일치했다. 인라인 도형의 본문과 뒤 문단은 원래 순서를 유지했고, HWPX에 저장된 줄 높이는 각각 6,000·1,000 HWPUNIT였다. 글상자의 미주 2번을 조회하면 본문 미주 1번과 구별되는 소유 경로를 반환했다. [양 형식 재열기와 값 비교](assets/semanticist21-20261123-table-notes-shadows/roundtrips.json)
+
+## 독립 인쇄와 Studio 편집
+
+공개 입력 17개의 전체 19쪽을 Native와 최적화한 fresh WASM에서 96 DPI로 그렸다. 한컴 Print 대비 보정 전 2px 실루엣의 전쪽 최저값은 Native 99.65%, WASM 99.68%였다. 두 경로 모두 글상자의 미주와 뒤 문단, 이동한 행의 경계와 중첩 표의 위치가 인쇄본과 일치했다. 그림자 대조군은 양쪽 모두 99.72%였고, 확대해 본체를 기준으로 그림자의 축소·확대·기울기 방향을 확인했다. [전쪽 측정값](assets/semanticist21-20261123-table-notes-shadows/focus-pages.tsv) · [양쪽 프로그램 해시](assets/semanticist21-20261123-table-notes-shadows/focus-results.json) · [인쇄본·Native·WASM 비교](assets/semanticist21-20261123-table-notes-shadows/hancom-native-wasm.png)
+
+Studio 검사 2,832건이 통과했고 기존 2건은 건너뛰었다. 배포 빌드와 실제 Chrome에서 중첩 표 선택·크기 조절·Undo, 행 경계 드래그, 각주 삽입·단축키 등 E2E 다섯 개를 통과했다. [실행 결과](assets/semanticist21-20261123-table-notes-shadows/studio-checks.json)
