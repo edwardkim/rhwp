@@ -1,0 +1,69 @@
+{
+  "input": {
+    "path": "samples/hwp3-sample10.hwp",
+    "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+    "bytes": 945360
+  },
+  "reference_pdf": {
+    "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+    "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+    "bytes": 96185197
+  },
+  "document_pages": 763,
+  "checked_pages": [
+    1
+  ],
+  "dpi": 96,
+  "radius_px": 2,
+  "protected_table_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "official_floor": "99.96",
+  "linked_images": [
+    {
+      "path": "samples/oracle.gif",
+      "sha256": "464e863dd2c1650fc6997b03a5d96c9413e61bbabaf7337c783db27203cc2761"
+    },
+    {
+      "path": "samples/rdb02.gif",
+      "sha256": "bfadf4cdbbeeb5f3d8632cb54c8c3696977f405204b651f99a7a24c8f39532cf"
+    },
+    {
+      "path": "samples/s1.jpg",
+      "sha256": "77dea18ce7f8f93b0931e133dec222aec642eef0ed87b8f2031b94dcbea5c514"
+    }
+  ],
+  "accepted_asset_record": {
+    "path": "mydocs/pr/assets/issue8856/final-20261110/sample10-linked-assets.json",
+    "sha256": "bc3a2f533d2fcbfd8c803bb3f4c231c5c8614709b630ea8aaa9094d4f963ff98"
+  },
+  "fresh_wasm": {
+    "base": {
+      "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "program_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+      "raw_percent": "99.96",
+      "manifest_sha256": "de1f8a67c5ac9bf0e831a110f9886af707778be79851756eb28e804faed2f594"
+    },
+    "candidate": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "program_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+      "raw_percent": "99.96",
+      "manifest_sha256": "20bc3f675c21f43dc563a318aa801cbe2670198067355394f3b7e55b408dcca0"
+    }
+  },
+  "base_candidate_identical_png_sha256": "769d163a363e0f987f5309f7fcc83ba1f63e37aa312576cd87804ed3bcd1cdfc",
+  "reference_png_sha256": "1ecd797cf64812352ce7f18b1ec2e4006e5cc4eb652c6376cb4407ea32efe6bc",
+  "observation": "표지 상단의 Oracle 로고, 중앙의 구성도, 하단의 인물 삽화가 모두 원본 Print와 같은 영역에 그려졌다.",
+  "artifacts": {
+    "tsv": {
+      "path": "page-001.tsv",
+      "sha256": "b11aa3a7e06b05af52c5de3856a74b446b77f40c5ff959a74016ad6accb1dc60"
+    },
+    "review_png": {
+      "path": "page-001-review.png",
+      "sha256": "596027f8140c6cd8ff0a23a412eca39c20c59a46f8dcc31cc5b1dc4df5347f35"
+    },
+    "overlay_png": {
+      "path": "page-001-overlay.png",
+      "sha256": "b8a2c146451037ef55e269e55f83a7fb36ef340a1ca61029b8bd9f84128d2003"
+    }
+  }
+}

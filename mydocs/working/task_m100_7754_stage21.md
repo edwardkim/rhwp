@@ -83,6 +83,11 @@ Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
 같은 생산본의 fresh WASM은 원래 아홉 이슈 583쪽에서 최저 98.11%, 보조 검증을 포함한
 633쪽에서 최저 98.07%였다. [원본별 전쪽 TSV와 측정 기록](../verification/issue7754-nine-fidelity/wasm/candidate-before-pr9322.json)
 
+`sample10` 1쪽은 기존 연결 그림 공급 절차로 확인했다. 원본 그림 3개의 SHA-256이 기존 증거와
+일치했다. 기준과 후보의 fresh WASM에서 그림을 실제로 공급해 1쪽을 각각 99.96%로 재현했고
+PNG가 바이트까지 일치했다. 표지의 로고·구성도·인물 삽화를 독립 Print와 직접 대조했다.
+[1쪽 연결 그림, TSV와 비교 PNG](../verification/issue7754-nine-fidelity/after-pr9322/protected/sample10-linked-images/validation.json)
+
 Stage 20의 보호 검증과 원래 아홉 이슈의 증빙은 이전 기준과 생산 SHA에 연결한다. 새 base와
 후보에서 동일한 Harness와 글꼴·연결 그림 공급으로 원래 대상, 보호 정본, #9318·#9322 기능을
 다시 대조한다. 시각·최소 글꼴 Rust·Studio 필수 검증을 완료한 뒤 PR을 제출한다.
