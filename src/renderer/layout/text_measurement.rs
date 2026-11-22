@@ -2054,6 +2054,40 @@ pub(crate) fn char_width_decision<'a>(
     )
 }
 
+/// Resolve a missing Common Indic Number Form after all ordinary and prepared
+/// advances. A supplied real glyph wins even in a font whose original type
+/// was unspecified. The Hancom fallback applies only to a verified HCR miss.
+fn indic_number_fallback_advance(
+    style: &TextStyle,
+    ch: char,
+    width_source: &str,
+) -> Option<(f64, &'static str)> {
+    if width_source != "heuristicHalfwidth" || style.source_font_is_hft {
+        return None;
+    }
+    let family = style
+        .metric_font_family
+        .as_deref()
+        .unwrap_or(&style.font_family);
+    let print_em =
+        font_metrics_data::indic_number_print_notdef_em(family, style.bold, style.italic, ch)?;
+    if let Some(font) = style.native_otf_metrics.as_deref() {
+        if font.has_glyph(ch) {
+            return font
+                .source_ttf_advance_em(ch)
+                .map(|em| (em, "nativeTrueType"))
+                .or_else(|| font.advance_em(ch).map(|em| (em, "nativeOtf")));
+        }
+        if let Some(em) = font
+            .visible_notdef_advance_em()
+            .filter(|_| style.glyph_fallback_advance_explicit)
+        {
+            return Some((em, "missingGlyphAdvance"));
+        }
+    }
+    Some((print_em, "missingGlyphAdvance"))
+}
+
 fn char_width_decision_with_hft_tracking<'a>(
     chars: &[char],
     cluster_len: &[u8],
@@ -2801,9 +2835,14 @@ fn char_width_decision_with_hft_tracking<'a>(
     })
     .flatten();
     let supplemented = supplement.is_some();
-    let (base_width_raw, width_source) = supplement
-        .map(|entry| (entry.natural_advance_px(), entry.width_source()))
-        .unwrap_or((base_width_raw, width_source));
+    let (base_width_raw, width_source) = if let Some(entry) = supplement {
+        (entry.natural_advance_px(), entry.width_source())
+    } else if let Some((em, source)) = indic_number_fallback_advance(style, c, width_source) {
+        em_exact = Some(em);
+        (font_size * em, source)
+    } else {
+        (base_width_raw, width_source)
+    };
     let base_width_px = if clamp_dash_leader {
         base_width_raw.min(font_size * 0.3)
     } else {

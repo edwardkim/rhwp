@@ -727,6 +727,24 @@ fn units(source: &Source, ch: char) -> Option<u16> {
 pub(super) fn primary_has_glyph(name: &str, bold: bool, italic: bool, ch: char) -> Option<bool> {
     Some(units(source(name, bold, italic)?, ch)? != MISSING)
 }
+
+/// Hancom Print uses Gulim glyph zero (hmtx 1024 / 1024) for these ten
+/// Common Indic Number Forms when the HCR source has no character glyph.
+/// This is fallback layout evidence, not a cmap entry for the missing sign.
+pub(crate) fn indic_number_print_notdef_em(
+    name: &str,
+    bold: bool,
+    italic: bool,
+    ch: char,
+) -> Option<f64> {
+    if ('\u{A830}'..='\u{A839}').contains(&ch)
+        && primary_has_glyph(name, bold, italic, ch) == Some(false)
+    {
+        Some(1.0)
+    } else {
+        None
+    }
+}
 pub(super) fn entry(metric: &FontMetric, ch: char) -> Option<(bool, u16)> {
     if metric.em_size != 1000 {
         return None;
