@@ -7959,6 +7959,47 @@ impl ObjectPlacementFrame<'_> {
         Some((y, y + height))
     }
 
+    /// [#9274] 쪽·종이 기준 자리차지(TopAndBottom) 표의 바깥 여백 포함 세로 밴드
+    /// `(top, bottom)` (절대 y px). 그림·도형 밴드(`page_anchored_topbottom_band`)와 같은
+    /// 계약이다 — 위치가 host 흐름과 무관하므로 밴드 위 본문은 밴드 위에 남고, 밴드에
+    /// 닿는 줄만 밴드 아래로 간다. 표 위치·높이는 그리기·host 도달 점프와 같은 식
+    /// (`absolute_table_vertical_geometry`, `table_reserved_height_hu`)을 쓴다.
+    /// 문단 기준·글자처럼 취급 표, 캡션 표, 단과 가로로 겹치지 않는 표는 `None`.
+    pub(crate) fn page_anchored_topbottom_table_band(&self, table: &Table) -> Option<(f64, f64)> {
+        let common = &table.common;
+        if common.treat_as_char
+            || common.text_wrap != TextWrap::TopAndBottom
+            || table.caption.is_some()
+            || common.width == 0
+            || common.height == 0
+        {
+            return None;
+        }
+        let (ref_y, ref_h) = match common.vert_rel_to {
+            VertRelTo::Page => (self.body.y, self.body.height),
+            VertRelTo::Paper => (self.paper.y, self.paper.height),
+            VertRelTo::Para => return None,
+        };
+        let height_hu = stored_square_top_band::table_reserved_height_hu(table).max(common.height);
+        let height = hwpunit_to_px(height_hu.min(i32::MAX as u32) as i32, self.dpi);
+        let (top, bottom) = absolute_table_vertical_geometry(table, ref_y, ref_h, height, self.dpi);
+        let top = top - hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+        let width = hwpunit_to_px(
+            common.width as i32
+                + i32::from(table.outer_margin_left)
+                + i32::from(table.outer_margin_right),
+            self.dpi,
+        );
+        let (x, _) = self.position(common, width, height);
+        if ![x, top, bottom].iter().all(|v| v.is_finite())
+            || x + width <= self.column.x + 0.5
+            || x >= self.column.x + self.column.width - 0.5
+        {
+            return None;
+        }
+        Some((top, bottom))
+    }
+
     /// 자리차지 개체의 완전한 바깥 상자 뒤에 저장된 빈 호스트 줄의 원점.
     /// 첫 저장 vpos가 개체 뒤의 줄이면 그 값을 쪽 원점으로 빼지 않는다.
     /// 개체·캡션·바깥 여백과 원본 줄이 같은 경계를 닫을 때만 인증한다.

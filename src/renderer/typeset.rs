@@ -5325,6 +5325,9 @@ impl TypesetEngine {
             st.finish_deferred_host_line();
         }
         let defer_host_line = st.defer_host_line_item_para == Some(para_idx);
+        // [#9274] host 줄이 닿지 않는 쪽·종이 기준 자리차지 표 밴드의 host 줄 전진(px).
+        // 그 줄을 표 뒤 본문 항목으로 내지 않았을 때만 마지막에 흐름에 싣는다.
+        let mut band_host_line_advance: Option<f64> = None;
         let pre_height: f64 = if pre_table_end_line > 0
             && is_first_table
             && !st.pre_emitted_host_paras.contains(&para_idx)
@@ -6019,7 +6022,35 @@ impl TypesetEngine {
                 })
                 .flatten()
                 .filter(|(band_bottom, _)| st.current_height + 0.5 < *band_bottom);
-            if hwp3_topbottom_no_reserve {
+            // [#9274] 쪽·종이 기준 자리차지 표는 흐름 밖 절대 위치의 밴드다. host 줄이 밴드
+            // 위끝에 닿지 않으면 한/글은 host 에서 흐름을 내리지 않고 뒤 문단을 밴드 위에
+            // 먼저 채운 뒤, 밴드에 닿는 줄부터 밴드 아래로 보낸다(그림 밴드 #7696 과 같은
+            // 계약). 흐름은 표가 놓인 host 줄만큼 전진하고 밴드는 뒤 문단 시작 판정에 싣는다.
+            let page_band_below_host = (!table.common.treat_as_char
+                && is_first_placed
+                && is_last_placed
+                && page_band_host_line.is_none())
+            .then(|| {
+                let (top, bottom) = st.page_anchored_table_band(table)?;
+                let line = crate::renderer::layout::control_line_seg_index(para, ctrl_idx)
+                    .and_then(|index| para.line_segs.get(index))
+                    .filter(|seg| !is_synthetic_line_seg(seg))?;
+                let line_advance = crate::renderer::hwpunit_to_px(
+                    line.line_height.max(0) + line.line_spacing.max(0),
+                    self.dpi,
+                );
+                (st.current_height + pre_height + line_advance <= top + 0.5).then_some((
+                    top,
+                    bottom,
+                    line_advance,
+                ))
+            })
+            .flatten();
+            if let Some((top, bottom, line_advance)) = page_band_below_host {
+                st.advance_flow_by(pre_height);
+                st.push_page_anchored_band(para_idx, top, bottom);
+                band_host_line_advance = Some(line_advance);
+            } else if hwp3_topbottom_no_reserve {
                 st.advance_flow_by(pre_height + stored_host_line_px.unwrap_or(0.0));
             } else if hangul_flowed_beside_table {
                 let band_top = st.current_height + pre_height;
@@ -6415,6 +6446,19 @@ impl TypesetEngine {
                     });
                 }
                 st.advance_flow_by(fmt.line_advance(0));
+            }
+        }
+
+        // [#9274] 표 뒤 본문·이연 항목으로 나가지 않은 host 줄은 표 항목이 소유한다.
+        if let Some(line_advance) = band_host_line_advance {
+            let host_line_emitted = st.current_items.iter().any(|item| {
+                matches!(item,
+                    PageItem::PartialParagraph { para_index, start_line: 0, .. }
+                    | PageItem::FullParagraph { para_index }
+                    if *para_index == para_idx)
+            });
+            if !host_line_emitted {
+                st.advance_flow_by(line_advance);
             }
         }
 

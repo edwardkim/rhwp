@@ -8139,6 +8139,53 @@ impl LayoutEngine {
         }
     }
 
+    /// [#9274] host 줄이 닿지 않는 쪽·종이 기준 자리차지 표 밴드 — 조판
+    /// (`typeset` 의 `page_band_below_host`)과 같은 판정이다. host 줄 위끝 `host_top`(절대 px)
+    /// 에서 표가 놓인 저장 줄만큼 전진해도 밴드 위끝에 닿지 않으면 그 전진량(px)을 돌려준다.
+    /// 이때 흐름은 host 에서 표 아래로 점프하지 않고, 뒤 문단은 조판이 밴드로 정한
+    /// 시작(`page_band_flow_starts`)을 따른다.
+    pub(crate) fn page_anchored_table_band_below_host(
+        &self,
+        para: &Paragraph,
+        control_index: usize,
+        col_area: &LayoutRect,
+        host_top: f64,
+    ) -> Option<f64> {
+        let Some(Control::Table(table)) = para.controls.get(control_index) else {
+            return None;
+        };
+        let (bx, by, bw, bh) = self.current_body_area.get();
+        let body = LayoutRect {
+            x: bx,
+            y: by,
+            width: bw,
+            height: bh,
+        };
+        let paper = LayoutRect {
+            x: self.current_paper_origin_x.get(),
+            y: 0.0,
+            width: self.current_paper_width.get(),
+            height: self.current_page_height.get(),
+        };
+        let frame = crate::renderer::float_placement::ObjectPlacementFrame {
+            container: col_area,
+            column: col_area,
+            body: &body,
+            paper: &paper,
+            paragraph_y: col_area.y,
+            alignment: crate::model::style::Alignment::Left,
+            dpi: self.dpi,
+        };
+        let (top, _) = frame.page_anchored_topbottom_table_band(table)?;
+        let line = control_line_seg_index(para, control_index)
+            .and_then(|index| para.line_segs.get(index))
+            .filter(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })?;
+        let advance = hwpunit_to_px(line.line_height.max(0) + line.line_spacing.max(0), self.dpi);
+        (host_top + advance <= top + 0.5).then_some(advance)
+    }
+
     /// 페이지·바탕쪽·단 프로브가 같은 물리 용지와 본문 좌표계를 소비한다.
     fn prime_page_layout_env(&self, layout: &PageLayoutInfo) {
         self.current_paper_width.set(layout.page_width);
@@ -8963,6 +9010,36 @@ impl LayoutEngine {
             // TopAndBottom 글상자: 앵커 문단에 도달하면 y_offset을 글상자 하단 아래로 점프
             let mut shape_jumped = false;
             for &(anchor_pi, bottom_y) in &shape_reserved {
+                // [#9274] host 줄이 닿지 않는 쪽·종이 기준 자리차지 표 밴드는 host 에서
+                // 점프하지 않는다 — 뒤 문단은 조판이 밴드로 정한 시작을 따른다.
+                let band_below_host = item_para == anchor_pi
+                    && {
+                        let anchor_para = &paragraphs[anchor_pi];
+                        let mut tables = anchor_para
+                        .controls
+                        .iter()
+                        .enumerate()
+                        .filter(|(_, control)| {
+                            matches!(control, Control::Table(t)
+                                if !t.common.treat_as_char
+                                    && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)
+                                    && !matches!(t.common.vert_rel_to, crate::model::shape::VertRelTo::Para))
+                        })
+                        .peekable();
+                        tables.peek().is_some()
+                            && tables.all(|(ci, _)| {
+                                self.page_anchored_table_band_below_host(
+                                    anchor_para,
+                                    ci,
+                                    col_area,
+                                    y_offset,
+                                )
+                                .is_some()
+                            })
+                    };
+                if band_below_host {
+                    continue;
+                }
                 if item_para == anchor_pi && bottom_y > y_offset {
                     // [Task #901 Stage 8] flow-around 시도: anchor 의 text height 가 picture 위
                     // 영역 (col_area.y ~ picture_top_y) 에 fit 가능하면 pre-jump skip.
@@ -14586,7 +14663,50 @@ impl LayoutEngine {
                 } else {
                     None
                 };
-                y_offset = if is_current_visible_para_float {
+                // [#9274] host 줄이 닿지 않는 쪽·종이 기준 자리차지 표는 밴드다 — 흐름은 표가
+                // 놓인 host 줄만큼만 전진한다(조판 `page_band_below_host` 와 같은 전진량).
+                let page_band_below_host = if is_tac {
+                    None
+                } else {
+                    self.page_anchored_table_band_below_host(
+                        para,
+                        control_index,
+                        &col_area,
+                        table_y_before,
+                    )
+                };
+                y_offset = if let Some(line_advance) = page_band_below_host {
+                    // 이연된 host 줄(#2813)은 표 뒤 자기 항목으로 흐름을 전진한다.
+                    let host_line_item_follows = page_content.column_contents.iter().any(|cc| {
+                        cc.items
+                            .iter()
+                            .skip_while(|item| {
+                                !matches!(item, PageItem::Table { para_index: p, control_index: c }
+                                    if *p == para_index && *c == control_index)
+                            })
+                            .any(|item| {
+                                matches!(item,
+                                    PageItem::PartialParagraph { para_index: p, .. }
+                                    | PageItem::FullParagraph { para_index: p }
+                                    if *p == para_index)
+                            })
+                    });
+                    if !host_line_item_follows {
+                        // host 줄 전진(줄높이 + 줄간격)이 끝 줄간격을 포함한다. 표 뒤 간격
+                        // 경로가 같은 줄간격을 다시 더하지 않는다.
+                        self.paragraph_spacing_consumed
+                            .borrow_mut()
+                            .entry((page_content.section_index, para_index))
+                            .or_default()
+                            .2 = true;
+                    }
+                    table_y_before
+                        + if host_line_item_follows {
+                            0.0
+                        } else {
+                            line_advance
+                        }
+                } else if is_current_visible_para_float {
                     // 오프셋 안에 글줄이 들어가지 않는 host 는 표 아래에서 글을 잇는다.
                     let mut flow_y = if let Some(placement) = ctx
                         .paragraph_float_placements
