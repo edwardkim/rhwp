@@ -25,6 +25,8 @@
 | 실제 Native 편집·저장·재열기 | 원본 HWP·실제 한컴 HWPX에 30/70줄 추가, 후보 12상태와 기준 12상태의 PNG·쪽수 동일, 독립 PDF·내용/소유 관계 확인 |
 | 저장 원본 Native 유입 보존 | 33조건·50쪽 완료, 최저 98.07% |
 | 리베이스 후 최소 글꼴 Native unfiltered lib | 4,033 PASS, 기존 12 ignored, exit 0 |
+| 리베이스 후 기존 Native CI 대상 | 21개 selector·193건 PASS, exit 0 |
+| 집중 통합·쪽수 기준 검사 | 5개 selector·28건 PASS, 시장구조조사·수출입의 oracle 포함 |
 | Studio unit·TypeScript | 2,834 PASS·0 skip, 타입 검사 PASS |
 | Node 정책·font trace 계약 | 36건·14건 각각 PASS |
 
@@ -37,8 +39,8 @@
 
 ## 남은 필수 작업
 
-- 리베이스 후 공식 Native CI 사례·focused 통합/쪽수 oracle·전체 nextest·Clippy·workspace build를
-  끝낸다. Cargo는 공용 target 한 곳에서 순차 실행하며 메모리 경합을 줄이기 위해 build jobs는
+- 리베이스 후 공식 Native CI 사례 21개와 focused 통합/쪽수 oracle 5개는 완료했다.
+  전체 nextest·Clippy·workspace build를 끝낸다. Cargo는 공용 target 한 곳에서 순차 실행하며 메모리 경합을 줄이기 위해 build jobs는
   2개로 제한했다. 정상 incremental 정책은 유지한다.
 - 후보 fresh WASM 원본 전쪽, 유입 기능의 실제 WASM 편집·저장·재열기·내용 보존, Studio 실제
   여정·CTRL_DATA 물리 레코드 보존을 끝낸다. 기준 재사용은 같은 입력·같은 실제 환경·같은 고정
@@ -58,3 +60,18 @@
 
 평균값·현재 base와 같다는 이유·98% 유지·다른 페이지 개선으로 정본 하락을 면제하지 않는다.
 아직 실행 중인 범위를 완료 또는 통과로 표시하지 않는다.
+
+## 후속 체크포인트: 순차 검증과 공간 확보
+
+공식 Native CI와 집중 검사 26개 selector의 종료 로그·명령·검증 SHA를
+`mydocs/pr/assets/issues7754_7765/source39/rust-completed-selectors.json`에 고정했다.
+쪽수 oracle은 16개 partition과 누락·중복·미달·비유한 값 거부 계약을 포함해 17건 모두 통과했다.
+이전 실패 검사를 제외하거나 실행하지 않은 채 통과로 세지 않았다.
+
+디스크 여유가 700 MiB 미만이 되어 종료된 구형 검증 실행 파일 8개와 미사용 임시 Chrome
+프로필 1개를 정리했다. 이후 다음 Cargo 실행을 예약하는 Python 부모만 일시 정지하고,
+실행 중이던 Cargo 자식이 정상 종료한 뒤 전체 Cargo/Rust 사용 부재와 잠금을 확인했다.
+정확히 지정한 오래된 incremental 하위 세션 5개만 정리하고 부모를 재개했다.
+실행 중인 Cargo·테스트는 중단하지 않았으며 deps·프로필 전체·원본·PDF·TSV·PNG는 보존했다.
+실제 확보 공간은 각각 761,630,720바이트와 2,983,735,296바이트다. 삭제 목록과 확인 근거는
+동일 source39 디렉터리의 cleanup 영수증에 남겼다. 최종 종료 정리는 아직 수행하지 않았다.

@@ -1,0 +1,6 @@
+{
+  "controller_pid": 1788076,
+  "command": "python3 /home/tsjang/rhwp/output/pr-review/issue7754-nine/run_source38_rust_gates.py ",
+  "paused": 1795322254.3035562,
+  "scope": "Only Python sequencing parent paused; existing Native Cargo/nextest child continues to terminal. Resume immediately after exact inactive incremental cache cleanup."
+}
