@@ -1,10 +1,10 @@
 //! 관계형·고정형: 시장구조조사의 빈 줄 흐름·부록 표 소속·전체 쪽수와 내용 보존.
+//! 주석 갱신: 2026-11-22T22:52:44+09:00. 최초 등록: 2026-11-21T23:18:23+09:00, 91f4f7f018350dff964c964e2d4d5b41afb148b7.
 //! 2026-11-21 측정: PDFium, Print 96 DPI, 색상 경계 보정 전 반경 2px 실루엣 raw.
 //! 94·95·100·247·315쪽 Native/fresh WASM 각각 100.00%; 246쪽 각각 99.97%.
 //! 전체 315쪽, Native/fresh WASM 전쪽 최저 각각 98.40%.
 //! 근거: mydocs/pr/assets/issues7754_7765/market-source7/README.md.
 //! 독립 Print: pdf/issue7755/market-2017-manual-print-2024.pdf; 생산 소스 a21e590a7.
-//! 주석 갱신: 2026-11-21T14:06:28+00:00; 신규 파일.
 
 use rhwp::model::control::Control;
 use rhwp::model::table::Table;
