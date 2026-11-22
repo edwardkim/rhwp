@@ -44,7 +44,8 @@ Palatino Bold의 괄호 윤곽·hmtx도 기준 PDF와 같다. 같은 정적 TTF�
 
 private Fontconfig에서 원본 Palatino를 공급하여 기존 system 경로를 재현한 결과,
 4·5·8·24·28·45·46·63쪽의 base·후보가 Native·WASM 모두 100.00%다. 전역 설치나
-렌더러 hinting·출력 좌표의 변경은 하지 않았다. 이 조건으로 전쪽 119쪽을 재측정 중이다.
+렌더러 hinting·출력 좌표의 변경은 하지 않았다. 정본 manifest의 전쪽은 74쪽이다.
+처음 전체 요청을 119쪽으로 잘못 지정한 실패와 정정·재실행은 stage14에 기록한다.
 
 ## Windows Arial의 실제 사용
 
