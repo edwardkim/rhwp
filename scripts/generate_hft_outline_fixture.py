@@ -3,6 +3,7 @@
 from pathlib import Path
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.t2CharStringPen import T2CharStringPen
+from fontTools.ttLib import TTFont
 
 
 def generate():
@@ -36,7 +37,6 @@ def generate():
 
 
 def generate_jamo():
-    from fontTools.ttLib import TTFont
     root = Path(__file__).resolve().parents[1] / 'tests/fixtures/fonts'
     with TTFont(root / 'RHWPHftOutline.otf', recalcTimestamp=False) as font:
         # 원래 face에도 옛자모가 있을 때 전용 face 선택을 덮어쓰는 결함을 검출한다.
@@ -46,8 +46,23 @@ def generate_jamo():
         font.save(root / 'RHWPHftOutlineJamo.otf')
 
 
+def generate_empty_point():
+    root = Path(__file__).resolve().parents[1] / 'tests/fixtures/fonts'
+    with TTFont(root / 'RHWPHftOutline.otf', recalcTimestamp=False) as font:
+        for table in font['cmap'].tables:
+            if table.isUnicode():
+                table.cmap = {0x2027: 'uniAC00'}
+        programs = font['CFF '].cff.topDictIndex[0].CharStrings
+        original = programs['uniAC00']
+        programs['uniAC00'] = T2CharStringPen(900, None).getCharString(
+            original.private, original.globalSubrs
+        )
+        font.save(root / 'RHWPHftEmptyPoint.otf')
+
+
 if __name__ == '__main__':
     import sys
     if '--jamo-only' not in sys.argv:
         generate()
+        generate_empty_point()
     generate_jamo()

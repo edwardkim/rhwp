@@ -761,6 +761,18 @@
       ]
     },
     {
+      "repositoryPath": "tests/fixtures/fonts/RHWPHftEmptyPoint.otf",
+      "sha256": "2b2edead0c42e41cdb1f6586ad12b6301f8b753016f9917c9ce4ff7825568ae1",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ],
+      "provenance": "scripts/generate_hft_outline_fixture.py"
+    },
+    {
       "repositoryPath": "tests/fixtures/fonts/RHWPHftOutline.otf",
       "sha256": "c3eb4ea18997f2a79442f80e51e421bfe496edb431a9247f27dafd4fcc305dda",
       "license": "MIT",

@@ -11,3 +11,7 @@
 `RHWPHftOutlineJamo.otf`는 같은 독창적인 사각형에 U+A960 매핑만 추가한다. 원래 HFT
 프로그램에도 옛자모가 있을 때 `RHWP Old Hangul` 우선 선택을 보존하는 font-only 계약이다.
 재생성은 같은 script이며 `--jamo-only`는 원래 파일을 다시 쓰지 않는다.
+
+`RHWPHftEmptyPoint.otf`는 같은 MIT 합성 글꼴에서 사각형 대신 전진폭만 가진 CFF
+글리프를 U+2027에 매핑한다. 설치 글꼴 없이 빈 윤곽을 다음 공급자에 넘기는 계약을 검사한다.
+일반 재생성 명령에 포함된다.

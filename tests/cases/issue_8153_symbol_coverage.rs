@@ -1,5 +1,5 @@
 //! 관계형: 가시 기호의 실제 공급 범위와 정상적인 빈 glyph의 구분.
-//! 주석 갱신: 2026-11-06 04:45:01 KST; 직전 파일 커밋: c417310cab 2026-10-30T19:50:11+09:00.
+//! 주석 갱신: 2026-11-22T15:01:27+09:00; 직전 파일 커밋: 7f76cee60e 2026-11-08T06:19:56+09:00.
 //! 편람 실측 Native 2026-10-28 / fresh WASM 2026-10-29: 96dpi, 한컴 2024 Print PDFium, 2px raw 실루엣.
 //! 이 검사는 합성 입력을 사용하며 아래 수치는 관련 편람의 별도 시각 검증이다.
 //! HWP 200쪽 Native 100.00% / fresh WASM 100.00%.
@@ -49,6 +49,33 @@ fn empty_symbols_do_not_claim_coverage_but_blank_semantics_and_real_ink_remain()
         "없는 collection face를 추측하지 않는다"
     );
     assert!(font_symbol_unicode_range(b"not a font", 0).is_empty());
+}
+
+#[test]
+fn cff_hyphenation_point_can_fall_through_only_when_the_outline_is_empty() {
+    const POINT: char = '\u{2027}';
+    let empty = include_bytes!("../fixtures/fonts/RHWPHftEmptyPoint.otf");
+    let ink = symbol_font_program::mapped_program(
+        include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
+        &[(POINT, 1)],
+    );
+    let empty_face = ttf_parser::Face::parse(empty, 0).unwrap();
+    let ink_face = ttf_parser::Face::parse(&ink, 0).unwrap();
+    let empty_gid = empty_face.glyph_index(POINT).unwrap();
+    let ink_gid = ink_face.glyph_index(POINT).unwrap();
+    assert_ne!(empty_gid.0, 0);
+    assert_eq!(
+        empty_face.glyph_hor_advance(empty_gid),
+        ink_face.glyph_hor_advance(ink_gid)
+    );
+    assert!(empty_face.glyph_bounding_box(empty_gid).is_none());
+    assert!(ink_face.glyph_bounding_box(ink_gid).is_some());
+    assert!(empty_symbol_codepoints(empty, 0).contains(&u32::from(POINT)));
+    assert_eq!(
+        font_symbol_unicode_range(empty, 0),
+        "U+0-2026,U+2028-10FFFF"
+    );
+    assert!(font_symbol_unicode_range(&ink, 0).is_empty());
 }
 
 #[test]
