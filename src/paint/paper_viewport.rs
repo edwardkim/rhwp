@@ -353,7 +353,8 @@ impl PagePaintContext {
                                     });
                             if run.style.print_text_device_frame
                                 || supplied_truetype
-                                || (run.style.hft_print_frame && !*rounded)
+                                || ((run.style.hft_print_frame || run.style.source_dc_frame)
+                                    && !*rounded)
                             {
                                 sources.insert(source.id.0);
                             }
@@ -473,8 +474,15 @@ impl PagePaintContext {
         // BorderFill에서 생산한 배경 사각형과 원본 도형은 같은 paint primitive를
         // 쓰지만 Print의 device 상태 계약은 다르다. 원본 도형 control 소유는
         // shape layout에서 이미 발행한다. 색·위치·쪽 번호로 배경을 추측하지 않는다.
-        ((hangul2024_print || rect.control_index.is_some())
-            && Self::shape_has_print_solid_fill(&rect.style))
+        // GDI의 선형 그러데이션은 단색 다각형 띠를 연속 출력한다. 칸 배경도
+        // 실제 띠 경계가 있으면 뒤 글자와 도형이 같은 DC 정밀도를 이어받는다.
+        let gradient_bands = rect.style.opacity > 0.0
+            && rect.gradient.as_deref().is_some_and(|fill| {
+                fill.gradient_type == 1 && fill.positions.windows(2).any(|p| p[0] == p[1])
+            });
+        gradient_bands
+            || ((hangul2024_print || rect.control_index.is_some())
+                && Self::shape_has_print_solid_fill(&rect.style))
             || (rect.picture_border
                 && rect.style.opacity > 0.0
                 && rect.style.stroke_color.is_some()

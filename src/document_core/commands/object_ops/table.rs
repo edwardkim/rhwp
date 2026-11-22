@@ -88,7 +88,7 @@ impl DocumentCore {
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.
     /// 4 개 by_path setter/getter (cell picture/shape × set/get) 의 공통 파싱.
     /// 빈 path 면 Err 반환.
-    fn parse_cell_path_json(json: &str) -> Result<Vec<(usize, usize, usize)>, HwpError> {
+    pub(crate) fn parse_cell_path_json(json: &str) -> Result<Vec<(usize, usize, usize)>, HwpError> {
         let path: Vec<(usize, usize, usize)> = serde_json::from_str::<Vec<serde_json::Value>>(json)
             .map_err(|e| HwpError::RenderError(format!("cell_path JSON 파싱 실패: {}", e)))?
             .iter()
@@ -518,7 +518,13 @@ impl DocumentCore {
         };
         // 한컴 기본: 셀 높이 = top + bottom padding (빈 셀 최소 높이)
         let cell_height: u32 = (cell_pad.top + cell_pad.bottom) as u32;
-        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, char_offset);
+        // 문단 나누기(`split_at`)는 논리 캐럿을 받는다. 글자 모양·빈 줄 서식은 그 캐럿의 글자 자리에서 읽는다.
+        let shape_offset = crate::document_core::helpers::logical_to_text_offset(
+            &self.document.sections[section_idx].paragraphs[para_idx],
+            char_offset,
+        )
+        .0;
+        let inherited_line = creation_line::for_cursor(self, section_idx, para_idx, shape_offset);
         let rendered_row_height: u32 =
             cell_pad.top as u32 + inherited_line.line_height.max(0) as u32 + cell_pad.bottom as u32;
         let total_width: u32 = col_widths.iter().sum();
@@ -563,7 +569,7 @@ impl DocumentCore {
         // 커서 위치 문단의 속성을 기본값으로 상속 (한컴 동작 일치).
         // 혼합 글자모양 문단에서는 첫 엔트리가 아니라 커서 offset 의 글자모양이 기준이다.
         let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let default_char_shape_id: u32 = current_para.char_shape_id_at(char_offset).unwrap_or(0);
+        let default_char_shape_id: u32 = current_para.char_shape_id_at(shape_offset).unwrap_or(0);
         let default_para_shape_id: u16 = current_para.para_shape_id;
         let para_shape_ids: Vec<u16> = (0..col_count)
             .map(|col| {
@@ -1759,6 +1765,8 @@ impl DocumentCore {
             restrict_enabled_by_this_call || json_i32(props_json, "horzOffset").is_some();
         let clamp_vert =
             restrict_enabled_by_this_call || json_i32(props_json, "vertOffset").is_some();
+        let caption_styles = self.resolve_render_styles();
+        let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
         let caption_changed = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -1779,7 +1787,15 @@ impl DocumentCore {
                 }
             };
             let had_caption = pic.caption.is_some();
+            let caption_width_before = super::picture::picture_caption_text_width(pic);
             let caption_created = Self::apply_picture_props_inner(pic, props_json);
+            super::picture::reflow_picture_caption_if_width_changed(
+                pic,
+                caption_width_before,
+                &caption_styles,
+                dpi,
+                hwp3_layout,
+            );
             caption_created || (had_caption && pic.caption.is_none())
         };
         if caption_changed {
@@ -1932,6 +1948,37 @@ impl DocumentCore {
         }
         Ok("{\"ok\":true}".to_string())
     }
+    /// 표 셀·글상자·머리말/꼬리말 안 도형에 글상자를 붙이거나 뗀다(본문은 `set_text_box_at`).
+    /// 경로는 `setCellShapePropertiesByPath`와 같다. 반환은 `{"ok":바뀜}`이고, 그리기 개체가 아니면 까닭을 준다.
+    pub fn set_text_box_at_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        cell_path_json: &str,
+        inner_control_idx: usize,
+        attach: bool,
+    ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path_json(cell_path_json)?;
+        let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
+            HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
+        })?;
+        let para = Self::resolve_cell_paragraph_mut(section, parent_para_idx, &path)?;
+        let changed = match crate::document_core::queries::hwpctrl_sets::toggle_shape_text_box(
+            para.controls.get_mut(inner_control_idx),
+            attach,
+        ) {
+            Ok(changed) => changed,
+            Err(reason) => return Ok(format!("{{\"ok\":false,\"reason\":\"{}\"}}", reason)),
+        };
+        if changed {
+            section.raw_stream = None;
+            self.finish_loaded_source_cache_after_object_edit(section_idx);
+            self.paginate_if_needed();
+            self.invalidate_page_tree_cache();
+        }
+        Ok(format!("{{\"ok\":{}}}", changed))
+    }
+
     pub fn set_cell_shape_properties_by_path_native(
         &mut self,
         section_idx: usize,
@@ -1940,7 +1987,10 @@ impl DocumentCore {
         inner_control_idx: usize,
         props_json: &str,
     ) -> Result<String, HwpError> {
+        self.validate_image_fill_reference(props_json)?;
         let path = Self::parse_cell_path_json(cell_path_json)?;
+        let caption_styles = self.resolve_render_styles();
+        let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
         let caption_changed = {
             let section = self.document.sections.get_mut(section_idx).ok_or_else(|| {
                 HwpError::RenderError(format!("구역 인덱스 {} 범위 초과", section_idx))
@@ -1960,7 +2010,16 @@ impl DocumentCore {
                     ))
                 }
             };
-            Self::apply_shape_props_inner(shape, props_json)
+            let caption_width_before = super::shape::shape_caption_text_width(shape);
+            let changed = Self::apply_shape_props_inner(shape, props_json);
+            super::shape::reflow_shape_caption_if_width_changed(
+                shape,
+                caption_width_before,
+                &caption_styles,
+                dpi,
+                hwp3_layout,
+            );
+            changed
         };
         if caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);

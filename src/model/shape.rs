@@ -111,6 +111,9 @@ pub struct CommonObjAttr {
     /// 되돌려, 원본이 `DoubleLine`/`TripleLine`/`Margin` 드롭캡으로 개체를 감싼
     /// 문단이었더라도 저장 시 드롭캡 스타일이 유실된다.
     pub drop_cap_style: DropCapStyle,
+    /// HWP5 그림 개체 CTRL_HEADER 직속 ParameterSet. 구성 요소의 CTRL_DATA와 독립적이다.
+    #[serde(skip)]
+    pub hwp5_header_ctrl_data: Option<Box<[u8]>>,
     /// 파싱된 필드 이후 추가 바이트 (라운드트립 보존용)
     pub raw_extra: Vec<u8>,
     /// HWPX `lock`(개체 잠금) 속성 보존 (#2840, #2855, #2931).
@@ -352,7 +355,7 @@ pub struct ShapeComponentAttr {
     pub render_b: f64,
     pub render_c: f64,
     /// [#8225] 묶음 안 자식 도형의 CTRL_DATA 원본 (자식 SHAPE_COMPONENT 바로 아래 레코드, 라운드트립 보존용).
-    /// 한컴은 여기에 개체 설명 글 같은 ParameterSet 을 둔다. 맨 위 개체의 CTRL_DATA 는
+    /// 한컴은 여기에 개체 설명 글 같은 ParameterSet을 둔다. 최상위 SHAPE_COMPONENT의 CTRL_DATA는
     /// `Paragraph.ctrl_data_records` 가 갖는다.
     #[serde(skip)]
     pub ctrl_data: Option<Vec<u8>>,
@@ -1037,6 +1040,30 @@ pub struct Caption {
     pub include_margin: bool,
     /// 문단 리스트
     pub paragraphs: Vec<Paragraph>,
+}
+
+impl Caption {
+    /// 위·아래 캡션의 '여백 부분까지 너비 확대'가 개체 왼쪽보다 앞서 여는 폭(왼쪽 바깥 여백).
+    pub fn margin_extension_left(&self, margin: &Padding) -> HwpUnit {
+        match self.direction {
+            CaptionDirection::Top | CaptionDirection::Bottom if self.include_margin => {
+                margin.left.max(0) as HwpUnit
+            }
+            _ => 0,
+        }
+    }
+
+    /// 캡션 글의 줄 폭. 한컴처럼 왼쪽·오른쪽은 캡션 크기, 위·아래는 개체 폭이고
+    /// '여백 부분까지 너비 확대'면 왼쪽·오른쪽 바깥 여백까지 넓힌다.
+    pub fn text_width(&self, object_width: HwpUnit, margin: &Padding) -> HwpUnit {
+        match self.direction {
+            CaptionDirection::Left | CaptionDirection::Right => self.width,
+            _ if self.include_margin => object_width
+                .saturating_add(margin.left.max(0) as HwpUnit)
+                .saturating_add(margin.right.max(0) as HwpUnit),
+            _ => object_width,
+        }
+    }
 }
 
 /// 캡션 방향

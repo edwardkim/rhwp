@@ -26,6 +26,7 @@ mod monochrome;
 mod overlap;
 
 pub(super) struct SkiaTextReplay<'a> {
+    pub(super) pdf_fonts: Option<&'a super::pdf_fonts::PdfFontCache>,
     pub(super) canvas: &'a Canvas,
     pub(super) font_fallback_observer: Option<&'a super::font_observation::FontFallbackObserver>,
     pub(super) raster_target: bool,
@@ -144,41 +145,23 @@ impl SkiaTextReplay<'_> {
                             font_style,
                             style.source_font_is_ttf,
                         );
-                        return fonts::for_text(
-                            &chain,
-                            sample,
-                            size,
-                            style,
-                            self.font_mgr,
-                            self.geometric_text,
-                            self.font_fallback_observer,
-                        );
+                        return fonts::for_text(self, &chain, sample, size, style);
                     }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
                         if let Some(primary) = typeface_chain.first() {
                             let font = Font::new(primary.typeface.clone(), size);
                             if let Some(glyph) = fonts::compatibility_glyph(&font, sample) {
                                 return fonts::for_text(
+                                    self,
                                     &typeface_chain[..1],
                                     &glyph.to_string(),
                                     size,
                                     style,
-                                    self.font_mgr,
-                                    self.geometric_text,
-                                    self.font_fallback_observer,
                                 );
                             }
                         }
                     }
-                    fonts::for_text(
-                        &typeface_chain,
-                        sample,
-                        size,
-                        style,
-                        self.font_mgr,
-                        self.geometric_text,
-                        self.font_fallback_observer,
-                    )
+                    fonts::for_text(self, &typeface_chain, sample, size, style)
                 };
                 let baseline_y = if baseline > 0.0 {
                     bbox.y + baseline
@@ -348,7 +331,8 @@ impl SkiaTextReplay<'_> {
                 let metric_source = text;
                 let text = expand_pua_render_text_in_style(text, style);
                 let text = text.as_str();
-                let symbol_sources = crate::renderer::implicit_symbol::sources(metric_source, text);
+                let symbol_sources =
+                    crate::renderer::implicit_symbol::sources(metric_source, text, style);
                 let metric_text = crate::renderer::composer::display_projection_metric_text(
                     metric_source,
                     text,
@@ -571,6 +555,29 @@ impl SkiaTextReplay<'_> {
                                 crate::renderer::implicit_symbol::InkShape::Rectangle => {
                                     canvas.draw_rect(bounds, &text_paint);
                                 }
+                                crate::renderer::implicit_symbol::InkShape::Ring { inner }
+                                | crate::renderer::implicit_symbol::InkShape::Frame { inner } => {
+                                    let (irx, iry) = (rx * inner, ry * inner);
+                                    let hole = skia_safe::Rect::from_xywh(
+                                        (cx - irx) as f32,
+                                        (cy - iry) as f32,
+                                        (2.0 * irx) as f32,
+                                        (2.0 * iry) as f32,
+                                    );
+                                    let mut outline = skia_safe::PathBuilder::new();
+                                    if matches!(
+                                        shape,
+                                        crate::renderer::implicit_symbol::InkShape::Ring { .. }
+                                    ) {
+                                        outline.add_oval(bounds, None, None);
+                                        outline.add_oval(hole, None, None);
+                                    } else {
+                                        outline.add_rect(bounds, None, None);
+                                        outline.add_rect(hole, None, None);
+                                    }
+                                    outline.set_fill_type(skia_safe::PathFillType::EvenOdd);
+                                    canvas.draw_path(&outline.detach(), &text_paint);
+                                }
                             }
                             continue;
                         }
@@ -664,8 +671,14 @@ impl SkiaTextReplay<'_> {
                                     if let Some(face) = inner_char.and_then(|character| {
                                         select_typeface_for_character(&inner_faces, character)
                                     }) {
-                                        let mut inner_font =
-                                            Font::new(face.typeface.clone(), font_size);
+                                        let mut inner_font = Font::new(
+                                            super::pdf_fonts::for_output(
+                                                self.pdf_fonts,
+                                                self.font_mgr,
+                                                face.typeface.clone(),
+                                            ),
+                                            font_size,
+                                        );
                                         inner_font.set_edging(font::Edging::AntiAlias);
                                         fonts::preserve_geometry(
                                             &mut inner_font,
@@ -842,7 +855,10 @@ impl SkiaTextReplay<'_> {
                                         cluster,
                                         advance,
                                         f64::from(natural_width * ratio),
-                                        Some(f64::from(ink.width() * ratio)),
+                                        Some((
+                                            f64::from(ink.left * ratio),
+                                            f64::from(ink.width() * ratio),
+                                        )),
                                         pin_ascii_advance,
                                     )
                                 })
@@ -1030,15 +1046,9 @@ impl SkiaTextReplay<'_> {
                         geometry.font_family,
                         font_style_for_text(&mark_style),
                     );
-                    if let Some(mut font) = fonts::for_text(
-                        &faces,
-                        geometry.glyph,
-                        font_size,
-                        &mark_style,
-                        self.font_mgr,
-                        self.geometric_text,
-                        self.font_fallback_observer,
-                    ) {
+                    if let Some(mut font) =
+                        fonts::for_text(self, &faces, geometry.glyph, font_size, &mark_style)
+                    {
                         font.set_scale_x(geometry.ratio as f32);
                         font.set_skew_x((geometry.skew_x * geometry.ratio) as f32);
                         let mut paint = Paint::default();

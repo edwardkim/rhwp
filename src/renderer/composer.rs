@@ -254,6 +254,8 @@ crate::storage::clone_fields!(InlineControl, {line_index, control_index, control
 /// 구성된 문단
 #[derive(Debug, Clone)]
 pub struct ComposedParagraph {
+    /// 캡션은 셀 주소를 쓰지만 셀 배치 후처리가 없으므로 스스로 글줄의 그림을 그린다.
+    pub(crate) is_caption: bool,
     /// 줄별 텍스트
     pub lines: Vec<ComposedLine>,
     /// 문단 스타일 ID
@@ -279,7 +281,7 @@ pub struct ComposedParagraph {
     pub(crate) horizontal_shaping:
         Option<std::sync::Arc<crate::renderer::shaping_paragraph::HorizontalShapingLineOutcome>>,
 }
-crate::storage::clone_fields!(ComposedParagraph, {lines, para_style_id, inline_controls, numbering_text, tac_controls, footnote_positions, tab_extended, frame_geometry, horizontal_shaping});
+crate::storage::clone_fields!(ComposedParagraph, {is_caption, lines, para_style_id, inline_controls, numbering_text, tac_controls, footnote_positions, tab_extended, frame_geometry, horizontal_shaping});
 
 /// Renderer-session cache for the expensive stored single-line overflow probe.
 ///
@@ -359,7 +361,8 @@ pub(crate) use line_breaking::{
 mod picture_anchor_projection;
 pub(crate) use line_breaking::{
     control_is_square_float_object, control_is_width_neutral_marker, frame_metrics_for_line,
-    paragraph_end_font_size_px, text_word_ranges, text_word_ranges_with_storage,
+    is_footnote_text_host, paragraph_end_font_size_px, text_word_ranges,
+    text_word_ranges_with_storage,
 };
 pub mod lineseg_compare;
 
@@ -369,8 +372,9 @@ pub(crate) use line_breaking::{
     layout_paragraph_in_frame_with_storage, layout_picture_anchor_in_frame, layout_picture_band,
     paragraph_flow_end, recalculate_section_vpos, reflow_line_segs,
     reflow_line_segs_after_cell_split, reflow_line_segs_after_cell_text_edit,
-    reflow_line_segs_in_stored_section, restamp_indentation, row_is_carved_from_box,
-    supports_picture_band_frame_controls, tokenize_paragraph, BreakToken, StoredRowMissPolicy,
+    reflow_line_segs_from, reflow_line_segs_in_stored_section, restamp_indentation,
+    row_is_carved_from_box, supports_picture_band_frame_controls, tokenize_paragraph, BreakToken,
+    StoredRowMissPolicy,
 };
 
 #[cfg(test)]

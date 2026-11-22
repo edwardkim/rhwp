@@ -1,3 +1,9 @@
+import {
+  PASSWORD_SAVE_CAPABILITY,
+  PasswordSaveError,
+  isPasswordSaveMethod,
+} from '../../../npm/editor/password-save-contract.js';
+import type { PasswordProtectedDocumentExport } from '../../../npm/editor/index.js';
 import { StudioCommandError } from '../core/command-error.ts';
 import {
   EMBED_PROTOCOL_VERSION,
@@ -25,17 +31,25 @@ interface EmbedRuntimeOptions {
 type EventSubscriptions = Partial<Record<'documentChanged' | 'fieldChanged' | 'commandError',
   (listener: (payload: unknown) => void) => () => void>>;
 
+function requestsPasswordSave(capabilities: unknown): boolean {
+  return Array.isArray(capabilities) && capabilities.includes(PASSWORD_SAVE_CAPABILITY);
+}
+
 function errorText(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-function postPortResponse(port: MessagePort, response: EmbedResponseEnvelope): void {
-  if (!(response.result instanceof Uint8Array)) {
+function postPortResponse(port: MessagePort, response: EmbedResponseEnvelope, method?: string): void {
+  if (response.result instanceof Uint8Array) {
+    const result = response.result.slice();
+    port.postMessage({ ...response, result }, [result.buffer]);
+  } else if (method === 'exportPasswordProtectedDocument' && response.result) {
+    const artifact = response.result as PasswordProtectedDocumentExport;
+    const bytes = artifact.bytes.slice();
+    port.postMessage({ ...response, result: { ...artifact, bytes } }, [bytes.buffer]);
+  } else {
     port.postMessage(response);
-    return;
   }
-  const result = response.result.slice();
-  port.postMessage({ ...response, result }, [result.buffer]);
 }
 
 function releasePort(port: MessagePort | undefined): void {
@@ -73,7 +87,8 @@ function bindPort(
       postPortResponse(port, response);
       return;
     }
-    const requiredCapability = {
+    const passwordSave = isPasswordSaveMethod(data.method);
+    const requiredCapability = passwordSave ? PASSWORD_SAVE_CAPABILITY : {
       getCommandErrorState: 'command-error-v1',
       getDocumentState: 'document-state-v1',
       getSelectionContext: 'selection-context-v1',
@@ -81,7 +96,8 @@ function bindPort(
       revertTextCommand: 'document-agent-command-v1',
       focusTarget: 'target-navigation-v1',
     }[data.method];
-    if (requiredCapability && !clientCapabilities.includes(requiredCapability)) {
+    if ((passwordSave && !handlers.passwordSave)
+      || (requiredCapability && !clientCapabilities.includes(requiredCapability))) {
       response.error = {
         code: 'UNSUPPORTED_CAPABILITY',
         message: `${requiredCapability} was not negotiated by the client.`,
@@ -92,6 +108,12 @@ function bindPort(
     try {
       response.result = await routeEmbedRequest(data.method, data.params, handlers);
     } catch (error) {
+      if (passwordSave) {
+        const safe = new PasswordSaveError(error instanceof PasswordSaveError ? error.code : undefined);
+        response.error = { code: safe.code, message: safe.message };
+        postPortResponse(port, response);
+        return;
+      }
       const documentAgentError = isDocumentAgentError(error) ? error : null;
       const commandError = error instanceof StudioCommandError && clientCapabilities.includes('command-error-v1')
         ? await error.report : undefined;
@@ -104,12 +126,14 @@ function bindPort(
           : {}),
       };
     }
-    postPortResponse(port, response);
+    postPortResponse(port, response, data.method);
   };
   port.start();
   port.postMessage({
     type: 'rhwp-connected', version: EMBED_PROTOCOL_VERSION, sessionId,
-    capabilities: EMBED_CAPABILITIES,
+    capabilities: EMBED_CAPABILITIES.filter(capability =>
+      capability !== PASSWORD_SAVE_CAPABILITY
+      || (handlers.passwordSave && clientCapabilities.includes(capability))),
   });
   const offs = (Object.keys(subscriptions) as Array<keyof EventSubscriptions>).map((event) =>
     subscriptions[event]!((payload) => {
@@ -153,6 +177,13 @@ async function handleLegacy(
   const method = isHwpctl ? 'loadFile' : message.method;
   const params = isHwpctl ? message : message.params;
   const response: Record<string, unknown> = { type: 'rhwp-response', id: message.id };
+  if (isPasswordSaveMethod(method)) {
+    const error = new PasswordSaveError('UNSUPPORTED_TRANSPORT');
+    response.error = { code: error.code, message: error.message };
+    const targetOrigin = isUsableParentOrigin(event.origin) ? event.origin : '*';
+    (event.source as WindowProxy | null)?.postMessage(response, { targetOrigin });
+    return;
+  }
   try {
     if (method === 'applyTextCommand' || method === 'revertTextCommand') {
       throw new Error('Legacy embed transport cannot execute document mutations.');
@@ -176,11 +207,15 @@ export function installEmbedRuntime(options: EmbedRuntimeOptions): () => void {
   } | null = null;
   const onMessage = (event: MessageEvent) => {
     const transferredPorts = Array.from(event.ports);
-    const isTopLevelLegacyRequest = isTopLevelSameWindow
-      && event.data?.type === 'rhwp-request';
+    // Custom-scheme top-level hosts can transfer a port using a metadata-only
+    // handshake. The source identity check still excludes every iframe peer.
+    const isTopLevelRequest = isTopLevelSameWindow
+      && (event.data?.type === 'rhwp-request'
+        || (event.data?.type === 'rhwp-connect' && transferredPorts.length > 0
+          && options.handlers.passwordSave && requestsPasswordSave(event.data.capabilities)));
     if (
       event.source !== options.parentWindow
-      || (!isUsableParentOrigin(event.origin) && !isTopLevelLegacyRequest)
+      || (!isUsableParentOrigin(event.origin) && !isTopLevelRequest)
     ) {
       releasePorts(transferredPorts);
       return;
@@ -226,7 +261,7 @@ export function installEmbedRuntime(options: EmbedRuntimeOptions): () => void {
       binding = { origin: event.origin, sessionId: event.data.sessionId, port, offEvents };
       return;
     }
-    if (binding) return;
+    if (binding && !isPasswordSaveMethod(event.data?.method)) return;
     void handleLegacy(event, options.handlers);
   };
   options.hostWindow.addEventListener('message', onMessage);

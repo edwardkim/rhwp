@@ -1,0 +1,65 @@
+{
+  "independent": {
+    "input": "samples/issue8697/hft-hanyang_junggothic-quotes.hwpx",
+    "pdf": "pdf/issue8697/hft-hanyang_junggothic-quotes-2020.pdf",
+    "page": 1,
+    "job": "de18435d-5660-4c82-9b96-b712694c6152",
+    "input_sha256": "4a3feebd772eaf4412f23c682d6c31e8ab1d122fcf80c69803758b577d72b0d4",
+    "status": "succeeded",
+    "method": 0,
+    "engine": "2020",
+    "pdf_sha256": "84bee1af2a3626c40abc741d95b0fa3dfa4e163a9ff12dec2d01ad935febd7e4"
+  },
+  "existing_probe": {
+    "input": "samples/issue8697/hft-hanyang_junggothic-probe.hwpx",
+    "pdf": "pdf/issue8697/hft-hanyang_junggothic-probe-2020.pdf",
+    "page": 4,
+    "resource": "T1"
+  },
+  "protected": {
+    "pdf": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+    "page": 49
+  },
+  "matching_decompressed_type3_charprocs": [
+    {
+      "code": "U+2018",
+      "style": "Regular",
+      "source_ref": "T1",
+      "reference_ref": "T19",
+      "unit": 1000,
+      "type3_sha256": "ce4b0e963ec208c85a1bd0a2e9c9db82311ebf79a17f1c9b6764180b089b021e",
+      "source_advance": 225,
+      "source_left": 71
+    },
+    {
+      "code": "U+2019",
+      "style": "Regular",
+      "source_ref": "T1",
+      "reference_ref": "T19",
+      "unit": 1000,
+      "type3_sha256": "b16cbf6ba6718b0662a233285b4d742f4ff3541c48aa92d27a529f3b2fd8d9f5",
+      "source_advance": 225,
+      "source_left": 60
+    },
+    {
+      "code": "U+201C",
+      "style": "Regular",
+      "source_ref": "T1",
+      "reference_ref": "T10",
+      "unit": 1000,
+      "type3_sha256": "252bca54841ab763237b02f72620b16826c3c37826c8c748648820529ed8f525",
+      "source_advance": 375,
+      "source_left": 71
+    },
+    {
+      "code": "U+201D",
+      "style": "Regular",
+      "source_ref": "T1",
+      "reference_ref": "T10",
+      "unit": 1000,
+      "type3_sha256": "f4855d0666ed38eb71d3e98519a9cbba456c2b2365364569e97d8ca6af17f20c",
+      "source_advance": 375,
+      "source_left": 60
+    }
+  ]
+}

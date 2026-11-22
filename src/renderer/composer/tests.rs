@@ -377,14 +377,14 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
     let mut clean_probe = para.clone();
     clean_probe.replace_line_segs(clean_probe.line_segs.clone());
     let clean_composed = compose_paragraph(&clean_probe);
+    let mut clean_frame = ParagraphBox::content(0..width_hwp).frame(0);
     assert!(!stored_rows_are_stale(
         &clean_composed,
         &clean_probe,
         inner_width,
         &styles,
-        false
+        &clean_frame
     ));
-    let mut clean_frame = ParagraphBox::content(0..width_hwp).frame(0);
     assert!(matches!(
         line_breaking::resolve_stored_line_segs_in_frame(
             &clean_probe,
@@ -400,12 +400,12 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
         Some(line_breaking::StoredRowResolution::Stored)
     ));
 
-    let stale = stored_rows_are_stale(&composed, &para, inner_width, &styles, false);
+    let mut dirty_frame = ParagraphBox::content(0..width_hwp).frame(0);
+    let stale = stored_rows_are_stale(&composed, &para, inner_width, &styles, &dirty_frame);
     assert!(
         stale,
         "the mutation bit, not overflow magnitude, is decisive"
     );
-    let mut dirty_frame = ParagraphBox::content(0..width_hwp).frame(0);
     assert!(matches!(
         line_breaking::resolve_stored_line_segs_in_frame(
             &para,
@@ -2084,11 +2084,9 @@ fn test_expand_hancom_relationship_line_pua_to_box_drawing() {
     );
 }
 
-/// #3486 — legacy 한컴 제품명은 raw HWP의 옛자모를 보존하면서 PDF와 같은
-/// 현대 product spelling으로만 표시한다. 보통 옛한글 낱말은 건드리지 않는다.
 #[test]
-fn legacy_hancom_product_names_use_display_projection_only() {
-    let text = "ᄒᆞᆫ글, ᄒᆞᆫ메일, ᄒᆞᆫ팩스, ᄒᆞᆫ소프트, ᄒᆞᆫ겨울";
+fn product_names_preserve_the_written_hangul_vowel() {
+    let text = "ᄒᆞᆫ글, ᄒᆞᆫ메일, ᄒᆞᆫ팩스, ᄒᆞᆫ소프트, ᄒᆞᆫ겨울, 한글";
     let char_count = text.chars().count();
     let para = Paragraph {
         text: text.to_string(),
@@ -2110,17 +2108,11 @@ fn legacy_hancom_product_names_use_display_projection_only() {
     let composed = compose_paragraph(&para);
     let run = &composed.lines[0].runs[0];
     assert_eq!(run.text, text, "원문 IR은 바꾸지 않는다");
-    assert_eq!(
-        run.display_text.as_deref(),
-        Some("한글, 한메일, 한팩스, 한소프트, ᄒᆞᆫ겨울"),
-        "닫힌 legacy 제품명 어휘만 한컴 PDF 표기처럼 투영한다"
-    );
+    assert_eq!(run.display_text.as_deref().unwrap_or(&run.text), text);
 }
 
-/// #3486 — 제품명은 HWP line-seg나 글자모양 경계에서 나뉠 수 있다. `ᄒᆞᆫ`과
-/// 뒤의 `글`이 다른 run이어도 첫 run에만 `한`을 투영해 model offset은 유지한다.
 #[test]
-fn legacy_hancom_product_projection_survives_line_boundary() {
+fn product_names_keep_source_jamo_and_offsets_at_a_stored_line_break() {
     let text = "ᄒᆞᆫ글";
     let para = Paragraph {
         text: text.to_string(),
@@ -2150,10 +2142,8 @@ fn legacy_hancom_product_projection_survives_line_boundary() {
     let composed = compose_paragraph(&para);
     assert_eq!(composed.lines.len(), 2);
     assert_eq!(composed.lines[0].runs[0].text, "ᄒᆞᆫ");
-    assert_eq!(
-        composed.lines[0].runs[0].display_text.as_deref(),
-        Some("한")
-    );
+    assert_eq!(composed.lines[0].runs[0].display_text, None);
+    assert_eq!(composed.lines[1].char_start, 3);
     assert_eq!(composed.lines[1].runs[0].text, "글");
     assert_eq!(composed.lines[1].runs[0].display_text, None);
 }

@@ -196,6 +196,46 @@ impl ColumnItemCtx<'_> {
             })
         }).then_some(spacing)
     }
+
+    /// 블록 TAC 표의 저장 줄 뒤에 같은 문단의 글자처럼 취급 그림·도형이 뒤 저장 줄을
+    /// 차지해 이 쪽에 방출됐으면, 문단 뒤 간격은 표 줄이 아니라 그 마지막 줄 뒤에 온다.
+    fn tac_shape_tail_spacing_after_table(
+        &self,
+        para_index: usize,
+        control_index: usize,
+    ) -> Option<f64> {
+        let para = self.paragraphs.get(para_index)?;
+        let comp = self.composed.get(para_index)?;
+        let spacing = self
+            .styles
+            .para_styles
+            .get(comp.para_style_id as usize)?
+            .spacing_after;
+        if spacing <= 0.0 {
+            return None;
+        }
+        if !matches!(para.controls.get(control_index), Some(Control::Table(t)) if t.common.treat_as_char)
+        {
+            return None;
+        }
+        let table_line = control_line_seg_index(para, control_index)?;
+        self.page_content
+            .column_contents
+            .iter()
+            .flat_map(|column| &column.items)
+            .any(|item| {
+                matches!(item, PageItem::Shape { para_index: owner, control_index: other }
+                    if *owner == para_index
+                        && match para.controls.get(*other) {
+                            Some(Control::Picture(picture)) => picture.common.treat_as_char,
+                            Some(Control::Shape(shape)) => shape.common().treat_as_char,
+                            _ => false,
+                        }
+                        && control_line_seg_index(para, *other)
+                            .is_some_and(|line| line > table_line))
+            })
+            .then_some(spacing)
+    }
 }
 
 pub(crate) const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
@@ -4066,6 +4106,7 @@ mod header_footer_layout;
 mod hidden_paragraph_marker;
 mod nested_table_origin;
 mod note_reference;
+pub(crate) use note_reference::note_reference_advance;
 mod note_separator;
 mod paragraph_border;
 mod paragraph_layout;
@@ -5363,10 +5404,6 @@ impl LayoutEngine {
             page_border_fill,
         );
         tree.root.children.push(footer_node);
-
-        // composer를 거치지 않고 직접 만들어진 표 셀/머리말 TextRun까지 같은
-        // 한컴 PDF 표시 계약을 적용한다. 원문 IR과 char offset은 변경하지 않는다.
-        tree.apply_legacy_hancom_product_display_projection();
 
         // [#6121] 셀 안 anchored 개체 ↔ 셀 본문 텍스트 페인트 순서 정합.
         Self::settle_cell_anchored_objects(&mut tree.root);
@@ -6825,6 +6862,7 @@ impl LayoutEngine {
             // 자동 번호는 저장 본문 줄의 원점을 쓰지 않고 위 target_area에서
             // 독립 배치한다. 본문 HFT의 종이 CTM을 다시 적용하지 않는다.
             page_num_style.hft_print_frame = false;
+            page_num_style.source_dc_frame = false;
 
             // [#3048] 폭은 실제 폰트 메트릭으로 잰다. 종전 `문자수 × 크기 × 0.6` 은
             // 장식 공백이 든 `- 1 -`(5자)을 30pt 로 과대평가해(실측 24.8pt) 가운데·
@@ -12967,6 +13005,13 @@ impl LayoutEngine {
                 );
                 self.table_push_floor.set(None);
                 self.para_float_host_is_whitespace.set(false);
+                // 뒤 저장 줄의 그림·도형은 자기 줄만 전진한다. 표 줄에서 뺀 문단 뒤
+                // 간격은 문단의 마지막 항목 뒤에 한 번 더한다.
+                if let Some(spacing) =
+                    ctx.tac_shape_tail_spacing_after_table(*para_index, *control_index)
+                {
+                    deferred_paragraph_spacing.insert(*para_index, spacing);
+                }
                 return out;
             }
             PageItem::PartialTable {
@@ -13902,6 +13947,17 @@ impl LayoutEngine {
                         .and_then(crate::renderer::float_placement::stored_line_lane_probe),
                     t,
                 );
+            // 뒤 문단이 표 상자 양옆 차선에서 host 줄 바로 다음에 이어지면 host 줄의 저장
+            // 전진량이 흐름의 끝이다(조판과 같은 판정). host 의 같은 줄 조각들을 줄마다 다시
+            // 더하지 않는다.
+            let flanking_host_advance_hu =
+                crate::renderer::float_placement::flanking_successor_host_advance_hu(
+                    para,
+                    paragraphs
+                        .get(para_index + 1)
+                        .and_then(crate::renderer::float_placement::stored_line_lane_probe),
+                    t,
+                );
             if renders_outside_body {
                 let tmp_id = tree.next_id();
                 let mut tmp_node = RenderNode::new(
@@ -14093,7 +14149,13 @@ impl LayoutEngine {
                             // 가시 host 는 제외한다 — 그쪽은 host 줄의 흐름이 이미 자리를
                             // 정한다. `hwp_table_test-m.hwp` 1쪽 표(가시 host·`vOff>0`)는
                             // 정본 250.77 에 대해 251.0 으로 이미 맞고, 여백을 더하면 벗어난다.
-                            y_offset + hwpunit_to_px(om_top, self.dpi)
+                            // 뒤 문단이 표 상자 양옆 차선을 흐르는 host 는 흐름이 host 줄만
+                            // 전진하고 표는 저장 세로 오프셋의 배타 상자로 남는다(조판이 같은
+                            // 상자를 띠로 등록한다).
+                            let stored_offset_px = flanking_host_advance_hu.map_or(0.0, |_| {
+                                hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
+                            });
+                            y_offset + stored_offset_px + hwpunit_to_px(om_top, self.dpi)
                         } else {
                             y_offset
                         };
@@ -14618,6 +14680,10 @@ impl LayoutEngine {
                     flow_y
                 } else if paper_page_square_empty_top.is_some() {
                     table_y_before
+                } else if let Some(host_advance_hu) = flanking_host_advance_hu {
+                    // 뒤 문단이 표 상자 양옆 차선에서 host 줄 바로 다음에 이어진다(조판과 같은
+                    // 판정). 흐름은 host 줄만큼만 전진한다.
+                    table_y_before + hwpunit_to_px(host_advance_hu, self.dpi)
                 } else if successor_starts_beside_table {
                     // 표 원점 이동은 개체의 배타 영역이다. 표 옆 후속 줄의 흐름을
                     // 표 높이로 덮어쓰기 전에 같은 저장 차선 결과를 소비한다.
@@ -15181,7 +15247,7 @@ impl LayoutEngine {
                     bin_data_content,
                     tbl_x_right,
                 );
-                if let Some(end) = host_flow_end {
+                if let Some(end) = host_flow_end.filter(|_| flanking_host_advance_hu.is_none()) {
                     // 점유 하단과 다음 흐름 끝은 다르다. 실제 글줄이 소비한
                     // 마지막 줄간격·문단 뒤 간격을 재계산하거나 다시 더하지 않는다.
                     y_offset = y_offset.max(end);
@@ -15194,6 +15260,7 @@ impl LayoutEngine {
                     host_flow_end.is_none()
                         && host_plan.is_none()
                         && !split_host_text_owned_by_fragments
+                        && flanking_host_advance_hu.is_none()
                 }) {
                     let mut text_h = 0.0;
                     let mut last_ls = 0.0;
@@ -15208,6 +15275,16 @@ impl LayoutEngine {
                     if host_text_bottom > y_offset {
                         y_offset = host_text_bottom;
                     }
+                }
+                if flanking_host_advance_hu.is_some() {
+                    // host 줄의 저장 전진량은 줄간격까지 지난 다음 흐름 원점이다. 표 뒤 간격
+                    // 경로가 host 의 끝 줄간격·문단 뒤 간격을 다시 더하지 않는다.
+                    let mut consumed = self.paragraph_spacing_consumed.borrow_mut();
+                    let entry = consumed
+                        .entry((page_content.section_index, para_index))
+                        .or_default();
+                    entry.1 = true;
+                    entry.2 = true;
                 }
                 // [#6128] host 뿐 아니라 **뒤따르는 어울림 문단**도 표보다 아래까지
                 // 내려올 수 있다. 그 문단들은 저장 vpos 로 배치되는데(아래 띠 경로),
@@ -16123,6 +16200,9 @@ impl LayoutEngine {
                     if para_style.spacing_after > 0.0
                         && (is_tac || !host_after_consumed)
                         && ctx.tac_text_tail_spacing_after(para_index).is_none()
+                        && ctx
+                            .tac_shape_tail_spacing_after_table(para_index, control_index)
+                            .is_none()
                     {
                         y_offset += para_style.spacing_after;
                     }
@@ -16825,6 +16905,9 @@ impl LayoutEngine {
                 if let Some(ps) = styles.para_styles.get(ps_id) {
                     if ps.spacing_after > 0.0
                         && ctx.tac_text_tail_spacing_after(para_index).is_none()
+                        && ctx
+                            .tac_shape_tail_spacing_after_table(para_index, control_index)
+                            .is_none()
                     {
                         y_offset += ps.spacing_after;
                     }

@@ -1,0 +1,49 @@
+{
+  "product_source": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+  "prior_painter_source": "5b8429a369",
+  "reference_pdf": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "reference_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+  "page": 71,
+  "dpi": 96,
+  "crop": [
+    272,
+    440,
+    320,
+    471
+  ],
+  "source_text": "ᄒᆞᆫ글",
+  "reference_character": "U+F53A",
+  "paper_painter_before": [
+    [
+      "fillText",
+      "ᄒᆞᆫ",
+      277.98383054842634,
+      462.4008443287639,
+      0.9994624853134155,
+      0.9989072680473328,
+      "21.333px \"RHWP Old Hangul\", 함초롬돋움, \"HCR Dotum\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", \"Noto Sans CJK KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif"
+    ]
+  ],
+  "paper_painter_after": [
+    [
+      "fill",
+      281.5659042025437,
+      445.92819704956156,
+      295.6809801491254,
+      465.2350773017703,
+      "21.333px 함초롬돋움, \"HCR Dotum\", \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", \"Noto Sans CJK KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif"
+    ]
+  ],
+  "crop_rgb_difference_to_print": [
+    420,
+    387,
+    386
+  ],
+  "png_sha256": {
+    "reference_png": "e34c1f8bb79097c21d2a2edf17f2875a29b660467348fe27b4d2ce150df2faa9",
+    "previous_png": "e91e856bbd2c0fe714523f2768c41f83649a8cfb8c9db930a643a6dda448be7d",
+    "wasm_png": "0ce9f5ac8481449d644e0f00959eec5126fd8228074cd8db1f5a51ed73cee0cb",
+    "native_png": "4458d0e98c7d8342d4b4401849997a09503052154407c7afa6a012c6c31641ee"
+  },
+  "unmodified_exporter_pixels_identical_to_trace": true
+}

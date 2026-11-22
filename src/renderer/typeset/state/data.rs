@@ -104,6 +104,8 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 지금 배치 중인 문단의 본문 각주와 그 참조가 든 줄. 분할 판정이 앞 줄의
     /// 각주 높이를 뒤 줄보다 먼저 예약하고, 조각 확정 때 그 쪽에 등록한다.
     pub(in crate::renderer::typeset) own_line_notes: Vec<crate::renderer::typeset::OwnLineNote>,
+    /// 너비가 다른 단으로 이어받은 각주를 그 단 폭으로 다시 나눌 스타일. 그런 단이 없으면 비어 있다.
+    pub(in crate::renderer::typeset) note_refold: Option<super::notes::NoteRefold>,
     /// 분할 조각 확정 때 이미 등록한 (문단, 컨트롤) 각주. 컨트롤 순회는 건너뛴다.
     pub(in crate::renderer::typeset) line_registered_notes:
         std::collections::HashSet<(usize, usize)>,
@@ -334,6 +336,11 @@ pub(in crate::renderer::typeset) struct StateView {
     /// 비-TAC Picture/Shape Square wrap: any_seg_matches만으로 후속 문단 판정 허용.
     /// 그림의 lineseg는 첫 seg cs=0일 수 있어 전체 seg 중 하나라도 일치하면 흡수.
     pub(in crate::renderer::typeset) wrap_around_any_seg: bool,
+    /// 밴드를 연 host 의 저장 사다리가 host 줄만 전진했다. 표 상자 옆의 뒤 문단은 띠에
+    /// 흡수되지 않고 자기 높이를 소비한다.
+    pub(in crate::renderer::typeset) wrap_around_stored_flow: bool,
+    /// 표 배치가 host 줄만 전진시킨 host 문단. 이 문단이 여는 밴드가 위 상태를 받는다.
+    pub(in crate::renderer::typeset) stored_flow_wrap_host: Option<usize>,
     /// [#6175] 밴드가 호스트 문단의 저장 사다리가 아니라 어울림 개체의 기하에서
     /// 유도됐다 — 개체 종류(묶음 포함)와 무관하게 뒤따르는 문단을 개체 옆으로 흘린다.
     pub(in crate::renderer::typeset) wrap_around_derived_band: bool,

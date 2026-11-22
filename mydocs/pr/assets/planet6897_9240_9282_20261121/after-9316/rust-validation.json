@@ -1,0 +1,56 @@
+{
+  "source": "954226e426517dc02ef0a15cc739899ab54b7fae",
+  "base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "tree": "99b2ed6efc18a4622eee558474ba35140220fb3e",
+  "exit_codes": {
+    "native-skia-lib": 0,
+    "manifest-prepare": 0,
+    "issue_2225_missing_picture_placeholder": 0,
+    "focused": 0,
+    "fmt": 0,
+    "full-nextest": 0,
+    "driver": 0,
+    "native-clippy": 0,
+    "manifest": 0,
+    "render_p37_direct_pdf_export": 0,
+    "wasm-clippy": 0,
+    "unit-test-tiers": 0,
+    "workspace-build": 0,
+    "workspace-all-targets": 0
+  },
+  "conditions": "macOS 최소 글꼴 격리, CARGO_BUILD_JOBS=8, nextest test threads=8",
+  "clippy_note": "Native·WASM Clippy는 합성 테스트 제거 직전의 동일 제품 소스 결과를 재사용했다.",
+  "focused": {
+    "seconds": 3.787,
+    "tests_run": 7,
+    "passed": 7,
+    "failed": 0,
+    "skipped": 13989
+  },
+  "full-nextest": {
+    "seconds": 736.807,
+    "tests_run": 13951,
+    "passed": 13951,
+    "failed": 0,
+    "skipped": 45
+  },
+  "issue_2225_missing_picture_placeholder": {
+    "seconds": 8.17,
+    "tests_run": 2,
+    "passed": 2,
+    "failed": 0,
+    "skipped": 351
+  },
+  "render_p37_direct_pdf_export": {
+    "seconds": 4.152,
+    "tests_run": 37,
+    "passed": 37,
+    "failed": 0,
+    "skipped": 304
+  },
+  "native_skia_library": {
+    "passed": 4032,
+    "failed": 0,
+    "ignored": 12
+  }
+}

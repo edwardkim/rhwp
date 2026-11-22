@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9213,
+  "title": "여러 문단 캡션의 문단 사이 음수 줄 간격을 캡션 높이가 잃어 표가 7px 아래로 내려간다",
+  "entries": [
+    {
+      "path": "samples/issue9213/labor-survey-2022h1-caption-ladder.hwpx",
+      "format": "hwpx",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9213",
+      "originalFilename": "156513948_6.29 2022년 상반기 직종별사업체노동력조사 결과(노동시장조사과).hwpx",
+      "bytes": 1205367,
+      "sha256": "d1d618c0a38d0efdb3348d21ec81fc400780a8c801ccbbc367c8ea08b495482d",
+      "lastSavedWith": {
+        "product": "hancom-office-2018",
+        "version": "10.0.0.11529"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9213/labor-survey-2022h1-caption-ladder-2020.pdf",
+      "referencePdfSha256": "e834e74b61c8236b9af521503658975a1985c33e10ee8d93f51b34d7ac61e8b0",
+      "referencePdfPageCount": 32,
+      "contract": "30쪽 구역 3 의 pi=158 은 글자처럼 취급한 25×14 표와 위 캡션(문단 둘)을 가진다. 캡션 첫 문단의 저장 줄은 vpos 0·높이 1100·줄 간격 -552, 둘째 문단은 vpos 548·높이 900 이다. 캡션 높이는 저장 사다리 끝 1448HU 이고 호스트 줄 높이 30730 = 표 28999 + 캡션 1448 + 간격 283 으로 닫힌다. 표는 호스트 줄 안에서 끝나고 다음 표(pi=159)와의 틈은 두 호스트 줄의 저장 간격 1300HU 다. 전체 32쪽으로 한/글 engine 2020 Print 와 같다."
+    }
+  ]
+}

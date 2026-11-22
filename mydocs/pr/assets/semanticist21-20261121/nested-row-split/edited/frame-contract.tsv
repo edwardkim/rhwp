@@ -1,0 +1,7 @@
+input_state	product	line_box_bottom	nested_rule_center	outer_rule_center	rule_gap	line_enclosed
+reopen	before	999.3	1001.15	997.95	-3.2	0
+reopen	after	999.3	1001.15	1004.95	3.8	1
+live-hwp	before	999.3	1001.15	999.25	-1.9	0
+live-hwp	after	999.3	1001.15	1004.95	3.8	1
+live-hwpx	before	999.3	1001.15	1003.05	1.9	1
+live-hwpx	after	999.3	1001.15	1004.95	3.8	1

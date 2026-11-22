@@ -418,11 +418,17 @@ impl TypesetEngine {
         // source tail에 뒤따르는 본문이 없어 자연 page break가 일어나지 않은 경우에도,
         // 지연 그림과 확정 개체 프레임은 독립한 다음 physical page를 가져야 한다.
         // 일반 흐름을 되감지 않고 다음 쪽 소유가 확정된 항목을 모두 배출한다.
+        // 각 단 아래 각주의 남은 조각은 같은 쪽 다음 단이 있으면 그 단에 잇는다.
+        let notes_continue_in_next_column = st.has_deferred_body_footnotes()
+            && st.footnote_frame_policy().continues_in_next_column()
+            && st.current_column + 1 < st.col_count;
         if !st.deferred_next_page_square_pictures.is_empty()
             || !st.deferred_next_page_stored_frames.is_empty()
-            || st.has_deferred_body_footnotes()
+            || (st.has_deferred_body_footnotes() && !notes_continue_in_next_column)
         {
             st.force_new_page();
+        } else if notes_continue_in_next_column {
+            st.advance_column_or_new_page();
         }
         while !st.deferred_next_page_stored_frames.is_empty() {
             st.force_new_page();
@@ -470,8 +476,15 @@ impl TypesetEngine {
         // 마지막 본문 뒤의 저장 각주 suffix도 버리지 않는다. 실제 다음 쪽을
         // 열면 전환 command가 큐를 인출하고 기존 각주 lane에 높이를 예약한다.
         // 쪽보다 긴 각주는 쪽마다 들어가는 줄까지만 인출되므로 큐가 빌 때까지 연다.
+        // 각 단 아래 각주는 같은 쪽 다음 단부터 잇는다.
         while st.has_deferred_body_footnotes() {
-            st.push_new_page_with_storage(storage)?;
+            if st.footnote_frame_policy().continues_in_next_column()
+                && st.current_column + 1 < st.col_count
+            {
+                st.advance_column_or_new_page_with_storage(storage)?;
+            } else {
+                st.push_new_page_with_storage(storage)?;
+            }
         }
         st.ensure_page_with_storage(storage)?;
 

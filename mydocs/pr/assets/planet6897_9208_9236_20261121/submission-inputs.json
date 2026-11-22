@@ -1,0 +1,284 @@
+{
+  "product_sha": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+  "cases": [
+    {
+      "original_pr": 9208,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9208/native/silhouette.tsv",
+          "sha256": "f7188ca571f912dd95b84e622675566692bc008629cd057fbee5576ba5555c40",
+          "bytes": 523,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9208/wasm/silhouette.tsv",
+          "sha256": "6599d8e4740d171f14e3b00d6e9f2178c11277e7ac6f9106b83ac6e48d37607f",
+          "bytes": 523,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue547/online-search-rfp.hwp",
+        "sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+        "bytes": 161792
+      },
+      "reference": {
+        "path": "pdf/issue547/online-search-rfp-2024.pdf",
+        "sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+        "bytes": 494983
+      },
+      "pages": 22,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    },
+    {
+      "original_pr": 9209,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9209/native/silhouette.tsv",
+          "sha256": "6a3d069a3eae0d82020deb05725ce5e196a06e8ade6675af7989e03d178d4f50",
+          "bytes": 1047,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9209/wasm/silhouette.tsv",
+          "sha256": "b8430d45f0b55e46d3e772d0475538ded4706b486a4a44d3e1a723e06ba18ce3",
+          "bytes": 1047,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue9038/sme_announcement_split_table_successor.hwpx",
+        "sha256": "e0cb2372922ec5c89cc028e583b78a1e1d264385569f23cd0f2daf29a91f410b",
+        "bytes": 1011553
+      },
+      "reference": {
+        "path": "pdf/issue9038/sme_announcement_split_table_successor-2020.pdf",
+        "sha256": "434e59c3c7bba89b6a13a06922c0d777494331c8557002a0cc070677dfce1d41",
+        "bytes": 686666
+      },
+      "pages": 46,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2022"
+    },
+    {
+      "original_pr": 9214,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9214/native/silhouette.tsv",
+          "sha256": "ff75cb7f8d8c75b00884ae1d40bc8e2a00bfa5c601bbd0709292334239d0e653",
+          "bytes": 740,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9214/wasm/silhouette.tsv",
+          "sha256": "af30810f9f2eb992f806dcf6152115ebb9fae02d0cfd6b69b6230fe70f7995a3",
+          "bytes": 738,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue9213/labor-survey-2022h1-caption-ladder.hwpx",
+        "sha256": "d1d618c0a38d0efdb3348d21ec81fc400780a8c801ccbbc367c8ea08b495482d",
+        "bytes": 1205367
+      },
+      "reference": {
+        "path": "pdf/issue9213/labor-survey-2022h1-caption-ladder-2024.pdf",
+        "sha256": "cd9086f7c205e39a52d427b5559ac04fd3331650d6f0436c807eeb8a3a88bf78",
+        "bytes": 1170325
+      },
+      "pages": 32,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    },
+    {
+      "original_pr": 9218,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9218/native/silhouette.tsv",
+          "sha256": "35e3eb8b10a0a52a098492b3b8b3cfadd913a7d64cc0138a96470037951f14ca",
+          "bytes": 1042,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9218/wasm/silhouette.tsv",
+          "sha256": "a5de48bcf318bac7a9d6d37260adac1f376690f88389f17656a18fb117835480",
+          "bytes": 1042,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue614/issue614-bullet-end-char-shape.hwp",
+        "sha256": "f959c73dc62f27da44db58a3c67c1c64d73c2a08784bbd7c99871acfe58b204a",
+        "bytes": 67584
+      },
+      "reference": {
+        "path": "pdf/issue614/issue614-bullet-end-char-shape-2024.pdf",
+        "sha256": "5e012fa99ebf7b13d72ccb2b940a3725dbc65da3a0d3585050c01023483f0193",
+        "bytes": 390694
+      },
+      "pages": 45,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    },
+    {
+      "original_pr": 9219,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9219/native/silhouette.tsv",
+          "sha256": "fe533392892a74a795a8b9c38df611274fb597ade86707399e422dbd689c90a4",
+          "bytes": 375,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9219/wasm/silhouette.tsv",
+          "sha256": "c11fbe17d03edf2476ad2ca20b27eee00c934a2aba0e0cc4a77a2c586d14ff3a",
+          "bytes": 375,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue9217/research-task-order-toc-shadow.hwp",
+        "sha256": "242072435d9c1c38ed496a1a3402e16fb904662b395cbe0fc7f3940e8959dd42",
+        "bytes": 226304
+      },
+      "reference": {
+        "path": "pdf/issue9217/research-task-order-toc-shadow-2024.pdf",
+        "sha256": "fb918350d1b1a3cb30516235fb714cdbb545d955a7592194e78ce18828bc62b6",
+        "bytes": 384992
+      },
+      "pages": 14,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    },
+    {
+      "original_pr": 9221,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9221/native/silhouette.tsv",
+          "sha256": "7cabd004e8b358e093fbc5709476d37425acf138ef7ea98cd7ed8fee7df23750",
+          "bytes": 297,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9221/wasm/silhouette.tsv",
+          "sha256": "3545e1ed671e5619b12d6c03714a7935089edf517305cbfb19929d0dcd796c19",
+          "bytes": 298,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue9216/regulatory-impact-nested-row-restart.hwp",
+        "sha256": "cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+        "bytes": 36352
+      },
+      "reference": {
+        "path": "pdf/issue9216/regulatory-impact-nested-row-restart-2024.pdf",
+        "sha256": "7e38ec58e1cb08e9923f8f6c14daeca20a64bf92b0dae56dbee72fb4406b86a3",
+        "bytes": 281822
+      },
+      "pages": 10,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    },
+    {
+      "original_pr": 9227,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9227/native/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "bytes": 172,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9227/wasm/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "bytes": 172,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue9223/ccus-press-release-square-band.hwpx",
+        "sha256": "043f5db6444ecbe6a23a7e70f1dfbc61fdc66331e807302dc26c647628197a66",
+        "bytes": 526688
+      },
+      "reference": {
+        "path": "pdf/issue9223/ccus-press-release-square-band-2024.pdf",
+        "sha256": "9ffb7b895f9f77cb669d4dbef56a5285b7e7bc0f8d1e3d66114fe0fdc20dec17",
+        "bytes": 227960
+      },
+      "pages": 3,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    },
+    {
+      "original_pr": 9232,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9232/native/silhouette.tsv",
+          "sha256": "bc2ba5140b5192b61b81ddbaecc2185cb62991312c69b2639c8518d6ce8106e8",
+          "bytes": 535,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9232/wasm/silhouette.tsv",
+          "sha256": "20998953c184d2f3eef99ae3ab37951085e62fbc82608ff9490d4608076c8bf8",
+          "bytes": 535,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue9228/regulatory-sandbox-press-release-flanking-box.hwpx",
+        "sha256": "7f4bce81e2955a0fc7524b70e6e00e2217f23a85d95cb45d2b21093bd79d05a7",
+        "bytes": 5260279
+      },
+      "reference": {
+        "path": "pdf/issue9228/regulatory-sandbox-press-release-flanking-box-2024.pdf",
+        "sha256": "9b43307c5f98cb3b86ea1612f7c2d790ced521ed38719ca1ae6ca90e595f1ca7",
+        "bytes": 1706312
+      },
+      "pages": 21,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    },
+    {
+      "original_pr": 9236,
+      "backends": {
+        "native": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9236/native/silhouette.tsv",
+          "sha256": "2945b35725eb6211667ed1345cca1a3021388f9c0417eab456829bb29bc4fcef",
+          "bytes": 551,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/planet6897_9208_9236_20261121/cases/9236/wasm/silhouette.tsv",
+          "sha256": "f7ecb475908c4d4a49512775b041d2d13cf80f6d29cebb341aede8155f762d6c",
+          "bytes": 552,
+          "source_head": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c"
+        }
+      },
+      "input": {
+        "path": "samples/issue9233/high-school-transfer-plan-cover-band.hwp",
+        "sha256": "70189a97083aa0046594f0c2bfc985888a607060414245d62235e09796008314",
+        "bytes": 177664
+      },
+      "reference": {
+        "path": "pdf/issue9233/high-school-transfer-plan-cover-band-2024.pdf",
+        "sha256": "8f07d75ed293f723c5d622fb6c5230cf5e52e751b58f85316d341cd7ce849d30",
+        "bytes": 404259
+      },
+      "pages": 22,
+      "dpi": 96,
+      "radius_px": 2,
+      "compat": "2024"
+    }
+  ]
+}

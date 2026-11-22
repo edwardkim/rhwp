@@ -434,6 +434,7 @@ function pastePlainText(this: any, text: string, hasSelection: boolean): void {
   if (!text) return;
 
   const lines = text.split(/\r?\n/);
+  if (!hasSelection && lines.length > 1 && this.tryPasteBodyParagraphs(lines)) return;
   for (let i = 0; i < lines.length; i++) {
     if (lines[i]) {
       this.executeOperation({ kind: 'command', command: new InsertTextCommand(this.cursor.getPosition(), lines[i]) });

@@ -19,9 +19,11 @@ pub struct Composition {
     ruby: Option<Box<RubyText>>,
     /// 테두리 없는 겹침이 전각 한 칸을 차지하는지(HWP 전각 공백 표지).
     full_width_cell: bool,
+    /// 글자가 하나도 없는 테두리 없는 포갠 겹침. 한/글 12.30은 캐럿 한 칸을 두되 폭 없이 그린다.
+    zero_width: bool,
 }
 
-crate::storage::clone_fields!(Composition, {border, owner_style, characters, spread, size_ratio, ruby, full_width_cell});
+crate::storage::clone_fields!(Composition, {border, owner_style, characters, spread, size_ratio, ruby, full_width_cell, zero_width});
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct RubyText {
@@ -142,6 +144,8 @@ impl Composition {
             ruby: None,
             // 한컴은 펼친 글자끼리 겹치기를 전각 한 칸에 그린다(HWP 원문은 그 칸을 전각 공백으로 둔다).
             full_width_cell: border.is_none() && co.expansion == 0,
+            // 한/글 12.30: 빈 펼친 겹침은 전각 한 칸을 비우고, 빈 포갠 겹침은 폭이 없다(HWP·HWPX 같음).
+            zero_width: border.is_none() && co.expansion == 1 && co.chars.is_empty(),
         }))
     }
 
@@ -205,6 +209,7 @@ impl Composition {
                 below: ruby.pos_type == 1,
             })),
             full_width_cell: false,
+            zero_width: false,
         }))
     }
 
@@ -228,6 +233,9 @@ impl Composition {
         if self.ruby.is_some() {
             // 한컴은 덧말이 길어도 본말 폭만 차지하고 덧말을 줄여 쓴다.
             return self.ruby_main_advances().iter().sum();
+        }
+        if self.zero_width {
+            return 0.0;
         }
         let character = self
             .border

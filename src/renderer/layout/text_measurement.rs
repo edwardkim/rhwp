@@ -1025,6 +1025,11 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                 && cs.source_hft_for_lang(lang_index),
             hft_print_frame: cs.hft_print_frame_for_lang(lang_index),
             print_text_device_frame: cs.print_text_device_frame_for_lang(lang_index),
+            source_dc_frame: cs
+                .font_families_source_dc_frame
+                .get(lang_index)
+                .copied()
+                .unwrap_or(cs.font_families_source_dc_frame[0]),
             preserve_glyph_ink: cs
                 .font_families_preserve_glyph_ink
                 .get(lang_index)
@@ -2220,6 +2225,14 @@ fn char_width_decision_with_hft_tracking<'a>(
             None,
             "exact",
         )
+    } else if let Some(em) = font_metrics_data::implicit_double_rule_advance_em(chars[i]) {
+        em_exact = Some(em);
+        (
+            quantize_hwp_px(font_size * em),
+            "implicitSymbolProgram",
+            None,
+            "hit",
+        )
     } else if let Some(em) = style
         .native_pua_metrics
         .as_ref()
@@ -2249,17 +2262,42 @@ fn char_width_decision_with_hft_tracking<'a>(
             style.bold,
             style.regenerated_font_metrics,
         );
-        // 현대 L/V/T는 같은 합성 음절의 메트릭을 소비한다. 자모 주소는 유지한다.
-        let metric_character = if cluster_len[i] > 1 {
-            crate::renderer::pua_glyph::modern_syllable(
-                &chars[i..i + usize::from(cluster_len[i])]
-                    .iter()
-                    .collect::<String>(),
-            )
-            .unwrap_or(c)
-        } else {
-            c
-        };
+        // 표시할 옛한글 한 음절에 원 프로그램의 가시 호환 글리프가 있으면
+        // 다음 글자도 그 글리프의 hmtx 뒤에서 시작한다. 자모 주소는 유지한다.
+        let cluster_glyph = (cluster_len[i] > 1)
+            .then(|| {
+                crate::renderer::pua_glyph::candidate(
+                    &chars[i..i + usize::from(cluster_len[i])]
+                        .iter()
+                        .collect::<String>(),
+                )
+            })
+            .flatten();
+        let old_glyph_metric = cluster_glyph
+            .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
+            .and_then(|glyph| {
+                style
+                    .selected_primary_font_program
+                    .and_then(|_| {
+                        font_metrics_data::old_hangul_syllable_advance_em(
+                            css_primary_face(display_family),
+                            style.bold,
+                            style.italic,
+                            glyph,
+                        )
+                    })
+                    .map(|em| (glyph, em, None))
+                    .or_else(|| {
+                        if latin.is_some() {
+                            return None;
+                        }
+                        font_metrics_data::declared_old_hangul_fallback(style, glyph)
+                            .map(|(metric, em)| (glyph, em, Some(metric)))
+                    })
+            });
+        let metric_character = cluster_glyph
+            .filter(|glyph| ('가'..='힣').contains(glyph))
+            .unwrap_or(c);
         let original_glyph_face = latin
             .map_or(style.original_glyph_metric_family.as_deref(), |slot| {
                 slot.original_glyph_metric_family.as_deref()
@@ -2333,6 +2371,18 @@ fn char_width_decision_with_hft_tracking<'a>(
         if original_glyph_em.is_none() && metric_character != c && embedded.width_px.is_some() {
             embedded.width_source = "canonicalHangulMetric";
             measurement_character = Some(metric_character);
+        }
+        if let Some((glyph, em, fallback)) = old_glyph_metric {
+            embedded.width_px = Some(quantize_hwp_px(font_size * em));
+            embedded.em_fraction = Some(em);
+            embedded.width_source = if let Some(metric) = fallback {
+                embedded.metric = Some(metric);
+                "declaredOldHangulFallbackMetric"
+            } else {
+                "sourceOldHangulMetric"
+            };
+            embedded.character_match = "hit";
+            measurement_character = Some(glyph);
         }
         if let Some(em) = contextual_advance {
             // 기본 cmap 글자의 hmtx가 아닌 실제 GSUB 결합형·합자의 전진을 소비한다.

@@ -105,6 +105,7 @@ impl DocumentCore {
         }
 
         let default_max_width = shape.common().width;
+        let ole = matches!(shape, ShapeObject::Ole(_));
         let mut created = false;
         {
             let caption_slot = Self::shape_caption_mut(shape);
@@ -113,9 +114,11 @@ impl DocumentCore {
                     max_width: default_max_width,
                     ..Default::default()
                 };
+                // 한컴 12.30에서 그리기 개체 캡션은 그림 캡션처럼 번호 뒤에 마침표가 없다("그림 N").
+                // OLE 개체는 HWP 그림 번호 뒤 마침표를 지킨다.
                 let auto_number = crate::model::control::AutoNumber {
                     number_type: crate::model::control::AutoNumberType::Picture,
-                    suffix_char: '.',
+                    suffix_char: if ole { '.' } else { '\0' },
                     ..Default::default()
                 };
                 // 한컴 그림/OLE 캡션은 AutoNumber 앞에 "그림" 접두어를 함께 표시한다.
@@ -320,6 +323,9 @@ impl DocumentCore {
                     g.gradient_type, g.angle, g.center_x, g.center_y, g.blur
                 ));
             }
+            if let Some(ref image) = fill.image {
+                extra.push_str(&crate::document_core::helpers::image_fill_json(image));
+            }
             extra.push_str(&format!(",\"fillAlpha\":{}", fill.alpha));
             // 그림자
             extra.push_str(&format!(",\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{},\"shadowOffsetY\":{},\"shadowAlpha\":{}",
@@ -371,6 +377,23 @@ impl DocumentCore {
             common_json, tb_json, extra_json, round_json, connector_json, caption_json
         ))
     }
+    pub(super) fn validate_image_fill_reference(&self, props: &str) -> Result<(), HwpError> {
+        if let Some(id) = crate::document_core::helpers::json_u32(props, "imageBinDataId") {
+            let valid = id
+                .checked_sub(1)
+                .and_then(|index| self.document.doc_info.bin_data_list.get(index as usize))
+                .is_some_and(|entry| {
+                    entry.data_type != crate::model::bin_data::BinDataType::Storage
+                });
+            if !valid {
+                return Err(HwpError::InvalidField(format!(
+                    "문서에 없는 그림 자원: {id}"
+                )));
+            }
+        }
+        Ok(())
+    }
+
     /// 글상자(Shape) 속성 변경 (네이티브).
     pub fn set_shape_properties_native(
         &mut self,
@@ -381,7 +404,11 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         use crate::document_core::helpers::{json_bool, json_i32, json_str};
 
+        let caption_styles = self.resolve_render_styles();
+        let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
+        self.validate_image_fill_reference(props_json)?;
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
+        let caption_width_before = shape_caption_text_width(shape);
 
         // [#8399] 어울림 배제 밴드 지문 — 그림 속성 편집(#6204)과 같은 재투영 판정.
         let band_geometry_before = super::picture::picture_band_geometry(shape.common());
@@ -542,6 +569,10 @@ impl DocumentCore {
                 let grad = d.fill.gradient.get_or_insert_with(Default::default);
                 grad.blur = v as i16;
             }
+            // 채우기 (그림) — 같은 문서의 그림 번호만 받는다.
+            if let Some(image) = crate::document_core::helpers::image_fill_from_json(props_json) {
+                d.fill.image = Some(image);
+            }
 
             // 그림자
             if let Some(v) = crate::document_core::helpers::json_u32(props_json, "shadowType") {
@@ -555,6 +586,9 @@ impl DocumentCore {
             }
             if let Some(v) = crate::document_core::helpers::json_i32(props_json, "shadowOffsetY") {
                 d.shadow_offset_y = v;
+            }
+            if let Some(v) = crate::document_core::helpers::json_i32(props_json, "shadowAlpha") {
+                d.shadow_alpha = v.clamp(0, 255) as u8;
             }
 
             // TextBox 속성 업데이트
@@ -594,31 +628,17 @@ impl DocumentCore {
         group_geometry::finish_top_level_edit(shape, transform_before);
 
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
+        reflow_shape_caption_if_width_changed(
+            shape,
+            caption_width_before,
+            &caption_styles,
+            dpi,
+            hwp3_layout,
+        );
 
-        // Group 리사이즈: original_width 유지, current_width만 변경 (렌더러가 스케일 적용)
-        // 한컴 방식: 자식은 변경하지 않고, 컨테이너의 current/original 비율로 스케일 결정
+        // 묶음 크기 바꾸기: original은 두고 current와 자손 행렬에 배율을 합성한다(한컴 12.30).
         if let crate::model::shape::ShapeObject::Group(ref mut group) = shape {
-            // [#6806] 묶음도 값이 바뀔 때만 — 파싱값이 `current ≠ common` 인 묶음(corpus 36건)은
-            // 같은 봉지를 되먹이면 지문이 흔들려 원본 변환 행렬(#6740)이 지워졌다.
-            if let Some(nw) = new_w.filter(|&w| w != width_before) {
-                group.shape_attr.current_width = nw;
-                // original_width는 유지 (스케일 기준)
-            }
-            if let Some(nh) = new_h.filter(|&h| h != height_before) {
-                group.shape_attr.current_height = nh;
-            }
-            // 회전 중심 갱신 — common 에서 다시 세우므로 무변경 시 멱등이다.
-            group.shape_attr.rotation_center.x = (group.common.width / 2) as i32;
-            group.shape_attr.rotation_center.y = (group.common.height / 2) as i32;
-            // [#6740] raw_rendering 초기화는 **실제로 변환이 바뀐 뒤에만** 한다.
-            // 종전에는 `if let Some(..)` 가드 밖에서 무조건 비웠기 때문에, 크기 키가
-            // 없는 속성(예: 빈 JSON)이나 같은 값 재적용에도 한컴 원본 행렬이 사라졌다.
-            // 판정 형태는 #6355(그림)와 같다.
-            if super::common::shape_transform_fingerprint(&group.common, &group.shape_attr)
-                != transform_before
-            {
-                group.shape_attr.raw_rendering = Vec::new();
-            }
+            group_geometry::finish_group_edit(group, transform_before, new_w, new_h);
         }
 
         super::common::update_changed_polygon_geometry(shape, transform_before);
@@ -715,6 +735,9 @@ impl DocumentCore {
                     ",\"gradientType\":{},\"gradientAngle\":{},\"gradientCenterX\":{},\"gradientCenterY\":{},\"gradientBlur\":{}",
                     g.gradient_type, g.angle, g.center_x, g.center_y, g.blur
                 ));
+            }
+            if let Some(ref image) = fill.image {
+                extra.push_str(&crate::document_core::helpers::image_fill_json(image));
             }
             extra.push_str(&format!(",\"fillAlpha\":{}", fill.alpha));
             extra.push_str(&format!(",\"shadowType\":{},\"shadowColor\":{},\"shadowOffsetX\":{},\"shadowOffsetY\":{},\"shadowAlpha\":{}",
@@ -907,6 +930,10 @@ impl DocumentCore {
                 let grad = d.fill.gradient.get_or_insert_with(Default::default);
                 grad.blur = v as i16;
             }
+            // 채우기 (그림) — 같은 문서의 그림 번호만 받는다.
+            if let Some(image) = crate::document_core::helpers::image_fill_from_json(props_json) {
+                d.fill.image = Some(image);
+            }
             if let Some(v) = crate::document_core::helpers::json_u32(props_json, "shadowType") {
                 d.shadow_type = v;
             }
@@ -918,6 +945,9 @@ impl DocumentCore {
             }
             if let Some(v) = crate::document_core::helpers::json_i32(props_json, "shadowOffsetY") {
                 d.shadow_offset_y = v;
+            }
+            if let Some(v) = crate::document_core::helpers::json_i32(props_json, "shadowAlpha") {
+                d.shadow_alpha = v.clamp(0, 255) as u8;
             }
             if let Some(ref mut tb) = d.text_box {
                 if let Some(v) = json_i32(props_json, "tbMarginLeft") {
@@ -954,21 +984,7 @@ impl DocumentCore {
         let caption_changed = Self::apply_shape_caption_props(shape, props_json);
 
         if let crate::model::shape::ShapeObject::Group(ref mut group) = shape {
-            // [#6806] 본문 경로와 동형 — 값이 바뀔 때만.
-            if let Some(nw) = new_w.filter(|&w| w != width_before) {
-                group.shape_attr.current_width = nw;
-            }
-            if let Some(nh) = new_h.filter(|&h| h != height_before) {
-                group.shape_attr.current_height = nh;
-            }
-            group.shape_attr.rotation_center.x = (group.common.width / 2) as i32;
-            group.shape_attr.rotation_center.y = (group.common.height / 2) as i32;
-            // [#6740] 본문 경로(set_shape_properties_native)와 같은 판정 — 실제 변화 시에만.
-            if super::common::shape_transform_fingerprint(&group.common, &group.shape_attr)
-                != transform_before
-            {
-                group.shape_attr.raw_rendering = Vec::new();
-            }
+            group_geometry::finish_group_edit(group, transform_before, new_w, new_h);
         }
         super::common::update_changed_polygon_geometry(shape, transform_before);
         caption_changed
@@ -2793,6 +2809,36 @@ impl DocumentCore {
         self.invalidate_page_tree_cache();
 
         Ok(crate::document_core::helpers::json_ok())
+    }
+}
+
+/// 도형 캡션 글 폭. 캡션이 없으면 None이다.
+pub(crate) fn shape_caption_text_width(shape: &ShapeObject) -> Option<u32> {
+    let common = shape.common();
+    DocumentCore::shape_caption_ref(shape)
+        .map(|caption| caption.text_width(common.width, &common.margin))
+}
+
+/// 속성 변경으로 도형 캡션 글 폭이 바뀌었으면(새 캡션 포함) 캡션 글을 새 폭으로 다시 줄 나눈다.
+pub(crate) fn reflow_shape_caption_if_width_changed(
+    shape: &mut ShapeObject,
+    before: Option<u32>,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    dpi: f64,
+    is_hwp3_variant: bool,
+) {
+    let after = shape_caption_text_width(shape);
+    if let (Some(width), Some(caption)) = (
+        after.filter(|_| after != before),
+        DocumentCore::shape_caption_mut(shape).as_mut(),
+    ) {
+        super::super::text_editing::reflow_caption_to_width(
+            caption,
+            width,
+            styles,
+            dpi,
+            is_hwp3_variant,
+        );
     }
 }
 

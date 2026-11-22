@@ -70,10 +70,13 @@
   Draft는 조기 설계 논의·WIP 공유 등 특별한 목적과 작업지시자의 명시적 Draft 지시가 있는 경우만
   허용하며 목적·미완료 항목·완료 계획을 기록한다. 번호 확보·CI 대기는 예외 사유가 아니다.
 - 조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전 최종 head에서
-  행정업무운영 편람 HWPX Native 383쪽 `--handbook-gate`를 실행해 통과한다. 지원 웹폰트를
-  사용할 수 있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
+  행정업무운영 편람 HWPX Native 383쪽을 정본에 대조해 통과한다. 같은 조건의 정본 보호 전쪽
+  결과가 있으면 그 TSV를 제출하고, 없으면 `--handbook-gate`를 실행한다. 지원 웹폰트를 사용할 수
+  있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
   검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
   실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
+  통합 담당자는 첫 전쪽 실행 전에 [동명 글꼴과 실제 사용 글리프 확인](mydocs/manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)의
+  절차로 수용 당시 공급 파일과 실제 사용 프로그램을 대조한다.
 - Docker 설치는 로컬 검증의 필수 조건이 아니다. 사용 가능 환경과 불가 환경의
   [fresh WASM 실행 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)를
   구분하고, 호스트 경로도 최적화·브라우저·시각 검증까지 동일하게 완료한다.
@@ -109,7 +112,11 @@
 조판·렌더링에 영향을 주는 변경은 **검증 대상 각 문서의 전체 페이지 TSV를 먼저 산출**한다.
 `silhouette_raw_match_percent`(색상 경계 보정 전2px 내용 실루엣 일치율)를 페이지별로 확인하며,
 **한 페이지라도 90% 미만이면 PR을 재검토한다.** 평균값이나 대표 페이지의 높은 점수로
-미달 쪽을 상쇄하지 않는다. 정확히 90%는 통과한다.
+미달 쪽을 상쇄하지 않는다. 정확히 90%는 자동 검사 하한을 충족한다.
+제출 전 글꼴로 설명되지 않는 차이는 Native·fresh WASM 전쪽 98% 이상으로 보정하고 가능한 쪽은
+100%까지 개선한다. 제출 기준은 TSV의 소수 둘째 자리 표시값으로 판정한다.
+동일한 글꼴을 확보해 적용할 수 없어 그 글꼴 차이만 남은 쪽은 예외로
+검토한다. [페이지별 제출 판정](mydocs/manual/verification/visual_verification_governance.md#페이지별-tsv와-pr-재검토-필수-조건)을 따른다.
 
 `re_review_required` 상태에서는 새 PR 생성과 열린 PR의 승인·통합을 보류한다.
 작성자는 원본·독립 한컴 Print PDF·overlay를 대조해 원인을 수정하고 새 head에서 다시 산출한다.

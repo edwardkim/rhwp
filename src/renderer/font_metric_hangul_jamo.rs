@@ -76,3 +76,35 @@ pub(super) fn width(metric: &FontMetric, ch: char) -> Option<u16> {
     let width = widths[(ch as u32 - 0x1100) as usize];
     (width != u16::MAX).then_some(width)
 }
+
+/// KS X 1026-1 옛한글 음절에 대응하는 원본 글꼴의 가시 Hanyang-PUA 글리프 폭.
+/// 함초롬/산뜻돋움 정체와 굵은체의 cmap·glyf·hmtx에서 공통으로 확인한 구간이다.
+/// 빈 글리프와 원본 cmap의 구멍은 포함하지 않는다.
+pub(super) fn compatibility_syllable_width(metric: &FontMetric, glyph: char) -> Option<u16> {
+    // HBATANG.TTF의 두 연속 cmap 구간은 hmtx 1024/1024다.
+    // 편람 HWP·HWPX의 한컴 Print에서도 KoPub 결측 음절의 실제 공급자다.
+    if metric.name == "Haansoft Batang"
+        && !metric.bold
+        && !metric.italic
+        && matches!(glyph as u32, 0xe0bc..=0xefff | 0xf100..=0xf66e)
+    {
+        return Some(metric.em_size);
+    }
+    let covered = matches!(glyph as u32,
+        0xe0bc..=0xe230 | 0xe233..=0xe95b | 0xe95d..=0xefff |
+        0xf100..=0xf4c6 | 0xf4c8..=0xf66e);
+    if !covered || metric.italic || metric.em_size != 1000 {
+        return None;
+    }
+    match metric.name {
+        "Han Santteut Dotum" | "한컴산뜻돋움" => {
+            Some(if matches!(glyph as u32, 0xf537 | 0xf53a) {
+                932
+            } else {
+                970
+            })
+        }
+        "HCR Dotum" | "함초롬돋움" | "HCR Batang" | "함초롬바탕" => Some(970),
+        _ => None,
+    }
+}

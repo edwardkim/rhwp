@@ -1,0 +1,53 @@
+{
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "source_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "build": "macOS locked web --no-opt",
+  "dpi": 96,
+  "compat": "2022",
+  "raw_radius_px": 2,
+  "results": [
+    {
+      "backend": "wasm",
+      "variant": "base",
+      "status": "canvas-image-decode-failed",
+      "native_sha256": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+      "wasm_sha256": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd",
+      "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "rasterized_pages": [
+        1,
+        2,
+        3,
+        5,
+        9
+      ],
+      "score_available": false,
+      "error": "Error: Canvas 그림 decode 실패"
+    },
+    {
+      "backend": "wasm",
+      "variant": "candidate",
+      "exit": 0,
+      "tsv": "silhouette.tsv",
+      "tsv_sha256": "fc2aee754c6baaee6e2a7774afdf24327b9f19df768d200f9b6599e47d1b590b",
+      "minimum": "99.66",
+      "p4": "99.80",
+      "pages": {
+        "1": "100.00",
+        "2": "99.99",
+        "3": "99.91",
+        "4": "99.80",
+        "5": "99.84",
+        "6": "99.82",
+        "7": "99.66",
+        "8": "99.93",
+        "9": "99.80"
+      },
+      "below_98": [],
+      "native_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+      "wasm_sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc",
+      "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b"
+    }
+  ]
+}

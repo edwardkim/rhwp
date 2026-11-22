@@ -1,0 +1,68 @@
+{
+  "product_head": "19646e69fc99ba76f9ff0350c2a425fe07ec1e88",
+  "build_artifacts": {
+    "rhwp.js": {
+      "sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "bytes": 594065
+    },
+    "rhwp_bg.wasm": {
+      "sha256": "1ffb6d28f8e50635c6bdc614bbf42f6b7e1ba666c5b40ebb065a65b39bc7f3fc",
+      "bytes": 32385326
+    }
+  },
+  "native_binary_sha256": "fe91bd066efaf1f8b01becf3a1faaa1b6260834c8ebaabbd5a9df3f5a7996892",
+  "browser": [
+    "Chrome/157.0.8103.80"
+  ],
+  "hft_files_absent": [
+    "ENGGT.otf",
+    "ENGGTI.otf",
+    "HGGGT.otf"
+  ],
+  "wasm_display_fallback": "HY견고딕",
+  "wasm_fallback_program_sha256": [
+    "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171",
+    "82f70d5e221412b10df0431f353f095885888823f5d026694691237c9a3004e8",
+    "ca822120ef31767c5e3dd78d59f3a1b00c59c82a6e8d31715ac2258152c5c234"
+  ],
+  "isolated_font_profile_sha256": "17bedc48ab4f6bf97ae23904cf8e2bc337305342f8059abd22d73a3cdb848c6e",
+  "browser_scope": "일회용 headless Chrome, 상위 Seatbelt 글꼴·루프백 격리",
+  "cases": [
+    {
+      "backend": "native",
+      "tsv": "native.tsv",
+      "tsv_sha256": "44cf26069ba6a4d74901548d3b6abdf5ad5ea8f7dbd5c83f848fad84aa69b975",
+      "input": {
+        "path": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+        "sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+        "sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59"
+      },
+      "pages": 64,
+      "minimum": "94.93",
+      "below_98": [
+        1
+      ]
+    },
+    {
+      "backend": "wasm",
+      "tsv": "wasm.tsv",
+      "tsv_sha256": "0893a76b847d3d6b9732ef8326da4b3962f1075b697e67b51e2f3a753e97a7f0",
+      "input": {
+        "path": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+        "sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+        "sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59"
+      },
+      "pages": 64,
+      "minimum": "94.93",
+      "below_98": [
+        1
+      ]
+    }
+  ]
+}

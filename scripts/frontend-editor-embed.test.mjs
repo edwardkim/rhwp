@@ -30,6 +30,7 @@ test('@rhwp/editor public API uses exact-origin MessageChannel v1 binary transpo
       'target-navigation-v1',
       'document-change-events-v1',
       'field-focus-events-v1',
+      'password-save-v1',
     ]);
     assert.equal(transfer.length, 1);
     sessionId = message.sessionId;

@@ -838,6 +838,26 @@ impl HwpDocument {
         .map_err(JsValue::from)
     }
 
+    /// 문서 내 지속 HFT 윤곽 등록의 소유 판정에 쓰이는 선언과 현재 환경.
+    #[cfg(target_arch = "wasm32")]
+    #[wasm_bindgen(js_name = getHftOutlineFontContext)]
+    pub fn get_hft_outline_font_context(&self) -> Result<String, JsValue> {
+        let faces: Vec<Vec<_>> = self
+            .document()
+            .doc_info
+            .font_faces
+            .iter()
+            .map(|language| {
+                language
+                    .iter()
+                    .map(|face| (face.name.as_str(), face.alt_type == 2))
+                    .collect()
+            })
+            .collect();
+        serde_json::to_string(&(faces, self.resolved_font_environment()))
+            .map_err(|error| JsValue::from_str(&error.to_string()))
+    }
+
     /// 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
     #[wasm_bindgen(js_name = registerHftOutlineFont)]
     pub fn register_hft_outline_font(
@@ -1217,6 +1237,20 @@ impl HwpDocument {
     #[wasm_bindgen(js_name = setShowTransparentBorders)]
     pub fn set_show_transparent_borders(&mut self, enabled: bool) {
         self.show_transparent_borders = enabled;
+        self.invalidate_page_tree_cache();
+    }
+
+    /// 편집 화면에 그림을 그리는지 반환한다.
+    #[wasm_bindgen(js_name = getShowPictures)]
+    pub fn get_show_pictures(&self) -> bool {
+        self.show_pictures
+    }
+
+    /// 한컴 보기 > 그림. 끄면 그림 개체는 회색 파선 자리 상자로, 쪽·셀 배경 그림은 빼고 그린다.
+    /// 도형 면을 채운 그림·차트·수식은 그대로다. 인쇄할 때는 켜고 그린다.
+    #[wasm_bindgen(js_name = setShowPictures)]
+    pub fn set_show_pictures(&mut self, enabled: bool) {
+        self.show_pictures = enabled;
         self.invalidate_page_tree_cache();
     }
 
@@ -1639,6 +1673,18 @@ impl HwpDocument {
         self.core
             .set_font_environment(environment)
             .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// 인쇄 작업 문맥을 선택한다. 일반 화면과 원본 문서에는 반영하지 않는다.
+    #[wasm_bindgen(js_name = setPrintJobContext)]
+    pub fn set_print_job_context_json(&mut self, json: Option<String>) -> Result<(), JsValue> {
+        let context = json
+            .as_deref()
+            .map(crate::document_core::PrintJobContext::from_json)
+            .transpose()
+            .map_err(|error| JsValue::from_str(&error.to_string()))?;
+        self.core.set_print_job_context(context);
+        Ok(())
     }
 
     /// CanvasKit direct replay 정책 진단을 JSON 문자열로 반환한다.
@@ -5561,6 +5607,34 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 직선 끝점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 직선 (글로벌 HWPUNIT 좌표).
+    /// `cell_path_json`은 `setCellShapePropertiesByPath`와 같은 경로다.
+    #[wasm_bindgen(js_name = moveLineEndpointByPath)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn move_line_endpoint_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        cell_path_json: &str,
+        ci: u32,
+        sx: i32,
+        sy: i32,
+        ex: i32,
+        ey: i32,
+    ) -> Result<String, JsValue> {
+        self.move_line_endpoint_by_path_native(
+            sec as usize,
+            parent_para as usize,
+            cell_path_json,
+            ci as usize,
+            sx,
+            sy,
+            ex,
+            ey,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// `moveLineEndpoint` 의 options object 변형 (#1413).
     ///
     /// options JSON 키: `{ sec, para, ci, sx, sy, ex, ey }` (좌표는 i32). positional 과 동일 동작.
@@ -6991,10 +7065,72 @@ impl HwpDocument {
         self.table_edit_at_cursor(list_id, op).map_err(|e| e.into())
     }
 
+    /// 문서 요약(제목·주제·지은이·날짜·키워드·기타·마지막 저장한 사람·만든 날짜·마지막 저장한 날짜) —
+    /// 한컴 파일 > 문서 정보의 문서 요약·문서 통계 탭.
+    #[wasm_bindgen(js_name = getDocumentSummary)]
+    pub fn get_document_summary(&self) -> String {
+        self.core.document_summary_json()
+    }
+
+    /// 문서 요약을 고친다. JSON 에 든 칸만 바꾸고 HWP·HWPX 저장 자리를 함께 쓴다.
+    #[wasm_bindgen(js_name = setDocumentSummary)]
+    pub fn set_document_summary(&mut self, json: &str) -> Result<String, JsValue> {
+        self.core
+            .set_document_summary_json(json)
+            .map_err(|e| e.into())
+    }
+
+    /// 문서에 든 그림 파일(BinData) — 삽입·연결, 경로, 처음 그리는 쪽. 문서 정보 > 그림 정보.
+    #[wasm_bindgen(js_name = getBinDataList)]
+    pub fn get_bin_data_list(&self) -> String {
+        self.core.bin_data_infos_json()
+    }
+
+    /// 문서의 저작권 표시(`{type, flag, lang}` 또는 `null`). 문서 정보 > 저작권.
+    #[wasm_bindgen(js_name = getLicenseMark)]
+    pub fn get_license_mark(&self) -> String {
+        self.core.license_mark_json()
+    }
+
+    /// 표·그림·글상자 수(본문·머리말·꼬리말·바탕쪽). 문서 정보 > 문서 통계.
+    #[wasm_bindgen(js_name = getObjectCount)]
+    pub fn get_object_count(&self) -> String {
+        self.core.object_count_json()
+    }
+
     /// 문서가 담은 컨트롤 사슬 — `HeadCtrl`·`LastCtrl` 과 `Next`·`Prev` 가 딛는다.
     #[wasm_bindgen(js_name = getControls)]
     pub fn get_controls(&self) -> String {
         self.controls_json()
+    }
+
+    /// 한컴 조판 부호 지우기·찾아가기의 자리 — `kinds_json`(한컴 목록 이름 배열) 갈래를
+    /// 본문·표 셀·글상자·캡션·머리말·꼬리말·각주·미주까지 문서 차례로 준다.
+    #[wasm_bindgen(js_name = getControlCodes)]
+    pub fn get_control_codes(&self, kinds_json: &str) -> Result<String, JsValue> {
+        let kinds: Vec<String> =
+            serde_json::from_str(kinds_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        serde_json::to_string(&self.core.control_codes_native(&kinds))
+            .map_err(|e| JsValue::from_str(&e.to_string()))
+    }
+
+    /// 한컴 조판 부호 지우기. `indices_json` 이 `null` 이면 갈래의 자리를 모두, 배열이면
+    /// `getControlCodes` 가 준 차례 번호의 것만 지운다. `{"ok":true,"count":n}`.
+    #[wasm_bindgen(js_name = eraseControlCodes)]
+    pub fn erase_control_codes(
+        &mut self,
+        kinds_json: &str,
+        indices_json: &str,
+    ) -> Result<String, JsValue> {
+        let kinds: Vec<String> =
+            serde_json::from_str(kinds_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let indices: Option<Vec<usize>> =
+            serde_json::from_str(indices_json).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        let count = self
+            .core
+            .erase_control_codes_native(&kinds, indices.as_deref())
+            .map_err(JsValue::from)?;
+        Ok(format!("{{\"ok\":true,\"count\":{count}}}"))
     }
 
     /// 컨트롤 하나를 지운다 — 웹한글컨트롤 `DeleteCtrl`.
@@ -7164,6 +7300,26 @@ impl HwpDocument {
     ) -> Result<String, JsValue> {
         self.set_text_box_at(para_in_list as usize, control_index as usize, attach)
             .map_err(|e| e.into())
+    }
+
+    /// 표 셀·글상자·머리말/꼬리말 안 도형에 글상자를 붙이거나 뗀다(경로는 `setCellShapePropertiesByPath`와 같다).
+    #[wasm_bindgen(js_name = setTextBoxAtByPath)]
+    pub fn set_text_box_at_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        cell_path_json: &str,
+        inner_control_idx: u32,
+        attach: bool,
+    ) -> Result<String, JsValue> {
+        self.set_text_box_at_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            cell_path_json,
+            inner_control_idx as usize,
+            attach,
+        )
+        .map_err(|e| e.into())
     }
 
     /// 개체에 캡션을 붙인다 — 웹한글컨트롤 `Run("ShapeObjAttachCaption")`.
@@ -9486,6 +9642,53 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 쪽(문서 전체 쪽 번호)에 적용되는 감추기 조판 부호 목록.
+    /// `{ok, section, hides:[{para, cellPath, controlIdx, hideHeader, …}]}` — 마지막 것이 그 쪽을 정한다.
+    #[wasm_bindgen(js_name = getPageHidesOnPage)]
+    pub fn get_page_hides_on_page(&self, page: u32) -> Result<String, JsValue> {
+        self.get_page_hides_on_page_native(page)
+            .map_err(|e| e.into())
+    }
+
+    /// 한/글 쪽 > 감추기: 쪽의 감추기 조판 부호 하나를 고치거나, 없으면 캐럿 자리(본문 문단
+    /// `para` 또는 그 문단 표의 `cell_path_json` 셀 문단, `char_offset`)에 넣는다. 모두 끄면 지운다.
+    #[wasm_bindgen(js_name = setPageHideOnPage)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn set_page_hide_on_page(
+        &mut self,
+        page: u32,
+        para: u32,
+        cell_path_json: &str,
+        char_offset: u32,
+        hide_header: bool,
+        hide_footer: bool,
+        hide_master: bool,
+        hide_border: bool,
+        hide_fill: bool,
+        hide_page_num: bool,
+    ) -> Result<String, JsValue> {
+        let path = if cell_path_json.trim().is_empty() {
+            Vec::new()
+        } else {
+            DocumentCore::parse_cell_path(cell_path_json).map_err(JsValue::from)?
+        };
+        self.set_page_hide_on_page_native(
+            page,
+            para as usize,
+            &path,
+            char_offset as usize,
+            crate::model::control::PageHide {
+                hide_header,
+                hide_footer,
+                hide_master_page: hide_master,
+                hide_border,
+                hide_fill,
+                hide_page_num,
+            },
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 감추기 조회
     #[wasm_bindgen(js_name = getPageHide)]
     pub fn get_page_hide(&self, sec: u32, para: u32) -> Result<String, JsValue> {
@@ -9799,6 +10002,32 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// cellPath가 가리키는 셀의 논리 캐럿 범위(글자와 글자처럼 취급한 개체가 한 칸씩)를 내부
+    /// 클립보드에 복사한다. 수식 같은 개체 바로 뒤에서 시작한 선택은 그 개체를 담지 않는다.
+    #[wasm_bindgen(js_name = copySelectionInCellByPathLogical)]
+    pub fn copy_selection_in_cell_by_path_logical(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        start_cell_para_idx: u32,
+        start_logical: u32,
+        end_cell_para_idx: u32,
+        end_logical: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.copy_selection_in_cell_by_path_logical_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            start_cell_para_idx as usize,
+            start_logical as usize,
+            end_cell_para_idx as usize,
+            end_logical as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 컨트롤 객체(표, 이미지, 도형)를 내부 클립보드에 복사한다.
     ///
     /// [Task #1161] `cell_path_json` 이 빈 문자열/`"[]"` 면 본문, 그 외에는 셀/글상자
@@ -9863,6 +10092,24 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 내부 클립보드를 본문 논리 캐럿(`insertTextLogical` 과 같은 축)에 붙인다.
+    ///
+    /// 각주·글자처럼 취급한 개체 바로 뒤에서도 그 뒤에 붙인다. 반환값은 `pasteInternal` 과 같다.
+    #[wasm_bindgen(js_name = pasteInternalLogical)]
+    pub fn paste_internal_logical(
+        &mut self,
+        section_idx: u32,
+        para_idx: u32,
+        logical_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.paste_internal_logical_native(
+            section_idx as usize,
+            para_idx as usize,
+            logical_offset as usize,
+        )
+        .map_err(|error| error.into())
+    }
+
     /// 순수 서식 글 조각을 본문 논리 캐럿의 누름틀 안팎 소속으로 붙인다.
     #[wasm_bindgen(js_name = pasteInternalTextLogical)]
     pub fn paste_internal_text_logical(
@@ -9920,6 +10167,26 @@ impl HwpDocument {
             parent_para_idx as usize,
             &path,
             char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 내부 클립보드를 cellPath가 가리키는 셀 문단의 논리 캐럿에 붙인다. 반환값은
+    /// `pasteInternalInCellByPath` 와 같다(`charOffset`은 글자 자리).
+    #[wasm_bindgen(js_name = pasteInternalInCellByPathLogical)]
+    pub fn paste_internal_in_cell_by_path_logical(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        logical_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.paste_internal_in_cell_by_path_logical_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            logical_offset as usize,
         )
         .map_err(|e| e.into())
     }
@@ -10191,6 +10458,28 @@ impl HwpDocument {
             parent_para_idx as usize,
             &path,
             char_offset as usize,
+            html,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// HTML을 cellPath가 가리키는 셀 문단의 논리 캐럿에 붙인다. 반환값은
+    /// `pasteHtmlInCellByPath` 와 같다(`charOffset`은 글자 자리).
+    #[wasm_bindgen(js_name = pasteHtmlInCellByPathLogical)]
+    pub fn paste_html_in_cell_by_path_logical(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        logical_offset: u32,
+        html: &str,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.paste_html_in_cell_by_path_logical_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            logical_offset as usize,
             html,
         )
         .map_err(|e| e.into())

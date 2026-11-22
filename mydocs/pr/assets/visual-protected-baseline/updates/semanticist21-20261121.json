@@ -1,0 +1,726 @@
+{
+  "previous_table_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "table_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+  "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+  "native_sha256": "d3fcb8f43cecae77530c38ef29968d9d120fad7751604b348d898f4ce0b056b4",
+  "wasm_sha256": "4327fe4dfdee45a5fdb64b9638ffcc5ee10e4904f5fdd5cfc60b60d7e4567bcb",
+  "wasm_js_sha256": "f38b73899bde75b74e9eb4ed924627595dee12339706d4ed88eeaf5d7c9d81fe",
+  "conditions": 46,
+  "compared_rows": 4046,
+  "declines": [],
+  "increases": [
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 25,
+      "previous": "99.94",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 31,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 32,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 34,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 44,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 49,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 50,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 53,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 60,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 61,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 67,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 72,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 73,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 74,
+      "previous": "99.85",
+      "current": "99.88"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 79,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 85,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 86,
+      "previous": "99.95",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 87,
+      "previous": "99.92",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 88,
+      "previous": "99.93",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 89,
+      "previous": "99.91",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 91,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 92,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 93,
+      "previous": "99.91",
+      "current": "99.97"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 94,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 95,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "native",
+      "page": 96,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 25,
+      "previous": "99.94",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 31,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 32,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 34,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 44,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 49,
+      "previous": "99.95",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 50,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 53,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 60,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 61,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 72,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 73,
+      "previous": "99.95",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 74,
+      "previous": "99.86",
+      "current": "99.88"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 79,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 85,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 86,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 87,
+      "previous": "99.93",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 88,
+      "previous": "99.91",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 89,
+      "previous": "99.87",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 91,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 92,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 93,
+      "previous": "99.91",
+      "current": "99.97"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 94,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 95,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "chemical",
+      "document_id": "870eabd0a7d9534c",
+      "backend": "wasm",
+      "page": 96,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 1,
+      "previous": "99.79",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 2,
+      "previous": "99.79",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 4,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 6,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 7,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 8,
+      "previous": "99.69",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 62,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "native",
+      "page": 71,
+      "previous": "99.91",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 1,
+      "previous": "99.81",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 2,
+      "previous": "99.79",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.96",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 6,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 7,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 8,
+      "previous": "99.67",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 62,
+      "previous": "99.98",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "spec13",
+      "document_id": "3298ed895b9a645c",
+      "backend": "wasm",
+      "page": 71,
+      "previous": "99.92",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "native",
+      "page": 4,
+      "previous": "99.89",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "native",
+      "page": 8,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "native",
+      "page": 24,
+      "previous": "99.91",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "native",
+      "page": 45,
+      "previous": "99.89",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "wasm",
+      "page": 4,
+      "previous": "99.90",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "wasm",
+      "page": 8,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "wasm",
+      "page": 24,
+      "previous": "99.92",
+      "current": "100.00"
+    },
+    {
+      "logical_key": "decree",
+      "document_id": "61c6ae96913006c5",
+      "backend": "wasm",
+      "page": 45,
+      "previous": "99.89",
+      "current": "100.00"
+    }
+  ],
+  "accepted_at": "2026-11-22T00:23:36.733586+09:00",
+  "verification_after_registration": {
+    "checked_at": "2026-11-22T00:23:51+09:00",
+    "handbook_hwpx_native_pages": 383,
+    "handbook_regressions": [],
+    "public_document_checks": [
+      {
+        "document_id": "52ee61fe7201e36b",
+        "backend": "native",
+        "minimum_raw": "100.0"
+      },
+      {
+        "document_id": "52ee61fe7201e36b",
+        "backend": "wasm",
+        "minimum_raw": "100.0"
+      },
+      {
+        "document_id": "59f6ab1155623bda",
+        "backend": "native",
+        "minimum_raw": "100.0"
+      },
+      {
+        "document_id": "59f6ab1155623bda",
+        "backend": "wasm",
+        "minimum_raw": "100.0"
+      },
+      {
+        "document_id": "cdacd874b6e6ac66",
+        "backend": "native",
+        "minimum_raw": "99.99756"
+      },
+      {
+        "document_id": "cdacd874b6e6ac66",
+        "backend": "wasm",
+        "minimum_raw": "99.99756"
+      },
+      {
+        "document_id": "d03a9dde3d5dc7ac",
+        "backend": "native",
+        "minimum_raw": "100.0"
+      },
+      {
+        "document_id": "d03a9dde3d5dc7ac",
+        "backend": "wasm",
+        "minimum_raw": "100.0"
+      }
+    ],
+    "table_rows_verified": 4046,
+    "lowered_rows": 0,
+    "comparison": "새 표를 읽는 편람·기여자 공통 검사에 같은 최종 소스로 실측한 전쪽 결과를 전달했다.",
+    "rerendered": {
+      "checked_at": "2026-11-22T00:29:38+09:00",
+      "native_handbook": {
+        "pages": 383,
+        "minimum_raw": "99.97",
+        "same_page_scores_as_before_registration": true,
+        "tsv_sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+        "regressions": []
+      },
+      "public_documents": [
+        {
+          "document_id": "52ee61fe7201e36b",
+          "backend": "native",
+          "minimum": "100.0",
+          "page_count": 1
+        },
+        {
+          "document_id": "52ee61fe7201e36b",
+          "backend": "wasm",
+          "minimum": "100.0",
+          "page_count": 1
+        },
+        {
+          "document_id": "59f6ab1155623bda",
+          "backend": "native",
+          "minimum": "100.0",
+          "page_count": 1
+        },
+        {
+          "document_id": "59f6ab1155623bda",
+          "backend": "wasm",
+          "minimum": "100.0",
+          "page_count": 1
+        },
+        {
+          "document_id": "cdacd874b6e6ac66",
+          "backend": "native",
+          "minimum": "99.99756",
+          "page_count": 1
+        },
+        {
+          "document_id": "cdacd874b6e6ac66",
+          "backend": "wasm",
+          "minimum": "99.99756",
+          "page_count": 1
+        },
+        {
+          "document_id": "d03a9dde3d5dc7ac",
+          "backend": "native",
+          "minimum": "100.0",
+          "page_count": 1
+        },
+        {
+          "document_id": "d03a9dde3d5dc7ac",
+          "backend": "wasm",
+          "minimum": "100.0",
+          "page_count": 1
+        }
+      ],
+      "handbook_and_contributor_unit_tests_passed": 30
+    }
+  }
+}

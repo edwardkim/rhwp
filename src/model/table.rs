@@ -573,6 +573,19 @@ impl Cell {
 }
 
 impl Table {
+    /// 이 표나 자식 표에 이번 편집에서 다시 만든 칸 글줄이 있는가.
+    /// 저장된 호스트의 끝과 현재 칸의 끝을 구분할 때 사용한다.
+    pub(crate) fn has_edited_cell_lines(&self) -> bool {
+        self.cells.iter().any(|cell| {
+            cell.paragraphs.iter().any(|paragraph| {
+                paragraph.cell_lines_edited
+                    || paragraph.controls.iter().any(|control| {
+                        matches!(control, crate::model::control::Control::Table(child) if child.has_edited_cell_lines())
+                    })
+            })
+        })
+    }
+
     /// [#9005] 저장 표 크기(`common.height`)가 숨긴 안내문을 담은 칸 내용으로 잰 값인가.
     ///
     /// 한/글은 표를 저장할 때 미기입 누름틀 안내문이 든 칸 글줄로 행 높이를 재고 그 합을

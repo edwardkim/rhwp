@@ -116,6 +116,8 @@ import { CENTER_ZOOM_ANCHOR } from '@/view/zoom-anchor';
 import { withBusyCursor } from '@/view/busy-cursor';
 import { formatPageIndicator } from '@/view/page-indicator';
 import { installEmbedRuntime } from '@/embed/runtime';
+import { HostPasswordSave } from '@/embed/host-password-save';
+import { PasswordSaveError } from '../../npm/editor/password-save-contract.js';
 import { subscribeFieldChanges } from '@/embed/field-events';
 import type { EmbedRendererRuntimeRequestV1 } from '@/embed/rpc-router';
 import { enrichFontDecisionTrace } from '@/core/font-decision-trace';
@@ -2311,6 +2313,16 @@ void initPromise.then(() => {
   }
 });
 
+const hostPasswordSave = new HostPasswordSave({
+  wasm,
+  revision: () => {
+    if (documentOpenSession.pending) throw new PasswordSaveError('DOCUMENT_OPEN_PENDING');
+    if (!documentAgent) throw new PasswordSaveError('NO_DOCUMENT');
+    return documentAgent.getDocumentRevision();
+  },
+  completeHostSave,
+});
+
 installEmbedRuntime({
   hostWindow: window,
   parentWindow: window.parent,
@@ -2403,6 +2415,20 @@ installEmbedRuntime({
     async notifySaved(fileName) {
       await initPromise;
       return completeHostSave(fileName);
+    },
+    passwordSave: {
+      async getState() {
+        await initPromise;
+        return hostPasswordSave.getState();
+      },
+      async export(request) {
+        await initPromise;
+        return hostPasswordSave.export(request);
+      },
+      async acknowledge(request) {
+        await initPromise;
+        return hostPasswordSave.acknowledge(request);
+      },
     },
     async getDocumentState() {
       await initPromise;

@@ -96,6 +96,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "순수 조각과 논리 위치를 검증한 뒤 구역 무효화 공통 구현에 위임한다.",
     ),
     (
+        "commands/clipboard.rs",
+        "paste_internal_logical_native",
+        Exempt::DelegatesTo("paste_internal_at_caret_native"),
+        "논리 캐럿을 조각에 맞는 자리로 바꾼 뒤 캐럿 붙이기 공통 함수에 위임한다. 공통 함수가 raw_stream을 무효화한다.",
+    ),
+    (
         "commands/html_import.rs",
         "paste_html_native",
         Exempt::DelegatesTo("paste_html_at_caret_native"),
@@ -363,6 +369,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "현재 세션의 Print 이미지 색상 옵션을 설정하고 출력 캐시만 비운다. 저장 문서의 IR과 원본 스트림은 유지한다.",
     ),
     (
+        "mod.rs",
+        "set_print_job_context",
+        Exempt::SessionState,
+        "인쇄 작업의 파일명·현지 시각과 출력 레이어 캐시만 갱신한다. 원본 DocInfo와 본문 스트림은 유지한다.",
+    ),
+    (
         "queries/rendering.rs",
         "begin_deferred_pagination",
         Exempt::SessionState,
@@ -392,6 +404,18 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         Exempt::SessionState,
         "dirty 구역을 다시 쪽으로 나눌 뿐(pagination·측정 캐시). 문서 IR 무변경 — \
          선행 편집 뮤테이터가 이미 무효화했다.",
+    ),
+    (
+        "queries/document_info.rs",
+        "update_document_summary",
+        Exempt::SurgicalRawEdit,
+        "문서 요약은 구역·DocInfo 밖 저장 자리다. HWP 요약 스트림(extra_streams)과 HWPX content.hpf metadata 원문을 직접 고쳐 쓴다.",
+    ),
+    (
+        "queries/document_info.rs",
+        "set_document_summary_json",
+        Exempt::SurgicalRawEdit,
+        "JSON 을 풀어 update_document_summary 로 요약 원문만 고쳐 쓴다. 구역·DocInfo 패스스루와 무관하다.",
     ),
     (
         "queries/memo_query.rs",
@@ -459,6 +483,36 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "copy_selection_in_cell_by_path_native",
         Exempt::SessionState,
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/clipboard.rs",
+        "copy_selection_in_cell_by_path_logical_native",
+        Exempt::SessionState,
+        "경로 기반 논리 범위 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/clipboard.rs",
+        "paste_internal_in_cell_by_path_native",
+        Exempt::DelegatesTo("paste_internal_in_cell_by_path_at"),
+        "글자 캐럿으로 셀 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/clipboard.rs",
+        "paste_internal_in_cell_by_path_logical_native",
+        Exempt::DelegatesTo("paste_internal_in_cell_by_path_at"),
+        "논리 캐럿으로 셀 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_in_cell_by_path_native",
+        Exempt::DelegatesTo("paste_html_in_cell_by_path_at"),
+        "글자 캐럿으로 셀 HTML 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
+    ),
+    (
+        "commands/html_import.rs",
+        "paste_html_in_cell_by_path_logical_native",
+        Exempt::DelegatesTo("paste_html_in_cell_by_path_at"),
+        "논리 캐럿으로 셀 HTML 붙이기 공통 함수에 위임한다. 공통 함수가 구역의 raw_stream을 비운다.",
     ),
     (
         "commands/formatting_runs.rs",

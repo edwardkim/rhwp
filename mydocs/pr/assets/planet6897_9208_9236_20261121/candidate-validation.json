@@ -1,0 +1,455 @@
+{
+  "product_source": "b0bd2a1e715292726e52c819cb55ffa38cd84c56",
+  "base_source": "2480af27df441ffd199cc24602afddbd2d13dcfe",
+  "merge_9258": "cb85758e00c2f882f622f1f2bd7f84ef767c7b2f",
+  "rust": {
+    "suites-prepare": {
+      "exit": 0,
+      "log_sha256": "adcaf1d3b1aad98e76f77d7d07ad9aa0db0d89c673f34cf5384c7c4e1a5cd863",
+      "summary": []
+    },
+    "fmt": {
+      "exit": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summary": []
+    },
+    "nextest": {
+      "exit": 0,
+      "log_sha256": "668e667daa3cde0a48cc71502e6d6d3a567b03c037de2d695c278a167628f73d",
+      "summary": [
+        "Summary [ 702.096s] 13859 tests run: 13859 passed (3 slow), 45 skipped"
+      ]
+    },
+    "native-skia-lib": {
+      "exit": 0,
+      "log_sha256": "caacacf88741eef5953cd0cf407aaf045afb5e13daafef3a6498c938c66a64c6",
+      "summary": [
+        "test result: ok. 3852 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 13.28s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    "native-skia-placeholder": {
+      "exit": 0,
+      "log_sha256": "003bc42c34d41fa62add1b9b8c801cbf54629948de4f0697e59b8447a3f7fbbf",
+      "summary": [
+        "Summary [   2.836s] 2 tests run: 2 passed, 351 skipped"
+      ]
+    },
+    "native-skia-direct-export": {
+      "exit": 0,
+      "log_sha256": "9e7573d4b1e5e1e9867ecce88b4f3f93b63adf14950af16e099026bb72013f0c",
+      "summary": [
+        "Summary [   1.689s] 36 tests run: 36 passed, 309 skipped"
+      ]
+    },
+    "clippy-root": {
+      "exit": 0,
+      "log_sha256": "612a3174264805cdda15ffc129ca8ccea1e7b921541c3b33bdda13923ab7a2c0",
+      "summary": []
+    },
+    "clippy-wasm": {
+      "exit": 0,
+      "log_sha256": "bf5008179195bef307e7ce63ffd180ec9c20347d1c1826e907434371e9a727c4",
+      "summary": []
+    },
+    "workspace-build": {
+      "exit": 0,
+      "log_sha256": "1546078fd50fdce6af3dd29456e8bc642ba3e1f8efcd59337cbc5949829f9b6e",
+      "summary": []
+    },
+    "clippy-all-targets": {
+      "exit": 0,
+      "log_sha256": "85e24b7c954136ffab23e64a86f529078ab20b887ff99d2075a342d335aadbdb",
+      "summary": []
+    },
+    "suites-check": {
+      "exit": 0,
+      "log_sha256": "7a100349f0412c814f08fb0cfd3514a8642747316528f0a036f2b90f80977d37",
+      "summary": []
+    }
+  },
+  "contributor_common_protection": {
+    "exit": 0,
+    "receipt_sha256": "728bcc0085ccf5a20c095341440a4ad26256767c50dd2286c00a173bb7889179"
+  },
+  "handbook_native": {
+    "exit": 0,
+    "pages": 383,
+    "visual_sweep_minimum_displayed": "99.97",
+    "receipt_sha256": "7daa1850a30b4f84adba6859a639bbb4c48c27c0831e212f18ef919dbc991eb6"
+  },
+  "full_protection": {
+    "checked_conditions": 43,
+    "checked_pages": 3249,
+    "drops_on_checked_pages": 0,
+    "higher_rows": 30,
+    "pending": [
+      {
+        "condition": "nested",
+        "backend": "native",
+        "pages": 17,
+        "condition_evidence": "mydocs/working/assets/issue9104/final/visual-validation.json",
+        "block": "exact_independent_font_not_recovered"
+      },
+      {
+        "condition": "nested",
+        "backend": "wasm",
+        "pages": 17,
+        "condition_evidence": "mydocs/working/assets/issue9104/final/visual-validation.json",
+        "block": "exact_independent_font_not_recovered"
+      },
+      {
+        "condition": "sample10",
+        "backend": "native",
+        "pages": 763,
+        "condition_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+        "block": "accepted_native_font_environment_not_recovered"
+      }
+    ],
+    "baseline_updated": false
+  },
+  "studio_canvas_compatibility": {
+    "candidate": {
+      "browser": "Chrome/157.0.8103.80",
+      "passed": {
+        "canvas2d": 4,
+        "canvaskit-compat": 3,
+        "canvaskit-default": 3
+      },
+      "fallbacks": {
+        "canvas2d": 0,
+        "canvaskit-compat": 1,
+        "canvaskit-default": 1
+      },
+      "results": [
+        {
+          "sampleId": "pr-9208",
+          "documentDigest": "sha256:bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "page": 3,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "af6832314c940114fc2ca54f08ac4d8508548de88d1d6be8eb0452cb075f3666",
+            "sizeBytes": 130035,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9208",
+          "documentDigest": "sha256:bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "page": 3,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvas2d",
+          "fontFallback": {
+            "reason": "canvaskitResourcePreparationFailed",
+            "missingFonts": [
+              "문체부 바탕체",
+              "한양신명조",
+              "HY울릉도B",
+              "HY울릉도M"
+            ],
+            "actualBackend": "canvas2d"
+          },
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "af6832314c940114fc2ca54f08ac4d8508548de88d1d6be8eb0452cb075f3666",
+            "sizeBytes": 130035,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9208",
+          "documentDigest": "sha256:bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "page": 3,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvaskit-default",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "d3e22522a2592e7aabd5a3aa5d5957645a57c6c0989a7c3713a5fbbdf19d5493",
+            "sizeBytes": 112723,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9219",
+          "documentDigest": "sha256:242072435d9c1c38ed496a1a3402e16fb904662b395cbe0fc7f3940e8959dd42",
+          "page": 1,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "1daeed1b0ec143abab907e0eb9cbd27661be1aa5c4fb70f3e834cac86484b610",
+            "sizeBytes": 32100,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9219",
+          "documentDigest": "sha256:242072435d9c1c38ed496a1a3402e16fb904662b395cbe0fc7f3940e8959dd42",
+          "page": 1,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvaskit-compat",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "63db9acdcf0912b2e50e68d615da9e2cfdbaef3ca9d8be13319fd2fc7c8280f2",
+            "sizeBytes": 27656,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9219",
+          "documentDigest": "sha256:242072435d9c1c38ed496a1a3402e16fb904662b395cbe0fc7f3940e8959dd42",
+          "page": 1,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvaskit-default",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "63db9acdcf0912b2e50e68d615da9e2cfdbaef3ca9d8be13319fd2fc7c8280f2",
+            "sizeBytes": 27656,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9221",
+          "documentDigest": "sha256:cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+          "page": 4,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "733cc3f5b0e4862528949b37f1df73f086b53259ba9832b005191aada9083223",
+            "sizeBytes": 162328,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9221",
+          "documentDigest": "sha256:cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+          "page": 4,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvaskit-compat",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "970fd105313de955e636b07028b69ebe7ba54ded2036af5941cee1ff08096ec8",
+            "sizeBytes": 137276,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9221",
+          "documentDigest": "sha256:cdd92b71a38fd74d6fa49f7a04a982e25698015547698e273e215a12a747d562",
+          "page": 4,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvaskit-default",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "970fd105313de955e636b07028b69ebe7ba54ded2036af5941cee1ff08096ec8",
+            "sizeBytes": 137276,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9236",
+          "documentDigest": "sha256:70189a97083aa0046594f0c2bfc985888a607060414245d62235e09796008314",
+          "page": 0,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "ee341754bf0191939548eb84d5cf826b753925d45dd67308884add32537d1161",
+            "sizeBytes": 115784,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9236",
+          "documentDigest": "sha256:70189a97083aa0046594f0c2bfc985888a607060414245d62235e09796008314",
+          "page": 0,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvaskit-compat",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "c0ed5e5000d34741e3f06322fc69afaa31e35d5c27e26bdf9f32863160e7095c",
+            "sizeBytes": 107228,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9236",
+          "documentDigest": "sha256:70189a97083aa0046594f0c2bfc985888a607060414245d62235e09796008314",
+          "page": 0,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "fontFallback": {
+            "reason": "canvaskitResourcePreparationFailed",
+            "missingFonts": [
+              "필기",
+              "한양신명조"
+            ],
+            "actualBackend": "canvas2d"
+          },
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "ee341754bf0191939548eb84d5cf826b753925d45dd67308884add32537d1161",
+            "sizeBytes": 115784,
+            "width": 794,
+            "height": 1122
+          }
+        }
+      ]
+    },
+    "fixed_base": {
+      "browser": "Chrome/157.0.8103.80",
+      "passed": {
+        "canvas2d": 2,
+        "canvaskit-compat": 2,
+        "canvaskit-default": 0
+      },
+      "fallbacks": {
+        "canvas2d": 0,
+        "canvaskit-compat": 0,
+        "canvaskit-default": 2
+      },
+      "results": [
+        {
+          "sampleId": "pr-9208",
+          "documentDigest": "sha256:bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "page": 3,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "d979b61647869a3b9601d50f3a36a79aee1d79f982e1336bbbd098c24356addf",
+            "sizeBytes": 130527,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9208",
+          "documentDigest": "sha256:bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "page": 3,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvaskit-compat",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "59371da0672aaa0422a32f6fb10ca467df70205482372bcea73726f4f3e0266b",
+            "sizeBytes": 112717,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9208",
+          "documentDigest": "sha256:bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "page": 3,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "fontFallback": {
+            "reason": "canvaskitResourcePreparationFailed",
+            "missingFonts": [
+              "문체부 바탕체",
+              "한양신명조",
+              "HY울릉도B",
+              "HY울릉도M"
+            ],
+            "actualBackend": "canvas2d"
+          },
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "d979b61647869a3b9601d50f3a36a79aee1d79f982e1336bbbd098c24356addf",
+            "sizeBytes": 130527,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9236",
+          "documentDigest": "sha256:70189a97083aa0046594f0c2bfc985888a607060414245d62235e09796008314",
+          "page": 0,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "843712c72d8767d10d2405ee973bca9df666ff3284505dfbbfa01e109db2ffee",
+            "sizeBytes": 117772,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9236",
+          "documentDigest": "sha256:70189a97083aa0046594f0c2bfc985888a607060414245d62235e09796008314",
+          "page": 0,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvaskit-compat",
+          "fontFallback": null,
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "c0ed5e5000d34741e3f06322fc69afaa31e35d5c27e26bdf9f32863160e7095c",
+            "sizeBytes": 107228,
+            "width": 794,
+            "height": 1122
+          }
+        },
+        {
+          "sampleId": "pr-9236",
+          "documentDigest": "sha256:70189a97083aa0046594f0c2bfc985888a607060414245d62235e09796008314",
+          "page": 0,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "fontFallback": {
+            "reason": "canvaskitResourcePreparationFailed",
+            "missingFonts": [
+              "필기",
+              "한양신명조"
+            ],
+            "actualBackend": "canvas2d"
+          },
+          "actualProfile": "print",
+          "artifact": {
+            "sha256": "843712c72d8767d10d2405ee973bca9df666ff3284505dfbbfa01e109db2ffee",
+            "sizeBytes": 117772,
+            "width": 794,
+            "height": 1122
+          }
+        }
+      ]
+    },
+    "interpretation": {
+      "same_target_source_document": true,
+      "observed_missing_font_sets_match": true,
+      "pr9208_requested_mode_varied_between_runs": true,
+      "pr9236_default_canvas2d_fallback_reproduced_on_base": true,
+      "result_does_not_prove_full_canvaskit_pass": true
+    }
+  },
+  "ready_for_pr": false
+}

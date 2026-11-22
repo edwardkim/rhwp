@@ -387,15 +387,24 @@ pub(crate) fn resolve_styles_with_environment(
                         && (metric_widths_verified_face(target)
                             || verified_source_alias
                             || matches!(target, "휴먼명조" | "HumanMyeongJo"));
-                    // 원문 유형 선언이나 자동 대체만으로 text device 좌표를
-                    // 부여하지 않는다. 실제 원 primary를 선택한 세션만 같은
-                    // 자격을 사용하며 원문의 source_ttf는 변경하지 않는다.
+                    // 원래 TTF 슬롯에서 주 프로그램 자체를 확인하면 같은 인쇄 장치
+                    // 좌표를 쓴다. 폭 표의 유무는 전진의 소유만 결정한다. 대체 쿼리,
+                    // 내장 face와 자연 전진 선택은 이 경로로 인증하지 않는다.
+                    let selected_source_truetype = original.alt_type == Some(1)
+                        && original.substitution_boundary.is_none()
+                        && source_font.is_some_and(|face| face.native_program.is_none())
+                        && style.font_families_primary_program[lang].is_some()
+                        && environment.is_some_and(|env| env.selects_true_type(target));
                     if preserve_source_metrics
                         && original.embedded != Some(true)
                         && primary_true_type_program
                     {
                         style.font_families_print_text_device_frame[lang] = true;
                     }
+                    style.font_families_source_dc_frame[lang] = preserve_source_metrics
+                        && original.embedded != Some(true)
+                        && selected_source_truetype
+                        && !primary_true_type_program;
                     // 표시용 TrueType을 명시해도 검증된 옛 face의 폭을 보존할 수 있다.
                     // 한컴 Print는 HCI Poppy를 TTF로 기록한 문서에서도 대체 face로
                     // 글리프를 찍고 원 HFT의 숫자·구두점 전진을 사용한다.
@@ -415,6 +424,15 @@ pub(crate) fn resolve_styles_with_environment(
                                             .is_none()
                                 })
                         });
+                    let source_face = original.requested_face.as_deref();
+                    let source_metric_table = source_face.and_then(|face| {
+                        crate::renderer::font_metrics_data::legacy_hft_metric_face(face).or_else(
+                            || {
+                                has_own_metric_table(&face, style.bold, style.italic)
+                                    .then_some(face)
+                            },
+                        )
+                    });
                     // 자동 표시용 선택은 저장된 원본 HFT 메트릭의 변경이 아니다.
                     let keep_source_metrics = !primary_true_type_program
                         && preserve_source_metrics
@@ -422,34 +440,35 @@ pub(crate) fn resolve_styles_with_environment(
                             || style.font_families_source_hft[lang]
                             || verified_legacy_widths_with_explicit_fallback)
                         && original.embedded != Some(true)
-                        && original.requested_face.as_deref().is_some_and(|face| {
-                            crate::renderer::font_metrics_data::legacy_hft_metric_face(face).is_some()
-                                || has_own_metric_table(&face, style.bold, style.italic)
-                                || crate::renderer::font_metrics_data::has_declared_original_glyph_metrics(face)
-                        });
+                        && (source_metric_table.is_some()
+                            || source_face.is_some_and(
+                                crate::renderer::font_metrics_data::has_declared_original_glyph_metrics,
+                            ));
                     if keep_source_metrics
                         && source_font.is_none_or(|face| face.native_program.is_none())
                     {
-                        style.font_families_metric_face[lang] = original
-                            .requested_face
-                            .as_deref()
-                            .and_then(|face| {
-                                crate::renderer::font_metrics_data::legacy_hft_metric_face(face)
-                                    .or_else(|| {
-                                        has_own_metric_table(&face, style.bold, style.italic)
-                                            .then_some(face)
-                                    })
-                            })
-                            .map(str::to_owned);
+                        style.font_families_metric_face[lang] =
+                            source_metric_table.map(str::to_owned);
                     }
-                    let explicit_true_type = !keep_source_metrics
-                        && environment.is_some_and(|env| env.selects_true_type(target));
+                    let declared_true_type =
+                        environment.is_some_and(|env| env.selects_true_type(target));
+                    let explicit_true_type = !keep_source_metrics && declared_true_type;
                     let explicit_replacement = environment.is_some_and(|env| {
                         decision
                             .requested_face
                             .as_deref()
                             .is_some_and(|face| env.replacement(face).is_some())
                     });
+                    // 개별 원본 글리프의 폭은 유지할 수 있지만, 그 사실만으로
+                    // 명시적 TrueType 대체에 원 HFT의 그래픽 프레임을 적용하지 않는다.
+                    // 실제 정적 TrueType 공급은 출력 레이어에서 자기 프레임을 선택한다.
+                    if explicit_replacement
+                        && declared_true_type
+                        && keep_source_metrics
+                        && source_metric_table.is_none()
+                    {
+                        style.font_families_hft_print_frame[lang] = false;
+                    }
                     // 기존 명시 공급의 윤곽은 전진 칸에 눌러 그리지 않는다(#8188).
                     // 생략된 설정의 기존 전진/leader와 명시 자연 전진은 별도로 선택한다.
                     style.font_families_preserve_glyph_ink[lang] =
@@ -1124,6 +1143,7 @@ pub(crate) fn try_resolve_single_char_style<A: storage::Storage>(
         font_families_verified_hft_bold_tracking,
         font_families_hft_print_frame,
         font_families_print_text_device_frame,
+        font_families_source_dc_frame: [false; LANG_COUNT],
         font_families_preserve_glyph_ink: vec![false; LANG_COUNT],
         font_families_natural_program_metrics: vec![false; LANG_COUNT],
         latin_decimal_halfwidth: false,

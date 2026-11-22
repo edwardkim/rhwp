@@ -15,7 +15,7 @@ import { resolveGlyphStartRect, isCompositionBoxRepresentable } from './line-sta
 import { FieldMarkerRenderer } from './field-marker-renderer';
 import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
-import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SubmodeSnapshotCommand, SubmodeSelectionSnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS, applyCharShapeModsToRange, cellAxisPath, cellParaIndexOf, cellPathJsonForPara } from './command';
+import { InsertTextCommand, SplitParagraphCommand, DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SubmodeSnapshotCommand, SubmodeSelectionSnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS, applyCharShapeModsToRange, cellAxisPath, cellParaIndexOf, cellPathJsonForPara } from './command';
 import type { OperationDescriptor, ParaFormatTarget, RefreshPolicy, TextMutationEffects, EditCommand, EditContext, HeaderFooterSelectionSnapshot, FormValueTarget } from './command';
 import { selectCellIndicesInRange, paraFormatTargetsForCellBlock, withCellPathTarget } from './cell-block-format';
 import type { SelectedCellBlock } from './cell-block-format';
@@ -3364,6 +3364,70 @@ export class InputHandler {
       this.afterEdit();
     }
     alert(error.message);
+  }
+
+  /**
+   * 한 단의 일반 본문에서는 중간 페이지 배치가 다음 명령의 입력이 되지 않는다.
+   * 개체·필드·단 전환이 있는 문서는 기존 붙여넣기 경로에서 배치를 확정한다.
+   */
+  private canBatchBodyPaste(): boolean {
+    if (this.isFormMode() || this.isComposing || this.pendingCharShape
+      || this.hasDeferredPaginationPending() || this.cursor.isInCell()
+      || this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return false;
+    try {
+      if (this.wasm.getSectionCount() !== 1 || this.wasm.getColumnDef(0).columnCount !== 1) return false;
+      const controls = this.wasm.getControls();
+      return controls.every(({ ctrlId, para }) => para === 0 && (ctrlId === 'secd' || ctrlId === 'cold'))
+        && controls.filter(({ ctrlId }) => ctrlId === 'cold').length <= 1;
+    } catch {
+      // 구조 조회를 지원하지 않는 브리지에서는 기존 경로를 사용한다.
+      return false;
+    }
+  }
+
+  private tryPasteBodyParagraphs(lines: readonly string[]): boolean {
+    if (!this.canBatchBodyPaste()) return false;
+
+    this.withCommandErrorBoundary('pastePlainText', () => {
+      const commands: EditCommand[] = [];
+      let position = this.cursor.getPosition();
+      const apply = (command: EditCommand) => {
+        position = command.execute(this.wasm);
+        command.consumeTextMutationEffects?.();
+        commands.push(command);
+      };
+
+      // 배치가 실패하면 문서 전체를 되돌린다. 그 전까지 history와 dirty 상태는 건드리지 않는다.
+      const checkpoint = this.wasm.saveSnapshot();
+      try {
+        this.wasm.runInBatch(() => {
+          for (const [index, line] of lines.entries()) {
+            if (line) apply(new InsertTextCommand(position, line));
+            if (index < lines.length - 1) apply(new SplitParagraphCommand(position));
+          }
+        });
+      } catch (error) {
+        try {
+          this.wasm.restoreSnapshot(checkpoint);
+          this.history.lastFailureRecovery = 'restored';
+        } catch (rollbackError) {
+          this.history.lastFailureRecovery = 'failed';
+          throw new AggregateError([error, rollbackError], '평문 붙여넣기 복구 실패');
+        }
+        throw error;
+      } finally {
+        this.wasm.discardSnapshot(checkpoint);
+      }
+
+      // 기존 삽입·분할의 병합 규칙과 되돌리기 순서를 그대로 사용한다.
+      for (const command of commands) this.history.recordWithoutExecute(command, this.wasm);
+      this.prepareTextMutationBeforeCursor(IMMEDIATE_TEXT_MUTATION_EFFECTS);
+      this.cursor.moveTo(position);
+      this.cursor.resetPreferredX();
+      this.caretLayoutReveal.requestFor(commands.at(-1)!.type);
+      this.afterEdit();
+    });
+    return true;
   }
 
   executeOperation(desc: OperationDescriptor): void {

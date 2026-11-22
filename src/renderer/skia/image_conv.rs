@@ -278,33 +278,6 @@ pub(super) fn draw_image_bytes(
             None,
         )
     };
-    let resolve_image_placement = |fill_mode: ImageFillMode,
-                                   x: f32,
-                                   y: f32,
-                                   width: f32,
-                                   height: f32,
-                                   image_width: f32,
-                                   image_height: f32| {
-        match fill_mode {
-            ImageFillMode::LeftTop => (x, y),
-            ImageFillMode::CenterTop => (x + (width - image_width) / 2.0, y),
-            ImageFillMode::RightTop => (x + width - image_width, y),
-            ImageFillMode::LeftCenter => (x, y + (height - image_height) / 2.0),
-            ImageFillMode::Center => (
-                x + (width - image_width) / 2.0,
-                y + (height - image_height) / 2.0,
-            ),
-            ImageFillMode::RightCenter => {
-                (x + width - image_width, y + (height - image_height) / 2.0)
-            }
-            ImageFillMode::LeftBottom => (x, y + height - image_height),
-            ImageFillMode::CenterBottom => {
-                (x + (width - image_width) / 2.0, y + height - image_height)
-            }
-            ImageFillMode::RightBottom => (x + width - image_width, y + height - image_height),
-            _ => (x, y),
-        }
-    };
     let draw_missing_image_placeholder = |x: f32, y: f32, width: f32, height: f32| {
         let rect = Rect::from_xywh(x, y, width, height);
         let mut fill = Paint::default();
@@ -943,11 +916,26 @@ pub(super) fn draw_image_bytes(
         canvas.restore();
         return true;
     } else {
-        let (image_x, image_y) =
-            resolve_image_placement(mode, x, y, width, height, image_width, image_height);
+        // 정렬 배치 사각형: 넘치는 축은 영역 크기로 줄인다(모든 출력 경로 공용).
+        let (image_x, image_y, placed_width, placed_height) =
+            crate::renderer::image_geometry::aligned_image_fill_rect(
+                mode,
+                (
+                    f64::from(x),
+                    f64::from(y),
+                    f64::from(width),
+                    f64::from(height),
+                ),
+                (f64::from(image_width), f64::from(image_height)),
+            );
         draw_image_rect(
             crop_src,
-            Rect::from_xywh(image_x, image_y, image_width, image_height),
+            Rect::from_xywh(
+                image_x as f32,
+                image_y as f32,
+                placed_width as f32,
+                placed_height as f32,
+            ),
         );
     }
 

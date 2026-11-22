@@ -29,6 +29,8 @@ mod native_pua_fonts;
 pub use native_pua_fonts::NativePuaFontRequest;
 mod font_environment;
 mod host_font_environment;
+mod print_job;
+pub use print_job::PrintJobContext;
 mod loaded_frame_restore;
 mod table_reflow_owners;
 mod tac_host_rows;
@@ -48,7 +50,8 @@ pub use commands::paragraph_block::{
     TEMPLATE_REQUEST_MAX_BYTES,
 };
 pub use commands::{
-    check_picture_props, check_shape_props, ComposeHost, TableColumnWidths, TableCreationOptions,
+    check_picture_props, check_shape_props, ComposeHost, ControlCode, TableColumnWidths,
+    TableCreationOptions,
 };
 pub mod converters;
 pub(crate) mod html_table_import;
@@ -262,6 +265,8 @@ pub struct DocumentCore {
     pub(crate) show_control_codes: bool,
     /// 투명선 표시 여부
     pub(crate) show_transparent_borders: bool,
+    /// 편집 화면에 그림을 그릴지(한컴 보기 > 그림). 끄면 그림 자리만 표시한다.
+    pub(crate) show_pictures: bool,
     /// 편집 화면의 바탕쪽을 흐리게 그릴지(한컴: 편집 화면에서는 본문보다 흐리게, 인쇄는 본래 모양)
     pub(crate) dim_master_pages: bool,
     /// 잘림 보기 (body/셀 클리핑 활성화 여부)
@@ -275,6 +280,7 @@ pub struct DocumentCore {
     /// [`Self::effective_layout_profile`] 이 profile 에 합성한다.
     pub(crate) hangul2024_compat: bool,
     pub(crate) print_png_rgb555: bool,
+    print_job_context: Option<PrintJobContext>,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
     pub(crate) measured_tables: Vec<Vec<MeasuredTable>>,
     /// 구역별 dirty 플래그 (true = 재페이지네이션 필요)
@@ -603,6 +609,15 @@ impl DocumentCore {
         }
     }
 
+    /// 같은 인쇄 작업에서 사용할 파일명·현지 시각을 전달한다.
+    pub fn set_print_job_context(&mut self, context: Option<PrintJobContext>) {
+        if self.print_job_context != context {
+            self.print_job_context = context;
+            self.layer_tree_json_cache.borrow_mut().clear();
+            self.page_layer_tree_cache.borrow_mut().clear();
+        }
+    }
+
     /// DPI를 설정하고 스타일을 재해소한 후 재페이지네이션한다.
     pub fn set_dpi(&mut self, dpi: f64) {
         self.dpi = dpi;
@@ -635,12 +650,14 @@ impl DocumentCore {
             annotate_metric_font: false,
             show_control_codes: false,
             show_transparent_borders: false,
+            show_pictures: true,
             dim_master_pages: false,
             clip_enabled: true,
             debug_overlay: false,
             respect_vpos_reset: false,
             hangul2024_compat: false,
             print_png_rgb555: false,
+            print_job_context: None,
             measured_tables: Vec::new(),
             dirty_sections: Vec::new(),
             measured_sections: Vec::new(),

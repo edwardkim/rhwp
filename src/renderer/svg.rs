@@ -53,6 +53,38 @@ fn implicit_symbol_svg(
             2.0 * rx,
             2.0 * ry,
         ),
+        super::implicit_symbol::InkShape::Ring { inner } => {
+            let ellipse = |rx: f64, ry: f64| {
+                format!(
+                    "M{:.4} {cy:.4}a{rx:.4} {ry:.4} 0 1 0 {:.4} 0a{rx:.4} {ry:.4} 0 1 0 {:.4} 0Z",
+                    cx - rx,
+                    2.0 * rx,
+                    -2.0 * rx,
+                )
+            };
+            format!(
+                "<path d=\"{}{}\" fill-rule=\"evenodd\" {attrs}/>\n",
+                ellipse(rx, ry),
+                ellipse(rx * inner, ry * inner),
+            )
+        }
+        super::implicit_symbol::InkShape::Frame { inner } => {
+            let rect = |rx: f64, ry: f64| {
+                format!(
+                    "M{:.4} {:.4}h{:.4}v{:.4}h{:.4}Z",
+                    cx - rx,
+                    cy - ry,
+                    2.0 * rx,
+                    2.0 * ry,
+                    -2.0 * rx,
+                )
+            };
+            format!(
+                "<path d=\"{}{}\" fill-rule=\"evenodd\" {attrs}/>\n",
+                rect(rx, ry),
+                rect(rx * inner, ry * inner),
+            )
+        }
     }
 }
 
@@ -2569,31 +2601,12 @@ impl SvgRenderer {
             }
         };
 
-        // 배치 위치 계산
-        let (ix, iy) = match fill_mode {
-            ImageFillMode::LeftTop => (bbox.x, bbox.y),
-            ImageFillMode::CenterTop => (bbox.x + (bbox.width - img_width) / 2.0, bbox.y),
-            ImageFillMode::RightTop => (bbox.x + bbox.width - img_width, bbox.y),
-            ImageFillMode::LeftCenter => (bbox.x, bbox.y + (bbox.height - img_height) / 2.0),
-            ImageFillMode::Center => (
-                bbox.x + (bbox.width - img_width) / 2.0,
-                bbox.y + (bbox.height - img_height) / 2.0,
-            ),
-            ImageFillMode::RightCenter => (
-                bbox.x + bbox.width - img_width,
-                bbox.y + (bbox.height - img_height) / 2.0,
-            ),
-            ImageFillMode::LeftBottom => (bbox.x, bbox.y + bbox.height - img_height),
-            ImageFillMode::CenterBottom => (
-                bbox.x + (bbox.width - img_width) / 2.0,
-                bbox.y + bbox.height - img_height,
-            ),
-            ImageFillMode::RightBottom => (
-                bbox.x + bbox.width - img_width,
-                bbox.y + bbox.height - img_height,
-            ),
-            _ => (bbox.x, bbox.y),
-        };
+        // 배치 사각형: 넘치는 축은 영역 크기로 줄인다(모든 출력 경로 공용).
+        let (ix, iy, img_width, img_height) = super::image_geometry::aligned_image_fill_rect(
+            fill_mode,
+            (bbox.x, bbox.y, bbox.width, bbox.height),
+            (img_width, img_height),
+        );
 
         // 도형 영역으로 클리핑
         let clip_id = format!("fill-clip-{}", self.next_clip_id());
@@ -3635,7 +3648,7 @@ impl Renderer for SvgRenderer {
             )
         };
 
-        let symbol_sources = super::implicit_symbol::sources(&metric_source, text);
+        let symbol_sources = super::implicit_symbol::sources(&metric_source, text, style);
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
         let metric_text = super::composer::display_projection_metric_text(
             &metric_source,
@@ -3647,10 +3660,19 @@ impl Renderer for SvgRenderer {
         let visual_positions =
             super::text_direction::VisualTextPositions::for_style(text, &char_positions, style);
         let cluster_x = |index: usize, cluster: &str| {
+            let ink_dx = super::glyph_fit::hft_quote_ink_offset(style, cluster, |em| {
+                let (advance, left) = style
+                    .native_otf_metrics
+                    .as_ref()?
+                    .primary_truetype_horizontal_metrics(cluster.chars().next()?)?;
+                Some((advance * em, left * em))
+            })
+            .unwrap_or_default();
             visual_positions
                 .as_ref()
                 .and_then(|p| p.span_origin(index, index + cluster.chars().count()))
                 .unwrap_or(char_positions[index])
+                + ink_dx
         };
         let clusters = if visual_positions.is_some() {
             super::contextual_text::coalesce(split_into_clusters(text))

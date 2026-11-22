@@ -7,6 +7,7 @@ pub(crate) const MAX_PORTABLE_FONT_BLOB_BYTES: usize = 32 * 1024 * 1024;
 pub(crate) use font_size::MAX_GLYPH_FONT_SIZE_PX;
 pub(crate) const MAX_PORTABLE_GLYPHS_PER_RUN: usize = 4096;
 
+pub(crate) mod automatic_print_footer;
 mod bitmap_fill_frame;
 pub mod builder;
 mod cell_clip;
@@ -20,6 +21,7 @@ mod equation_print_frame;
 pub mod font;
 pub mod font_glyph;
 mod font_size;
+mod gdi_font_metrics;
 mod group_picture;
 mod json;
 pub mod layer_tree;

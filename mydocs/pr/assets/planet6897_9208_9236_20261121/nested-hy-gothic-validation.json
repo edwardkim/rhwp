@@ -1,0 +1,55 @@
+{
+  "file": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "file_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+  "source_font_slot": {
+    "codepoint": "U+203B",
+    "font_id": 8,
+    "language_slot": 5,
+    "font_name": "한양중고딕",
+    "source_occurrences": 4
+  },
+  "print_page_5_glyph_uses": {
+    "count": 3,
+    "embedded_font": "T6",
+    "embedded_font_type": "Type 3"
+  },
+  "supplemental_glyph_program": {
+    "filename": "H2GTRM.TTF",
+    "family": "HYGothic-Medium",
+    "postscript": "H2gtrM",
+    "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5",
+    "glyph": "U+203B"
+  },
+  "glyph_environment_sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1",
+  "product_source": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+  "basis": "같은 글꼴 조건에서 고정 base와 후보의 전쪽 PNG 및 TSV를 비교하고 기존 보호 TSV와 대조했다.",
+  "fixed_base_under_new_font_condition_measured": true,
+  "compat": "2022",
+  "dpi": 96,
+  "radius_px": 2,
+  "comparison_results": [
+    {
+      "backend": "native",
+      "pages": 17,
+      "minimum": "99.98",
+      "reference_page_5": "100.00",
+      "candidate_page_5": "100.00",
+      "lower_than_historical_floor": [],
+      "higher_than_historical_floor": [],
+      "tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592"
+    },
+    {
+      "backend": "wasm",
+      "pages": 17,
+      "minimum": "99.98",
+      "reference_page_5": "100.00",
+      "candidate_page_5": "100.00",
+      "lower_than_historical_floor": [],
+      "higher_than_historical_floor": [],
+      "tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592"
+    }
+  ],
+  "fixed_base": "ca231d64f43f19da1d1d1aec4cf26a05b817aa22",
+  "fixed_base_candidate_png_differences": 0,
+  "whole_comparison_evidence": "final-protection/validation.json"
+}

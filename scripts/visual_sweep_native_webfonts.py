@@ -261,7 +261,7 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
     postscript_aliases = _postscript_aliases(paths)
     rules, registry_sha = _rules(root)
     cache = root / 'output/pr-review/native-webfont-cache'
-    mappings, resources, unresolved, local_substitutes = {}, {}, [], []
+    mappings, resources, unresolved, local_substitutes, display_substitutes = {}, {}, [], [], []
     explicitly_mapped = set()
     if explicit_environment:
         specified = json.loads(Path(explicit_environment).read_text(encoding='utf-8'))
@@ -284,9 +284,18 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
         substitute = request.get('substitute', [])
         if not isinstance(substitute, list) or any(not isinstance(x, str) for x in substitute):
             raise ValueError('Native 대체 글꼴 후보가 올바르지 않습니다')
-        group = groups.setdefault(source, {'primary': [], 'substitute': []})
+        hancom_default = request.get('hancomMissingDefault', [])
+        if not isinstance(hancom_default, list) or any(not isinstance(x, str) for x in hancom_default):
+            raise ValueError('Native 한컴 기본 대체 글꼴 후보가 올바르지 않습니다')
+        display = request.get('displayAliases', [])
+        if not isinstance(display, list) or any(not isinstance(x, str) for x in display):
+            raise ValueError('Native 표시 대체 후보가 올바르지 않습니다')
+        group = groups.setdefault(
+            source, {'primary': [], 'substitute': [], 'hancom_default': [], 'display': []})
         group['primary'].extend(primary)
         group['substitute'].extend(substitute)
+        group['hancom_default'].extend(hancom_default)
+        group['display'].extend(display)
     for source, group in groups.items():
         primary = group['primary']
         # 공급된 정확한 PostScript face의 하이픈 차이를 해소한다. 이때
@@ -312,8 +321,22 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
             if rule is None:
                 unresolved.append(source)
             continue
+        # 원장에 없는 TTF 원본은 rhwp 글꼴 계획의 한컴 기본 대체(한컴바탕)가 공급 경로에
+        # 있으면 그 face로 치환한다. 서체 분류와 무관한 일반 Noto 치환보다 앞선다.
+        # 선언 이름 순서(한컴바탕 먼저)를 유지한다. Native 공급과 같은 표시 치환이다.
+        hancom = next((x for x in group['hancom_default'] if _normal(x) in installed), None)
+        if rule is None and hancom is not None:
+            unresolved.append(source)
+            mappings[source] = hancom
+            continue
         if rule is None:
             unresolved.append(source)
+            # 렌더러 사슬이 선언한 설치 표시 대체(#6171, 예: 한양견고딕 → HY견고딕)는
+            # 공개 일반 대체보다 앞선다. Native 공급(`native_webfonts::prepare`)과 같다.
+            # 한컴 기본 대체(위 분기, edwardkim/rhwp#9208)가 적용되는 원본은 여기에 오지 않는다.
+            if any(_normal(x) in installed for x in group['display']):
+                display_substitutes.append(source)
+                continue
             url = FALLBACK
         else:
             url = rule['supply']['sourceUrl']
@@ -472,6 +495,7 @@ def prepare(root, hwp, binary, paths, explicit_environment, compat, dpi):
                            'document_glyph_fallbacks': scoped_fallbacks,
                            'unmapped_sources': sorted(set(unresolved)),
                            'local_document_substitutes': sorted(set(local_substitutes)),
+                           'display_alias_substitutes': sorted(set(display_substitutes)),
                            'resources': list(resources.values()),
                            'module_sha256': _sha(Path(__file__).read_bytes())}}
     _PREPARED[key] = result

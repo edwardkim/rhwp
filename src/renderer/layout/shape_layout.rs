@@ -1454,11 +1454,21 @@ impl LayoutEngine {
                 parent.node_type,
                 RenderNodeType::Column(_) | RenderNodeType::Body { .. }
             );
+            // '여백 부분까지 너비 확대'면 위·아래 캡션이 왼쪽·오른쪽 바깥 여백까지 넓어진다(한컴 12.30).
+            let ext_left = hwpunit_to_px(
+                caption.margin_extension_left(&common.margin) as i32,
+                self.dpi,
+            );
+            let ext_w = hwpunit_to_px(
+                caption.text_width(common.width, &common.margin) as i32 - common.width as i32,
+                self.dpi,
+            )
+            .max(0.0);
             let (cap_x, cap_w, cap_y) = match caption.direction {
-                CaptionDirection::Top => (adjusted_shape_x, shape_w, shape_y),
+                CaptionDirection::Top => (adjusted_shape_x - ext_left, shape_w + ext_w, shape_y),
                 CaptionDirection::Bottom => (
-                    adjusted_shape_x,
-                    shape_w,
+                    adjusted_shape_x - ext_left,
+                    shape_w + ext_w,
                     adjusted_shape_y + shape_h + caption_spacing,
                 ),
                 CaptionDirection::Left | CaptionDirection::Right => {
@@ -1481,6 +1491,7 @@ impl LayoutEngine {
                     (cx, cw, cy)
                 }
             };
+            let caption_first = parent.children.len();
             self.layout_caption(
                 tree,
                 parent,
@@ -1509,6 +1520,15 @@ impl LayoutEngine {
                     Some(control_index),
                     CaptionControlKind::Shape,
                 ),
+            );
+            Self::clip_side_caption(
+                parent,
+                caption_first,
+                caption,
+                cap_x,
+                cap_w,
+                adjusted_shape_y,
+                adjusted_shape_y + shape_h,
             );
         }
     }
@@ -3312,6 +3332,24 @@ impl LayoutEngine {
                             &ole_container_path,
                         );
                     }
+                } else if ole.raw_tag_data.len() == 26
+                    && ole.drawing.border_line.attr & 0x3F != 0
+                    && parent
+                        .children
+                        .last()
+                        .is_some_and(|node| matches!(node.node_type, RenderNodeType::RawSvg(_)))
+                {
+                    // 프레젠테이션 자체의 안쪽 선과 OLE 레코드의 바깥 선을 각각 그린다.
+                    let border = crate::model::shape::DrawingObjAttr {
+                        border_line: ole.drawing.border_line,
+                        ..Default::default()
+                    };
+                    let (style, _) = drawing_to_shape_style(&border, self.dpi);
+                    parent.children.push(RenderNode::new(
+                        tree.next_id(),
+                        RenderNodeType::Rectangle(RectangleNode::new(0.0, style, None)),
+                        BoundingBox::new(render_x, render_y, render_w, render_h),
+                    ));
                 }
             }
         }

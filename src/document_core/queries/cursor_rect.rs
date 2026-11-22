@@ -26,6 +26,34 @@ fn header_footer_node(
     })
 }
 
+/// 쪽 렌더 트리의 각주 영역들. 다단 쪽은 각 단 아래·오른쪽 단 아래 배치에 따라 영역이 여럿이다.
+fn footnote_area_nodes(
+    root: &crate::renderer::render_tree::RenderNode,
+) -> Vec<&crate::renderer::render_tree::RenderNode> {
+    use crate::renderer::render_tree::RenderNodeType;
+    root.children
+        .iter()
+        .filter(|child| matches!(child.node_type, RenderNodeType::FootnoteArea))
+        .collect()
+}
+
+/// 점을 품은 각주 영역, 없으면 상자까지 가장 가까운 영역.
+fn footnote_area_at(
+    root: &crate::renderer::render_tree::RenderNode,
+    x: f64,
+    y: f64,
+) -> Option<&crate::renderer::render_tree::RenderNode> {
+    let distance = |node: &crate::renderer::render_tree::RenderNode| {
+        let b = &node.bbox;
+        let dx = (b.x - x).max(x - (b.x + b.width)).max(0.0);
+        let dy = (b.y - y).max(y - (b.y + b.height)).max(0.0);
+        dx.hypot(dy)
+    };
+    footnote_area_nodes(root)
+        .into_iter()
+        .min_by(|a, b| distance(a).total_cmp(&distance(b)))
+}
+
 /// 묶음 개체(GSO Group)인가. 자식 Image 노드는 외곽 Group의 control_index를 물려받는다.
 fn is_group_shape_control(ctrl: &Control) -> bool {
     matches!(
@@ -1775,6 +1803,14 @@ impl DocumentCore {
             // 행의 칸도 위아래 clip 밖 줄은 그 쪽에 보이지 않으므로 고르지 않는다.
             current_clip: Option<(f64, f64, f64, f64)>,
         ) {
+            // 머리말·꼬리말은 본문 히트의 대상이 아니다. 그 안 표 칸·캡션의 셀 문맥은 머리말 문단
+            // 기준이라, 본문 주소로 돌려주면 본문에 없는 칸을 가리킨다(머리말 히트가 따로 찾는다).
+            if matches!(
+                node.node_type,
+                RenderNodeType::Header | RenderNodeType::Footer
+            ) {
+                return;
+            }
             let line_id = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
                 Some(node.id)
             } else {
@@ -3848,22 +3884,43 @@ impl DocumentCore {
         char_offset: usize,
         hint_page: Option<u32>,
     ) -> Result<String, HwpError> {
+        let path = Self::parse_cell_path(path_json)?;
+        self.locate_cell_cursor(
+            section_idx,
+            parent_para_idx,
+            &path,
+            char_offset,
+            hint_page,
+            Some(path_json),
+        )
+        .map(|(_, rect)| rect)
+    }
+
+    /// 저장은 실제 글줄의 쪽만 사용한다. UI는 빈 칸에서도 근사 캐럿을 표시할 수 있다.
+    pub(crate) fn locate_cell_cursor(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+        hint_page: Option<u32>,
+        ui_path_json: Option<&str>,
+    ) -> Result<(u32, String), HwpError> {
         use crate::renderer::layout::{CellContext, CellPathEntry};
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let path = Self::parse_cell_path(path_json)?;
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
         }
 
-        let _para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, &path)?;
+        let _para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, path)?;
 
         // 머리말·꼬리말 표는 그 머리말·꼬리말 노드 안에서, 머리말 문단을 뿌리로 한 경로로 찾는다.
         // 그 노드의 칸 글은 머리말 문단 번호를 부모 문단으로 갖는다. 구역 번호는 본문 것이 아니므로
         // 본문 문단을 읽는 보정(`repair_unwrapped_wrapper_cell_context`)이 닿지 않게 둔다.
-        let header_footer = self.header_footer_path_root(section_idx, parent_para_idx, &path);
+        let header_footer = self.header_footer_path_root(section_idx, parent_para_idx, path);
         let (search_section, search_parent, path) = match header_footer {
-            Some(_) => (usize::MAX, path[0].2, path[1..].to_vec()),
+            Some(_) => (usize::MAX, path[0].2, &path[1..]),
             None => (section_idx, parent_para_idx, path),
         };
 
@@ -4121,28 +4178,33 @@ impl DocumentCore {
                 root,
                 search_section,
                 search_parent,
-                &path,
+                path,
                 char_offset,
                 page_num,
             ) {
-                return Ok(hit);
+                return Ok((page_num, hit));
             }
             if let Some((pi, x, y, h, cell_bounds)) = find_cursor_by_path(
                 self,
                 root,
                 search_section,
                 search_parent,
-                &path,
+                path,
                 char_offset,
                 page_num,
                 None,
                 None,
                 None,
             ) {
-                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
+                return Ok((pi, format_cursor_rect_json(pi, x, y, h, cell_bounds)));
             }
         }
 
+        let Some(path_json) = ui_path_json else {
+            return Err(HwpError::RenderError(
+                "실제 칸 줄의 쪽을 찾을 수 없습니다".into(),
+            ));
+        };
         // fallback: 아무 TextRun이라도 찾기
         for &page_num in &pages {
             let Some(tree) = page_root(page_num)? else {
@@ -4248,13 +4310,13 @@ impl DocumentCore {
                 root,
                 search_section,
                 search_parent,
-                &path,
+                path,
                 page_num,
                 None,
                 None,
                 None,
             ) {
-                return Ok(format_cursor_rect_json(pi, x, y, h, cell_bounds));
+                return Ok((pi, format_cursor_rect_json(pi, x, y, h, cell_bounds)));
             }
         }
 
@@ -4938,34 +5000,51 @@ impl DocumentCore {
     /// Issue #595: Header/Footer 노드의 bbox 는 `expand_bbox_to_children` 으로
     /// 자식 (예: 단 구분선 line) 까지 확장되어 본문 영역을 침범할 수 있음.
     /// hit 판정은 layout 의 정확한 `header_area` / `footer_area` 로 수행하여
-    /// bbox 확장과 무관하게 본질 영역만 hit.
+    /// bbox 확장과 무관하게 본질 영역만 hit. 영역보다 커서 밖까지 그린 표(캡션 포함)·글줄 위도 hit.
     pub fn hit_test_header_footer_native(
         &self,
         page_num: u32,
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
+        use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+
+        let hit = |is_header: bool| {
+            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, is_header);
+            Ok(format!(
+                "{{\"hit\":true,\"isHeader\":{},\"sectionIndex\":{},\"applyTo\":{}}}",
+                is_header, section_idx, apply_to
+            ))
+        };
+        let inside =
+            |b: &BoundingBox| x >= b.x && x <= b.x + b.width && y >= b.y && y <= b.y + b.height;
         let (page_content, _, _) = self.find_page(page_num)?;
         let layout = &page_content.layout;
-
-        // 머리말 영역 hit 판정 (layout.header_area — 정확한 머리말 범위)
-        let h = &layout.header_area;
-        if x >= h.x && x <= h.x + h.width && y >= h.y && y <= h.y + h.height {
-            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, true);
-            return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":true,\"sectionIndex\":{},\"applyTo\":{}}}",
-                section_idx, apply_to
-            ));
+        // 머리말·꼬리말 영역 hit 판정 (layout.header_area / footer_area — 정확한 범위)
+        for (is_header, area) in [(true, &layout.header_area), (false, &layout.footer_area)] {
+            if x >= area.x && x <= area.x + area.width && y >= area.y && y <= area.y + area.height {
+                return hit(is_header);
+            }
         }
 
-        // 꼬리말 영역 hit 판정 (layout.footer_area)
-        let f = &layout.footer_area;
-        if x >= f.x && x <= f.x + f.width && y >= f.y && y <= f.y + f.height {
-            let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, false);
-            return Ok(format!(
-                "{{\"hit\":true,\"isHeader\":false,\"sectionIndex\":{},\"applyTo\":{}}}",
-                section_idx, apply_to
-            ));
+        // 영역보다 큰 머리말·꼬리말 표·글줄은 영역 밖까지 그린다. 그 표(캡션 포함)·글줄 위도 머리말·꼬리말이다.
+        // 영역 밖으로 뻗은 선 같은 다른 개체는 그 자리를 머리말로 만들지 않는다(#595).
+        fn content_at(node: &RenderNode, inside: &dyn Fn(&BoundingBox) -> bool) -> bool {
+            node.children.iter().any(|child| {
+                (matches!(
+                    child.node_type,
+                    RenderNodeType::Table(_) | RenderNodeType::TextLine(_)
+                ) && inside(&child.bbox))
+                    || content_at(child, inside)
+            })
+        }
+        let tree = self.build_page_tree_cached(page_num)?;
+        for is_header in [true, false] {
+            if header_footer_node(&tree.root, is_header)
+                .is_some_and(|node| inside(&node.bbox) && content_at(node, &inside))
+            {
+                return hit(is_header);
+            }
         }
 
         Ok("{\"hit\":false}".to_string())
@@ -5370,6 +5449,27 @@ impl DocumentCore {
                     page_num,
                     section_idx,
                     is_header,
+                    apply_to,
+                    x,
+                    y,
+                )
+            })
+            .flatten()
+        {
+            return Ok(hit);
+        }
+        if let Some(hit) = (!is_master)
+            .then(|| {
+                let (host, control) = self.find_header_footer_control(
+                    section_idx,
+                    is_header,
+                    crate::document_core::header_footer_apply_from_u8(apply_to),
+                )?;
+                header_footer_caption_hit(
+                    hf_node,
+                    (host, control),
+                    page_num,
+                    section_idx,
                     apply_to,
                     x,
                     y,
@@ -5886,12 +5986,8 @@ impl DocumentCore {
 
         let tree = self.build_page_tree(page_num)?;
 
-        let fn_node = tree
-            .root
-            .children
-            .iter()
-            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea));
-        let fn_node = match fn_node {
+        // 다단 쪽은 단마다 각주 영역이 있으므로 누른 자리의 영역을 고른다.
+        let fn_node = match footnote_area_at(&tree.root, x, y) {
             Some(n) => n,
             None => return Ok("{\"hit\":false}".to_string()),
         };
@@ -6115,14 +6211,11 @@ impl DocumentCore {
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
-        let Some(fn_node) = tree
-            .root
-            .children
-            .iter()
-            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea))
-        else {
+        // 한 각주가 다단 쪽의 여러 영역에 이어질 수 있어 모든 영역에서 모은다.
+        let fn_nodes = footnote_area_nodes(&tree.root);
+        if fn_nodes.is_empty() {
             return Ok("[]".to_string());
-        };
+        }
 
         #[derive(Clone)]
         struct FnRunInfo {
@@ -6178,7 +6271,9 @@ impl DocumentCore {
         }
 
         let mut runs = Vec::new();
-        collect_runs(fn_node, footnote_index, &mut runs);
+        for fn_node in fn_nodes {
+            collect_runs(fn_node, footnote_index, &mut runs);
+        }
         runs.sort_by(|a, b| {
             a.fn_para_idx
                 .cmp(&b.fn_para_idx)
@@ -6536,18 +6631,12 @@ impl DocumentCore {
 
         let tree = self.build_page_tree(page_num)?;
 
-        let fn_node = tree
-            .root
-            .children
-            .iter()
-            .find(|child| matches!(child.node_type, RenderNodeType::FootnoteArea));
-        let fn_node = match fn_node {
-            Some(n) => n,
-            None => {
-                return Err(HwpError::RenderError(
-                    "각주 영역을 찾을 수 없습니다".to_string(),
-                ))
-            }
+        // 다단 쪽은 단마다 각주 영역이 있으므로 모든 영역에서 이 각주의 줄을 찾는다.
+        let fn_nodes = footnote_area_nodes(&tree.root);
+        let Some(&first_area) = fn_nodes.first() else {
+            return Err(HwpError::RenderError(
+                "각주 영역을 찾을 수 없습니다".to_string(),
+            ));
         };
 
         let marker_para = usize::MAX - 2000 - fn_para_idx;
@@ -6593,7 +6682,9 @@ impl DocumentCore {
         }
 
         let mut runs: Vec<FnCursorRun> = Vec::new();
-        collect_cursor_runs(fn_node, footnote_index, marker_para, &mut runs);
+        for fn_node in &fn_nodes {
+            collect_cursor_runs(fn_node, footnote_index, marker_para, &mut runs);
+        }
 
         if runs.is_empty() {
             // 폴백: 번호 TextRun(char_start=None) 뒤의 위치를 찾기
@@ -6623,7 +6714,10 @@ impl DocumentCore {
                 }
                 None
             }
-            if let Some((x, y, h)) = find_number_run_end(fn_node, footnote_index, marker_para) {
+            if let Some((x, y, h)) = fn_nodes
+                .iter()
+                .find_map(|fn_node| find_number_run_end(fn_node, footnote_index, marker_para))
+            {
                 return Ok(format!(
                     "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
                     page_num, x, y, h
@@ -6631,7 +6725,7 @@ impl DocumentCore {
             }
             return Ok(format!(
                 "{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}",
-                page_num, fn_node.bbox.x, fn_node.bbox.y, 12.0
+                page_num, first_area.bbox.x, first_area.bbox.y, 12.0
             ));
         }
 
@@ -6853,6 +6947,85 @@ fn header_footer_edit_node(
     } else {
         matches!(node_type, RenderNodeType::Footer)
     }
+}
+
+/// 머리말·꼬리말 그림 캡션 글줄을 누른 자리. 캡션 글줄의 셀 문맥은 [머리말(셀 0, 머리말 문단),
+/// 그림(셀 0, 캡션 문단)]이다. 누른 y가 든 캡션 줄의 가장 가까운 글자 자리를 표 칸 히트와 같은
+/// JSON으로 준다.
+fn header_footer_caption_hit(
+    hf_node: &crate::renderer::render_tree::RenderNode,
+    (host, control): (usize, usize),
+    page_num: u32,
+    section_idx: usize,
+    apply_to: u8,
+    x: f64,
+    y: f64,
+) -> Option<String> {
+    use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+    // 머리말 그림 캡션 글은 표 칸 글처럼 머리말 문단이 뿌리인 [(그림, 0, 캡션 문단)] 문맥을 갖는다.
+    // 표 칸(TableCell) 밖이고 글상자가 아닌 칸 0 문맥만 그림 캡션이다(표 캡션은 65534로 따로 찾는다).
+    fn collect<'a>(node: &'a RenderNode, in_cell: bool, out: &mut Vec<&'a RenderNode>) {
+        if let RenderNodeType::TextRun(ref run) = node.node_type {
+            if !in_cell
+                && run.char_start.is_some()
+                && run.cell_context.as_ref().is_some_and(|ctx| {
+                    !ctx.in_textbox && ctx.path.len() == 1 && ctx.path[0].cell_index == 0
+                })
+            {
+                out.push(node);
+            }
+            return;
+        }
+        let in_cell = in_cell || matches!(node.node_type, RenderNodeType::TableCell(_));
+        for child in &node.children {
+            collect(child, in_cell, out);
+        }
+    }
+    let mut runs = Vec::new();
+    collect(hf_node, false, &mut runs);
+    let node = runs
+        .into_iter()
+        .filter(|node| y >= node.bbox.y && y <= node.bbox.y + node.bbox.height)
+        .min_by(|a, b| {
+            let dx = |node: &RenderNode| {
+                if x < node.bbox.x {
+                    node.bbox.x - x
+                } else {
+                    (x - (node.bbox.x + node.bbox.width)).max(0.0)
+                }
+            };
+            dx(a).total_cmp(&dx(b))
+        })?;
+    let RenderNodeType::TextRun(ref run) = node.node_type else {
+        return None;
+    };
+    let ctx = run.cell_context.as_ref()?;
+    let positions = run.replay_positions_for(&run.text).into_owned();
+    let local = x - node.bbox.x;
+    let index = positions
+        .iter()
+        .enumerate()
+        .min_by(|a, b| (a.1 - local).abs().total_cmp(&(b.1 - local).abs()))
+        .map_or(0, |(i, _)| i);
+    let cursor_x = node.bbox.x + positions.get(index).copied().unwrap_or(0.0);
+    let inner = &ctx.path[0];
+    Some(format!(
+        "{{\"hit\":true,\"sectionIndex\":{},\"applyTo\":{},\"paraIndex\":{},\"charOffset\":{},\"parentParaIndex\":{},\"cellPath\":[{{\"controlIndex\":{},\"cellIndex\":0,\"cellParaIndex\":{}}},{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}],\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+        section_idx,
+        apply_to,
+        inner.cell_para_index,
+        run.char_start? + index,
+        host,
+        control,
+        ctx.parent_para_index,
+        inner.control_index,
+        inner.cell_index,
+        inner.cell_para_index,
+        page_num,
+        cursor_x,
+        node.bbox.y,
+        node.bbox.height
+    ))
 }
 
 #[cfg(test)]

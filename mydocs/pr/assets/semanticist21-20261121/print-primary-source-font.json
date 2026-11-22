@@ -1,0 +1,40 @@
+{
+  "document": "pdf/한글문서파일형식_5.0_revision1.3-hancom-official.pdf",
+  "page": 71,
+  "character": "U+F53A",
+  "pdf_family": "HCRDotum",
+  "pdf_glyph": 7,
+  "pdf_font_sha256": "39f57d05c42341c010baaeb7a0034107b6cd38ca6ee16f68a9f7bad427feeb87",
+  "pdf_glyph_geometry": {
+    "path_sha256": "ce1c98d753eaca9458186aa13fd708516c919b90b4a1d3e1754c998104e740f1",
+    "advance_and_bearing": [
+      970,
+      168
+    ],
+    "units_per_em": 1000
+  },
+  "loaded_normal_candidates": [
+    {
+      "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898",
+      "glyph": "uniF53A",
+      "path_sha256": "ce1c98d753eaca9458186aa13fd708516c919b90b4a1d3e1754c998104e740f1",
+      "advance_and_bearing": [
+        970,
+        168
+      ],
+      "units_per_em": 1000,
+      "identical": true
+    },
+    {
+      "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+      "glyph": "uniF53A",
+      "path_sha256": "ce1c98d753eaca9458186aa13fd708516c919b90b4a1d3e1754c998104e740f1",
+      "advance_and_bearing": [
+        970,
+        168
+      ],
+      "units_per_em": 1000,
+      "identical": true
+    }
+  ]
+}

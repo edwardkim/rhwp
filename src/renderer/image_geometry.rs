@@ -1,6 +1,40 @@
 //! 그림의 외접 프레임과 회전 전 출력 크기를 구분한다.
 use super::render_tree::{BoundingBox, ImageNode, ShapeTransform};
 use crate::model::image::Picture;
+use crate::model::style::ImageFillMode;
+
+/// 정렬 배치 채우기(가운데·모서리·변 가운데)의 그림 사각형 `(x, y, width, height)`.
+///
+/// 한/글은 채울 영역보다 큰 그림을 잘라 내지 않는다. 넘치는 축만 영역 크기로 줄여 그림 전체를
+/// 그리고(다른 축은 원래 크기 그대로), 남는 축은 채우기 유형의 정렬에 따라 놓는다. 모든 출력
+/// 경로가 이 사각형을 쓴다.
+pub(crate) fn aligned_image_fill_rect(
+    mode: ImageFillMode,
+    area: (f64, f64, f64, f64),
+    image_size: (f64, f64),
+) -> (f64, f64, f64, f64) {
+    let (x, y, area_width, area_height) = area;
+    let width = image_size.0.min(area_width.max(0.0));
+    let height = image_size.1.min(area_height.max(0.0));
+    let (left, center, right) = (x, x + (area_width - width) / 2.0, x + area_width - width);
+    let (top, middle, bottom) = (
+        y,
+        y + (area_height - height) / 2.0,
+        y + area_height - height,
+    );
+    let (image_x, image_y) = match mode {
+        ImageFillMode::CenterTop => (center, top),
+        ImageFillMode::RightTop => (right, top),
+        ImageFillMode::LeftCenter => (left, middle),
+        ImageFillMode::Center => (center, middle),
+        ImageFillMode::RightCenter => (right, middle),
+        ImageFillMode::LeftBottom => (left, bottom),
+        ImageFillMode::CenterBottom => (center, bottom),
+        ImageFillMode::RightBottom => (right, bottom),
+        _ => (left, top),
+    };
+    (image_x, image_y, width, height)
+}
 
 /// 전체 크기가 저장되지 않은 비트맵의 자르기 좌표계를 확정한다.
 /// GIF와 밀도 정보가 없는 BMP의 실제 픽셀 좌표는 픽셀당 75 HWPUNIT을 쓴다.
