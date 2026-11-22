@@ -19,6 +19,7 @@
 //!   (issue2439 1쪽). `--verify` 는 base exit 3(33건) → head exit 0.
 //! - 저장소 표본 전체 SVG A/B(base ↔ head 직접 열기): 1877 파일 차이 0.
 //! - 편람 HWPX Native 383쪽 `--handbook-gate` 통과.
+//!
 //! 증거: `output/pr-review/9039/final.log`(로컬, 커밋 안 함), PR 본문.
 #![cfg(not(target_arch = "wasm32"))]
 
