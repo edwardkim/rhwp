@@ -1315,5 +1315,42 @@
   "target_pages": 583,
   "target_minimum": 98.08,
   "feature_documents": 33,
-  "feature_pages": 50
+  "feature_pages": 50,
+  "direct_review": {
+    "dpi": 96,
+    "pages": [
+      {
+        "document": "issue7765-hwp",
+        "page": 25,
+        "silhouette_raw_match_percent": "98.08",
+        "candidate_and_reference_png": {
+          "native": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/native/direct-review/regulatory-analysis-hwp-p025-native.png",
+            "sha256": "a4a23471f9edbb6b288271cf60ee6d6c542756f779cb780dc6ce22369e5494e8"
+          },
+          "hancom-print": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/native/direct-review/regulatory-analysis-hwp-p025-hancom-print.png",
+            "sha256": "fa8b0b2f4d4809382914a650a957251941ab406cdbd110eaadff638bbd7e01e7"
+          }
+        },
+        "observation": "산식과 근거 설명의 줄 순서와 셀 소속을 확인했다. 표 아래 테두리는 후보 y=1026, 기준 PDF y=1022~1023에 보인다. 이 쪽은 절대 좌표 회귀로 고정하지 않았다."
+      },
+      {
+        "document": "issue7755",
+        "page": 44,
+        "silhouette_raw_match_percent": "98.40",
+        "candidate_and_reference_png": {
+          "native": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/native/direct-review/market-structure-survey-p044-native.png",
+            "sha256": "b074e5e7f2fc55ddb5a721badd1ff4bca1f0ef4a0394e860ddc473ff32bc43f9"
+          },
+          "hancom-print": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/native/direct-review/market-structure-survey-p044-hancom-print.png",
+            "sha256": "f6568bd4c05d8427ce8e145f37a095b2e1b5d009eb5ac61fce435140afbd85dc"
+          }
+        },
+        "observation": "두 그래프의 계열 순서, 축, 범례와 출처 줄을 확인했다. 하단 여백의 짧은 붉은 세로선은 기준 PDF에서만 보인다."
+      }
+    ]
+  }
 }
