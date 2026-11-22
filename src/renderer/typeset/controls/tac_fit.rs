@@ -178,32 +178,37 @@ pub(super) fn prepare(
     // 벌어진다 (10k r15 156744475: 붙임 포스터+차기 붙임 헤더 표 문단 ×2 →
     // rhwp 5쪽 vs 한글 3쪽, 저장 ls[0] vpos=5435 는 같은 쪽 배치를 명시).
     // 리셋 이전 줄들의 높이만 fit 기준으로 삼는다.
-    let pre_reset_height_for_fit = if has_tac
-        && tac_count == 1
-        && first_line_tac_height.is_none()
-        && para.text.is_empty()
-        && para.line_segs.len() == para.controls.len()
-    {
-        para.controls
-            .iter()
-            .position(
-                |c| matches!(c, Control::Table(t) if flow.is_effective_tac_table(para, t, fmt)),
-            )
-            .filter(|&ti| {
-                ti > 0
-                    && ti <= fmt.line_heights.len()
-                    && para.line_segs.get(ti).map(|s| s.vertical_pos) == Some(0)
-                    && para.controls[..ti].iter().all(|c| match c {
-                        Control::Picture(p) => p.common.treat_as_char,
-                        Control::Shape(s) => s.common().treat_as_char,
-                        _ => false,
-                    })
-            })
-            // 쪽 끝 줄은 줄 높이까지만 들어가면 된다. 리셋 앞 마지막 줄의 줄간격은 세지 않는다.
-            .map(|ti| fmt.line_content_height(0..ti, 0.0))
-    } else {
-        None
-    };
+    // [#8997] 표의 줄은 컨트롤 순번이 아니라 표가 실린 저장 줄로 찾는다. 쪽 번호 위치·머리말·
+    // 감추기처럼 줄을 차지하지 않는 컨트롤이 표 앞에 있어도 같은 문단이다(1543000-202100035
+    // s0 pi11: 컨트롤 [그림 TAC, 쪽번호위치, 머리말, 감추기, 표 TAC], 저장 줄 0 vpos 42652 로고 ·
+    // 줄 1 vpos 0 목차 표. 한컴 Print 1쪽 아래에 로고, 2쪽에 목차 표).
+    let pre_reset_height_for_fit =
+        if has_tac && tac_count == 1 && first_line_tac_height.is_none() && para.text.is_empty() {
+            para.controls
+                .iter()
+                .enumerate()
+                .find_map(|(index, c)| match c {
+                    Control::Table(t) if flow.is_effective_tac_table(para, t, fmt) => flow
+                        .tac_table_line_index(para, t, fmt)
+                        .map(|line| (index, line)),
+                    _ => None,
+                })
+                .filter(|&(ti, line)| {
+                    line > 0
+                        && line <= fmt.line_heights.len()
+                        && para.line_segs.get(line).map(|s| s.vertical_pos) == Some(0)
+                        && para.controls[..ti].iter().all(|c| match c {
+                            Control::Picture(p) => p.common.treat_as_char,
+                            Control::Shape(s) => s.common().treat_as_char,
+                            Control::Table(_) | Control::Equation(_) | Control::Form(_) => false,
+                            _ => true,
+                        })
+                })
+                // 쪽 끝 줄은 줄 높이까지만 들어가면 된다. 리셋 앞 마지막 줄의 줄간격은 세지 않는다.
+                .map(|(_, line)| fmt.line_content_height(0..line, 0.0))
+        } else {
+            None
+        };
     let height_for_fit = pre_reset_height_for_fit.unwrap_or(height_for_fit);
 
     // 넘치면 flush (단일 TAC 표만)
