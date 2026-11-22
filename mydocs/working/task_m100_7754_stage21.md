@@ -64,6 +64,11 @@ Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
 속성과 payload가 일치했으며 편집한 텍스트도 보존됐다.
 [반복 저장의 실제 산출물](../verification/issue7754-nine-fidelity/incoming-pr9318/ole-repeat-save-after-pr9322.json)
 
+#9318의 Studio 편집·입력 동작 7종을 새 기준과 후보에서 실행했다. 실제 브라우저가 받은
+WASM 해시를 대조했다. 후보의 호스트 글꼴 입력 검사 첫 실행에서 준비 호출 21회가 기록됐다.
+동일한 검사와 WASM을 양쪽에서 다시 실행하자 20회로 통과했고, 편집 후 내용·쪽 소속과 조판·
+그리기 해시가 일치했다. [Studio 기능별 검증 결과](../verification/issue7754-nine-fidelity/incoming-pr9318/studio-feature-journeys-after-pr9322.json)
+
 후보 생산본과 공개 글꼴 497개를 사용해 공통 보호 문서 4종을 Native·fresh WASM으로
 실행했다. 8조건 모두 공식 표시값 100.00%였다.
 [공개 글꼴의 쪽별 TSV와 비교 이미지](../verification/issue7754-nine-fidelity/after-pr9322/public-font-gate/validation.json)
