@@ -43,6 +43,10 @@ Native·fresh WASM 8조건이 모두 통과했다. 전쪽 공식 표시값은 10
 Native·fresh WASM으로 재대조했다. 안내서 2쪽은 양쪽 99.99%, 규제분석 네 쪽은 양쪽 100.00%다.
 [전쪽 TSV와 확대 판독](../verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/review.json)
 
+배포용 문서 3쪽은 Native·fresh WASM 모두 100.00%였고, 단위 문구와 예산 표의 위치를 직접
+확인했다. 복학원서·143E 공개 HWP·온새미로 HWP와 HWPX의 대표 구간도 새 생산본으로 대조했다.
+[대표 구간의 전쪽 TSV와 PNG](../verification/issue7754-nine-fidelity/representative-print-review/review.json)
+
 보호 fresh WASM의 첫 `sample10` 실행은 연결 그림 옵션을 빠뜨려 1쪽 raw가 31.61%였다.
 [기존 지침](../manual/verification/visual_sweep_guide.md#macos-외부-연결-그림-공급)과
 [수용 기록](../pr/assets/issue8856/final-20261110/sample10-linked-assets.json)에 따라
