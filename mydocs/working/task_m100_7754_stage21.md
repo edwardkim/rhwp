@@ -29,6 +29,11 @@ Plane 15 기호로 바꿨고 굵은 구간의 UTF-16 시작 위치도 1만큼 �
 원문과 굵은 구간을 새 생산본에서 확인하는 데 사용한다.
 [재저장 대조군의 실제 차이](../verification/issue7754-nine-fidelity/incoming-pr9322/modern-hwpx-save-before-pr9322.json)
 
+새 `devel` 생산본에서 원본·편집본 11종을 Native와 fresh WASM으로 각각 44개 저장 산출물로
+재현했다. 각 경로의 HWPX 33개는 독립 한컴 저장본과 문단 텍스트·굵은 구간이 일치했다.
+WASM에서 원본과 재열기의 실제 표시 60개와 결합 부호 편집·재열기 13개 상태를 확인했다.
+[기준 생산본의 산출물 해시와 비교 결과](../verification/issue7754-nine-fidelity/incoming-pr9322/roundtrip-verification.json)
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
