@@ -18,15 +18,15 @@
 
 실로티 나그리 결합 부호 `U+A806`은 라틴 B 뒤에 단독으로 올 때 그리기 단계에서 점선 원을 받는다. 실로티 나그리 기본 글자 뒤에서는 그 글자에 결합하며, 사용자가 입력한 점선 원은 본문에 보존된다. HWP와 HWPX에서 30개 조합씩 총 60개가 독립 한컴 인쇄의 표시 순서와 일치했다. 편집·실행 취소·저장·재열기의 13개 상태에서 본문과 위치를 확인했다. [60개 표시 결과](assets/pr9280/syloti-display.tsv) · [편집 근거](assets/pr9280/syloti-edit.json) · [확대 비교](assets/pr9280/syloti-after.png)
 
-함초롬 원본 글꼴에 없는 인도 숫자 기호는 한컴 인쇄에 쓰인 굴림의 미수록 글리프 윤곽과 전진폭을 확인했다. 짧은 줄에서 뒤의 B가 분리되고, 실제 #5800 현대 문서의 84개 기호가 한 줄에 남는다. 30개 문단의 인쇄 결과 55줄을 HWP·HWPX 양쪽과 비교했다. 일반 공백 U+00A0만 둔 대조군의 후속 C는 한컴보다 2.677px 오른쪽이며 devel과 보완본의 위치가 같다. [짧은 줄](assets/pr9280/indic-short-comparison.png) · [84개 연속 기호](assets/pr9280/indic-long-comparison.png) · [공백 대조](assets/pr9280/space-control.tsv)
+함초롬 원본 글꼴에 없는 인도 숫자 기호는 한컴 인쇄에 쓰인 굴림의 미수록 글리프 윤곽과 전진폭을 확인했다. 짧은 줄에서 뒤의 B가 분리되고, 실제 #5800 현대 문서의 84개 기호가 한 줄에 남는다. 30개 문단의 인쇄 결과 55줄을 HWP·HWPX 양쪽과 비교했다. 줄 바꿈 없는 공백 U+00A0만 둔 대조군의 후속 C는 한컴보다 2.677px 오른쪽이며 devel과 보완본의 위치가 같다. [짧은 줄](assets/pr9280/indic-short-comparison.png) · [84개 연속 기호](assets/pr9280/indic-long-comparison.png) · [공백 대조](assets/pr9280/space-control.tsv)
 
 원본·저장본·대조군 37쪽씩의 raw 최저는 Native 99.17%, fresh WASM 98.97%다. 원 PR의 HWP와 다시 연 HWPX는 구형 문서에서 100.00%, 현대 문서에서 99.97%로 두 렌더러가 일치했다. 최종 저장본 9개를 Windows 한컴 2020으로 다시 인쇄한 결과 각 원본 PDF와 전쪽 RGB 픽셀이 같았다. Studio에서는 로컬 Chromium의 두 글꼴 환경에서 화면·인쇄용 Canvas2D와 CanvasKit을 80회 실행하고 실제 그리기 결과를 확인했다. [쪽별 TSV와 화면 증거](assets/pr9280/README.md) · [Windows 한컴 재인쇄](assets/pr9280/hancom-reprint.tsv)
 
 ## 최신 기여 이력과 devel
 
-검토 중 jangster77 님이 원 PR에 최신 devel `622af208ee`을 병합했다. 최신 원 head `38c3b5171c`의 독립 PDF 등록 21개와 쪽수 표의 모든 행을 검증 후보에서 대조했다. 원 기여 4개와 이 병합을 포함한 로컬 커밋은 `8d5774278a`다. 보완·회귀를 검증한 `3e5a553b87`과 병합 뒤 파일 트리는 `7a468c624b124c5d6c9e9c3f8b940bd957098890`으로 같다. devel의 #9318에서 병합한 표·WMF 대조군은 Native·fresh WASM 각각 167쪽의 모든 PNG가 devel과 바이트 단위로 일치했다. [원 PR의 최신 병합](https://github.com/edwardkim/rhwp/pull/9280/commits/38c3b5171c52a925b2f575e9ad17a61fa620ca28) · [334개 PNG 해시](assets/pr9280/devel-9318-pages.tsv)
+검토 중 jangster77 님이 원 PR에 최신 devel `622af208ee`을 병합했다. 원 PR의 코드 head `38c3b5171c`의 독립 PDF 등록 21개와 쪽수 표의 모든 행을 검증 후보에서 대조했다. 원 기여 4개와 이 병합을 포함한 로컬 커밋은 `8d5774278a`다. 보완·회귀를 검증한 `3e5a553b87`과 병합 뒤 파일 트리는 `7a468c624b124c5d6c9e9c3f8b940bd957098890`으로 같다. devel의 #9318에서 병합한 표·WMF 대조군은 Native·fresh WASM 각각 167쪽의 모든 PNG가 devel과 바이트 단위로 일치했다. [원 PR의 최신 병합](https://github.com/edwardkim/rhwp/pull/9280/commits/38c3b5171c52a925b2f575e9ad17a61fa620ca28) · [334개 PNG 해시](assets/pr9280/devel-9318-pages.tsv)
 
-원 PR의 최신 head에서 Build & Test와 CI Impact Policy가 성공했다. GitHub에서 이 PR이 자동으로 닫을 이슈는 0건이며, 관련 이슈 #5140·#5800·#5861·#8306은 모두 완료 상태다. [원 head의 Build & Test](https://github.com/edwardkim/rhwp/actions/runs/45027558091/job/137233658558)
+원 PR의 코드 head에서 Build & Test와 CI Impact Policy가 성공했다. 이후 jangster77 님이 검토 기록과 비교 증적 24개 파일을 추가한 `d33f4649a1`도 원격 검사에 통과했다. 로컬에서 이 커밋을 병합해 협업자의 원 검토 기록을 보존했다. 추가된 파일은 모두 검토 자료와 오늘할일이며, 검증을 마친 제품·테스트·기준 파일은 병합 전후 동일하다. [협업자의 검토 기록](archives/pr_9280_review.md) GitHub에서 이 PR이 자동으로 닫을 이슈는 0건이며, 관련 이슈 #5140·#5800·#5861·#8306은 모두 완료 상태다. [원 head의 Build & Test](https://github.com/edwardkim/rhwp/actions/runs/45027558091/job/137233658558)
 
 ## 필수 검증과 제출 경로
 
