@@ -37,3 +37,9 @@ Windows 한컴 2020에서 함초롬바탕과 함초롬돋움의 보통·굵은 �
 최종 WASM을 Studio에 연결하고 Chromium에서 Canvas2D와 CanvasKit, 화면·인쇄 모드, 기본 글꼴 환경과 Windows 검증 글꼴 공급을 조합해 80번 렌더링했다. CanvasKit 40건 모두 해당 backend에서 그리기를 마쳤다. 단독 부호가 포함된 행 120곳의 픽셀을 확인했고 구형 원본·저장본의 화면·인쇄 출력 네 쌍은 수정 전과 동일했다. [두 backend의 실제 캡처 기록](studio-renders.tsv) · [CanvasKit의 수정 전후 확대](studio-syloti-ink.png) · [행별 픽셀 대조](studio-ink.tsv) · [구형 대조군](studio-legacy-control.tsv)
 
 Native와 fresh WASM에서 원본·저장본·대조군 37쪽씩의 쪽별 TSV를 보존했다. 독립 Print와의 최저 실루엣 일치율은 Native 99.17%, WASM 98.97%다. [74개 측정값](indic-visual.tsv) · [쪽별 원본 TSV](tsv/) · [대표 비교·오버레이](visual/)
+
+## 최종 회귀와 기존 문서 보호
+
+Rust 전체 회귀 13,971개, 집중 회귀 36개와 Native 공식 검사 4,072개가 통과했다. 회귀에는 공개 글꼴 다섯 파일만 노출했고, 한컴 인쇄와의 시각 대조에는 문서별 공급 글꼴을 사용했다. 검토 디렉터리 아래 `target/pr-review/pr9280-source`에서 제품을 분리 빌드해 Native 실행 파일과 최적화된 WASM의 SHA-256을 기록했다. Studio 2,832개, Rust 포맷·Clippy·workspace 빌드와 새 표본의 보안 검사도 통과했다. [검사별 결과와 바이너리 SHA-256](local-validation.json) · [58개 입력의 검사 결과](sample-inspection.tsv)
+
+보호 문서 23종은 Native와 fresh WASM 각각 2,023쪽의 공식값이 모두 같았다. 입력·독립 Print·글꼴·TSV 해시는 원본 TSV와 함께 보존했다. [쪽별 보호값 비교](protection/pages.tsv) · [측정 조건](protection/conditions.json) · [Native TSV](protection/native/) · [fresh WASM TSV](protection/wasm/)
