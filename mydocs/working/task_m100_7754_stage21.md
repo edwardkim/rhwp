@@ -115,6 +115,11 @@ Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인
 100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
 [기준 Native의 전쪽 대조](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-base-native.json)
 
+시장구조조사 첫 32쪽의 fresh WASM 후보 최저는 98.40%였고, 32쪽의 PNG가 리베이스 직전
+후보와 일치했다. 3쪽은 현재 기준보다 Native에서 95.99% → 99.40%, fresh WASM에서
+95.95% → 99.34%로 개선됐다. 연구진 제목과 테두리 및 이름 세 줄을 한컴 Print와 대조했다.
+[3쪽 TSV 수치와 확대 비교](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-page-003.json)
+
 시장구조조사 100쪽의 현재 후보 Native는 독립 한컴 Print 대비 100.00%였다. 기준의
 제3절 소결 제목은 PDF보다 61px 위에서 시작했고, 후보의 시작 행은 PDF와 1px 차이였다.
 후보의 제목과 본문 위치 및 줄 순서를 확대 대조했고 PNG가 리베이스 직전 후보와
