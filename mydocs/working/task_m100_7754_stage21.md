@@ -31,8 +31,8 @@ Plane 15 기호로 바꿨고 굵은 구간의 UTF-16 시작 위치도 1만큼 �
 
 새 `devel` 생산본에서 원본·편집본 11종을 Native와 fresh WASM으로 각각 44개 저장 산출물로
 재현했다. 각 경로의 HWPX 33개는 독립 한컴 저장본과 문단 텍스트·굵은 구간이 일치했다.
-WASM에서 원본과 재열기의 실제 표시 60개와 결합 부호 편집·재열기 13개 상태를 확인했다.
-후보 Native도 11종의 저장·재열기에서 같은 한컴 문단 텍스트와 굵은 구간을 보존했다.
+후보 Native와 fresh WASM도 11종의 저장·재열기에서 같은 한컴 문단 텍스트와 굵은 구간을
+보존했다. WASM의 원본·재열기 표시 60개와 결합 부호 편집·재열기 13개 상태가 기준과 일치했다.
 [기준과 후보의 산출물 해시 및 비교 결과](../verification/issue7754-nine-fidelity/incoming-pr9322/roundtrip-verification.json)
 
 기준 생산본의 Studio에서는 원본·저장본 10종을 기본 글꼴과 Windows 검증 글꼴로 열고,
@@ -44,6 +44,11 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 실행했다. CanvasKit 40조�
 편집 직후와 HWP·HWPX 저장 후 재열기의 12상태 모두 줄 순서·개수·쪽 소속이 독립 Print와
 일치했다. 42쪽의 실루엣 일치율은 최저 98.07%다.
 [중첩 표 쪽별 TSV와 입력·산출물 해시](../verification/issue7754-nine-fidelity/after-pr9322/nested/wasm/validation.json)
+
+#9318의 OLE 입력은 새 기준과 후보의 Native·fresh WASM에서 HWP와 HWPX로 각각 두 번
+편집·저장하고 다시 열었다. 변환본과 편집본 20개의 독립 CFB·XML 검사에서 두 OLE 개체의
+속성과 payload가 일치했으며 편집한 텍스트도 보존됐다.
+[반복 저장의 실제 산출물](../verification/issue7754-nine-fidelity/incoming-pr9318/ole-repeat-save-after-pr9322.json)
 
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
