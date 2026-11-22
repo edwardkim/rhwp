@@ -13,6 +13,26 @@ export type MemoEdit = { kind: 'insert'; author: string; text: string }
 
 export class MemoEditError extends Error {}
 
+const memoWordBreak = /[ \t\r\n\u3000]/u;
+
+/** 웹한글의 커서 메모는 공백 사이 낱말과 양끝 경계를 사용한다.
+ * 메모 API의 위치는 Unicode scalar 인덱스다.
+ */
+export function memoRangeAtCaret(text: string, caret: number): { start: number; end: number } {
+  const chars = Array.from(text);
+  let last = { start: caret, end: caret };
+  let end = 0;
+  while (end < chars.length) {
+    while (end < chars.length && memoWordBreak.test(chars[end])) end++;
+    const start = end;
+    while (end < chars.length && !memoWordBreak.test(chars[end])) end++;
+    if (start === end) break;
+    last = { start, end };
+    if (caret <= end) break;
+  }
+  return last;
+}
+
 /** WASM은 실패를 JSON으로 반환하기도 하므로 snapshot을 성공 처리하지 않는다. */
 export function requireMemoSuccess(value: string): { id?: number } {
   const result = JSON.parse(value);

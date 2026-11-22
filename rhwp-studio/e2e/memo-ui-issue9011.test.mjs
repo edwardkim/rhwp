@@ -146,7 +146,7 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   await open(page); await fill(page,'두 번째 메모'); await page.click('.dialog-btn-primary');
   const multiple=await state(page); assert.equal(multiple.length,2);
   const second=multiple.find(m=>m.text==='두 번째 메모');
-  assert.deepEqual([second.startCharIdx, second.endCharIdx], [8, 8]);
+  assert.deepEqual([second.startCharIdx, second.endCharIdx], [6, 8]);
   await selectMemo(page, second.id);
   await deleteMemo(page);
   assert.equal((await state(page)).length,1); await close(page);
@@ -406,6 +406,67 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   const option = await page.$eval('[data-memo-dialog] select', el => el.selectedOptions[0].textContent);
   assert.ok(option.startsWith(`${actualPage}쪽 ·`), option);
   await close(page);
+
+  await createNewDocument(page);
+  // 저장된 한컴 웹한글 V3 InsertFieldMemo에서 대조한 Unicode scalar 범위.
+  const phrase = '한글ABC 테스트, 다음';
+  const unicode = 'e\u0301lan 👩‍💻한글';
+  const wordCases = [
+    ['혼용 단어 중간', phrase, 1, 0, 5],
+    ['한영 경계', phrase, 2, 0, 5],
+    ['단어 끝 공백', phrase, 5, 0, 5],
+    ['다음 단어 시작', phrase, 6, 6, 10],
+    ['문장부호', phrase, 9, 6, 10],
+    ['문단 끝', phrase, 13, 11, 13],
+    ['빈 문단', '', 0, 0, 0],
+    ['결합 문자', unicode, 2, 0, 5],
+    ['이모지와 한글', unicode, 9, 6, 11],
+    ['선행 공백', '  하나 둘', 1, 2, 4],
+    ['연속 공백 안', '하나   둘', 3, 5, 6],
+    ['후행 공백', '하나  ', 4, 0, 2],
+    ['공백뿐인 문단', '   ', 2, 2, 2],
+    ['줄바꿈 없는 공백', '가　나 다', 3, 2, 5],
+  ];
+  const wordTable = await page.evaluate(async cases => {
+    const wasm = window.__wasm;
+    for (const [index, [, text]] of cases.entries()) {
+      if (text) wasm.doc.insertText(0, index, 0, text);
+      wasm.splitParagraph(0, index, Array.from(text).length);
+    }
+    const result = wasm.createTable(0, cases.length, 0, cases.length, 1);
+    if (!result.ok) throw new Error('createTable failed');
+    for (const [index, [, text]] of cases.entries()) {
+      if (text) wasm.insertTextInCell(0, result.paraIdx, result.controlIdx, index, 0, 0, text);
+    }
+    await window.__canvasView.loadDocument();
+    return result;
+  }, wordCases);
+  const targets = [];
+  for (const isCell of [false, true]) {
+    for (const [index, [label, , caret, start, end]] of wordCases.entries()) {
+      const pos = isCell ? {
+        ...body, paragraphIndex: 0, charOffset: caret, parentParaIndex: wordTable.paraIdx,
+        controlIndex: wordTable.controlIdx, cellIndex: index, cellParaIndex: 0,
+        cellPath: [{ controlIndex: wordTable.controlIdx, cellIndex: index, cellParaIndex: 0 }],
+      } : { ...body, paragraphIndex: index, charOffset: caret };
+      const name = (isCell ? '셀 ' : '본문 ') + label;
+      await position(pos);
+      await add(name);
+      const actual = (await state(page)).find(memo => memo.text === name);
+      assert.deepEqual([actual.startCharIdx, actual.endCharIdx], [start, end], name);
+      assert.equal(actual.path?.at(-1).cellIndex ?? null, isCell ? index : null, name);
+      targets.push(actual);
+    }
+  }
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  assert.equal((await state(page)).length, targets.length - 1);
+  await page.evaluate(() => window.__inputHandler.performRedo());
+  assert.deepEqual((await state(page)).sort((a, b) => a.id - b.id), targets);
+  for (const format of ['hwp', 'hwpx']) {
+    await saveAndReopen(page, format, 'words');
+    assert.deepEqual(contentAndAnchor(await state(page)), contentAndAnchor(targets));
+  }
+  console.log('  한컴 웹한글을 대조한 단어 범위 — 본문·표 셀, Unicode, HWP/HWPX 저장·재열기');
 
   await createNewDocument(page);
   const grouped = await page.evaluate(async () => {

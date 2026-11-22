@@ -1,7 +1,7 @@
 import type { CommandDef } from '../types';
 import { hyperlinkRange } from '@/core/hyperlink';
 import { StudioCommandError } from '@/core/command-error';
-import { MemoEditError, validateMemoEdit } from '@/core/memo-editor';
+import { MemoEditError, memoRangeAtCaret, validateMemoEdit } from '@/core/memo-editor';
 import { MemoDialog } from '@/ui/memo-dialog';
 import { showToast } from '@/ui/toast';
 import { t } from '../../i18n/index.ts';
@@ -20,7 +20,14 @@ export const memoCommand: CommandDef = {
       let insertion: { range: ReturnType<typeof hyperlinkRange>; context: string } | null = null;
       try {
         const range = hyperlinkRange(ih.getCursorPosition(), selection);
-        insertion = { range, context: JSON.stringify(wasm.getHyperlinkContext(range.target)) };
+        const { section, para, cellPath } = range.target;
+        const context = wasm.getHyperlinkContext(range.target);
+        if (cellPath.length === 0) {
+          range.start = wasm.logicalToTextOffset(section, para, range.start);
+          range.end = wasm.logicalToTextOffset(section, para, range.end);
+        }
+        const anchor = selection ? range : memoRangeAtCaret(context.text, range.start);
+        insertion = { range: { ...range, start: anchor.start, end: anchor.end }, context: JSON.stringify(context) };
       } catch {
         // 새 메모 위치를 확인할 수 없는 경우에도 기존 메모는 ID로 관리할 수 있다.
       }
