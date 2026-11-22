@@ -33,6 +33,18 @@ Windows 11 x64에서 조달청 HWPX 세 개를 일반 명령으로 내보냈다.
 | 모집 안내문 | 93.23% | 93.38% |
 | 추천 서식 | 93.03% | 93.61% |
 
+### 원본 지정 글꼴을 공급한 대조
+
+위 표는 Windows에서 별도 글꼴 경로를 주지 않고 실행한 기본 출력이다. 같은 문서에 `--font-path`로 휴먼명조, 한컴 윤고딕 240, 함초롬 및 Wingdings 등 로컬 글꼴을 명시해 다시 내보냈다. Windows가 기본 환경에서 Noto Sans KR로 대체하던 휴먼명조를 이 실행에서는 휴먼명조 프로그램으로 선택했다. 한컴 인쇄본·페이지·DPI와 비교 방법은 두 실험 모두 같다. [공급 파일 이름과 해시](../tech/investigations/issue9276/print-fonts.tsv)
+
+| 원본 | Windows 직접 PDF 최저 | Native Skia PNG 최저 | fresh WASM 최저 |
+|---|---:|---:|---:|
+| 공고문 | 99.77% | 99.76% | 99.60% |
+| 모집 안내문 | 99.66% | 99.69% | 99.68% |
+| 추천 서식 | 99.70% | 99.97% | 99.97% |
+
+세 문서 19쪽 모두 Windows 직접 PDF의 수정 전후 픽셀과 추출 텍스트가 같았다. 표와 제목·본문을 같은 위치에서 확대해 글꼴 공급에 따른 차이를 확인했다. [전쪽 측정·변경 픽셀](../tech/investigations/issue9276/print-font-pages.tsv) · [모집 안내문](../tech/investigations/issue9276/guide-print-font-control.png) · [추천 서식](../tech/investigations/issue9276/form-print-font-control.png)
+
 fresh WASM은 기준과 후보의 제품 코드를 각각 다시 컴파일·최적화하고 같은 Chrome for Testing 156.0.8078.47에서 전쪽을 그렸다. 두 빌드의 Canvas에서 바뀐 픽셀은 0개다. Windows PNG 첫 대조에서는 공고문 5쪽의 안티앨리어싱 픽셀 4개가 달랐다. 같은 기준 실행 파일에서도 이 4개 값이 달라졌고, 이어서 두 번 실행한 기준판과 수정판의 해당 쪽은 각각 같았다. PDF 내보내기에서는 이 차이가 나타나지 않았다. [공고문 표](../tech/investigations/issue9276/announce-font-detail.png) · [모집 안내문 글자](../tech/investigations/issue9276/guide-font-detail.png) · [추천 서식 항목명](../tech/investigations/issue9276/form-font-detail.png)
 
 공고문 11쪽은 화면용 프로필, 빠른 미리 보기 프로필, 기존 글꼴 환경 재사용 경로에서도 다시 내보냈다. 각 모드의 devel과 수정판을 대조한 33쪽에서 RGB 픽셀과 추출 텍스트가 같았다. [모드별 전쪽 결과](../tech/investigations/issue9276/windows-profiles.tsv)

@@ -294,5 +294,18 @@
     "version": "156.0.8078.47",
     "browser_executable_sha256": "230f0db8c5086182f46c59c867c0d461eb525d6552dfad226ea6b4d9ec249db2"
   },
-  "windows_short_form_standalone_trials": 4
+  "windows_short_form_standalone_trials": 4,
+  "source_font_control": {
+    "pages": 19,
+    "font_file_sha256_list": "print-fonts.tsv",
+    "windows_pdf_changed_pixels": 0,
+    "windows_pdf_text_changed_pages": 0,
+    "wasm_changed_pixels": 0,
+    "minima": {
+      "windows_candidate_pdf_raw": 99.66234,
+      "windows_candidate_png_raw": 99.66217,
+      "linux_candidate_native_raw": 99.69041,
+      "wasm_candidate_raw": 99.60127
+    }
+  }
 }
