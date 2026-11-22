@@ -181,7 +181,12 @@
     "target_directory": "/home/tsjang/rhwp/target/pr-review",
     "target_mount": "overlay",
     "writable_layer": "private temporary filesystem",
-    "launcher_sha256": "8adc5eb465970b471c35ee0a660979d7acb7123dc4eb70d23f85d6e32e6f6349"
+    "launcher_sha256": "8adc5eb465970b471c35ee0a660979d7acb7123dc4eb70d23f85d6e32e6f6349",
+    "writable_layer_limit_mib": {
+      "initial": 6400,
+      "before_running_full_suite": 8400,
+      "receipt_sha256": "158e6f6d09c94eadabd94e5e1b1f36de0312bee50afd18a9c40a5513a51cd12f"
+    }
   },
   "workspace_build": {
     "gate": "workspace-build",
@@ -200,5 +205,154 @@
     "elapsed_seconds": 369.08,
     "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
     "target_mount": "overlay"
+  },
+  "full_release_test_nextest": {
+    "gate": "all-rust",
+    "command": [
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "exit_code": 0,
+    "stdout_sha256": "0233aaf8a3011c80b5394e806a5205f7741d06702e4904ca127faf631a7024fc",
+    "stdout_digest_provenance": "recorded_at_exit",
+    "elapsed_seconds": 5512.54,
+    "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+    "tests": {
+      "tests_run": 13995,
+      "passed": 13995,
+      "failed": 0,
+      "skipped": 45,
+      "slow": 11,
+      "binaries": 55,
+      "test_seconds": 963.365,
+      "passing_test_inventory_sha256": "a356a969c045164bb2f538d7fb846a19f86637c42b29d4a93c8378846ecbca90"
+    },
+    "target_mount": "overlay"
+  },
+  "changed_regression_module_registration": {
+    "candidate": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+    "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+    "generated_harness_count": 28,
+    "changed_modules": [
+      {
+        "test": "tests/cases/armor_cli_contract.rs",
+        "sha256": "0c1390dad6a874a87f2d56708c288dadb724ba69dce7ef8ec099c5194fdabb73",
+        "harness": "regression_suite_026",
+        "module": "armor_cli_contract"
+      },
+      {
+        "test": "tests/cases/body_overflow_baseline.rs",
+        "sha256": "27a2635b1f7dfd821c4c9890d590cfb738c2fef09e58fccae2ff040db222498e",
+        "harness": "regression_suite_026",
+        "module": "body_overflow_baseline"
+      },
+      {
+        "test": "tests/cases/issue_2279_layout_oracles.rs",
+        "sha256": "4912cb6ad2437d262ee73afaa687971ecf70e82be69b9e93a85ce52a52cdab25",
+        "harness": "regression_suite_022",
+        "module": "issue_2279_layout_oracles"
+      },
+      {
+        "test": "tests/cases/issue_4961_font_decision_trace.rs",
+        "sha256": "ad0516e07e6f948a920517f72bf548ef782350724f77aee9338a9d45eb099ae1",
+        "harness": "regression_suite_026",
+        "module": "issue_4961_font_decision_trace"
+      },
+      {
+        "test": "tests/cases/issue_5804_dash_leader_glyphs.rs",
+        "sha256": "69feadd4d66f8ea8b5fa9bb74dde345d8700cf5e08f83e7b9e745b8e7a14b4d8",
+        "harness": "regression_suite_001",
+        "module": "issue_5804_dash_leader_glyphs"
+      },
+      {
+        "test": "tests/cases/issue_5830_dash_leader_last_line.rs",
+        "sha256": "fc2ac60286049e70dfeb3e25f7f92ce31cb6f5be72f8bc93c486825e13eef019",
+        "harness": "regression_suite_004",
+        "module": "issue_5830_dash_leader_last_line"
+      },
+      {
+        "test": "tests/cases/issue_6761_stored_vpos_rewind_page_break.rs",
+        "sha256": "17e492b39ed6fe8f31d763b42e0a200f52b5be13839ee62bc028b34f703aa037",
+        "harness": "regression_suite_016",
+        "module": "issue_6761_stored_vpos_rewind_page_break"
+      },
+      {
+        "test": "tests/cases/issue_7080_area_dot_fullwidth.rs",
+        "sha256": "5ff0c4b0da01a2203e0e35f6fa1e23b8400538b4c4093edbb5599f717849d347",
+        "harness": "regression_suite_006",
+        "module": "issue_7080_area_dot_fullwidth"
+      },
+      {
+        "test": "tests/cases/issue_7160_tac_table_line_break.rs",
+        "sha256": "75e232af6fd16bddbe69e4539cd8eaaa63de123c7c1580a1da98b69c9efae807",
+        "harness": "regression_suite_022",
+        "module": "issue_7160_tac_table_line_break"
+      },
+      {
+        "test": "tests/cases/issue_7754_font_logical_family_ownership.rs",
+        "sha256": "f8c8ad4398c2963e9d0e05b1201078f679493c2fed1f3d65ac62a10a2088da9c",
+        "harness": "regression_suite_015",
+        "module": "issue_7754_font_logical_family_ownership"
+      },
+      {
+        "test": "tests/cases/issue_7754_original_frame_and_glyph_origins.rs",
+        "sha256": "a62f3c767cd47d6b53cdc03f159ae4d579b2e4bb2a22bec155213b731f97ab1c",
+        "harness": "regression_suite_013",
+        "module": "issue_7754_original_frame_and_glyph_origins"
+      },
+      {
+        "test": "tests/cases/issue_7755_market_flow_content.rs",
+        "sha256": "f8b52f4ef833f2a19f1dafc54e8f404a1e4d38cca6329d9e8edd8e683b60bef3",
+        "harness": "regression_suite_018",
+        "module": "issue_7755_market_flow_content"
+      },
+      {
+        "test": "tests/cases/issue_7765_current_source_frames.rs",
+        "sha256": "8e47e699e30e17024184be6cfdfcb78548f02728c282276ce5610dd7b2e2a7c0",
+        "harness": "regression_suite_024",
+        "module": "issue_7765_current_source_frames"
+      },
+      {
+        "test": "tests/cases/issue_7765_hwpx_saved_flow_ownership.rs",
+        "sha256": "483100f7465498e41100279ee9d919a075039d03f641db48d4c19536e03e0a29",
+        "harness": "regression_suite_020",
+        "module": "issue_7765_hwpx_saved_flow_ownership"
+      },
+      {
+        "test": "tests/cases/issue_8153_print_glyph_geometry.rs",
+        "sha256": "cecea0bfbef4d6c58341defd5793c4ef4afc8b3d1645a358e74412d31f8afd56",
+        "harness": "regression_suite_004",
+        "module": "issue_8153_print_glyph_geometry"
+      },
+      {
+        "test": "tests/cases/off_canvas_baseline.rs",
+        "sha256": "aeefa80af42ca2cf8364ed67d8ccab853f3956182a0d4f8a65590739557d10b3",
+        "harness": "regression_suite_003",
+        "module": "off_canvas_baseline"
+      },
+      {
+        "test": "tests/cases/oracle_page_count_baseline.rs",
+        "sha256": "046c6fd8737d0d5a7f55312eff827171b7bf8a3f89fac1e531bc6fc7e4d65a25",
+        "harness": "regression_suite_003",
+        "module": "oracle_page_count_baseline"
+      },
+      {
+        "test": "tests/cases/text_overlap_baseline.rs",
+        "sha256": "44e5f8b2f4493290331e2f0d4b0972163f5afed89cf140b6d568bc72fc50b93a",
+        "harness": "regression_suite_008",
+        "module": "text_overlap_baseline"
+      }
+    ]
   }
 }
