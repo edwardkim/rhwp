@@ -509,6 +509,11 @@ where
     if let Some(marker) = doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH) {
         z.write_deflated(HWP5_ORIGIN_HWPX_MARKER_PATH, marker)?;
     }
+    // [#9039] HWP 줄 규칙을 쓰는 HWPX 계보(`/RhwpHwpxOrigin` = 1) — 다시 열 때 같은 저장
+    // 줄을 XML 규칙으로 다시 짜지 않도록 값을 그대로 옮긴다.
+    if let Some(marker) = doc.hwpx_origin_hwp_line_rules() {
+        z.write_deflated(crate::model::document::HWPX_ORIGIN_HWPX_MARKER_PATH, marker)?;
+    }
     // HWP3-origin 마커 — 재열람 시 hwp3_lineage 복원(왕복 레이아웃 등식).
     if let Some(marker) = doc.hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH) {
         let encoded = hwp3_page_ownership
