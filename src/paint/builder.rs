@@ -11,6 +11,7 @@ use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{
     BoundingBox, ControlCode, NodeId, PageRenderTree, RectangleNode, RenderNode, RenderNodeType,
+    TextRunNode,
 };
 use std::collections::HashMap;
 
@@ -307,8 +308,16 @@ impl LayerBuilder {
                 .page_context
                 .map(PagePaintContext::without_rectangle_mapping);
         }
+        let mut previous_text = None;
         let mut children = crate::renderer::paint_order::children(node)
-            .filter_map(|child| self.build_node(child))
+            .filter_map(|child| {
+                let layer = self.build_node(child, previous_text);
+                previous_text = match &child.node_type {
+                    RenderNodeType::TextRun(run) => Some(run),
+                    _ => None,
+                };
+                layer
+            })
             .collect::<Vec<_>>();
         self.page_context = previous_context;
         self.shape_group_depth = previous_group_depth;
@@ -333,11 +342,15 @@ impl LayerBuilder {
         children
     }
 
-    fn build_node(&mut self, node: &RenderNode) -> Option<LayerNode> {
+    fn build_node(
+        &mut self,
+        node: &RenderNode,
+        previous_text: Option<&TextRunNode>,
+    ) -> Option<LayerNode> {
         if let Some(paths) = &node.paint_clip {
             let mut unclipped = node.clone();
             unclipped.paint_clip = None;
-            let child = self.build_node(&unclipped)?;
+            let child = self.build_node(&unclipped, previous_text)?;
             return Some(LayerNode {
                 bounds: node.bbox,
                 source_node_id: Some(node.id),
@@ -353,7 +366,7 @@ impl LayerBuilder {
                 let mut print_node = node.clone();
                 print_node.bbox = bbox;
                 print_node.print_bbox = None;
-                return self.build_node(&print_node);
+                return self.build_node(&print_node, previous_text);
             }
         }
         if !node.visible || (node.editor_only && !self.profile.shows_editor_visuals()) {
@@ -374,8 +387,8 @@ impl LayerBuilder {
         }
 
         if let Some(parts) = super::parallel_shadow::split(node) {
-            let shadow = self.build_node(&parts.silhouette)?;
-            let body = self.build_node(&parts.body)?;
+            let shadow = self.build_node(&parts.silhouette, previous_text)?;
+            let body = self.build_node(&parts.body, previous_text)?;
             let mut group = LayerNode::group(
                 node.bbox,
                 Some(node.id),
@@ -405,7 +418,7 @@ impl LayerBuilder {
                 self.page_context = self
                     .page_context
                     .map(PagePaintContext::without_rectangle_mapping);
-                let child = self.build_node(&local);
+                let child = self.build_node(&local, previous_text);
                 self.page_context = previous_context;
                 let child = child?;
                 let mut group = LayerNode::group(
@@ -468,7 +481,7 @@ impl LayerBuilder {
                             super::dot_leader::prepare(&self.metafile_fonts, node.bbox, &mut run);
                     }
                 }
-                let mut ops = text_run_ops(node.bbox, run, self.output_options);
+                let mut ops = text_run_ops(node.bbox, run, self.output_options, previous_text);
                 ops.extend(
                     leader_paths
                         .into_iter()
@@ -1093,6 +1106,7 @@ fn text_run_ops(
     bbox: crate::renderer::render_tree::BoundingBox,
     run: crate::renderer::render_tree::TextRunNode,
     output_options: LayerOutputOptions,
+    previous: Option<&TextRunNode>,
 ) -> Vec<PaintOp> {
     let has_char_overlap = run.char_overlap.is_some();
     let show_text_marks = output_options.show_paragraph_marks || output_options.show_control_codes;
@@ -1114,7 +1128,7 @@ fn text_run_ops(
             + has_strikethrough as usize
             + has_emphasis_dot as usize,
     );
-    ops.push(PaintOp::text_run(bbox, run.clone()));
+    super::syloti_marks::push_text(&mut ops, bbox, &run, previous);
     if has_char_overlap {
         ops.push(PaintOp::char_overlap(bbox, run.clone()));
     }

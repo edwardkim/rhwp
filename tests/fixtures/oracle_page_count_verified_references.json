@@ -226,6 +226,33 @@
       "pages": 1,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-mark-control.hwp",
+      "source_sha256": "6412d298aa3f7b1444c04ee681f6a5b6e8669091d02d8ebb7fd0a4bff08f1bb5",
+      "pdf": "pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf",
+      "pdf_sha256": "1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-boundaries.hwp",
+      "source_sha256": "2dc1fdb162d895d7b4602432b68b701c29d57e69a3a9eaea4676c5457da1b748",
+      "pdf": "pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf",
+      "pdf_sha256": "70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-placeholders.hwp",
+      "source_sha256": "8ae5c95f6cf9c1e7ae71f6bc9f48462a6a2f55a74b33f0a36a12c2e0313eef14",
+      "pdf": "pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf",
+      "pdf_sha256": "d04b61cbc149362432b5e91f7333b393dd009bfe578615bfd6de8e7d7720a49e",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
     }
   ]
 }

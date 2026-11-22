@@ -226,6 +226,12 @@ samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp	1	1
 samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp	1	1
 # 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
 samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-boundaries.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-mark-control.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-placeholders.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-대조군.hwpx	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwpx	1	1
