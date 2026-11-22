@@ -35,6 +35,10 @@ Native·fresh WASM 8조건이 모두 통과했다. 전쪽 공식 표시값은 10
 
 원래 이슈의 fresh WASM, 보호 정본 fresh WASM, 최소 글꼴 Rust·lint, 남은 Studio 검증은 진행 중이다.
 
+시장구조조사 100쪽의 Studio Canvas2D 화면과 독립 한컴 Print를 직접 대조했다.
+후보의 제목과 본문이 빈 줄 묶음 아래로 복원됐다. 제목의 첫 잉크 행은 새 base의 217px에서
+한컴 Print와 같은 279px로 옮겨졌다. [원본 PNG와 측정 근거](../verification/issue7754-nine-fidelity/studio/market-page100-screen/review.json)
+
 보호 fresh WASM의 첫 `sample10` 실행은 연결 그림 옵션을 빠뜨려 1쪽 raw가 31.61%였다.
 [기존 지침](../manual/verification/visual_sweep_guide.md#macos-외부-연결-그림-공급)과
 [수용 기록](../pr/assets/issue8856/final-20261110/sample10-linked-assets.json)에 따라
