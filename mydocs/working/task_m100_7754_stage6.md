@@ -107,3 +107,25 @@ Native가 실제 선택한 HY중고딕은 이미 원본 TTF였다. Fontconfig의
 `source36/protected/environment-repair/`에 있다. 이는 16쪽의 환경 원인 확인이며
 보호 전체 통과를 뜻하지 않는다. 올바른 조건의 전체 보호 비교에서 남은 하락과
 미측정 항목을 계속 조사한다.
+
+
+## 새 기준·후보 fresh WASM 전쪽과 Native 실제 편집 확정
+
+평문 10개 원본의 fresh WASM도 기준·후보 각 583쪽을 완료했다. 실제 독립 PDF의
+전체 쪽수와 같고 후보는 모든 쪽 98% 이상, 페이지별 기준 대비 하락은 0쪽이다.
+시장구조조사는 315쪽 최저 98.40%, 온새미로 HWP/HWPX는 46쪽씩 최저 99.98%,
+수학 HWP 64쪽 최저 98.11%, HWPX 64쪽 최저 98.69%다.
+양쪽 원본 chunk TSV와 합친 전체 TSV·manifest는 `source36/issues/wasm/`에 있다.
+
+Native 실제 중첩 표 편집도 기준·후보에서 각각 원본 HWP와 실제 한컴 HWPX에
+30줄·70줄을 추가해 live·HWP 저장/재열기·HWPX 저장/재열기를 완료했다.
+24개 상태의 독립 PDF 비교 최저는 98.07%이고 대응 12쌍의 전쪽 PNG가 바이트 단위로
+같다. caret와 최종 렌더 트리의 실제 줄 내용·순서·누락·중복 및 21줄·58줄 경계의
+쪽 소속을 확인했다. 실제 저장 bytes의 SHA도 보존했다.
+`source36/incoming/live-native/`에 probe·연결 시도·실행 결과·TSV를 고정했다.
+WASM 실제 편집·저장/재열기의 완료를 대신하지 않는다.
+
+사용 종료한 task 전용 probe 실행 파일과 옛 frozen library 20개를 활성 명령·maps·fd
+참조가 없는지 확인한 뒤 정확한 경로로 삭제해 2,054,539,230바이트를 확보했다.
+공유 target과 현재 생산물·원본·PDF·TSV·PNG는 보존했다.
+workspace build는 같은 최소 글꼴 환경에서 재실행해 통과했고 전체 nextest가 실행 중이다.

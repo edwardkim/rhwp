@@ -10,10 +10,12 @@
 | --- | --- | --- |
 | 평문 원본 10개 Native | 전쪽 583쪽, 모두 raw 98% 이상 | `issues/native/qualified-originals.json`, 각 원본의 TSV·실행 manifest |
 | 새 기준과 후보 Native | 각 583쪽, 페이지별 표시값 하락 0쪽 | `issues/native/comparison.json`, `condition-comparison.json` 및 양쪽 전체 TSV |
+| 평문 원본 10개 fresh WASM | 기준·후보 각 583쪽, 후보 전쪽 98% 이상·페이지별 하락 0쪽 | `issues/wasm/qualified-originals.json`, `comparison.json` 및 양쪽 전쪽 TSV |
 | 실제 암호 원본 | Native 24쪽 최저 99.50%, WASM 24쪽 최저 99.48% | `encrypted/results.json`, 양쪽 전체 TSV |
 | 암호 원본과 평문 대응 | 경로별 PNG 24/24 SHA 일치 | `encrypted/results.json` |
 | Studio 유입 기능 | 기준·후보 각 7개 여정 통과 | `incoming/studio/validation.json` |
 | 편집 기능의 저장 원본 Native | 기준·후보 각 33개 조건·50쪽, 전쪽 PNG SHA 일치·하락 0쪽 | `incoming/saved-native/validation.json`, 양쪽 전체 TSV |
+| Native 실제 중첩 표 편집 | 원본 2종 × 30/70줄 × 3상태 × 2소스, 대응 PNG 전체 동일·최저 98.07% | `incoming/live-native/validation.json`, 전체 TSV·소유·순서 검사 |
 | WASM CTRL_DATA | 기준·후보 각 4개 실제 입력 × 2회 저장·재열기, 8/8 소유·payload 보존 | `incoming/ctrl-data-wasm/*/physical-record-validation.json` |
 
 전쪽 수는 측정 요청 수만으로 판단하지 않았다. 평문 Native 각 실행의
@@ -60,7 +62,7 @@ CTRL_HEADER/SHAPE_COMPONENT 소유 스택과 각 payload의 길이·SHA를 비�
 
 ## 아직 완료하지 않은 항목
 
-새 기준과 후보의 전쪽 WASM 비교, 중첩 표의 최종 실제 편집·재열기,
+유입 기능 저장 원본의 WASM 비교와 실제 중첩 표 WASM 편집·재열기,
 최소 글꼴 환경의 정식 전체 Rust 검증, 편람 gate와 정본 보호 비교는 실행 중이다.
 Native 583쪽 완료와 위 기능 검사를 전체 검증의 완료로 해석하지 않는다.
 보호 비교의 기존 글꼴·환경 재현 문제와 표시값 하락은 별도로 해결해야 한다.
@@ -84,3 +86,12 @@ workspace build의 디스크 공간 부족은 보존하고 재실행하며 전�
 Native·fresh WASM 모두 100.00%다. 이전 잘못된 stock 환경의 52.97%는 보존한
 진단 결과이며 제품 회귀나 글꼴 우선순위 결함으로 판정하지 않는다.
 전체 보호 비교·정본 대비 하락 해소는 별도로 남아 있다.
+
+
+Native 실제 편집은 기준·후보에서 각각 원본 HWP와 실제 한컴 HWPX에 30줄·70줄을
+추가한 뒤 live·실제 HWP 저장/재열기·실제 HWPX 저장/재열기를 실행했다.
+24개 상태의 독립 Print 전쪽 점수 최저는 98.07%이고 대응 12쌍의 모든 PNG가 같다.
+렌더 트리의 실제 `줄 1`부터 마지막 줄까지 내용·순서·누락·중복과 독립 Print의
+21줄·58줄 경계 쪽 소속도 확인했다. 별도 rustc probe의 serde 의존성 불일치는
+연결 시도 기록으로 남기고 맞는 의존성에서 재실행했다. WASM의 실제 저장/재열기는
+별도로 실행하며 이 Native 결과로 대신하지 않는다.
