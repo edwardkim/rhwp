@@ -491,9 +491,46 @@
             725,
             1060
           ],
-          "observation": "근거설명 첫 행의 위·아래 괘선과 내용이 놓인 높이를 확인했다."
+          "observation": "근거설명 첫 행의 위·아래 괘선과 내용이 놓인 높이를 확인했다.",
+          "whole_document_render": {
+            "image_sha256": [
+              "d7fb3a6ee499651d29374214ce3fedf70b7a8f8ab16fd49c42f287429a499879",
+              "0d238a71c7b57b0513b5e846c93972f0a2c4f98b8a97fb995430bed39034c347",
+              "c596a2a7eb7236dd6573d7ac10a2b4dc488b39d4525016b49a03595215bbe869"
+            ],
+            "matches_focused_capture": true,
+            "matches_previous_whole_document_capture": true,
+            "review_panel": {
+              "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7765-hwpx-p026-reason-table-first-row-height.png",
+              "sha256": "ec98655d4da92bc6f5bf0de3a03794685ffd1f2fba79f92c513de7ba30a0d2c4"
+            }
+          }
         }
-      ]
+      ],
+      "whole_document": {
+        "native": {
+          "pages": 64,
+          "minimum": "98.69",
+          "pages_at_100": 22,
+          "tsv": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7765-hwpx.tsv",
+            "sha256": "3c2a5c1415e613d7cbf3370dc3cdf74fc39f01d6a607ed2717900a6c5c23d29c"
+          }
+        },
+        "wasm": {
+          "pages": 64,
+          "minimum": "98.69",
+          "pages_at_100": 15,
+          "tsv": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7765-hwpx.tsv",
+            "sha256": "d5705b9121085ed24e8fd613403b5d347ba273e7843d0c49f39aff8e6ce45cd7"
+          },
+          "pngs_matching_previous_candidate": 64,
+          "pngs_matching_current_base": 43,
+          "pages_improved_against_current_base": 21,
+          "pages_below_current_base": 0
+        }
+      }
     }
   ]
 }
