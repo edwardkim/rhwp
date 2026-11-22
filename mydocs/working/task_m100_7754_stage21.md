@@ -126,6 +126,11 @@ Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인
 바이트까지 일치하는 것을 확인했다.
 [100쪽의 현재 Native 판독 근거](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-native-page-100.json)
 
+같은 100쪽에서 fresh WASM은 현재 기준의 27.35%에서 후보 100.00%로 개선됐다. 후보의
+제3절 소결 제목은 독립 한컴 Print와 같은 279행에서 시작했고, 전쪽 실행에서 얻은 PNG는
+리베이스 직전 후보의 PNG와 일치했다.
+[100쪽의 현재 WASM 판독 근거](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-wasm-page-100.json)
+
 시장구조조사의 기준 Studio는 95·100·106·247·315쪽을 화면과 인쇄 프로필로 실행했다.
 요청한 렌더러 세 조건을 포함한 30개 PNG가 리베이스 전후로 모두 일치했다. 전체 315쪽이
 CanvasKit의 사전 검사 한도인 128쪽을 넘는 네 조건에서 실제 Canvas2D 출력을 확인했다.
