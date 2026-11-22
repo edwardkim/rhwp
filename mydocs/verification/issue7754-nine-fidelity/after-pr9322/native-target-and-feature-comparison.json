@@ -3414,5 +3414,150 @@
   },
   "tsv_publication": {
     "exact_existing_files_referenced": 86
+  },
+  "verified_review_pictures": {
+    "matched": 10,
+    "pages": [
+      {
+        "key": "issue7756",
+        "page": 1,
+        "purpose": "application-receipt",
+        "raw": "99.00",
+        "print_png_sha256": "2a55acaccdc5597e9d9ff66e04e828c0f5f00af153f60ba5f376afb0d6bdfc78",
+        "candidate_png_sha256": "16d1833e0e09ecc4a149b485f55cfb5aa40474c2e9c62664ff090a96f5b479c4",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/review.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/enrollment-application-p001.png",
+          "sha256": "ce114a6ac8f4901df7d6f361febc325f0142cbbe8c61b1bfbf0365264d0757c1"
+        }
+      },
+      {
+        "key": "issue7757",
+        "page": 3,
+        "purpose": "budget-table-unit-label",
+        "raw": "100.00",
+        "print_png_sha256": "b57b5935c3813d7feefb2e8576fe3eb7421a3e0a6c496318398c088b931b00c6",
+        "candidate_png_sha256": "9a56e08ec16c2e7d5a5abbcbb698d6f82098c00e0d5d5e8f850e3e02308ea3c0",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/review.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/budget-table-p003.png",
+          "sha256": "307a76fb70de974e264a747020881423c487c798587f76b226440c60c4ca3a83"
+        }
+      },
+      {
+        "key": "issue7759",
+        "page": 1,
+        "purpose": "source-text-and-columns",
+        "raw": "99.93",
+        "print_png_sha256": "d32c8c1e3c78dbb4b205ebe57b07887c028f6a1da3d0562b898c8cadbf8d7ab2",
+        "candidate_png_sha256": "1c67b078e5ee7f5d154ec328140717c80549756ab74a8e8f2505a4a058e37f9b",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/review.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/two-columns-and-chart-p001.png",
+          "sha256": "ab7ce4f4cad6c82f996562808ca384bf9ed56355541e070e67e45f476cc26532"
+        }
+      },
+      {
+        "key": "issue7761",
+        "page": 5,
+        "purpose": "square-wrap-content",
+        "raw": "100.00",
+        "print_png_sha256": "e4b2aa77db6fecc7b2fe27d5e78aaf6e42a10a019a59eae464a79655b1baeb69",
+        "candidate_png_sha256": "da2ef47510b6143cbf603443df0f01ef8e6b7e37aea4783a820b7e8874316157",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/review.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/onsaemiro-square-wrap-p005.png",
+          "sha256": "81f75581c4aa71ed11e55aefd8f2d36aea7c41bee326b757180c2c7b98b972f0"
+        }
+      },
+      {
+        "key": "issue7762",
+        "page": 5,
+        "purpose": "square-wrap-content",
+        "raw": "100.00",
+        "print_png_sha256": "e4b2aa77db6fecc7b2fe27d5e78aaf6e42a10a019a59eae464a79655b1baeb69",
+        "candidate_png_sha256": "da2ef47510b6143cbf603443df0f01ef8e6b7e37aea4783a820b7e8874316157",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/review.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/representative-print-review/onsaemiro-square-wrap-p005.png",
+          "sha256": "81f75581c4aa71ed11e55aefd8f2d36aea7c41bee326b757180c2c7b98b972f0"
+        }
+      },
+      {
+        "key": "issue7754-plain",
+        "page": 2,
+        "purpose": "old-hangul-origins",
+        "raw": "99.99",
+        "print_png_sha256": "bd058e76e9e0915420ea45e540c547ee9c217fa4d32589523c117b93642143a8",
+        "candidate_png_sha256": "f122205da1889f5283e953ea3ca43a16961bed94b3f2285832c512920b8ddddb",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7754-plain-p002-old-hangul-origins.png",
+          "sha256": "146ffbf2ce545774a7dea1edb46e34afe772d8579aa2f624d2d0cc60e1bacb33"
+        }
+      },
+      {
+        "key": "issue7765-hwp",
+        "page": 10,
+        "purpose": "body-line-pitch",
+        "raw": "100.00",
+        "print_png_sha256": "e0ed579f6421fc48e3524e378d19e2865f5df3ab9c892b940409ff2d56a83ffb",
+        "candidate_png_sha256": "575a2bc3f12649958ccb7ec84cedab840b307057174b753d83dd089dbb1041af",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/issue7765-hwp-p010-body-line-pitch.png",
+          "sha256": "1b6f10007282ff73d08f6ed39df6f6e8d2f8e05d0ceb55485114d7799dde255a"
+        }
+      },
+      {
+        "key": "issue7765-hwp",
+        "page": 28,
+        "purpose": "continued-table-and-next-table",
+        "raw": "100.00",
+        "print_png_sha256": "9aa20c36bff5221a55e5f921b7f00158cc91d319f2b1266d45c86350f06c38d2",
+        "candidate_png_sha256": "34aada74a0b15b054051624fb403c9345907148e5d94ff8ee80d1391e0b5c948",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7765-hwp-p028-continued-table-and-next-table.png",
+          "sha256": "8252ff43e2364ea1c4f9424f862663d6de2e07463568b29f46c1de510ad27757"
+        }
+      },
+      {
+        "key": "issue7765-hwp",
+        "page": 29,
+        "purpose": "last-table-fragment-border",
+        "raw": "100.00",
+        "print_png_sha256": "4ad5bdc2dcebadefe547eb8c0949621884d900f995084fb3eaafba2be96d42eb",
+        "candidate_png_sha256": "e31ebd5694892a309672a8544ee9aeabdfdc3d7cb1b82ff31e0c441a5c85f530",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7765-hwp-p029-last-table-fragment-border.png",
+          "sha256": "535eacc5efe5c875e2b8eabe28660dcf93ce963b7f5d47693e6633c27789d9f9"
+        }
+      },
+      {
+        "key": "issue7765-hwpx",
+        "page": 26,
+        "purpose": "reason-table-first-row-height",
+        "raw": "100.00",
+        "print_png_sha256": "d7fb3a6ee499651d29374214ce3fedf70b7a8f8ab16fd49c42f287429a499879",
+        "candidate_png_sha256": "0d238a71c7b57b0513b5e846c93972f0a2c4f98b8a97fb995430bed39034c347",
+        "same_as_reviewed_png": true,
+        "review_record": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json",
+        "review_panel": {
+          "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7765-hwpx-p026-reason-table-first-row-height.png",
+          "sha256": "ec98655d4da92bc6f5bf0de3a03794685ffd1f2fba79f92c513de7ba30a0d2c4"
+        }
+      }
+    ]
   }
 }
