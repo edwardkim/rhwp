@@ -372,5 +372,28 @@
         297
       ]
     }
+  },
+  "after_pr9322_page100": {
+    "page": 100,
+    "profile": "print",
+    "requested_backend": "canvas2d",
+    "roles": {
+      "base": {
+        "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+        "wasm_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+        "png_sha256": "b5ba006842a107bf9bc9b5e0083807f639c218a95eed53a7cc7e6335697a0e61",
+        "heading_first_ink_row": 217
+      },
+      "candidate": {
+        "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "png_sha256": "dccc3d3f842748931b4a048b5e41b79fc783c7c234a41b6f66d66e7fcb1cda0b",
+        "heading_first_ink_row": 279
+      }
+    },
+    "independent_hancom_print": {
+      "png_sha256": "41695f69cb01947810b10b2ba8d9bac7aa2032122863847dbc4e4af4e5a33e2c",
+      "heading_first_ink_row": 279
+    }
   }
 }
