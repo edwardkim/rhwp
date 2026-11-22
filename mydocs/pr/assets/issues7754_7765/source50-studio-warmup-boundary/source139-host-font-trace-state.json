@@ -1,0 +1,31 @@
+{
+  "started": 1795343066.7918577,
+  "scope": "Same original host input test, assertions retained; collect actual call stack and input index of every metrics preparation. Diagnostic only.",
+  "results": [
+    {
+      "role": "base",
+      "exit_code": 0,
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/rhwp-studio/e2e/host-font-input-issue9165.test.mjs",
+        "--mode=headless"
+      ]
+    },
+    {
+      "role": "candidate",
+      "exit_code": 0,
+      "command": [
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source117_studio_wrapper.mjs",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate",
+        "/usr/local/bin/node",
+        "/home/tsjang/rhwp/rhwp-studio/e2e/host-font-input-issue9165.test.mjs",
+        "--mode=headless"
+      ]
+    }
+  ],
+  "ended": 1795343132.1754804
+}
