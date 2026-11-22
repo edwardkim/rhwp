@@ -13,3 +13,6 @@ neighbors6-2020-hwpx	2020	11.0.0.9136	9c13310c-6bc2-4fb8-a1aa-22d8eef48472	succe
 neighbors6-2024-hwpx	2024	13.0.0.3901	c777d6ee-af17-434c-b3d9-dc3906fe6056	succeeded			9b8a45dfa7a7aa30b1fc19b8e4cdd3ae0b3c1a44451c2db22bd2a8f902b4b7c9
 v5-2020-pdf	2020	11.0.0.9136	b4af1331-4753-4a12-96d3-4c9bd06c1b53	succeeded	0	hancom2020_pdf_driver_one_up	7bda8ce2c802c6d246f37bcd1b8b8d9b3938ffe982d065ca7094eeeaa479cdf1
 v6-2020-pdf	2020	11.0.0.9136	7190fb2e-1992-4260-865b-75db14a6c331	succeeded	0	hancom2020_pdf_driver_one_up	92cb4b0cbc4d07e2c2ca8e72eb70b7a6b5c2d892b134e2bde6b68e08bae63c46
+syloti-mark-control-2020-pdf	2020	11.0.0.9136	8816cfef-ca32-44c6-b5d1-27f6746bbcd2	succeeded	0	hancom2020_pdf_driver_one_up	1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9
+syloti-boundaries-2020-pdf	2020	11.0.0.9136	4557a616-ae3a-40dc-ad52-a3f24fb6da8b	succeeded	0	hancom2020_pdf_driver_one_up	70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4
+syloti-placeholders-2020-pdf	2020	11.0.0.9136	14537bf7-868f-4609-bc63-36b68c9bec0e	succeeded	0	hancom2020_pdf_driver_one_up	d04b61cbc149362432b5e91f7333b393dd009bfe578615bfd6de8e7d7720a49e
