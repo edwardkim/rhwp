@@ -69,6 +69,12 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 바이트까지 일치했다.
 [기준 Native 633쪽의 원본 TSV와 산출물 확인](../verification/issue7754-nine-fidelity/after-pr9322/native-base-before-and-after-pr9322.json)
 
+현재 후보 Native도 43조건의 전체 633쪽을 같은 공급 조건으로 대조했다. 이슈 대상
+583쪽의 최저는 98.08%였고 389쪽이 100.00%였다. 보조 사례 50쪽의 최저는 98.07%였고
+42쪽이 100.00%였다. 현재 기준보다 73쪽이 개선됐으며 하락은 없었다. 리베이스 직전
+후보와 633쪽의 PNG가 일치했고, 원본 TSV 86개의 바이트도 기존 정식 증적과 일치했다.
+[현재 Native의 전쪽 결과와 TSV](../verification/issue7754-nine-fidelity/after-pr9322/native-target-and-feature-comparison.json)
+
 시장구조조사 315쪽의 기준 Native 출력은 리베이스 전후로 동일했다. 각 쪽의 출력·독립
 Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인 3쪽(95.99%)과
 100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
