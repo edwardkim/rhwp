@@ -1,0 +1,186 @@
+{
+  "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+  "candidate": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+  "toolchain": "1.93.1",
+  "build_jobs": 1,
+  "font_isolation": {
+    "visible_fonts": [
+      "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+      "ttfs/opensource/NotoSansKR-Regular.ttf",
+      "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+      "ttfs/opensource/RHWPOldHangul-Regular.otf",
+      "ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+    ],
+    "native_references": {
+      "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/rust-native-lib.json",
+      "sha256": "f3d60404afeb2b2b767fe641c498d37610ea8cc925ff82b46fcadf4a64bb9ae2"
+    }
+  },
+  "preflight": [
+    {
+      "gate": "candidate-prepare",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "93c91d1ffe9c86ce423b2e84bba4929675c5bcb14d38775f7ef256d6f71b1bde",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 29.15
+    },
+    {
+      "gate": "manifest-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "93e861523623bcd84d57b808edb62af5af2aa82a"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "1de1ea1b43bbd69935395f7fbc85029253e3f46505962f912dbabeb9c495e912",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 12.88
+    },
+    {
+      "gate": "unit-tier-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "93e861523623bcd84d57b808edb62af5af2aa82a"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "dee262356bb2ad3d464c331a7888262da2eb25f6799e90c8cc53dcdcdecce9fe",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 95.51
+    },
+    {
+      "gate": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 143.01
+    }
+  ],
+  "clippy": [
+    {
+      "gate": "native-root-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "5d01fabf76b937e6ab99f3414044d3fb894d87520641a241ca880f1fe0505d34",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 202.47,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "ext4"
+    },
+    {
+      "gate": "native-skia-lib-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "67ec00376dc5f26ca09f89937db2ff1303ebfcdc5edea3e759718c727c9e29ba",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 174.95,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "ext4"
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "f222cc6da24a471358b428bf8c5d0d35ca3ef741c400f884ca2146f3c0e6ee2b",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 215.17,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "overlay"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--lib",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e6657624f7daa802f0eed83ec4f3481e7c01c05ef5b85224befdbf3a73e27d8c",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 174.44,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "overlay"
+    }
+  ],
+  "storage_recovery": {
+    "event": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "terminated_service": {
+        "ActiveState": "failed",
+        "MainPID": "0",
+        "Result": "exit-code",
+        "ExecMainStatus": "1"
+      },
+      "failed_gate": "workspace-clippy",
+      "completed_gates": 36,
+      "failed_stdout_sha256": "9084e1ed3994dede9d3c2f94c27bbda268d97efaccf05817fceafaae7c88222d",
+      "failed_state_sha256": "a36cf24282f0d8425383accb26dd08882e618b3c6de302dd6b3da39abc45bd72"
+    },
+    "event_record_sha256": "cd74308d591bc8474a5cd194163fd9100b2533d0ac55b76c1e297cc73050a894",
+    "target_directory": "/home/tsjang/rhwp/target/pr-review",
+    "target_mount": "overlay",
+    "writable_layer": "private temporary filesystem",
+    "launcher_sha256": "8adc5eb465970b471c35ee0a660979d7acb7123dc4eb70d23f85d6e32e6f6349"
+  }
+}
