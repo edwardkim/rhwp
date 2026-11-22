@@ -107,6 +107,11 @@ WASM 해시를 대조했다. 후보의 호스트 글꼴 입력 검사 첫 실행
 동일한 검사와 WASM을 양쪽에서 다시 실행하자 20회로 통과했고, 편집 후 내용·쪽 소속과 조판·
 그리기 해시가 일치했다. [Studio 기능별 검증 결과](../verification/issue7754-nine-fidelity/incoming-pr9318/studio-feature-journeys-after-pr9322.json)
 
+#9318의 Studio 원본 4종에서 화면·인쇄와 렌더러 요청 3종을 실행했다. 24조건 모두
+리베이스 전 검증과 같은 실제 렌더러를 사용했으며, 현재 기준과 후보의 PNG 24쌍이
+바이트까지 일치했다.
+[리베이스 후 Studio 화면·인쇄 PNG 해시](../verification/issue7754-nine-fidelity/incoming-pr9318/studio-screen-and-print-after-pr9322.json)
+
 후보 생산본과 공개 글꼴 497개를 사용해 공통 보호 문서 4종을 Native·fresh WASM으로
 실행했다. 8조건 모두 공식 표시값 100.00%였다.
 [공개 글꼴의 쪽별 TSV와 비교 이미지](../verification/issue7754-nine-fidelity/after-pr9322/public-font-gate/validation.json)
