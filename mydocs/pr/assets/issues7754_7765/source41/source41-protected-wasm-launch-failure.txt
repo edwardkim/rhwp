@@ -10,4 +10,3 @@ TimeoutError: Timed out after 30000 ms while waiting for the WS endpoint URL to 
     at async worker (file:///home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs:202:19)
     at async Promise.all (index 0)
     at async main (file:///home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs:516:5)
-

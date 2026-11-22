@@ -29,7 +29,7 @@
 29:  3c80172568 ! 29:  02b1750bb3 규제분석 원본별 내용 회귀와 수용 문서의 공통 corpus를 복원
     @@ tests/cases/text_overlap_baseline.rs: const DEFERRED_TEXT_OVERLAP_FIXTURES: &[&s
       ];
-     
+
       ## tests/fixtures/body_overflow_baseline.tsv ##
     +@@
     ++# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
@@ -61,12 +61,12 @@
     -+[2027] 온새미로 1 본교재.hwpx	0
     -+issue1891/86712_regulatory_analysis.hwpx	0
     -+복학원서.hwp	0
-     
+
       ## tests/fixtures/deferred_visual_regression_inputs.tsv ##
      @@ tests/fixtures/deferred_visual_regression_inputs.tsv: mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/hwp3-sample10-hwpx.
     @@ tests/fixtures/deferred_visual_regression_inputs.tsv: samples/table_giant_cell_o
       tests/fixtures/issue6923/156645214_240812(조간)_4개_아이돌굿즈_판매사업자_전상법의_위반행위_제재.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7771
-     
+
       ## tests/fixtures/off_canvas_baseline.tsv ##
     -@@ tests/fixtures/off_canvas_baseline.tsv: rowbreak-problem-pages.hwpx	2
     - task1718/table_giant_cell_overfill.hwp	2
@@ -102,11 +102,11 @@
     + task2070/hy_ladder3.hwpx	2
     + task2097/18095317_eogu_geumji.hwp	1
     + task2097/21217935_simsa_jipyo.hwp	3
-     
+
       ## tests/fixtures/oracle_page_count_baseline.tsv ##
      @@ tests/fixtures/oracle_page_count_baseline.tsv: samples/pr4093/outline_navigation_table_cell_number.hwpx	1	1
     @@ tests/fixtures/oracle_page_count_baseline.tsv: samples/pr4093/outline_navigation
-     
+
       ## tests/fixtures/oracle_page_count_verified_references.json ##
      @@
     -       "pages": 215,
@@ -161,7 +161,7 @@
     +     {
     +       "sample": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
     +       "source_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
-     
+
       ## tests/fixtures/overflow_cell_baseline.tsv ##
     -@@ tests/fixtures/overflow_cell_baseline.tsv: issue7216/tall_table_before.hwpx	21
     - # #8462 새 시험 고정본 2행 — 용지 밖으로 오프셋된 글상자 안의 글줄(한/글은 그 글상자를 그리지 않는다). 수정 전후 같은 자리이며 이 PR 은 흐름 밂만 바꾼다.
@@ -179,7 +179,7 @@
     + issue1891_external_bindata_link.hwpx	32
     + issue1921/59043_regulatory_analysis.hwp	1
     + issue7062/tac_object_host_line_height.hwp	1
-     
+
       ## tests/fixtures/render_page_samples.tsv ##
      @@ tests/fixtures/render_page_samples.tsv: mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.h
 30:  ca8f0dbf10 = 30:  c869e0ac1a 소스32 공식 교차 검증과 Studio fresh WASM 바인딩을 고정
@@ -499,7 +499,7 @@
     @@ tests/cases/oracle_page_count_baseline.rs: fn page_counts_do_not_drift_from_hanc
                           continue;
                       }
-     
+
     - ## tests/fixtures/oracle_page_count_verified_references.json ##
     -@@
     -       "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",

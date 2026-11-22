@@ -101,8 +101,13 @@
     {
       "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-unfiltered-lib.log",
       "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-unfiltered-lib.txt",
-      "sha256": "87526847a741316772c06a8c4d682027ab72efe40951b544414dd706d4c5ec5c",
-      "bytes": 343609
+      "sha256": "ed8531108b885a134d946bcb6d586c5892cd451015005587e903e963b1c706bf",
+      "bytes": 343608,
+      "original_log": {
+        "commit": "c1ead7045fb0bc6793f140c8001410e317d3eb1a",
+        "path": "mydocs/pr/assets/issues7754_7765/source42/rust-logs/source38-rust-native-unfiltered-lib.txt",
+        "sha256": "87526847a741316772c06a8c4d682027ab72efe40951b544414dd706d4c5ec5c"
+      }
     },
     {
       "source": "output/pr-review/issue7754-nine/logs/source38-rust-native-cli_exit_codes_native.log",

@@ -40,7 +40,7 @@
 40:  f14a4ceacd = 40:  6fc8d32466 안내문 첫 쪽 99.59% 개선과 어울림 대조군·분할 글꼴 근거를 기록
 41:  883815b324 ! 41:  e3aac69be2 분할 글꼴의 옛한글 glyph와 전진폭을 원문 주소 보존 경로에서 공유
     @@ src/renderer/pua_glyph.rs: pub(crate) fn candidate(cluster: &str) -> Option<char
-     
+
       ## src/renderer/skia/text_replay.rs ##
      @@ src/renderer/skia/text_replay.rs: impl SkiaTextReplay<'_> {
     -                             self.font_fallback_observer,

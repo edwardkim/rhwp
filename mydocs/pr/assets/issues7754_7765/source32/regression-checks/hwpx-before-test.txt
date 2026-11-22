@@ -14,4 +14,3 @@ failures:
     case0::first_nested_cut_reserves_blank_minimum_without_consuming_the_next_line
 
 test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.79s
-

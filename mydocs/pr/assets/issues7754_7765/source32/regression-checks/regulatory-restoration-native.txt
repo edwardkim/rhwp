@@ -42,4 +42,3 @@ test case3::continuation_keeps_the_terminal_text_on_its_own_page_once ... ok
 test case3::successive_saved_restarts_with_link_fields_keep_their_page_owners ... ok
 
 test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.55s
-

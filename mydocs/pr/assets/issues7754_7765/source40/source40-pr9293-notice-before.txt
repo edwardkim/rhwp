@@ -16,7 +16,7 @@ test at scripts/frontend-font-assets.test.mjs:99:1
   AssertionError [ERR_ASSERTION]: unregistered public fonts must fail the gate
   + actual - expected
   ... Skipped lines
-  
+
     [
       'assets/fonts/Cafe24Ssurround-v2.0.woff2',
       'assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2',
@@ -30,7 +30,7 @@ test at scripts/frontend-font-assets.test.mjs:99:1
       'tests/fixtures/native_font_family_names/family-contract.ttf',
       'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Bold.ttf',
       'tests/fixtures/native_font_styles/RHWPSuppliedStyle-Regular.ttf',
-  
+
       at TestContext.<anonymous> (file:///home/tsjang/rhwp-worktrees/pr-9293-font-notice/scripts/frontend-font-assets.test.mjs:115:10)
       at Test.runInAsyncScope (node:async_hooks:227:14)
       at Test.run (node:internal/test_runner/test:1201:25)

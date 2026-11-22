@@ -22,8 +22,13 @@
     {
       "source": "output/pr-review/issue7754-nine/source87-range-diff.txt",
       "retained": "mydocs/pr/assets/issues7754_7765/source46/source87-range-diff.txt",
-      "bytes": 8040,
-      "sha256": "53a07248e848db4bb9b241576a94d2d09faa95eabd117abc5d27089cdeb766e1"
+      "bytes": 8035,
+      "sha256": "2ef685e5fa190fc1f4c8a891200b7e37ad4f9dd3ef05280ea7cb4a7f78e44c22",
+      "original_log": {
+        "commit": "c1ead7045fb0bc6793f140c8001410e317d3eb1a",
+        "path": "mydocs/pr/assets/issues7754_7765/source46/source87-range-diff.txt",
+        "sha256": "53a07248e848db4bb9b241576a94d2d09faa95eabd117abc5d27089cdeb766e1"
+      }
     },
     {
       "source": "output/pr-review/issue7754-nine/source87-completed-incremental-cleanup.json",

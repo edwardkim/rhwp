@@ -24,4 +24,3 @@ test case0::continuation_keeps_the_terminal_text_on_its_own_page_once ... ok
 test case5::middle_fragment_without_carried_boxes_does_not_stretch_the_last_fragment ... ok
 
 test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.50s
-

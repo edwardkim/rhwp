@@ -22,7 +22,12 @@
       "exit_code": 1,
       "seconds": 0.3661708061117679,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source40-pr9293-notice-before.txt",
-      "sha256": "26410445588adf191e735eecdf7ffe36fbb5a793b968a7b6ecd7821134a986a0"
+      "sha256": "4634b100e149d6d19c794c6849c1ab0ecaf33cc655c7c5bea2cf1d2afb7aca09",
+      "original_log": {
+        "commit": "c1ead7045fb0bc6793f140c8001410e317d3eb1a",
+        "path": "mydocs/pr/assets/issues7754_7765/source40/source40-pr9293-notice-before.txt",
+        "sha256": "26410445588adf191e735eecdf7ffe36fbb5a793b968a7b6ecd7821134a986a0"
+      }
     },
     {
       "label": "source40-pr9293-notice-after",
