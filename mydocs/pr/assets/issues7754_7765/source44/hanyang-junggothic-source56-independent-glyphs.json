@@ -1,0 +1,200 @@
+{
+  "job_id": "b656772a-6ed7-45a8-baa7-72aa68a70f4a",
+  "input_sha256": "79c2714845d7ed0941534bc765665e7f0302dac1333abfce84d21daef3d10592",
+  "pdf_sha256": "b061c2fbd646ecb31ac1b6547fcd0656535b61fa965e19c6ef1442ebf38107e8",
+  "pages": 7,
+  "characters": 11187,
+  "expected_characters": 11187,
+  "exact_full_text": true,
+  "glyphs": [
+    {
+      "character": "·",
+      "code_point": 183,
+      "type3_sha256": "b4a4f0a94051530c5ea9a65ae01728ec6e58d7c127645f017969de4b8d3bc4b5",
+      "bytes": 116,
+      "advance": 381.0,
+      "bounds": [
+        149.0,
+        310.0,
+        233.0,
+        392.0
+      ]
+    },
+    {
+      "character": "․",
+      "code_point": 8228,
+      "type3_sha256": "9e0b5d4a648393b1e8142ff7e3903e084815babfa348f17e2a43ea33dac38793",
+      "bytes": 139,
+      "advance": 1000.0,
+      "bounds": [
+        425.0,
+        277.0,
+        575.75,
+        422.0
+      ]
+    },
+    {
+      "character": "～",
+      "code_point": 65374,
+      "type3_sha256": "158708910277eac088fca59d9c2ca7f73c6bd44177005050e8586379b471ea98",
+      "bytes": 263,
+      "advance": 1000.0,
+      "bounds": [
+        169.0,
+        300.8541660566814,
+        848.0,
+        426.042082477704
+      ]
+    },
+    {
+      "character": "“",
+      "code_point": 8220,
+      "type3_sha256": "252bca54841ab763237b02f72620b16826c3c37826c8c748648820529ed8f525",
+      "bytes": 279,
+      "advance": 375.0,
+      "bounds": [
+        71.0,
+        537.0,
+        324.0,
+        780.0
+      ]
+    },
+    {
+      "character": "”",
+      "code_point": 8221,
+      "type3_sha256": "f4855d0666ed38eb71d3e98519a9cbba456c2b2365364569e97d8ca6af17f20c",
+      "bytes": 278,
+      "advance": 375.0,
+      "bounds": [
+        60.0,
+        542.0,
+        313.0,
+        785.0
+      ]
+    },
+    {
+      "character": "•",
+      "code_point": 8226,
+      "type3_sha256": "2506433f6422778c6963a3dcbf11c311df80b06e75aad7a49a64e9be6c25a16a",
+      "bytes": 139,
+      "advance": 1000.0,
+      "bounds": [
+        315.75,
+        162.0,
+        687.0,
+        534.0
+      ]
+    },
+    {
+      "character": "∙",
+      "code_point": 8729,
+      "type3_sha256": "5e310374e02c09e499e80f353e306dddf4eef2067ee56e854d87bbfa2d6ed38d",
+      "bytes": 139,
+      "advance": 1000.0,
+      "bounds": [
+        376.25,
+        229.0,
+        623.75,
+        475.0
+      ]
+    },
+    {
+      "character": "○",
+      "code_point": 9675,
+      "type3_sha256": "fad77514f6f7cd6fff71b55ed68032a52664b0fa8a766bf691eb1c0a30762863",
+      "bytes": 301,
+      "advance": 1000.0,
+      "bounds": [
+        189.0,
+        36.0,
+        812.0,
+        662.0
+      ]
+    },
+    {
+      "character": "◦",
+      "code_point": 9702,
+      "type3_sha256": "aeb96fbb8f28029864380c8e96bb2ec9632bdecf17869103a169e715da8ae1a7",
+      "bytes": 307,
+      "advance": 1000.0,
+      "bounds": [
+        272.0,
+        125.0,
+        725.0,
+        572.0
+      ]
+    },
+    {
+      "character": "‧",
+      "code_point": 8231,
+      "type3_sha256": "d0c9f254deee71513ac1305d0b679a54f05477cf807fb46568f8e5e29105317f",
+      "bytes": 72,
+      "unsupported": "Empty source glyph outline; text mapping and advance alone are not a font source"
+    },
+    {
+      "character": "➜",
+      "code_point": 10140,
+      "type3_sha256": "3fc700edca2ea2bef8f12e40912e4717e3033f3366b1ed536f5e08a1d525912b",
+      "bytes": 293,
+      "advance": 1000.0,
+      "bounds": [
+        1.0,
+        -69.2823532428066,
+        1000.0,
+        762.1247423540365
+      ]
+    },
+    {
+      "character": "←",
+      "code_point": 8592,
+      "type3_sha256": "0e0ab969a6d696e48f4228f2777c842c0728484b13eb498a49d57a24c8cf4b41",
+      "bytes": 175,
+      "advance": 1000.0,
+      "bounds": [
+        3.0,
+        165.0,
+        998.0,
+        528.0
+      ]
+    },
+    {
+      "character": "↑",
+      "code_point": 8593,
+      "type3_sha256": "c3b12421bc99792a2b0d282c80ba141da9877126069e374665dfef347ee8aa70",
+      "bytes": 179,
+      "advance": 1000.0,
+      "bounds": [
+        317.0,
+        -148.0,
+        688.0,
+        847.0
+      ]
+    },
+    {
+      "character": "→",
+      "code_point": 8594,
+      "type3_sha256": "c2dd0a6cfa880d5f34a58f56a6f1e0319e247f75ff389ef52ff9f0ddde573257",
+      "bytes": 171,
+      "advance": 1000.0,
+      "bounds": [
+        1.0,
+        165.0,
+        996.0,
+        528.0
+      ]
+    },
+    {
+      "character": "↓",
+      "code_point": 8595,
+      "type3_sha256": "7c3a8657b24e37126eabbde2aed8669367c50f40d4f06be348c86abf20f99d1f",
+      "bytes": 177,
+      "advance": 1000.0,
+      "bounds": [
+        317.0,
+        -147.0,
+        688.0,
+        848.0
+      ]
+    }
+  ]
+}

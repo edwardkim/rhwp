@@ -1,0 +1,71 @@
+from pathlib import Path
+import json, subprocess, time, hashlib, os
+
+R = Path('/home/tsjang/rhwp')
+O = R / 'output/pr-review/issue7754-nine'
+P = O / 'source56-independent-print-state.json'
+config = json.loads((O / 'source56-independent-specimen-jobs.json').read_text())
+client = O / 'private-source56-independent-specimens/client/hwp2024_mcp_client_convert.mjs'
+env_file = '/home/tsjang/hwp-convert-2024/.env.local'
+s = {'started': time.time(), 'pid': os.getpid(), 'scope': config['purpose'], 'results': []}
+
+def save():
+    P.write_text(json.dumps(s, ensure_ascii=False, indent=2) + '\n')
+
+def call(operation, args):
+    r = subprocess.run(['/usr/local/bin/node', str(client), operation,
+                        '--env-file', env_file, *args], capture_output=True, timeout=180)
+    # Never persist raw server output or stderr: it may contain internal URLs.
+    if r.returncode:
+        raise RuntimeError('client_' + operation + '_exit_' + str(r.returncode))
+    return json.loads(r.stdout)
+
+def safe_status(result):
+    fields = ['status', 'job_id', 'engine', 'terminal']
+    out = {k: result[k] for k in fields if k in result}
+    details = result.get('result') or {}
+    out['print'] = {k: details[k] for k in ['engine', 'hancom_version',
+                    'pdf_print_method', 'pdf_output_mode'] if k in details}
+    return out
+
+try:
+    for job in config['jobs']:
+        record = dict(job, observations=[])
+        s['results'].append(record)
+        name = job['key'] + '-alphabet-2020.pdf'
+        started = call('start', ['--input', job['input'], '--target', 'pdf',
+                       '--engine', '2020', '--output-filename', name,
+                       '--timeout-seconds', '600'])
+        record['start'] = safe_status(started)
+        job_id = started['job_id']
+        save()
+        deadline = time.monotonic() + 900
+        while True:
+            current = call('status', ['--job-id', job_id])
+            clean = safe_status(current)
+            if not record['observations'] or record['observations'][-1] != clean:
+                record['observations'].append(clean)
+                save()
+            if current.get('terminal'):
+                assert current['status'] == 'succeeded', 'conversion_not_succeeded'
+                actual = current.get('result') or {}
+                assert actual.get('engine') == '2020', 'engine_unverified'
+                assert str(actual.get('hancom_version', '')).startswith('11.'), 'product_unverified'
+                assert actual.get('pdf_print_method') == 0, 'print_method_unverified'
+                assert actual.get('pdf_output_mode') == 'hancom2020_pdf_driver_one_up', 'print_mode_unverified'
+                break
+            assert time.monotonic() < deadline, 'conversion_status_timeout'
+            time.sleep(5)
+        downloaded = call('download', ['--job-id', job_id, '--output-dir', config['output_dir']])
+        output = Path(downloaded['output_path'])
+        sha = hashlib.sha256(output.read_bytes()).hexdigest()
+        assert sha == downloaded['sha256'], 'download_hash_mismatch'
+        record.update(output=str(output), pdf_sha256=sha, bytes=output.stat().st_size,
+                      print=clean['print'], complete=True)
+        save()
+    s['passed'] = all(r.get('complete') for r in s['results'])
+except Exception as e:
+    s['error'] = str(e) if isinstance(e, (RuntimeError, AssertionError)) else type(e).__name__
+finally:
+    s['ended'] = time.time()
+    save()
