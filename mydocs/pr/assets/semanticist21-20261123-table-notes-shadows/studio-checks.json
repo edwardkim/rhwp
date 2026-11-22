@@ -56,5 +56,5 @@
     "ESNext.Disposable"
   ],
   "browser": "Chrome 156 headless",
-  "runtime_wasm_sha256": "a3872e5dcc47614a84e4db0a7d5f99a74969101213cad09eda8d346cd93f094b"
+  "runtime_wasm_sha256": "e7ed8f68fb0e5c27866177ba0a4b98ee2b919752c8102d7237196af964b4b3db"
 }
