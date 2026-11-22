@@ -18,6 +18,12 @@
 같았다. 이 기록은 #9322 검증 입력의 출처다. 새 후보의 실제 출력, HWP 버전 경계에서의
 HWPX 저장·재열기, 결합 부호의 내용·편집 위치와 실제 화면·인쇄 backend는 새 base와 비교한다.
 
+37종의 입력·PDF를 쪽수와 해시로 고정했다. 검증에 사용하는 글꼴 다섯 파일은 원 PR의
+해시와 일치한다. 굴림은 현재 TTC의 첫 face를 독립 한컴 PDF 16개가 실제 사용한 GID 0과
+대조해 4,539개 표시에 쓰인 윤곽과 전진폭을 확인했다.
+[검증 입력 목록](../verification/issue7754-nine-fidelity/incoming-pr9322/inputs.tsv)과
+[글꼴 프로그램 대조](../verification/issue7754-nine-fidelity/incoming-pr9322/font-supply.json)를 사용한다.
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 

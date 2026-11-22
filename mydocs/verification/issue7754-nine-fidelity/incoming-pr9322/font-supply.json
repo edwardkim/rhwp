@@ -1,0 +1,239 @@
+{
+  "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+  "programs": [
+    {
+      "file": "HANBatang.ttf",
+      "expected_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "face_index": 0,
+      "identity": "file_exact"
+    },
+    {
+      "file": "HANBatangB.ttf",
+      "expected_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+      "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+      "face_index": 0,
+      "identity": "file_exact"
+    },
+    {
+      "file": "HANDotum.ttf",
+      "expected_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+      "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+      "face_index": 0,
+      "identity": "file_exact"
+    },
+    {
+      "file": "HANDotumB.ttf",
+      "expected_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+      "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+      "face_index": 0,
+      "identity": "file_exact"
+    },
+    {
+      "file": "gulim.ttc",
+      "expected_sha256": "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+      "face_index": 0,
+      "identity": "verified_observed_ttc_face"
+    },
+    {
+      "file": "msyi.ttf",
+      "expected_sha256": "80aef1c25135b945e9de7d09e6445c386405eb2e0ea7032d4cd00a2fe3eef0ae",
+      "sha256": "80aef1c25135b945e9de7d09e6445c386405eb2e0ea7032d4cd00a2fe3eef0ae",
+      "face_index": 0,
+      "identity": "file_exact"
+    }
+  ],
+  "verified_missing_glyph": {
+    "glyph_id": 0,
+    "units_per_em": 1024,
+    "advance": 1024,
+    "outline_sha256": "11497d2716f24cb632de611bb8d6e5423ab3c2da2690039118873e97c80f68f2",
+    "reference_pdf_count": 16,
+    "reference_pdfs": [
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-break-controls-2020.pdf",
+        "pdf_sha256": "46acd625a0e67e5cdbdd6d1b63c86b68c8c974c49bfece81525f6cac9a0b8b24",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 616,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf",
+        "pdf_sha256": "4e2af63d4cd287f45b258bfd6dd7a3bf93a7f6c4493e2c4a5e34e33cd2845ba6",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 10,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf",
+        "pdf_sha256": "17c2891460ae1715bcaebf7b9341e43f1e00d4cb83f502952026dbf325d653ba",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 20,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf",
+        "pdf_sha256": "03d874e45cfe51f7ba1d73d23aa8c4f6b7aa35ea0e395dd65403bbc86a07f683",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 10,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf",
+        "pdf_sha256": "c3a0c85f16e6e9408438bda55a703b25e3ea60bbaf61f2418ed25a6992c3d18d",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 20,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf",
+        "pdf_sha256": "a80a4b3cdc2c09b57b2706b3ccdd8dff811f397a7d418546ef23035deb913cb4",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 832,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf",
+        "pdf_sha256": "1ed6b7bedccd1ab138b9da65b0a1a0c7ee23a13963d1d9ff4d4de68367c30373",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 2677,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-run-boundaries-2020.pdf",
+        "pdf_sha256": "1c7e0a1b4f7c13173403a58071a891f4834569ad9b1c605c7f27dd897c335836",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 87,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-run-pairs-2020.pdf",
+        "pdf_sha256": "0fd49ad11a6fac5ddfac7ce4b01fa971ac3744bb7d104178dbca0a577b19c829",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 167,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-seal-mixed-2020.pdf",
+        "pdf_sha256": "10da6a83f894ce9fc2ecf22c7f2ff7e455ce213ba8c9abb89f6cabc2a202580f",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 2,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-seal-ten-2020.pdf",
+        "pdf_sha256": "dc1ce1a9bb92c0c0efab1089bd4ef74d5790b0a013d971f7d97d2a2aeefab431",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 10,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf",
+        "pdf_sha256": "af0f46cbc65984afd845f273a60af9486ee4b2476fe408a01b203def567156e9",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 84,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6-2020.pdf",
+        "pdf_sha256": "d269741fccd472fdf81ab4159cfe7dd773484d740fade75b2b625d4ff7378fc9",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 1,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/neighbors-v6-2020.pdf",
+        "pdf_sha256": "0bcdf1ed67959fa858271a4b58453b4906fd4781f5872a76cd5f9f07c818a0b9",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 1,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf",
+        "pdf_sha256": "70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 1,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      },
+      {
+        "pdf": "pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf",
+        "pdf_sha256": "1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9",
+        "page": 1,
+        "glyph_id": 0,
+        "count": 1,
+        "embedded_program": {
+          "pdf_font_name": "INPILL+Gulim",
+          "embedded_font_sha256": "6123f2e35b6ebbe7b3915316561e823a96b3a5637d3d2c4d27d339f7c0c47b13"
+        }
+      }
+    ],
+    "measurement_ko": "독립 한컴 PDF에서 실제 GID 0으로 그린 내장 굴림의 윤곽 명령·좌표·전진폭을 설치 컬렉션 첫 face와 대조했다."
+  },
+  "other_traced_gids": [],
+  "font_environment": {
+    "path": "mydocs/pr/assets/pr9280/windows-font-environment.json",
+    "sha256": "7ac0e909653ac1beca0ee6d630766e3d39f73a687e8dd3c972b6578c928bdc2a"
+  },
+  "scope_ko": "PR #9322의 입력·독립 Print 대조에 사용할 글꼴 프로그램이다. 굴림은 파일 전체의 신원이 다르며 관측한 GID 0의 윤곽과 전진폭을 확인했다."
+}
