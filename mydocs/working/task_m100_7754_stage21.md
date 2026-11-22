@@ -60,6 +60,7 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 
 좌표 회귀가 지정된 다섯 쪽은 현재 후보에서도 두 경로 모두 98% 이상이었다. #7754의
 안내서 2쪽은 Native·fresh WASM에서 각각 99.99%였고 #7765의 네 쪽은 각각 100.00%였다.
+전쪽 실행에서 얻은 다섯 쪽의 PNG는 리베이스 직전 확대 판독에 사용한 PNG와 모두 일치했다.
 #7765 HWP 10쪽은 새 WASM 확대 이미지에서 일곱 줄을 다시 판독했다. 독립 Print와
 각 줄의 첫 잉크 행 차이는 최대 1px였다.
 [선정 다섯 쪽의 TSV와 확대 판독](../verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json)

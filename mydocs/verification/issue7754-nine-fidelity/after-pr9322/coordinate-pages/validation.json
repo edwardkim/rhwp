@@ -71,7 +71,20 @@
             323,
             422
           ],
-          "observation": "세 줄의 옛한글과 다음 글자 원점이 맞는다. 강조 배경색과 외곽선 일부에 작은 차이가 보인다."
+          "observation": "세 줄의 옛한글과 다음 글자 원점이 맞는다. 강조 배경색과 외곽선 일부에 작은 차이가 보인다.",
+          "whole_document_render": {
+            "image_sha256": [
+              "bd058e76e9e0915420ea45e540c547ee9c217fa4d32589523c117b93642143a8",
+              "f122205da1889f5283e953ea3ca43a16961bed94b3f2285832c512920b8ddddb",
+              "cfc35b85ea4c76683c7b9e234ec2530261a535320329a29b20d1d2a4900ce4bf"
+            ],
+            "matches_focused_capture": true,
+            "matches_previous_whole_document_capture": true,
+            "review_panel": {
+              "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7754-plain-p002-old-hangul-origins.png",
+              "sha256": "146ffbf2ce545774a7dea1edb46e34afe772d8579aa2f624d2d0cc60e1bacb33"
+            }
+          }
         }
       ]
     },
