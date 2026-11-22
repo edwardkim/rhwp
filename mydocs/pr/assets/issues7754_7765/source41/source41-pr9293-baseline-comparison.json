@@ -1,0 +1,1209 @@
+{
+  "recorded": "2026-11-22T05:32:59.621685+00:00",
+  "pr": 9293,
+  "recorded_head": "b4faa9e6d6633ce0fed56cd0540eea5ea01c3645",
+  "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "verified_conditions": 46,
+  "verified_pages": 4046,
+  "original_floor_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "current_floor_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "floor_raise_commit": "3be32a741cffdf100c6870a28fb606b33bce1851",
+  "original_floor_failures": [],
+  "current_floor_failures": [
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "25",
+      "old_floor": "99.94",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.94"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "31",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "32",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "34",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "44",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "49",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "50",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "53",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "60",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "61",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "67",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "72",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "73",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "74",
+      "old_floor": "99.85",
+      "current_floor": "99.88",
+      "pr9293_candidate": "99.85"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "79",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "85",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "86",
+      "old_floor": "99.95",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.95"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "87",
+      "old_floor": "99.92",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.92"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "88",
+      "old_floor": "99.93",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.93"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "89",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "91",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "92",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "93",
+      "old_floor": "99.91",
+      "current_floor": "99.97",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "94",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "95",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "96",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "25",
+      "old_floor": "99.94",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.94"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "31",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "32",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "34",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "44",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "49",
+      "old_floor": "99.95",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.95"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "50",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "53",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "60",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "61",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "72",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "73",
+      "old_floor": "99.95",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.95"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "74",
+      "old_floor": "99.86",
+      "current_floor": "99.88",
+      "pr9293_candidate": "99.86"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "79",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "85",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "86",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "87",
+      "old_floor": "99.93",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.93"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "88",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "89",
+      "old_floor": "99.87",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.87"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "91",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "92",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "93",
+      "old_floor": "99.91",
+      "current_floor": "99.97",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "94",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "95",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "96",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "1",
+      "old_floor": "99.79",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.79"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "2",
+      "old_floor": "99.79",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.79"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "4",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "6",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "7",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "8",
+      "old_floor": "99.69",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.69"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "62",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "71",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "1",
+      "old_floor": "99.81",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.81"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "2",
+      "old_floor": "99.79",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.79"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "4",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "6",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "7",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "8",
+      "old_floor": "99.67",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.67"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "62",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "71",
+      "old_floor": "99.92",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.92"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "4",
+      "old_floor": "99.89",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.89"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "8",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "24",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "45",
+      "old_floor": "99.89",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.89"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": "4",
+      "old_floor": "99.90",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.90"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": "24",
+      "old_floor": "99.92",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.92"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": "45",
+      "old_floor": "99.89",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.89"
+    }
+  ],
+  "changed_floor_rows": [
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "25",
+      "old_floor": "99.94",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.94"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "31",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "32",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "34",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "44",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "49",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "50",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "53",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "60",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "61",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "67",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "72",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "73",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "74",
+      "old_floor": "99.85",
+      "current_floor": "99.88",
+      "pr9293_candidate": "99.85"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "79",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "85",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "86",
+      "old_floor": "99.95",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.95"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "87",
+      "old_floor": "99.92",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.92"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "88",
+      "old_floor": "99.93",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.93"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "89",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "91",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "92",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "93",
+      "old_floor": "99.91",
+      "current_floor": "99.97",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "94",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "95",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "native",
+      "page": "96",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "25",
+      "old_floor": "99.94",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.94"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "31",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "32",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "34",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "44",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "49",
+      "old_floor": "99.95",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.95"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "50",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "53",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "60",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "61",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "72",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "73",
+      "old_floor": "99.95",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.95"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "74",
+      "old_floor": "99.86",
+      "current_floor": "99.88",
+      "pr9293_candidate": "99.86"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "79",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "85",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "86",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "87",
+      "old_floor": "99.93",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.93"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "88",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "89",
+      "old_floor": "99.87",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.87"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "91",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "92",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "93",
+      "old_floor": "99.91",
+      "current_floor": "99.97",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "94",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "95",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "chemical",
+      "backend": "wasm",
+      "page": "96",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "1",
+      "old_floor": "99.79",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.79"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "2",
+      "old_floor": "99.79",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.79"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "4",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "6",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "7",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "8",
+      "old_floor": "99.69",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.69"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "62",
+      "old_floor": "99.97",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.97"
+    },
+    {
+      "document": "spec13",
+      "backend": "native",
+      "page": "71",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "1",
+      "old_floor": "99.81",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.81"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "2",
+      "old_floor": "99.79",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.79"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "4",
+      "old_floor": "99.96",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.96"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "6",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "7",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "8",
+      "old_floor": "99.67",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.67"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "62",
+      "old_floor": "99.98",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.98"
+    },
+    {
+      "document": "spec13",
+      "backend": "wasm",
+      "page": "71",
+      "old_floor": "99.92",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.92"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "4",
+      "old_floor": "99.89",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.89"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "8",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.99"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "24",
+      "old_floor": "99.91",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.91"
+    },
+    {
+      "document": "decree",
+      "backend": "native",
+      "page": "45",
+      "old_floor": "99.89",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.89"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": "4",
+      "old_floor": "99.90",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.90"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": "8",
+      "old_floor": "99.99",
+      "current_floor": "100.00",
+      "pr9293_candidate": "100.00"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": "24",
+      "old_floor": "99.92",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.92"
+    },
+    {
+      "document": "decree",
+      "backend": "wasm",
+      "page": "45",
+      "old_floor": "99.89",
+      "current_floor": "100.00",
+      "pr9293_candidate": "99.89"
+    }
+  ],
+  "conclusion": "The PR record passes its original pinned floor. Its TSVs were not measured against the later raised current devel floor. Current task does not alter either floor."
+}
