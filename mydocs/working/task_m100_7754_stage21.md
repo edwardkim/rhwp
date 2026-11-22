@@ -94,6 +94,13 @@ HWP에서 각각 0.02%p 낮아졌고 HWPX에서 각각 0.04%p 높아졌다. HWPX
 좌표 회귀 5쪽과 대표 구간 5쪽의 Native와 독립 Print PNG는 확대 판독에 쓴 PNG와 모두 일치했다.
 [현재 Native의 전쪽 결과와 TSV](../verification/issue7754-nine-fidelity/after-pr9322/native-target-and-feature-comparison.json)
 
+현재 후보 fresh WASM은 이슈 대상 583쪽에서 최저 98.11%, 100.00% 378쪽이었다. 보조 사례
+50쪽은 최저 98.07%, 100.00% 42쪽이었다. 현재 기준보다 91쪽이 개선됐고 하락은 없었다.
+633쪽 모두 리베이스 직전 후보와 PNG가 일치했다. 좌표 검사 5쪽과 대표 구간 5쪽의
+전쪽 실행 PNG도 확대 판독에 쓰인 PNG와 일치했다. 시장구조조사 후보 315쪽은
+최저 98.40%, 100.00% 212쪽이었다.
+[현재 fresh WASM의 전쪽 원본 TSV와 10쪽 판독](../verification/issue7754-nine-fidelity/after-pr9322/wasm-target-and-feature-comparison.json)
+
 복학원서·배포용 의회운영 문서·공개 HWP의 fresh WASM 전쪽 최저는 각각 98.99%, 99.80%,
 99.94%였다. 대표 쪽의 Native·fresh WASM·독립 Print PNG가 리베이스 직전 확대 판독
 이미지와 일치했다. 복학원서 1쪽의 fresh WASM 일치율은 현재 기준의 96.59%에서 98.99%로 올라갔다.
