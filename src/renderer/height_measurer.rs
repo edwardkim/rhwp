@@ -846,6 +846,9 @@ pub struct MeasuredTable {
     /// 직전 측정이 아니라 이 값을 하한으로 써야 undo/삭제로 내용이 줄었을 때
     /// 행이 로드 배분까지 되돌아온다. 비편집 측정은 None(자기 자신이 기준).
     pub baseline_row_heights: Option<Vec<f64>>,
+    /// 행별 하한 기준(`baseline_row_heights`, 없으면 이 측정)을 잰 때의 행 선언 높이(px).
+    /// 편집으로 줄인 행 선언만큼 그 행의 하한을 낮추는 데 쓴다. 비어 있으면 낮추지 않는다.
+    pub baseline_declared_row_heights: Vec<f64>,
     /// 조각이 실제 수용한 물리 행 상자의 소유 범위. 원본 전체 측정은 비어 있다.
     pub fragment_block_frames: Vec<(usize, usize)>,
     /// 캡션 높이 (px)
@@ -872,7 +875,7 @@ pub struct MeasuredTable {
     /// 단일 행 블록이면 row_block_end[r] == r + 1.
     pub row_block_end: Vec<usize>,
 }
-crate::storage::clone_fields!(MeasuredTable, {para_index, control_index, unwrapped_table_depth, total_height, row_heights, row_frame_heights, baseline_row_heights, fragment_block_frames, caption_height, cell_spacing, cumulative_heights, repeat_header, has_header_cells, cells, page_break, row_block_start, row_block_end});
+crate::storage::clone_fields!(MeasuredTable, {para_index, control_index, unwrapped_table_depth, total_height, row_heights, row_frame_heights, baseline_row_heights, baseline_declared_row_heights, fragment_block_frames, caption_height, cell_spacing, cumulative_heights, repeat_header, has_header_cells, cells, page_break, row_block_start, row_block_end});
 
 /// 측정된 행 높이가 문서의 **행별 선언 높이**와 이미 일치하는가.
 ///
@@ -4090,6 +4093,7 @@ let body_height=match nested_body_heights
                 total_height: 0.0,
                 row_heights: storage.filled(rc, 0.0)?,
                 baseline_row_heights: None,
+                baseline_declared_row_heights: Vec::new(),
                 row_frame_heights: None,
                 fragment_block_frames: Vec::new(),
                 unwrapped_table_depth: 0,
@@ -6598,12 +6602,16 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
         }
         let (row_block_start, row_block_end) =
             compute_row_blocks_with_storage(table, row_heights.len(), storage)?;
+        let baseline_declared_row_heights = storage.collect(
+            (0..row_heights.len()).map(|row| declared_row_height_px(table, row, self.dpi)),
+        )?;
         Ok(MeasuredTable {
             para_index,
             control_index,
             total_height,
             row_heights,
             baseline_row_heights: None,
+            baseline_declared_row_heights,
             row_frame_heights,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -6659,10 +6667,25 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
             return Ok(());
         }
         mt.baseline_row_heights = Some(crate::storage::try_clone(baseline, storage)?);
+        // 하한은 편집하지 않은 행의 로드 배분을 지키는 값이다. 편집으로 행 선언을 줄인 행은
+        // 줄인 만큼 하한도 낮춰야 화면이 새 선언을 따른다. 낮추지 않으면 로드 높이에 묶여
+        // 다시 열기 전까지 줄어들지 않는다.
+        let declared_now = std::mem::replace(
+            &mut mt.baseline_declared_row_heights,
+            crate::storage::try_clone(&prev.baseline_declared_row_heights, storage)?,
+        );
+        let declared_shrink = |row: usize| match (
+            prev.baseline_declared_row_heights.get(row),
+            declared_now.get(row),
+        ) {
+            (Some(before), Some(now)) => (before - now).max(0.0),
+            _ => 0.0,
+        };
         let mut changed = false;
-        for (h, b) in mt.row_heights.iter_mut().zip(baseline.iter()) {
-            if *h + 0.05 < *b {
-                *h = *b;
+        for (row, (h, b)) in mt.row_heights.iter_mut().zip(baseline.iter()).enumerate() {
+            let floor = b - declared_shrink(row);
+            if *h + 0.05 < floor {
+                *h = floor;
                 changed = true;
             }
         }
@@ -7695,6 +7718,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -7721,6 +7745,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0, 40.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -7754,6 +7779,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![50.0, 30.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -7779,6 +7805,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -7815,6 +7842,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![50.0, 30.0, 25.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -7846,6 +7874,7 @@ mod tests {
             total_height: 0.0,
             row_heights: vec![],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -7871,6 +7900,7 @@ mod tests {
             total_height: 50.0,
             row_heights: vec![50.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -7998,6 +8028,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![20.0, 30.0, 25.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -8034,6 +8065,7 @@ mod tests {
             total_height: 50.0,
             row_heights: vec![20.0, 30.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -8064,6 +8096,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![10.0, 10.0, 10.0, 10.0, 10.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -8100,6 +8133,7 @@ mod tests {
             total_height: 100.0,
             row_heights: vec![10.0, 10.0, 10.0, 10.0, 10.0],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,
@@ -8128,6 +8162,7 @@ mod tests {
             total_height: 0.0,
             row_heights: vec![],
             baseline_row_heights: None,
+            baseline_declared_row_heights: Vec::new(),
             row_frame_heights: None,
             fragment_block_frames: Vec::new(),
             unwrapped_table_depth: 0,

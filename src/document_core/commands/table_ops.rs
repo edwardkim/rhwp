@@ -1453,6 +1453,26 @@ impl DocumentCore {
         // 대상 셀의 적용 직전 id — 아래 borrow 블록이 정상 완료되면 채워진다.
         let mut target_bf_before = 0u16;
 
+        // 높이를 정하지 않은 행은 표 높이를 다시 적을 때 지금 그린 높이로 센다.
+        // 행 수가 다른 측정(일괄 편집 중 줄을 넣은 표 등)은 쓰지 않는다.
+        let drawn_rows: Vec<u32> = self
+            .measured_tables
+            .get(section_idx)
+            .and_then(|tables| {
+                tables.iter().find(|t| {
+                    t.para_index == parent_para_idx
+                        && t.control_index == control_idx
+                        && t.unwrapped_table_depth == 0
+                })
+            })
+            .map(|t| {
+                t.row_heights
+                    .iter()
+                    .map(|&h| crate::renderer::px_to_hwpunit(h, self.dpi).max(0) as u32)
+                    .collect()
+            })
+            .unwrap_or_default();
+
         let (needs_reflow, wrap_changed, reflow_para_count) = {
             let mut needs_reflow = false;
             let mut size_changed = false;
@@ -1483,10 +1503,12 @@ impl DocumentCore {
                 size_changed |= width_changed;
                 cell.width = v;
             }
-            if let Some(v) = top_u32("height") {
-                size_changed |= cell.height != v;
+            let height_changed = top_u32("height").is_some_and(|v| {
+                let changed = cell.height != v;
                 cell.height = v;
-            }
+                changed
+            });
+            size_changed |= height_changed;
             if let Some(v) = top_i16("paddingLeft") {
                 needs_reflow |= cell.padding.left != v;
                 cell.padding.left = v;
@@ -1546,6 +1568,14 @@ impl DocumentCore {
             }
             if size_changed {
                 table.update_ctrl_dimensions();
+                if height_changed {
+                    let rows = usize::from(table.row_count);
+                    table.sync_ctrl_height_from_rows(if drawn_rows.len() == rows {
+                        &drawn_rows
+                    } else {
+                        &[]
+                    });
+                }
                 if !width_changed {
                     // 행마다 칸 경계가 다르면 열별 최댓값 합은 실제 표 너비보다 크다.
                     // 높이만 바꿀 때 선언 너비와 HWP 원본 헤더는 그대로 둔다.
