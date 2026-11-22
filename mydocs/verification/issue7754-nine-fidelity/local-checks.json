@@ -283,6 +283,20 @@
       "log_sha256": "21448d56ecb00a9e46f42c975cafd4d96d47fe4fad36220a83b8c39cb9b50897"
     }
   ],
+  "workspace_build": {
+    "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "target/pr-review"
+    ],
+    "exit_code": 0,
+    "seconds": 352.3137687551789,
+    "log_sha256": "50c97d454c677fe19e96295b285bfea82418bcde7a669dfc5ca8ae92f21ae402"
+  },
   "minimum_font_environment": {
     "visible_font_list_sha256": "0429940ab2fa83a69c2274cf85ce5c3b1adc56595a00484353a396a83df8691e",
     "lint_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
