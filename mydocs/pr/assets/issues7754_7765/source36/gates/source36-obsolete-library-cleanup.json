@@ -1,0 +1,145 @@
+{
+  "recorded": 1795311909.0832307,
+  "scope": "Obsolete ended Source4/30/32/33 probe libraries only; no shared target mutation, no active producer input changed",
+  "active_refs": [],
+  "files": [
+    {
+      "path": "output/pr-review/issue7754-nine/source32-password-fonttrace-minfont-v3/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source30-hwpx-regression-before/librhwp-source32.rlib",
+      "bytes": 336936130,
+      "sha256": "3cce5746b1b230e66a961ffc71979791a78eab2eaa7b65aa59ed946716817ab4",
+      "nlink": 2,
+      "inode": 2101752,
+      "blocks": 658088
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-password-fonttrace-minfont-v4/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source33-native-libraries/librhwp-base5665.rlib",
+      "bytes": 167749390,
+      "sha256": "921eb76f92541b4b88b4f2f4344ae0a85707397d8b6e4f3bfcbcc99fef40f333",
+      "nlink": 1,
+      "inode": 2121086,
+      "blocks": 327648
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source33-native-libraries/librhwp-candidate.rlib",
+      "bytes": 167630546,
+      "sha256": "068e456f1a85f0213b12611eb215fdc24b83b60a19098470fc500d7dc1145515",
+      "nlink": 1,
+      "inode": 2121098,
+      "blocks": 327416
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source30-watermark-existing/librhwp-source30.rlib",
+      "bytes": 336936130,
+      "sha256": "3cce5746b1b230e66a961ffc71979791a78eab2eaa7b65aa59ed946716817ab4",
+      "nlink": 2,
+      "inode": 2101752,
+      "blocks": 658088
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/regulatory-resave/librhwp-source4.rlib",
+      "bytes": 166123402,
+      "sha256": "4c7174be8cf136c0deb0ef94f80424bab564d607d9e67e4c83605f482e906626",
+      "nlink": 1,
+      "inode": 1987241,
+      "blocks": 324472
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-dash-regression-minfont/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-hwpx-regression-minfont-v2/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-hwpx-regression-minfont/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-existing-minfont/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-password-fonttrace-minfont/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-restored-minfont-first/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-regulatory-restoration-minfont-v2/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-password-fonttrace-minfont-v2/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-dash-regression-minfont-v2/librhwp-source32.rlib",
+      "bytes": 166384006,
+      "sha256": "b738f666accb13dee8a78618548747befe7bb667fb783e46f58517da94b13995",
+      "nlink": 1,
+      "inode": 2111288,
+      "blocks": 324984
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source32-regulatory-restoration-minfont/librhwp-source32.rlib",
+      "bytes": 166384786,
+      "sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+      "nlink": 11,
+      "inode": 2105377,
+      "blocks": 324984
+    }
+  ],
+  "logical_bytes_unlinked": 3171992250,
+  "distinct_inodes": 6
+}

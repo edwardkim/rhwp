@@ -129,3 +129,30 @@ WASM 실제 편집·저장/재열기의 완료를 대신하지 않는다.
 참조가 없는지 확인한 뒤 정확한 경로로 삭제해 2,054,539,230바이트를 확보했다.
 공유 target과 현재 생산물·원본·PDF·TSV·PNG는 보존했다.
 workspace build는 같은 최소 글꼴 환경에서 재실행해 통과했고 전체 nextest가 실행 중이다.
+
+
+## 원본 OTF 백업과 보호 51쪽의 원인 분리
+
+`/home/tsjang/Downloads/hft2otf-deploy-20261117/previous-installed-otf.zip`에서
+기존 보호 기록의 SHA와 정확히 같은 OTF 247개를 찾았다. 파일은 Git 밖의 비공개
+검증 경로에만 준비했고 시스템에 설치하지 않았다. 원본 프로그램 ID(face 0)도 기록했다.
+정확한 옛 OTF를 단순히 `--font-path`로 공급한 세 쪽의 값은 변하지 않았다.
+따라서 파일 확보만으로 실제 선택이나 전체 보호 통과를 선언하지 않는다.
+
+sample16 HWP 2022의 51쪽은 새 `SPSMJ.otf`에 추가된 U+25CB 매핑이 영향을 주었다.
+기존 정본 SPSMJ에는 이 매핑이 없다. 제품·입력·PDF·DPI·compat·기준 JSON을 유지하고,
+별도 bwrap 프로세스에서 현재 SPSMJ 경로에 정확한 옛 파일만 보이도록 하자
+raw가 99.44%에서 100.00%로 복원됐다. 두 Native PNG의 변경은 제목의 두 원 기호
+영역에만 있고, 그 아래 본문·표의 픽셀은 전부 같다. 같은 배율로 독립 PDF와 직접 읽었다.
+Native ordinary typeface trace도 확인했지만 이를 모든 projected outline의 선택 증거로
+확대하지 않는다. wrapper의 `/dev/null` 준비·mount 순서 오류는 별도로 보존했다.
+
+정식 근거는 `source36/protected/original-font-context/`다. 이 단일 Native 쪽은
+fresh WASM·정본 전체·미확보 글꼴과 정확한 outline 환경의 검증을 대신하지 않는다.
+시스템 폰트와 제품의 TTF → 검증된 TTC → CFF 순서는 변경하지 않았다.
+
+전체 nextest의 컴파일은 계속 실행한다. swap 포화의 I/O 경합을 줄이기 위해
+이번 작업의 시각 검증 supervisor만 일시 정지했고 이미 시작한 자식은 종료시키지 않았다.
+Cargo에는 신호를 보내지 않았다. Rust 종료 또는 45분 뒤 자동 재개하며 목표 작업은 계속한다.
+종료한 옛 probe library 17개도 활성 참조가 없음을 확인해 unlink했다. hardlink를 포함하므로
+3,171,992,250바이트는 논리 크기이며 실제 확보 용량으로 주장하지 않는다. 공유 target은 보존했다.
