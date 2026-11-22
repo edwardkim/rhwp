@@ -40,10 +40,16 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 실행했다. CanvasKit 40조�
 그리기를 마쳤다. 두 렌더러의 대표 인쇄 캡처에서 단독 결합 부호의 점선 원과 정상 결합을
 확인했다. [실제 렌더러와 PNG 해시](../verification/issue7754-nine-fidelity/incoming-pr9322/studio/studio-verification.json)
 
-새 `devel`의 fresh WASM에서 중첩 표 HWP와 한컴 HWPX에 각각 30줄·70줄을 편집했다.
+새 기준과 후보의 fresh WASM에서 중첩 표 HWP와 한컴 HWPX에 각각 30줄·70줄을 편집했다.
 편집 직후와 HWP·HWPX 저장 후 재열기의 12상태 모두 줄 순서·개수·쪽 소속이 독립 Print와
-일치했다. 42쪽의 실루엣 일치율은 최저 98.07%다.
+일치했다. 각각 42쪽의 실루엣 일치율은 최저 98.07%였고 기준과 후보의 쪽별 점수와 PNG가
+모두 일치했다.
 [중첩 표 쪽별 TSV와 입력·산출물 해시](../verification/issue7754-nine-fidelity/after-pr9322/nested/wasm/validation.json)
+
+#7754의 암호 HWPX는 같은 독립 한컴 Print PDF로 대조했다. Native와 fresh WASM 모두
+암호 원본과 평문 대조군의 24쪽 PNG가 각각 바이트까지 일치했다. 기준의 전쪽 최저값은
+Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
+[암호 HWPX 쪽별 TSV와 PNG 해시](../verification/issue7754-nine-fidelity/after-pr9322/issue7754-encrypted-parity/validation.json)
 
 #9318의 OLE 입력은 새 기준과 후보의 Native·fresh WASM에서 HWP와 HWPX로 각각 두 번
 편집·저장하고 다시 열었다. 변환본과 편집본 20개의 독립 CFB·XML 검사에서 두 OLE 개체의
