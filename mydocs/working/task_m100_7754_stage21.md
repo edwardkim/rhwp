@@ -58,6 +58,12 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 [Native 쪽별 TSV와 산출물 해시](../verification/issue7754-nine-fidelity/after-pr9322/nested/native/validation.json) ·
 [WASM 쪽별 TSV와 산출물 해시](../verification/issue7754-nine-fidelity/after-pr9322/nested/wasm/validation.json)
 
+좌표 회귀가 지정된 다섯 쪽은 현재 후보에서도 두 경로 모두 98% 이상이었다. #7754의
+안내서 2쪽은 Native·fresh WASM에서 각각 99.99%였고 #7765의 네 쪽은 각각 100.00%였다.
+#7765 HWP 10쪽은 새 WASM 확대 이미지에서 일곱 줄을 다시 판독했다. 독립 Print와
+각 줄의 첫 잉크 행 차이는 최대 1px였다.
+[선정 다섯 쪽의 TSV와 확대 판독](../verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json)
+
 시장구조조사 315쪽의 기준 Native 출력은 리베이스 전후로 동일했다. 각 쪽의 출력·독립
 Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인 3쪽(95.99%)과
 100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
