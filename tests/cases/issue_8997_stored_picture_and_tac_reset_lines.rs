@@ -1,9 +1,9 @@
 //! 관계형·고정형 — [#8997] 캡션 그림이 흡수한 빈 host 줄과 리셋 앞 TAC 그림 줄을 저장 사다리대로 조판한다.
-//! 주석 갱신: 2026-11-23 04:19 KST (새 파일)
+//! 주석 갱신: 2026-11-23 05:36 KST (새 파일, devel `93e8615236` 위 rebase 뒤 재측정)
 //!
 //! 입력: `mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp`
 //! (한컴 2020 Print `pdf/issue8997/1543000-202100035-food-security-report-2020.pdf`, 141쪽).
-//! 수정 전(devel `622af208ee`) rhwp 는 143쪽이었다.
+//! 수정 전(devel `93e8615236`) rhwp 는 143쪽이었다.
 //! - 구역 2 문단 952 는 빈 host 줄(`sw=0`) 하나와 캡션 위 그림(비TAC·위아래·문단 기준 오프셋 0·위아래
 //!   여백 283HU)을 가진다. 한/글은 host 줄을 그림 띠에 흡수해 다음 문단(953) 저장 줄을 그림 상자
 //!   아래끝(20984 = 앞 간격 원점 0 + 여백 283 + 캡션 그림 + 여백 283)에 둔다. 조판은 캡션 그림이면
@@ -20,7 +20,7 @@
 //!
 //! 측정: 2026-11-23, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
 //! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 내용 실루엣), 글꼴은 맑은 고딕(Regular·Bold)·
-//! 바탕 + `ttfs/opensource` 를 Native·WASM 두 경로에 공급. source `6ae490cdba`(코드) 위 시험 커밋.
+//! 바탕 + `ttfs/opensource` 를 Native·WASM 두 경로에 공급. source `ee3bc54011`(코드) 위 시험 커밋.
 //!
 //! - 대상 쪽(1·2·97·98): Native 98.55·99.75·98.89·100.00, fresh WASM 99.46·99.84·98.88·100.00.
 //! - 전체 141쪽(한컴 Print 와 같음). 전쪽 최저 Native 24.29(93쪽)·WASM 25.16(93쪽). 90 미만 9쪽
