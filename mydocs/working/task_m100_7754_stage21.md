@@ -27,6 +27,10 @@ HWPX 저장·재열기, 결합 부호의 내용·편집 위치와 실제 화면�
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
+리베이스 전 생산본 `b75ce19774a4b059b26c2d134d49d5f7ce4a93b2`의 최소 글꼴 전체 Rust 검사는
+13,984개 통과, 실패 0개, 설정에 따라 제외한 45개로 끝났다.
+[검사 명령과 종료 기록](../verification/issue7754-nine-fidelity/local-checks.json)
+
 Stage 20의 보호 검증과 원래 아홉 이슈의 증빙은 이전 기준과 생산 SHA에 연결한다. 새 base와
 후보에서 동일한 Harness와 글꼴·연결 그림 공급으로 원래 대상, 보호 정본, #9318·#9322 기능을
 다시 대조한다. 시각·최소 글꼴 Rust·Studio 필수 검증을 완료한 뒤 PR을 제출한다.

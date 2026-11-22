@@ -326,5 +326,31 @@
       },
       "log_sha256": "f6366d0a7d3fb3a0429a7b916f70cd9ee9cded0d9e1816fd8d4cd022e539a0c7"
     }
+  },
+  "full_rust_integration": {
+    "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+    "scope_ko": "PR #9322 리베이스 전 생산본",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--tests",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "exit_code": 0,
+    "passed": 13984,
+    "failed": 0,
+    "slow": 15,
+    "skipped": 45,
+    "test_runtime_seconds": 1221.52,
+    "total_seconds": 4367.596827131929,
+    "log_sha256": "08f88af6eb58d1216a42b3596dfb9c7d027f9b4e0ba3630a45f1e422c280b121"
   }
 }
