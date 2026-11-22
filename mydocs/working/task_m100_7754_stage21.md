@@ -50,6 +50,15 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 실행했다. CanvasKit 40조�
 속성과 payload가 일치했으며 편집한 텍스트도 보존됐다.
 [반복 저장의 실제 산출물](../verification/issue7754-nine-fidelity/incoming-pr9318/ole-repeat-save-after-pr9322.json)
 
+후보 생산본과 공개 글꼴 497개를 사용해 공통 보호 문서 4종을 Native·fresh WASM으로
+실행했다. 8조건 모두 공식 표시값 100.00%였다.
+[공개 글꼴의 쪽별 TSV와 비교 이미지](../verification/issue7754-nine-fidelity/after-pr9322/public-font-gate/validation.json)
+
+후보 Studio의 TypeScript와 렌더러 계약 검사가 통과했다. 단위 검사 2,834개 중 웹 WASM 환경에서
+실행된 2,832개와 같은 소스의 Node WASM 바인딩으로 재실행한 2개가 통과했다. 실제 WASM의
+글꼴 추적 계약 검사 2개도 통과했다.
+[Studio 로컬 검증](../verification/issue7754-nine-fidelity/after-pr9322/studio-local-validation.json)
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
