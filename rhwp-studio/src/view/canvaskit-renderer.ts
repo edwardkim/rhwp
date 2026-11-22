@@ -3,7 +3,7 @@ import { compatibilityGlyphView } from './canvaskit/compatibility-glyph-view.ts'
 import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
 import { ordinaryTextFontFamilies, parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
-import { isSylotiShapingRun, shapePositionedSyloti } from './canvaskit/positioned-syloti-text';
+import { isSylotiShapingRun, shapePositionedSyloti, type PositionedGlyphs } from './canvaskit/positioned-syloti-text';
 import { enclosedPua, enclosedPuaInnerFaces, enclosedPuaInnerText } from '../core/enclosed-pua.ts';
 import { enclosedPuaGeometry } from './canvaskit/enclosed-pua-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
@@ -3479,16 +3479,24 @@ export class CanvasKitLayerRenderer {
 
         // Shape with the same physical face that will paint the glyph IDs.
         // Several paint passes can share the cluster offsets and shaped glyphs.
-        const shapedFontIndex = positionedSyloti ? candidateManagers.findIndex((manager, i) =>
-          manager && codePoints.every((ch, j) =>
-            /[\s\u200c\u200d]/u.test(ch) || candidateGlyphIds[i][j] > 0)) : -1;
-        const shapedManager = candidateManagers[shapedFontIndex];
-        const shaped = shapedManager && shapePositionedSyloti(this.canvasKit, shapedManager,
-          codePoints, replayPositions!, fontSize, ratio, CanvasKitLayerRenderer.MAX_SHAPED_TEXT_WIDTH,
-          CanvasKitLayerRenderer.MAX_TEXT_RUN_CODE_POINTS);
-        if (positionedSyloti && !shaped) {
-          this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
-          return;
+        let shaped: PositionedGlyphs | null = null;
+        let shapedFont = font;
+        if (positionedSyloti) {
+          for (const [i, manager] of candidateManagers.entries()) {
+            if (!manager || codePoints.some((ch, j) =>
+              !/[\s\u200c\u200d]/u.test(ch) && !candidateGlyphIds[i][j])) continue;
+            shaped = shapePositionedSyloti(this.canvasKit, manager, codePoints, replayPositions!,
+              fontSize, ratio, !!style.bold, !!style.italic, CanvasKitLayerRenderer.MAX_SHAPED_TEXT_WIDTH,
+              CanvasKitLayerRenderer.MAX_TEXT_RUN_CODE_POINTS);
+            if (shaped) {
+              shapedFont = candidateFonts[i];
+              break;
+            }
+          }
+          if (!shaped) {
+            this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
+            return;
+          }
         }
         const drawPass = (
           fillPaint: SkPaint,
@@ -3497,12 +3505,11 @@ export class CanvasKitLayerRenderer {
           strokePaint?: SkPaint,
         ) => {
           if (shaped) {
-            const selected = candidateFonts[shapedFontIndex];
             const range = { start: 0, length: glyphReplayText.length };
             this.drawCachedGlyphs(canvas, shaped.glyphs, shaped.positions, originX + offsetX,
-              originY + baselineShift + offsetY, selected, fillPaint, range);
+              originY + baselineShift + offsetY, shapedFont, fillPaint, range);
             if (strokePaint) this.drawCachedGlyphs(canvas, shaped.glyphs, shaped.positions,
-              originX + offsetX, originY + baselineShift + offsetY, selected, strokePaint, range);
+              originX + offsetX, originY + baselineShift + offsetY, shapedFont, strokePaint, range);
             return;
           }
           if (verticalPresentationText !== undefined) {

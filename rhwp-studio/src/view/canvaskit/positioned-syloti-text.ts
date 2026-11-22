@@ -17,8 +17,9 @@ export interface PositionedGlyphs {
 
 export function shapePositionedSyloti(
   kit: CanvasKit, manager: FontMgr, points: readonly string[], origins: readonly number[],
-  fontSize: number, ratio: number, maxWidth: number, maxGlyphs: number,
+  fontSize: number, ratio: number, bold: boolean, italic: boolean, maxWidth: number, maxGlyphs: number,
 ): PositionedGlyphs | null {
+  if (!manager.countFamilies()) return null;
   // SkParagraph reports glyph clusters in UTF-8, caret queries in UTF-16,
   // and the paint stream supplies one origin per displayed scalar.
   const utf8ToUtf16 = new Map<number, number>();
@@ -33,7 +34,9 @@ export function shapePositionedSyloti(
     unit += point.length;
   }
   const style = new kit.ParagraphStyle({
-    maxLines: 1, textStyle: { fontFamilies: [manager.getFamilyName(0)], fontSize },
+    maxLines: 1, textStyle: { fontFamilies: [manager.getFamilyName(0)], fontSize,
+      fontStyle: { weight: bold ? kit.FontWeight.Bold : kit.FontWeight.Normal,
+        slant: italic ? kit.FontSlant.Italic : kit.FontSlant.Upright } },
   });
   const builder = kit.ParagraphBuilder.Make(style, manager);
   let paragraph: Paragraph | null = null;

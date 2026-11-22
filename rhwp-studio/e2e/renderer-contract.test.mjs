@@ -1007,9 +1007,11 @@ function runExecutableTextReplay(op, {
   };
   const fallbackTypeface = { face: 'fallback' };
   const symbolTypeface = symbolGlyphIds ? { face: 'symbol' } : null;
-  const manager = shapedTextAvailable ? { getFamilyName: () => 'Physical test face' } : null;
+  const manager = shapedTextAvailable ? { countFamilies: () => 1, getFamilyName: () => 'Physical test face' } : null;
   const renderer = new CanvasKitLayerRendererRuntime({
     Font: FakeFont,
+    FontWeight: { Normal: 400, Bold: 700 },
+    FontSlant: { Upright: 0, Italic: 1 },
     StrokeCap: { Round: 'round' },
     StrokeJoin: { Round: 'round' },
     PathEffect: {
@@ -2584,7 +2586,7 @@ assert.equal(
 const positionedSyloti = {
   type: 'textRun', bbox: { x: 3, y: 4, width: 60, height: 20 }, baseline: 15,
   text: 'ꠇ꠆꠆', displayText: 'ꠇ꠆◌꠆', displayPositions: [0, 13, 28, 42, 42],
-  style: { fontSize: 20, ratio: 1.5 },
+  style: { fontSize: 20, ratio: 1.5, bold: true, italic: true },
 };
 const scriptCluster = (start, left) => ({
   graphemeClusterTextRange: { start, end: start + 2 }, graphemeLayoutBounds: [left, 0, left + 10, 20],
@@ -2599,6 +2601,8 @@ const ink = shapedInk.events.find(e => e.type === 'canvas.drawGlyphs');
 assert.deepEqual(ink?.glyphIds, [121, 122, 123, 124]);
 assert.deepEqual(ink?.positions, [0, 0, 9, -2, 28, 0, 38.5, -1]);
 assert.deepEqual([ink?.x, ink?.y], [3, 19]);
+assert.deepEqual(shapedInk.events.find(e => e.type === 'paragraphStyle.create')?.style.textStyle.fontStyle,
+  { weight: 700, slant: 1 });
 assert.equal(shapedInk.unsupportedOps.size, 0);
 const astralPrefix = runExecutableTextReplay({ ...positionedSyloti, text: '𝟘꠆',
   displayText: '𝟘◌꠆', displayPositions: [0, 19, 32, 32] }, {
