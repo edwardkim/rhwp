@@ -6,7 +6,7 @@
 - `documents[].backends`에서 문서 key와 backend를 선택한다.
 - `font_set`이 가리키는 파일명·SHA-256·배열 순서로 글꼴을 공급하고,
   `font_environment`가 있으면 해당 환경 JSON을 `--font-environment`로 지정한다.
-- 선택 우선순위는 원 TTF → 실제 글리프를 확인한 TTC face → CFF다.
+- 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_*`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는
   `reproduction_validation`에 기록한다.
 
