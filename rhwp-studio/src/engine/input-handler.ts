@@ -5186,6 +5186,28 @@ export class InputHandler {
     this.eventBus.emit('footnoteModeChanged', false);
   }
 
+  /** 저장된 메모 범위에 표시·포커스만 복원한다. */
+  focusMemoRange(start: DocumentPosition, end: DocumentPosition, rect: import('@/core/types').CursorRect): boolean {
+    if (!this.canEditHyperlink()) return false;
+    if (start.charOffset === end.charOffset) {
+      this.cursor.clearSelection();
+      this.cursor.moveTo(start);
+    } else if (start.parentParaIndex !== undefined) {
+      this.cursor.clearSelection();
+      this.cursor.moveTo(start);
+      this.cursor.setAnchor();
+      this.cursor.moveTo(end);
+    } else if (!this.cursor.selectRange(start, end)) {
+      return false;
+    }
+    this.cursor.resetPreferredX();
+    this.active = true;
+    this.updateCaret();
+    this.scrollCaretIntoView(rect);
+    this.focusTextarea();
+    return true;
+  }
+
   /** 커서를 지정 위치로 이동하고 캐럿을 표시한다. 성공하면 true 반환. */
   moveCursorTo(pos: DocumentPosition): boolean {
     // 이동 전 위치가 유효한지 사전 검증 (경고 로그 방지)

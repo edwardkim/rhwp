@@ -4057,33 +4057,46 @@ export class WasmBridge {
     return JSON.parse(this.doc.getMemoList());
   }
 
-  /** 목록에는 상위 문단 첫 쪽이 아니라 실제 기준 글자가 표시되는 쪽을 쓴다. */
-  getMemoDisplayPage(memo: MemoInfo): number | null {
+  /** 조회용 위치, 이동할 범위, 본문 표시가 같은 렌더 좌표를 사용한다. */
+  getMemoTarget(memo: MemoInfo): { start: DocumentPosition; end: DocumentPosition; rect: CursorRect } | null {
     const { sectionIndex: sec, paraIndex: para, startCharIdx: start, endCharIdx: end, path } = memo;
     if (para === null || start === null || end === null) return null;
-    if (this.pageCount === 1) return 1;
     try {
-      let pageIndex: number | undefined;
+      let position: DocumentPosition = { sectionIndex: sec, paragraphIndex: para, charOffset: start };
+      let endOffset = end;
+      let rect: CursorRect;
       if (path?.length) {
-        const pathJson = JSON.stringify(path.map(entry => ({
+        const cellPath = path.map(entry => ({
           controlIndex: entry.controlIndex,
           cellIndex: entry.type === 'cell' ? entry.cellIndex : 0,
           cellParaIndex: entry.paraIndex,
-        })));
-        const cellPara = path[path.length - 1].paraIndex;
-        const glyph = start === end ? undefined
-          : this.getSelectionRectsInCellByPath(sec, para, pathJson, cellPara, start, cellPara, start + 1)[0];
-        pageIndex = glyph?.pageIndex ?? this.getCursorRectByPath(sec, para, pathJson, start).pageIndex;
+        }));
+        const pathJson = JSON.stringify(cellPath);
+        const cellPara = cellPath[cellPath.length - 1].cellParaIndex;
+        if (start < 0 || end < start || end > this.getCellParagraphLengthByPath(sec, para, pathJson)) return null;
+        position = { ...position, ...cellPath[0], paragraphIndex: cellPara, parentParaIndex: para, cellPath,
+          isTextBox: path[path.length - 1].type === 'textbox' };
+        rect = (start !== end
+          ? this.getSelectionRectsInCellByPath(sec, para, pathJson, cellPara, start, cellPara, start + 1)[0]
+          : undefined) ?? this.getCursorRectByPath(sec, para, pathJson, start);
       } else {
-        const from = this.textToLogicalOffset(sec, para, start);
-        const glyph = start === end ? undefined : this.getSelectionRects(sec, para, from, para, from + 1)[0];
-        pageIndex = glyph?.pageIndex ?? this.getCursorRect(sec, para, from).pageIndex;
+        if (start < 0 || end < start || end > Array.from(this.getHyperlinkContext({ section: sec, para, cellPath: [] }).text).length) return null;
+        position.charOffset = this.textToLogicalOffset(sec, para, start);
+        endOffset = this.textToLogicalOffset(sec, para, end);
+        rect = (start !== end
+          ? this.getSelectionRects(sec, para, position.charOffset, para, position.charOffset + 1)[0]
+          : undefined) ?? this.getCursorRect(sec, para, position.charOffset);
       }
-      return pageIndex !== undefined && Number.isInteger(pageIndex) && pageIndex >= 0
-        && pageIndex < this.pageCount ? pageIndex + 1 : null;
+      if (!Number.isInteger(rect.pageIndex) || rect.pageIndex < 0 || rect.pageIndex >= this.pageCount) return null;
+      return { start: position, end: { ...position, charOffset: endOffset }, rect };
     } catch {
       return null;
     }
+  }
+
+  getMemoDisplayPage(memo: MemoInfo): number | null {
+    const target = this.getMemoTarget(memo);
+    return target ? target.rect.pageIndex + 1 : null;
   }
 
   insertMemo(target: HyperlinkTarget, start: number, end: number, author: string, text: string): void {

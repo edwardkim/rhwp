@@ -151,3 +151,23 @@
     -1px 0 0 var(--doc-paper);
   white-space: nowrap;
 }
+
+.memo-marker-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  overflow: clip;
+}
+.memo-marker-layer > button {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 1px solid var(--ui-border-strong);
+  border-radius: 4px;
+  background: var(--ui-accent-bg);
+  color: var(--ui-text);
+  cursor: pointer;
+  pointer-events: auto;
+}

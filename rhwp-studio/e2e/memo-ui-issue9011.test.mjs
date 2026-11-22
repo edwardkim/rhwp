@@ -260,6 +260,19 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
       await selectMemo(page, memo.id);
       assert.equal(await page.$eval('#memo-text', el => el.value), memo.text);
       assert.match(await page.$eval('select[aria-label="문서의 메모"]', el => el.selectedOptions[0].textContent), /표 셀 2/);
+      const expectedOffset = memo.endCharIdx;
+      await page.focus('.memo-go-to');
+      await page.keyboard.press('Enter');
+      await page.waitForSelector('#memo-text', { hidden: true });
+      const focus = await page.evaluate(() => window.__inputHandler.getCursorPosition());
+      assert.equal(focus.charOffset, expectedOffset);
+      assert.equal(focus.cellPath.at(-1).cellIndex, 1);
+      assert.equal(await dirty(page), false, '메모 이동은 저장 상태를 바꾸지 않는다');
+      const mark = `.memo-marker-layer button[data-memo-id="${memo.id}"]`;
+      await page.waitForSelector(mark, { visible: true });
+      await page.click(mark);
+      assert.equal(await page.$eval('#memo-text', el => el.value), memo.text);
+      assert.equal(await dirty(page), false, '표시에서 메모를 열어도 문서는 바뀌지 않는다');
       await close(page);
       console.log(`  ${format.toUpperCase()} ${pass}회차: 본문과 두 셀의 메모 및 대상 위치 보존`);
     }
