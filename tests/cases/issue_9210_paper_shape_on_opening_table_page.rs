@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9210] 쪽을 넘겨 나뉜 표를 가진 문단의 용지 기준 글 앞 도형은 표의 첫 조각이 있는 쪽(앵커 쪽)에 한 번만 그린다.
-//! 주석 갱신: MEASURE_TIME KST (새 파일)
+//! 주석 갱신: 2026-11-22 17:02 KST (새 파일)
 //!
 //! 입력: 공개 문서 `samples/issue9038/sme_announcement_split_table_successor.hwpx`
 //! (중소벤처기업부 사업공고 첨부 HWPX, edwardkim/rhwp#9038).
@@ -15,7 +15,12 @@
 //! - 관계형: 두 사각형은 문단 251 표의 첫 조각과 같은 쪽(43쪽)에 각각 한 번씩 그려지고, 표의 이어진
 //!   조각이 있는 44~46쪽에는 없다. 세로 오프셋이 큰 `ci=1` 이 `ci=2` 보다 아래에 놓이며 둘 다 쪽 상자 안이다.
 //!
-//! MEASURE_BLOCK
+//! 측정: 2026-11-22, source devel `bd3cd17133`(이 파일 외 코드 변경 없음),
+//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, `silhouette_raw_match_percent`,
+//! 글꼴 `ttfs/opensource`. 전체 46쪽(= PDF).
+//! - 43쪽(대상): Native 97.36%, fresh WASM 97.41%. 두 사각형 위치를 PDF 와 확대 대조함.
+//! - 전쪽 최저: Native 90.83%(17쪽), fresh WASM 93.38%(17쪽) — 모두 90% 이상.
+//! 증거: `mydocs/pr/assets/issue_9210/`(native·wasm TSV, 43쪽 review·overlay PNG).
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
