@@ -4,6 +4,28 @@
 # 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.
 # 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.
 # 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-break-controls-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-break-controls.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-advances.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-batang-bold.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-dotum-bold.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-dotum.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-line-widths.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-long-lines.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-run-boundaries-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-run-boundaries.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-run-pairs-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-run-pairs.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-seal-mixed-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-seal-mixed.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-seal-ten-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-seal-ten.hwp	1	1
 # 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v5-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
 mydocs/pr/assets/pr9280/neighbors-v5.hwp	1	1
 # 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v6-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.

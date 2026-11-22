@@ -32,6 +32,7 @@ CI 와 회귀 시험은 만들어진 TSV 만 읽는다 — Rust 쪽에 PDF 파�
 """
 import argparse
 import collections
+from ctypes import ArgumentError
 import io
 import hashlib
 from pathlib import Path
@@ -212,6 +213,16 @@ def inactive_oracle_samples():
     return retired
 
 
+def oracle_page_text(page):
+    text = page.get_textpage()
+    try:
+        return squeeze(text.get_text_range())
+    except (RecursionError, ArgumentError):
+        # PDFium excludes unmapped glyphs from text indices. Its range helper
+        # can exhaust Python's stack while skipping a long run of them.
+        return squeeze(text.get_text_bounded())
+
+
 def oracle_pages_and_text(git_path, tmp):
     """정답지 PDF 의 (쪽 수, 쪽별 본문). 쪽별로 두는 이유는 수록 범위 확인 때문이다."""
     import pypdfium2 as pdfium
@@ -219,11 +230,8 @@ def oracle_pages_and_text(git_path, tmp):
         if subprocess.run(['git', 'show', 'HEAD:' + git_path], stdout=fh).returncode != 0:
             return None, []
     try:
-        doc = pdfium.PdfDocument(tmp)
-        n = len(doc)
-        pages = [squeeze(doc[i].get_textpage().get_text_range()) for i in range(n)]
-        doc.close()
-        return n, pages
+        with pdfium.PdfDocument(tmp) as doc:
+            return len(doc), [oracle_page_text(page) for page in doc]
     except Exception:
         return None, []
 

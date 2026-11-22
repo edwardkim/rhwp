@@ -1,9 +1,11 @@
-//! 관계형·고정형 회귀. HWP5와 저장한 HWPX의 문자·서식·문단 수, 단독 부호의 표시와 후속 문자 위치를 검사한다.
-//! 주석 갱신 2026-11-22 21:04 KST. 직전 변경 eb83e873566cf6dd079c4d8be430b1fa386e6af1 (2026-11-22 19:51:19 KST).
-//! 2026-11-22 Windows 한컴 2020 독립 Print와 96 dpi 2px 실루엣을 전쪽 비교했다. 각 원본·저장본은 한 쪽이다.
-//! 구형·현대 원본의 Native/fresh WASM은 각각 100.00%/100.00%, 99.64%/99.63%다.
-//! 단독 부호의 HWP와 HWPX 중 낮은 Native/fresh WASM 값은 기본 99.47%/99.46%, 경계 99.22%/99.19%, 대체 받침 99.17%/98.97%다.
-//! 원본별 값과 독립 표시 문자열은 `mydocs/pr/assets/pr9280/`의 `focus-*.tsv`, `syloti-pages.tsv`, `syloti-hancom.tsv`에 있다.
+//! 관계형·고정형 회귀. HWP5와 HWPX의 원문·서식·단독 부호 표시, 후속 글자 간격과 줄별 기호 수를 검사한다.
+//! 주석 갱신 2026-11-22 22:29 KST. 직전 변경 f3340bd4c5160976e25268a19347d16f8ab17a7d (2026-11-22 21:30:54 KST).
+//! 2026-11-22 Windows 한컴 2020 독립 Print와 96 dpi 2px 실루엣을 전쪽 비교했다. 각 원본과 저장본은 한 쪽이다.
+//! 구형·현대 원본과 재저장본의 Native/fresh WASM은 각각 100.00%/100.00%, 99.97%/99.97%다.
+//! 단독 부호 HWP와 HWPX의 전쪽 최저값은 기본 99.95%/99.95%, 경계 99.84%/99.82%, 대체 받침 99.17%/98.97%다.
+//! 10–85개 및 85–400개 기호의 두 문서와 각 HWPX 재열기는 Native/fresh WASM 모두 100.00%다.
+//! 독립 인쇄의 기호 윤곽·다음 B 사이와 30개 문단의 줄별 개수를 대조했다. 원본별 TSV와 Print 확대는
+//! `mydocs/pr/assets/pr9280/`의 `focus-*.tsv`, `syloti-pages.tsv`, `indic-line-breaks.tsv`, `indic-visual.tsv`에 연결한다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::document::Document;
@@ -358,6 +360,100 @@ fn isolated_syloti_hasanta_preserves_source_positions_and_paints_printed_cluster
                 let c = |para: usize| lines[para].following_c.expect("후속 라틴 C");
                 assert_eq!(c(1), c(4), "단독 부호 반복은 후속 C를 밀지 않는다");
                 assert!(c(5) > c(3), "원문에 입력한 점선 원은 글자 폭을 차지한다");
+            }
+        }
+    }
+}
+
+fn paragraph_lines(
+    node: &rhwp::renderer::render_tree::RenderNode,
+    paragraph: usize,
+) -> Vec<&rhwp::renderer::render_tree::RenderNode> {
+    use rhwp::renderer::render_tree::RenderNodeType;
+
+    if matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(paragraph))
+    {
+        return vec![node];
+    }
+    node.children
+        .iter()
+        .flat_map(|child| paragraph_lines(child, paragraph))
+        .collect()
+}
+
+#[test]
+fn an_unmapped_modern_sign_leaves_room_for_its_outline_before_the_next_run() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+
+    let original = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp"
+    ))
+    .unwrap();
+    let reopened = DocumentCore::from_bytes(&original.export_hwpx_native().unwrap()).unwrap();
+    for core in [&original, &reopened] {
+        let tree = core.build_page_render_tree(0).unwrap();
+        let lines = paragraph_lines(&tree.root, 14);
+        let line = lines.first().expect("U+A832 followed by B");
+        let glyph = |text: &str| {
+            line.children
+                .iter()
+                .find_map(|node| match &node.node_type {
+                    RenderNodeType::TextRun(run) if run.text == text => {
+                        Some((node.bbox.x, run.style.font_size))
+                    }
+                    _ => None,
+                })
+                .unwrap_or_else(|| panic!("missing text run {text}"))
+        };
+        let (sign_x, em) = glyph("꠲");
+        let (next_x, _) = glyph("B");
+        // Hancom Print places the next character one Gulim glyph-zero advance
+        // from the sign. The embedded font has 1024 units per em and per glyph.
+        assert!(
+            (next_x - sign_x - em).abs() <= 2.0,
+            "sign {sign_x}, B {next_x}, em {em}"
+        );
+    }
+}
+
+#[test]
+fn missing_glyph_ink_fits_inside_the_independently_printed_line_breaks() {
+    use rhwp::renderer::render_tree::RenderNodeType;
+    use std::collections::BTreeMap;
+
+    let reference = include_str!("../../mydocs/pr/assets/pr9280/indic-line-breaks.tsv");
+    for name in ["indic-number-line-widths", "indic-number-long-lines"] {
+        let filename = format!("mydocs/pr/assets/pr9280/indic/{name}.hwp");
+        let original = DocumentCore::from_bytes(&std::fs::read(&filename).unwrap()).unwrap();
+        let reopened = DocumentCore::from_bytes(&original.export_hwpx_native().unwrap()).unwrap();
+        let mut printed: BTreeMap<usize, Vec<usize>> = BTreeMap::new();
+        for record in reference.lines().skip(1) {
+            let row: Vec<_> = record.split('\t').collect();
+            if row[0] == name {
+                printed
+                    .entry(row[1].parse().unwrap())
+                    .or_default()
+                    .push(row[5].parse().unwrap());
+            }
+        }
+        assert_eq!(printed.len(), 15);
+        for core in [&original, &reopened] {
+            assert_eq!(core.page_count(), 1);
+            let page = core.build_page_render_tree(0).unwrap();
+            for (&paragraph, counts) in &printed {
+                let lines = paragraph_lines(&page.root, paragraph);
+                assert_eq!(lines.len(), counts.len(), "{name} paragraph {paragraph}");
+                for (line, &count) in lines.iter().zip(counts) {
+                    let text: String = line
+                        .children
+                        .iter()
+                        .filter_map(|node| match &node.node_type {
+                            RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                            _ => None,
+                        })
+                        .collect();
+                    assert_eq!(text, "꠲".repeat(count), "{name} paragraph {paragraph}");
+                }
             }
         }
     }
