@@ -143,6 +143,11 @@ fresh WASM의 새 기준도 정본 보호 23종·2,023쪽을 완료했다. 같�
 세 파일의 해시도 대조했다.
 [fresh WASM 기준 정본 보호 전쪽 비교](../verification/issue7754-nine-fidelity/after-pr9322/protected/wasm-base-before-and-after-pr9322.json)
 
+새 기준과 후보의 fresh WASM 정본 보호 23종·2,023쪽에서 PNG가 모두 일치했다. 보호 하한
+미달과 쪽수 누락은 없었다. 자동 공급 문서의 실제 글꼴 선택 기록과 sample10의 원본 연결
+그림을 대조했다. Native를 포함한 정본 보호 46조건·4,046쪽을 모두 확인했다.
+[fresh WASM 정본 보호 전쪽 비교](../verification/issue7754-nine-fidelity/after-pr9322/protected/wasm/wasm-validation.json)
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
