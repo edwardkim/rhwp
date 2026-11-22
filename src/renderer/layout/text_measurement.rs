@@ -2074,7 +2074,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         .as_ref()
         .is_some_and(|program| program.advance_em(chars[i]).is_some())
     {
-        super::super::composer::hancom_symbol_display_key(chars[i])
+        chars[i]
     } else {
         super::super::composer::single_scalar_display_char(chars[i])
     };

@@ -1,0 +1,29 @@
+{
+  "id": "windows-hancom-2020-print",
+  "substitutions": {
+    "함초롬바탕": "HCR Batang"
+  },
+  "preserveSourceMetrics": true,
+  "glyphFallbacks": {
+    "함초롬바탕": [
+      "Gulim",
+      "Microsoft Yi Baiti"
+    ],
+    "HCR Batang": [
+      "Gulim",
+      "Microsoft Yi Baiti"
+    ]
+  },
+  "selectedPrograms": {
+    "함초롬바탕": {
+      "family": "HCR Batang",
+      "query": "함초롬바탕",
+      "programId": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "trueType": true,
+      "openTypeCff": false
+    }
+  },
+  "trueTypeFaces": [
+    "HCR Batang"
+  ]
+}

@@ -495,6 +495,13 @@ impl Document {
             .map(|(_, d)| d.as_slice())
     }
 
+    /// Paragraph text in HWP5 before 5.0.1.6 uses the legacy Hancom symbol encoding.
+    pub(crate) fn uses_legacy_body_symbols(&self) -> bool {
+        let v = &self.header.version;
+        self.provenance.format == crate::model::provenance::SourceFormat::Hwp5
+            && (v.major, v.minor, v.build, v.revision) < (5, 0, 1, 6)
+    }
+
     /// [#8310] 이 HWP 가 원본 HWPX 의 저장 줄 계약(원본 좌표·저장 줄 없음)을 지니는가.
     ///
     /// `/RhwpHwpxOrigin` 의 값이 [`HWPX_ORIGIN_SOURCE_LINES`] 일 때만 참이다. 종전 값(`1`)의

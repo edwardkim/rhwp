@@ -1,6 +1,10 @@
-//! #5140 follow-up: an independent Hancom SaveAs pair establishes the 5.0.1.6
-//! body-text boundary and the UTF-16 expansion. See the sample README for hashes.
+//! 관계형·고정형 회귀. 같은 본문의 HWP5 버전에 따른 문자·서식 보존과 문단 수를 검사한다.
+//! 주석 갱신 2026-11-22 19:22 KST. 직전 변경 70b7bf355e66c6d435afeb969295d2625977598d (2026-11-22 18:37:23 KST).
+//! Windows 한컴 2020 독립 Print와 96 dpi 2px 실루엣을 비교했다. 두 원본은 각 한 쪽이다.
+//! 구형 원본은 Native/fresh WASM 100.00%/100.00%, 현대 원본은 98.46%/98.49%였다.
+//! 근거: `mydocs/pr/assets/pr9280/`, `pdf/issue5140-version-boundary/`. 글꼴 설치 없이 문자 관계를 검사한다.
 
+use rhwp::document_core::DocumentCore;
 use rhwp::model::document::Document;
 use rhwp::parser::parse_document;
 use rhwp::serializer::hwpx::{
@@ -186,6 +190,80 @@ fn edits_survive_hwp_and_hwpx_reopen_and_resave() {
                 texts(again.document()),
                 "cross save {name}"
             );
+        }
+    }
+}
+
+#[test]
+fn modern_body_characters_and_legacy_rules_survive_reopening_for_extraction() {
+    let pairs = [
+        ('\u{A807}', '┬'),
+        ('\u{A80E}', '┘'),
+        ('\u{A810}', '│'),
+        ('\u{A832}', '═'),
+    ];
+    for revision in [5, 6] {
+        for format in ["hwp", "hwpx"] {
+            let name = format!(
+                "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.{revision}.{format}"
+            );
+            let source = std::fs::read(&name).expect(&name);
+            let core = DocumentCore::from_bytes(&source).unwrap();
+            for bytes in [
+                source,
+                core.export_hwp_native().unwrap(),
+                core.export_hwpx_native().unwrap(),
+            ] {
+                let reopened = DocumentCore::from_bytes(&bytes).unwrap();
+                let text = reopened.extract_page_text_native(0).unwrap();
+                for (raw, rule) in pairs {
+                    let expected = if revision == 5 { rule } else { raw };
+                    let label = format!("U+{:04X}: A{expected}B", raw as u32);
+                    assert!(text.lines().any(|line| line == label), "{name}: {label}");
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn editing_and_repeated_saves_keep_the_four_neighbor_symbols_and_bold_start() {
+    let typed = "\u{A805}\u{A809}\u{A847}\u{A849}😀\t";
+    for revision in [5, 6] {
+        let name =
+            format!("samples/issue5140-version-boundary/legacy-symbols-v5.0.1.{revision}.hwp");
+        let mut core = DocumentCore::from_bytes(&std::fs::read(&name).expect(&name)).unwrap();
+        core.insert_text_native(0, 1, 0, typed).unwrap();
+        let prefix = if revision == 5 {
+            "\u{F0805}\u{F0809}\u{F0847}\u{F0849}😀\t"
+        } else {
+            typed
+        };
+        for bytes in [
+            core.export_hwp_native().unwrap(),
+            core.export_hwpx_native().unwrap(),
+        ] {
+            let first = DocumentCore::from_bytes(&bytes).unwrap();
+            let hwpx = first.export_hwpx_native().unwrap();
+            let second = DocumentCore::from_bytes(&hwpx).unwrap();
+            let doc = parse_document(&second.export_hwpx_native().unwrap()).unwrap();
+            let para = &doc.sections[0].paragraphs[1];
+            assert!(para.text.starts_with(prefix), "{name}: {:?}", para.text);
+            let expected_symbol = if revision == 5 {
+                '\u{F0806}'
+            } else {
+                '\u{A806}'
+            };
+            let bold = para
+                .char_shapes
+                .iter()
+                .find(|r| doc.doc_info.char_shapes[r.char_shape_id as usize].bold)
+                .unwrap();
+            // A normal tab occupies eight HWP character slots. The other controls
+            // in this paragraph follow the original Hancom style-run contract.
+            let b = para.text.chars().position(|ch| ch == 'B').unwrap();
+            assert_eq!(para.text.chars().nth(b - 1), Some(expected_symbol));
+            assert_eq!(bold.start_pos, para.char_offsets[b]);
         }
     }
 }

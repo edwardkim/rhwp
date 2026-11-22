@@ -1926,7 +1926,7 @@ fn remap_bfchar_block(block: &mut [u8]) {
             Some(t) => t,
             None => continue,
         };
-        let mapped = crate::renderer::composer::pua_to_text_surface(&text);
+        let mapped = crate::renderer::composer::body_text_surface(&text);
         if mapped.as_ref() == text.as_str() {
             continue;
         }

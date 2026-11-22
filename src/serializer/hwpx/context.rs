@@ -238,7 +238,7 @@ impl SerializeContext {
         S::Error: std::fmt::Display,
     {
         let mut ctx = Self {
-            legacy_body_symbols: super::body_symbols::uses_legacy_body_symbols(doc),
+            legacy_body_symbols: doc.uses_legacy_body_symbols(),
             ..Self::default()
         };
         ctx.char_shape_ids.reservation = reservation.clone();

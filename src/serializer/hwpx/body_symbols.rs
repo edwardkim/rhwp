@@ -1,37 +1,7 @@
-//! Versioned HWP5 paragraph-text conversion at the HWPX boundary.
-//!
-//! Hancom 12.30.0.6544 saves the paired 5.0.1.5 / 5.0.1.6 fixtures differently:
-//! only the older input expands measured BMP symbols to supplementary PUA.
-//! This is not a font-cmap substitution or a rule for every A000–A8FF value.
+//! UTF-16 position changes at the HWP5 to HWPX paragraph-text boundary.
 
-use crate::model::{document::Document, paragraph::Paragraph};
+use crate::model::{paragraph::Paragraph, provenance::body_symbol};
 use crate::serializer::SerializeError;
-
-/// Values independently observed in the version-boundary samples in addition to
-/// the existing #5140/#5861 lookup. Do not extend the compose lookup with these.
-const BODY_SYMBOLS: &[u16] = &[
-    0xA806, 0xA808, 0xA80C, 0xA811, 0xA813, 0xA817, 0xA81C, 0xA827, 0xA848,
-];
-
-pub(super) fn uses_legacy_body_symbols(doc: &Document) -> bool {
-    let v = &doc.header.version;
-    doc.layout_profile().hwp5_container() && (v.major, v.minor, v.build, v.revision) < (5, 0, 1, 6)
-}
-
-pub(super) fn body_symbol(c: char, legacy: bool) -> char {
-    if !legacy {
-        return c;
-    }
-    let Ok(unit) = u16::try_from(u32::from(c)) else {
-        return c;
-    };
-    let cp = crate::parser::tags::hancom_symbol_to_plane15(unit).or_else(|| {
-        BODY_SYMBOLS
-            .contains(&unit)
-            .then(|| 0xF0000 | u32::from(unit & 0x0FFF))
-    });
-    cp.and_then(char::from_u32).unwrap_or(c)
-}
 
 /// Source UTF-16 positions immediately after characters that grow by one unit.
 /// Keep original control-slot gaps and already supplementary characters intact.

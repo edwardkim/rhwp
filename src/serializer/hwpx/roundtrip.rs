@@ -772,7 +772,7 @@ fn is_hwpx_to_hwp_incomparable(d: &IrDifference) -> bool {
 ///
 /// [`Paragraph::remove_control_slot_like_hwpx_export`]: crate::model::paragraph::Paragraph::remove_control_slot_like_hwpx_export
 pub fn hwpx_export_expected_document(doc: &Document) -> Document {
-    let legacy_symbols = super::body_symbols::uses_legacy_body_symbols(doc);
+    let legacy_symbols = doc.uses_legacy_body_symbols();
     let mut expected = doc.clone();
     for section in &mut expected.sections {
         for para in &mut section.paragraphs {

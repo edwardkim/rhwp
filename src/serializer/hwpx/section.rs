@@ -1627,7 +1627,7 @@ where
             c => storage
                 .push_char(
                     &mut buf,
-                    super::body_symbols::body_symbol(c, cursor.legacy_body_symbols),
+                    crate::model::provenance::body_symbol(c, cursor.legacy_body_symbols),
                 )
                 .map_err(xml_error)?,
         }

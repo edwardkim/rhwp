@@ -472,7 +472,7 @@ pub(crate) fn text_word_ranges_with_storage<S: crate::storage::Storage>(
     styles: &ResolvedStyleSet,
     storage: &S,
 ) -> Result<Vec<Range<usize>>, S::Error> {
-    let chars: Vec<_> = storage.collect(para.text.chars())?;
+    let chars: Vec<_> = storage.collect(styles.body_chars(&para.text))?;
     let style = styles.para_styles.get(para.para_shape_id as usize);
     storage.collect(
         try_tokenize_paragraph_with_regenerated_space_metric(
@@ -1391,7 +1391,7 @@ pub(super) fn compose_horizontal_shaping_handoff(
         return None;
     }
 
-    let text_chars = para.text.chars().collect::<Vec<_>>();
+    let text_chars = styles.body_chars(&para.text).collect::<Vec<_>>();
     let inline_controls = flow_inline_controls(para, styles);
     let projection = prepare_paragraph_projection(
         para,
@@ -4890,7 +4890,7 @@ fn try_layout_paragraph_in_frame_impl<S: Storage>(
             .char_offsets
             .partition_point(|offset| *offset < source_start_utf16),
     };
-    let mut text_chars = storage.collect(para.text.chars())?;
+    let mut text_chars = storage.collect(styles.body_chars(&para.text))?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
     for (position, _) in &para.layout_field_values {
@@ -6814,7 +6814,7 @@ fn try_reflow_line_segs_impl<S: Storage>(
         }
     }
 
-    let mut text_chars = storage.collect(para.text.chars())?;
+    let mut text_chars = storage.collect(styles.body_chars(&para.text))?;
     // 필드는 공백을 건너뛰는 줄 경계가 아닌 원자 토큰이다. 토큰화 전용
     // 필드 마커로 투영하며 원문과 모델 축은 바꾸지 않는다.
     for (position, _) in &para.layout_field_values {

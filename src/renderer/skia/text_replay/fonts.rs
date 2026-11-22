@@ -205,32 +205,43 @@ pub(super) fn for_text(
         .chars()
         .find(|ch| !crate::renderer::text_glyph_visibility::is_nonprinting_character(*ch))
     {
-        let selected =
-            resolve_typeface_for_character(chain, ch, font_mgr, font_style_for_text(style));
-        if selected.is_none() {
+        let Some(candidate) =
+            resolve_typeface_for_character(chain, ch, font_mgr, font_style_for_text(style))
+        else {
             if let Some(observer) = observer {
                 observer.missing(&style.font_family);
             }
-        }
-        return selected.map(|candidate| {
-            let font = finish(
-                candidate_typeface(&candidate, font_mgr, sample),
-                size,
-                style,
-                replay,
-            );
-            if !candidate.declared {
-                if let Some(observer) = observer {
-                    observer.selected(
-                        &style.font_family,
-                        font.typeface().family_name(),
-                        candidate.source,
-                        style,
-                    );
-                }
+            // An absent visible glyph still occupies its composed position. Use the
+            // font's own .notdef outline after exhausting real character coverage.
+            // Explicit glyph fallbacks retain their declared order.
+            if crate::renderer::text_glyph_visibility::visible_missing_sign(ch) {
+                return chain.iter().find_map(|candidate| {
+                    let face = &candidate.typeface;
+                    let font = Font::new(face.clone(), size);
+                    (face.unichar_to_glyph(ch as i32) == 0
+                        && font.get_path(0).is_some_and(|path| !path.is_empty()))
+                    .then(|| finish(face.clone(), size, style, replay))
+                });
             }
-            font
-        });
+            return None;
+        };
+        let font = finish(
+            candidate_typeface(&candidate, font_mgr, sample),
+            size,
+            style,
+            replay,
+        );
+        if !candidate.declared {
+            if let Some(observer) = observer {
+                observer.selected(
+                    &style.font_family,
+                    font.typeface().family_name(),
+                    candidate.source,
+                    style,
+                );
+            }
+        }
+        return Some(font);
     }
     if let Some(candidate) = chain.first() {
         Some(finish(

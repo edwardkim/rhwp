@@ -476,10 +476,11 @@ impl DocumentCore {
                 }
             }
         }
+        let legacy_symbols = self.document.uses_legacy_body_symbols();
         for section in &self.document.sections {
-            queries::content_fonts::collect(&section.paragraphs, &mut fonts);
+            queries::content_fonts::collect(&section.paragraphs, &mut fonts, legacy_symbols);
             for master in &section.section_def.master_pages {
-                queries::content_fonts::collect(&master.paragraphs, &mut fonts);
+                queries::content_fonts::collect(&master.paragraphs, &mut fonts, legacy_symbols);
             }
         }
         let fonts_json: Vec<String> = fonts

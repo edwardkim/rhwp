@@ -522,13 +522,11 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
                 } else if program
                     .as_ref()
                     .is_some_and(|program| program.advance_em(ch).is_some())
-                    || super::enclosed_pua(hancom_symbol_display_key(ch)).is_some()
+                    || super::enclosed_pua(ch).is_some()
                 {
                     // 실제 공급한 원 glyph와 렌더러 합성 기호(#8201)는 Unicode 표시 대체보다
                     // 우선한다. 측정과 paint가 같은 원 키의 전진·표시를 소비한다.
-                    let source = hancom_symbol_display_key(ch);
-                    storage.push_char(&mut display, source)?;
-                    changed |= source != ch;
+                    storage.push_char(&mut display, ch)?;
                 } else if let Some(replacement) = pua_plain_text_display(ch) {
                     storage.push_str(&mut display, replacement)?;
                     changed = true;

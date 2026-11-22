@@ -292,8 +292,7 @@ impl NativeOtfMetrics {
 
 impl NativePuaMetrics {
     pub fn advance_em(&self, character: char) -> Option<f64> {
-        let key = super::composer::hancom_symbol_display_key(character);
-        self.advances[SUPPORTED_SYMBOLS.iter().position(|ch| *ch == key)?]
+        self.advances[SUPPORTED_SYMBOLS.iter().position(|ch| *ch == character)?]
     }
 }
 
