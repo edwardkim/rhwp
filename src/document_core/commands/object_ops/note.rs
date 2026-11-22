@@ -243,11 +243,12 @@ impl DocumentCore {
         })?;
         Some((u8::try_from(idx).ok()?, &styles[idx]))
     }
+    /// 새 미주 안 문단의 (글자 모양, 문단 모양, 스타일). 구역의 기존 미주, '미주' 스타일,
+    /// `fallback`(커서 자리 문단 값) 차례로 고른다.
     fn endnote_style_defaults(
         &self,
         section_idx: usize,
-        para_idx: usize,
-        char_offset: usize,
+        fallback: (u32, u16, u8),
     ) -> (u32, u16, u8) {
         let section = &self.document.sections[section_idx];
 
@@ -270,13 +271,7 @@ impl DocumentCore {
             return (style.char_shape_id as u32, style.para_shape_id, idx);
         }
 
-        // 폴백 — 커서 offset 의 글자모양 기준 (첫 엔트리 아님).
-        let current_para = &section.paragraphs[para_idx];
-        (
-            current_para.char_shape_id_at(char_offset).unwrap_or(0),
-            current_para.para_shape_id,
-            current_para.style_id,
-        )
+        fallback
     }
     /// 새 각주 컨트롤. 안 문단은 기존 각주(없으면 `fallback` 글자·문단 모양·스타일)를 따르고,
     /// 문단 모양과 스타일은 '각주' 스타일을 따른다. 번호는 넣은 뒤 구역 번호 매기기로 다시 매긴다.
@@ -728,6 +723,145 @@ impl DocumentCore {
         ))
     }
 
+    /// 새 미주 컨트롤과 그 번호 모양·앞뒤 장식 문자. 안 문단은 `endnote_style_defaults`를 따르고,
+    /// 번호는 넣은 뒤 `refresh_endnote_numbers`가 구역의 번호 매기기대로 매긴다.
+    fn new_endnote(
+        &self,
+        section_idx: usize,
+        fallback: (u32, u16, u8),
+    ) -> (crate::model::footnote::Endnote, u8, char, char) {
+        let shape = &self.document.sections[section_idx]
+            .section_def
+            .endnote_shape;
+        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
+        let prefix_char = shape.prefix_char;
+        let suffix_char = if shape.suffix_char == '\0' {
+            ')'
+        } else {
+            shape.suffix_char
+        };
+        let (default_char_shape_id, para_shape_id, style_id) =
+            self.endnote_style_defaults(section_idx, fallback);
+        let inner_para = Self::make_note_inner_paragraph(
+            crate::model::control::AutoNumberType::Endnote,
+            0,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+            default_char_shape_id,
+            para_shape_id,
+            style_id,
+        );
+        let endnote = crate::model::footnote::Endnote {
+            paragraphs: vec![inner_para],
+            before_decoration_letter: prefix_char as u16,
+            after_decoration_letter: suffix_char as u16,
+            number_shape: number_format_code as u32,
+            ..Default::default()
+        };
+        (endnote, number_format_code, prefix_char, suffix_char)
+    }
+
+    /// 표 셀·글상자(중첩 포함) 문단에 미주를 넣는다. `path`는 `...ByPath` API의 셀 경로이고
+    /// 마지막 단계 문단이 미주 번호를 둘 문단, `char_offset`은 그 문단의 글자 자리다.
+    /// 본문 `insert_endnote_native`처럼 빈 미주 문단 하나를 만들고 문서의 미주 번호를 다시 매긴다.
+    /// 반환: JSON `{"ok":true, "controlIdx":N, "endnoteNumber":N}`
+    pub fn insert_endnote_by_path_native(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        path: &[(usize, usize, usize)],
+        char_offset: usize,
+    ) -> Result<String, HwpError> {
+        let (Some(&(outer_ctrl, _, _)), Some(&(_, _, inner_para))) = (path.first(), path.last())
+        else {
+            return Err(HwpError::RenderError("cellPath가 비어 있음".into()));
+        };
+        let fallback = {
+            let para = self.resolve_paragraph_by_path(section_idx, parent_para_idx, path)?;
+            if char_offset > para.text.chars().count() {
+                return Err(HwpError::RenderError(format!(
+                    "글자 자리 {} 범위 초과",
+                    char_offset
+                )));
+            }
+            (
+                para.char_shape_id_at(char_offset).unwrap_or(0),
+                para.para_shape_id,
+                para.style_id,
+            )
+        };
+        let (endnote, number_format_code, prefix_char, suffix_char) =
+            self.new_endnote(section_idx, fallback);
+        let para = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
+        let insert_idx = crate::document_core::helpers::find_control_text_positions(para)
+            .iter()
+            .position(|&pos| pos > char_offset)
+            .unwrap_or(para.controls.len());
+        para.align_ctrl_data_records();
+        para.controls
+            .insert(insert_idx, Control::Endnote(Box::new(endnote)));
+        para.ctrl_data_records.insert(insert_idx, None);
+        para.shift_for_inline_control_insert(insert_idx, char_offset);
+        para.char_count += 8;
+        para.control_mask |= 1u32 << 0x0011; // 각주/미주 비트
+        para.has_para_text = true;
+        // 이 문단이나 그 안쪽의 활성 누름틀은 컨트롤 번호가 밀렸을 수 있다.
+        if self.active_field.as_ref().is_some_and(|active| {
+            active.section_idx == section_idx
+                && active.para_idx == parent_para_idx
+                && active
+                    .cell_path
+                    .as_deref()
+                    .is_some_and(|p| p.starts_with(path))
+        }) {
+            self.clear_active_field();
+        }
+        Self::sync_paragraph_endnotes_with_shape(
+            &mut self.document.sections[section_idx].paragraphs,
+            number_format_code,
+            prefix_char,
+            suffix_char,
+        );
+        self.refresh_endnote_numbers(section_idx);
+
+        // 미주 안 문단은 미주 영역 폭으로, 셀 문단은 셀 폭으로 다시 나눈다.
+        let mut note_path = path.to_vec();
+        note_path.push((insert_idx, 0, 0));
+        self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, &note_path, 0);
+        self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_para);
+        self.recalculate_cell_paragraph_vpos_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            inner_para,
+            None,
+        );
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
+        self.document.sections[section_idx].raw_stream = None;
+        self.mark_section_dirty(section_idx);
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+        let endnote_number = match self
+            .resolve_paragraph_by_path(section_idx, parent_para_idx, path)?
+            .controls
+            .get(insert_idx)
+        {
+            Some(Control::Endnote(note)) => note.number,
+            _ => 0,
+        };
+
+        self.event_log.push(DocumentEvent::PictureInserted {
+            section: section_idx,
+            para: parent_para_idx,
+        });
+        Ok(format!(
+            "{{\"ok\":true,\"controlIdx\":{},\"endnoteNumber\":{}}}",
+            insert_idx, endnote_number
+        ))
+    }
+
     /// 미주를 삽입한다.
     /// 커서 위치에 미주 컨트롤을 추가하고 빈 미주 문단 1개를 생성한다.
     /// 반환: JSON `{"ok":true, "paraIdx":N, "controlIdx":N, "endnoteNumber":N}`
@@ -737,8 +871,6 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
-        use crate::model::footnote::Endnote;
-
         if section_idx >= self.document.sections.len() {
             return Err(HwpError::RenderError(format!(
                 "구역 인덱스 {} 범위 초과",
@@ -752,44 +884,17 @@ impl DocumentCore {
             )));
         }
 
-        let shape = self.document.sections[section_idx]
-            .section_def
-            .endnote_shape
-            .clone();
-        let number_format_code = Self::footnote_shape_number_format_code(shape.number_format);
-
-        let (default_char_shape_id, para_shape_id, style_id) =
-            self.endnote_style_defaults(section_idx, para_idx, char_offset);
-        let prefix_char = if shape.prefix_char == '\0' {
-            '\0'
-        } else {
-            shape.prefix_char
+        // 폴백 — 커서 offset 의 글자모양 기준 (첫 엔트리 아님).
+        let fallback = {
+            let current_para = &self.document.sections[section_idx].paragraphs[para_idx];
+            (
+                current_para.char_shape_id_at(char_offset).unwrap_or(0),
+                current_para.para_shape_id,
+                current_para.style_id,
+            )
         };
-        let suffix_char = if shape.suffix_char == '\0' {
-            ')'
-        } else {
-            shape.suffix_char
-        };
-
-        // 번호는 넣은 뒤 `refresh_endnote_numbers`가 구역의 번호 매기기대로 매긴다.
-        let inner_para = Self::make_note_inner_paragraph(
-            crate::model::control::AutoNumberType::Endnote,
-            0,
-            number_format_code,
-            prefix_char,
-            suffix_char,
-            default_char_shape_id,
-            para_shape_id,
-            style_id,
-        );
-
-        let endnote = Endnote {
-            paragraphs: vec![inner_para],
-            before_decoration_letter: prefix_char as u16,
-            after_decoration_letter: suffix_char as u16,
-            number_shape: number_format_code as u32,
-            ..Default::default()
-        };
+        let (endnote, number_format_code, prefix_char, suffix_char) =
+            self.new_endnote(section_idx, fallback);
 
         self.document.sections[section_idx].raw_stream = None;
         let paragraph = &mut self.document.sections[section_idx].paragraphs[para_idx];
