@@ -30,6 +30,10 @@ PNG 37쌍이 일치했고 최저 99.17%였다. 함초롬돋움에서 빠진 기�
 누락 글리프를 원본 Print와 직접 대조했다.
 [Native 쪽별 TSV와 비교 PNG](../verification/issue7754-nine-fidelity/incoming-pr9322/print/native-validation.json)
 
+최적화한 fresh WASM에서도 같은 37쪽을 대조했다. 기준과 후보의 PNG 37쌍이 일치했고
+독립 Print 대비 최저는 98.79%였다. Native와 같은 세 사례를 직접 판독했다.
+[WASM 쪽별 TSV와 비교 PNG](../verification/issue7754-nine-fidelity/incoming-pr9322/print/wasm-validation.json)
+
 현대 HWPX 재저장 대조군에서 리베이스 전 두 생산본은 같은 여섯 문단의 BMP 문자를
 Plane 15 기호로 바꿨고 굵은 구간의 UTF-16 시작 위치도 1만큼 밀렸다. 한컴 HWPX와 같은
 원문과 굵은 구간을 새 생산본에서 확인하는 데 사용한다.
