@@ -25,8 +25,11 @@ OLE 속성, HWPX payload, 편집 표지의 보존을 확인했다.
 새 base와 후보의 PNG SHA-256이 전부 일치하며 기존 하한보다 낮은 쪽은 없다. 두 실행에서
 화학 문서 74·93쪽이 100.00%로 올랐다. [전쪽 비교와 생산 기록](../verification/issue7754-nine-fidelity/protected/native/native-validation.json)
 
-원래 이슈의 fresh WASM, 보호 정본 fresh WASM, 최소 글꼴 Rust·lint, 공개 글꼴 검사 및
-남은 Studio 검증은 진행 중이다.
+공개 글꼴 검사에는 기존 검증의 격리 절차를 사용했다. 공개 글꼴 497개를 확인했고, 4개 문서의
+Native·fresh WASM 8조건이 모두 통과했다. 전쪽 공식 표시값은 100.00%다.
+[전쪽 TSV, 비교 및 오버레이](../verification/issue7754-nine-fidelity/public-font-gate/public-font-validation.json)
+
+원래 이슈의 fresh WASM, 보호 정본 fresh WASM, 최소 글꼴 Rust·lint, 남은 Studio 검증은 진행 중이다.
 
 Source155의 frozen 후보 소스는 `b75ce19774a4b059b26c2d134d49d5f7ce4a93b2`다.
 공식 자료 정리 커밋 `433eba9d7011807d57cf235311afff15036b3ceb`까지의 변경이 모두 `mydocs/` 안에 있음을 확인했다.
