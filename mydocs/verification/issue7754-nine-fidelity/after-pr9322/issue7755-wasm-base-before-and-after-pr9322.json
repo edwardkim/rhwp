@@ -20,7 +20,7 @@
     288
   ],
   "available_pages_before": 288,
-  "finished_pages_current": 288,
+  "finished_pages_current": 315,
   "archived_manifests_recovered_and_verified": 9,
   "physical_png_paths": 1152,
   "changed_pages": [
@@ -406,5 +406,50 @@
       "current": 0
     },
     "observation": "리베이스 전 기준에서는 부록 B-2 제목과 첫 표 행이 246쪽 하단에 놓였다. 현재 기준에서는 독립 한컴 Print와 같이 247쪽에서 부록 제목과 표가 시작한다. 246쪽의 앞 표와 247쪽의 첫 행 및 이어지는 내용 순서를 확인했다."
+  },
+  "current_complete_measurement": {
+    "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+    "program_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+    "pages": 315,
+    "minimum_percent": "27.35",
+    "pages_at_100": 211,
+    "pages_below_98": [
+      {
+        "page": 3,
+        "raw_percent": "95.95"
+      },
+      {
+        "page": 100,
+        "raw_percent": "27.35"
+      }
+    ],
+    "physical_png_paths_verified": 630,
+    "conditions": {
+      "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+      "font_environment_sha256": null,
+      "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+      "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+      "comparison_profile": "print"
+    },
+    "capture_manifest_sha256": [
+      "11cde9639cd9f0d656b28422b05e490872215ec26a9dafa58d3eab9c3570a251",
+      "e3eed0d99b6bff091045b44f4d3096a2983d0d574266d1967dcc9b49aa7c4dd3",
+      "e8b87e7de95af03130b47de89bce045fd1d8af6e898e112c34163bb227d81560",
+      "5948eb8d386263cadac4c01b887a657247d71b67130c7d1600ae5a882d5fa17e",
+      "a0c15016a4116988dc54100cedae60acd7ea7796a2959580531e918b1d315c6f",
+      "0ffd6cbcec90dcdf3a6f4f740c978596baea4491e8e913a4e4ab67d14c9fa7d5",
+      "0c55ae5c343fb36bd14bf9966cbc683da51f5235afaf76facd77db7d124f78f4",
+      "4233f6f74864994ce25b91b2c29349ee4e23b11a6d6ac85544934abed0bfc5be",
+      "9402eaba4c67ee1c6a45a7e399bacea40bcd6ddab26dfc60c03ac135042d7c83",
+      "a890c5cd9eeba3b45dbe7ed26e3ebb6f6a9ac572bfa448e1d25884939594878d"
+    ],
+    "full_raw_tsv": {
+      "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/wasm/base/issue7755.tsv",
+      "sha256": "d2a3271fde9f0d87be1f5d1b06e7939a40d53c768a62f9da64cf58d4e7a9c48a"
+    },
+    "pages_289_through_315": {
+      "pages": 27,
+      "minimum_percent": "99.98"
+    }
   }
 }
