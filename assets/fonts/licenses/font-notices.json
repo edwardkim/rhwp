@@ -839,6 +839,19 @@
       ]
     },
     {
+      "repositoryPath": "tests/fixtures/hft_mapped_symbol_program_tracking/fallback.ttf",
+      "sha256": "96b086527f9b5c24e32873826900142f27adc73ba77d0b7de90b09a56e48685d",
+      "license": "MIT",
+      "licenseFiles": [
+        "LICENSE",
+        "tests/fixtures/hft_mapped_symbol_program_tracking/LICENSE.txt"
+      ],
+      "copyrightNotices": [
+        "Copyright (c) 2025-2026 Edward Kim"
+      ],
+      "provenance": "tests/fixtures/hft_mapped_symbol_program_tracking/generate.py"
+    },
+    {
       "repositoryPath": "tests/fixtures/native_font_family_names/family-contract.ttf",
       "sha256": "6df6857773effe6a86fdfa99eff92e1d1e3e6a928ec0f52316f85c4b464c3bbd",
       "license": "OFL-1.1",
