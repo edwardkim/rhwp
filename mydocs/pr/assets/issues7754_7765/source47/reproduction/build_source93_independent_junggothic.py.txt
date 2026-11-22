@@ -1,0 +1,69 @@
+from pathlib import Path
+import json, importlib.util, hashlib, re
+import pymupdf
+from fontTools.fontBuilder import FontBuilder
+from fontTools.pens.t2CharStringPen import T2CharStringPen
+
+R = Path('/home/tsjang/rhwp')
+O = R / 'output/pr-review/issue7754-nine'
+spec = importlib.util.spec_from_file_location('hft_source', R / 'scripts/prepare_hft_hangul_font.py')
+hft = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(hft)
+hft.BULLET_CHARACTERS = '·•∙○◦․‧～“”'
+state = json.loads((O / 'source56-independent-print-state.json').read_text())
+job = next(r for r in state['results'] if r['key'] == 'hanyang-junggothic')
+assert job.get('complete')
+pdf = Path(job['output'])
+assert hashlib.sha256(pdf.read_bytes()).hexdigest() == job['pdf_sha256']
+doc = pymupdf.open(pdf)
+expected = hft.specimen_characters(True, True)
+assert ''.join(c for p in doc for c in p.get_text() if not c.isspace()) == expected
+glyphs = {}
+for ref in sorted({f[0] for p in doc for f in p.get_fonts() if f[2] == 'Type3'}):
+    body = doc.xref_object(ref)
+    assert list(map(float, re.search(r'/FontMatrix\s*\[([^\]]+)\]', body)[1].split())) == [0.001, 0, 0, 0.001, 0, 0]
+    enc = hft.font_encoding(doc, hft.font_reference(body, 'Encoding'))
+    procs = {k: int(v) for k, v in re.findall(r'/([^\s/]+)\s+(\d+)\s+0\s+R', doc.xref_object(hft.font_reference(body, 'CharProcs')))}
+    for code, cp in hft.mapped_characters(doc, hft.font_reference(body, 'ToUnicode')):
+        if cp not in set(map(ord, expected)):
+            continue
+        stream = doc.xref_stream(procs[enc[code]]).decode('ascii')
+        assert cp not in glyphs or glyphs[cp] == stream, 'conflicting_independent_source'
+        glyphs[cp] = stream
+assert set(glyphs) == set(map(ord, expected))
+selected, rejected = {}, {}
+for cp in sorted(glyphs):
+    try:
+        selected[cp] = hft.restore_outline(glyphs[cp])
+    except ValueError as error:
+        rejected[f'{cp:04X}'] = str(error)
+assert rejected == {'2027': 'Empty source glyph outline; text mapping and advance alone are not a font source'}
+assert hashlib.sha256(glyphs[0x2022].encode()).hexdigest() == '2506433f6422778c6963a3dcbf11c311df80b06e75aad7a49a64e9be6c25a16a'
+assert hashlib.sha256(glyphs[0x25CB].encode()).hexdigest() == 'fad77514f6f7cd6fff71b55ed68032a52664b0fa8a766bf691eb1c0a30762863'
+order = ['.notdef'] + [f'uni{cp:04X}' for cp in sorted(selected)]
+builder = FontBuilder(1000, isTTF=False)
+builder.setupGlyphOrder(order)
+builder.setupCharacterMap({cp: f'uni{cp:04X}' for cp in selected})
+pen = T2CharStringPen(1000, None)
+strings = {'.notdef': pen.getCharString()}
+advances = {'.notdef': 1000}
+for cp, (width, charstring) in selected.items():
+    strings[f'uni{cp:04X}'] = charstring
+    advances[f'uni{cp:04X}'] = width
+builder.setupHorizontalMetrics({name: (round(width), 0) for name, width in advances.items()})
+builder.setupHorizontalHeader(ascent=1000, descent=-200)
+family = 'RHWP Hancom Independent Junggothic'
+ps_name = 'RHWP-Hancom-Independent-Junggothic-Regular'
+builder.setupNameTable({'familyName': family, 'styleName': 'Regular', 'uniqueFontIdentifier': ps_name + '-' + job['pdf_sha256'][:16], 'fullName': family + ' Regular', 'psName': ps_name, 'version': 'Version 1.000'})
+builder.setupOS2(sTypoAscender=1000, sTypoDescender=-200, usWinAscent=1000, usWinDescent=200)
+builder.setupPost()
+builder.setupCFF(ps_name, {'FullName': family, 'FamilyName': family, 'Weight': 'Regular'}, strings, {})
+builder.setupHorizontalMetrics({name: hft.source_horizontal_metrics(advances[name], string) for name, string in strings.items()})
+D = O / 'private-source93-independent-junggothic'
+D.mkdir(mode=0o700, exist_ok=True)
+font = D / 'independent-junggothic-regular.otf'
+builder.save(font)
+font.chmod(0o600)
+receipt = {'job_id': job['start']['job_id'], 'print': job['print'], 'input_sha256': job['input_sha256'], 'pdf_sha256': job['pdf_sha256'], 'pdf': str(pdf), 'family': family, 'ps_name': ps_name, 'font': str(font), 'font_sha256': hashlib.sha256(font.read_bytes()).hexdigest(), 'independent_sequence_validated': len(expected), 'independent_glyph_programs_validated': len(glyphs), 'glyphs': len(selected), 'rejected': rejected, 'source_glyph_sha256': {f'{cp:04X}': hashlib.sha256(glyphs[cp].encode()).hexdigest() for cp in selected}, 'transformation': 'identity outlines and advance; rounded CFF xMin in hmtx. No target-document data, scaling, translation, synthetic stroke, or score selection.', 'scope': 'Private full independently printed Junggothic alphabet, not the target document or historical missing font. Only independently nonempty glyphs are supplied. Original matching TTF/TTC selection remains first; this CFF complements the incomplete SPJGT source family before unrelated family fallback. No U2027 glyph is invented.'}
+(O / 'source93-independent-junggothic-provenance.json').write_text(json.dumps(receipt, ensure_ascii=False, indent=2) + '\n')
+print('Independent source glyphs:', len(glyphs), 'selected:', len(selected), 'rejected:', list(rejected))
