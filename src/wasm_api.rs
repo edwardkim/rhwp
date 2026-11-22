@@ -5653,6 +5653,44 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 꺾인·곡선 연결선의 가운데 점(안쪽 제어점 둘)을 그 축으로 옮긴다 (HWPUNIT 거리).
+    /// 축은 `getShapeProperties`의 `connectorMidAxis`("x"·"y")이며, 그 축의 거리만 쓴다.
+    #[wasm_bindgen(js_name = moveConnectorMidpoint)]
+    pub fn move_connector_midpoint(
+        &mut self,
+        sec: u32,
+        para: u32,
+        ci: u32,
+        dx: i32,
+        dy: i32,
+    ) -> Result<String, JsValue> {
+        self.move_connector_midpoint_native(sec as usize, para as usize, ci as usize, dx, dy)
+            .map_err(|e| e.into())
+    }
+
+    /// 가운데 점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 연결선.
+    /// `cell_path_json`은 `setCellShapePropertiesByPath`와 같은 경로다.
+    #[wasm_bindgen(js_name = moveConnectorMidpointByPath)]
+    pub fn move_connector_midpoint_by_path(
+        &mut self,
+        sec: u32,
+        parent_para: u32,
+        cell_path_json: &str,
+        ci: u32,
+        dx: i32,
+        dy: i32,
+    ) -> Result<String, JsValue> {
+        self.move_connector_midpoint_by_path_native(
+            sec as usize,
+            parent_para as usize,
+            cell_path_json,
+            ci as usize,
+            dx,
+            dy,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 구역 내 모든 연결선의 좌표를 연결된 도형 위치에 맞게 갱신한다.
     #[wasm_bindgen(js_name = updateConnectorsInSection)]
     pub fn update_connectors_in_section_wasm(&mut self, section_idx: u32) {
