@@ -1,0 +1,33 @@
+{
+  "started": 1795309502.0866497,
+  "scope": "Exact published canonical Native environment SHA from current accepted condition history; input/PDF/code/threshold unchanged. Earlier stock-condition failure is preserved separately.",
+  "environment": "/home/tsjang/rhwp/mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native.json",
+  "environment_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab",
+  "command": [
+    "/home/tsjang/rhwp/venv/bin/python",
+    "scripts/visual_sweep.py",
+    "--silhouette-only",
+    "--hwp",
+    "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+    "--pdf",
+    "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+    "--key",
+    "decree-p016-canonical-env",
+    "--pages",
+    "16",
+    "--rhwp-bin",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source36-optimized",
+    "--compat",
+    "2022",
+    "--dpi",
+    "96",
+    "--page-workers",
+    "1",
+    "--font-environment",
+    "/home/tsjang/rhwp/mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native.json",
+    "--out",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-canonical-environment-diagnostic/native"
+  ],
+  "ended": 1795309525.1418934,
+  "exit_code": 0
+}

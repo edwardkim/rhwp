@@ -68,3 +68,19 @@ Native 583쪽 완료와 위 기능 검사를 전체 검증의 완료로 해석�
 공유 target은 보존했다. 사용 종료된 이 작업의 초기 실행 파일 28개만 삭제해
 3,981,930,744바이트를 확보한 경로·해시·활성 참조 검사 근거는
 `gates/source36-obsolete-binary-cleanup.json`에 있다. 현재 생산물과 원본·PDF·TSV·PNG는 보존했다.
+
+
+## 정식 검사 중간 확정과 환경 resolver 보정
+
+`gates/native-checkpoint/results.json`은 전체 검증 완료 이전의 확정 접두 실행이다.
+최소 글꼴 Native unfiltered lib 4,033건 통과·12건 ignored, 기존 Native CI 논리
+검사 21개와 관련 집중 검사, fmt·manifest·unit-tier·양쪽 Clippy의 통과를 담았다.
+workspace build의 디스크 공간 부족은 보존하고 재실행하며 전체 nextest는 남아 있다.
+
+`protected/environment-repair/`는 작업 전용 resolver가 chemical·decree의
+정본 환경 4개를 누락한 오류의 보정 근거다. 고정된 조건 보고서와 TSV 해시를 대조해
+46개 스키마를 판독했고 정확한 환경 파일 45개를 찾았다. outline Native의 정확한
+환경 파일 1개는 계속 찾는다. 정본 환경을 적용한 decree 16쪽의 raw는
+Native·fresh WASM 모두 100.00%다. 이전 잘못된 stock 환경의 52.97%는 보존한
+진단 결과이며 제품 회귀나 글꼴 우선순위 결함으로 판정하지 않는다.
+전체 보호 비교·정본 대비 하락 해소는 별도로 남아 있다.

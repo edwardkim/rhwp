@@ -1,4 +1,4 @@
-# 9개 이슈 소스 36: 전쪽·유입 기능·정식 회귀 완료
+# 9개 이슈 소스 36: 전쪽·유입 기능·정식 회귀 검증
 
 ## 고정한 소스와 완료 근거
 
@@ -54,8 +54,8 @@ Studio 유입 여정은 기준·후보 각각 7개 통과, 실제 WASM CTRL_DATA
 초기 준비·probe 오류와 최종 실행은 구분해 보존했다.
 
 근거는 `mydocs/pr/assets/issues7754_7765/source36/README.md`와 연결한 원본
-TSV·manifest·구조화된 결과에 있다. 기준 Native CtrlData의 정식 Cargo 실행은
-최소 글꼴 환경에서 아직 컴파일 중이다. 전체 Rust·WASM·보호 비교의 완료와 구분한다.
+TSV·manifest·구조화된 결과에 있다. 기준 Native CtrlData의 정식 Cargo 실행은 최소 글꼴 환경에서 5건 통과했다.
+전체 Rust·WASM·보호 비교의 완료와 구분한다.
 
 새 기준 Native도 평문 10개 원본 583쪽을 모두 완료했다. 실제 전체 쪽수는 각
 독립 PDF와 같으며 후보와 페이지별로 비교한 하락은 0쪽이다. 시장구조조사는
@@ -78,3 +78,32 @@ Arial 4종·함초롬바탕과 outline 환경의 재현 문제가 남아 있다.
 
 다른 본인 PR #9293의 실패 보정에 대한 기존 원격 승인 질문도 그대로 보존한다.
 현재 작업의 필수 검증을 계속하며, 원격 변경을 중복 요청하거나 미완료를 Draft로 우회하지 않는다.
+
+
+## 정식 Native 검사와 보호 환경 복원 중간 확정
+
+최소 글꼴 환경의 정식 Native unfiltered lib는 4,033건 통과, 12건 ignored다.
+기존 CI의 Native 논리 검사 21개와 안내문 실물 2건·HFT 추적·CTRL_DATA 집중
+검사가 통과했다. 기존 `issue_8153_print_glyph_geometry`의 분할 프로그램 3건도
+정식 suite에서 통과했다. fmt·manifest·unit-tier·workspace Clippy·WASM Clippy도
+통과했다. 실행 명령·소스 SHA·실제 summary와 로그 해시는
+`source36/gates/native-checkpoint/results.json`에 있다.
+
+workspace build는 FFI archive와 incremental graph를 쓰다가 디스크 공간 부족으로
+중단됐다. 사용 종료한 이번 작업의 중간 산출물을 확인해 정리하고 재실행한다.
+전체 nextest는 아직 실행하지 않았으므로 전체 Rust 검증 완료로 기록하지 않는다.
+Native 실제 편집 probe의 별도 rustc 연결도 serde 의존성 선택을 바로잡은 후 재실행한다.
+
+보호 검증의 작업 전용 환경 resolver가 `conditions.font_supply.environment_sha256`를
+읽지 않아 chemical·decree의 양쪽 경로 4개 조건을 누락했다. 정본 manifest의 TSV SHA와
+고정한 조건 보고서 SHA를 각각 확인한 resolver로 46개 조건의 스키마를 모두 판독했다.
+정확한 환경 파일은 45개 확보했고 outline Native의 1개는 아직 미확보다.
+정확한 정본 환경을 적용한 decree 16쪽은 Native·fresh WASM 모두 raw 100.00%다.
+이전 잘못된 stock 환경의 Native 52.97%는 제품 회귀 근거로 사용하지 않는다.
+Native가 실제 선택한 HY중고딕은 이미 원본 TTF였다. Fontconfig의 CFF 선택만으로
+원인을 추정했던 진단은 배제했다. 폰트 순서와 제품 구현은 변경하지 않았다.
+
+복원 코드·조건별 SHA·두 경로 TSV·manifest·대응 PNG는
+`source36/protected/environment-repair/`에 있다. 이는 16쪽의 환경 원인 확인이며
+보호 전체 통과를 뜻하지 않는다. 올바른 조건의 전체 보호 비교에서 남은 하락과
+미측정 항목을 계속 조사한다.
