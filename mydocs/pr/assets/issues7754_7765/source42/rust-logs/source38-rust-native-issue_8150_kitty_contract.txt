@@ -1,0 +1,16 @@
+[RustTestSuite] issue_8150_kitty_contract -> regression_suite_008::issue_8150_kitty_contract
+[RustTestSuite] cargo nextest run --locked --test regression_suite_008 -E test(/(^|::)issue_8150_kitty_contract::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+    Finished `release-test` profile [optimized] target(s) in 0.37s
+────────────
+ Nextest run ID 632b2d5f-071f-49e2-a9a1-490c1c4d58cd with nextest profile: default
+    Starting 8 tests across 1 binary (368 tests skipped)
+        PASS [   0.016s] (1/8) rhwp::regression_suite_008 issue_8150_kitty_contract::native::io_failure_stops_header_payload_and_continuation_writes
+        PASS [   0.016s] (2/8) rhwp::regression_suite_008 issue_8150_kitty_contract::native::chunk_boundaries_padding_and_continuation_follow_specification
+        PASS [   0.018s] (3/8) rhwp::regression_suite_008 issue_8150_kitty_contract::native::empty_payload_is_rejected_before_any_output
+        PASS [   0.019s] (4/8) rhwp::regression_suite_008 issue_8150_kitty_contract::native::png_preserves_channels_stride_and_white_alpha_composition
+        PASS [   0.020s] (5/8) rhwp::regression_suite_008 issue_8150_kitty_contract::native::encoder_rejects_bad_raster_and_excessive_width
+        PASS [   0.028s] (6/8) rhwp::regression_suite_008 issue_8150_kitty_contract::native::nonexistent_input_is_runtime_error_without_graphics
+        PASS [   0.042s] (7/8) rhwp::regression_suite_008 issue_8150_kitty_contract::cli_declares_kitty_feature_and_options
+        PASS [   0.096s] (8/8) rhwp::regression_suite_008 issue_8150_kitty_contract::cli_invalid_options_have_empty_stdout
+────────────
+     Summary [   0.098s] 8 tests run: 8 passed, 368 skipped

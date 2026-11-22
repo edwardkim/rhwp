@@ -1,0 +1,24 @@
+{
+  "recorded": 1795324522.365174,
+  "scope": "Preliminary read-only merge-tree; final exact-head and other own PR inventory will be rechecked before submission.",
+  "results": [
+    {
+      "label": "devel-9293",
+      "left": "bd3cd171331e80e79881dc8e9ed37f837ef6be77",
+      "right": "83b671c2a63a87b0946d2d2aa3f512ecf38945d2",
+      "exit_code": 0,
+      "seconds": 0.3486063608434051,
+      "output": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source40-merge-simulation-devel-9293.txt",
+      "merge_tree": "47b42075ee752b117e7b9c0b43caea33a46418a1"
+    },
+    {
+      "label": "candidate-9293",
+      "left": "fc0e4aff7482f352426e42d69a41ad80e0c3792d",
+      "right": "83b671c2a63a87b0946d2d2aa3f512ecf38945d2",
+      "exit_code": 0,
+      "seconds": 0.16484826593659818,
+      "output": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source40-merge-simulation-candidate-9293.txt",
+      "merge_tree": "0ffbc5a355a90920d99f45b1f48dc5ead3d71121"
+    }
+  ]
+}
