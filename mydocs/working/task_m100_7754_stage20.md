@@ -35,6 +35,13 @@ Native·fresh WASM 8조건이 모두 통과했다. 전쪽 공식 표시값은 10
 
 원래 이슈의 fresh WASM, 보호 정본 fresh WASM, 최소 글꼴 Rust·lint, 남은 Studio 검증은 진행 중이다.
 
+보호 fresh WASM의 첫 `sample10` 실행은 연결 그림 옵션을 빠뜨려 1쪽 raw가 31.61%였다.
+[기존 지침](../manual/verification/visual_sweep_guide.md#macos-외부-연결-그림-공급)과
+[수용 기록](../pr/assets/issue8856/final-20261110/sample10-linked-assets.json)에 따라
+`oracle.gif`, `rdb02.gif`, `s1.jpg`의 SHA-256을 확인하고 하나씩 `--linked-image`로 공급했다.
+재실행한 후보 1쪽은 99.96%로 보호 하한을 충족했고, 첫 32쪽에서 하락은 0쪽이다. 이 공급 조건으로
+`sample10` 763쪽을 새 base와 후보에서 재검증한다.
+
 Source155의 frozen 후보 소스는 `b75ce19774a4b059b26c2d134d49d5f7ce4a93b2`다.
 공식 자료 정리 커밋 `433eba9d7011807d57cf235311afff15036b3ceb`까지의 변경이 모두 `mydocs/` 안에 있음을 확인했다.
 제품 코드 바이트는 같으며, 검증 결과에는 실제 실행 producer의 SHA를 기록한다.
