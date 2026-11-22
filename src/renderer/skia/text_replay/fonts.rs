@@ -193,14 +193,14 @@ fn owns_intrinsic_heavy_face(typeface: &Typeface, style: &TextStyle) -> bool {
 }
 
 pub(super) fn for_text(
+    replay: &super::SkiaTextReplay<'_>,
     chain: &[TypefaceCandidate],
     sample: &str,
     size: f32,
     style: &TextStyle,
-    font_mgr: &FontMgr,
-    geometric_text: bool,
-    observer: Option<&super::super::font_observation::FontFallbackObserver>,
 ) -> Option<Font> {
+    let font_mgr = replay.font_mgr;
+    let observer = replay.font_fallback_observer;
     if let Some(ch) = sample
         .chars()
         .find(|ch| !crate::renderer::text_glyph_visibility::is_nonprinting_character(*ch))
@@ -217,8 +217,7 @@ pub(super) fn for_text(
                 candidate_typeface(&candidate, font_mgr, sample),
                 size,
                 style,
-                font_mgr,
-                geometric_text,
+                replay,
             );
             if !candidate.declared {
                 if let Some(observer) = observer {
@@ -238,15 +237,14 @@ pub(super) fn for_text(
             candidate_typeface(candidate, font_mgr, sample),
             size,
             style,
-            font_mgr,
-            geometric_text,
+            replay,
         ))
     } else {
         let mut font = Font::default();
         font.set_size(size);
         font.set_edging(font::Edging::AntiAlias);
         font.set_subpixel(true);
-        preserve_geometry(&mut font, geometric_text);
+        preserve_geometry(&mut font, replay.geometric_text);
         Some(font)
     }
 }
@@ -259,13 +257,8 @@ pub(super) fn preserve_geometry(font: &mut Font, geometric_text: bool) {
     }
 }
 
-fn finish(
-    tf: Typeface,
-    size: f32,
-    style: &TextStyle,
-    font_mgr: &FontMgr,
-    geometric_text: bool,
-) -> Font {
+fn finish(tf: Typeface, size: f32, style: &TextStyle, replay: &super::SkiaTextReplay<'_>) -> Font {
+    let font_mgr = replay.font_mgr;
     let tf = if style.italic {
         unobliqued_typeface(font_mgr, &tf).unwrap_or(tf)
     } else {
@@ -283,7 +276,10 @@ fn finish(
     };
     let is_bold_face = *tf.font_style().weight() >= 600;
     let is_slanted_face = tf.font_style().slant() != skia_safe::font_style::Slant::Upright;
-    let mut font = Font::new(tf, size);
+    let mut font = Font::new(
+        super::super::pdf_fonts::for_output(replay.pdf_fonts, font_mgr, tf),
+        size,
+    );
     font.set_edging(font::Edging::AntiAlias);
     // 글줄이 정한 소수 원점을 glyph raster에서도 보존한다.
     font.set_subpixel(true);
@@ -292,7 +288,7 @@ fn finish(
     if style.fixed_glyph_advances {
         font.set_baseline_snap(false);
     }
-    preserve_geometry(&mut font, geometric_text);
+    preserve_geometry(&mut font, replay.geometric_text);
     if style.is_visually_bold() && !is_bold_face && !owns_heavy {
         font.set_embolden(true);
     }

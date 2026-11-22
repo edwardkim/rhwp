@@ -1,5 +1,6 @@
 //! 관계형·고정형: re-03-latin-only-hancom의 PDF API와 합성 PaintOp의 이미지 픽셀·화살촉 vector/거부 계약.
-//! 주석 갱신: 2026-11-12T08:34:52+09:00; 직전 파일 커밋: 2026-11-06T18:07:13+09:00 (8829dd8f3947d2b9a3525ded8919370fa19dae94).
+//! 주석 갱신: 2026-11-22T13:49:12+09:00. 직전 파일 커밋은 2026-11-12T08:35:16+09:00 (68e8190d334fccc5a2846dcfead4a7c60330774a).
+//! #9276은 공개 글꼴로 PDF 부분 임베딩, 사용 글리프의 윤곽·전진폭, 문자 추출 및 부분 임베딩 금지를 검사한다.
 //! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
 //! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
 //! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
@@ -2209,5 +2210,105 @@ mod metafile_font_snapshot {
             source,
             "paint 공급이 저장 IR과 원래 WMF 바이트를 바꾸지 않는다"
         );
+    }
+}
+
+#[cfg(feature = "pdf-import")]
+#[test]
+fn direct_pdf_subsets_legacy_gsub_without_losing_text_or_embedding_permissions() {
+    use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile};
+    use rhwp::renderer::pdf::layer_trees_to_pdf_with_options;
+    use rhwp::renderer::render_tree::{BoundingBox, TextRunNode};
+    use rhwp::renderer::TextStyle;
+    use ttf_parser::{Face, Tag};
+
+    let source = include_bytes!("../ttfs/opensource/NotoSansKR-Regular.ttf");
+    let original = Face::parse(source, 0).unwrap();
+    let offset = |tag| {
+        original
+            .raw_face()
+            .table_records
+            .into_iter()
+            .find(|record| record.tag == Tag::from_bytes(tag))
+            .unwrap()
+            .offset as usize
+    };
+    let gsub = offset(b"GSUB");
+    let fs_type = offset(b"OS/2") + 8;
+    let text = "Aé한";
+    let run = TextRunNode {
+        text: text.into(),
+        style: TextStyle {
+            font_family: "Noto Sans KR".into(),
+            font_size: 20.0,
+            ..Default::default()
+        },
+        baseline: 20.0,
+        char_shape_id: None,
+        para_shape_id: None,
+        section_index: None,
+        para_index: None,
+        char_start: None,
+        cell_context: None,
+        is_para_end: true,
+        is_line_break_end: false,
+        rotation: 0.0,
+        is_vertical: false,
+        char_overlap: None,
+        border_fill_id: 0,
+        field_marker: Default::default(),
+        layout_positions: None,
+        display_text: None,
+    };
+    let bounds = BoundingBox::new(0.0, 0.0, 180.0, 48.0);
+    let page = PageLayerTree::with_profile(
+        bounds.width,
+        bounds.height,
+        LayerNode::leaf(bounds, None, vec![PaintOp::text_run(bounds, run)]),
+        RenderProfile::Print,
+    );
+    let mut program = source.to_vec();
+    program[gsub..gsub + 4].copy_from_slice(&0x0000_1000u32.to_be_bytes());
+    for allow_subset in [true, false] {
+        if !allow_subset {
+            program[fs_type..fs_type + 2].copy_from_slice(&0x0100u16.to_be_bytes());
+        }
+        let path = unique_pdf_path().with_extension("ttf");
+        std::fs::write(&path, &program).unwrap();
+        let mut options = DirectPdfExportOptions::default();
+        options.font_paths.push(path.clone());
+        let result = layer_trees_to_pdf_with_options(std::slice::from_ref(&page), &options);
+        std::fs::remove_file(path).unwrap();
+        let pdf =
+            pdf_oxide::PdfDocument::from_bytes_with_limits(result.unwrap(), Default::default())
+                .unwrap();
+        let extracted: String = pdf.extract_text(0).unwrap().split_whitespace().collect();
+        assert_eq!(extracted, text);
+        let fonts = pdf.extract_embedded_fonts().unwrap();
+        assert_eq!(fonts.len(), 1, "the specified face supplies every glyph");
+        let embedded = &fonts[0].1;
+        if allow_subset {
+            assert!(
+                embedded.len() < program.len() / 4,
+                "unused outlines were embedded"
+            );
+        } else {
+            assert_eq!(
+                embedded, &program,
+                "preserve the complete no-subsetting program"
+            );
+        }
+        let face = Face::parse(embedded, 0).unwrap();
+        for ch in text.chars() {
+            let glyph = original.glyph_index(ch).unwrap();
+            assert_eq!(
+                face.glyph_bounding_box(glyph),
+                original.glyph_bounding_box(glyph)
+            );
+            assert_eq!(
+                face.glyph_hor_advance(glyph),
+                original.glyph_hor_advance(glyph)
+            );
+        }
     }
 }

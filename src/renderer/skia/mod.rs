@@ -22,6 +22,7 @@ mod image_coverage;
 mod image_effect;
 mod line_replay;
 mod metafile_print;
+mod pdf_fonts;
 mod prepared_page;
 mod print_image_sampling;
 mod rectangle_fill;

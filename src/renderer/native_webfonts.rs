@@ -397,25 +397,26 @@ pub fn prepare(doc_info: &DocInfo, paths: &[PathBuf]) -> Result<NativeWebfontSup
         }
     }
     super::font_paths::retain_fontdb_family_aliases(&mut database);
+    // Many document slots ask for the same installed family or PostScript name.
+    // Normalize the inventory once; a hyphen-insensitive match must still
+    // identify a single distinct PostScript name, including localized aliases.
+    let mut installed_names = BTreeSet::new();
+    let mut compact_postscript = BTreeMap::<String, BTreeSet<&str>>::new();
+    for face in database.faces() {
+        let name = normalized(&face.post_script_name);
+        compact_postscript
+            .entry(name.replace('-', ""))
+            .or_default()
+            .insert(&face.post_script_name);
+        installed_names.insert(name);
+        installed_names.extend(face.families.iter().map(|(family, _)| normalized(family)));
+    }
     let present = |name: &str| {
         let target = normalized(name);
-        if database.faces().any(|face| {
-            normalized(&face.post_script_name) == target
-                || face
-                    .families
-                    .iter()
-                    .any(|(family, _)| normalized(family) == target)
-        }) {
-            return true;
-        }
-        // PostScript 하이픈 차이는 단일 실제 face로 확인되는 경우에만 허용한다.
-        let compact = target.replace('-', "");
-        let matches: BTreeSet<_> = database
-            .faces()
-            .filter(|face| normalized(&face.post_script_name).replace('-', "") == compact)
-            .map(|face| face.post_script_name.clone())
-            .collect();
-        matches.len() == 1
+        installed_names.contains(&target)
+            || compact_postscript
+                .get(&target.replace('-', ""))
+                .is_some_and(|matches| matches.len() == 1)
     };
     let embedded: BTreeSet<_> = doc_info
         .font_faces

@@ -40,15 +40,15 @@ pub struct NativeSkiaCacheStats {
     pub images: NativeSkiaCacheUsage,
 }
 
-pub(super) struct BoundedCache<V> {
-    entries: HashMap<CacheKey, (V, usize)>,
-    order: VecDeque<CacheKey>,
+pub(super) struct BoundedCache<V, K = CacheKey> {
+    entries: HashMap<K, (V, usize)>,
+    order: VecDeque<K>,
     max_entries: usize,
     max_bytes: usize,
     usage: NativeSkiaCacheUsage,
 }
 
-impl<V: Clone> BoundedCache<V> {
+impl<V: Clone, K: Copy + Eq + std::hash::Hash> BoundedCache<V, K> {
     pub fn new(max_entries: usize, max_bytes: usize) -> Self {
         Self {
             entries: HashMap::new(),
@@ -59,7 +59,7 @@ impl<V: Clone> BoundedCache<V> {
         }
     }
 
-    pub fn get(&mut self, key: CacheKey) -> Option<V> {
+    pub fn get(&mut self, key: K) -> Option<V> {
         let Some((value, _)) = self.entries.get(&key) else {
             self.usage.misses = self.usage.misses.saturating_add(1);
             return None;
@@ -71,18 +71,18 @@ impl<V: Clone> BoundedCache<V> {
         Some(value)
     }
 
-    pub fn insert(&mut self, key: CacheKey, value: V, bytes: usize) {
+    pub fn insert(&mut self, key: K, value: V, bytes: usize) {
         self.insert_observed(key, value, bytes, |_, _| {});
     }
 
     pub fn insert_observed(
         &mut self,
-        key: CacheKey,
+        key: K,
         value: V,
         bytes: usize,
         mut on_eviction: impl FnMut(&V, usize),
     ) -> bool {
-        let Some(bytes) = bytes.checked_add(std::mem::size_of::<(CacheKey, V, usize)>()) else {
+        let Some(bytes) = bytes.checked_add(std::mem::size_of::<(K, V, usize)>()) else {
             self.usage.skipped_oversized = self.usage.skipped_oversized.saturating_add(1);
             return false;
         };

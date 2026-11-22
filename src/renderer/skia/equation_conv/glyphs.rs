@@ -67,7 +67,16 @@ pub(super) fn draw_text_with_family(
         .into_iter()
         .map(|(index, text)| {
             let mut face = index
-                .map(|index| Font::new(chain[index].typeface.clone(), font_size as f32))
+                .map(|index| {
+                    Font::new(
+                        super::super::pdf_fonts::for_output(
+                            fonts.pdf_fonts,
+                            fonts.font_mgr,
+                            chain[index].typeface.clone(),
+                        ),
+                        font_size as f32,
+                    )
+                })
                 .unwrap_or_default();
             face.set_size(font_size as f32);
             face.set_edging(font::Edging::AntiAlias);
@@ -232,7 +241,16 @@ pub(super) fn draw_hancom_glyphs(
                 )
             };
         let mut font = selected
-            .map(|candidate| Font::new(candidate.typeface.clone(), font_size as f32))
+            .map(|candidate| {
+                Font::new(
+                    super::super::pdf_fonts::for_output(
+                        fonts.pdf_fonts,
+                        fonts.font_mgr,
+                        candidate.typeface.clone(),
+                    ),
+                    font_size as f32,
+                )
+            })
             .unwrap_or_default();
         font.set_size(font_size as f32);
         font.set_edging(font::Edging::AntiAlias);
