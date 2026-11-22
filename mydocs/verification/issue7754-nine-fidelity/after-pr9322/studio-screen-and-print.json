@@ -1,0 +1,4458 @@
+{
+  "current_sources": {
+    "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+    "candidate": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c"
+  },
+  "wasm_sha256": {
+    "base": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+    "candidate": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91"
+  },
+  "before_rebase_sources": {
+    "base": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+    "candidate": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2"
+  },
+  "cases_by_role": {
+    "base": 216,
+    "candidate": 216
+  },
+  "same_within_current_pairs": 165,
+  "before_rebase_comparison": {
+    "base_original_cases": 192,
+    "base_original_png_unchanged": 192,
+    "candidate_original_cases": 192,
+    "candidate_original_png_unchanged": 192
+  },
+  "incoming_pr_9318_pairs_with_matching_png": 24,
+  "market": {
+    "paired_conditions": 30,
+    "changed_pairs": 6,
+    "changed_pages": [
+      100
+    ],
+    "fallback": {
+      "base": {
+        "source_report_sha256": "5d4b78a89eb0adcc38d45d6626dd6a96ab9ae1bf0967c8f4c6883d98db46bcc6",
+        "checked_fallbacks": 4,
+        "effective_backend": "canvas2d",
+        "document_pages": 315,
+        "canvaskit_max_pages": 128
+      },
+      "candidate": {
+        "source_report_sha256": "a892217a94b176b6738c9b894fb352430affc2f5c4bb694175a78fb250cb8659",
+        "checked_fallbacks": 4,
+        "effective_backend": "canvas2d",
+        "document_pages": 315,
+        "canvaskit_max_pages": 128
+      }
+    }
+  },
+  "verified_capture_batches": [
+    {
+      "role": "base",
+      "name": "incoming-9318",
+      "count": 24,
+      "report_sha256": "1da081be59ffc0288bef993c873e7f4b0f06cd4e836e3eb7ce3c8372c2c76eab",
+      "served_sha256": "7dbaa9f2b8fcda2cf670ade065556d057110356f34fe68974979c5b88d75f2b8"
+    },
+    {
+      "role": "base",
+      "name": "original-01",
+      "count": 48,
+      "report_sha256": "a631c9a3314feb9a8db828802bb03400fa75fda6c52bb4e590e4bdc33847ad9f",
+      "served_sha256": "7dbaa9f2b8fcda2cf670ade065556d057110356f34fe68974979c5b88d75f2b8"
+    },
+    {
+      "role": "base",
+      "name": "original-09",
+      "count": 48,
+      "report_sha256": "9bf59378df2a9ea977746135f1b7e4edb2ed0514ba7982d74f9d223366d38be9",
+      "served_sha256": "7dbaa9f2b8fcda2cf670ade065556d057110356f34fe68974979c5b88d75f2b8"
+    },
+    {
+      "role": "base",
+      "name": "original-17",
+      "count": 48,
+      "report_sha256": "328ee8da91d8d2d0857cd65bf1a6b30f9a802337d31aa1b02a0ce5c7c68b1b11",
+      "served_sha256": "7dbaa9f2b8fcda2cf670ade065556d057110356f34fe68974979c5b88d75f2b8"
+    },
+    {
+      "role": "base",
+      "name": "original-25",
+      "count": 18,
+      "report_sha256": "f365ba85c9ece9f246cc4dd7cd45ec9ec328fb6ed6b298e6fe4940399d7a0fe0",
+      "served_sha256": "7dbaa9f2b8fcda2cf670ade065556d057110356f34fe68974979c5b88d75f2b8"
+    },
+    {
+      "role": "base",
+      "name": "market-bounded",
+      "count": 30,
+      "report_sha256": "5d4b78a89eb0adcc38d45d6626dd6a96ab9ae1bf0967c8f4c6883d98db46bcc6",
+      "served_sha256": "b6e191174c57bb1ca1d516ebd09e1f855b23f584aa7f7148f6f3c29864f0c8fd"
+    },
+    {
+      "role": "candidate",
+      "name": "incoming-9318",
+      "count": 24,
+      "report_sha256": "e52aa686c10e6f820e3b8f01c61844db29b5fa9191f91fbb4c2af881c68d82fc",
+      "served_sha256": "d37605d20fb68e99dca396b6ca6e07140d897139af8a9099027d6ec9c7fb26e7"
+    },
+    {
+      "role": "candidate",
+      "name": "original-01",
+      "count": 48,
+      "report_sha256": "e1a2f19195a1866ffe432b1cb95aac6e2ca766a5c598b56b9155e614dfe0c439",
+      "served_sha256": "330f801a8c70cdd8ea89bfb823aa7766b6cabfe858882b645076b28356b38745"
+    },
+    {
+      "role": "candidate",
+      "name": "original-09",
+      "count": 48,
+      "report_sha256": "eb1c505c6f33a11cce6739d15d757599313dbc2734683cd0bbab201bf17d1bc6",
+      "served_sha256": "330f801a8c70cdd8ea89bfb823aa7766b6cabfe858882b645076b28356b38745"
+    },
+    {
+      "role": "candidate",
+      "name": "original-17",
+      "count": 48,
+      "report_sha256": "4bf1d395e56708e04bfbf115f55bcb4a4144328fc6eefd4870f384d7a888b352",
+      "served_sha256": "330f801a8c70cdd8ea89bfb823aa7766b6cabfe858882b645076b28356b38745"
+    },
+    {
+      "role": "candidate",
+      "name": "original-25",
+      "count": 18,
+      "report_sha256": "fe3956d431c983b922ec19936e0947475b92df91de6674992c99ed16f482e119",
+      "served_sha256": "d37605d20fb68e99dca396b6ca6e07140d897139af8a9099027d6ec9c7fb26e7"
+    },
+    {
+      "role": "candidate",
+      "name": "market-bounded",
+      "count": 30,
+      "report_sha256": "a892217a94b176b6738c9b894fb352430affc2f5c4bb694175a78fb250cb8659",
+      "served_sha256": "979fee02c1999505eb06966ac6e0986be963969108ec40826895543a6ea6f6e3"
+    }
+  ],
+  "png_hashes_recomputed": true,
+  "pairs": [
+    {
+      "sample": "7754-plain-p1",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "86ebe2a953d8db44776ef310454c76043866790ff2381e7266662b14ae869034",
+        "sizeBytes": 237639,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "ce0999ba4b8e41bb9e458ab8e1fa82ffdb3d86b7adf8c407e65ac739de334b35",
+        "sizeBytes": 238303,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7754-plain-p1",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a28b07f2194b4e3c4c9f88790150e624374916238f85ffd0e8c7f0f77eee9278",
+        "sizeBytes": 236656,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "34c0bc2cfdbcd47bf25f96e27dee69e03b20b91cc5d980e490d5ed4cbf9802b4",
+        "sizeBytes": 237101,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7754-plain-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "86ebe2a953d8db44776ef310454c76043866790ff2381e7266662b14ae869034",
+        "sizeBytes": 237639,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "ce0999ba4b8e41bb9e458ab8e1fa82ffdb3d86b7adf8c407e65ac739de334b35",
+        "sizeBytes": 238303,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7754-plain-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a28b07f2194b4e3c4c9f88790150e624374916238f85ffd0e8c7f0f77eee9278",
+        "sizeBytes": 236656,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "34c0bc2cfdbcd47bf25f96e27dee69e03b20b91cc5d980e490d5ed4cbf9802b4",
+        "sizeBytes": 237101,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7754-plain-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "86ebe2a953d8db44776ef310454c76043866790ff2381e7266662b14ae869034",
+        "sizeBytes": 237639,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "ce0999ba4b8e41bb9e458ab8e1fa82ffdb3d86b7adf8c407e65ac739de334b35",
+        "sizeBytes": 238303,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7754-plain-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a28b07f2194b4e3c4c9f88790150e624374916238f85ffd0e8c7f0f77eee9278",
+        "sizeBytes": 236656,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "34c0bc2cfdbcd47bf25f96e27dee69e03b20b91cc5d980e490d5ed4cbf9802b4",
+        "sizeBytes": 237101,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7754-plain-p24",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "c5e1980ec85b994e0e31162509c5a3361191f9a8745e902a2dc294ad578900f8",
+        "sizeBytes": 95646,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "c5e1980ec85b994e0e31162509c5a3361191f9a8745e902a2dc294ad578900f8",
+        "sizeBytes": 95646,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 24
+    },
+    {
+      "sample": "7754-plain-p24",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "16eab284b053bda28323bc6cf1ca56b079cf686a2fab8d4377040c5d412dbb91",
+        "sizeBytes": 94977,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "16eab284b053bda28323bc6cf1ca56b079cf686a2fab8d4377040c5d412dbb91",
+        "sizeBytes": 94977,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 24
+    },
+    {
+      "sample": "7754-plain-p24",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "c5e1980ec85b994e0e31162509c5a3361191f9a8745e902a2dc294ad578900f8",
+        "sizeBytes": 95646,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "c5e1980ec85b994e0e31162509c5a3361191f9a8745e902a2dc294ad578900f8",
+        "sizeBytes": 95646,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 24
+    },
+    {
+      "sample": "7754-plain-p24",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "16eab284b053bda28323bc6cf1ca56b079cf686a2fab8d4377040c5d412dbb91",
+        "sizeBytes": 94977,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "16eab284b053bda28323bc6cf1ca56b079cf686a2fab8d4377040c5d412dbb91",
+        "sizeBytes": 94977,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 24
+    },
+    {
+      "sample": "7754-plain-p24",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "c5e1980ec85b994e0e31162509c5a3361191f9a8745e902a2dc294ad578900f8",
+        "sizeBytes": 95646,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "c5e1980ec85b994e0e31162509c5a3361191f9a8745e902a2dc294ad578900f8",
+        "sizeBytes": 95646,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 24
+    },
+    {
+      "sample": "7754-plain-p24",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "16eab284b053bda28323bc6cf1ca56b079cf686a2fab8d4377040c5d412dbb91",
+        "sizeBytes": 94977,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "16eab284b053bda28323bc6cf1ca56b079cf686a2fab8d4377040c5d412dbb91",
+        "sizeBytes": 94977,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 24
+    },
+    {
+      "sample": "7754-plain-p4",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "dc8ef0747d9d1e41a41c6ce8b6f8907428eeaa1921908258e2cc67ecf9eaae73",
+        "sizeBytes": 163081,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "dc8ef0747d9d1e41a41c6ce8b6f8907428eeaa1921908258e2cc67ecf9eaae73",
+        "sizeBytes": 163081,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 4
+    },
+    {
+      "sample": "7754-plain-p4",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d9efa08f1c1bb202bc6aa663a0968289cd30cf37420d2e99493d16624489c2e1",
+        "sizeBytes": 162474,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d9efa08f1c1bb202bc6aa663a0968289cd30cf37420d2e99493d16624489c2e1",
+        "sizeBytes": 162474,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 4
+    },
+    {
+      "sample": "7754-plain-p4",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "dc8ef0747d9d1e41a41c6ce8b6f8907428eeaa1921908258e2cc67ecf9eaae73",
+        "sizeBytes": 163081,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "dc8ef0747d9d1e41a41c6ce8b6f8907428eeaa1921908258e2cc67ecf9eaae73",
+        "sizeBytes": 163081,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 4
+    },
+    {
+      "sample": "7754-plain-p4",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d9efa08f1c1bb202bc6aa663a0968289cd30cf37420d2e99493d16624489c2e1",
+        "sizeBytes": 162474,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d9efa08f1c1bb202bc6aa663a0968289cd30cf37420d2e99493d16624489c2e1",
+        "sizeBytes": 162474,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 4
+    },
+    {
+      "sample": "7754-plain-p4",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "dc8ef0747d9d1e41a41c6ce8b6f8907428eeaa1921908258e2cc67ecf9eaae73",
+        "sizeBytes": 163081,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "dc8ef0747d9d1e41a41c6ce8b6f8907428eeaa1921908258e2cc67ecf9eaae73",
+        "sizeBytes": 163081,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 4
+    },
+    {
+      "sample": "7754-plain-p4",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d9efa08f1c1bb202bc6aa663a0968289cd30cf37420d2e99493d16624489c2e1",
+        "sizeBytes": 162474,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d9efa08f1c1bb202bc6aa663a0968289cd30cf37420d2e99493d16624489c2e1",
+        "sizeBytes": 162474,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 4
+    },
+    {
+      "sample": "7754-plain-p6",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "862e41c3db8d40dcc229fbbe7ea0294f9b32279ac1d519f57bf7b52632d9e754",
+        "sizeBytes": 163164,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "862e41c3db8d40dcc229fbbe7ea0294f9b32279ac1d519f57bf7b52632d9e754",
+        "sizeBytes": 163164,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 6
+    },
+    {
+      "sample": "7754-plain-p6",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "17f97c3c78051b1fa4f70b7b1aaaed78384a27cce80d6e2bff1ac78a60cfdabc",
+        "sizeBytes": 162558,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "17f97c3c78051b1fa4f70b7b1aaaed78384a27cce80d6e2bff1ac78a60cfdabc",
+        "sizeBytes": 162558,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 6
+    },
+    {
+      "sample": "7754-plain-p6",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "862e41c3db8d40dcc229fbbe7ea0294f9b32279ac1d519f57bf7b52632d9e754",
+        "sizeBytes": 163164,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "862e41c3db8d40dcc229fbbe7ea0294f9b32279ac1d519f57bf7b52632d9e754",
+        "sizeBytes": 163164,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 6
+    },
+    {
+      "sample": "7754-plain-p6",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "17f97c3c78051b1fa4f70b7b1aaaed78384a27cce80d6e2bff1ac78a60cfdabc",
+        "sizeBytes": 162558,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "17f97c3c78051b1fa4f70b7b1aaaed78384a27cce80d6e2bff1ac78a60cfdabc",
+        "sizeBytes": 162558,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 6
+    },
+    {
+      "sample": "7754-plain-p6",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "862e41c3db8d40dcc229fbbe7ea0294f9b32279ac1d519f57bf7b52632d9e754",
+        "sizeBytes": 163164,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "862e41c3db8d40dcc229fbbe7ea0294f9b32279ac1d519f57bf7b52632d9e754",
+        "sizeBytes": 163164,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 6
+    },
+    {
+      "sample": "7754-plain-p6",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "17f97c3c78051b1fa4f70b7b1aaaed78384a27cce80d6e2bff1ac78a60cfdabc",
+        "sizeBytes": 162558,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "17f97c3c78051b1fa4f70b7b1aaaed78384a27cce80d6e2bff1ac78a60cfdabc",
+        "sizeBytes": 162558,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 6
+    },
+    {
+      "sample": "7755-p100",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64333,
+        "sha256": "b5ba006842a107bf9bc9b5e0083807f639c218a95eed53a7cc7e6335697a0e61"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64510,
+        "sha256": "dccc3d3f842748931b4a048b5e41b79fc783c7c234a41b6f66d66e7fcb1cda0b"
+      },
+      "same_png": false,
+      "page": 100
+    },
+    {
+      "sample": "7755-p100",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64611,
+        "sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64728,
+        "sha256": "5b234616d6fb0b9e811af1fb61d25cd9a173536220517f3916a855b7b5f1de17"
+      },
+      "same_png": false,
+      "page": 100
+    },
+    {
+      "sample": "7755-p100",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64333,
+        "sha256": "b5ba006842a107bf9bc9b5e0083807f639c218a95eed53a7cc7e6335697a0e61"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64510,
+        "sha256": "dccc3d3f842748931b4a048b5e41b79fc783c7c234a41b6f66d66e7fcb1cda0b"
+      },
+      "same_png": false,
+      "page": 100
+    },
+    {
+      "sample": "7755-p100",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64611,
+        "sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64728,
+        "sha256": "5b234616d6fb0b9e811af1fb61d25cd9a173536220517f3916a855b7b5f1de17"
+      },
+      "same_png": false,
+      "page": 100
+    },
+    {
+      "sample": "7755-p100",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64333,
+        "sha256": "b5ba006842a107bf9bc9b5e0083807f639c218a95eed53a7cc7e6335697a0e61"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64510,
+        "sha256": "dccc3d3f842748931b4a048b5e41b79fc783c7c234a41b6f66d66e7fcb1cda0b"
+      },
+      "same_png": false,
+      "page": 100
+    },
+    {
+      "sample": "7755-p100",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64611,
+        "sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64728,
+        "sha256": "5b234616d6fb0b9e811af1fb61d25cd9a173536220517f3916a855b7b5f1de17"
+      },
+      "same_png": false,
+      "page": 100
+    },
+    {
+      "sample": "7755-p106",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      },
+      "same_png": true,
+      "page": 106
+    },
+    {
+      "sample": "7755-p106",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      },
+      "same_png": true,
+      "page": 106
+    },
+    {
+      "sample": "7755-p106",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      },
+      "same_png": true,
+      "page": 106
+    },
+    {
+      "sample": "7755-p106",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      },
+      "same_png": true,
+      "page": 106
+    },
+    {
+      "sample": "7755-p106",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      },
+      "same_png": true,
+      "page": 106
+    },
+    {
+      "sample": "7755-p106",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      },
+      "same_png": true,
+      "page": 106
+    },
+    {
+      "sample": "7755-p247",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      },
+      "same_png": true,
+      "page": 247
+    },
+    {
+      "sample": "7755-p247",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      },
+      "same_png": true,
+      "page": 247
+    },
+    {
+      "sample": "7755-p247",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      },
+      "same_png": true,
+      "page": 247
+    },
+    {
+      "sample": "7755-p247",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      },
+      "same_png": true,
+      "page": 247
+    },
+    {
+      "sample": "7755-p247",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      },
+      "same_png": true,
+      "page": 247
+    },
+    {
+      "sample": "7755-p247",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      },
+      "same_png": true,
+      "page": 247
+    },
+    {
+      "sample": "7755-p315",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      },
+      "same_png": true,
+      "page": 315
+    },
+    {
+      "sample": "7755-p315",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      },
+      "same_png": true,
+      "page": 315
+    },
+    {
+      "sample": "7755-p315",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      },
+      "same_png": true,
+      "page": 315
+    },
+    {
+      "sample": "7755-p315",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      },
+      "same_png": true,
+      "page": 315
+    },
+    {
+      "sample": "7755-p315",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      },
+      "same_png": true,
+      "page": 315
+    },
+    {
+      "sample": "7755-p315",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      },
+      "same_png": true,
+      "page": 315
+    },
+    {
+      "sample": "7755-p95",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      },
+      "same_png": true,
+      "page": 95
+    },
+    {
+      "sample": "7755-p95",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      },
+      "same_png": true,
+      "page": 95
+    },
+    {
+      "sample": "7755-p95",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      },
+      "same_png": true,
+      "page": 95
+    },
+    {
+      "sample": "7755-p95",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      },
+      "same_png": true,
+      "page": 95
+    },
+    {
+      "sample": "7755-p95",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      },
+      "same_png": true,
+      "page": 95
+    },
+    {
+      "sample": "7755-p95",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      },
+      "candidate": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      },
+      "same_png": true,
+      "page": 95
+    },
+    {
+      "sample": "7756-p1",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "555349c6b528199b993d1fffb5fc9f031f85a6a0eb5619ab469497df8b0f7d8c",
+        "sizeBytes": 180753,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "d471496c9bcf73a756ad314c16ec92fcdaab14c5e06be6250897ca738d1e059c",
+        "sizeBytes": 175193,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7756-p1",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "564b1eebaf79cc13b8099d8257d21772f88f8bc280de9b3380c11284fe388fd9",
+        "sizeBytes": 181607,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "564b1eebaf79cc13b8099d8257d21772f88f8bc280de9b3380c11284fe388fd9",
+        "sizeBytes": 181607,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7756-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "555349c6b528199b993d1fffb5fc9f031f85a6a0eb5619ab469497df8b0f7d8c",
+        "sizeBytes": 180753,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "d471496c9bcf73a756ad314c16ec92fcdaab14c5e06be6250897ca738d1e059c",
+        "sizeBytes": 175193,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7756-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "564b1eebaf79cc13b8099d8257d21772f88f8bc280de9b3380c11284fe388fd9",
+        "sizeBytes": 181607,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "564b1eebaf79cc13b8099d8257d21772f88f8bc280de9b3380c11284fe388fd9",
+        "sizeBytes": 181607,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7756-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "555349c6b528199b993d1fffb5fc9f031f85a6a0eb5619ab469497df8b0f7d8c",
+        "sizeBytes": 180753,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "d471496c9bcf73a756ad314c16ec92fcdaab14c5e06be6250897ca738d1e059c",
+        "sizeBytes": 175193,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 1
+    },
+    {
+      "sample": "7756-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "564b1eebaf79cc13b8099d8257d21772f88f8bc280de9b3380c11284fe388fd9",
+        "sizeBytes": 181607,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "564b1eebaf79cc13b8099d8257d21772f88f8bc280de9b3380c11284fe388fd9",
+        "sizeBytes": 181607,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7757-p1",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d152c284a39c6a98f6c062ecfeff2e8e0097fb2c8319e5abc57659f7fce58a9a",
+        "sizeBytes": 75030,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "d152c284a39c6a98f6c062ecfeff2e8e0097fb2c8319e5abc57659f7fce58a9a",
+        "sizeBytes": 75030,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7757-p1",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f0b4dc2db41a186741c1a89347e9f0de5476e7c6ad039332af30afab6c88bd2c",
+        "sizeBytes": 65078,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "f0b4dc2db41a186741c1a89347e9f0de5476e7c6ad039332af30afab6c88bd2c",
+        "sizeBytes": 65078,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7757-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "baac735959a4ce6a7b38e7c1784270d7162464c918bf9cb0446a3f2cd421ca09",
+        "sizeBytes": 69124,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "baac735959a4ce6a7b38e7c1784270d7162464c918bf9cb0446a3f2cd421ca09",
+        "sizeBytes": 69124,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7757-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "2665da5b0cdfcec0bf8ed4aa80c64c4ffd8491d2ae5254104d23ed6f116c8bcb",
+        "sizeBytes": 59962,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "2665da5b0cdfcec0bf8ed4aa80c64c4ffd8491d2ae5254104d23ed6f116c8bcb",
+        "sizeBytes": 59962,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7757-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "baac735959a4ce6a7b38e7c1784270d7162464c918bf9cb0446a3f2cd421ca09",
+        "sizeBytes": 69124,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "baac735959a4ce6a7b38e7c1784270d7162464c918bf9cb0446a3f2cd421ca09",
+        "sizeBytes": 69124,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7757-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "3be67094da235bea90c4acdb06308792b6aefa050daca0776dfd62ab4634f50b",
+        "sizeBytes": 53539,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "3be67094da235bea90c4acdb06308792b6aefa050daca0776dfd62ab4634f50b",
+        "sizeBytes": 53539,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7757-p3",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "357d912bbd068f9e19a02ee3815017e3925f481f9dbf6a1bbb6ee29da34db4fe",
+        "sizeBytes": 122249,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "357d912bbd068f9e19a02ee3815017e3925f481f9dbf6a1bbb6ee29da34db4fe",
+        "sizeBytes": 122249,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 3
+    },
+    {
+      "sample": "7757-p3",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "bb6efd2c51878a24672e93f5f645d38db0ecc8d16ce563360f5f4c6506a64ca1",
+        "sizeBytes": 118603,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "bb6efd2c51878a24672e93f5f645d38db0ecc8d16ce563360f5f4c6506a64ca1",
+        "sizeBytes": 118603,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 3
+    },
+    {
+      "sample": "7757-p3",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "32d93ca4004a9e8b642f4f026f92dbb30de0a195a2e1762cf9544b00648729d6",
+        "sizeBytes": 96708,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "32d93ca4004a9e8b642f4f026f92dbb30de0a195a2e1762cf9544b00648729d6",
+        "sizeBytes": 96708,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 3
+    },
+    {
+      "sample": "7757-p3",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "c26545dd50b5ec87f0f5ee7f9ba48f40d71ee0e5255c69b46b02e117d9e26da6",
+        "sizeBytes": 97669,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "c26545dd50b5ec87f0f5ee7f9ba48f40d71ee0e5255c69b46b02e117d9e26da6",
+        "sizeBytes": 97669,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 3
+    },
+    {
+      "sample": "7757-p3",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "32d93ca4004a9e8b642f4f026f92dbb30de0a195a2e1762cf9544b00648729d6",
+        "sizeBytes": 96708,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "32d93ca4004a9e8b642f4f026f92dbb30de0a195a2e1762cf9544b00648729d6",
+        "sizeBytes": 96708,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 3
+    },
+    {
+      "sample": "7757-p3",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "c26545dd50b5ec87f0f5ee7f9ba48f40d71ee0e5255c69b46b02e117d9e26da6",
+        "sizeBytes": 97669,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "c26545dd50b5ec87f0f5ee7f9ba48f40d71ee0e5255c69b46b02e117d9e26da6",
+        "sizeBytes": 97669,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 3
+    },
+    {
+      "sample": "7759-p1",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "1936854404b5be9a8784bcd97bd0a57807bdfe1b6424c745d9fdc41e10aa4417",
+        "sizeBytes": 260756,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "1936854404b5be9a8784bcd97bd0a57807bdfe1b6424c745d9fdc41e10aa4417",
+        "sizeBytes": 260756,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7759-p1",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "56b2a24dc00a7fef3714ed0803862c005d2de1029a2749745aa2c5509f241cec",
+        "sizeBytes": 261124,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "56b2a24dc00a7fef3714ed0803862c005d2de1029a2749745aa2c5509f241cec",
+        "sizeBytes": 261124,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7759-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "7fbe4be86f534583cf94e78dd22599bc0a3a3e7c2e4e8fc6223f3b519dc43eb1",
+        "sizeBytes": 253447,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "7fbe4be86f534583cf94e78dd22599bc0a3a3e7c2e4e8fc6223f3b519dc43eb1",
+        "sizeBytes": 253447,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7759-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "6ece1bb0573909871fc2de63887f7cdb5a6b45f65cd9654f42a6863650e0aab3",
+        "sizeBytes": 254788,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "6ece1bb0573909871fc2de63887f7cdb5a6b45f65cd9654f42a6863650e0aab3",
+        "sizeBytes": 254788,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7759-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "7fbe4be86f534583cf94e78dd22599bc0a3a3e7c2e4e8fc6223f3b519dc43eb1",
+        "sizeBytes": 253447,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "7fbe4be86f534583cf94e78dd22599bc0a3a3e7c2e4e8fc6223f3b519dc43eb1",
+        "sizeBytes": 253447,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7759-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "6ece1bb0573909871fc2de63887f7cdb5a6b45f65cd9654f42a6863650e0aab3",
+        "sizeBytes": 254788,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "6ece1bb0573909871fc2de63887f7cdb5a6b45f65cd9654f42a6863650e0aab3",
+        "sizeBytes": 254788,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7760-p1",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffe0b133b6ec8903f0d2339b16426687e695ae1607197d766b0437b79a257d95",
+        "sizeBytes": 150419,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "ffe0b133b6ec8903f0d2339b16426687e695ae1607197d766b0437b79a257d95",
+        "sizeBytes": 150419,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7760-p1",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "2439b4ffeb8db16f103743fbe0867668094c2de21aa10e16e28df3c1f20c5e72",
+        "sizeBytes": 146697,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "2439b4ffeb8db16f103743fbe0867668094c2de21aa10e16e28df3c1f20c5e72",
+        "sizeBytes": 146697,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7760-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffe0b133b6ec8903f0d2339b16426687e695ae1607197d766b0437b79a257d95",
+        "sizeBytes": 150419,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "ffe0b133b6ec8903f0d2339b16426687e695ae1607197d766b0437b79a257d95",
+        "sizeBytes": 150419,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7760-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "2439b4ffeb8db16f103743fbe0867668094c2de21aa10e16e28df3c1f20c5e72",
+        "sizeBytes": 146697,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "2439b4ffeb8db16f103743fbe0867668094c2de21aa10e16e28df3c1f20c5e72",
+        "sizeBytes": 146697,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7760-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffe0b133b6ec8903f0d2339b16426687e695ae1607197d766b0437b79a257d95",
+        "sizeBytes": 150419,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "ffe0b133b6ec8903f0d2339b16426687e695ae1607197d766b0437b79a257d95",
+        "sizeBytes": 150419,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7760-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "2439b4ffeb8db16f103743fbe0867668094c2de21aa10e16e28df3c1f20c5e72",
+        "sizeBytes": 146697,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "2439b4ffeb8db16f103743fbe0867668094c2de21aa10e16e28df3c1f20c5e72",
+        "sizeBytes": 146697,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7760-p19",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "df344d915e138f058218ba087f744a75bced2d88f49421543711994092e31e20",
+        "sizeBytes": 88276,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "df344d915e138f058218ba087f744a75bced2d88f49421543711994092e31e20",
+        "sizeBytes": 88276,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 19
+    },
+    {
+      "sample": "7760-p19",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0b77d762d41e40dc2150d8e59771705c06356eb5e1644eeb742893c9c0c5c702",
+        "sizeBytes": 89289,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "0b77d762d41e40dc2150d8e59771705c06356eb5e1644eeb742893c9c0c5c702",
+        "sizeBytes": 89289,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 19
+    },
+    {
+      "sample": "7760-p19",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "df344d915e138f058218ba087f744a75bced2d88f49421543711994092e31e20",
+        "sizeBytes": 88276,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "df344d915e138f058218ba087f744a75bced2d88f49421543711994092e31e20",
+        "sizeBytes": 88276,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 19
+    },
+    {
+      "sample": "7760-p19",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0b77d762d41e40dc2150d8e59771705c06356eb5e1644eeb742893c9c0c5c702",
+        "sizeBytes": 89289,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "0b77d762d41e40dc2150d8e59771705c06356eb5e1644eeb742893c9c0c5c702",
+        "sizeBytes": 89289,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 19
+    },
+    {
+      "sample": "7760-p19",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "df344d915e138f058218ba087f744a75bced2d88f49421543711994092e31e20",
+        "sizeBytes": 88276,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "df344d915e138f058218ba087f744a75bced2d88f49421543711994092e31e20",
+        "sizeBytes": 88276,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 19
+    },
+    {
+      "sample": "7760-p19",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0b77d762d41e40dc2150d8e59771705c06356eb5e1644eeb742893c9c0c5c702",
+        "sizeBytes": 89289,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "0b77d762d41e40dc2150d8e59771705c06356eb5e1644eeb742893c9c0c5c702",
+        "sizeBytes": 89289,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 19
+    },
+    {
+      "sample": "7761-p1",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7761-p1",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7761-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7761-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7761-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7761-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7761-p46",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7761-p46",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7761-p46",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7761-p46",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7761-p46",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7761-p46",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7762-p1",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7762-p1",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7762-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7762-p1",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7762-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "cbf91fb388c4e60be222409ff7ea811c4c84ec27e9094fc54badf0a94ee189c0",
+        "sizeBytes": 28242,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7762-p1",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ffa5de36c55164bcd70049f7f8796445f6f83777cec3cef98e80ab924951a212",
+        "sizeBytes": 33891,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 1
+    },
+    {
+      "sample": "7762-p46",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7762-p46",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7762-p46",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7762-p46",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7762-p46",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "f371991216dd9e44a50a94d56eb50c79e41ff03fa4f5bf1522da9a4c9ed25f28",
+        "sizeBytes": 10601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7762-p46",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "916db541857b9ffe9a5a8334f5de2a0a911643ee21301a845976339270476e63",
+        "sizeBytes": 11097,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 46
+    },
+    {
+      "sample": "7765-hwp-p10",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwp-p10",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwp-p10",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwp-p10",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwp-p10",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwp-p10",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwp-p26",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "db24c2c70a4b4fd1b92ead7af74299d287d349c6a092b013103da891502a59ef",
+        "sizeBytes": 119686,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "db24c2c70a4b4fd1b92ead7af74299d287d349c6a092b013103da891502a59ef",
+        "sizeBytes": 119686,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwp-p26",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f602922a996a7006e9f0a8a76a8c94304764580299fd051ffd5e9eab058a8809",
+        "sizeBytes": 122335,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "f602922a996a7006e9f0a8a76a8c94304764580299fd051ffd5e9eab058a8809",
+        "sizeBytes": 122335,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwp-p26",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "db24c2c70a4b4fd1b92ead7af74299d287d349c6a092b013103da891502a59ef",
+        "sizeBytes": 119686,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "db24c2c70a4b4fd1b92ead7af74299d287d349c6a092b013103da891502a59ef",
+        "sizeBytes": 119686,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwp-p26",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f602922a996a7006e9f0a8a76a8c94304764580299fd051ffd5e9eab058a8809",
+        "sizeBytes": 122335,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "f602922a996a7006e9f0a8a76a8c94304764580299fd051ffd5e9eab058a8809",
+        "sizeBytes": 122335,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwp-p26",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "db24c2c70a4b4fd1b92ead7af74299d287d349c6a092b013103da891502a59ef",
+        "sizeBytes": 119686,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "db24c2c70a4b4fd1b92ead7af74299d287d349c6a092b013103da891502a59ef",
+        "sizeBytes": 119686,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwp-p26",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "f602922a996a7006e9f0a8a76a8c94304764580299fd051ffd5e9eab058a8809",
+        "sizeBytes": 122335,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "f602922a996a7006e9f0a8a76a8c94304764580299fd051ffd5e9eab058a8809",
+        "sizeBytes": 122335,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwp-p27",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "23d195d529cd5c4affdbe577ef20b48af75edd606b677131ee265ebbed2f4ce7",
+        "sizeBytes": 148087,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "23d195d529cd5c4affdbe577ef20b48af75edd606b677131ee265ebbed2f4ce7",
+        "sizeBytes": 148087,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwp-p27",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "7a38786e5a2b2231690c891deae1115e807cc55bbcf806fc247fe708320530e4",
+        "sizeBytes": 150169,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "7a38786e5a2b2231690c891deae1115e807cc55bbcf806fc247fe708320530e4",
+        "sizeBytes": 150169,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwp-p27",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "23d195d529cd5c4affdbe577ef20b48af75edd606b677131ee265ebbed2f4ce7",
+        "sizeBytes": 148087,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "23d195d529cd5c4affdbe577ef20b48af75edd606b677131ee265ebbed2f4ce7",
+        "sizeBytes": 148087,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwp-p27",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "7a38786e5a2b2231690c891deae1115e807cc55bbcf806fc247fe708320530e4",
+        "sizeBytes": 150169,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "7a38786e5a2b2231690c891deae1115e807cc55bbcf806fc247fe708320530e4",
+        "sizeBytes": 150169,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwp-p27",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "23d195d529cd5c4affdbe577ef20b48af75edd606b677131ee265ebbed2f4ce7",
+        "sizeBytes": 148087,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "23d195d529cd5c4affdbe577ef20b48af75edd606b677131ee265ebbed2f4ce7",
+        "sizeBytes": 148087,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwp-p27",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "7a38786e5a2b2231690c891deae1115e807cc55bbcf806fc247fe708320530e4",
+        "sizeBytes": 150169,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "7a38786e5a2b2231690c891deae1115e807cc55bbcf806fc247fe708320530e4",
+        "sizeBytes": 150169,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwp-p28",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3be7bb09ba2d0690ebbdc2bc81850ed9848a6070ed6623f6064f8adff6f6aff4",
+        "sizeBytes": 133985,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "3be7bb09ba2d0690ebbdc2bc81850ed9848a6070ed6623f6064f8adff6f6aff4",
+        "sizeBytes": 133985,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwp-p28",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ea4079a12635561fded064c99630e7c9dbfbd38577f4a4d29fb688a53f016a50",
+        "sizeBytes": 135653,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ea4079a12635561fded064c99630e7c9dbfbd38577f4a4d29fb688a53f016a50",
+        "sizeBytes": 135653,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwp-p28",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3be7bb09ba2d0690ebbdc2bc81850ed9848a6070ed6623f6064f8adff6f6aff4",
+        "sizeBytes": 133985,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "3be7bb09ba2d0690ebbdc2bc81850ed9848a6070ed6623f6064f8adff6f6aff4",
+        "sizeBytes": 133985,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwp-p28",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ea4079a12635561fded064c99630e7c9dbfbd38577f4a4d29fb688a53f016a50",
+        "sizeBytes": 135653,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ea4079a12635561fded064c99630e7c9dbfbd38577f4a4d29fb688a53f016a50",
+        "sizeBytes": 135653,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwp-p28",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3be7bb09ba2d0690ebbdc2bc81850ed9848a6070ed6623f6064f8adff6f6aff4",
+        "sizeBytes": 133985,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "3be7bb09ba2d0690ebbdc2bc81850ed9848a6070ed6623f6064f8adff6f6aff4",
+        "sizeBytes": 133985,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwp-p28",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "ea4079a12635561fded064c99630e7c9dbfbd38577f4a4d29fb688a53f016a50",
+        "sizeBytes": 135653,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "ea4079a12635561fded064c99630e7c9dbfbd38577f4a4d29fb688a53f016a50",
+        "sizeBytes": 135653,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwp-p29",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a8dee32f7c31c935e3da85b06d6cf8fb9aa8b6d6f04f2c08ecc782d5a6a75780",
+        "sizeBytes": 27033,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a8dee32f7c31c935e3da85b06d6cf8fb9aa8b6d6f04f2c08ecc782d5a6a75780",
+        "sizeBytes": 27033,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwp-p29",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05573a2d2e265425c628cee778d581e2d6bdfc99b24a74d442eaf5f0526cbdf0",
+        "sizeBytes": 27406,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "05573a2d2e265425c628cee778d581e2d6bdfc99b24a74d442eaf5f0526cbdf0",
+        "sizeBytes": 27406,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwp-p29",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a8dee32f7c31c935e3da85b06d6cf8fb9aa8b6d6f04f2c08ecc782d5a6a75780",
+        "sizeBytes": 27033,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a8dee32f7c31c935e3da85b06d6cf8fb9aa8b6d6f04f2c08ecc782d5a6a75780",
+        "sizeBytes": 27033,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwp-p29",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05573a2d2e265425c628cee778d581e2d6bdfc99b24a74d442eaf5f0526cbdf0",
+        "sizeBytes": 27406,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "05573a2d2e265425c628cee778d581e2d6bdfc99b24a74d442eaf5f0526cbdf0",
+        "sizeBytes": 27406,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwp-p29",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a8dee32f7c31c935e3da85b06d6cf8fb9aa8b6d6f04f2c08ecc782d5a6a75780",
+        "sizeBytes": 27033,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a8dee32f7c31c935e3da85b06d6cf8fb9aa8b6d6f04f2c08ecc782d5a6a75780",
+        "sizeBytes": 27033,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwp-p29",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05573a2d2e265425c628cee778d581e2d6bdfc99b24a74d442eaf5f0526cbdf0",
+        "sizeBytes": 27406,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "05573a2d2e265425c628cee778d581e2d6bdfc99b24a74d442eaf5f0526cbdf0",
+        "sizeBytes": 27406,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwp-p64",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwp-p64",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwp-p64",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwp-p64",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwp-p64",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwp-p64",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwpx-p10",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "4e4c5b78f79317e81ac7d5452f2aac6d1173694bf5d9683a8b688fe3ab3e8318",
+        "sizeBytes": 175348,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwpx-p10",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "98edbcab7ec1c0c78f6b66f508e03159e55d25b77b7248a98108cf98327b82e8",
+        "sizeBytes": 174557,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwpx-p10",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "4e4c5b78f79317e81ac7d5452f2aac6d1173694bf5d9683a8b688fe3ab3e8318",
+        "sizeBytes": 175348,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwpx-p10",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "98edbcab7ec1c0c78f6b66f508e03159e55d25b77b7248a98108cf98327b82e8",
+        "sizeBytes": 174557,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwpx-p10",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "05232f477498e95473f57bd97aeb726d98781ea1971e577cc806e00c7859afcf",
+        "sizeBytes": 174353,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "4e4c5b78f79317e81ac7d5452f2aac6d1173694bf5d9683a8b688fe3ab3e8318",
+        "sizeBytes": 175348,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwpx-p10",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "601814cb52ab2999d4fa253fa644b93d0450ece5df7bcf1255a7902f6569373d",
+        "sizeBytes": 173584,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "98edbcab7ec1c0c78f6b66f508e03159e55d25b77b7248a98108cf98327b82e8",
+        "sizeBytes": 174557,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 10
+    },
+    {
+      "sample": "7765-hwpx-p25",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "eb69b4314999cfeb2772427c97759e19a6bd92bb39c0ff4a03264ca6221620d5",
+        "sizeBytes": 151113,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "20604567191d0ccf9c9e9e27b0161b311a8f31a4548c4b7f31dfb694bd0ac6b5",
+        "sizeBytes": 158968,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 25
+    },
+    {
+      "sample": "7765-hwpx-p25",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "b350a399a436dbf15e523b1d45157cc1e4e7a1e2554a6fa30cd819a31576836f",
+        "sizeBytes": 152077,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "c99db6a0a7f44712b73703bfc01f56a050a963ef5ed33ee99899a28e7f6fa296",
+        "sizeBytes": 159890,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 25
+    },
+    {
+      "sample": "7765-hwpx-p25",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "eb69b4314999cfeb2772427c97759e19a6bd92bb39c0ff4a03264ca6221620d5",
+        "sizeBytes": 151113,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "20604567191d0ccf9c9e9e27b0161b311a8f31a4548c4b7f31dfb694bd0ac6b5",
+        "sizeBytes": 158968,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 25
+    },
+    {
+      "sample": "7765-hwpx-p25",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "b350a399a436dbf15e523b1d45157cc1e4e7a1e2554a6fa30cd819a31576836f",
+        "sizeBytes": 152077,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "c99db6a0a7f44712b73703bfc01f56a050a963ef5ed33ee99899a28e7f6fa296",
+        "sizeBytes": 159890,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 25
+    },
+    {
+      "sample": "7765-hwpx-p25",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "eb69b4314999cfeb2772427c97759e19a6bd92bb39c0ff4a03264ca6221620d5",
+        "sizeBytes": 151113,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "20604567191d0ccf9c9e9e27b0161b311a8f31a4548c4b7f31dfb694bd0ac6b5",
+        "sizeBytes": 158968,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 25
+    },
+    {
+      "sample": "7765-hwpx-p25",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "b350a399a436dbf15e523b1d45157cc1e4e7a1e2554a6fa30cd819a31576836f",
+        "sizeBytes": 152077,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "c99db6a0a7f44712b73703bfc01f56a050a963ef5ed33ee99899a28e7f6fa296",
+        "sizeBytes": 159890,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 25
+    },
+    {
+      "sample": "7765-hwpx-p26",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "46852d3c30e7faba073fefa9abb9de09fb4e4bd48aebeedb1c507e1f01966389",
+        "sizeBytes": 123161,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "148a5f8e78a7fb7314476a5e7b188a8442fd95598b0aaf3ab156fccdf06d8a11",
+        "sizeBytes": 122523,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwpx-p26",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0e21773e36e577d704f55144af4e07bb38580ed31498db2fc3bc79c9ee2ee8d8",
+        "sizeBytes": 125846,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "687f818066c87a8a09c71213b24d70bf2babefe0ed05b0a69bd43d9ab31a8d1e",
+        "sizeBytes": 125435,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwpx-p26",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "46852d3c30e7faba073fefa9abb9de09fb4e4bd48aebeedb1c507e1f01966389",
+        "sizeBytes": 123161,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "148a5f8e78a7fb7314476a5e7b188a8442fd95598b0aaf3ab156fccdf06d8a11",
+        "sizeBytes": 122523,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwpx-p26",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0e21773e36e577d704f55144af4e07bb38580ed31498db2fc3bc79c9ee2ee8d8",
+        "sizeBytes": 125846,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "687f818066c87a8a09c71213b24d70bf2babefe0ed05b0a69bd43d9ab31a8d1e",
+        "sizeBytes": 125435,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwpx-p26",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "46852d3c30e7faba073fefa9abb9de09fb4e4bd48aebeedb1c507e1f01966389",
+        "sizeBytes": 123161,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "148a5f8e78a7fb7314476a5e7b188a8442fd95598b0aaf3ab156fccdf06d8a11",
+        "sizeBytes": 122523,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwpx-p26",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0e21773e36e577d704f55144af4e07bb38580ed31498db2fc3bc79c9ee2ee8d8",
+        "sizeBytes": 125846,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "687f818066c87a8a09c71213b24d70bf2babefe0ed05b0a69bd43d9ab31a8d1e",
+        "sizeBytes": 125435,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 26
+    },
+    {
+      "sample": "7765-hwpx-p27",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "fab99f7b96800b9d654742ed953a40262fcc0e31aaca3b428878b3245fa5bacd",
+        "sizeBytes": 143128,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a8561dc19384b6b28d8dfd776d47f230e541b43c75ec120288c126c5d1f88af1",
+        "sizeBytes": 147009,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwpx-p27",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3403e4a10a23daff0b1f7cbc741cef51604c418383ad09de4988d1ab5bd75a5d",
+        "sizeBytes": 144549,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "7515faf3d4f7b0b53c0924aa18444fdcf70c8691b156976e8206f68672e24e0d",
+        "sizeBytes": 149118,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwpx-p27",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "fab99f7b96800b9d654742ed953a40262fcc0e31aaca3b428878b3245fa5bacd",
+        "sizeBytes": 143128,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a8561dc19384b6b28d8dfd776d47f230e541b43c75ec120288c126c5d1f88af1",
+        "sizeBytes": 147009,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwpx-p27",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3403e4a10a23daff0b1f7cbc741cef51604c418383ad09de4988d1ab5bd75a5d",
+        "sizeBytes": 144549,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "7515faf3d4f7b0b53c0924aa18444fdcf70c8691b156976e8206f68672e24e0d",
+        "sizeBytes": 149118,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwpx-p27",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "fab99f7b96800b9d654742ed953a40262fcc0e31aaca3b428878b3245fa5bacd",
+        "sizeBytes": 143128,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a8561dc19384b6b28d8dfd776d47f230e541b43c75ec120288c126c5d1f88af1",
+        "sizeBytes": 147009,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwpx-p27",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3403e4a10a23daff0b1f7cbc741cef51604c418383ad09de4988d1ab5bd75a5d",
+        "sizeBytes": 144549,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "7515faf3d4f7b0b53c0924aa18444fdcf70c8691b156976e8206f68672e24e0d",
+        "sizeBytes": 149118,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 27
+    },
+    {
+      "sample": "7765-hwpx-p28",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "eea85fbd5d30d3025e8ca0ee2fe1959d9353fcba54108703bea2a43f52692b63",
+        "sizeBytes": 121405,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "b2a0c210df8f1cc38c1813515cd6caf1399f129a2e7b4220001d4affd4b76f04",
+        "sizeBytes": 130955,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwpx-p28",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3ce1465e31b012f940470d87be8a99cd9c34f9d329855bd125d740333096fc88",
+        "sizeBytes": 124106,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "f5ff4db307e3b4b6879affe6850c6e28097930fe3774a622a241884b681a754c",
+        "sizeBytes": 132556,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwpx-p28",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "eea85fbd5d30d3025e8ca0ee2fe1959d9353fcba54108703bea2a43f52692b63",
+        "sizeBytes": 121405,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "b2a0c210df8f1cc38c1813515cd6caf1399f129a2e7b4220001d4affd4b76f04",
+        "sizeBytes": 130955,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwpx-p28",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3ce1465e31b012f940470d87be8a99cd9c34f9d329855bd125d740333096fc88",
+        "sizeBytes": 124106,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "f5ff4db307e3b4b6879affe6850c6e28097930fe3774a622a241884b681a754c",
+        "sizeBytes": 132556,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwpx-p28",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "eea85fbd5d30d3025e8ca0ee2fe1959d9353fcba54108703bea2a43f52692b63",
+        "sizeBytes": 121405,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "b2a0c210df8f1cc38c1813515cd6caf1399f129a2e7b4220001d4affd4b76f04",
+        "sizeBytes": 130955,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwpx-p28",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "3ce1465e31b012f940470d87be8a99cd9c34f9d329855bd125d740333096fc88",
+        "sizeBytes": 124106,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "f5ff4db307e3b4b6879affe6850c6e28097930fe3774a622a241884b681a754c",
+        "sizeBytes": 132556,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 28
+    },
+    {
+      "sample": "7765-hwpx-p29",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "04a8b9e25ec020f0dd8428a8e0696cbd4e913ae99efd9e33065bd8ed7c511fc3",
+        "sizeBytes": 48002,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "2cfe053a8c1cf1fe5fc2aa499d4f4445e203d09a632f5ec6f4cf468072a655b2",
+        "sizeBytes": 24540,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwpx-p29",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0577bf6ad158f37dad87bae90669a2f29c764f2268e736adf3c930e0859b8ae7",
+        "sizeBytes": 48323,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d33327a2bcba155e216f0ff4a3c14fedb12f2f632b9c8da6e4edb80745120aea",
+        "sizeBytes": 24942,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwpx-p29",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "04a8b9e25ec020f0dd8428a8e0696cbd4e913ae99efd9e33065bd8ed7c511fc3",
+        "sizeBytes": 48002,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "2cfe053a8c1cf1fe5fc2aa499d4f4445e203d09a632f5ec6f4cf468072a655b2",
+        "sizeBytes": 24540,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwpx-p29",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0577bf6ad158f37dad87bae90669a2f29c764f2268e736adf3c930e0859b8ae7",
+        "sizeBytes": 48323,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d33327a2bcba155e216f0ff4a3c14fedb12f2f632b9c8da6e4edb80745120aea",
+        "sizeBytes": 24942,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwpx-p29",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "04a8b9e25ec020f0dd8428a8e0696cbd4e913ae99efd9e33065bd8ed7c511fc3",
+        "sizeBytes": 48002,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "2cfe053a8c1cf1fe5fc2aa499d4f4445e203d09a632f5ec6f4cf468072a655b2",
+        "sizeBytes": 24540,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": false,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwpx-p29",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "0577bf6ad158f37dad87bae90669a2f29c764f2268e736adf3c930e0859b8ae7",
+        "sizeBytes": 48323,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d33327a2bcba155e216f0ff4a3c14fedb12f2f632b9c8da6e4edb80745120aea",
+        "sizeBytes": 24942,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": false,
+      "page": 29
+    },
+    {
+      "sample": "7765-hwpx-p64",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwpx-p64",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwpx-p64",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwpx-p64",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwpx-p64",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "78fadde94b35328000dbcdff49c3bf03c8209a57d0c8194066663e82b3e871a6",
+        "sizeBytes": 83160,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "7765-hwpx-p64",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d2d619bb1928229b923381e91c3eb8b86082769625ff8a771951b14e46762149",
+        "sizeBytes": 83733,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 64
+    },
+    {
+      "sample": "chemical-page31",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "2b62efa21fda4be7c402025c310d6fee5319d1e0fc08e02147dd63bbdfbd997c",
+        "sizeBytes": 139451,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "2b62efa21fda4be7c402025c310d6fee5319d1e0fc08e02147dd63bbdfbd997c",
+        "sizeBytes": 139451,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 31
+    },
+    {
+      "sample": "chemical-page31",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a3dd67b72c94a597a6eac953db19a07556b803337d9a8a2656f87e34ab7acce5",
+        "sizeBytes": 138454,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "a3dd67b72c94a597a6eac953db19a07556b803337d9a8a2656f87e34ab7acce5",
+        "sizeBytes": 138454,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 31
+    },
+    {
+      "sample": "chemical-page31",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "2b62efa21fda4be7c402025c310d6fee5319d1e0fc08e02147dd63bbdfbd997c",
+        "sizeBytes": 139451,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "2b62efa21fda4be7c402025c310d6fee5319d1e0fc08e02147dd63bbdfbd997c",
+        "sizeBytes": 139451,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 31
+    },
+    {
+      "sample": "chemical-page31",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a3dd67b72c94a597a6eac953db19a07556b803337d9a8a2656f87e34ab7acce5",
+        "sizeBytes": 138454,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "a3dd67b72c94a597a6eac953db19a07556b803337d9a8a2656f87e34ab7acce5",
+        "sizeBytes": 138454,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 31
+    },
+    {
+      "sample": "chemical-page31",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "2b62efa21fda4be7c402025c310d6fee5319d1e0fc08e02147dd63bbdfbd997c",
+        "sizeBytes": 139451,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "2b62efa21fda4be7c402025c310d6fee5319d1e0fc08e02147dd63bbdfbd997c",
+        "sizeBytes": 139451,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 31
+    },
+    {
+      "sample": "chemical-page31",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "a3dd67b72c94a597a6eac953db19a07556b803337d9a8a2656f87e34ab7acce5",
+        "sizeBytes": 138454,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "a3dd67b72c94a597a6eac953db19a07556b803337d9a8a2656f87e34ab7acce5",
+        "sizeBytes": 138454,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 31
+    },
+    {
+      "sample": "chemical-page72",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "4a6a998f305651680a9b0b9e44e9c1058b36a73f7f157c509ad6b9eb8f93512c",
+        "sizeBytes": 145601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "4a6a998f305651680a9b0b9e44e9c1058b36a73f7f157c509ad6b9eb8f93512c",
+        "sizeBytes": 145601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 72
+    },
+    {
+      "sample": "chemical-page72",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "388d217e22d60f9579997cfdd3f40fa2421c87fa04b3ffdb5f2ff8f6bd3153eb",
+        "sizeBytes": 145606,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "388d217e22d60f9579997cfdd3f40fa2421c87fa04b3ffdb5f2ff8f6bd3153eb",
+        "sizeBytes": 145606,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 72
+    },
+    {
+      "sample": "chemical-page72",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "4a6a998f305651680a9b0b9e44e9c1058b36a73f7f157c509ad6b9eb8f93512c",
+        "sizeBytes": 145601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "4a6a998f305651680a9b0b9e44e9c1058b36a73f7f157c509ad6b9eb8f93512c",
+        "sizeBytes": 145601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 72
+    },
+    {
+      "sample": "chemical-page72",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "388d217e22d60f9579997cfdd3f40fa2421c87fa04b3ffdb5f2ff8f6bd3153eb",
+        "sizeBytes": 145606,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "388d217e22d60f9579997cfdd3f40fa2421c87fa04b3ffdb5f2ff8f6bd3153eb",
+        "sizeBytes": 145606,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 72
+    },
+    {
+      "sample": "chemical-page72",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "4a6a998f305651680a9b0b9e44e9c1058b36a73f7f157c509ad6b9eb8f93512c",
+        "sizeBytes": 145601,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "4a6a998f305651680a9b0b9e44e9c1058b36a73f7f157c509ad6b9eb8f93512c",
+        "sizeBytes": 145601,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 72
+    },
+    {
+      "sample": "chemical-page72",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "388d217e22d60f9579997cfdd3f40fa2421c87fa04b3ffdb5f2ff8f6bd3153eb",
+        "sizeBytes": 145606,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "388d217e22d60f9579997cfdd3f40fa2421c87fa04b3ffdb5f2ff8f6bd3153eb",
+        "sizeBytes": 145606,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 72
+    },
+    {
+      "sample": "forest-page2",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "2dbb3f9e052fe8f280a13fd7d97cd9ee0dacccd285d0967b72ff3a687e4c93ce",
+        "sizeBytes": 96009,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "2dbb3f9e052fe8f280a13fd7d97cd9ee0dacccd285d0967b72ff3a687e4c93ce",
+        "sizeBytes": 96009,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "forest-page2",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "bfe378605bf3fbf23f34f22fd6976d6b78b1087c47ebcf89736ed596afee682b",
+        "sizeBytes": 97302,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "bfe378605bf3fbf23f34f22fd6976d6b78b1087c47ebcf89736ed596afee682b",
+        "sizeBytes": 97302,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "forest-page2",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "a28dddfc471138d87de8ec564c60ed40d8da5d031a64a260ad81939dfdbe2188",
+        "sizeBytes": 98279,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a28dddfc471138d87de8ec564c60ed40d8da5d031a64a260ad81939dfdbe2188",
+        "sizeBytes": 98279,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "forest-page2",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvaskit-compat",
+      "base": {
+        "sha256": "8fe4e5e989e074e992a72ee95e8221ea776a21909e5cb51fa3377652c0fa5e3b",
+        "sizeBytes": 100470,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "8fe4e5e989e074e992a72ee95e8221ea776a21909e5cb51fa3377652c0fa5e3b",
+        "sizeBytes": 100470,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "forest-page2",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "a28dddfc471138d87de8ec564c60ed40d8da5d031a64a260ad81939dfdbe2188",
+        "sizeBytes": 98279,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "a28dddfc471138d87de8ec564c60ed40d8da5d031a64a260ad81939dfdbe2188",
+        "sizeBytes": 98279,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "forest-page2",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvaskit-default",
+      "base": {
+        "sha256": "d5c36c40937b88d3c52fd151d43b9c4de3abd80e0b322af3501375ecad0c3d63",
+        "sizeBytes": 96449,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "d5c36c40937b88d3c52fd151d43b9c4de3abd80e0b322af3501375ecad0c3d63",
+        "sizeBytes": 96449,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "kobe-page2",
+      "requested_backend": "canvas2d",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "acedd1f107e96a4ca076fc04fccaf2c68e52216cf6e8fee4abb407a2c2a1b0c2",
+        "sizeBytes": 88936,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "acedd1f107e96a4ca076fc04fccaf2c68e52216cf6e8fee4abb407a2c2a1b0c2",
+        "sizeBytes": 88936,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "kobe-page2",
+      "requested_backend": "canvas2d",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cc2225832480d8861505722791fd8ad899de2824a0b33be9bd0af7d75c36a561",
+        "sizeBytes": 87319,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "cc2225832480d8861505722791fd8ad899de2824a0b33be9bd0af7d75c36a561",
+        "sizeBytes": 87319,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "kobe-page2",
+      "requested_backend": "canvaskit-compat",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "acedd1f107e96a4ca076fc04fccaf2c68e52216cf6e8fee4abb407a2c2a1b0c2",
+        "sizeBytes": 88936,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "acedd1f107e96a4ca076fc04fccaf2c68e52216cf6e8fee4abb407a2c2a1b0c2",
+        "sizeBytes": 88936,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "kobe-page2",
+      "requested_backend": "canvaskit-compat",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cc2225832480d8861505722791fd8ad899de2824a0b33be9bd0af7d75c36a561",
+        "sizeBytes": 87319,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "cc2225832480d8861505722791fd8ad899de2824a0b33be9bd0af7d75c36a561",
+        "sizeBytes": 87319,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "kobe-page2",
+      "requested_backend": "canvaskit-default",
+      "profile": "print",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "acedd1f107e96a4ca076fc04fccaf2c68e52216cf6e8fee4abb407a2c2a1b0c2",
+        "sizeBytes": 88936,
+        "width": 794,
+        "height": 1122
+      },
+      "candidate": {
+        "sha256": "acedd1f107e96a4ca076fc04fccaf2c68e52216cf6e8fee4abb407a2c2a1b0c2",
+        "sizeBytes": 88936,
+        "width": 794,
+        "height": 1122
+      },
+      "same_png": true,
+      "page": 2
+    },
+    {
+      "sample": "kobe-page2",
+      "requested_backend": "canvaskit-default",
+      "profile": "screen",
+      "actual_backend": "canvas2d",
+      "base": {
+        "sha256": "cc2225832480d8861505722791fd8ad899de2824a0b33be9bd0af7d75c36a561",
+        "sizeBytes": 87319,
+        "width": 794,
+        "height": 1123
+      },
+      "candidate": {
+        "sha256": "cc2225832480d8861505722791fd8ad899de2824a0b33be9bd0af7d75c36a561",
+        "sizeBytes": 87319,
+        "width": 794,
+        "height": 1123
+      },
+      "same_png": true,
+      "page": 2
+    }
+  ]
+}

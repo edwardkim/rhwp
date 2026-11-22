@@ -101,6 +101,12 @@ CanvasKit의 사전 검사 한도인 128쪽을 넘는 네 조건에서 실제 Ca
 일치했고, 후보의 제목 시작 행은 화면과 한컴 Print에서와 같은 279px였다.
 [100쪽 Studio 인쇄 확대 판독](../verification/issue7754-nine-fidelity/studio/market-page100-print/review.json)
 
+현재 기준과 후보의 Studio 화면·인쇄를 각각 216조건에서 검증했다. 원래 192조건은 양쪽
+모두 리베이스 직전의 각 PNG와 일치했고, #9318의 24조건은 현재 기준과 후보가 일치했다.
+시장구조조사 30조건의 차이는 100쪽의 6조건에서 확인했다. 시장구조조사의 CanvasKit 요청은
+315쪽이 사전 검사 한도 128쪽을 넘으므로 Canvas2D 출력을 대조했다.
+[Studio 전체 화면·인쇄 검증](../verification/issue7754-nine-fidelity/after-pr9322/studio-screen-and-print.json)
+
 #7754의 암호 HWPX는 같은 독립 한컴 Print PDF로 대조했다. Native와 fresh WASM 모두
 암호 원본과 평문 대조군의 24쪽 PNG가 각각 바이트까지 일치했다. 기준의 전쪽 최저값은
 Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
