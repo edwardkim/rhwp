@@ -42,7 +42,11 @@ impl TypesetEngine {
         storage: &S,
     ) -> Result<bool, S::Error> {
         let column = st.inline_flow_column();
-        let table_text_rows = inline_flow::supports_table_text_rows_with_storage(para, storage)?;
+        let table_text_rows = inline_flow::supports_table_text_rows_with_storage(
+            para,
+            styles.legacy_body_symbols,
+            storage,
+        )?;
         let picture_rows = inline_flow::supports_picture_rows(para);
         // [#8282] 저장 줄이 있는 본문은 증언 없는 어울림 개체가 있을 때만 후보다.
         let reflow_stored_text =

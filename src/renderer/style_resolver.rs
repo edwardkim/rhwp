@@ -71,6 +71,7 @@ pub(crate) fn try_resolve_styles_for_document<S: storage::Storage>(
     let lookup = missing_fonts::try_lookup_context(document, storage)?;
     let mut styles = try_resolve_styles_with_variant(&lookup, dpi, profile.hwp3_layout(), storage)?;
     styles.source_hwp3_native = profile.hwp3_native_layout();
+    styles.legacy_body_symbols = document.uses_legacy_body_symbols();
     styles.word_compat_target = doc_targets_ms_word(&document.doc_info);
     if document.provenance.format == crate::model::provenance::SourceFormat::Hwp5
         && !document.provenance.hwpx_lineage
@@ -613,6 +614,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
 
     let mut styles = ResolvedStyleSet {
         source_hwp3_native: false,
+        legacy_body_symbols: false,
         word_compat_target: false,
         source_program_projection_slots: Default::default(),
         script_metrics: Default::default(),

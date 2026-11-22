@@ -260,7 +260,7 @@ impl Player {
             } else {
                 f.face_name.clone()
             };
-            // LogFontW.height: 음수=cell height, 양수=character height. |height|를 px로 사용.
+            // LOGFONT의 음수 높이는 문자 높이, 양수는 글자 셀 높이다.
             let size = f.height.unsigned_abs().max(1) as f32;
             let weight = if f.weight >= 700 { "bold" } else { "normal" };
             let italic = if f.italic != 0 { "italic" } else { "normal" };
@@ -268,9 +268,28 @@ impl Player {
         } else {
             ("sans-serif".to_string(), 12.0, "normal", "normal")
         };
+        // TA_TOP(0)의 원점은 문자 셀 위다. 검증된 원본 메트릭이 있는
+        // 음수 LOGFONT 높이는 GDI 정수 전진으로 기준선까지 내려서 그린다.
+        let baseline_offset = if dc.text_align & 0x18 == 0 {
+            dc.font
+                .as_ref()
+                .filter(|font| font.height < 0)
+                .and_then(|font| {
+                    crate::renderer::font_metrics_data::source_descent_em(
+                        &family,
+                        font.weight >= 700,
+                        font.italic != 0,
+                    )
+                })
+                .map_or(0, |descent| {
+                    (f64::from(size) * (1.0 - descent)).round() as i32
+                })
+        } else {
+            0
+        };
         let node = format!(
             "<text x=\"{}\" y=\"{}\" font-family=\"{}\" font-size=\"{:.2}\" font-weight=\"{}\" font-style=\"{}\" fill=\"{}\">{}</text>",
-            t.reference.x, t.reference.y,
+            t.reference.x, t.reference.y.saturating_add(baseline_offset),
             escape_xml(&family), size, weight, italic, color,
             escape_xml(&t.text),
         );

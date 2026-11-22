@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9239,
+  "title": "표 캡션 문단에 걸린 떠 있는 표를 그리지 않고, 다음 쪽으로 넘어간 한 행 자리차지 표가 앞 쪽 끝에 남는다",
+  "entries": [
+    {
+      "path": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9239",
+      "originalFilename": "30023_고령자취업지원제도개선(전원위의결)_사회제도개선담당관 2010-2-4.hwp",
+      "bytes": 430592,
+      "sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "lastSavedWith": {
+        "product": null,
+        "version": "5.0.2.4"
+      },
+      "referenceEngine": "2020",
+      "referencePdf": "pdf/issue9239/senior-employment-policy-caption-float-table-2020.pdf",
+      "referencePdfSha256": "396e6b38374c78ed9d7674ee3e219169768b00f6030349ba6e77f7360f6ed680",
+      "referencePdfPageCount": 62,
+      "contract": "전체 62쪽으로 한/글 Print 와 같다. 43쪽: 문단 519 의 글자처럼 취급 표(21×7)에 달린 위 캡션 첫 문단의 자리차지 표(49×12 「3. 시·군·구별 고령인구」)가 쪽 안에 한 번 그려지고 바깥 표보다 위에 있다. 11→12쪽: 문단 179 의 1×2 자리차지 제목 표는 11쪽에 없고 12쪽에서 문단 181 표 위에 있으며, 11쪽의 본문 표는 각주 영역과 겹치지 않는다."
+    }
+  ]
+}

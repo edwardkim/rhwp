@@ -1,0 +1,51 @@
+{
+  "sha": "93482b2d0069cfa7648c5f08df95ddc2eee9c179",
+  "pr": 9318,
+  "stage": "code",
+  "workflows": {
+    "Adapter inter-diff": {
+      "id": 45011510726,
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/45011510726",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1
+    },
+    "Proptest roundtrip": {
+      "id": 45011510781,
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/45011510781",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1
+    },
+    "CodeQL": {
+      "id": 45011510737,
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/45011510737",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1
+    },
+    "Render Diff": {
+      "id": 45011510740,
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/45011510740",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1
+    },
+    "CI": {
+      "id": 45011510672,
+      "html_url": "https://github.com/edwardkim/rhwp/actions/runs/45011510672",
+      "status": "completed",
+      "conclusion": "success",
+      "run_attempt": 1
+    }
+  },
+  "required": [
+    {
+      "bucket": "pass",
+      "link": "https://github.com/edwardkim/rhwp/actions/runs/45011510672/job/137183136495",
+      "name": "Build & Test",
+      "state": "SUCCESS",
+      "workflow": "CI"
+    }
+  ]
+}

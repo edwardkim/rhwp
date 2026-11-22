@@ -26,6 +26,7 @@ mod monochrome;
 mod overlap;
 
 pub(super) struct SkiaTextReplay<'a> {
+    pub(super) pdf_fonts: Option<&'a super::pdf_fonts::PdfFontCache>,
     pub(super) canvas: &'a Canvas,
     pub(super) font_fallback_observer: Option<&'a super::font_observation::FontFallbackObserver>,
     pub(super) raster_target: bool,
@@ -144,41 +145,23 @@ impl SkiaTextReplay<'_> {
                             font_style,
                             style.source_font_is_ttf,
                         );
-                        return fonts::for_text(
-                            &chain,
-                            sample,
-                            size,
-                            style,
-                            self.font_mgr,
-                            self.geometric_text,
-                            self.font_fallback_observer,
-                        );
+                        return fonts::for_text(self, &chain, sample, size, style);
                     }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
                         if let Some(primary) = typeface_chain.first() {
                             let font = Font::new(primary.typeface.clone(), size);
                             if let Some(glyph) = fonts::compatibility_glyph(&font, sample) {
                                 return fonts::for_text(
+                                    self,
                                     &typeface_chain[..1],
                                     &glyph.to_string(),
                                     size,
                                     style,
-                                    self.font_mgr,
-                                    self.geometric_text,
-                                    self.font_fallback_observer,
                                 );
                             }
                         }
                     }
-                    fonts::for_text(
-                        &typeface_chain,
-                        sample,
-                        size,
-                        style,
-                        self.font_mgr,
-                        self.geometric_text,
-                        self.font_fallback_observer,
-                    )
+                    fonts::for_text(self, &typeface_chain, sample, size, style)
                 };
                 let baseline_y = if baseline > 0.0 {
                     bbox.y + baseline
@@ -688,8 +671,14 @@ impl SkiaTextReplay<'_> {
                                     if let Some(face) = inner_char.and_then(|character| {
                                         select_typeface_for_character(&inner_faces, character)
                                     }) {
-                                        let mut inner_font =
-                                            Font::new(face.typeface.clone(), font_size);
+                                        let mut inner_font = Font::new(
+                                            super::pdf_fonts::for_output(
+                                                self.pdf_fonts,
+                                                self.font_mgr,
+                                                face.typeface.clone(),
+                                            ),
+                                            font_size,
+                                        );
                                         inner_font.set_edging(font::Edging::AntiAlias);
                                         fonts::preserve_geometry(
                                             &mut inner_font,
@@ -855,8 +844,16 @@ impl SkiaTextReplay<'_> {
                                 ch.is_ascii_alphanumeric()
                                     || (style.fixed_glyph_advances && ch.is_ascii_graphic())
                             });
+                            // The font's missing-glyph mark keeps its own outline. The
+                            // document sets successive origins independently of that width.
+                            let missing_glyph =
+                                glyph_text.chars().next().is_some_and(|ch| {
+                                    font.unichar_to_glyph(ch as i32) == 0
+                                && crate::renderer::text_glyph_visibility::visible_missing_sign(ch)
+                                });
                             let (fit_scale, fit_dx) = fit_positions
                                 .get(*char_idx)
+                                .filter(|_| !missing_glyph)
                                 .and_then(|start| {
                                     let end = *char_idx + cluster.chars().count();
                                     let advance = fit_positions.get(end)? - start;
@@ -1057,15 +1054,9 @@ impl SkiaTextReplay<'_> {
                         geometry.font_family,
                         font_style_for_text(&mark_style),
                     );
-                    if let Some(mut font) = fonts::for_text(
-                        &faces,
-                        geometry.glyph,
-                        font_size,
-                        &mark_style,
-                        self.font_mgr,
-                        self.geometric_text,
-                        self.font_fallback_observer,
-                    ) {
+                    if let Some(mut font) =
+                        fonts::for_text(self, &faces, geometry.glyph, font_size, &mark_style)
+                    {
                         font.set_scale_x(geometry.ratio as f32);
                         font.set_skew_x((geometry.skew_x * geometry.ratio) as f32);
                         let mut paint = Paint::default();

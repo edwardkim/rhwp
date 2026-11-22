@@ -1,4 +1,4 @@
-//! 비영 cmap가 빈 TrueType 기호를 공급한다고 주장하지 않게 한다.
+//! 보이는 기호의 cmap 항목이 빈 윤곽을 가리키면 다음 글꼴에 맡긴다.
 //!
 //! 원본 프로그램은 그대로 두고 실제 fallback의 문자 공급 범위만 제한한다.
 //! 공백·문자·결합/서식 문자와 별도 color/bitmap/SVG 표현은 이 정책의 대상이 아니다.
@@ -6,8 +6,10 @@
 mod bitmap;
 
 use std::collections::BTreeSet;
-use ttf_parser::{Face, GlyphId, Tag};
+use ttf_parser::{CFFError, Face, GlyphId, OutlineBuilder, Tag};
 use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
+
+const HYPHENATION_POINT: char = '\u{2027}';
 
 /// 실제 프로그램의 cmap로 요청 글리프 공급을 확인한다. 파일·별칭·캐시를 바꾸지 않는다.
 pub fn font_supports_text(data: &[u8], face_index: u32, text: &str) -> bool {
@@ -52,6 +54,10 @@ fn font_missing_text_impl(
 }
 
 pub fn is_visible_symbol(character: char) -> bool {
+    // 가운뎃점은 문장부호이며 일부 HFT 변환 글꼴에는 폭만 남아 있다.
+    if character == HYPHENATION_POINT {
+        return true;
+    }
     // Unicode BRAILLE PATTERN BLANK는 OtherSymbol이지만 본래 빈 칸이다.
     character != '\u{2800}'
         && matches!(
@@ -91,36 +97,67 @@ fn declared_empty_glyf(face: &Face<'_>, glyph: GlyphId) -> Option<bool> {
     (data.len() >= 10).then(|| i16::from_be_bytes([data[0], data[1]]) == 0)
 }
 
-/// 사양상 빈 glyf이고 다른 잉크 표현도 없는 가시 기호만 반환한다.
-/// CFF·가변 글꼴의 해석 실패나 없는 cmap는 이 집합에 포함하지 않는다.
+struct DiscardOutline;
+
+impl OutlineBuilder for DiscardOutline {
+    fn move_to(&mut self, _: f32, _: f32) {}
+    fn line_to(&mut self, _: f32, _: f32) {}
+    fn quad_to(&mut self, _: f32, _: f32, _: f32, _: f32) {}
+    fn curve_to(&mut self, _: f32, _: f32, _: f32, _: f32, _: f32, _: f32) {}
+    fn close(&mut self) {}
+}
+
+/// 빈 glyf 또는 비어 있음이 확인된 CFF 가운뎃점에서 다른 잉크 표현도 없는 경우를 반환한다.
 pub fn empty_symbol_codepoints(data: &[u8], face_index: u32) -> BTreeSet<u32> {
     let mut empty = BTreeSet::new();
     let Ok(face) = Face::parse(data, face_index) else {
         return empty;
     };
-    if face.is_variable() || face.tables().glyf.is_none() {
+    if face.is_variable() {
         return empty;
     }
     // 외부 cmap의 범위를 순회하지 않아 조작된 format 12의 거대한 group에도
     // 실행량이 늘어나지 않는다. Unicode의 유한한 기호 집합만 한 번 마련한다.
     static SYMBOLS: std::sync::OnceLock<Vec<char>> = std::sync::OnceLock::new();
-    let symbols = SYMBOLS.get_or_init(|| {
-        (0..=0x10FFFF)
-            .filter_map(char::from_u32)
-            .filter(|ch| is_visible_symbol(*ch))
-            .collect()
-    });
-    for character in symbols {
-        let Some(glyph) = face.glyph_index(*character) else {
+    let cff = face.tables().cff;
+    let characters = if face.tables().glyf.is_some() {
+        SYMBOLS
+            .get_or_init(|| {
+                (0..=0x10FFFF)
+                    .filter_map(char::from_u32)
+                    .filter(|ch| is_visible_symbol(*ch))
+                    .collect()
+            })
+            .as_slice()
+    } else if cff.is_some() {
+        &[HYPHENATION_POINT]
+    } else {
+        return empty;
+    };
+    for &character in characters {
+        let Some(glyph) = face.glyph_index(character) else {
             continue;
         };
-        if glyph.0 != 0
-            && declared_empty_glyf(&face, glyph) == Some(true)
+        if glyph.0 == 0 {
+            continue;
+        }
+        let has_empty_outline = if face.tables().glyf.is_some() {
+            declared_empty_glyf(&face, glyph) == Some(true)
+        } else {
+            // ZeroBBox는 해석이 정상 종료됐지만 윤곽을 만들지 않았다는 뜻이다.
+            cff.is_some_and(|table| {
+                matches!(
+                    table.outline(glyph, &mut DiscardOutline),
+                    Err(CFFError::ZeroBBox)
+                )
+            })
+        };
+        if has_empty_outline
             && !face.is_color_glyph(glyph)
             && face.glyph_svg_image(glyph).is_none()
             && !bitmap::may_supply_ink(&face, glyph)
         {
-            empty.insert(*character as u32);
+            empty.insert(character as u32);
         }
     }
     empty

@@ -3077,12 +3077,22 @@ impl Renderer for WebCanvasRenderer {
                         // 문맥 shaping의 내부 전진·결합은 브라우저가 결정한다.
                         // 저장 원점은 유지하며 낱글자 폭의 합으로 다시 압축하지 않는다.
                         let contextual = contextual_text::is_contextual(cluster_str);
+                        let mut missing_font = None;
                         let fit = if measured_descriptor.is_some() || contextual {
                             None
                         } else if cluster_advance > 0.0 {
                             self.ctx.measure_text(glyph_text).ok().and_then(|metrics| {
                                 let ink_width = metrics.actual_bounding_box_left()
                                     + metrics.actual_bounding_box_right();
+                                if ink_width == 0.0
+                                    && super::text_glyph_visibility::visible_missing_sign(ch)
+                                    && glyph_text.len() == ch.len_utf8()
+                                {
+                                    missing_font = self.visible_fallback_font(glyph_text, style);
+                                    if missing_font.is_some() {
+                                        return None;
+                                    }
+                                }
                                 super::canvas_cluster_fit(
                                     style,
                                     cluster_str,
@@ -3106,10 +3116,14 @@ impl Renderer for WebCanvasRenderer {
                         self.ctx.translate(char_x + fit_dx, y).unwrap_or(());
                         self.ctx.scale(ratio * fit_scale, 1.0).unwrap_or(());
                         self.apply_synthetic_italic(synthetic_italic);
-                        let painted = self.draw_hft_outline(glyph_text, style, font_size)
-                            || stroke_space.as_ref().is_some_and(|space| {
-                                self.draw_faux_bold_outline(glyph_text, style, font_size, space)
-                            });
+                        if let Some(descriptor) = &missing_font {
+                            self.ctx.set_font(descriptor);
+                        }
+                        let painted = missing_font.is_none()
+                            && (self.draw_hft_outline(glyph_text, style, font_size)
+                                || stroke_space.as_ref().is_some_and(|space| {
+                                    self.draw_faux_bold_outline(glyph_text, style, font_size, space)
+                                }));
                         if !painted {
                             Self::fill_positioned_text(
                                 &self.ctx,
@@ -3716,6 +3730,45 @@ impl WebCanvasRenderer {
 
         // 캐시 미스: draw_image로 로드 시작 (다음 렌더에서 crop 적용)
         self.draw_image(data, dx, dy, dw, dh);
+    }
+
+    // When no installed face covers a sign, Canvas may use the primary face's
+    // empty .notdef even if a declared fallback has a visible missing glyph.
+    fn visible_fallback_font(&self, text: &str, style: &TextStyle) -> Option<String> {
+        // A mapped glyph may intentionally be empty. A verified owner keeps it.
+        if self.hft_outline_fonts.as_ref().is_some_and(|fonts| {
+            fonts
+                .pua_coverage
+                .text_faces
+                .select(
+                    &super::canvas_text_font::family_chain(style),
+                    text,
+                    style.is_visually_bold(),
+                    style.italic,
+                )
+                .is_some_and(|face| face.predecessors_known)
+        }) {
+            return None;
+        }
+        let ctx = &self.ctx;
+        let active = ctx.font();
+        let (prefix, _) = active.split_once("px ")?;
+        let families = super::internal_font_family_members(&style.font_family);
+        ctx.save();
+        let result = families
+            .into_iter()
+            .skip(1)
+            .map(super::css_single_quoted_font_family)
+            .chain(std::iter::once(String::from("sans-serif")))
+            .find_map(|family| {
+                let descriptor = format!("{prefix}px {family}");
+                ctx.set_font(&descriptor);
+                let metrics = ctx.measure_text(text).ok()?;
+                (metrics.actual_bounding_box_left() + metrics.actual_bounding_box_right() > 0.0)
+                    .then_some(descriptor)
+            });
+        ctx.restore();
+        result
     }
 
     fn fill_positioned_text(

@@ -213,6 +213,7 @@ pub(super) fn construct_glyph_font(
     run: &LayerGlyphRunPaint,
     resources: &ResourceArena,
     font_mgr: &FontMgr,
+    pdf_fonts: Option<&super::pdf_fonts::PdfFontCache>,
 ) -> Result<PreparedGlyph, Vec<FontFailure>> {
     let instance = &run.shape_key.font_instance;
     let face = resources
@@ -309,7 +310,10 @@ pub(super) fn construct_glyph_font(
             return Err(vec![FontFailure::FontVariationUnsupported]);
         }
     }
-    let mut font = Font::from_typeface(typeface, instance.size_px as f32);
+    let mut font = Font::from_typeface(
+        super::pdf_fonts::for_output(pdf_fonts, font_mgr, typeface),
+        instance.size_px as f32,
+    );
     font.set_embolden(instance.synthetic_bold);
     font.set_skew_x(if instance.synthetic_italic {
         crate::renderer::text_italic::SKEW_X as f32

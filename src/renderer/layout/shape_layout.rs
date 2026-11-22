@@ -3390,6 +3390,24 @@ impl LayoutEngine {
                             &ole_container_path,
                         );
                     }
+                } else if ole.raw_tag_data.len() == 26
+                    && ole.drawing.border_line.attr & 0x3F != 0
+                    && parent
+                        .children
+                        .last()
+                        .is_some_and(|node| matches!(node.node_type, RenderNodeType::RawSvg(_)))
+                {
+                    // 프레젠테이션 자체의 안쪽 선과 OLE 레코드의 바깥 선을 각각 그린다.
+                    let border = crate::model::shape::DrawingObjAttr {
+                        border_line: ole.drawing.border_line,
+                        ..Default::default()
+                    };
+                    let (style, _) = drawing_to_shape_style(&border, self.dpi);
+                    parent.children.push(RenderNode::new(
+                        tree.next_id(),
+                        RenderNodeType::Rectangle(RectangleNode::new(0.0, style, None)),
+                        BoundingBox::new(render_x, render_y, render_w, render_h),
+                    ));
                 }
             }
         }

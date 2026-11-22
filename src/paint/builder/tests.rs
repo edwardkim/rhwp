@@ -528,6 +528,7 @@ fn either_view_option_preserves_legacy_text_mark_union_semantics() {
             show_control_codes: true,
             ..Default::default()
         },
+        None,
     );
     assert!(paragraph_ops
         .iter()
@@ -540,6 +541,7 @@ fn either_view_option_preserves_legacy_text_mark_union_semantics() {
             show_paragraph_marks: true,
             ..Default::default()
         },
+        None,
     );
     assert!(space_ops
         .iter()
@@ -568,6 +570,7 @@ fn overlap_runs_do_not_gain_normal_text_decorations_or_tab_leaders() {
         BoundingBox::new(0.0, 0.0, 40.0, 10.0),
         run,
         LayerOutputOptions::default(),
+        None,
     );
 
     assert!(ops

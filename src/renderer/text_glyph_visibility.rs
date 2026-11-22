@@ -15,3 +15,13 @@ pub(crate) fn is_nonprinting_character(character: char) -> bool {
 pub(crate) fn is_nonprinting_cluster(text: &str) -> bool {
     text.chars().all(is_nonprinting_character)
 }
+
+/// A printable sign with no glyph uses a visible missing-glyph mark at its
+/// original advance. Controls, spaces, combining marks and PUA have their own owners.
+pub(crate) fn visible_missing_sign(ch: char) -> bool {
+    use unicode_properties::{GeneralCategoryGroup, UnicodeGeneralCategory};
+    matches!(
+        ch.general_category_group(),
+        GeneralCategoryGroup::Number | GeneralCategoryGroup::Punctuation
+    ) || super::font_symbol_coverage::is_visible_symbol(ch)
+}

@@ -1,20 +1,24 @@
 //! [#5800] HWP5 원시 한컴 사용자 기호 재현 fixture 생성기.
 //!
-//! 이슈 본문의 대표 재현 문서(지방 조례 별지 서식)는 저작권/배포 문제로 저장소에
-//! 담지 않는다. 대신 같은 증상을 내는 최소 문서를 rhwp 자체 HWP5 writer 로 만든다 —
-//! HWP5 는 한컴 사용자 정의 기호를 **BMP 단일 유닛 `0xA000 | X`** 로 싣기 때문에,
-//! 그 값을 그대로 넣으면 원본과 같은 바이트 표현이 된다.
+//! 같은 본문을 HWP 5.1.0.1과 5.0.1.5로 읽는 최소 대조본을 만든다.
+//! 5.0.1.5 본문의 U+A832는 한컴 이중 괘선이며, 5.0.1.6 이후에는 유니코드 문자다.
+//! 독립 한컴 인쇄본은 `pdf/issue5140-version-boundary/`에 보존한다.
 //!
 //! Usage:
 //!   cargo run --profile release-test --example build_issue_5800_fixture
 //!   ./target/release-test/rhwp.exe export-svg samples/issue5800-hancom-symbol.hwp -o output/
 
 use rhwp::document_core::DocumentCore;
-use std::fs;
+use std::{
+    fs,
+    io::{Cursor, Seek, SeekFrom, Write},
+};
 
 const OUT: &str = "samples/issue5800-hancom-symbol.hwp";
 
-/// 0xA832(═) 84 개 — 태안군 별지 제5호 서식의 제목 아래 이중 밑줄과 같은 개수.
+const LEGACY: &str = "samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp";
+
+/// 같은 본문 U+A832 84개 — 태안군 별지 제5호 서식의 제목 아래 이중 밑줄과 같은 개수.
 fn double_rule() -> String {
     "\u{A832}".repeat(84)
 }
@@ -47,6 +51,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .export_hwp_native()
         .map_err(|e| format!("HWP 내보내기 실패: {e:?}"))?;
     fs::write(OUT, &bytes)?;
+    // HWP5 FileHeader stores revision, build, minor and major starting at byte 32.
+    let mut legacy = cfb::CompoundFile::open(Cursor::new(bytes.clone()))?;
+    {
+        let mut header = legacy.open_stream("/FileHeader")?;
+        header.seek(SeekFrom::Start(32))?;
+        header.write_all(&[5, 1, 0, 5])?;
+    }
+    fs::write(LEGACY, legacy.into_inner().into_inner())?;
 
     // 되읽어 원시 값이 그대로 실렸는지 확인한다(정규화는 렌더 경로의 몫이다).
     let reread = rhwp::parser::parse_hwp(&bytes)?;

@@ -1,0 +1,384 @@
+{
+  "verified_initialization_responses": 24,
+  "actual_backend_counts": {
+    "canvas2d": 20,
+    "canvaskit-compat": 2,
+    "canvaskit-default": 2
+  },
+  "runs": [
+    {
+      "source_head": "954226e426517dc02ef0a15cc739899ab54b7fae",
+      "profile": "macOS locked wasm-pack --no-opt",
+      "browser": "Chrome/157.0.8103.80",
+      "sample_count": 3,
+      "capture_error": null,
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+          "bytes": 611033
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "1a32e5328fa1911b1c81e3e0b85e9192d814542feb252f88d6bdd1985fff32be",
+          "bytes": 32618412
+        }
+      },
+      "verified_initialization_responses": 18,
+      "actual_backend_counts": {
+        "canvas2d": 18
+      },
+      "font_fallback_gate": {
+        "total": 12,
+        "passed": 12,
+        "failed": 0
+      },
+      "cases": [
+        {
+          "sampleId": "kobe-page2",
+          "page": 1,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "ef8844fb3bd09022a0afeb4be7fd3eb8bee9942107d4db8b02c08ba471ebd921",
+            "sizeBytes": 92271
+          }
+        },
+        {
+          "sampleId": "kobe-page2",
+          "page": 1,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "ef8844fb3bd09022a0afeb4be7fd3eb8bee9942107d4db8b02c08ba471ebd921",
+            "sizeBytes": 92271
+          }
+        },
+        {
+          "sampleId": "kobe-page2",
+          "page": 1,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "ef8844fb3bd09022a0afeb4be7fd3eb8bee9942107d4db8b02c08ba471ebd921",
+            "sizeBytes": 92271
+          }
+        },
+        {
+          "sampleId": "kobe-page2",
+          "page": 1,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "c20fd59a214881bedc32c44b586ff7100080eb590b4378fceaa06a7e34cae92b",
+            "sizeBytes": 94676
+          }
+        },
+        {
+          "sampleId": "kobe-page2",
+          "page": 1,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "c20fd59a214881bedc32c44b586ff7100080eb590b4378fceaa06a7e34cae92b",
+            "sizeBytes": 94676
+          }
+        },
+        {
+          "sampleId": "kobe-page2",
+          "page": 1,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "c20fd59a214881bedc32c44b586ff7100080eb590b4378fceaa06a7e34cae92b",
+            "sizeBytes": 94676
+          }
+        },
+        {
+          "sampleId": "chemical-page31",
+          "page": 30,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "0a84da5b94bc56f645b2c7cabd1b818b8cd53a310d12d1030a5c81dd760cab4f",
+            "sizeBytes": 159538
+          }
+        },
+        {
+          "sampleId": "chemical-page31",
+          "page": 30,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "0a84da5b94bc56f645b2c7cabd1b818b8cd53a310d12d1030a5c81dd760cab4f",
+            "sizeBytes": 159538
+          }
+        },
+        {
+          "sampleId": "chemical-page31",
+          "page": 30,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "0a84da5b94bc56f645b2c7cabd1b818b8cd53a310d12d1030a5c81dd760cab4f",
+            "sizeBytes": 159538
+          }
+        },
+        {
+          "sampleId": "chemical-page31",
+          "page": 30,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "489ccecc5e908f1c8d01545401b1fdd37f49ae0ed998fb0d799900182792d031",
+            "sizeBytes": 160729
+          }
+        },
+        {
+          "sampleId": "chemical-page31",
+          "page": 30,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "489ccecc5e908f1c8d01545401b1fdd37f49ae0ed998fb0d799900182792d031",
+            "sizeBytes": 160729
+          }
+        },
+        {
+          "sampleId": "chemical-page31",
+          "page": 30,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "489ccecc5e908f1c8d01545401b1fdd37f49ae0ed998fb0d799900182792d031",
+            "sizeBytes": 160729
+          }
+        },
+        {
+          "sampleId": "chemical-page72",
+          "page": 71,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "4d418c2e7e68a08ce60c89543c94fb427f8044c7bb1d30e7014a2c620a93e38b",
+            "sizeBytes": 170454
+          }
+        },
+        {
+          "sampleId": "chemical-page72",
+          "page": 71,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "4d418c2e7e68a08ce60c89543c94fb427f8044c7bb1d30e7014a2c620a93e38b",
+            "sizeBytes": 170454
+          }
+        },
+        {
+          "sampleId": "chemical-page72",
+          "page": 71,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "4d418c2e7e68a08ce60c89543c94fb427f8044c7bb1d30e7014a2c620a93e38b",
+            "sizeBytes": 170454
+          }
+        },
+        {
+          "sampleId": "chemical-page72",
+          "page": 71,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "a676dac59394781477bede27d544460e738be1ae7ff0cd1ceff4bc6da6e89594",
+            "sizeBytes": 171930
+          }
+        },
+        {
+          "sampleId": "chemical-page72",
+          "page": 71,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "a676dac59394781477bede27d544460e738be1ae7ff0cd1ceff4bc6da6e89594",
+            "sizeBytes": 171930
+          }
+        },
+        {
+          "sampleId": "chemical-page72",
+          "page": 71,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": true,
+          "artifact": {
+            "sha256": "a676dac59394781477bede27d544460e738be1ae7ff0cd1ceff4bc6da6e89594",
+            "sizeBytes": 171930
+          }
+        }
+      ],
+      "different_pngs_from_prior": [],
+      "backend_changed_from_prior": []
+    },
+    {
+      "source_head": "954226e426517dc02ef0a15cc739899ab54b7fae",
+      "profile": "macOS locked wasm-pack --no-opt",
+      "browser": "Chrome/157.0.8103.80",
+      "sample_count": 1,
+      "capture_error": null,
+      "artifacts": {
+        "rhwp.js": {
+          "sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+          "bytes": 611033
+        },
+        "rhwp_bg.wasm": {
+          "sha256": "1a32e5328fa1911b1c81e3e0b85e9192d814542feb252f88d6bdd1985fff32be",
+          "bytes": 32618412
+        }
+      },
+      "verified_initialization_responses": 6,
+      "actual_backend_counts": {
+        "canvas2d": 2,
+        "canvaskit-compat": 2,
+        "canvaskit-default": 2
+      },
+      "font_fallback_gate": {
+        "total": 0,
+        "passed": 0,
+        "failed": 0
+      },
+      "cases": [
+        {
+          "sampleId": "forest-page2",
+          "page": 1,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "e5c7308efaedb19614d3ae4f2fb1ba401a4d62c3fff75f94f1e5bb180669475b",
+            "sizeBytes": 108219
+          }
+        },
+        {
+          "sampleId": "forest-page2",
+          "page": 1,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvaskit-compat",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "5822c04b65a78530ce1026754a38441a09ffe7b12c19807e87ee97722bad287e",
+            "sizeBytes": 100456
+          }
+        },
+        {
+          "sampleId": "forest-page2",
+          "page": 1,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvaskit-default",
+          "profile": "screen",
+          "actualProfile": "screen",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "bd70b01bd38b4eee2c08973d733a4e9a61f08e49aa6a5ea5957ea7fd0488807a",
+            "sizeBytes": 96496
+          }
+        },
+        {
+          "sampleId": "forest-page2",
+          "page": 1,
+          "backend": "canvas2d",
+          "actualBackend": "canvas2d",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "8d0e486390b5af898f8cfe7c1c819894bec11f3aea9701bf2dfb6bdade421202",
+            "sizeBytes": 106544
+          }
+        },
+        {
+          "sampleId": "forest-page2",
+          "page": 1,
+          "backend": "canvaskit-compat",
+          "actualBackend": "canvaskit-compat",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "1f7bf9e8dbeab27dcf8fb8b74fc6ec0f40d22fb01fdc56e3d781b553f2fc8135",
+            "sizeBytes": 98302
+          }
+        },
+        {
+          "sampleId": "forest-page2",
+          "page": 1,
+          "backend": "canvaskit-default",
+          "actualBackend": "canvaskit-default",
+          "profile": "print",
+          "actualProfile": "print",
+          "fontFallback": false,
+          "artifact": {
+            "sha256": "1f7bf9e8dbeab27dcf8fb8b74fc6ec0f40d22fb01fdc56e3d781b553f2fc8135",
+            "sizeBytes": 98302
+          }
+        }
+      ],
+      "different_pngs_from_prior": [],
+      "backend_changed_from_prior": []
+    }
+  ]
+}

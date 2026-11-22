@@ -584,6 +584,8 @@ pub struct ResolvedStyleSet {
     pub(crate) section_tab_width_bits: std::sync::Arc<std::sync::atomic::AtomicU64>,
     /// 원본 HWP3 또는 그 HWPX 변환의 글꼴 꾸밈 출처.
     pub(crate) source_hwp3_native: bool,
+    /// Body text is decoded before composition; original UTF-16 offsets stay in the IR.
+    pub(crate) legacy_body_symbols: bool,
     /// 문서의 호환 대상이 MS 워드인가(HWP5 `HWPTAG_COMPATIBLE_DOCUMENT` 값 2, HWPX
     /// `targetProgram="MS_WORD"`). 한/글 문서와 다른 흐름 규칙을 고른다.
     pub(crate) word_compat_target: bool,
@@ -655,6 +657,10 @@ pub struct ResolvedStyleSet {
 }
 
 impl ResolvedStyleSet {
+    pub(crate) fn body_chars<'a>(&self, text: &'a str) -> impl Iterator<Item = char> + 'a {
+        crate::model::provenance::body_chars(text, self.legacy_body_symbols)
+    }
+
     pub(crate) fn section_tab_scope(&self, spacing: u32, dpi: f64) -> SectionTabScope {
         // HWPX tabStop 8000 = tabStopVal 4000 = 40pt. 정의가 없는 0은
         // 기존 기본값 4000 HWPUNIT을 사용한다. u32 전 범위를 f64로 정확히 읽는다.
@@ -798,6 +804,6 @@ crate::storage::clone_fields!(ResolvedParaStyle, {alignment, vertical_alignment,
 
 crate::storage::clone_fields!(ResolvedBorderStyle, {borders, fill_color, pattern, gradient, image_fill, diagonal_attr, break_cell_separate_line, diagonal, center_line});
 
-crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, word_compat_target, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
+crate::storage::clone_fields!(ResolvedStyleSet, {section_tab_width_bits, script_metrics, source_hwp3_native, legacy_body_symbols, word_compat_target, source_program_projection_slots, native_pua_fonts, display_only_otf_slots, inferred_ttf_requires_selection, unsubstituted_font_slots, char_overlap_size_bounds, source_char_shapes, resolved_dpi, isolated_jamo_font, page_number_char_style_id, page_number_font_is_hft, supplemental_metrics, style_char_shapes, char_styles, para_styles, border_styles, numberings, bullets, hwp3_variant, hft_ascii_halfwidth, kerning_measurement_context, horizontal_shaping_context});
 
 crate::storage::clone_fields!(ResolvedImageFill, {bin_data_id, fill_mode, brightness, contrast, effect});

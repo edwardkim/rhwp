@@ -4,6 +4,32 @@
 # 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.
 # 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.
 # 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-break-controls-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-break-controls.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-advances.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-batang-bold.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-dotum-bold.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-dotum.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-line-widths.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-number-long-lines.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-run-boundaries-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-run-boundaries.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-run-pairs-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-run-pairs.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-seal-mixed-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-seal-mixed.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/indic/indic-seal-ten-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/indic/indic-seal-ten.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v5-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/neighbors-v5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v6-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/neighbors-v6.hwp	1	1
 samples/2010-01-06.hwp	6	6
 samples/2022년 국립국어원 업무계획.hwp	35	35
 samples/20250130-hongbo.hwp	4	4
@@ -216,6 +242,18 @@ samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
 samples/issue4889/18098267_nested_fragment_origin.hwp	3	3
+# 검증한 과거 경로: pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-boundaries.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-mark-control.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/syloti-placeholders.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-대조군.hwpx	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwp	1	1
 samples/issue5447/3차원묶은세로막대형-행추가.hwpx	1	1
@@ -289,6 +327,8 @@ samples/issue5652/표식이있는꺽은선형-행추가.hwpx	1	1
 samples/issue5787/nested_square_table_horz_offset.hwp	1	1
 samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	8	8
 samples/issue5798/offcolumn_float_table_no_band.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5800-hancom-symbol.hwp	1	1
 samples/issue5809/156518601_p1_square_host.hwpx	1	1
 samples/issue5818/cell_square_logo_text_wrap.hwpx	1	1
 samples/issue5821/condensed_ratio_title_box.hwpx	1	1
@@ -353,12 +393,20 @@ samples/issue8660/picture_in_front_with_table_host_over_12px.hwp	2	2
 samples/issue8660/picture_top_and_bottom_over_12px_text_follows.hwp	2	2
 samples/issue8660/picture_unrestricted_over_12px.hwp	1	1
 samples/issue8660/rect_top_and_bottom_over_12px.hwp	2	2
+# 검증한 과거 경로: pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue886/1660000-201400009-kobe-earthquake.hwp	64	64
 samples/issue9073/proficiency_test_result_form.hwpx	1	1
 samples/issue9073/veterans_summer_support_press_release.hwpx	2	2
 samples/issue9079/black_stork_restoration_press_release.hwpx	6	6
 samples/issue9085/facility_fee_reduction_criteria.hwpx	1	1
 samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx	4	4
 samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx	4	4
+# 검증한 과거 경로: pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx	7	7
+# 검증한 과거 경로: pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx	3	3
+# 검증한 과거 경로: pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx	9	9
 samples/issue_265.hwp	16	16
 samples/k-water-rfp-2024.hwp	27	27
 samples/k-water-rfp.hwp	27	27

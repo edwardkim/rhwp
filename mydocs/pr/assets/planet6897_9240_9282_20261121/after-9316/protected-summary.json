@@ -1,0 +1,20 @@
+{
+  "head": "954226e426517dc02ef0a15cc739899ab54b7fae",
+  "base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "conditions": 46,
+  "pages": 4046,
+  "below_official": 0,
+  "canonical_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "output_sha256": "fd010542e38f98ddde152589852c8b56309d93b6a3c2450ee7a6ea08f9e59d95",
+  "changed_supply_inventory_from_previous": [
+    {
+      "document": "yeongwol",
+      "backend": "native"
+    },
+    {
+      "document": "outline",
+      "backend": "native"
+    }
+  ],
+  "supply_inventory_note": "이전 환경의 등록 목록과 달랐던 조건도 정본 표시값을 충족했다."
+}

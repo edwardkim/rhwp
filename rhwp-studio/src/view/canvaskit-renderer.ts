@@ -3,6 +3,7 @@ import { compatibilityGlyphView } from './canvaskit/compatibility-glyph-view.ts'
 import { CanvasKitBundledFontFamily, syntheticItalicSkew } from './canvaskit/font-style-selection.ts';
 import { ordinaryTextFontFamilies, parseCssFontFamilyList } from '../core/font-substitution.ts';
 import { textRequiresComplexShaping } from './canvaskit/nominal-text-replay.ts';
+import { isSylotiShapingRun, shapePositionedSyloti, type PositionedGlyphs } from './canvaskit/positioned-syloti-text';
 import { enclosedPua, enclosedPuaInnerFaces, enclosedPuaInnerText } from '../core/enclosed-pua.ts';
 import { enclosedPuaGeometry } from './canvaskit/enclosed-pua-geometry.ts';
 import { imageRectIsReduced, imageRectUsesCubic } from './canvaskit/image-reduction.ts';
@@ -215,6 +216,12 @@ interface CanvasKitLocalTypeface {
   fontFamily: string | null;
   record?: LocalFontRecord;
   bytesDigest?: string;
+}
+
+// Native and Canvas2D also preserve the ink of an uncovered printable sign.
+// Braille pattern blank is a deliberately empty symbol.
+function isPrintableSign(ch: string): boolean {
+  return ch !== '\u2800' && /^[\p{N}\p{P}\p{S}]$/u.test(ch);
 }
 
 function primaryFontFamily(value: string | null | undefined): string {
@@ -1423,6 +1430,9 @@ export class CanvasKitLayerRenderer {
         : null)
       ?? (primary?.typeface !== this.symbolFallbackTypeface && this.defaultTypeface !== this.symbolFallbackTypeface
         ? observe(this.symbolFallbackTypeface, 'CanvasKit symbol fallback', 'symbol')
+        : null)
+      ?? (isPrintableSign(character)
+        ? observe(this.additionalMathFallbackTypeface, this.additionalMathFallbackFamily ?? 'CanvasKit math fallback', 'symbol')
         : null);
     if (selected) {
       return {
@@ -3108,7 +3118,7 @@ export class CanvasKitLayerRenderer {
     }
   }
 
-  private recordTextRunCoverageGaps(op: LayerTextRunOp, codePoints: readonly string[]): boolean {
+  private recordTextRunCoverageGaps(op: LayerTextRunOp, codePoints: readonly string[], positionedSyloti: boolean): boolean {
     const style = op.style ?? {};
     const decorationsAreExternal = op.legacyVisuals?.decorations === 'mirror';
     if (!decorationsAreExternal && style.underline && style.underline !== 'none') {
@@ -3127,7 +3137,7 @@ export class CanvasKitLayerRenderer {
         || (codePoint >= 0xa960 && codePoint <= 0xa97f)
         || (codePoint >= 0xd7b0 && codePoint <= 0xd7ff);
     });
-    const requiresUnsupportedShaping = textRequiresComplexShaping(replayText)
+    const requiresUnsupportedShaping = (!positionedSyloti && textRequiresComplexShaping(replayText))
       || (textRunHasPaintEffects(style) && hasOldHangul);
     if (requiresUnsupportedShaping) {
       this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
@@ -3227,7 +3237,10 @@ export class CanvasKitLayerRenderer {
       this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
       return;
     }
-    if (this.recordTextRunCoverageGaps(op, replayCodePoints)) return;
+    const positionedSyloti = !op.isVertical && !op.puaGlyphCandidates?.length
+      && isSylotiShapingRun(replayText, replayCodePoints)
+      && replayPositions?.length === replayCodePoints.length + 1 && replayPositions.every(Number.isFinite);
+    if (this.recordTextRunCoverageGaps(op, replayCodePoints, positionedSyloti)) return;
     const verticalPresentationText = op.isVertical
       && op.orientation !== 'vertical-sideways'
       ? VERTICAL_PRESENTATION_BASE_TEXT.get(replayText)
@@ -3320,6 +3333,7 @@ export class CanvasKitLayerRenderer {
           hasOldHangul = codePoints.some(ch => /[\u1100-\u11ff\ua960-\ua97f\ud7b0-\ud7ff]/.test(ch));
         }
         const candidateFonts = [font];
+        const candidateManagers = [fontManager];
         const candidateFontSources: CanvasKitFontSubstitutionDiagnostic['source'][] = [
           'unregisteredDefault',
         ];
@@ -3327,6 +3341,8 @@ export class CanvasKitLayerRenderer {
           preparedTypeface?.fontFamily ?? this.defaultFontFamily ?? 'CanvasKit default',
         ];
         let candidateGlyphIds: Uint16Array[] = [];
+        let missingSignFont: number | undefined;
+        const visibleMissingSigns = new Set<number>();
         const fallbackSpans: Array<{ start: number; end: number; fontIndex: number }> = [];
         let oldHangulTypeface: CanvasKitLocalTypeface | null = null;
         if (hasLayoutPositions) {
@@ -3341,6 +3357,7 @@ export class CanvasKitLayerRenderer {
               adjustFont(fallbackFont, fallback);
               fallbackFonts.push(fallbackFont);
               candidateFonts.push(fallbackFont);
+              candidateManagers.push(fallback.fontManager);
               candidateFontSources.push('missingGlyphFamily');
               candidateFontFamilies.push(fallback.fontFamily ?? 'Declared family fallback');
               candidateGlyphIds.push(fallbackFont.getGlyphIDs(glyphReplayText, codePoints.length));
@@ -3356,6 +3373,7 @@ export class CanvasKitLayerRenderer {
             adjustFont(fallbackFont, candidate);
             fallbackFonts.push(fallbackFont);
             candidateFonts.push(fallbackFont);
+            candidateManagers.push(candidate.fontManager);
             candidateFontSources.push('missingGlyphFamily');
             candidateFontFamilies.push(candidate.fontFamily ?? 'CanvasKit family fallback');
             candidateGlyphIds.push(fallbackFont.getGlyphIDs(glyphReplayText, codePoints.length));
@@ -3367,6 +3385,7 @@ export class CanvasKitLayerRenderer {
             adjustFont(defaultFont, null);
             fallbackFonts.push(defaultFont);
             candidateFonts.push(defaultFont);
+            candidateManagers.push(this.defaultFontManager);
             candidateFontSources.push('missingGlyphDefault');
             candidateFontFamilies.push(this.defaultFontFamily ?? 'CanvasKit default');
             candidateGlyphIds.push(defaultFont.getGlyphIDs(glyphReplayText, codePoints.length));
@@ -3379,9 +3398,24 @@ export class CanvasKitLayerRenderer {
             adjustFont(symbolFont, null);
             fallbackFonts.push(symbolFont);
             candidateFonts.push(symbolFont);
+            candidateManagers.push(null);
             candidateFontSources.push('missingGlyphSymbol');
             candidateFontFamilies.push('CanvasKit symbol fallback');
             candidateGlyphIds.push(symbolFont.getGlyphIDs(glyphReplayText, codePoints.length));
+          }
+          // The bundled math face is already loaded. It also supplies a visible
+          // missing-glyph outline on hosts whose body and symbol faces leave gid 0 blank.
+          if (this.additionalMathFallbackTypeface && primaryGlyphIds.includes(0) && codePoints.some((ch, i) =>
+            isPrintableSign(ch) && candidateGlyphIds.every(ids => !ids[i]))) {
+            const signFont = this.makeFont(this.additionalMathFallbackTypeface, fontSize);
+            adjustFont(signFont, null);
+            fallbackFonts.push(signFont);
+            candidateFonts.push(signFont);
+            candidateManagers.push(null);
+            candidateFontSources.push('missingGlyphSymbol');
+            candidateFontFamilies.push(this.additionalMathFallbackFamily ?? 'CanvasKit math fallback');
+            candidateGlyphIds.push(signFont.getGlyphIDs(glyphReplayText, codePoints.length)
+              .map((id, i) => isPrintableSign(codePoints[i]) ? id : 0));
           }
           const selectedFontIndices = codePoints.map((codePoint, index) => {
             // 위치/전진은 공통 positions가 소유한다. TAB·공백은 font가 visible gid를 갖고 있어도 글리프 잉크가 아니다.
@@ -3394,9 +3428,21 @@ export class CanvasKitLayerRenderer {
             }
             const candidateIndex = candidateGlyphIds.findIndex(ids => (ids[index] ?? 0) !== 0);
             if (candidateIndex >= 0) return candidateIndex;
+            // A printable sign uses the first visible .notdef only after every
+            // prepared face has failed cmap lookup. Its advance still belongs to the producer.
+            if (isPrintableSign(codePoint)) {
+              missingSignFont ??= candidateFonts.findIndex(candidate => {
+                const bounds = candidate.getGlyphBounds?.(Uint16Array.of(0));
+                return bounds && bounds[2] > bounds[0] && bounds[3] > bounds[1];
+              });
+              if (missingSignFont >= 0) {
+                visibleMissingSigns.add(index);
+                return missingSignFont;
+              }
+            }
             return enclosedPua(code) ? -1 : 0;
           });
-          for (const fontIndex of new Set(selectedFontIndices)) {
+          for (const fontIndex of new Set(selectedFontIndices.filter((_, i) => !visibleMissingSigns.has(i)))) {
             if (fontIndex > 0) {
               this.recordFontSubstitution({
                 requestedFamily: requestedFontFamily || this.defaultFontFamily || 'CanvasKit default',
@@ -3431,12 +3477,41 @@ export class CanvasKitLayerRenderer {
           }
         }
 
+        // Shape with the same physical face that will paint the glyph IDs.
+        // Several paint passes can share the cluster offsets and shaped glyphs.
+        let shaped: PositionedGlyphs | null = null;
+        let shapedFont = font;
+        if (positionedSyloti) {
+          for (const [i, manager] of candidateManagers.entries()) {
+            if (!manager || codePoints.some((ch, j) =>
+              !/[\s\u200c\u200d]/u.test(ch) && !candidateGlyphIds[i][j])) continue;
+            shaped = shapePositionedSyloti(this.canvasKit, manager, codePoints, replayPositions!,
+              fontSize, ratio, !!style.bold, !!style.italic, CanvasKitLayerRenderer.MAX_SHAPED_TEXT_WIDTH,
+              CanvasKitLayerRenderer.MAX_TEXT_RUN_CODE_POINTS);
+            if (shaped) {
+              shapedFont = candidateFonts[i];
+              break;
+            }
+          }
+          if (!shaped) {
+            this.unsupportedOps.add('textRun:scriptTextRequiresShaping');
+            return;
+          }
+        }
         const drawPass = (
           fillPaint: SkPaint,
           offsetX = 0,
           offsetY = 0,
           strokePaint?: SkPaint,
         ) => {
+          if (shaped) {
+            const range = { start: 0, length: glyphReplayText.length };
+            this.drawCachedGlyphs(canvas, shaped.glyphs, shaped.positions, originX + offsetX,
+              originY + baselineShift + offsetY, shapedFont, fillPaint, range);
+            if (strokePaint) this.drawCachedGlyphs(canvas, shaped.glyphs, shaped.positions,
+              originX + offsetX, originY + baselineShift + offsetY, shapedFont, strokePaint, range);
+            return;
+          }
           if (verticalPresentationText !== undefined) {
             const selectedFont = hasLayoutPositions
               ? candidateFonts[fallbackSpans[0]?.fontIndex ?? 0] ?? font!
@@ -3641,7 +3716,7 @@ export class CanvasKitLayerRenderer {
               runGlyphIds[index - runStart] = glyphId;
               runPositions[(index - runStart) * 2] = replayPositions![index];
               runPositions[(index - runStart) * 2 + 1] = baselineShift;
-              hasMissingGlyph ||= glyphId === 0;
+              hasMissingGlyph ||= glyphId === 0 && !visibleMissingSigns.has(index);
             }
             this.drawCachedGlyphs(canvas,
               runGlyphIds,

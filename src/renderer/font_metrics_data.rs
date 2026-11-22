@@ -37,6 +37,7 @@ mod supplementary_pictographs;
 
 #[path = "font_metric_contextual_scripts.rs"]
 mod contextual_scripts;
+pub(crate) use contextual_scripts::indic_number_print_notdef_em;
 #[path = "font_metric_math_symbol_blocks.rs"]
 mod math_symbol_blocks;
 

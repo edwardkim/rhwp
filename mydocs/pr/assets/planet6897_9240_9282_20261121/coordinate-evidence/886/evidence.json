@@ -1,0 +1,57 @@
+{
+  "source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "dpi": 96,
+  "raw_metric": "silhouette_raw_match_percent",
+  "origin": "페이지 좌상단",
+  "expected_coordinates_unit": "PDF point",
+  "expected_coordinates": {
+    "2": {
+      "chapter_3_page_number_x": 471.12
+    },
+    "8": {
+      "first_zone_top": 215.284
+    }
+  },
+  "tolerance_px": 2,
+  "backends": {
+    "native": {
+      "pages": 64,
+      "minimum_display": "98.12",
+      "displayed_100": 18,
+      "selected_display_raw": {
+        "1": "100.00",
+        "2": "99.87",
+        "8": "99.99",
+        "37": "98.12"
+      },
+      "tsv_sha256": "3e697371dd9f05e1eeff84021c64f080ff95c8ce921253646d2861462d5224f3",
+      "visual_sweep_manifest_sha256": "d6e163b048a8b51f21746f6997cc086804f2d64b1c5c99a5c096dbd78805eb9b",
+      "native_sha256": "6e1935067e80877fc7cb54e49acaa02a3f3ed8a6c6adf428a4530d6933ba29d9"
+    },
+    "wasm": {
+      "pages": 64,
+      "minimum_display": "98.15",
+      "displayed_100": 18,
+      "selected_display_raw": {
+        "1": "100.00",
+        "2": "99.87",
+        "8": "99.99",
+        "37": "98.15"
+      },
+      "tsv_sha256": "62e9bf6e9bea17c71e18a5d8bef4ade1d7452319ee7f703aa586d5923e0a1248",
+      "visual_sweep_manifest_sha256": "9bc5300a7c547e8c615d7538c725ef71d5f68900f4ac55426e2f40815f269d46",
+      "wasm_sha256": "18b88fdf2ace019f31d29e00aeef74093860c4aa8f750b1d93b1c435cc2962de",
+      "wasm_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+      "build": "macOS locked web --no-opt"
+    }
+  },
+  "input": {
+    "path": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+    "sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+    "sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59"
+  },
+  "comparison_profile": "print"
+}

@@ -1,0 +1,101 @@
+{
+  "product_source_commit": "9595602fe1024fc314bb0c9918a8f7343a91bb75",
+  "regression_and_fixtures_commit": "3e5a553b87f1f1ca180a46f613dca1367947b2c4",
+  "source_and_regression_tree": "7a468c624b124c5d6c9e9c3f8b940bd957098890",
+  "latest_original_pr_head": "d33f4649a13bf32f502a4616e50d6c99e025545c",
+  "devel": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+  "native_cli_sha256": "ef8e28a1127cf2c2d06bebdd1f153b92fafd3e86fa5db6399f2f3e125c0284e3",
+  "optimized_wasm_sha256": "c8b84a72e3895fe09439af8743d3a35a81f32ef5f373c1eabe43627fa9b2f427",
+  "wasm_javascript_sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+  "regression_font_paths_relative_to_ttfs": [
+    "opensource/NotoSansKR-ExtraLight.ttf",
+    "opensource/NotoSansKR-Regular.ttf",
+    "opensource/NotoSansSymbols2-Regular.ttf",
+    "opensource/RHWPOldHangul-Regular.otf",
+    "opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "rust": {
+    "full": {
+      "passed": 13971,
+      "skipped_or_filtered": 45
+    },
+    "focused": {
+      "passed": 36,
+      "skipped_or_filtered": 13980
+    },
+    "new-sample-security": {
+      "passed": 6,
+      "skipped_or_filtered": 14010
+    },
+    "native_library": {
+      "passed": 4033,
+      "ignored": 12
+    },
+    "native_missing_picture": {
+      "passed": 2,
+      "skipped_or_filtered": 353
+    },
+    "native_direct_pdf": {
+      "passed": 37,
+      "skipped_or_filtered": 314
+    },
+    "native_total_passed": 4072
+  },
+  "rust_gates_passed": [
+    "cargo fmt --all -- --check",
+    "git diff --check",
+    "cargo clippy --locked -- -D warnings",
+    "cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings",
+    "cargo build --locked --workspace",
+    "cargo clippy --locked --workspace --all-targets -- -D warnings",
+    "Rust suite manifest and 24 suite-contract tests",
+    "Rust unit-tier policy"
+  ],
+  "studio": {
+    "tests_passed": 2832,
+    "tests_skipped": 2,
+    "types": true,
+    "production_build": true,
+    "renderer_contract": true,
+    "captures": 80,
+    "actual_canvaskit_captures": 40
+  },
+  "independent_print_focused": {
+    "native": {
+      "pages": 37,
+      "minimum_percent": 99.17
+    },
+    "wasm": {
+      "pages": 37,
+      "minimum_percent": 98.97
+    }
+  },
+  "registered_print_reader_comparison": {
+    "registered_documents": 39,
+    "distinct_print_pdfs": 38,
+    "examined_pages": 1449,
+    "previous_text_unchanged_pages": 1448,
+    "whole_page_text_fallback": [
+      {
+        "pdf": "pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf",
+        "page": 1,
+        "text_chars": 0
+      }
+    ]
+  },
+  "regression_and_sample_gate_command_profile": "release-test",
+  "fresh_wasm": "wasm-pack release, wasm-opt",
+  "protected": {
+    "floor_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+    "datasets": 46,
+    "pages_by_backend": {
+      "native": 2023,
+      "wasm": 2023
+    },
+    "total": 4046,
+    "down": 0,
+    "up": 0,
+    "missing": 0
+  },
+  "validated_original_pr_code_head": "38c3b5171c52a925b2f575e9ad17a61fa620ca28"
+}

@@ -1,27 +1,17 @@
-//! [#5800] HWP5 원시 한컴 사용자 기호의 **평면-15 표시 키 정규화** 계약.
-//!
-//! 같은 글자를 HWP5 는 BMP 단일 유닛 `0xA000 | X` 로, HWPX 는 평면 15 보충 PUA
-//! `U+F0000 | X` 로 싣는다. 표시 매핑표는 평면 15 키만 갖고 있어서, 정규화가 없으면
-//! HWP5 문서의 `0xA832` 가 유니코드 U+A832(실로티 나그리 `꠲`)로 그려진다.
-//!
-//! 정규화는 **표에 값이 있을 때만** 한다 — 값이 없는 코드포인트는 원문을 유지해
-//! 미등록 PUA 축(#5599)의 관측 표면을 바꾸지 않는다.
+//! 관계형 회귀. 같은 HWP5 본문의 파일 버전과 HWPX 재열기 전후의 실제 문자·괘선 소속을 검사한다.
+//! 주석 갱신 2026-11-22 21:04 KST. 직전 변경 eb83e873566cf6dd079c4d8be430b1fa386e6af1 (2026-11-22 19:51:19 KST).
+//! 2026-11-22 Windows 한컴 2020 독립 Print와 96 dpi 2px 실루엣으로 각각 전 1쪽을 비교했다.
+//! 5.1.0.1 Native/fresh WASM 100.00%/100.00%, 5.0.1.5 99.95%/100.00%.
+//! 기호 84개는 같은 본문에 저장되어 있다. 현대 입력에서는 Unicode이고 구형 입력에서는 이중 괘선이다.
+//! 근거는 `mydocs/pr/assets/pr9280/`와 `pdf/issue5140-version-boundary/`에 보존한다.
 
 use rhwp::renderer::composer::{expand_pua_render_text, pua_to_display_text, pua_to_text_surface};
 use rhwp::wasm_api::HwpDocument;
 use std::fs;
 use std::path::Path;
 
-/// `tools/fixture_generators/build_issue_5800_fixture.rs` 가 만든 최소 재현 문서.
-const FIXTURE: &str = "samples/issue5800-hancom-symbol.hwp";
-
-fn fixture_bytes() -> Vec<u8> {
-    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(FIXTURE);
-    fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()))
-}
-
 #[test]
-fn hwp5_raw_symbols_reach_the_display_table() {
+fn legacy_display_helpers_accept_the_original_raw_symbol_key() {
     // 검증된 한컴 표시표(`renderer::hancom_pua`) 쪽 값.
     assert_eq!(
         expand_pua_render_text("\u{A832}"),
@@ -70,31 +60,40 @@ fn normalization_only_applies_to_measured_symbols_with_a_table_value() {
 }
 
 #[test]
-fn fixture_ir_keeps_raw_units_but_svg_never_paints_them() {
-    let bytes = fixture_bytes();
-    let document = rhwp::parser::parse_hwp(&bytes).expect("parse issue5800 fixture");
-    let ir: String = document.sections[0]
-        .paragraphs
-        .iter()
-        .map(|p| p.text.as_str())
-        .collect();
-    assert_eq!(
-        ir.matches('\u{A832}').count(),
-        84,
-        "IR 은 HWP5 원시 값을 그대로 보존해야 함(정규화는 표시 경로의 몫)",
-    );
+fn identical_hwp5_units_follow_the_file_version_through_save_and_display() {
+    let cases = [
+        ("samples/issue5800-hancom-symbol.hwp", '꠲', '═'),
+        (
+            "samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp",
+            '═',
+            '꠲',
+        ),
+    ];
+    for (name, expected, other) in cases {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(name);
+        let source = fs::read(&path).expect(name);
+        let parsed = rhwp::parser::parse_hwp(&source).expect("parse HWP5");
+        let stored = parsed.sections[0]
+            .paragraphs
+            .iter()
+            .map(|paragraph| paragraph.text.matches('꠲').count())
+            .sum::<usize>();
+        assert_eq!(stored, 84, "{name}: original HWP5 units");
 
-    let svg = HwpDocument::from_bytes(&bytes)
-        .expect("load issue5800 fixture")
-        .render_page_svg_native(0)
-        .expect("render issue5800 fixture page 1");
-    assert!(svg.contains('═'), "SVG 는 이중 가로 괘선을 그려야 함",);
-    assert!(
-        !svg.contains('\u{A832}'),
-        "SVG 에 원시 U+A832(`꠲`)가 남으면 안 됨",
-    );
-    assert!(
-        !svg.contains('\u{A12B}') && !svg.contains('\u{A289}'),
-        "도장란/원문자 자리에도 원시 코드포인트가 남으면 안 됨",
-    );
+        let opened = HwpDocument::from_bytes(&source).unwrap();
+        let hwpx = opened.export_hwpx_native().unwrap();
+        for doc in [opened, HwpDocument::from_bytes(&hwpx).unwrap()] {
+            let text = doc.extract_page_text_native(0).unwrap();
+            assert_eq!(text.matches(expected).count(), stored, "{name}: text");
+            assert!(!text.contains(other), "{name}: {other}");
+            let svg = doc.render_page_svg_native(0).unwrap();
+            assert!(
+                svg.contains(expected) && !svg.contains(other),
+                "{name}: SVG"
+            );
+            for yi in ['ꄫ', 'ꊉ', 'ꊊ'] {
+                assert_eq!(svg.contains(yi), expected == '꠲', "{name}: {yi}");
+            }
+        }
+    }
 }

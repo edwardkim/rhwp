@@ -136,6 +136,222 @@
       "pages": 215,
       "provenance": "desktop_hancom_print",
       "evidence": "mydocs/pr/assets/issues7749_7753_20261121/print-references.json"
+    },
+    {
+      "sample": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+      "source_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "pdf": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+      "pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "pages": 64,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+      "source_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+      "pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "pages": 7,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+      "source_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "pdf": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+      "pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "pages": 3,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+      "source_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "pages": 9,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/wmf-9285/print-verification.json"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp",
+      "source_sha256": "bd45ac8a92eefc77695a0800130215452cd83f9a2f312e41d4c09385e31857f2",
+      "pdf": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf",
+      "pdf_sha256": "83b9986558d2bc36686944beedde8463af16de996ebcd8216a35b9cc698dcbc4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "samples/issue5140-version-boundary/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+      "source_sha256": "7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3",
+      "pdf": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf",
+      "pdf_sha256": "77b4f67f348aa4ce825845c8635e1219152d4a53fde3bb5a321dedf1bb783909",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "samples/issue5140-version-boundary/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/neighbors-v5.hwp",
+      "source_sha256": "fe06995eae6499fa5a4c19e72a7be8491723b4985520ec333794e09984ea995f",
+      "pdf": "pdf/issue5140-version-boundary/neighbors-v5-2020.pdf",
+      "pdf_sha256": "1b3c5488670d8b4f325fccdb868d1350143537df55d898a2051d0de7183bc4e4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/neighbors-v6.hwp",
+      "source_sha256": "07429b766c1e0078bf79f2673056a403dc9cb5e904b74eaf4815b4a2c8fa2d18",
+      "pdf": "pdf/issue5140-version-boundary/neighbors-v6-2020.pdf",
+      "pdf_sha256": "0bcdf1ed67959fa858271a4b58453b4906fd4781f5872a76cd5f9f07c818a0b9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp",
+      "source_sha256": "f3898d64da3f8cf8307fa29bd52d9f3c8339b6003e5ab6610b2325684c32c3c1",
+      "pdf": "pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf",
+      "pdf_sha256": "d41e66fecf8b3801b0ed86f109acd95e130df8737506a1a8e72cc8cab15997a9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5800-hancom-symbol.hwp",
+      "source_sha256": "e09951a7ac179344a9f9c3dd9625a6de757a5d5cc5cee2fcb7c76c040959476d",
+      "pdf": "pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf",
+      "pdf_sha256": "af0f46cbc65984afd845f273a60af9486ee4b2476fe408a01b203def567156e9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-mark-control.hwp",
+      "source_sha256": "6412d298aa3f7b1444c04ee681f6a5b6e8669091d02d8ebb7fd0a4bff08f1bb5",
+      "pdf": "pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf",
+      "pdf_sha256": "1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-boundaries.hwp",
+      "source_sha256": "2dc1fdb162d895d7b4602432b68b701c29d57e69a3a9eaea4676c5457da1b748",
+      "pdf": "pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf",
+      "pdf_sha256": "70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/syloti-placeholders.hwp",
+      "source_sha256": "8ae5c95f6cf9c1e7ae71f6bc9f48462a6a2f55a74b33f0a36a12c2e0313eef14",
+      "pdf": "pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf",
+      "pdf_sha256": "d04b61cbc149362432b5e91f7333b393dd009bfe578615bfd6de8e7d7720a49e",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-break-controls.hwp",
+      "source_sha256": "ec5593b897ce1d8336a53c063d2301b876ffab012df59f56eda1a156d021fd1e",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-break-controls-2020.pdf",
+      "pdf_sha256": "46acd625a0e67e5cdbdd6d1b63c86b68c8c974c49bfece81525f6cac9a0b8b24",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-advances.hwp",
+      "source_sha256": "00372178fa768ce6aab01eaae7bcf39126e0443c12f7bf2efb41bc2439ae765e",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf",
+      "pdf_sha256": "4e2af63d4cd287f45b258bfd6dd7a3bf93a7f6c4493e2c4a5e34e33cd2845ba6",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-batang-bold.hwp",
+      "source_sha256": "680baa206e568f0eb8cfcee492d4d98db8b8441a7a9d6e841ab9ef66ffa82811",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf",
+      "pdf_sha256": "17c2891460ae1715bcaebf7b9341e43f1e00d4cb83f502952026dbf325d653ba",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-dotum-bold.hwp",
+      "source_sha256": "1ccb33e661ad3d15d9db2b91130d9cc1605b866d53935e4e7c79d6f3c5039451",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf",
+      "pdf_sha256": "c3a0c85f16e6e9408438bda55a703b25e3ea60bbaf61f2418ed25a6992c3d18d",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-dotum.hwp",
+      "source_sha256": "da9d394daba0ba6e3bd30bcd3d813a15d322d238eb28b62a7b71533d00cf499c",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf",
+      "pdf_sha256": "03d874e45cfe51f7ba1d73d23aa8c4f6b7aa35ea0e395dd65403bbc86a07f683",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-line-widths.hwp",
+      "source_sha256": "0c4dea313973c9351cc6c6d77d1e3167746eaf173e10f08d6d7fb20bbc4ba547",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf",
+      "pdf_sha256": "a80a4b3cdc2c09b57b2706b3ccdd8dff811f397a7d418546ef23035deb913cb4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-number-long-lines.hwp",
+      "source_sha256": "d3513755092e8b032a6eb911200da6addda8a0739981969e45d87ffb1a1057d1",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf",
+      "pdf_sha256": "1ed6b7bedccd1ab138b9da65b0a1a0c7ee23a13963d1d9ff4d4de68367c30373",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-run-boundaries.hwp",
+      "source_sha256": "f32669a28d63c50c0df2eab80f8ec0a130c773908d939a8433d450f279a2d0fc",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-run-boundaries-2020.pdf",
+      "pdf_sha256": "1c7e0a1b4f7c13173403a58071a891f4834569ad9b1c605c7f27dd897c335836",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-run-pairs.hwp",
+      "source_sha256": "3190a4263bb2e5e85a0125c0e6da36135c82bcf658b61252277354b0d57ffad9",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-run-pairs-2020.pdf",
+      "pdf_sha256": "0fd49ad11a6fac5ddfac7ce4b01fa971ac3744bb7d104178dbca0a577b19c829",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-seal-mixed.hwp",
+      "source_sha256": "a16fbd46ea966e0ee0544fb74992a5af66effd10b92bfebc353826f03ddffcc8",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-seal-mixed-2020.pdf",
+      "pdf_sha256": "10da6a83f894ce9fc2ecf22c7f2ff7e455ce213ba8c9abb89f6cabc2a202580f",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/indic/indic-seal-ten.hwp",
+      "source_sha256": "4974fde9f676bd1125c83c231a047759c5a78566a5033bc064ac56395cd74a8b",
+      "pdf": "pdf/issue5140-version-boundary/indic/indic-seal-ten-2020.pdf",
+      "pdf_sha256": "dc1ce1a9bb92c0c0efab1089bd4ef74d5790b0a013d971f7d97d2a2aeefab431",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
     }
   ]
 }
