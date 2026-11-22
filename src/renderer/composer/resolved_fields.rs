@@ -31,7 +31,7 @@ impl ComposedTextRun {
                 .map(Some);
         }
         let text = storage.chars(self.text.chars().skip(start).take(end - start))?;
-        let expanded = super::try_expand_pua_surface(&text, None, false, storage)?;
+        let expanded = super::try_expand_pua_surface(text.chars(), None, false, storage)?;
         Ok((expanded != text).then_some(expanded))
     }
 }

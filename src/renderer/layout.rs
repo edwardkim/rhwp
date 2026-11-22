@@ -4154,7 +4154,7 @@ pub(crate) use text_measurement::{
     estimate_text_width_exact, estimate_text_width_unrounded,
     estimate_text_width_unrounded_with_storage, extract_tab_leaders_with_extended,
     find_next_tab_stop, hancom_regenerated_space_width, has_hft_bold_tracking, is_cjk_char,
-    is_halfwidth_cjk_quote, kopub_declared_space_em, kopub_space_advance_em,
+    is_halfwidth_cjk_quote, kopub_declared_space_em, kopub_space_advance_em, line_break_text_width,
     resolved_letter_spacing, resolved_to_text_style, split_into_clusters,
     trace_char_width_decisions, try_resolved_to_text_style, verified_source_projection_face,
     verified_source_projection_text, verified_source_projection_text_with_fallback,
@@ -5612,7 +5612,7 @@ impl LayoutEngine {
     /// 단위로 다시 만든다 — 원본 런의 값을 잘라 쓸 수 없기 때문이다(표시 길이가 모델과
     /// 다르므로 모델 인덱스로 자를 수 없다).
     fn pua_display_for(text: &str) -> Option<String> {
-        let expanded = crate::renderer::composer::expand_pua_render_text(text);
+        let expanded = crate::renderer::composer::expand_body_render_text(text);
         (expanded != text).then_some(expanded)
     }
 
@@ -5819,12 +5819,12 @@ impl LayoutEngine {
                         }
                         let plain: String = chars[cursor..rel].iter().collect();
                         display
-                            .push_str(&crate::renderer::composer::expand_pua_render_text(&plain));
+                            .push_str(&crate::renderer::composer::expand_body_render_text(&plain));
                         display.push_str(rep);
                         cursor = rel + 1;
                     }
                     let tail: String = chars[cursor.min(chars.len())..].iter().collect();
-                    display.push_str(&crate::renderer::composer::expand_pua_render_text(&tail));
+                    display.push_str(&crate::renderer::composer::expand_body_render_text(&tail));
                     // `line.runs[run_idx].text` 는 marker 를 포함한 원 모델 문자열이다.
                     // 바꾸지 않아야 char_start/offset 이 표시 자릿수에 끌려가지 않는다.
                     line.runs[run_idx].display_text = Some(display);

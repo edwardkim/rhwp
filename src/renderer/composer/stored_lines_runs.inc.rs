@@ -1,8 +1,12 @@
 /// 문단의 텍스트를 줄별로 분할하고, 각 줄 내에서 CharShapeRef 경계에 따라 분할한다.
 fn try_compose_lines<S: crate::storage::Storage>(
     para: &Paragraph,
+    legacy_symbols: bool,
     storage: &S,
 ) -> Result<Vec<ComposedLine>, S::Error> {
+    // The projected character still occupies exactly one source scalar. Split styles and
+    // LineSegs using the original HWP UTF-16 offsets, even when that character grows.
+    let body_chars = || crate::model::provenance::body_chars(&para.text, legacy_symbols);
     if para.line_segs.is_empty() {
         // LineSeg가 없으면 텍스트를 ComposedLine 으로 분할
         if crate::renderer::tac_table_host_text_is_line_tail(para) {
@@ -23,7 +27,7 @@ fn try_compose_lines<S: crate::storage::Storage>(
         // 평균 43~46 chars/line. 기존 35 는 conservative — 매 paragraph +1 line
         // 발생 → 페이지 수 inflate (sample16-hwp5.hwp: 64 reference 대비 +3).
         // 45 로 조정하여 HWP3 정합 개선 (+1 까지 축소, 잔존 ParaShape 데이터 차이).
-        let chars: Vec<char> = storage.collect(para.text.chars())?;
+        let chars: Vec<char> = storage.collect(body_chars())?;
         const CHARS_PER_LINE: usize = 45;
         let mut lines = storage.vec(0)?;
         let total = chars.len();
@@ -169,8 +173,7 @@ fn try_compose_lines<S: crate::storage::Storage>(
         }
         // 이 줄의 텍스트 추출
         let line_text = storage.chars(
-            para.text
-                .chars()
+            body_chars()
                 .skip(text_start)
                 .take(text_end - text_start),
         )?;

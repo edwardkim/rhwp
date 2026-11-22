@@ -538,7 +538,35 @@ fn new_sample_documents_are_clean_across_all_three_detectors() {
 
         let unicode = unicode_finding_count(&core);
         checked_unicode += 1;
-        if unicode > 0 && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
+        if *path == repo("samples/issue5140-version-boundary/syloti-placeholders.hwp") {
+            // The shaping fixture deliberately contrasts ZWJ and ZWNJ before a
+            // Syloti hasanta. Check every finding, including its source position.
+            let report = inspect_unicode(path);
+            let findings: Vec<_> = report["findings"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|f| {
+                    serde_json::json!([
+                        f["kind"],
+                        f["codepoint"],
+                        f["section"],
+                        f["paragraph"],
+                        f["charOffset"],
+                        f["runLength"]
+                    ])
+                })
+                .collect();
+            assert_eq!(unicode, 3);
+            assert_eq!(
+                serde_json::Value::Array(findings),
+                serde_json::json!([
+                    ["zero_width", "U+200D", 0, 11, 1, 1],
+                    ["zero_width", "U+200D", 0, 12, 1, 1],
+                    ["zero_width", "U+200C", 0, 13, 1, 1]
+                ])
+            );
+        } else if unicode > 0 && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
             dirty.push(format!("  - [unicode] {name}: {unicode}건"));
         }
     }

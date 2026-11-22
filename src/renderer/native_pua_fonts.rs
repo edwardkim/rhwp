@@ -115,6 +115,7 @@ struct NativeOtfProgram {
     faux_bold: bool,
     cff: bool,
     static_truetype: bool,
+    visible_notdef_advance: Option<f64>,
     verified_hft_bold_tracking: bool,
 }
 
@@ -229,6 +230,11 @@ impl NativeOtfMetrics {
         found
     }
 
+    /// First outlined glyph zero in paint order, after character coverage is exhausted.
+    pub(crate) fn visible_notdef_advance_em(&self) -> Option<f64> {
+        self.programs.iter().find_map(|p| p.visible_notdef_advance)
+    }
+
     pub fn needs_faux_bold(&self, character: char) -> bool {
         self.glyph_metric(character)
             .is_some_and(|(_, faux, _, _)| faux)
@@ -292,8 +298,7 @@ impl NativeOtfMetrics {
 
 impl NativePuaMetrics {
     pub fn advance_em(&self, character: char) -> Option<f64> {
-        let key = super::composer::hancom_symbol_display_key(character);
-        self.advances[SUPPORTED_SYMBOLS.iter().position(|ch| *ch == key)?]
+        self.advances[SUPPORTED_SYMBOLS.iter().position(|ch| *ch == character)?]
     }
 }
 
@@ -354,6 +359,14 @@ impl NativePuaFonts {
             && !face.is_variable()
             && face.tables().colr.is_none()
             && face.tables().svg.is_none();
+        // The compact measurement face below has no outlines. An empty glyph
+        // zero can still have an hmtx entry, so store its advance only if visible.
+        let notdef = ttf_parser::GlyphId(0);
+        let visible_notdef_advance = face
+            .glyph_bounding_box(notdef)
+            .filter(|bounds| bounds.x_min < bounds.x_max && bounds.y_min < bounds.y_max)
+            .and_then(|_| face.glyph_hor_advance(notdef))
+            .map(|advance| f64::from(advance) / f64::from(face.units_per_em()));
         let source_digest: [u8; 32] = Sha256::digest(bytes).into();
         let source_face_index = face_index;
         // FontEnvironment의 Native 신원 생성과 같은 입력·collection face를 소비한다.
@@ -428,6 +441,7 @@ impl NativePuaFonts {
             faux_bold,
             cff,
             static_truetype,
+            visible_notdef_advance,
             verified_hft_bold_tracking,
         });
         self.otf_programs

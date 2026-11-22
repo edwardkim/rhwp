@@ -417,13 +417,17 @@ fn compute_char_positions_walk(
     let supplemental = super::super::supplemental_metrics::standalone_scalar_mask(text, style);
     let contextual = super::super::arabic_context::advances(&chars, style);
     let char_width = |i: usize| -> f64 {
-        char_width_decision_with_hft_tracking(
+        measure_scalar_advance(
             &chars,
             &cluster_len,
             i,
             style,
             supplemental.as_ref().is_some_and(|mask| mask[i]),
-            include_hft_bold_tracking,
+            if include_hft_bold_tracking {
+                AdvancePurpose::Layout
+            } else {
+                AdvancePurpose::GlyphFit
+            },
             contextual.as_ref().and_then(|widths| widths[i]),
         )
         .final_width_px
@@ -556,13 +560,13 @@ impl EmbeddedTextMeasurer {
             let contextual =
                 super::super::arabic_context::advances_with_storage(&chars, style, storage)?;
             let char_width = |i: usize| -> f64 {
-                char_width_decision_with_hft_tracking(
+                measure_scalar_advance(
                     &chars,
                     &cluster_len,
                     i,
                     style,
                     supplemental.as_ref().is_some_and(|mask| mask[i]),
-                    true,
+                    AdvancePurpose::Layout,
                     contextual.as_ref().and_then(|widths| widths[i]),
                 )
                 .final_width_px
@@ -2043,24 +2047,74 @@ pub(crate) fn char_width_decision<'a>(
     allow_supplemental: bool,
 ) -> CharWidthDecision<'a> {
     let contextual = super::super::arabic_context::advances(chars, style);
-    char_width_decision_with_hft_tracking(
+    measure_scalar_advance(
         chars,
         cluster_len,
         i,
         style,
         allow_supplemental,
-        true,
+        AdvancePurpose::Layout,
         contextual.as_ref().and_then(|widths| widths[i]),
     )
 }
 
-fn char_width_decision_with_hft_tracking<'a>(
+/// Resolve a missing Common Indic Number Form after all ordinary and prepared
+/// advances. A supplied real glyph wins even in a font whose original type
+/// was unspecified. The Hancom fallback applies only to a verified HCR miss.
+fn indic_number_fallback_advance(
+    style: &TextStyle,
+    ch: char,
+    width_source: &str,
+    purpose: AdvancePurpose,
+) -> Option<(f64, &'static str)> {
+    if width_source != "heuristicHalfwidth" || style.source_font_is_hft {
+        return None;
+    }
+    let family = style
+        .metric_font_family
+        .as_deref()
+        .unwrap_or(&style.font_family);
+    let print_em =
+        font_metrics_data::indic_number_print_notdef_em(family, style.bold, style.italic, ch)?;
+    if let Some(font) = style
+        .native_otf_metrics
+        .as_deref()
+        .filter(|font| font.has_glyph(ch))
+    {
+        return font
+            .source_ttf_advance_em(ch)
+            .map(|em| (em, "nativeTrueType"))
+            .or_else(|| font.advance_em(ch).map(|em| (em, "nativeOtf")));
+    }
+    // Hancom breaks the line using the document's unassigned character slot.
+    // Its visible substitute is fitted inside the resulting line: an isolated
+    // Gulim glyph zero gets a full em, while 85 slots fit in a 425.2 pt line
+    // at 10 pt. Real character glyphs above keep their own advance throughout.
+    if purpose == AdvancePurpose::LineBreak {
+        return None;
+    }
+    let explicit_em = style
+        .native_otf_metrics
+        .as_deref()
+        .filter(|_| style.glyph_fallback_advance_explicit)
+        .and_then(|font| font.visible_notdef_advance_em());
+    Some((explicit_em.unwrap_or(print_em), "missingGlyphAdvance"))
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum AdvancePurpose {
+    LineBreak,
+    Layout,
+    GlyphFit,
+}
+
+fn measure_scalar_advance<'a>(
     chars: &[char],
     cluster_len: &[u8],
     i: usize,
     style: &'a TextStyle,
     allow_supplemental: bool,
-    include_hft_bold_tracking: bool,
+    purpose: AdvancePurpose,
     contextual_advance: Option<f64>,
 ) -> CharWidthDecision<'a> {
     let (font_size, ratio, _) = style_params(style);
@@ -2074,7 +2128,7 @@ fn char_width_decision_with_hft_tracking<'a>(
         .as_ref()
         .is_some_and(|program| program.advance_em(chars[i]).is_some())
     {
-        super::super::composer::hancom_symbol_display_key(chars[i])
+        chars[i]
     } else {
         super::super::composer::single_scalar_display_char(chars[i])
     };
@@ -2160,13 +2214,13 @@ fn char_width_decision_with_hft_tracking<'a>(
                 .literal_figure_space_em
                 .map(|em| font_size * em)
                 .unwrap_or_else(|| {
-                    char_width_decision_with_hft_tracking(
+                    measure_scalar_advance(
                         &['0'],
                         &[1],
                         0,
                         style,
                         false,
-                        false,
+                        AdvancePurpose::GlyphFit,
                         None,
                     )
                     .base_width_px
@@ -2801,9 +2855,16 @@ fn char_width_decision_with_hft_tracking<'a>(
     })
     .flatten();
     let supplemented = supplement.is_some();
-    let (base_width_raw, width_source) = supplement
-        .map(|entry| (entry.natural_advance_px(), entry.width_source()))
-        .unwrap_or((base_width_raw, width_source));
+    let (base_width_raw, width_source) = if let Some(entry) = supplement {
+        (entry.natural_advance_px(), entry.width_source())
+    } else if let Some((em, source)) =
+        indic_number_fallback_advance(style, c, width_source, purpose)
+    {
+        em_exact = Some(em);
+        (font_size * em, source)
+    } else {
+        (base_width_raw, width_source)
+    };
     let base_width_px = if clamp_dash_leader {
         base_width_raw.min(font_size * 0.3)
     } else {
@@ -2814,7 +2875,7 @@ fn char_width_decision_with_hft_tracking<'a>(
     // 본문용 굵기 자간을 빌리지 않는다. 준비된 원 PUA 프로그램·본문 글리프와
     // 리터럴 Unicode 문자는 기존의 자기 프로그램 계약을 유지한다.
     let include_hft_bold_tracking =
-        include_hft_bold_tracking && width_source != "implicitSymbolProgram";
+        purpose != AdvancePurpose::GlyphFit && width_source != "implicitSymbolProgram";
     // 원본 HFT의 굵기는 intrinsic 글리프 폭을 바꾸지 않고 약0.05em의
     // 추가 전진을 준다. 독립 Print 22행의 굵기·크기·자간 대조를 따른다.
     // 표시용 TTF의 bold 메트릭이나 배분 자간과 구분하고 원본 자간을 함께 소비한다.
@@ -3024,6 +3085,27 @@ pub(crate) fn estimate_text_width_unrounded_with_storage<S: crate::storage::Stor
     style: &TextStyle,
     storage: &S,
 ) -> Result<f64, S::Error> {
+    measure_unrounded(text, style, AdvancePurpose::Layout, storage)
+}
+
+pub(crate) fn line_break_text_width(text: &str, style: &TextStyle) -> f64 {
+    match measure_unrounded(
+        text,
+        style,
+        AdvancePurpose::LineBreak,
+        &crate::storage::Unbounded,
+    ) {
+        Ok(width) => width,
+        Err(never) => match never {},
+    }
+}
+
+fn measure_unrounded<S: crate::storage::Storage>(
+    text: &str,
+    style: &TextStyle,
+    purpose: AdvancePurpose,
+    storage: &S,
+) -> Result<f64, S::Error> {
     let (_, _, tab_w) = style_params(style);
     let chars: Vec<char> = storage.collect(text.chars())?;
     let cluster_len = build_cluster_len_with_storage(&chars, storage)?;
@@ -3034,13 +3116,13 @@ pub(crate) fn estimate_text_width_unrounded_with_storage<S: crate::storage::Stor
     )?;
     let contextual = super::super::arabic_context::advances_with_storage(&chars, style, storage)?;
     let char_width = |i: usize| -> f64 {
-        char_width_decision_with_hft_tracking(
+        measure_scalar_advance(
             &chars,
             &cluster_len,
             i,
             style,
             supplemental.as_ref().is_some_and(|mask| mask[i]),
-            true,
+            purpose,
             contextual.as_ref().and_then(|widths| widths[i]),
         )
         .final_width_px

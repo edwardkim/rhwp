@@ -82,6 +82,7 @@ mod tests {
         let styles = ResolvedStyleSet {
             section_tab_width_bits: Default::default(),
             source_hwp3_native: false,
+            legacy_body_symbols: false,
             word_compat_target: false,
             source_program_projection_slots: Default::default(),
             unsubstituted_font_slots: Default::default(),

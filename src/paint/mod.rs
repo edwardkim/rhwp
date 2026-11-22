@@ -45,6 +45,7 @@ pub mod schema;
 mod shaped_measurement;
 pub(crate) mod shaping_glyph;
 pub(crate) mod shaping_glyph_vertical;
+mod syloti_marks;
 mod table_fill_origin;
 pub mod text_shadow;
 pub mod text_shape;

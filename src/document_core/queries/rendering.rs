@@ -342,26 +342,18 @@ fn load_bounded_embedded_font_bytes(
     bytes_by_id
 }
 
-/// 실제 필요한 문자 출처에 한해 같은 bounded 문단 순회를 사용한다.
-#[derive(Clone, Copy)]
-pub(crate) enum ExactFontSlotFilter {
-    All,
-    Pua,
-    LiteralFigureSpace,
-}
-
 fn collect_exact_font_slots_from_paragraphs(
     paragraphs: &[Paragraph],
     slots: &mut std::collections::HashSet<ExactFontSlot>,
     remaining_work_units: &mut usize,
     depth: usize,
 ) {
-    collect_exact_font_slots_from_paragraphs_filtered(
+    collect_exact_font_slots_from_paragraphs_selected(
         paragraphs,
         slots,
         remaining_work_units,
         depth,
-        ExactFontSlotFilter::All,
+        ExactFontSlotSelection::All,
     );
 }
 
@@ -369,7 +361,7 @@ fn collect_exact_font_slots_from_paragraphs(
 #[derive(Clone, Copy)]
 pub(crate) enum ExactFontSlotSelection<'a> {
     All,
-    NativePua,
+    NativePua(&'a crate::renderer::style_resolver::ResolvedStyleSet),
     LiteralFigureSpace,
     Tab(&'a crate::model::document::DocInfo),
     Shadow(
@@ -378,26 +370,6 @@ pub(crate) enum ExactFontSlotSelection<'a> {
             std::collections::HashMap<ExactFontSlot, std::collections::BTreeSet<char>>,
         >,
     ),
-}
-
-pub(crate) fn collect_exact_font_slots_from_paragraphs_filtered(
-    paragraphs: &[Paragraph],
-    slots: &mut std::collections::HashSet<ExactFontSlot>,
-    remaining_work_units: &mut usize,
-    depth: usize,
-    filter: ExactFontSlotFilter,
-) {
-    collect_exact_font_slots_from_paragraphs_selected(
-        paragraphs,
-        slots,
-        remaining_work_units,
-        depth,
-        match filter {
-            ExactFontSlotFilter::All => ExactFontSlotSelection::All,
-            ExactFontSlotFilter::Pua => ExactFontSlotSelection::NativePua,
-            ExactFontSlotFilter::LiteralFigureSpace => ExactFontSlotSelection::LiteralFigureSpace,
-        },
-    );
 }
 
 pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
@@ -437,7 +409,12 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
             _ => true,
         };
         if has_selected_runs {
-            let composed = compose_paragraph(paragraph);
+            let composed = match selection {
+                ExactFontSlotSelection::NativePua(styles) if styles.legacy_body_symbols => {
+                    crate::renderer::composer::compose_paragraph_in_context(paragraph, styles)
+                }
+                _ => compose_paragraph(paragraph),
+            };
             for run in composed.lines.iter().flat_map(|line| &line.runs) {
                 if *remaining_work_units == 0 {
                     return;
@@ -451,10 +428,9 @@ pub(crate) fn collect_exact_font_slots_from_paragraphs_selected(
                 if has_text
                     && match selection {
                         ExactFontSlotSelection::All => true,
-                        ExactFontSlotSelection::NativePua => run
-                            .text
-                            .chars()
-                            .any(crate::renderer::native_pua_fonts::is_supported_symbol),
+                        ExactFontSlotSelection::NativePua(_) => run.text.chars().any(|ch| {
+                            crate::renderer::native_pua_fonts::SUPPORTED_SYMBOLS.contains(&ch)
+                        }),
                         ExactFontSlotSelection::LiteralFigureSpace => run.literal_figure_space,
                         ExactFontSlotSelection::Tab(_) => run.text.contains('\t'),
                         ExactFontSlotSelection::Shadow(info, _) => info
@@ -8850,7 +8826,7 @@ impl DocumentCore {
                     // 모델에 제어문자 1자라 그대로 내보내면 값이 사라진다 (Task #3216).
                     // [#3385] 렌더가 폰트 정합을 위해 원문으로 흘리는 PUA 는 텍스트
                     // 표면에서만 읽을 수 있는 문자로 바꾼다 (렌더 결정은 불변).
-                    out.push_str(&crate::renderer::composer::pua_to_text_surface(
+                    out.push_str(&crate::renderer::composer::body_text_surface(
                         tr.display_or_text(),
                     ));
                     *has_token = true;

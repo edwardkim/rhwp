@@ -843,6 +843,10 @@ function runExecutableTextReplay(op, {
   fillPaintErrorAt = null,
   requirePreparedFontFamilies = false,
   shapedTextAvailable = true,
+  shapedLine,
+  shapedClusters,
+  missingGlyphBounds,
+  lastResortGlyphIds,
 } = {}) {
   const events = [];
   const unsupportedOps = new Set();
@@ -858,6 +862,7 @@ function runExecutableTextReplay(op, {
 
     getGlyphIDs(text, count) {
       events.push({ type: 'font.getGlyphIDs', text, count });
+      if (this.typeface?.face === 'lastResort') return Uint16Array.from(lastResortGlyphIds);
       if (innerGlyphIdsByFace && /^[0-9인]+$/u.test(text)) {
         return Uint16Array.from(innerGlyphIdsByFace[this.typeface?.face] ?? [0]);
       }
@@ -875,6 +880,9 @@ function runExecutableTextReplay(op, {
     }
 
     getGlyphBounds(ids) {
+      if (missingGlyphBounds && ids.length === 1 && ids[0] === 0) {
+        return Float32Array.from(missingGlyphBounds[this.typeface?.face] ?? [0, 0, 0, 0]);
+      }
       return Float32Array.from(Array.from(ids).flatMap(() => [-4, -12, 4, 2]));
     }
 
@@ -895,6 +903,10 @@ function runExecutableTextReplay(op, {
   }
 
   const paragraph = {
+    didExceedMaxLines: () => false,
+    unresolvedCodepoints: () => [],
+    getShapedLines: () => shapedLine ? [shapedLine] : [],
+    getGlyphInfoAt: index => shapedClusters?.[index] ?? null,
     layout(width) {
       events.push({ type: 'paragraph.layout', width });
     },
@@ -995,8 +1007,11 @@ function runExecutableTextReplay(op, {
   };
   const fallbackTypeface = { face: 'fallback' };
   const symbolTypeface = symbolGlyphIds ? { face: 'symbol' } : null;
+  const manager = shapedTextAvailable ? { countFamilies: () => 1, getFamilyName: () => 'Physical test face' } : null;
   const renderer = new CanvasKitLayerRendererRuntime({
     Font: FakeFont,
+    FontWeight: { Normal: 400, Bold: 700 },
+    FontSlant: { Upright: 0, Italic: 1 },
     StrokeCap: { Round: 'round' },
     StrokeJoin: { Round: 'round' },
     PathEffect: {
@@ -1015,9 +1030,10 @@ function runExecutableTextReplay(op, {
     XYWHRect(x, y, width, height) {
       return { x, y, width, height };
     },
-  }, 'default', {}, fallbackTypeface, symbolTypeface, shapedTextAvailable ? {} : null,
+  }, 'default', {}, fallbackTypeface, symbolTypeface, manager,
   'Noto Sans KR', 'fonts/NotoSansKR-Regular.woff2', requirePreparedFontFamilies);
   renderer.unsupportedOps = unsupportedOps;
+  if (lastResortGlyphIds) renderer.additionalMathFallbackTypeface = { face: 'lastResort' };
   if (usePreparedTypeface) {
     renderer.findPreparedTypeface = (fontFamily) => ({
       typeface: preparedFaces
@@ -1025,14 +1041,14 @@ function runExecutableTextReplay(op, {
         : fontFamily === 'RHWP Old Hangul'
         ? null
         : { face: 'primary' },
-      fontManager: shapedTextAvailable ? {} : null,
+      fontManager: manager,
       fontFamily,
     });
   }
   const recordTextRunCoverageGaps = renderer.recordTextRunCoverageGaps.bind(renderer);
-  renderer.recordTextRunCoverageGaps = (textRun, codePoints) => {
+  renderer.recordTextRunCoverageGaps = (...args) => {
     events.push({ type: 'coverage.record' });
-    return recordTextRunCoverageGaps(textRun, codePoints);
+    return recordTextRunCoverageGaps(...args);
   };
   let fillPaintCreates = 0;
   renderer.makeFillPaint = (color) => {
@@ -2370,7 +2386,7 @@ for (const [label, body, baselinePattern] of [
 }
 requireSnippet(
   renderTextRunBody,
-  /MAX_TEXT_RUN_CODE_POINTS[\s\S]*?this\.recordTextRunCoverageGaps\(op, replayCodePoints\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs[\s\S]*?const drawPass[\s\S]*?const runGlyphIds = new Uint16Array[\s\S]*?this\.drawCachedGlyphs\(/,
+  /MAX_TEXT_RUN_CODE_POINTS[\s\S]*?this\.recordTextRunCoverageGaps\(op, replayCodePoints, positionedSyloti\)[\s\S]*?const primaryGlyphIds = font\.getGlyphIDs[\s\S]*?const drawPass[\s\S]*?const runGlyphIds = new Uint16Array[\s\S]*?this\.drawCachedGlyphs\(/,
   'textRun replay should validate coverage once and reuse positioned glyphs across paint passes',
 );
 requireSnippet(
@@ -2565,6 +2581,61 @@ assert.equal(
   false,
   'unsupported complex-script effect combinations must fail before partial drawing',
 );
+
+// Cluster origins come from HWP while mark offsets and substituted glyph IDs come from SkParagraph.
+const positionedSyloti = {
+  type: 'textRun', bbox: { x: 3, y: 4, width: 60, height: 20 }, baseline: 15,
+  text: 'ꠇ꠆꠆', displayText: 'ꠇ꠆◌꠆', displayPositions: [0, 13, 28, 42, 42],
+  style: { fontSize: 20, ratio: 1.5, bold: true, italic: true },
+};
+const scriptCluster = (start, left) => ({
+  graphemeClusterTextRange: { start, end: start + 2 }, graphemeLayoutBounds: [left, 0, left + 10, 20],
+});
+const shapedLine = { baseline: 16, runs: [{
+  glyphs: Uint16Array.of(121, 122, 123, 124), offsets: Uint32Array.of(0, 3, 6, 9, 12),
+  positions: Float32Array.of(0, 16, 6, 14, 11, 16, 18, 15, 21, 16),
+}] };
+const shapedClusters = [scriptCluster(0, 0), scriptCluster(0, 0), scriptCluster(2, 11), scriptCluster(2, 11)];
+const shapedInk = runExecutableTextReplay(positionedSyloti, { shapedLine, shapedClusters });
+const ink = shapedInk.events.find(e => e.type === 'canvas.drawGlyphs');
+assert.deepEqual(ink?.glyphIds, [121, 122, 123, 124]);
+assert.deepEqual(ink?.positions, [0, 0, 9, -2, 28, 0, 38.5, -1]);
+assert.deepEqual([ink?.x, ink?.y], [3, 19]);
+assert.deepEqual(shapedInk.events.find(e => e.type === 'paragraphStyle.create')?.style.textStyle.fontStyle,
+  { weight: 700, slant: 1 });
+assert.equal(shapedInk.unsupportedOps.size, 0);
+const astralPrefix = runExecutableTextReplay({ ...positionedSyloti, text: '𝟘꠆',
+  displayText: '𝟘◌꠆', displayPositions: [0, 19, 32, 32] }, {
+  shapedLine: { baseline: 16, runs: [{ glyphs: Uint16Array.of(91, 92, 93),
+    offsets: Uint32Array.of(0, 4, 7, 10), positions: Float32Array.of(0, 16, 8, 16, 13, 16, 15, 16) }] },
+  shapedClusters: [scriptCluster(0, 0), scriptCluster(0, 0), scriptCluster(2, 8), scriptCluster(2, 8)],
+});
+assert.deepEqual(astralPrefix.events.find(e => e.type === 'canvas.drawGlyphs')?.positions,
+  [0, 0, 19, 0, 26.5, 0], 'UTF-8 cluster offsets must resolve to scalar origins after a surrogate pair');
+for (const options of [{ shapedTextAvailable: false }, { shapedLine, shapedClusters: [] }]) {
+  const missingShaping = runExecutableTextReplay(positionedSyloti, options);
+  assert.ok(missingShaping.unsupportedOps.has('textRun:scriptTextRequiresShaping'));
+  assert.ok(!missingShaping.events.some(e => e.type.startsWith('canvas.draw')));
+}
+const missingSign = { type: 'textRun', text: '\uA832',
+  bbox: { x: 2, y: 12, width: 14, height: 20 }, positions: [0, 14], style: { fontSize: 16 } };
+for (const [bounds, visible] of [[[1, -8, 9, 0], true], [[0, 0, 0, 0], false]]) {
+  const result = runExecutableTextReplay(missingSign, { usePreparedTypeface: true,
+    glyphIds: [0], fallbackGlyphIds: [0], missingGlyphBounds: { fallback: bounds } });
+  assert.equal(result.unsupportedOps.has('textRun:glyphMapping'), !visible);
+  if (visible) {
+    const fallback = result.events.find(e => e.type === 'canvas.drawGlyphs');
+    assert.deepEqual(fallback?.glyphIds, [0]);
+    assert.deepEqual(fallback?.positions, [0, 0]);
+  }
+}
+for (const id of [0, 77]) {
+  const result = runExecutableTextReplay(missingSign, { usePreparedTypeface: true,
+    glyphIds: [0], fallbackGlyphIds: [0], lastResortGlyphIds: [id],
+    missingGlyphBounds: { lastResort: [1, -9, 11, 0] } });
+  assert.equal(result.unsupportedOps.has('textRun:glyphMapping'), false);
+  assert.deepEqual(result.events.find(e => e.type === 'canvas.drawGlyphs')?.glyphIds, [id]);
+}
 
 const textEffectReplay = runExecutableTextReplay({
   type: 'textRun',

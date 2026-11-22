@@ -1,0 +1,121 @@
+profile	input	paragraph	hancom_display	left	top	right	bottom	changed_rgb_pixels
+screen	syloti-mark-control	1	U+0042 U+25CC U+A806 U+0020 U+0043	125	163	210	180	54
+screen	syloti-mark-control	2	U+A807 U+A806 U+0020 U+0043	125	184	210	201	58
+screen	syloti-mark-control	3	U+25CC U+A806 U+0020 U+0043	125	205	210	222	54
+screen	syloti-mark-control	4	U+0042 U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	227	210	244	110
+screen	syloti-mark-control	5	U+25CC U+A806 U+0020 U+0043	125	248	210	265	11
+screen	syloti-mark-control	6	U+0042 U+25CC U+A806 U+0020 U+A807 U+A806 U+0020 U+0043	125	269	210	286	106
+screen	syloti-mark-control-saved	1	U+0042 U+25CC U+A806 U+0020 U+0043	125	163	210	180	54
+screen	syloti-mark-control-saved	2	U+A807 U+A806 U+0020 U+0043	125	184	210	201	58
+screen	syloti-mark-control-saved	3	U+25CC U+A806 U+0020 U+0043	125	205	210	222	54
+screen	syloti-mark-control-saved	4	U+0042 U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	227	210	244	110
+screen	syloti-mark-control-saved	5	U+25CC U+A806 U+0020 U+0043	125	248	210	265	11
+screen	syloti-mark-control-saved	6	U+0042 U+25CC U+A806 U+0020 U+A807 U+A806 U+0020 U+0043	125	269	210	286	106
+screen	syloti-boundaries	1	U+A807 U+A806 U+25CC U+A806 U+0020 U+0043	125	163	210	180	112
+screen	syloti-boundaries	2	U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	184	210	201	67
+screen	syloti-boundaries	3	U+00A0 U+25CC U+A806 U+0020 U+0043	125	205	210	222	54
+screen	syloti-boundaries	4	U+0020 U+25CC U+A806 U+0020 U+0043	125	227	210	244	54
+screen	syloti-boundaries	5	U+A803 U+A806 U+0020 U+0043	125	248	210	265	50
+screen	syloti-boundaries	6	U+2022 U+A806 U+0020 U+0043	125	269	210	286	11
+screen	syloti-boundaries	7	U+A807 U+A823 U+25CC U+A806 U+0020 U+0043	125	291	210	308	116
+screen	syloti-boundaries	8	U+A807 U+A806 U+A807 U+0020 U+0043	125	312	210	329	104
+screen	syloti-boundaries	9	U+25CC U+A806 U+A807 U+0020 U+0043	125	333	210	350	103
+screen	syloti-boundaries-saved	1	U+A807 U+A806 U+25CC U+A806 U+0020 U+0043	125	163	210	180	112
+screen	syloti-boundaries-saved	2	U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	184	210	201	67
+screen	syloti-boundaries-saved	3	U+00A0 U+25CC U+A806 U+0020 U+0043	125	205	210	222	54
+screen	syloti-boundaries-saved	4	U+0020 U+25CC U+A806 U+0020 U+0043	125	227	210	244	54
+screen	syloti-boundaries-saved	5	U+A803 U+A806 U+0020 U+0043	125	248	210	265	50
+screen	syloti-boundaries-saved	6	U+2022 U+A806 U+0020 U+0043	125	269	210	286	11
+screen	syloti-boundaries-saved	7	U+A807 U+A823 U+25CC U+A806 U+0020 U+0043	125	291	210	308	116
+screen	syloti-boundaries-saved	8	U+A807 U+A806 U+A807 U+0020 U+0043	125	312	210	329	104
+screen	syloti-boundaries-saved	9	U+25CC U+A806 U+A807 U+0020 U+0043	125	333	210	350	103
+screen	syloti-placeholders	1	U+002D U+25CC U+A806 U+0020 U+0043	125	163	210	180	56
+screen	syloti-placeholders	2	U+2010 U+25CC U+A806 U+0020 U+0043	125	184	210	201	54
+screen	syloti-placeholders	3	U+2011 U+25CC U+A806 U+0020 U+0043	125	205	210	222	54
+screen	syloti-placeholders	4	U+2012 U+A806 U+0020 U+0043	125	227	210	244	17
+screen	syloti-placeholders	5	U+2013 U+A806 U+0020 U+0043	125	248	210	265	11
+screen	syloti-placeholders	6	U+2014 U+A806 U+0020 U+0043	125	269	210	286	11
+screen	syloti-placeholders	7	U+2015 U+A806 U+0020 U+0043	125	291	210	308	11
+screen	syloti-placeholders	8	U+00D7 U+25CC U+A806 U+0020 U+0043	125	312	210	329	56
+screen	syloti-placeholders	9	U+25FB U+A806 U+0020 U+0043	125	333	210	350	11
+screen	syloti-placeholders	10	U+25FE U+A806 U+0020 U+0043	125	355	210	372	11
+screen	syloti-placeholders	11	U+0042 U+0020 U+25CC U+A806 U+0020 U+0043	125	376	210	393	54
+screen	syloti-placeholders	12	U+A807 U+0020 U+A806 U+0020 U+0043	125	397	210	414	58
+screen	syloti-placeholders	13	U+A807 U+0020 U+25CC U+A806 U+0020 U+0043	125	419	210	436	101
+screen	syloti-placeholders	14	U+A807 U+A802 U+25CC U+A806 U+0020 U+0043	125	440	210	457	113
+screen	syloti-placeholders	15	U+A807 U+A80B U+25CC U+A806 U+0020 U+0043	125	461	210	478	113
+screen	syloti-placeholders-saved	1	U+002D U+25CC U+A806 U+0020 U+0043	125	163	210	180	56
+screen	syloti-placeholders-saved	2	U+2010 U+25CC U+A806 U+0020 U+0043	125	184	210	201	54
+screen	syloti-placeholders-saved	3	U+2011 U+25CC U+A806 U+0020 U+0043	125	205	210	222	54
+screen	syloti-placeholders-saved	4	U+2012 U+A806 U+0020 U+0043	125	227	210	244	17
+screen	syloti-placeholders-saved	5	U+2013 U+A806 U+0020 U+0043	125	248	210	265	11
+screen	syloti-placeholders-saved	6	U+2014 U+A806 U+0020 U+0043	125	269	210	286	11
+screen	syloti-placeholders-saved	7	U+2015 U+A806 U+0020 U+0043	125	291	210	308	11
+screen	syloti-placeholders-saved	8	U+00D7 U+25CC U+A806 U+0020 U+0043	125	312	210	329	56
+screen	syloti-placeholders-saved	9	U+25FB U+A806 U+0020 U+0043	125	333	210	350	11
+screen	syloti-placeholders-saved	10	U+25FE U+A806 U+0020 U+0043	125	355	210	372	11
+screen	syloti-placeholders-saved	11	U+0042 U+0020 U+25CC U+A806 U+0020 U+0043	125	376	210	393	54
+screen	syloti-placeholders-saved	12	U+A807 U+0020 U+A806 U+0020 U+0043	125	397	210	414	58
+screen	syloti-placeholders-saved	13	U+A807 U+0020 U+25CC U+A806 U+0020 U+0043	125	419	210	436	101
+screen	syloti-placeholders-saved	14	U+A807 U+A802 U+25CC U+A806 U+0020 U+0043	125	440	210	457	113
+screen	syloti-placeholders-saved	15	U+A807 U+A80B U+25CC U+A806 U+0020 U+0043	125	461	210	478	113
+print	syloti-mark-control	1	U+0042 U+25CC U+A806 U+0020 U+0043	125	163	210	180	96
+print	syloti-mark-control	2	U+A807 U+A806 U+0020 U+0043	125	184	210	201	92
+print	syloti-mark-control	3	U+25CC U+A806 U+0020 U+0043	125	205	210	222	96
+print	syloti-mark-control	4	U+0042 U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	227	210	244	193
+print	syloti-mark-control	5	U+25CC U+A806 U+0020 U+0043	125	248	210	265	21
+print	syloti-mark-control	6	U+0042 U+25CC U+A806 U+0020 U+A807 U+A806 U+0020 U+0043	125	269	210	286	166
+print	syloti-mark-control-saved	1	U+0042 U+25CC U+A806 U+0020 U+0043	125	163	210	180	96
+print	syloti-mark-control-saved	2	U+A807 U+A806 U+0020 U+0043	125	184	210	201	92
+print	syloti-mark-control-saved	3	U+25CC U+A806 U+0020 U+0043	125	205	210	222	96
+print	syloti-mark-control-saved	4	U+0042 U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	227	210	244	193
+print	syloti-mark-control-saved	5	U+25CC U+A806 U+0020 U+0043	125	248	210	265	21
+print	syloti-mark-control-saved	6	U+0042 U+25CC U+A806 U+0020 U+A807 U+A806 U+0020 U+0043	125	269	210	286	166
+print	syloti-boundaries	1	U+A807 U+A806 U+25CC U+A806 U+0020 U+0043	125	163	210	180	188
+print	syloti-boundaries	2	U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	184	210	201	116
+print	syloti-boundaries	3	U+00A0 U+25CC U+A806 U+0020 U+0043	125	205	210	222	96
+print	syloti-boundaries	4	U+0020 U+25CC U+A806 U+0020 U+0043	125	227	210	244	96
+print	syloti-boundaries	5	U+A803 U+A806 U+0020 U+0043	125	248	210	265	76
+print	syloti-boundaries	6	U+2022 U+A806 U+0020 U+0043	125	269	210	286	21
+print	syloti-boundaries	7	U+A807 U+A823 U+25CC U+A806 U+0020 U+0043	125	291	210	308	192
+print	syloti-boundaries	8	U+A807 U+A806 U+A807 U+0020 U+0043	125	312	210	329	159
+print	syloti-boundaries	9	U+25CC U+A806 U+A807 U+0020 U+0043	125	333	210	350	167
+print	syloti-boundaries-saved	1	U+A807 U+A806 U+25CC U+A806 U+0020 U+0043	125	163	210	180	188
+print	syloti-boundaries-saved	2	U+25CC U+A806 U+25CC U+A806 U+0020 U+0043	125	184	210	201	116
+print	syloti-boundaries-saved	3	U+00A0 U+25CC U+A806 U+0020 U+0043	125	205	210	222	96
+print	syloti-boundaries-saved	4	U+0020 U+25CC U+A806 U+0020 U+0043	125	227	210	244	96
+print	syloti-boundaries-saved	5	U+A803 U+A806 U+0020 U+0043	125	248	210	265	76
+print	syloti-boundaries-saved	6	U+2022 U+A806 U+0020 U+0043	125	269	210	286	21
+print	syloti-boundaries-saved	7	U+A807 U+A823 U+25CC U+A806 U+0020 U+0043	125	291	210	308	192
+print	syloti-boundaries-saved	8	U+A807 U+A806 U+A807 U+0020 U+0043	125	312	210	329	159
+print	syloti-boundaries-saved	9	U+25CC U+A806 U+A807 U+0020 U+0043	125	333	210	350	167
+print	syloti-placeholders	1	U+002D U+25CC U+A806 U+0020 U+0043	125	163	210	180	96
+print	syloti-placeholders	2	U+2010 U+25CC U+A806 U+0020 U+0043	125	184	210	201	96
+print	syloti-placeholders	3	U+2011 U+25CC U+A806 U+0020 U+0043	125	205	210	222	96
+print	syloti-placeholders	4	U+2012 U+A806 U+0020 U+0043	125	227	210	244	35
+print	syloti-placeholders	5	U+2013 U+A806 U+0020 U+0043	125	248	210	265	21
+print	syloti-placeholders	6	U+2014 U+A806 U+0020 U+0043	125	269	210	286	21
+print	syloti-placeholders	7	U+2015 U+A806 U+0020 U+0043	125	291	210	308	21
+print	syloti-placeholders	8	U+00D7 U+25CC U+A806 U+0020 U+0043	125	312	210	329	96
+print	syloti-placeholders	9	U+25FB U+A806 U+0020 U+0043	125	333	210	350	21
+print	syloti-placeholders	10	U+25FE U+A806 U+0020 U+0043	125	355	210	372	21
+print	syloti-placeholders	11	U+0042 U+0020 U+25CC U+A806 U+0020 U+0043	125	376	210	393	96
+print	syloti-placeholders	12	U+A807 U+0020 U+A806 U+0020 U+0043	125	397	210	414	92
+print	syloti-placeholders	13	U+A807 U+0020 U+25CC U+A806 U+0020 U+0043	125	419	210	436	167
+print	syloti-placeholders	14	U+A807 U+A802 U+25CC U+A806 U+0020 U+0043	125	440	210	457	188
+print	syloti-placeholders	15	U+A807 U+A80B U+25CC U+A806 U+0020 U+0043	125	461	210	478	187
+print	syloti-placeholders-saved	1	U+002D U+25CC U+A806 U+0020 U+0043	125	163	210	180	96
+print	syloti-placeholders-saved	2	U+2010 U+25CC U+A806 U+0020 U+0043	125	184	210	201	96
+print	syloti-placeholders-saved	3	U+2011 U+25CC U+A806 U+0020 U+0043	125	205	210	222	96
+print	syloti-placeholders-saved	4	U+2012 U+A806 U+0020 U+0043	125	227	210	244	35
+print	syloti-placeholders-saved	5	U+2013 U+A806 U+0020 U+0043	125	248	210	265	21
+print	syloti-placeholders-saved	6	U+2014 U+A806 U+0020 U+0043	125	269	210	286	21
+print	syloti-placeholders-saved	7	U+2015 U+A806 U+0020 U+0043	125	291	210	308	21
+print	syloti-placeholders-saved	8	U+00D7 U+25CC U+A806 U+0020 U+0043	125	312	210	329	96
+print	syloti-placeholders-saved	9	U+25FB U+A806 U+0020 U+0043	125	333	210	350	21
+print	syloti-placeholders-saved	10	U+25FE U+A806 U+0020 U+0043	125	355	210	372	21
+print	syloti-placeholders-saved	11	U+0042 U+0020 U+25CC U+A806 U+0020 U+0043	125	376	210	393	96
+print	syloti-placeholders-saved	12	U+A807 U+0020 U+A806 U+0020 U+0043	125	397	210	414	92
+print	syloti-placeholders-saved	13	U+A807 U+0020 U+25CC U+A806 U+0020 U+0043	125	419	210	436	167
+print	syloti-placeholders-saved	14	U+A807 U+A802 U+25CC U+A806 U+0020 U+0043	125	440	210	457	188
+print	syloti-placeholders-saved	15	U+A807 U+A80B U+25CC U+A806 U+0020 U+0043	125	461	210	478	187

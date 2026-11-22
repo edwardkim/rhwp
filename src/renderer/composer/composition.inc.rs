@@ -230,8 +230,11 @@ pub(crate) fn compose_paragraph_in_context_with_storage<S: crate::storage::Stora
         storage,
     )
 }
-pub(crate) fn compose_paragraph_for_metric_requests(para: &Paragraph) -> ComposedParagraph {
-    compose_paragraph_scoped(para, true, None)
+pub(crate) fn compose_paragraph_for_metric_requests(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+) -> ComposedParagraph {
+    compose_paragraph_scoped(para, true, styles.legacy_body_symbols.then_some(styles))
 }
 
 fn compose_paragraph_scoped(
@@ -304,7 +307,8 @@ fn try_compose_paragraph_with_owners<S: crate::storage::Storage>(
     let synth_para = try_synthesize_marker_paragraph(para, storage)?;
     let para = synth_para.as_ref().unwrap_or(para);
 
-    let mut lines = try_compose_lines(para, storage)?;
+    let legacy_symbols = metric_styles.is_some_and(|styles| styles.legacy_body_symbols);
+    let mut lines = try_compose_lines(para, legacy_symbols, storage)?;
     if let Some(styles) = metric_styles {
         punctuation_slots::try_resolve_run_slots(
             &mut lines,

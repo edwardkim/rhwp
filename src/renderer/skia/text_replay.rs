@@ -844,8 +844,16 @@ impl SkiaTextReplay<'_> {
                                 ch.is_ascii_alphanumeric()
                                     || (style.fixed_glyph_advances && ch.is_ascii_graphic())
                             });
+                            // The font's missing-glyph mark keeps its own outline. The
+                            // document sets successive origins independently of that width.
+                            let missing_glyph =
+                                glyph_text.chars().next().is_some_and(|ch| {
+                                    font.unichar_to_glyph(ch as i32) == 0
+                                && crate::renderer::text_glyph_visibility::visible_missing_sign(ch)
+                                });
                             let (fit_scale, fit_dx) = fit_positions
                                 .get(*char_idx)
+                                .filter(|_| !missing_glyph)
                                 .and_then(|start| {
                                     let end = *char_idx + cluster.chars().count();
                                     let advance = fit_positions.get(end)? - start;

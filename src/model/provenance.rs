@@ -24,6 +24,41 @@ pub enum SourceFormat {
     Pdf,
 }
 
+/// Decode a paragraph-text unit using the source document's symbol encoding.
+/// The extra body codes are attested in Hancom's 5.0.1.5/5.0.1.6 save pairs.
+/// ComposeText has a separate lookup. Other BMP characters remain Unicode.
+pub(crate) fn body_symbol(c: char, legacy: bool) -> char {
+    if !legacy || !('\u{a000}'..='\u{afff}').contains(&c) {
+        return c;
+    }
+    let unit = c as u16;
+    let cp = crate::parser::tags::hancom_symbol_to_plane15(unit).or_else(|| {
+        matches!(
+            unit,
+            0xA805
+                | 0xA806
+                | 0xA808
+                | 0xA809
+                | 0xA80C
+                | 0xA811
+                | 0xA813
+                | 0xA817
+                | 0xA81C
+                | 0xA827
+                | 0xA847
+                | 0xA848
+                | 0xA849
+        )
+        .then(|| 0xF0000 | u32::from(unit & 0x0FFF))
+    });
+    cp.and_then(char::from_u32).unwrap_or(c)
+}
+
+/// Decode one source scalar at a time without changing paragraph or run indices.
+pub(crate) fn body_chars(text: &str, legacy: bool) -> impl Clone + Iterator<Item = char> + '_ {
+    text.chars().map(move |ch| body_symbol(ch, legacy))
+}
+
 /// 문서 출처 서명 — 파서가 확정하며 이후 read-only.
 ///
 /// 기존 `Document.is_hwp3_variant`/`is_hwpx_variant` 는 Stage 1 동안 shim 으로
