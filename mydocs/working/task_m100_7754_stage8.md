@@ -27,6 +27,7 @@
 | 리베이스 후 최소 글꼴 Native unfiltered lib | 4,033 PASS, 기존 12 ignored, exit 0 |
 | 리베이스 후 기존 Native CI 대상 | 21개 selector·193건 PASS, exit 0 |
 | 집중 통합·쪽수 기준 검사 | 5개 selector·28건 PASS, 시장구조조사·수출입의 oracle 포함 |
+| workspace Clippy·WASM Clippy·workspace build | 각 exit 0, 최소 글꼴 환경 |
 | Studio unit·TypeScript | 2,834 PASS·0 skip, 타입 검사 PASS |
 | Node 정책·font trace 계약 | 36건·14건 각각 PASS |
 
@@ -40,7 +41,7 @@
 ## 남은 필수 작업
 
 - 리베이스 후 공식 Native CI 사례 21개와 focused 통합/쪽수 oracle 5개는 완료했다.
-  전체 nextest·Clippy·workspace build를 끝낸다. Cargo는 공용 target 한 곳에서 순차 실행하며 메모리 경합을 줄이기 위해 build jobs는
+  workspace Clippy·WASM Clippy·workspace build도 완료했고 전체 nextest를 실행 중이다. Cargo는 공용 target 한 곳에서 순차 실행하며 메모리 경합을 줄이기 위해 build jobs는
   2개로 제한했다. 정상 incremental 정책은 유지한다.
 - 후보 fresh WASM 원본 전쪽, 유입 기능의 실제 WASM 편집·저장·재열기·내용 보존, Studio 실제
   여정·CTRL_DATA 물리 레코드 보존을 끝낸다. 기준 재사용은 같은 입력·같은 실제 환경·같은 고정
@@ -75,3 +76,25 @@
 실행 중인 Cargo·테스트는 중단하지 않았으며 deps·프로필 전체·원본·PDF·TSV·PNG는 보존했다.
 실제 확보 공간은 각각 761,630,720바이트와 2,983,735,296바이트다. 삭제 목록과 확인 근거는
 동일 source39 디렉터리의 cleanup 영수증에 남겼다. 최종 종료 정리는 아직 수행하지 않았다.
+
+## 환경 직렬화 경로의 추가 확인
+
+outline의 환경 ID는 Rust의 선택 프로그램 생성만으로 결정되지 않았다. 실제 경로는
+`FontEnvironment::from_document_lookup → NativeWebfontSupply::merge_into_environment →
+visual_sweep_native_webfonts.prepare`이며 Native CLI와 Python이 순서대로 ID를 다시 만든다.
+실제 기준 Native metadata도 이 중간 CLI ID를 출력한다. Native merge를 포함해 고친 재현기는
+기존에 별도로 보존된 `cce7acdac8ae6caa24767d1c22ee4bcc3aac5dabbcf0bc8dcefb88d2727cd745`
+환경을 바이트 단위로 재현했다. 초기 2,048건 진단은 이 단계를 빠뜨린 제한된 탐색이므로
+그 음성 결과로 복구 불가를 판단하지 않도록 증거에 정정했다.
+
+원래 outline에 공급한 CFF 파일의 실제 바이트에서 face index 0을 포함한 프로그램 ID를
+산출하고, Native CLI가 웹폰트 매핑 뒤 지울 수 있는 `#신명조` 프로그램도 별도로 대조했다.
+50,400개 조합에서 정본 `4ade…` SHA는 아직 일치하지 않았다. 이는 확보한 프로그램 변형의
+탐색 결과이며 모든 과거 공급 상태를 배제한 결과가 아니다. 정확한 환경 복원은 계속 미완료다.
+코드·검증값·정본 조건을 이 탐색에 맞춰 변경하지 않았다. 재현기·입력 메타데이터·종료 영수증은
+source39에 보존했다.
+
+추가 디스크 확보는 사용이 끝난 Source33 보호 검증의 생성 PNG 17,612개에만 한정했다.
+활성 프로세스의 경로·열린 파일과 대기 controller 소스를 확인한 뒤 삭제했으며, 원본·PDF와
+모든 정식 증거, TSV·JSON·로그, Source36 수정 전 및 Source37 최종 PNG는 보존했다.
+실제 여유 증가 1,212,612,608바이트와 경로 목록의 SHA를 cleanup 영수증에 기록했다.
