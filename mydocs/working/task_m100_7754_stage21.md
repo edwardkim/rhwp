@@ -58,6 +58,11 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 [Native 쪽별 TSV와 산출물 해시](../verification/issue7754-nine-fidelity/after-pr9322/nested/native/validation.json) ·
 [WASM 쪽별 TSV와 산출물 해시](../verification/issue7754-nine-fidelity/after-pr9322/nested/wasm/validation.json)
 
+시장구조조사 315쪽의 기준 Native 출력은 리베이스 전후로 동일했다. 각 쪽의 출력·독립
+Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인 3쪽(95.99%)과
+100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
+[기준 Native의 전쪽 대조](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-base-native.json)
+
 #7754의 암호 HWPX는 같은 독립 한컴 Print PDF로 대조했다. Native와 fresh WASM 모두
 암호 원본과 평문 대조군의 24쪽 PNG가 각각 바이트까지 일치했다. 기준의 전쪽 최저값은
 Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
