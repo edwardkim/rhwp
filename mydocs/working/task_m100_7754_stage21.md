@@ -133,6 +133,11 @@ WASM 해시를 대조했다. 후보의 호스트 글꼴 입력 검사 첫 실행
 행정업무운영 편람 HWPX 383쪽을 포함한다.
 [Native 정본 보호 전쪽 비교](../verification/issue7754-nine-fidelity/after-pr9322/protected/native/native-validation.json)
 
+fresh WASM의 새 기준도 정본 보호 23종·2,023쪽을 완료했다. 같은 공급 조건에서 리베이스 직전
+기준과 전체 PNG 및 쪽별 값이 일치했다. 보호 하한 미달은 없었으며 sample10에 공급한 원본 연결 그림
+세 파일의 해시도 대조했다.
+[fresh WASM 기준 정본 보호 전쪽 비교](../verification/issue7754-nine-fidelity/after-pr9322/protected/wasm-base-before-and-after-pr9322.json)
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
