@@ -49,3 +49,11 @@ Studio 검사 2,832건이 통과했고 기존 2건은 건너뛰었다. 배포 �
 ## 보호 문서 23종
 
 Native와 fresh WASM에서 각각 2,023쪽을 다시 그렸다. 공식 하한 4,046행은 모두 같은 값으로 재현됐고, 누락된 쪽은 0개였다. 편람 HWPX 383쪽, HWP3 원본 763쪽, 시행령 74쪽도 전쪽을 비교했다. 46개 실행 조건에서 원본과 독립 PDF의 해시, 순서가 있는 글꼴 파일·해시 5,811행을 확인했다. [보호 전쪽 TSV](assets/semanticist21-20261123-table-notes-shadows/protected-pages.tsv) · [양쪽 렌더러의 측정 결과](assets/semanticist21-20261123-table-notes-shadows/protected-results.json) · [입력 조건](assets/semanticist21-20261123-table-notes-shadows/protected-inputs.json) · [글꼴 공급 순서](assets/semanticist21-20261123-table-notes-shadows/protected-font-programs.tsv)
+
+## 새 표본의 용지 경계와 쪽수
+
+열을 하나 추가한 표는 저장 너비가 55,754 HWPUNIT다. 이 HWP와 HWPX를 같은 조건으로 연 기준 devel과 후보 모두 표 오른쪽이 용지 밖으로 67.08px 나왔다. 독립 한컴 PDF의 실제 괘선 끝은 645.37pt이고 용지 오른쪽은 595pt다. ‘용역명’, ‘규격 및 세부사항’, ‘금액’, ‘대상’, ‘합계’는 양쪽 형식 모두 용지 안에 인쇄됐다. 두 원본의 Native·WASM 실루엣도 각각 100.00%였다. 이 두 파일에만 용지 밖 표 1개씩을 처음 등록했다. 원본 파일과 PDF의 SHA-256, 두 실행의 좌표와 동일한 내용은 비교 기록에 보존했다. [표본별 비교 근거](assets/semanticist21-20261123-table-notes-shadows/fixture-checks.json)
+
+정본 쪽수 생성기로 입력 17개와 해당 한컴 인쇄물을 대조해 19쪽을 등록했다. 그림자 HWPX는 저장 제품 정보가 없어 생성기의 기본 엔진인 한컴 2020으로도 인쇄했다. 2024 인쇄와 96 DPI 렌더링 픽셀이 같았고, 2020 호환 조건의 Native·WASM 실루엣은 각각 99.86%였다. [그림자 한컴 2020 Print](../../pdf/semanticist21-20261123/shadow-presets-hwpx-2020.pdf)
+
+추가된 17개 경로를 보안 코퍼스 검사에 직접 전달했다. 같은 원본을 공개 CLI에서도 확인해 숨은 글자·인젝션·유니코드 검사 51건을 통과했다. 이들 17개 문서의 표 세로 클리핑은 devel과 후보 모두 0건이었다. 기존 클리핑 대조군 92개와 이번 문서의 교집합은 0개다. 용지 경계·정본 쪽수·신규 문서 보안에 대한 집중 검사 19개도 통과했다. [신규 문서별 진단](assets/semanticist21-20261123-table-notes-shadows/fixture-checks.json)
