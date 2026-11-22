@@ -12305,7 +12305,7 @@
         }
       ]
     },
-    "19d5c8e263b3d38e": {
+    "f57745c75bbbd21a": {
       "files": [
         {
           "filename": "SPJGT.otf",
@@ -12517,7 +12517,7 @@
         },
         {
           "filename": "ENJGT.otf",
-          "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c"
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
         }
       ]
     },
@@ -15719,7 +15719,7 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "19d5c8e263b3d38e",
+          "font_set": "f57745c75bbbd21a",
           "inventory_kind": "ordered_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/chemical-spec13-font-programs.tsv",
