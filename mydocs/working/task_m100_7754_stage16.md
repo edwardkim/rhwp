@@ -26,3 +26,16 @@ head·clean 상태는 유지했다. 이 제외는 기존 Native 전체 회귀 �
 자료는 `mydocs/pr/assets/issues7754_7765/source47/`에 보존했다. 다른 정본 미달 쪽이
 남아 있으므로 전쪽 보호 완료로 판정하지 않고 신명조 글자표의 독립 인쇄도 재시도한다.
 리베이스 전 Source37 진단 결과와 새 Source88 검증을 구분한다.
+
+## 후보 producer의 캐시 재사용 거부와 재검증
+
+Source88의 후보 빌드가 base와 다른 52개 생산 파일을 컴파일하지 않고 같은 Native·WASM
+바이트를 재사용한 것을 SHA 대조로 확인했다. 해당 후보 측정과 Source91/101/102/103은
+완료 증거에서 제외하고 작업 소유 프로세스만 종료했다. 실제 base 수집은 계속 보존한다.
+`mydocs/pr/assets/issues7754_7765/source48/`에 재사용·종료·정리 근거를 기록했다.
+
+Source105는 소스 바이트를 유지하면서 생산 파일의 수정 시각을 갱신하고 실제 재컴파일과
+서로 다른 최종 artifact SHA를 검증한다. 원래 target·일반 최적화·incremental 정책은
+유지한다. Source107의 작은 gate에 base에서 미달하는 실제 HWPX 경계 4쪽을 추가했다.
+그 뒤 Source106의 전체 회귀·lint, Source108의 필수 편람, Source109의 전쪽 보호,
+Source110의 9개 이슈·유입 기능 전쪽 비교로 새 검증을 완료한다. 현재 단계는 미완료다.
