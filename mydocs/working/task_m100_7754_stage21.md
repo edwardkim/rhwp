@@ -74,6 +74,11 @@ Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인
 100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
 [기준 Native의 전쪽 대조](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-base-native.json)
 
+시장구조조사의 기준 Studio는 95·100·106·247·315쪽을 화면과 인쇄 프로필로 실행했다.
+요청한 렌더러 세 조건을 포함한 30개 PNG가 리베이스 전후로 모두 일치했다. 전체 315쪽이
+CanvasKit의 사전 검사 한도인 128쪽을 넘는 네 조건에서 실제 Canvas2D 출력을 확인했다.
+[시장구조조사 기준 Studio 화면·인쇄 증적](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-base-studio.json)
+
 #7754의 암호 HWPX는 같은 독립 한컴 Print PDF로 대조했다. Native와 fresh WASM 모두
 암호 원본과 평문 대조군의 24쪽 PNG가 각각 바이트까지 일치했다. 기준의 전쪽 최저값은
 Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
