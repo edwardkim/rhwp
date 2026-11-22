@@ -92,6 +92,11 @@ Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인
 CanvasKit의 사전 검사 한도인 128쪽을 넘는 네 조건에서 실제 Canvas2D 출력을 확인했다.
 [시장구조조사 기준 Studio 화면·인쇄 증적](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-base-studio.json)
 
+시장구조조사의 후보 Studio 화면 15조건은 리베이스 직전과 PNG가 일치했다. 100쪽의 현재
+기준과 후보 Canvas2D PNG를 이전 확대 판독 이미지와 각각 대조했다. 후보의 제목 시작 행은
+한컴 Print와 같은 279px였다.
+[100쪽 Studio 화면 확대 판독](../verification/issue7754-nine-fidelity/studio/market-page100-screen/review.json)
+
 #7754의 암호 HWPX는 같은 독립 한컴 Print PDF로 대조했다. Native와 fresh WASM 모두
 암호 원본과 평문 대조군의 24쪽 PNG가 각각 바이트까지 일치했다. 기준의 전쪽 최저값은
 Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
