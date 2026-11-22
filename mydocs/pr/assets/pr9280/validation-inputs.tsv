@@ -1,0 +1,70 @@
+role	repo_path	used_filename	bytes	sha256
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp	issue5800-v5.0.1.5.hwp	13312	f3898d64da3f8cf8307fa29bd52d9f3c8339b6003e5ab6610b2325684c32c3c1
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp	legacy-symbols-v5.0.1.5.hwp	5120	bd45ac8a92eefc77695a0800130215452cd83f9a2f312e41d4c09385e31857f2
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwpx	legacy-symbols-v5.0.1.5.hwpx	56023	bbe09129f125b9ffda2b583b8e81a3cec67b64da48df8c0d0fd83729d619e800
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp	legacy-symbols-v5.0.1.6.hwp	5120	7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwpx	legacy-symbols-v5.0.1.6.hwpx	56379	b036334d8a6072a8c8e39b829b4d150617b8b2eb5592181f5fc3a10dd1c7041f
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/syloti-boundaries.hwp	syloti-boundaries.hwp	5120	2dc1fdb162d895d7b4602432b68b701c29d57e69a3a9eaea4676c5457da1b748
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/syloti-mark-control.hwp	syloti-mark-control.hwp	5120	6412d298aa3f7b1444c04ee681f6a5b6e8669091d02d8ebb7fd0a4bff08f1bb5
+source HWP or contributor Hancom save	samples/issue5140-version-boundary/syloti-placeholders.hwp	syloti-placeholders.hwp	5120	8ae5c95f6cf9c1e7ae71f6bc9f48462a6a2f55a74b33f0a36a12c2e0313eef14
+source HWP	samples/issue5800-hancom-symbol.hwp	issue5800-hancom-symbol.hwp	13312	e09951a7ac179344a9f9c3dd9625a6de757a5d5cc5cee2fcb7c76c040959476d
+source HWP	mydocs/pr/assets/pr9280/neighbors-v5.hwp	neighbors-v5.hwp	5120	fe06995eae6499fa5a4c19e72a7be8491723b4985520ec333794e09984ea995f
+source HWP	mydocs/pr/assets/pr9280/neighbors-v6.hwp	neighbors-v6.hwp	5120	07429b766c1e0078bf79f2673056a403dc9cb5e904b74eaf4815b4a2c8fa2d18
+Hancom source Print	pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf	issue5800-hancom-symbol-2020.pdf	23244	af0f46cbc65984afd845f273a60af9486ee4b2476fe408a01b203def567156e9
+Hancom source Print	pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf	issue5800-v5.0.1.5-2020.pdf	15919	d41e66fecf8b3801b0ed86f109acd95e130df8737506a1a8e72cc8cab15997a9
+Hancom source Print	pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5-2020.pdf	legacy-symbols-v5.0.1.5-2020.pdf	17979	43b5bda7c39f9d4695fe57729f4476e8ab0008fced559047d1b4d07f8b06933c
+Hancom source Print	pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf	legacy-symbols-v5.0.1.5.pdf	12707	83b9986558d2bc36686944beedde8463af16de996ebcd8216a35b9cc698dcbc4
+Hancom source Print	pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6-2020.pdf	legacy-symbols-v5.0.1.6-2020.pdf	23036	d269741fccd472fdf81ab4159cfe7dd773484d740fade75b2b625d4ff7378fc9
+Hancom source Print	pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf	legacy-symbols-v5.0.1.6.pdf	14440	77b4f67f348aa4ce825845c8635e1219152d4a53fde3bb5a321dedf1bb783909
+Hancom source Print	pdf/issue5140-version-boundary/neighbors-v5-2020.pdf	neighbors-v5-2020.pdf	18942	1b3c5488670d8b4f325fccdb868d1350143537df55d898a2051d0de7183bc4e4
+Hancom source Print	pdf/issue5140-version-boundary/neighbors-v6-2020.pdf	neighbors-v6-2020.pdf	24479	0bcdf1ed67959fa858271a4b58453b4906fd4781f5872a76cd5f9f07c818a0b9
+Hancom source Print	pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf	syloti-boundaries-2020.pdf	21641	70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4
+Hancom source Print	pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf	syloti-mark-control-2020.pdf	22086	1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9
+Hancom source Print	pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf	syloti-placeholders-2020.pdf	12432	d04b61cbc149362432b5e91f7333b393dd009bfe578615bfd6de8e7d7720a49e
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/edited5-2020.hwpx	edited5-2020.hwpx	22493	ec5abe0b10a426b162c22b8bd8b4bba12395da18b0abcc51c9ce21b70d1b8719
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/edited6-2020.hwpx	edited6-2020.hwpx	23128	2f4aa45e2d2b61bd65322f189668ef3871e857a8ea8aee95b0f26ef4dcf6bf9f
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/issue5800-hancom-symbol-2020.hwpx	issue5800-hancom-symbol-2020.hwpx	14981	733ad613aae0a5937320c371a880aa3d09b0778cc494e4b2fa134ca5418ae9a8
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/issue5800-v5.0.1.5-2020.hwpx	issue5800-v5.0.1.5-2020.hwpx	14753	33f8d7641b361adb6eca12c91f991dd47f3dfcc6959a953828f3eba08feed2e1
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.5-2020.hwpx	legacy-symbols-v5.0.1.5-2020.hwpx	22035	94ee2e7f58dfa328cf4f43b84632f4efb7c7396bad1e880a1b16bab3c79b257f
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.5-2024.hwpx	legacy-symbols-v5.0.1.5-2024.hwpx	21985	d81bf3ba9035805c389f0fe737cb7395d3c676cf5636afc88194aa843ac26792
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.6-2020.hwpx	legacy-symbols-v5.0.1.6-2020.hwpx	22537	ee1e2197d12727f0470c6c0bb8a44efdbd932b6978de57841fa0b8840d9a62ea
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.6-2024.hwpx	legacy-symbols-v5.0.1.6-2024.hwpx	22480	f9bb12c01c46a2388418c9fa27bca03140181391c87292248d0f79d6c1b3f680
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/neighbors5-2020.hwpx	neighbors5-2020.hwpx	22667	7131364ce2256bef872c61a7ca291dc83c810a24b8f8c304ea249ff23b7e61dd
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/neighbors5-2024.hwpx	neighbors5-2024.hwpx	22620	22514a3bd4389db08f8d7f258c914f7f138530389b8263c29a71346d99321a29
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/neighbors6-2020.hwpx	neighbors6-2020.hwpx	23609	74a94c12ec5fc91855569671fcd4aedd8a528d304bc9ada025eaf050a19e0f45
+independent Hancom save	tests/fixtures/issue5140-version-boundary/hancom/neighbors6-2024.hwpx	neighbors6-2024.hwpx	23541	9b8a45dfa7a7aa30b1fc19b8e4cdd3ae0b3c1a44451c2db22bd2a8f902b4b7c9
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/v5.hwpx	v5.hwpx	7595	5bdd71ec32501c8cdfd9651fd5aa29998705d2bfa2257f9bb6d21ef3b3edbd17
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/v5-2020.pdf	merged-v5-2020.pdf	17979	daca959ff282e47a34a6c7e9f8383aecde6d57cf458b8ab6cd11e9e7da2d447e
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/v6.hwpx	v6.hwpx	7592	d546b9bcde769bfda82659b95100443eed5a7c9ea9cb29b09ee6575333fcebec
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/v6-2020.pdf	merged-v6-2020.pdf	23036	9a7566f49e78dc66cb3a4b82b56f23bcadca163afb09df99f3c8384a41bba78c
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/neighbors5.hwpx	neighbors5.hwpx	7643	59ab3ce9dc8fb4d367b0c02362da5ef460007a98948e103b418d31622e6a0766
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/neighbors5-2020.pdf	merged-neighbors5-2020.pdf	18942	74a2784e7c22ff86e18461ca4cfe43f875b6f825fd77e376506dd871747763e5
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/neighbors6.hwpx	neighbors6.hwpx	7633	9b4200b0bac4c44aa2c8555a09617bb664a59de03889e15bf2019ad44d8547be
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/neighbors6-2020.pdf	merged-neighbors6-2020.pdf	24479	1846779cbcf647060a1cd62d65a8ab972bdbb5c5bc9d73e0a87a0b110c4dc4d4
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/sealmodern.hwpx	sealmodern.hwpx	7545	a7b442eef59fbf46b197d7ef2dbe8f55b743eb0c2159fab175946760df1ec700
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/sealmodern-2020.pdf	merged-sealmodern-2020.pdf	23244	7434ae5227d20ee071c5b22ff497847c935943ad6794359b9e803c286944f299
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/seallegacy.hwpx	seallegacy.hwpx	7555	4eeb0fcf6950e565ebf34d7ae6b04a889fc4a506e39145b8d83baeff27a6b134
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/seallegacy-2020.pdf	merged-seallegacy-2020.pdf	15919	79b551bc86e29dd4209b672d9941c93e3907ef598561f45fb04082880428a734
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/syloti-mark-control.hwpx	syloti-mark-control.hwpx	7586	e1498abf1b94c181ad5486901c72065938d1cb0990e64321a2d4d3eb25144ffb
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/syloti-mark-control-2020.pdf	merged-syloti-mark-control-2020.pdf	22086	78c5202f5b0086847476298e5da5bac202aba29e7a1c4f740adee2388125c5ec
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/syloti-boundaries.hwpx	syloti-boundaries.hwpx	7589	61c76df9de279e76f6dd62dacaa4615a41b2a9d8c51118c276430ca3a32c5bb7
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/syloti-boundaries-2020.pdf	merged-syloti-boundaries-2020.pdf	21641	4191bb0cbad0ed646e2cb7198a6d2eae7ee028a1799ad8faa4d55e4d4206294d
+Native HWPX used for reopen and Print	tests/fixtures/issue5140-version-boundary/rhwp-save/syloti-placeholders.hwpx	syloti-placeholders.hwpx	7546	917c2ac1764a8f20210a5a4120dd691b6b39c21f6422e197bab7cda85756e99f
+Windows Hancom 2020 Print of rhwp save	pdf/issue5140-version-boundary/reopened/syloti-placeholders-2020.pdf	merged-syloti-placeholders-2020.pdf	12432	0d4ece2e523c9327039b1269a17933e5259259021ace796a9421df7e61532003
+auxiliary spacing control	tests/fixtures/issue5140-version-boundary/spacing/syloti-space-comparison.hwp	syloti-space-comparison.hwp	5120	eadfac225f5e18f4f270bd88a7766c3b56bc0b69e9268f390302b8c7407ce5fd
+auxiliary Hancom spacing control	pdf/issue5140-version-boundary/syloti-space-comparison-2020.pdf	syloti-space-comparison-2020.pdf	21408	a0075a45222e0aa930383340256eb565728170ae8ec3c1d4d83e9a7ed590a4b5
+auxiliary Hancom spacing control	pdf/issue5140-version-boundary/syloti-boundaries-2024.pdf	syloti-boundaries-2024.pdf	21649	408b0ad8778d01adae93c8b139ba1ca59c6f1e17e200ddffee06569ae84b20b6
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/cross5.hwpx	cross5.hwpx	7640	b71fd1787a74d5326b4d751c118c47a7abd621aba6da298c7c4d990371f5b058
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/cross6.hwpx	cross6.hwpx	7639	ea0d76440c73ad4f677a781c42779a5fc3e84b4607a14e6c74d81612d1eac371
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/edited5.hwp	edited5.hwp	5120	2011a5cf4ea03e75a19d4228e62136b0f415cd02bfa974e130644d3d04ae9940
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/cross5.hwpx	edited5.hwpx	7640	b71fd1787a74d5326b4d751c118c47a7abd621aba6da298c7c4d990371f5b058
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/edited6.hwp	edited6.hwp	5120	a1292ac594e68d01acd942df09089b3946add94e5a044a75647aaa3b6635493f
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/cross6.hwpx	edited6.hwpx	7639	ea0d76440c73ad4f677a781c42779a5fc3e84b4607a14e6c74d81612d1eac371
+fresh WASM saved input	mydocs/pr/assets/pr9280/neighbors-v5.hwp	neighbors5.hwp	5120	fe06995eae6499fa5a4c19e72a7be8491723b4985520ec333794e09984ea995f
+fresh WASM saved input	mydocs/pr/assets/pr9280/neighbors-v6.hwp	neighbors6.hwp	5120	07429b766c1e0078bf79f2673056a403dc9cb5e904b74eaf4815b4a2c8fa2d18
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v5-via-hwp.hwpx	ref-v5-via-hwp.hwpx	7401	135e7bd9a7b49196c5ba7c4f76a6e03c762cf22db84d92fbb614cd071d18ef3e
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v5-via-hwpx.hwpx	ref-v5-via-hwpx.hwpx	35823	7f9a6acfddb959382f1ccbc7b7722761af97204d08338c71ce770f8180bacc36
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v6-via-hwp.hwpx	ref-v6-via-hwp.hwpx	7397	8b8393750928d0fb4720854309b299a64a30812a303c77c2fd611f915a1a9931
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/wasm-edit/ref-v6-via-hwpx.hwpx	ref-v6-via-hwpx.hwpx	36256	108ca02a6f4dfe2e86976e05062b4acfe2d5380dd6fd24bbd1094b26221d88ec
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/rhwp-save/v5.hwpx	v5.hwpx	7595	5bdd71ec32501c8cdfd9651fd5aa29998705d2bfa2257f9bb6d21ef3b3edbd17
+fresh WASM saved input	tests/fixtures/issue5140-version-boundary/rhwp-save/v6.hwpx	v6.hwpx	7592	d546b9bcde769bfda82659b95100443eed5a7c9ea9cb29b09ee6575333fcebec
