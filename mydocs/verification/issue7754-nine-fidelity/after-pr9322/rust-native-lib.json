@@ -1,0 +1,69 @@
+{
+  "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+  "toolchain": "1.93.1",
+  "profile": "release-test",
+  "features": [
+    "native-skia"
+  ],
+  "test_threads": 12,
+  "build_jobs": 1,
+  "visible_fonts": [
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "command": [
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+    "cargo",
+    "test",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--",
+    "--test-threads",
+    "12"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1957.06,
+  "stdout_sha256": "9f707eb9d006a9001cf4acf8eae45fc7d2658061b4fb36aff99f1c21ac5ebceb",
+  "passed": 4033,
+  "failed": 0,
+  "ignored": 12,
+  "cases": [
+    {
+      "test_binary": "rhwp-561b51528026b556",
+      "passed": 3851,
+      "failed": 0,
+      "ignored": 12,
+      "seconds": "27.66"
+    },
+    {
+      "test_binary": "rhwp_contracts-e7f57825e35c047c",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": "0.02"
+    },
+    {
+      "test_binary": "rhwp_ooxml_chart-bf45f4c0c69039b4",
+      "passed": 165,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": "0.03"
+    },
+    {
+      "test_binary": "rhwp_password_crypto-26b5a9033502c975",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": "0.00"
+    }
+  ]
+}

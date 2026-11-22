@@ -143,6 +143,11 @@ WASM 해시를 대조했다. 후보의 호스트 글꼴 입력 검사 첫 실행
 글꼴 추적 계약 검사 2개도 통과했다.
 [Studio 로컬 검증](../verification/issue7754-nine-fidelity/after-pr9322/studio-local-validation.json)
 
+최소 글꼴 환경에서 후보의 Native Skia 라이브러리 전체를 실행했다. 공개 글꼴 다섯 개를
+확인했고, 실행 파일 네 개에서 4,033개가 통과했다. 실패는 없었고 기존 ignore 표기가 붙은
+12개는 실행에서 제외됐다.
+[Native Skia 라이브러리 검사와 실행 근거](../verification/issue7754-nine-fidelity/after-pr9322/rust-native-lib.json)
+
 새 기준과 후보의 Native 정본 보호 문서 23종·2,023쪽을 완료했다. 쪽별 TSV와 실제 PNG를
 대조해 하락과 누락이 0쪽이고, 기준과 후보의 PNG 2,023쌍이 모두 일치하는 것을 확인했다.
 행정업무운영 편람 HWPX 383쪽을 포함한다.
