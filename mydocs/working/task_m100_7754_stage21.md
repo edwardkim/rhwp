@@ -68,6 +68,11 @@ Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
 속성과 payload가 일치했으며 편집한 텍스트도 보존됐다.
 [반복 저장의 실제 산출물](../verification/issue7754-nine-fidelity/incoming-pr9318/ole-repeat-save-after-pr9322.json)
 
+#9318에서 반영한 원본 6종의 후보 Native 출력을 재검증했다. 리베이스 직전 후보와 현재
+후보의 PNG·쪽별 점수·공급 조건이 167쪽 모두 일치했고, 독립 Print 대비 전쪽 최저는
+98.14%였다. 수용 당시 기록과 점수가 달랐던 쪽도 두 후보에서 같은 값을 확인했다.
+[후보 167쪽의 TSV와 PNG 해시](../verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native-after-pr9322.json)
+
 #9318의 Studio 편집·입력 동작 7종을 새 기준과 후보에서 실행했다. 실제 브라우저가 받은
 WASM 해시를 대조했다. 후보의 호스트 글꼴 입력 검사 첫 실행에서 준비 호출 21회가 기록됐다.
 동일한 검사와 WASM을 양쪽에서 다시 실행하자 20회로 통과했고, 편집 후 내용·쪽 소속과 조판·
