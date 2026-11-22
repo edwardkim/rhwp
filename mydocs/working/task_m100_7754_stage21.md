@@ -69,6 +69,12 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 바이트까지 일치했다.
 [기준 Native 633쪽의 원본 TSV와 산출물 확인](../verification/issue7754-nine-fidelity/after-pr9322/native-base-before-and-after-pr9322.json)
 
+시장구조조사 실행 전에 완료한 기준 fresh WASM 42조건·318쪽을 #9318과 #9322 병합
+전 같은 조건의 출력과 대조했다. PNG 312쪽이 일치했다. 규제분석 13·37·54쪽은
+HWP에서 각각 0.02%p 낮아졌고 HWPX에서 각각 0.04%p 높아졌다. HWPX의 기준 최저
+19.52%는 두 기준에서 같았다.
+[기준 fresh WASM 318쪽의 리베이스 전후 대조](../verification/issue7754-nine-fidelity/after-pr9322/wasm-base-before-market.json)
+
 현재 후보 Native도 43조건의 전체 633쪽을 같은 공급 조건으로 대조했다. 이슈 대상
 583쪽의 최저는 98.08%였고 389쪽이 100.00%였다. 보조 사례 50쪽의 최저는 98.07%였고
 42쪽이 100.00%였다. 현재 기준보다 73쪽이 개선됐으며 하락은 없었다. 리베이스 직전
