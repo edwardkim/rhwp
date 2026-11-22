@@ -13,6 +13,7 @@
 | 실제 암호 원본 | Native 24쪽 최저 99.50%, WASM 24쪽 최저 99.48% | `encrypted/results.json`, 양쪽 전체 TSV |
 | 암호 원본과 평문 대응 | 경로별 PNG 24/24 SHA 일치 | `encrypted/results.json` |
 | Studio 유입 기능 | 기준·후보 각 7개 여정 통과 | `incoming/studio/validation.json` |
+| 편집 기능의 저장 원본 Native | 기준·후보 각 33개 조건·50쪽, 전쪽 PNG SHA 일치·하락 0쪽 | `incoming/saved-native/validation.json`, 양쪽 전체 TSV |
 | WASM CTRL_DATA | 기준·후보 각 4개 실제 입력 × 2회 저장·재열기, 8/8 소유·payload 보존 | `incoming/ctrl-data-wasm/*/physical-record-validation.json` |
 
 전쪽 수는 측정 요청 수만으로 판단하지 않았다. 평문 Native 각 실행의
@@ -51,6 +52,11 @@ CTRL_DATA는 렌더 결과나 직렬화기의 자기 보고에 의존하지 않�
 Python reader가 OLE/DEFLATE 안의 HWP 레코드 크기·레벨·tag를 읽고
 CTRL_HEADER/SHAPE_COMPONENT 소유 스택과 각 payload의 길이·SHA를 비교했다.
 새로 내보낸 HWP는 중간 산출물로만 두며 이 디렉터리에는 검사 코드와 결과를 보존한다.
+
+유입 편집 기능의 저장 원본 33개 조건은 같은 글꼴 공급·래스터 설정으로 양쪽 각
+50쪽을 실행했다. 후보 최저값은 98.07%이며 모든 대응 PNG가 바이트 단위로 같다.
+이는 저장된 실제 입력을 다시 여는 보호 검사다. 공개 편집 API로 직접 내용을 추가한
+중첩 표의 live·HWP 재열기·HWPX 재열기는 별도로 실행한다.
 
 ## 아직 완료하지 않은 항목
 
