@@ -19,3 +19,7 @@
 공개 대조군은 중첩 표·한 행 경계 이동·병합 표·인라인 도형·셀 주석·글상자 미주의 HWP/HWPX와 그림자 HWPX다. 한컴에서 각 파일을 직접 PDF로 인쇄하고 원본과 PDF의 SHA-256을 함께 기록했다. [검증 입력 17개와 한컴 Print PDF](assets/semanticist21-20261123-table-notes-shadows/hancom-print.tsv)
 
 원 PR 다섯 건의 GitHub 종료 연결 이슈는 0개다. #9310 본문에서 선행 사례로 언급된 #7860은 접수 당시 이미 닫혀 있었다.
+
+## 원본에서 확인한 수정 전후 차이
+
+#9310의 글상자 미주 문서를 한컴 2020으로 인쇄하면 본문 미주 1번 뒤에 2번과 ‘상자미주’가 표시된다. 같은 HWPX를 연 devel에서는 두 번째 항목이 없었다. 다섯 건을 통합한 Native에서 본문 끝의 번호와 글이 복원돼 raw가 91.41%에서 100.00%로 올랐다. 표 셀 주석의 HWP는 1쪽의 뒤 문단 글자 높이에 작은 차이가 있어 99.65%였고, 2쪽은 100.00%였다. 두 쪽 모두 devel과 5건 후보의 PNG SHA-256이 같았다. [원본·devel·후보 직접 비교](assets/semanticist21-20261123-table-notes-shadows/textbox-note-comparison.png) · [쪽별 raw와 PNG 해시](assets/semanticist21-20261123-table-notes-shadows/devel-notes.tsv)
