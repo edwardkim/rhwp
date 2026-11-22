@@ -1254,5 +1254,66 @@
         "readiness": []
       }
     }
-  ]
+  ],
+  "candidate": {
+    "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+    "browser": "Chrome/158.0.8127.36",
+    "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+    "completed": 80
+  },
+  "effective_renderer_counts": {
+    "base": {
+      "canvas2d": 40,
+      "canvaskit": 40
+    },
+    "candidate": {
+      "canvas2d": 40,
+      "canvaskit": 40
+    }
+  },
+  "browser_font_programs": [
+    {
+      "file": "HANBatang.ttf",
+      "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+      "face_index": 0,
+      "browser_sfnt_sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+    },
+    {
+      "file": "HANBatangB.ttf",
+      "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+      "face_index": 0,
+      "browser_sfnt_sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+    },
+    {
+      "file": "HANDotum.ttf",
+      "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+      "face_index": 0,
+      "browser_sfnt_sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+    },
+    {
+      "file": "HANDotumB.ttf",
+      "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+      "face_index": 0,
+      "browser_sfnt_sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+    },
+    {
+      "file": "gulim.ttc",
+      "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+      "face_index": 0,
+      "browser_sfnt_sha256": "ee67c3802aedb61b5d87b2a7318f8993cc476187d28e280548bd16365f0014f0"
+    },
+    {
+      "file": "msyi.ttf",
+      "sha256": "80aef1c25135b945e9de7d09e6445c386405eb2e0ea7032d4cd00a2fe3eef0ae",
+      "face_index": 0,
+      "browser_sfnt_sha256": "80aef1c25135b945e9de7d09e6445c386405eb2e0ea7032d4cd00a2fe3eef0ae"
+    }
+  ],
+  "base_candidate_comparison": {
+    "pairs": 80,
+    "byte_identical_pngs": 80,
+    "changed_rgb_pixels": 0,
+    "measurements": "paired-captures.tsv",
+    "measurements_sha256": "eaaf7c9eb83856e31f130750bfa43686f297e2817fc744683e22305fbdc76729"
+  }
 }
