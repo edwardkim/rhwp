@@ -15750,10 +15750,6 @@
             "recorded_supply_count": 1217,
             "accepted_programs_not_supplied": null
           },
-          "later_supply_record": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-history.md",
-            "sha256": "4c38bda3798e5ae90cfa9c091b51cdae7fca6dd8cfe3c4eb4e444dfd9457712f"
-          },
           "accepted_font_set": "2bf668066e4b8607",
           "accepted_font_environment": {
             "path": "mydocs/verification/protected-font-supply/environments/chemical-native-accepted.json",
@@ -15801,10 +15797,6 @@
             },
             "recorded_supply_count": 1218,
             "accepted_programs_not_supplied": null
-          },
-          "later_supply_record": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-history.md",
-            "sha256": "4c38bda3798e5ae90cfa9c091b51cdae7fca6dd8cfe3c4eb4e444dfd9457712f"
           },
           "accepted_font_set": "2bf668066e4b8607",
           "accepted_font_environment": {
@@ -15869,10 +15861,6 @@
             "recorded_supply_count": 1219,
             "accepted_programs_not_supplied": null
           },
-          "later_supply_record": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-history.md",
-            "sha256": "4c38bda3798e5ae90cfa9c091b51cdae7fca6dd8cfe3c4eb4e444dfd9457712f"
-          },
           "accepted_font_set": "f1c864214d48966a",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
@@ -15906,10 +15894,6 @@
             },
             "recorded_supply_count": 1219,
             "accepted_programs_not_supplied": null
-          },
-          "later_supply_record": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-history.md",
-            "sha256": "4c38bda3798e5ae90cfa9c091b51cdae7fca6dd8cfe3c4eb4e444dfd9457712f"
           },
           "accepted_font_set": "30c3bc27139d693f",
           "accepted_font_environment": null,

@@ -103,12 +103,6 @@
       "official_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81"
     },
     {
-      "original_path": "mydocs/pr/assets/planet6897_9240_9282_20261121/after-9316/README.md",
-      "official_path": "mydocs/verification/protected-font-supply/records/protected-font-supply-history.md",
-      "sha256": "e1f4c0087ec5a4a91c69c41256639683f58ae4eeee65ec8b80f3ad9954634de1",
-      "official_sha256": "4c38bda3798e5ae90cfa9c091b51cdae7fca6dd8cfe3c4eb4e444dfd9457712f"
-    },
-    {
       "original_path": "mydocs/pr/assets/semanticist21-20261121/validation/final/font-supply/chemical-native.json",
       "official_path": "mydocs/verification/protected-font-supply/environments/chemical-native-accepted.json",
       "sha256": "374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa",
