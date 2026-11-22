@@ -63,7 +63,7 @@ pub(crate) fn parallel_preset_hu(kind: u32) -> Option<(i32, i32)> {
 /// 평행은 이동, 작게·크게는 왼쪽 위·오른쪽 아래 모서리를 기준으로 줄이고 늘린 뒤 왼쪽 위로 옮기며,
 /// 기울임은 아래 변에서 위(뒤쪽 그림자) 또는 아래(앞쪽 그림자, 상하로 뒤집힘)로 반 높이만큼 눕힌다.
 /// 원근(9~12)은 한/글 Mac에서 고를 수 없고 단순 이동으로 대체하지 않으므로 None이다.
-pub(crate) fn matrix(
+pub fn matrix(
     kind: u32,
     [x, y, w, h]: [f64; 4],
     unit: f64,
@@ -112,7 +112,7 @@ pub(crate) fn matrix(
 }
 
 /// 행렬로 옮긴 상자의 외곽(x, y, w, h).
-pub(crate) fn transformed_box(m: [f64; 6], [x, y, w, h]: [f64; 4]) -> [f64; 4] {
+pub fn transformed_box(m: [f64; 6], [x, y, w, h]: [f64; 4]) -> [f64; 4] {
     let corners = [(x, y), (x + w, y), (x, y + h), (x + w, y + h)]
         .map(|(px, py)| (m[0] * px + m[2] * py + m[4], m[1] * px + m[3] * py + m[5]));
     let min_x = corners.iter().map(|p| p.0).fold(f64::INFINITY, f64::min);
@@ -131,7 +131,7 @@ pub(crate) fn transformed_box(m: [f64; 6], [x, y, w, h]: [f64; 4]) -> [f64; 4] {
 /// 독립 개체의 선언 원점은 본체와 그림자를 합친 외곽의 왼쪽 위다(한/글 12.30 화면에서 확인).
 /// 본체를 원점에서 얼마나 밀어야 하는지(HWPUNIT) 돌려준다.
 /// 묶음 자식의 renderingInfo 원점과는 별개의 배치 계약이다.
-pub(crate) fn body_origin_hu(kind: u32, x: i32, y: i32, w: f64, h: f64) -> Option<(f64, f64)> {
+pub fn body_origin_hu(kind: u32, x: i32, y: i32, w: f64, h: f64) -> Option<(f64, f64)> {
     let m = matrix(kind, [0.0, 0.0, w, h], 1.0, (f64::from(x), f64::from(y)))?;
     let [sx, sy, _, _] = transformed_box(m, [0.0, 0.0, w, h]);
     Some(((-sx).max(0.0), (-sy).max(0.0)))
