@@ -1,0 +1,152 @@
+{
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "product_source_head": "cef9ff9acc08f92431e89450945462514fffa772",
+  "backend": "native",
+  "dpi": 96,
+  "results": [
+    {
+      "issue": "886",
+      "pages": 64,
+      "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "print_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "font_program_count": 1218,
+      "profile": "print",
+      "compat": "2022",
+      "base_tsv": "886/base.tsv",
+      "candidate_tsv": "886/candidate.tsv",
+      "base_tsv_sha256": "f19a91f416b77a239b5ec7741ea2b4ad7c0c272ed33b4f233c1cb704f174f20e",
+      "candidate_tsv_sha256": "3e697371dd9f05e1eeff84021c64f080ff95c8ce921253646d2861462d5224f3",
+      "minimum_candidate": "98.12",
+      "declines_over_two_pp": [],
+      "changed_pages": [
+        {
+          "page": 2,
+          "base": "97.49",
+          "candidate": "99.87",
+          "delta_pp": "2.38"
+        }
+      ]
+    },
+    {
+      "issue": "9239",
+      "pages": 62,
+      "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "print_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+      "font_program_count": 1218,
+      "profile": "print",
+      "compat": "2022",
+      "base_tsv": "9239/base.tsv",
+      "candidate_tsv": "9239/candidate.tsv",
+      "base_tsv_sha256": "c7a6bc234c6562d87e229e985d8b869c344b2ee33b9ae1be0a85e16d50cc11a2",
+      "candidate_tsv_sha256": "ff3abd370b3dd4dff98bca0fc5fc31c413c24466ca2a0f317531ac10ee0b47ce",
+      "minimum_candidate": "98.87",
+      "declines_over_two_pp": [],
+      "changed_pages": [
+        {
+          "page": 11,
+          "base": "93.49",
+          "candidate": "99.99",
+          "delta_pp": "6.50"
+        },
+        {
+          "page": 12,
+          "base": "34.29",
+          "candidate": "99.97",
+          "delta_pp": "65.68"
+        },
+        {
+          "page": 15,
+          "base": "97.02",
+          "candidate": "99.98",
+          "delta_pp": "2.96"
+        },
+        {
+          "page": 16,
+          "base": "97.07",
+          "candidate": "99.97",
+          "delta_pp": "2.90"
+        },
+        {
+          "page": 21,
+          "base": "95.09",
+          "candidate": "99.94",
+          "delta_pp": "4.85"
+        },
+        {
+          "page": 43,
+          "base": "0.00",
+          "candidate": "99.56",
+          "delta_pp": "99.56"
+        }
+      ]
+    },
+    {
+      "issue": "9272",
+      "pages": 7,
+      "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "print_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "font_program_count": 1218,
+      "profile": "print",
+      "compat": "2024",
+      "base_tsv": "9272/base.tsv",
+      "candidate_tsv": "9272/candidate.tsv",
+      "base_tsv_sha256": "c652d6848d075c7b2b9007bb6691e356595f9d05fcc7ccb6caccce1b90c3dea1",
+      "candidate_tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+      "minimum_candidate": "99.98",
+      "declines_over_two_pp": [],
+      "changed_pages": [
+        {
+          "page": 6,
+          "base": "83.97",
+          "candidate": "100.00",
+          "delta_pp": "16.03"
+        },
+        {
+          "page": 7,
+          "base": "0.87",
+          "candidate": "100.00",
+          "delta_pp": "99.13"
+        }
+      ]
+    },
+    {
+      "issue": "9279",
+      "pages": 3,
+      "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "print_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "font_program_count": 1220,
+      "profile": "print",
+      "compat": "2024",
+      "base_tsv": "9279/base.tsv",
+      "candidate_tsv": "9279/candidate.tsv",
+      "base_tsv_sha256": "6335037c2750d6d82739d98f48c00df7c8bf9b6306edb567c383f4e44307622f",
+      "candidate_tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+      "minimum_candidate": "100.00",
+      "declines_over_two_pp": [],
+      "changed_pages": [
+        {
+          "page": 2,
+          "base": "86.04",
+          "candidate": "100.00",
+          "delta_pp": "13.96"
+        }
+      ]
+    },
+    {
+      "issue": "547",
+      "pages": 22,
+      "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+      "print_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+      "font_program_count": 1218,
+      "profile": "print",
+      "compat": "2024",
+      "base_tsv": "547/base.tsv",
+      "candidate_tsv": "547/candidate.tsv",
+      "base_tsv_sha256": "30a0cd319ab5f8c607716b968c1e55d329c1246a7d2e7001727067b7f4f614c1",
+      "candidate_tsv_sha256": "30a0cd319ab5f8c607716b968c1e55d329c1246a7d2e7001727067b7f4f614c1",
+      "minimum_candidate": "99.68",
+      "declines_over_two_pp": [],
+      "changed_pages": []
+    }
+  ]
+}

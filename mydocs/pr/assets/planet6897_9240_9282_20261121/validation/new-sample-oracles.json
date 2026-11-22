@@ -1,0 +1,53 @@
+{
+  "source_head": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "native_sha256": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417",
+  "registered": [
+    {
+      "sample": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+      "source_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "pdf": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+      "pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "pages": 64,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+      "source_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+      "pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "pages": 7,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+      "source_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "pdf": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+      "pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "pages": 3,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/mcp-print-verification.json"
+    },
+    {
+      "sample": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+      "source_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "pages": 9,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/planet6897_9240_9282_20261121/wmf-9285/print-verification.json"
+    }
+  ],
+  "registered_pages": 83,
+  "original_registry_rows_preserved": 654,
+  "nup_excluded": {
+    "input": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+    "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+    "reference_pdf": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+    "print_reference_pages": 62,
+    "rhwp_pages": 62,
+    "stored_print_method": 4,
+    "print_method_implies_nup": true
+  }
+}

@@ -1,0 +1,144 @@
+{
+  "head": "080525ab91f95f35f6af6050d6fb7b4df09f7d5a",
+  "scope": "full",
+  "steps": [
+    {
+      "name": "full-nextest",
+      "started": "2026-11-21T23:14:17.818149+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T23:51:06.772037+09:00",
+      "log_sha256": "d1cd5dc010b30e1ea1a51222302e4095de047c0a5c542f170e325747602961f3"
+    },
+    {
+      "name": "fmt",
+      "started": "2026-11-21T23:51:06.789476+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T23:51:47.701494+09:00",
+      "log_sha256": "b53e397539ea07b1d380cffce916f5ab2d6768613a8785bc94b169f38a2b174f"
+    },
+    {
+      "name": "native-clippy",
+      "started": "2026-11-21T23:51:47.702086+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T23:53:23.106665+09:00",
+      "log_sha256": "74ffce230dbb830f7967e20961ba4fe6dc2f4d966a3aab0972f5d24b1fb15879"
+    },
+    {
+      "name": "wasm-clippy",
+      "started": "2026-11-21T23:53:23.112628+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T23:54:14.203046+09:00",
+      "log_sha256": "08c9d66e0f68b95ea2e7be060a4f0bc1753771589c5d4173a61ff579faf64489"
+    },
+    {
+      "name": "workspace-build",
+      "started": "2026-11-21T23:54:14.203601+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T23:55:16.068111+09:00",
+      "log_sha256": "cd466fa788a1b83da4358c85ebf601cb65a7ef49571233d79e0ec03da40639d5"
+    },
+    {
+      "name": "workspace-clippy",
+      "started": "2026-11-21T23:55:16.076855+09:00",
+      "exit": 0,
+      "finished": "2026-11-21T23:56:36.009653+09:00",
+      "log_sha256": "ef8153bc29740efb38f646547cb484dc71e55a0295a98fd1036a2c2f62de5033"
+    },
+    {
+      "name": "native-skia-lib",
+      "started": "2026-11-21T23:56:36.010230+09:00",
+      "exit": 0,
+      "finished": "2026-11-22T00:04:14.081839+09:00",
+      "log_sha256": "0c89142561846db685c2fe83baa83d24688047782d6a33b72cb639890b930f95"
+    }
+  ],
+  "product_head": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "observed_review_head": "f1d6cb2f98f57b3046ed5b40cb1598a9a486a830",
+  "non_document_changes_after_full_run": [
+    "tests/fixtures/oracle_page_count_baseline.tsv",
+    "tests/fixtures/oracle_page_count_verified_references.json"
+  ],
+  "build_jobs": 8,
+  "test_threads": 8,
+  "nextest": {
+    "product_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+    "test_checkout_head": "080525ab91f95f35f6af6050d6fb7b4df09f7d5a",
+    "test_exit": 0,
+    "elapsed_test_seconds": 806.426,
+    "tests": 13877,
+    "passed": 13877,
+    "failed": 0,
+    "slow": 4,
+    "skipped": 45,
+    "test_threads": 8,
+    "fonts": "macOS minimum-font sandbox with explicit public test fixtures",
+    "log_sha256": "d1cd5dc010b30e1ea1a51222302e4095de047c0a5c542f170e325747602961f3",
+    "started": "2026-11-21T23:14:17.818149+09:00",
+    "finished": "2026-11-21T23:51:06.772037+09:00",
+    "checkout_diffs_from_product_source": [
+      "mydocs/pr/archives/pr_9269_review.md",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-chemical-wasm/README.md",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-chemical-wasm/candidate.tsv",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-chemical-wasm/fixed-base.tsv",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-chemical-wasm/overlay-086.png",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-chemical-wasm/review-086.png",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-chemical-wasm/validation.json",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-nested-wasm/README.md",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-nested-wasm/candidate.tsv",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-nested-wasm/fixed-base.tsv",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-nested-wasm/overlay-016.png",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-nested-wasm/review-016.png",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/protected-nested-wasm/validation.json",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/validation/ole-repeat-save-v5.json",
+      "mydocs/pr/assets/planet6897_9240_9282_20261121/validation/protected-intermediate-v4.json"
+    ]
+  },
+  "native_skia_lib": {
+    "passed": 4034,
+    "failed": 0,
+    "ignored": 12,
+    "log_sha256": "0c89142561846db685c2fe83baa83d24688047782d6a33b72cb639890b930f95"
+  },
+  "native_skia_focused": {
+    "issue_2225_missing_picture_placeholder": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 350,
+      "log_sha256": "fb670d29a7f676f5a424eca04f1e02e75febdcb4214667e629fa533776e6f6d5"
+    },
+    "render_p37_direct_pdf_export": {
+      "passed": 36,
+      "failed": 0,
+      "skipped": 323,
+      "log_sha256": "03147ff3859d944effd83db3347b2adb1984aad3a36040a519b4c2b55bb68524"
+    }
+  },
+  "new_samples_security": {
+    "inputs": [
+      "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+      "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+      "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+      "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+      "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx"
+    ],
+    "passed": 6,
+    "failed": 0,
+    "skipped": 362,
+    "log_sha256": "32100ddb69dd91acdda443792c8d26c6cb1d65af1a2ed7f3591919c057a30859"
+  },
+  "native_webfonts_python": {
+    "passed": 16,
+    "failed": 0,
+    "log_sha256": "c22645d6f8b562dbd080331b3e720a19e2a0f6900925ae09fec678694e37c36a"
+  },
+  "suite_manifest": "[RustTestSuite] 확인 완료: 2457 sources / 10114 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2149321..2153996",
+  "unit_tier_check": "[RustUnitTier] 확인 완료: 4094 tests / 295 modules / ready 0 / support 85 / white-box 4005 / cfg support items 28",
+  "page_count_oracle": {
+    "registration_commit": "a9ee83ba5e6f71fc76dfa87c24a6be7a232795aa",
+    "passed": 16,
+    "failed": 0,
+    "skipped": 307,
+    "log_sha256": "ffa01e09713617af0feed15d922d828ba0a0eaac1f53374298d079be37e62185",
+    "registration_evidence": "new-sample-oracles.json"
+  }
+}

@@ -365,12 +365,20 @@ samples/issue8660/picture_in_front_with_table_host_over_12px.hwp	2	2
 samples/issue8660/picture_top_and_bottom_over_12px_text_follows.hwp	2	2
 samples/issue8660/picture_unrestricted_over_12px.hwp	1	1
 samples/issue8660/rect_top_and_bottom_over_12px.hwp	2	2
+# 검증한 과거 경로: pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue886/1660000-201400009-kobe-earthquake.hwp	64	64
 samples/issue9073/proficiency_test_result_form.hwpx	1	1
 samples/issue9073/veterans_summer_support_press_release.hwpx	2	2
 samples/issue9079/black_stork_restoration_press_release.hwpx	6	6
 samples/issue9085/facility_fee_reduction_criteria.hwpx	1	1
 samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx	4	4
 samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx	4	4
+# 검증한 과거 경로: pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx	7	7
+# 검증한 과거 경로: pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx	3	3
+# 검증한 과거 경로: pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx	9	9
 samples/issue_265.hwp	16	16
 samples/k-water-rfp-2024.hwp	27	27
 samples/k-water-rfp.hwp	27	27

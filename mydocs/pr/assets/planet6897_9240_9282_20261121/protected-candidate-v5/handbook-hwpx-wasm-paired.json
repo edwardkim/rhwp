@@ -1,0 +1,45 @@
+{
+  "key": "handbook-hwpx",
+  "backend": "wasm",
+  "pages": 383,
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "font_environment_sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25",
+  "fixed_base_producer_hashes": {
+    "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519",
+    "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+    "rhwp_bg.wasm": "c32305fcccd7a18bef0f67305cc4674c51b9e4b052d15097038b31c7be7e26cd"
+  },
+  "candidate_producer_hashes": {
+    "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417",
+    "rhwp.js": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+    "rhwp_bg.wasm": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f"
+  },
+  "fixed_base_manifest_sha256": "b1725a91137040901c3df98ed87798760fdc6c568c3c995de811ee232da11646",
+  "candidate_manifest_sha256": "b12335b1912153631eb63279d0f52944d5ed6512fef0a64af43b432e276fb18d",
+  "all_page_display_scores_equal": true,
+  "same_run_conditions": true,
+  "tsv": "wasm/handbook-hwpx.tsv",
+  "tsv_sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a",
+  "png_byte_changes": {
+    "rhwp": [],
+    "pdf": []
+  },
+  "page_130": {
+    "score": "99.96",
+    "png": {
+      "rhwp": {
+        "fixed_base_sha256": "ab6731071950820ecaee350f99ad212f22bad033e638035c61a29d2b1dde90eb",
+        "candidate_sha256": "ab6731071950820ecaee350f99ad212f22bad033e638035c61a29d2b1dde90eb"
+      },
+      "pdf": {
+        "fixed_base_sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd",
+        "candidate_sha256": "554b6a770060086a59af0a08f5b9f377fc058bfda47e2e62e05f9a63f49c3abd"
+      }
+    },
+    "images_sha256": {
+      "handbook-hwpx-wasm-review-130.png": "c90229dee587c95ab23e35cf8ab8462c31bd6641c1035b32f66507300dc4ba96",
+      "handbook-hwpx-wasm-overlay-130.png": "14e52fbbf5fa390897dd470b46dccc80b0479ddee725a2cfca9fc431d145d68f"
+    }
+  }
+}

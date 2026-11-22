@@ -1,0 +1,317 @@
+{
+  "product_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "fixed_base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+  "native_sha256": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417",
+  "wasm_sha256": "b7daba5a67af717138d37638f8a1a477dd0990f034b234e985a534c5d6ef228f",
+  "wasm_js_sha256": "23130c8002fe1aa4e6545910d92ef5716ccb92097747662d2b64ef129ff27b08",
+  "case_count": 10,
+  "page_count": 290,
+  "below_98": 0,
+  "changed_pixels_from_v4": 0,
+  "reference_engine_by_document": {
+    "886": 2020,
+    "9239": 2020,
+    "9272": 2024,
+    "9279": 2024,
+    "9285": 2020
+  },
+  "comparison_profile": "Hancom PDF Print, 96 DPI, silhouette raw 2px, official two decimal value",
+  "results": [
+    {
+      "source_pr": 9240,
+      "case": "886",
+      "backend": "native",
+      "page_count": 64,
+      "minimum_raw_display": "98.12",
+      "source_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/886/native/silhouette.tsv",
+      "latest_tsv_sha256": "3e697371dd9f05e1eeff84021c64f080ff95c8ce921253646d2861462d5224f3",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 1,
+          "raw_png_sha256": "dce0da6448e65d5064d87c31b4d2c3d145eada654037e6b960b5026883331126",
+          "print_png_sha256": "26d62770c84e6b8fe06cf4f232f0d4fd18f50eeaf6298ad250f60aee9aada651",
+          "score": "100.00"
+        },
+        {
+          "page": 2,
+          "raw_png_sha256": "75a8f1ad0da76d83fa05848cdb64d4b10c4d674a01d7dfc41d335ab994419b94",
+          "print_png_sha256": "e694487c5c47819e2bd909ac2d55f6814f103bf6b5dcf3b0d5204ad8276bbce0",
+          "score": "99.87"
+        },
+        {
+          "page": 8,
+          "raw_png_sha256": "4973d09266e1bc2289de8cdfa91e5896fd67907af9671e16fca7921057295775",
+          "print_png_sha256": "906a66f47ccbb036776236d593bc10c3d0a2371631e5af54d4155150d9a4ce40",
+          "score": "99.99"
+        }
+      ]
+    },
+    {
+      "source_pr": 9269,
+      "case": "9239",
+      "backend": "native",
+      "page_count": 62,
+      "minimum_raw_display": "98.87",
+      "source_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/native/silhouette.tsv",
+      "latest_tsv_sha256": "ff3abd370b3dd4dff98bca0fc5fc31c413c24466ca2a0f317531ac10ee0b47ce",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 11,
+          "raw_png_sha256": "fa3aeedb29329376cd653ea374a11c669210007d64f5c7c845bd86147563ef21",
+          "print_png_sha256": "491bbfef8dcf38c2c964d2605af03c9544c97cecf86e756f0af1b24ca006e89f",
+          "score": "99.99"
+        },
+        {
+          "page": 12,
+          "raw_png_sha256": "9fe1d6d5dd487372c4b4458b6dbc992ab6948720a46ff2be5971c1de0894d488",
+          "print_png_sha256": "d08550639f2cca7cca90a4402fba6d21a0076d9c4915852f1e5efcbfb25cf16d",
+          "score": "99.97"
+        },
+        {
+          "page": 15,
+          "raw_png_sha256": "f9aa2b8112b1997b1e5ce768958244b969372df800808cb3d7e0662515c189cb",
+          "print_png_sha256": "18067a4f24d1c673a16ec20f82d2d5e9e51b4a51b9af1bc1ff4af84a47604cec",
+          "score": "99.98"
+        },
+        {
+          "page": 16,
+          "raw_png_sha256": "af6fc376912f4faaa16ac323513437965d228236078c645cddf9ba599abc9fd5",
+          "print_png_sha256": "300731e794283b582dc42376f231eb57244abf2f481aead938d36f44911e462d",
+          "score": "99.97"
+        },
+        {
+          "page": 21,
+          "raw_png_sha256": "1d000c46a9d9bd20f741cad3f3da38fcd53d2e66200a89452c42943d4ef00be4",
+          "print_png_sha256": "71dcc7a36b68a5237cffe31eb8969cc2c051e7cc831a8db93054e088b6dec895",
+          "score": "99.94"
+        },
+        {
+          "page": 43,
+          "raw_png_sha256": "c99f7304beea8f5c7cae40aa2fc74546247e979118180f5eb5d59de49d2d9c7c",
+          "print_png_sha256": "e33ff8a9a1210c2ef2144ef78b8adbd7445622870ac92f26ff6b1594adcaa6a5",
+          "score": "99.56"
+        }
+      ]
+    },
+    {
+      "source_pr": 9278,
+      "case": "9272",
+      "backend": "native",
+      "page_count": 7,
+      "minimum_raw_display": "99.98",
+      "source_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/9272/native/silhouette.tsv",
+      "latest_tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 6,
+          "raw_png_sha256": "514766db1ad915a61d0a646009e156ea0f15eefb4bd6087f17165ad9e9d08706",
+          "print_png_sha256": "570c94c068a436fa1423afb33f08982562903a70a0a1ae35102fb943efe9b1a4",
+          "score": "100.00"
+        },
+        {
+          "page": 7,
+          "raw_png_sha256": "d425b4d3b95823876b41e75e2e9d33d086ffbf79b09c35d941b28bb8911f1d5a",
+          "print_png_sha256": "3e0792a8043b6d11b7e578b944f4018ec35abb23c14ffe4e7ffb99bcb8c1e134",
+          "score": "100.00"
+        }
+      ]
+    },
+    {
+      "source_pr": 9282,
+      "case": "9279",
+      "backend": "native",
+      "page_count": 3,
+      "minimum_raw_display": "100.00",
+      "source_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/9279/native/silhouette.tsv",
+      "latest_tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 2,
+          "raw_png_sha256": "02fdc9ca807b22b6bfcb306e2fecc93f088e6467f517916bd726d13d8a50064e",
+          "print_png_sha256": "00e0373d4822d2585fbd91b72bb7113c8fcef98d55a82a7dcb5848fe2fe705c4",
+          "score": "100.00"
+        }
+      ]
+    },
+    {
+      "source_pr": 9287,
+      "case": "9285",
+      "backend": "native",
+      "page_count": 9,
+      "minimum_raw_display": "99.78",
+      "source_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "reference_pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/wmf-9285/native/silhouette.tsv",
+      "latest_tsv_sha256": "3b3b089773c9585d64a7a66a6d08553cae3ba385cb66caca65f2e57cec77015f",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 4,
+          "raw_png_sha256": "7735f86e09d8e2e948eefc7b72c1211426bf8214608df16afe27a8930f2f45be",
+          "print_png_sha256": "b8b2b2533278aa140ec2e28c095e5538a5bb29b321efc5116288ccbc08752138",
+          "score": "99.93"
+        }
+      ]
+    },
+    {
+      "source_pr": 9240,
+      "case": "886",
+      "backend": "wasm",
+      "page_count": 64,
+      "minimum_raw_display": "98.15",
+      "source_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/886/wasm/silhouette.tsv",
+      "latest_tsv_sha256": "62e9bf6e9bea17c71e18a5d8bef4ade1d7452319ee7f703aa586d5923e0a1248",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 1,
+          "raw_png_sha256": "d8b3cf230639740b1d9aa1c0d4e1e1530f759f6c7362eedd8b1d2548a229c59a",
+          "print_png_sha256": "26d62770c84e6b8fe06cf4f232f0d4fd18f50eeaf6298ad250f60aee9aada651",
+          "score": "100.00"
+        },
+        {
+          "page": 2,
+          "raw_png_sha256": "3eb8669189b52a3a2ce7cdbd13196969684d61b7fedb950064cf98b48b6dc2b2",
+          "print_png_sha256": "e694487c5c47819e2bd909ac2d55f6814f103bf6b5dcf3b0d5204ad8276bbce0",
+          "score": "99.87"
+        },
+        {
+          "page": 8,
+          "raw_png_sha256": "e1bf2c8eacc1d4db5be40261cba42fef45eb1eea23bd7047c7683b91ae2e7a51",
+          "print_png_sha256": "906a66f47ccbb036776236d593bc10c3d0a2371631e5af54d4155150d9a4ce40",
+          "score": "99.99"
+        }
+      ]
+    },
+    {
+      "source_pr": 9269,
+      "case": "9239",
+      "backend": "wasm",
+      "page_count": 62,
+      "minimum_raw_display": "98.86",
+      "source_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/9239/wasm/silhouette.tsv",
+      "latest_tsv_sha256": "9320f8d36fe2a75cfc73dcbb2b9cd0e2e2dc4f6d6e1d7cf59c2082945db6dd24",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 11,
+          "raw_png_sha256": "fcf59bb0292f1d2dc609b16ded26c177d812891c68d87520532445c92e43025a",
+          "print_png_sha256": "491bbfef8dcf38c2c964d2605af03c9544c97cecf86e756f0af1b24ca006e89f",
+          "score": "99.99"
+        },
+        {
+          "page": 12,
+          "raw_png_sha256": "3c4d1f13e377dbfd8d3efd52050807eb9de801438e63fe2e328d12cffdf48dc0",
+          "print_png_sha256": "d08550639f2cca7cca90a4402fba6d21a0076d9c4915852f1e5efcbfb25cf16d",
+          "score": "99.97"
+        },
+        {
+          "page": 15,
+          "raw_png_sha256": "d6cbbcc1f89cf22eb2314ae4d047a62d791fb0b752dba64917327caf1a8b3bf9",
+          "print_png_sha256": "18067a4f24d1c673a16ec20f82d2d5e9e51b4a51b9af1bc1ff4af84a47604cec",
+          "score": "99.89"
+        },
+        {
+          "page": 16,
+          "raw_png_sha256": "debb81da4dde006d521eba422f232823ad7f3c857f7ef4a63f446021f1391fce",
+          "print_png_sha256": "300731e794283b582dc42376f231eb57244abf2f481aead938d36f44911e462d",
+          "score": "99.97"
+        },
+        {
+          "page": 21,
+          "raw_png_sha256": "a3aa1b19b1962ea616f82d8157a08681af68368e0d3165b180c91dbb44041e01",
+          "print_png_sha256": "71dcc7a36b68a5237cffe31eb8969cc2c051e7cc831a8db93054e088b6dec895",
+          "score": "99.98"
+        },
+        {
+          "page": 43,
+          "raw_png_sha256": "c84c4abef20646afb2e8fe17e27a974d696c405daa493a282d2b29c3def71aee",
+          "print_png_sha256": "e33ff8a9a1210c2ef2144ef78b8adbd7445622870ac92f26ff6b1594adcaa6a5",
+          "score": "99.61"
+        }
+      ]
+    },
+    {
+      "source_pr": 9278,
+      "case": "9272",
+      "backend": "wasm",
+      "page_count": 7,
+      "minimum_raw_display": "99.98",
+      "source_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/9272/wasm/silhouette.tsv",
+      "latest_tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 6,
+          "raw_png_sha256": "b8b418d3b51058bbdcdc7a30ba1d7d9f292fb01ec9a18a2ec64838a25ab36c7d",
+          "print_png_sha256": "570c94c068a436fa1423afb33f08982562903a70a0a1ae35102fb943efe9b1a4",
+          "score": "100.00"
+        },
+        {
+          "page": 7,
+          "raw_png_sha256": "836cfa9041f90406516d4ae5f1ca396ef99148c68da1721774ba457438d460de",
+          "print_png_sha256": "3e0792a8043b6d11b7e578b944f4018ec35abb23c14ffe4e7ffb99bcb8c1e134",
+          "score": "100.00"
+        }
+      ]
+    },
+    {
+      "source_pr": 9282,
+      "case": "9279",
+      "backend": "wasm",
+      "page_count": 3,
+      "minimum_raw_display": "100.00",
+      "source_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/coordinate-evidence/9279/wasm/silhouette.tsv",
+      "latest_tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 2,
+          "raw_png_sha256": "28fac6e5b4002953e4689e97b511a5586d440b1a4793c46af509b15e93d01e66",
+          "print_png_sha256": "00e0373d4822d2585fbd91b72bb7113c8fcef98d55a82a7dcb5848fe2fe705c4",
+          "score": "100.00"
+        }
+      ]
+    },
+    {
+      "source_pr": 9287,
+      "case": "9285",
+      "backend": "wasm",
+      "page_count": 9,
+      "minimum_raw_display": "99.66",
+      "source_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "reference_pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "tsv": "mydocs/pr/assets/planet6897_9240_9282_20261121/wmf-9285/wasm/silhouette.tsv",
+      "latest_tsv_sha256": "fc2aee754c6baaee6e2a7774afdf24327b9f19df768d200f9b6599e47d1b590b",
+      "all_page_pixels_equal_to_previous_review_capture": true,
+      "claim_pages": [
+        {
+          "page": 4,
+          "raw_png_sha256": "6f0379fb79664c7c8286d59f4446f0e79908c7defca93d5d3eb9313313a68ec7",
+          "print_png_sha256": "b8b2b2533278aa140ec2e28c095e5538a5bb29b321efc5116288ccbc08752138",
+          "score": "99.80"
+        }
+      ]
+    }
+  ]
+}

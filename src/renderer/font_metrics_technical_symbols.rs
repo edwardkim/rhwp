@@ -204,6 +204,9 @@ pub(crate) fn verified_non_hft_glyph_width(metric: &FontMetric, ch: char) -> Opt
     match (metric.name, metric.em_size, metric.bold, metric.italic, ch) {
         // 두 gulim TTC의 Dotum face에서 H18543의 hmtx는 384/1024다.
         ("Dotum", 1024, false, false, '\u{25AA}') => Some(384),
+        // GulimChe의 같은 글리프는 반각이다. #9239 한컴 Print에서
+        // 네모 뒤 공백의 원점도 한글 전각 전진의 절반만큼 이동한다.
+        ("GulimChe", 1024, false, false, '\u{25AA}') => Some(512),
         _ => None,
     }
 }
