@@ -1,0 +1,26 @@
+# 보호 문서 글꼴 공급 자료의 공식화와 새 base 검증 계속
+
+사용자의 최신 지시인 **검증 완료 후 PR·후속 처리까지 진행**에 따라, stage19의 PR 준비 후
+대기 계획을 변경한다. 필수 검증을 완료하기 전에는 PR을 제출하지 않는다. #9316의 Windows
+직접 PDF 기능 검사는 계속 제외한다.
+
+글꼴 공급 자료는 [공식 자료 디렉터리](../verification/protected-font-supply/README.md)에
+모았다. 23개 문서의 Native·WASM 46조건은 문서 key와 backend로 선택한다. 환경 JSON과
+수용 기록은 사람이 읽을 수 있는 파일명으로 구분했다. 자료 파일 82개의 참조·SHA와 변경한
+Markdown 5개의 링크를 확인했다. CI classifier는 해당 문서 변경 40개를 `review-only`로 판정했다.
+원 TTF → 검증 TTC face → CFF의 우선순위와 보호 정본 TSV는 유지한다.
+
+sample16의 글꼴 파일만 공급하고 환경 JSON을 생략했던 첫 실행은 수용하지 않았다.
+정본 환경 JSON과 Gulim·Batang TTC, Arial 원본을 명시 공급한 새 base WASM의 18·35쪽에서
+HWPX는 99.99%·100.00%, HWP 2022는 100.00%·100.00%로 복원됐다. 이 두 쪽의 개선을
+전쪽 보호 통과로 확대하지 않으며 세 저장본을 전쪽 재검증한다.
+
+새 base와 후보의 기존 PR 주 원본 6개·167쪽 Native 검증은 각각 98% 이상이다.
+새 base의 같은 167쪽 fresh WASM도 98% 이상이다. 두 역할의 OLE 입력은 HWP·HWPX 각각
+편집 후 두 번 저장·재열기를 실행했고, 독립 CFB/ZIP 검사에서 OLE 속성과 HWPX payload,
+편집 표지의 보존을 확인했다. 대상 아홉 이슈의 전체 시각 검증과 보호 전쪽, 최소 글꼴 Rust·lint,
+후보 fresh WASM·실제 Studio·편집 및 암호 문서 검증은 실행 중이며 완료로 판정하지 않는다.
+
+Source155의 frozen 후보 소스는 `b75ce19774a4b059b26c2d134d49d5f7ce4a93b2`다.
+공식 자료 정리 커밋 `433eba9d7011807d57cf235311afff15036b3ceb`까지의 변경이 모두 `mydocs/` 안에 있음을 확인했다.
+제품 코드 바이트는 같으며, 검증 결과에는 실제 실행 producer의 SHA를 기록한다.
