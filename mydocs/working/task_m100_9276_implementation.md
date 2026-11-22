@@ -6,7 +6,7 @@
 
 원본 TTF를 우선하는 `typeface_candidates_for_families_for_source`는 같은 설치 계열·스타일을 그리는 동안 매번 OS에 실제 face를 요청했다. DirectWrite face의 윤곽 형식을 확인하려고 전체 TTF/TTC를 매번 읽었다. 계측용 빌드에서 공고문은 4,386회에 20.720초, 모집 안내문은 5,627회에 26.468초였다. 공고문에서 PDF 문서를 닫는 데 든 시간은 0.745초였다. 각 함수의 측정 시간은 하위 호출을 포함한다.
 
-수정본은 설치 글꼴 카탈로그별로 가족명과 굵기·너비·기울기를 키로 써서 TrueType 선택과 미발견 결과를 재사용한다. 사용자 경로의 우선순위, 같은 계열 내 후보 순서, 문자별 실제 글리프 선택은 종전 경로가 결정한다. 현지화된 계열명을 확인할 때는 선택한 face의 이름 테이블을 읽는다. Windows에서는 DirectWrite가 공급하는 원본 파일 스트림과 face 번호를 사용해 TTF와 TTC의 순위를 판정한다. [Skia의 DirectWrite 스트림 구현](https://github.com/rust-skia/skia/blob/m157.2/src/ports/SkTypeface_win_dw.cpp#L691-L718)
+수정본은 설치 글꼴 카탈로그별로 글꼴 계열명과 굵기·너비·기울기를 키로 써서 TrueType 선택과 미발견 결과를 재사용한다. 사용자 경로의 우선순위, 같은 계열 내 후보 순서, 문자별 실제 글리프 선택은 종전 경로가 결정한다. 현지화된 계열명을 확인할 때는 선택한 face의 이름 테이블을 읽는다. Windows에서는 DirectWrite가 공급하는 원본 파일 스트림과 face 번호를 사용해 TTF와 TTC의 순위를 판정한다. [Skia의 DirectWrite 스트림 구현](https://github.com/rust-skia/skia/blob/m157.2/src/ports/SkTypeface_win_dw.cpp#L691-L718)
 
 별도 Windows 실행 파일에서 문서 열기, 웹폰트 준비, 환경 선택, 환경 적용을 각각 측정했다. 추천 서식은 초기 웹폰트 준비 1.112초, 설치 프로그램을 이용한 치환 판정 1.676초였다. 웹폰트 준비 단계에서는 설치 이름과 PostScript 이름을 한 번 색인한다. 하이픈이 다른 이름은 종전과 같이 서로 다른 실제 PostScript 이름이 하나일 때만 수용한다.
 
@@ -18,4 +18,4 @@
 
 ## 검증 자료
 
-공고문과 모집 안내문은 조달청에서 함께 배포한 PDF를 독립 기준으로 사용했다. 추천 서식은 원본 HWPX의 제품 버전에 맞춰 한컴 2024에서 인쇄한 1쪽 PDF를 사용했다. 원본 글꼴 프로그램과 Windows 설치 글꼴을 포함하는 PDF는 로컬에서 비교했다. [조달청 공고문 원본](https://www.pps.go.kr/common/fileDown.do?key=202604300039&sn=1) · [모집 안내문 원본](https://www.pps.go.kr/common/fileDown.do?key=202610080012&sn=2) · [추천 서식 원본](https://www.pps.go.kr/common/fileDown.do?key=202610080012&sn=1)
+공고문은 한컴 2020, 모집 안내문과 추천 서식은 한컴 2024에서 인쇄해 각 원본의 전체 쪽을 대조했다. 공고문과 모집 안내문은 조달청에서 함께 배포한 PDF도 추가로 비교했다. 원본 글꼴 프로그램과 Windows 설치 글꼴을 포함하는 PDF는 로컬에서 비교했다. [조달청 공고문 원본](https://www.pps.go.kr/common/fileDown.do?key=202604300039&sn=1) · [모집 안내문 원본](https://www.pps.go.kr/common/fileDown.do?key=202610080012&sn=2) · [추천 서식 원본](https://www.pps.go.kr/common/fileDown.do?key=202610080012&sn=1)
