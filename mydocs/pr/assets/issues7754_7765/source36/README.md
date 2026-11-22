@@ -9,6 +9,7 @@
 | 범위 | 결과 | 근거 |
 | --- | --- | --- |
 | 평문 원본 10개 Native | 전쪽 583쪽, 모두 raw 98% 이상 | `issues/native/qualified-originals.json`, 각 원본의 TSV·실행 manifest |
+| 새 기준과 후보 Native | 각 583쪽, 페이지별 표시값 하락 0쪽 | `issues/native/comparison.json`, `condition-comparison.json` 및 양쪽 전체 TSV |
 | 실제 암호 원본 | Native 24쪽 최저 99.50%, WASM 24쪽 최저 99.48% | `encrypted/results.json`, 양쪽 전체 TSV |
 | 암호 원본과 평문 대응 | 경로별 PNG 24/24 SHA 일치 | `encrypted/results.json` |
 | Studio 유입 기능 | 기준·후보 각 7개 여정 통과 | `incoming/studio/validation.json` |
@@ -24,6 +25,13 @@
 `direct-review/` 및 앞 단계 소스 35의 직접 판독 자료를 함께 사용한다.
 원본 TTF → 검증된 대응 TTC → CFF 순서는 유지했다. 원본 HFT 폭과 표시 CFF의
 프로그램 메트릭을 구분한 수정이며, 문서별 좌표 보정은 추가하지 않았다.
+
+새 기준의 시장구조조사 최저값은 26.80%였으며 후보는 98.40%다.
+기준의 90% 미만 종료 상태는 수정 전 원인 증거로 보존했다. 후보의 실패가 아니다.
+각 쪽을 같은 독립 PDF·DPI·raw 방식으로 비교했고, 글꼴 공급·Native 대체 계획·
+PDF 래스터 조건·레이아웃 호환 모드도 원본별로 같음을 확인했다.
+후속 문서 커밋과 제품 생산·정식 회귀 코드의 동일성은
+`gates/source-equivalence-checkpoint.json`의 Git 비교와 선택 파일 트리 해시로 잇는다.
 
 ## 유입 기능의 실행 근거와 한계
 
