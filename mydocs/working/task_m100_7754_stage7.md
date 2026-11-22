@@ -91,3 +91,22 @@ fresh WASM 생산·전쪽 실행과 정식 Rust 게이트는 진행 중이며 �
 최신 upstream은 `bd3cd171331e80e79881dc8e9ed37f837ef6be77`로 fetch했다.
 기존 기준 이후 README·기록·이미지뿐이며 생산 코드·테스트·검증 도구는 동일하다.
 현재 producer의 정확한 source SHA를 보존한 뒤 동기화한다.
+
+## fresh WASM 생산과 통합 검사 경로 보정
+
+같은 소스의 최적화 fresh WASM도 exit 0, 655.5초로 생산했다. `rhwp_bg.wasm` SHA는
+`76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3`다.
+실제 브라우저 경계·전쪽 측정과 Rust 검증은 계속한다.
+
+첫 정식 unit-tier 정책 검사가 소스 내부 test 총량 4,093 > base 4,092로 실패했다.
+정책·상한을 바꾸지 않고 새 이름 계약을 public `DocumentCore` 통합 검사
+`tests/cases/issue_7754_font_logical_family_ownership.rs`로 옮겼다. 기존 내부 tests는
+작업 전 그대로 복원했다. 같은 3개 이름 소유·우선 조건을 그대로 보호하며 기존 자동
+suite 수집 경로를 쓴다. 최소 글꼴의 실제 통합 검사로 소스 36 FAIL / 새 Native PASS를
+다시 확인했다. unit-tier도 base 대비 4,092건·295모듈로 PASS다. 정식 Cargo 실행은
+수정된 등록을 준비한 worktree에서 재시작한다. 이 변경은 `#[cfg(test)]` 모듈과 통합
+검사에만 영향을 주며 Native/fresh WASM의 생산 동작은 같다.
+
+두 tracked WASM d.ts 생성물의 변경은 줄 순서만 다르고 전체 선언·서명 Counter가
+동일함을 확인했다. 작업이 생성한 이 두 파일만 HEAD로 복원했으며 최적화 package와
+실제 브라우저 공급물은 보존했다. 관련 근거는 `source37/integration-contract/`다.

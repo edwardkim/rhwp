@@ -1,8 +1,4 @@
-//! 관계형·고정형: 스타일 입력 계약과 원본·실제 조회·fallback 이름의 소유를 검사한다.
-//! 주석 갱신: 2026-11-22T12:00:50+09:00; 직전 파일 변경: 2026-10-18T17:30:46+09:00 11cc64a4438a7cc71beccae3e287de9faeb9cf9d.
-//! DocInfo/FontEnvironment의 이름 해석 단위 계약이다. 문서·glyph·픽셀을 그리지 않으므로 시각 raw 측정은 비해당이다.
-//! 실제 회귀 원본의 별도 진단: mydocs/pr/assets/issues7754_7765/source36/protected/alias-regression/.
-//! 단위 검사의 값을 실물 시각 측정으로 취급하지 않으며 최종 head의 Native/fresh WASM 검증은 별도로 완료한다.
+//! 기존 스타일 해소의 계약 검사. 함수·검사 내용을 유지한다.
 
 use super::*;
 use crate::model::document::DocInfo;
@@ -487,59 +483,4 @@ fn test_font_family_for_lang_fallback() {
     assert_eq!(cs.font_family_for_lang(1), "Arial");
     assert_eq!(cs.font_family_for_lang(3), "함초롬돋움"); // 빈 문자열 → 한국어 폴백
     assert_eq!(cs.font_family_for_lang(99), "함초롬돋움"); // 범위 초과 → 한국어 폴백
-}
-
-#[test]
-fn selected_program_identity_does_not_promote_a_logical_hft_family() {
-    use crate::renderer::font_environment::FontEnvironment;
-
-    let source = "Logical HFT Name";
-    let family = "Selected Physical Family";
-    let fallback = "Declared Glyph Fallback";
-    for (source_type, query, expected_first) in [
-        (2, source, family),
-        (2, "Selected-PostScript-Name", "Selected-PostScript-Name"),
-        (1, source, source),
-    ] {
-        let info = DocInfo {
-            font_faces: vec![vec![Font {
-                name: source.into(),
-                alt_type: source_type,
-                ..Default::default()
-            }]],
-            ..Default::default()
-        };
-        // The identity authenticates the selected program. It does not prove that
-        // a second installed family with the logical source name is that program.
-        let environment = FontEnvironment::from_json(
-            &serde_json::json!({
-                "id": "selected-physical-program-name-contract",
-                "preserveSourceMetrics": true,
-                "substitutions": {(source): family},
-                "selectedPrograms": {(source): {
-                    "query": query, "family": family,
-                    "programId": "01".repeat(32),
-                    "trueType": source_type == 1,
-                    "openTypeCff": source_type == 2
-                }},
-                "glyphFallbacks": {(family): [fallback]}
-            })
-            .to_string(),
-        )
-        .unwrap();
-        let decision = lookup_font_name_in_environment(&info, 0, 0, Some(&environment));
-        assert_eq!(decision.requested_face.as_deref(), Some(source));
-        assert_eq!(
-            decision.css_family_chain.first().map(String::as_str),
-            Some(expected_first)
-        );
-        assert!(decision
-            .css_family_chain
-            .iter()
-            .any(|name| name == fallback));
-        if source_type == 2 && query == source {
-            assert!(decision.css_family_chain.iter().all(|name| name != source));
-            assert_eq!(decision.css_family_chain, [family, fallback]);
-        }
-    }
 }
