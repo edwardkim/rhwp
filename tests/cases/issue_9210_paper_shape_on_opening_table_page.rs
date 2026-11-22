@@ -20,6 +20,7 @@
 //! 글꼴 `ttfs/opensource`. 전체 46쪽(= PDF).
 //! - 43쪽(대상): Native 97.36%, fresh WASM 97.41%. 두 사각형 위치를 PDF 와 확대 대조함.
 //! - 전쪽 최저: Native 90.83%(17쪽), fresh WASM 93.38%(17쪽) — 모두 90% 이상.
+//!
 //! 증거: `mydocs/pr/assets/issue_9210/`(native·wasm TSV, 43쪽 review·overlay PNG).
 #![cfg(not(target_arch = "wasm32"))]
 
