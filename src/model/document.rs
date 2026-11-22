@@ -54,6 +54,15 @@ pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
 /// 값으로 구분해 종전 파일의 읽기 규칙을 바꾸지 않는다.
 pub const HWPX_ORIGIN_SOURCE_LINES: &[u8] = b"2";
 
+/// [#9039] `/RhwpHwpxOrigin` 의 HWP 줄 규칙 값(`1`)을 HWPX 로 옮기는 ZIP 보조 엔트리.
+///
+/// 값 `1` 의 HWP 는 HWPX 계보(`hwpx_stored_layout`)로 조판하지만 저장 줄은 HWP 규칙으로
+/// 읽는다 — XML import 의 줄 재구성(원점에 머문 본문 사다리 재조판 등)을 하지 않는다.
+/// 이 계약을 싣지 않고 HWPX 로 저장하면 다시 열 때 같은 저장 줄이 XML 규칙으로 다시
+/// 짜여 원본과 갈라진다(`issue2439_…`: 33문단의 저장 줄 전부). 값은 원본 스트림 값을
+/// 그대로 싣고, HWPX → HWP 저장은 이 값을 `/RhwpHwpxOrigin` 으로 되돌린다.
+pub const HWPX_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwpx-origin";
+
 /// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
 ///
 /// HWP3 파싱은 `apply_hwp3_origin_fixup` 으로 `margin_bottom` 에서 1600 HU(21.3px)를
@@ -510,6 +519,21 @@ impl Document {
         self.extra_streams.iter().any(|(path, value)| {
             path == HWPX_ORIGIN_STREAM_PATH && value == HWPX_ORIGIN_SOURCE_LINES
         })
+    }
+
+    /// [#9039] HWPX 계보로 조판하되 저장 줄은 HWP 규칙으로 읽는 문서의 출처 값.
+    ///
+    /// HWP 는 `/RhwpHwpxOrigin` 값이 [`HWPX_ORIGIN_SOURCE_LINES`] 가 아닐 때(종전 값 `1`),
+    /// HWPX 는 그 값을 옮겨 실은 [`HWPX_ORIGIN_HWPX_MARKER_PATH`] 가 있을 때 값을 돌려준다.
+    /// 두 형식에서 같은 문서가 같은 줄 읽기 규칙을 쓰도록 저장·읽기가 이 값을 공유한다.
+    pub fn hwpx_origin_hwp_line_rules(&self) -> Option<&[u8]> {
+        self.extra_streams
+            .iter()
+            .find(|(path, value)| {
+                path == HWPX_ORIGIN_STREAM_PATH && value != HWPX_ORIGIN_SOURCE_LINES
+            })
+            .map(|(_, value)| value.as_slice())
+            .or_else(|| self.hwpx_aux_entry(HWPX_ORIGIN_HWPX_MARKER_PATH))
     }
 
     /// [#2403 Stage 1] 레이아웃 호환 정책 질의 표면.
