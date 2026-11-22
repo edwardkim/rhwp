@@ -71,7 +71,18 @@
           },
           "observation_ko": "워터마크와 절취선, 접수증의 제목·날짜·날인 순서를 확인했다. 영문 serif 윤곽과 빨간 낙관 테두리에 차이가 남는다."
         }
-      ]
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 1,
+        "current_native_raw_percent": "99.00",
+        "current_fresh_wasm_raw_percent": "98.99",
+        "current_devel_fresh_wasm_raw_percent": "96.59",
+        "current_candidate_wasm_whole_document_minimum": "98.99",
+        "current_candidate_wasm_tsv_sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49"
+      }
     },
     {
       "key": "issue7757",
@@ -146,7 +157,18 @@
             }
           ]
         }
-      ]
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 3,
+        "current_native_raw_percent": "100.00",
+        "current_fresh_wasm_raw_percent": "100.00",
+        "current_devel_fresh_wasm_raw_percent": "100.00",
+        "current_candidate_wasm_whole_document_minimum": "99.80",
+        "current_candidate_wasm_tsv_sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853"
+      }
     },
     {
       "key": "issue7759",
@@ -210,7 +232,18 @@
           },
           "observation_ko": "두 단의 줄 위치와 문장 순서, 본문 옆 차트의 범례와 계열을 확인했다."
         }
-      ]
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 1,
+        "current_native_raw_percent": "99.93",
+        "current_fresh_wasm_raw_percent": "99.94",
+        "current_devel_fresh_wasm_raw_percent": "99.94",
+        "current_candidate_wasm_whole_document_minimum": "99.94",
+        "current_candidate_wasm_tsv_sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d"
+      }
     },
     {
       "key": "issue7761",

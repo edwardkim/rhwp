@@ -76,6 +76,11 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 좌표 회귀 5쪽과 대표 구간 5쪽의 Native와 독립 Print PNG는 확대 판독에 쓴 PNG와 모두 일치했다.
 [현재 Native의 전쪽 결과와 TSV](../verification/issue7754-nine-fidelity/after-pr9322/native-target-and-feature-comparison.json)
 
+복학원서·배포용 의회운영 문서·공개 HWP의 fresh WASM 전쪽 최저는 각각 98.99%, 99.80%,
+99.94%였다. 대표 쪽의 Native·fresh WASM·독립 Print PNG가 리베이스 직전 확대 판독
+이미지와 일치했다. 복학원서 1쪽의 fresh WASM 일치율은 현재 기준의 96.59%에서 98.99%로 올라갔다.
+[세 문서의 현재 대표 구간 대조](../verification/issue7754-nine-fidelity/representative-print-review/review.json)
+
 시장구조조사 315쪽의 기준 Native 출력은 리베이스 전후로 동일했다. 각 쪽의 출력·독립
 Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인 3쪽(95.99%)과
 100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
