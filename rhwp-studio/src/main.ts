@@ -755,7 +755,7 @@ async function initialize(): Promise<void> {
       canvasView.getViewportManager(),
     );
     installMemoMarkers(container, canvasView, wasm, eventBus,
-      memoId => dispatcher.dispatch('insert:comment', { memoId }));
+      (memoId, compose) => dispatcher.dispatch('insert:comment', { memoId, compose }));
     inputHandler.configureCommandErrors({
       isDirty: () => documentState.isDirty(),
       render: () => canvasView!.refreshDocumentAgentMutation(),

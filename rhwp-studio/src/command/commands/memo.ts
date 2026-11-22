@@ -1,7 +1,9 @@
+import type { DocumentPosition } from '@/core/types';
+import { showConfirm } from '@/ui/confirm-dialog';
 import type { CommandDef } from '../types';
 import { hyperlinkRange } from '@/core/hyperlink';
 import { StudioCommandError } from '@/core/command-error';
-import { MemoEditError, memoRangeAtCaret, validateMemoEdit } from '@/core/memo-editor';
+import { countMemoReplies, MemoEditError, memoRangeAtCaret, validateMemoEdit, type MemoEdit, type MemoComposeRequest } from '@/core/memo-editor';
 import { MemoDialog } from '@/ui/memo-dialog';
 import { showToast } from '@/ui/toast';
 import { t } from '../../i18n/index.ts';
@@ -16,10 +18,13 @@ export const memoCommand: CommandDef = {
     try {
       if (!ih.canEditHyperlink()) throw new Error(t('dialog.memo.invalidTarget'));
       const wasm = services.wasm;
-      const selection = ih.hasSelection() ? structuredClone(ih.getSelection()) : null;
+      if (params?.generation !== undefined && params.generation !== wasm.documentGeneration) return;
+      const pointer = params?.position as DocumentPosition | undefined;
+      const selection = pointer ? params?.selection as ReturnType<typeof ih.getSelection> ?? null
+        : ih.hasSelection() ? structuredClone(ih.getSelection()) : null;
       let insertion: { range: ReturnType<typeof hyperlinkRange>; context: string } | null = null;
       try {
-        const range = hyperlinkRange(ih.getCursorPosition(), selection);
+        const range = hyperlinkRange(pointer ?? ih.getCursorPosition(), selection);
         const { section, para, cellPath } = range.target;
         const context = wasm.getHyperlinkContext(range.target);
         if (cellPath.length === 0) {
@@ -35,7 +40,7 @@ export const memoCommand: CommandDef = {
       let memos = wasm.getMemos();
       let fingerprint = JSON.stringify(memos);
       const requestedId = typeof params?.memoId === 'number' ? params.memoId : null;
-      const dialog = new MemoDialog(memos, insertion !== null, memo => wasm.getMemoDisplayPage(memo), edit => {
+      const apply = (edit: MemoEdit) => {
         if (wasm.documentGeneration !== generation || services.getInputHandler() !== ih
           || !services.getContext().isEditable || services.getContext().isFormMode || !ih.canEditHyperlink()
           || JSON.stringify(wasm.getMemos()) !== fingerprint) {
@@ -78,7 +83,36 @@ export const memoCommand: CommandDef = {
         if (!applied) throw new Error(t('dialog.memo.failed'));
         memos = wasm.getMemos(); fingerprint = JSON.stringify(memos);
         return memos;
-      }, {
+      };
+      const compose = params?.compose;
+      const chosen = memos.find(memo => memo.id === requestedId);
+      if (compose === 'remove' && chosen?.editable) {
+        const count = countMemoReplies(chosen.id, memos);
+        void showConfirm(t('dialog.memo.delete'), count
+          ? t('dialog.memo.deleteThreadConfirm', { p1: count }) : t('dialog.memo.deleteOneConfirm'))
+          .then(ok => { if (ok) apply({ kind: 'remove', id: chosen.id, confirmedReplies: count }); })
+          .catch(error => showToast({ message: String(error) }));
+        return;
+      }
+      if (compose === 'insert' ? insertion !== null : (compose === 'update' || compose === 'reply') && chosen?.editable) {
+        if (compose === 'reply' && chosen?.parentId !== null) return;
+        const kind = compose as 'insert' | 'update' | 'reply';
+        const request: MemoComposeRequest = {
+          kind, cardId: chosen?.parentId ?? chosen?.id ?? null,
+          restoreFocus: () => ih.focus(),
+          author: kind === 'update' ? chosen!.author : '',
+          text: kind === 'update' ? chosen!.text : '',
+          submit(author, text) {
+            if (kind === 'insert') apply({ kind, author, text });
+            else if (kind === 'reply') apply({ kind, id: chosen!.id, author, text });
+            else apply({ kind, id: chosen!.id, text });
+          },
+        };
+        services.eventBus.emit('memo-compose', request);
+        return;
+      }
+      if (compose === 'insert') throw new Error(t('dialog.memo.invalidTarget'));
+      const dialog = new MemoDialog(memos, insertion !== null, memo => wasm.getMemoDisplayPage(memo), apply, {
         initialId: requestedId,
         goTo(memo) {
           if (wasm.documentGeneration !== generation || services.getInputHandler() !== ih) return false;
@@ -90,4 +124,10 @@ export const memoCommand: CommandDef = {
       dialog.afterClose = () => ih.focus(); dialog.show();
     } catch (error) { showToast({ message: error instanceof Error ? error.message : String(error) }); }
   },
+};
+
+export const memoInsertCommand: CommandDef = {
+  ...memoCommand,
+  id: 'insert:memo-here',
+  execute: services => memoCommand.execute(services, { compose: 'insert' }),
 };

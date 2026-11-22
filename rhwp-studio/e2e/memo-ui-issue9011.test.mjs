@@ -287,13 +287,13 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   const saveBytes = () => page.evaluate(() => [...window.__wasm.exportHwpx()]);
   const beforePreview = await saveBytes();
   await toggleMemoView('view:memo-margin');
-  await page.waitForFunction(() => document.querySelectorAll('.memo-margin-cards button').length === 3);
+  await page.waitForFunction(() => document.querySelectorAll('.memo-card').length === 3);
   assert.equal(await page.$$('.memo-margin-guides polyline').then(lines => lines.length), 0);
   await toggleMemoView('view:memo-guides');
   await page.waitForFunction(() => document.querySelectorAll('.memo-margin-guides polyline').length === 3);
   const geometry = () => page.evaluate(() => {
     const viewport = document.querySelector('#scroll-container').getBoundingClientRect();
-    const cards = [...document.querySelectorAll('.memo-margin-cards button')]
+    const cards = [...document.querySelectorAll('.memo-card')]
       .map(button => button.getBoundingClientRect()).sort((a, b) => a.top - b.top);
     return cards.every((card, index) => card.left >= viewport.right &&
       (index === 0 || card.top >= cards[index - 1].bottom));
@@ -303,7 +303,7 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   await page.waitForFunction(() => window.__canvasView.getViewportManager().getZoom() === 1.2
     && document.querySelector('.memo-margin-guides polyline'));
   assert.equal(await geometry(), true, '확대 후에도 여백 상자는 분리된다');
-  await page.click('.memo-margin-cards button');
+  await page.click('.memo-card-open');
   const awaitMemoText = await page.$eval('#memo-text', el => el.value);
   assert.ok(beforeMargin.some(memo => memo.text === awaitMemoText), '카드에서 해당 메모를 연다');
   await close(page);
@@ -506,10 +506,92 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   await close(page);
   console.log('  묶음 안 글상자: 오류 표시, 저장 바이트·dirty 유지');
 
+  await createNewDocument(page);
+  const quick = await page.evaluate(async () => {
+    const w = window.__wasm, cv = window.__canvasView;
+    w.doc.insertText(0, 0, 0, '가나다라 별도 단어');
+    w.splitParagraph(0, 0, 10);
+    const table = w.createTable(0, 1, 0, 1, 1);
+    w.insertTextInCell(0, table.paraIdx, table.controlIdx, 0, 0, 0, '가운데 글자');
+    await cv.loadDocument();
+    return table;
+  });
+  const clickAt = async rect => {
+    const point = await page.evaluate(rect => {
+      const view = window.__canvasView;
+      const v = view.getVirtualScroll(), zoom = view.getViewportManager().getZoom();
+      const c = document.querySelector('#scroll-content'), b = c.getBoundingClientRect();
+      return { x: b.left + v.getPageLeftResolved(rect.pageIndex, c.clientWidth) + rect.x * zoom + 1,
+        y: b.top + v.getPageOffset(rect.pageIndex) + (rect.y + rect.height / 2) * zoom };
+    }, rect);
+    await page.mouse.click(point.x, point.y, { button: 'right' });
+    await page.waitForSelector('.context-menu [data-cmd="insert:comment"]', { visible: true });
+  };
+  const compose = async text => {
+    await page.waitForSelector('.memo-inline-editor textarea:focus');
+    await page.type('.memo-inline-editor textarea', text);
+    await page.click('.memo-inline-editor button[type="submit"]');
+    await page.waitForSelector('.memo-inline-editor', { hidden: true });
+  };
+  await position({ ...body, charOffset: 1 }, { ...body, charOffset: 3 });
+  await clickAt(await page.evaluate(() => window.__wasm.getCursorRect(0, 0, 2)));
+  await page.click('.context-menu [data-cmd="insert:comment"]');
+  await compose('빠른 메뉴 선택 메모');
+  assert.deepEqual((await state(page)).map(m => [m.startCharIdx, m.endCharIdx]), [[1, 3]]);
+
+  // 본문에 캐럿을 둔 채 셀을 우클릭하면 이전 캐럿 대신 클릭한 셀에 붙는다.
+  await position({ ...body, charOffset: 0 });
+  await clickAt(await page.evaluate(({ paraIdx, controlIdx }) =>
+    window.__wasm.getCursorRectByPath(0, paraIdx, JSON.stringify([{ controlIndex: controlIdx, cellIndex: 0, cellParaIndex: 0 }]), 1), quick));
+  await page.click('.context-menu [data-cmd="insert:comment"]');
+  await page.keyboard.press('Escape');
+  assert.equal((await state(page)).length, 1);
+  await clickAt(await page.evaluate(({ paraIdx, controlIdx }) =>
+    window.__wasm.getCursorRectByPath(0, paraIdx, JSON.stringify([{ controlIndex: controlIdx, cellIndex: 0, cellParaIndex: 0 }]), 1), quick));
+  await page.click('.context-menu [data-cmd="insert:comment"]');
+  await compose('빠른 메뉴 셀 메모');
+  const cellMemo = (await state(page)).find(m => m.text === '빠른 메뉴 셀 메모');
+  assert.deepEqual([cellMemo.startCharIdx, cellMemo.endCharIdx, cellMemo.path.at(-1).cellIndex], [0, 3, 0]);
+  const card = '.memo-card[data-memo-id="' + cellMemo.id + '"]';
+  await page.waitForSelector(card);
+  assert.equal(await page.$eval('.memo-marker-layer', e => e.hidden), true);
+  await page.hover(card);
+  await page.waitForSelector(card + '.is-active');
+  assert.ok(await page.$('.memo-highlight-layer .is-active'));
+  await page.click(card + ' .memo-card-actions button:last-child');
+  await compose('부모 카드 안의 회신');
+  await page.waitForSelector(card + ' details summary');
+  assert.equal(await page.$eval(card + ' details summary', e => e.textContent), '댓글 1개');
+  await page.click(card + ' details summary');
+  assert.equal(await page.$eval(card + ' .memo-reply-open', e => e.textContent), '부모 카드 안의 회신');
+  await page.click(card + ' header', { button: 'right' });
+  await page.waitForSelector('.context-menu .md-item', { visible: true });
+  await page.click('.context-menu .md-item:last-child');
+  await page.waitForFunction(() => [...document.querySelectorAll('.modal-overlay')].some(e => e.textContent.includes('댓글 1개')));
+  await page.keyboard.press('Escape');
+  assert.equal((await state(page)).length, 3);
+
+  await toggleMemoView('view:memo-visibility');
+  await page.waitForSelector('.memo-margin', { hidden: true });
+  await page.waitForFunction(() => !document.querySelector('.memo-highlight-layer span')
+    && document.querySelector('.memo-marker-layer').hidden);
+  await toggleMemoView('view:memo-visibility');
+  await page.waitForSelector(card, { visible: true });
+  await position({ ...body, charOffset: 7 });
+  await page.click('#menu-bar .menu-item[data-menu="insert"] .menu-title');
+  const insertItem = '#menu-bar .md-item[data-cmd="insert:memo-here"]';
+  assert.equal(await page.$eval(insertItem, el => el.classList.contains('disabled')), false, '입력 메뉴의 메모 넣기 활성');
+  await page.$eval(insertItem, el => el.click());
+  await page.waitForSelector('.memo-inline-editor textarea:focus');
+  await page.keyboard.press('Escape');
+  assert.equal((await state(page)).length, 3);
+  console.log('  빠른 메뉴 본문·셀 위치, 인라인 회신 및 강조·숨기기');
+
+  await createNewDocument(page);
   await loadApp(page, '?lang=en');
   await createNewDocument(page);
   await open(page);
-  assert.equal(await page.$eval('[data-cmd="insert:comment"] .md-label', el => el.textContent), 'Memo');
+  assert.equal(await page.$eval('[data-cmd="insert:comment"] .md-label', el => el.textContent), 'Memo list');
   assert.equal(await page.$eval('[data-memo-dialog]', el => el.getAttribute('aria-label')), 'Memo');
   assert.equal(await page.$eval('[data-memo-dialog] select', el => el.getAttribute('aria-label')), 'Document memos');
   assert.equal(await page.$eval('[data-memo-dialog] .dialog-btn-primary', el => el.textContent), 'Apply');

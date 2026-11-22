@@ -11,6 +11,15 @@ export type MemoEdit = { kind: 'insert'; author: string; text: string }
   | { kind: 'update'; id: number; text: string }
   | { kind: 'remove'; id: number; confirmedReplies?: number };
 
+export interface MemoComposeRequest {
+  kind: 'insert' | 'update' | 'reply';
+  cardId: number | null;
+  restoreFocus: () => void;
+  author: string;
+  text: string;
+  submit: (author: string, text: string) => void;
+}
+
 export class MemoEditError extends Error {}
 
 const memoWordBreak = /[ \t\r\n\u3000]/u;

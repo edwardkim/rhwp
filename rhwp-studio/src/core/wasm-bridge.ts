@@ -4058,13 +4058,14 @@ export class WasmBridge {
   }
 
   /** 조회용 위치, 이동할 범위, 본문 표시가 같은 렌더 좌표를 사용한다. */
-  getMemoTarget(memo: MemoInfo): { start: DocumentPosition; end: DocumentPosition; rect: CursorRect } | null {
+  getMemoTarget(memo: MemoInfo, fullRange = false): { start: DocumentPosition; end: DocumentPosition; rect: CursorRect; highlight: SelectionRect[] } | null {
     const { sectionIndex: sec, paraIndex: para, startCharIdx: start, endCharIdx: end, path } = memo;
     if (para === null || start === null || end === null) return null;
     try {
       let position: DocumentPosition = { sectionIndex: sec, paragraphIndex: para, charOffset: start };
       let endOffset = end;
       let rect: CursorRect;
+      let highlight: SelectionRect[] = [];
       if (path?.length) {
         const cellPath = path.map(entry => ({
           controlIndex: entry.controlIndex,
@@ -4076,19 +4077,21 @@ export class WasmBridge {
         if (start < 0 || end < start || end > this.getCellParagraphLengthByPath(sec, para, pathJson)) return null;
         position = { ...position, ...cellPath[0], paragraphIndex: cellPara, parentParaIndex: para, cellPath,
           isTextBox: path[path.length - 1].type === 'textbox' };
-        rect = (start !== end
-          ? this.getSelectionRectsInCellByPath(sec, para, pathJson, cellPara, start, cellPara, start + 1)[0]
-          : undefined) ?? this.getCursorRectByPath(sec, para, pathJson, start);
+        if (start !== end) {
+          highlight = this.getSelectionRectsInCellByPath(sec, para, pathJson, cellPara, start, cellPara, fullRange ? end : start + 1);
+        }
+        rect = highlight[0] ?? this.getCursorRectByPath(sec, para, pathJson, start);
       } else {
         if (start < 0 || end < start || end > Array.from(this.getHyperlinkContext({ section: sec, para, cellPath: [] }).text).length) return null;
         position.charOffset = this.textToLogicalOffset(sec, para, start);
         endOffset = this.textToLogicalOffset(sec, para, end);
-        rect = (start !== end
-          ? this.getSelectionRects(sec, para, position.charOffset, para, position.charOffset + 1)[0]
-          : undefined) ?? this.getCursorRect(sec, para, position.charOffset);
+        if (start !== end) {
+          highlight = this.getSelectionRects(sec, para, position.charOffset, para, fullRange ? endOffset : position.charOffset + 1);
+        }
+        rect = highlight[0] ?? this.getCursorRect(sec, para, position.charOffset);
       }
       if (!Number.isInteger(rect.pageIndex) || rect.pageIndex < 0 || rect.pageIndex >= this.pageCount) return null;
-      return { start: position, end: { ...position, charOffset: endOffset }, rect };
+      return { start: position, end: { ...position, charOffset: endOffset }, rect, highlight };
     } catch {
       return null;
     }

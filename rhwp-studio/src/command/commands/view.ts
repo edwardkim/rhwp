@@ -393,6 +393,13 @@ export const viewCommands: CommandDef[] = [
     },
   } satisfies CommandDef,
   {
+    id: 'view:memo-visibility',
+    label: t('dialog.memo.visibility'),
+    icon: 'icon-comment',
+    canExecute: ctx => ctx.hasDocument,
+    execute: services => services.eventBus.emit('memo-view-toggle', 'visibility'),
+  },
+  {
     id: 'view:memo-margin',
     label: t('command.view.memoMargin.label'),
     icon: 'icon-comment',
