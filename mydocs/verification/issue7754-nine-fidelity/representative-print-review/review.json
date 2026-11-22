@@ -395,7 +395,21 @@
           },
           "observation_ko": "[A] 옆 첫 줄과 다음 줄의 글자 소속, 표·본문·후속 문항을 별도 HWPX 원본에서 확인했다."
         }
-      ]
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 5,
+        "current_native_raw_percent": "100.00",
+        "current_fresh_wasm_raw_percent": "100.00",
+        "current_devel_fresh_wasm_raw_percent": "94.71",
+        "current_candidate_wasm_whole_document_minimum": "99.98",
+        "current_candidate_wasm_whole_document_pages": 46,
+        "current_candidate_wasm_whole_document_pages_at_100": 44,
+        "current_candidate_wasm_whole_document_pngs_equal_to_prior_candidate": 46,
+        "current_candidate_wasm_tsv_sha256": "2299ebdf16e567670d65d96ecb9f8359608f9dd1637eb816a9310a712ebe6b7c"
+      }
     }
   ],
   "purpose_ko": "현재 후보의 원래 이슈 대표 구간에서 내용·순서·배치를 독립 한컴 Print와 직접 대조했다."

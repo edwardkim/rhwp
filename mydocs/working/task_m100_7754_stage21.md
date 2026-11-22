@@ -87,10 +87,11 @@ HWP에서 각각 0.02%p 낮아졌고 HWPX에서 각각 0.04%p 높아졌다. HWPX
 이미지와 일치했다. 복학원서 1쪽의 fresh WASM 일치율은 현재 기준의 96.59%에서 98.99%로 올라갔다.
 [세 문서의 현재 대표 구간 대조](../verification/issue7754-nine-fidelity/representative-print-review/review.json)
 
-온새미로 HWP 46쪽의 fresh WASM 전쪽 최저는 99.98%였고 44쪽이 100.00%였다.
-리베이스 직전 후보의 PNG와 46쪽이 일치했다. 도형 옆 줄 경계를 판독한 5쪽은
-Native와 fresh WASM 모두 100.00%였으며, 현재 기준의 fresh WASM은 94.71%였다.
-[온새미로 HWP 5쪽 판독과 전쪽 집계](../verification/issue7754-nine-fidelity/representative-print-review/review.json)
+온새미로 HWP와 HWPX는 각각 46쪽이며 fresh WASM 전쪽 최저는 두 형식 모두 99.98%였다.
+HWP 44쪽과 HWPX 44쪽이 100.00%였다. 각 형식의 46쪽은 리베이스 직전
+후보의 PNG와 일치했다. 도형 옆 줄 경계를 판독한 두 형식의 5쪽은 Native와 fresh WASM에서
+100.00%였으며, 현재 기준의 fresh WASM은 94.71%였다.
+[온새미로 HWP·HWPX 5쪽 판독과 전쪽 집계](../verification/issue7754-nine-fidelity/representative-print-review/review.json)
 
 수출입 현황 19쪽의 전쪽 최저는 Native 99.81%, fresh WASM 99.86%였다. fresh WASM의
 기준과 후보 PNG 19쪽이 모두 일치했다. 10쪽의 흑자국·적자국 표와 하단 무역 추이 그래프를
