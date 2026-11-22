@@ -227,8 +227,9 @@ WASM 해시를 대조했다. 후보의 호스트 글꼴 입력 검사 첫 실행
 저장소 루트, Native Skia 라이브러리, 워크스페이스 전체 타깃 및 WASM 라이브러리의 Clippy가
 모두 통과했다. 워크스페이스 Clippy는 디스크 공간 부족으로 한 차례 종료됐다. 검증을 마친
 36개 단계의 로그를 확인했다. 기존 검토 타깃 경로를 유지하면서 격리된 임시 파일시스템에
-새 빌드 출력을 기록해 워크스페이스 Clippy부터 다시 실행했다.
-[Clippy 명령과 저장공간 복구 기록](../verification/issue7754-nine-fidelity/after-pr9322/rust-local-validation.json)
+새 빌드 출력을 기록해 워크스페이스 Clippy부터 다시 실행했다. 같은 환경의
+워크스페이스 빌드도 통과했다.
+[Clippy·빌드 명령과 저장공간 복구 기록](../verification/issue7754-nine-fidelity/after-pr9322/rust-local-validation.json)
 
 새 기준과 후보의 Native 정본 보호 문서 23종·2,023쪽을 완료했다. 쪽별 TSV와 실제 PNG를
 대조해 하락과 누락이 0쪽이고, 기준과 후보의 PNG 2,023쌍이 모두 일치하는 것을 확인했다.

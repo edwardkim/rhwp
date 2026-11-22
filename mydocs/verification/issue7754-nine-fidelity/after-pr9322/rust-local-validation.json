@@ -182,5 +182,23 @@
     "target_mount": "overlay",
     "writable_layer": "private temporary filesystem",
     "launcher_sha256": "8adc5eb465970b471c35ee0a660979d7acb7123dc4eb70d23f85d6e32e6f6349"
+  },
+  "workspace_build": {
+    "gate": "workspace-build",
+    "command": [
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review"
+    ],
+    "exit_code": 0,
+    "stdout_sha256": "005f56f3ec1783d18a6aa550e07759c8791ecbbfe9f544946431145579076b68",
+    "stdout_digest_provenance": "recorded_at_exit",
+    "elapsed_seconds": 369.08,
+    "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+    "target_mount": "overlay"
   }
 }
