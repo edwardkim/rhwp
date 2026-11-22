@@ -227,7 +227,116 @@
               ]
             }
           },
-          "observation": "일곱 줄의 본문을 나란히 판독했고, 각 줄의 첫 잉크 행 차이는 최대 1px였다."
+          "observation": "일곱 줄의 본문을 나란히 판독했고, 각 줄의 첫 잉크 행 차이는 최대 1px였다.",
+          "whole_document_render": {
+            "image_sha256": [
+              "e0ed579f6421fc48e3524e378d19e2865f5df3ab9c892b940409ff2d56a83ffb",
+              "575a2bc3f12649958ccb7ec84cedab840b307057174b753d83dd089dbb1041af",
+              "0d1e64c9a8ee8c7c0800ff5a3a452909e538b9ee206c2869fb9c7e31044cd5c6"
+            ],
+            "matches_focused_capture": false,
+            "matches_previous_whole_document_capture": true,
+            "review_panel": {
+              "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7765-hwp-p010-body-line-pitch.png",
+              "sha256": "b2e11213d9cf06f126117f33fb6d502b255de9b8f6d850db9a2779c8938b4e64"
+            },
+            "row_ink_spans": {
+              "independent_hancom_print": [
+                [
+                  165,
+                  182
+                ],
+                [
+                  196,
+                  213
+                ],
+                [
+                  225,
+                  242
+                ],
+                [
+                  255,
+                  272
+                ],
+                [
+                  285,
+                  302
+                ],
+                [
+                  315,
+                  332
+                ],
+                [
+                  345,
+                  362
+                ]
+              ],
+              "candidate_native": [
+                [
+                  165,
+                  182
+                ],
+                [
+                  196,
+                  212
+                ],
+                [
+                  226,
+                  242
+                ],
+                [
+                  256,
+                  272
+                ],
+                [
+                  286,
+                  302
+                ],
+                [
+                  315,
+                  332
+                ],
+                [
+                  345,
+                  362
+                ]
+              ],
+              "candidate_fresh_wasm": [
+                [
+                  165,
+                  182
+                ],
+                [
+                  196,
+                  213
+                ],
+                [
+                  225,
+                  242
+                ],
+                [
+                  255,
+                  272
+                ],
+                [
+                  285,
+                  302
+                ],
+                [
+                  315,
+                  332
+                ],
+                [
+                  345,
+                  362
+                ]
+              ]
+            },
+            "first_ink_row_max_abs_difference_px": {
+              "native": 1,
+              "wasm": 0
+            }
+          }
         },
         {
           "page": 28,
@@ -252,7 +361,20 @@
             723,
             429
           ],
-          "observation": "이어받은 표의 아래 괘선과 후속 표의 위 괘선 사이 간격을 확인했다."
+          "observation": "이어받은 표의 아래 괘선과 후속 표의 위 괘선 사이 간격을 확인했다.",
+          "whole_document_render": {
+            "image_sha256": [
+              "9aa20c36bff5221a55e5f921b7f00158cc91d319f2b1266d45c86350f06c38d2",
+              "34aada74a0b15b054051624fb403c9345907148e5d94ff8ee80d1391e0b5c948",
+              "dd5e40504dad517b292d2cc829976e6070e9ba376d1f45f6beb3fa054e3dca75"
+            ],
+            "matches_focused_capture": true,
+            "matches_previous_whole_document_capture": true,
+            "review_panel": {
+              "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7765-hwp-p028-continued-table-and-next-table.png",
+              "sha256": "8252ff43e2364ea1c4f9424f862663d6de2e07463568b29f46c1de510ad27757"
+            }
+          }
         },
         {
           "page": 29,
@@ -277,9 +399,44 @@
             723,
             317
           ],
-          "observation": "마지막 조각의 위·아래 괘선과 빈 종료 줄의 공간을 확인했다."
+          "observation": "마지막 조각의 위·아래 괘선과 빈 종료 줄의 공간을 확인했다.",
+          "whole_document_render": {
+            "image_sha256": [
+              "4ad5bdc2dcebadefe547eb8c0949621884d900f995084fb3eaafba2be96d42eb",
+              "e31ebd5694892a309672a8544ee9aeabdfdc3d7cb1b82ff31e0c441a5c85f530",
+              "c2e80466edbe4df0094079db17b800f8eb8b61093fcdbcabba4701c76fe603f2"
+            ],
+            "matches_focused_capture": true,
+            "matches_previous_whole_document_capture": true,
+            "review_panel": {
+              "path": "mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/issue7765-hwp-p029-last-table-fragment-border.png",
+              "sha256": "535eacc5efe5c875e2b8eabe28660dcf93ce963b7f5d47693e6633c27789d9f9"
+            }
+          }
         }
-      ]
+      ],
+      "whole_document": {
+        "native": {
+          "pages": 64,
+          "minimum": "98.08",
+          "pages_at_100": 44,
+          "tsv": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7765-hwp.tsv",
+            "sha256": "49ebc4fcb42edec07222dd0d1cdb8a4e324ff7a32a78e74c4e45e7070e63c751"
+          }
+        },
+        "wasm": {
+          "pages": 64,
+          "minimum": "98.11",
+          "pages_at_100": 46,
+          "tsv": {
+            "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7765-hwp.tsv",
+            "sha256": "33c575a6f3b5e949dbde7136f700f60d1ab0abf76fbd17c473f5763b042276a8"
+          },
+          "pngs_matching_previous_candidate": 64,
+          "pngs_matching_current_base": 64
+        }
+      }
     },
     {
       "key": "issue7765-hwpx",

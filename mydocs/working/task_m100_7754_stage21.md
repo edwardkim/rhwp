@@ -64,6 +64,12 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 각 줄의 첫 잉크 행 차이는 최대 1px였다.
 [선정 다섯 쪽의 TSV와 확대 판독](../verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json)
 
+규제분석 HWP는 64쪽 전체에서 Native 최저 98.08%, fresh WASM 최저 98.11%였다.
+좌표 검사 대상 10·28·29쪽은 두 경로에서 모두 100.00%였다. 10쪽의 fresh WASM PNG는
+선정 쪽 실행과 전쪽 실행에서 서로 달랐다. 전쪽 실행의 본문 일곱 줄 첫 잉크 행은
+독립 Print와 각각 일치했다. 전쪽 fresh WASM PNG 64쪽은 리베이스 직전 후보 및 현재
+기준과 모두 일치했다.
+
 새 기준 Native의 원래 아홉 이슈 583쪽과 보조 사례 50쪽을 직전 기준과 대조했다.
 43조건에서 같은 글꼴 공급과 PDF 래스터 조건을 사용했으며, 633쪽의 PNG와 TSV가
 바이트까지 일치했다.
