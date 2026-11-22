@@ -150,15 +150,9 @@ impl SkiaTextReplay<'_> {
                     if let Some((glyph, _)) =
                         crate::renderer::pua_glyph::source_program_glyph(style, sample)
                     {
-                        if let Some(font) = fonts::for_text(
-                            &typeface_chain,
-                            &glyph.to_string(),
-                            size,
-                            style,
-                            self.font_mgr,
-                            self.geometric_text,
-                            self.font_fallback_observer,
-                        ) {
+                        if let Some(font) =
+                            fonts::for_text(self, &typeface_chain, &glyph.to_string(), size, style)
+                        {
                             return Some(font);
                         }
                     }
