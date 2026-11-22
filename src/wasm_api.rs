@@ -5675,6 +5675,27 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 표 셀·글상자(중첩 포함) 문단에 각주를 넣는다. `path_json`은 `...ByPath` API의 셀 경로이고
+    /// 마지막 단계 문단이 각주 번호를 둘 문단, `char_offset`은 그 문단의 글자 자리다.
+    /// 반환: `{"ok":true,"controlIdx":N,"footnoteNumber":N}`
+    #[wasm_bindgen(js_name = insertFootnoteByPath)]
+    pub fn insert_footnote_by_path(
+        &mut self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.insert_footnote_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 미주를 삽입한다.
     #[wasm_bindgen(js_name = insertEndnote)]
     pub fn insert_endnote(
@@ -5742,6 +5763,26 @@ impl HwpDocument {
         self.promote_ole_equation_native(
             section_idx as usize,
             para_idx as usize,
+            control_idx as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 셀 경로로 표 셀·글상자(중첩 포함) 안 각주·미주 정보를 조회한다. `path_json`의 마지막 단계
+    /// 문단이 주석 번호가 든 문단이고, `control_idx`는 그 문단의 주석 컨트롤이다.
+    #[wasm_bindgen(js_name = getFootnoteInfoByPath)]
+    pub fn get_footnote_info_by_path(
+        &self,
+        section_idx: u32,
+        parent_para_idx: u32,
+        path_json: &str,
+        control_idx: u32,
+    ) -> Result<String, JsValue> {
+        let path = DocumentCore::parse_cell_path(path_json)?;
+        self.get_footnote_info_by_path_native(
+            section_idx as usize,
+            parent_para_idx as usize,
+            &path,
             control_idx as usize,
         )
         .map_err(|e| e.into())

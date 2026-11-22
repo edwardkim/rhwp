@@ -6926,9 +6926,60 @@ impl DocumentCore {
             } => (*para_index, *shape_control_index, "shape"),
         };
 
+        // 각주 번호가 든 문단까지의 셀 경로(`...ByPath` API 꼴)와 그 문단의 각주 컨트롤 번호.
+        // 표 셀·글상자 안 각주도 이 경로에 각주 단계를 이어 편집한다. 본문 각주는 빈 경로다.
+        let step = |control: usize, cell: usize, para: usize| {
+            format!(
+                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                control, cell, para
+            )
+        };
+        let (steps, note_control_idx) = match &fn_ref.source {
+            FootnoteSource::Body { control_index, .. } => (Vec::new(), *control_index),
+            FootnoteSource::TableCell {
+                table_control_index,
+                cell_index,
+                cell_para_index,
+                cell_control_index,
+                ..
+            } => (
+                vec![step(*table_control_index, *cell_index, *cell_para_index)],
+                *cell_control_index,
+            ),
+            FootnoteSource::NestedTableCell {
+                table_control_index,
+                cell_path,
+                ..
+            } => {
+                // 첫 항목은 바깥 표의 셀이고, 다음 항목마다 앞 셀 문단의 표 컨트롤 번호를 단다.
+                // 마지막 항목의 컨트롤 번호가 각주다.
+                let mut steps = Vec::new();
+                let mut control = *table_control_index;
+                for entry in cell_path {
+                    steps.push(step(control, entry.cell_index, entry.cell_para_index));
+                    control = entry.control_index;
+                }
+                (steps, control)
+            }
+            FootnoteSource::ShapeTextBox {
+                shape_control_index,
+                tb_para_index,
+                tb_control_index,
+                ..
+            } => (
+                vec![step(*shape_control_index, 0, *tb_para_index)],
+                *tb_control_index,
+            ),
+        };
+
         Ok(format!(
-            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\"}}",
-            section_idx, para_idx, control_idx, source_type
+            "{{\"ok\":true,\"sectionIdx\":{},\"paraIdx\":{},\"controlIdx\":{},\"sourceType\":\"{}\",\"notePath\":[{}],\"noteControlIdx\":{}}}",
+            section_idx,
+            para_idx,
+            control_idx,
+            source_type,
+            steps.join(","),
+            note_control_idx
         ))
     }
 }
