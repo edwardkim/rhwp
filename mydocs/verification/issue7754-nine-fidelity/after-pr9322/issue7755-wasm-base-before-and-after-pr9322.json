@@ -451,5 +451,37 @@
       "pages": 27,
       "minimum_percent": "99.98"
     }
+  },
+  "candidate_check_at_appendix_start": {
+    "backend": "fresh-wasm-canvas2d",
+    "matching_sources": {
+      "current_base": {
+        "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+        "wasm_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba"
+      },
+      "current_candidate": {
+        "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91"
+      },
+      "previous_candidate": {
+        "source": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+        "wasm_sha256": "a17cd643b322457f5a8a5644c065395a5d925f4e88496542f52ca8c048d425cb"
+      }
+    },
+    "matching_render_and_print_png_pairs": [
+      {
+        "page": 246,
+        "raw_percent": "99.97",
+        "render_png_sha256": "04ed7e1ce7bf3848bdc20ade132b589793074d73d28e43341fcf0222da2b4737",
+        "print_png_sha256": "6c6881f7e04a5375ea7f8630dab5f5e6f260be1ac40ef32eefdcb23915d51ed3"
+      },
+      {
+        "page": 247,
+        "raw_percent": "100.00",
+        "render_png_sha256": "cc9b42cb9f08b5807d81d3932c0a994d8cadb94f1b4e14f3189d4a71cf881e0a",
+        "print_png_sha256": "d5a0623c8f6eef277f3f9dfee77225214192cc2b157f3b5fbba495318743fe9e"
+      }
+    ],
+    "same_rendering_condition_as_base": true
   }
 }
