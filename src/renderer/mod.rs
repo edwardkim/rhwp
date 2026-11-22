@@ -955,7 +955,7 @@ pub struct ShapeStyle {
     pub stroke_width: f64,
     /// 테두리 종류
     pub stroke_dash: StrokeDash,
-    /// 투명도 (0.0=완전투명, 1.0=불투명)
+    /// 채우기 불투명도 (0.0=완전 투명, 1.0=불투명).
     pub opacity: f64,
     /// 선 투명도 (0=불투명 ~ 255=투명). 채우기 투명도와 따로 선에만 건다.
     #[serde(skip_serializing_if = "is_opaque")]

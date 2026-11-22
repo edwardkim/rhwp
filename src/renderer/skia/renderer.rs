@@ -28,7 +28,9 @@ use crate::renderer::raster_pixels::{
     RasterPixelFormat, RasterPixels, RasterRegion, RasterRegionPixels,
 };
 use crate::renderer::render_tree::RenderLayerInfo;
-use crate::renderer::{svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash};
+use crate::renderer::{
+    alpha_to_opacity, svg_arc_to_beziers, LineStyle, PathCommand, ShapeStyle, StrokeDash,
+};
 
 use super::cache::{
     debug_key, debug_size, inline_resource_estimate, BoundedCache, NativeSkiaCacheStats,
@@ -1277,7 +1279,10 @@ impl SkiaLayerRenderer {
             } else {
                 1.0
             });
-            paint.set_color(colorref_to_skia(style.stroke_color?, style.opacity as f32));
+            paint.set_color(colorref_to_skia(
+                style.stroke_color?,
+                alpha_to_opacity(style.stroke_alpha) as f32,
+            ));
             apply_dash(&mut paint, style.stroke_dash);
             floor_stroke_to_device(canvas, &mut paint, raster_target);
             Some(paint)
@@ -1291,7 +1296,10 @@ impl SkiaLayerRenderer {
             } else {
                 1.0
             });
-            paint.set_color(colorref_to_skia(style.color, 1.0));
+            paint.set_color(colorref_to_skia(
+                style.color,
+                alpha_to_opacity(style.alpha) as f32,
+            ));
             apply_dash(&mut paint, style.dash);
             if let Some(intervals) = &style.dash_pattern {
                 let intervals = intervals.iter().map(|v| *v as f32).collect::<Vec<_>>();
@@ -2684,6 +2692,7 @@ fn draw_arrow_heads(
     style: &LineStyle,
     antialias: bool,
 ) {
+    let opacity = alpha_to_opacity(style.alpha) as f32;
     for head in heads {
         let mut builder = PathBuilder::new();
         for command in &head.commands {
@@ -2710,17 +2719,16 @@ fn draw_arrow_heads(
         let path = builder.detach();
         let mut fill = Paint::default();
         fill.set_anti_alias(antialias);
-        fill.set_color(if head.filled {
-            colorref_to_skia(style.color, 1.0)
-        } else {
-            Color::WHITE
-        });
+        fill.set_color(colorref_to_skia(
+            if head.filled { style.color } else { 0xFFFFFF },
+            opacity,
+        ));
         canvas.draw_path(&path, &fill);
         if !head.filled {
             let mut outline = Paint::default();
             outline.set_anti_alias(antialias);
             outline.set_style(paint::Style::Stroke);
-            outline.set_color(colorref_to_skia(style.color, 1.0));
+            outline.set_color(colorref_to_skia(style.color, opacity));
             outline.set_stroke_width((style.width * 0.3).max(0.5) as f32);
             canvas.draw_path(&path, &outline);
         }

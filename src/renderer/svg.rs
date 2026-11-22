@@ -314,7 +314,7 @@ impl SvgRenderer {
             | super::LineRenderType::ThickThinDouble
             | super::LineRenderType::ThinThickThinTriple => {
                 self.draw_multi_line(x1, y1, x2, y2, width, &color, &style.line_type);
-                self.draw_arrow_heads(&super::arrow::line_heads((x1, y1, x2, y2), style), style);
+                self.draw_arrow_heads(&super::arrow::line_heads((x1, y1, x2, y2), style), style, 0);
                 return;
             }
             _ => {}
@@ -1940,6 +1940,7 @@ impl SvgRenderer {
                 color_to_svg(stroke),
                 style.stroke_width
             ));
+            stroke_pattern::append_attrs(&mut attrs, style.stroke_dash, style.stroke_width);
             if style.stroke_alpha > 0 {
                 attrs.push_str(&format!(
                     " stroke-opacity=\"{:.3}\"",
@@ -3521,10 +3522,15 @@ impl SvgRenderer {
         let Some(style) = &path.line_style else {
             return;
         };
-        self.draw_arrow_heads(&super::arrow::connector_heads(path), style);
+        self.draw_arrow_heads(&super::arrow::connector_heads(path), style, style.alpha);
     }
 
-    fn draw_arrow_heads(&mut self, heads: &[super::arrow::ArrowHead], style: &LineStyle) {
+    fn draw_arrow_heads(
+        &mut self,
+        heads: &[super::arrow::ArrowHead],
+        style: &LineStyle,
+        alpha: u8,
+    ) {
         for head in heads {
             self.draw_path(
                 &head.commands,
@@ -3532,6 +3538,8 @@ impl SvgRenderer {
                     fill_color: Some(if head.filled { style.color } else { 0xFFFFFF }),
                     stroke_color: if head.filled { None } else { Some(style.color) },
                     stroke_width: (style.width * 0.3).max(0.5),
+                    opacity: super::alpha_to_opacity(alpha),
+                    stroke_alpha: alpha,
                     ..Default::default()
                 },
             );

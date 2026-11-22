@@ -2285,6 +2285,7 @@ impl LayoutEngine {
                                 stroke_color: Some(line_style.color),
                                 stroke_width: line_style.width,
                                 stroke_dash: line_style.dash.clone(),
+                                stroke_alpha: line_style.alpha,
                                 fill_color: None,
                                 ..Default::default()
                             }

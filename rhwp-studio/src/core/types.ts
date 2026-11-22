@@ -1333,6 +1333,7 @@ export interface LayerPatternFill {
 
 export interface LayerLineStyle {
   color?: string;
+  strokeOpacity?: number;
   width?: number;
   dash?: LayerStrokeDash;
   /** Physical on/off lengths supplied by the shared border layout. */
@@ -1354,6 +1355,7 @@ export interface LayerShapeStyle {
   strokeWidth?: number;
   strokeDash?: LayerStrokeDash;
   opacity?: number;
+  strokeOpacity?: number;
   pattern?: LayerPatternFill;
   shadow?: LayerShadowStyle;
 }

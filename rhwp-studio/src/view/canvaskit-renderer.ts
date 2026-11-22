@@ -2244,7 +2244,7 @@ export class CanvasKitLayerRenderer {
         canvas.restore();
       }
     }
-    this.drawCompoundLine(canvas, x1, y1, x2, y2, style, 1, singlePaintWidth);
+    this.drawCompoundLine(canvas, x1, y1, x2, y2, style, style.strokeOpacity ?? 1, singlePaintWidth);
     // A zero-length straight line has no endpoint direction, matching the producer.
     if (x1 !== x2 || y1 !== y2) this.drawLineArrows(canvas, op.arrowHeads, style, color, width);
   }
@@ -2261,6 +2261,7 @@ export class CanvasKitLayerRenderer {
       strokeColor: style.strokeColor ?? op.lineStyle?.color,
       strokeWidth: op.lineStyle?.width ?? style.strokeWidth,
       strokeDash: op.lineStyle?.dash ?? style.strokeDash,
+      strokeOpacity: op.lineStyle?.strokeOpacity ?? style.strokeOpacity,
       shadow: style.shadow ?? op.lineStyle?.shadow,
     };
 
@@ -5683,7 +5684,7 @@ export class CanvasKitLayerRenderer {
       paint.delete?.();
     }
     if (style?.strokeColor && (style.strokeWidth ?? 0) > 0) {
-      const paint = this.makeStrokePaint(style.strokeColor, this.deviceStrokeWidth(canvas, style.strokeWidth ?? 1), style.opacity);
+      const paint = this.makeStrokePaint(style.strokeColor, this.deviceStrokeWidth(canvas, style.strokeWidth ?? 1), style.strokeOpacity ?? style.opacity);
       try {
         this.drawStrokeWithDash(style.strokeDash, paint, () => draw(paint), undefined, style.strokeWidth ?? 1);
       } finally {
@@ -5917,8 +5918,8 @@ export class CanvasKitLayerRenderer {
     }
     for (const head of heads ?? []) {
       const path = this.createCommandPath(head.commands, 0, 0);
-      const fill = this.makeFillPaint(head.filled ? color : '#ffffff');
-      const outline = head.filled ? null : this.makeStrokePaint(color, Math.max(0.5, width * 0.3), 1);
+      const fill = this.makeFillPaint(head.filled ? color : '#ffffff', style.strokeOpacity);
+      const outline = head.filled ? null : this.makeStrokePaint(color, Math.max(0.5, width * 0.3), style.strokeOpacity);
       try {
         canvas.drawPath(path, fill);
         if (outline) canvas.drawPath(path, outline);

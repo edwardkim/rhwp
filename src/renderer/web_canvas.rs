@@ -1300,6 +1300,11 @@ impl WebCanvasRenderer {
         style: &LineStyle,
         width: f64,
     ) {
+        if style.alpha != 0 {
+            self.ctx.save();
+            self.ctx
+                .set_global_alpha(self.ctx.global_alpha() * super::alpha_to_opacity(style.alpha));
+        }
         let color = color_to_css(style.color);
         let (lx1, ly1, lx2, ly2) = (x1, y1, x2, y2);
         let dx = x2 - x1;
@@ -1403,7 +1408,11 @@ impl WebCanvasRenderer {
             &super::arrow::line_heads((x1, y1, x2, y2), style),
             &color,
             width,
+            0,
         );
+        if style.alpha != 0 {
+            self.ctx.restore();
+        }
     }
 
     fn render_ellipse(
@@ -1595,6 +1604,7 @@ impl WebCanvasRenderer {
                 &super::arrow::connector_heads(path),
                 &color_to_css(style.color),
                 style.width,
+                style.alpha,
             );
         }
         if restore_transform {
@@ -2288,6 +2298,17 @@ impl WebCanvasRenderer {
         true
     }
 
+    /// 면과 획이 달라도 상위 레이어의 불투명도는 양쪽에 곱한다.
+    fn begin_shape_fill(&self, style: &ShapeStyle) -> Option<f64> {
+        if style.opacity == 1.0 && style.stroke_alpha == 0 {
+            return None;
+        }
+        let parent = self.ctx.global_alpha();
+        self.ctx.save();
+        self.ctx.set_global_alpha(parent * style.opacity);
+        Some(parent)
+    }
+
     /// 그라데이션을 포함한 사각형 그리기
     fn draw_rect_with_gradient(
         &mut self,
@@ -2299,12 +2320,7 @@ impl WebCanvasRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
-        // 한컴처럼 채우기 투명도는 면에만, 선 투명도는 선에만 건다.
-        let need_opacity = style.opacity < 1.0 || style.stroke_alpha > 0;
-        if need_opacity {
-            self.ctx.save();
-            self.ctx.set_global_alpha(style.opacity);
-        }
+        let parent_alpha = self.begin_shape_fill(style);
         // 그림자는 fill에만 적용 (stroke 전에 해제)
         self.apply_shadow(style);
 
@@ -2345,9 +2361,9 @@ impl WebCanvasRenderer {
             }
             self.clear_shadow(style); // stroke 전에 그림자 해제
             if let Some(stroke) = style.stroke_color {
-                if need_opacity {
+                if let Some(parent) = parent_alpha {
                     self.ctx
-                        .set_global_alpha(super::alpha_to_opacity(style.stroke_alpha));
+                        .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
                 }
                 self.ctx.set_stroke_style_str(&color_to_css(stroke));
                 self.ctx
@@ -2377,9 +2393,9 @@ impl WebCanvasRenderer {
             }
             self.clear_shadow(style); // stroke 전에 그림자 해제
             if let Some(stroke) = style.stroke_color {
-                if need_opacity {
+                if let Some(parent) = parent_alpha {
                     self.ctx
-                        .set_global_alpha(super::alpha_to_opacity(style.stroke_alpha));
+                        .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
                 }
                 self.ctx.set_stroke_style_str(&color_to_css(stroke));
                 self.ctx
@@ -2392,7 +2408,7 @@ impl WebCanvasRenderer {
             }
         }
 
-        if need_opacity {
+        if parent_alpha.is_some() {
             self.ctx.restore();
         }
     }
@@ -2407,12 +2423,7 @@ impl WebCanvasRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
-        // 한컴처럼 채우기 투명도는 면에만, 선 투명도는 선에만 건다.
-        let need_opacity = style.opacity < 1.0 || style.stroke_alpha > 0;
-        if need_opacity {
-            self.ctx.save();
-            self.ctx.set_global_alpha(style.opacity);
-        }
+        let parent_alpha = self.begin_shape_fill(style);
         self.apply_shadow(style);
         self.ctx.begin_path();
         let _ = self
@@ -2441,9 +2452,9 @@ impl WebCanvasRenderer {
         }
 
         if let Some(stroke) = style.stroke_color {
-            if need_opacity {
+            if let Some(parent) = parent_alpha {
                 self.ctx
-                    .set_global_alpha(super::alpha_to_opacity(style.stroke_alpha));
+                    .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
             }
             self.ctx.set_stroke_style_str(&color_to_css(stroke));
             self.ctx
@@ -2455,7 +2466,7 @@ impl WebCanvasRenderer {
             self.ctx.set_line_cap("butt");
         }
         self.clear_shadow(style);
-        if need_opacity {
+        if parent_alpha.is_some() {
             self.ctx.restore();
         }
     }
@@ -2467,12 +2478,7 @@ impl WebCanvasRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
-        // 한컴처럼 채우기 투명도는 면에만, 선 투명도는 선에만 건다.
-        let need_opacity = style.opacity < 1.0 || style.stroke_alpha > 0;
-        if need_opacity {
-            self.ctx.save();
-            self.ctx.set_global_alpha(style.opacity);
-        }
+        let parent_alpha = self.begin_shape_fill(style);
         self.apply_shadow(style);
         self.ctx.begin_path();
         let mut min_x = f64::MAX;
@@ -2578,9 +2584,9 @@ impl WebCanvasRenderer {
         }
 
         if let Some(stroke) = style.stroke_color {
-            if need_opacity {
+            if let Some(parent) = parent_alpha {
                 self.ctx
-                    .set_global_alpha(super::alpha_to_opacity(style.stroke_alpha));
+                    .set_global_alpha(parent * super::alpha_to_opacity(style.stroke_alpha));
             }
             self.ctx.set_stroke_style_str(&color_to_css(stroke));
             self.ctx
@@ -2599,7 +2605,7 @@ impl WebCanvasRenderer {
             self.ctx.set_shadow_offset_y(0.0);
             self.ctx.set_shadow_blur(0.0);
         }
-        if need_opacity {
+        if parent_alpha.is_some() {
             self.ctx.restore();
         }
     }
@@ -3388,12 +3394,6 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_line(&mut self, x1: f64, y1: f64, x2: f64, y2: f64, style: &LineStyle) {
-        // 선 투명도는 선과 화살표를 함께 옅게 한다.
-        if style.alpha > 0 {
-            self.ctx.save();
-            self.ctx
-                .set_global_alpha(super::alpha_to_opacity(style.alpha));
-        }
         self.draw_line_with_resolved_width(
             x1,
             y1,
@@ -3402,9 +3402,6 @@ impl Renderer for WebCanvasRenderer {
             style,
             style.dash.canvas_width(style.width),
         );
-        if style.alpha > 0 {
-            self.ctx.restore();
-        }
     }
 
     fn draw_ellipse(&mut self, cx: f64, cy: f64, rx: f64, ry: f64, style: &ShapeStyle) {
@@ -4769,8 +4766,12 @@ fn draw_arrow_heads(
     heads: &[super::arrow::ArrowHead],
     color: &str,
     stroke_width: f64,
+    alpha: u8,
 ) {
     ctx.save();
+    if alpha != 0 {
+        ctx.set_global_alpha(ctx.global_alpha() * super::alpha_to_opacity(alpha));
+    }
     let _ = ctx.set_line_dash(&js_sys::Array::new());
     for head in heads {
         ctx.begin_path();
