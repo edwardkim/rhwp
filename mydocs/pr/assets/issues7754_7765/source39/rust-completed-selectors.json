@@ -29,7 +29,7 @@
       "seconds": 913.6290434130933,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-cli_exit_codes_native.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-cli_exit_codes_native.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-cli_exit_codes_native.txt",
       "log_sha256": "841731b1cbc71337e34c51aa0fc688f2772de741e58b43f0c602187c0a7b5463",
       "tests_passed": 2
     },
@@ -56,7 +56,7 @@
       "seconds": 27.005407323827967,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_1144_native.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_1144_native.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_1144_native.txt",
       "log_sha256": "dc409a6b4bc1d59cb8788f73413665999f5dd7c5bda4ae31cf640a63882469f4",
       "tests_passed": 1
     },
@@ -83,7 +83,7 @@
       "seconds": 49.94272444094531,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2225_missing_picture_placeholder.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2225_missing_picture_placeholder.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2225_missing_picture_placeholder.txt",
       "log_sha256": "d1be7d2c6a3c1f05cff7dbad740624d88269552343f95aef575fff22640d94df",
       "tests_passed": 2
     },
@@ -110,7 +110,7 @@
       "seconds": 45.09712020214647,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-render_p37_direct_pdf_export.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-render_p37_direct_pdf_export.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-render_p37_direct_pdf_export.txt",
       "log_sha256": "7507fad86974ac60ec719f661695290f93bbbb9573d9b1c2cdb1ae70c21e7736",
       "tests_passed": 36
     },
@@ -137,7 +137,7 @@
       "seconds": 93.5269844790455,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_7950_pdf_paint.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_7950_pdf_paint.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_7950_pdf_paint.txt",
       "log_sha256": "ef48eb48c69805bb8486e4f3b497fe5ecebd3fc8d38037b2e37729a5d30aab7b",
       "tests_passed": 4
     },
@@ -164,7 +164,7 @@
       "seconds": 49.00593865616247,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2083_hide_fill_page_background.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2083_hide_fill_page_background.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2083_hide_fill_page_background.txt",
       "log_sha256": "dd9c09889b81325d3f15c6406d98b4bebaaa999744bba4c07fdb43bdc383753d",
       "tests_passed": 1
     },
@@ -191,7 +191,7 @@
       "seconds": 63.672395969042554,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2292_chart_png_clip.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2292_chart_png_clip.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2292_chart_png_clip.txt",
       "log_sha256": "1e705662ff428c0bd80106b6fd6e77a7e300b43c2f90f6146d78c88d803e3ee3",
       "tests_passed": 1
     },
@@ -218,7 +218,7 @@
       "seconds": 53.311522463103756,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_2293_chart_png_text.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2293_chart_png_text.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_2293_chart_png_text.txt",
       "log_sha256": "d398a7ac2b6d1bcbcb22e01ed8a27d950bf560c4ce8065b1367efdb4b6b89e9a",
       "tests_passed": 2
     },
@@ -245,7 +245,7 @@
       "seconds": 59.94901148113422,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_7820_sixel_contract.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_7820_sixel_contract.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_7820_sixel_contract.txt",
       "log_sha256": "ac50a99db1667eafb7ebcf9876aa9765a6b4d86b86faa789562c69b1922a73a7",
       "tests_passed": 7
     },
@@ -272,7 +272,7 @@
       "seconds": 1.8206399008631706,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8150_kitty_contract.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8150_kitty_contract.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8150_kitty_contract.txt",
       "log_sha256": "919b4e950f547cff7451ebab277622d33e6bad877e533b7519558d69ad3f1429",
       "tests_passed": 8
     },
@@ -299,7 +299,7 @@
       "seconds": 3.2474013599567115,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_4961_font_decision_trace.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_4961_font_decision_trace.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_4961_font_decision_trace.txt",
       "log_sha256": "156e21de854278b4a845a643cb19d21276bf70779bdaf05455c9c3c1002cf217",
       "tests_passed": 12
     },
@@ -326,7 +326,7 @@
       "seconds": 59.91728482185863,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_7902_original_frame_and_content.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_7902_original_frame_and_content.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_7902_original_frame_and_content.txt",
       "log_sha256": "c927bee54830e9f0cc70e698852b49f9bd1291f1a2c0bc6ee67008313d532856",
       "tests_passed": 7
     },
@@ -353,7 +353,7 @@
       "seconds": 3.025542075978592,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8160_hwp2022_paragraph_relations.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8160_hwp2022_paragraph_relations.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8160_hwp2022_paragraph_relations.txt",
       "log_sha256": "67c3e7211a298329bffb445ca8726babe9aa59110b1c8757eb8afca78144eb9c",
       "tests_passed": 3
     },
@@ -380,7 +380,7 @@
       "seconds": 2.1721697000321,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-native_fractional_glyph_origin.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-native_fractional_glyph_origin.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-native_fractional_glyph_origin.txt",
       "log_sha256": "eef6c794b4abaa05c00edd720878449d1bb23a970ed0e080e299023e6a03aa97",
       "tests_passed": 7
     },
@@ -407,7 +407,7 @@
       "seconds": 57.139438113896176,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-skia_native_glyph_replay.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-skia_native_glyph_replay.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-skia_native_glyph_replay.txt",
       "log_sha256": "c2e2b298292ea68a4c3d82e777dd183c2697ff8bc84b0e81e6ce8e2679f93753",
       "tests_passed": 25
     },
@@ -434,7 +434,7 @@
       "seconds": 54.73486934392713,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8153_opaque_mixed_axis_image_sampling.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8153_opaque_mixed_axis_image_sampling.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8153_opaque_mixed_axis_image_sampling.txt",
       "log_sha256": "13610747f16923cbf52e19396217fa161d835aa6ca47c6645542c76452da4445",
       "tests_passed": 2
     },
@@ -461,7 +461,7 @@
       "seconds": 16.156392932171002,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8153_print_glyph_geometry.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8153_print_glyph_geometry.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8153_print_glyph_geometry.txt",
       "log_sha256": "f911fba163b2e578509e14e1cbf3302141dfdacff2d44748aa63ce97f8369d38",
       "tests_passed": 9
     },
@@ -488,7 +488,7 @@
       "seconds": 41.42257388914004,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_8153_symbol_fallback.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8153_symbol_fallback.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_8153_symbol_fallback.txt",
       "log_sha256": "08f3a21c13ba388ac8bc37df2d02fa5050e048e0725d0623e1bf828160624a27",
       "tests_passed": 2
     },
@@ -515,7 +515,7 @@
       "seconds": 2.3988098439294845,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-issue_536_native_region_cache.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_536_native_region_cache.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-issue_536_native_region_cache.txt",
       "log_sha256": "44e4caa0781bad6085310714f959c711eb081bfe3bd7087338b14bd03ff48975",
       "tests_passed": 39
     },
@@ -542,7 +542,7 @@
       "seconds": 39.32795378402807,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-skia_region_plan.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-skia_region_plan.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-skia_region_plan.txt",
       "log_sha256": "11fc25364134ad07f38efa4e88b75244ef77f5d73a79eda0e6453dac91e3b168",
       "tests_passed": 10
     },
@@ -569,7 +569,7 @@
       "seconds": 1.881146736908704,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-native-skia_host_surface.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-skia_host_surface.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-native-skia_host_surface.txt",
       "log_sha256": "f2753b43e343561c08a016e3011ba689649a01712bd10d7366b0b2d47912af34",
       "tests_passed": 13
     },
@@ -596,7 +596,7 @@
       "seconds": 1.8736633050721139,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_7754_font_logical_family_ownership.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_7754_font_logical_family_ownership.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_7754_font_logical_family_ownership.txt",
       "log_sha256": "f4d52f0379811d1c583d5c7cc4e8619f9b924a1313700fef7a90d11de92ce97c",
       "tests_passed": 1
     },
@@ -623,7 +623,7 @@
       "seconds": 23.85634429194033,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-focused-oracle_page_count_baseline.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-oracle_page_count_baseline.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-oracle_page_count_baseline.txt",
       "log_sha256": "bbf964e80e1be1a3052ae5ca4221351a34614d5e8bb9e646b614b44d62b0d6d5",
       "tests_passed": 17
     },
@@ -650,7 +650,7 @@
       "seconds": 2.1716616570483893,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_7754_original_frame_and_glyph_origins.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_7754_original_frame_and_glyph_origins.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_7754_original_frame_and_glyph_origins.txt",
       "log_sha256": "9bc243a00cbd812a1273452e8e779fd02ed6d149a32a8c4ec29be4b58d13c76d",
       "tests_passed": 2
     },
@@ -677,7 +677,7 @@
       "seconds": 50.121106144972146,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_8418_hft_outline_tracking.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_8418_hft_outline_tracking.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_8418_hft_outline_tracking.txt",
       "log_sha256": "6ee29990d584dd7ee7e7aa6859cd2b424bb64aa90ad601e4ee8bbb37bebc8f75",
       "tests_passed": 3
     },
@@ -704,7 +704,7 @@
       "seconds": 2.835625000996515,
       "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source38-rust-focused-issue_8225_group_child_ctrl_data.log",
       "source_head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
-      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_8225_group_child_ctrl_data.log",
+      "evidence": "mydocs/pr/assets/issues7754_7765/source39/rust/source38-rust-focused-issue_8225_group_child_ctrl_data.txt",
       "log_sha256": "01fd44e67fe226cd56045d181dee93c0ec044d073232072b7bf06506e386a495",
       "tests_passed": 5
     }
