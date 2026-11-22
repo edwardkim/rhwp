@@ -24,6 +24,11 @@ HWPX 저장·재열기, 결합 부호의 내용·편집 위치와 실제 화면�
 [검증 입력 목록](../verification/issue7754-nine-fidelity/incoming-pr9322/inputs.tsv)과
 [글꼴 프로그램 대조](../verification/issue7754-nine-fidelity/incoming-pr9322/font-supply.json)를 사용한다.
 
+현대 HWPX 재저장 대조군에서 리베이스 전 두 생산본은 같은 여섯 문단의 BMP 문자를
+Plane 15 기호로 바꿨고 굵은 구간의 UTF-16 시작 위치도 1만큼 밀렸다. 한컴 HWPX와 같은
+원문과 굵은 구간을 새 생산본에서 확인하는 데 사용한다.
+[재저장 대조군의 실제 차이](../verification/issue7754-nine-fidelity/incoming-pr9322/modern-hwpx-save-before-pr9322.json)
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
