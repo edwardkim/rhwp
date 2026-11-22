@@ -7,7 +7,9 @@ export interface MemoInfo extends MemoAnchor {
   page: number; editable: boolean; readOnlyReason: string | null;
 }
 export type MemoEdit = { kind: 'insert'; author: string; text: string }
-  | { kind: 'update'; id: number; text: string } | { kind: 'remove'; id: number };
+  | { kind: 'reply'; id: number; author: string; text: string }
+  | { kind: 'update'; id: number; text: string }
+  | { kind: 'remove'; id: number; confirmedReplies?: number };
 
 export class MemoEditError extends Error {}
 
@@ -36,13 +38,34 @@ export function memoTargetPath(target: HyperlinkTarget): string {
     ({ controlIndex, cellIndex, cellParaIndex })));
 }
 
+export function countMemoReplies(id: number, memos: readonly MemoInfo[]): number {
+  const children = new Map<number, number[]>();
+  for (const memo of memos) {
+    if (memo.parentId === null) continue;
+    const siblings = children.get(memo.parentId) ?? [];
+    siblings.push(memo.id);
+    children.set(memo.parentId, siblings);
+  }
+  const visited = new Set([id]);
+  const queue = [id];
+  for (const parent of queue) {
+    for (const child of children.get(parent) ?? []) {
+      if (visited.has(child)) continue;
+      visited.add(child);
+      queue.push(child);
+    }
+  }
+  return visited.size - 1;
+}
+
 export function validateMemoEdit(edit: MemoEdit, memos: readonly MemoInfo[]): void {
   if (edit.kind !== 'remove' && !edit.text.trim()) throw new Error(t('dialog.memo.blank'));
   if (edit.kind === 'insert') return;
   const existing = memos.find(m => m.id === edit.id);
   if (!existing) throw new Error(t('dialog.memo.missing'));
-  if (edit.kind === 'remove' && memos.some(m => m.parentId === edit.id)) {
-    throw new Error(t('dialog.memo.hasReplies'));
-  }
   if (!existing.editable) throw new Error(t('dialog.memo.readOnly'));
+  if (edit.kind === 'reply' && existing.parentId !== null) throw new Error(t('dialog.memo.invalidTarget'));
+  if (edit.kind === 'remove' && countMemoReplies(edit.id, memos) !== (edit.confirmedReplies ?? 0)) {
+    throw new Error(t(edit.confirmedReplies === undefined ? 'dialog.memo.hasReplies' : 'dialog.memo.changed'));
+  }
 }

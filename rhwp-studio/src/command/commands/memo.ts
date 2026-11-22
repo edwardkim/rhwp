@@ -53,9 +53,13 @@ export const memoCommand: CommandDef = {
               if (edit.kind === 'insert') {
                 if (!range) throw new Error(t('dialog.memo.invalidTarget'));
                 wasm.insertMemo(range.target, range.start, range.end, edit.author, edit.text);
+              } else if (edit.kind === 'reply') {
+                wasm.insertMemoReply(edit.id, edit.author, edit.text);
+              } else if (edit.kind === 'update') {
+                wasm.updateMemo(edit.id, edit.text);
+              } else {
+                wasm.removeMemo(edit.id);
               }
-              else if (edit.kind === 'update') wasm.updateMemo(edit.id, edit.text);
-              else wasm.removeMemo(edit.id);
               applied = true;
               return edit.kind === 'insert' && range ? range.pos : cursor;
             },

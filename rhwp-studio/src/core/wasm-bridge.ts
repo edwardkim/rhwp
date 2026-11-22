@@ -4094,6 +4094,11 @@ export class WasmBridge {
     }
   }
 
+  insertMemoReply(parentId: number, author: string, text: string): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    requireMemoSuccess(this.doc.insertMemoReply(parentId, JSON.stringify({ author, text })));
+  }
+
   getMemoDisplayPage(memo: MemoInfo): number | null {
     const target = this.getMemoTarget(memo);
     return target ? target.rect.pageIndex + 1 : null;
