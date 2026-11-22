@@ -1,0 +1,85 @@
+{
+  "original_pr": 9287,
+  "issue": 9285,
+  "input": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+  "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+  "previous_attachment": {
+    "creator": "Hwp 2022 12.0.0.4547",
+    "sha256": "975e799947cd2d3f66f7687fc05b8513cfcb1d84580f5591cb0b146d15825fc8"
+  },
+  "rejected_print": {
+    "job_id": "c58be2fc-2953-4e37-96e8-d239c4cf6e8b",
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up",
+    "pdf_print_method": 0,
+    "input_preprocess": "none",
+    "pdf_page_count": 9,
+    "bytes": 545427,
+    "sha256": "e86838bf3efa7aba3e72e0270119a39e03e0f3c9601425f9bef6996edb392817"
+  },
+  "official_print": {
+    "job_id": "3666b390-784e-4343-a25b-9615f780d370",
+    "engine": "2020",
+    "hancom_version": "11.0.0.9136",
+    "backend": "hwp-managed-direct-dll-host",
+    "pdf_output_mode": "hancom2020_pdf_driver_one_up",
+    "pdf_print_method": 0,
+    "input_preprocess": "none",
+    "pdf_page_count": 9,
+    "bytes": 614775,
+    "path": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+    "sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b"
+  },
+  "extraction_audit": {
+    "method": "pdftotext layout; page-by-page alphanumeric multiset",
+    "pages": [
+      {
+        "page": 1,
+        "alphanumeric_characters": 725,
+        "first_print_omissions": 0
+      },
+      {
+        "page": 2,
+        "alphanumeric_characters": 58,
+        "first_print_omissions": 0
+      },
+      {
+        "page": 3,
+        "alphanumeric_characters": 621,
+        "first_print_omissions": 31
+      },
+      {
+        "page": 4,
+        "alphanumeric_characters": 406,
+        "first_print_omissions": 0
+      },
+      {
+        "page": 5,
+        "alphanumeric_characters": 404,
+        "first_print_omissions": 0
+      },
+      {
+        "page": 6,
+        "alphanumeric_characters": 596,
+        "first_print_omissions": 0
+      },
+      {
+        "page": 7,
+        "alphanumeric_characters": 647,
+        "first_print_omissions": 20
+      },
+      {
+        "page": 8,
+        "alphanumeric_characters": 645,
+        "first_print_omissions": 0
+      },
+      {
+        "page": 9,
+        "alphanumeric_characters": 541,
+        "first_print_omissions": 5
+      }
+    ]
+  }
+}

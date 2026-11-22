@@ -1,5 +1,5 @@
 """관계형: Native 글꼴 공급 우선순위와 실제 웹폰트 대체 계약을 검증한다."""
-# 주석 갱신: 2026-11-15T09:43:19+09:00 (Asia/Seoul); 직전 파일 커밋: 2026-11-09T21:27:26+09:00 (72216ada1c5015ccc4d9e23c5d5e50f322194bfb)
+# 주석 갱신: 2026-11-20T10:33:21+09:00 (Asia/Seoul); 직전 파일 커밋: 2026-11-15T09:43:19+09:00 (f39e2f3b876df7774bdab2d23701a5d3633aaaea)
 # 합성 요청·응답을 사용하는 공급 경로 관계 검사이며 시각 일치율을 고정하지 않는다.
 import json
 import tempfile
@@ -147,6 +147,25 @@ class NativeWebfontTests(unittest.TestCase):
         self.assertEqual(result['evidence']['mappings'], {})
         self.assertEqual(result['evidence']['local_document_substitutes'], ['Missing'])
         self.assertIsNone(result['font_environment'])
+
+    def test_installed_display_alias_precedes_generic_public_fallback(self):
+        # #886: 원 HFT(한양견고딕)와 문서 대체·공급 원장이 없고, 렌더러 사슬이 선언한
+        # 표시 대체(HY견고딕)만 설치된 경우 공개 Noto 로 치환하지 않는다(Native 공급과 같음).
+        # 표시 대체도 없으면 종전대로 공개 일반 대체를 쓴다.
+        plan = {'embeddedFamilies': [], 'requests': [
+            {'source': '한양견고딕', 'primary': ['한양견고딕', 'HY Gyeongothic'], 'substitute': [],
+             'displayAliases': ['HY견고딕', 'HYGothic-Extra', 'HCR Dotum']},
+            {'source': 'NoAlias', 'primary': ['NoAlias'], 'substitute': [],
+             'displayAliases': ['AbsentAlias']},
+        ]}
+        with patch.object(web, '_installed_names', return_value={'hy견고딕'}), \
+                patch.object(web, '_postscript_aliases', return_value={}), \
+                patch.object(web, '_resource', side_effect=self.resource), \
+                patch.object(web, '_run', side_effect=[plan, {'fontEnvironment': None}]):
+            result = web.prepare(self.root, self.hwp, 'rhwp', [], None, '2022', 96)
+        self.assertEqual(result['evidence']['mappings'], {'NoAlias': 'WebGenericPS'})
+        self.assertEqual(result['evidence']['display_alias_substitutes'], ['한양견고딕'])
+        self.assertEqual(result['evidence']['unmapped_sources'], ['NoAlias', '한양견고딕'])
 
     def test_supplied_postscript_alias_wins_document_substitute(self):
         plan = {'embeddedFamilies': [], 'requests': [

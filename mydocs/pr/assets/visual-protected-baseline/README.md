@@ -47,6 +47,9 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.98% | 99.98% |
 | [outline_navigation_table_cell_number.hwpx](<../../../../samples/pr4093/outline_navigation_table_cell_number.hwpx>) | 1 | 100.00% | 100.00% |
 
+`exam-social-insert.hwp`와 `exam-social-insert-delete.hwp`는 캡처 전에
+[#8040 신그래픽체 공급 절차](../../../manual/verification/visual_sweep_guide.md#8040-삽입삽입-삭제-보호-문서의-신그래픽체-공급)를 확인한다.
+
 ## 2026-11-15 PR #9075 검토의 상승분 반영
 
 동일한 최종 제품 소스 `43adf3f7fe412e71797456887e2be44b8ef8d14f`의 Native/fresh WASM
@@ -77,6 +80,8 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
    일반 90%·98% 기준과 devel 대비 하락 판정에는 기존 정밀값을 사용한다. 다른 쪽의 개선·평균·CI 성공으로 면제하지 않는다.
 5. 이 표는 글꼴 프로그램을 제공하지 않는다. 출처 commit의 condition_evidence와 그 SHA를 통해 수용 당시 조건·생산 기록을 확인한다.
    현재 설치 글꼴이나 임의 대체 글꼴이 원래 조건과 같다고 가정하지 않는다. 통합 담당자가 원본 공급 조건을 확인하고 맞춘다.
+   새 수용 기록에는 문서·backend별 실제 공급 파일, SHA-256·face index·선택 프로그램 및
+   설정을 재현할 수 있는 경로를 남긴다. [글꼴 공급·선택 확인 절차](../../../manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)
 6. 검증을 완료해 수용한 최종 전쪽 결과에 상승한 공식 표시값이 있으면 **보호 하한도 반드시 상향한다.**
    새 결과와 입력/PDF·생산·글꼴 증거를 확보하고, 갱신 전 정본 대비 하락 0쪽·누락 0쪽을 확인한다.
    같은 최종 검증본의 전쪽 결과에서 상승한 행은 상향하고 동등한 행은 유지한다.

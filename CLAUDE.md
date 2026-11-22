@@ -68,10 +68,13 @@ Docker는 필수 설치 조건이 아니며 [환경별 fresh WASM 경로](mydocs
 Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한다.
 
 조판에 영향을 주는 변경이 포함된 PR은 일반 기여자를 포함하여 제출 전 최종 head에서
-행정업무운영 편람 HWPX Native 383쪽 `--handbook-gate`를 실행해 통과한다. 지원 웹폰트를
-사용할 수 있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
+행정업무운영 편람 HWPX Native 383쪽을 정본에 대조해 통과한다. 같은 조건의 정본 보호 전쪽
+결과가 있으면 그 TSV를 제출하고, 없으면 `--handbook-gate`를 실행한다. 지원 웹폰트를 사용할 수
+있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
 검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
 실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
+통합 담당자는 첫 전쪽 실행 전에 [동명 글꼴과 실제 사용 글리프 확인](mydocs/manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)의
+절차로 수용 당시 공급 파일과 실제 사용 프로그램을 대조한다.
 
 ## 리뷰어 지정 후 추가 커밋 제한
 

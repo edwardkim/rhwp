@@ -1,0 +1,101 @@
+{
+  "key": "sample10",
+  "backend": "native",
+  "document_id": "b1a9055c4c7e6f09",
+  "exit": 0,
+  "tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+  "manifest_sha256": "24fa41ba6505c257ecb83db3cd24e42d72e306b40a396559f2a115d96e8f285d",
+  "pages": 763,
+  "minimum": "99.57",
+  "producer_hashes": {
+    "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417"
+  },
+  "font_environment_sha256": "11055ee9df8350c92dfb5203c48d9aa9f3a38afb457f38d519051d5c597f9b09",
+  "accepted_font_environment_sha256": "11055ee9df8350c92dfb5203c48d9aa9f3a38afb457f38d519051d5c597f9b09",
+  "font_file_count": 1219,
+  "accepted_font_file_count": 66,
+  "accepted_font_supply_sha256": "e1c891e8c332d8ef8e5c87aae4bf0244530a27779125ef1d2ab99bd865b0fd63",
+  "measured_font_supply_canonical_sha256": "f358f9f1ce649586261d99dbbf4ec9307929c4f8de6bb72dbc958472c996e434",
+  "accepted_missing_program_hashes": null,
+  "accepted_evidence": {
+    "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+    "evidence_path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+    "evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401"
+  },
+  "floor_declines": [],
+  "floor_gains": [],
+  "status": "scores-retained",
+  "product_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+  "input": {
+    "path": "samples/hwp3-sample10.hwp",
+    "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+    "bytes": 945360
+  },
+  "reference_pdf": {
+    "path": "pdf/issue8371/hwp3-sample10-2020.pdf",
+    "sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+    "bytes": 96185197
+  },
+  "protected_source": {
+    "pr": null,
+    "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+    "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+    "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/native/sample10.tsv",
+    "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+    "metric_column": "silhouette_raw_match_percent",
+    "page_column": "page",
+    "document_filter": null,
+    "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+    "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
+    "precision": "공식 소수 둘째 자리 전쪽 원문"
+  },
+  "protected_table_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "displayed_100": 741,
+  "read_pages": [
+    {
+      "page": 474,
+      "candidate": "100.00"
+    },
+    {
+      "page": 757,
+      "candidate": "99.57"
+    }
+  ],
+  "evidence_sha256": {
+    "overlay-474.png": "6feb260d486edc95450ba828900cb6a74fa82cd0789e48b4c58aa2c7baa7831a",
+    "overlay-757.png": "f7cc60c160a52013686aa511a86b787278fb231e8616e9c3fae87ca9280ff7d3",
+    "review-474.png": "d89db765c69c642ff221e236f012010ac2ca40735b967f01efe40e9de097c563",
+    "review-757.png": "517af9ac1720ff64508ce847730c771bd0e899d490e6e93f99fde6a7be61a554"
+  },
+  "fixed_base_comparison": {
+    "key": "sample10",
+    "backend": "native",
+    "protected_conditions": 46,
+    "base": "d7b5286cbf6401678a70eed3d66236a68dd2a72c",
+    "candidate_source": "65b6fe383c3bd8cbcf83de7909c7a6c24eb32c35",
+    "same_run_conditions": true,
+    "page_count": 763,
+    "candidate_tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+    "fixed_base_tsv_sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+    "candidate_producer": {
+      "rhwp_binary": "19316bb73574a843504838b8ed76188d6d39e0b379a904e3aa8b38f89b3cc417"
+    },
+    "fixed_base_producer": {
+      "rhwp_binary": "ce06101fc8271df1e456c4aab8da1882cf4d48f58d22729fb8453d193dd2c519"
+    },
+    "devel_declines_over_2pp": [],
+    "display_score_changes": [],
+    "inspected_pages": [
+      {
+        "page": 474,
+        "fixed_base": "100.00",
+        "candidate": "100.00"
+      },
+      {
+        "page": 757,
+        "fixed_base": "99.57",
+        "candidate": "99.57"
+      }
+    ]
+  }
+}

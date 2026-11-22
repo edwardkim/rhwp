@@ -2225,6 +2225,14 @@ fn char_width_decision_with_hft_tracking<'a>(
             None,
             "exact",
         )
+    } else if let Some(em) = font_metrics_data::implicit_double_rule_advance_em(chars[i]) {
+        em_exact = Some(em);
+        (
+            quantize_hwp_px(font_size * em),
+            "implicitSymbolProgram",
+            None,
+            "hit",
+        )
     } else if let Some(em) = style
         .native_pua_metrics
         .as_ref()
