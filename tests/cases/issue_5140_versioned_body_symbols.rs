@@ -1,8 +1,9 @@
-//! 관계형·고정형 회귀. 같은 본문의 HWP5 버전에 따른 문자·서식 보존과 문단 수를 검사한다.
-//! 주석 갱신 2026-11-22 19:22 KST. 직전 변경 70b7bf355e66c6d435afeb969295d2625977598d (2026-11-22 18:37:23 KST).
-//! Windows 한컴 2020 독립 Print와 96 dpi 2px 실루엣을 비교했다. 두 원본은 각 한 쪽이다.
-//! 구형 원본은 Native/fresh WASM 100.00%/100.00%, 현대 원본은 98.46%/98.49%였다.
-//! 근거: `mydocs/pr/assets/pr9280/`, `pdf/issue5140-version-boundary/`. 글꼴 설치 없이 문자 관계를 검사한다.
+//! 관계형·고정형 회귀. HWP5와 저장한 HWPX의 문자·서식·문단 수, 단독 부호의 표시와 후속 문자 위치를 검사한다.
+//! 주석 갱신 2026-11-22 21:04 KST. 직전 변경 eb83e873566cf6dd079c4d8be430b1fa386e6af1 (2026-11-22 19:51:19 KST).
+//! 2026-11-22 Windows 한컴 2020 독립 Print와 96 dpi 2px 실루엣을 전쪽 비교했다. 각 원본·저장본은 한 쪽이다.
+//! 구형·현대 원본의 Native/fresh WASM은 각각 100.00%/100.00%, 99.64%/99.63%다.
+//! 단독 부호의 HWP와 HWPX 중 낮은 Native/fresh WASM 값은 기본 99.47%/99.46%, 경계 99.22%/99.19%, 대체 받침 99.17%/98.97%다.
+//! 원본별 값과 독립 표시 문자열은 `mydocs/pr/assets/pr9280/`의 `focus-*.tsv`, `syloti-pages.tsv`, `syloti-hancom.tsv`에 있다.
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::document::Document;
@@ -264,6 +265,100 @@ fn editing_and_repeated_saves_keep_the_four_neighbor_symbols_and_bold_start() {
             let b = para.text.chars().position(|ch| ch == 'B').unwrap();
             assert_eq!(para.text.chars().nth(b - 1), Some(expected_symbol));
             assert_eq!(bold.start_pos, para.char_offsets[b]);
+        }
+    }
+}
+
+// 입력 파일과 기대 표시 문자열은 Windows 한컴 2020의 본문과 독립 Print에서 얻었다.
+#[test]
+fn isolated_syloti_hasanta_preserves_source_positions_and_paints_printed_clusters() {
+    use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp};
+
+    #[derive(Default)]
+    struct Line {
+        logical: String,
+        painted: String,
+        following_c: Option<f64>,
+    }
+
+    fn collect(node: &LayerNode, lines: &mut [Line]) {
+        match &node.kind {
+            LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    collect(child, lines);
+                }
+            }
+            LayerNodeKind::ClipRect { child, .. } | LayerNodeKind::ClipPath { child, .. } => {
+                collect(child, lines);
+            }
+            LayerNodeKind::Leaf { ops } => {
+                for op in ops {
+                    let PaintOp::TextRun { bbox, run, .. } = op else {
+                        continue;
+                    };
+                    let Some(line) = run
+                        .para_index
+                        .filter(|&index| index > 0)
+                        .and_then(|index| lines.get_mut(index))
+                    else {
+                        continue;
+                    };
+                    assert_eq!(run.char_start, Some(line.logical.chars().count()));
+                    line.logical.push_str(&run.text);
+                    line.painted.push_str(run.display_or_text());
+                    if run.text == "C" {
+                        line.following_c = Some(bbox.x);
+                    }
+                }
+            }
+        }
+    }
+
+    fn scalars(field: &str) -> String {
+        field
+            .split_whitespace()
+            .map(|code| {
+                let value = u32::from_str_radix(code.strip_prefix("U+").unwrap(), 16).unwrap();
+                char::from_u32(value).unwrap()
+            })
+            .collect()
+    }
+
+    let oracle = include_str!("../../mydocs/pr/assets/pr9280/syloti-hancom.tsv");
+    for stem in [
+        "syloti-mark-control",
+        "syloti-boundaries",
+        "syloti-placeholders",
+    ] {
+        let path = format!("samples/issue5140-version-boundary/{stem}.hwp");
+        let input = std::fs::read(&path).unwrap();
+        let original = DocumentCore::from_bytes(&input).unwrap();
+        let reopened = DocumentCore::from_bytes(&original.export_hwpx_native().unwrap()).unwrap();
+        let rows: Vec<_> = oracle
+            .lines()
+            .skip(1)
+            .map(|row| row.split('\t').collect::<Vec<_>>())
+            .filter(|row| row[0] == stem)
+            .collect();
+        assert!(!rows.is_empty());
+        for core in [&original, &reopened] {
+            let tree = core.build_page_layer_tree(0).unwrap();
+            let mut lines: Vec<_> = (0..=rows.len()).map(|_| Line::default()).collect();
+            collect(&tree.root, &mut lines);
+            for row in &rows {
+                let para = row[1].parse::<usize>().unwrap();
+                let source = scalars(row[2]);
+                assert_eq!(core.document().sections[0].paragraphs[para].text, source);
+                assert_eq!(lines[para].logical, source, "{stem} 문단 {para} 원문");
+                // 한컴 PDF의 문자표는 폭이 없는 joiner를 공백으로 기록한다.
+                let printed = lines[para].painted.replace(['\u{200c}', '\u{200d}'], " ");
+                assert_eq!(printed, scalars(row[3]), "{stem} 문단 {para} 표시");
+            }
+            if stem == "syloti-mark-control" {
+                let c = |para: usize| lines[para].following_c.expect("후속 라틴 C");
+                assert_eq!(c(1), c(4), "단독 부호 반복은 후속 C를 밀지 않는다");
+                assert!(c(5) > c(3), "원문에 입력한 점선 원은 글자 폭을 차지한다");
+            }
         }
     }
 }
