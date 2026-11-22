@@ -1,0 +1,176 @@
+{
+  "base_source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+  "checks": [
+    "release-build",
+    "native-lib",
+    "native-picture",
+    "native-pdf",
+    "fmt",
+    "clippy",
+    "clippy-wasm",
+    "workspace-build",
+    "clippy-workspace",
+    "release-lib",
+    "doctest"
+  ],
+  "minimal_font_files": [
+    "NotoSansKR-ExtraLight.ttf",
+    "NotoSansKR-Regular.ttf",
+    "NotoSansSymbols2-Regular.ttf",
+    "RHWPOldHangul-Regular.otf",
+    "RHWPPublicBatang-Regular.ttf"
+  ],
+  "focused": {
+    "passed": 14,
+    "skipped": 1354
+  },
+  "full_regression": {
+    "passed": 13985,
+    "skipped": 45
+  },
+  "native": {
+    "library": {
+      "passed": 4033,
+      "ignored": 12
+    },
+    "picture": {
+      "passed": 2,
+      "skipped": 347
+    },
+    "direct_pdf": {
+      "passed": 37,
+      "skipped": 318
+    }
+  },
+  "native_passed": 4072,
+  "release_library": {
+    "passed": 3976,
+    "ignored": 12
+  },
+  "documentation_tests": {
+    "passed": 8,
+    "ignored": 3
+  },
+  "studio": {
+    "tests": 2834,
+    "pass": 2832,
+    "skipped": 2
+  },
+  "browser_e2e": 5,
+  "visual": {
+    "focus_rows": 38,
+    "protected_rows": 4046,
+    "below": 0,
+    "higher": 0,
+    "missing": 0
+  },
+  "test_topology_checks": {
+    "scripts_passed": 36,
+    "manifest": "[RustTestSuite] 확인 완료: 2481 sources / 10216 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2172205..2176732",
+    "inline": "[RustUnitTier] 확인 완료: 4092 tests / 295 modules / ready 0 / support 85 / white-box 4003 / cfg support items 28"
+  },
+  "new_fixture_validation": {
+    "initial_full_run_failures": [
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_10",
+      "off_canvas_baseline::off_canvas_does_not_grow_partition_3"
+    ],
+    "targeted_passed": 19,
+    "independent_page_counts": {
+      "documents": 17,
+      "pages": 19,
+      "all_match": true
+    },
+    "final_full_run_passed": 13985
+  },
+  "existing_external_clipping_controls": {
+    "measured_from_manifest": 0,
+    "missing_from_manifest_paths": 92,
+    "gate_exit": 1,
+    "supplemental_same_name_comparison": {
+      "matching_names": 5,
+      "same_input_results": 5,
+      "measured": 5,
+      "pages_in_candidate": 6,
+      "clipped_in_base": 0,
+      "clipped_in_candidate": 0,
+      "identity_to_official_source": "not independently established"
+    }
+  },
+  "original_pr_checks": {
+    "observed": "2026-11-23T06:12:51.144753+09:00",
+    "originals": [
+      {
+        "number": 9284,
+        "head": "eeff0619f5fa5a8b53c9b7779423ccba7fa74754",
+        "checks": 41,
+        "closing_issues": 0,
+        "overall": "SUCCESS",
+        "failures": []
+      },
+      {
+        "number": 9310,
+        "head": "67395e38c06ba805b3dee596e4c19bff99018776",
+        "checks": 41,
+        "closing_issues": 0,
+        "overall": "FAILURE",
+        "failures": [
+          [
+            "Lint (fmt, clippy, WASM check)",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45042231478/job/137269131371"
+          ],
+          [
+            "Build & Test",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45042231478/job/137278632146"
+          ],
+          [
+            "CI Impact Policy",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/45045384434"
+          ]
+        ]
+      },
+      {
+        "number": 9313,
+        "head": "963407d677ab76691dfaf9c65ba74241356b3851",
+        "checks": 39,
+        "closing_issues": 0,
+        "overall": "FAILURE",
+        "failures": [
+          [
+            "Lint (fmt, clippy, WASM check)",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/44991383066/job/137113040611"
+          ],
+          [
+            "Build & Test",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/44991383066/job/137119063008"
+          ],
+          [
+            "CI Impact Policy",
+            "FAILURE",
+            "https://github.com/edwardkim/rhwp/actions/runs/44993535503"
+          ]
+        ]
+      },
+      {
+        "number": 9315,
+        "head": "5a463d48a7f01565426fc710ea36a275005c5c69",
+        "checks": 37,
+        "closing_issues": 0,
+        "overall": "SUCCESS",
+        "failures": []
+      },
+      {
+        "number": 9323,
+        "head": "7c505b07e44baa8f1cb3b49c06409c84186fbad1",
+        "checks": 39,
+        "closing_issues": 0,
+        "overall": "SUCCESS",
+        "failures": []
+      }
+    ]
+  }
+}
