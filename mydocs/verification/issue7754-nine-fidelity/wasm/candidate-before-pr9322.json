@@ -1,0 +1,1731 @@
+{
+  "scope_ko": "PR #9322 리베이스 전 후보 WASM 전쪽 측정",
+  "producer": {
+    "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+    "files": {
+      "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+      "rhwp_bg.wasm": "a17cd643b322457f5a8a5644c065395a5d925f4e88496542f52ca8c048d425cb",
+      "rhwp.d.ts": "03e205aad76d7d583331ad1bd5fb16fbd4559ff7fb7f6ebcf35356a0b0dfe1f9",
+      "rhwp_bg.wasm.d.ts": "a3acb4729285cee034ead9e95165adaae8cd631db1eba6c540c8324efb773522"
+    }
+  },
+  "metric": "silhouette_raw_match_percent",
+  "radius_px": 2,
+  "dpi": 96,
+  "documents": [
+    {
+      "group": "features",
+      "key": "captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-captioned_picture_inside_a_caption_survives_hwp_round_trip.hwp",
+        "sha256": "8daa1d47d962245acdcd69e454e84d749588f6ed32df6a76ca77e09c2bfc9656"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-captioned_picture_inside_a_caption_survives_hwp_round_trip-hwp-2020.pdf",
+        "sha256": "1f177b21695a59d5cac691c630eb46eb91662b1fc3ba33964e12832b1f93777c"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "7b9992b90d0611474be152080f41fcfc133bb25194c6817529fa4b8389e7bf6b",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "captions-caption-cell_picture_caption_lines_address_the_caption",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-cell_picture_caption_lines_address_the_caption.hwp",
+        "sha256": "ea16aa7343ca527f8df64684eed9736bca842ca6d10037929956ac2589311ea7"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-cell_picture_caption_lines_address_the_caption-hwp-2020.pdf",
+        "sha256": "3b175f7859dbbdb5395d956eff31ab4418b3dd8a15038ad2de597926f0dd5367"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "99.68",
+      "pages_at_100": 0,
+      "original_shards": [
+        {
+          "part": "captions-caption-cell_picture_caption_lines_address_the_caption",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "87fb54a7cc1a769a6eb675e4c2449108aeeff8e115dbc7928ae1f712616dc74a",
+          "capture_manifest_sha256": "e6471753cba4cad9ab14a4ffd6a3ef8060da30353254071ffeb8e21ea3652f3e",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "captions-caption-header-false-false",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-header-false-false.hwp",
+        "sha256": "c360246014555e474b312c828b2cd9b84a217874b707d8beaea21eede3f05499"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-header-false-false-hwp-2020.pdf",
+        "sha256": "a33938bac102b4a9ddc8ee582934926edb442e638617511845feb3ff22e6747f"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "captions-caption-header-false-false",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "701392fc1a1368082686c0fc495f4918025524b003dc29f1cac245fba883214f",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "captions-caption-header-true-false",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-header-true-false.hwp",
+        "sha256": "8bb849146339669c03c2c7173860a82c544158e6d6473b41c49a92c582a08b85"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-header-true-false-hwp-2020.pdf",
+        "sha256": "9f0f84fa72ebaa00c73c59d33f2b3c78a4810cb7f4990d2cec42d5f5b291620f"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "captions-caption-header-true-false",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "d5cf6063daf1810ac6854a98327be18607877956b300fab253edf5137c7274e6",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "captions-caption-header-true-true",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-header-true-true.hwp",
+        "sha256": "9279d68fa88d54f56bf1c233284aaf05a51e9b037a7e593cb767631c96583725"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-header-true-true-hwp-2020.pdf",
+        "sha256": "434816827e758881b30371119cebaedfd289fb71b4fef501a716b3f54976de31"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "captions-caption-header-true-true",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "0de0dc9a62ea0e97fcd3ac59a8d63b32600e10c4ec5ef2f22b30c4aa2617a31f",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-include_margin_widens_a_bottom_caption_to_the_outer_margins.hwp",
+        "sha256": "8784d847f5161f0ded88379af306c50ac2bd850195ed962dd00287eb8d16914b"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-include_margin_widens_a_bottom_caption_to_the_outer_margins-hwp-2020.pdf",
+        "sha256": "f8187f9be478cce012a7e8919f2fcf038eebaef64c20ead180ad978f3ccfd354"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "61a9bf40a52ebbc03c514e58f605bd5738c39de18a0ad0f0f316a514d12cece7",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "captions-caption-inline_picture_caption_starts_under_the_picture",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-inline_picture_caption_starts_under_the_picture.hwp",
+        "sha256": "1676638ccdb84e6aa070996fb2de0c98a662bf19feb34f8c840fbe11c4bc1080"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-inline_picture_caption_starts_under_the_picture-hwp-2020.pdf",
+        "sha256": "a1a67dae081518efa1d462a940ff740c10032001e64ea62ad0fd17a60e79db15"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "captions-caption-inline_picture_caption_starts_under_the_picture",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "da491b977710143923e0371f8148bd4c4af344b76e2f1c16797085472bb2edfe",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "captions-caption-narrowing_a_side_caption_rewraps_its_text",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/captions/caption-narrowing_a_side_caption_rewraps_its_text.hwp",
+        "sha256": "90025bda16b0d379ed9815f818434db464b054a807505dbf8a78b3e0e5a0a757"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9220-picture-captions/caption-narrowing_a_side_caption_rewraps_its_text-hwp-2020.pdf",
+        "sha256": "ec4de91fdfc7592d962e815cdf74062eae2eea04082cc08a17bfc2932210108f"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "99.57",
+      "pages_at_100": 0,
+      "original_shards": [
+        {
+          "part": "captions-caption-narrowing_a_side_caption_rewraps_its_text",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "6fa62f05fd812da7ec8d83ece040e99308df38fb39cc45003909319eceaa58d8",
+          "capture_manifest_sha256": "ff03ddfcae678269530469cb726f9e7d1cbc29af605a1ca6273c5c728cb5fade",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "empty-overlap-overlap-false-hwpx",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/empty-overlap/saved/overlap-false.hwpx",
+        "sha256": "3eee70709465de1832331a212bbc21e14d4f9f124b343bb2770145fc7763f531"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9271-empty-overlap/overlap-false-hwpx-2020.pdf",
+        "sha256": "684cbdb121fa783d3ffacdaa0282ed15e6aabf4e2b1e29b65280a1e781e67ad4"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "empty-overlap-overlap-false-hwpx",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "092b650b2a4ac5b16b6eee2528d5c28b5ef861d72d0d06f0f01379205c208e9d",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "empty-overlap-overlap-true-hwpx",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/empty-overlap/saved/overlap-true.hwpx",
+        "sha256": "8074b668dc25a131fe1d1f9550a90afcd3622891ec2348f2d645235cf0f3c2dd"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9271-empty-overlap/overlap-true-hwpx-2020.pdf",
+        "sha256": "eb970c567f628f5706b120e1aa43c2e2c3eb9eec0cea05ae84760dafeb3b7952"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "empty-overlap-overlap-true-hwpx",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "7bb1066df5f77008415deac5bfcf3dce3e686263f3961ecfd3a989360e1eb6b7",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-c2-eachColumn",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/c2-eachColumn.hwp",
+        "sha256": "4d225c833842b7180e65085c7a1fa39e99d3da0c3d43861937322ae0f83801ff"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/c2-eachColumn-2020.pdf",
+        "sha256": "3f6b353a4a7917c1e42293cae02af378d3267d43213dfd07492a477b31a529a6"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-c2-eachColumn",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "4e406f494b7e0643c35a551ae1d72c950a58e2d1b6ed431c7c0103322310b9af",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-c2-rightColumn",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/c2-rightColumn.hwp",
+        "sha256": "885abdcf9fb23f5740e573d88d87b23fb06a798b453ac742970a24f382796b2c"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/c2-rightColumn-2020.pdf",
+        "sha256": "9992665869300e7a867ec0efa488a846dd8c4bd385dd058e06841a14553e7fdd"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-c2-rightColumn",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "18170d94ee1c1f537a2ca739135dfef41f9599d664fb53c9f9ad3bd10100695f",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-c3u-eachColumn",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/c3u-eachColumn.hwp",
+        "sha256": "d5052c9ad7f98646cac3677d7d115d0414e5be18ffa4cbc709ccb864528ffcc1"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/c3u-eachColumn-2020.pdf",
+        "sha256": "629dda07cad889aa4825eb99411b4e9ab1c92da06e615ce3dd2056cd84b7fd6f"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-c3u-eachColumn",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "52493f5aaf8c2ca45d16a55c1ac8ff99135c251e1950e63b9a23d1b8177c255b",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-c3u-touch-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/footnotes/saved/c3u-touch.hwp",
+        "sha256": "60c2fa08605e3a14d873853a1e267e88cfde0696f76fac1bc3b3d74e9827f8fd"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/c3u-touch-hwp-2020.pdf",
+        "sha256": "8ed173e63d69e07bd99c879548693da5c6c5a5ee22d72cf9bb13780f78d10998"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-c3u-touch-hwp",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "8996f67e3a0204738e21c9d0d4097822a808ee337ee88564f487b44c878700b8",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-c3u-touch-hwpx",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/footnotes/saved/c3u-touch.hwpx",
+        "sha256": "2051f3fe68498d2cdae096ee0e2ad35b96c67c9d6f3ad62e131962c9595b9403"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/c3u-touch-hwpx-2020.pdf",
+        "sha256": "2385b19a24500d419a4dd7c746f98866263e7da6cc6bc93b700a5e7151a64618"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-c3u-touch-hwpx",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "508f64dbd46ace00ecf9fa517c00a334049187861992c657b3867ad2f351449f",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-edited-each",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/footnotes/saved/edited-each.hwp",
+        "sha256": "264cf362540ca7eb8a797cd3f244b47bf00cc2c6489fca87f28b05ada4b6c0de"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/edited-each-2020.pdf",
+        "sha256": "29f771bb7535bfcfea3e7e673b21a9fdeb406c9b4d93d6c2732bfae505911143"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-edited-each",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "4e17e262ebaeda10149b7811664cbf10343b220c02956209cb0652819afb2878",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-edited-two",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/footnotes/saved/edited-two.hwp",
+        "sha256": "662ea35ee9998e97ef042679cb00c67885b0afd80abad3dec25473ad160d5914"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/edited-two-2020.pdf",
+        "sha256": "bf971f4feb86d8bb7df7154fe5aca6357b1339a9a696466fee6aecf357826b97"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-edited-two",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "9fac5e1e7d2371005d5b86b6357f9b3162ab36e41173c8bdc024298754bda593",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-overflow-e2",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/overflow-e2.hwp",
+        "sha256": "dd14474b178988bde39057b69c2a1bbd511a65b3abcf10a8850dd8f43b04fec9"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/overflow-e2-2020.pdf",
+        "sha256": "2c8273fa1fdae9e94b8c2ee832214051cba0928b50456c0b0d6a0f73e7212daf"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-overflow-e2",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "471b94f92ebb848a1e9201bd0fb72625ee6dd0e90a72534e971b1062ecf0b0a9",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-overflow-e2-tail",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/overflow-e2-tail.hwp",
+        "sha256": "54be8fc3709ce30c4eef8083a86313274e089144aaf31b93c758a92b167008bd"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/overflow-e2-tail-2020.pdf",
+        "sha256": "e09373cebb159d8294cda531c801a192c78f15259958def1fa0d4242b8819243"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-overflow-e2-tail",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "261dffef321afed07b308401c99863b8bbc646cf739bd9c157e21367a904471b",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-refold-e3u",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/refold-e3u.hwp",
+        "sha256": "5bfd650bd6a39070381014bf6ce5b9092fc1863aba69456589d828ea5861e544"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/refold-e3u-2020.pdf",
+        "sha256": "92ffff85407d41a0464251b75361705d3b261057d65a98ff08751fd634dff3d9"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-refold-e3u",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "5f7d356008dfcb543ca6623a5ff98a6a79be8b0d7df102ef4553bb2317ee9c8d",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "resized-group-resized-group-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/resized-group/saved/resized-group.hwp",
+        "sha256": "b2389cad6e2b10c9b9221ffdd3a6004a8424a2ccfd269ab6fbb64879c3cd4017"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9241-resized-group/resized-group-hwp-2020.pdf",
+        "sha256": "1a98607426eafb0fbf2fb27fee074196392d7a7f77b3d9347b0f7cea1de9a1b3"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "resized-group-resized-group-hwp",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "98fac27db975f8c3d9a3610b82481c168b6a04d51098590dc9dad9d363f7f3a6",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "resized-group-resized-group-hwpx",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/resized-group/saved/resized-group.hwpx",
+        "sha256": "e9ad958c95511384620e82a70c34283a3085e7c135e3b1b9993d35f266feee90"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9241-resized-group/resized-group-hwpx-2020.pdf",
+        "sha256": "741fa5b581afa1079489355ef766c7472cbd48ecc1d45f349163d67dea470064"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "100.00",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "resized-group-resized-group-hwpx",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "capture_manifest_sha256": "8442d4e0569eb6e5a728e14fb71203c47b512b47dee914e15517541ea6a05d8d",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-edited-narrow",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/footnotes/saved/edited-narrow.hwp",
+        "sha256": "f7d0548507b4106288cd9e320b587614e50f178dace64c7281c23803587c7696"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/edited-narrow-2020.pdf",
+        "sha256": "79719230f0dccff4ca0cb85c7532c6f4a0bb4495991251f4a6c87f30fb8473c7"
+      },
+      "compat": "2022",
+      "page_count": 2,
+      "minimum": "100.00",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "footnotes-edited-narrow",
+          "first_page": 1,
+          "last_page": 2,
+          "pages": 2,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "capture_manifest_sha256": "f9d3752a1a1fb49a9c044a8cba1126ed77c1ab7149c40f4290e7651e79a7d5fa",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-edited-one",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/footnotes/saved/edited-one.hwp",
+        "sha256": "4a02831d42363879eca6b9242bbbd27e2934ff7601c10dfd2f4cbad56c7cae5b"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/edited-one-2020.pdf",
+        "sha256": "0e926f5636d9a76e47f5ac169c453d297c0f92de5fceb228a8a4c2be8bc96f36"
+      },
+      "compat": "2022",
+      "page_count": 2,
+      "minimum": "100.00",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "footnotes-edited-one",
+          "first_page": 1,
+          "last_page": 2,
+          "pages": 2,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "capture_manifest_sha256": "0fcf34158ca8aea0d6394a9a6a653af185a006f5f9b40ab51c42ac4035485081",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-overflow-e2-flow",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/overflow-e2-flow.hwp",
+        "sha256": "cb4efeefc46e993dec11777915eba61da0a405aa0452af9ba57461281cf9e6bc"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/overflow-e2-flow-2020.pdf",
+        "sha256": "d11193888f51584c096b038cd35ee8cdccaa8158e06b984c68892ee22f5c81dc"
+      },
+      "compat": "2022",
+      "page_count": 2,
+      "minimum": "99.22",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-overflow-e2-flow",
+          "first_page": 1,
+          "last_page": 2,
+          "pages": 2,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "7b55b10dee5269fec94ed4c36a869747432c5b77ec9a732dd501ff9d6fb0c049",
+          "capture_manifest_sha256": "81fb5fca509a77891aeef9644455e480816d342aa49492776fb7aa4ff94a9538",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-overflow-r2",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/overflow-r2.hwp",
+        "sha256": "55d884339a478e04ab504a866e5ea41bec2b43ffa628b78e06570a47ceaf5411"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/overflow-r2-2020.pdf",
+        "sha256": "a4578289bdf2837284d70c6f1ce1393682a97247647b8ea92d4d3c0e057c18e1"
+      },
+      "compat": "2022",
+      "page_count": 2,
+      "minimum": "100.00",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "footnotes-overflow-r2",
+          "first_page": 1,
+          "last_page": 2,
+          "pages": 2,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "capture_manifest_sha256": "0afd5c9c338a1d4ce6b35770cdbe86c211f1dd93fc824209c994339aa4646875",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-overflow-r2-flow",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/overflow-r2-flow.hwp",
+        "sha256": "067844e24dd776ad3128baf50dc58a00b095249dcf89b05ee54f857f83932840"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/overflow-r2-flow-2020.pdf",
+        "sha256": "c87fd7ec29d138f04a966bacc4b9d1004011b7dc1c2dabfff03986f18d955a67"
+      },
+      "compat": "2022",
+      "page_count": 2,
+      "minimum": "99.30",
+      "pages_at_100": 1,
+      "original_shards": [
+        {
+          "part": "footnotes-overflow-r2-flow",
+          "first_page": 1,
+          "last_page": 2,
+          "pages": 2,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "97953f0ae367d4b07dc48e2c8c270af33404b9bd9427729310ec2436712286fb",
+          "capture_manifest_sha256": "c63086381efaa440a081c81a7d8b10f5f4b860c5e120f93c5bccef70401782d8",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-overflow-r3u",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/overflow-r3u.hwp",
+        "sha256": "6e567d66f066c7c382ecae6da816b619dbe17ac4862526252832c23e6059bf6f"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/overflow-r3u-2020.pdf",
+        "sha256": "e47041a120499ff1b098b5326c3cde85ffe5351c01b2f13ec94766c7c3506e70"
+      },
+      "compat": "2022",
+      "page_count": 2,
+      "minimum": "100.00",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "footnotes-overflow-r3u",
+          "first_page": 1,
+          "last_page": 2,
+          "pages": 2,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "capture_manifest_sha256": "34475a9a34e64398f49ac086d7c9474633406c4e0084b7e5d793c516a03895be",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "footnotes-refold-e3u-chain",
+      "input": {
+        "path": "tests/fixtures/footnote_columns/refold-e3u-chain.hwp",
+        "sha256": "2d6973ab942560294a11fa90caf4e6fc604e28c016be32e1d2401db6ea6b9c3c"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9234-footnote-columns/refold-e3u-chain-2020.pdf",
+        "sha256": "b715f2a638eceb47587b44bb41eefa82116a131a19755a68fa175110b4aab440"
+      },
+      "compat": "2022",
+      "page_count": 2,
+      "minimum": "100.00",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "footnotes-refold-e3u-chain",
+          "first_page": 1,
+          "last_page": 2,
+          "pages": 2,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "capture_manifest_sha256": "807bd17c9e68333f1bea94e294f4804dc816bc1d35cd9778d419aabf58eb83c8",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "nested-row-split-nested-30-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/nested-row-split/saved/nested-30.hwp",
+        "sha256": "e5625bb5f27e1e31e9679a8d32dd6907a89dbcf289229dd334375e0120f17f11"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9273-nested-row-split/nested-30-hwp-2020.pdf",
+        "sha256": "7c721a2c08964c89a3803e61284d6b1da0d3d68124ec036e20782156034cbca0"
+      },
+      "compat": "2022",
+      "page_count": 3,
+      "minimum": "98.07",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "nested-row-split-nested-30-hwp",
+          "first_page": 1,
+          "last_page": 3,
+          "pages": 3,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+          "capture_manifest_sha256": "5b819bb4a8f186b527f74ff60088283674218fc8950773b841a3138aab68a410",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "nested-row-split-nested-30-hwpx",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/nested-row-split/saved/nested-30.hwpx",
+        "sha256": "102a9ca342705fb63522d31553da731d4553beed143fcf3c5ca0866bf314395e"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9273-nested-row-split/nested-30-hwpx-2020.pdf",
+        "sha256": "a6de9354e4e18214658ca14450d4194f531919d98824441ae6572f66fe0b4658"
+      },
+      "compat": "2022",
+      "page_count": 3,
+      "minimum": "98.07",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "nested-row-split-nested-30-hwpx",
+          "first_page": 1,
+          "last_page": 3,
+          "pages": 3,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+          "capture_manifest_sha256": "e92f80508a84b2a9e499e5a959559f3d180786c14f9eae4ca30fb4d920e94464",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "nested-row-split-nested-70-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/nested-row-split/saved/nested-70.hwp",
+        "sha256": "f978ba2523a3bdc73956a27fb736f5a437f2596c90012813978cff2e870d7145"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9273-nested-row-split/nested-70-hwp-2020.pdf",
+        "sha256": "4474adadab418dd13da0b589ceb9fee1af42fa5ab3656dd3f08e54b038d39b9d"
+      },
+      "compat": "2022",
+      "page_count": 4,
+      "minimum": "98.23",
+      "pages_at_100": 3,
+      "original_shards": [
+        {
+          "part": "nested-row-split-nested-70-hwp",
+          "first_page": 1,
+          "last_page": 4,
+          "pages": 4,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "a1a00d59bc14f14356db7548ee38aca48704d0b03a534de4669fcce362ed8180",
+          "capture_manifest_sha256": "8ec0263e587afe76c7766fecafea1f94aec03ffdf507c9215aaf591141ceb718",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "features",
+      "key": "nested-row-split-nested-70-hwpx",
+      "input": {
+        "path": "mydocs/pr/assets/semanticist21-20261121/nested-row-split/saved/nested-70.hwpx",
+        "sha256": "475309597317f0ebd3ac369794521f6fef880165a725d13f0986a76bc762cfda"
+      },
+      "reference_pdf": {
+        "path": "pdf/pr9273-nested-row-split/nested-70-hwpx-2020.pdf",
+        "sha256": "c3a2b80a6e03a7d64ac94524e11924622bb1da76fdff4a0cc87f82cc59f570a4"
+      },
+      "compat": "2022",
+      "page_count": 4,
+      "minimum": "98.24",
+      "pages_at_100": 3,
+      "original_shards": [
+        {
+          "part": "nested-row-split-nested-70-hwpx",
+          "first_page": 1,
+          "last_page": 4,
+          "pages": 4,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+          "capture_manifest_sha256": "1991a09ae35f08b41b1d2b28f4f241f51b227f3059c3f70da502556bcb1905d2",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ]
+    },
+    {
+      "group": "issues",
+      "key": "issue7756",
+      "input": {
+        "path": "samples/복학원서.hwp",
+        "sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7756/bokhak-original-print-2024.pdf",
+        "sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4"
+      },
+      "compat": "2024",
+      "page_count": 1,
+      "minimum": "98.99",
+      "pages_at_100": 0,
+      "original_shards": [
+        {
+          "part": "issue7756",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49",
+          "capture_manifest_sha256": "74a2d94462b22829c1720f1f9b0234418860ee45fb4140a1eb8308e5ac1e42c4",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7756.tsv",
+        "sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7759",
+      "input": {
+        "path": "samples/143E433F503322BD33.hwp",
+        "sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa"
+      },
+      "reference_pdf": {
+        "path": "pdf/143E433F503322BD33-hwp-2020.pdf",
+        "sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d"
+      },
+      "compat": "2022",
+      "page_count": 1,
+      "minimum": "99.94",
+      "pages_at_100": 0,
+      "original_shards": [
+        {
+          "part": "issue7759",
+          "first_page": 1,
+          "last_page": 1,
+          "pages": 1,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d",
+          "capture_manifest_sha256": "5a7af9f15209caaff5eb94ffdae42cfa73d8f86172c0d64668e6f8c7f122a2bb",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7759.tsv",
+        "sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7757",
+      "input": {
+        "path": "samples/task1768/distribution_doc.hwpx",
+        "sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+        "sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba"
+      },
+      "compat": "2022",
+      "page_count": 3,
+      "minimum": "99.80",
+      "pages_at_100": 2,
+      "original_shards": [
+        {
+          "part": "issue7757",
+          "first_page": 1,
+          "last_page": 3,
+          "pages": 3,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853",
+          "capture_manifest_sha256": "0acc082cf0c05d3ad3769573c99f55381a055aa9291daf1bf3cd4a32c2072d00",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7757.tsv",
+        "sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7760",
+      "input": {
+        "path": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+        "sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e"
+      },
+      "reference_pdf": {
+        "path": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+        "sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b"
+      },
+      "compat": "2022",
+      "page_count": 19,
+      "minimum": "99.86",
+      "pages_at_100": 15,
+      "original_shards": [
+        {
+          "part": "issue7760",
+          "first_page": 1,
+          "last_page": 19,
+          "pages": 19,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "d6ab6244e98687a2a9f240adbd53785aca64c6d36db64ce7d33e14aba46ba228",
+          "capture_manifest_sha256": "736d25dd5dea551123ac749b2011e517bfc449b53fbaa0378f621181e141f168",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7760.tsv",
+        "sha256": "d6ab6244e98687a2a9f240adbd53785aca64c6d36db64ce7d33e14aba46ba228"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7754-plain",
+      "input": {
+        "path": "samples/HWP5-nopassword-123456.hwpx",
+        "sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e"
+      },
+      "reference_pdf": {
+        "path": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+        "sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d"
+      },
+      "compat": "2024",
+      "page_count": 24,
+      "minimum": "99.48",
+      "pages_at_100": 0,
+      "original_shards": [
+        {
+          "part": "issue7754-plain",
+          "first_page": 1,
+          "last_page": 24,
+          "pages": 24,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "cf023d68c01dab729e31fd49b5f0d1d15b2dc920d2e6c41516962a2b18d5d8c3",
+          "capture_manifest_sha256": "60968d04bac2b837fba165cade6c11a20f0bbe644a5e0fe5a77d205d779167a3",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7754-plain.tsv",
+        "sha256": "cf023d68c01dab729e31fd49b5f0d1d15b2dc920d2e6c41516962a2b18d5d8c3"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7761",
+      "input": {
+        "path": "samples/[2027] 온새미로 1 본교재.hwp",
+        "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+        "sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219"
+      },
+      "compat": "2024",
+      "page_count": 46,
+      "minimum": "99.98",
+      "pages_at_100": 44,
+      "original_shards": [
+        {
+          "part": "issue7761-001-032",
+          "first_page": 1,
+          "last_page": 32,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "5d4edefb26efbe34cb8a5bc9db4d3d222badb50c4b3aa549d8fe9da9086dfe7b",
+          "capture_manifest_sha256": "749f8877c5deff0e87e7606afb2db10d35ed2bd5a1ac1984775d4b39e5bdab8d",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7761-033-046",
+          "first_page": 33,
+          "last_page": 46,
+          "pages": 14,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "3ee37fdbefeea1e60536fed8833479476a369513054dcab2d9de37bad2c2545e",
+          "capture_manifest_sha256": "5d9de1547a36cc213caf5e6a2b4ba4ce9a6726b8b90e3465881519f0d41bbb4f",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7761.tsv",
+        "sha256": "dc04516a4b48bae8c247ae11d3cb83ca54662c44ef566c1941093bed11bb90af"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7762",
+      "input": {
+        "path": "samples/[2027] 온새미로 1 본교재.hwpx",
+        "sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c"
+      },
+      "reference_pdf": {
+        "path": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+        "sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab"
+      },
+      "compat": "2024",
+      "page_count": 46,
+      "minimum": "99.98",
+      "pages_at_100": 44,
+      "original_shards": [
+        {
+          "part": "issue7762-001-032",
+          "first_page": 1,
+          "last_page": 32,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "5d4edefb26efbe34cb8a5bc9db4d3d222badb50c4b3aa549d8fe9da9086dfe7b",
+          "capture_manifest_sha256": "164e8ca5204e211eaf4fd5f8a368fcf2c73aca1484ef976cedb7dd6adc349f37",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7762-033-046",
+          "first_page": 33,
+          "last_page": 46,
+          "pages": 14,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "ede22c0db6549c9c638affb21f2e64f0226c35f15dac89a65a24c26d9f5f2cdd",
+          "capture_manifest_sha256": "edeffec32eea0cebc3ed40e541895e0f1b6587a9fbb40a0f8a572c8862a0ebea",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7762.tsv",
+        "sha256": "2299ebdf16e567670d65d96ecb9f8359608f9dd1637eb816a9310a712ebe6b7c"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7765-hwp",
+      "input": {
+        "path": "samples/86712_regulatory_analysis.hwp",
+        "sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+        "sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a"
+      },
+      "compat": "2024",
+      "page_count": 64,
+      "minimum": "98.11",
+      "pages_at_100": 46,
+      "original_shards": [
+        {
+          "part": "issue7765-hwp-001-032",
+          "first_page": 1,
+          "last_page": 32,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "d29af300a40e2093709eae169a2f29d0fbf4175531a4971bcf357bc60d601b4c",
+          "capture_manifest_sha256": "70b0346c37cbcfc224b4f54531dcb12e9b0f6c2fd8791f800273c7aeb1733366",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7765-hwp-033-064",
+          "first_page": 33,
+          "last_page": 64,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "d5ae046fa00ed911635de39cca030e7ae2e31d5eea260faf421edd03c11f4fca",
+          "capture_manifest_sha256": "326389df167be8214f9755553891c4b11994f2669aed4b321c9b84174bac2521",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7765-hwp.tsv",
+        "sha256": "33c575a6f3b5e949dbde7136f700f60d1ab0abf76fbd17c473f5763b042276a8"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7765-hwpx",
+      "input": {
+        "path": "samples/issue1891/86712_regulatory_analysis.hwpx",
+        "sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+        "sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8"
+      },
+      "compat": "2024",
+      "page_count": 64,
+      "minimum": "98.69",
+      "pages_at_100": 15,
+      "original_shards": [
+        {
+          "part": "issue7765-hwpx-001-032",
+          "first_page": 1,
+          "last_page": 32,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "20d15f704a1ede3e8ad6a267ed8aa23d5adfb2eeec02de0e209b9a16ea7a592a",
+          "capture_manifest_sha256": "f99e3cd5b768d6b9ba643346f7d3cf569cb55523c360290eaeecdf915b01440a",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7765-hwpx-033-064",
+          "first_page": 33,
+          "last_page": 64,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "dfb9727be7eaaaf3756f9dbb21d5d5efcdfae87a1328e13f1b8bc1c6d29a119a",
+          "capture_manifest_sha256": "df1ff8b6d1b5b33488ef2aa12c7c4946ad27b0a07d705fe3c59836d4c7ec3584",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7765-hwpx.tsv",
+        "sha256": "d5705b9121085ed24e8fd613403b5d347ba273e7843d0c49f39aff8e6ce45cd7"
+      }
+    },
+    {
+      "group": "issues",
+      "key": "issue7755",
+      "input": {
+        "path": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+        "sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+        "sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+      },
+      "compat": "2022",
+      "page_count": 315,
+      "minimum": "98.40",
+      "pages_at_100": 212,
+      "original_shards": [
+        {
+          "part": "issue7755-001-032",
+          "first_page": 1,
+          "last_page": 32,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "f4fc4a3464f9f0b42758a472a9f8c2a21906c376c3136e519f94196cb484f341",
+          "capture_manifest_sha256": "b13c3fd3b896992afab81189a3dbb18e755946554d0e0cb4d075c953dc17c177",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-033-064",
+          "first_page": 33,
+          "last_page": 64,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "3cb7376caa9bc7a6fba1853a71819ec5485e111d6a8ab046da780845b1075b3f",
+          "capture_manifest_sha256": "de8c0d255cb3f0df4c5ae25e755f29a3a43c57bdad4dc14620b82ca49e7b4502",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-065-096",
+          "first_page": 65,
+          "last_page": 96,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "5cb4bf448e2ca70b4a196974ac6c81c128268b43543c57ac0e82c72f6edd561f",
+          "capture_manifest_sha256": "7bc857b04d2c8906bd51b7b5ba2b6b4af5514bd8d5c8bef2bfe4a603e7dc7c6b",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-097-128",
+          "first_page": 97,
+          "last_page": 128,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "d7e3e6c309b667d4ca67d12e973d7921bcb14bbd7a966d54eb163b98e54f8d9a",
+          "capture_manifest_sha256": "a09615288469bffd2838dc6956a29edbe6a215f21a64b68d8c7360b07c99c8ca",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-129-160",
+          "first_page": 129,
+          "last_page": 160,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "cefad34fe0238a00d643926ac12d39a3b09f891bfa89cc52d5a8e480d4302833",
+          "capture_manifest_sha256": "4c975b78af773c0ceeab922233faab415a57982804c794dd551abe882698c5ec",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-161-192",
+          "first_page": 161,
+          "last_page": 192,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "f370059ef8e938f663afecdbb34b440c305e3755c5fb0e48e31ecb2d1faa86d7",
+          "capture_manifest_sha256": "b5a3c3b8d471e03ee969f02e859582acd3d8be2684a360636580c10423c8f76a",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-193-224",
+          "first_page": 193,
+          "last_page": 224,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "19993464683c09907eca403d68898e3c25923626fd355cfa1593a84b430acced",
+          "capture_manifest_sha256": "1a11ab1550d4c1de73e538e096577bc19208303bfe9d8c28bf51c7365954da0c",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-225-256",
+          "first_page": 225,
+          "last_page": 256,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "a16358bda8f67cf32fe82b265445f5e5ec199fed8b88b8d1d7273275f0cbc818",
+          "capture_manifest_sha256": "9ffcdc98492f976c929e52543b3010698b78aff9467be19edaf6ef55042d36ba",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-257-288",
+          "first_page": 257,
+          "last_page": 288,
+          "pages": 32,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "b7e9375d74d1729fcfb37a79040a11f5049b0331a98d36cffcf169d7303fc020",
+          "capture_manifest_sha256": "599bc42df2aee6b0a573907ed077d3b5bc4ee2b174599afa81a7f5e1c1a80181",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        },
+        {
+          "part": "issue7755-289-315",
+          "first_page": 289,
+          "last_page": 315,
+          "pages": 27,
+          "exit_code": 0,
+          "sweep_gate": "not_evaluated",
+          "raw_tsv_sha256": "f268721fddc86493dac8ce7d3b4e65b8480de2500aa994d5ee0c52286fe67511",
+          "capture_manifest_sha256": "9f07d0b7d3a0dd9cdcc88878aa8d1068db7a18885d11142e46d7e75dcec79cd2",
+          "condition": {
+            "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+            "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+            "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+            "comparison_profile": "print"
+          }
+        }
+      ],
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7755.tsv",
+        "sha256": "d89721fac55ffb0019eba76b28648b3ffaa9ba46e1fd4c0d3607b9758cb1ee78"
+      }
+    }
+  ],
+  "original_pages": 583,
+  "auxiliary_pages": 50,
+  "original_minimum": "98.11",
+  "overall_minimum": "98.07"
+}

@@ -31,6 +31,9 @@ HWPX 저장·재열기, 결합 부호의 내용·편집 위치와 실제 화면�
 13,984개 통과, 실패 0개, 설정에 따라 제외한 45개로 끝났다.
 [검사 명령과 종료 기록](../verification/issue7754-nine-fidelity/local-checks.json)
 
+같은 생산본의 fresh WASM은 원래 아홉 이슈 583쪽에서 최저 98.11%, 보조 검증을 포함한
+633쪽에서 최저 98.07%였다. [원본별 전쪽 TSV와 측정 기록](../verification/issue7754-nine-fidelity/wasm/candidate-before-pr9322.json)
+
 Stage 20의 보호 검증과 원래 아홉 이슈의 증빙은 이전 기준과 생산 SHA에 연결한다. 새 base와
 후보에서 동일한 Harness와 글꼴·연결 그림 공급으로 원래 대상, 보호 정본, #9318·#9322 기능을
 다시 대조한다. 시각·최소 글꼴 Rust·Studio 필수 검증을 완료한 뒤 PR을 제출한다.
