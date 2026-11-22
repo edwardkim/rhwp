@@ -15,11 +15,15 @@ sample16의 글꼴 파일만 공급하고 환경 JSON을 생략했던 첫 실행
 HWPX는 99.99%·100.00%, HWP 2022는 100.00%·100.00%로 복원됐다. 이 두 쪽의 개선을
 전쪽 보호 통과로 확대하지 않으며 세 저장본을 전쪽 재검증한다.
 
-새 base와 후보의 기존 PR 주 원본 6개·167쪽 Native 검증은 각각 98% 이상이다.
-새 base의 같은 167쪽 fresh WASM도 98% 이상이다. 두 역할의 OLE 입력은 HWP·HWPX 각각
-편집 후 두 번 저장·재열기를 실행했고, 독립 CFB/ZIP 검사에서 OLE 속성과 HWPX payload,
-편집 표지의 보존을 확인했다. 대상 아홉 이슈의 전체 시각 검증과 보호 전쪽, 최소 글꼴 Rust·lint,
-후보 fresh WASM·실제 Studio·편집 및 암호 문서 검증은 실행 중이며 완료로 판정하지 않는다.
+#9318로 유입된 원본 6종 167쪽은 새 base와 후보 모두 Native·fresh WASM에서 쪽마다 98% 이상이다.
+후보 fresh WASM 최저는 고베 지진 문서의 98.15%이며, base에서 하락한 쪽은 없다.
+[전쪽 TSV와 생산 SHA](../verification/issue7754-nine-fidelity/incoming-pr9318/coverage.json)에 각 조건을 기록했다.
+두 역할의 OLE 입력은 HWP·HWPX 각각 편집 후 두 번 저장·재열기를 실행했다. 독립 CFB/ZIP 검사에서
+OLE 속성, HWPX payload, 편집 표지의 보존을 확인했다.
+
+원래 아홉 이슈의 Native 대상 583쪽은 최저 98.08%다. 후보 Native 정본 보호는 23종 2,023쪽에서
+하락 0쪽이며 화학 문서 2쪽이 100.00%로 올랐다. 원래 이슈의 fresh WASM, 보호 정본의 base 대조와
+fresh WASM, 최소 글꼴 Rust·lint, 공개 글꼴 검사 및 남은 Studio 검증은 진행 중이다.
 
 Source155의 frozen 후보 소스는 `b75ce19774a4b059b26c2d134d49d5f7ce4a93b2`다.
 공식 자료 정리 커밋 `433eba9d7011807d57cf235311afff15036b3ceb`까지의 변경이 모두 `mydocs/` 안에 있음을 확인했다.
