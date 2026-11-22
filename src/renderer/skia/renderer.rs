@@ -1,7 +1,7 @@
 use super::region_plan::SkiaRegionPlan;
 use skia_safe::{
     paint, png_encoder, surfaces, Canvas, Color, Font, FontMgr, FontStyle, Matrix, Paint,
-    PathBuilder, PathEffect, Picture, PictureRecorder, RRect, Rect, Shaper,
+    PathBuilder, PathEffect, Picture, PictureRecorder, RRect, Rect, Shaper, Typeface,
 };
 use std::cell::{OnceCell, RefCell};
 use std::collections::{BTreeSet, HashMap, HashSet};
@@ -175,13 +175,14 @@ pub fn native_skia_glyph_run_replay_proof(
     run: &LayerGlyphRunPaint,
     resources: &ResourceArena,
 ) -> NativeGlyphRunReplayProof {
-    prepare_native_glyph_run(run, resources, &FontMgr::default()).0
+    prepare_native_glyph_run(run, resources, &FontMgr::default(), None).0
 }
 
 fn prepare_native_glyph_run(
     run: &LayerGlyphRunPaint,
     resources: &ResourceArena,
     font_mgr: &FontMgr,
+    pdf_fonts: Option<&super::pdf_fonts::PdfFontCache>,
 ) -> (NativeGlyphRunReplayProof, Option<PreparedGlyph>) {
     let mut contract_reasons = BTreeSet::new();
     let mut construction_reasons = BTreeSet::new();
@@ -420,7 +421,7 @@ fn prepare_native_glyph_run(
 
     let contract_replayable = contract_reasons.is_empty();
     let prepared = if contract_replayable {
-        match construct_glyph_font(run, resources, font_mgr) {
+        match construct_glyph_font(run, resources, font_mgr, pdf_fonts) {
             Ok(prepared) => Some(prepared),
             Err(reasons) => {
                 construction_reasons.extend(reasons);
@@ -497,6 +498,7 @@ pub struct SkiaLayerRenderer {
     viewport_culling: bool,
     font_fallback_observer: Option<super::font_observation::FontFallbackObserver>,
     font_mgr: FontMgr,
+    pdf_fonts: Option<super::pdf_fonts::PdfFontCache>,
     text_shaper: OnceCell<Option<Shaper>>,
     /// 사용자 지정 경로의 family별 TTC face·스타일 catalog.
     /// SVG 의 `--font-path` 와 같은 패턴으로 ttfs 디렉토리의 한컴 전용 폰트 (HY견명조 등) 도 사용 가능.
@@ -533,6 +535,7 @@ impl SkiaLayerRenderer {
             viewport_culling: true,
             font_fallback_observer: None,
             font_mgr: font_mgr.clone(),
+            pdf_fonts: None,
             text_shaper: OnceCell::new(),
             custom_typefaces: TypefaceCatalog::default(),
             bundled_typefaces: TypefaceCatalog::default(),
@@ -547,6 +550,12 @@ impl SkiaLayerRenderer {
             )),
             image_cache: ImageResourceCache::new(DEFAULT_CACHE_ENTRIES, DEFAULT_CACHE_BYTES),
         })
+    }
+
+    /// Use PDF-specific font programs only while recording a direct PDF.
+    pub(crate) fn for_pdf(mut self) -> Self {
+        self.pdf_fonts = Some(super::pdf_fonts::PdfFontCache::new());
+        self
     }
 
     /// Bound each of the picture, glyph and image caches independently. Zero
@@ -1183,7 +1192,12 @@ impl SkiaLayerRenderer {
         }
         let prepared = Rc::new(match op {
             PaintOp::GlyphRun { run, .. } => {
-                let (proof, prepared) = prepare_native_glyph_run(run, resources, &self.font_mgr);
+                let (proof, prepared) = prepare_native_glyph_run(
+                    run,
+                    resources,
+                    &self.font_mgr,
+                    self.pdf_fonts.as_ref(),
+                );
                 prepared.ok_or(NativeGlyphPreparationFailure::GlyphRunRejected(proof))?
             }
             PaintOp::GlyphOutline { outline, bbox, .. } => {
@@ -1357,12 +1371,14 @@ impl SkiaLayerRenderer {
             )
         };
         let equation_fonts = EquationFonts {
+            pdf_fonts: self.pdf_fonts.as_ref(),
             font_mgr: &self.font_mgr,
             system_families: &self.system_families,
             custom_typefaces: &self.custom_typefaces,
             bundled_typefaces: &self.bundled_typefaces,
         };
         let text_replay = SkiaTextReplay {
+            pdf_fonts: self.pdf_fonts.as_ref(),
             canvas,
             font_fallback_observer: self.font_fallback_observer.as_ref(),
             raster_target: cache_context.raster_target,
@@ -2502,25 +2518,32 @@ impl LayerRasterRenderer for SkiaLayerRenderer {
 }
 
 impl SkiaLayerRenderer {
+    fn output_font(&self, face: Typeface, size: f32) -> Font {
+        Font::new(
+            super::pdf_fonts::for_output(self.pdf_fonts.as_ref(), &self.font_mgr, face),
+            size,
+        )
+    }
+
     fn make_form_font(&self, size: f32) -> Font {
         let style = FontStyle::default();
         for family in FORM_CJK_FAMILIES {
             if let Some(tf) = match_supplied_family(&self.custom_typefaces, family, style) {
-                return Font::new(tf, size);
+                return self.output_font(tf, size);
             }
             if let Some(tf) =
                 match_system_family_style(&self.font_mgr, &self.system_families, family, style)
             {
-                return Font::new(tf, size);
+                return self.output_font(tf, size);
             }
             // [#3300] 시스템 폰트가 없는 headless 환경에서는 번들 폰트가
             // custom·system 뒤의 최후 폴백으로 form caption의 한국어를 구제한다.
             if let Some(tf) = match_supplied_family(&self.bundled_typefaces, family, style) {
-                return Font::new(tf, size);
+                return self.output_font(tf, size);
             }
         }
         if let Some(tf) = legacy_typeface_for_style(&self.font_mgr, style) {
-            return Font::new(tf, size);
+            return self.output_font(tf, size);
         }
         let mut f = Font::default();
         f.set_size(size);
@@ -2620,7 +2643,7 @@ impl SkiaLayerRenderer {
                     match_supplied_family(&self.bundled_typefaces, &label.font_family, style)
                 });
             let font = typeface
-                .map(|tf| Font::new(tf, label.font_size as f32))
+                .map(|tf| self.output_font(tf, label.font_size as f32))
                 .unwrap_or_else(|| self.make_form_font(label.font_size as f32));
             let mut paint = Paint::default();
             paint.set_anti_alias(true);

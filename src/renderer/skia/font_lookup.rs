@@ -14,10 +14,42 @@ use crate::renderer::{
 #[derive(Clone, Default)]
 pub(super) struct SystemFontFamilies {
     names: HashSet<String>,
+    preferred_truetype: RefCell<HashMap<FontLookupKey, Option<Typeface>>>,
     postscript_faces: Arc<OnceLock<HashMap<String, Typeface>>>,
 }
 
 impl SystemFontFamilies {
+    /// Resolving the OS-selected outline may read an entire TTC on Windows.
+    /// Both the selected face and a miss are stable for this catalog and style.
+    fn preferred_truetype(
+        &self,
+        font_mgr: &FontMgr,
+        family: &str,
+        style: FontStyle,
+    ) -> Option<Typeface> {
+        let key = FontLookupKey {
+            family: family.to_owned(),
+            style: FontStyleCacheKey::new(style),
+        };
+        if let Some(face) = self.preferred_truetype.borrow().get(&key) {
+            return face.clone();
+        }
+        let selected = font_mgr
+            .match_family_style(family, style)
+            .filter(|face| !is_placeholder_typeface(face) && typeface_is_truetype(face))
+            .or_else(|| {
+                matching_system_programs(font_mgr, family, style)
+                    .into_iter()
+                    .find(typeface_is_truetype)
+            });
+        let mut cache = self.preferred_truetype.borrow_mut();
+        if cache.len() >= crate::renderer::font_paths::MAX_NATIVE_CUSTOM_FONT_FILES {
+            cache.clear();
+        }
+        cache.insert(key, selected.clone());
+        selected
+    }
+
     fn postscript_face(&self, font_mgr: &FontMgr, requested: &str) -> Option<Typeface> {
         // OpenType name ID 6은 공백·비ASCII·PostScript 구분 문자를 허용하지 않는다.
         // 일반 family의 이름 수용과 구별하며 없는 한국어 family를 색인하지 않는다.
@@ -103,12 +135,7 @@ pub(super) fn supplied_family_names(data: &[u8], face_index: u32, primary: &str)
     // Read the same collection face that the bounded catalog constructed.
     if let Ok(face) = ttf_parser::Face::parse(data, face_index) {
         for name in face.names() {
-            if !matches!(
-                name.name_id,
-                ttf_parser::name_id::FAMILY
-                    | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
-                    | ttf_parser::name_id::WWS_FAMILY
-            ) {
+            if !is_family_name_record(name.name_id) {
                 continue;
             }
             if let Some(family) = name.to_string() {
@@ -122,11 +149,32 @@ pub(super) fn supplied_family_names(data: &[u8], face_index: u32, primary: &str)
     families
 }
 
+fn is_family_name_record(id: u16) -> bool {
+    matches!(
+        id,
+        ttf_parser::name_id::FAMILY
+            | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
+            | ttf_parser::name_id::WWS_FAMILY
+    )
+}
+
 /// 실제 선택된 face의 family 레코드로 요청 계열 소속을 확인한다.
 pub(super) fn typeface_declares_family(typeface: &Typeface, requested: &str) -> bool {
     let primary = typeface.family_name();
     if primary.eq_ignore_ascii_case(requested) {
         return true;
+    }
+    // DWrite exposes tables for the selected TTC face. A localized name
+    // lookup needs only that face's name records, not the other outlines.
+    if let Some(data) = typeface.copy_table_data(u32::from_be_bytes(*b"name")) {
+        if let Some(table) = ttf_parser::name::Table::parse(data.as_bytes()) {
+            return table.names.into_iter().any(|name| {
+                is_family_name_record(name.name_id)
+                    && name.to_string().is_some_and(|value| {
+                        !value.trim().is_empty() && value.trim().eq_ignore_ascii_case(requested)
+                    })
+            });
+        }
     }
     let matches = |data: &[u8], index| {
         supplied_family_names(data, index, &primary)
@@ -349,31 +397,23 @@ fn typeface_candidates_for_families_for_source(
         // 고르면 선언 순서를 뒤집는다. 공급 출처는 각 face 내부에서 우선한다.
         // 생성 fallback은 family 요청이다. 원본/설치 별칭의 명시 ID 6만
         // 별도 프로그램으로 해석하며 같은 family의 문자 fallback은 유지한다.
-        if let Some(typeface) = (has_system_family(system_families, family)
-            || postscript_requests.contains(family))
-        .then(|| match_system_family_style(font_mgr, system_families, family, style))
-        .flatten()
+        let installed = has_system_family(system_families, family);
+        if let Some(typeface) = (installed || postscript_requests.contains(family))
+            .then(|| match_system_family_style(font_mgr, system_families, family, style))
+            .flatten()
         {
-            if source_ttf && has_system_family(system_families, family) {
+            if source_ttf && installed {
                 // 명시 TrueType 원본은 OS가 선택한 같은 스타일의 face도 확인한다.
                 // 명시 TTF에서는 먼저 OS 원래 선택을 확인하고, 그것이 CFF이면
                 // 같은 스타일의 설치 TTF를 찾는다. 없는 경우 기존 사다리를 유지한다.
-                let original = font_mgr.match_family_style(family, style);
-                let ttf = original
-                    .filter(|face| !is_placeholder_typeface(face) && typeface_is_truetype(face))
-                    .or_else(|| {
-                        matching_system_programs(font_mgr, family, style)
-                            .into_iter()
-                            .find(typeface_is_truetype)
-                    });
-                if let Some(ttf) = ttf {
+                if let Some(ttf) = system_families.preferred_truetype(font_mgr, family, style) {
                     push(ttf, "system", family_order);
                 }
             }
             // 같은 family와 스타일이라도 한글·영문 OTF와 TTF가 서로 다른
             // 글리프를 담을 수 있다. 원 family의 모든 프로그램을 먼저 찾고, 없는
             // 글리프는 같은 family의 다른 프로그램을 대체 family보다 앞에 둔다.
-            if has_system_family(system_families, family) {
+            if installed {
                 // fontconfig의 합성 Bold·Oblique는 매칭 결과의 스타일만 바꾼다.
                 // 실제 Regular 프로그램을 기준으로 같은 family의 분리된
                 // 글리프 공급자를 찾고, paint에서 요청한 굵기를 적용한다.
@@ -695,13 +735,11 @@ fn matching_system_programs(font_mgr: &FontMgr, family: &str, style: FontStyle) 
                 if !typeface_declares_family(&candidate, family) {
                     return None;
                 }
-                let cff = typeface_is_cff(&candidate);
-                Some((candidate, cff))
+                Some(candidate)
             })
             .collect();
         // 같은 family의 TTF → TTC face → OTF를 모두 다른 family보다 앞에 둔다.
-        found.sort_by_key(|(candidate, _)| typeface_program_order(candidate));
-        let found: Vec<_> = found.into_iter().map(|(candidate, _)| candidate).collect();
+        found.sort_by_key(typeface_program_order);
         cache.borrow_mut().insert(key, found.clone());
         found
     })

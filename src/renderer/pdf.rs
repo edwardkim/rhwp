@@ -2515,7 +2515,8 @@ pub fn layer_trees_to_pdf_with_annotations(
         ..Default::default()
     };
     let renderer = crate::renderer::skia::SkiaLayerRenderer::new()
-        .with_font_paths(options.font_paths.as_slice());
+        .with_font_paths(options.font_paths.as_slice())
+        .for_pdf();
     let mut output = Vec::new();
 
     {
