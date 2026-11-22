@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-18
+last_verified: 2026-11-22
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -391,31 +391,33 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 [devel 대비 실루엣 하락 재검토](visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)를 따른다.
 현재 자동90% gate 또는 `not_evaluated`만으로 이 비교를 완료했다고 쓰지 않는다.
 
-### macOS에서 정본 보호 문서의 글꼴 공급 재현
+### 정본 보호 문서의 글꼴 공급 재현
 
 **이 절은 정본 보호 TSV 전체를 비교하는 통합 담당 collaborator·maintainer의 절차다.**
 일반 기여자의 비공개 원본 글꼴 보유 의무를 추가하지 않는다.
-다른 호스트의 수용 결과를 Mac에서 비교할 때는 누락된 기준 글꼴을 먼저 확보한다.
+Linux·Windows·macOS에 동일하게 적용한다.
+문서별 공급 조건은 [공식 글꼴 공급 manifest](../../verification/protected-font-supply/manifest.json)의 문서 key와 backend로
+확인한다. `font_set`의 파일명·SHA·공급 순서와 `font_environment`의 환경 JSON을 함께 적용한다.
+글꼴 파일만 공급하고 지정된 환경 JSON을 생략하지 않는다.
+다른 호스트의 수용 결과를 비교할 때는 누락된 기준 글꼴을 먼저 확보한다.
 환경 차이를 하락 허용 사유로 쓰거나 점수가 높은 대체 글꼴을 임의로 선택하지 않는다.
 중첩 표 `issue2007_nested_cell_pagination_42065.hwp`에는
 [한양중고딕 기호 공급 조건](#중첩-표-보호-문서의-한양중고딕-기호-공급)을 적용한다.
 
-1. 정본 manifest의 해당 데이터셋 `source.evidence_commit`에서 `condition_evidence`를 읽고
-   기록된 SHA-256을 확인한다. 최신 작업 폴더의 같은 이름 JSON으로 대신하지 않는다.
-   연결된 수용 기록의 `condition_sets` 등에서 실제 `font_supply.files`와
-   `font_environment.configuration`을 확인한다. 파일 경로뿐 아니라 프로그램 SHA-256,
+1. 공식 글꼴 공급 manifest에서 해당 문서·backend의 `font_set`과 `font_environment`를 읽고
+   기록된 SHA-256을 확인한다. 프로그램 SHA-256과 공급 순서,
    TTC/OTC의 face index, family/PostScript 이름과 대체·메트릭 설정을 함께 대조한다.
-2. 기준 프로그램과 Mac 사용자 글꼴을 SHA-256으로 대조한다. 필요한 파일이 없으면 출처를
+2. 기준 프로그램과 검증 호스트의 글꼴을 SHA-256으로 대조한다. 필요한 파일이 없으면 출처를
    확인할 수 있는 동일 파일을 확보하고 원본·공급본의 SHA-256을 확인한다.
    파일명·family가 같다는 이유로 다른 버전을 같은 프로그램으로 취급하지 않는다.
    수용 당시 임시 경로가 없어졌어도 기록된 SHA로 파일의 동일성을 확인한다.
    동일 파일을 확보하지 못하면 미확보로 기록하며 비슷한 글꼴로 기준 재현을 선언하지 않는다.
 3. 이관한 검증용 파일은 Git에서 제외된 `output/pr-review/<검증명>/fonts/`에 두고,
-   Mac에서 읽을 수 있는 디렉터리를 `--font-path`로 명시한다. 기준 JSON의 호스트 전용 경로만
+   검증 호스트에서 읽을 수 있는 디렉터리를 `--font-path`로 명시한다. 기준 JSON의 호스트 전용 경로만
    로컬 경로로 대응시키고 대체 규칙·`preserveSourceMetrics` 등의 의미는 유지한다.
    출처 경로와 로컬 경로, 원본·복사본 해시의 대응표를 기록한다. 전체 시스템 글꼴 목록을
    무조건 설치하지 않고 해당 검증의 필요한 프로그램을 공급한다. 비공개 글꼴은 커밋하지 않는다.
-4. 사용자 폰트 등록이 요청된 경우에는 `~/Library/Fonts`에서 동일 SHA의 기존 파일을 재사용하고,
+4. macOS에서 사용자 글꼴 등록이 요청된 경우에는 `~/Library/Fonts`에서 동일 SHA의 기존 파일을 재사용하고,
    누락 파일만 기존 파일을 덮어쓰지 않는 경로에 복사해 CoreText 사용자 범위로 등록한다.
    별도 프로세스에서 각 face의 사용 가능 여부와 실제 선택 파일·SHA를 다시 확인한다.
    등록 성공이나 `fc-list`만으로 CoreText·Native·브라우저의 실제 선택을 입증하지 않는다.
@@ -431,7 +433,7 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
    원본 공급과 PDF가 실제 사용한 대체를 구분하고, 대체가 확인된 경우에만 아래
    [대체 글꼴 설정과 비교 조건](#대체-글꼴-설정과-비교-조건)에 따라 같은 설정을 양쪽에 적용한다.
    점수 상승만으로 대체의 정당성을 판단하지 않는다.
-7. 조건을 맞춘 뒤에도 하락하면 같은 Mac의 base/head 전쪽 TSV와 해당 쪽의 review·overlay,
+7. 조건을 맞춘 뒤에도 하락하면 같은 호스트의 base/head 전쪽 TSV와 해당 쪽의 review·overlay,
    실제 선택 프로그램을 대조한다. base에서도 같은 하락이면 후보 수정의 새 회귀와 구분해
    기록하되, **보호 기준 통과로 처리하지 않는다.** 파일·face·배치·래스터 경로 중 원인을
    확인하고 보정·재검증한다. OS 차이라는 추정, 미세 하락 또는 평균 상승으로 면제하지 않는다.
@@ -439,7 +441,7 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 글꼴·render tree·기준 PDF가 같은데도 브라우저의 가속 경로가 다르면 Chrome 버전과
 CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 기록한다. 최종 Canvas의
 `willReadFrequently: true`만으로 같은 래스터 경로라고 판단하지 않는다. 기준 환경의
-소프트웨어 재생을 Mac에서 재현해야 하면 `VISUAL_SWEEP_CHROME`에
+소프트웨어 재생을 재현해야 하면 `VISUAL_SWEEP_CHROME`에
 `--disable-gpu`를 전달하는 실행 wrapper를 지정하고, 같은 고정 조건으로 base와 후보의
 전쪽을 다시 산출한다. 원 GPU 결과와 조건 대조도 보존하며 다른 조건의 쪽별 최고값을
 합치지 않는다. wrapper·브라우저·JS/WASM·글꼴의 실행 신원과 별도 output을 기록하고,
