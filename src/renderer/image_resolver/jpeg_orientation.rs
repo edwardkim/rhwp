@@ -3,7 +3,7 @@
 //! 브라우저 렌더러에는 방향 값만 1로 바꾼 사본을 넘겨 한/글과 같은 화소 배치로 그리게 한다.
 
 /// 방향이 1(그대로)이 아닌 JPEG면 EXIF 첫 IFD의 방향 값만 1로 바꾼 사본을, 아니면 None을 준다.
-pub(crate) fn upright_jpeg(data: &[u8]) -> Option<Vec<u8>> {
+pub fn upright_jpeg(data: &[u8]) -> Option<Vec<u8>> {
     let at = orientation_value_offset(data)?;
     let little = data.get(at.1..at.1 + 2)? == b"II";
     let value = if little {
@@ -81,65 +81,4 @@ fn ifd0_orientation(data: &[u8], tiff: usize, end: usize) -> Option<(usize, usiz
         }
     }
     None
-}
-
-#[cfg(test)]
-mod tests {
-    use super::upright_jpeg;
-
-    /// SOI + APP1(Exif, IFD0에 방향 하나) + SOS 머리만 있는 JPEG 조각.
-    fn jpeg_with_orientation(value: u16, little: bool) -> Vec<u8> {
-        let u16b = |v: u16| {
-            if little {
-                v.to_le_bytes()
-            } else {
-                v.to_be_bytes()
-            }
-        };
-        let u32b = |v: u32| {
-            if little {
-                v.to_le_bytes()
-            } else {
-                v.to_be_bytes()
-            }
-        };
-        let mut tiff = Vec::new();
-        tiff.extend_from_slice(if little { b"II" } else { b"MM" });
-        tiff.extend_from_slice(&u16b(42));
-        tiff.extend_from_slice(&u32b(8));
-        tiff.extend_from_slice(&u16b(1));
-        tiff.extend_from_slice(&u16b(0x0112));
-        tiff.extend_from_slice(&u16b(3));
-        tiff.extend_from_slice(&u32b(1));
-        tiff.extend_from_slice(&u16b(value));
-        tiff.extend_from_slice(&[0, 0]);
-        tiff.extend_from_slice(&u32b(0));
-        let mut out = vec![0xFF, 0xD8, 0xFF, 0xE1];
-        out.extend_from_slice(&((tiff.len() + 8) as u16).to_be_bytes());
-        out.extend_from_slice(b"Exif\0\0");
-        out.extend_from_slice(&tiff);
-        out.extend_from_slice(&[0xFF, 0xDA, 0x00, 0x02]);
-        out
-    }
-
-    #[test]
-    fn 방향이_있는_jpeg는_방향_값만_1로_바꾼다() {
-        for little in [true, false] {
-            let source = jpeg_with_orientation(6, little);
-            let upright = upright_jpeg(&source).expect("방향 6은 바꾼다");
-            assert_eq!(upright, jpeg_with_orientation(1, little));
-            assert_eq!(upright_jpeg(&upright), None);
-        }
-    }
-
-    #[test]
-    fn 방향이_없거나_jpeg가_아니면_그대로_둔다() {
-        assert_eq!(upright_jpeg(&jpeg_with_orientation(1, true)), None);
-        assert_eq!(upright_jpeg(&[0xFF, 0xD8, 0xFF, 0xDA, 0x00, 0x02]), None);
-        assert_eq!(upright_jpeg(b"\x89PNG\r\n\x1a\n"), None);
-        // 길이가 잘린 EXIF도 넘어서 읽지 않는다.
-        let mut short = jpeg_with_orientation(6, true);
-        short.truncate(20);
-        assert_eq!(upright_jpeg(&short), None);
-    }
 }

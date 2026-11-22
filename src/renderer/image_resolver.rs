@@ -39,7 +39,7 @@ use crate::renderer::render_tree::{
 mod jpeg_orientation;
 mod picture_adjustments;
 mod picture_soft_edge;
-pub(crate) use jpeg_orientation::upright_jpeg;
+pub use jpeg_orientation::upright_jpeg;
 pub(crate) use picture_adjustments::{
     adjusted_picture_bytes, picture_tone_parameters, resolve_page_background_tone,
 };
