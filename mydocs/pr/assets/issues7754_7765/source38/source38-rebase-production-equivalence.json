@@ -1,0 +1,18 @@
+{
+  "recorded": 1795319453.2602813,
+  "head": "46f68fc2abec2b93c7ee0f7743a7054c694d8064",
+  "latest_base": "bd3cd171331e80e79881dc8e9ed37f837ef6be77",
+  "rebase_from": "b5ce4c146a",
+  "production_source": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+  "production_changed_files": [
+    "src/renderer/style_resolver/tests.rs"
+  ],
+  "cfg_test_only_file": "src/renderer/style_resolver/tests.rs",
+  "cfg_test_parent": "src/renderer/style_resolver.rs:2077",
+  "runtime_tools_during_rebase": [
+    "scripts/tests/font_decision_trace_e2e.test.mjs"
+  ],
+  "runtime_note": "Only an e2e test source differs; scripts and browser consumers used by running visual jobs are byte-identical throughout replay. Frozen Native/WASM producers are unchanged.",
+  "producer_receipt_sha256": "4f94f2e2422fa5be5672ea05871a01c4954b6fb785d68a1a2fc55bf8d1ffcb78",
+  "next": "Full Rust gates at rebased head with the integration contract, then remaining visual/functional gates; no claim of completion."
+}
