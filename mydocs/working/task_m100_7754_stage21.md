@@ -40,6 +40,11 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 실행했다. CanvasKit 40조�
 그리기를 마쳤다. 두 렌더러의 대표 인쇄 캡처에서 단독 결합 부호의 점선 원과 정상 결합을
 확인했다. [실제 렌더러와 PNG 해시](../verification/issue7754-nine-fidelity/incoming-pr9322/studio/studio-verification.json)
 
+새 `devel`의 fresh WASM에서 중첩 표 HWP와 한컴 HWPX에 각각 30줄·70줄을 편집했다.
+편집 직후와 HWP·HWPX 저장 후 재열기의 12상태 모두 줄 순서·개수·쪽 소속이 독립 Print와
+일치했다. 42쪽의 실루엣 일치율은 최저 98.07%다.
+[중첩 표 쪽별 TSV와 입력·산출물 해시](../verification/issue7754-nine-fidelity/after-pr9322/nested/wasm/validation.json)
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
