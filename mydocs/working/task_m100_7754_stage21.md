@@ -100,6 +100,11 @@ WASM 해시를 대조했다. 후보의 호스트 글꼴 입력 검사 첫 실행
 글꼴 추적 계약 검사 2개도 통과했다.
 [Studio 로컬 검증](../verification/issue7754-nine-fidelity/after-pr9322/studio-local-validation.json)
 
+새 기준과 후보의 Native 정본 보호 문서 23종·2,023쪽을 완료했다. 쪽별 TSV와 실제 PNG를
+대조해 하락과 누락이 0쪽이고, 기준과 후보의 PNG 2,023쌍이 모두 일치하는 것을 확인했다.
+행정업무운영 편람 HWPX 383쪽을 포함한다.
+[Native 정본 보호 전쪽 비교](../verification/issue7754-nine-fidelity/after-pr9322/protected/native/native-validation.json)
+
 리베이스 직전 기준의 보호 정본 46조건·4,046쪽은 `devel`과 후보의 PNG 해시가 일치했고,
 하락과 누락은 0쪽이었다. [리베이스 전 전쪽 보호 결과](../verification/issue7754-nine-fidelity/protected/validation-before-pr9322.json)
 
