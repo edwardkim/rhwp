@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-16
+last_verified: 2026-11-22
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -20,6 +20,8 @@ last_verified: 2026-11-16
 값 하락 금지는 통합 담당 collaborator·maintainer에게만 추가 적용한다.** 이 특별 검증 전체의
 원본 OTF 확보·설치와 환경 재현을 일반 기여자의 제출 조건으로 요구하지 않는다.
 특별 검증에 필요한 환경 확보·보정·재검증은 통합 담당자가 수행한다.
+Visual Sweep 검증 환경의 글꼴 공급·선택 문제는 메인터너·콜라보레이터에게만 전달하고,
+일반 기여자에게 보정을 요구하지 않는다.
 
 공식 시각 판정과 보호 TSV·회귀 기대값은 Windows 데스크톱 **한컴 2020·2024의
 `Hancom PDF` 프린터 인쇄(Print) PDF**를 기준으로 검증한다. 웹한글기안기, Cairo,
