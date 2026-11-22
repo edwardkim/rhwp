@@ -1,5 +1,17 @@
 # PR #9269 리뷰 — fix(layout): 캡션 문단에 걸린 떠 있는 표를 그리고, 나눌 수 없는 한 행 자리차지 표는 저장된 다음 쪽으로 통째 넘긴다 (#9239)
 
+## #9316 리베이스 후 주장 검증
+
+고정 기준은 `8a196ca7aea2aa3cf32d394f5b7da2bdf4520479`, 검증한 제품 소스는 `954226e426517dc02ef0a15cc739899ab54b7fae`다. 같은 원본과 독립 한컴 Print로 주장 문서를 전쪽 대조했다.
+아래의 이전 검토 자료는 각각 명시한 실행 소스의 기록이다.
+
+| 입력 | 경로 | 쪽수 | 최저값 | 대표 쪽 | 전쪽 TSV 및 이미지 |
+| --- | --- | ---: | ---: | ---: | --- |
+| 9239 | native | 62 | 98.96% | 43 | [TSV](../assets/planet6897_9240_9282_20261121/after-9316/claims/9239/native/silhouette.tsv) · [review](../assets/planet6897_9240_9282_20261121/after-9316/claims/9239/native/review/review_043.png) · [overlay](../assets/planet6897_9240_9282_20261121/after-9316/claims/9239/native/overlay/overlay_043.png) |
+| 9239 | wasm | 62 | 98.96% | 43 | [TSV](../assets/planet6897_9240_9282_20261121/after-9316/claims/9239/wasm/silhouette.tsv) · [review](../assets/planet6897_9240_9282_20261121/after-9316/claims/9239/wasm/review/review_043.png) · [overlay](../assets/planet6897_9240_9282_20261121/after-9316/claims/9239/wasm/overlay/overlay_043.png) |
+
+합성 `fallback.ttf`와 `RHWPHftEmptyPoint.otf` 및 전용 검사는 PR 커밋 범위에서 제거했다. [글꼴 공급 및 출력 증거](../assets/planet6897_9240_9282_20261121/after-9316/README.md)
+
 ## 최종 판정
 
 **통합 검증 완료.** 원 PR의 변경 경계와 전체 Rust 회귀를 확인했다. 동일 공급 조건의 정본 보호 문서 46조건·4,046쪽에서 기존 보호값 및 고정 기준 대비 하락은 0쪽이다. [통합 전쪽 대조](../assets/planet6897_9240_9282_20261121/protected-candidate-v5/fixed-base-comparison.json)

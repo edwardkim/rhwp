@@ -1,5 +1,17 @@
 # PR #9287 리뷰 — 색상표 없는 WMF 1비트 DIB의 레코드 경계 보존 (#9285)
 
+## #9316 리베이스 후 주장 검증
+
+고정 기준은 `8a196ca7aea2aa3cf32d394f5b7da2bdf4520479`, 검증한 제품 소스는 `954226e426517dc02ef0a15cc739899ab54b7fae`다. 같은 원본과 독립 한컴 Print로 주장 문서를 전쪽 대조했다.
+아래의 이전 검토 자료는 각각 명시한 실행 소스의 기록이다.
+
+| 입력 | 경로 | 쪽수 | 최저값 | 대표 쪽 | 전쪽 TSV 및 이미지 |
+| --- | --- | ---: | ---: | ---: | --- |
+| 9285 | native | 9 | 99.78% | 4 | [TSV](../assets/planet6897_9240_9282_20261121/after-9316/claims/9285/native/silhouette.tsv) · [review](../assets/planet6897_9240_9282_20261121/after-9316/claims/9285/native/review/review_004.png) · [overlay](../assets/planet6897_9240_9282_20261121/after-9316/claims/9285/native/overlay/overlay_004.png) |
+| 9285 | wasm | 9 | 99.66% | 4 | [TSV](../assets/planet6897_9240_9282_20261121/after-9316/claims/9285/wasm/silhouette.tsv) · [review](../assets/planet6897_9240_9282_20261121/after-9316/claims/9285/wasm/review/review_004.png) · [overlay](../assets/planet6897_9240_9282_20261121/after-9316/claims/9285/wasm/overlay/overlay_004.png) |
+
+합성 `fallback.ttf`와 `RHWPHftEmptyPoint.otf` 및 전용 검사는 PR 커밋 범위에서 제거했다. [글꼴 공급 및 출력 증거](../assets/planet6897_9240_9282_20261121/after-9316/README.md)
+
 ## 판정
 
 **원 PR 변경 검증 완료.** 고정 devel과 통합 후보에서 원본 전체 9쪽의 SVG를 대조했다. 4쪽의 WMF 변환을
