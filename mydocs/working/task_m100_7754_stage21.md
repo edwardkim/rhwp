@@ -167,6 +167,11 @@ Native 98.17%와 WASM 98.07%였고, 후보는 두 경로 모두 99.48%였다.
 [후보 Native TSV와 PNG 해시](../verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native-after-pr9322.json) ·
 [후보 WASM TSV와 PNG 해시](../verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm-after-pr9322.json)
 
+온라인 검색 제안요청서 2쪽의 fresh WASM은 #9240 수용 증빙 99.94%에서 99.72%로 달라졌다.
+두 증빙의 독립 한컴 Print는 RGB 픽셀이 같았으며, 비교 대상을 교차해도 같은 점수를 얻었다.
+차이는 목차 첫 다섯 항목의 점선 양 끝에 집중됐다. 현재 devel과 후보의 PNG는 일치했다.
+[2쪽의 교차 측정과 확대 판독](../verification/issue7754-nine-fidelity/incoming-pr9318/online-search-rfp-page-002-wasm-comparison.json)
+
 #9318 원본 6종의 현재 기준과 후보 Native를 전쪽 대조했다. 167쪽의 PNG가 모두 일치했고 최저는 98.14%였다. 기준 대비 하락과 누락은 없었다.
 [현재 기준과 후보 Native의 전쪽 검증](../verification/issue7754-nine-fidelity/incoming-pr9318/after-pr9322/native/coverage.json)
 
