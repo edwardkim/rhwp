@@ -425,5 +425,199 @@
         }
       }
     ]
+  },
+  "focused_native_checks": {
+    "selectors": 8,
+    "tests_passed": 48,
+    "failed": 0,
+    "command_template": [
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+      "/usr/local/bin/node",
+      "scripts/run-rust-test.mjs",
+      "<selector>",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "cases": [
+      {
+        "selector": "issue_7754_font_logical_family_ownership",
+        "exit_code": 0,
+        "stdout_sha256": "63c79a46a2639d7a82f7707fff6a38e2809a5040545f2b064074f7859f0b6be5",
+        "tests": {
+          "tests_run": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 366,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.026,
+          "passing_test_inventory_sha256": "12d41dae2e3ae26ccf116b07fadf8f1d045414aa84994d44d6c8fa3c7c96b777"
+        },
+        "elapsed_seconds": 95.27,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "oracle_page_count_baseline",
+        "exit_code": 0,
+        "stdout_sha256": "e80f68ba298375fe0401bffb6ead68bfb822b52a52904dfa6679a4276554adea",
+        "tests": {
+          "tests_run": 17,
+          "passed": 17,
+          "failed": 0,
+          "skipped": 363,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 28.504,
+          "passing_test_inventory_sha256": "1042849ed3e834700af473fec21e78b9db7c345feea6b6314469940e024e99ef"
+        },
+        "elapsed_seconds": 31.05,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_7754_original_frame_and_glyph_origins",
+        "exit_code": 0,
+        "stdout_sha256": "b50f637d0e156d32e7a3a5fc067bdf2cee519af64af77e4a46a48fb274bdbb53",
+        "tests": {
+          "tests_run": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 364,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.456,
+          "passing_test_inventory_sha256": "7323ab3e917d67bad9955a58c940a7d5ecb1e182c2307b60dbb05e7f2a4cf5d6"
+        },
+        "elapsed_seconds": 2.69,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_8418_hft_outline_tracking",
+        "exit_code": 0,
+        "stdout_sha256": "cdb0536b7a2ee2ae1c01bbd9f2e5f06678d7af1bb08ca4778c25d2666f024ca6",
+        "tests": {
+          "tests_run": 3,
+          "passed": 3,
+          "failed": 0,
+          "skipped": 342,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.066,
+          "passing_test_inventory_sha256": "81f56a04a833e5209bc450970bf2f70a13eeeda8a475aabdddaa2e81a73bac8e"
+        },
+        "elapsed_seconds": 2.17,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_8225_group_child_ctrl_data",
+        "exit_code": 0,
+        "stdout_sha256": "77246cb8136f412faca709d66da0a6dd468294e0d92a4e155351949645bf337f",
+        "tests": {
+          "tests_run": 5,
+          "passed": 5,
+          "failed": 0,
+          "skipped": 358,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.213,
+          "passing_test_inventory_sha256": "754894b4500863b11dcc4de16cce20f270119cd4b8fd96b9cb0e516bd2dee3ec"
+        },
+        "elapsed_seconds": 3.13,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_5140_versioned_body_symbols",
+        "exit_code": 0,
+        "stdout_sha256": "6812a7fec879780f287b81ae3f40b5a7712583e68c04c5f9e4d4125d89193503",
+        "tests": {
+          "tests_run": 11,
+          "passed": 11,
+          "failed": 0,
+          "skipped": 351,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.014,
+          "passing_test_inventory_sha256": "27a5160c18ff071a6989afcafaf8bf862a7c5d8d3b39b0d8d095bc94ef88f5f0"
+        },
+        "elapsed_seconds": 188.65,
+        "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4"
+      },
+      {
+        "selector": "issue_5140_hancom_symbol_plane15",
+        "exit_code": 0,
+        "stdout_sha256": "7392378c3f9a7bb70c7547b44b7f578f74d1e37bc3a40f25887504642a855ea2",
+        "tests": {
+          "tests_run": 6,
+          "passed": 6,
+          "failed": 0,
+          "skipped": 357,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.056,
+          "passing_test_inventory_sha256": "3a31a914f4ac12b02da57bcba9ed287e46c97de32bd4ff221b2a25c9490bf45d"
+        },
+        "elapsed_seconds": 26.77,
+        "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4"
+      },
+      {
+        "selector": "issue_5800_hwp5_pua_plane15",
+        "exit_code": 0,
+        "stdout_sha256": "1be12346bb595fdb6e730fcee0146c30b6d77250cc10ab26ce0ae0d41e5857de",
+        "tests": {
+          "tests_run": 3,
+          "passed": 3,
+          "failed": 0,
+          "skipped": 357,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.543,
+          "passing_test_inventory_sha256": "e2e3b85fddf12671c50e9516acb9db50a636cce5e28db48bf275b859c5b7a10f"
+        },
+        "elapsed_seconds": 3.89,
+        "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4"
+      }
+    ]
+  },
+  "fixture_mount_recovery": {
+    "interrupting_attempt": {
+      "label": "focused-issue_5140_versioned_body_symbols",
+      "exit_code": 101,
+      "log_sha256": "8301c1cf668f417e5860d3adac7e10512ea15d559ab0739c9b336e038ee5a3f8",
+      "reason": "Mounting earlier fixture directories hid three test inputs from the current commit."
+    },
+    "old_checkout": "329b5080859ba7aa06934f13890cd1920228a040",
+    "corrected_assets_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+    "mounted_assets_verified": 323,
+    "required_by_failed_compile": [
+      {
+        "path": "mydocs/pr/assets/pr9280/indic-line-breaks.tsv",
+        "git_blob": "558b7ff88feca46e7943c80174a279a5e6ed3449",
+        "sha256": "de20af8fa6935f9c1d425744eb44da25dc995883e812da3fe57af7731ffd6abe",
+        "absent_from_original_root": true
+      },
+      {
+        "path": "mydocs/pr/assets/pr9280/syloti-hancom.tsv",
+        "git_blob": "05df8d7db637b4b366403031ed65514c71504b74",
+        "sha256": "d95c785877c6bd42807f99c03baf6ea44d62e4fc60434cb7bc832245d33b2f4b",
+        "absent_from_original_root": true
+      },
+      {
+        "path": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+        "git_blob": "795dad9298a20f556af5e9034f1357c3c7d30bab",
+        "sha256": "7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3",
+        "absent_from_original_root": true
+      }
+    ],
+    "fixture_mount_audit_sha256": "0a3ce39064788ad37424b04430d8337f2dd7287b5c69b6cce818f93ebdda3098",
+    "original_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2",
+    "corrected_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+    "passed_tests_in_resumed_selector": 11
   }
 }
