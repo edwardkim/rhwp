@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9274] 용지 기준 자리차지 표는 띠다: host 뒤 문단은 띠 위를 먼저 채우고, 띠에 닿는 줄부터 띠 아래로 간다.
-//! 주석 갱신: MEASURE_TIME KST (새 파일)
+//! 주석 갱신: 2026-11-22 13:57 KST (새 파일)
 //!
 //! 입력: #9272 fixture `samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx`
 //! (산업통상자원부 입법예고 공개 문서, HWPX, 한컴오피스 2020 저장, 7쪽).
@@ -15,7 +15,17 @@
 //! - 관계형: 7쪽에서 문단 44~51 의 줄은 맨 위 문단 42 의 줄 아래, 표 위끝 위에 위→아래 순서로 겹치지 않고,
 //!   문단 52~60 의 줄은 표 아래끝 아래에 같은 순서로 놓이며 본문 상자 안에 든다.
 //!
-//! MEASURE_BLOCK
+//! 반례: `issue_8836_absolute_float_host_spacing` — host 줄 자체가 띠에 닿으면 띠 아래로 뛰는 동작은
+//! 그대로 남는다. 그림 띠는 `issue_7696_page_anchored_topbottom_band` 가 지킨다.
+//!
+//! 측정(2026-11-22, 이 파일과 같은 커밋의 코드, base = #9278 head `083da55560`,
+//! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
+//! `silhouette_raw_match_percent`, 글꼴 `ttfs/opensource` — 문서 본 글꼴 없는 환경):
+//! - Native: 7쪽 / 7쪽, 7쪽 99.59(base 99.59 — 옮긴 줄이 빈 줄이라 실루엣이 같다), 전쪽 최저 97.38(3쪽,
+//!   한양신명조 대체 글꼴의 글자 모양 차이만, 줄 위치·줄 나눔은 같다)
+//! - fresh WASM(`scripts/wasm-pack-locked.sh --target web`): 7쪽 / 7쪽, 7쪽 99.82, 전쪽 최저 99.82(7쪽)
+//! - 7쪽 빈 줄 위치는 문단부호 표시 비교 `p7_para_marks_base_vs_head.png` 로 확인했다.
+//! - 증거: `mydocs/pr/assets/issue_9274/`(native·wasm·base 전쪽 TSV, 7쪽 review·overlay PNG, 문단부호 비교 PNG)
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
