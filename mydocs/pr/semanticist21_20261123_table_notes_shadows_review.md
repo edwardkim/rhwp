@@ -12,13 +12,23 @@
 
 ## 통합 보완
 
-#9310과 #9313의 기존 CI는 라이브러리 내부 테스트 수가 증가해 실패했다. 각주·미주 검사 한 개와 그림자 검사 세 개를 자동 수집하는 통합 테스트로 옮겼다. 해당 판정기를 devel 대비로 실행해 내부 테스트 4,092개, 회귀 소스 2,481개와 suite 28개를 확인했다.
+#9310과 #9313의 기존 CI는 라이브러리 내부 테스트 수가 증가해 실패했다. 각주·미주 검사 한 개와 그림자 검사 세 개를 자동 수집하는 통합 테스트로 옮겼다. 해당 판정기를 devel 대비로 실행해 내부 테스트 4,092개, 회귀 소스 2,481개와 suite 28개를 확인했다. 두 판정기의 자체 테스트 36개도 통과했다. [#9310의 원 Lint 작업](https://github.com/edwardkim/rhwp/actions/runs/45042231478/job/137269131371) · [#9313의 원 Lint 작업](https://github.com/edwardkim/rhwp/actions/runs/44991383066/job/137113040611)
 
 중첩 표에 실제 마우스 입력을 보내는 Studio 검사 두 곳에서 첫 파일의 글꼴 선택창과 화면 클릭 좌표를 보완했다. 표 편집 명령과 테스트의 개체 소유·Undo 검사는 원래 경로를 사용한다.
 
 공개 대조군은 중첩 표·한 행 경계 이동·병합 표·인라인 도형·셀 주석·글상자 미주의 HWP/HWPX와 그림자 HWPX다. 한컴에서 각 파일을 직접 PDF로 인쇄하고 원본과 PDF의 SHA-256을 함께 기록했다. [검증 입력 17개와 한컴 Print PDF](assets/semanticist21-20261123-table-notes-shadows/hancom-print.tsv)
 
 원 PR 다섯 건의 GitHub 종료 연결 이슈는 0개다. #9310 본문에서 선행 사례로 언급된 #7860은 접수 당시 이미 닫혀 있었다.
+
+## 편집에서 배치까지 확인한 경로
+
+| 변경 | 생산한 값과 실제 소비 지점 |
+| --- | --- |
+| 중첩 표와 한 행의 셀 경계 | 표 노드의 경로에서 마지막 표 자체를 제외한 부모 경로를 Studio 개체 목록으로 보낸다. 셀 경계 편집은 행의 셀 너비를 바꾼 뒤 `regrid_columns_from_widths`로 열 번호와 병합 범위를 다시 계산한다. 중첩 표 포인터 검사에서 안쪽 표와 바깥 표의 크기를 각각 확인했다. |
+| 표 셀·글상자의 미주 | `paragraph_endnote_refs_with_storage`가 실제 문서 순서로 소유 경로를 수집한다. `resolve_endnote_at`은 그 경로로 원문을 찾고 `get_endnote_source_at_native`는 편집기에 같은 가상 문단의 소유자를 돌려준다. 인쇄본에 두 번째 미주가 실제로 표시되는지도 비교했다. |
+| 도형 그림자 | 프리셋, 도형의 너비·높이와 오프셋을 공통 `shadow::matrix`에 전달한다. 조판은 `body_origin_hu`로 본체 원점을 구하고 paint는 같은 변환으로 레이어와 그 경계를 계산한다. |
+| 인라인 도형 | 도형 속성을 바꾸기 전 문단의 저장 끝 위치를 얻는다. 글자처럼 취급하기를 켜거나 끄면 `reflow_body_inline_object_change`가 저장 줄을 다시 구성하고, 재조판·쪽 나눔과 HWPX 저장이 그 결과를 사용한다. |
+| 병합 표의 열 너비 | `get_column_widths`는 병합 셀 안에서 너비를 모르는 열이 하나일 때 셀 간격과 이미 아는 열 너비를 뺀다. 행·열 삽입이 이 열 너비를 사용한다. 여러 열의 너비가 아직 결정되지 않은 경우에는 기존 기본값 처리를 유지한다. |
 
 ## 원본에서 확인한 수정 전후 차이
 
@@ -35,3 +45,7 @@
 공개 입력 17개의 전체 19쪽을 Native와 최적화한 fresh WASM에서 96 DPI로 그렸다. 한컴 Print 대비 보정 전 2px 실루엣의 전쪽 최저값은 Native 99.65%, WASM 99.68%였다. 두 경로 모두 글상자의 미주와 뒤 문단, 이동한 행의 경계와 중첩 표의 위치가 인쇄본과 일치했다. 그림자 대조군은 양쪽 모두 99.72%였고, 확대해 본체를 기준으로 그림자의 축소·확대·기울기 방향을 확인했다. [전쪽 측정값](assets/semanticist21-20261123-table-notes-shadows/focus-pages.tsv) · [양쪽 프로그램 해시](assets/semanticist21-20261123-table-notes-shadows/focus-results.json) · [인쇄본·Native·WASM 비교](assets/semanticist21-20261123-table-notes-shadows/hancom-native-wasm.png)
 
 Studio 검사 2,832건이 통과했고 기존 2건은 건너뛰었다. 배포 빌드와 실제 Chrome에서 중첩 표 선택·크기 조절·Undo, 행 경계 드래그, 각주 삽입·단축키 등 E2E 다섯 개를 통과했다. [실행 결과](assets/semanticist21-20261123-table-notes-shadows/studio-checks.json)
+
+## 보호 문서 23종
+
+Native와 fresh WASM에서 각각 2,023쪽을 다시 그렸다. 공식 하한 4,046행은 모두 같은 값으로 재현됐고, 누락된 쪽은 0개였다. 편람 HWPX 383쪽, HWP3 원본 763쪽, 시행령 74쪽도 전쪽을 비교했다. 46개 실행 조건에서 원본과 독립 PDF의 해시, 순서가 있는 글꼴 파일·해시 5,811행을 확인했다. [보호 전쪽 TSV](assets/semanticist21-20261123-table-notes-shadows/protected-pages.tsv) · [양쪽 렌더러의 측정 결과](assets/semanticist21-20261123-table-notes-shadows/protected-results.json) · [입력 조건](assets/semanticist21-20261123-table-notes-shadows/protected-inputs.json) · [글꼴 공급 순서](assets/semanticist21-20261123-table-notes-shadows/protected-font-programs.tsv)
