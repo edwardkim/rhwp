@@ -21,6 +21,10 @@ HWPX는 99.99%·100.00%, HWP 2022는 100.00%·100.00%로 복원됐다. 이 두 �
 두 역할의 OLE 입력은 HWP·HWPX 각각 편집 후 두 번 저장·재열기를 실행했다. 독립 CFB/ZIP 검사에서
 OLE 속성, HWPX payload, 편집 표지의 보존을 확인했다.
 
+중첩 표의 Native 검증은 HWP·HWPX 입력에 각각 30줄과 70줄을 삽입해 HWP·HWPX로 저장하고
+다시 열었다. 두 생산본의 12개 대응 상태에서 페이지 소속과 PNG가 일치했다.
+[Native 편집·저장·재열기](../verification/issue7754-nine-fidelity/nested-table-native-edit-save-reopen.json)
+
 원래 아홉 이슈의 Native 대상 583쪽은 최저 98.08%다. Native 정본 보호 23종 2,023쪽은
 새 base와 후보의 PNG SHA-256이 전부 일치하며 기존 하한보다 낮은 쪽은 없다. 두 실행에서
 화학 문서 74·93쪽이 100.00%로 올랐다. [전쪽 비교와 생산 기록](../verification/issue7754-nine-fidelity/protected/native/native-validation.json)
