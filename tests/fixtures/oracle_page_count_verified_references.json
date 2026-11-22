@@ -154,6 +154,42 @@
       "pages": 1,
       "provenance": "desktop_hancom_print",
       "evidence": "samples/issue5140-version-boundary/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/neighbors-v5.hwp",
+      "source_sha256": "fe06995eae6499fa5a4c19e72a7be8491723b4985520ec333794e09984ea995f",
+      "pdf": "pdf/issue5140-version-boundary/neighbors-v5-2020.pdf",
+      "pdf_sha256": "1b3c5488670d8b4f325fccdb868d1350143537df55d898a2051d0de7183bc4e4",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "mydocs/pr/assets/pr9280/neighbors-v6.hwp",
+      "source_sha256": "07429b766c1e0078bf79f2673056a403dc9cb5e904b74eaf4815b4a2c8fa2d18",
+      "pdf": "pdf/issue5140-version-boundary/neighbors-v6-2020.pdf",
+      "pdf_sha256": "0bcdf1ed67959fa858271a4b58453b4906fd4781f5872a76cd5f9f07c818a0b9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp",
+      "source_sha256": "f3898d64da3f8cf8307fa29bd52d9f3c8339b6003e5ab6610b2325684c32c3c1",
+      "pdf": "pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf",
+      "pdf_sha256": "d41e66fecf8b3801b0ed86f109acd95e130df8737506a1a8e72cc8cab15997a9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
+    },
+    {
+      "sample": "samples/issue5800-hancom-symbol.hwp",
+      "source_sha256": "e09951a7ac179344a9f9c3dd9625a6de757a5d5cc5cee2fcb7c76c040959476d",
+      "pdf": "pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf",
+      "pdf_sha256": "af0f46cbc65984afd845f273a60af9486ee4b2476fe408a01b203def567156e9",
+      "pages": 1,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/pr9280/README.md"
     }
   ]
 }

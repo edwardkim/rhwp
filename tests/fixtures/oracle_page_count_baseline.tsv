@@ -4,6 +4,10 @@
 # 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.
 # 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.
 # 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.
+# 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v5-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/neighbors-v5.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/neighbors-v6-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+mydocs/pr/assets/pr9280/neighbors-v6.hwp	1	1
 samples/2010-01-06.hwp	6	6
 samples/2022년 국립국어원 업무계획.hwp	35	35
 samples/20250130-hongbo.hwp	4	4
@@ -216,6 +220,8 @@ samples/issue3765/zone_switch_ladder_understates_page.hwpx	2	2
 samples/issue3837/stored_vpos_rewind_form.hwp	4	4
 samples/issue4514/sample1-repro.hwp	46	46
 samples/issue4889/18098267_nested_fragment_origin.hwp	3	3
+# 검증한 과거 경로: pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp	1	1
 # 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
 samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp	1	1
 # 검증한 과거 경로: pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
@@ -293,6 +299,8 @@ samples/issue5652/표식이있는꺽은선형-행추가.hwpx	1	1
 samples/issue5787/nested_square_table_horz_offset.hwp	1	1
 samples/issue5788/tac_table_missing_anchor_line_spacing.hwp	8	8
 samples/issue5798/offcolumn_float_table_no_band.hwp	1	1
+# 검증한 과거 경로: pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf (desktop_hancom_print), 원본·PDF SHA와 쪽수 고정.
+samples/issue5800-hancom-symbol.hwp	1	1
 samples/issue5809/156518601_p1_square_host.hwpx	1	1
 samples/issue5818/cell_square_logo_text_wrap.hwpx	1	1
 samples/issue5821/condensed_ratio_title_box.hwpx	1	1
