@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#8997] 캡션 그림이 흡수한 빈 host 줄과 리셋 앞 TAC 그림 줄을 저장 사다리대로 조판한다.
-//! 주석 갱신: MEASURE_TIME KST (새 파일)
+//! 주석 갱신: 2026-11-23 04:19 KST (새 파일)
 //!
 //! 입력: `mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp`
 //! (한컴 2020 Print `pdf/issue8997/1543000-202100035-food-security-report-2020.pdf`, 141쪽).
@@ -18,7 +18,15 @@
 //!   2쪽의 첫 본문 개체다.
 //! - 고정형: 전체 쪽수 141(독립 한컴 Print PDF).
 //!
-//! MEASURE_BLOCK
+//! 측정: 2026-11-23, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
+//! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 내용 실루엣), 글꼴은 맑은 고딕(Regular·Bold)·
+//! 바탕 + `ttfs/opensource` 를 Native·WASM 두 경로에 공급. source `6ae490cdba`(코드) 위 시험 커밋.
+//!
+//! - 대상 쪽(1·2·97·98): Native 98.55·99.75·98.89·100.00, fresh WASM 99.46·99.84·98.88·100.00.
+//! - 전체 141쪽(한컴 Print 와 같음). 전쪽 최저 Native 24.29(93쪽)·WASM 25.16(93쪽). 90 미만 9쪽
+//!   (4·6·68·85·90~93·132)은 본문이 수정 전 devel 의 대응 쪽과 같은 기존 미달이며(쪽 번호만 다름)
+//!   90~93쪽은 #8997 의 남은 범위, 나머지는 #9326 으로 분리했다.
+//! - 증거: `mydocs/pr/assets/issue_8997/{native,wasm}/food_silhouette.tsv`, 대표 review·overlay PNG.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
