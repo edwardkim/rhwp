@@ -1,5 +1,5 @@
 //! 관계형·고정형 — [#9039] `/RhwpHwpxOrigin` = 1 HWP 를 HWPX 로 저장해도 다시 열 때 저장 줄을 같은 규칙(HWP)으로 읽는다.
-//! 주석 갱신: MEASURE_TIME KST (새 파일)
+//! 주석 갱신: 2026-11-22 20:45 KST (새 파일)
 //!
 //! 입력: `samples/issue2439_zero_offset_coanchored_float_exclusion.hwp` — `/RhwpHwpxOrigin` 값 `1`
 //! (원본 HWPX 저장 줄 계약 #8310 이전의 rhwp 변환본). 본문 33문단의 저장 줄이 모두 `vertpos=0` 이다.
@@ -12,7 +12,14 @@
 //!   HWPX → HWP 로 되돌린 문서도 원본과 같은 줄·쪽별 본문이다.
 //! - 고정형: 실리는 표지 값은 원본 스트림 값 `1` 이다. 반례로 값 `2`(#8310) HWP 와 한컴 HWPX 는 표지를 싣지 않는다.
 //!
-//! MEASURE_BLOCK
+//! 측정: 2026-11-22, base `8a196ca7ae` / head `646515d993`. 이 표본의 독립 한컴 Print PDF 는 저장소에 없고
+//! (`pdf/issue2439/` 는 `samples/issue2439/` 의 다른 원본용) 측정 환경(mac)에 한/글이 없어 raw 실루엣
+//! 일치율은 측정하지 않았다. 이 검사는 쪽 좌표를 고정하지 않으며, 시각 근거는 같은 원본의 출력 대조로 대신한다.
+//! - 원본 HWP SVG ↔ HWPX 저장 후 다시 연 SVG(값 `1` 표본 10건): base·head 모두 바이트 동일, 쪽수 동일
+//!   (issue2439 1쪽). `--verify` 는 base exit 3(33건) → head exit 0.
+//! - 저장소 표본 전체 SVG A/B(base ↔ head 직접 열기): 1877 파일 차이 0.
+//! - 편람 HWPX Native 383쪽 `--handbook-gate` 통과.
+//! 증거: `output/pr-review/9039/final.log`(로컬, 커밋 안 함), PR 본문.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
