@@ -666,6 +666,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         cell_format_vpos_dirty: _,
         cell_vpos_reset: _,
         stored_flow_shifted: _,
+        cell_lines_edited: _,
         // 행 메트릭의 출처와 계산한 번호는 직렬화 원문에 없는 파생값이다.
         layout_space_metrics: _,
         hwp3_saved_space_corrections: _,

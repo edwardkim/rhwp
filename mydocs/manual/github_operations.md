@@ -422,6 +422,33 @@ review-only 재사용에서는 검증한 code candidate와 실행 신원을 확�
 처음 정책을 바꾸는 PR은 trusted base의 기존 분류에 따라 Full CI가 실행될 수 있다.
 그 실행 시간을 frontend-only 선택 실행의 개선 실측으로 보고하지 않는다.
 
+#### Render Diff와 Visual Sweep 결과 찾기
+
+Actions 실행의 해당 시도에서 `Canvas visual diff` 작업 요약을 열면 비교 종류, 기존 판정 또는 참고 결과,
+실제 비교한 문서·쪽, 근거 파일의 경로와 SHA-256을 확인할 수 있다. 같은 색인은 `render-diff-artifacts`의
+`output/render-diff-build/evidence.md`에 포함된다. 요약의 다운로드 링크는 해당 작업이 올린 artifact ID를
+가리킨다. Canvas legacy/layer, Direct/compatibility PDF, CanvasKit readiness는 각각 기존 gate 결과를
+기록한다. Canvas와 compatibility PDF raster 비교는 참고용이다.
+
+`build.json`의 source SHA는 실제 WASM 빌드에 사용한 checkout을 뜻한다. PR head와 합친 커밋을 빌드하면
+두 SHA가 다를 수 있다. `consumption/`에는 브라우저가 받은 WASM 해시, `native-build.txt`에는 Native PDF
+CLI의 빌드 소스와 실행 파일 해시가 있다. 이전 artifact는 남아 있는 기록만 표시한다.
+
+ZIP이나 압축을 푼 디렉터리에 같은 색인 명령을 실행할 수 있다. 아래 예는 run `44925877031`의 첫 번째 시도다.
+
+```sh
+python3 scripts/render_diff_evidence.py render-diff-artifacts.zip \
+  --run-url https://github.com/edwardkim/rhwp/actions/runs/44925877031/attempts/1 \
+  --pr-head f0f9fc76b4306aef9571467e1a3453eee6e68ff4 \
+  --tested-sha 83835e4daf912fc4af47c69f415a72bf61b6aa94 --json-output evidence.json
+```
+
+실제로 실행한 [Print Visual Sweep](verification/visual_sweep_guide.md)의 실루엣 결과를 함께 찾으려면
+입력 루트 아래 결과 디렉터리를 `--print-sweep <상대 경로>`로 지정한다. Native와 fresh WASM에 대해
+반복 지정할 수 있다. Print 출처가 기록된 완료 manifest와 쪽 목록·raw 일치율이 같은 `silhouette.tsv`가 함께 있어야
+두 파일이 표시된다. 기준 PDF의 인쇄 출처와 PR 판정은 Visual Sweep 절차에 따라 확인한다.
+색인 명령은 기존 파일만 읽으므로 비교·빌드·캡처를 다시 실행할 필요가 없다.
+
 ### 7.5 workflow PR의 후행 review 기록
 
 후속 기록은 [옵션 2: 원 PR 병합 후 별도 기록 PR](pr_review/post_merge.md#711-ci-변경-pr은-옵션-2로-후속-기록)로
@@ -847,3 +874,11 @@ gh workflow enable <workflow-file> --repo edwardkim/rhwp
 새 GitHub 운영 절차가 생기면 먼저 이 문서의 기존 등급과 수명주기로 표현할 수 있는지 확인한다. 별도
 매뉴얼이 필요하면 이 문서에 경계와 라우팅만 추가한다. 정보구조 또는 canonical 관계를 바꾸면
 [문서 링크와 메타데이터 로컬 검사](markdown_link_check_guide.md)를 실행한다.
+
+## PR CI 요약 코멘트
+
+devel 대상 PR에는 CI, CodeQL, Render Diff의 현재 head·run·attempt를 확인한 보고 코멘트 하나를 유지한다. 실패 job과 실제 완료된 시각 검증 단계는 GitHub 실행 기록에 연결한다. 검증 항목, 결과, 리뷰 포인트, 근거를 한 표에 표시한다. 실패 단계와 취소 작업을 먼저 표시하고 해당 head에서 확인한 실행만 포함한다. «최근 실행 갱신»은 표에 포함된 GitHub 실행의 가장 최근 updated_at을 UTC로 표시한다. 이 코멘트의 게시 여부는 병합 판정에 사용하지 않는다.
+
+Render Diff는 `output/render-diff-build/evidence.json`(schema_version 1)을 수치와 출처의 공통 색인으로 쓴다. `run_id`, `run_attempt`, `pr_head`, `tested_sha`로 실행을 구별한다. `comparisons`의 검사별 `metrics`, `pages`, `evidence` 및 `files`의 경로별 SHA-256을 사용하면 Markdown 없이 결과를 읽을 수 있다. 빌드와 실행 증거는 `build`, `native_build`, `consumption`에 기록한다. 실제 측정이 확인된 Print만 포함하며, 측정 커밋과 TSV 해시·쪽·점수가 일치해야 한다.
+
+보고 workflow는 현재 attempt가 올린 소형 `render-diff-index-<run_id>-<attempt>`의 JSON만 읽는다. 압축을 디스크에 풀거나 PR 코드를 실행하지 않는다. 결과 파일이 없는 완료 단계는 결과 미확인으로 표시한다. 기본 브랜치 반영 뒤 실제 PR에서 최초 코멘트 ID와 재실행 뒤 ID가 같은지 확인한다.

@@ -14,7 +14,7 @@ use crate::renderer::composer::{reflow_line_segs, restamp_indentation, Paragraph
 
 impl DocumentCore {
     /// 구역의 각주 번호를 문서 순서대로 1부터 다시 매긴다.
-    fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
+    pub(crate) fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
         let section = &mut self.document.sections[section_idx];
         let mut footnote_number = 1u16;
         for para in &mut section.paragraphs {
@@ -306,6 +306,67 @@ impl DocumentCore {
         }
     }
 
+    /// 다단 쪽에서 단 폭 각주 영역에 그리는 본문 각주의 영역 폭(px). 쪽 폭 영역이면 None.
+    fn footnote_column_frame_width(
+        &self,
+        section_idx: usize,
+        para_idx: usize,
+        control_idx: usize,
+    ) -> Option<f64> {
+        use crate::renderer::footnote_frames::FramePolicy;
+        use crate::renderer::pagination::FootnoteSource;
+
+        let section = self.document.sections.get(section_idx)?;
+        if !matches!(
+            section.paragraphs.get(para_idx)?.controls.get(control_idx),
+            Some(Control::Footnote(_))
+        ) {
+            return None;
+        }
+        let pages = &self.pagination.get(section_idx)?.pages;
+        pages.iter().find_map(|page| {
+            let note = page.footnotes.iter().find(|note| {
+                matches!(note.source, FootnoteSource::Body { para_index, control_index }
+                    if para_index == para_idx && control_index == control_idx)
+            })?;
+            let policy = FramePolicy {
+                placement: section.section_def.footnote_shape.placement,
+                columns: page.layout.column_areas.len() as u16,
+            };
+            (!policy.spans_page()).then(|| policy.area(&page.layout, note.column_index).width)
+        })
+    }
+
+    /// 각주 영역 폭이 바뀌면(단 각주 위치·단 수·단 간격·쪽 여백) 구역의 본문 각주 줄을 새 폭으로 나눈다.
+    /// 영역 폭은 쪽 배정을 따르므로 새 조판으로 쪽을 나눈 뒤에 부른다.
+    pub(crate) fn reflow_body_footnotes(&mut self, section_idx: usize) {
+        let notes: Vec<(usize, usize, usize)> = self.document.sections[section_idx]
+            .paragraphs
+            .iter()
+            .enumerate()
+            .flat_map(|(para, paragraph)| {
+                paragraph.controls.iter().enumerate().filter_map(
+                    move |(control, ctrl)| match ctrl {
+                        Control::Footnote(note) => Some((para, control, note.paragraphs.len())),
+                        _ => None,
+                    },
+                )
+            })
+            .collect();
+        if notes.is_empty() {
+            return;
+        }
+        for (para, control, count) in notes {
+            for note_para in 0..count {
+                self.reflow_footnote_paragraph(section_idx, para, control, note_para);
+            }
+        }
+        self.document.sections[section_idx].raw_stream = None;
+        self.recompose_section(section_idx);
+        self.paginate_if_needed();
+        self.invalidate_page_tree_cache();
+    }
+
     /// 각주 문단 리플로우
     pub(crate) fn reflow_footnote_paragraph(
         &mut self,
@@ -316,14 +377,18 @@ impl DocumentCore {
     ) {
         use crate::renderer::hwpunit_to_px;
 
-        // 각주 영역 폭 = 페이지 텍스트 영역 폭
-        let available_width = {
-            let section = &self.document.sections[section_idx];
-            let page_def = &section.section_def.page_def;
-            let text_width =
-                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
-            hwpunit_to_px(text_width, self.dpi)
-        };
+        // 각주 영역 폭 = 페이지 텍스트 영역 폭. 다단 쪽의 각 단 아래·오른쪽 단 아래 각주는
+        // 그 단 폭 영역에 그리므로(한컴 12.30) 저장 줄도 그 폭으로 나눈다.
+        let available_width = self
+            .footnote_column_frame_width(section_idx, para_idx, control_idx)
+            .unwrap_or_else(|| {
+                let section = &self.document.sections[section_idx];
+                let page_def = &section.section_def.page_def;
+                let text_width = page_def.width as i32
+                    - page_def.margin_left as i32
+                    - page_def.margin_right as i32;
+                hwpunit_to_px(text_width, self.dpi)
+            });
 
         // 문단 모양 변경 직후에는 새 id가 이전 rebuild의 styles에 없을 수 있다.
         // 머리말/꼬리말과 셀의 재조판처럼 현재 doc_info에서 해석한 같은 스타일로
@@ -568,7 +633,7 @@ impl DocumentCore {
         // [Task #2337] undo 재삽입용 삭제 텍스트 확보 (HF 와 동일 방식 — char 슬라이스로
         // delete_text_at 클램핑과 동일 범위). 역연산 삭제 커맨드가 사용한다.
         let deleted_text: String = fn_para.text.chars().skip(char_offset).take(count).collect();
-        fn_para.delete_text_at(char_offset, count);
+        fn_para.delete_text_at_removing_owned_controls(char_offset, count);
 
         self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
 

@@ -7,6 +7,8 @@ last_verified: 2026-07-30
 
 # Task #3486 Stage 12-A — 중단 가능한 visual sweep 증적 계약
 
+**2026-11-21 판독 정정.** 아래 p3의 제품명 현대화 설명을 정정한다. 두 인쇄본의 3쪽에서 중성은 아래아이며, 표 안에서도 원문 표기를 그려야 한다. [당시 인쇄본과 한컴 2020 인쇄본의 확대 비교](../../pr/assets/semanticist21-20261121/legacy-product-source-glyphs.png)
+
 - 이슈: [#3486](https://github.com/edwardkim/rhwp/issues/3486)
 - 기준 `devel`: `42e1f125dae664bf50f2053784b5e0a213bea2e2`
 - 선행 결론: [Stage 11](task_m100_3486_stage11.md)의 HWP3 전역 decode 보정·`ᄒᆞᆫ → 한` 치환 배제

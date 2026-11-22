@@ -1,5 +1,8 @@
 // 관계형: 실제 FontFace 주 프로그램의 Print 기하·후보 소유·Screen 보존을 검사한다.
-// 주석 갱신: 2026-11-15 05:42:03 KST. 공개 OFL TTF·MIT CFF 자원만 공급하며 실물 px 핀·시스템 글꼴을 요구하지 않는다.
+// 주석 갱신 2026-11-21T20:45:00+09:00. 직전 파일 변경 ddeb30aaf5cb1fe085335ffe7beee0bf76d7ec83 (2026-11-15T08:41:39+09:00).
+// 2026-11-21 형식 사양서 71쪽, 독립 인쇄 PDF와 96 DPI 2px raw 비교. 해당 쪽 Native/fresh WASM 각각 100.00%, 전체 71쪽 최저 각각 99.92%.
+// 옛한글의 원 윤곽과 출력은 mydocs/pr/assets/semanticist21-20261121/validation/final/spec13-p71-primary-glyph.json에 기록했다.
+// 공개 OFL TTF·MIT CFF 자원만 공급하며 실물 px 핀·시스템 글꼴을 요구하지 않는다.
 // 실물 보정 근거: mydocs/pr/assets/issue_9060/print-primary-glyph-geometry-analysis.md.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
@@ -152,4 +155,36 @@ test('완전한 CFF의 결측만 확인된 다음 TTF의 Print 윤곽으로 이�
   assert.ok(!rows[1].texts.includes('H'), '모든 CFF의 결측이 확인됐을 때만 다음 실제 프로그램을 재생한다');
   assert.ok(rows[1].paths > rows[0].paths && rows[1].ink > 0);
   assert.equal(rows[1].tree, rows[0].tree);
+});
+
+test('Print에 등록한 보통 굵기 프로그램이 자소열의 글리프를 소유할 때 윤곽을 사용한다', async t => {
+  const page = await setup(t, 'print-primary-jamo');
+  const result = await page.evaluate(async () => {
+    const family = 'RHWP Print Jamo';
+    const latin = await geometryFont(family, 'latin');
+    const korean = await geometryFont(family, 'regular');
+    const doc = geometryDocument(family, 'hft', '가');
+    function paint(profile) {
+      const {texts, paths, ink, tree} = geometryPaint(doc, profile);
+      return {texts, paths, ink, tree};
+    }
+    try {
+      const before = paint('print');
+      doc.registerPrintFontPrimary(family, latin, 0, false);
+      const missing = paint('print');
+      doc.registerPrintFontPrimary(family, korean, 0, false);
+      const selected = paint('print');
+      const screen = paint('screen');
+      doc.clearPrintFontPrimary(family);
+      return {before, missing, selected, screen, cleared: paint('print')};
+    } finally {
+      doc.free();
+    }
+  });
+  for (const fallback of [result.before, result.missing, result.screen, result.cleared]) {
+    assert.ok(fallback.texts.includes('가'));
+  }
+  assert.ok(!result.selected.texts.includes('가'));
+  assert.ok(result.selected.paths > result.missing.paths && result.selected.ink > 0);
+  assert.equal(result.selected.tree, result.before.tree);
 });

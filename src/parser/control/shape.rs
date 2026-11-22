@@ -42,37 +42,50 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
     // 자신의 레코드만 처리하고, 중첩 컨트롤의 하위 레코드는 무시
     let base_level = child_records.first().map(|r| r.level).unwrap_or(0);
     let mut shape_component_parsed = false;
+    // 자기 SHAPE_COMPONENT는 가장 얕은 것이다. 캡션 글에 든 캡션 달린 그림의 것은 더 깊다.
+    let own_sc_level = child_records
+        .iter()
+        .filter(|r| {
+            r.tag_id == tags::HWPTAG_SHAPE_COMPONENT
+                || r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER
+        })
+        .map(|r| r.level)
+        .min();
 
     // 그룹 컨테이너 사전 감지
     let has_container_tag = child_records
         .iter()
         .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER);
-    let has_child_sc = if let Some((sc_idx, sc_rec)) = child_records
-        .iter()
-        .enumerate()
-        .find(|(_, r)| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT)
-    {
-        let sc_level = sc_rec.level;
-        child_records[sc_idx + 1..]
-            .iter()
-            .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && r.level == sc_level + 1)
-    } else {
-        false
-    };
+    let has_child_sc =
+        if let Some((sc_idx, sc_rec)) = child_records.iter().enumerate().find(|(_, r)| {
+            r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && Some(r.level) == own_sc_level
+        }) {
+            let sc_level = sc_rec.level;
+            child_records[sc_idx + 1..]
+                .iter()
+                .any(|r| r.tag_id == tags::HWPTAG_SHAPE_COMPONENT && r.level == sc_level + 1)
+        } else {
+            false
+        };
     if has_container_tag {
         is_container = true;
     } else if has_child_sc {
         is_container = true;
     }
-    // SHAPE_COMPONENT 인덱스 찾기 (캡션/텍스트박스 LIST_HEADER 구분에 필요)
+    // SHAPE_COMPONENT 인덱스 찾기 (캡션/텍스트박스 LIST_HEADER 구분에 필요).
+    // 자기 레벨(가장 얕은)의 것만 본다. 캡션 글에 캡션 달린 그림이 들면 그 그림의 SHAPE_COMPONENT가
+    // 먼저 나와, 그것을 잡으면 캡션이 그 앞에서 잘리고 안쪽 그림이 사각형 글상자가 된다.
     let shape_comp_idx = child_records.iter().position(|r| {
-        r.tag_id == tags::HWPTAG_SHAPE_COMPONENT
-            || r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER
+        (r.tag_id == tags::HWPTAG_SHAPE_COMPONENT
+            || r.tag_id == tags::HWPTAG_SHAPE_COMPONENT_CONTAINER)
+            && Some(r.level) == own_sc_level
     });
 
     for record in child_records {
         match record.tag_id {
-            tags::HWPTAG_SHAPE_COMPONENT if !shape_component_parsed => {
+            tags::HWPTAG_SHAPE_COMPONENT
+                if !shape_component_parsed && Some(record.level) == own_sc_level =>
+            {
                 shape_component_parsed = true;
                 let parsed = parse_shape_component_full(&record.data);
                 drawing.shape_attr = parsed.attr;
@@ -85,7 +98,9 @@ pub(crate) fn parse_gso_control(ctrl_data: &[u8], child_records: &[Record]) -> C
                 drawing.inst_id = parsed.inst_id;
                 drawing.shadow_alpha = parsed.shadow_alpha;
             }
-            tags::HWPTAG_SHAPE_COMPONENT_CONTAINER if !shape_component_parsed => {
+            tags::HWPTAG_SHAPE_COMPONENT_CONTAINER
+                if !shape_component_parsed && Some(record.level) == own_sc_level =>
+            {
                 shape_component_parsed = true;
                 is_container = true;
                 let parsed = parse_shape_component_full(&record.data);

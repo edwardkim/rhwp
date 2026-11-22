@@ -4106,6 +4106,7 @@ mod header_footer_layout;
 mod hidden_paragraph_marker;
 mod nested_table_origin;
 mod note_reference;
+pub(crate) use note_reference::note_reference_advance;
 mod note_separator;
 mod paragraph_border;
 mod paragraph_layout;
@@ -5403,10 +5404,6 @@ impl LayoutEngine {
             page_border_fill,
         );
         tree.root.children.push(footer_node);
-
-        // composer를 거치지 않고 직접 만들어진 표 셀/머리말 TextRun까지 같은
-        // 한컴 PDF 표시 계약을 적용한다. 원문 IR과 char offset은 변경하지 않는다.
-        tree.apply_legacy_hancom_product_display_projection();
 
         // [#6121] 셀 안 anchored 개체 ↔ 셀 본문 텍스트 페인트 순서 정합.
         Self::settle_cell_anchored_objects(&mut tree.root);
@@ -6865,6 +6862,7 @@ impl LayoutEngine {
             // 자동 번호는 저장 본문 줄의 원점을 쓰지 않고 위 target_area에서
             // 독립 배치한다. 본문 HFT의 종이 CTM을 다시 적용하지 않는다.
             page_num_style.hft_print_frame = false;
+            page_num_style.source_dc_frame = false;
 
             // [#3048] 폭은 실제 폰트 메트릭으로 잰다. 종전 `문자수 × 크기 × 0.6` 은
             // 장식 공백이 든 `- 1 -`(5자)을 30pt 로 과대평가해(실측 24.8pt) 가운데·

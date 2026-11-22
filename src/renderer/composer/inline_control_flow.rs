@@ -77,6 +77,15 @@ pub(crate) fn flow_inline_controls_with_storage<S: crate::storage::Storage>(
     styles: &ResolvedStyleSet,
     storage: &S,
 ) -> Result<Vec<FlowInlineControl>, S::Error> {
+    measured_flow_controls(para, styles, storage, true)
+}
+
+pub(super) fn measured_flow_controls<S: crate::storage::Storage>(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    storage: &S,
+    include_footnote_advances: bool,
+) -> Result<Vec<FlowInlineControl>, S::Error> {
     Ok({
         if para.controls.is_empty() {
             return Ok(Vec::new());
@@ -95,6 +104,31 @@ pub(crate) fn flow_inline_controls_with_storage<S: crate::storage::Storage>(
                     // 재조판 폭을 대상으로 하므로 표는 기존 control 배치 경로에 둔다.
                     if matches!(control, Control::Table(_)) {
                         return None;
+                    }
+                    if let Control::Footnote(note) = control {
+                        if !include_footnote_advances {
+                            return None;
+                        }
+                        let style_id =
+                            super::find_active_char_shape(&para.char_shapes, utf16_position);
+                        let advance = crate::renderer::layout::note_reference_advance(
+                            control,
+                            note.number,
+                            styles,
+                            style_id,
+                        );
+                        let dpi = styles.resolved_dpi.unwrap_or(crate::renderer::DEFAULT_DPI);
+                        // 위 첨자 참조의 전진은 본문 줄에, 각주 내용의 높이는 단 아래에 속한다.
+                        return (text_len > 0 && char_position <= text_len).then_some(
+                            FlowInlineControl {
+                                char_position,
+                                utf16_position,
+                                width_hwp: px_to_hwpunit(advance, dpi),
+                                height_hwp: 0,
+                                baseline_distance_hwp: None,
+                                spacing_height_hwp: None,
+                            },
+                        );
                     }
                     if let Control::Ruby(ruby) = control {
                         let (width_hwp, height_hwp, baseline) =

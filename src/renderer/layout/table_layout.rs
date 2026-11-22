@@ -9652,8 +9652,23 @@ impl LayoutEngine {
                                 let cell_bottom = (content_cell_y + cell_h)
                                     .min(inner_area.y + inner_area.height)
                                     .max(cell_top);
-                                if pic_h <= (cell_bottom - cell_top) + 0.5 {
-                                    pic_y.clamp(cell_top, (cell_bottom - pic_h).max(cell_top))
+                                // 한컴 12.30처럼 아래 캡션도 칸 안에 들도록 캡션 띠까지 함께 묶는다.
+                                // 위 캡션은 저장 세로 오프셋이 자리를 정하므로 건드리지 않는다.
+                                let below = match pic.caption.as_ref() {
+                                    Some(caption)
+                                        if caption.direction
+                                            == crate::model::shape::CaptionDirection::Bottom =>
+                                    {
+                                        self.calculate_caption_height(&pic.caption, styles)
+                                            + hwpunit_to_px(caption.spacing as i32, self.dpi)
+                                    }
+                                    _ => 0.0,
+                                };
+                                if pic_h + below <= (cell_bottom - cell_top) + 0.5 {
+                                    pic_y.clamp(
+                                        cell_top,
+                                        (cell_bottom - pic_h - below).max(cell_top),
+                                    )
                                 } else {
                                     pic_y
                                 }
@@ -18111,6 +18126,11 @@ impl LayoutEngine {
                                 self.nested_plain_text_row_has_line_cuts(
                                     &row_cells,
                                     &row_units[index],
+                                    // 저장 개체가 행 경계에서 닫히면 그 행의 소유권은
+                                    // 원본 조각에 있다. 측정 높이 차이만으로 이를 다시 자르지 않는다.
+                                    !row_has_plain_source_boundary
+                                        && stored_object_frame_row.is_none()
+                                        && *rh > row_declared_px + 0.5,
                                 )
                             });
                             let row_has_blank_source_frame = row_units.iter().any(|units| {
@@ -18310,9 +18330,28 @@ impl LayoutEngine {
                                         }
                                     }
 
+                                    // 저장된 글줄이 다음 쪽의 원점에서 다시 시작하는
+                                    // 경우에도 그 줄까지의 간격은 닫는 조각에 속하지 않는다.
+                                    let next_starts_source_frame = row_has_plain_source_boundary
+                                        && driver_units.get(fragment_index + 1).is_some_and(
+                                            |next| {
+                                                next.page_frame_reset_before
+                                                    && next.stored_frame_break_before
+                                            },
+                                        );
+                                    let projected_advance = if (row_has_plain_line_cuts
+                                        || next_starts_source_frame)
+                                        && !fragment.terminal
+                                    {
+                                        reflowed_nested_row::shared_closing_line_advance(
+                                            &row_units, &fragment,
+                                        )
+                                    } else {
+                                        0.0
+                                    };
                                     units.push(CellUnit {
                                         height: uh,
-                                        following_line_advance: 0.0,
+                                        following_line_advance: projected_advance,
                                         reflowed_line_slot: false,
                                         hard_break_before,
                                         stored_frame_break_before,
@@ -21305,6 +21344,11 @@ impl LayoutEngine {
         end_cut: usize,
         styles: &ResolvedStyleSet,
     ) -> f64 {
+        if let Some(advance) =
+            reflowed_nested_row::continuation_closing_advance(units, start_cut, end_cut)
+        {
+            return advance;
+        }
         if let Some(trim) =
             self.stored_inline_picture_opening_tail(table, cell, units, start_cut, end_cut)
         {
@@ -31172,6 +31216,7 @@ mod row_cut_tests {
             tac_controls: Vec::new(),
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            is_caption: false,
             horizontal_shaping: None,
             frame_geometry: None,
         }

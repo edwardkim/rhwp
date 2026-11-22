@@ -1,0 +1,110 @@
+[
+  {
+    "stage": "column-spacing",
+    "backend": "native",
+    "page": 10,
+    "original": "글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 ᄒᆞᆫ글 제품군(글 워디안, 글 2002, 글 ",
+    "displayed": "ᄒᆞᆫ글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 한글 제품군(한글 워디안, 한글 2002, ᄒᆞᆫ글 ",
+    "equivalent": false,
+    "silhouette_raw_match_percent": 99.99732
+  },
+  {
+    "stage": "column-spacing",
+    "backend": "wasm",
+    "page": 10,
+    "original": "글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 ᄒᆞᆫ글 제품군(글 워디안, 글 2002, 글 ",
+    "displayed": "ᄒᆞᆫ글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 한글 제품군(한글 워디안, 한글 2002, ᄒᆞᆫ글 ",
+    "equivalent": false,
+    "silhouette_raw_match_percent": 99.99733
+  },
+  {
+    "stage": "verified-entry-count",
+    "backend": "native",
+    "page": 10,
+    "original": "글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 ᄒᆞᆫ글 제품군(글 워디안, 글 2002, 글 ",
+    "displayed": "ᄒᆞᆫ글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 ᄒᆞᆫ글 제품군(ᄒᆞᆫ글 워디안, ᄒᆞᆫ글 2002, ᄒᆞᆫ글 ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  },
+  {
+    "stage": "verified-entry-count",
+    "backend": "wasm",
+    "page": 10,
+    "original": "글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 ᄒᆞᆫ글 제품군(글 워디안, 글 2002, 글 ",
+    "displayed": "ᄒᆞᆫ글 문서 파일 형식 5.0은 2000년 10월 이후에 출시된 ᄒᆞᆫ글 제품군(ᄒᆞᆫ글 워디안, ᄒᆞᆫ글 2002, ᄒᆞᆫ글 ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  },
+  {
+    "stage": "column-spacing",
+    "backend": "native",
+    "page": 11,
+    "original": "WCHAR는 글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 글의 내부 코드는 한글, ",
+    "displayed": "WCHAR는 ᄒᆞᆫ글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. ᄒᆞᆫ글의 내부 코드는 한글, ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  },
+  {
+    "stage": "column-spacing",
+    "backend": "wasm",
+    "page": 11,
+    "original": "WCHAR는 글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 글의 내부 코드는 한글, ",
+    "displayed": "WCHAR는 ᄒᆞᆫ글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. ᄒᆞᆫ글의 내부 코드는 한글, ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  },
+  {
+    "stage": "verified-entry-count",
+    "backend": "native",
+    "page": 11,
+    "original": "WCHAR는 글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 글의 내부 코드는 한글, ",
+    "displayed": "WCHAR는 ᄒᆞᆫ글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. ᄒᆞᆫ글의 내부 코드는 한글, ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  },
+  {
+    "stage": "verified-entry-count",
+    "backend": "wasm",
+    "page": 11,
+    "original": "WCHAR는 글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. 글의 내부 코드는 한글, ",
+    "displayed": "WCHAR는 ᄒᆞᆫ글의 내부 코드로 표현된 문자 한 글자를 표현하는 자료형이다. ᄒᆞᆫ글의 내부 코드는 한글, ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  },
+  {
+    "stage": "column-spacing",
+    "backend": "native",
+    "page": 71,
+    "original": "ᄒᆞᆫ글 문서 파일 구조 5.0 ",
+    "displayed": "한글 문서 파일 구조 5.0 ",
+    "equivalent": false,
+    "silhouette_raw_match_percent": 99.95091
+  },
+  {
+    "stage": "column-spacing",
+    "backend": "wasm",
+    "page": 71,
+    "original": "ᄒᆞᆫ글 문서 파일 구조 5.0 ",
+    "displayed": "한글 문서 파일 구조 5.0 ",
+    "equivalent": false,
+    "silhouette_raw_match_percent": 99.95092
+  },
+  {
+    "stage": "verified-entry-count",
+    "backend": "native",
+    "page": 71,
+    "original": "ᄒᆞᆫ글 문서 파일 구조 5.0 ",
+    "displayed": "ᄒᆞᆫ글 문서 파일 구조 5.0 ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  },
+  {
+    "stage": "verified-entry-count",
+    "backend": "wasm",
+    "page": 71,
+    "original": "ᄒᆞᆫ글 문서 파일 구조 5.0 ",
+    "displayed": "ᄒᆞᆫ글 문서 파일 구조 5.0 ",
+    "equivalent": true,
+    "silhouette_raw_match_percent": 100.0
+  }
+]

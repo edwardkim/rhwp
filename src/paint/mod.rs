@@ -21,6 +21,7 @@ mod equation_print_frame;
 pub mod font;
 pub mod font_glyph;
 mod font_size;
+mod gdi_font_metrics;
 mod group_picture;
 mod json;
 pub mod layer_tree;

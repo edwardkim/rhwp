@@ -5,6 +5,34 @@ use super::placement::ParagraphFragment;
 use crate::model::paragraph::Paragraph;
 use crate::renderer::pagination::PageItem;
 
+/// 첫 줄도 수용하지 못한 단을 떠나면 참조 번호와 본문은 새 단의 폭을 함께 쓴다.
+/// 앞 단의 문자 컷을 버릴 수 있는 경우는 아직 소비한 줄이 없을 때뿐이다.
+pub(super) fn refold_unplaced_note_host<S: crate::storage::Storage>(
+    para: &Paragraph,
+    engine: &super::super::TypesetEngine,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    width: f64,
+    storage: &S,
+) -> Result<Option<FormattedParagraph>, S::Error> {
+    use crate::renderer::composer;
+
+    if !composer::is_footnote_text_host(para) || composer::stored_rows_cross_physical_frame(para) {
+        return Ok(None);
+    }
+    let mut body = storage.clone_paragraph(para)?;
+    body.replace_line_segs(Vec::new());
+    let composed = composer::compose_paragraph_in_context_with_storage(&body, styles, storage)?;
+    let formatted = engine.format_paragraph_with_known_square_band_with_storage(
+        &body,
+        Some(&composed),
+        styles,
+        Some(width),
+        false,
+        storage,
+    )?;
+    Ok(formatted.computed_paragraph.is_some().then_some(formatted))
+}
+
 pub(super) fn detect_breaks(
     para: &Paragraph,
     col_count: u16,

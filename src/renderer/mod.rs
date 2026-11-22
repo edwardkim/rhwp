@@ -53,6 +53,7 @@ pub mod height_cursor;
 pub mod height_measurer;
 pub(crate) mod hft_ascii_evidence;
 pub(crate) mod hft_outline;
+pub(crate) mod hidden_pictures;
 pub mod html;
 pub(crate) mod hwp3_caption_host;
 pub mod hyperlinks;
@@ -332,7 +333,7 @@ pub(crate) fn canvas_cluster_fit(
     cluster: &str,
     layout_cluster_advance: f64,
     visual_width: f64,
-    ink_width: Option<f64>,
+    ink: Option<(f64, f64)>,
     pin_ascii_advance: bool,
 ) -> Option<(f64, f64)> {
     glyph_fit::canvas_cluster_fit(
@@ -340,7 +341,7 @@ pub(crate) fn canvas_cluster_fit(
         cluster,
         layout_cluster_advance,
         visual_width,
-        ink_width,
+        ink,
         pin_ascii_advance,
     )
 }
@@ -439,6 +440,9 @@ pub struct TextStyle {
     /// 원문 유형을 추정하지 않으며 Type3 그래픽의 fill 상태와 구분한다.
     #[serde(skip_serializing)]
     pub print_text_device_frame: bool,
+    /// 원 TTF의 전진을 유지하면서 인쇄 DC의 현재 좌표 정밀도로 윤곽을 그린다.
+    #[serde(skip_serializing)]
+    pub source_dc_frame: bool,
     /// 명시적으로 선택한 실제 프로그램의 잉크 폭. 논리 전진과 구분한다.
     #[serde(skip_serializing)]
     pub preserve_glyph_ink: bool,
@@ -635,7 +639,7 @@ pub struct TextStyle {
     #[serde(skip_serializing)]
     pub ascii_punct_latin: Option<Box<LatinSlotMetrics>>,
 }
-crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, print_ink_font_size, font_position, hft_print_frame, print_text_device_frame, preserve_glyph_ink, natural_program_metrics, latin_decimal_halfwidth, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, cell_advance_scale, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, layout_half_space_em, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
+crate::storage::clone_fields!(TextStyle, {literal_soft_hyphen, text_paint, continuous_shadow, inherited_half_space_em, script_metrics, shadow_offset_percent, space_compression, literal_figure_space, literal_figure_space_em, native_pua_metrics, native_otf_metrics, bidi_layout, emphasis_skip_first_cluster, top_underline_font_size, top_underline_phase, supplemental_metrics, isolated_jamo_font, font_family, font_size, fixed_glyph_advances, source_font_is_hft, source_font_is_ttf, selected_primary_font_program, source_verified_hft_bold_tracking, source_hwp3_hft_bold, resolved_font_size, print_ink_font_size, font_position, hft_print_frame, print_text_device_frame, source_dc_frame, preserve_glyph_ink, natural_program_metrics, latin_decimal_halfwidth, color, bold, italic, underline, strikethrough, kerning, letter_spacing, ratio, default_tab_width, tab_stops, auto_tab_right, auto_left_tab_position, available_width, line_x_offset, text_start_offset, right_tab_block_width_override, tab_leaders, inline_tabs, extra_word_spacing, unjustified_leading_spaces, extra_char_spacing, cell_advance_scale, extra_dash_advance, outline_type, shadow_type, shadow_color, shadow_offset_x, shadow_offset_y, emboss, engrave, superscript, subscript, emphasis_dot, underline_shape, strike_shape, underline_color, strike_color, shade_color, font_metric_trusted, glyph_fallback_advance_explicit, metric_font_family, original_glyph_metric_family, font_space_em, layout_half_space, layout_half_space_em, regenerated_font_metrics, hft_hangul_face, hft_font_face, hft_fullwidth_dot, ascii_punct_latin});
 
 /// [#7418] 영문 슬롯의 기본 메트릭 — [`TextStyle::ascii_punct_latin`] 참조.
 #[derive(Debug, Clone, PartialEq)]
@@ -861,6 +865,7 @@ impl Default for TextStyle {
             font_position: None,
             hft_print_frame: false,
             print_text_device_frame: false,
+            source_dc_frame: false,
             preserve_glyph_ink: false,
             natural_program_metrics: false,
             latin_decimal_halfwidth: false,
@@ -4727,27 +4732,27 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(3.0), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 3.0)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∘", 6.0, 12.0, Some(3.0), false),
+            canvas_cluster_fit(&style, "∘", 6.0, 12.0, Some((0.0, 3.0)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.4), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 6.4)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(6.8), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 6.8)), false),
             Some((1.0, -3.0))
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "A", 6.0, 12.0, Some(3.0), false),
+            canvas_cluster_fit(&style, "A", 6.0, 12.0, Some((0.0, 3.0)), false),
             None
         );
         assert_eq!(
-            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some(9.0), false),
+            canvas_cluster_fit(&style, "∙", 6.0, 12.0, Some((0.0, 9.0)), false),
             None
         );
 
@@ -4786,7 +4791,7 @@ mod tests {
         // 고정폭 원 글꼴의 `1` 칸(0.5em)에 대체 글꼴의 좁은 `1`(0.25em).
         // 종전에는 2배로 늘려 굵은 글자처럼 보였다.
         assert_eq!(
-            canvas_cluster_fit(&style, "1", 8.0, 4.0, Some(2.0), true),
+            canvas_cluster_fit(&style, "1", 8.0, 4.0, Some((0.0, 2.0)), true),
             Some((1.0, 2.0))
         );
         // HFT 자동 쪽번호(`fixed_glyph_advances`)는 원본 폭 점유 계약을 유지한다.
@@ -4795,25 +4800,60 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(
-            canvas_cluster_fit(&fixed, "1", 8.0, 4.0, Some(2.0), true),
+            canvas_cluster_fit(&fixed, "1", 8.0, 4.0, Some((0.0, 2.0)), true),
             Some((2.0, 0.0))
         );
         // 전각 대체 글꼴의 `•`: 상자 16px, 잉크 4px, 칸 6px.
         // 종전에는 상자를 칸에 맞춰 0.375배로 눌렀다. 잉크가 칸에 들어가므로
         // 누르지 않고 상자를 칸 가운데에 둔다.
         assert_eq!(
-            canvas_cluster_fit(&style, "•", 6.0, 16.0, Some(4.0), false),
+            canvas_cluster_fit(&style, "•", 6.0, 16.0, Some((0.0, 4.0)), false),
             Some((1.0, -5.0))
         );
         // 잉크가 칸보다 넓으면 잉크만 칸 폭에 맞춘다 (상자 폭 배율보다 덜 누른다).
         assert_eq!(
-            canvas_cluster_fit(&style, "μ", 6.0, 16.0, Some(8.0), false),
+            canvas_cluster_fit(&style, "μ", 6.0, 16.0, Some((0.0, 8.0)), false),
             Some((0.75, -3.0))
         );
         // 한글 음절은 상자를 채우는 glyph라 종전대로 상자 폭을 맞춘다.
         assert_eq!(
-            canvas_cluster_fit(&style, "가", 6.0, 16.0, Some(4.0), false),
+            canvas_cluster_fit(&style, "가", 6.0, 16.0, Some((0.0, 4.0)), false),
             Some((0.375, 0.0))
+        );
+        // #8697 독립 Print의 한양중고딕(HFT) 따옴표는 원래 칸의 왼쪽 잉크 위치를
+        // 유지한다. 네 글자의 전진과 베어링은 한컴 2020 문자표에서 측정했다.
+        let hft = TextStyle {
+            source_font_is_hft: true,
+            metric_font_family: Some("한양중고딕 (HFT)".into()),
+            ..Default::default()
+        };
+        let em = hft.effective_font_size();
+        for (quote, advance, source_left, substitute_left) in [
+            ("‘", 225.0, 71.0, 829.0),
+            ("’", 225.0, 60.0, 103.0),
+            ("“", 375.0, 71.0, 651.0),
+            ("”", 375.0, 60.0, 100.0),
+        ] {
+            let cell = em * advance / 1000.0;
+            let original_left = em * source_left / 1000.0;
+            let wide_left = em * substitute_left / 1024.0;
+            let (scale, shift) =
+                canvas_cluster_fit(&hft, quote, cell, em, Some((wide_left, 1.0)), false)
+                    .expect("원 칸보다 넓은 대체 글리프의 잉크 정렬");
+            assert_eq!(scale, 1.0);
+            assert!((wide_left + shift - original_left).abs() < 1e-9);
+            assert_eq!(
+                canvas_cluster_fit(&hft, quote, cell, cell, Some((original_left, 1.0)), false),
+                None,
+            );
+        }
+        let ttf = TextStyle {
+            source_font_is_hft: false,
+            ..hft
+        };
+        assert_eq!(
+            canvas_cluster_fit(&ttf, "“", em, em, Some((em / 2.0, 1.0)), false),
+            None,
         );
         verified_font_glyph_ink_preserves_natural_width_without_explicit_fit();
     }

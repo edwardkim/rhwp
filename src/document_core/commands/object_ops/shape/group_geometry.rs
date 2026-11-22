@@ -160,3 +160,133 @@ pub(in crate::document_core::commands::object_ops) fn frame_matrix(
         placement.translation.1,
     ]
 }
+
+type Fingerprint = (u32, u32, u32, u32, u32, u32, i16, bool, bool);
+
+/// 묶음 속성 변경의 뒷정리. 크기가 바뀌면 한컴 12.30처럼 묶음 자신의 행렬과 모든 자손의
+/// 최상위 묶음 단계 행렬에 배율을 합성해 자식이 묶음 상자를 따라 늘거나 준다.
+pub(super) fn finish_group_edit(
+    group: &mut crate::model::shape::GroupShape,
+    before: Fingerprint,
+    new_w: Option<u32>,
+    new_h: Option<u32>,
+) {
+    let sa = &mut group.shape_attr;
+    let (old_w, old_h) = (sa.current_width, sa.current_height);
+    // [#6806] 값이 바뀔 때만 — 파싱값이 `current ≠ common` 인 묶음은 같은 봉지를 되먹여도
+    // 지문이 흔들리면 안 된다.
+    if let Some(nw) = new_w.filter(|&w| w != before.0) {
+        sa.current_width = nw;
+    }
+    if let Some(nh) = new_h.filter(|&h| h != before.1) {
+        sa.current_height = nh;
+    }
+    let ratio = |new: u32, old: u32| {
+        if new != old && old > 0 {
+            new as f64 / old as f64
+        } else {
+            1.0
+        }
+    };
+    let (kx, ky) = (
+        ratio(sa.current_width, old_w),
+        ratio(sa.current_height, old_h),
+    );
+    // 회전 중심 갱신 — common 에서 다시 세우므로 무변경 시 멱등이다.
+    sa.rotation_center.x = (group.common.width / 2) as i32;
+    sa.rotation_center.y = (group.common.height / 2) as i32;
+    // [#6740] raw_rendering 초기화는 실제로 변환이 바뀐 뒤에만 한다.
+    if super::super::common::shape_transform_fingerprint(&group.common, sa) != before {
+        sa.raw_rendering = Vec::new();
+    }
+    if kx == 1.0 && ky == 1.0 {
+        return;
+    }
+    // 한컴 저장본처럼 묶음 자신의 크기 행렬은 current/original 배율이 된다(원본 행렬은 위에서 비웠다).
+    scale_rendering(sa, kx, ky);
+    scale_descendants(&mut group.children, kx, ky);
+}
+
+/// 자손의 렌더링 행렬 앞에 묶음 로컬 원점 기준 배율을 곱한다. 한컴 12.30은 크기를 current에도
+/// 반영하고(버림) 회전 중심을 그 가운데로 옮긴다.
+fn scale_descendants(children: &mut [ShapeObject], kx: f64, ky: f64) {
+    for child in children {
+        let sa = child.shape_attr_mut();
+        scale_rendering(sa, kx, ky);
+        sa.current_width = (sa.current_width as f64 * kx) as u32;
+        sa.current_height = (sa.current_height as f64 * ky) as u32;
+        sa.rotation_center.x = (sa.current_width / 2) as i32;
+        sa.rotation_center.y = (sa.current_height / 2) as i32;
+        if let ShapeObject::Group(group) = child {
+            scale_descendants(&mut group.children, kx, ky);
+        }
+    }
+}
+
+/// 합성 행렬 M을 S·M(S = 배율)로 바꾸고, 저장 원본 행렬이 있으면 이동 바로 뒤의 첫 단계
+/// (최상위 묶음 단계) 크기 행렬을 같은 합성이 되도록 고친다: T·R0·S0' = S·T·R0·S0.
+/// 한컴 12.30 저장본의 자식 첫 단계 크기 행렬 [k, 0, tx(k−1); 0, k, ty(k−1)]과 같은 꼴이다.
+fn scale_rendering(sa: &mut crate::model::shape::ShapeComponentAttr, kx: f64, ky: f64) {
+    sa.render_sx *= kx;
+    sa.render_b *= kx;
+    sa.render_tx *= kx;
+    sa.render_c *= ky;
+    sa.render_sy *= ky;
+    sa.render_ty *= ky;
+    const MATRIX: usize = 6 * 8;
+    let raw = &mut sa.raw_rendering;
+    if raw.len() < 2 + 3 * MATRIX || u16::from_le_bytes([raw[0], raw[1]]) == 0 {
+        // 원본 행렬이 없으면 저장기가 합성 행렬로 새로 만든다.
+        return;
+    }
+    let read = |raw: &[u8], at: usize| {
+        let mut m = [0.0; 6];
+        for (i, v) in m.iter_mut().enumerate() {
+            let o = at + i * 8;
+            *v = f64::from_le_bytes(raw[o..o + 8].try_into().expect("8바이트"));
+        }
+        m
+    };
+    let (trans, scale, rotation) = (
+        read(raw, 2),
+        read(raw, 2 + MATRIX),
+        read(raw, 2 + 2 * MATRIX),
+    );
+    let anchor = compose(&trans, &rotation);
+    let Some(inverse) = invert(&anchor) else {
+        return;
+    };
+    let factor = compose(&compose(&inverse, &[kx, 0.0, 0.0, 0.0, ky, 0.0]), &anchor);
+    let scaled = compose(&factor, &scale);
+    for (i, v) in scaled.iter().enumerate() {
+        let o = 2 + MATRIX + i * 8;
+        raw[o..o + 8].copy_from_slice(&v.to_le_bytes());
+    }
+}
+
+/// 아핀 행렬 [a, b, tx, c, d, ty]의 곱 A × B (파서의 합성과 같다).
+fn compose(a: &[f64; 6], b: &[f64; 6]) -> [f64; 6] {
+    [
+        a[0] * b[0] + a[1] * b[3],
+        a[0] * b[1] + a[1] * b[4],
+        a[0] * b[2] + a[1] * b[5] + a[2],
+        a[3] * b[0] + a[4] * b[3],
+        a[3] * b[1] + a[4] * b[4],
+        a[3] * b[2] + a[4] * b[5] + a[5],
+    ]
+}
+
+fn invert(m: &[f64; 6]) -> Option<[f64; 6]> {
+    let det = m[0] * m[4] - m[1] * m[3];
+    if det.abs() < 1e-12 {
+        return None;
+    }
+    Some([
+        m[4] / det,
+        -m[1] / det,
+        (m[1] * m[5] - m[4] * m[2]) / det,
+        -m[3] / det,
+        m[0] / det,
+        (m[3] * m[2] - m[0] * m[5]) / det,
+    ])
+}

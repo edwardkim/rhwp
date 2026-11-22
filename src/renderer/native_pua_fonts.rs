@@ -140,6 +140,21 @@ impl NativeOtfMetrics {
         )
     }
 
+    /// SVG에 공급한 주 TrueType의 hmtx에서 전진폭·왼쪽 베어링을 em으로 읽는다.
+    pub(crate) fn primary_truetype_horizontal_metrics(
+        &self,
+        character: char,
+    ) -> Option<(f64, f64)> {
+        let program = self.programs.first().filter(|p| p.static_truetype)?;
+        let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
+        let glyph = face.glyph_index(character).filter(|id| id.0 != 0)?;
+        let units = f64::from(face.units_per_em());
+        Some((
+            f64::from(face.glyph_hor_advance(glyph)?) / units,
+            f64::from(face.glyph_hor_side_bearing(glyph)?) / units,
+        ))
+    }
+
     /// 실제 공급자의 윤곽 형식은 cmap/hmtx 축약 전에 확인한다.
     /// 원본 유형·폭 표의 신뢰나 뒤 후보의 형식으로 주 프로그램을 추정하지 않는다.
     pub(crate) fn has_static_truetype_paint_programs(&self) -> bool {

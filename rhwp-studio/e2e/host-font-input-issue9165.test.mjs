@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { launchBrowser, createPage, closeBrowser, loadApp, createNewDocument } from './helpers.mjs';
 
-const font = readFileSync(new URL('../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf', import.meta.url)).toString('base64');
+const font = readFileSync(process.env.RHWP_HOST_INPUT_TEST_FONT
+  || new URL('../../tests/fixtures/fonts/RHWPHostFixture-Regular.ttf', import.meta.url)).toString('base64');
 const browser = await launchBrowser();
 try {
   for (const catalog of ['none', 'empty', 'populated']) {
@@ -27,7 +28,9 @@ try {
       if (catalog !== 'none') {
         await window.rhwpStudio.fonts.setProvider({
           getSnapshot: async () => ({ revision: '1', faces: catalog === 'empty' ? [] : [
-            { id: 'fixture', family, fullName: family, postscriptName: 'RHWPHostFixture-Regular', style: 'Regular', weight: 400, slant: 'normal' },
+            { id: 'fixture', family, fullName: family, postscriptName: 'RHWPHostFixture-Regular',
+              aliases: ['RHWP Input Text', 'RHWP Input Book', '입력 시험 글꼴'],
+              style: 'Regular', weight: 400, slant: 'normal' },
             { id: 'alternate', family: 'RHWP Synthetic Alternate', fullName: 'RHWP Synthetic Alternate',
               postscriptName: 'RHWPAlternate-Regular', style: 'Regular', weight: 400, slant: 'normal' },
           ] }),
@@ -47,7 +50,20 @@ try {
         input.textarea.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: '가' }));
         await frame(); await frame();
       };
+      const owner = w.borrowDocumentHandle();
+      const registrations = {};
+      for (const name of ['registerTextFontGlyphCoverage', 'registerHftOutlineFont']) {
+        const method = owner[name].bind(owner);
+        const stat = registrations[name] = { calls: 0, bytes: 0 };
+        owner[name] = (family, bytes, index) => {
+          stat.calls++;
+          stat.bytes += bytes.byteLength;
+          return method(family, bytes, index);
+        };
+      }
       await insert();
+      const warmupRegistrations = structuredClone(registrations);
+      for (const stat of Object.values(registrations)) stat.calls = stat.bytes = 0;
       const queriedPages = [];
       let prepares = 0, treeMs = 0;
       const tree = w.getPageLayerTreeObject.bind(w), prepare = w.prepareCanvasMetrics.bind(w);
@@ -70,7 +86,8 @@ try {
       const text = w.getTextInCell(0, table.paraIdx, table.controlIdx, 0, 0, 0, 22);
       times.sort((a, b) => a - b);
       const timing = { catalog, trees: queriedPages.length, perInput, treeMs, prepares, reads: faceReads.length, medianMs: (times[9] + times[10]) / 2,
-        text, cursor: input.cursor.getPosition().charOffset, pages: w.pageCount };
+        text, cursor: input.cursor.getPosition().charOffset, pages: w.pageCount,
+        warmupRegistrations, registrations: structuredClone(registrations) };
       const cell = () => w.getTextInCell(0, table.paraIdx, table.controlIdx, 0, 0, 0,
         w.getCellParagraphLength(0, table.paraIdx, table.controlIdx, 0, 0));
       const textarea = input.textarea;
@@ -104,15 +121,19 @@ try {
         const layer = tree(pageIndex);
         geometry.pages.push([layer.pageWidth, layer.pageHeight, layer.root]);
       }
-      const layoutHash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',
-        new TextEncoder().encode(JSON.stringify(geometry)))), b => b.toString(16).padStart(2, '0')).join('');
+      const sha256 = async bytes => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
+        b => b.toString(16).padStart(2, '0')).join('');
+      const layoutHash = await sha256(new TextEncoder().encode(JSON.stringify(geometry)));
+      const canvas = document.createElement('canvas');
+      w.renderPageToCanvas(0, canvas);
+      const paintHash = await sha256(canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data);
       if (catalog === 'populated') {
         w.applyCharFormat(0, 2, 0, 5, JSON.stringify({fontId: w.findOrCreateFontId('RHWP Synthetic Alternate')}));
         window.__eventBus.emit('document-changed');
         const deadline = performance.now() + 5000;
         while (!faceReads.includes('alternate') && performance.now() < deadline) await frame();
       }
-      return { ...timing, ...editing, layoutHash, faceReads };
+      return { ...timing, ...editing, layoutHash, paintHash, faceReads };
     }, {catalog, font});
     console.log(JSON.stringify(result));
     assert.equal(result.text, 'A' + '가'.repeat(21));
@@ -125,13 +146,14 @@ try {
     assert.equal(result.finalCursor, result.redone.length);
     assert.equal(result.cursor, 22);
     assert.equal(result.pages, 3);
-    assert.equal(result.prepares, 20);
     if (catalog === 'populated') {
       assert.ok(result.reads > 0);
       assert.ok(result.faceReads.includes('alternate'), '새 스타일을 적용한 다른 페이지의 face 준비');
     }
     if (!process.argv.includes('--baseline')) {
+      assert.equal(result.prepares, 20);
       if (catalog === 'populated') {
+        for (const stat of Object.values(result.registrations)) assert.deepEqual(stat, { calls: 0, bytes: 0 });
         // A layout transition can require a full discovery pass before metrics settle.
         for (const pages of result.perInput.slice(-10)) assert.deepEqual(pages, [0]);
         assert.ok(result.trees < 60);

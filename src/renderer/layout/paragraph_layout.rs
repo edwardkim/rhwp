@@ -2216,18 +2216,19 @@ impl VisibleTextLineMeasure {
         // 같은 해소 글자 모양에서 이어진 공백만 본문의 말미다. 밑줄이
         // 같아도 글꼴·크기·자간 등이 다른 입력란은 독립 점유를 가진다.
         // 원본 ID가 달라도 동일한 글자 모양으로 나눈 run은 같은 소유다.
+        // 앞쪽 필드의 표시 숫자는 그 뒤 본문과 끝 공백 사이의 서식 소유를 끊지 않는다.
+        // 끝 공백 바로 앞이 필드인 경우에만 일반 본문의 장식을 상속하지 않는다.
         let visible_style = line
             .runs
             .iter()
-            .all(|run| !run.inserted_control_text && run.display_text.is_none())
-            .then(|| {
-                line.runs
-                    .iter()
-                    .rev()
-                    .find(|run| run.text.chars().any(|ch| !ch.is_whitespace()))
-                    .and_then(|run| styles.char_styles.get(run.char_style_id as usize))
+            .rev()
+            .find(|run| {
+                run.inserted_control_text
+                    || run.display_text.is_some()
+                    || run.text.chars().any(|ch| !ch.is_whitespace())
             })
-            .flatten();
+            .filter(|run| !run.inserted_control_text && run.display_text.is_none())
+            .and_then(|run| styles.char_styles.get(run.char_style_id as usize));
         let mut inherited_decoration_tail = false;
         let mut coherent_tail_style = true;
         for (run, (text, style)) in line.runs.iter().zip(&mut runs).rev() {
@@ -3219,17 +3220,28 @@ fn needs_word_distribution(
     }
 }
 
-/// [Task #2067] 조판부호 모드의 인라인 컨트롤 마커 라벨 수집 — (논리 위치, 라벨).
-fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec<(usize, String)> {
+/// 조판부호 모드의 인라인 컨트롤 마커 하나.
+struct ShapeMarkerLabel {
+    /// 논리 위치(캐럿 축). `FieldMarkerType::ShapeMarker` 에 싣는다.
+    position: usize,
+    label: String,
+    control: usize,
+    /// 문단 글자 축 위치. 줄·run 의 글자 범위와 견준다.
+    text_position: usize,
+}
+
+/// [Task #2067] 조판부호 모드의 인라인 컨트롤 마커 라벨 수집.
+fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec<ShapeMarkerLabel> {
     if show_ctrl {
         if let Some(ref pa) = para {
             let ctrl_positions = pa.logical_control_positions();
+            let text_positions = pa.control_text_positions();
             pa.controls
                 .iter()
                 .enumerate()
                 .filter_map(|(ci, ctrl)| {
                     let pos = ctrl_positions.get(ci).copied().unwrap_or(0);
-                    match ctrl {
+                    let label = match ctrl {
                         Control::Shape(s) => Some((pos, format!("[{}]", s.shape_name()))),
                         Control::Picture(_) => Some((pos, "[그림]".to_string())),
                         Control::Table(t) if t.common.treat_as_char => {
@@ -3258,7 +3270,13 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
                         Control::NewNumber(_) => Some((pos, "[새 번호]".to_string())),
                         Control::Bookmark(bm) => Some((pos, format!("[책갈피:{}]", bm.name))),
                         _ => None,
-                    }
+                    };
+                    label.map(|(position, label)| ShapeMarkerLabel {
+                        position,
+                        label,
+                        control: ci,
+                        text_position: text_positions.get(ci).copied().unwrap_or(position),
+                    })
                 })
                 .collect()
         } else {
@@ -3267,6 +3285,49 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
     } else {
         Vec::new()
     }
+}
+
+/// 조판부호 모드의 인라인 컨트롤 마커(작게 줄인 파란 글자) 노드와 그 폭.
+#[allow(clippy::too_many_arguments)]
+fn shape_marker_node(
+    tree: &mut PageLayoutContext,
+    label: &str,
+    base_style: TextStyle,
+    position: usize,
+    (x, y): (f64, f64),
+    (line_height, baseline): (f64, f64),
+    (para_style_id, section_index, para_index): (u16, usize, usize),
+    cell_ctx: &Option<CellContext>,
+) -> (RenderNode, f64) {
+    let mut style = base_style;
+    style.color = 0x0000FF;
+    style.font_size *= 0.55;
+    let width = estimate_text_width(label, &style);
+    let node = RenderNode::new(
+        tree.next_id(),
+        RenderNodeType::TextRun(TextRunNode {
+            text: label.to_string(),
+            style,
+            char_shape_id: None,
+            para_shape_id: Some(para_style_id),
+            section_index: Some(section_index),
+            para_index: Some(para_index),
+            char_start: None,
+            cell_context: cell_ctx.clone(),
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline,
+            field_marker: FieldMarkerType::ShapeMarker(position),
+            layout_positions: None,
+            display_text: None,
+        }),
+        BoundingBox::new(x, y, width, line_height),
+    );
+    (node, width)
 }
 
 /// [#5677] 빈 문단의 저장 `column_start` 가 그 문단 자신의 `margin_left` 와 같다고 볼
@@ -8635,7 +8696,15 @@ impl LayoutEngine {
 
             // 조판부호 모드: 인라인 도형 마커 위치 수집
             let show_ctrl = self.show_control_codes.get();
-            let shape_markers: Vec<(usize, String)> = collect_shape_marker_labels(show_ctrl, para);
+            // 이 줄 글자 범위의 마커만 그린다. 줄 경계 자리는 다음 줄이 갖는다.
+            let line_text_end = composed.lines.get(line_idx + 1).map(|next| next.char_start);
+            let shape_markers: Vec<ShapeMarkerLabel> = collect_shape_marker_labels(show_ctrl, para)
+                .into_iter()
+                .filter(|marker| {
+                    marker.text_position >= comp_line.char_start
+                        && line_text_end.is_none_or(|end| marker.text_position < end)
+                })
+                .collect();
 
             // 각주 마커 위치 수집
             let fn_positions: &[(usize, u16, usize)] = &note_line.positions;
@@ -8792,38 +8861,18 @@ impl LayoutEngine {
             }
 
             // 조판부호: 텍스트 뒤에 위치한 미삽입 도형 마커 추가
-            for (smi, (spos, stext)) in shape_markers.iter().enumerate() {
+            for (smi, marker) in shape_markers.iter().enumerate() {
                 if !shape_marker_inserted[smi] {
                     shape_marker_inserted[smi] = true;
-                    let base_style = resolved_to_text_style(styles, 0, 0);
-                    let mut ms = base_style;
-                    ms.color = 0x0000FF;
-                    ms.font_size *= 0.55;
-                    let mw = estimate_text_width(stext, &ms);
-                    let mid = tree.next_id();
-                    let mn = RenderNode::new(
-                        mid,
-                        RenderNodeType::TextRun(TextRunNode {
-                            text: stext.clone(),
-                            style: ms,
-                            char_shape_id: None,
-                            para_shape_id: Some(composed.para_style_id),
-                            section_index: Some(section_index),
-                            para_index: Some(para_index),
-                            char_start: None,
-                            cell_context: cell_ctx.clone(),
-                            is_para_end: false,
-                            is_line_break_end: false,
-                            rotation: 0.0,
-                            is_vertical: false,
-                            char_overlap: None,
-                            border_fill_id: 0,
-                            baseline,
-                            field_marker: FieldMarkerType::ShapeMarker(*spos),
-                            layout_positions: None,
-                            display_text: None,
-                        }),
-                        BoundingBox::new(x, text_y, mw, line_height),
+                    let (mn, mw) = shape_marker_node(
+                        tree,
+                        &marker.label,
+                        resolved_to_text_style(styles, 0, 0),
+                        marker.position,
+                        (x, text_y),
+                        (line_height, baseline),
+                        (composed.para_style_id, section_index, para_index),
+                        &cell_ctx,
                     );
                     line_node.children.push(mn);
                     x += mw;
@@ -9512,7 +9561,7 @@ impl LayoutEngine {
         tac_offsets_px: &[(usize, f64, usize)],
         line_tac_offsets: &[(usize, f64, usize)],
         leading_space_ownership: &LeadingSpaces,
-        shape_markers: &[(usize, String)],
+        shape_markers: &[ShapeMarkerLabel],
         fn_positions: &[(usize, u16, usize)],
         fn_marker_inserted: &mut [bool],
         shape_marker_inserted: &mut [bool],
@@ -9650,38 +9699,18 @@ impl LayoutEngine {
                 None
             };
             // 조판부호: 이 run 시작 위치 이전의 도형 마커를 먼저 삽입
-            for (smi, (spos, stext)) in shape_markers.iter().enumerate() {
-                if !shape_marker_inserted[smi] && *spos <= run_char_pos {
+            for (smi, marker) in shape_markers.iter().enumerate() {
+                if !shape_marker_inserted[smi] && marker.text_position <= run_char_pos {
                     shape_marker_inserted[smi] = true;
-                    let base_style = run.text_style(styles);
-                    let mut ms = base_style;
-                    ms.color = 0x0000FF; // BGR: 빨간색
-                    ms.font_size *= 0.55;
-                    let mw = estimate_text_width(stext, &ms);
-                    let mid = tree.next_id();
-                    let mn = RenderNode::new(
-                        mid,
-                        RenderNodeType::TextRun(TextRunNode {
-                            text: stext.clone(),
-                            style: ms,
-                            char_shape_id: None,
-                            para_shape_id: Some(composed.para_style_id),
-                            section_index: Some(section_index),
-                            para_index: Some(para_index),
-                            char_start: None,
-                            cell_context: cell_ctx.clone(),
-                            is_para_end: false,
-                            is_line_break_end: false,
-                            rotation: 0.0,
-                            is_vertical: false,
-                            char_overlap: None,
-                            border_fill_id: 0,
-                            baseline,
-                            field_marker: FieldMarkerType::ShapeMarker(*spos),
-                            layout_positions: None,
-                            display_text: None,
-                        }),
-                        BoundingBox::new(x, text_y, mw, line_height),
+                    let (mn, mw) = shape_marker_node(
+                        tree,
+                        &marker.label,
+                        run.text_style(styles),
+                        marker.position,
+                        (x, text_y),
+                        (line_height, baseline),
+                        (composed.para_style_id, section_index, para_index),
+                        cell_ctx,
                     );
                     line_node.children.push(mn);
                     x += mw;
@@ -9995,14 +10024,17 @@ impl LayoutEngine {
             };
             // 탭 리더 계산: 탭이 포함된 run에서 채움 기호 정보 추출
             // inline_tabs를 일시 제거하여 tab_stops 기반 위치 계산과 일관되게 함
+            // 탭의 주소와 저장 전진의 시작점은 같은 표시 메트릭에서 얻는다.
+            // 한 글자의 옛한글이 여러 자모로 투영될 수 있다.
+            let metric_text = effective_text_for_metrics(run);
             if has_tabs && run.text.contains('\t') {
                 let saved_inline_tabs = std::mem::take(&mut text_style.inline_tabs);
                 let positions = layout_positions
                     .clone()
-                    .unwrap_or_else(|| compute_char_positions(&run.text, &text_style));
+                    .unwrap_or_else(|| compute_char_positions(metric_text, &text_style));
                 text_style.inline_tabs = saved_inline_tabs;
                 text_style.tab_leaders = extract_tab_leaders_with_extended(
-                    &run.text,
+                    metric_text,
                     &positions,
                     &text_style,
                     &composed.tab_extended,
@@ -10035,7 +10067,7 @@ impl LayoutEngine {
                 if run_tab_count > 0 {
                     let last_inline_idx = run_tab_count - 1;
                     pending_right_tab_render = resolve_last_tab_pending(
-                        &run.text,
+                        metric_text,
                         last_inline_idx,
                         &text_style.inline_tabs,
                         &text_style,
@@ -10160,6 +10192,24 @@ impl LayoutEngine {
                     }
                 })
                 .collect();
+            // 조판부호: run 글자 사이에 든 마커(run 내 상대 위치, 컨트롤 번호, 마커 번호)는
+            // 그 자리에서 run 을 나눠 그린다. run 앞 마커는 위에서, 끝 마커는 다음 run·줄 끝에서 그린다.
+            let run_shape_marks: Vec<(usize, usize, usize)> = if run.inserted_control_text
+                || run.char_overlap.is_some()
+            {
+                Vec::new()
+            } else {
+                shape_markers
+                    .iter()
+                    .enumerate()
+                    .filter(|(smi, marker)| {
+                        !shape_marker_inserted[*smi]
+                            && marker.text_position > run_char_pos
+                            && marker.text_position < run_char_end
+                    })
+                    .map(|(smi, marker)| (marker.text_position - run_char_pos, marker.control, smi))
+                    .collect()
+            };
 
             if run_tacs.is_empty() {
                 // tac 없음: 기존 렌더링 경로
@@ -10269,7 +10319,7 @@ impl LayoutEngine {
                 let mut fn_split_extra = 0.0f64; // 각주 마커 삽입으로 인한 추가 폭
                 let mut emitted_text_width = full_width;
                 {
-                    if run_fn_markers.is_empty() {
+                    if run_fn_markers.is_empty() && run_shape_marks.is_empty() {
                         // 각주 없음: 기존 방식으로 전체 TextRun 생성
                         let run_x = x;
                         let run_id = reserved_shaping_run_id.unwrap_or_else(|| tree.next_id());
@@ -10306,8 +10356,19 @@ impl LayoutEngine {
                         let mut sub_char_offset = char_offset;
                         emitted_text_width = 0.0;
 
-                        for &(rel_pos, fnum, fni, ctrl_idx) in &run_fn_markers {
-                            fn_marker_inserted[fni] = true;
+                        let mut splits: Vec<_> = run_fn_markers
+                            .iter()
+                            .map(|&(rel, fnum, fni, ctrl)| (rel, ctrl, Some((fnum, fni)), None))
+                            .chain(
+                                run_shape_marks
+                                    .iter()
+                                    .map(|&(rel, ctrl, smi)| (rel, ctrl, None, Some(smi))),
+                            )
+                            .collect();
+                        if !run_shape_marks.is_empty() {
+                            splits.sort_by_key(|&(rel, ctrl, _, mark)| (rel, ctrl, mark.is_none()));
+                        }
+                        for &(rel_pos, ctrl_idx, note, mark) in &splits {
                             // 각주 앞 텍스트 세그먼트
                             if rel_pos > seg_start {
                                 let seg_text: String =
@@ -10378,6 +10439,30 @@ impl LayoutEngine {
                                     rel_pos - seg_start
                                 };
                             }
+                            if let Some(smi) = mark {
+                                // 마커는 캐럿 칸을 차지하지 않고 폭만 차지한다.
+                                shape_marker_inserted[smi] = true;
+                                let marker = &shape_markers[smi];
+                                let (mn, mw) = shape_marker_node(
+                                    tree,
+                                    &marker.label,
+                                    run.text_style(styles),
+                                    marker.position,
+                                    (sub_x, text_y),
+                                    (line_height, baseline),
+                                    (composed.para_style_id, section_index, para_index),
+                                    cell_ctx,
+                                );
+                                line_node.children.push(mn);
+                                sub_x += mw;
+                                fn_split_extra += mw;
+                                seg_start = rel_pos;
+                                continue;
+                            }
+                            let Some((fnum, fni)) = note else {
+                                continue;
+                            };
+                            fn_marker_inserted[fni] = true;
                             let reference = super::note_reference::reference(
                                 para.and_then(|p| p.controls.get(ctrl_idx)),
                                 fnum,
@@ -10545,19 +10630,26 @@ impl LayoutEngine {
                 // 글상자(TextBox) 자체와 그 내부 텍스트("개화" 같은)는
                 // shape_layout 이 inline_shape_position 을 보고 별도 패스에서 렌더하므로 중복되지 않는다.
 
-                let mut events: Vec<_> = run_tacs
-                    .iter()
-                    .map(|&(position, width, control)| (position, width, control, None))
-                    .chain(
-                        run_fn_markers
-                            .iter()
-                            .map(|&(position, number, index, control)| {
-                                (position, 0.0, control, Some((number, index)))
-                            }),
-                    )
-                    .collect();
-                events.sort_by_key(|&(position, _, control, _)| (position, control));
-                for &(tac_rel, tac_w, tac_ci, note) in &events {
+                let mut events: Vec<_> =
+                    run_tacs
+                        .iter()
+                        .map(|&(position, width, control)| (position, width, control, None, None))
+                        .chain(
+                            run_fn_markers
+                                .iter()
+                                .map(|&(position, number, index, control)| {
+                                    (position, 0.0, control, Some((number, index)), None)
+                                }),
+                        )
+                        .chain(run_shape_marks.iter().map(|&(position, control, smi)| {
+                            (position, 0.0, control, None, Some(smi))
+                        }))
+                        .collect();
+                // 같은 자리의 개체 마커는 그 개체 앞에 그린다.
+                events.sort_by_key(|&(position, _, control, _, mark)| {
+                    (position, control, mark.is_none())
+                });
+                for &(tac_rel, tac_w, tac_ci, note, mark) in &events {
                     // [Issue #3396] 한글은 TAC 표를 "outMargin 포함 폭의 문자"로
                     // 배치한다 — 괘선(테두리)은 pen + outMargin.left 에 그려지고,
                     // 다음 문자는 outMargin.right 뒤에서 시작한다 (오라클 실측:
@@ -10656,6 +10748,24 @@ impl LayoutEngine {
                         }
                         x += seg_w;
                         sub_char_offset += seg_char_count;
+                    }
+                    if let Some(smi) = mark {
+                        shape_marker_inserted[smi] = true;
+                        let marker = &shape_markers[smi];
+                        let (mn, mw) = shape_marker_node(
+                            tree,
+                            &marker.label,
+                            run.text_style(styles),
+                            marker.position,
+                            (x, text_y),
+                            (line_height, baseline),
+                            (composed.para_style_id, section_index, para_index),
+                            cell_ctx,
+                        );
+                        line_node.children.push(mn);
+                        x += mw;
+                        seg_start = tac_rel;
+                        continue;
                     }
                     if let Some((number, index)) = note {
                         let reference = super::note_reference::reference(
@@ -11146,13 +11256,19 @@ impl LayoutEngine {
                     // 상위 런의 리더를 상속하지 않고, 탭을 소유한 조각에서 다시 계산한다.
                     seg_style.tab_leaders.clear();
                     seg_style.line_x_offset = x - col_area.x - tab_origin_shift;
+                    let seg_display = run.display_for_model_range(seg_start, run_chars.len());
+                    let metric_text = crate::renderer::composer::display_projection_metric_text(
+                        &remaining,
+                        seg_display.as_deref().unwrap_or(&remaining),
+                        run.literal_soft_hyphen,
+                    );
                     // 인라인 개체를 통과한 뒤 실제 탭을 소유한 조각의 원점과
                     // 저장 전진을 함께 사용한다. 런의 시작점은 개체 앞일 수 있다.
                     if has_tabs && TextRunNode::ends_with_alignment_tab(&remaining) {
                         let tab_count = remaining.chars().filter(|c| *c == '\t').count();
                         if tab_count > 0 {
                             pending_right_tab_render = resolve_last_tab_pending(
-                                &remaining,
+                                metric_text,
                                 tab_count - 1,
                                 &seg_style.inline_tabs,
                                 &seg_style,
@@ -11164,9 +11280,9 @@ impl LayoutEngine {
                         }
                     }
                     if has_tabs && remaining.contains('\t') {
-                        let positions = compute_char_positions(&remaining, &seg_style);
+                        let positions = compute_char_positions(metric_text, &seg_style);
                         seg_style.tab_leaders = extract_tab_leaders_with_extended(
-                            &remaining,
+                            metric_text,
                             &positions,
                             &seg_style,
                             &composed.tab_extended[inline_tab_cursor_render
@@ -11180,9 +11296,8 @@ impl LayoutEngine {
                                 .min(composed.tab_extended.len())..],
                         );
                     }
-                    let seg_display = run.display_for_model_range(seg_start, run_chars.len());
-                    let seg_w = if let Some(display) = &seg_display {
-                        estimate_text_width_exact(display, &seg_style)
+                    let seg_w = if seg_display.is_some() {
+                        estimate_text_width_exact(metric_text, &seg_style)
                     } else {
                         estimate_text_width(&remaining, &seg_style)
                     };
@@ -11995,33 +12110,33 @@ impl LayoutEngine {
                 seg_start_est = tac_rel;
             }
             // 마지막 세그먼트 처리
-            let mut remaining_est: String = run_chars_est[seg_start_est..].iter().collect();
-            // TAC 로 쪼개지지 않은 런은 통째로 재므로, 표시 길이가 모델과 다르면
-            // **그려지는 글자**로 잰다. 이 자연 폭이 정렬 간격 분배의 기준이라, 모델로
-            // 재면 남는 폭이 과대평가돼 글자가 흩어진다 (Task #3216).
-            if seg_start_est == 0 && run.display_text.is_some() {
-                remaining_est = effective_text_for_metrics(run).to_string();
-            }
+            let remaining_source: String = run_chars_est[seg_start_est..].iter().collect();
+            let display = run.display_for_model_range(seg_start_est, run_chars_est.len());
+            let remaining_est = crate::renderer::composer::display_projection_metric_text(
+                &remaining_source,
+                display.as_deref().unwrap_or(&remaining_source),
+                run.literal_soft_hyphen,
+            );
             ts = ts.for_source_text_fragment(seg_start_est, &run_chars_est);
             ts.line_x_offset = est_x;
             super::leader_tab::apply_cross_run_width(
                 &mut ts,
-                &remaining_est,
+                remaining_est,
                 comp_line,
                 run_idx_est,
                 styles,
             );
             right_tab_fields::apply_block_width(&mut ts, comp_line, run_idx_est, para, styles);
             if !remaining_est.is_empty() {
-                est_x += estimate_text_width_exact(&remaining_est, &ts);
+                est_x += estimate_text_width_exact(remaining_est, &ts);
             }
             // run이 \t로 끝나면 다음 run에 오른쪽/가운데 탭 조정 필요 — Task #290:
             // inline_tabs(composed.tab_extended) 가 LEFT 를 명시하면 cross-run pending 을 설정하지 않는다.
             // [Task #279] trailing 공백 (\t 뒤에 따라오는 ' ') 도 허용 — 목차 소제목의
             // 들여쓰기 문단에서 한컴이 "\t " 형태로 저장하는 케이스가 있음.
             if TextRunNode::ends_with_alignment_tab(&run.text) {
-                let pending_text = if TextRunNode::ends_with_alignment_tab(&remaining_est) {
-                    &remaining_est
+                let pending_text = if TextRunNode::ends_with_alignment_tab(remaining_est) {
+                    remaining_est
                 } else {
                     &run.text
                 };
@@ -12119,7 +12234,8 @@ impl LayoutEngine {
                         && super::control_line_seg_index(p, *ci) == Some(vars.line_idx)
                 })
         });
-        let empty_line_tac_allowed = cell_ctx.is_none()
+        let empty_line_tac_allowed = composed.is_caption
+            || cell_ctx.is_none()
             || is_caption_cell_context(cell_ctx.as_ref())
             || owns_boundary_tac
             || generated_picture_row;
@@ -13315,6 +13431,7 @@ mod trailing_tac_width_tests {
             tac_controls: Vec::new(),
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            is_caption: false,
             horizontal_shaping: None,
             frame_geometry: None,
         }

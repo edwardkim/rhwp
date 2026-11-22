@@ -516,6 +516,12 @@ Authoritative resources useful to contributors and fork users are organized in t
 - [Investigation PR Guide](https://github.com/edwardkim/rhwp/wiki/Investigation-PR-가이드)
 - [Legal FAQ](https://github.com/edwardkim/rhwp/wiki/Legal-FAQ)
 
+## Acknowledgments
+
+![Contributor support: OpenAI](https://img.shields.io/badge/Contributor%20support-OpenAI-64748b?style=flat-square)
+
+We thank OpenAI for supporting rhwp contributors in their development and maintenance work.
+
 ## Notice
 
 This product was developed with reference to the HWP (.hwp) file format specification published by Hancom Inc.

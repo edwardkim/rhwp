@@ -581,6 +581,7 @@ pub(crate) fn prune_incomplete_memos(paragraphs: &mut [Paragraph]) -> Result<(),
 /// Delete text, but drop a memo whose whole non-empty anchor disappears in this
 /// edit. A memo whose anchor is only shortened stays. Memos that were already
 /// zero-length anchors are untouched.
+/// 사용자 편집 지우기 전용이라 지운 글자를 차지한 자동 번호 같은 컨트롤도 함께 지운다.
 pub(crate) fn delete_text_at_keeping_memos(
     para: &mut Paragraph,
     char_offset: usize,
@@ -600,7 +601,7 @@ pub(crate) fn delete_text_at_keeping_memos(
             }
         }
     }
-    let deleted = para.delete_text_at(char_offset, count);
+    let deleted = para.delete_text_at_removing_owned_controls(char_offset, count);
     if deleted == 0 {
         return 0;
     }

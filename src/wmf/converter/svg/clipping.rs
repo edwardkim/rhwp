@@ -85,6 +85,13 @@ pub(super) fn visible_element_maxima(
     node: &Node,
     clips: &BTreeMap<String, DeviceClipBounds>,
 ) -> (Option<i32>, Option<i32>) {
+    // GDI의 NULL_BRUSH와 NULL_PEN으로 만든 사각형은 창 밖에도 잉크가 없다.
+    if node.has_name("rect")
+        && node.attr("fill") == Some("none")
+        && node.attr("stroke") == Some("none")
+    {
+        return (None, None);
+    }
     let x = element_max_x(node);
     let y = element_max_y(node);
     let clip = node

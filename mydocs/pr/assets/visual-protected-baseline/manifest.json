@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 최종 전쪽 검증의 상승분을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
+  "table_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -3955,21 +3955,21 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-21T16:41:02.609001+09:00",
+      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
-        "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
-        "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/native/chemical.tsv",
-        "sha256": "9726358be649e638244c17d475594eae16b145c147c9780e0edeb216c28702c0",
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/chemical.tsv",
+        "sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
-        "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
-      "minimum_display": "99.85",
+      "minimum_display": "99.88",
       "source_history": [
         {
           "pr": null,
@@ -3984,20 +3984,32 @@
           "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
           "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+          "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+          "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/native/chemical.tsv",
+          "sha256": "9726358be649e638244c17d475594eae16b145c147c9780e0edeb216c28702c0",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+          "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
-        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
-        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
-        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/chemical.tsv",
-        "sha256": "9111800060d296754f077d6fb6d0313f4f0300ab5c5d216c166aa3481e292dd5",
+        "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+        "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+        "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/native/chemical.tsv",
+        "sha256": "9726358be649e638244c17d475594eae16b145c147c9780e0edeb216c28702c0",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
-        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+        "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       }
     },
@@ -4025,21 +4037,21 @@
         "radius_px": 2
       },
       "page_count": 103,
-      "accepted_at": "2026-11-21T16:41:02.609001+09:00",
+      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
-        "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
-        "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/wasm/chemical.tsv",
-        "sha256": "be4f6d0ff2869a28691d07edf6d088b233d318c4cd5912f41687cd2a7bdce105",
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/chemical.tsv",
+        "sha256": "29b4f5e65e65a6955fe74cc9bb0d95f48d2e671d58e1206b73c5f0220df5bcb6",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
-        "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
-      "minimum_display": "99.86",
+      "minimum_display": "99.88",
       "source_history": [
         {
           "pr": null,
@@ -4054,20 +4066,32 @@
           "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
           "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+          "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+          "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/wasm/chemical.tsv",
+          "sha256": "be4f6d0ff2869a28691d07edf6d088b233d318c4cd5912f41687cd2a7bdce105",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+          "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
-        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
-        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
-        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/chemical.tsv",
-        "sha256": "fb7e4309c10b07948c4bef2fbeab9c34b1e497d278dab86c5deb36b824d3ef0d",
+        "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+        "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+        "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/wasm/chemical.tsv",
+        "sha256": "be4f6d0ff2869a28691d07edf6d088b233d318c4cd5912f41687cd2a7bdce105",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
-        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+        "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+        "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       }
     },
@@ -4095,8 +4119,38 @@
         "radius_px": 2
       },
       "page_count": 71,
-      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/spec13.tsv",
+        "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.92",
+      "source_history": [
+        {
+          "pr": null,
+          "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+          "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+          "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/spec13.tsv",
+          "sha256": "1740db49214ba69905b9030002a2bc90897ca3fc6c623a305a91e5ed956dbcc2",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+          "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        }
+      ],
+      "previous_source": {
         "pr": null,
         "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
         "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
@@ -4109,9 +4163,7 @@
         "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
         "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.69",
-      "source_history": []
+      }
     },
     {
       "document_id": "3298ed895b9a645c",
@@ -4137,8 +4189,38 @@
         "radius_px": 2
       },
       "page_count": 71,
-      "accepted_at": "2026-11-19T01:21:37.125726+09:00",
+      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/spec13.tsv",
+        "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "99.92",
+      "source_history": [
+        {
+          "pr": null,
+          "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
+          "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
+          "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
+          "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/wasm/head/spec13.tsv",
+          "sha256": "b620227f2a2aac18809adb5258d89dd84f25206c0db156e07861e257887a7a3a",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
+          "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        }
+      ],
+      "previous_source": {
         "pr": null,
         "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
         "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
@@ -4151,9 +4233,7 @@
         "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
         "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.67",
-      "source_history": []
+      }
     },
     {
       "document_id": "6456507d769ec90b",
@@ -4263,21 +4343,21 @@
         "radius_px": 2
       },
       "page_count": 74,
-      "accepted_at": "2026-11-20T18:59:35.468943+09:00",
+      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "57fd9bb6e2",
-        "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
-        "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
-        "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
-        "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/native/decree.tsv",
-        "sha256": "13fd69cf4aa56e9069352bdec023c1ff1554329e84ea8025632734ced6397e2e",
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/native/decree.tsv",
+        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
-      "minimum_display": "99.89",
+      "minimum_display": "99.98",
       "source_history": [
         {
           "pr": null,
@@ -4292,20 +4372,32 @@
           "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
           "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "57fd9bb6e2",
+          "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+          "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
+          "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
+          "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/native/decree.tsv",
+          "sha256": "13fd69cf4aa56e9069352bdec023c1ff1554329e84ea8025632734ced6397e2e",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "dd9019b03986e85ee53eb6ac059e7368a1bffd2f",
-        "code_commit": "0fee3421a4ca0fd6e9484b67e4da0b2f4c5e44b0",
-        "qualified_rendering_commit": "8771cdcbc48cc324bddc790b32bf8516b52b6379",
-        "path": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/scope-whole/native/head/decree.tsv",
-        "sha256": "74ac79a552433fd3c66db702a1f4dbda5cc8529a17548ea1025f7c3219222a03",
+        "evidence_commit": "57fd9bb6e2",
+        "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+        "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
+        "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
+        "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/native/decree.tsv",
+        "sha256": "13fd69cf4aa56e9069352bdec023c1ff1554329e84ea8025632734ced6397e2e",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json",
-        "condition_evidence_sha256": "34972a6c04df4ab474e83dc1d10dc7bd91fb0dee03a7382efef5fb2a5d30d0c8",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       }
     },
@@ -4333,21 +4425,21 @@
         "radius_px": 2
       },
       "page_count": 74,
-      "accepted_at": "2026-11-20T18:59:35.468943+09:00",
+      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
       "source": {
         "pr": null,
-        "evidence_commit": "57fd9bb6e2",
-        "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
-        "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
-        "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
-        "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/wasm/decree.tsv",
-        "sha256": "1cadf36ede0470da44a9a273286a891c3a1b18624502213a2a05f24025bf6d19",
+        "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+        "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+        "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+        "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+        "path": "mydocs/pr/assets/semanticist21-20261121/validation/final/wasm/decree.tsv",
+        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
-      "minimum_display": "99.89",
+      "minimum_display": "99.98",
       "source_history": [
         {
           "pr": null,
@@ -4375,19 +4467,32 @@
           "condition_evidence": "mydocs/pr/assets/issues7739_7743_20261119/protected-validation.json",
           "condition_evidence_sha256": "aaa57047499d306ecde8b99529bc32840a9a4dfabbc6aa18a0e10b3b18b98fa2",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "57fd9bb6e2",
+          "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+          "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
+          "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
+          "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/wasm/decree.tsv",
+          "sha256": "1cadf36ede0470da44a9a273286a891c3a1b18624502213a2a05f24025bf6d19",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ],
       "previous_source": {
         "pr": null,
-        "evidence_commit": "9cf03b849900e9ba2b01830c08ef9321bc7390ca",
-        "code_commit": "d77d3e0faa0f75d0bfcd49453aa8f144f6b56b68",
-        "path": "mydocs/pr/assets/issues7739_7743_20261119/protected/wasm/decree.tsv",
-        "sha256": "d524d8840c2e2968f1e0f5fe31c74d9c2ca75063b37eb58eba8e3691746a162d",
+        "evidence_commit": "57fd9bb6e2",
+        "code_commit": "3901aa782d4445efb171ec4ffb026f2a459c2daf",
+        "condition_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json",
+        "condition_evidence_sha256": "4c0a5ab6ea7e006ba068a182738f09cc0e550dc7c7c3d4a438a73a1299f4495d",
+        "path": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/wasm/decree.tsv",
+        "sha256": "1cadf36ede0470da44a9a273286a891c3a1b18624502213a2a05f24025bf6d19",
         "metric_column": "silhouette_raw_match_percent",
         "page_column": "page",
         "document_filter": null,
-        "condition_evidence": "mydocs/pr/assets/issues7739_7743_20261119/protected-validation.json",
-        "condition_evidence_sha256": "aaa57047499d306ecde8b99529bc32840a9a4dfabbc6aa18a0e10b3b18b98fa2",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       }
     },
@@ -5202,9 +5307,21 @@
       "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/planet6897-9208-9236-20261121.json",
       "increased_row_count": 30,
       "evaluated_row_count": 4046
+    },
+    {
+      "pr": null,
+      "evidence_commit": "70fca853bee65aba00820c5dbe39d0f4aa899d86",
+      "code_commit": "521f69d19da9176e7947ceb318cf9838bec5ca75",
+      "condition_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json",
+      "condition_evidence_sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81",
+      "accepted_at": "2026-11-22T00:23:36.733586+09:00",
+      "acceptance_basis": "최신 devel을 반영한 46개 조건의 전쪽 검증과 원본 53행의 독립 인쇄본 대조",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/semanticist21-20261121.json",
+      "increased_row_count": 75,
+      "evaluated_row_count": 4046
     }
   ],
-  "updated_at": "2026-11-21T16:41:02.609001+09:00",
-  "previous_table_sha256": "5847906ccaea6054b8233c6a1074423743a6d486ba0dc908795cd0d9dfcee756",
+  "updated_at": "2026-11-22T00:23:36.733586+09:00",
+  "previous_table_sha256": "7f558bd4a1c8b901001492a977476efe1b1df3165dd3fef220f43ca1f87f55e3",
   "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }

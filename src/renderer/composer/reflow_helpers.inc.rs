@@ -705,19 +705,125 @@ pub(crate) fn stored_rows_are_stale(
     para: &Paragraph,
     inner_width_px: f64,
     styles: &ResolvedStyleSet,
-    line_wrap_squeeze: bool,
+    frame: &LayoutFrame,
 ) -> bool {
     match stored_rows_are_stale_with_storage(
         composed,
         para,
         inner_width_px,
         styles,
-        line_wrap_squeeze,
+        frame,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
         Err(never) => match never {},
     }
+}
+
+/// 각주 본문과 별도로, 원본 줄이 소유한 참조 번호의 전진은 본문 폭을 차지한다.
+/// 줄 끝 공백은 다음 줄로 넘치지 않으며, 내부 공백은 문단의 압축 가능량까지 허용한다.
+fn stored_footnote_row_overflows<S: crate::storage::Storage>(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    inner_width: f64,
+    frame: &LayoutFrame,
+    storage: &S,
+) -> Result<bool, S::Error> {
+    let count = composed.lines.len();
+    if count < 2
+        || !para
+            .controls
+            .iter()
+            .any(|control| matches!(control, Control::Footnote(_)))
+        || stored_row_fragments::crosses_physical_frame(para)
+        || count != para.line_segs.len()
+        || inner_width <= 0.0
+        // 내어쓰기·문단 머리·여러 슬롯이 있는 저장 줄의 segment_width는 본문이
+        // 실제로 쓸 수 있는 폭과 다르다. 이런 줄의 캐시는 저장 프레임 판정에 맡긴다.
+        || !frame.exclusions.is_empty()
+        || para.line_segs.iter().any(|seg| {
+            seg.tag & (LineSeg::TAG_IMPLEMENTATION_PROPERTY | LineSeg::TAG_INDENTATION
+                | LineSeg::TAG_PARAGRAPH_HEAD | LineSeg::TAG_AUTO_HYPHENATION) != 0
+                || seg.column_start != para.line_segs[0].column_start
+                || seg.segment_width != para.line_segs[0].segment_width
+        })
+
+    {
+        return Ok(false);
+    }
+    let dpi = styles.resolved_dpi.unwrap_or(crate::renderer::DEFAULT_DPI);
+    let condense = styles
+        .para_styles
+        .get(para.para_shape_id as usize)
+        .map_or(0, |style| style.condense_min_space);
+    let mut advances = storage.vec(count)?;
+    advances.resize(count, 0.0);
+    for (control, raw) in para
+        .controls
+        .iter()
+        .zip(para.control_utf16_positions_with_storage(storage)?)
+    {
+        if let Control::Footnote(note) = control {
+            let row = para
+                .line_segs
+                .partition_point(|seg| para.line_seg_text_start_of(seg.text_start) <= raw)
+                .saturating_sub(1);
+            advances[row] += crate::renderer::layout::note_reference_advance(
+                control,
+                note.number,
+                styles,
+                find_active_char_shape(&para.char_shapes, raw),
+            );
+        }
+    }
+    'rows: for (line, markers) in composed.lines.iter().zip(advances).take(count - 1) {
+        if markers == 0.0 || line.has_line_break || line.segment_width <= 0 {
+            continue;
+        }
+        let mut used = markers;
+        let mut trailing = true;
+        let mut savings = 0;
+        for run in line.runs.iter().rev() {
+            let text = effective_text_for_metrics(run);
+            if text.contains(['\t', '\u{ad}']) {
+                continue 'rows;
+            }
+            let text = if trailing {
+                text.trim_end_matches(' ')
+            } else {
+                text
+            };
+            if text.is_empty() {
+                continue;
+            }
+            trailing = false;
+            let mut style = run.try_text_style(styles, storage)?;
+            used += estimate_text_width(text, &style);
+            style.letter_spacing = 0.0;
+            let spaces = text.bytes().filter(|byte| *byte == b' ').count() as i64;
+            if spaces > 0 && condense > 0 {
+                savings += spaces
+                    * line_breaking::condense_space_budget_for_px(
+                        estimate_text_width(" ", &style),
+                        condense,
+                        dpi,
+                    );
+            }
+        }
+        let minimum = crate::renderer::px_to_hwpunit(used, dpi)
+            - line_breaking::whole_space_savings_hwp(savings);
+        if minimum > line.segment_width
+            && minimum > crate::renderer::px_to_hwpunit(inner_width, dpi)
+        {
+            // 저장 줄 전체가 번호를 빼고 채운 결과와 같아야, 번호 누락으로
+            // 옛 줄이 만들어졌다는 근거가 있다. 정상 저장 줄의 글꼴 추정 오차를 보존한다.
+            return line_breaking::stored_rows_match_without_footnote_advances(
+                para, frame, styles, dpi, storage,
+            );
+        }
+    }
+    Ok(false)
 }
 
 pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
@@ -727,7 +833,7 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
     styles: &ResolvedStyleSet,
     // "한 줄로 입력"(SQUEEZE) 칸. 한/글은 저장 줄 하나에 글을 밀어 넣고 넘치면 겹쳐 찍으므로
     // 과밀만으로는 저장 줄 나눔이 낡았다고 보지 않는다.
-    line_wrap_squeeze: bool,
+    frame: &LayoutFrame,
     storage: &S,
 ) -> Result<bool, S::Error> {
     Ok({
@@ -749,6 +855,11 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
         {
             return Ok(false);
         }
+        if !frame.line_wrap_squeeze
+            && stored_footnote_row_overflows(composed, para, styles, inner_width_px, frame, storage)?
+        {
+            return Ok(true);
+        }
         // [#2525] 비마스킹 대형 과밀: 저장 lineseg 이 장평 반영 실폭
         // (estimate_composed_line_width 는 ts.ratio 를 자체 반영) 기준으로도 내폭을
         // 크게(≥1.8×) 초과하면, 정당한 장평/자간 압축 범위(최소 advance 클램프 0.5×
@@ -767,7 +878,7 @@ pub(crate) fn stored_rows_are_stale_with_storage<S: crate::storage::Storage>(
         // [#SQUEEZE] "한 줄로 입력" 칸은 과밀 저장 줄이 정상이다(36481164 「건 명」 칸:
         // 저장 한 줄 19808HU 에 글 약 1.9배 — 한컴 Print 는 한 줄에 겹쳐 찍는다). #2525 의 근거
         // (hwpx-02 5쪽 135자)는 본문 문단이라 이 예외와 겹치지 않는다.
-        for l in composed.lines.iter().filter(|_| !line_wrap_squeeze) {
+        for l in composed.lines.iter().filter(|_| !frame.line_wrap_squeeze) {
             if estimate_composed_line_width_with_storage(l, styles, storage)? > inner_width_px * 1.8
                 && !line_overflow_is_leader_fill_with_storage(l, styles, inner_width_px, storage)?
             {

@@ -34,6 +34,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `autosave-recovery.test.mjs` | 상시 | active | Task #1448 — 미저장 문서 자동 백업 복구 E2E | — | 수동 |  |
 | `blogform.test.mjs` | 상시 | active | BlogForm_BookReview.hwp 누름틀 안내문 | BlogForm_BookReview.hwp | 수동 |  |
 | `body-outside-click-fallback.test.mjs` | 진단 | hold | 보류 ② 본문 외곽 클릭 fallback 결함 — 가설 (b) master page 글상자 hit 확정 e2e | hwpctl_Action_Table__v1.1.hwp | 수동 | legacy-name · 보류② 이슈 종속 |
+| `body-plain-text-paste-issue8197.test.mjs` | 상시 | active | #8197 본문 400문단 배치, 형식별 재저장·복구·Undo/Redo·선택 대체 | 합성 평문 | 수동 | 실제 붙여넣기 이벤트와 WASM |
 | `bridge-lifecycle.test.mjs` | 상시 | active | Studio Bridge — 부모 페이지에서 createStudio 로 chrome·커맨드·hwpctrl 제어와 destroy 회수 | table-001.hwp | npm e2e:bridge |  |
 | `bridge-perf.test.mjs` | 상시 | active | 브리지 성능 게이트 — 배치 RPC 1왕복·배치 이득·undo 1스텝·수명 잔여 (계획서 §6) | table-001.hwp | npm e2e:bridge-perf |  |
 | `canvas-render-diff.test.mjs` | 상시 | active | Browser canvas visual diff between the legacy PageRenderTree path  | — | npm+CI |  |
@@ -74,6 +75,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `embed-field-events.test.mjs` | 상시 | active | `field-focus-events-v1` 누름틀 진입·변경·이탈 이벤트가 부모 페이지까지 오고 같은 누름틀 안 이동·해지 후는 무알림, 문서 교체 이탈·동일 ID 재진입 | field-01.hwp | npm e2e:field-events |  |
 | `embed-svg-profile.test.mjs` | 상시 | active | SDK SVG 4종 profile·기존 경로·인쇄 안내문 제외·내용/Undo 보존 | field-01.hwp | 수동 | 독립 Print PDF와 별도 Visual Sweep |
 | `embed-save-ack.test.mjs` | 상시 | active | Task #2660 호스트 저장 완료 통지와 dirty/autosave 정리 계약 | footnote-01.hwp | 수동 |  |
+| `embed-password-save.test.mjs` | 상시 | active | #5987 암호 보호 저장, 리비전 확인, draft 수명, HWP5/HWPX 재열기와 HWP3 변환 | footnote-01.hwp, HWP3-password-123456.hwp | npm e2e:embed-password-save |  |
 | `embed-transport.test.mjs` | 상시 | active | Issue #2186 @rhwp/editor MessageChannel v1 iframe transport | — | npm e2e:embed |  |
 | `export-hwpx.test.mjs` | 상시 | active | Issue #557 — npm/editor RPC + Wrapper 에 exportHwpx / exportHwpVeri | — | 수동 |  |
 | `footnote-delete-confirm.test.mjs` | 상시 | active | #598 본문 각주 삭제 확인창/취소/Undo | footnote-01.hwp | 수동 |  |
@@ -209,6 +211,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 
 | `hyperlink-ui-issue6963.test.mjs` | 상시 | active | #6963 한컴형 링크 UI·우클릭·방문 색·undo/redo·드래그 선택 | 새 문서 | 수동 | 실제 WASM 필요 |
 | `memo-delete-undo.test.mjs` | 상시 | active | #8017 메모 기준 글자 Backspace·Delete 삭제와 Ctrl+Z·Ctrl+Y의 메모·범위 복원, 떨어진 삭제 병합 유지 | 새 문서 | npm e2e:memo-delete-undo | 실제 Studio 키 입력·fresh WASM |
+| `memo-ui-issue9011.test.mjs` | 상시 | active | #9011 본문·표 셀 메모 추가·편집·삭제, undo/redo 및 HWP/HWPX 저장·재열기 | 새 문서 | npm e2e:memo-ui | 실제 Studio 메뉴·fresh WASM |
 
 | `host-font-input-issue9165.test.mjs` | 상시 | active | #9165 셀 입력의 호스트 글꼴 페이지 조회와 입력 지연 | 합성 3쪽 표·RHWPHostFixture | npm e2e:issue-9165 | Canvas2D, 공급자 3조건 |
 | `host-font-provider-issue7403.test.mjs` | 상시 | active | #7403 호스트 face 선택·동명 교체·실패 복구·저장 이름/dirty 보존 | 새 문서·합성 TTC·번들 Noto·basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-7403 / e2e:issue-7403-canvas2d | 명시적 CanvasKit/Canvas2D, 측정·paint·SVG 경계 포함 |

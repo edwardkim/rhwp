@@ -4,6 +4,85 @@ use super::*;
 
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
+    /// 글줄이 실제로 출력한 그림 원점에서 아래 캡션을 배치하고 편집 경로를 이어 준다.
+    pub(super) fn layout_inline_picture_bottom_captions(
+        &self,
+        tree: &mut PageLayoutContext,
+        area_node: &mut RenderNode,
+        para: &Paragraph,
+        emitted_para: usize,
+        first_node: usize,
+        parent_context: &CellContext,
+        styles: &ResolvedStyleSet,
+        area: &LayoutRect,
+        bin_data_content: &[BinDataContent],
+    ) -> f64 {
+        fn image_box(node: &RenderNode, para: usize, control: usize) -> Option<BoundingBox> {
+            if let RenderNodeType::Image(ref img) = node.node_type {
+                if img.para_index == Some(para) && img.control_index == Some(control) {
+                    return Some(node.bbox);
+                }
+            }
+            node.children
+                .iter()
+                .find_map(|child| image_box(child, para, control))
+        }
+        let mut bottom = f64::MIN;
+        for (ci, ctrl) in para.controls.iter().enumerate() {
+            let Control::Picture(pic) = ctrl else {
+                continue;
+            };
+            let Some(caption) = pic.caption.as_ref() else {
+                continue;
+            };
+            if !pic.common.treat_as_char
+                || caption.direction != crate::model::shape::CaptionDirection::Bottom
+            {
+                continue;
+            }
+            let Some(image) = area_node.children[first_node..]
+                .iter()
+                .filter(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+                .find_map(|node| image_box(node, emitted_para, ci))
+            else {
+                continue;
+            };
+            let mut context = parent_context.clone();
+            context.path.push(CellPathEntry {
+                control_index: ci,
+                cell_index: 0,
+                cell_para_index: 0,
+                text_direction: 0,
+            });
+            let ext_left = hwpunit_to_px(
+                caption.margin_extension_left(&pic.common.margin) as i32,
+                self.dpi,
+            );
+            let ext_w = hwpunit_to_px(
+                caption.text_width(pic.common.width, &pic.common.margin) as i32
+                    - pic.common.width as i32,
+                self.dpi,
+            )
+            .max(0.0);
+            let cap_y = image.y + image.height + hwpunit_to_px(caption.spacing as i32, self.dpi);
+            self.layout_caption(
+                tree,
+                area_node,
+                caption,
+                styles,
+                area,
+                image.x - ext_left,
+                image.width + ext_w,
+                cap_y,
+                bin_data_content,
+                Some(context),
+                None,
+            );
+            bottom = bottom.max(cap_y + self.calculate_caption_height(&pic.caption, styles));
+        }
+        bottom
+    }
+
     pub(super) fn layout_header_footer_paragraphs(
         &self,
         tree: &mut PageLayoutContext,
@@ -361,6 +440,17 @@ impl LayoutEngine {
                         Some(bin_data_content),
                         None, // 머리말/꼬리말 컨텍스트 — wrap zone 무관
                     );
+                    y_offset = y_offset.max(self.layout_inline_picture_bottom_captions(
+                        tree,
+                        area_node,
+                        para,
+                        usize::MAX - i,
+                        0,
+                        &CellContext { parent_para_index: i, path: Vec::new(), in_textbox: false },
+                        styles,
+                        area,
+                        bin_data_content,
+                    ));
                 }
             } else if has_shape {
                 // [#5802] 글자처럼 취급(TAC) 도형은 paragraph_layout 이 inline 좌표를

@@ -1,5 +1,8 @@
 //! 검사 유형: 관계형 — 원 PUA·표시 기호·기호 프로그램·전진폭의 소유를 구분한다.
-//! 주석 갱신: 2026-11-20T05:29:53+09:00; 직전 파일 변경 31a422575722f634cfc2d9eb97e708da58aea188 (2026-11-13T01:05:55+09:00).
+//! 주석 갱신 2026-11-21 17:33 KST. 직전 devel 파일 변경 d7b5286cbf (2026-11-21T17:16:57+09:00).
+//! 보정 대조 1/1쪽, Native 99.91% / fresh WASM 98.89% (96 DPI, 2px raw).
+//! 확대 비교는 mydocs/pr/assets/semanticist21-20261121/validation/README.md에 있다.
+//! 이전 주석 갱신: 2026-11-20T05:29:53+09:00; 직전 파일 변경 31a422575722f634cfc2d9eb97e708da58aea188 (2026-11-13T01:05:55+09:00).
 //! planet6897/rhwp-issue-docs#614: 0xA1 의 「○ 크기의 흰 원」 기대값은 웹한글기안기 Haan Wings
 //! 이력이었다. 현재 기준 2020 Print 는 Wingdings glyph 7(advance 1825, 바깥 (173,0)..(1653,1480),
 //! 안쪽 (321,148)..(1505,1332))의 굵은 고리이므로 고리 윤곽 관계로 교정했다.
@@ -15,7 +18,7 @@
 //! 한컴 웹한글기안기 인쇄 PDF(`pdf/issue8680/wingdings_pua_symbols-webhwp-print.pdf`)는
 //! 이 글자를 문서 글꼴과 상관없이 `Haan Wings` 글꼴의 같은 코드(0x81 등)로 그린다.
 //! - 0x80~0x95 는 ⓪ ①..⑩ ⓿ ❶..❿ (Wingdings→Unicode 공개 표와 PDF 글리프가 일치)
-//! - 0xA1 은 ○ 크기의 흰 원, 0xFE 는 ☑
+//! - 0xA1은 바깥·안쪽 윤곽을 가진 Wingdings 고리, 0xFE는 ☑
 //! - 내장 Haan Wings 폭: 0x80~0x95·0xA1 = 891/1000, 0xFE = 892/1000
 //!
 //! 수정 전 rhwp 는 0x80~0x95 의 표시 대체가 없어 빈칸(반각 전진)으로 그렸다.
@@ -216,19 +219,29 @@ fn wingdings_pua_circled_digits_are_painted_with_visible_symbols() {
 
 /// `fill-rule="evenodd"` 고리 경로의 (바깥, 안쪽) 가로 반지름.
 fn ring_radii(svg: &str) -> Vec<(f64, f64)> {
-    svg.split("<path d=\"M")
-        .skip(1)
-        .filter_map(|tail| {
-            let head = &tail[..tail.find('>')?];
-            if !head.contains("fill-rule=\"evenodd\"") {
-                return None;
-            }
-            let d = &head[..head.find('"')?];
-            let radius = |part: &str| -> Option<f64> {
-                part.split('a').nth(1)?.split(' ').next()?.parse().ok()
+    let document = roxmltree::Document::parse(svg).unwrap();
+    document
+        .descendants()
+        .filter(|node| {
+            node.has_tag_name("path")
+                && node.attribute("fill-rule") == Some("evenodd")
+                && node.next_sibling_element().is_some_and(|label| {
+                    label.has_tag_name("text")
+                        && label.attribute("fill-opacity") == Some("0")
+                        && label.text() == Some("○")
+                })
+        })
+        .filter_map(|node| {
+            let mut contours = node.attribute("d")?.split('M').skip(1);
+            let radius = |part: &str| {
+                part.split_once('a')?
+                    .1
+                    .split_whitespace()
+                    .next()?
+                    .parse()
+                    .ok()
             };
-            let mut parts = d.split('M');
-            Some((radius(parts.next()?)?, radius(parts.next()?)?))
+            Some((radius(contours.next()?)?, radius(contours.next()?)?))
         })
         .collect()
 }

@@ -1,3 +1,5 @@
+import { PASSWORD_SAVE_CAPABILITY } from '../../../npm/editor/password-save-contract.js';
+
 export const EMBED_PROTOCOL_VERSION = 1 as const;
 export const EMBED_CAPABILITIES = [
   'transferable-array-buffer',
@@ -18,6 +20,7 @@ export const EMBED_CAPABILITIES = [
   'document-change-events-v1',
   'field-focus-events-v1',
   'command-error-v1',
+  PASSWORD_SAVE_CAPABILITY,
 ] as const;
 
 export interface EmbedConnectAttempt {

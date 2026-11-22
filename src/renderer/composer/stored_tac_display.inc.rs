@@ -461,7 +461,7 @@ pub(crate) fn captioned_shape_height_px(
     }
 }
 
-/// Hanyang-PUA 옛한글 코드포인트·한컴 PUA와 legacy 제품명을 렌더링용 텍스트로 변환한다.
+/// Hanyang-PUA 옛한글 코드포인트와 한컴 PUA를 렌더링용 텍스트로 변환한다.
 ///
 /// 한컴 자체 폰트 (함초롬바탕 LVT 등) 는 PUA 영역에 옛한글 글리프를 직접
 /// 보유하나, OFL 폰트 (Noto Serif KR / Source Han Serif K 등) 는 KS X 1026-1
@@ -473,11 +473,6 @@ pub(crate) fn captioned_shape_height_px(
 /// 불변성을 유지하기 위함이다(PUA 1 char = display N chars). `U+F012B` 서명·날인
 /// 기호처럼 렌더러가 합성하는 기호(`EnclosedPua`)는 원 키를 유지한다(#8201).
 ///
-/// 1990년대 한컴 제품 설명서는 `ᄒᆞᆫ글`·`ᄒᆞᆫ메일`처럼 제품명을 옛한글 자모로
-/// 저장했지만, 한컴 PDF는 이를 각각 `한글`·`한메일`로 인쇄한다. 이것은 일반
-/// 옛한글 정규화가 아니다. 아래의 닫힌 제품명 어휘만 display projection으로
-/// 바꾸며, 원문 IR·검색·캐럿 offset은 그대로 보존한다.
-///
 /// 매핑 표: KTUG HanyangPuaTableProject (Public Domain).
 fn try_convert_pua_display_text<S: crate::storage::Storage>(
     composed: &mut ComposedParagraph,
@@ -487,8 +482,6 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
 ) -> Result<(), S::Error> {
     use super::pua_oldhangul::map_pua_old_hangul;
 
-    let product_prefix_starts = try_legacy_hancom_product_prefix_starts(composed, storage)?;
-    let mut run_char_start = 0usize;
     for line in composed.lines.iter_mut() {
         // [#7993] 제어 표기 소프트 하이픈은 줄 끝에서만 `-` 로 보이고, 줄 중간에서는
         // 보이지도 폭을 갖지도 않는다(한/글 2020 Print: task1725 162쪽 `<hp:hypen/>` 16개가
@@ -502,10 +495,6 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
             };
             let chars: Vec<char> = storage.collect(run.text.chars())?;
             run.literal_soft_hyphen = !soft_hyphen_control && chars.contains(&'\u{00AD}');
-            let run_char_end = run_char_start + chars.len();
-            let has_product_projection = product_prefix_starts
-                .iter()
-                .any(|start| *start < run_char_end && start.saturating_add(3) > run_char_start);
             let has_pua_display = chars.iter().any(|ch| {
                 pua_plain_text_display(*ch).is_some()
                     || map_pua_old_hangul(*ch).is_some()
@@ -517,25 +506,13 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
             } else {
                 None
             };
-            if !has_product_projection && !has_pua_display {
-                run_char_start = run_char_end;
+            if !has_pua_display {
                 continue;
             }
             let mut display = storage.string("")?;
             let mut changed = false;
             for (index, ch) in chars.iter().copied().enumerate() {
-                let char_position = run_char_start + index;
-                if product_prefix_starts.contains(&char_position) {
-                    storage.push_char(&mut display, '한')?;
-                    changed = true;
-                } else if product_prefix_starts
-                    .iter()
-                    .any(|start| (start + 1..start + 3).contains(&char_position))
-                {
-                    // `ᄒᆞᆫ` 세 자모가 style/line 경계를 넘더라도 첫 위치에만
-                    // `한`을 투영한다. 뒤 두 model char는 offset 공간에만 남긴다.
-                    changed = true;
-                } else if ch == '\u{00AD}' {
+                if ch == '\u{00AD}' {
                     // 제어 표기는 줄 끝에서만, 리터럴은 본문에서도 하이픈으로 보인다.
                     // 모델 문자와 offset은 그대로 유지한다.
                     if !soft_hyphen_control || line_end_char == Some(index) {
@@ -571,63 +548,12 @@ fn try_convert_pua_display_text<S: crate::storage::Storage>(
                     }
                 }
             }
-            run_char_start = run_char_end;
             // 글꼴 공급 뒤 재구성할 때 앞선 일반 compose의 대체 문자열도 폐기한다.
             // 원 PUA를 그대로 쓰는 결과는 changed=false여도 이전 display와 다르다.
             run.display_text = changed.then_some(display);
         }
     }
     Ok(())
-}
-
-const LEGACY_HANCOM_PRODUCT_WORDS: [(&str, &str); 4] = [
-    ("ᄒᆞᆫ글", "한글"),
-    ("ᄒᆞᆫ메일", "한메일"),
-    ("ᄒᆞᆫ팩스", "한팩스"),
-    ("ᄒᆞᆫ소프트", "한소프트"),
-];
-
-/// 한컴 PDF가 현대 글리프로 인쇄하는 레거시 제품명만 화면 문자열로 투영한다.
-///
-/// 이 함수는 모델 문자열을 정규화하지 않는다. 표 셀처럼 composer를 우회해
-/// `TextRunNode`를 직접 만드는 레이아웃 경로에도 같은 제한된 표시 계약을
-/// 적용하기 위해 render-tree 최종화 단계에서 재사용한다.
-pub(crate) fn legacy_hancom_product_display_text(text: &str) -> Option<String> {
-    let mut display = text.to_owned();
-    for (legacy, modern) in LEGACY_HANCOM_PRODUCT_WORDS {
-        display = display.replace(legacy, modern);
-    }
-    (display != text).then_some(display)
-}
-
-/// `ᄒᆞᆫ`이 legacy 한컴 제품명으로 쓰인 model-character 시작 위치를 찾는다.
-///
-/// `ComposedParagraph`의 run은 줄·글자모양 경계에서 나뉠 수 있으므로, 먼저 모든
-/// run을 이어 검사한 뒤 model char 좌표를 돌려준다. 그 뒤 display projection은
-/// run별로 적용해도 줄 경계를 넘어선 제품명을 놓치지 않는다.
-fn try_legacy_hancom_product_prefix_starts<S: crate::storage::Storage>(
-    composed: &ComposedParagraph,
-    storage: &S,
-) -> Result<Vec<usize>, S::Error> {
-    let mut logical_text = storage.string("")?;
-    for text in composed
-        .lines
-        .iter()
-        .flat_map(|line| line.runs.iter())
-        .map(|run| run.text.as_str())
-    {
-        storage.push_str(&mut logical_text, text)?;
-    }
-    let mut starts = storage.vec(0)?;
-    for (char_index, (byte_index, _)) in logical_text.char_indices().enumerate() {
-        if LEGACY_HANCOM_PRODUCT_WORDS
-            .iter()
-            .any(|(legacy, _)| logical_text[byte_index..].starts_with(legacy))
-        {
-            storage.push(&mut starts, char_index)?;
-        }
-    }
-    Ok(starts)
 }
 
 /// 각주 마커를 해당 텍스트 위치의 런에 인라인 삽입
