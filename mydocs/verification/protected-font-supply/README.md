@@ -4,8 +4,9 @@
 문서별 Native·WASM 글꼴 공급 조건이다. 경로는 저장소 루트를 기준으로 해석한다.
 
 - `documents[].backends`에서 문서 key와 backend를 선택한다.
-- `font_set`이 가리키는 파일명·SHA-256·배열 순서로 글꼴을 공급하고,
-  `font_environment`가 있으면 해당 환경 JSON을 `--font-environment`로 지정한다.
+- `supply_mode`가 `explicit_files`이면 `font_set`의 파일명·SHA-256·배열 순서로
+  `--font-path`를 지정한다. 자동 선택 조건에서는 `font_set`을 공급 환경 확인에 사용한다.
+- `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_*`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는
   `reproduction_validation`에 기록한다.

@@ -395,8 +395,7 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 
 정본 보호 전쪽을 비교하는 collaborator·maintainer는 Linux·Windows·macOS 모두
 [공식 글꼴 공급 자료](../../verification/protected-font-supply/README.md)를 따른다.
-문서 key와 backend로 `manifest.json`의 조건을 선택하고, `font_set`의 파일을 `--font-path`로,
-`font_environment`가 있으면 해당 JSON을 `--font-environment`로 공급한다.
+문서 key와 backend로 `manifest.json`의 조건을 선택해 공급 방식과 환경 JSON을 적용한다.
 파일명·프로그램 SHA·face와 실제 선택 기록을 대조한다. 일반 기여자에게 비공개 글꼴 확보를 요구하지 않는다.
 
 글꼴 공급·설정이 바뀌면 새 output에서 같은 조건의 고정 base와 후보를 전쪽 비교한다.
