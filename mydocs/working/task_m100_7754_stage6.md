@@ -156,3 +156,39 @@ fresh WASM·정본 전체·미확보 글꼴과 정확한 outline 환경의 검�
 Cargo에는 신호를 보내지 않았다. Rust 종료 또는 45분 뒤 자동 재개하며 목표 작업은 계속한다.
 종료한 옛 probe library 17개도 활성 참조가 없음을 확인해 unlink했다. hardlink를 포함하므로
 3,171,992,250바이트는 논리 크기이며 실제 확보 용량으로 주장하지 않는다. 공유 target은 보존했다.
+
+
+## 소스 36 전체 회귀 종료와 다음 보정 조건
+
+최소 글꼴 전체 nextest는 exit 100으로 끝났다. 13,970건 중 13,968건 통과,
+2건 실패, 45건 skipped다. 실패는 oracle partition 13·15이며 각각 수출입 19쪽과
+시장구조조사 315쪽의 모아 찍기 선언 제외 규약이다. 실제 쪽수 격차 실패로 바꾸어
+설명하지 않는다. 이번 복원에서 독립 1-up Print 참조를 추가한 범위와 기존 생성기·
+검사기의 제외 규약을 함께 추적하고, 해당 Print 근거에 따른 계약을 보정해야 한다.
+쪽수·내용 검사를 제거하거나 기준값을 낮추지 않는다. 실제 summary와 실패 본문은
+`source36/gates/full-rust-source36/`에 고정했다.
+
+정본 SPSMJ를 동일하게 적용한 기준/후보의 중첩 표 16쪽은 100.00%/99.98%다.
+같은 렌더 트리 위치에서 후보의 U+2027 두 개만 사라지고 21개 PNG 픽셀이 달라졌다.
+원인은 선택한 SFNT의 신원을 원본 HFT 논리 이름 자체의 물리 family 인증으로 넓혀
+추가한 별칭이다. 설치된 다른 논리 이름 프로그램은 이 문자를 cmap에 가지지만 윤곽이
+없다. 선택한 실제 family로만 조회하는 진단은 원 프로그램 ID·bytes·메트릭 보존을
+유지하면서 기준 PNG를 정확히 복원했다. 안내문 2쪽은 Native 99.99%와 기존 PNG
+동일성을 유지하고 stock WASM에서도 99.99%다.
+
+중첩 표의 private font context WASM 진단도 100.00%다. root read-only에 따른
+project cache 쓰기, Snap launcher의 namespace 제약은 준비 오류로 보존했고,
+기존 host Chrome 155를 명시해 실행했다. 이 경로는 진단이며 stock Snap 158과
+같은 환경의 최종 보호 gate를 대신하지 않는다. 근거는
+`source36/protected/alias-regression/`에 있다.
+
+앞선 Human Gothic TTF 미확보 추정은 배제한다. 실제 추가 기준은
+`HYGothic-Medium`의 H2GTRM.TTF이며 현재 파일의 SHA는
+`0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5`로 정본과 같다.
+Human Gothic의 원본 CFF와 다른 프로그램이다. 추가 Poppy 프로그램을 제거한 진단은
+오히려 악화했으므로 채택하지 않았다. 시스템 글꼴을 삭제·변경하지 않았다.
+
+소스 36은 최종 제출 후보가 아니다. 현재 실제 출력·기준 측정은 보존한다.
+미시작 소스 36 전체 보호 WASM·공통 gate의 idle supervisor만 종료해 중복 실행을
+막았다. 실행 중인 Native 자식과 Cargo에는 신호를 보내지 않았다. 두 oracle 계약과
+별칭 보정을 다음 단계의 코드로 고정하고 새 생산물에서 필수 검증을 다시 완료한다.
