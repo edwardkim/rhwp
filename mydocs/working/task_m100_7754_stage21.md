@@ -24,6 +24,12 @@ HWPX 저장·재열기, 결합 부호의 내용·편집 위치와 실제 화면�
 [검증 입력 목록](../verification/issue7754-nine-fidelity/incoming-pr9322/inputs.tsv)과
 [글꼴 프로그램 대조](../verification/issue7754-nine-fidelity/incoming-pr9322/font-supply.json)를 사용한다.
 
+Native에서 이 입력과 독립 한컴 Print 37쪽을 같은 글꼴 공급으로 비교했다. 기준과 후보의
+PNG 37쌍이 일치했고 최저 99.17%였다. 함초롬돋움에서 빠진 기호는 한컴 PDF의 실제 사용
+기록대로 굴림을 지정해 재현했다. 결합 부호, 함초롬돋움의 누락 글리프, 현대 도장란의 연속
+누락 글리프를 원본 Print와 직접 대조했다.
+[Native 쪽별 TSV와 비교 PNG](../verification/issue7754-nine-fidelity/incoming-pr9322/print/native-validation.json)
+
 현대 HWPX 재저장 대조군에서 리베이스 전 두 생산본은 같은 여섯 문단의 BMP 문자를
 Plane 15 기호로 바꿨고 굵은 구간의 UTF-16 시작 위치도 1만큼 밀렸다. 한컴 HWPX와 같은
 원문과 굵은 구간을 새 생산본에서 확인하는 데 사용한다.
