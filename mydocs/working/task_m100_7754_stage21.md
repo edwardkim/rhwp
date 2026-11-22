@@ -64,6 +64,11 @@ Canvas2D·CanvasKit의 화면·인쇄 80조건을 각각 실행했다. 두 생�
 각 줄의 첫 잉크 행 차이는 최대 1px였다.
 [선정 다섯 쪽의 TSV와 확대 판독](../verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json)
 
+새 기준 Native의 원래 아홉 이슈 583쪽과 보조 사례 50쪽을 직전 기준과 대조했다.
+43조건에서 같은 글꼴 공급과 PDF 래스터 조건을 사용했으며, 633쪽의 PNG와 TSV가
+바이트까지 일치했다.
+[기준 Native 633쪽의 원본 TSV와 산출물 확인](../verification/issue7754-nine-fidelity/after-pr9322/native-base-before-and-after-pr9322.json)
+
 시장구조조사 315쪽의 기준 Native 출력은 리베이스 전후로 동일했다. 각 쪽의 출력·독립
 Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인 3쪽(95.99%)과
 100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
