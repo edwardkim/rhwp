@@ -23,3 +23,9 @@
 ## 원본에서 확인한 수정 전후 차이
 
 #9310의 글상자 미주 문서를 한컴 2020으로 인쇄하면 본문 미주 1번 뒤에 2번과 ‘상자미주’가 표시된다. 같은 HWPX를 연 devel에서는 두 번째 항목이 없었다. 다섯 건을 통합한 Native에서 본문 끝의 번호와 글이 복원돼 raw가 91.41%에서 100.00%로 올랐다. 표 셀 주석의 HWP는 1쪽의 뒤 문단 글자 높이에 작은 차이가 있어 99.65%였고, 2쪽은 100.00%였다. 두 쪽 모두 devel과 5건 후보의 PNG SHA-256이 같았다. [원본·devel·후보 직접 비교](assets/semanticist21-20261123-table-notes-shadows/textbox-note-comparison.png) · [쪽별 raw와 PNG 해시](assets/semanticist21-20261123-table-notes-shadows/devel-notes.tsv)
+
+## 공개 편집 API와 저장 재열기
+
+같은 도구로 기준 devel과 후보의 WASM을 각각 새로 빌드했다. 후보의 `HwpDocument`는 기준의 이름 있는 메서드 609개를 모두 제공한다. 표 셀·글상자의 각주·미주를 입력하거나 번호, 커서와 소유 경로를 읽는 메서드 다섯 개가 추가됐다. Studio의 공개 JavaScript와 TypeScript 선언을 이 빌드에서 생성했다. 별도 TypeScript 소비자가 다섯 메서드를 엄격 모드로 읽는 검사도 통과했다. [양쪽 패키지·공개 API 대조](assets/semanticist21-20261123-table-notes-shadows/public-api.json)
+
+후보에서 표·도형·주석을 편집해 저장한 HWP 8개와 HWPX 8개를 다시 열었다. 파일 16개 모두 한컴 Print에 사용한 원본과 SHA-256이 일치했다. 인라인 도형의 본문과 뒤 문단은 원래 순서를 유지했고, HWPX에 저장된 줄 높이는 각각 6,000·1,000 HWPUNIT였다. 글상자의 미주 2번을 조회하면 본문 미주 1번과 구별되는 소유 경로를 반환했다. [양 형식 재열기와 값 비교](assets/semanticist21-20261123-table-notes-shadows/roundtrips.json)
