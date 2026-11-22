@@ -115,6 +115,12 @@ Print PNG와 TSV를 실제 바이트로 대조했다. 기준에서 98% 미만인
 100쪽(26.80%)도 리베이스 전후에 같은 값이었다.
 [기준 Native의 전쪽 대조](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-base-native.json)
 
+시장구조조사의 fresh WASM 기준은 리베이스 전 증빙이 남은 1~288쪽을 새 기준과 대조했다.
+1~245쪽의 PNG와 점수는 같았고 246~288쪽은 43쪽 모두 개선됐다. 리베이스 전 기준은
+부록 B-2의 시작을 246쪽에 배치했다. 새 기준은 독립 Print와 같이 247쪽에서 제목과 표가
+시작했다. 글꼴 공급과 독립 Print PNG는 대조 범위에서 일치했다.
+[기준 fresh WASM 288쪽 및 246·247쪽 확대 판독](../verification/issue7754-nine-fidelity/after-pr9322/issue7755-wasm-base-before-and-after-pr9322.json)
+
 시장구조조사 첫 32쪽의 fresh WASM 후보 최저는 98.40%였고, 32쪽의 PNG가 리베이스 직전
 후보와 일치했다. 3쪽은 현재 기준보다 Native에서 95.99% → 99.40%, fresh WASM에서
 95.95% → 99.34%로 개선됐다. 연구진 제목과 테두리 및 이름 세 줄을 한컴 Print와 대조했다.
