@@ -83,7 +83,13 @@ Q52 압축한 결과와 각각 562,536픽셀 전부 일치했다. 13쪽은 저�
 87.31%에서 99.74%로 올랐고, 전쪽 최저는 99.05%였다. 나머지 19쪽 PNG의 해시는 같았다.
 8쪽을 확대해 셀 안의 이미지 시작점, 밑줄, 아래 행과의 경계를 확인했다.
 후보 전쪽 TSV SHA-256은 `c7b018843601b53d49875c11a5ec5b49c90fee4df9331154ab49eb8eb7853aae`다.
-Fresh WASM과 회귀 복원은 진행 중이다.
+Fresh WASM 전20쪽 최저는 99.04%였으며, 양쪽 모두 8쪽 99.74%와 19쪽 99.87%였다.
+독립 Print의 오른쪽 칸 캡처가 잘리기 전 x 원점은 221.00px였다. 이 원점과
+그림의 셀 소속을 검사하고, 19쪽은 중간 표 앞 제목과 표의 단 내부 점유를 검사한다.
+[Native TSV](assets/issue7771/idol-goods-native.tsv),
+[WASM TSV](assets/issue7771/idol-goods-wasm.tsv),
+[8쪽](assets/issue7771/idol-goods-page-08.png)과 [19쪽](assets/issue7771/idol-goods-page-19.png)
+확대 비교를 보존한다.
 
 ## #7776 인라인 표 뒤의 저장 줄간격
 
@@ -126,7 +132,25 @@ Fresh WASM과 회귀 복원은 진행 중이다.
 
 전쪽 TSV SHA-256은 축산 지침 `909e0a9233fb51f6c18ec6a5c76ca34e8abbb3ee9b4baecef27111034cccb2d7`,
 양돈 HWP·HWPX 모두 `09899aa53d0abadd1809dc286c66b1ee537d30026a2d5a7acbfa8fe96d50632e`다.
-Visual Sweep Python 기존 검사 47건을 통과했다. Fresh WASM과 회귀 복원은 진행 중이다.
+Fresh WASM에서 축산 지침 전12쪽 최저는 99.98%, 양돈 두 형식 전11쪽 최저는 각각
+99.49%였다. 양돈 5쪽은 두 형식의 두 경로 모두 100.00%였다. 제목의 앞·뒤 사각형이
+원본 실선을 유지하고 뒤 본문을 침범하지 않는 검사를 되살렸다. 두 형식의 TSV는
+각 backend에서 바이트까지 같아 한 벌씩 보존한다. HWPX에 사용한 한컴 2020 직접
+Print의 job은 `eb201818-8aa7-4f42-88a9-0337a7f02101`이다.
+[양돈 Native TSV](assets/issue7770/pig-farm-variants-native.tsv),
+[WASM TSV](assets/issue7770/pig-farm-variants-wasm.tsv),
+[5쪽 확대 비교](assets/issue7770/pig-farm-page-05.png)를 연결한다.
+
+축산 지침 기준은 한컴 2024 1-up job `c4a38f4b-1ed9-4bc7-a240-7d6add5ebbfc`,
+PDF SHA-256 `3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896`이다.
+양쪽 100.00%인 2쪽에서 마지막 사육 기준 글줄의 본문 단 소속과 포함을 검사하고,
+2px 공차에서 본문 하단 넘침이 0건인 전쪽 원장 행을 복원한다.
+[독립 Print](../../pdf/issue7767/animal-welfare-husbandry-one-up-2024.pdf),
+[Native TSV](assets/issue7767/animal-welfare-native.tsv),
+[WASM TSV](assets/issue7767/animal-welfare-wasm.tsv),
+[2쪽 확대 비교](assets/issue7767/animal-welfare-page-02.png)를 보존한다.
+Visual Sweep Python 기존 검사 47건을 통과했고, 이 절과 #7771의 복원 검사 3건은
+최소 글꼴 환경에서 별도 Rust 시험 바이너리로 실행해 통과했다.
 
 ## #7774 HWP5·HWPX SQL 변환본
 

@@ -130,9 +130,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "issue6844/30269-anticorruption-recommendation-toc.hwp",
     "issue6854/70833-electrical-safety-rule-regulatory-analysis.hwp",
     "rowbreak-problem-pages.hwp",
-    // #6778: 한컴2024 재출력 전12쪽도 최저17.50287%로 본문 배율·소속이 다르다.
-    // 인쇄 방식4를 rhwp 출력에 반영하지 않는 전체 피델리티는 #7445에서 복원한다.
-    "issue6778/156757920-animal-welfare-husbandry-guidelines.hwp",
 ];
 
 fn collect_samples() -> Vec<(PathBuf, String)> {
