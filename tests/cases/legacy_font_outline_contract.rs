@@ -180,24 +180,6 @@ fn romanized_myeongjo_names_keep_serif_fallback() {
     assert!(generic_fallback("Sinmyeong Junggothic").ends_with(",sans-serif"));
 }
 
-fn synthetic_cff_for(character: char) -> Vec<u8> {
-    let mut cff = CFF.to_vec();
-    let count = u16::from_be_bytes([cff[4], cff[5]]) as usize;
-    let cmap = (0..count)
-        .find_map(|index| {
-            let pos = 12 + index * 16;
-            (cff.get(pos..pos + 4) == Some(b"cmap"))
-                .then(|| u32::from_be_bytes(cff[pos + 8..pos + 12].try_into().unwrap()) as usize)
-        })
-        .unwrap();
-    let sub = cmap + u32::from_be_bytes(cff[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
-    for offset in [sub + 14, sub + 20] {
-        cff[offset..offset + 2].copy_from_slice(&(character as u16).to_be_bytes());
-    }
-    cff[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub(character as u16).to_be_bytes());
-    cff
-}
-
 #[test]
 fn verified_legacy_advance_survives_a_supplied_display_otf() {
     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
@@ -752,38 +734,6 @@ mod native {
     use rhwp::renderer::skia::SkiaLayerRenderer;
     use rhwp::renderer::TextStyle;
 
-    // 독립 MIT fixture의 이름 레코드만 바꿔 기본 이름은 다르지만
-    // 현지화된 family 이름은 같은 분할 face를 만든다.
-    fn localized_alias_cff(mut bytes: Vec<u8>, suffix: u8) -> Vec<u8> {
-        let table_count = u16::from_be_bytes([bytes[4], bytes[5]]) as usize;
-        let name_entry = (0..table_count)
-            .map(|index| 12 + index * 16)
-            .find(|&pos| &bytes[pos..pos + 4] == b"name")
-            .unwrap();
-        let name =
-            u32::from_be_bytes(bytes[name_entry + 8..name_entry + 12].try_into().unwrap()) as usize;
-        let count = u16::from_be_bytes([bytes[name + 2], bytes[name + 3]]) as usize;
-        let strings = name + u16::from_be_bytes([bytes[name + 4], bytes[name + 5]]) as usize;
-        for index in 0..count {
-            let record = name + 6 + index * 12;
-            let platform = u16::from_be_bytes([bytes[record], bytes[record + 1]]);
-            let language = u16::from_be_bytes([bytes[record + 4], bytes[record + 5]]);
-            let name_id = u16::from_be_bytes([bytes[record + 6], bytes[record + 7]]);
-            if name_id != 1 {
-                continue;
-            }
-            if platform == 1 {
-                let length = u16::from_be_bytes([bytes[record + 8], bytes[record + 9]]) as usize;
-                let offset = u16::from_be_bytes([bytes[record + 10], bytes[record + 11]]) as usize;
-                assert_eq!(length, FAMILY.len());
-                bytes[strings + offset + length - 1] = suffix;
-            } else if platform == 3 && language == 0x0409 {
-                bytes[record + 4..record + 6].copy_from_slice(&0x0412u16.to_be_bytes());
-            }
-        }
-        bytes
-    }
-
     fn paint(y: f64, hft: bool, profile: RenderProfile) -> RasterPixels {
         let run = TextRunNode {
             text: "가".into(),
@@ -938,11 +888,13 @@ mod native {
     }
 
     #[test]
-    fn localized_split_family_keeps_selected_legacy_outline_origin_in_2022_print() {
-        let first = localized_alias_cff(CFF.to_vec(), b'1');
-        let second = localized_alias_cff(synthetic_cff_for('나'), b'2');
+    fn split_family_keeps_selected_legacy_outline_origin_in_2022_print() {
+        let first = ttf_parser::Face::parse(SOURCE_SANS_FIRST, 0).unwrap();
+        let second = ttf_parser::Face::parse(SOURCE_SANS_SECOND, 0).unwrap();
+        assert!(first.glyph_index('Ɓ').is_none());
+        assert!(second.glyph_index('Ɓ').is_some());
         let renderer = SkiaLayerRenderer::new()
-            .try_with_font_data(&[first, second])
+            .try_with_font_data(&[SOURCE_SANS_FIRST.to_vec(), SOURCE_SANS_SECOND.to_vec()])
             .unwrap();
         let mut core =
             DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp")).unwrap();
@@ -953,9 +905,9 @@ mod native {
         assert!(!reference.preserves_raster_text_geometry());
         let paint_at = |y| {
             let run = TextRunNode {
-                text: "나".into(),
+                text: "Ɓ".into(),
                 style: TextStyle {
-                    font_family: FAMILY.into(),
+                    font_family: "Source Sans 3".into(),
                     font_size: 32.0,
                     source_font_is_hft: true,
                     ..Default::default()
