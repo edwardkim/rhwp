@@ -17,6 +17,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SOURCE: &[u8] =
     include_bytes!("../../mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp");
+const BODY_TEXT: &str = "BodyEnd of bodyBody end";
 
 fn top_level_tables<'a>(node: &'a RenderNode, tables: &mut Vec<&'a RenderNode>) {
     if matches!(&node.node_type, RenderNodeType::Table(_)) {
@@ -39,10 +40,16 @@ fn text(node: &RenderNode, result: &mut String) {
 
 #[test]
 fn coanchored_title_and_body_stay_on_the_first_page() {
-    assert_coanchored_tables(SOURCE);
+    assert_coanchored_tables(SOURCE, BODY_TEXT);
 }
 
-fn assert_coanchored_tables(bytes: &[u8]) {
+#[test]
+fn coanchored_inline_tail_negative_spacing_keeps_body_on_anchor_page() {
+    let bytes = include_bytes!("../fixtures/coanchored_inline_tail/negative-spacing.hwp");
+    assert_coanchored_tables(bytes, "BodyEnd of bodyBody endTail line");
+}
+
+fn assert_coanchored_tables(bytes: &[u8], expected_body: &str) {
     let core = DocumentCore::from_bytes(bytes).unwrap();
     assert_eq!(core.page_count(), 2);
 
@@ -59,11 +66,7 @@ fn assert_coanchored_tables(bytes: &[u8]) {
         panic!("Expected only the following table on page 2");
     };
     assert!(title.bbox.y + title.bbox.height <= body.bbox.y);
-    for (table, expected) in [
-        (title, "Title"),
-        (body, "BodyEnd of bodyBody end"),
-        (next, "Next page"),
-    ] {
+    for (table, expected) in [(title, "Title"), (body, expected_body), (next, "Next page")] {
         let mut actual = String::new();
         text(table, &mut actual);
         assert_eq!(actual, expected);
@@ -156,7 +159,7 @@ fn coanchored_managed_cache_survives_public_save_and_reopen_paths() {
         core.export_hwp_with_adapter().unwrap(),
         core.export_hwpx_native().unwrap(),
     ] {
-        assert_coanchored_tables(&bytes);
+        assert_coanchored_tables(&bytes, BODY_TEXT);
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
         let after = rendered_body(&reopened);
         if bytes.starts_with(b"PK") {
@@ -305,7 +308,7 @@ fn coanchored_empty_header_footer_and_saved_copy_preserve_table_ownership() {
         "samples/pr9042/metadata-empty-footer.hwp",
         "samples/pr9042/pr9042-hancom-saved.hwp",
     ] {
-        assert_coanchored_tables(&std::fs::read(path).unwrap());
+        assert_coanchored_tables(&std::fs::read(path).unwrap(), BODY_TEXT);
     }
 }
 
