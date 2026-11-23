@@ -429,10 +429,13 @@ export function renderPictureObjectSelection(this: any): void {
           }
 
           if (matchType === 'line') {
-            // 직선/연결선: 시작점/끝점 핸들 (꺽인/곡선 연결선은 중간점 추가)
+            // 직선에는 안내선을, 편집 가능한 꺾인 선·곡선에는 가운데 손잡이를 표시한다.
             let midPoint: { x: number; y: number } | undefined;
+            let showStraightGuide = true;
             try {
               const props = getObjectProperties.call(this, ref);
+              // LinkLineType 0~2는 화살촉 조합이 다른 직선이다.
+              showStraightGuide = props.connectorType === undefined || props.connectorType < 3;
               if (!ref.headerFooter && !ref.noteRef && props.connectorMidAxis &&
                   props.connectorMidX !== undefined && props.connectorMidY !== undefined) {
                 const px = 96 / 7200;
@@ -447,6 +450,7 @@ export function renderPictureObjectSelection(this: any): void {
                 x: ctrl.x, y: ctrl.y, width: ctrl.w, height: ctrl.h },
               zoom,
               midPoint,
+              showStraightGuide,
             );
             this.eventBus.emit('editing-page-changed', p);
             return;

@@ -120,6 +120,15 @@ fn connector_line_style(
     }
 }
 
+/// 공통 접선이 만나는 모서리와 양 끝점으로 ¼타원을 그린다.
+fn connector_quarter_ellipse(from: (f64, f64), corner: (f64, f64), to: (f64, f64)) -> PathCommand {
+    const KAPPA: f64 = 0.552_284_749_830_793_6;
+    let tangent = |(x, y): (f64, f64)| (x + KAPPA * (corner.0 - x), y + KAPPA * (corner.1 - y));
+    let (c1x, c1y) = tangent(from);
+    let (c2x, c2y) = tangent(to);
+    PathCommand::CurveTo(c1x, c1y, c2x, c2y, to.0, to.1)
+}
+
 /// 글상자에 공백이 아닌 실제 텍스트가 한 글자라도 있는지.
 /// 그림을 원래 크기로 상자 안 한 자리에 놓는 채우기 모드.
 fn is_placement_fill_mode(mode: crate::model::style::ImageFillMode) -> bool {
@@ -2181,13 +2190,6 @@ impl LayoutEngine {
                             // 가운데 점이 있는 곡선 연결선: 한/글 인쇄처럼 안쪽 제어점 둘을 모서리로 삼아
                             // 시작점→가운데 점(두 점의 가운데)→끝점을 4분의 1 타원 두 개로 잇는다.
                             // 곡선은 옮긴 가운데 점을 지나고 거기서 가운데 선 방향으로 꺾임 없이 이어진다.
-                            const KAPPA: f64 = 0.552_284_749_830_793_6;
-                            let corner = |from: (f64, f64), at: (f64, f64)| {
-                                (
-                                    from.0 + KAPPA * (at.0 - from.0),
-                                    from.1 + KAPPA * (at.1 - from.1),
-                                )
-                            };
                             let a = connector_point_xy(&conn.control_points[1]);
                             let b = connector_point_xy(&conn.control_points[2]);
                             let mid = ((a.0 + b.0) / 2.0, (a.1 + b.1) / 2.0);
@@ -2195,9 +2197,7 @@ impl LayoutEngine {
                             for (from, at, to) in
                                 [((path_start_x, path_start_y), a, mid), (mid, b, end)]
                             {
-                                let (c1x, c1y) = corner(from, at);
-                                let (c2x, c2y) = corner(to, at);
-                                commands.push(PathCommand::CurveTo(c1x, c1y, c2x, c2y, to.0, to.1));
+                                commands.push(connector_quarter_ellipse(from, at, to));
                             }
                         } else if conn.link_type.is_arc() {
                             // 곡선 연결선: 제어점(type=2)을 bezier 제어점으로, 나머지는 앵커로 사용
@@ -2211,9 +2211,25 @@ impl LayoutEngine {
                                 .map(connector_point_xy)
                                 .collect();
                             match ctrl_pts.len() {
+                                // 양 끝 표식만 저장한 곡선에는 그릴 호가 없다.
+                                0 if first_control_is_start
+                                    && last_control_is_end
+                                    && cps.len() == 2 => {}
                                 0 => {
                                     // 제어점 없음 → 직선
                                     commands.push(PathCommand::LineTo(end_x, end_y));
+                                }
+                                1 if first_control_is_start
+                                    && last_control_is_end
+                                    && cps.len() == 3
+                                    && ((cps[1].x == cps[0].x && cps[1].y == cps[2].y)
+                                        || (cps[1].y == cps[0].y && cps[1].x == cps[2].x)) =>
+                                {
+                                    commands.push(connector_quarter_ellipse(
+                                        (path_start_x, path_start_y),
+                                        ctrl_pts[0],
+                                        (end_x, end_y),
+                                    ));
                                 }
                                 1 => {
                                     // 제어점 1개 → quadratic bezier (cubic으로 변환)
@@ -2279,8 +2295,8 @@ impl LayoutEngine {
 
                         // 비표시 연결선도 원본 제어점·선택 끝점을 유지한다.
                         // 직선 fallback으로 바꾸지 않고 획·화살촉만 제외한다.
-                        let line_visible = line.drawing.border_line.attr & 0x3F != 0;
-                        let style = if line_visible {
+                        let has_stroke = line_visible && commands.len() > 1;
+                        let style = if has_stroke {
                             ShapeStyle {
                                 stroke_color: Some(line_style.color),
                                 stroke_width: line_style.width,
@@ -2304,7 +2320,7 @@ impl LayoutEngine {
                         // 연결선: 시작/끝 좌표 (선 선택 방식용) + 화살표
                         path_node.connector_endpoints =
                             Some((path_start_x, path_start_y, path_end_x, path_end_y));
-                        if line_visible
+                        if has_stroke
                             && (line_style.start_arrow != super::super::ArrowStyle::None
                                 || line_style.end_arrow != super::super::ArrowStyle::None)
                         {

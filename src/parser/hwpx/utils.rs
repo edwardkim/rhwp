@@ -159,10 +159,8 @@ impl Drop for RatioAlphaGuard {
     }
 }
 
-/// HWPX 채우기·선의 `alpha`(0=불투명 ~ 255=투명). 한컴 12.30은 0~255 정수로 쓴다
-/// (투명도 30% → 77). 소수점이 있는 값은 예전 rhwp 저장본처럼 0.0~1.0 비율로 읽는다.
-/// 예전 rhwp는 완전 투명(255)을 소수점 없이 `1`로 썼으므로, 그 저장본으로 확인된 패키지
-/// ([`RatioAlphaGuard`])에서는 모든 값을 비율로 읽는다.
+/// 구버전 rhwp는 완전 투명한 채움을 정수 `1`로 썼다. 한컴에서 같은 값은 1/255이므로
+/// 구버전 표지 또는 사용자의 명시적 복원 요청이 있는 패키지에만 적용한다.
 pub fn parse_fill_alpha_byte(raw: &str) -> Option<u8> {
     if raw.trim() == "1" && HWPX_RATIO_ALPHA.with(|c| c.get()) {
         return Some(255);
@@ -170,6 +168,7 @@ pub fn parse_fill_alpha_byte(raw: &str) -> Option<u8> {
     parse_alpha_byte(raw)
 }
 
+/// 한컴의 0~255 정수와 이전 저장기가 쓴 소수점 있는 비율을 읽는다.
 pub fn parse_alpha_byte(raw: &str) -> Option<u8> {
     let raw = raw.trim();
     let value = raw.parse::<f64>().ok().filter(|v| v.is_finite())?;

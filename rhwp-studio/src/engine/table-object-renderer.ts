@@ -309,7 +309,8 @@ export class TableObjectRenderer {
     lineBBox: { pageIndex: number; x1: number; y1: number; x2: number; y2: number;
                 x: number; y: number; width: number; height: number },
     zoom: number,
-    midPoint?: { x: number; y: number },
+    midPoint: { x: number; y: number } | undefined,
+    showStraightGuide: boolean,
   ): void {
     this.clear();
     this.ensureAttached();
@@ -325,7 +326,7 @@ export class TableObjectRenderer {
     const ey = pageOffset + lineBBox.y2 * zoom;
 
     // 직선 표시 (SVG) — 연결선은 점선 불필요 (마커만 표시)
-    if (!midPoint) {
+    if (showStraightGuide) {
       const svgEl = document.createElement('div');
       svgEl.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;';
       const svg = createSvgRoot('100%', '100%');

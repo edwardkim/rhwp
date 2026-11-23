@@ -17,9 +17,9 @@ pub(crate) fn connector_props_json(line: &LineShape) -> String {
     if inner.is_empty() {
         return format!(",\"connectorType\":{}", conn.link_type as u32);
     }
-    let count = inner.len() as i32;
-    let x = inner.iter().map(|p| p.x).sum::<i32>() / count;
-    let y = inner.iter().map(|p| p.y).sum::<i32>() / count;
+    let count = inner.len() as i64;
+    let x = inner.iter().map(|p| i64::from(p.x)).sum::<i64>() / count;
+    let y = inner.iter().map(|p| i64::from(p.y)).sum::<i64>() / count;
     let axis = conn
         .midpoint_axis()
         .map(|axis| format!(",\"connectorMidAxis\":\"{axis}\""))
