@@ -1,12 +1,11 @@
 // 관계형: TTF/HFT 요청의 실제 프로그램 소유·공급 순서와 공유 예산을 구분한다.
-// 주석 갱신: 2026-11-05T11:07:01+09:00 (Asia/Seoul). 직전 파일 변경: 93f3043ff764d8cb11c67a4870d99bf9bf1d2b00 2026-11-05T09:47:35+09:00.
-// 실행 근거: 2026-11-05 11:04 KST, 공개 기본 글꼴 5개 격리에서 11 PASS·0 FAIL·0 SKIP.
+// 주석 갱신 2026-11-23T22:28:07+09:00. 직전 파일 변경 8d72b4c448f15843d95deff20cdc2dc6485e462b 2026-11-05T11:11:07+09:00.
+// 2026-11-23 Node 검사 45건 통과. #8754의 TTF → TTC 일치 face → CFF 순서를 검사한다.
 // 입력은 이 파일의 합성 family·프로그램 표식 바이트다. 실물 쪽·절대 px·golden은 사용하지 않는다.
 // 원본 HWP/HWPX·독립 Print·Native/fresh WASM raw는 이 합성 계약의 직접 입력이 아니므로 비대상이다.
 // 공급 모듈의 실제 조판 소비는 별도 전쪽 측정으로 구분한다: c183 Native/fresh WASM 각 80입력·406쪽,
 // 최저 raw 92.45232% / 92.87288%, 96 DPI·Print·색상 경계 보정 전 2px 실루엣.
 // 근거: mydocs/pr/assets/planet6897_20261103/current-c183a1ac61/{native,wasm}-validation.md.
-// 아래 선행 주석과 실행 코드는 보존했다. 새로 덧붙인 첫머리는 검사 동작을 바꾸지 않는다.
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -35,7 +34,7 @@ test('콤마 선언 체인에서도 원본 TTF와 HFT의 실제 프로그램을 
   assert.deepEqual(proofs.map(p => p.sha256), ['original','legacy']);
 });
 
-test('같은 이름의 HFT와 원본 TrueType 요청은 프로그램을 섞지 않는다', async () => {
+test('동명 글꼴의 HFT 공급은 순서를 유지하고 원본 TrueType 요청은 CFF를 제외한다', async () => {
   const requests = [
     {family: 'Mixed', bold: false, italic: false},
     {family: 'Mixed', bold: false, italic: false, source_ttf: true},
@@ -49,13 +48,15 @@ test('같은 이름의 HFT와 원본 TrueType 요청은 프로그램을 섞지 �
   };
   const fonts = [
     {families: ['Mixed'], weight: 400, style: 'normal', sha256: 'cff', openTypeCff: true, signature: [79, 84, 84, 79]},
+    {families: ['Mixed'], weight: 400, style: 'normal', sha256: 'ttc-face', collectionFace: true, signature: [0, 1, 0, 0, 2]},
     {families: ['Mixed'], weight: 400, style: 'normal', sha256: 'ttf', openTypeCff: false, signature: [0, 1, 0, 0]},
   ];
   await prepareHftOtfFonts(owner, fonts, async record => Uint8Array.from(record.signature).buffer);
-  assert.deepEqual(received.map(bytes => Array.from(bytes.slice(0, 4))), fonts.map(font => font.signature));
+  assert.deepEqual(received[0].map(bytes => Array.from(bytes)), [fonts[2].signature, fonts[1].signature, fonts[0].signature]);
+  assert.deepEqual(received[1].map(bytes => Array.from(bytes)), [fonts[2].signature, fonts[1].signature]);
 });
 
-test('실제 선택한 CFF만 전달하고 없는 face와 TTF는 HFT 경로에 남긴다', async () => {
+test('HFT 표시 프로그램은 실제 TTF와 CFF를 공급하고 없는 face에는 프로그램을 만들지 않는다', async () => {
   const requests = [
     {family: 'Installed', bold: true, italic: false},
     {family: 'TrueType', bold: false, italic: false},
@@ -71,11 +72,12 @@ test('실제 선택한 CFF만 전달하고 없는 face와 TTF는 HFT 경로에 �
   ];
   const proof = await prepareHftOtfFonts(owner, fonts, async face =>
     Uint8Array.from(face.sha256 === 'cff' ? [79, 84, 84, 79] : [0, 1, 0, 0]).buffer);
-  assert.deepEqual([...received[0]], [79, 84, 84, 79]);
-  assert.equal(received[1], null);
+  assert.deepEqual(received[0].map(bytes => Array.from(bytes)), [[0, 1, 0, 0], [79, 84, 84, 79]]);
+  assert.deepEqual([...received[1]], [0, 1, 0, 0]);
   assert.equal(received[2], null);
   assert.equal(proof[0].weight, 400, '굵은 face가 없을 때 실제 선택한 일반 face를 전달한다');
-  assert.equal(proof.length, 1);
+  assert.deepEqual(proof.map(({family, sha256}) => [family, sha256]),
+    [['Installed', 'ttf'], ['Installed', 'cff'], ['TrueType', 'ttf']]);
 });
 test('같은 family의 분할 CFF는 표시 후보 순서로 모두 전달한다', async () => {
   const request = {family: 'Split', bold: false, italic: false};
@@ -130,7 +132,7 @@ test('실제 적재한 face 순서로 PUA 공급을 판단하고 지원하지 �
 });
 test('구형 WASM에는 등록을 시도하지 않고 기존 표시 경로를 유지한다',async()=>{assert.deepEqual(await prepareNativePuaFonts({},[],()=>{throw Error('unexpected read')}),[])});
 
-test('같은 family의 원본 TTF와 HFT 요청은 각 유형에 맞는 프로그램을 따로 공급한다', async () => {
+test('동명 TTF의 PUA가 없으면 HFT가 다음 CFF를 쓰고 원본 TTF 요청은 따로 공급한다', async () => {
   const oldDoc = globalThis.document, oldFont = globalThis.FontFace;
   globalThis.document = {fonts: new Set()};
   globalThis.FontFace = class { async load() { return this; } };
@@ -143,15 +145,17 @@ test('같은 family의 원본 TTF와 HFT 요청은 각 유형에 맞는 프로�
       ]),
       registerNativePuaFont() { throw Error('유형별 등록을 사용해야 한다'); },
       registerNativePuaFontForSource(_family, _bold, _italic, sourceTtf, bytes) {
-        calls.push([sourceTtf, bytes[0]]); return true;
+        calls.push([sourceTtf, bytes[0]]);
+        return sourceTtf || bytes[0] === 79;
       },
     };
     const fonts = [
       {families: ['Mixed'], weight: 400, style: 'normal', sha256: 'cff', openTypeCff: true, id: 79},
       {families: ['Mixed'], weight: 400, style: 'normal', sha256: 'ttf', openTypeCff: false, id: 0},
     ];
-    await prepareNativePuaFonts(owner, fonts, async font => Uint8Array.of(font.id, 1, 0, 0).buffer);
-    assert.deepEqual(calls, [[false, 79], [true, 0]]);
+    const proof = await prepareNativePuaFonts(owner, fonts, async font => Uint8Array.of(font.id, 1, 0, 0).buffer);
+    assert.deepEqual(calls, [[false, 0], [false, 79], [true, 0]]);
+    assert.deepEqual(proof.map(item => item.sha256), ['cff', 'ttf']);
   } finally { globalThis.document = oldDoc; globalThis.FontFace = oldFont; }
 });
 
