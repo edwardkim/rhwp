@@ -280,6 +280,7 @@ pub struct DocumentCore {
     /// [`Self::effective_layout_profile`] 이 profile 에 합성한다.
     pub(crate) hangul2024_compat: bool,
     pub(crate) print_png_rgb555: bool,
+    pub(crate) print_bmp_full_color: bool,
     print_job_context: Option<PrintJobContext>,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
     pub(crate) measured_tables: Vec<Vec<MeasuredTable>>,
@@ -602,6 +603,14 @@ impl DocumentCore {
         }
     }
 
+    /// Print JPEG 변환에 원본 32비트 BI_RGB DIB의 색을 사용한다.
+    pub fn set_print_bmp_full_color(&mut self, enabled: bool) {
+        if self.print_bmp_full_color != enabled {
+            self.print_bmp_full_color = enabled;
+            self.invalidate_page_tree_cache();
+        }
+    }
+
     /// 한컴 Print 장치의 PNG 압축 전 색상 변환을 조판 세대와 별도로 지정한다.
     pub fn set_print_png_rgb555(&mut self, enabled: bool) {
         if self.print_png_rgb555 != enabled {
@@ -658,6 +667,7 @@ impl DocumentCore {
             respect_vpos_reset: false,
             hangul2024_compat: false,
             print_png_rgb555: false,
+            print_bmp_full_color: false,
             print_job_context: None,
             measured_tables: Vec::new(),
             dirty_sections: Vec::new(),

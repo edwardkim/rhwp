@@ -285,6 +285,6 @@ impl Catalogue {
     pub(super) fn jpeg(&self, data: &[u8]) -> Option<Vec<u8>> {
         let (key, _) = raster_identity(data)?;
         let quality = self.qualities.get(&key).copied().flatten()?;
-        encode_print_jpeg(data, quality, false)
+        encode_print_jpeg(data, quality, crate::renderer::image_resolver::PrintJpegTransfer::Direct)
     }
 }

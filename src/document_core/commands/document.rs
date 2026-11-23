@@ -477,6 +477,7 @@ impl DocumentCore {
             respect_vpos_reset: false,
             hangul2024_compat: false,
             print_png_rgb555: false,
+            print_bmp_full_color: false,
             print_job_context: None,
             measured_tables: Vec::new(),
             dirty_sections: storage

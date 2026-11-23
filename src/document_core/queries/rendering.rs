@@ -1769,6 +1769,7 @@ impl DocumentCore {
                 .with_metafile_device_pixel_width(metafile_pixel)
                 .with_hancom2024_print_bitmap(self.hangul2024_compat)
                 .with_print_png_rgb555(self.print_png_rgb555)
+                .with_print_bmp_full_color(self.print_bmp_full_color)
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch)
                 .with_prior_print_solid_fill(prior_print_solid_fill)

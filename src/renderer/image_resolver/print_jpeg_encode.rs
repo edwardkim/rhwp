@@ -13,11 +13,19 @@ use crate::model::{image::ImageEffect, style::ImageFillMode};
 use crate::paint::{ResolvedImageKind, ResolvedImagePayload};
 use crate::renderer::render_tree::{BoundingBox, ImageNode};
 
+#[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
+pub(crate) enum PrintJpegTransfer {
+    Direct,
+    PaletteQuality,
+    Rgb555,
+}
+
 pub(crate) fn print_jpeg_payload(
     image: &ImageNode,
     bbox: BoundingBox,
     dpi: f64,
     print_png_rgb555: bool,
+    print_bmp_full_color: bool,
 ) -> Option<ResolvedImagePayload> {
     if image.effect != ImageEffect::RealPic
         || image.brightness != 0
@@ -80,22 +88,25 @@ pub(crate) fn print_jpeg_payload(
             .floor()
             .clamp(35.0, 75.0) as u8
     };
-    // 32비트 BI_RGB DIB도 Hancom PDF의 불투명 전송에서 RGB555를 거친다.
-    // 동일 원본의 한컴 2020·2022 Print에서 PNG 색상 경로가 달랐다.
-    // 조판 호환 모드와 별도로 선택된 장치만 기존 RGB555 팔레트 규칙을 적용한다.
-    let expand = image.hancom2024_print_bitmap
-        || (print_png_rgb555 && mime == "image/png")
-        || (data.starts_with(b"BM")
-            && data.get(14..18) == Some(&40_u32.to_le_bytes())
-            && data.get(28..34) == Some(&[32, 0, 0, 0, 0, 0]));
+    let dib_true_color = data.starts_with(b"BM")
+        && data.get(14..18) == Some(&40_u32.to_le_bytes())
+        && data.get(28..34) == Some(&[32, 0, 0, 0, 0, 0]);
+    // 한컴 PDF 1-up 장치는 이 DIB의 RGB를 보존하면서 같은 팔레트별 JPEG 품질을 쓴다.
+    // RGB555 장치의 Bayer 재구성과 JPEG 양자화 품질은 별도 단계다.
+    let transfer = if dib_true_color && print_bmp_full_color {
+        PrintJpegTransfer::PaletteQuality
+    } else if dib_true_color || image.hancom2024_print_bitmap || (print_png_rgb555 && mime == "image/png") {
+        PrintJpegTransfer::Rgb555
+    } else {
+        PrintJpegTransfer::Direct
+    };
     let bytes = if mime == "image/jpeg" {
-        // 이미 JPEG인 불투명 그림도 한컴 2020 Print는 출력 폭으로 다시 압축한다.
-        // 가시 창의 RGB를 유지하고, BMP/PNG의 RGB555 변환은 적용하지 않는다.
+        // 한컴 2020 Print에서 원본 JPEG의 RGB를 유지하며 출력 폭으로 다시 압축한다.
         let mut bytes = super::print_fill_jpeg::recompress_original_rgb(data, quality)?;
         super::png_sampling::mark_print_jpeg(&mut bytes, false);
         bytes
     } else {
-        encode_print_jpeg(data, quality, expand)?
+        encode_print_jpeg(data, quality, transfer)?
     };
     Some(ResolvedImagePayload {
         data: bytes,
@@ -108,7 +119,11 @@ pub(crate) fn print_jpeg_payload(
 
 /// 중첩 메타파일 자원도 동일한 팔레트·양자화·전달 마커를 소비한다.
 /// 최초 사용 품질을 고르는 책임과 현재 배치의 프레임 책임은 호출자에게 있다.
-pub(crate) fn encode_print_jpeg(data: &[u8], quality: u8, expand: bool) -> Option<Vec<u8>> {
+pub(crate) fn encode_print_jpeg(
+    data: &[u8],
+    quality: u8,
+    transfer: PrintJpegTransfer,
+) -> Option<Vec<u8>> {
     if !(35..=75).contains(&quality) {
         return None;
     }
@@ -121,7 +136,7 @@ pub(crate) fn encode_print_jpeg(data: &[u8], quality: u8, expand: bool) -> Optio
     let header = crate::renderer::image_header::canvaskit_encoded_image_header(data)
         .filter(|header| header.is_within_decode_limits())?;
     let (width, height) = (header.width, header.height);
-    memoized(Conversion::PrintJpeg { quality, expand }, data, || {
+    memoized(Conversion::PrintJpeg { quality, transfer }, data, || {
         let mut decoded = decode_image_with_format_limited(data, format)?.to_rgba8();
         // RGB555 전달과 JPEG 품질은 서로 다른 팔레트 경계를 소비한다.
         // 변환 전 원본에서 큰 경계까지 세고 알파 검사는 모든 픽셀에서 유지한다.
@@ -137,13 +152,13 @@ pub(crate) fn encode_print_jpeg(data: &[u8], quality: u8, expand: bool) -> Optio
         if colors.len() < 32 {
             return None;
         }
-        let quality = if expand {
+        let quality = if transfer != PrintJpegTransfer::Direct {
             super::print_codec::quality_for_palette(quality, colors.len())
         } else {
             quality
         };
         colors.extend([[0, 0, 0], [255, 255, 255]]);
-        let reconstruction = expand && colors.len() > 256;
+        let reconstruction = transfer == PrintJpegTransfer::Rgb555 && colors.len() > 256;
         if reconstruction {
             // 257색 이상 전달은 RGB555 장치의 4×4 ordered dither를 거친다.
             // 단순 c + (c >> 5)는 평균 명도만 근사하며 저명도 타일의 실제
