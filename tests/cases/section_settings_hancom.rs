@@ -1,6 +1,6 @@
 //! 관계형·고정형(쪽별 내용 소속, 원본 판형 및 인쇄 쪽 번호).
-//! 주석 갱신 2026-11-24T01:49:33+09:00 / 직전 파일 변경 f528069f3b38100e5928c1fb63bcfe1fba089d95, 2026-11-23T14:41:00+09:00.
-//! 2026-11-24, Windows 한컴 Print 대비 96 DPI 2px raw 실루엣. B5 대조군 4종은 각 4쪽 모두 Native/fresh WASM 100.00%다.
+//! 주석 갱신 2026-11-24T03:35:00+09:00. 직전 변경 a0b8b59d4e4c710dff36d5ef78a13296f907b003 (2026-11-24T01:57:23+09:00).
+//! 2026-11-24, Windows 한컴 Print 대비 96 DPI 2px raw 실루엣. B5 대조군 4종·한컴 재저장 HWP/HWPX·HWP 재생성본은 각 4쪽 모두 Native/fresh WASM 100.00%다.
 //! 전쪽 측정과 원본은 `mydocs/pr/assets/semanticist21-20261124-rework/final/`에 기록한다.
 //!
 //! 검사 유형: 관계형(한컴 12.30 Mac PDF로 확인한 구역 설정 계약).
@@ -318,4 +318,77 @@ fn first_section_uses_the_character_order_and_requires_a_column_definition() {
             }
         }
     }
+}
+
+#[test]
+fn printed_master_text_overlaps_only_its_source_body_line() {
+    use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
+
+    let samples =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/semanticist21-20261124-rework");
+    for file in [
+        "b5-adjacent.hwpx",
+        "b5-no-column.hwpx",
+        "b5-page-number.hwpx",
+        "b5-text.hwpx",
+        "two-sections-2020.hwp",
+        "two-sections-2020.hwpx",
+    ] {
+        let doc = DocumentCore::from_bytes(&std::fs::read(samples.join(file)).unwrap()).unwrap();
+        assert_eq!(doc.page_count(), 4, "{file}");
+        for page in 0..doc.page_count() {
+            let root = doc.build_page_render_tree(page).unwrap().root;
+            let scan = scan_page(page, &root, doc.page_count(), &AnomalyOptions::default());
+            // 한컴 PDF에서 바탕쪽표식과 본문의 첫 단어는 같은 원점에서 인쇄된다.
+            let printed_master = file == "b5-adjacent.hwpx" || page >= 2;
+            assert_eq!(
+                scan.text_overlap.len(),
+                usize::from(printed_master),
+                "{file} {page}"
+            );
+            for pair in scan.text_overlap {
+                let paths = [&pair.path_a, &pair.path_b];
+                assert!(
+                    paths.iter().any(|p| p.starts_with("Page/Body/")),
+                    "{paths:?}"
+                );
+                assert!(
+                    paths.iter().any(|p| p.starts_with("Page/MasterPage")),
+                    "{paths:?}"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn rebuilding_hancom_saved_section_preserves_the_normalized_controls_and_all_fields() {
+    use rhwp::diagnostics::ir_field_sweep::sweep_documents;
+    use rhwp::parser::parse_document;
+    use rhwp::serializer::serialize_document;
+
+    let input = include_bytes!("../../samples/semanticist21-20261124-rework/two-sections-2020.hwp");
+    let original = parse_document(input).unwrap();
+    let mut edited = original.clone();
+    edited.doc_info.raw_stream_dirty = true;
+    for section in &mut edited.sections {
+        section.raw_stream = None;
+    }
+    let saved = serialize_document(&edited).unwrap();
+    let reopened = parse_document(&saved).unwrap();
+    let mut expected = original;
+    let controls = &mut expected.sections[1].paragraphs[0].controls;
+    assert!(matches!(
+        controls.as_slice(),
+        [
+            Control::SectionDef(_),
+            Control::PageNumberPos(_),
+            Control::ColumnDef(_),
+            ..
+        ]
+    ));
+    // 한컴 저장본의 둘째 구역에서만 쪽 번호 위치와 단 정의가 순서를 바꾼다.
+    controls.swap(1, 2);
+    let differences = sweep_documents(&expected, &reopened).unwrap();
+    assert!(differences.is_empty(), "{differences:?}");
 }

@@ -1,4 +1,8 @@
-//! Issue #5598: 좁은 표 칸에서 내어쓰기가 줄 상자를 다 먹으면 이어지는 줄의 글자가 칸 밖으로
+//! 관계형·고정형. 한컴 2020 Print의 셀 포함·본문 순서와 첫 줄 끝 글자의 원점을 확인한다.
+//! 주석 갱신 2026-11-24T03:35:00+09:00. 직전 변경 a1bd3fa4edb8bb79c0ae312166358b6be299e5d0 (2026-11-14T15:52:14+09:00).
+//! 원본 두 종과 새 저장본은 각 1쪽이며 96 DPI 보정 전 2px 실루엣의 Native·fresh WASM 전쪽 최저 모두 100.00%다.
+//! 측정 근거는 `mydocs/pr/assets/semanticist21-20261124-rework/final/regression-controls.json`에 있다.
+//! 좁은 표 칸에서 내어쓰기가 줄 상자를 다 먹으면 이어지는 줄의 글자가 칸 밖으로
 //! 밀려 나간다.
 //!
 //! 재현 문서(코퍼스 00539, `자치수형자 선정 절차`)의 `분류처우위원회 심의ㆍ의결` 칸은 안쪽 폭이
@@ -81,15 +85,23 @@ fn document_with_narrow_cell(indent: i32) -> Document {
 fn worst_overflow(doc: &Document, printed_input: &[u8]) -> f64 {
     use quick_xml::{events::Event, Reader};
     use rhwp::renderer::render_tree::RenderNodeType;
+    use std::io::Read;
     let bytes = serialize_hwpx(doc).expect("HWPX 직렬화 실패");
     // #8318: header.xml의 0xFFFFFFFF 센티넬이 "none"에서 "#FFFFFFFF"로 바뀌었을 뿐
     // 독립 Print 입력의 본문·레이아웃 엔트리는 바이트 단위로 동일해야 한다.
     let mut actual_zip = zip::ZipArchive::new(std::io::Cursor::new(&bytes)).expect("actual zip");
     let mut expected_zip =
         zip::ZipArchive::new(std::io::Cursor::new(printed_input)).expect("expected zip");
-    assert_eq!(actual_zip.len(), expected_zip.len(), "엔트리 수 일치");
+    // #9286의 바이트 투명도 표지 한 개만 추가됐다. 기존 모든 엔트리는 아래에서 따로 대조한다.
+    assert_eq!(actual_zip.len(), expected_zip.len() + 1);
+    let mut marker = Vec::new();
+    actual_zip
+        .by_name(rhwp::model::document::RHWP_BYTE_ALPHA_HWPX_MARKER_PATH)
+        .expect("바이트 투명도 표지")
+        .read_to_end(&mut marker)
+        .unwrap();
+    assert_eq!(marker, b"1");
     for i in 0..expected_zip.len() {
-        use std::io::Read;
         let mut expected_entry = expected_zip.by_index(i).expect("expected entry");
         let name = expected_entry.name().expect("entry name").into_owned();
         let mut actual_entry = actual_zip.by_name(&name).expect("actual entry");
