@@ -1,0 +1,10 @@
+{
+  "verified_at": "2026-11-22T10:53:22.596Z",
+  "pr": 9318,
+  "merged": true,
+  "merged_at": "2026-11-22T10:52:33Z",
+  "merge_commit": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+  "head": "a883a52521ee9640856c11b00e132de3ed0bfed0",
+  "base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "url": "https://github.com/edwardkim/rhwp/pull/9318"
+}

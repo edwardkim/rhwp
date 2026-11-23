@@ -1,0 +1,56 @@
+{
+  "page": 100,
+  "document_pages": 315,
+  "input": {
+    "path": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    "sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    "sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+  },
+  "comparison": {
+    "profile": "print",
+    "backend": "native-skia",
+    "dpi": 96,
+    "silhouette_radius_px": 2,
+    "heading_roi_px": {
+      "x_start": 260,
+      "x_end_exclusive": 500,
+      "y_start": 195,
+      "y_end_exclusive": 305
+    },
+    "heading_ink_rule": "휘도 180 미만인 픽셀이 3개 이상인 첫 행"
+  },
+  "matched_rendering_condition": {
+    "font_supply": "f5bdfe9d7fdfa0f8ef249579f2b8dae3e1febbdf63bd643d87ec901f37b71903",
+    "font_environment_sha256": null,
+    "registered_font_programs": null,
+    "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+    "comparison_profile": "print"
+  },
+  "output": {
+    "base": {
+      "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "program_sha256": "169c8a00b73a4373db37cde92819840dffea77164a84085fe4b50784628b8d53",
+      "raw_percent": "26.80",
+      "png_sha256": "f3971e54e651d07c44b161e682f81ec9981e75b3c79842f4998a082a372bad26",
+      "heading_first_ink_row": 218,
+      "capture_manifest_sha256": "ac33e75acc039592596d5bfd90fdf8ac6e1b23198344ad48e0cd8bc2a60a30f6"
+    },
+    "candidate": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "program_sha256": "c214cd39c5b6cba08e80852de8cccdbbed58965595d8900b06be1d04960eef4d",
+      "raw_percent": "100.00",
+      "png_sha256": "8c7ae927fb93ad9e43f0661dfcd7e8daf2cd73a90deebc71513027d17ea036e7",
+      "heading_first_ink_row": 280,
+      "capture_manifest_sha256": "e91543700f45dac7d50da47718edafec1bf665d58065a7435018b5439b33c78a"
+    },
+    "hancom_print": {
+      "png_sha256": "31b421f77363614573e2798c5137e433a60634000d77a9245e125c9fa3472831",
+      "heading_first_ink_row": 279
+    }
+  },
+  "candidate_before_rebase_png_sha256": "8c7ae927fb93ad9e43f0661dfcd7e8daf2cd73a90deebc71513027d17ea036e7",
+  "observation": "현재 후보의 제3절 소결 제목과 본문의 시작 위치 및 줄 순서를 독립 한컴 Print와 확대 대조했다. 후보의 제목 첫 잉크 행은 기준 PDF와 1px 차이였다."
+}

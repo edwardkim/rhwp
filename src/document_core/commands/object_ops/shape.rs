@@ -407,6 +407,13 @@ impl DocumentCore {
         let caption_styles = self.resolve_render_styles();
         let (dpi, hwp3_layout) = (self.dpi, self.document.layout_profile().hwp3_layout());
         self.validate_image_fill_reference(props_json)?;
+        // 글자처럼 취급 전환·글자처럼 취급한 도형의 크기 편집은 문단 저장 줄을 다시 새긴다.
+        let stored_end_before = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(crate::renderer::composer::paragraph_flow_end);
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
         let caption_width_before = shape_caption_text_width(shape);
 
@@ -661,6 +668,22 @@ impl DocumentCore {
             .map(|shape| super::picture::picture_band_geometry(shape.common()));
         if band_geometry_after.as_ref() != Some(&band_geometry_before) {
             let _ = self.apply_body_edit_through_picture_band(section_idx, parent_para_idx, |_| {});
+            // 글자처럼 취급을 켜거나 끄면(또는 그런 도형의 크기를 바꾸면) 줄 높이가 개체를 따라야
+            // 한/글처럼 개체가 줄 위에 선다. 저장 줄을 다시 새기지 않으면 이전 줄 높이로 그리고 저장한다.
+            if band_geometry_before.treat_as_char
+                || band_geometry_after
+                    .as_ref()
+                    .is_some_and(|band| band.treat_as_char)
+            {
+                self.reflow_body_inline_object_change(
+                    section_idx,
+                    parent_para_idx,
+                    stored_end_before,
+                );
+                self.recompose_section(section_idx);
+                self.paginate_if_needed();
+                self.invalidate_page_tree_cache();
+            }
         }
 
         self.event_log.push(DocumentEvent::PictureResized {

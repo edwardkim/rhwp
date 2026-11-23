@@ -1,0 +1,38 @@
+{
+  "source_head": "2f46647df16da00365b22a1364cdc0b28b8344bc",
+  "modules": [
+    "tests/cases/issue_7765_current_source_frames.rs",
+    "tests/cases/issue_7160_tac_table_line_break.rs",
+    "tests/issue_938.rs",
+    "tests/cases/issue_7081_cell_trailing_space_alignment.rs",
+    "tests/cases/issue_8105_closing_fragment_trailing_empty_line.rs",
+    "tests/cases/issue_8105_split_row_declared_cells.rs"
+  ],
+  "command": [
+    "rustc",
+    "--edition=2021",
+    "--test",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-restored-minfont-first/harness.rs",
+    "-o",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-restored-minfont-first/harness",
+    "--extern",
+    "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-restored-minfont-first/librhwp-source32.rlib",
+    "-L",
+    "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+    "--extern",
+    "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+    "--extern",
+    "image=/home/tsjang/rhwp/target/pr-review/release-test/deps/libimage-23af837ccdfe46d8.rlib",
+    "--extern",
+    "base64=/home/tsjang/rhwp/target/pr-review/release-test/deps/libbase64-e3f94b72ec3fea0f.rlib",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+    "-L",
+    "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out"
+  ],
+  "library_sha256": "0b578b0f631c7c235c9f29f55c5125cfe1f9a533d8c7b2d689dd584bbc2099cc",
+  "started": 1795281469.4037528,
+  "build_exit": 0,
+  "test_exit": 0,
+  "ended": 1795281488.8313813
+}

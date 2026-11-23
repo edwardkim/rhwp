@@ -1,0 +1,3 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27 at http://127.0.0.1:36901
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445

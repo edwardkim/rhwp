@@ -1,0 +1,9 @@
+{
+  "state": "complete",
+  "scope": "nativeTextTypefaceSelection",
+  "records": [],
+  "missingRequests": [],
+  "droppedObservations": 0,
+  "recordLimit": 256,
+  "nameByteLimit": 65536
+}

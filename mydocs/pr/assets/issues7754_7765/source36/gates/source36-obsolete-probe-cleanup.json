@@ -1,0 +1,108 @@
+{
+  "recorded": 1795311312.8017585,
+  "scope": "Ended task-owned obsolete probe executables and frozen libraries only; current producers and input/PDF/TSV/PNG retained",
+  "active_cmdline_maps_fd_matches": [],
+  "files": [
+    {
+      "path": "output/pr-review/issue7754-nine/source8-model-diagnostic/market-core-probe",
+      "bytes": 43307680,
+      "sha256": "04f811265a9e6581f0e4f1d7f078fdeb90cb3ac88f7e91f4544b1c55e2479507"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source8-model-diagnostic/librhwp-source8.rlib",
+      "bytes": 165979044,
+      "sha256": "2ebeaabc3e2236b3e10be385145fbaa301fea849261f1430fe884110c397820b"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source8-model-diagnostic/style-probe",
+      "bytes": 33166456,
+      "sha256": "12282fe194054fe63c64c28fd24d321762b1b5d094149230120355ad67b62722"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source8-model-diagnostic/probe",
+      "bytes": 65960608,
+      "sha256": "479e4068e7b9ec92f37a0468f9c61897935259772c1fcdf14fbc46eb6e53e854"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source8-model-diagnostic/all-probe",
+      "bytes": 65962152,
+      "sha256": "a62544ab55fe981793a3d544d30e6ef4c66cb6be8ed1aa98541f113ab1543ed4"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source9-model-diagnostic/cell-contract-probe",
+      "bytes": 33088344,
+      "sha256": "8bc736e1e6ed4b9b0d2ef8e807f3cb2aa015b95396ff9edb694d0252b8bae15d"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source9-model-diagnostic/librhwp-source9.rlib",
+      "bytes": 165935700,
+      "sha256": "e1859af680e94d3afaeb629d3f9661da52d0edc056a6bce658a8639b7b2c9fcb"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source9-model-diagnostic/market-regression-candidate",
+      "bytes": 45762736,
+      "sha256": "3732e9fd50532365002b7584c547ecf6e25be986bc1b92b614d4e1465a774f5a"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source9-model-diagnostic/format-probe",
+      "bytes": 66010504,
+      "sha256": "01f6290ca78cca48fe313e1fe44cd156ecad7701e32ca7c85406be8a82f66bf8"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source9-model-diagnostic/cell-controls-probe",
+      "bytes": 33276760,
+      "sha256": "ae5f12251234f0dade6a7efe603c118bab5390bf55ee5f7c637534b0d7e138ef"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source9-model-diagnostic/provenance-probe",
+      "bytes": 33092904,
+      "sha256": "9e904d97bf487bd7fda16ce4a21d0ef792afa7f9e6d62ad403c2b4bfdbf06564"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source14-model-diagnostic/market-registered-harness",
+      "bytes": 88722672,
+      "sha256": "8598614610592d3c57ebccaccceb2de7819388d1723377c4a40350ae315d3c1c"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source14-model-diagnostic/librhwp-source14.rlib",
+      "bytes": 336701658,
+      "sha256": "109a1c756e51e389b95a306d6aa660ac9a65a9005c27fbc5fa06e6afa5025a16"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source23-model-diagnostic/short-tail-probe",
+      "bytes": 53198736,
+      "sha256": "03c627939ab55a3f5718690d305e466decd091c66f61002c415429a0ddc91307"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source23-model-diagnostic/frame-probe",
+      "bytes": 53211208,
+      "sha256": "841cf5e2fa86353373ca181df3e22684f64ce0465d0e1548633b32a21d3b8da2"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source23-model-diagnostic/librhwp-source23.rlib",
+      "bytes": 336794514,
+      "sha256": "c007d082509ac8b134fe85feef0cfe5c2df512e70346e4b19e0a68bf32f0b46b"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source34-native-library/librhwp.rlib",
+      "bytes": 162337244,
+      "sha256": "ddbca36e6d76541b7520c0f0747c3ceaac80b505b65c58b3ee247c6641b70113"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source35-native-library/librhwp.rlib",
+      "bytes": 167405222,
+      "sha256": "75bc3c05819f70cebd7da75a93213a282bac1a2ec47bb69fa36b1bc49897c13a"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source33-first-page-font-trace",
+      "bytes": 52306128,
+      "sha256": "48039277dd47c43b8ddfda5fe3a4fd588d2bb8c0991997dfe3ac4b51b9ab3e18"
+    },
+    {
+      "path": "output/pr-review/issue7754-nine/source33-first-page-style-probe",
+      "bytes": 52318960,
+      "sha256": "d59bda35da7ac8103850a760961c5432674cb69571b9c0051d5d42065e415efd"
+    }
+  ],
+  "bytes": 2054539230
+}

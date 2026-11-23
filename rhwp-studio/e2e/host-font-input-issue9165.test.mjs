@@ -62,6 +62,14 @@ try {
         };
       }
       await insert();
+      // 두 RAF만으로 예열 입력의 지연 페이지 배치까지 끝났다고 가정하지 않는다.
+      // 예열 완료 변경을 본 입력의 글꼴 준비 호출 수에 포함하지 않도록 경계를 맞춘다.
+      const warmupDeadline = performance.now() + 15000;
+      while (input.hasDeferredPaginationPending()) {
+        if (performance.now() >= warmupDeadline) throw Error('Warmup pagination did not settle');
+        await frame();
+      }
+      await frame(); await frame();
       const warmupRegistrations = structuredClone(registrations);
       for (const stat of Object.values(registrations)) stat.calls = stat.bytes = 0;
       const queriedPages = [];

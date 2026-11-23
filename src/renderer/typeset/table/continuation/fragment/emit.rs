@@ -2802,6 +2802,7 @@ impl TypesetEngine {
         if st.prefilled_line_prefixes.contains_key(&index) {
             return;
         }
+        self.restore_consumed_cell_prefix_axis(st, input);
         if std::env::var_os("RHWP_DIAG_SCAN").is_some() {
             eprintln!(
                 "DIAG_SCAN TERMINAL_SOURCE_OWNER pi={} next={} text_len={} controls={} lines={} source_lines={:?} first_line={:?} current={:.3} margin={} hwp5={} hwpx={}",

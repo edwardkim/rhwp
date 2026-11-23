@@ -300,6 +300,11 @@ impl ParagraphBox {
             .with_derivable_origin(matches!(head_type, HeadType::None | HeadType::Outline))
     }
 
+    /// 원점을 발행할 수 없는 목록의 폭만으로 원점까지 인증하지 않는다.
+    pub(crate) fn origin_is_derivable(&self) -> bool {
+        self.origin_is_derivable
+    }
+
     /// The box after the geometry pitch — the single source for both the
     /// published record and the carved frame.
     pub(crate) fn effective(&self) -> Range<i32> {

@@ -5,7 +5,7 @@ use super::paragraph::Paragraph;
 use super::style::{Fill, ShapeBorderLine};
 use super::*;
 
-pub(crate) mod shadow;
+pub mod shadow;
 
 /// `raw_ctrl_data` (CTRL_HEADER) 바이트 오프셋 상수.
 ///

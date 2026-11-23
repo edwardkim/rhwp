@@ -1,0 +1,51 @@
+{
+  "key": "issue7754-plain",
+  "page": 1,
+  "dpi": 96,
+  "crop_box": [
+    245,
+    150,
+    510,
+    215
+  ],
+  "scale": 4,
+  "method": "nearest-neighbor",
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7754-plain/pdf_png/pdf-001.png",
+      "sha256": "a395bd44c18842bb89135af2466b1702660d805c9495b868a9f1350f9dd093f7"
+    },
+    {
+      "label": "devel Native",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "e7fb98a3273cc8fd49580aefb8cb3c1e66eba59b976cceacb0c062ef44205eca"
+    },
+    {
+      "label": "candidate Native",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "9645aa849ebd9eaef2a9850a6079b7d09775bf400fa1bdb7733150c224c602c8"
+    },
+    {
+      "label": "devel WASM",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/base/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "f340702bf21b861cb7e38ce0bb516887acd86c216b4c3ca7405b342e894fa03e"
+    },
+    {
+      "label": "candidate WASM",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/candidate/issue7754-plain/rhwp_png/rhwp_001.png",
+      "sha256": "44341efb839827648e28c80b736c15235ca37f1025e971919136fa991b0e283b"
+    }
+  ],
+  "panel": "mydocs/pr/assets/issues7754_7765/source33/direct-review/issue7754-p001-title-oldhangul-4x.png",
+  "panel_sha256": "b000a90e6714d9e996034260efac0b3d42680f62440af088598195d684d48062",
+  "created": 1795294122.7835393,
+  "direct_reading_status": "needs correction; independently read all five same-scale regions",
+  "read_at": "2026-11-21T20:53:27.797848+00:00",
+  "observations": [
+    "Independent Print has one heavy original old-Hangul syllable; base Native and both WASM panels show a thin separated Jamo form. Candidate Native also differs from the original syllable and its following glyph boundary.",
+    "The original HWPX keeps U+1112 U+119E U+11AB. Restoring the deleted modern-product-name rewrite would contradict the source.",
+    "Actual same-family CFF companion HGGGT.otf contains U+F53A with advance 1.0em. Its earlier Latin-only companion ENGGT.otf has neither that glyph nor the three Jamo. HGSMJ.otf provides the corresponding body glyph.",
+    "Font trace records confirm original source offsets and chosen layout family. Their paint status is unsupported; they do not establish actual backend glyph selection."
+  ]
+}

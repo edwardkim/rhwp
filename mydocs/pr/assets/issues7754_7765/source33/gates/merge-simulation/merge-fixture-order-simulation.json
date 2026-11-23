@@ -1,0 +1,52 @@
+{
+  "original_head": "e6895accbe23daa2e57fa73c48bc9fe61c55ee57",
+  "other_head": "b4faa9e6d6633ce0fed56cd0540eea5ea01c3645",
+  "simulation_commit": "b1baddfbb7d0caee69ba6414fabcbc5aeb7bccf5",
+  "tree": "4cb19710b1bd556bce1c0f91a09e6989aff15baa",
+  "exit_code": 0,
+  "changes": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "operation": "Move only the issue7754..7765 appended block before existing content; retain every row and comment."
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "operation": "Move only the issue7754..7765 appended block before existing content; retain every row and comment."
+    },
+    {
+      "path": "tests/fixtures/overflow_cell_baseline.tsv",
+      "operation": "Move only the issue7754..7765 appended block before existing content; retain every row and comment."
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_verified_references.json",
+      "operation": "Move only ten task-owned reference records to the beginning; preserve all field values and other record order."
+    }
+  ],
+  "semantics_unchanged": true,
+  "post_apply_semantic_validation": [
+    {
+      "path": "tests/fixtures/body_overflow_baseline.tsv",
+      "effective_records": 180,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "20de206dc980b15258de08d795a95d33ef4ee0d2e7305bd66ea02a15e62e4664"
+    },
+    {
+      "path": "tests/fixtures/off_canvas_baseline.tsv",
+      "effective_records": 74,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "67046d636efd8a2c64ea65b2317a4c09abf9c85a396948754cfc685bd4ae04e1"
+    },
+    {
+      "path": "tests/fixtures/overflow_cell_baseline.tsv",
+      "effective_records": 20,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "d6ae688dc0f1b414f0f78d9e102224eb0526cc4002f9a49df1c8274ab0d590e4"
+    },
+    {
+      "path": "tests/fixtures/oracle_page_count_verified_references.json",
+      "effective_records": 25,
+      "same_parsed_records_and_values": true,
+      "semantic_sha256": "dae2d08cb4550d168b73ba170a3be2e20de29918495d84d619037b98d2d21509"
+    }
+  ]
+}

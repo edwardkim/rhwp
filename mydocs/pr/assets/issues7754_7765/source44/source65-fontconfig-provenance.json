@@ -1,0 +1,32 @@
+{
+  "scope": "Private Fontconfig supply of the exact original Windows Palatino programs. No system installation, no renderer change. Restores system-font source semantics for the original static TrueType programs.",
+  "config": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source65-fontconfig/fonts.conf",
+  "config_sha256": "a03da84b0e070506867c819b54525f444fef199c7d164fcdade82830c476c8d9",
+  "bold_fc_match": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+  "font_files": [
+    {
+      "path": "C:\\Windows\\Fonts\\pala.ttf",
+      "bytes": 472284,
+      "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\palab.ttf",
+      "bytes": 419932,
+      "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\palabi.ttf",
+      "bytes": 335292,
+      "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf"
+    },
+    {
+      "path": "C:\\Windows\\Fonts\\palai.ttf",
+      "bytes": 413708,
+      "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed",
+      "local_path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf"
+    }
+  ]
+}

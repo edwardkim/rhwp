@@ -1,0 +1,260 @@
+{
+  "recorded": "2026-11-22T05:33:46.100241+00:00",
+  "producer_source": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+  "production_equivalence": "mydocs/pr/assets/issues7754_7765/source38/source38-rebase-production-equivalence.json",
+  "backend": "fresh optimized WASM",
+  "dpi": 96,
+  "radius_px": 2,
+  "metric": "silhouette_raw_match_percent",
+  "documents": 10,
+  "pages": 583,
+  "all_candidate_pages_at_least98": true,
+  "same_condition_frozen_base_declines": 0,
+  "results": [
+    {
+      "key": "issue7756",
+      "pages": 1,
+      "minimum": 98.99,
+      "input": "samples/복학원서.hwp",
+      "input_sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4",
+      "independent_pdf": "pdf/issue7756/bokhak-original-print-2024.pdf",
+      "pdf_sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7756/silhouette.tsv",
+      "full_tsv_sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49",
+      "parts": [
+        {
+          "part": "issue7756",
+          "tsv_sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7756/parts/issue7756/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7759",
+      "pages": 1,
+      "minimum": 99.94,
+      "input": "samples/143E433F503322BD33.hwp",
+      "input_sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+      "independent_pdf": "pdf/143E433F503322BD33-hwp-2020.pdf",
+      "pdf_sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7759/silhouette.tsv",
+      "full_tsv_sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d",
+      "parts": [
+        {
+          "part": "issue7759",
+          "tsv_sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7759/parts/issue7759/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7757",
+      "pages": 3,
+      "minimum": 99.8,
+      "input": "samples/task1768/distribution_doc.hwpx",
+      "input_sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc",
+      "independent_pdf": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+      "pdf_sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7757/silhouette.tsv",
+      "full_tsv_sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853",
+      "parts": [
+        {
+          "part": "issue7757",
+          "tsv_sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7757/parts/issue7757/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7760",
+      "pages": 19,
+      "minimum": 99.18,
+      "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "input_sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "independent_pdf": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+      "pdf_sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7760/silhouette.tsv",
+      "full_tsv_sha256": "bf0d5f934fbc5797056a59c34cd0d1aaf9c4b898fb5a3bdf217aa2638ef7c837",
+      "parts": [
+        {
+          "part": "issue7760",
+          "tsv_sha256": "bf0d5f934fbc5797056a59c34cd0d1aaf9c4b898fb5a3bdf217aa2638ef7c837",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7760/parts/issue7760/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7754-plain",
+      "pages": 24,
+      "minimum": 99.48,
+      "input": "samples/HWP5-nopassword-123456.hwpx",
+      "input_sha256": "20ed90f48c6501cad99f6aa1f82d81d2a2132eb04f2d1d32805ac251749e4d0e",
+      "independent_pdf": "pdf/HWP5-nopassword-123456-hwpx-2024.pdf",
+      "pdf_sha256": "b20bd5c0b3716818113cc6bc2a18ba768325b338a3a16840e3680e124cfea01d",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7754-plain/silhouette.tsv",
+      "full_tsv_sha256": "cf023d68c01dab729e31fd49b5f0d1d15b2dc920d2e6c41516962a2b18d5d8c3",
+      "parts": [
+        {
+          "part": "issue7754-plain",
+          "tsv_sha256": "cf023d68c01dab729e31fd49b5f0d1d15b2dc920d2e6c41516962a2b18d5d8c3",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7754-plain/parts/issue7754-plain/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7761",
+      "pages": 46,
+      "minimum": 99.98,
+      "input": "samples/[2027] 온새미로 1 본교재.hwp",
+      "input_sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "independent_pdf": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+      "pdf_sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7761/silhouette.tsv",
+      "full_tsv_sha256": "dc04516a4b48bae8c247ae11d3cb83ca54662c44ef566c1941093bed11bb90af",
+      "parts": [
+        {
+          "part": "issue7761-001-032",
+          "tsv_sha256": "5d4edefb26efbe34cb8a5bc9db4d3d222badb50c4b3aa549d8fe9da9086dfe7b",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7761/parts/issue7761-001-032/silhouette.tsv"
+        },
+        {
+          "part": "issue7761-033-046",
+          "tsv_sha256": "3ee37fdbefeea1e60536fed8833479476a369513054dcab2d9de37bad2c2545e",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7761/parts/issue7761-033-046/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7762",
+      "pages": 46,
+      "minimum": 99.98,
+      "input": "samples/[2027] 온새미로 1 본교재.hwpx",
+      "input_sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c",
+      "independent_pdf": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+      "pdf_sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7762/silhouette.tsv",
+      "full_tsv_sha256": "2299ebdf16e567670d65d96ecb9f8359608f9dd1637eb816a9310a712ebe6b7c",
+      "parts": [
+        {
+          "part": "issue7762-001-032",
+          "tsv_sha256": "5d4edefb26efbe34cb8a5bc9db4d3d222badb50c4b3aa549d8fe9da9086dfe7b",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7762/parts/issue7762-001-032/silhouette.tsv"
+        },
+        {
+          "part": "issue7762-033-046",
+          "tsv_sha256": "ede22c0db6549c9c638affb21f2e64f0226c35f15dac89a65a24c26d9f5f2cdd",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7762/parts/issue7762-033-046/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7765-hwp",
+      "pages": 64,
+      "minimum": 98.11,
+      "input": "samples/86712_regulatory_analysis.hwp",
+      "input_sha256": "ee82c7755617003cb972ba398da9cffadfed24ac0fa068eee1a5347da7658a88",
+      "independent_pdf": "pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf",
+      "pdf_sha256": "ac34bb60492e3749a53183cfb63c814f86379895937dd1309d3bc3d2d1b8126a",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7765-hwp/silhouette.tsv",
+      "full_tsv_sha256": "0b950a519df4a24ee4c41720fd739facc41c3b2a11563a85df55060e93a8cd80",
+      "parts": [
+        {
+          "part": "issue7765-hwp-001-032",
+          "tsv_sha256": "fa1573dcc94a44a8ea4dc01b974727ef6878760f25c69984c27d306ed09dc72f",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7765-hwp/parts/issue7765-hwp-001-032/silhouette.tsv"
+        },
+        {
+          "part": "issue7765-hwp-033-064",
+          "tsv_sha256": "7a8337df8671609aea983ac86a67ba2299d08397d0c0fe4eaf8ed16c2a822cb4",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7765-hwp/parts/issue7765-hwp-033-064/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7765-hwpx",
+      "pages": 64,
+      "minimum": 98.69,
+      "input": "samples/issue1891/86712_regulatory_analysis.hwpx",
+      "input_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+      "independent_pdf": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+      "pdf_sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7765-hwpx/silhouette.tsv",
+      "full_tsv_sha256": "d6b829a79f739625d43fd21439d29c648c771818366cff4e12e385acae778f84",
+      "parts": [
+        {
+          "part": "issue7765-hwpx-001-032",
+          "tsv_sha256": "374558b8c1435546f46336d89d90ba52d266bfac9c8f1574991ff0320dfc5221",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7765-hwpx/parts/issue7765-hwpx-001-032/silhouette.tsv"
+        },
+        {
+          "part": "issue7765-hwpx-033-064",
+          "tsv_sha256": "b9f5c8e0fd64dedb0cd834ea119cab87ad1dc597d9ba4b192578f27144e95ed7",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7765-hwpx/parts/issue7765-hwpx-033-064/silhouette.tsv"
+        }
+      ]
+    },
+    {
+      "key": "issue7755",
+      "pages": 315,
+      "minimum": 98.4,
+      "input": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "input_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+      "independent_pdf": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+      "pdf_sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616",
+      "full_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/silhouette.tsv",
+      "full_tsv_sha256": "3a9c7fc0dd5c06a7112a2408217a2e2c4d70f10195570d296d560536659ca11c",
+      "parts": [
+        {
+          "part": "issue7755-001-032",
+          "tsv_sha256": "f4fc4a3464f9f0b42758a472a9f8c2a21906c376c3136e519f94196cb484f341",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-001-032/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-033-064",
+          "tsv_sha256": "128027eff8b7c80b4b34bb5de3daadd1038506e97a1b0dd3f770de695b6dd773",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-033-064/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-065-096",
+          "tsv_sha256": "5582dc74af017d0ba4e2d98853108e4ddfb21c6ca842af8018902105f76d7ec7",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-065-096/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-097-128",
+          "tsv_sha256": "8bb8bd9b5ebc4c437a82ccb7960f4929498eb3699bc3e081a14a31267bd59dea",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-097-128/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-129-160",
+          "tsv_sha256": "cefad34fe0238a00d643926ac12d39a3b09f891bfa89cc52d5a8e480d4302833",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-129-160/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-161-192",
+          "tsv_sha256": "f370059ef8e938f663afecdbb34b440c305e3755c5fb0e48e31ecb2d1faa86d7",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-161-192/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-193-224",
+          "tsv_sha256": "19993464683c09907eca403d68898e3c25923626fd355cfa1593a84b430acced",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-193-224/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-225-256",
+          "tsv_sha256": "a16358bda8f67cf32fe82b265445f5e5ec199fed8b88b8d1d7273275f0cbc818",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-225-256/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-257-288",
+          "tsv_sha256": "b7e9375d74d1729fcfb37a79040a11f5049b0331a98d36cffcf169d7303fc020",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-257-288/silhouette.tsv"
+        },
+        {
+          "part": "issue7755-289-315",
+          "tsv_sha256": "f268721fddc86493dac8ce7d3b4e65b8480de2500aa994d5ee0c52286fe67511",
+          "formal_tsv": "mydocs/pr/assets/issues7754_7765/source41/wasm-originals/issue7755/parts/issue7755-289-315/silhouette.tsv"
+        }
+      ]
+    }
+  ]
+}

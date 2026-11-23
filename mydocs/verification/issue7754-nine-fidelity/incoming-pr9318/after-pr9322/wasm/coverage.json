@@ -1,0 +1,615 @@
+{
+  "backend": "wasm",
+  "pages": 167,
+  "matching_pngs": 167,
+  "page_comparison_tsv_sha256": "949fa2149e97f8e08ce7d0ce815bc6fcee028b5a2d4692d8df4e4db0417eee34",
+  "datasets": [
+    {
+      "key": "9279",
+      "input": {
+        "path": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+        "sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+        "sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097"
+      },
+      "compat": "2024",
+      "pages": 3,
+      "original_pr": 9282,
+      "prior_tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+      "same_producer_condition_per_page": true,
+      "roles": {
+        "base": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9279.tsv",
+          "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+          "shards": [
+            {
+              "part": "9279",
+              "first_page": 1,
+              "last_page": 3,
+              "pages": 3,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+              "capture_manifest_sha256": "283f872acee3d332ff5a575bfcccd81134368bc7bc1a0a2dd5166732b687f883",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "100.00"
+        },
+        "candidate": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9279.tsv",
+          "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+          "shards": [
+            {
+              "part": "9279",
+              "first_page": 1,
+              "last_page": 3,
+              "pages": 3,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+              "capture_manifest_sha256": "d4d5aa89abaa0693429542d2a1ae63697ecb32dc77341f194c1d42a733fc4b86",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "100.00"
+        }
+      }
+    },
+    {
+      "key": "9272",
+      "input": {
+        "path": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+        "sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+        "sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7"
+      },
+      "compat": "2024",
+      "pages": 7,
+      "original_pr": 9278,
+      "prior_tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+      "same_producer_condition_per_page": true,
+      "roles": {
+        "base": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9272.tsv",
+          "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+          "shards": [
+            {
+              "part": "9272",
+              "first_page": 1,
+              "last_page": 7,
+              "pages": 7,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+              "capture_manifest_sha256": "6b8414a8d50c81473f63a2d16ac41a13b8e618f4cf59973d51b045d9928e9900",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "99.98"
+        },
+        "candidate": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9272.tsv",
+          "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+          "shards": [
+            {
+              "part": "9272",
+              "first_page": 1,
+              "last_page": 7,
+              "pages": 7,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+              "capture_manifest_sha256": "315091ae4742f8688cc0e017ff5e49be9c82424b0d7621574e3d2c459c78af84",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "99.98"
+        }
+      }
+    },
+    {
+      "key": "9285",
+      "input": {
+        "path": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+        "sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+        "sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b"
+      },
+      "compat": "2022",
+      "pages": 9,
+      "original_pr": 9287,
+      "prior_tsv_sha256": "fc2aee754c6baaee6e2a7774afdf24327b9f19df768d200f9b6599e47d1b590b",
+      "same_producer_condition_per_page": true,
+      "roles": {
+        "base": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9285.tsv",
+          "tsv_sha256": "e85c751a01a4e85204d547bd6502c72b5d72ec0449f3b022b9651858ba01395e",
+          "shards": [
+            {
+              "part": "9285",
+              "first_page": 1,
+              "last_page": 9,
+              "pages": 9,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "e85c751a01a4e85204d547bd6502c72b5d72ec0449f3b022b9651858ba01395e",
+              "capture_manifest_sha256": "b9cc5ced5d0ac073d42ecff95baa97756a0498b90cf2e1f6cb08724b0a491860",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "99.81"
+        },
+        "candidate": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9285.tsv",
+          "tsv_sha256": "e85c751a01a4e85204d547bd6502c72b5d72ec0449f3b022b9651858ba01395e",
+          "shards": [
+            {
+              "part": "9285",
+              "first_page": 1,
+              "last_page": 9,
+              "pages": 9,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "e85c751a01a4e85204d547bd6502c72b5d72ec0449f3b022b9651858ba01395e",
+              "capture_manifest_sha256": "93b981b28feaf9f68ad154907f730b7f21e6ef252729d75286974f881dfc2972",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "99.81"
+        }
+      }
+    },
+    {
+      "key": "547",
+      "input": {
+        "path": "samples/issue547/online-search-rfp.hwp",
+        "sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue547/online-search-rfp-2024.pdf",
+        "sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885"
+      },
+      "compat": "2022",
+      "pages": 22,
+      "original_pr": 9240,
+      "prior_tsv_sha256": "d460b6dc98116621a6cdcbad717f77861606b95d26091165efb2bfd043703458",
+      "same_producer_condition_per_page": true,
+      "roles": {
+        "base": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/547.tsv",
+          "tsv_sha256": "e51f36b6db2f82405957b0f9cb8cf4948dc6a99bef07b8206317f1e57c9bb421",
+          "shards": [
+            {
+              "part": "547",
+              "first_page": 1,
+              "last_page": 22,
+              "pages": 22,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "e51f36b6db2f82405957b0f9cb8cf4948dc6a99bef07b8206317f1e57c9bb421",
+              "capture_manifest_sha256": "33fb6ba2c75986fd8a83cd77def03aee1bdc3afc48bfab3265f997895e2c812a",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "99.72"
+        },
+        "candidate": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/547.tsv",
+          "tsv_sha256": "e51f36b6db2f82405957b0f9cb8cf4948dc6a99bef07b8206317f1e57c9bb421",
+          "shards": [
+            {
+              "part": "547",
+              "first_page": 1,
+              "last_page": 22,
+              "pages": 22,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "e51f36b6db2f82405957b0f9cb8cf4948dc6a99bef07b8206317f1e57c9bb421",
+              "capture_manifest_sha256": "f59b329464f896dfc70cc53f1952d1507cf0f78b70b7002661fdb6712e204d39",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "99.72"
+        }
+      }
+    },
+    {
+      "key": "9239",
+      "input": {
+        "path": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+        "sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+        "sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151"
+      },
+      "compat": "2022",
+      "pages": 62,
+      "original_pr": 9269,
+      "prior_tsv_sha256": "0d23cb91557992918ff4092a73c2b65e58330a18b1e4be5da7fdc410b3229cf1",
+      "same_producer_condition_per_page": true,
+      "roles": {
+        "base": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9239.tsv",
+          "tsv_sha256": "1bf045a6f9248611634eae3a9e7a2bb976a2986f11056879d360778e069e1c6f",
+          "shards": [
+            {
+              "part": "9239-001-032",
+              "first_page": 1,
+              "last_page": 32,
+              "pages": 32,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "10b273784d15ffe17091973b66b7bfc17ed6febfca1a1682abde488abfe70881",
+              "capture_manifest_sha256": "6cf4bdc5c0500bac87c6ff422acac203f07209da1dfb9c3888c1354e7abd4b37",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            },
+            {
+              "part": "9239-033-062",
+              "first_page": 33,
+              "last_page": 62,
+              "pages": 30,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "98d024f91bd95a85a3a271ad626507b276a434e9aae9c17a25a64f286a98804c",
+              "capture_manifest_sha256": "6187ac9b9f846a9f90c7cc43c791008f89319366d29870a2060ac2e4db6df96d",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "98.93"
+        },
+        "candidate": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9239.tsv",
+          "tsv_sha256": "1bf045a6f9248611634eae3a9e7a2bb976a2986f11056879d360778e069e1c6f",
+          "shards": [
+            {
+              "part": "9239-001-032",
+              "first_page": 1,
+              "last_page": 32,
+              "pages": 32,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "10b273784d15ffe17091973b66b7bfc17ed6febfca1a1682abde488abfe70881",
+              "capture_manifest_sha256": "8f3de496991ce14d49282ad79fdcd47d656b918a78cd4631e32d21ef15e15034",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            },
+            {
+              "part": "9239-033-062",
+              "first_page": 33,
+              "last_page": 62,
+              "pages": 30,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "98d024f91bd95a85a3a271ad626507b276a434e9aae9c17a25a64f286a98804c",
+              "capture_manifest_sha256": "e601af80e654eb0759926641990fc2126f07ef5ac5e9d2d607325b209bc1c1f3",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "98.93"
+        }
+      }
+    },
+    {
+      "key": "886",
+      "input": {
+        "path": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+        "sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+        "sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59"
+      },
+      "compat": "2022",
+      "pages": 64,
+      "original_pr": 9240,
+      "prior_tsv_sha256": "62e9bf6e9bea17c71e18a5d8bef4ade1d7452319ee7f703aa586d5923e0a1248",
+      "same_producer_condition_per_page": true,
+      "roles": {
+        "base": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/886.tsv",
+          "tsv_sha256": "5a29ede466b7cc80407ee6471ed9fba0c4b7a358f5c88ee6c1ac01a34a5b5b43",
+          "shards": [
+            {
+              "part": "886-001-032",
+              "first_page": 1,
+              "last_page": 32,
+              "pages": 32,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "3bfa48bf4fe98c8d8e5ba767c6ad2bee68d39d562dc8bbbf99c05660c495750c",
+              "capture_manifest_sha256": "d78d2e8863177a5f435a20e9d6cea77b4ef097e0cfe9b82fd4dc9bb4b47fc1cc",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            },
+            {
+              "part": "886-033-064",
+              "first_page": 33,
+              "last_page": 64,
+              "pages": 32,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "082fb65eb951eb7372d7c1f9bfd46e0e18a0ac3ea43d162986d5c89ee6735ff7",
+              "capture_manifest_sha256": "9114d798de5fcb57d45db573b1bcd2c52140adc05b5d7ddd0337b5a2e802ddda",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "98.15"
+        },
+        "candidate": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/886.tsv",
+          "tsv_sha256": "5a29ede466b7cc80407ee6471ed9fba0c4b7a358f5c88ee6c1ac01a34a5b5b43",
+          "shards": [
+            {
+              "part": "886-001-032",
+              "first_page": 1,
+              "last_page": 32,
+              "pages": 32,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "3bfa48bf4fe98c8d8e5ba767c6ad2bee68d39d562dc8bbbf99c05660c495750c",
+              "capture_manifest_sha256": "1531a437d36e5d2fcc7c59b413889b1ff3c0be6a5b6643f10a32232653bbafc1",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            },
+            {
+              "part": "886-033-064",
+              "first_page": 33,
+              "last_page": 64,
+              "pages": 32,
+              "exit_code": 0,
+              "sweep_gate": "not_evaluated",
+              "raw_tsv_sha256": "082fb65eb951eb7372d7c1f9bfd46e0e18a0ac3ea43d162986d5c89ee6735ff7",
+              "capture_manifest_sha256": "c147f80c02d87533687cb6264b1bbb794cc704428589b80561458cc2b6353a18",
+              "condition": {
+                "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+                "font_environment_sha256": null,
+                "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+                "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+                "comparison_profile": "print"
+              }
+            }
+          ],
+          "minimum_percent": "98.15"
+        }
+      }
+    }
+  ],
+  "score_declines": [],
+  "less_than_historical_raw": [
+    {
+      "key": "547",
+      "original_pr": 9240,
+      "page": 1,
+      "accepted_percent": "100.00",
+      "base_percent": "99.99",
+      "candidate_percent": "99.99",
+      "base_png_sha256": "83bbc1bffc4ad8c8b2e055db466ccca4e4e66a39a8a5602df1bf4549742536ce",
+      "candidate_png_sha256": "83bbc1bffc4ad8c8b2e055db466ccca4e4e66a39a8a5602df1bf4549742536ce",
+      "print_png_sha256": "35336a11e7c7cb7becd564bc62853d7584b04a5f88be3623a02c93986affd51a"
+    },
+    {
+      "key": "547",
+      "original_pr": 9240,
+      "page": 2,
+      "accepted_percent": "99.94",
+      "base_percent": "99.72",
+      "candidate_percent": "99.72",
+      "base_png_sha256": "7f8377140bdbc5a0157279693f0ea349f0f08dda81ee3f185504de94a574bd1e",
+      "candidate_png_sha256": "7f8377140bdbc5a0157279693f0ea349f0f08dda81ee3f185504de94a574bd1e",
+      "print_png_sha256": "533aa1d3adecaf74eacf06ed9def0728de2427c170d40e1bd2f14b4de6dd1f96"
+    },
+    {
+      "key": "9239",
+      "original_pr": 9269,
+      "page": 24,
+      "accepted_percent": "98.96",
+      "base_percent": "98.93",
+      "candidate_percent": "98.93",
+      "base_png_sha256": "245957929c467af753b8f7dbd2677b79a440aebd6284c79dd872e248da2bcab7",
+      "candidate_png_sha256": "245957929c467af753b8f7dbd2677b79a440aebd6284c79dd872e248da2bcab7",
+      "print_png_sha256": "7f225be4d3cf1f462fb2c6b4e2503ab6f3bc6a8edd4b6447914bb4a1ea5c564f"
+    },
+    {
+      "key": "9239",
+      "original_pr": 9269,
+      "page": 46,
+      "accepted_percent": "100.00",
+      "base_percent": "99.99",
+      "candidate_percent": "99.99",
+      "base_png_sha256": "940872d190abe5b1aa7ad2fbe29356dd3a524be123567321f99d0ea5f66cfb12",
+      "candidate_png_sha256": "940872d190abe5b1aa7ad2fbe29356dd3a524be123567321f99d0ea5f66cfb12",
+      "print_png_sha256": "4909e9b5eef9461fac89f3ab8b003fc2198e966d72f9637756f08640c8b43d1d"
+    },
+    {
+      "key": "9239",
+      "original_pr": 9269,
+      "page": 51,
+      "accepted_percent": "100.00",
+      "base_percent": "99.99",
+      "candidate_percent": "99.99",
+      "base_png_sha256": "0f3fefa551250fd640b7d0bee414c7745e6cf3127952a9fff630c4298b3e541c",
+      "candidate_png_sha256": "0f3fefa551250fd640b7d0bee414c7745e6cf3127952a9fff630c4298b3e541c",
+      "print_png_sha256": "e7ad88f6baacb2858a91e14c3c82f0702e28ec6301f5df35f7c60f6cd06c563c"
+    },
+    {
+      "key": "9239",
+      "original_pr": 9269,
+      "page": 52,
+      "accepted_percent": "100.00",
+      "base_percent": "99.99",
+      "candidate_percent": "99.99",
+      "base_png_sha256": "d09a8adbe074666d98abcb024211665c1833f7912e4eab3e6a323fd2841e44ae",
+      "candidate_png_sha256": "d09a8adbe074666d98abcb024211665c1833f7912e4eab3e6a323fd2841e44ae",
+      "print_png_sha256": "1be07a03ea0e3c1347a09219a4e958581ecd907b287c5a041b4b5f86b39a6fbf"
+    },
+    {
+      "key": "886",
+      "original_pr": 9240,
+      "page": 6,
+      "accepted_percent": "99.99",
+      "base_percent": "99.98",
+      "candidate_percent": "99.98",
+      "base_png_sha256": "d339cbdc38877a09f5f4aaf44ba4d678f2d625a4fc03455a729c11f0dff69950",
+      "candidate_png_sha256": "d339cbdc38877a09f5f4aaf44ba4d678f2d625a4fc03455a729c11f0dff69950",
+      "print_png_sha256": "f36b4e63de41d596b2b2d04080eb7e1663b467c56055a30f29c22c2d6309e676"
+    },
+    {
+      "key": "886",
+      "original_pr": 9240,
+      "page": 41,
+      "accepted_percent": "99.15",
+      "base_percent": "99.14",
+      "candidate_percent": "99.14",
+      "base_png_sha256": "1aeea8c39f4d84fbfefc5074e674e4f656ed51c7038d3f33c304761a50997476",
+      "candidate_png_sha256": "1aeea8c39f4d84fbfefc5074e674e4f656ed51c7038d3f33c304761a50997476",
+      "print_png_sha256": "0218c54c21684600028d684712dd32b68c53c3dc1adf1de5faba6f0dea7620ea"
+    },
+    {
+      "key": "886",
+      "original_pr": 9240,
+      "page": 57,
+      "accepted_percent": "99.52",
+      "base_percent": "99.51",
+      "candidate_percent": "99.51",
+      "base_png_sha256": "9b255c6d4c8823b8d007fc94c8e78d72127d1d1b3747fe0e307417e658a9da78",
+      "candidate_png_sha256": "9b255c6d4c8823b8d007fc94c8e78d72127d1d1b3747fe0e307417e658a9da78",
+      "print_png_sha256": "53561f3cc726b362aa47ee8da5898e1b94cd85f29e0fe54046814176ab901489"
+    },
+    {
+      "key": "886",
+      "original_pr": 9240,
+      "page": 61,
+      "accepted_percent": "99.78",
+      "base_percent": "99.77",
+      "candidate_percent": "99.77",
+      "base_png_sha256": "8c7d65ec31711457e0548e8ff7314892159f48df8740ab63d7cdf552cf1e5d61",
+      "candidate_png_sha256": "8c7d65ec31711457e0548e8ff7314892159f48df8740ab63d7cdf552cf1e5d61",
+      "print_png_sha256": "ebc68fd0efc4017e8678927ca331e45af0e14428db0109b4d8b913414f21dc34"
+    }
+  ],
+  "changed_pngs": [],
+  "direct_visual_review_required": false,
+  "no_against_base_declines": true,
+  "historical_evidence": {
+    "path": "mydocs/pr/assets/planet6897_9240_9282_20261121/after-9316/claim-validation.json",
+    "sha256": "9fd895af0b5221e4f28974092ed0ea7799f6be1c4ddff028f0b288d374e0d669"
+  },
+  "sources": {
+    "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+    "candidate": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c"
+  },
+  "page_comparison_tsv": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/after-pr9322/wasm/pages.tsv",
+  "tsv_publication": {
+    "reused_identical_blobs": 12
+  },
+  "candidate_same_as_before_immediate_rebase": {
+    "pages": 167,
+    "all_render_pngs_and_print_pngs_match": true,
+    "all_raw_scores_match": true,
+    "proof": {
+      "path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm-after-pr9322.json",
+      "sha256": "22b2df759da6f242281c2cd9ca6b2abe53379dea9987244e8610c30194d6438a"
+    }
+  },
+  "largest_initial_accepted_score_difference_direct_review": {
+    "key": "547",
+    "page": 2,
+    "path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/online-search-rfp-page-002-wasm-comparison.json",
+    "sha256": "3abb84bf93be6cb20323f3e447cdb4f0cbee456424d99acf4d2a0deea3b691d3"
+  }
+}

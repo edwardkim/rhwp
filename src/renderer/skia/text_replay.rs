@@ -147,6 +147,15 @@ impl SkiaTextReplay<'_> {
                         );
                         return fonts::for_text(self, &chain, sample, size, style);
                     }
+                    if let Some((glyph, _)) =
+                        crate::renderer::pua_glyph::source_program_glyph(style, sample)
+                    {
+                        if let Some(font) =
+                            fonts::for_text(self, &typeface_chain, &glyph.to_string(), size, style)
+                        {
+                            return Some(font);
+                        }
+                    }
                     if crate::renderer::pua_glyph::candidate(sample).is_some() {
                         if let Some(primary) = typeface_chain.first() {
                             let font = Font::new(primary.typeface.clone(), size);

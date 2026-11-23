@@ -48,6 +48,10 @@ import subprocess
 import sys
 import tempfile
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from oracle_page_count.regenerate import load_verified_references
+from oracle_page_count.logical_page_reference import permits_logical_pages
+
 FIXTURE = 'tests/fixtures/oracle_page_count_baseline.tsv'
 SUFFIX = re.compile(r'-(20\d\d|hwp|hwpx|kopub|no-ttf|current)+$', re.I)
 TRUTH_WORD = re.compile(r'(한글|오라클|정본)')
@@ -137,6 +141,7 @@ def main():
     args = ap.parse_args()
 
     root = os.path.abspath(args.root)
+    verified = load_verified_references(root)
     rhwp = args.rhwp
     if not os.path.isabs(rhwp):
         rhwp = os.path.join(root, rhwp)
@@ -161,7 +166,7 @@ def main():
             skipped += 1
             continue
         got, nup = measure(rhwp, root, rel)
-        if got is None or nup:
+        if got is None or (nup and not permits_logical_pages(verified.get(rel))):
             skipped += 1
             continue
         ok = got in truth[rel]

@@ -1,0 +1,13 @@
+[RustTestSuite] issue_7950_pdf_paint -> regression_suite_004::issue_7950_pdf_paint
+[RustTestSuite] cargo nextest run --locked --test regression_suite_004 -E test(/(^|::)issue_7950_pdf_paint::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 1m 04s
+────────────
+ Nextest run ID f62ce041-f3ac-4756-8f38-dbea3e80fdf3 with nextest profile: default
+    Starting 4 tests across 1 binary (325 tests skipped)
+        PASS [   0.081s] (1/4) rhwp::regression_suite_004 issue_7950_pdf_paint::fill_and_visible_text_survive_save_while_zero_alpha_paint_does_not_reappear
+        PASS [   0.081s] (2/4) rhwp::regression_suite_004 issue_7950_pdf_paint::path_image_path_source_order_survives_lowering_and_save
+        PASS [   0.084s] (3/4) rhwp::regression_suite_004 issue_7950_pdf_paint::compound_even_odd_hole_and_bezier_stroke_keep_alpha_in_saved_pictures
+        PASS [   0.356s] (4/4) rhwp::regression_suite_004 issue_7950_pdf_paint::inferred_table_cannot_cover_its_labels_with_retained_positional_paint
+────────────
+     Summary [   0.358s] 4 tests run: 4 passed, 325 skipped

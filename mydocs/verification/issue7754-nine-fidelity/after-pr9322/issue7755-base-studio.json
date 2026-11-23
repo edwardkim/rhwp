@@ -1,0 +1,393 @@
+{
+  "scope": "market base renders",
+  "pages": [
+    95,
+    100,
+    106,
+    247,
+    315
+  ],
+  "paired_images": 30,
+  "same_images": 30,
+  "changed": [],
+  "bounded_fallback_per_role": 4,
+  "producers": {
+    "before_pr9322": {
+      "wasm_sha256": "bf4074a8aad9bd3a9a605ca4998acf1fe3b53cf378c486e67bc0091cdaaaf6ba",
+      "browser": "Chrome/158.0.8127.36",
+      "source_head": "622af208ee12c4cb16357d465e4802e7fd4726bc"
+    },
+    "after_pr9322": {
+      "wasm_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+      "browser": "Chrome/158.0.8127.36",
+      "source_head": "93e861523623bcd84d57b808edb62af5af2aa82a"
+    }
+  },
+  "frames": [
+    {
+      "page": 95,
+      "requested_renderer": "canvas2d",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      }
+    },
+    {
+      "page": 100,
+      "requested_renderer": "canvas2d",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64611,
+        "sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+      },
+      "archived_png": "mydocs/verification/issue7754-nine-fidelity/studio/market-page100-screen/base.png"
+    },
+    {
+      "page": 106,
+      "requested_renderer": "canvas2d",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      }
+    },
+    {
+      "page": 247,
+      "requested_renderer": "canvas2d",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      }
+    },
+    {
+      "page": 315,
+      "requested_renderer": "canvas2d",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      }
+    },
+    {
+      "page": 95,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      }
+    },
+    {
+      "page": 100,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64611,
+        "sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+      }
+    },
+    {
+      "page": 106,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      }
+    },
+    {
+      "page": 247,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      }
+    },
+    {
+      "page": 315,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      }
+    },
+    {
+      "page": 95,
+      "requested_renderer": "canvaskit-default",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 78923,
+        "sha256": "3bd0053badf9ba29b7ce9bfef1aaa2aa3bd3a2228ee1cf5481e93c11202514d4"
+      }
+    },
+    {
+      "page": 100,
+      "requested_renderer": "canvaskit-default",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 64611,
+        "sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+      }
+    },
+    {
+      "page": 106,
+      "requested_renderer": "canvaskit-default",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 120326,
+        "sha256": "a51a052237fb6b12a5a210caece230928723c67b70c78d5e948f00ebc6b17242"
+      }
+    },
+    {
+      "page": 247,
+      "requested_renderer": "canvaskit-default",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 94524,
+        "sha256": "5d181931ba2309b55abe829431f96f03407b2190a459a2cd09aef3b4163ee568"
+      }
+    },
+    {
+      "page": 315,
+      "requested_renderer": "canvaskit-default",
+      "profile": "screen",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1123,
+        "sizeBytes": 73705,
+        "sha256": "e4262f9d4d632151b0bd0e3f87c9ec07c2aef4c3b0a98f78add31d696ad322ad"
+      }
+    },
+    {
+      "page": 95,
+      "requested_renderer": "canvas2d",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      }
+    },
+    {
+      "page": 100,
+      "requested_renderer": "canvas2d",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64333,
+        "sha256": "b5ba006842a107bf9bc9b5e0083807f639c218a95eed53a7cc7e6335697a0e61"
+      },
+      "archived_png": "mydocs/verification/issue7754-nine-fidelity/studio/market-page100-print/base.png"
+    },
+    {
+      "page": 106,
+      "requested_renderer": "canvas2d",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      }
+    },
+    {
+      "page": 247,
+      "requested_renderer": "canvas2d",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      }
+    },
+    {
+      "page": 315,
+      "requested_renderer": "canvas2d",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      }
+    },
+    {
+      "page": 95,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      }
+    },
+    {
+      "page": 100,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64333,
+        "sha256": "b5ba006842a107bf9bc9b5e0083807f639c218a95eed53a7cc7e6335697a0e61"
+      }
+    },
+    {
+      "page": 106,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      }
+    },
+    {
+      "page": 247,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      }
+    },
+    {
+      "page": 315,
+      "requested_renderer": "canvaskit-compat",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      }
+    },
+    {
+      "page": 95,
+      "requested_renderer": "canvaskit-default",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 76934,
+        "sha256": "19dd520b1f3a0884240225d5852b04e4299bd515ee778d5325149798e27f6fd4"
+      }
+    },
+    {
+      "page": 100,
+      "requested_renderer": "canvaskit-default",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 64333,
+        "sha256": "b5ba006842a107bf9bc9b5e0083807f639c218a95eed53a7cc7e6335697a0e61"
+      }
+    },
+    {
+      "page": 106,
+      "requested_renderer": "canvaskit-default",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 113627,
+        "sha256": "9cfe36ac09a14db50cc63f51b5113b38e2ec7aeff7f7620d35b835f85359b47b"
+      }
+    },
+    {
+      "page": 247,
+      "requested_renderer": "canvaskit-default",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 87863,
+        "sha256": "2db4d5079b64c205a93f6cd6b43fa35888285557a508f6ee66f3575fd78d41bd"
+      }
+    },
+    {
+      "page": 315,
+      "requested_renderer": "canvaskit-default",
+      "profile": "print",
+      "effective_renderer": "canvas2d",
+      "artifact": {
+        "width": 794,
+        "height": 1122,
+        "sizeBytes": 67679,
+        "sha256": "c0e6533ecf4984862fdf49322b408e8594ad0c5834f4dd486dfd91ee8b3ded77"
+      }
+    }
+  ],
+  "document_sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341",
+  "canvas_kit_preflight_page_limit": 128,
+  "effective_canvas2d_captures_per_run": 30
+}

@@ -54,6 +54,101 @@ impl Table {
         bounds.into_iter().collect()
     }
 
+    /// 줄마다 셀 너비를 왼쪽부터 더한 경계로 열 격자를 다시 나눈다.
+    ///
+    /// 한컴 12.30은 한 줄의 칸 경계만 옮기면(Shift 끌기) 그 자리에 새 열 경계를 두고, 다른 줄의
+    /// 셀은 두 열에 걸치게 저장한다(3×3 표의 가운데 줄 첫 경계를 옮긴 저장본: 열 4개, 위·아래
+    /// 줄 둘째 셀 colSpan 2). 열마다 가장 넓은 셀로 그리는 한컴은 격자를 나누지 않은 표를 다른
+    /// 줄까지 넓혀 그린다. 셀 너비·줄·순서는 그대로 두고 `col`·`col_span`·열 수와 셀 영역만 고친다.
+    ///
+    /// `before`는 고치기 전 칸 경계(`column_bounds`)이며 셀 영역을 새 격자로 옮길 때 쓴다.
+    /// 셀 간격이 있거나, 여러 줄에 걸친 셀의 경계가 줄마다 다르거나, 줄 너비가 서로 다르면
+    /// 하나의 격자로 나눌 수 없어 그대로 두고 `false`를 돌려준다.
+    pub fn regrid_columns_from_widths(&mut self, before: &[i64]) -> bool {
+        if self.cell_spacing != 0 || self.cells.is_empty() {
+            return false;
+        }
+        let mut edges: Vec<Option<(i64, i64)>> = vec![None; self.cells.len()];
+        let mut row_end: Option<i64> = None;
+        for row in 0..self.row_count {
+            let mut cells: Vec<usize> = (0..self.cells.len())
+                .filter(|&i| {
+                    let c = &self.cells[i];
+                    c.row <= row && row < c.row.saturating_add(c.row_span)
+                })
+                .collect();
+            cells.sort_by_key(|&i| self.cells[i].col);
+            let mut x = 0i64;
+            for i in cells {
+                let edge = (x, x + i64::from(self.cells[i].width));
+                match edges[i] {
+                    Some((s, e)) if (s - edge.0).abs() > 2 || (e - edge.1).abs() > 2 => {
+                        return false;
+                    }
+                    Some(_) => {}
+                    None => edges[i] = Some(edge),
+                }
+                x = edge.1;
+            }
+            match row_end {
+                Some(end) if (end - x).abs() > 2 => return false,
+                Some(_) => {}
+                None => row_end = Some(x),
+            }
+        }
+        let Some(edges) = edges.into_iter().collect::<Option<Vec<_>>>() else {
+            return false;
+        };
+        // 2HU 안의 경계는 저장 반올림 차이로 보고 한 격자선으로 묶는다.
+        let mut positions: Vec<i64> = edges.iter().flat_map(|&(s, e)| [s, e]).collect();
+        positions.sort_unstable();
+        positions.dedup();
+        let mut lines: Vec<i64> = Vec::new();
+        let mut line_of: Vec<(i64, u16)> = Vec::with_capacity(positions.len());
+        for pos in positions {
+            if lines.last().is_none_or(|&last| pos - last > 2) {
+                lines.push(pos);
+            }
+            line_of.push((pos, (lines.len() - 1) as u16));
+        }
+        let Ok(cols) = u16::try_from(lines.len() - 1) else {
+            return false;
+        };
+        if cols == 0 {
+            return false;
+        }
+        let line = |pos: i64| {
+            line_of
+                .binary_search_by_key(&pos, |&(p, _)| p)
+                .map(|at| line_of[at].1)
+                .unwrap_or(0)
+        };
+        for (cell, &(s, e)) in self.cells.iter_mut().zip(&edges) {
+            cell.col = line(s);
+            cell.col_span = line(e) - line(s);
+        }
+        // 셀 영역은 옛 경계에 가장 가까운 새 격자선으로 옮긴다.
+        let nearest = |pos: i64| {
+            lines
+                .iter()
+                .enumerate()
+                .min_by_key(|&(_, &l)| (l - pos).abs())
+                .map_or(0, |(at, _)| at as u16)
+        };
+        for zone in &mut self.zones {
+            let (s, e) = (usize::from(zone.start_col), usize::from(zone.end_col) + 1);
+            let (Some(&from), Some(&to)) = (before.get(s), before.get(e)) else {
+                continue;
+            };
+            let (s, e) = (nearest(from), nearest(to));
+            zone.start_col = s;
+            zone.end_col = e.max(s + 1) - 1;
+        }
+        self.col_count = cols;
+        self.rebuild_grid();
+        true
+    }
+
     /// 블록(행·열 포함 범위)의 셀을 `axis` 방향으로 같은 크기로 맞추고 격자를 다시 나눈다.
     ///
     /// `bounds`는 그 방향 격자선 위치(HWPUNIT, 길이 = 줄 수 + 1)다. 너비는 칸 경계,

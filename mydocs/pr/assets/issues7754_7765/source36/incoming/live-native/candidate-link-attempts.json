@@ -1,0 +1,7 @@
+[
+  {
+    "serde_json": "/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-01a0026680b78649.rlib",
+    "exit_code": 0,
+    "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/candidate-build-libserde_json-01a0026680b78649.log"
+  }
+]

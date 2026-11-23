@@ -1,0 +1,7 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 at http://127.0.0.1:41393
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3
+candidate samples/basic/sungeo.hwp two actual HWP edit/save/reopen rounds
+candidate samples/20250130-hongbo.hwp two actual HWP edit/save/reopen rounds
+candidate samples/task2137/156618554_petfood_press.hwp two actual HWP edit/save/reopen rounds
+candidate samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp two actual HWP edit/save/reopen rounds

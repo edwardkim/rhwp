@@ -1621,6 +1621,9 @@ impl Table {
                     }
                 }
             }
+            if widths.contains(&0) {
+                self.solve_merged_only_columns(&mut widths);
+            }
             // 폭이 0인 열은 기본값 1800 HWPUNIT (약 6.35mm)
             for w in &mut widths {
                 if *w == 0 {
@@ -1629,6 +1632,45 @@ impl Table {
             }
             widths
         })
+    }
+
+    /// 홀로 선(`col_span == 1`) 셀이 없고 가로 병합 셀로만 덮인 열의 폭을 병합 셀 폭에서 푼다.
+    ///
+    /// 머리 줄 `A | B+C | D`, 맨 아래 줄 `A+B | C+D`처럼 병합된 서식 표는 B·C 열을 홀로 선
+    /// 셀로 알 수 없다. 기본값으로 떨어뜨리면 줄·칸을 넣을 때 새 셀이 좁아지고 표 전체
+    /// 폭(개체 폭)이 줄어든다. 레이아웃 `resolve_column_widths` 2단계처럼 모르는 열이
+    /// 하나뿐인 병합 셀에서 아는 열 폭을 빼 채운다. 셀 폭만으로 정해지지 않는 열은 고르게
+    /// 나누지 않고 그대로 둔다: 추측한 폭은 테두리 그림 소유 증명(`grid`)을 거짓으로 통과시킨다.
+    fn solve_merged_only_columns(&self, widths: &mut [HwpUnit]) {
+        let spacing = HwpUnit::try_from(self.cell_spacing).unwrap_or(0);
+        let len = widths.len();
+        let merged = |cell: &Cell| {
+            let start = cell.col as usize;
+            let end = start + cell.col_span as usize;
+            (cell.col_span > 1 && end <= len).then(|| {
+                let gaps = spacing.saturating_mul(HwpUnit::from(cell.col_span - 1));
+                (start..end, cell.width.saturating_sub(gaps))
+            })
+        };
+        let sum = |widths: &[HwpUnit]| widths.iter().fold(0, |a: HwpUnit, w| a.saturating_add(*w));
+        // 한 바퀴마다 0인 열이 하나 이상 채워질 때만 다시 도므로 열 수만큼 돌면 끝난다.
+        let mut progress = true;
+        while progress {
+            progress = false;
+            for cell in &self.cells {
+                let Some((span, total)) = merged(cell) else {
+                    continue;
+                };
+                let mut unknown = span.clone().filter(|&c| widths[c] == 0);
+                if let (Some(col), None) = (unknown.next(), unknown.next()) {
+                    let rest = total.saturating_sub(sum(&widths[span]));
+                    if rest > 0 {
+                        widths[col] = rest;
+                        progress = true;
+                    }
+                }
+            }
+        }
     }
 
     /// Base grid column widths.

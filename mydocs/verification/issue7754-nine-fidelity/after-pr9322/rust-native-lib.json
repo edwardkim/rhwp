@@ -1,0 +1,623 @@
+{
+  "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+  "toolchain": "1.93.1",
+  "profile": "release-test",
+  "features": [
+    "native-skia"
+  ],
+  "test_threads": 12,
+  "build_jobs": 1,
+  "visible_fonts": [
+    "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+    "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf",
+    "ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+  ],
+  "command": [
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+    "cargo",
+    "test",
+    "--locked",
+    "--profile",
+    "release-test",
+    "--target-dir",
+    "/home/tsjang/rhwp/target/pr-review",
+    "--features",
+    "native-skia",
+    "--lib",
+    "--",
+    "--test-threads",
+    "12"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1957.06,
+  "stdout_sha256": "9f707eb9d006a9001cf4acf8eae45fc7d2658061b4fb36aff99f1c21ac5ebceb",
+  "passed": 4033,
+  "failed": 0,
+  "ignored": 12,
+  "cases": [
+    {
+      "test_binary": "rhwp-561b51528026b556",
+      "passed": 3851,
+      "failed": 0,
+      "ignored": 12,
+      "seconds": "27.66"
+    },
+    {
+      "test_binary": "rhwp_contracts-e7f57825e35c047c",
+      "passed": 15,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": "0.02"
+    },
+    {
+      "test_binary": "rhwp_ooxml_chart-bf45f4c0c69039b4",
+      "passed": 165,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": "0.03"
+    },
+    {
+      "test_binary": "rhwp_password_crypto-26b5a9033502c975",
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": "0.00"
+    }
+  ],
+  "native_ci_selectors": {
+    "selectors": 21,
+    "tests_passed": 194,
+    "failed": 0,
+    "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2",
+    "command_template": [
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+      "/usr/local/bin/node",
+      "scripts/run-rust-test.mjs",
+      "<selector>",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "cases": [
+      {
+        "selector": "cli_exit_codes_native",
+        "stdout_sha256": "dea727b4fc5d08bdc15cae1984a5856de48b5fe1c99f4aa7e6179f6b18396098",
+        "elapsed_seconds": 1462.57,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 0,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 5.927,
+          "passing_test_inventory_sha256": "1989f0120af1fa3fdcc165b919b7e1f09ec355ee51cf85cfeef941c8acfebaf7"
+        }
+      },
+      {
+        "selector": "issue_1144_native",
+        "stdout_sha256": "db505eef15a486d4e36c69944a155e6c3fd5fecb2bf26025103752ba5a16aea1",
+        "elapsed_seconds": 24.94,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 0,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.422,
+          "passing_test_inventory_sha256": "3b87521b57d7766975980708c8fa0d12be846bcd7243673c39d93fad13f6e5a1"
+        }
+      },
+      {
+        "selector": "issue_2225_missing_picture_placeholder",
+        "stdout_sha256": "34e241a3538c93f4420fdd388b82ec174ed1e4f6e3be725d54e9cbab0d059f60",
+        "elapsed_seconds": 92.32,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 367,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 2.39,
+          "passing_test_inventory_sha256": "69a195a6a30ef33343055f1b81fd552f60525d1f0f6dd2a4733cc287738a4bc0"
+        }
+      },
+      {
+        "selector": "render_p37_direct_pdf_export",
+        "stdout_sha256": "f303d8912c75fd34b599406c6a102b10df247d67f53020ce89088f55b4168fa5",
+        "elapsed_seconds": 117.34,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 37,
+          "passed": 37,
+          "failed": 0,
+          "skipped": 343,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 2.86,
+          "passing_test_inventory_sha256": "799b8e401ec9786a4306fb647400b9fbaaba7081a9bd1316724e675d0c6617d0"
+        }
+      },
+      {
+        "selector": "issue_7950_pdf_paint",
+        "stdout_sha256": "1728db4508dcb546ae1dcd0da4a1452e7497f5221246a25617cb84fdfda0ef1b",
+        "elapsed_seconds": 113.84,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 4,
+          "passed": 4,
+          "failed": 0,
+          "skipped": 320,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 2.484,
+          "passing_test_inventory_sha256": "cff32f27fdcd874b8d6da5f4bfe8174ab491c3052215b1ea75eef611fc5ab575"
+        }
+      },
+      {
+        "selector": "issue_2083_hide_fill_page_background",
+        "stdout_sha256": "300cb3fd4aed8923738c16527626a0d883caec859e5751024287175ee706c0a0",
+        "elapsed_seconds": 96.04,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 371,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.297,
+          "passing_test_inventory_sha256": "6a86d4d71a2277f3357bb63daf72dd62dfb7d6dbef6f335586edcf09f2e8e81d"
+        }
+      },
+      {
+        "selector": "issue_2292_chart_png_clip",
+        "stdout_sha256": "f7c1a0b7c981409b7bb2629735238f0a37d06d215df1e46745725b16804b3a19",
+        "elapsed_seconds": 82.81,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 365,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.194,
+          "passing_test_inventory_sha256": "0af2ff13b9c5501a3b82a22b432b61ad208f83bd59ed075122ccbf3aaa18ff35"
+        }
+      },
+      {
+        "selector": "issue_2293_chart_png_text",
+        "stdout_sha256": "e64cea1fd41a9c878fb2d951b7dedd6fd5dad6315277cde5d27fbebb470780ea",
+        "elapsed_seconds": 104.16,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 343,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 2.05,
+          "passing_test_inventory_sha256": "f2ac5a276b6beb944123ae5d16c338b8d62d8c0bc04ded9407777de088774c32"
+        }
+      },
+      {
+        "selector": "issue_7820_sixel_contract",
+        "stdout_sha256": "41b3be6a56a3abe6343b2be989d31f7d1ff47f662d1005a3f567da0ee8af41ee",
+        "elapsed_seconds": 84.58,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 7,
+          "passed": 7,
+          "failed": 0,
+          "skipped": 342,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.138,
+          "passing_test_inventory_sha256": "e9e82d90ebb83a07164ac2c00aebd9f9c719af53c8f939dd103ef0c44fdf1b6c"
+        }
+      },
+      {
+        "selector": "issue_8150_kitty_contract",
+        "stdout_sha256": "7ea79fb53ab24bacac735cff6b039d56e366e58faba3e3229e448b11afb0b3d1",
+        "elapsed_seconds": 2.54,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 8,
+          "passed": 8,
+          "failed": 0,
+          "skipped": 337,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.148,
+          "passing_test_inventory_sha256": "01f80f7bad5f63ea1f06d6f5d813fe4ec5c048e341990d3a9a0c2182ea402771"
+        }
+      },
+      {
+        "selector": "issue_4961_font_decision_trace",
+        "stdout_sha256": "c83dd996579e76c23aa2c410b8923d42ee05ef61335cdd41c439553bc70e7d2c",
+        "elapsed_seconds": 3.85,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 12,
+          "passed": 12,
+          "failed": 0,
+          "skipped": 360,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.538,
+          "passing_test_inventory_sha256": "68decf05c91e4443f04e834dd49de394cb2eacc34160c794d0a1ee39c1a2ab74"
+        }
+      },
+      {
+        "selector": "issue_7902_original_frame_and_content",
+        "stdout_sha256": "cff9a72df7cc4c0f605bbc458c2a331dd0976930ad549e4beb8ae5b1b2e00301",
+        "elapsed_seconds": 129.37,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 7,
+          "passed": 7,
+          "failed": 0,
+          "skipped": 371,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 20.922,
+          "passing_test_inventory_sha256": "5a56cc6a0031baadb63af8212ab6735fd8308216a9bb4965d68e66200be0e14d"
+        }
+      },
+      {
+        "selector": "issue_8160_hwp2022_paragraph_relations",
+        "stdout_sha256": "bb4cc74665840d4d3cdb0a5c032d9d0fe69f1b06c9325ef9e37044a8d41fafbf",
+        "elapsed_seconds": 24.87,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 3,
+          "passed": 3,
+          "failed": 0,
+          "skipped": 342,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.72,
+          "passing_test_inventory_sha256": "c836f36a8c803e78981ff25cbcc92080f1c67b404f69db799c3dc0c1a6a26483"
+        }
+      },
+      {
+        "selector": "native_fractional_glyph_origin",
+        "stdout_sha256": "054df642b8197e2b7f86a0e7dfeb21e50474b6dbf69d06e3f99f832178b77de7",
+        "elapsed_seconds": 2.31,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 7,
+          "passed": 7,
+          "failed": 0,
+          "skipped": 371,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.335,
+          "passing_test_inventory_sha256": "65ca16fbd0bba3be8f809b3ace69152cbf2d5efc9e2717165fa557781c6eca51"
+        }
+      },
+      {
+        "selector": "skia_native_glyph_replay",
+        "stdout_sha256": "2a235e069998c98d5457b4d303162f9e5d00c3f61fc6b576e1956e7620a60330",
+        "elapsed_seconds": 101.26,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 25,
+          "passed": 25,
+          "failed": 0,
+          "skipped": 335,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.572,
+          "passing_test_inventory_sha256": "d0a05daf9e58ac3c182d73604c41417658fd770236c2c2c4e55e60cf43c734f7"
+        }
+      },
+      {
+        "selector": "issue_8153_opaque_mixed_axis_image_sampling",
+        "stdout_sha256": "af299b3f6db8265ead46015ba9b3b51394259a88e8899e23bce2e4ef3184ce74",
+        "elapsed_seconds": 79.88,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 361,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 4.152,
+          "passing_test_inventory_sha256": "f7e055cd3ea8533d259d09300e08be194628142902bfd5775b207c06802a0543"
+        }
+      },
+      {
+        "selector": "issue_8153_print_glyph_geometry",
+        "stdout_sha256": "21cf936d7688a708cbc9d36e4cc8ae70dfb6991fdf338093edde7d47321c2b3d",
+        "elapsed_seconds": 2.78,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 9,
+          "passed": 9,
+          "failed": 0,
+          "skipped": 340,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.05,
+          "passing_test_inventory_sha256": "8158306751a251f1f21b32b8693965c961054c547b4e0d1e342d11d78c7d4adf"
+        }
+      },
+      {
+        "selector": "issue_8153_symbol_fallback",
+        "stdout_sha256": "bddfe729ae2802d032d8f3e33c0e5962efb207bb533c7a048bb5ea60abb7095c",
+        "elapsed_seconds": 2.25,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 376,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.167,
+          "passing_test_inventory_sha256": "f4ddeb16d24b13573e4392982551b73d2fc2473319f2b47cb02574e47858ecdb"
+        }
+      },
+      {
+        "selector": "issue_536_native_region_cache",
+        "stdout_sha256": "33631ecc8836588ba747c542916499fb8aff803d42fc3840930774060f88c9c3",
+        "elapsed_seconds": 2.63,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 39,
+          "passed": 39,
+          "failed": 0,
+          "skipped": 306,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.679,
+          "passing_test_inventory_sha256": "63465512c12f02bd54817a6ebf845eb124d0e5c98a9f094c52b848d6abb61c17"
+        }
+      },
+      {
+        "selector": "skia_region_plan",
+        "stdout_sha256": "822fb270c414019f067bbdd60b6946306da1d422422896cb5111a43eac10aa7d",
+        "elapsed_seconds": 96.92,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 10,
+          "passed": 10,
+          "failed": 0,
+          "skipped": 352,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.039,
+          "passing_test_inventory_sha256": "b4a27d3d79d453e4c598783250f36d137654cbad252239f151f6e5681eb2602d"
+        }
+      },
+      {
+        "selector": "skia_host_surface",
+        "stdout_sha256": "f0a132ddaf9c781d843aa406913dc024a05b66c14967a68682efcd1896cbc407",
+        "elapsed_seconds": 107.52,
+        "exit_code": 0,
+        "tests": {
+          "tests_run": 13,
+          "passed": 13,
+          "failed": 0,
+          "skipped": 345,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.08,
+          "passing_test_inventory_sha256": "afd0145438ae6bf71e1dae5930356beefc9219d70a4fb7143b466f14128c999d"
+        }
+      }
+    ]
+  },
+  "focused_native_checks": {
+    "selectors": 8,
+    "tests_passed": 48,
+    "failed": 0,
+    "command_template": [
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+      "/usr/local/bin/node",
+      "scripts/run-rust-test.mjs",
+      "<selector>",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--features",
+      "native-skia",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "cases": [
+      {
+        "selector": "issue_7754_font_logical_family_ownership",
+        "exit_code": 0,
+        "stdout_sha256": "63c79a46a2639d7a82f7707fff6a38e2809a5040545f2b064074f7859f0b6be5",
+        "tests": {
+          "tests_run": 1,
+          "passed": 1,
+          "failed": 0,
+          "skipped": 366,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.026,
+          "passing_test_inventory_sha256": "12d41dae2e3ae26ccf116b07fadf8f1d045414aa84994d44d6c8fa3c7c96b777"
+        },
+        "elapsed_seconds": 95.27,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "oracle_page_count_baseline",
+        "exit_code": 0,
+        "stdout_sha256": "e80f68ba298375fe0401bffb6ead68bfb822b52a52904dfa6679a4276554adea",
+        "tests": {
+          "tests_run": 17,
+          "passed": 17,
+          "failed": 0,
+          "skipped": 363,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 28.504,
+          "passing_test_inventory_sha256": "1042849ed3e834700af473fec21e78b9db7c345feea6b6314469940e024e99ef"
+        },
+        "elapsed_seconds": 31.05,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_7754_original_frame_and_glyph_origins",
+        "exit_code": 0,
+        "stdout_sha256": "b50f637d0e156d32e7a3a5fc067bdf2cee519af64af77e4a46a48fb274bdbb53",
+        "tests": {
+          "tests_run": 2,
+          "passed": 2,
+          "failed": 0,
+          "skipped": 364,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.456,
+          "passing_test_inventory_sha256": "7323ab3e917d67bad9955a58c940a7d5ecb1e182c2307b60dbb05e7f2a4cf5d6"
+        },
+        "elapsed_seconds": 2.69,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_8418_hft_outline_tracking",
+        "exit_code": 0,
+        "stdout_sha256": "cdb0536b7a2ee2ae1c01bbd9f2e5f06678d7af1bb08ca4778c25d2666f024ca6",
+        "tests": {
+          "tests_run": 3,
+          "passed": 3,
+          "failed": 0,
+          "skipped": 342,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.066,
+          "passing_test_inventory_sha256": "81f56a04a833e5209bc450970bf2f70a13eeeda8a475aabdddaa2e81a73bac8e"
+        },
+        "elapsed_seconds": 2.17,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_8225_group_child_ctrl_data",
+        "exit_code": 0,
+        "stdout_sha256": "77246cb8136f412faca709d66da0a6dd468294e0d92a4e155351949645bf337f",
+        "tests": {
+          "tests_run": 5,
+          "passed": 5,
+          "failed": 0,
+          "skipped": 358,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.213,
+          "passing_test_inventory_sha256": "754894b4500863b11dcc4de16cce20f270119cd4b8fd96b9cb0e516bd2dee3ec"
+        },
+        "elapsed_seconds": 3.13,
+        "font_isolation_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+      },
+      {
+        "selector": "issue_5140_versioned_body_symbols",
+        "exit_code": 0,
+        "stdout_sha256": "6812a7fec879780f287b81ae3f40b5a7712583e68c04c5f9e4d4125d89193503",
+        "tests": {
+          "tests_run": 11,
+          "passed": 11,
+          "failed": 0,
+          "skipped": 351,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.014,
+          "passing_test_inventory_sha256": "27a5160c18ff071a6989afcafaf8bf862a7c5d8d3b39b0d8d095bc94ef88f5f0"
+        },
+        "elapsed_seconds": 188.65,
+        "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4"
+      },
+      {
+        "selector": "issue_5140_hancom_symbol_plane15",
+        "exit_code": 0,
+        "stdout_sha256": "7392378c3f9a7bb70c7547b44b7f578f74d1e37bc3a40f25887504642a855ea2",
+        "tests": {
+          "tests_run": 6,
+          "passed": 6,
+          "failed": 0,
+          "skipped": 357,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 0.056,
+          "passing_test_inventory_sha256": "3a31a914f4ac12b02da57bcba9ed287e46c97de32bd4ff221b2a25c9490bf45d"
+        },
+        "elapsed_seconds": 26.77,
+        "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4"
+      },
+      {
+        "selector": "issue_5800_hwp5_pua_plane15",
+        "exit_code": 0,
+        "stdout_sha256": "1be12346bb595fdb6e730fcee0146c30b6d77250cc10ab26ce0ae0d41e5857de",
+        "tests": {
+          "tests_run": 3,
+          "passed": 3,
+          "failed": 0,
+          "skipped": 357,
+          "slow": 0,
+          "binaries": 1,
+          "test_seconds": 1.543,
+          "passing_test_inventory_sha256": "e2e3b85fddf12671c50e9516acb9db50a636cce5e28db48bf275b859c5b7a10f"
+        },
+        "elapsed_seconds": 3.89,
+        "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4"
+      }
+    ]
+  },
+  "fixture_mount_recovery": {
+    "interrupting_attempt": {
+      "label": "focused-issue_5140_versioned_body_symbols",
+      "exit_code": 101,
+      "log_sha256": "8301c1cf668f417e5860d3adac7e10512ea15d559ab0739c9b336e038ee5a3f8",
+      "reason": "Mounting earlier fixture directories hid three test inputs from the current commit."
+    },
+    "old_checkout": "329b5080859ba7aa06934f13890cd1920228a040",
+    "corrected_assets_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+    "mounted_assets_verified": 323,
+    "required_by_failed_compile": [
+      {
+        "path": "mydocs/pr/assets/pr9280/indic-line-breaks.tsv",
+        "git_blob": "558b7ff88feca46e7943c80174a279a5e6ed3449",
+        "sha256": "de20af8fa6935f9c1d425744eb44da25dc995883e812da3fe57af7731ffd6abe",
+        "absent_from_original_root": true
+      },
+      {
+        "path": "mydocs/pr/assets/pr9280/syloti-hancom.tsv",
+        "git_blob": "05df8d7db637b4b366403031ed65514c71504b74",
+        "sha256": "d95c785877c6bd42807f99c03baf6ea44d62e4fc60434cb7bc832245d33b2f4b",
+        "absent_from_original_root": true
+      },
+      {
+        "path": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+        "git_blob": "795dad9298a20f556af5e9034f1357c3c7d30bab",
+        "sha256": "7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3",
+        "absent_from_original_root": true
+      }
+    ],
+    "fixture_mount_audit_sha256": "0a3ce39064788ad37424b04430d8337f2dd7287b5c69b6cce818f93ebdda3098",
+    "original_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2",
+    "corrected_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+    "passed_tests_in_resumed_selector": 11
+  }
+}

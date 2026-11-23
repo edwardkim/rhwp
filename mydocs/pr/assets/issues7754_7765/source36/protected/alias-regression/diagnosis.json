@@ -1,0 +1,42 @@
+{
+  "recorded": 1795315132.4798644,
+  "scope": "Verified candidate regression under identical restored font bytes; not an environment waiver. Diagnostic query changes model removal of an unqualified logical-family alias; actual product correction and final-head validation still required.",
+  "base_source": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "candidate_source": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "base_raw": "100.00",
+  "candidate_raw": "99.98",
+  "selected_family_query_raw": "100.00",
+  "same_render_tree_point_boxes": true,
+  "base_candidate_changed_pixel_bbox": [
+    379,
+    137,
+    711,
+    396
+  ],
+  "base_candidate_changed_pixels": 21,
+  "base_png_sha256": "4ca83bb131b9887cc871a72d8948fde2047f1a1410305ce3270626048ae718ed",
+  "diagnostic_png_sha256": "4ca83bb131b9887cc871a72d8948fde2047f1a1410305ce3270626048ae718ed",
+  "diagnostic_equals_base_png": true,
+  "guide_p002_diagnostic_raw": "99.99",
+  "guide_p002_diagnostic_identical_png": true,
+  "font_evidence": {
+    "path": "/usr/local/share/fonts/rhwp-issue8160-ted2/original-hanyang-complete-symbols/hanyang-original-complete-symbols.otf",
+    "sha256": "04264432d4d3d30eb2b4d0174b4c191b0418ebc2729bdeee8978305ceb8b14d1",
+    "format": "CFF",
+    "character": "U+2027",
+    "glyph": "uni2027",
+    "glyph_id": 11194,
+    "hmtx": [
+      500,
+      0
+    ],
+    "outline_bbox": null,
+    "family": "한양신명조"
+  },
+  "cause": "Adding the logical HFT query as a fallback can select a different installed program with a mapped but empty glyph. The selected primary program identity does not authenticate that additional logical family. The two visible PDF dots disappear in the candidate.",
+  "corrections_to_diagnosis": [
+    "H2GTRM.TTF is already installed and matches the canonical SHA; HYGothic-Medium is distinct from Human Gothic.",
+    "Removing the additional Poppy program worsened the output; it is not adopted.",
+    "Original source bytes, metric preservation and TTF/TTC/CFF priority remain unchanged."
+  ]
+}

@@ -33,6 +33,17 @@ pub(crate) fn candidate(cluster: &str) -> Option<char> {
     pua_candidate(cluster)
 }
 
+/// 측정과 paint가 같은 실제 프로그램의 호환 음절을 소비한다.
+/// 원문 자모·문자 주소와 FontEnvironment의 프로그램 우선순위는 바꾸지 않는다.
+pub(crate) fn source_program_glyph(style: &super::TextStyle, cluster: &str) -> Option<(char, f64)> {
+    let glyph = candidate(cluster).filter(|ch| super::pua_oldhangul::is_pua_old_hangul(*ch))?;
+    let advance = style
+        .native_otf_metrics
+        .as_ref()?
+        .compatibility_cluster_advance(cluster, glyph)?;
+    Some((glyph, advance))
+}
+
 /// 단독 자소의 원 cmap가 없을 때도 유일한 원 PUA가 있으면 사용한다.
 pub(crate) fn fallback_candidate(cluster: &str) -> Option<char> {
     pua_candidate(cluster).filter(|glyph| Some(*glyph) != candidate(cluster))

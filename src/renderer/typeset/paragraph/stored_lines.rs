@@ -52,18 +52,29 @@ pub(in crate::renderer::typeset) fn stored_tail_boundary_invalidated_at_current_
     index: usize,
     styles: &crate::renderer::style_resolver::ResolvedStyleSet,
 ) -> bool {
-    matches!(
-        stored_frame_prefix(st, paragraphs, index, styles),
-        Some(StoredFramePrefix::OmittedFromInput)
-    ) || stored_page_boundary_invalidated_by_reflow(
-        st.profile,
-        st.col_count,
-        &st.current_items,
-        paragraphs,
-        index,
-        st.current_height,
-        st.layout.dpi,
-    )
+    (st.col_count == 1
+        && crate::renderer::typeset::stored_reset_ownership::closed_float_reset_is_stale(
+            st.profile,
+            paragraphs,
+            index,
+            &st.current_items,
+            st.vpos_page_base.or(st.vpos_lazy_base),
+            st.current_height,
+            st.layout.dpi,
+        ))
+        || matches!(
+            stored_frame_prefix(st, paragraphs, index, styles),
+            Some(StoredFramePrefix::OmittedFromInput)
+        )
+        || stored_page_boundary_invalidated_by_reflow(
+            st.profile,
+            st.col_count,
+            &st.current_items,
+            paragraphs,
+            index,
+            st.current_height,
+            st.layout.dpi,
+        )
 }
 
 fn stored_frame_prefix(

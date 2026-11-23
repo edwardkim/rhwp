@@ -1,0 +1,222 @@
+{
+  "key": "decree",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    4,
+    24,
+    45,
+    63
+  ],
+  "completed_pages": [
+    4,
+    24,
+    45,
+    63
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+  "tsv_sha256": "17748deb1b756d5b3343842430545520b11833a21cd9640450922b424ded4307",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 4,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "3487276a7f79de6b29b577af739ec029318d3fdeb388923c05b30e6bf8bae921",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/pdf_png/pdf-004.png",
+      "pdf_sha256": "6fb0de143ecfcac26c9a88423071d449bdd83f275a3b97890696e7d01f25e66e"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "9195c04b497c5c5e03e1a026088e85b13144e9f04b591baa65dfb6a1cb54e11a",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/pdf_png/pdf-024.png",
+      "pdf_sha256": "6ea267f646ceece264581b390ce7b2021b0b29f36a38bf8ff7a8808bc285366e"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "f77beffbd41750045b97aa3e22c6b8dd34a1a74df72a3248e9abe1c987505963",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/pdf_png/pdf-045.png",
+      "pdf_sha256": "78a8086af41d8ab57f9cb884135e4386f3e807b48fdc577e9b7afa88b1a457ff"
+    },
+    {
+      "page": 63,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/rhwp_png/rhwp_063.png",
+      "rhwp_sha256": "4c2e4cb5d91b89d1e86bf1983992934ccfb89573981c87b8723c2b476162826a",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/pdf_png/pdf-063.png",
+      "pdf_sha256": "db82ae27b881f5b99f5a2e09323611b711d82c4fc0a034192fb270d641c1052b"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89307,
+      "silhouette_raw_unmatched_pixels": 46,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43018,
+      "tolerant_content_match_percent": 99.89307
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.91044,
+      "silhouette_raw_unmatched_pixels": 45,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 50243,
+      "tolerant_content_match_percent": 99.91044
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.89383,
+      "silhouette_raw_unmatched_pixels": 45,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42386,
+      "tolerant_content_match_percent": 99.89383
+    },
+    {
+      "page": 63,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98906,
+      "silhouette_raw_unmatched_pixels": 12,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 109715,
+      "tolerant_content_match_percent": 99.98906
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 74,
+      "pdf": 74
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6776/78494-virtual-convergence-industry-decree.hwpx",
+      "sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617"
+    },
+    "pdf": {
+      "path": "pdf/78494-virtual-convergence-industry-decree-2020.pdf",
+      "sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9"
+    },
+    "git_head": "4b1cc7625051eb2d403d6e19c90742e0fbd6e21d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "sha256": "249e11dedc91f4f2c90b145e82b9bd0102d27a0b1e1ebaa15030431178cdfa02"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "c6f7a75ee9ff965e004bf029a7c4211240e2e359dc01c2635efbe883222819d1"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2022",
+    "print_png_rgb555": true,
+    "print_png_rgb555_reference_metadata": {
+      "creator": "Hwp 2022 0.0.0.0",
+      "producer": "Hancom PDF 1.3.0.550"
+    },
+    "font_environment": {
+      "path": "/home/tsjang/rhwp/mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/decree-native.json",
+      "sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/pala.ttf",
+          "sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palab.ttf",
+          "sha256": "8e14668bbae03f78ed668dbe3261218881960dcd9fb80ad6c1d1dfb4226a57c3"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palabi.ttf",
+          "sha256": "d0e722b91ffd5391cc2e7d6e976f274d5aee9fe0b8d0fedfffe093763e695cde"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source49-palatino/palai.ttf",
+          "sha256": "99f0af2d1941707fecda23da38bafbed5144a73a3720d773c05b9d4c445920ed"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/820d3212f688-H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-canonical-fonts-20261122/e50c7200521c-H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source50-decree-palatino-exact-ttf-focus/native/candidate/decree/silhouette-checkpoint.json"
+}

@@ -22,10 +22,12 @@ pub(crate) fn page_starts_with_hidden_empty_lines(
     para: &Paragraph,
     items: &[PageItem],
     hidden: &std::collections::HashSet<usize>,
+    source_prefix_already_suppressed: bool,
 ) -> bool {
     // 저장 줄이 없는 빈 문단은 실제 줄 상자를 소유할 수 있다. 저장 쪽의
     // 숨김 표식으로 추정하지 않고 기존 빈 문단 배치에 맡긴다.
-    !para.line_segs.is_empty()
+    !source_prefix_already_suppressed
+        && !para.line_segs.is_empty()
         // 명시 쪽·구역 나누기를 소유한 문단은 사용자가 만든 줄 상자를
         // 유지한다. 저장 조판에서 추정한 자동 경계만 숨김 대상이 될 수 있다.
         && (!matches!(
@@ -187,20 +189,22 @@ fn same_cell_path(a: &[TableFootnotePathEntry], b: &[TableFootnotePathEntry]) ->
         })
 }
 
-fn resolve_endnote_at<'a>(
+pub(crate) fn resolve_endnote_at<'a>(
     host: &'a Paragraph,
     control_index: usize,
     cell_path: &[TableFootnotePathEntry],
 ) -> Option<&'a Endnote> {
     let mut control = host.controls.get(control_index)?;
     for step in cell_path {
-        let Control::Table(table) = control else {
-            return None;
+        // 표는 셀, 글상자는 셀 0의 글상자 문단을 지난다.
+        let paragraphs = match control {
+            Control::Table(table) => &table.cells.get(step.cell_index)?.paragraphs,
+            Control::Shape(shape) if step.cell_index == 0 => {
+                &shape.drawing()?.text_box.as_ref()?.paragraphs
+            }
+            _ => return None,
         };
-        control = table
-            .cells
-            .get(step.cell_index)?
-            .paragraphs
+        control = paragraphs
             .get(step.cell_para_index)?
             .controls
             .get(step.control_index)?;
@@ -212,8 +216,8 @@ fn resolve_endnote_at<'a>(
 }
 
 /// [#7860] 본문 문단 하나가 소유한 미주를 문서 순서로 모은다. 본문 컨트롤의 미주와
-/// 표 셀(중첩 표 포함) 안 미주를 컨트롤 순서대로 내려가며 모은다. 글상자 안 미주는
-/// 아직 다루지 않는다.
+/// 표 셀(중첩 표 포함)·글상자 안 미주를 컨트롤 순서대로 내려가며 모은다. 글상자는
+/// 셀 0 하나인 단계다(미주 번호 매기기와 같은 범위).
 pub(crate) fn paragraph_endnote_refs(
     section_index: usize,
     para_index: usize,
@@ -273,6 +277,27 @@ pub(crate) fn paragraph_endnote_refs_with_storage<'a, S: crate::storage::Storage
                             walk_with_storage(&cell_para.controls, path, Some(top), out, storage)?;
                             path.pop();
                         }
+                    }
+                }
+                Control::Shape(shape) => {
+                    let Some(text_box) = shape.drawing().and_then(|d| d.text_box.as_ref()) else {
+                        continue;
+                    };
+                    if let Some(last) = path.last_mut() {
+                        last.control_index = control_index;
+                    }
+                    let top = top_control_index.unwrap_or(control_index);
+                    for (cell_para_index, box_para) in text_box.paragraphs.iter().enumerate() {
+                        storage.push(
+                            path,
+                            TableFootnotePathEntry {
+                                cell_index: 0,
+                                cell_para_index,
+                                control_index: usize::MAX,
+                            },
+                        )?;
+                        walk_with_storage(&box_para.controls, path, Some(top), out, storage)?;
+                        path.pop();
                     }
                 }
                 _ => {}
@@ -2038,6 +2063,7 @@ struct PaginationSourceContext {
     source_uses_inline_field_reset: bool,
     hwp3_converted_missing_lineseg: bool,
     stored_geometry_policy: crate::model::provenance::StoredGeometryPolicy,
+    stored_body_layout: bool,
 }
 crate::storage::clone_copy!(PaginationSourceContext);
 
@@ -2050,6 +2076,8 @@ impl PaginationSourceContext {
                 || hwp3_converted_missing_lineseg,
             hwp3_converted_missing_lineseg,
             stored_geometry_policy: profile.stored_geometry_policy(),
+            stored_body_layout: !profile.session_edited()
+                && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout()),
         }
     }
 
@@ -2058,6 +2086,7 @@ impl PaginationSourceContext {
             source_uses_inline_field_reset: is_hwp3_variant,
             hwp3_converted_missing_lineseg: is_hwp3_variant,
             stored_geometry_policy: is_hwp3_variant.into(),
+            stored_body_layout: false,
         }
     }
 }
@@ -2141,6 +2170,8 @@ impl Paginator {
 }
 
 mod engine;
+mod stored_empty_prefix;
+pub(crate) use stored_empty_prefix::has_two_suppressed_before;
 mod state;
 
 #[cfg(test)]

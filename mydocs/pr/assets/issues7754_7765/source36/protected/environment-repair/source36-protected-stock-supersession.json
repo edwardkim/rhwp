@@ -1,0 +1,19 @@
+{
+  "recorded": 1795309808.403935,
+  "reason": "The task-local canonical-condition resolver omitted explicit environments stored in newer source-report layouts. Exact accepted decree environment was found and independently restored p16 from52.97 to100.00 without code changes. Supersede incorrect stock-condition controller; preserve all raw outputs.",
+  "correct_environment_sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab",
+  "controllers": [
+    {
+      "backend": "native",
+      "pid": 1642237,
+      "children_at_supersession": "1676248",
+      "controller_terminal": true
+    },
+    {
+      "backend": "wasm",
+      "pid": 1642238,
+      "children_at_supersession": "1681608",
+      "controller_terminal": true
+    }
+  ]
+}

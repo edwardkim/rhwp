@@ -1,0 +1,125 @@
+{
+  "scope": "All 10 source/PDF pairings; no font installation or supply changes during frozen base/head measurement. Runtime target files and native fallback plans are equal.",
+  "results": [
+    {
+      "key": "issue7756",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7759",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7757",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7760",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7754-plain",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7761",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7762",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7765-hwp",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7765-hwpx",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    },
+    {
+      "key": "issue7755",
+      "same_condition": {
+        "font_supply": true,
+        "native_webfont_fallback": true,
+        "pdf_rasterizer": true,
+        "image_decoding": true,
+        "comparison_profile": true,
+        "raster_backend": true,
+        "layout_generation": true
+      }
+    }
+  ]
+}

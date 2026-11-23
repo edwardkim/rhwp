@@ -1,0 +1,14 @@
+[
+  {
+    "path": "rhwp-studio/public/rhwp.d.ts",
+    "head_sha256": "2bb1b9441ea1c8088b279718a25880d4563a9ea2b875fb684883625141574f0e",
+    "generated_sha256": "7481b12c47223331585265361ff0d5ffa8fb88a7dc59d282778ad7582e46b092",
+    "same_lines_and_signatures_reordered_only": true
+  },
+  {
+    "path": "rhwp-studio/public/rhwp_bg.wasm.d.ts",
+    "head_sha256": "e3bdabbd5217cd33120246d06a424c60d7f2de69b5594be445ab9b25f2f0233d",
+    "generated_sha256": "e35bd0ec91907cd389cacbb0c51521f293a00decfb3b72fb41da5d17525d418b",
+    "same_lines_and_signatures_reordered_only": true
+  }
+]

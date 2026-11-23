@@ -1,0 +1,91 @@
+{
+  "base": "df263432be6135cdbf624dfc691d4c6367a47bfa",
+  "candidate": "3df7e740a8f9be501d1e24d6c9411befccdf44a3",
+  "producers": {
+    "candidate-wasm": {
+      "source": "3df7e740a8f9be501d1e24d6c9411befccdf44a3",
+      "tree": "7afa007c4b2b6e2cf8ee365ba5440728ff1210be",
+      "seconds": 625.2443451650906,
+      "build_command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "/dev/shm/rhwp-7754-pr9335-producers/candidate-wasm"
+      ],
+      "stdout_sha256": "0dd77c47b82c78640c98f6c0ee25ba90c0deeb4f05721982d749e865fbb866d9",
+      "files": {
+        "rhwp.js": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2",
+        "rhwp.d.ts": "ea93f3232be89decf2ed2ec5aeccc9ff8362f19d1837b818d6d8b4ac9d8a2ac4",
+        "rhwp_bg.wasm": "32b838ad173a25f9f6e2f52585d13f6f9ded46ae42291d58c2721a85dde97f95",
+        "rhwp_bg.wasm.d.ts": "79a3b5c8bf4b36f909af64c6f32dbde06cb648d465298e80cfa84c86ecdea021"
+      }
+    },
+    "candidate-native": {
+      "source": "3df7e740a8f9be501d1e24d6c9411befccdf44a3",
+      "tree": "7afa007c4b2b6e2cf8ee365ba5440728ff1210be",
+      "seconds": 563.195346764056,
+      "build_command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "stdout_sha256": "1465a3c29899de0fd265539194ac7a2ff2f7110adf531daaaf1b963c611efc1e",
+      "binary_sha256": "0a5b73229df1daa122a73fefb69f96dab52910de6d28d3f05df3f3d9d80f5afd"
+    },
+    "base-wasm": {
+      "source": "df263432be6135cdbf624dfc691d4c6367a47bfa",
+      "tree": "fa26ff8d2ca2a792f1d73b92c7f9240a917f6926",
+      "seconds": 661.2916692041326,
+      "build_command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "/dev/shm/rhwp-7754-pr9335-producers/base-wasm"
+      ],
+      "stdout_sha256": "5e902b7ce9fe8f8c1f74e8e1a1a96ac71e1de126a8abd5ec7c14135307852426",
+      "files": {
+        "rhwp.js": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2",
+        "rhwp.d.ts": "193fc561b4388ac5758380fe3b67c67621229a0874e47bdecbe6f58790bc7b67",
+        "rhwp_bg.wasm": "5d28d3b76f7e6907c2cb69b359636b6cf3c025f0fe76f9a7763ceb3e54c02062",
+        "rhwp_bg.wasm.d.ts": "91525761fad10484eca8902da8b5ce966ce09bdaabd959af58a0dd3daca27f31"
+      }
+    },
+    "base-native": {
+      "source": "df263432be6135cdbf624dfc691d4c6367a47bfa",
+      "tree": "fa26ff8d2ca2a792f1d73b92c7f9240a917f6926",
+      "seconds": 663.315096011851,
+      "build_command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "stdout_sha256": "728efc17b0465f8f36f643b8dc3c33597f83602dc5a2b901c5f4bc58c85b7f8f",
+      "binary_sha256": "d95d00b11ea77f60e0d3c672e7c05128b671c52b27ea5b798ccf9c70e339d928"
+    }
+  },
+  "storage_recovery": {
+    "failed_receipt_sha256": "3088ad3642c245720b8588578a5b4cf9b8f81d46736cddf9da384e5421bc05a1",
+    "failed_log_sha256": "4040d58b825670d6b5d49b469b3f29a331b704c11cb3f313be223186d23f7c86",
+    "temporary_mount": "private tmpfs",
+    "temporary_path": "/tmp",
+    "capacity_mib": 2200
+  }
+}

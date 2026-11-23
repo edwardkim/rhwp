@@ -1,0 +1,61 @@
+{
+  "scope": "Causal glyph-program isolation only. Original bytes unchanged. Explicit diagnostic query is not the final font environment or accepted producer setting.",
+  "created": 1795295693.8655496,
+  "crop": [
+    250,
+    150,
+    350,
+    215
+  ],
+  "scale": 5,
+  "dpi": 96,
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-focused-native/issue7754-p001/pdf_png/pdf-001.png",
+      "sha256": "a395bd44c18842bb89135af2466b1702660d805c9495b868a9f1350f9dd093f7"
+    },
+    {
+      "label": "Native normal program order (source34)",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-focused-native/issue7754-p001/rhwp_png/rhwp_001.png",
+      "sha256": "26c76e9f0e0ce487d96baec5f8dfbc2d8bb84db27544505c4c3369bc69a74f47"
+    },
+    {
+      "label": "Diagnostic: verified HGGGT glyph program",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-causal-split-program/original-HGGGT-diagnostic/rhwp_png/rhwp_001.png",
+      "sha256": "322b19748e73b8bc50c89a57cefb041d126be13aa9b991ad07655d78b315a447"
+    }
+  ],
+  "panel_sha256": "235c0eec01861152551bca611363d1504e9d93c9f2ae6e49d4acaab9db7b0bed",
+  "status": "directly read; glyph identity supported, small bitmap placement difference remains; diagnostic only",
+  "read_at": 1795296254.8708358,
+  "observations": [
+    "The diagnostic selects the actual HGGGT program and restores the same old-Hangul syllable structure. Native normal ordering has an incomplete/separated form.",
+    "Independent PDF encodes F53A plus two ZWSP characters in T2, then draws raster image Im3 over the syllable. That image is produced by Hancom and is absent from the three original document BMP resources.",
+    "Original HGGGT CFF and PDF T2/HFT4 expose the same principal glyph outline coordinates, with rounding of one font unit at an endpoint. A small PDF raster-image placement difference remains. No code coordinate compensation is inferred from this diagnostic."
+  ],
+  "dark_glyph_bbox_method": {
+    "crop": [
+      259,
+      150,
+      298,
+      208
+    ],
+    "threshold_luminance_lt": 64,
+    "purpose": "diagnostic ink bound only; not a regression pin or silhouette gate"
+  },
+  "dark_glyph_bboxes": {
+    "pdf": [
+      265,
+      166,
+      293,
+      200
+    ],
+    "diagnostic": [
+      265,
+      164,
+      293,
+      198
+    ]
+  }
+}

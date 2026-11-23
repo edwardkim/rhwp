@@ -1,13 +1,13 @@
-//! [#7765] 원본 글꼴의 현재 줄 구성과 중첩 표의 실제 물리 프레임을 보호한다.
-//!
-//! 같은 원본/공급 글꼴 한컴 2024 Print 전64쪽을 먼저 비교했다.
-//! Native/fresh WASM 최저94.31413/94.07347%, 미달0쪽이며,
-//! 중요한25~29쪽은 양쪽98% 이상이다. px 기대값은 PDF 괘선 좌표를
-//! 96CSSpx로 환산한 값이며, 글자 모양은 별도 review/overlay로 판독한다.
-//! 기준 PDF: pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf
-//! 별칭 인증 검사는 관계형이다. 같은 프로그램의 설치 조회 이름으로 바뀌어도
-//! 기존 Print 프레임과 내용 소유가 같아야 하며 새 px 기대값을 만들지 않는다.
-//! 주석 갱신: 2026-11-08 00:35 KST.
+//! 관계형·고정형: 원본 HWP의 현재 줄 구성과 중첩 표의 물리 프레임·내용 소유를 보호한다.
+//! 주석 갱신: 2026-11-22T03:14:12+09:00.
+//! 직전 파일 변경: 2026-11-08T06:19:56+09:00, 7f76cee60e38fceb63feacaff706cf984b19c427.
+//! 측정: 2026-11-22 KST, Print·compat2024·96DPI·PDFium·보정 전2px raw.
+//! 독립 Print와 같은 전64쪽, 최저 Native98.08% / fresh WASM98.11%.
+//! 20·21·26·28·29쪽 양쪽100.00%;25쪽98.08/98.11%,27쪽98.18/98.16%.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md 및 issue7765-hwp의 전쪽 TSV.
+//! PDF: pdf/issue7382-regression-review/86712_regulatory_analysis-font-supplied-2024.pdf.
+//! 기존 별칭·내용 소유 관계와 독립 Print를 확대 판독한28·29쪽 ±2px 좌표를 유지한다.
+//! 원본별 다른 HWPX 분할을 이 HWP 기대값으로 대체하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use serde_json::Value;

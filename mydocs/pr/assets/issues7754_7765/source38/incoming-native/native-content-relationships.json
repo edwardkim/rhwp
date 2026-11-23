@@ -1,0 +1,398 @@
+[
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "origin",
+    "lines": 30,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/live/render_tree/page-0001.json": "e7a60c1acedf69dfc17a7163d4b03516d45cd5bd2e678a7b6304d255390a1e48",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/live/render_tree/page-0002.json": "82fd250137b91ef1c1db414c002e4ab295e3f75fa50e1ee311017cd831cb4960",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/live/render_tree/page-0003.json": "96ed65b1c176a8a585d1ba60d77896169224e41694f574dd28e7475fdb8c7a91"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "origin",
+    "lines": 30,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwp/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwp/render_tree/page-0003.json": "a354298d5ae9046f4fdd711697fe55ada74580a6303a784cbaaf27e6a945d1eb"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "origin",
+    "lines": 30,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwpx/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-30/reopen-hwpx/render_tree/page-0003.json": "a354298d5ae9046f4fdd711697fe55ada74580a6303a784cbaaf27e6a945d1eb"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "origin",
+    "lines": 70,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/live/render_tree/page-0001.json": "e7a60c1acedf69dfc17a7163d4b03516d45cd5bd2e678a7b6304d255390a1e48",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/live/render_tree/page-0002.json": "82fd250137b91ef1c1db414c002e4ab295e3f75fa50e1ee311017cd831cb4960",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/live/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/live/render_tree/page-0004.json": "3222b244ef67f4f0b9bcb3be85fcdb264d8926e4617a0a94a44ff8b026b487fb"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "origin",
+    "lines": 70,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwp/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwp/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwp/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "origin",
+    "lines": 70,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwpx/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwpx/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/origin-70/reopen-hwpx/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "hancom",
+    "lines": 30,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/live/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/live/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/live/render_tree/page-0003.json": "202a0d75820084d0f4a2a8ed96213a53a6b9f153b25a4d7940f816cb1bfd9a42"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "hancom",
+    "lines": 30,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwp/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwp/render_tree/page-0003.json": "202a0d75820084d0f4a2a8ed96213a53a6b9f153b25a4d7940f816cb1bfd9a42"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "hancom",
+    "lines": 30,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwpx/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-30/reopen-hwpx/render_tree/page-0003.json": "202a0d75820084d0f4a2a8ed96213a53a6b9f153b25a4d7940f816cb1bfd9a42"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "hancom",
+    "lines": 70,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/live/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/live/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/live/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/live/render_tree/page-0004.json": "0c3570e6487fa59beb24dd8760a1cc06775f46116c7961ae17b0cb10bab0582f"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "hancom",
+    "lines": 70,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwp/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwp/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwp/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "base",
+    "key": "hancom",
+    "lines": 70,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwpx/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwpx/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/base/hancom-70/reopen-hwpx/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "origin",
+    "lines": 30,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/live/render_tree/page-0001.json": "e7a60c1acedf69dfc17a7163d4b03516d45cd5bd2e678a7b6304d255390a1e48",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/live/render_tree/page-0002.json": "82fd250137b91ef1c1db414c002e4ab295e3f75fa50e1ee311017cd831cb4960",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/live/render_tree/page-0003.json": "96ed65b1c176a8a585d1ba60d77896169224e41694f574dd28e7475fdb8c7a91"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "origin",
+    "lines": 30,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwp/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwp/render_tree/page-0003.json": "a354298d5ae9046f4fdd711697fe55ada74580a6303a784cbaaf27e6a945d1eb"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "origin",
+    "lines": 30,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwpx/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-30/reopen-hwpx/render_tree/page-0003.json": "a354298d5ae9046f4fdd711697fe55ada74580a6303a784cbaaf27e6a945d1eb"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "origin",
+    "lines": 70,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/live/render_tree/page-0001.json": "e7a60c1acedf69dfc17a7163d4b03516d45cd5bd2e678a7b6304d255390a1e48",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/live/render_tree/page-0002.json": "82fd250137b91ef1c1db414c002e4ab295e3f75fa50e1ee311017cd831cb4960",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/live/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/live/render_tree/page-0004.json": "3222b244ef67f4f0b9bcb3be85fcdb264d8926e4617a0a94a44ff8b026b487fb"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "origin",
+    "lines": 70,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwp/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwp/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwp/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "origin",
+    "lines": 70,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwpx/render_tree/page-0001.json": "b928bbbd4d9501236037bbde54d755305e24a03f0b3b92256835481c2e08af0f",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwpx/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/origin-70/reopen-hwpx/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "hancom",
+    "lines": 30,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/live/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/live/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/live/render_tree/page-0003.json": "202a0d75820084d0f4a2a8ed96213a53a6b9f153b25a4d7940f816cb1bfd9a42"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "hancom",
+    "lines": 30,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwp/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwp/render_tree/page-0003.json": "202a0d75820084d0f4a2a8ed96213a53a6b9f153b25a4d7940f816cb1bfd9a42"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "hancom",
+    "lines": 30,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwpx/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-30/reopen-hwpx/render_tree/page-0003.json": "202a0d75820084d0f4a2a8ed96213a53a6b9f153b25a4d7940f816cb1bfd9a42"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "hancom",
+    "lines": 70,
+    "state": "live",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/live/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/live/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/live/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/live/render_tree/page-0004.json": "0c3570e6487fa59beb24dd8760a1cc06775f46116c7961ae17b0cb10bab0582f"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "hancom",
+    "lines": 70,
+    "state": "reopen-hwp",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwp/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwp/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwp/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwp/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  },
+  {
+    "backend": "native",
+    "role": "candidate",
+    "key": "hancom",
+    "lines": 70,
+    "state": "reopen-hwpx",
+    "exact_content_and_order": true,
+    "missing": 0,
+    "duplicates": 0,
+    "independent_print_page_ownership": true,
+    "trees": {
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwpx/render_tree/page-0001.json": "f83be260c95d0749a63b5e7e5164a430d1707f822b4ef06c3d552c0375c3331b",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwpx/render_tree/page-0002.json": "ea95016ba3ba339f56ea548cca6f98858c02e7de898c42a4020a6066bb78b9f0",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwpx/render_tree/page-0003.json": "82604fa726cdebff445059f582584704d16e95bb144b7c642370f8bb7d1fa273",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-live/candidate/hancom-70/reopen-hwpx/render_tree/page-0004.json": "d25018bc009b3025fdc1f61dc5d05ddd35c3ffe5601b1a85b1c87148199f9dca"
+    }
+  }
+]
