@@ -250,3 +250,35 @@ fn centered_contents_table_uses_its_declared_object_frame() {
     let contents = compact(&core, page);
     assert!(contents.contains("제1장서론") && contents.contains("생산,소비"));
 }
+
+/// 관계형 — 85쪽의 그림은 설명·출처 행 사이에서 자신의 전체 높이를 보존한다.
+#[test]
+fn picture_between_caption_and_source_stays_inside_its_row() {
+    let core = core();
+    let page = core.build_page_render_tree(84).expect("한컴 Print 85쪽");
+    let mut remaining = vec![&page.root];
+    let table = loop {
+        let node = remaining.pop().expect("그림을 담은 원본 표");
+        if matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.section_index == Some(2) && table.para_index == Some(845))
+        {
+            break node;
+        }
+        remaining.extend(&node.children);
+    };
+    let picture_row = table
+        .children
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 1))
+        .expect("가운데 그림 행");
+    let picture = picture_row
+        .children
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::Image(_)))
+        .expect("그림 행의 원본 그림");
+    assert!(picture.bbox.y > picture_row.bbox.y, "그림 위 안 여백");
+    assert!(
+        picture.bbox.y + picture.bbox.height < picture_row.bbox.y + picture_row.bbox.height,
+        "그림의 전체 높이가 출처 행 전에 들어가야 한다",
+    );
+}

@@ -4,7 +4,7 @@ use crate::model::{
     control::Control,
     paragraph::{ColumnBreakType, Paragraph},
     shape::VertAlign,
-    table::Cell,
+    table::{Cell, Table, TablePageBreak, VerticalAlign},
 };
 
 /// 빈 저장 줄을 흡수한 단독 그림 띠는 그림 자체의 높이를 점유한다.
@@ -31,6 +31,67 @@ pub(crate) fn stored_picture_only_cell_height_hu(cell: &Cell) -> Option<i32> {
         && picture.caption.is_none()
         && crate::renderer::empty_host_line_absorbed_by_topbottom_float(para, common))
     .then_some(height)
+}
+
+/// 앞 설명, 그림, 뒤 설명으로 닫히는 저장 표의 물리 행 높이.
+/// 그림 호스트의 폭 없는 저장 줄과 뒤 설명에 같은 선행 전진이 기록된다.
+/// 개체 선언을 정확히 닫는 경우에만 전진을 뒤 설명이 소유하고 그림 행은
+/// 그림과 안 여백만 소비한다.
+pub(crate) fn stored_captioned_picture_row_heights(table: &Table) -> Option<[i32; 3]> {
+    if table.row_count != 3
+        || table.col_count != 1
+        || table.cells.len() != 3
+        || table.cell_spacing != 0
+        || !super::is_para_topbottom_float(&table.common)
+        || table.layout_page_break() != TablePageBreak::RowBreak
+        || !super::stored_complete_column_frame(table)
+    {
+        return None;
+    }
+    let caption = table.cell_at(0, 0)?;
+    let picture = table.cell_at(1, 0)?;
+    let source = table.cell_at(2, 0)?;
+    let [host] = picture.paragraphs.as_slice() else {
+        return None;
+    };
+    let [caption_para] = caption.paragraphs.as_slice() else {
+        return None;
+    };
+    let [source_para] = source.paragraphs.as_slice() else {
+        return None;
+    };
+    let trailing_origin = source_para.line_segs.first()?.vertical_pos;
+    if trailing_origin <= 0
+        || host.line_segs.first()?.vertical_pos != trailing_origin
+        || caption_para.text.trim().is_empty()
+        || source_para.text.trim().is_empty()
+        || [caption, picture, source].iter().any(|cell| {
+            cell.row_span != 1
+                || cell.text_direction != 0
+                || cell.vertical_align != VerticalAlign::Center
+        })
+    {
+        return None;
+    }
+    let caption_padding = caption.effective_vertical_padding_hu(&table.padding);
+    let picture_padding = picture.effective_vertical_padding_hu(&table.padding);
+    let source_padding = source.effective_vertical_padding_hu(&table.padding);
+    let picture_height =
+        stored_picture_only_cell_height_hu(picture)?.checked_add(picture_padding)?;
+    if i32::try_from(caption.height).ok()? != caption_padding
+        || i32::try_from(source.height).ok()? != source_padding
+        || i32::try_from(picture.height).ok()? >= picture_height
+    {
+        return None;
+    }
+    let rows = [
+        super::stored_plain_cell_ink_height(caption)?.checked_add(caption_padding)?,
+        picture_height,
+        super::stored_plain_cell_ink_height_from(source, trailing_origin)?
+            .checked_add(source_padding)?,
+    ];
+    (rows.iter().copied().map(i64::from).sum::<i64>() == i64::from(table.common.height))
+        .then_some(rows)
 }
 
 /// 줄 구성과 같은 HWPUNIT 그림 점유 높이가 실제 저장 줄을 증명할 때만 수용한다.

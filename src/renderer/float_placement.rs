@@ -62,7 +62,9 @@ pub(crate) use stored_nested_before_host::{
 };
 pub(crate) use stored_nested_closing_host::stored_nested_host_closes_after_previous_line;
 pub(crate) use stored_nested_terminal_line::stored_nested_terminal_host_line_height_hu;
-pub(crate) use stored_row_picture_frame::stored_picture_only_cell_height_hu;
+pub(crate) use stored_row_picture_frame::{
+    stored_captioned_picture_row_heights, stored_picture_only_cell_height_hu,
+};
 mod stored_cut_outer_frame;
 mod stored_header_frame;
 pub(crate) use stored_cut_outer_frame::stored_hwpx_cut_owns_outer_frame;
@@ -460,6 +462,9 @@ pub(crate) fn stored_inline_picture_successor_advance(
 pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32>> {
     use crate::model::paragraph::{ColumnBreakType, LineSeg};
 
+    if let Some(rows) = stored_captioned_picture_row_heights(table) {
+        return Some(rows.into());
+    }
     let row_count = usize::from(table.row_count);
     if row_count < 2 || table.common.height > i32::MAX as u32 {
         return None;

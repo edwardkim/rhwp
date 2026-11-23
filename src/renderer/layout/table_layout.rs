@@ -6968,6 +6968,18 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> bool {
         let profile = self.profile.get();
+        let normalization = self.render_normalization.borrow();
+        if profile.session_edited() || normalization.cell_frame_reflowed(table, cell) {
+            return false;
+        }
+        if cell.row == 1
+            && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            && !normalization.table_text_reflowed(table)
+            && crate::renderer::float_placement::stored_captioned_picture_row_heights(table)
+                .is_some()
+        {
+            return true;
+        }
         let [para] = cell.paragraphs.as_slice() else {
             return false;
         };
@@ -6975,11 +6987,6 @@ impl LayoutEngine {
             return false;
         };
         profile.hwpx_stored_layout()
-            && !profile.session_edited()
-            && !self
-                .render_normalization
-                .borrow()
-                .cell_frame_reflowed(table, cell)
             && line.vertical_pos > 0
             && crate::renderer::float_placement::stored_picture_only_cell_height_hu(cell).is_some()
             && styles
