@@ -17,3 +17,7 @@
 가운데 점을 가진 연결선의 실제 손잡이가 축별 API로 전달되고 크기·끝점이 보존되는지 확인하면 편집 기능으로 수용할 수 있다. 엔진·인쇄 개선을 먼저 제출하려는 경우에는 PR의 완료 범위를 명시하고 남은 Studio 경로를 후속 작업에 연결할 수 있다. 꺾임이 0개·1개인 비편집 대조군의 기존 인쇄 차이는 각각 79.15%·68.37%이며, 최신 기준·후보 PNG는 두 backend에서 같다. 이 수치는 앞선 8개 인쇄 보완의 재발로 집계하지 않았다. [인쇄 비교](../assets/semanticist21-20261124-rework/connector-print-pages.png) · [API 저장 결과](../assets/semanticist21-20261124-rework/wasm-api-and-roundtrips.json) · [쪽별 결과](../assets/semanticist21-20261124-rework/pages.tsv)
 
 원 head는 `aee210f9f2`에서 `6f4ded68c7`로 바뀌었다. 리뷰어는 `edwardkim`이며 원 head의 CI와 최신 `devel` 개별 병합 시뮬레이션이 통과했다. 실제 로컬 검증은 세 기여를 함께 적용한 `327be655a1`에서 수행했다. [공통 검증 기록](../assets/semanticist21-20261124-rework/README.md)
+
+## 통합 PR #9376
+
+원 PR의 head `6f4ded68c7391bf0497930230ef9aeba1c8ed29e`를 `327be655a1`의 부모로 보존했다. 메인테이너 보완 커밋은 f997ce9409 · af7f716c37 · 53058f69c4이다. 본문·셀에서 가운데 선분을 끌 때의 이동 축과 끝점, 0개·1개 꺾임의 인쇄을 독립 한컴 Print와 실제 저장·편집 경로에서 검증했다. Native와 fresh WASM의 해당 12쪽은 모두 100.00%였다. [통합 셀프 리뷰](pr_9376_review.md) · [원격 제품 CI](https://github.com/edwardkim/rhwp/actions/runs/45279878825)

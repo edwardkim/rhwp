@@ -18,3 +18,7 @@ Windows 한컴 2020에서 마지막 두 문서를 각각 인쇄했다. 문자 �
 `drop_first_section_def_like_hancom`은 첫 문단의 `controls`에서 두 컨트롤의 인덱스를 비교한다. 본문 글자는 이 배열에 들어가지 않아 첫 구역의 B5와 시작 번호 5가 그대로 적용된다. 새 head에서 XML의 실제 글자·컨트롤 순서를 구분하고, 인접·글자 개재·컨트롤 개재 및 둘째 구역의 결과를 위 원본으로 다시 확인하면 보류를 해제할 수 있다. #8482는 기여자가 별도 미해결 범위로 참조했다. [구역 판정 코드](../../../src/parser/hwpx/mod.rs) · [쪽별 결과](../assets/semanticist21-20261124-rework/pages.tsv)
 
 원 head는 `43f85a99b5`에서 `f528069f3b`로 바뀌었다. 리뷰어는 `edwardkim`이며 원 head의 CI와 최신 `devel` 개별 병합 시뮬레이션이 통과했다. 실제 로컬 검증은 세 기여를 함께 적용한 `327be655a1`에서 수행했다. [공통 검증 기록](../assets/semanticist21-20261124-rework/README.md)
+
+## 통합 PR #9376
+
+원 PR의 head `f528069f3b38100e5928c1fb63bcfe1fba089d95`를 `980b84b40e`의 부모로 보존했다. 메인테이너 보완 커밋은 f997ce9409 · af7f716c37이다. 첫 구역을 A4·1쪽으로 시작할 조건, 다음 구역의 번호와 바탕쪽 보존을 독립 한컴 Print와 실제 저장·편집 경로에서 검증했다. Native와 fresh WASM의 해당 32쪽은 모두 100.00%였다. [통합 셀프 리뷰](pr_9376_review.md) · [원격 제품 CI](https://github.com/edwardkim/rhwp/actions/runs/45279878825)
