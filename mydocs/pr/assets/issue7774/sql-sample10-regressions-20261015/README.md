@@ -46,6 +46,8 @@ Print 분할본을 순서대로 대조했다. 별도로 출력한 HWPX 1-up 기�
 SHA-256은
 `ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9`다.
 한컴 엔진 `13.0.0.3901`, job `0aa8ae32-b51b-4b42-bb30-3a51dd8c43af`에서 출력했다.
+원본 HWPX를 한컴 2024 직접 인쇄 경로로 전달했고 `pdf_print_method=0`과 763쪽을 확인했다.
+전쪽 PDF는 `/home/tsjang/rhwp-local-pdf/issue7774/hwp3-sample10-hwpx-hancom-2024-one-up.pdf`에 보관한다.
 아래 이미지는 독립 Print, Native, fresh WASM 순서다.
 
 - [489쪽 SQL 문장과 소속 글줄](sql-hwpx-page-489.png)
