@@ -43,6 +43,10 @@ pub(super) fn ordinary_line(value: &LayoutBox, fs: f64) -> bool {
     font_line(value, fs) && !contains_prime(value) && !contains_cjk(value)
 }
 
+pub(super) fn ordinary_cjk_line(value: &LayoutBox, fs: f64) -> bool {
+    font_line(value, fs) && !contains_prime(value) && contains_cjk(value)
+}
+
 /// 같은 글자 줄과 그 줄을 감싼 근호의 추가 점유다.
 /// 다줄·분수·크기 변경은 글자 줄로 접지 않는다. 정상화된 줄은 원래 자식과
 /// 독립 폰트 프레임의 기준선 연결을 확인하며 자연 glyph 높이와 구별한다.
