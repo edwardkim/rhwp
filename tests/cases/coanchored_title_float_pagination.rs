@@ -1,6 +1,10 @@
 //! 검사 유형: 관계형·고정형(독립 Print의 전쪽 쪽수).
-//! 주석 갱신: 2026-11-13T22:39:25+09:00.
-//! 직전 파일 변경: 62742884777cd8a07b431ead5bb4338520f590f7 2026-11-13T21:04:19+09:00.
+//! 주석 갱신: 2026-11-23T14:08:11+09:00.
+//! 직전 파일 변경: 3e260212f85e551a570c4501c7786c8098c0156e 2026-11-23 13:58:40+09:00.
+//! 음수 줄 간격 합성 파일 2026-11-23 측정: 96 DPI·PDFium·2px raw, 한컴 Print와 동일한 전 2쪽.
+//! Native p1 98.83%·p2 100.00%, fresh WASM p1 98.82%·p2 100.00%.
+//! 후속 파일·독립 PDF: tests/fixtures/coanchored_inline_tail/README.md.
+//! 전쪽 TSV·대조 이미지: mydocs/pr/assets/coanchored-inline-tail-negative-spacing/.
 //! 측정: 2026-11-13, 96 DPI·PDFium·색상 경계 보정 전 2px raw 실루엣, Native Skia/fresh 최적화 WASM Canvas.
 //! 원 Mac Print 사례 전 2쪽 최저: Native 100.00% / WASM 100.00%.
 //! 무변경 저장·빈 머리말·빈 꼬리말 각각 전 2쪽 최저: Native 100.00% / WASM 100.00%.
