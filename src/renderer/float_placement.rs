@@ -1065,14 +1065,13 @@ fn reflow_picture_paragraph_frame(
         };
         let reference_width = inner_width - reference_left;
         let offset = px(signed_hwpunit(c.horizontal_offset));
-        let x = reference_left
-            + match c.horz_align {
-                HorzAlign::Left | HorzAlign::Inside => offset,
-                HorzAlign::Center => (reference_width - width).max(0.0) / 2.0 + offset,
-                HorzAlign::Right | HorzAlign::Outside => {
-                    (reference_width - width).max(0.0) - offset
-                }
-            };
+        let x = crate::renderer::object_alignment::aligned_horizontal_origin(
+            reference_left,
+            reference_width.max(width),
+            width,
+            c.horz_align,
+            offset,
+        );
         let y = px(topbottom_flow_vertical_offset_hu(c)) + px(i32::from(c.margin.top));
         let rect = LayoutRect {
             x,

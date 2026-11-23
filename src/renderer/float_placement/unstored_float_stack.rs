@@ -2,7 +2,7 @@
 //!
 //! 저장 줄이 없는 글 없는 문단에 문단 기준 자리차지 그림이 여럿 걸리고 그 세로 오프셋이
 //! 음수이면, 그 값은 그림에 밀려 내려간 줄 위치를 기준으로 저장된 것이라 지금 배치의 원점
-//! 위치를 말해 주지 않는다. 웹한글기안기는 음수 오프셋을 문단 원점(0)으로 보고, '겹침 허용
+//! 위치를 말해 주지 않는다. 한컴 2024는 음수 오프셋을 문단 원점(0)으로 보고, '겹침 허용
 //! 안 함' 그림을 문단 순서대로 놓으면서 앞 그림과 겹치면 그 아래로 내린다. 자리차지 그림에
 //! 걸린 줄은 그 그림 아래로 밀린다. 그래서 사진 칸의 위아래 줄이 겹치지 않고 쌓이며,
 //! 마지막 빈 줄은 그림 묶음 아래에 놓이고, 칸 세로 정렬은 그 묶음 전체에 적용된다.
@@ -13,7 +13,8 @@
 use super::{
     hwpunit_to_px, signed_hwpunit, Control, LayoutRect, Paragraph, ReflowPictureParagraphFrame,
 };
-use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::model::shape::{HorzRelTo, TextWrap, VertAlign, VertRelTo};
+use crate::renderer::object_alignment::aligned_horizontal_origin;
 
 struct StackedFloat {
     index: usize,
@@ -23,6 +24,7 @@ struct StackedFloat {
     top: f64,
     outer_height: f64,
     margin_top: f64,
+    allow_overlap: bool,
     pushes_line: bool,
     rect: LayoutRect,
 }
@@ -62,11 +64,9 @@ pub(super) fn paragraph_frame(
         if c.treat_as_char
             || picture.caption.is_some()
             || !c.flow_with_text
-            || c.allow_overlap
             || c.vert_rel_to != VertRelTo::Para
             || c.vert_align != VertAlign::Top
             || !matches!(c.horz_rel_to, HorzRelTo::Column | HorzRelTo::Para)
-            || c.horz_align != HorzAlign::Left
             || !matches!(c.text_wrap, TextWrap::TopAndBottom | TextWrap::Square)
             || width <= 0
             || height <= 0
@@ -80,14 +80,14 @@ pub(super) fn paragraph_frame(
         } else {
             0.0
         };
-        let x = reference_left + px(signed_hwpunit(c.horizontal_offset));
         let (width, height) = (px(width), px(height));
-        // 가로 가운데가 칸 내용 폭 안에 있는 그림만 다룬다. 칸 밖에 놓인 그림의 배치는
-        // 별도 계약이다(가장자리를 조금 넘는 음수 가로 오프셋은 사진 칸에 흔하다).
-        let center = x + width / 2.0;
-        if center < 0.0 || center > inner_width {
-            return None;
-        }
+        let x = aligned_horizontal_origin(
+            reference_left,
+            inner_width - reference_left,
+            width,
+            c.horz_align,
+            px(signed_hwpunit(c.horizontal_offset)),
+        );
         let margin_top = px(i32::from(c.margin.top));
         floats.push(StackedFloat {
             index,
@@ -97,6 +97,7 @@ pub(super) fn paragraph_frame(
             top: px(offset.max(0)),
             outer_height: margin_top + height + px(i32::from(c.margin.bottom)),
             margin_top,
+            allow_overlap: c.allow_overlap,
             pushes_line: c.text_wrap == TextWrap::TopAndBottom,
             rect: LayoutRect {
                 x,
@@ -126,11 +127,13 @@ pub(super) fn paragraph_frame(
 
     let mut placed: Vec<StackedFloat> = Vec::with_capacity(floats.len());
     for mut float in floats {
-        // 겹치는 앞 그림이 있으면 그 아래로 내린다. 내려간 자리에서 다시 확인한다.
+        // 두 그림 모두 겹침을 막을 때 앞 그림의 바닥으로 이동한다. 글줄 점유는 textWrap을 따른다.
         while let Some(bottom) = placed
             .iter()
             .filter(|other| {
-                other.left < float.right
+                !float.allow_overlap
+                    && !other.allow_overlap
+                    && other.left < float.right
                     && float.left < other.right
                     && other.top < float.bottom()
                     && float.top < other.bottom()
