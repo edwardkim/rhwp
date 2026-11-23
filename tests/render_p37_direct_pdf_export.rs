@@ -1,6 +1,6 @@
 //! 관계형·고정형: re-03-latin-only-hancom의 PDF API와 합성 PaintOp의 이미지 픽셀·화살촉 vector/거부 계약.
-//! 주석 갱신: 2026-11-22T13:49:12+09:00. 직전 파일 커밋은 2026-11-12T08:35:16+09:00 (68e8190d334fccc5a2846dcfead4a7c60330774a).
-//! #9276은 공개 글꼴로 PDF 부분 임베딩, 사용 글리프의 윤곽·전진폭, 문자 추출 및 부분 임베딩 금지를 검사한다.
+//! 주석 갱신: 2026-11-24T07:08+09:00. 직전 파일 커밋은 2026-11-24T03:53:50+09:00 (fd888fbff2652310a229520d0ebdd55ac8177375).
+//! #9276은 저장소의 Noto Sans KR 원본으로 PDF 부분 임베딩, 사용 글리프의 윤곽·전진폭과 문자 추출을 검사한다.
 //! 실물 페이지의 조판 좌표를 고정하는 검사가 아니므로 이 assertion의 raw 시각 측정값은 비해당이다.
 //! 합성 알고리즘 계약과 별도의 Native/fresh WASM 실물 검증을 구분한다.
 //! 근거: mydocs/pr/assets/seo_rii_20261030/README.md.
@@ -2159,26 +2159,17 @@ mod metafile_font_snapshot {
 
 #[cfg(feature = "pdf-import")]
 #[test]
-fn direct_pdf_subsets_legacy_gsub_without_losing_text_or_embedding_permissions() {
+fn direct_pdf_subsets_the_original_font_without_losing_text_or_metrics() {
     use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile};
     use rhwp::renderer::pdf::layer_trees_to_pdf_with_options;
     use rhwp::renderer::render_tree::{BoundingBox, TextRunNode};
     use rhwp::renderer::TextStyle;
-    use ttf_parser::{Face, Tag};
+    use ttf_parser::Face;
 
     let source = include_bytes!("../ttfs/opensource/NotoSansKR-Regular.ttf");
     let original = Face::parse(source, 0).unwrap();
-    let offset = |tag| {
-        original
-            .raw_face()
-            .table_records
-            .into_iter()
-            .find(|record| record.tag == Tag::from_bytes(tag))
-            .unwrap()
-            .offset as usize
-    };
-    let gsub = offset(b"GSUB");
-    let fs_type = offset(b"OS/2") + 8;
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource/NotoSansKR-Regular.ttf");
+    assert!(std::fs::read(&path).unwrap() == source);
     let text = "Aé한";
     let run = TextRunNode {
         text: text.into(),
@@ -2211,48 +2202,33 @@ fn direct_pdf_subsets_legacy_gsub_without_losing_text_or_embedding_permissions()
         LayerNode::leaf(bounds, None, vec![PaintOp::text_run(bounds, run)]),
         RenderProfile::Print,
     );
-    let mut program = source.to_vec();
-    program[gsub..gsub + 4].copy_from_slice(&0x0000_1000u32.to_be_bytes());
-    for allow_subset in [true, false] {
-        if !allow_subset {
-            program[fs_type..fs_type + 2].copy_from_slice(&0x0100u16.to_be_bytes());
-        }
-        let path = unique_pdf_path().with_extension("ttf");
-        std::fs::write(&path, &program).unwrap();
-        let mut options = DirectPdfExportOptions::default();
-        options.font_paths.push(path.clone());
-        let result = layer_trees_to_pdf_with_options(std::slice::from_ref(&page), &options);
-        std::fs::remove_file(path).unwrap();
-        let pdf =
-            pdf_oxide::PdfDocument::from_bytes_with_limits(result.unwrap(), Default::default())
-                .unwrap();
-        let extracted: String = pdf.extract_text(0).unwrap().split_whitespace().collect();
-        assert_eq!(extracted, text);
-        let fonts = pdf.extract_embedded_fonts().unwrap();
-        assert_eq!(fonts.len(), 1, "the specified face supplies every glyph");
-        let embedded = &fonts[0].1;
-        if allow_subset {
-            assert!(
-                embedded.len() < program.len() / 4,
-                "unused outlines were embedded"
-            );
-        } else {
-            assert_eq!(
-                embedded, &program,
-                "preserve the complete no-subsetting program"
-            );
-        }
-        let face = Face::parse(embedded, 0).unwrap();
-        for ch in text.chars() {
-            let glyph = original.glyph_index(ch).unwrap();
-            assert_eq!(
-                face.glyph_bounding_box(glyph),
-                original.glyph_bounding_box(glyph)
-            );
-            assert_eq!(
-                face.glyph_hor_advance(glyph),
-                original.glyph_hor_advance(glyph)
-            );
-        }
+    let mut options = DirectPdfExportOptions::default();
+    options.font_paths.push(path.clone());
+    let bytes = layer_trees_to_pdf_with_options(std::slice::from_ref(&page), &options).unwrap();
+    let pdf = pdf_oxide::PdfDocument::from_bytes_with_limits(bytes, Default::default()).unwrap();
+    let extracted: String = pdf.extract_text(0).unwrap().split_whitespace().collect();
+    assert_eq!(extracted, text);
+    let fonts = pdf.extract_embedded_fonts().unwrap();
+    assert_eq!(fonts.len(), 1, "the specified face supplies every glyph");
+    let embedded = &fonts[0].1;
+    assert!(
+        embedded.len() < source.len() / 4,
+        "unused outlines were embedded"
+    );
+    let face = Face::parse(embedded, 0).unwrap();
+    for ch in text.chars() {
+        let glyph = original.glyph_index(ch).unwrap();
+        assert_eq!(
+            face.glyph_bounding_box(glyph),
+            original.glyph_bounding_box(glyph)
+        );
+        assert_eq!(
+            face.glyph_hor_advance(glyph),
+            original.glyph_hor_advance(glyph)
+        );
     }
+    assert!(
+        std::fs::read(path).unwrap() == source,
+        "the source font was changed"
+    );
 }
