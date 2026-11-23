@@ -2423,6 +2423,10 @@ impl WebCanvasRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
+        if let Some(commands) = super::ellipse::patterned_outline(cx, cy, rx, ry, style) {
+            self.draw_path_with_gradient(&commands, style, gradient);
+            return;
+        }
         let parent_alpha = self.begin_shape_fill(style);
         self.apply_shadow(style);
         self.ctx.begin_path();

@@ -26,6 +26,7 @@ pub(crate) mod footnote_frames;
 #[cfg(target_arch = "wasm32")]
 pub(crate) mod mipmap_sampling;
 pub use conjoining_jamo::IsolatedJamoFont;
+pub(crate) mod ellipse;
 pub(crate) mod emphasis;
 pub(crate) mod enclosed_pua_geometry;
 pub(crate) mod endnote_spacing;

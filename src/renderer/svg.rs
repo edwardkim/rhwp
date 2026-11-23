@@ -1926,6 +1926,10 @@ impl SvgRenderer {
         style: &ShapeStyle,
         gradient: Option<&GradientFillInfo>,
     ) {
+        if let Some(commands) = super::ellipse::patterned_outline(cx, cy, rx, ry, style) {
+            self.draw_path_with_gradient(&commands, style, gradient);
+            return;
+        }
         let mut attrs = format!("cx=\"{}\" cy=\"{}\" rx=\"{}\" ry=\"{}\"", cx, cy, rx, ry);
 
         attrs.push_str(&self.build_fill_attr(
