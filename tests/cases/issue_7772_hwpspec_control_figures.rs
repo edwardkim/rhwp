@@ -1,7 +1,8 @@
-//! 관계형·고정형 회귀 — #7772의 제어문자 그림 소속과 독립 Print의 쪽수.
-//! 주석 갱신 2026-11-23 21:28:48 +0900.
+//! 관계형·고정형 회귀 — #7772의 제어문자 그림·곡선·셀 안 후속 설명의 소속과 쪽수를 보호한다.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-11-23T21:32:00+09:00
+//! `ba8fd7101a79a93a6930325bc8d8d1dd174d98fe`.
 //! 2026-11-23 한컴 2024 1-up Print, 96 DPI 2px raw 실루엣 대조.
-//! 20쪽 Native/fresh WASM 각각 100.00%, 21쪽 각각 99.99%.
+//! 20·106쪽 Native/fresh WASM 각각 100.00%, 21쪽 각각 99.99%.
 //! 전178쪽 최저 Native 98.14%, fresh WASM 98.16%.
 //! 전쪽 TSV와 확대 판독은 `mydocs/pr/assets/issue7772/README.md`.
 #![cfg(not(target_arch = "wasm32"))]
@@ -69,4 +70,60 @@ fn hwpspec_has_one_print_figure_per_control_on_the_owning_page() {
         extended.2 < next_text.bbox.y,
         "그림을 설명 본문과 겹치지 않게 배치한다"
     );
+}
+
+#[test]
+fn hwpspec_curve_reserves_its_full_line_before_the_next_label() {
+    let mut document =
+        DocumentCore::from_bytes(include_bytes!("../../samples/hwpspec.hwp")).expect("사양서 원본");
+    document.set_hangul2024_compat(true);
+    let tree = document
+        .build_page_render_tree(105)
+        .expect("106쪽 곡선 설명");
+    let table = tree.root.children.iter()
+        .filter(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .flat_map(|body| &body.children)
+        .filter(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .flat_map(|column| &column.children)
+        .find(|node| matches!(&node.node_type, RenderNodeType::Table(table) if table.para_index == Some(344)))
+        .expect("곡선 설명의 본문 표");
+    let cell = table
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::TableCell(_)))
+        .expect("곡선과 좌표 라벨이 있는 셀");
+    let curve = cell
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Path(_)))
+        .expect("셀에 속한 곡선 도형");
+    let label = |paragraph, expected: &str| {
+        cell.children.iter().find(|node| {
+            matches!(&node.node_type, RenderNodeType::TextLine(line) if line.para_index == Some(paragraph))
+                && node.children.iter().any(|node| matches!(&node.node_type,
+                    RenderNodeType::TextRun(text) if text.text.trim() == expected))
+        }).expect("곡선 셀에 원본 소속의 좌표 라벨을 한 번 그린다")
+    };
+    let x2 = label(2, "(x2, y2)");
+    let x3 = label(3, "(x3, y3)");
+    let bottom = curve.bbox.y + curve.bbox.height;
+    let RenderNodeType::Table(owner) = &table.node_type else {
+        unreachable!()
+    };
+    let source = &document.document().sections[owner.section_index.unwrap()].paragraphs[344];
+    let rhwp::model::control::Control::Table(model) =
+        &source.controls[owner.control_index.unwrap()]
+    else {
+        panic!("곡선 라벨의 저장 표")
+    };
+    let stored_line = &model.cells[0].paragraphs[2].line_segs[0];
+    let saved_height = f64::from(stored_line.line_height) / 75.0;
+    assert!(
+        (x2.bbox.height - saved_height).abs() <= 1.0 / 75.0,
+        "곡선과 같은 라벨 줄이 문서가 기록한 전체 높이를 소비한다"
+    );
+    let center = curve.bbox.y + curve.bbox.height / 2.0;
+    assert!((x2.bbox.y..=x2.bbox.y + x2.bbox.height).contains(&center));
+    assert!(bottom <= x3.bbox.y && x2.bbox.y + x2.bbox.height <= x3.bbox.y);
+    assert!(x3.bbox.y + x3.bbox.height <= cell.bbox.y + cell.bbox.height);
 }
