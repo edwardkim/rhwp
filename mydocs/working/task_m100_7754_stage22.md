@@ -43,6 +43,18 @@ Vite의 저장소 쪽 자료 6개와 공개 쪽 자료 5개를 현재 Git 트리
 받은 WASM의 SHA-256이 후보 패키지와 일치했다.
 [Studio 빌드·단위 테스트·브라우저 검증](../verification/issue7754-nine-fidelity/after-pr9335/studio-local-validation.json)
 
+## fresh WASM 기준·후보 편집 대조
+
+기준 WASM 빌드는 컴파일러가 쓰는 `/tmp`의 공간 부족으로 한 차례 종료됐다.
+후보의 완성된 Native·WASM 산출물 해시를 대조해 유지했고, 기준은 별도 임시 파일시스템으로
+빌드해 통과했다.
+
+양쪽 fresh WASM이 공개 메서드 614개를 같은 선언과 함께 제공했다. 같은 표 셀·글상자
+각주와 미주를 편집해 저장 전, HWP 재열기, HWPX 재열기의 쪽수·번호·텍스트와 미주
+소유 경로를 비교했다. 용역내역서 HWP·HWPX의 원본, 행 삽입, 열 삽입을 각각 대조했고,
+양쪽에서 12건씩 재열어 병합 셀 위치와 너비가 보존되는 것을 확인했다.
+[기준·후보 WASM 편집 검증](../verification/issue7754-nine-fidelity/after-pr9335/wasm-paired-api-and-editing.json)
+
 ## 보호 정본 글꼴 조건 대조
 
 공식 목록의 Native·WASM 46개 조건을 실행 명령과 대조했다. 글꼴 파일을 명시하는
