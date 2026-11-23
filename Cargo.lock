@@ -2266,7 +2266,7 @@ dependencies = [
  "windows",
  "wuff",
  "zeroize",
- "zip 9.5.1",
+ "zip 9.8.0",
 ]
 
 [[package]]
@@ -2347,7 +2347,7 @@ dependencies = [
  "roxmltree 0.21.2",
  "sha1",
  "sha2",
- "zip 9.5.1",
+ "zip 9.8.0",
 ]
 
 [[package]]
@@ -3994,9 +3994,9 @@ dependencies = [
 
 [[package]]
 name = "zip"
-version = "9.5.1"
+version = "9.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3476fd497ac8af5b1ec7b51acab7bef380f7e8dd8e0487595bafd839417a302"
+checksum = "721c8158b9503b2660291ad3056a20f722deaeed21bb908a9a363d7e17b34f0e"
 dependencies = [
  "constant_time_eq 0.6.1",
  "crc32fast",
