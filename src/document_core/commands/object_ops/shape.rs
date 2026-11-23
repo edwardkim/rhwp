@@ -348,30 +348,9 @@ impl DocumentCore {
             String::new()
         };
 
-        // 연결선 타입 + 제어점 좌표 (꺽임/곡선 중간 마커용)
+        // 연결선 종류·가운데 점 좌표와 그 점을 옮기는 축
         let connector_json = if let crate::model::shape::ShapeObject::Line(ref line) = shape {
-            if let Some(ref conn) = line.connector {
-                // type=2 제어점의 평균 좌표 (꺽임 모서리 / 곡선 중간점)
-                let ctrl2_pts: Vec<&crate::model::shape::ConnectorControlPoint> = conn
-                    .control_points
-                    .iter()
-                    .filter(|cp| cp.point_type == 2)
-                    .collect();
-                if !ctrl2_pts.is_empty() {
-                    let avg_x: i32 =
-                        ctrl2_pts.iter().map(|p| p.x).sum::<i32>() / ctrl2_pts.len() as i32;
-                    let avg_y: i32 =
-                        ctrl2_pts.iter().map(|p| p.y).sum::<i32>() / ctrl2_pts.len() as i32;
-                    format!(
-                        ",\"connectorType\":{},\"connectorMidX\":{},\"connectorMidY\":{}",
-                        conn.link_type as u32, avg_x, avg_y
-                    )
-                } else {
-                    format!(",\"connectorType\":{}", conn.link_type as u32)
-                }
-            } else {
-                String::new()
-            }
+            super::connector::connector_props_json(line)
         } else {
             String::new()
         };
@@ -810,28 +789,9 @@ impl DocumentCore {
             String::new()
         };
 
+        // 연결선 종류·가운데 점 좌표와 그 점을 옮기는 축
         let connector_json = if let crate::model::shape::ShapeObject::Line(ref line) = shape {
-            if let Some(ref conn) = line.connector {
-                let ctrl2_pts: Vec<&crate::model::shape::ConnectorControlPoint> = conn
-                    .control_points
-                    .iter()
-                    .filter(|cp| cp.point_type == 2)
-                    .collect();
-                if !ctrl2_pts.is_empty() {
-                    let avg_x: i32 =
-                        ctrl2_pts.iter().map(|p| p.x).sum::<i32>() / ctrl2_pts.len() as i32;
-                    let avg_y: i32 =
-                        ctrl2_pts.iter().map(|p| p.y).sum::<i32>() / ctrl2_pts.len() as i32;
-                    format!(
-                        ",\"connectorType\":{},\"connectorMidX\":{},\"connectorMidY\":{}",
-                        conn.link_type as u32, avg_x, avg_y
-                    )
-                } else {
-                    format!(",\"connectorType\":{}", conn.link_type as u32)
-                }
-            } else {
-                String::new()
-            }
+            super::connector::connector_props_json(line)
         } else {
             String::new()
         };

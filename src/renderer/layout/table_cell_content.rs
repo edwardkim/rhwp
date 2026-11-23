@@ -793,11 +793,30 @@ impl LayoutEngine {
                     Self::object_stable_index(cell_para_i, inner_ci)
                 })
                 .unwrap_or(0);
-            let layer = RenderLayerInfo::new(
+            let mut layer = RenderLayerInfo::new(
                 Some(child_common.text_wrap),
                 child_common.z_order,
                 stable_index,
             );
+            // 종이·쪽 기준 글 앞/뒤 개체는 칸 높이에 들지 않으므로(height_measurer) 칸 클립에
+            // 잘리지 않게 쪽에서 그린다. 한/글 인쇄도 셀 밖까지 그린다. 편집 소유는 노드의 셀
+            // 문맥에 남는다(셀 그림의 쪽 그리기와 같다).
+            if table_cell_ctx.is_some()
+                && matches!(
+                    child_common.text_wrap,
+                    crate::model::shape::TextWrap::InFrontOfText
+                        | crate::model::shape::TextWrap::BehindText
+                )
+                && !matches!(
+                    child_common.vert_rel_to,
+                    crate::model::shape::VertRelTo::Para
+                )
+            {
+                layer.independent_page_paint = cell_node
+                    .children
+                    .get(children_before)
+                    .map(|first| first.id);
+            }
             for child in cell_node.children.iter_mut().skip(children_before) {
                 child.set_layer(layer);
                 child.cell_frame_paint =
