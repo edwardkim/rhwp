@@ -15,3 +15,10 @@ fresh WASM의 해당 두 쪽이 96.76%·97.04%에서 각각 100.00%로 올랐다
 | `pdf/1480000-201900042-chemical-product-labeling-study-2020.pdf` | `f8e5c0408e221080ede9a9a67b153d02d792d22961c738e46749641f32a32e79` |
 | Native 전쪽 TSV | `2d40ed836fa5d1cc7981ce4c8239de58e8993bf4b458b2681e29fe633d724b05` |
 | fresh WASM 전쪽 TSV | `c2da526baf421ee89ff73ef8b47c7049bad304b4b3c44feb6094bffd53525ceb` |
+
+## 83쪽 후속 제목
+
+표 문단과 그 다음 빈 문단의 원본 바깥여백, 후속 ‘일반인 대상 선호도 조사’ 제목의
+소속과 순서를 검사한다. 최종 조판 소스를 반영한 Native·fresh WASM에서 83쪽은
+각각 100.00%, 전쪽 최저는 양쪽 99.53%로 재현했다.
+[83쪽 표와 후속 제목 확대 비교](page-83-table-followup.png)
