@@ -5,6 +5,21 @@
 [Build & Test](https://github.com/edwardkim/rhwp/actions/runs/45086987257/job/137419358770)와
 [Render Diff](https://github.com/edwardkim/rhwp/actions/runs/45086987252)가 통과했다.
 이 결과의 기준은 `93e861523623bcd84d57b808edb62af5af2aa82a`다.
+2026-11-23 13:42 KST에 #9334를 닫았다.
+
+## 새 PR 후보 리베이스
+
+최신 `upstream/devel`인 `7d6628982c81e702d58d8d0e6f52059f68a0b9ae`에
+`task/7754-nine-fidelity-rebased`를 리베이스했다. 기존 후보
+`70b1302ae8591a0e2686065fc0a151ad9461ef17`의 이력은
+로컬 `archive/pr-9334-nine-fidelity`에 보존했다. 통합 소스를 첫 커밋으로
+옮기고 뒤따른 커밋 15개의 변경을 순서대로 다시 적용했다.
+
+리베이스 직후 후보 `7d4aab4bfb363feaa1ebdae680d98f89688ab264`의 전체 트리
+`f0b13439a8843fd927d00f7ef5e95efae4a02ff0`는 기존 후보와 최신 devel의
+`git merge-tree` 결과와 일치했다. 기존 후보와의 차이는 당일 작업 기록과
+#9335 검토 문서의 보관 경로 두 곳이다. 검증에 사용한 Native·fresh WASM의 소스와
+회귀 입력은 리베이스 직전과 같은 Git 객체임을 확인했다.
 
 ## 동기화한 범위
 
