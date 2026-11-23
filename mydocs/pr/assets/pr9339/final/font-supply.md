@@ -32,10 +32,15 @@ Windows 설치본으로 공급이 가능해진 문서 6종을 기준 devel과 �
 
 | 11월 23일 추가 대조 | 내부 서체명·버전 | 유니코드 문자표의 한글 완성형 음절 | SHA-256 |
 | --- | --- | ---: | --- |
-| 로컬 `ttfs/chemical/dotumche.ttf` (11,548바이트) | DotumCheUT 001.000 | 0 / 11,172 | `0f93ebba3db375268404e834f11eaefc349252799d6ba3cef2906cd16451f4b1` |
+| 처음 제공된 `ttfs/chemical/dotumche.ttf` (11,548바이트) | DotumCheUT 001.000 | 0 / 11,172 | `0f93ebba3db375268404e834f11eaefc349252799d6ba3cef2906cd16451f4b1` |
 | EverythingFonts의 공개 미리보기 WOFF2 | DotumChe 2.21 | 11,172 / 11,172 | `2170a738fb09250e6f099e560b259a04ec4ea7cd21b2f3bb5bfd55d07508c873` |
+| 이번에 제공된 `ttfs/chemical/DotumChe-Regular.ttf` (4,568,508바이트) | DotumChe Regular 2.21 | 11,172 / 11,172 | `c2c030ca896d46ff28dae17663e9fe22ab2fc6e6518c96d75e15ca8fb441bd2f` |
 
-사이트의 Regular TTF 다운로드는 로그인 화면으로 연결된다. 미리보기에서 서체명과 한글 음절 수를 확인했으며, 사이트 원본 TTF와 정본의 바이트 일치 여부는 미확인이다. 화학물질 표시 기준 103쪽의 정본 재검증은 해당 TTF 확보 후 진행한다. [EverythingFonts 미리보기](https://everythingfonts.com/font/dotumche#web) · [Regular TTF 다운로드](https://everythingfonts.com/font/dotumche/download/dotumche)
+제공된 Regular TTF의 유니코드 문자표와 가로 글리프 메트릭은 공개 미리보기와 같다. TTF의 이름 테이블에는 영문 `DotumChe`가 있다. 과거 공급 기록에는 한글 이름 `돋움체`도 있다. `check_protected_font.py`는 제공본의 해시가 정본의 `097a83c1…`와 달라 종료 코드 1을 반환했다. [EverythingFonts 미리보기](https://everythingfonts.com/font/dotumche#web)
+
+화학물질 표시 기준 103쪽에서 Regular TTF를 각 백엔드의 50번째 순서에 넣고 나머지 52개 파일은 정본 또는 허용된 해시로 공급했다. 96 DPI 한컴 Print 대비 쪽별 최저 실루엣 일치율은 Native 99.99%, fresh WASM 100.00%였다(소수 둘째 자리 표시). 두 백엔드 모두 103쪽의 PNG가 기준 devel과 후보에서 각각 같았고 쪽별 하한 미달은 0건이었다. Native 최저인 26쪽에서 표의 제목·두 열의 괘선·뒤 문단 줄바꿈을 인쇄본과 직접 대조했다. [쪽별 하한·실측값·PNG SHA-256](chemical-dotumche-diagnostic.tsv)
+
+같은 후보에서 해당 TTF만 제외하고 나머지 52개를 같은 순서로 공급해 다시 렌더링했다. Native·fresh WASM 각각 103쪽 모두 TTF를 넣을 때와 뺄 때의 PNG가 같았다. 이 결과는 이 문서에서 추가 파일이 출력에 영향을 주지 않았다는 근거다. 정본 공급 여부는 기존 허용 해시로 판정한다. [렌더러별 빌드와 소스 SHA](renderer-builds.json)
 
 Windows 11의 `C:\Windows\Fonts\H2MJSM.TTF`에 기록된 서체명은 한글 `HY신명조`, 영문 `HYSinMyeongJo-Medium`이다. 시행령 문서(`decree`)의 Native·WASM 공급 목록은 `49dd1ef0caa6…`를 지정하며, 이번 검증에서는 설치본 `f78f538885b2…`를 같은 순서에 공급했다.
 

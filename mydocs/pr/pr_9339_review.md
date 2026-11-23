@@ -8,7 +8,7 @@
 
 공개 글꼴만 노출한 환경에서 `cargo nextest`의 전체 회귀 14,017개가 통과했다. 건너뛰기 항목은 45개였다. 같은 호스트에서 기준 devel과 보정본으로 #9350의 문서 10종을 출력해 Native·WASM 각각 583쪽의 PNG가 모두 같은 것을 확인했다. [별도 빌드와 새 devel 기능 검증](assets/pr9339/final/README.md#새-devel의-기능-검증)
 
-**정본 보호 검증을 완료할 때까지 머지 보류.** 명시적 공급 대상 312개 중 311개를 확보했다. 메인테이너가 허용한 Windows 11 설치본 6개로 문서 6종을 추가 측정했고, Native·fresh WASM 각각 276쪽 모두 로컬 devel과 후보의 PNG가 같았다. 그중 공식 하한 미달은 두 소스에서 똑같이 Native 65쪽, WASM 63쪽이다. 단독 `dotumche.ttf` 미확보로 화학물질 문서 103쪽의 정본 검증이 남았다. [파일별 허용 해시](assets/pr9339/final/font-supply.md) · [쪽별 결과](assets/pr9339/final/protected-windows-fonts.tsv)
+**정본 보호 검증을 완료할 때까지 머지 보류.** 명시적 공급 대상 312개 중 311개를 확보했다. 메인테이너가 허용한 Windows 11 설치본 6개로 문서 6종을 추가 측정했고, Native·fresh WASM 각각 276쪽 모두 로컬 devel과 후보의 PNG가 같았다. 그중 공식 하한 미달은 두 소스에서 똑같이 Native 65쪽, WASM 63쪽이다. 화학물질 문서 103쪽은 별도 제공된 DotumChe Regular 2.21로 측정해 양쪽 백엔드 모두 하한 미달이 0건이었다. 이 파일 한 개를 빼도 전쪽 PNG가 같았다. 정본 SHA-256과 일치하는 돋움체 파일은 아직 확보하지 못했다. [파일별 허용 해시](assets/pr9339/final/font-supply.md) · [Windows 설치본 결과](assets/pr9339/final/protected-windows-fonts.tsv) · [돋움체 비교 결과](assets/pr9339/final/chemical-dotumche-diagnostic.tsv)
 
 ## 접수 당시 판정
 

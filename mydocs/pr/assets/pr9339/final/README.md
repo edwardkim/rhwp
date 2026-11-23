@@ -22,7 +22,7 @@
 
 ## 글꼴과 보호 문서 재현
 
-#9350의 명시적 공급 대상 312개 중 기존 해시 305개와 허용된 Windows 11 설치본 6개를 확인했다. 단독 `dotumche.ttf`가 필요한 화학물질 문서 103쪽은 미측정이다. 각 실행은 같은 입력·PDF·DPI·compat를 사용한다. [공식 공급 목록](../../../../verification/protected-font-supply/manifest.json) · [파일별 허용 해시](font-supply.md)
+#9350의 명시적 공급 대상 312개 중 기존 해시 305개와 허용된 Windows 11 설치본 6개를 확인했다. 화학물질 문서 103쪽은 정본 SHA-256과 일치하는 `dotumche.ttf`를 확보하지 못해 제공된 DotumChe Regular 2.21로 별도 측정했다. 각 실행은 같은 입력·PDF·DPI·compat를 사용한다. [공식 공급 목록](../../../../verification/protected-font-supply/manifest.json) · [파일별 해시와 돋움체 대조](font-supply.md)
 
 공식 목록의 확보된 프로그램은 명시 순서대로 공급하고 자동 선택 문서에는 사용 가능한 기록 글꼴을 격리된 Fontconfig에 노출해 devel과 후보를 비교했다. 재현할 수 있는 프로그램이 제한된 문서는 양쪽 소스에서 같은 조건으로 측정했다. 입력이나 프로그램이 빠진 행은 보호 통과에 포함하지 않는다. [정본 판정 기준](../../../../manual/verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)
 
@@ -32,6 +32,8 @@
 | 기존 공급 | [fresh WASM](protected-system-wasm.tsv) | 16종 1,644쪽 | 0쪽 | 25쪽 |
 | 허용된 Windows 설치본을 공급한 문서 | [Native](protected-windows-fonts.tsv) | 6종 276쪽 | 0쪽 | 65쪽 |
 | 허용된 Windows 설치본을 공급한 문서 | [fresh WASM](protected-windows-fonts.tsv) | 6종 276쪽 | 0쪽 | 63쪽 |
+| DotumChe Regular 2.21 별도 측정 | [Native](chemical-dotumche-diagnostic.tsv) | 1종 103쪽 | 0쪽 | 0쪽 |
+| DotumChe Regular 2.21 별도 측정 | [fresh WASM](chemical-dotumche-diagnostic.tsv) | 1종 103쪽 | 0쪽 | 0쪽 |
 
 새 SPJGT를 지정하는 범위는 화학물질 문서의 Native·WASM이다. 양쪽 모두 단독 돋움체 1개를 더 확보해야 한다. 회수한 굴림 파일은 `outline-demo`와 `outline-minimal`의 Native 자동 선택 환경에도 반영했다. Fontconfig에서 기록 목록 1,219개 중 로컬의 575개를 확인한 뒤 두 문서의 4쪽을 devel·보정본으로 다시 그렸다. 굴림 추가 전후와 두 소스 사이의 픽셀 차이는 모두 0쪽이었다.
 
