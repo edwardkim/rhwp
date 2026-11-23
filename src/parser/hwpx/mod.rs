@@ -537,6 +537,7 @@ fn parse_hwpx_package(
         crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH,
         crate::model::document::HWP3_ORIGIN_HWPX_PARAGRAPH_AXIS_PATH,
         crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
+        crate::model::document::HWPX_ORIGIN_HWPX_MARKER_PATH,
     ];
     let mut hwpx_aux_entries: Vec<(String, Vec<u8>)> = Vec::new();
     for path in HWPX_AUX_PATHS {

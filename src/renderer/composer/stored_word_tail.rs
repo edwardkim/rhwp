@@ -276,6 +276,42 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
             super::compose_paragraph_in_context_with_storage(para, styles, storage),
             failure,
         )?;
+        use crate::renderer::style_resolver::SourceProgramRowOwner;
+        if composed
+            .lines
+            .iter()
+            .flat_map(|line| &line.runs)
+            .any(|run| {
+                !run.text.trim().is_empty()
+                    && matches!(
+                        styles
+                            .source_program_projection_slots
+                            .get(&(run.char_style_id, run.lang_index)),
+                        Some(SourceProgramRowOwner::ScopedNaturalReplacement)
+                    )
+            })
+        {
+            // 선택한 프로그램의 전진으로 같은 물리 줄 안에서 문자 경계만 갱신한다.
+            // 명시적 줄·쪽·단과 저장 줄의 높이·기준선은 원래 소유자에 남긴다.
+            if para.line_segs.len() < 2 || super::stored_row_fragments::crosses_physical_frame(para)
+            {
+                return None;
+            }
+            let frame = box_.frame(para.line_segs[0].vertical_pos);
+            let (mut rows, spaces) = crate::storage::optional(
+                project_stored_rows_with_storage(para, &frame, styles, dpi, false, true, storage),
+                failure,
+            )??;
+            if rows.len() != para.line_segs.len() {
+                return None;
+            }
+            for (fresh, stored) in rows.iter_mut().zip(&para.line_segs) {
+                let text_start = fresh.text_start;
+                *fresh = stored.clone();
+                fresh.text_start = text_start;
+            }
+            return Some((rows, spaces));
+        }
         let mut fallbacks = crate::storage::optional(storage.vec(0), failure)?;
         let mut saw_declared_program = false;
         for run in composed.lines.iter().flat_map(|line| &line.runs) {
@@ -370,6 +406,7 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
                         failure,
                     )?;
                 }
+                SourceProgramRowOwner::ScopedNaturalReplacement => return None,
             }
         }
         if fallbacks.is_empty() && !saw_declared_program {

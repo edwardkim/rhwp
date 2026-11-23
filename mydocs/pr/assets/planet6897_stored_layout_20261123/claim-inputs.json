@@ -1,0 +1,58 @@
+[
+  {
+    "pr": 9289,
+    "case": "badge",
+    "input": "samples/issue8495/council-badge-para-float-sibling-origin.hwp",
+    "input_sha256": "edc9850dabb2278e5972dd2feacd4db37874f087766cec56e55f05bfffb4657c",
+    "reference": "pdf/issue8495/council-badge-para-float-sibling-origin-2024.pdf",
+    "reference_sha256": "c1e9822000652895105c7d331bc9a17e8223a06d91621bec787398b4569a8821"
+  },
+  {
+    "pr": 9305,
+    "case": "townhall",
+    "input": "samples/issue9290/labor-townhall-table-opened-page.hwpx",
+    "input_sha256": "4a0d235391c59e2f22dc79e51c08fd0f18660a6d64b5747b8998e603d52078d4",
+    "reference": "pdf/issue9290/labor-townhall-table-opened-page-2024.pdf",
+    "reference_sha256": "1501760ba54d4569721b7e1c90aa05d05d635acbcfa9e727d788c48629c7a1ed"
+  },
+  {
+    "pr": 9311,
+    "case": "decree-band",
+    "input": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+    "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+    "reference": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+    "reference_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7"
+  },
+  {
+    "pr": 9317,
+    "case": "sme-overlay",
+    "input": "samples/issue9038/sme_announcement_split_table_successor.hwpx",
+    "input_sha256": "e0cb2372922ec5c89cc028e583b78a1e1d264385569f23cd0f2daf29a91f410b",
+    "reference": "pdf/issue9210/sme_announcement_split_table_successor-2020.pdf",
+    "reference_sha256": "e68b80c8b1306536c857327496ae626be1bfc2b931900cfa6832482ab9e446e7"
+  },
+  {
+    "pr": 9324,
+    "case": "origin-marker",
+    "input": "samples/issue2439_zero_offset_coanchored_float_exclusion.hwp",
+    "input_sha256": "fbe318ac2fb20e42612571fe384567259b4785bc0375766c122cbc31cad828ca",
+    "reference": "pdf/issue2439/issue2439_zero_offset_coanchored_float_exclusion-2020.pdf",
+    "reference_sha256": "4cbc03d073d9231bcfe6ad59ecbff4d9693a09e103fb2430031c26d9dabe221c"
+  },
+  {
+    "pr": 9327,
+    "case": "food",
+    "input": "mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp",
+    "input_sha256": "8cc9b219a5c54fdc2324f63da32b224a1ac23877c6c92976c407e6c42475317c",
+    "reference": "pdf/issue8997/1543000-202100035-food-security-report-2020.pdf",
+    "reference_sha256": "4c2d909332e5fe3be5044a76cc9d5448e29e98087b4688907fdf1ce093dccc04"
+  },
+  {
+    "pr": 9327,
+    "case": "jeju",
+    "input": "samples/issue8759/6500000-201700118_jeju_tourism_education_plan.hwp",
+    "input_sha256": "fa87e135c3d609324457adb37230e220be9406ba99a94d26a813ba7132244ac9",
+    "reference": "pdf/issue8759/6500000-201700118_jeju_tourism_education_plan-2020.pdf",
+    "reference_sha256": "56f1bf8b3d92065e2e51ae27f1abbf4a97ccbd83474f29f3c00b4e2bca26659e"
+  }
+]

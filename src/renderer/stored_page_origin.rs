@@ -21,6 +21,32 @@ fn has_paragraph_float_graphic(paragraph: &Paragraph) -> bool {
     })
 }
 
+/// 빈 host 줄이 띠에 흡수된([`crate::renderer::empty_host_line_absorbed_by_topbottom_float`])
+/// 문단 기준 자리차지 그림 하나가 소유하는 바깥 상자의 끝(px, 문단 시작 기준).
+/// 배치 `layout_body_picture` 와 같이 상자는 문단 시작 + 세로 오프셋에서 시작하고
+/// 위 여백 · 캡션을 포함한 그림 · 아래 여백을 차지한다. 조판의 흡수 반환도 같은 상자를 쓴다.
+fn absorbed_picture_frame_end_px(paragraph: &Paragraph, dpi: f64) -> Option<f64> {
+    use crate::model::shape::VertAlign;
+    let [Control::Picture(picture)] = paragraph.controls.as_slice() else {
+        return None;
+    };
+    let common = &picture.common;
+    let offset = crate::renderer::float_placement::signed_hwpunit(common.vertical_offset);
+    if !crate::renderer::empty_host_line_absorbed_by_topbottom_float(paragraph, common)
+        || !matches!(common.vert_align, VertAlign::Top)
+        || paragraph.stored_text_partition_is_dirty()
+        || paragraph.cell_format_vpos_dirty
+    {
+        return None;
+    }
+    Some(
+        hwpunit_to_px(offset, dpi)
+            + hwpunit_to_px(common.margin.top as i32, dpi)
+            + crate::renderer::composer::captioned_picture_height_px(picture, dpi)
+            + hwpunit_to_px(common.margin.bottom as i32, dpi),
+    )
+}
+
 /// 문단 기준 자리차지 표가 소유하는 완전한 바깥 프레임의 끝.
 /// 저장 쪽 원점과 다음 문단의 전진을 확인하는 두 경로가 같은 프레임을 사용한다.
 fn paragraph_float_frame_end_hu(paragraph: &Paragraph) -> Option<i64> {
@@ -167,6 +193,17 @@ pub(crate) fn stored_first_margin_is_page_relative(
         && !first.cell_format_vpos_dirty
         && !next.cell_format_vpos_dirty
         && next.controls.is_empty();
+    // [#8997] 빈 host 줄을 흡수한 문단 기준 그림의 바깥 상자도 다음 저장 줄을 닫으면 같은
+    // 증거다. 첫 줄 vpos 는 앞 간격(쪽 원점 0 + 앞 간격)이고, 상자는 문단 시작(원점 0)에서
+    // 오프셋·위 여백 뒤에 놓인다(1543000-202100035 s2 pi952: 줄 vpos 500 = 앞 간격, 다음
+    // 저장 vpos 20984 = 위 여백 283 + 캡션 그림 + 아래 여백 283, 한컴 Print 의 캡션 위끝도
+    // 본문 위끝 + 위 여백).
+    let picture_closes_next = absorbed_picture_frame_end_px(first, dpi).is_some_and(|end| {
+        (end - hwpunit_to_px(next_seg.vertical_pos, dpi)).abs() <= 0.5
+            && !next.stored_text_partition_is_dirty()
+            && !next.cell_format_vpos_dirty
+            && next.controls.is_empty()
+    });
     // 손상 입력의 저장 줄 값은 i32 뺄셈을 넘칠 수 있어 위 등식처럼 i64 로 잰다.
     let stored_gap_hu = i64::from(next_seg.vertical_pos)
         - i64::from(last_seg.vertical_pos)
@@ -208,7 +245,7 @@ pub(crate) fn stored_first_margin_is_page_relative(
         || !first.controls.iter().any(
             |control| matches!(control, Control::Shape(shape) if shape.common().treat_as_char),
         ))
-        && !has_paragraph_float_graphic(first)
+        && (picture_closes_next || !has_paragraph_float_graphic(first))
         && !has_paragraph_float_graphic(next)
         && first_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && last_seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
@@ -217,6 +254,7 @@ pub(crate) fn stored_first_margin_is_page_relative(
         && first_before > 0.5
         && first_margin_matches
         && (float_closes_next
+            || picture_closes_next
             || complete_margin_step
             || next_margin_step
             || next_restarts_at_own_margin)

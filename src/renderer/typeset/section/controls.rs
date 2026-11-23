@@ -697,17 +697,14 @@ impl TypesetEngine {
                                 let hr = hl + hwpunit_to_px(pic.common.width as i32, self.dpi);
                                 // [#7470] 그림 띠에 흡수된 빈 host 줄은 이미 흐름에 더한 문단
                                 // 높이에서 돌려준다(배치 `layout_shape_item` #683 과 같은 판별).
-                                let absorbed_host_line = if pic.caption.is_none() {
+                                let absorbed_host_line =
                                     crate::renderer::absorbed_host_line_return_px(
                                         para,
                                         &pic.common,
                                         host_spacing_before,
                                         host_spacing_after,
                                         self.dpi,
-                                    )
-                                } else {
-                                    0.0
-                                };
+                                    );
                                 let host_line = hwpunit_to_px(
                                     crate::renderer::hwp3_caption_host::line_advance_hwp(
                                         para,

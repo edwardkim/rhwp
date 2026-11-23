@@ -1,0 +1,22 @@
+[
+  {
+    "backend": "native",
+    "sme17_latest_base_raw": 94.46614,
+    "sme17_head_and_latest_base_png_sha256": "bffe93ec39c919347c5d314866545841225f967ad5bf298d44364d708550e806",
+    "identical": true,
+    "uiwang_hcr_changed_pages": [
+      2,
+      3
+    ]
+  },
+  {
+    "backend": "wasm",
+    "sme17_latest_base_raw": 94.34458,
+    "sme17_head_and_latest_base_png_sha256": "c644ec7e2400efcc9266a84ee05d32a7a943171d9b219a45e0ff035104001136",
+    "identical": true,
+    "uiwang_hcr_changed_pages": [
+      2,
+      3
+    ]
+  }
+]

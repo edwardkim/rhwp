@@ -363,14 +363,18 @@ impl DocumentCore {
         // [#8310] 한컴 HWPX 에서 만든 HWP(`/RhwpHwpxOrigin` = 2)는 원본 HWPX 의 저장 줄
         // 계약을 지닌다 — 원본 좌표와 "저장 줄 없음". 같은 문서가 같은 조판 입력이 되도록
         // HWPX 와 같은 XML import 규칙으로 연다.
-        let use_xml_import_semantics =
-            (matches!(
+        // [#9039] `/RhwpHwpxOrigin` = 1 계약을 옮겨 실은 HWPX 는 원래의 HWP 처럼 저장 줄을
+        // HWP 규칙으로 읽는다. XML 파서가 비워 두는 문단 필드 정규화는 그대로 한다.
+        let hwpx_with_hwp_line_rules = matches!(source_format, crate::parser::FileFormat::Hwpx)
+            && document.hwpx_origin_hwp_line_rules().is_some();
+        let use_xml_import_semantics = !hwpx_with_hwp_line_rules
+            && (matches!(
                 source_format,
                 crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
             ) || (matches!(source_format, crate::parser::FileFormat::Hwp)
                 && document.hwpx_origin_keeps_source_lines()))
-                && !hwp5_origin_hwpx
-                && !document.layout_profile().hwp3_native_layout();
+            && !hwp5_origin_hwpx
+            && !document.layout_profile().hwp3_native_layout();
 
         // 비표준 lineseg 감지 — reflow 이전 시점에 IR을 그대로 검증.
         // 경고는 사용자에게 고지되며, 자동 reflow 는 `needs_line_seg_reflow` 조건에만 한정.
@@ -378,6 +382,7 @@ impl DocumentCore {
         // LinesegTextRunReflow는 HWPX textRun 전용 패턴. HWP3/HWP5/HML에는 확대 적용하지 않는다.
         let check_textrun_reflow = matches!(source_format, crate::parser::FileFormat::Hwpx)
             && !hwp5_origin_hwpx
+            && !hwpx_with_hwp_line_rules
             && !document.layout_profile().hwp3_native_layout();
         let validation_report = Self::validate_linesegs(&document, check_textrun_reflow);
 
@@ -431,7 +436,7 @@ impl DocumentCore {
         // XML 파서가 채우지 않는 paragraph 필드를 HWP 직렬화/파싱 라운드트립 결과와 일치시킨다.
         // 1) char_shapes 빈 paragraph 에 default [(0,0)] 추가 (HWP 스펙상 최소 1개 요구)
         // 2) control_mask 를 controls 기반으로 재계산
-        if use_xml_import_semantics {
+        if use_xml_import_semantics || hwpx_with_hwp_line_rules {
             Self::normalize_xml_import_paragraphs(&mut document);
         }
 

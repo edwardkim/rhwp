@@ -4986,14 +4986,23 @@ pub(crate) fn stored_terminal_empty_line_gap(
 
 /// The first whole table and any host line share one stored column origin.
 /// Source coordinates remain separate from the accepted relative placement.
+///
+/// 쪽 첫 저장 줄이 문단 앞 간격만큼 내려 있고 다음 문단까지 간격 사다리가 닫히면 저장 원점은
+/// 0이다. 쪽을 문단으로 열든 표로 열든 같은 규칙이므로, 표 항목이 단을 여는 조판·배치·저장 TAC
+/// 프레임이 모두 이 조회를 쓴다(156731281 3쪽: 붙임 표 host 줄 1500 = 앞 간격, 다음 줄 5400 =
+/// 1500 + 1500 + 900 + 앞 간격 1500, 한/글 Print 의 본문도 원점 0 기준).
 pub(crate) fn stored_table_column_origin(
     para: &Paragraph,
     next: Option<&Paragraph>,
     has_host_line: bool,
     placement: Option<&ParagraphFloatPlacement>,
+    styles: &super::style_resolver::ResolvedStyleSet,
     dpi: f64,
 ) -> Option<i32> {
     let source = para.line_segs.first()?.vertical_pos;
+    if super::stored_page_origin::stored_first_margin_is_page_relative(para, next, styles, dpi) {
+        return Some(0);
+    }
     if has_host_line && super::composer::stored_tac_host_frame(para).is_none() {
         placement
             .and_then(|placement| placement.stored_host_origin)
@@ -7948,6 +7957,47 @@ impl ObjectPlacementFrame<'_> {
             return None;
         }
         Some((y, y + height))
+    }
+
+    /// [#9274] 쪽·종이 기준 자리차지(TopAndBottom) 표의 바깥 여백 포함 세로 밴드
+    /// `(top, bottom)` (절대 y px). 그림·도형 밴드(`page_anchored_topbottom_band`)와 같은
+    /// 계약이다 — 위치가 host 흐름과 무관하므로 밴드 위 본문은 밴드 위에 남고, 밴드에
+    /// 닿는 줄만 밴드 아래로 간다. 표 위치·높이는 그리기·host 도달 점프와 같은 식
+    /// (`absolute_table_vertical_geometry`, `table_reserved_height_hu`)을 쓴다.
+    /// 문단 기준·글자처럼 취급 표, 캡션 표, 단과 가로로 겹치지 않는 표는 `None`.
+    pub(crate) fn page_anchored_topbottom_table_band(&self, table: &Table) -> Option<(f64, f64)> {
+        let common = &table.common;
+        if common.treat_as_char
+            || common.text_wrap != TextWrap::TopAndBottom
+            || table.caption.is_some()
+            || common.width == 0
+            || common.height == 0
+        {
+            return None;
+        }
+        let (ref_y, ref_h) = match common.vert_rel_to {
+            VertRelTo::Page => (self.body.y, self.body.height),
+            VertRelTo::Paper => (self.paper.y, self.paper.height),
+            VertRelTo::Para => return None,
+        };
+        let height_hu = stored_square_top_band::table_reserved_height_hu(table).max(common.height);
+        let height = hwpunit_to_px(height_hu.min(i32::MAX as u32) as i32, self.dpi);
+        let (top, bottom) = absolute_table_vertical_geometry(table, ref_y, ref_h, height, self.dpi);
+        let top = top - hwpunit_to_px(i32::from(table.outer_margin_top), self.dpi);
+        let width = hwpunit_to_px(
+            common.width as i32
+                + i32::from(table.outer_margin_left)
+                + i32::from(table.outer_margin_right),
+            self.dpi,
+        );
+        let (x, _) = self.position(common, width, height);
+        if ![x, top, bottom].iter().all(|v| v.is_finite())
+            || x + width <= self.column.x + 0.5
+            || x >= self.column.x + self.column.width - 0.5
+        {
+            return None;
+        }
+        Some((top, bottom))
     }
 
     /// 자리차지 개체의 완전한 바깥 상자 뒤에 저장된 빈 호스트 줄의 원점.

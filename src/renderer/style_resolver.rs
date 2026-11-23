@@ -545,6 +545,7 @@ pub(crate) fn resolve_styles_with_environment(
         &document.doc_info,
         &mut styles,
         document.provenance.format == crate::model::provenance::SourceFormat::Hwpx,
+        environment,
         &storage::Unbounded,
     ) {
         Ok(()) => (),
@@ -668,7 +669,7 @@ fn try_resolve_styles_with_variant<S: storage::Storage>(
         supplemental_metrics: None,
     };
     original_font_slots::refresh(doc_info, &mut styles, storage)?;
-    source_program_rows::refresh_with_storage(doc_info, &mut styles, false, storage)?;
+    source_program_rows::refresh_with_storage(doc_info, &mut styles, false, None, storage)?;
     Ok(styles)
 }
 
