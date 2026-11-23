@@ -1,3 +1,10 @@
+//! 관계형·고정형 회귀 — #7769 synam-001 HWP의 5→6쪽 금융자산 행 이어받기를 보호한다.
+//! 주석 갱신 2026-11-23 20:55 KST. 직전 파일 변경 2026-10-24 15:11:35 KST,
+//! `60972534680a0c5e51e54ec189b92e252e81a867`.
+//! 기준 검증 2026-11-23 KST, 96 DPI Print PDFium과 보정 전 2px raw 실루엣.
+//! 35쪽 최저 Native/fresh WASM 95.84/96.05%, 5쪽 98.72/98.73%, 6쪽 99.99/100.00%.
+//! 근거는 `mydocs/pr/assets/issue7769/synam/`의 전쪽 TSV와 5→6쪽 확대 비교다.
+//!
 //! RowBreak 표의 행 내부 조각 때문에 전체 조각이 쪽 경계를 넘으면
 //! 그 조각을 현재 쪽에 남기지 않는다.
 //!
@@ -372,5 +379,62 @@ fn synam_001_page14_uses_row_budget_after_repeated_header() {
     assert!(
         page14.contains("start_cut=[2, 13]"),
         "page 14 should continue from the row 6 cut already started on page 13:\n{page14}"
+    );
+}
+
+#[test]
+fn synam_001_financial_assets_cell_continues_between_pages_five_and_six() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/synam-001.hwp");
+    let core = DocumentCore::from_bytes(&fs::read(path).expect("synam-001 원본")).unwrap();
+    let (para, control, row, column) = core.document().sections[0]
+        .paragraphs
+        .iter()
+        .enumerate()
+        .find_map(|(pi, paragraph)| {
+            paragraph
+                .controls
+                .iter()
+                .enumerate()
+                .find_map(|(ci, ctrl)| {
+                    let Control::Table(table) = ctrl else {
+                        return None;
+                    };
+                    let cell = table.cells.iter().find(|cell| {
+                        cell.paragraphs
+                            .iter()
+                            .any(|p| p.text.contains("비상장주식의 평가"))
+                            && cell.paragraphs.iter().any(|p| p.text.contains("보통예금"))
+                    })?;
+                    Some((pi, ci, cell.row, cell.col))
+                })
+        })
+        .expect("금융자산 설명의 원본 셀");
+    assert_eq!(core.page_count(), 35);
+
+    let split_cell = |page| {
+        let tree = core
+            .build_page_render_tree(page)
+            .expect("원본 표가 나뉜 쪽");
+        let table = owned_table(&tree.root, para, control);
+        let mut cells = table.children.iter().filter(|node| {
+            matches!(&node.node_type, RenderNodeType::TableCell(cell)
+                if cell.row == row && cell.col == column)
+        });
+        let cell = cells.next().expect("해당 쪽의 금융자산 설명 셀");
+        assert!(
+            cells.next().is_none(),
+            "같은 셀 조각이 한 쪽에 중복되지 않는다"
+        );
+        compact(&subtree_text(cell))
+    };
+    let first = split_cell(4);
+    let second = split_cell(5);
+    assert!(first.contains("보통예금") && first.ends_with("비상장주"));
+    assert!(second.starts_with("식의평가에관하여는") && second.contains("연금보험"));
+    assert_eq!(
+        format!("{first}{second}")
+            .matches("비상장주식의평가에관하여는")
+            .count(),
+        1
     );
 }
