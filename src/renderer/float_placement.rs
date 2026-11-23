@@ -5977,7 +5977,6 @@ pub(crate) fn stored_tail_square_picture_placement(
 /// 같은 저장 축에서 닫힐 때만 그림이 호스트 텍스트 앞의 공간을 소유한다.
 /// 실제 앞 흐름도 그 경계에 있어야 하므로 편집되거나 누락된 공간을 되감지 않는다.
 #[allow(clippy::too_many_arguments)]
-#[allow(clippy::too_many_arguments)]
 pub(crate) fn stored_picture_before_host_placement(
     previous: &Paragraph,
     para: &Paragraph,
