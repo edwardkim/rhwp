@@ -9308,15 +9308,19 @@ impl LayoutEngine {
                         PageItem::FullParagraph { .. }
                             | PageItem::PartialParagraph { start_line: 0, .. }
                     );
-                    (starts_paragraph && owner.checked_add(1) == Some(item_para))
-                        .then(|| {
-                            col_content
-                                .paragraph_float_placements
-                                .get(&(*owner, *control_index))?
-                                .stored_successor_line_origin
-                                .map(|origin| col_area.y + origin)
+                    if !starts_paragraph {
+                        return None;
+                    }
+                    col_content
+                        .paragraph_float_placements
+                        .get(&(*owner, *control_index))?
+                        .stored_successor_line_origin
+                        .filter(|&origin| {
+                            super::height_cursor::stored_frame_successor(
+                                *owner, item_para, paragraphs, origin, self.dpi,
+                            )
                         })
-                        .flatten()
+                        .map(|origin| col_area.y + origin)
                 });
             hcursor.owned_origin = owned_paragraph_origin
                 .map(super::height_cursor::FlowOrigin::Paragraph)
@@ -9408,12 +9412,15 @@ impl LayoutEngine {
                 };
                 hcursor.curr_item_is_table_fragment =
                     matches!(item, PageItem::PartialTable { .. }) && !opening_host_owns_lead;
-                if !hcursor.bind_stored_frame_successor(
+                if let Some(start) = hcursor.bind_stored_frame_successor(
                     y_offset,
                     item_para,
                     paragraphs,
+                    styles,
                     &col_content.paragraph_float_placements,
-                ) && !hcursor.bind_computed_paragraph_successor(
+                ) {
+                    y_offset = start;
+                } else if !hcursor.bind_computed_paragraph_successor(
                     y_offset,
                     item_para,
                     paragraphs,
