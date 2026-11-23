@@ -30,6 +30,8 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::hwpunit_to_px;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use std::path::Path;
 
@@ -217,4 +219,34 @@ fn relocated_chart_and_split_rows_keep_their_print_page_owners() {
             .collect();
         assert_eq!(actual, [expected_page], "「{text}」의 한컴 Print 쪽 소속");
     }
+}
+
+/// 관계형 — 6쪽 목차 표는 빈 줄 전진을 포함한 원본 내용 전체를 개체 선언 안에 배치한다.
+#[test]
+fn centered_contents_table_uses_its_declared_object_frame() {
+    let core = core();
+    let page = 5;
+    let section = 2;
+    let paragraph = 25;
+    let [Control::Table(source)] = core.document().sections[section].paragraphs[paragraph]
+        .controls
+        .as_slice()
+    else {
+        panic!("원본 목차 표가 없다");
+    };
+    assert!(source.cells[0].height > source.common.height);
+    let frame = page_boxes(&core, page)
+        .tables
+        .into_iter()
+        .find(|(s, p, _)| *s == Some(section) && *p == Some(paragraph))
+        .map(|(_, _, bounds)| bounds)
+        .expect("한컴 Print와 같은 6쪽에 목차 표가 있다");
+    let declared = hwpunit_to_px(source.common.height as i32, 96.0);
+    assert!(
+        (frame.height - declared).abs() < 1e-6,
+        "표의 실제 높이 {}가 원본 개체 선언 {declared}을 따른다",
+        frame.height,
+    );
+    let contents = compact(&core, page);
+    assert!(contents.contains("제1장서론") && contents.contains("생산,소비"));
 }

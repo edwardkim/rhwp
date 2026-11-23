@@ -201,11 +201,21 @@ pub(super) fn stored_plain_cell_ink_height_from(
     cell: &crate::model::table::Cell,
     first_origin: i32,
 ) -> Option<i32> {
+    stored_plain_cell_ink_height_with_empty_lines(cell, first_origin, false)
+}
+
+fn stored_plain_cell_ink_height_with_empty_lines(
+    cell: &crate::model::table::Cell,
+    first_origin: i32,
+    allow_compact_empty_lines: bool,
+) -> Option<i32> {
     use crate::model::paragraph::LineSeg;
     if cell.dirty_flag || cell.text_direction != 0 || cell.height >= 0x8000_0000 {
         return None;
     }
     let mut ink_end = 0_i32;
+    let mut next_origin = 0_i32;
+    let mut exact_successor = false;
     let mut first = true;
     for para in &cell.paragraphs {
         if !para.controls.is_empty()
@@ -217,19 +227,35 @@ pub(super) fn stored_plain_cell_ink_height_from(
             return None;
         }
         for line in &para.line_segs {
+            let compact_empty_line = allow_compact_empty_lines
+                && line.line_spacing < 0
+                && para.text.is_empty()
+                && para.line_segs.len() == 1;
             if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
                 || line.line_height <= 0
-                || line.line_spacing < 0
-                || line.vertical_pos < ink_end
+                || (line.line_spacing < 0 && !compact_empty_line)
+                || line.vertical_pos < next_origin
+                || (exact_successor && line.vertical_pos != next_origin)
                 || (first && line.vertical_pos != first_origin)
             {
                 return None;
             }
-            ink_end = line.vertical_pos.checked_add(line.line_height)?;
+            let line_end = line.vertical_pos.checked_add(line.line_height)?;
+            ink_end = ink_end.max(line_end);
+            next_origin = line_end;
+            exact_successor = compact_empty_line;
+            if compact_empty_line {
+                // 한컴은 빈 저장 줄에만 줄 높이보다 짧은 전진을 기록한다.
+                // 다음 저장 줄이 바로 그 전진으로 시작할 때 겹침을 인정한다.
+                next_origin = line_end.checked_add(line.line_spacing)?;
+                if next_origin <= line.vertical_pos {
+                    return None;
+                }
+            }
             first = false;
         }
     }
-    (!first).then_some(ink_end)
+    (!first && !exact_successor).then_some(ink_end)
 }
 
 /// Every saved row closes at the same declared horizontal table boundary.
@@ -537,7 +563,13 @@ pub(crate) fn stored_complete_row_frame_heights(table: &Table) -> Option<Vec<i32
 /// to fragment composition instead. Callers exclude edited/reflow profiles.
 pub(crate) fn stored_plain_object_row_frame_heights(table: &Table) -> Option<Vec<i32>> {
     let row_count = usize::from(table.row_count);
-    if row_count < 2
+    let centered_single_cell = row_count == 1
+        && table.col_count == 1
+        && matches!(
+            table.cells.as_slice(),
+            [cell] if cell.vertical_align == crate::model::table::VerticalAlign::Center
+        );
+    if (row_count < 2 && !centered_single_cell)
         || table.common.treat_as_char
         || table.layout_page_break() != TablePageBreak::RowBreak
         || !is_para_topbottom_float(&table.common)
@@ -567,7 +599,7 @@ pub(crate) fn stored_plain_object_row_frame_heights(table: &Table) -> Option<Vec
     }
     rows[row_count - 1] = closing;
     for cell in &table.cells {
-        let ink = stored_plain_cell_ink_height(cell)?;
+        let ink = stored_plain_cell_ink_height_with_empty_lines(cell, 0, centered_single_cell)?;
         let required = ink.checked_add(cell.effective_vertical_padding_hu(&table.padding))?;
         if required > *rows.get(usize::from(cell.row))? {
             return None;
