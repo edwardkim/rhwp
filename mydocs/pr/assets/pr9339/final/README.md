@@ -22,16 +22,18 @@
 
 ## 글꼴과 보호 문서 재현
 
-#9350이 추가한 문서별 공급 목록에서 명시적으로 지정한 고유 글꼴 312개를 확인했다. 새 `hft-fonts-cmap-v2/SPJGT.otf`와 독립 표본에서 복원한 두 프로그램을 포함해 305개의 SHA-256을 확보했다. 미확보 7개와 영향 문서를 기록했다. 각 실행은 같은 입력·PDF·DPI·compat를 사용한다. [공식 공급 목록](../../../../verification/protected-font-supply/manifest.json) · [파일별 대조](font-supply.md)
+#9350의 명시적 공급 대상 312개 중 기존 해시 305개와 허용된 Windows 11 설치본 6개를 확인했다. 단독 `dotumche.ttf`가 필요한 화학물질 문서 103쪽은 미측정이다. 각 실행은 같은 입력·PDF·DPI·compat를 사용한다. [공식 공급 목록](../../../../verification/protected-font-supply/manifest.json) · [파일별 허용 해시](font-supply.md)
 
 공식 목록의 확보된 프로그램은 명시 순서대로 공급하고 자동 선택 문서에는 사용 가능한 기록 글꼴을 격리된 Fontconfig에 노출해 devel과 후보를 비교했다. 재현할 수 있는 프로그램이 제한된 문서는 양쪽 소스에서 같은 조건으로 측정했다. 입력이나 프로그램이 빠진 행은 보호 통과에 포함하지 않는다. [정본 판정 기준](../../../../manual/verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)
 
-| 백엔드 | 비교한 문서와 쪽 | 로컬 devel과 후보의 PNG 차이 | 두 소스에서 공식 하한에 미달한 쪽 | 필수 글꼴 미확보로 제외한 쪽 |
-| --- | ---: | ---: | ---: | ---: |
-| [Native](protected-system-native.tsv) | 16종 1,644쪽 | 0쪽 | 19쪽 | 7종 379쪽 |
-| [fresh WASM](protected-system-wasm.tsv) | 16종 1,644쪽 | 0쪽 | 25쪽 | 7종 379쪽 |
+| 측정 조건 | 백엔드 | 비교한 문서와 쪽 | 로컬 devel과 후보의 PNG 차이 | 두 소스에서 공식 하한에 미달한 쪽 |
+| --- | --- | ---: | ---: | ---: |
+| 기존 공급 | [Native](protected-system-native.tsv) | 16종 1,644쪽 | 0쪽 | 19쪽 |
+| 기존 공급 | [fresh WASM](protected-system-wasm.tsv) | 16종 1,644쪽 | 0쪽 | 25쪽 |
+| 허용된 Windows 설치본을 공급한 문서 | [Native](protected-windows-fonts.tsv) | 6종 276쪽 | 0쪽 | 65쪽 |
+| 허용된 Windows 설치본을 공급한 문서 | [fresh WASM](protected-windows-fonts.tsv) | 6종 276쪽 | 0쪽 | 63쪽 |
 
-새 SPJGT를 지정하는 범위는 화학물질 문서의 Native·WASM이다. 양쪽에서 다른 여섯 글꼴도 지정하므로 이 문서 103쪽은 제외 목록에 남는다. 회수한 굴림 파일은 `outline-demo`와 `outline-minimal`의 Native 자동 선택 환경에도 반영했다. Fontconfig에서 기록 목록 1,219개 중 로컬의 575개를 확인한 뒤 두 문서의 4쪽을 devel·보정본으로 다시 그렸다. 굴림 추가 전후와 두 소스 사이의 픽셀 차이는 모두 0쪽이었다.
+새 SPJGT를 지정하는 범위는 화학물질 문서의 Native·WASM이다. 양쪽 모두 단독 돋움체 1개를 더 확보해야 한다. 회수한 굴림 파일은 `outline-demo`와 `outline-minimal`의 Native 자동 선택 환경에도 반영했다. Fontconfig에서 기록 목록 1,219개 중 로컬의 575개를 확인한 뒤 두 문서의 4쪽을 devel·보정본으로 다시 그렸다. 굴림 추가 전후와 두 소스 사이의 픽셀 차이는 모두 0쪽이었다.
 
 이전 검토에서 수용한 #9335의 공급본으로도 devel과 후보를 실행했다. 23종·양 백엔드의 5,811개 항목과 고유 프로그램 559개의 해시·이름·순서를 확인했다. Native에서 동명 글꼴을 선택하는 검색 디렉터리 묶음과 환경 JSON도 복원했다. 이 결과는 새 글꼴 목록이 생기기 전의 조건에서 그림 보정으로 바뀐 출력을 확인하는 데 사용한다. [이전 수용 조건](../../semanticist21-20261123-table-notes-shadows/protected-inputs.json) · [검색 순서 대조](font-search-groups.tsv) · [쪽별 정본](../../visual-protected-baseline/final.tsv)
 

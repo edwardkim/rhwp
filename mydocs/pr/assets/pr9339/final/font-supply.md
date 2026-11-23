@@ -1,30 +1,34 @@
 # PR #9339 정본 보호 글꼴 확인
 
-2026-11-23 19:29 KST 재확인 결과, devel `321ab8f977`의 고유 프로그램 312개 중 305개는 로컬 파일의 SHA-256을 확인했다. 나머지 7개가 필요한 문서 7종은 백엔드별 379쪽이다. [공식 공급 조건](../../../../verification/protected-font-supply/manifest.json)
+2026-11-23 메인테이너 결정에 따라 아래 6개 글꼴은 각각 검증 당시 파일과 Windows 11 설치본의 SHA-256을 모두 허용한다. devel `321ab8f977`의 명시적 공급 대상 312개 중 305개는 기존 해시, 6개는 Windows 설치본 해시로 직접 확인했다. 남은 `dotumche.ttf`는 화학물질 표시 기준 103쪽에 쓰인다. [공식 공급 조건과 허용 해시 쌍](../../../../verification/protected-font-supply/manifest.json)
 
-| 파일 | 필요한 SHA-256 | 해당 문서 |
-| --- | --- | --- |
-| `0ea38ac53e8d-batang.TTC` | `0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8` | chemical, outline, sample16-hwp2022, sample16-hwp2024, sample16-hwpx |
-| `49dd1ef0caa6-H2MJSM.TTF` | `49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc` | decree |
-| `arial.ttf` | `c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
-| `arialbd.ttf` | `766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
-| `arialbi.ttf` | `e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
-| `ariali.ttf` | `79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
-| `dotumche.ttf` | `097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62` | chemical |
+| 파일 | 검증 당시 SHA-256 | 함께 허용한 Windows 11 SHA-256 | 해당 문서 |
+| --- | --- | --- | --- |
+| `batang.ttc` | `0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8` | `51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8` | chemical, outline, sample16-hwp2022, sample16-hwp2024, sample16-hwpx |
+| `H2MJSM.TTF` (HY신명조) | `49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc` | `f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b` | decree |
+| `arial.ttf` | `c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1` | `edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
+| `arialbd.ttf` | `766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69` | `4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
+| `arialbi.ttf` | `e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994` | `d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
+| `ariali.ttf` | `79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62` | `4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
+| `dotumche.ttf` | `097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62` | — | chemical |
+
+Windows 설치본으로 공급이 가능해진 문서 6종을 기준 devel과 후보에서 다시 출력했다. Native·fresh WASM 각각 276쪽 모두 두 소스의 PNG가 같았다. 쪽별 공식 하한에 미달한 쪽은 두 소스에서 똑같이 Native 65쪽, WASM 63쪽이었다. [실제 공급 해시·WASM face·문서별 결과](protected-windows-fonts.json) · [쪽별 점수와 PNG 해시](protected-windows-fonts.tsv)
 
 ## 직접 대조한 파일
 
-필수 고유 프로그램 312개를 기준으로 보면 `ttfs` 안에서 296개, 그 밖의 로컬 경로나 복원 결과에서만 9개를 확보했다. 미확보 7개는 위 표와 같다. [312개 전체의 SHA-256과 폴더 내 일치 경로](ttfs-inventory.tsv)
+19:29 KST에 검증 당시 해시와 일치한 파일은 `ttfs` 안에서 296개, 그 밖의 로컬 경로나 복원 결과에서 9개였다. 표의 Windows 설치본은 이번에 각각 `C:\Windows\Fonts`에서 다시 읽어 SHA-256을 계산했다. [312개 전체의 기존 SHA-256과 폴더 내 일치 경로](ttfs-inventory.tsv)
 
 폴더 대조 중 devel에 병합된 #9359(`321ab8f977`)의 목록도 확인했다. 23종 문서와 두 백엔드의 비교에서 바뀐 값은 검증 기록 파일의 SHA-256 46곳뿐이다. 새 기록 파일의 실제 해시를 검증했고, 공급 모드·파일명·글꼴 SHA-256·순서와 4,046행 보호 하한표가 같음을 확인했다. [검증 기록 정리 PR](https://github.com/edwardkim/rhwp/pull/9359)
 
-18:16 조사 때는 로컬 `ttfs`의 하위 폴더와 ZIP 2개의 글꼴 후보가 1,068개였다. 19:29 재확인 때는 `hft-fonts-cmap-v2`의 387개를 포함해 1,455개였다. 새 `hft-fonts-cmap-v2/SPJGT.otf`의 SHA-256은 `6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a`로 정본과 같다. 기존 `hft/SPJGT.otf`는 `484d6046…`이다. 화학물질 문서의 양쪽 공급 목록에는 새 파일을 반영한 뒤에도 다른 글꼴 6개가 미확보다.
+18:16 조사 때는 로컬 `ttfs`의 하위 폴더와 ZIP 2개의 글꼴 후보가 1,068개였다. 19:29 재확인 때는 `hft-fonts-cmap-v2`의 387개를 포함해 1,455개였다. 새 `hft-fonts-cmap-v2/SPJGT.otf`의 SHA-256은 `6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a`로 정본과 같다. 기존 `hft/SPJGT.otf`는 `484d6046…`이다. 이후 화학물질 문서의 Native·WASM 공급 목록에서 Arial 4종과 바탕 TTC는 이번에 허용된 설치본으로 확인했다.
 
 처음 찾던 11개 중 이 폴더에서 해시가 일치한 것은 새 SPJGT 한 개다. Arial 네 파일과 바탕·굴림 TTC는 동명 파일의 해시가 다르다. 필수 굴림 파일은 별도 로컬 변환기 자료에서 찾아 SHA-256 `4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226`을 확인했다.
 
 두 SPJGT의 내부 이름은 모두 `HY Junggothic`이다. 문서별 정본에서 화학물질 표시 기준은 `6f6cc714…`, 편람 HWP와 영월 문서는 `484d6046…`를 명시한다. 선호 유니코드 문자표의 항목 수는 기존 536개, 새 파일 893개다. 새 파일의 두 유니코드 문자표에는 `○`(U+25CB)가 `hft343B`에 연결되어 있고, `•`(U+2022)는 두 파일 모두 매핑이 없다.
 
 돋움체는 `ttfs/windows/gulim.ttc`의 네 번째 서체(index 3, Version 5.04)로 확인됐다. 이 서체를 단일 TTF로 추출한 SHA-256은 `3674103f23382f9bf40e650d8860b9ce2338ae6bf9400bdcf0b56688743f8f53`로, 정본의 `dotumche.ttf`와 다르다. [파일별 해시 대조](font-program-lookup.tsv)
+
+Windows 11의 `C:\Windows\Fonts\H2MJSM.TTF`에 기록된 서체명은 한글 `HY신명조`, 영문 `HYSinMyeongJo-Medium`이다. 시행령 문서(`decree`)의 Native·WASM 공급 목록은 `49dd1ef0caa6…`를 지정하며, 이번 검증에서는 설치본 `f78f538885b2…`를 같은 순서에 공급했다.
 
 공개 생성법과 같은 빈 HWPX로 한양중고딕 독립 표본을 만들었다. 입력 SHA-256은 `79c2714845d7ed0941534bc765665e7f0302dac1333abfce84d21daef3d10592`이고, 한컴 2020 11.0.0.9136에서 재인쇄한 7쪽의 본문 11,187자가 생성 순서와 일치했다. 새 PDF의 SHA-256은 `618695320aee01224d30c14511ce319fa4b0883e1c97cb45d5bf8d40741c44c3`이다. 독립 자료의 모든 비어 있지 않은 Type 3 글리프 프로그램을 당시 해시와 대조했다. [표본 생성 기록](../../issues7754_7765/source44/source56-independent-specimen-jobs.json)
 
