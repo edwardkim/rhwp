@@ -432,19 +432,14 @@ export function renderPictureObjectSelection(this: any): void {
             // 직선/연결선: 시작점/끝점 핸들 (꺽인/곡선 연결선은 중간점 추가)
             let midPoint: { x: number; y: number } | undefined;
             try {
-              const props = this.wasm.getShapeProperties(ref.sec, ref.ppi, ref.ci);
-              // connectorType >= 3: 꺽인(3~5) 또는 곡선(6~8)
-              if (props.connectorType !== undefined && props.connectorType >= 3) {
-                if (props.connectorMidX !== undefined && props.connectorMidY !== undefined) {
-                  // 실제 꺽임/곡선 제어점 좌표 (HWPUNIT → page px)
-                  const PX = 96 / 7200;
-                  midPoint = {
-                    x: ctrl.x + props.connectorMidX * PX,
-                    y: ctrl.y + props.connectorMidY * PX,
-                  };
-                } else {
-                  midPoint = { x: (ctrl.x1 + ctrl.x2) / 2, y: (ctrl.y1 + ctrl.y2) / 2 };
-                }
+              const props = getObjectProperties.call(this, ref);
+              if (!ref.headerFooter && !ref.noteRef && props.connectorMidAxis &&
+                  props.connectorMidX !== undefined && props.connectorMidY !== undefined) {
+                const px = 96 / 7200;
+                midPoint = {
+                  x: ctrl.x + props.connectorMidX * px,
+                  y: ctrl.y + props.connectorMidY * px,
+                };
               }
             } catch { /* 일반 선 */ }
             this.pictureObjectRenderer.renderLine(

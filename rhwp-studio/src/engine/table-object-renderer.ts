@@ -60,7 +60,7 @@ function createSvgLine(
 }
 
 /** 핸들 방향 */
-export type HandleDirection = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'rotate';
+export type HandleDirection = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'rotate' | 'midpoint';
 
 interface HandleInfo {
   dir: HandleDirection;
@@ -346,7 +346,7 @@ export class TableObjectRenderer {
     if (midPoint) {
       const mx = pageLeft + midPoint.x * zoom;
       const my = pageOffset + midPoint.y * zoom;
-      handlePoints.push(['s', mx, my]); // 's'를 중간점 핸들로 사용
+      handlePoints.push(['midpoint', mx, my]);
     }
     for (const [dir, cx, cy] of handlePoints) {
       const el = document.createElement('div');

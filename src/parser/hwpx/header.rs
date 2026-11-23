@@ -11,7 +11,7 @@ use crate::model::style::*;
 use crate::parser::tags;
 
 use super::utils::{
-    attr_str, local_name, parse_alpha_byte, parse_bool, parse_color, parse_gradient_type,
+    attr_str, local_name, parse_bool, parse_color, parse_fill_alpha_byte, parse_gradient_type,
     parse_hatch_style, parse_i16, parse_i32, parse_i8, parse_u16, parse_u32, parse_u8,
     skip_element,
 };
@@ -1722,7 +1722,8 @@ fn parse_border_fill(
                                         }
                                     }
                                     b"alpha" => {
-                                        if let Some(alpha) = parse_alpha_byte(&attr_str(&attr)) {
+                                        if let Some(alpha) = parse_fill_alpha_byte(&attr_str(&attr))
+                                        {
                                             bf.fill.alpha = alpha;
                                         }
                                     }
@@ -1755,7 +1756,8 @@ fn parse_border_fill(
                                     b"blur" | b"step" => grad.blur = parse_i16(&attr),
                                     b"stepCenter" => grad.step_center = parse_u8(&attr),
                                     b"alpha" => {
-                                        if let Some(alpha) = parse_alpha_byte(&attr_str(&attr)) {
+                                        if let Some(alpha) = parse_fill_alpha_byte(&attr_str(&attr))
+                                        {
                                             bf.fill.alpha = alpha;
                                         }
                                     }

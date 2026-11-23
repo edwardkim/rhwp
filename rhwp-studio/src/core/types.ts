@@ -659,6 +659,9 @@ export interface ShapeProperties {
   borderOutlineStyle?: number;
   lineType?: number;         // 0=없음, 1=실선, 2=파선, 3=점선, 4=일점쇄선, 5=이점쇄선, ...
   lineEndShape?: number;     // 0=둥근, 1=평면
+  connectorMidX?: number;
+  connectorMidY?: number;
+  connectorMidAxis?: 'x' | 'y';
   arrowStart?: number;       // 0=없음, 1~6=화살표 모양
   arrowEnd?: number;
   arrowStartSize?: number;   // 0~8

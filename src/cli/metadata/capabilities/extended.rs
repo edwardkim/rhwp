@@ -99,7 +99,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd_json(
             "export-hwpx",
             "HWP→HWPX 변환 저장 (--verify 게이트 exit 3/4, --json 봉투)",
-            &["--verify", "--verify-pages", "--json"],
+            &["--verify", "--verify-pages", "--json", "--recover-legacy-alpha"],
             &[
                 "schemaVersion",
                 "source",

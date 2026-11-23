@@ -145,18 +145,17 @@ thread_local! {
 }
 
 /// `parse_hwpx`가 header·구역을 읽는 동안 예전 rhwp 비율 `alpha` 해석을 세운다.
-pub(crate) struct RatioAlphaGuard;
+pub(crate) struct RatioAlphaGuard(bool);
 
 impl RatioAlphaGuard {
     pub(crate) fn set(active: bool) -> Self {
-        HWPX_RATIO_ALPHA.with(|c| c.set(active));
-        RatioAlphaGuard
+        Self(HWPX_RATIO_ALPHA.with(|c| c.replace(active)))
     }
 }
 
 impl Drop for RatioAlphaGuard {
     fn drop(&mut self) {
-        HWPX_RATIO_ALPHA.with(|c| c.set(false));
+        HWPX_RATIO_ALPHA.with(|c| c.set(self.0));
     }
 }
 
@@ -164,10 +163,17 @@ impl Drop for RatioAlphaGuard {
 /// (투명도 30% → 77). 소수점이 있는 값은 예전 rhwp 저장본처럼 0.0~1.0 비율로 읽는다.
 /// 예전 rhwp는 완전 투명(255)을 소수점 없이 `1`로 썼으므로, 그 저장본으로 확인된 패키지
 /// ([`RatioAlphaGuard`])에서는 모든 값을 비율로 읽는다.
+pub fn parse_fill_alpha_byte(raw: &str) -> Option<u8> {
+    if raw.trim() == "1" && HWPX_RATIO_ALPHA.with(|c| c.get()) {
+        return Some(255);
+    }
+    parse_alpha_byte(raw)
+}
+
 pub fn parse_alpha_byte(raw: &str) -> Option<u8> {
     let raw = raw.trim();
     let value = raw.parse::<f64>().ok().filter(|v| v.is_finite())?;
-    Some(if raw.contains('.') || HWPX_RATIO_ALPHA.with(|c| c.get()) {
+    Some(if raw.contains('.') {
         (value.clamp(0.0, 1.0) * 255.0).round() as u8
     } else {
         value.clamp(0.0, 255.0).round() as u8

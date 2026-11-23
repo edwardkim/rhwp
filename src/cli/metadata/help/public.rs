@@ -269,6 +269,7 @@ pub(super) fn print() {
     println!();
     println!("  export-hwpx <입력.hwp|입력.hwpx> [출력.hwpx] [--verify] [--verify-pages]");
     println!("      HWP 문서를 HWPX(ZIP+XML)로 변환 저장. 출력 생략 시 <입력 stem>.hwpx");
+    println!("      --recover-legacy-alpha  구버전 rhwp가 저장한 HWPX의 완전 투명 채움 복원");
     println!(
         "      --verify              변환 후 산출물을 재파싱해 IR 차이를 검출 (차이 시 exit 3)"
     );

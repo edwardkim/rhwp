@@ -1478,7 +1478,7 @@ fn parse_document_inner(
     data: &[u8],
     password: Option<&[u8]>,
 ) -> Result<ParsedDocument, ParseError> {
-    parse_document_inner_unsealed(data, password).map(seal_parsed_document)
+    parse_document_inner_unsealed(data, password, false).map(seal_parsed_document)
 }
 
 /// `DocumentCore` 로 여는 경로 전용 — DocInfo 만 봉인하고 본문 봉인은 호출자에게 맡긴다.
@@ -1490,8 +1490,10 @@ fn parse_document_inner(
 pub(crate) fn parse_document_for_core(
     data: &[u8],
     password: Option<&[u8]>,
+    recover_legacy_hwpx_alpha: bool,
 ) -> Result<ParsedDocument, ParseError> {
-    parse_document_inner_unsealed(data, password).map(seal_parsed_doc_info)
+    parse_document_inner_unsealed(data, password, recover_legacy_hwpx_alpha)
+        .map(seal_parsed_doc_info)
 }
 
 fn seal_parsed_doc_info(mut parsed: ParsedDocument) -> ParsedDocument {
@@ -1518,18 +1520,16 @@ fn seal_parsed_document(parsed: ParsedDocument) -> ParsedDocument {
 fn parse_document_inner_unsealed(
     data: &[u8],
     password: Option<&[u8]>,
+    recover_legacy_hwpx_alpha: bool,
 ) -> Result<ParsedDocument, ParseError> {
     let open_policy = document_open_decompression_policy();
     match detect_format(data) {
         FileFormat::Hwp => {
             parse_hwp_inner_with_limits(data, password, open_policy.hwp5).map(without_hml_metadata)
         }
-        FileFormat::Hwpx => match password {
-            Some(password) => hwpx::parse_hwpx_with_password(data, password),
-            None => hwpx::parse_hwpx(data),
-        }
-        .map_err(ParseError::from)
-        .map(without_hml_metadata),
+        FileFormat::Hwpx => hwpx::parse_hwpx_for_open(data, password, recover_legacy_hwpx_alpha)
+            .map_err(ParseError::from)
+            .map(without_hml_metadata),
         FileFormat::Hwp3 => match password {
             Some(password) => hwp3::parse_hwp3_with_open_body_limit_and_password(
                 data,

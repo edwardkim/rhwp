@@ -527,18 +527,11 @@ where
             crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS,
         )?;
     }
-    // rhwp 원본 마커를 싣는 산출물은 alpha 를 정수로 썼다고 표시한다. 표지가 없는 예전
-    // 저장본은 다시 열 때 비율 alpha 로 읽는다(`parse_hwpx`).
-    if doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH).is_some()
-        || doc
-            .hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH)
-            .is_some()
-    {
-        z.write_deflated(
-            crate::model::document::RHWP_BYTE_ALPHA_HWPX_MARKER_PATH,
-            b"1",
-        )?;
-    }
+    // 채움 alpha를 바이트로 기록한 패키지는 구버전 복원 옵션으로 다시 열어도 같은 값이다.
+    z.write_deflated(
+        crate::model::document::RHWP_BYTE_ALPHA_HWPX_MARKER_PATH,
+        b"1",
+    )?;
     if doc.layout_profile().hwp3_external_realign() {
         z.write_deflated(
             crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
