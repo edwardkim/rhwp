@@ -14,40 +14,38 @@ use rhwp::renderer::font_symbol_coverage::{empty_symbol_codepoints, font_symbol_
 
 #[test]
 fn empty_symbols_do_not_claim_coverage_but_blank_semantics_and_real_ink_remain() {
-    let original = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
-    let bytes = symbol_font_program::mapped_program(
-        original,
-        &[
-            (' ', 1),
-            ('A', 2),
-            ('B', 1),
-            ('⚫', 1),
-            ('∑', 1),
-            ('€', 1),
-            ('˘', 1),
-            ('\u{2800}', 1),
-            ('\u{301}', 1),
-            ('\u{200d}', 1),
-            ('★', 2),
-        ],
+    use rhwp::renderer::font_symbol_coverage::is_visible_symbol;
+    let program =
+        include_bytes!("../../vendor/rhwp-pdf-import-backend/src/fonts/assets/DejaVuSans.ttf");
+    let face = ttf_parser::Face::parse(program, 0).unwrap();
+    let empty_object = face
+        .glyph_index('\u{fffc}')
+        .expect("원본에 등록된 객체 대체 기호");
+    assert!(face.glyph_bounding_box(empty_object).is_none());
+    let empty = empty_symbol_codepoints(program, 0);
+    assert_eq!(empty, [u32::from('\u{fffc}')].into());
+    assert_eq!(
+        font_symbol_unicode_range(program, 0),
+        "U+0-FFFB,U+FFFD-10FFFF",
+        "실제 빈 기호만 다음 글꼴로 넘긴다"
     );
-    let before = bytes.clone();
-    let empty = empty_symbol_codepoints(&bytes, 0);
-    assert_eq!(empty, ['˘', '€', '∑', '⚫'].map(u32::from).into());
-    let range = font_symbol_unicode_range(&bytes, 0);
-    assert!(!range.is_empty());
-    for ch in [' ', 'A', 'B', '★', '\u{2800}', '\u{301}', '\u{200d}'] {
-        assert!(
-            !empty.contains(&u32::from(ch)),
-            "정상 의미/잉크 보존: {ch:?}"
-        );
+
+    for character in ['⚫', '∑', '€', '˘', '★'] {
+        assert!(is_visible_symbol(character));
+        let glyph = face.glyph_index(character).unwrap();
+        assert!(face.glyph_bounding_box(glyph).is_some());
+        assert!(!empty.contains(&u32::from(character)));
     }
-    assert_eq!(bytes, before, "원본 cmap/glyph/hmtx/name은 바뀌지 않는다");
-    assert!(font_symbol_unicode_range(original, 0).is_empty());
-    assert!(
-        font_symbol_unicode_range(&bytes, 1).is_empty(),
-        "없는 collection face를 추측하지 않는다"
-    );
+    for character in [' ', 'A', 'B', '\u{2800}', '\u{0301}', '\u{200d}'] {
+        assert!(!is_visible_symbol(character));
+        assert!(face.glyph_index(character).is_some());
+        assert!(!empty.contains(&u32::from(character)));
+    }
+    for character in [' ', '\u{2800}', '\u{200d}'] {
+        let glyph = face.glyph_index(character).unwrap();
+        assert!(face.glyph_bounding_box(glyph).is_none());
+    }
+    assert!(font_symbol_unicode_range(program, 1).is_empty());
     assert!(font_symbol_unicode_range(b"not a font", 0).is_empty());
 }
 
