@@ -5989,9 +5989,23 @@ pub(crate) fn stored_picture_before_host_placement(
     actual_host_flow_y: f64,
     dpi: f64,
 ) -> Option<ParagraphFloatPlacement> {
-    let [Control::Picture(picture)] = para.controls.as_slice() else {
-        return None;
-    };
+    // 용지 기준의 장식선은 독립해 그려지며 문단 기준 그림의 흐름 상자를 소비하지 않는다.
+    let mut picture = None;
+    for control in &para.controls {
+        match control {
+            Control::Picture(value) if picture.is_none() => picture = Some(value),
+            Control::Shape(shape)
+                if matches!(shape.as_ref(), crate::model::shape::ShapeObject::Line(_))
+                    && !shape.common().treat_as_char
+                    && shape.common().vert_rel_to == VertRelTo::Paper
+                    && matches!(
+                        shape.common().text_wrap,
+                        TextWrap::InFrontOfText | TextWrap::BehindText
+                    ) => {}
+            _ => return None,
+        }
+    }
+    let picture = picture?;
     let [host] = para.line_segs.as_slice() else {
         return None;
     };
@@ -10713,6 +10727,41 @@ pub(crate) fn para_relative_left_aligned_outer_margin_left_hu(table: &Table) -> 
         return None;
     }
     Some(i32::from(table.outer_margin_left))
+}
+
+/// 저장 글줄이 어울림 표의 바깥 상자 오른쪽에서 단 끝까지 이어지는 경우의 왼쪽 바깥여백.
+pub(crate) fn stored_column_square_table_outer_margin_left_hu(
+    para: &Paragraph,
+    table: &Table,
+    column_width_hu: i32,
+) -> Option<i32> {
+    let common = &table.common;
+    if common.treat_as_char
+        || common.text_wrap != TextWrap::Square
+        || common.horz_rel_to != HorzRelTo::Column
+        || common.horz_align != HorzAlign::Left
+        || common.width == 0
+        || table.outer_margin_left == 0
+        || para.stored_text_partition_is_dirty()
+        || !matches!(para.controls.as_slice(), [Control::Table(_)])
+    {
+        return None;
+    }
+    let [line] = para.line_segs.as_slice() else {
+        return None;
+    };
+    let offset = signed_hwpunit(common.horizontal_offset);
+    let margin_left = i32::from(table.outer_margin_left);
+    let outer_right = i64::from(offset)
+        + i64::from(margin_left)
+        + i64::from(common.width)
+        + i64::from(table.outer_margin_right);
+    (offset >= 0
+        && line.segment_width > 0
+        && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && i64::from(line.column_start) == outer_right
+        && line.column_start.checked_add(line.segment_width) == Some(column_width_hu))
+    .then_some(margin_left)
 }
 
 /// [#7063] 왼쪽 정렬 **자리차지(TopAndBottom)** 표의 왼쪽 바깥여백 (HU).

@@ -13525,8 +13525,21 @@ impl LayoutEngine {
                     )
                 })
                 .flatten();
+            let stored_column_square_margin = (self.profile.get().hwp5_stored_pagination_layout()
+                && !self.profile.get().session_edited())
+            .then(|| {
+                crate::renderer::float_placement::stored_column_square_table_outer_margin_left_hu(
+                    para,
+                    t,
+                    super::px_to_hwpunit(col_area.width, self.dpi),
+                )
+            })
+            .flatten();
             let tbl_inline_x = if let Some((ix, _)) = inline_pos {
                 Some(ix)
+            } else if let Some(left) = stored_column_square_margin {
+                // 비-TAC 인라인 원점은 layout_table에서 저장 가로 오프셋을 더한다.
+                Some(col_area.x + hwpunit_to_px(left, self.dpi))
             } else if empty_square_host_geometry.is_some()
                 && matches!(t.common.horz_rel_to, crate::model::shape::HorzRelTo::Column)
             {
