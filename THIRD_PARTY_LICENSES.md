@@ -411,6 +411,7 @@ USE THE FONT SOFTWARE OR FROM OTHER DEALINGS IN THE FONT SOFTWARE.
 | `tests/fixtures/native_font_styles/*.ttf` (2개) | Adobe Noto Sans KR 수정본, SIL OFL 1.1 | [출처·재생성](tests/fixtures/native_font_styles/README.md), [전문](tests/fixtures/native_font_styles/OFL.txt) |
 | `tests/fixtures/fonts/source-code-pro/SourceCodePro-Regular.otf` | Adobe Source Code Pro 2.042 원본, SIL OFL 1.1 | [출처·SHA-256](tests/fixtures/fonts/source-code-pro/README.md), [전문](tests/fixtures/fonts/source-code-pro/LICENSE.md) |
 | `tests/fixtures/fonts/source-sans-3/*.otf` (3개) | Adobe Source Sans 3 공식 원본, SIL OFL 1.1 | [출처·SHA-256](tests/fixtures/fonts/source-sans-3/README.md), [3.028R 전문](tests/fixtures/fonts/source-sans-3/LICENSE-3.028.md), [3.052R 전문](tests/fixtures/fonts/source-sans-3/LICENSE-3.052.md) |
+| `tests/fixtures/fonts/last-resort/LastResortHE-Regular.ttf` | Unicode Last Resort 17.000 배포 원본, SIL OFL 1.1 | [출처·SHA-256](tests/fixtures/fonts/last-resort/README.md), [전문](tests/fixtures/fonts/last-resort/OFL.txt) |
 | 나머지 `tests/fixtures/fonts/`의 TTF·TTC (7개) | 저장소 생성기의 직접 작성 윤곽선, MIT | 각 `*.LICENSE.md`에 생성기·용도 기록. 외부 폰트 수정본과 구별 |
 
 `assets/fonts/NotoSansMath-Regular.woff2`는 Ubuntu 설치본의 전체 TTF를 WOFF2로 변환한

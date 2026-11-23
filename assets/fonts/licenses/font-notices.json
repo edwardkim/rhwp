@@ -1104,6 +1104,18 @@
         "Copyright (c) 2025-2026 Edward Kim"
       ],
       "provenance": "tests/fixtures/issue8533/README.md"
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/last-resort/LastResortHE-Regular.ttf",
+      "sha256": "3a936fe2379e9e164a8f9819095cbf53d9305a2d08532d9be5b496f4be45bcde",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/fonts/last-resort/OFL.txt"
+      ],
+      "copyrightNotices": [
+        "© 2020–2025 Unicode, Inc."
+      ],
+      "provenance": "tests/fixtures/fonts/last-resort/README.md"
     }
   ]
 }
