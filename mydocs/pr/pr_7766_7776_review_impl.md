@@ -6,8 +6,31 @@ last_verified: 2026-11-23
 
 # #7766–#7776 조판 복원 구현 기록
 
-작업 브랜치는 `task/7766-inline-table-page-origin`이며 검증 기준 `upstream/devel`은
-`321ab8f97791ecf58b56f178f49b7795a836fb79`다.
+작업 브랜치는 `task/7766-inline-table-page-origin`이다. 초기 구현 비교는
+`321ab8f97791ecf58b56f178f49b7795a836fb79`에서 시작했다.
+
+## 리베이스로 반영한 기능의 재검증
+
+#9372가 병합된 devel `28a6afc1ebe3e9873605f2d306ca094b422abf24`과 후보 제품
+`9a78578e17f46dbd53b19d1eb10445dbef7a2988`을 비교했다. 같은 입력, 독립 한컴 Print,
+글꼴 공급 순서와 출력 프로필을 사용했다. 화면 대조는 96 DPI에서 색상 경계 보정 전
+2px 실루엣과 PNG·렌더 트리를 확인했다.
+
+| 선행 PR | 다시 확인한 동작 | 증적 |
+| --- | --- | --- |
+| #9324 | Native와 fresh WASM에서 HWP↔HWPX 저장·재열기, 삽입 문구·원본 표식 유지, 비해당 입력의 표식 유지 여부 확인 | [Native](assets/issue7766/rebase-validation/pr9324-native.json) · [fresh WASM](assets/issue7766/rebase-validation/pr9324-wasm.json) |
+| #9365 | 12문서 각각 양쪽 경로의 쪽수, PNG 및 렌더 트리 동일 | [Native TSV](assets/issue7766/rebase-validation/pr9365-native.tsv) · [fresh WASM TSV](assets/issue7766/rebase-validation/pr9365-wasm.tsv) |
+| #9372 | 11조건 539쪽씩 비교. Native 전쪽과 fresh WASM 537쪽 동일. fresh WASM 2쪽의 제목 간격 개선을 확대 판독 | [Native TSV](assets/issue7766/rebase-validation/pr9372-native.tsv) · [fresh WASM TSV](assets/issue7766/rebase-validation/pr9372-wasm.tsv) |
+
+#9317 중소기업 안내서의 fresh WASM 7쪽은 99.93%→99.99%, 43쪽은 98.20%→98.38%다.
+두 쪽의 제목 가운뎃점 주변이 한컴 인쇄에 가까워졌다. 43쪽의 첫 표 조각에 사각형 두 개가
+남고 44–46쪽에서 반복되지 않는 기존 배치 계약도 확인했다.
+[7쪽 비교](assets/issue7766/rebase-validation/pr9317-wasm-page-07.png) ·
+[43쪽 비교](assets/issue7766/rebase-validation/pr9317-wasm-page-43.png) ·
+[확인 기록](assets/issue7766/rebase-validation/pr9317-wasm-delta.json)
+
+#9372가 수용할 때도 90%에 미달했던 조건은 식품 자료 8쪽, 제주 자료 9쪽,
+소비자 물가 1쪽이며 같은 쪽의 수치를 유지했다.
 
 ## #7766 명시적 쪽 나눔의 인라인 표와 본표 이어받기
 
