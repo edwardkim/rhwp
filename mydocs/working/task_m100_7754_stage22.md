@@ -31,6 +31,18 @@ fresh WASM을 빌드하고 JavaScript와 선언 파일 두 개를 대조했다. 
 캐럿은 같은 줄에서 글자 순서대로 전진했다.
 [후보 WASM 해시·공개 API·주석 검증](../verification/issue7754-nine-fidelity/after-pr9335/wasm-candidate-api-and-notes.json)
 
+## Studio 실행 검증
+
+프로덕션 빌드가 통과했다. 격리한 Studio 작업본에 공용 셰이더와 렌더러 계약 문서,
+Vite의 저장소 쪽 자료 6개와 공개 쪽 자료 5개를 현재 Git 트리의 바이트대로 준비했다.
+같은 WASM 생산본으로 Node 바인딩도 생성했다. 두 Node 전용 검사를 포함한 Studio 테스트
+2,834개와 렌더러 계약 검사가 모두 통과했다.
+
+#9335에 기록된 브라우저 검사 5개를 다시 실행했다. 중첩 표 포인터와 개체 선택,
+표 경계 드래그, 각주 단축키와 삽입 검사가 모두 통과했다. 각 검사에서 브라우저가
+받은 WASM의 SHA-256이 후보 패키지와 일치했다.
+[Studio 빌드·단위 테스트·브라우저 검증](../verification/issue7754-nine-fidelity/after-pr9335/studio-local-validation.json)
+
 ## 검증 계획
 
 - 같은 조건의 Native·fresh WASM에서 아홉 이슈 원본 583쪽과 보조 검증 50쪽을
