@@ -291,6 +291,39 @@ fn resolve_master_page_hrefs<'a, 'b>(
     (hrefs, missing_refs)
 }
 
+/// 한컴 12.30은 첫 구역 첫 문단에서 구역 정의와 단 정의 사이에 다른 컨트롤(쪽 번호 위치 등)이
+/// 끼면 그 구역 정의를 버리고 새 문서 기본값으로 연다. 용지·여백·첫 쪽 감추기·시작 쪽 번호·바탕쪽이
+/// 모두 기본값이 되고, 한컴으로 다시 저장하면 바탕쪽 참조도 사라진다. 같은 차례라도 둘째 구역부터는
+/// 구역 정의를 그대로 쓴다(한컴 12.30 Mac 화면, 2026-11-23).
+fn drop_first_section_def_like_hancom(section: &mut Section) {
+    use crate::model::control::Control;
+    let Some(paragraph) = section.paragraphs.first() else {
+        return;
+    };
+    let Some(secd) = paragraph
+        .controls
+        .iter()
+        .position(|c| matches!(c, Control::SectionDef(_)))
+    else {
+        return;
+    };
+    let cold_gap = paragraph.controls[secd + 1..]
+        .iter()
+        .position(|c| matches!(c, Control::ColumnDef(_)));
+    if !matches!(cold_gap, Some(gap) if gap > 0) {
+        return;
+    }
+    let Ok(blank) =
+        section::parse_hwpx_section(crate::serializer::hwpx::section::EMPTY_SECTION_XML)
+    else {
+        return;
+    };
+    if let Control::SectionDef(definition) = &mut section.paragraphs[0].controls[secd] {
+        **definition = blank.section_def.clone();
+    }
+    section.section_def = blank.section_def;
+}
+
 /// [#3460] `binaryItemIDRef` 를 매니페스트 위치 기준 정규 이름(`image{N}`)으로 통일한다.
 ///
 /// 섹션 파서는 `binaryItemIDRef` 에서 **숫자만 뽑아** `bin_data_id` 로 쓰고(숫자 불변식,
@@ -784,6 +817,9 @@ pub(crate) fn parse_hwpx_with_reservation(
     // [#6868 잔여] 구역 경계를 넘는 누름틀의 종료 마커를 잇는다 — 구역 하나를 파싱하는
     // 동안에는 앞 구역에서 열린 필드를 볼 수 없다.
     section::link_orphan_field_ends_across_sections(&mut sections);
+    if let Some(first) = sections.first_mut() {
+        drop_first_section_def_like_hancom(first);
+    }
 
     // [Task #1608] (제거) 과거 Task #554 의 HWP3-origin tolerance 부여는
     // head version == "1.4" 오탐지로 네이티브 HWPX 전반에 부당 적용되어 삭제했다.

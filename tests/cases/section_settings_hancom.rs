@@ -183,3 +183,76 @@ fn hwp_page_start_bits_follow_hancom() {
     );
     assert_eq!(page_numbers(&reopened), [1, 2, 3, 4]);
 }
+
+/// 시험 문서의 첫 구역만 고친 HWPX 바이트.
+fn with_first_section(edit: impl Fn(&str) -> String) -> Vec<u8> {
+    use std::io::{Read, Write};
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let mut source = zip::ZipArchive::new(std::fs::File::open(path).unwrap()).unwrap();
+    let mut out = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    for index in 0..source.len() {
+        let mut entry = source.by_index(index).unwrap();
+        let name = entry.name().unwrap().to_string();
+        if name == "Contents/section0.xml" {
+            let mut xml = String::new();
+            entry.read_to_string(&mut xml).unwrap();
+            let options = zip::write::SimpleFileOptions::default()
+                .compression_method(zip::CompressionMethod::Stored);
+            out.start_file(name, options).unwrap();
+            out.write_all(edit(&xml).as_bytes()).unwrap();
+        } else {
+            out.raw_copy_file(entry).unwrap();
+        }
+    }
+    out.finish().unwrap().into_inner()
+}
+
+/// 시험 문서 첫 구역 첫 문단은 [구역 정의][쪽 번호 위치][단 정의] 차례이고, 두 구역이 같은
+/// `masterpage0`을 참조한다. 한컴 12.30(Mac)은 이 차례면 첫 구역의 구역 정의를 버리고 기본값으로
+/// 연다. 그래서 바탕쪽은 3·4쪽에만 보이고, 첫 구역만 B5 용지·시작 쪽 번호 5로 바꿔도 1쪽은 A4·1쪽이다.
+/// 단 정의를 구역 정의 바로 뒤로 옮기면 첫 구역 설정이 살아 바탕쪽이 1·2쪽에도 보인다.
+#[test]
+fn first_section_def_split_from_column_def_falls_back_like_hancom() {
+    let marked = |core: &DocumentCore| -> Vec<bool> {
+        (0..core.page_count())
+            .map(|page| page_text(core, page).contains("바탕쪽표식"))
+            .collect()
+    };
+    let core = open();
+    assert_eq!(marked(&core), [false, false, true, true]);
+    let saved = rhwp::serializer::hwpx::serialize_hwpx(core.document()).unwrap();
+    let reopened = DocumentCore::from_bytes(&saved).unwrap();
+    assert_eq!(marked(&reopened), [false, false, true, true]);
+
+    let b5_from_five = with_first_section(|xml| {
+        xml.replace(
+            r#"width="59528" height="84186""#,
+            r#"width="51592" height="72852""#,
+        )
+        .replace(
+            r#"pageStartsOn="BOTH" page="0""#,
+            r#"pageStartsOn="BOTH" page="5""#,
+        )
+    });
+    let core = DocumentCore::from_bytes(&b5_from_five).unwrap();
+    assert_eq!(
+        core.document().sections[0].section_def.page_def.width,
+        59528
+    );
+    assert_eq!(page_numbers(&core), [1, 2, 3, 4]);
+    assert_eq!(marked(&core), [false, false, true, true]);
+
+    let page_number =
+        r#"<hp:ctrl><hp:pageNum pos="BOTTOM_CENTER" formatType="DIGIT" sideChar="-"/></hp:ctrl>"#;
+    let column = r#"<hp:ctrl><hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/></hp:ctrl>"#;
+    let reordered = with_first_section(|xml| {
+        let swapped = xml.replace(
+            &format!("{page_number}{column}"),
+            &format!("{column}{page_number}"),
+        );
+        assert_ne!(swapped, xml);
+        swapped
+    });
+    let core = DocumentCore::from_bytes(&reordered).unwrap();
+    assert_eq!(marked(&core), [true; 4]);
+}

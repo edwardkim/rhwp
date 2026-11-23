@@ -50,7 +50,7 @@ use super::utils::{
 use super::SerializeError;
 use super::{picture, table};
 
-const EMPTY_SECTION_XML: &str = include_str!("templates/empty_section0.xml");
+pub(crate) const EMPTY_SECTION_XML: &str = include_str!("templates/empty_section0.xml");
 
 /// MEMO subList 여는 태그 (#1391) — 실물(aift) 고정 속성.
 /// `textDirection` 만 원본값 보존(가변); 나머지는 실측 고정 속성.
