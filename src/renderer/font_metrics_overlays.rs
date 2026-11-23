@@ -309,6 +309,12 @@ pub(crate) fn declared_original_glyph_advance_em(
     if face == "명조" && bold && italic && matches!(character, '[' | ']') {
         return Some(0.5);
     }
+    // 독립 한컴 Print의 중첩 표 6·12·16쪽은 굵은 HCI Poppy의 가운뎃점을
+    // 같은 Type 3 글리프로 그린다. /Widths와 CharProc의 전진은 모두 384/1000em이다.
+    // 문서가 선언한 원본 폭을 적용하며 표시용 글꼴의 hmtx와 구분한다.
+    if face == "HCI Poppy" && bold && !italic && character == '·' {
+        return original_glyph_advance_em(face, false, false, character);
+    }
     // 독립 전체 ASCII 표본의 한컴2020 Print Type3는 95자 모두500/1000em이다.
     // 원본 HFT 선언을 확인한 호출자만 이 부분 표를 받는다. 실제 TrueType,
     // 미검증 italic·비ASCII에는 전달하지 않는다. 알 수 없는 고딕의 점·쉼표를
