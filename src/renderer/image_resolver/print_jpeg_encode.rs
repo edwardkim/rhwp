@@ -40,6 +40,12 @@ pub(crate) fn print_jpeg_payload(
     let mime = detect_image_mime_type(data);
     match mime {
         "image/bmp" | "image/png" | "image/gif" => (),
+        // 회전·반전 그림의 Print는 먼저 장치 표면을 그린다. 원본 RGB 래스터를
+        // 축 정렬 JPEG로 다시 압축하면 회전한 장치 표면에 손실이 중복된다.
+        "image/jpeg"
+            if !image.hancom2024_print_bitmap
+                && image.fill_mode.is_none()
+                && !image.transform.has_transform() => {}
         _ => return None,
     }
     let header = crate::renderer::image_header::canvaskit_encoded_image_header(data)
@@ -65,9 +71,15 @@ pub(crate) fn print_jpeg_payload(
     if !nominal_width.is_finite() || nominal_width <= 0.0 {
         return None;
     }
-    let quality = (75.0 * nominal_width / f64::from(width))
-        .floor()
-        .clamp(35.0, 75.0) as u8;
+    let quality = if mime == "image/jpeg" {
+        // 원본 JPEG의 품질은 정수 화면 폭이 아닌 실제 인쇄 폭(pt)으로 정한다.
+        // 1px 미만 절삭도 팔레트 품질 경계(70→71)를 바꿀 수 있다.
+        super::print_codec::requested_quality(target.width * 72.0 / dpi, width)
+    } else {
+        (75.0 * nominal_width / f64::from(width))
+            .floor()
+            .clamp(35.0, 75.0) as u8
+    };
     // 32비트 BI_RGB DIB도 Hancom PDF의 불투명 전송에서 RGB555를 거친다.
     // 동일 원본의 한컴 2020·2022 Print에서 PNG 색상 경로가 달랐다.
     // 조판 호환 모드와 별도로 선택된 장치만 기존 RGB555 팔레트 규칙을 적용한다.
@@ -76,7 +88,15 @@ pub(crate) fn print_jpeg_payload(
         || (data.starts_with(b"BM")
             && data.get(14..18) == Some(&40_u32.to_le_bytes())
             && data.get(28..34) == Some(&[32, 0, 0, 0, 0, 0]));
-    let bytes = encode_print_jpeg(data, quality, expand)?;
+    let bytes = if mime == "image/jpeg" {
+        // 이미 JPEG인 불투명 그림도 한컴 2020 Print는 출력 폭으로 다시 압축한다.
+        // 가시 창의 RGB를 유지하고, BMP/PNG의 RGB555 변환은 적용하지 않는다.
+        let mut bytes = super::print_fill_jpeg::recompress_original_rgb(data, quality)?;
+        super::png_sampling::mark_print_jpeg(&mut bytes, false);
+        bytes
+    } else {
+        encode_print_jpeg(data, quality, expand)?
+    };
     Some(ResolvedImagePayload {
         data: bytes,
         mime: "image/jpeg",

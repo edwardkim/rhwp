@@ -22,20 +22,21 @@ pub(super) fn payload(image: &ImageNode, width_points: f64) -> Option<ResolvedIm
         return None;
     }
     let quality = print_codec::requested_quality(width_points, header.width);
-    // 같은 JPEG를 Picture와 채움으로 사용할 때도 두 색 계약의 캐시를 섞지 않는다.
-    let data = memoized(
-        Conversion::Hancom2024FillJpegRgb { quality },
-        source,
-        || {
-            let rgb = super::print_tone::decode_jpeg_fill_rgb(source)?;
-            let quality = print_codec::quality_for_palette(quality, print_codec::palette_len(&rgb));
-            print_codec::encode_rgb(rgb, quality)
-        },
-    )?;
+    let data = recompress_original_rgb(source, quality)?;
     Some(ResolvedImagePayload {
         data,
         mime: "image/jpeg",
         kind: ResolvedImageKind::OutputDevice,
         suppress_effects: false,
+    })
+}
+
+/// 원본 RGB를 유지하는 그림과 채움은 같은 압축 자원을 사용한다.
+/// RGB555를 거치는 일반 Picture의 전송 캐시와는 구분한다.
+pub(super) fn recompress_original_rgb(source: &[u8], quality: u8) -> Option<Vec<u8>> {
+    memoized(Conversion::PrintOriginalRgbJpeg { quality }, source, || {
+        let rgb = super::print_tone::decode_jpeg_fill_rgb(source)?;
+        let quality = print_codec::quality_for_palette(quality, print_codec::palette_len(&rgb));
+        print_codec::encode_rgb(rgb, quality)
     })
 }
