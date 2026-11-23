@@ -31,7 +31,7 @@ samples/KTX.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	77
 samples/SO-SUEOP.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7807
 samples/SO-SUEOP.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7807
 samples/aift.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7791
-samples/basic/KTX-003.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7739,7769,7780,7781
+samples/basic/KTX-003.hwp	body,off_canvas,oracle,overflow_cell,render_page	7739,7780,7781
 samples/basic/issue2007_nested_cell_pagination_42065.hwp	body,overflow_cell,render_page,text_overlap	7747
 samples/exam_eng.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7730
 samples/hml/exambank_math_equations_min.hml	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7785
