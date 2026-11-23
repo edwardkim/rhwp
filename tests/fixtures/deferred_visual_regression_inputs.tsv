@@ -41,7 +41,7 @@ samples/hwp3-sample16-hwp5-2010.hwp	body,off_canvas,oracle,overflow_cell,render_
 samples/hwp3-sample16-hwp5.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7721,7723
 samples/hwp3-sample16-hwp5.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7722
 samples/hwpctl_API_v2.4.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7731
-samples/hwpspec.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7772
+samples/hwpspec.hwp	body,overflow_cell,render_page,text_overlap	7772
 samples/hwpx/156160455-social-pig-farm-income.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7770,7775
 samples/hwpx_sample2.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7830
 samples/issue1891/76076_regulatory_analysis.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7779

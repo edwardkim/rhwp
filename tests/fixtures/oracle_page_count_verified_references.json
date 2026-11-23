@@ -3,6 +3,25 @@
   "purpose": "이미 독립 검증한 과거 경로의 원본/PDF를 바이트 신원으로 고정한다. 일반 canonical 형식·엔진 선택 규칙은 유지한다.",
   "references": [
     {
+      "sample": "samples/hwpspec.hwp",
+      "source_sha256": "64df877f3c4accda0111ecf39d837da889741bb821b220cf61b6c126dc88364d",
+      "pdf": "pdf/issue7772/hwpspec-hancom-one-up-2024.pdf",
+      "pdf_sha256": "a4f52594ead9e292f6d124a362f91ed28d84fa29a3e23858232b1a95f7bedd39",
+      "pages": 178,
+      "provenance": "desktop_hancom_print",
+      "evidence": "mydocs/pr/assets/issue7772/README.md",
+      "logical_page_comparison": {
+        "native": {
+          "tsv": "mydocs/pr/assets/issue7772/hwpspec-native.tsv",
+          "sha256": "2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e"
+        },
+        "wasm": {
+          "tsv": "mydocs/pr/assets/issue7772/hwpspec-wasm.tsv",
+          "sha256": "0b1c1cb3fe554efa3d7b4e2023458095ffac078c9539cf043c9f6397312798d9"
+        }
+      }
+    },
+    {
       "sample": "samples/issue1891/86712_regulatory_analysis.hwpx",
       "source_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
       "pdf": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
