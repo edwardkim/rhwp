@@ -148,6 +148,8 @@ issue6946/44529-logistics-policy-rule-amendment.hwp	1
 issue8755/46551_road_traffic_rule_amendment.hwp	11
 issue9073/proficiency_test_result_form.hwpx	1
 issue9223/ccus-press-release-square-band.hwpx	1
+# #9291 신규 공개 샘플: base 17b17c934b 와 head 의 over_bottom 이 동일(16쪽 표 34.4px 1건, 수정과 무관).
+issue9291/consumer-price-trend-page-start-empty-line.hwp	1
 issues/2809/jubo_20260104.hwp	3
 kps-ai.hwp	2
 loading-fail-01.hwp	0
