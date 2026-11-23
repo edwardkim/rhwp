@@ -43,6 +43,14 @@ Vite의 저장소 쪽 자료 6개와 공개 쪽 자료 5개를 현재 Git 트리
 받은 WASM의 SHA-256이 후보 패키지와 일치했다.
 [Studio 빌드·단위 테스트·브라우저 검증](../verification/issue7754-nine-fidelity/after-pr9335/studio-local-validation.json)
 
+## 보호 정본 글꼴 조건 대조
+
+공식 목록의 Native·WASM 46개 조건을 실행 명령과 대조했다. 글꼴 파일을 명시하는
+37개 조건에서 파일의 SHA-256과 공급 순서가 일치했다. 문서가 글꼴을 선택하는 9개
+조건의 공급 방식과 전체 조건에 포함된 환경 JSON 21개의 SHA-256도 확인했다.
+실제 전쪽 렌더의 하락과 누락은 실행 결과에서 확인한다.
+[공식 공급 목록](../verification/protected-font-supply/manifest.json)
+
 ## 검증 계획
 
 - 같은 조건의 Native·fresh WASM에서 아홉 이슈 원본 583쪽과 보조 검증 50쪽을
