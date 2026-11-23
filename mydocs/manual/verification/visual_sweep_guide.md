@@ -398,7 +398,8 @@ PR을 재검토한다.** Native/WASM 교차 비교나 다른 backend 점수의 �
 문서 key와 backend로 `manifest.json`의 조건을 선택해 공급 방식과 환경 JSON을 적용한다.
 파일명·프로그램 SHA·face와 실제 선택 기록을 대조한다. 일반 기여자에게 비공개 글꼴 확보를 요구하지 않는다.
 
-문서가 지정한 SHA-256이 `accepted_sha256_pairs`에 있으면 해당 글꼴의 두 해시 중 하나를 공급할 수 있다.
+manifest 최상위의 `accepted_sha256_pairs`는 공통 허용 쌍이고, 문서 항목의 같은 필드는 해당 문서에만 적용한다.
+문서별 허용 쌍은 `scripts/check_protected_font.py --document <문서 key>`로 확인한다.
 기준과 후보에는 같은 파일을 같은 순서로 공급하고, 실제 사용한 SHA-256을 기록한다.
 
 글꼴 공급·설정이 바뀌면 새 output에서 같은 조건의 고정 base와 후보를 전쪽 비교한다.

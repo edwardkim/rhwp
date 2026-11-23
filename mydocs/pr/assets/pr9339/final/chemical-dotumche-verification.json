@@ -1,0 +1,47 @@
+{
+  "document": "chemical",
+  "compat": "2022",
+  "dpi": 96,
+  "pages": 103,
+  "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+  "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+  "font_supply_manifest_sha256": "441f89117cd0ea045681cb41fd710a79b94f9910ca2920b19c55475a931a8c12",
+  "floor_table_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "explicit_programs": {
+    "total": 312,
+    "original": 305,
+    "global_alternate": 6,
+    "document_alternate": 1
+  },
+  "scope": "chemical",
+  "slot_1_based": 50,
+  "face_index": 0,
+  "required_sha256": "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62",
+  "supplied_sha256": "c2c030ca896d46ff28dae17663e9fe22ab2fc6e6518c96d75e15ca8fb441bd2f",
+  "renderers": "renderer-builds.json",
+  "page_table": "chemical-dotumche-diagnostic.tsv",
+  "page_table_sha256": "8cf0b62b914d78560d2d286622b347ecef9c1f9bf380e41a48c827f2809b721b",
+  "ordered_actual_hash_definition": "SHA-256 of each actual file SHA-256 in load order, lowercase ASCII, one LF after each entry",
+  "backends": {
+    "native": {
+      "font_set": "f57745c75bbbd21a",
+      "slot_count": 53,
+      "ordered_actual_sha256": "16fe5134244fc4f3f47d3103be23fbd8f312f08494d9bb4218a32a9c24ca18de",
+      "verified_pages_per_source": 103,
+      "minimum_display_percent": "99.99",
+      "below_floor": 0,
+      "candidate_png_changes_vs_base": 0,
+      "candidate_png_changes_vs_omission_control": 0
+    },
+    "wasm": {
+      "font_set": "41203851b66ecbe2",
+      "slot_count": 53,
+      "ordered_actual_sha256": "16fe5134244fc4f3f47d3103be23fbd8f312f08494d9bb4218a32a9c24ca18de",
+      "verified_pages_per_source": 103,
+      "minimum_display_percent": "100.00",
+      "below_floor": 0,
+      "candidate_png_changes_vs_base": 0,
+      "candidate_png_changes_vs_omission_control": 0
+    }
+  }
+}

@@ -15982,6 +15982,12 @@
     },
     {
       "key": "chemical",
+      "accepted_sha256_pairs": {
+        "dotumche.ttf": [
+          "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62",
+          "c2c030ca896d46ff28dae17663e9fe22ab2fc6e6518c96d75e15ca8fb441bd2f"
+        ]
+      },
       "input": {
         "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
         "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",

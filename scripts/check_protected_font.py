@@ -13,20 +13,36 @@ def accepted_hashes(required, pairs):
     return [required]
 
 
+def supply_hashes(manifest, required, document=None):
+    pairs = manifest.get("accepted_sha256_pairs", {})
+    groups = manifest["font_sets"].values()
+    if document is not None:
+        pairs = {**pairs, **document.get("accepted_sha256_pairs", {})}
+        groups = (manifest["font_sets"][backend["font_set"]] for backend in document["backends"].values())
+
+    allowed = accepted_hashes(required, pairs)
+    if document is None and len(allowed) > 1:
+        return allowed
+    if any(entry["sha256"] in allowed for group in groups for entry in group["files"]):
+        return allowed
+    return []
+
+
 def main():
+    root = Path(__file__).resolve().parents[1]
+    manifest_path = root / "mydocs/verification/protected-font-supply/manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    documents = {document["key"]: document for document in manifest["documents"]}
+
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--document", choices=documents, metavar="KEY", help="문서별 공급 조건을 적용할 문서 key")
     parser.add_argument("required_sha256", help="문서별 font_set에 기록된 SHA-256")
     parser.add_argument("file", type=Path, help="공급할 로컬 글꼴 파일")
     args = parser.parse_args()
 
-    root = Path(__file__).resolve().parents[1]
-    manifest_path = root / "mydocs/verification/protected-font-supply/manifest.json"
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     required = args.required_sha256.lower()
-    allowed = accepted_hashes(required, manifest.get("accepted_sha256_pairs", {}))
-    if len(allowed) == 1 and not any(
-        entry["sha256"] == required for group in manifest["font_sets"].values() for entry in group["files"]
-    ):
+    allowed = supply_hashes(manifest, required, documents.get(args.document))
+    if not allowed:
         parser.error(f"공급 목록에 없는 SHA-256: {required}")
     checksum = hashlib.sha256()
     try:

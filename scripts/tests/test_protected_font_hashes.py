@@ -1,6 +1,6 @@
 import unittest
 
-from scripts.check_protected_font import accepted_hashes
+from scripts.check_protected_font import accepted_hashes, supply_hashes
 
 
 class ProtectedFontHashesTest(unittest.TestCase):
@@ -18,3 +18,22 @@ class ProtectedFontHashesTest(unittest.TestCase):
         self.assertNotIn("regular-windows", allowed)
         self.assertNotIn("bold-third-version", allowed)
         self.assertEqual(accepted_hashes("dotumche-original", self.pairs), ["dotumche-original"])
+
+    def test_document_pair_is_local_even_when_font_sets_are_shared(self):
+        files = [{"sha256": "dotumche-original"}, {"sha256": "regular-original"}]
+        manifest = {
+            "accepted_sha256_pairs": self.pairs,
+            "font_sets": {"shared": {"files": files}},
+        }
+        other = {"backends": {"native": {"font_set": "shared"}, "wasm": {"font_set": "shared"}}}
+        pair = ["dotumche-original", "dotumche-local"]
+        chemical = {**other, "accepted_sha256_pairs": {"dotumche.ttf": pair}}
+
+        self.assertEqual(supply_hashes(manifest, "dotumche-original", chemical), pair)
+        self.assertEqual(supply_hashes(manifest, "dotumche-local", chemical), list(reversed(pair)))
+        for scope in (None, other):
+            self.assertEqual(supply_hashes(manifest, "dotumche-original", scope), ["dotumche-original"])
+            self.assertEqual(supply_hashes(manifest, "dotumche-local", scope), [])
+        self.assertEqual(supply_hashes(manifest, "regular-windows", chemical),
+                         ["regular-windows", "regular-original"])
+        self.assertEqual(supply_hashes(manifest, "bold-windows", chemical), [])

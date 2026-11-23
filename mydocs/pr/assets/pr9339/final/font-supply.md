@@ -1,8 +1,8 @@
 # PR #9339 정본 보호 글꼴 확인
 
-2026-11-23 메인테이너 결정에 따라 아래 6개 글꼴은 각각 검증 당시 파일과 Windows 11 설치본의 SHA-256을 모두 허용한다. devel `321ab8f977`의 명시적 공급 대상 312개 중 305개는 기존 해시, 6개는 Windows 설치본 해시로 직접 확인했다. 남은 `dotumche.ttf`는 화학물질 표시 기준 103쪽에 쓰인다. [공식 공급 조건과 허용 해시 쌍](../../../../verification/protected-font-supply/manifest.json)
+2026-11-23 메인테이너 결정에 따라 명시적 공급 대상 312개를 모두 확인했다. devel `321ab8f977`의 기존 해시와 일치하는 파일이 305개, 공통으로 허용한 Windows 11 설치본이 6개, 화학물질 표시 기준(`chemical`)에만 허용한 돋움체가 1개다. [공식 공급 조건과 허용 해시 쌍](../../../../verification/protected-font-supply/manifest.json)
 
-| 파일 | 검증 당시 SHA-256 | 함께 허용한 Windows 11 SHA-256 | 해당 문서 |
+| 파일 | 검증 당시 SHA-256 | 함께 허용한 SHA-256 | 해당 문서 |
 | --- | --- | --- | --- |
 | `batang.ttc` | `0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8` | `51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8` | chemical, outline, sample16-hwp2022, sample16-hwp2024, sample16-hwpx |
 | `H2MJSM.TTF` (HY신명조) | `49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc` | `f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b` | decree |
@@ -10,7 +10,7 @@
 | `arialbd.ttf` | `766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69` | `4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
 | `arialbi.ttf` | `e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994` | `d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
 | `ariali.ttf` | `79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62` | `4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
-| `dotumche.ttf` | `097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62` | — | chemical |
+| `dotumche.ttf` | `097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62` | `c2c030ca896d46ff28dae17663e9fe22ab2fc6e6518c96d75e15ca8fb441bd2f` | chemical 한정 |
 
 Windows 설치본으로 공급이 가능해진 문서 6종을 기준 devel과 후보에서 다시 출력했다. Native·fresh WASM 각각 276쪽 모두 두 소스의 PNG가 같았다. 쪽별 공식 하한에 미달한 쪽은 두 소스에서 똑같이 Native 65쪽, WASM 63쪽이었다. [실제 공급 해시·WASM face·문서별 결과](protected-windows-fonts.json) · [쪽별 점수와 PNG 해시](protected-windows-fonts.tsv)
 
@@ -36,11 +36,11 @@ Windows 설치본으로 공급이 가능해진 문서 6종을 기준 devel과 �
 | EverythingFonts의 공개 미리보기 WOFF2 | DotumChe 2.21 | 11,172 / 11,172 | `2170a738fb09250e6f099e560b259a04ec4ea7cd21b2f3bb5bfd55d07508c873` |
 | 이번에 제공된 `ttfs/chemical/DotumChe-Regular.ttf` (4,568,508바이트) | DotumChe Regular 2.21 | 11,172 / 11,172 | `c2c030ca896d46ff28dae17663e9fe22ab2fc6e6518c96d75e15ca8fb441bd2f` |
 
-제공된 Regular TTF의 유니코드 문자표와 가로 글리프 메트릭은 공개 미리보기와 같다. TTF의 이름 테이블에는 영문 `DotumChe`가 있다. 과거 공급 기록에는 한글 이름 `돋움체`도 있다. `check_protected_font.py`는 제공본의 해시가 정본의 `097a83c1…`와 달라 종료 코드 1을 반환했다. [EverythingFonts 미리보기](https://everythingfonts.com/font/dotumche#web)
+제공된 Regular TTF의 유니코드 문자표와 가로 글리프 메트릭은 공개 미리보기와 같다. TTF의 이름 테이블에는 영문 `DotumChe`가 있다. 과거 공급 기록에는 한글 이름 `돋움체`도 있다. 실제 CLI는 `--document chemical`에서 제공본을 허용했고 나머지 22개 문서, 문서 키 생략, WOFF2 제공은 모두 거부했다. 기존 Windows 설치본 6개의 공통 검사와 글꼴·시각 검증 관련 자동 검사 47개도 통과했다. [EverythingFonts 미리보기](https://everythingfonts.com/font/dotumche#web) · [검사 명령](../../../../verification/protected-font-supply/README.md)
 
 화학물질 표시 기준 103쪽에서 Regular TTF를 각 백엔드의 50번째 순서에 넣고 나머지 52개 파일은 정본 또는 허용된 해시로 공급했다. 96 DPI 한컴 Print 대비 쪽별 최저 실루엣 일치율은 Native 99.99%, fresh WASM 100.00%였다(소수 둘째 자리 표시). 두 백엔드 모두 103쪽의 PNG가 기준 devel과 후보에서 각각 같았고 쪽별 하한 미달은 0건이었다. Native 최저인 26쪽에서 표의 제목·두 열의 괘선·뒤 문단 줄바꿈을 인쇄본과 직접 대조했다. [쪽별 하한·실측값·PNG SHA-256](chemical-dotumche-diagnostic.tsv)
 
-같은 후보에서 해당 TTF만 제외하고 나머지 52개를 같은 순서로 공급해 다시 렌더링했다. Native·fresh WASM 각각 103쪽 모두 TTF를 넣을 때와 뺄 때의 PNG가 같았다. 이 결과는 이 문서에서 추가 파일이 출력에 영향을 주지 않았다는 근거다. 정본 공급 여부는 기존 허용 해시로 판정한다. [렌더러별 빌드와 소스 SHA](renderer-builds.json)
+같은 후보에서 해당 TTF만 제외하고 나머지 52개를 같은 순서로 공급해 다시 렌더링했다. Native·fresh WASM 각각 103쪽 모두 TTF를 넣을 때와 뺄 때의 PNG가 같았다. 문서별 허용을 반영한 뒤에는 53개 파일의 해시와 순서를 확인하고 기준·후보를 새 출력 경로에서 다시 측정했다. [공급 조건과 재검증 결과](chemical-dotumche-verification.json) · [렌더러별 빌드와 소스 SHA](renderer-builds.json)
 
 Windows 11의 `C:\Windows\Fonts\H2MJSM.TTF`에 기록된 서체명은 한글 `HY신명조`, 영문 `HYSinMyeongJo-Medium`이다. 시행령 문서(`decree`)의 Native·WASM 공급 목록은 `49dd1ef0caa6…`를 지정하며, 이번 검증에서는 설치본 `f78f538885b2…`를 같은 순서에 공급했다.
 
