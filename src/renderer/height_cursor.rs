@@ -19,7 +19,7 @@
 mod origin;
 pub(crate) use origin::FlowOrigin;
 
-use super::layout::{para_has_overlay_shape, vpos_corrected_end_y};
+use super::layout::{control_line_seg_index, para_has_overlay_shape, vpos_corrected_end_y};
 use super::style_resolver::ResolvedStyleSet;
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
@@ -126,6 +126,86 @@ pub(crate) fn stored_ladder_omits_spacing_after(
 
 fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
+}
+
+/// 글 앞뒤 장식과 인라인 개체가 같은 문단에 있어도, 마지막 저장 줄이
+/// 인라인 개체의 상자를 소유하면 뒤 문단의 저장 사다리를 이어갈 수 있다.
+fn stored_inline_tail_closes_before_successor(
+    previous: &Paragraph,
+    current: &Paragraph,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<()> {
+    let authored = |para: &Paragraph| {
+        !para.stored_text_partition_is_dirty()
+            && !para.cell_format_vpos_dirty
+            && para.line_segs.iter().all(|line| {
+                line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0 && line.line_height > 0
+            })
+            && para
+                .source_line_seg_vertical_pos
+                .as_ref()
+                .is_none_or(|source| {
+                    source
+                        .iter()
+                        .copied()
+                        .eq(para.line_segs.iter().map(|line| line.vertical_pos))
+                })
+    };
+    if !authored(previous)
+        || !authored(current)
+        || !current.controls.is_empty()
+        || current.column_type != crate::model::paragraph::ColumnBreakType::None
+    {
+        return None;
+    }
+    let last_index = previous.line_segs.len().checked_sub(1)?;
+    let last = &previous.line_segs[last_index];
+    let first = current.line_segs.first()?;
+    let mut inline_height = None;
+    for (index, control) in previous.controls.iter().enumerate() {
+        let common = match control {
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => return None,
+        };
+        if common.treat_as_char {
+            if inline_height.is_some() || control_line_seg_index(previous, index)? != last_index {
+                return None;
+            }
+            inline_height = Some(
+                i64::from(common.height)
+                    + i64::from(common.margin.top)
+                    + i64::from(common.margin.bottom),
+            );
+        } else if !matches!(
+            common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText
+        ) {
+            return None;
+        }
+    }
+    let after = styles
+        .para_styles
+        .get(previous.para_shape_id as usize)?
+        .spacing_after;
+    let before = styles
+        .para_styles
+        .get(current.para_shape_id as usize)?
+        .spacing_before;
+    let boundary_gap = i64::from(first.vertical_pos)
+        - i64::from(last.vertical_pos)
+        - i64::from(last.line_height)
+        - i64::from(last.line_spacing);
+    let within_stored_margins = [before.max(after), before + after]
+        .into_iter()
+        .any(|spacing| (boundary_gap - i64::from(super::px_to_hwpunit(spacing, dpi))).abs() <= 1);
+    (i64::from(last.line_height) == inline_height?
+        && last.line_height == last.text_height
+        && last.line_spacing >= 0
+        && boundary_gap >= 0
+        && within_stored_margins)
+        .then_some(())
 }
 
 fn para_is_treat_as_char_equation_only(para: &Paragraph) -> bool {
@@ -610,10 +690,48 @@ impl HeightCursor {
         }
         // 글앞으로/글뒤로/위아래 Shape·Picture 가 있는 문단: vpos 에 개체 높이 포함 → bypass
         // (#409, #1027 Stage B). 분할 표 직후 첫 문단도 sequential 신뢰 (#991).
-        let prev_has_overlay_shape = paragraphs
-            .get(prev_pi)
-            .map(para_has_overlay_shape)
-            .unwrap_or(false);
+        let Some(prev_para) = paragraphs.get(prev_pi) else {
+            return y_offset;
+        };
+        let prev_has_overlay_shape = para_has_overlay_shape(prev_para);
+        if prev_has_overlay_shape
+            && !self.prev_item_was_partial_table
+            && !self.session_edited
+            && prev_pi.checked_add(1) == Some(item_para)
+        {
+            if let (Some((base, anchor)), Some(current)) =
+                (self.stored_column_origin, paragraphs.get(item_para))
+            {
+                if stored_inline_tail_closes_before_successor(prev_para, current, styles, self.dpi)
+                    .is_some()
+                {
+                    let last = prev_para.line_segs.last().unwrap();
+                    let first = &current.line_segs[0];
+                    let spacing_before = if self.skip_spacing_before_prededuct {
+                        0.0
+                    } else {
+                        styles.para_styles[current.para_shape_id as usize].spacing_before
+                    };
+                    let line_top =
+                        anchor + hwpunit_to_px(first.vertical_pos.saturating_sub(base), self.dpi);
+                    let start = line_top - spacing_before;
+                    if last.vertical_pos >= base
+                        && start >= y_offset
+                        && start >= self.col_area_y
+                        && line_top + hwpunit_to_px(first.line_height, self.dpi)
+                            <= self.col_area_y + self.col_area_height
+                    {
+                        // 장식의 페인트 항목이 활성 기준을 비워도, 이미 확정한
+                        // 단의 원점과 두 저장 줄의 경계는 그대로 이어진다.
+                        self.vpos_page_base = Some(base);
+                        self.vpos_lazy_base = None;
+                        self.col_anchor_y = anchor;
+                        self.stored_boundary_spacing_before = spacing_before;
+                        return start;
+                    }
+                }
+            }
+        }
         if prev_has_overlay_shape || self.prev_item_was_partial_table {
             // 분할 자리차지 표의 이어지는 조각 뒤 첫 문단은 저장 첫 줄이 조각 점유 끝(앞 간격을
             // 조각 안에서 소비한 자리)이다. 그 줄로 단의 사다리 기준을 세워, 빈 문단 뒤
@@ -656,9 +774,6 @@ impl HeightCursor {
             }
             return y_offset;
         }
-        let Some(prev_para) = paragraphs.get(prev_pi) else {
-            return y_offset;
-        };
         // A floating picture does not consume the host's text advance. The
         // saved successor can nevertheless certify that its line is below the
         // complete picture. Reconstructing a new lazy origin from that empty
