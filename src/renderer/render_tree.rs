@@ -1376,6 +1376,10 @@ pub struct ShapeTransform {
     /// 흐름·선택 bbox는 유지하고 모든 paint 소비자가 같은 잉크 상자를 구한다.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image_frame_ratio: Option<[f64; 2]>,
+    /// 한/글 개체 속성의 가로·세로 기울이기. 원래 크기로 그린 도형을 쪽 공간에서 옮기는
+    /// 아핀 행렬 `[a, b, c, d, e, f]`이며, paint 단계가 공통 변환 묶음으로 내린다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub skew: Option<[f64; 6]>,
 }
 
 impl ShapeTransform {
