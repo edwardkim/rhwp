@@ -57,6 +57,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `probe-host-font-visual-issue7403.mjs` | 진단 | active | #7403 실제 HCRBatang host face의 CanvasKit/Canvas2D 출력과 해제 후 원복 시각 증거 | re-01-hangul-only-hancom.hwp | 수동 | RHWP_HOST_FONT_PATH로 검증한 글꼴 공급, run-with-vite.mjs 경유 |
 | `chart-data-structure-issue6053.test.mjs` | 상시 | active | #6053 차트 행·열·라벨 구조 편집 UI — 우클릭 행 추가·저장본 반영·Ctrl+Z 원복·무편집 무흔적·ESC 는 메뉴만 닫음·종류별 사전 판정(원형 안내/주식형 캔들 양끝 비활성) | chart/세로막대형/묶은세로막대형.hwp, chart/원형/2차원원형.hwp, chart/기타/시가고가저가종가.hwp | npm e2e:issue-6053 | dev server 필요 — run-with-vite.mjs 경유 |
 | `cell-enter-pagination-issue4031.test.mjs` | 상시 | active | Issue #4031 — pending 중 셀 Enter의 pre-navigation full flush 0회·split 1회·barrier 대조군 계약 | issue1949_giant_cell_nested_tables_perf.hwp/.hwpx | npm e2e:issue-4031-cell-enter |  |
+| `f11-same-place-fields.test.mjs` | 상시 | active | F11로 같은 자리 빈 누름틀을 나·가 차례로 고르고 고른 누름틀에 입력, 셀 누름틀 → 표 → 본문 누름틀 | 편집 API 합성 | 수동 | run-with-vite.mjs 경유, 실제 F11·문자 키 |
 | `cell-block-delete-keys.test.mjs` | 상시 | active | 셀 블록 지우기 키 — Backspace/Delete 내용 지우기와 Cmd+Backspace/Cmd+E 구조 삭제 확인·Undo | — | npm e2e:cell-block-delete-keys | 합성 keydown, run-with-vite.mjs 경유 |
 | `cell-plain-text-paste-issue6638.test.mjs` | 상시 | active | #6638 셀 평문 붙여넣기 빈 문단·끝 개행·커서·undo/redo 보존 | — | npm e2e:issue-6638 | 합성 paste 이벤트, OS 클립보드 미사용 |
 | `command-palette.test.mjs` | 상시 | active | /커맨드 팔레트 | — | 수동 |  |

@@ -903,6 +903,28 @@ export interface DocumentPosition {
   cursorRect?: CursorRect;
 }
 
+/** 컨트롤이 든 문단 주소 (`getBookmarks`의 `place` 꼴). cellPath는 본문 문단에서 시작하는 [컨트롤, 셀, 문단] 경로다. */
+export interface ControlPlace {
+  section: number;
+  para: number;
+  cellPath: [number, number, number][];
+}
+
+/** findNearestControlAt 결과. 필드면 fieldId·start·end(그 문단의 글자 범위)가 있다. */
+export interface NearestControl {
+  type: 'none' | 'table' | 'picture' | 'shape' | 'equation' | 'field' | 'bookmark';
+  sec: number;
+  para: number;
+  ci: number;
+  charPos?: number;
+  place: ControlPlace;
+  areas?: string[];
+  fieldId?: number;
+  fieldType?: string;
+  start?: number;
+  end?: number;
+}
+
 /** 책갈피 정보 */
 export interface BookmarkInfo {
   name: string;
