@@ -2993,9 +2993,9 @@ fn write_drawing_shape_component<W: std::io::Write>(
     w.write_i32(drawing.shadow_offset_x)?;
     w.write_i32(drawing.shadow_offset_y)?;
 
-    // 인스턴스 ID (4바이트) + 예약 (1바이트) + 그림자 투명도 (1바이트)
+    // 인스턴스 ID (4바이트) + 선 투명도 (1바이트) + 그림자 투명도 (1바이트)
     w.write_u32(drawing.inst_id)?;
-    w.write_u8(0)?; // 예약
+    w.write_u8(drawing.border_line.alpha)?;
     w.write_u8(drawing.shadow_alpha)?;
 
     Ok(())

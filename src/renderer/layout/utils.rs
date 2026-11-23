@@ -475,6 +475,7 @@ pub(crate) fn drawing_to_shape_style(
         stroke_width,
         stroke_dash,
         opacity,
+        stroke_alpha: border.alpha,
         shadow,
     };
     (style, gradient)
@@ -540,6 +541,7 @@ pub(crate) fn drawing_to_line_style(drawing: &crate::model::shape::DrawingObjAtt
         start_arrow_size,
         end_arrow_size,
         shadow,
+        alpha: border.alpha,
     }
 }
 

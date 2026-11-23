@@ -11,8 +11,9 @@ use crate::model::style::*;
 use crate::parser::tags;
 
 use super::utils::{
-    attr_str, local_name, parse_bool, parse_color, parse_gradient_type, parse_hatch_style,
-    parse_i16, parse_i32, parse_i8, parse_u16, parse_u32, parse_u8, skip_element,
+    attr_str, local_name, parse_alpha_byte, parse_bool, parse_color, parse_gradient_type,
+    parse_hatch_style, parse_i16, parse_i32, parse_i8, parse_u16, parse_u32, parse_u8,
+    skip_element,
 };
 use super::HwpxError;
 
@@ -1721,10 +1722,8 @@ fn parse_border_fill(
                                         }
                                     }
                                     b"alpha" => {
-                                        // HWPX alpha: 0.0=완전투명 ~ 1.0=불투명 (float string)
-                                        let val = attr_str(&attr);
-                                        if let Ok(f) = val.parse::<f64>() {
-                                            bf.fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                        if let Some(alpha) = parse_alpha_byte(&attr_str(&attr)) {
+                                            bf.fill.alpha = alpha;
                                         }
                                     }
                                     _ => {}
@@ -1756,9 +1755,8 @@ fn parse_border_fill(
                                     b"blur" | b"step" => grad.blur = parse_i16(&attr),
                                     b"stepCenter" => grad.step_center = parse_u8(&attr),
                                     b"alpha" => {
-                                        let val = attr_str(&attr);
-                                        if let Ok(f) = val.parse::<f64>() {
-                                            bf.fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                        if let Some(alpha) = parse_alpha_byte(&attr_str(&attr)) {
+                                            bf.fill.alpha = alpha;
                                         }
                                     }
                                     _ => {}

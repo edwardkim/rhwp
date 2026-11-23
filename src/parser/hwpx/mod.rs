@@ -571,6 +571,17 @@ pub(crate) fn parse_hwpx_with_reservation(
     ));
     let package_info = content::parse_content_hpf(&content_xml)?;
 
+    // 2-1. rhwp 원본 마커만 있고 정수 alpha 표지가 없으면 예전 rhwp 저장본이다 — 그 시절
+    // 저장기는 채우기 alpha 를 0.0~1.0 비율로 썼다(완전 투명 = `1`). header 의 borderFill 과
+    // 구역의 도형 채우기가 모두 이 규칙을 따른다.
+    let ratio_alpha = hwpx_aux_entries.iter().any(|(path, _)| {
+        path == crate::model::document::HWP5_ORIGIN_HWPX_MARKER_PATH
+            || path == crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH
+    }) && reader
+        .read_file_bytes(crate::model::document::RHWP_BYTE_ALPHA_HWPX_MARKER_PATH)
+        .is_err();
+    let _ratio_alpha_guard = utils::RatioAlphaGuard::set(ratio_alpha);
+
     // 3. header.xml → DocInfo, DocProperties
     let header_xml = reader.read_file("Contents/header.xml")?;
     let header_xml = canonicalize_bullet_image_refs(&header_xml, &package_info.bin_data_items);

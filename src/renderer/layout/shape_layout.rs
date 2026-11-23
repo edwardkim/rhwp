@@ -1180,9 +1180,20 @@ impl LayoutEngine {
             && i64::from(crate::renderer::float_placement::signed_hwpunit(
                 common.vertical_offset,
             )) == -i64::from(common.height as i32);
+        // '쪽 영역 안으로 제한'(`flow_with_text`)인 글 앞·뒤 도형도 문단 기준 음수 세로
+        // 오프셋을 0 으로 본다. 한/글 12.30 Mac 에서 #8324 타원(문단 기준·위 정렬, -876)을
+        // 글 앞·글 뒤로 열면 문단 위끝에 그리고, 제한을 끄면 876 만큼 위에 그린다. 글이
+        // 비켜 가지 않는 배치라 조판 점유는 바뀌지 않는다.
+        let clamps_negative_offset = clamp_negative_para_offset
+            || common.flow_with_text
+                && matches!(
+                    common.text_wrap,
+                    crate::model::shape::TextWrap::InFrontOfText
+                        | crate::model::shape::TextWrap::BehindText
+                );
         let adjusted_common;
         let common_for_position = if self_displacement_offset
-            || clamp_negative_para_offset
+            || clamps_negative_offset
                 && !common.treat_as_char
                 && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
                 && matches!(
