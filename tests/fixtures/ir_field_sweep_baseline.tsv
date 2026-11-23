@@ -313,6 +313,7 @@ hwp5rb	pua-test.hwp	sections[].paragraphs[].raw_header_extra.len	18
 hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	104
 hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	10
 hwp5rb	rowbreak-problem-pages.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].text_box.paragraphs[].controls[].cells[].list_header_width_ref	69
+hwp5rb	semanticist21-20261124-rework/two-sections-2020.hwp	sections[].paragraphs[].controls[]	2
 hwp5rb	synam-001.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	441
 hwp5rb	synam-001.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	49
 hwp5rb	ta-pic-001-r-쪽영역안제한.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3

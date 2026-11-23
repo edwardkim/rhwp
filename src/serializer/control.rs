@@ -599,7 +599,8 @@ fn write_section_def<W: std::io::Write>(
     // flags bit 20-21은 동기화하지 않는다. HWP5는 page_num_type을 별도 필드로
     // 갖지 않고 flags bit 20-21로만 표현하므로, 여기서 반영하지 않으면 HWPX
     // 출처 문서를 HWP5로 저장할 때 홀/짝 쪽번호 시작 설정이 유실된다.
-    let mut flags = (sd.flags & !0x0030_0000) | (((sd.page_num_type as u32) & 0x03) << 20);
+    let mut flags = (sd.flags & !0x0030_0000)
+        | ((u32::from(crate::model::document::hwp_page_num_type(sd.page_num_type)) & 0x03) << 20);
     // 모델이 저장하는 기본 바탕쪽은 한컴처럼 bit 29·30·31에 양 쪽·짝수 쪽·홀수 쪽이 있는지 적는다.
     // 한컴 12.30은 이 비트가 목록과 맞지 않는 HWP를 손상된 파일로 거절한다. 원본 레코드를 다시 쓰는
     // 바탕쪽은 원본의 비트를 그대로 둔다.
@@ -2992,9 +2993,9 @@ fn write_drawing_shape_component<W: std::io::Write>(
     w.write_i32(drawing.shadow_offset_x)?;
     w.write_i32(drawing.shadow_offset_y)?;
 
-    // 인스턴스 ID (4바이트) + 예약 (1바이트) + 그림자 투명도 (1바이트)
+    // 인스턴스 ID (4바이트) + 선 투명도 (1바이트) + 그림자 투명도 (1바이트)
     w.write_u32(drawing.inst_id)?;
-    w.write_u8(0)?; // 예약
+    w.write_u8(drawing.border_line.alpha)?;
     w.write_u8(drawing.shadow_alpha)?;
 
     Ok(())

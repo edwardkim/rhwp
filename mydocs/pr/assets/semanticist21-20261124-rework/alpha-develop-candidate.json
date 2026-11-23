@@ -1,0 +1,44 @@
+{
+  "devel-native": {
+    "size": [
+      794,
+      1122
+    ],
+    "changed_pixels": 0,
+    "bounding_box": null
+  },
+  "devel-wasm": {
+    "size": [
+      794,
+      1122
+    ],
+    "changed_pixels": 0,
+    "bounding_box": null
+  },
+  "combined-native": {
+    "size": [
+      794,
+      1122
+    ],
+    "changed_pixels": 23260,
+    "bounding_box": [
+      312,
+      95,
+      475,
+      281
+    ]
+  },
+  "combined-wasm": {
+    "size": [
+      794,
+      1122
+    ],
+    "changed_pixels": 22379,
+    "bounding_box": [
+      314,
+      97,
+      473,
+      279
+    ]
+  }
+}

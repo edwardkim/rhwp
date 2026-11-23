@@ -2999,6 +2999,15 @@ export class WasmBridge {
     (this.doc as any).moveLineEndpoint(sec, para, ci, sx, sy, ex, ey);
   }
 
+  moveConnectorMidpoint(sec: number, para: number, ci: number, dx: number, dy: number, path?: CellPathLike): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    if (path?.length) {
+      this.doc.moveConnectorMidpointByPath(sec, para, JSON.stringify(path), ci, dx, dy);
+    } else {
+      this.doc.moveConnectorMidpoint(sec, para, ci, dx, dy);
+    }
+  }
+
   updateConnectorsInSection(sec: number): void {
     if (!this.doc) return;
     (this.doc as any).updateConnectorsInSection(sec);

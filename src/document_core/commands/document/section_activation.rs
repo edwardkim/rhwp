@@ -26,12 +26,22 @@ pub(super) fn activate_page_geometry(document: &mut Document, format: FileFormat
         {
             continue;
         }
-        let page = PageDef::a4_default();
-        section.section_def.page_def = page.clone();
+        let activate = |definition: &mut crate::model::document::SectionDef| {
+            definition.page_def = PageDef::a4_default();
+            // Windows 한컴 2020에서 첫 HWPX 구역의 단 정의가 없으면 용지와 함께
+            // 시작 번호와 바탕쪽 참조가 비활성이다. 머리말·꼬리말 본문은 그대로 쓴다.
+            if index == 0 && format == FileFormat::Hwpx {
+                definition.page_num = 0;
+                definition.page_num_type = 0;
+                definition.flags &= !(3 << 20);
+                definition.master_pages.clear();
+            }
+        };
+        activate(&mut section.section_def);
         for paragraph in &mut section.paragraphs {
             for control in &mut paragraph.controls {
                 if let Control::SectionDef(definition) = control {
-                    definition.page_def = page.clone();
+                    activate(definition);
                 }
             }
         }

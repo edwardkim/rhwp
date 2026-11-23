@@ -26,6 +26,7 @@ pub(crate) mod footnote_frames;
 #[cfg(target_arch = "wasm32")]
 pub(crate) mod mipmap_sampling;
 pub use conjoining_jamo::IsolatedJamoFont;
+pub(crate) mod ellipse;
 pub(crate) mod emphasis;
 pub(crate) mod enclosed_pua_geometry;
 pub(crate) mod endnote_spacing;
@@ -955,10 +956,22 @@ pub struct ShapeStyle {
     pub stroke_width: f64,
     /// 테두리 종류
     pub stroke_dash: StrokeDash,
-    /// 투명도 (0.0=완전투명, 1.0=불투명)
+    /// 채우기 불투명도 (0.0=완전 투명, 1.0=불투명).
     pub opacity: f64,
+    /// 선 투명도 (0=불투명 ~ 255=투명). 채우기 투명도와 따로 선에만 건다.
+    #[serde(skip_serializing_if = "is_opaque")]
+    pub stroke_alpha: u8,
     /// 그림자 (None이면 그림자 없음)
     pub shadow: Option<ShadowStyle>,
+}
+
+fn is_opaque(alpha: &u8) -> bool {
+    *alpha == 0
+}
+
+/// 선 투명도(0=불투명 ~ 255=투명)를 그리기 불투명도(1.0=불투명)로 바꾼다.
+pub fn alpha_to_opacity(alpha: u8) -> f64 {
+    1.0 - f64::from(alpha) / 255.0
 }
 
 /// 도형 그림자 스타일
@@ -985,6 +998,7 @@ impl Default for ShapeStyle {
             stroke_width: 0.0,
             stroke_dash: StrokeDash::default(),
             opacity: 1.0,
+            stroke_alpha: 0,
             shadow: None,
         }
     }
@@ -1301,6 +1315,9 @@ pub struct LineStyle {
     pub end_arrow_size: u8,
     /// 그림자
     pub shadow: Option<ShadowStyle>,
+    /// 선 투명도 (0=불투명 ~ 255=투명). 화살표도 같이 옅어진다.
+    #[serde(skip_serializing_if = "is_opaque")]
+    pub alpha: u8,
 }
 
 /// 테두리 점선 종류

@@ -342,6 +342,25 @@ impl PaintOp {
     }
 
     pub fn ellipse(bbox: BoundingBox, ellipse: EllipseNode) -> Self {
+        let rx = bbox.width / 2.0;
+        let ry = bbox.height / 2.0;
+        if let Some(commands) = crate::renderer::ellipse::patterned_outline(
+            bbox.x + rx,
+            bbox.y + ry,
+            rx,
+            ry,
+            &ellipse.style,
+        ) {
+            let mut path = PathNode::new(commands, ellipse.style, ellipse.gradient);
+            path.transform = ellipse.transform;
+            path.section_index = ellipse.section_index;
+            path.para_index = ellipse.para_index;
+            path.control_index = ellipse.control_index;
+            path.cell_index = ellipse.cell_index;
+            path.cell_para_index = ellipse.cell_para_index;
+            path.outer_table_control_index = ellipse.outer_table_control_index;
+            return Self::path(bbox, path);
+        }
         Self::Ellipse {
             bbox,
             ellipse: Box::new(ellipse),

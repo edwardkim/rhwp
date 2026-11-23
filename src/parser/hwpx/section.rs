@@ -41,9 +41,9 @@ use crate::model::HwpUnit16;
 use crate::parser::tags;
 
 use super::utils::{
-    attr_str, local_name, parse_bool, parse_color, parse_gradient_type, parse_hatch_style,
-    parse_i16, parse_i32, parse_i32_wrapping, parse_i8, parse_u16, parse_u32, parse_u8,
-    skip_element,
+    attr_str, local_name, parse_alpha_byte, parse_bool, parse_color, parse_fill_alpha_byte,
+    parse_gradient_type, parse_hatch_style, parse_i16, parse_i32, parse_i32_wrapping, parse_i8,
+    parse_u16, parse_u32, parse_u8, skip_element,
 };
 use super::HwpxError;
 
@@ -4289,6 +4289,7 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
         match attr.key.as_ref().as_bytes() {
             b"color" => bl.color = parse_color(&attr),
             b"width" => bl.width = parse_i32(&attr),
+            b"alpha" => bl.alpha = parse_alpha_byte(&attr_str(&attr)).unwrap_or(0),
             b"style" => {
                 // 선 스타일 → attr 비트 플래그 (하위 바이트)
                 let style_val: u32 = match attr_str(&attr).as_str() {
@@ -4327,18 +4328,19 @@ fn parse_line_shape_attr(e: &quick_xml::events::BytesStart) -> ShapeBorderLine {
             b"tailStyle" => {
                 bl.attr = (bl.attr & !(0x3F << 16)) | (arrow_shape(&attr_str(&attr)) << 16);
             }
+            // HWP5 선 속성처럼 시작 채움은 bit 30, 끝 채움은 bit 31이다.
             b"headfill" => {
-                if parse_bool(&attr) {
-                    bl.attr |= 0x8000_0000;
-                } else {
-                    bl.attr &= !0x8000_0000;
-                }
-            }
-            b"tailfill" => {
                 if parse_bool(&attr) {
                     bl.attr |= 0x4000_0000;
                 } else {
                     bl.attr &= !0x4000_0000;
+                }
+            }
+            b"tailfill" => {
+                if parse_bool(&attr) {
+                    bl.attr |= 0x8000_0000;
+                } else {
+                    bl.attr &= !0x8000_0000;
                 }
             }
             b"headSz" => {
@@ -4431,9 +4433,8 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                                     }
                                 }
                                 b"alpha" => {
-                                    let val = attr_str(&attr);
-                                    if let Ok(f) = val.parse::<f64>() {
-                                        fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                    if let Some(alpha) = parse_fill_alpha_byte(&attr_str(&attr)) {
+                                        fill.alpha = alpha;
                                     }
                                 }
                                 _ => {}
@@ -4455,9 +4456,8 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                                 b"blur" | b"step" => grad.blur = parse_i16(&attr),
                                 b"stepCenter" => grad.step_center = parse_u8(&attr),
                                 b"alpha" => {
-                                    let val = attr_str(&attr);
-                                    if let Ok(f) = val.parse::<f64>() {
-                                        fill.alpha = (f.clamp(0.0, 1.0) * 255.0) as u8;
+                                    if let Some(alpha) = parse_fill_alpha_byte(&attr_str(&attr)) {
+                                        fill.alpha = alpha;
                                     }
                                 }
                                 _ => {}

@@ -10099,6 +10099,65 @@ export class HwpDocument {
         }
     }
     /**
+     * 꺾인·곡선 연결선의 가운데 점(안쪽 제어점 둘)을 그 축으로 옮긴다 (HWPUNIT 거리).
+     * 축은 `getShapeProperties`의 `connectorMidAxis`("x"·"y")이며, 그 축의 거리만 쓴다.
+     * @param {number} sec
+     * @param {number} para
+     * @param {number} ci
+     * @param {number} dx
+     * @param {number} dy
+     * @returns {string}
+     */
+    moveConnectorMidpoint(sec, para, ci, dx, dy) {
+        let deferred2_0;
+        let deferred2_1;
+        try {
+            const ret = wasm.hwpdocument_moveConnectorMidpoint(this.__wbg_ptr, sec, para, ci, dx, dy);
+            var ptr1 = ret[0];
+            var len1 = ret[1];
+            if (ret[3]) {
+                ptr1 = 0; len1 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred2_0 = ptr1;
+            deferred2_1 = len1;
+            return getStringFromWasm0(ptr1, len1);
+        } finally {
+            wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 가운데 점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 연결선.
+     * `cell_path_json`은 `setCellShapePropertiesByPath`와 같은 경로다.
+     * @param {number} sec
+     * @param {number} parent_para
+     * @param {string} cell_path_json
+     * @param {number} ci
+     * @param {number} dx
+     * @param {number} dy
+     * @returns {string}
+     */
+    moveConnectorMidpointByPath(sec, parent_para, cell_path_json, ci, dx, dy) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(cell_path_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_moveConnectorMidpointByPath(this.__wbg_ptr, sec, parent_para, ptr0, len0, ci, dx, dy);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 개체를 한 걸음 옮긴다 — 웹한글컨트롤 `ShapeObjMove*`(걸음 56 HWPUNIT).
      * @param {number} para_in_list
      * @param {number} control_index

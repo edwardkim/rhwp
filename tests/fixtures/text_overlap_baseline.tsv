@@ -190,3 +190,11 @@ issue1891/86712_regulatory_analysis.hwpx	0
 # 2건). 한컴 Print도 둘째 줄을 첫 줄 아래 960HU에 둔다. 수정 전(devel 17b17c934b) 6건은 행 37 칸(2쪽 끝, 2건)이 쪽 사이에서
 # 나뉘어 빠진 값이다.
 issue9353/uiwang_lane_min_length.hwp	8
+# #9281. 한컴 2020 Print에서 바탕쪽표식과 본문 첫 단어의 원점이 같다. 여섯 입력의 전 24쪽은 두 backend 모두 raw 100.00%다.
+# section_settings_hancom::printed_master_text_overlaps_only_its_source_body_line이 쪽별 건수와 본문·바탕쪽 소유를 검사한다.
+semanticist21-20261124-rework/b5-adjacent.hwpx	4
+semanticist21-20261124-rework/b5-no-column.hwpx	2
+semanticist21-20261124-rework/b5-page-number.hwpx	2
+semanticist21-20261124-rework/b5-text.hwpx	2
+semanticist21-20261124-rework/two-sections-2020.hwp	2
+semanticist21-20261124-rework/two-sections-2020.hwpx	2

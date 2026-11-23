@@ -1,0 +1,281 @@
+[
+  {
+    "key": "b5-adjacent-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "b5-no-column-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "b5-page-number-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "b5-text-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "connector-arc-hwp-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "scripts_disabled",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "connector-arc-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "connector-stroke-hwp-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "scripts_disabled",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "connector-stroke-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "hancom-even-start-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "scripts_disabled",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "later-free-minus-1752-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "later-minus-1752-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "later-zero-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "nested-connector-arc-hwp-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "scripts_disabled",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "nested-connector-arc-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "nested-connector-stroke-hwp-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "scripts_disabled",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "nested-connector-stroke-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "no-elbow-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "offset-behind-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "offset-flow-off-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "offset-minus-1752-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "offset-zero-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "old-transparent-hwp-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "scripts_disabled",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "old-transparent-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "one-elbow-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "r3-ellipse-fill-alpha-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "stroke-fill-controls-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "two-horizontal-shift-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "two-sections-2020-hwp-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "scripts_disabled",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "two-sections-2020-hwpx-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "two-sections-2020",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2020_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  },
+  {
+    "key": "two-vertical-hwpx-2024",
+    "status": "candidate",
+    "sample_hash": "match",
+    "pdf_hash": "match",
+    "actual_mode": "hancom2024_pdf_driver_one_up",
+    "actual_input_preprocess": "none",
+    "preprocess_field_present": false
+  }
+]

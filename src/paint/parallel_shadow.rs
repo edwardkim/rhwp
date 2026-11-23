@@ -2,7 +2,7 @@
 
 use crate::paint::layer_tree::{CacheHint, GroupKind, LayerNode};
 use crate::renderer::render_tree::{BoundingBox, GroupNode, PathNode, RenderNode, RenderNodeType};
-use crate::renderer::{PathCommand, ShadowStyle, ShapeStyle};
+use crate::renderer::{alpha_to_opacity, PathCommand, ShadowStyle, ShapeStyle};
 
 pub(super) struct ShadowParts {
     pub body: RenderNode,
@@ -39,12 +39,19 @@ fn clear_shadow(node: &mut RenderNode) {
     }
 }
 
+/// 원 획과 그림자의 불투명도를 곱한 뒤 가장 가까운 HWP 투명도 바이트로 되돌린다.
+fn shadow_stroke_alpha(stroke: u8, shadow: u8) -> u8 {
+    let opacity = u16::from(255 - stroke) * u16::from(255 - shadow);
+    255 - ((opacity + 127) / 255) as u8
+}
+
 fn recolor(style: &mut ShapeStyle, shadow: &ShadowStyle, has_gradient: bool) {
     style.fill_color = (style.fill_color.is_some() || style.pattern.is_some() || has_gradient)
         .then_some(shadow.color);
     style.pattern = None;
     style.stroke_color = style.stroke_color.map(|_| shadow.color);
-    style.opacity *= 1.0 - f64::from(shadow.alpha) / 255.0;
+    style.opacity *= alpha_to_opacity(shadow.alpha);
+    style.stroke_alpha = shadow_stroke_alpha(style.stroke_alpha, shadow.alpha);
     style.shadow = None;
 }
 
@@ -85,15 +92,16 @@ pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
             path.gradient = None;
             if let Some(style) = &mut path.line_style {
                 style.color = shadow.color;
+                style.alpha = shadow_stroke_alpha(style.alpha, shadow.alpha);
             }
         }
         RenderNodeType::Line(line) => {
-            // 일반 Path의 opacity를 사용해 선 그림자의 alpha도 공통 재생한다.
+            let alpha = shadow_stroke_alpha(line.style.alpha, shadow.alpha);
             let style = ShapeStyle {
                 stroke_color: Some(shadow.color),
                 stroke_width: line.style.width,
                 stroke_dash: line.style.dash,
-                opacity: 1.0 - f64::from(shadow.alpha) / 255.0,
+                stroke_alpha: alpha,
                 ..ShapeStyle::default()
             };
             let mut path = PathNode::new(
@@ -106,6 +114,7 @@ pub(super) fn split(node: &RenderNode) -> Option<ShadowParts> {
             );
             let mut line_style = line.style.clone();
             line_style.color = shadow.color;
+            line_style.alpha = alpha;
             path.line_style = Some(line_style);
             path.connector_endpoints = Some((line.x1, line.y1, line.x2, line.y2));
             path.transform = line.transform;

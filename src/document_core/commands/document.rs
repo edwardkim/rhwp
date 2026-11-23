@@ -173,6 +173,20 @@ impl DocumentCore {
         Self::from_bytes_inner(data, None)
     }
 
+    /// 구형 rhwp에서 저장한 HWPX의 무표지 채움 투명도 1을 완전 투명으로 복원한다.
+    /// 일반 HWPX는 같은 숫자를 1/255로 쓰므로 사용자가 출처를 확인한 경우에만 호출한다.
+    pub fn from_legacy_rhwp_hwpx(data: &[u8], password: Option<&[u8]>) -> Result<Self, HwpError> {
+        let format = crate::parser::FileFormat::Hwpx;
+        if crate::parser::detect_format(data) != format {
+            return Err(HwpError::InvalidFile(
+                "구버전 투명도 복원에는 HWPX 입력이 필요합니다".into(),
+            ));
+        }
+        let parsed = crate::parser::parse_document_for_core(data, password, true)
+            .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
+        Self::from_parsed_document(parsed, format)
+    }
+
     /// 문서를 열어 현재 Core를 원자적으로 교체한다.
     ///
     /// 성공 결과에는 문서·암호·metadata를 싣지 않는다. 암호의 보관 수명은
@@ -229,7 +243,7 @@ impl DocumentCore {
                 .map_err(|e| HwpError::InvalidFile(format!("PDF 오류: {e}")))?;
             return Self::from_pdf_bytes(data, &options);
         }
-        let parsed = crate::parser::parse_document_for_core(data, password)
+        let parsed = crate::parser::parse_document_for_core(data, password, false)
             .map_err(|e| HwpError::InvalidFile(e.to_string()))?;
         Self::from_parsed_document(parsed, source_format)
     }

@@ -521,6 +521,14 @@ export class InputHandler {
 
   // 직선 끝점 드래그 상태
   private isLineEndpointDragging = false;
+  private connectorMidpointDrag: {
+    ref: { sec: number; ppi: number; ci: number; cellPath?: CellPathLike };
+    axis: 'x' | 'y';
+    start: number;
+    original: number;
+    zoom: number;
+    applied: number;
+  } | null = null;
   private lineEndpointState: {
     ref: { sec: number; ppi: number; ci: number; type: string };
     endpoint: 'start' | 'end';

@@ -15,6 +15,13 @@ use super::*;
 /// 마커가 사라져 native HWPX로 취급된다.
 pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
 
+/// rhwp가 채우기·선 `alpha`를 한/글처럼 0~255 정수로 쓴 HWPX임을 표시하는 ZIP 보조 엔트리.
+///
+/// 예전 rhwp는 `alpha`를 0.0~1.0 비율로 써서 완전 투명(255)이 정수 `1`과 같은 글자가 된다.
+/// rhwp 원본 마커(HWP5·HWP3)가 있는데 이 표지가 없으면 그 시절 저장본이므로 비율로 읽는다.
+/// 한컴에서 다시 저장하면 두 마커가 모두 사라져 한컴 정수 규칙을 따른다.
+pub const RHWP_BYTE_ALPHA_HWPX_MARKER_PATH: &str = "META-INF/rhwp-byte-alpha";
+
 /// 제어 슬롯을 포함하는 문단 UTF-16 축으로 LineSeg를 저장하는 생산자 계약.
 /// 이전 `1` 산출물의 축 해석은 읽기 호환 경로에서 유지한다.
 pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";
@@ -345,6 +352,17 @@ pub struct Section {
     /// 원본 바이트의 다이제스트 쌍. 저장 시 둘 다 일치할 때만 raw 를 재사용한다.
     /// 계약 전문은 `model::raw_provenance` 모듈 주석.
     pub raw_provenance: Option<crate::model::raw_provenance::SectionSeal>,
+}
+
+/// HWP5 구역 정의 속성 bit 20-21 값과 쪽 번호 종류(`page_num_type`, 1=홀수·2=짝수)를 서로 바꾼다.
+/// 한컴 12.30은 HWP에 홀수 시작을 2, 짝수 시작을 1로 쓴다(HWPX `ODD`·`EVEN` 저장본을 HWP로 저장해 확인).
+/// 서로 맞바꾸기라 읽기와 쓰기에 함께 쓴다.
+pub fn hwp_page_num_type(value: u8) -> u8 {
+    match value {
+        1 => 2,
+        2 => 1,
+        other => other,
+    }
 }
 
 /// 구역 정의 (HWPTAG_CTRL_HEADER - 'secd')

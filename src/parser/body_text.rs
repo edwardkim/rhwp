@@ -1137,7 +1137,8 @@ fn parse_section_def(ctrl_data: &[u8], child_records: &[Record], ctrl_level: u16
     sd.first_page_border = sd.flags & 0x0100 != 0;
     sd.first_page_fill = sd.flags & 0x0200 != 0;
     sd.hide_empty_line = sd.flags & 0x00080000 != 0; // bit 19: 빈 줄 감추기
-    sd.page_num_type = ((sd.flags >> 20) & 0x03) as u8; // bit 20-21: 쪽 번호 종류 (0=이어서, 1=홀수, 2=짝수)
+                                                     // bit 20-21: 쪽 번호 종류 (0=이어서, 1=짝수, 2=홀수)
+    sd.page_num_type = crate::model::document::hwp_page_num_type(((sd.flags >> 20) & 0x03) as u8);
 
     // 자식 레코드에서 PAGE_DEF, FOOTNOTE_SHAPE, PAGE_BORDER_FILL 파싱
     let mut footnote_count = 0u32;

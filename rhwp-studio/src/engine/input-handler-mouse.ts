@@ -5,7 +5,7 @@ import { hyperlinkAtPointer, hoverHyperlink, rememberHyperlinkClick, followHyper
 import type { ContextMenuItem } from '@/ui/context-menu';
 import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
 import * as _connector from './input-handler-connector';
-import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
+import { MoveConnectorMidpointCommand, MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 import { cacheTableCellBboxes, ensureTableCellBboxCache } from './table-bbox-cache';
@@ -595,6 +595,18 @@ export function onClick(this: any, e: MouseEvent): void {
             if (picBbox) {
               const props = this.getObjectProperties(ref);
               if (props.sizeProtect) return;
+              if (dir === 'midpoint') {
+                const axis = props.connectorMidAxis;
+                if (ref.type !== 'line' || (axis !== 'x' && axis !== 'y')) return;
+                this.connectorMidpointDrag = {
+                  ref, axis, start: axis === 'x' ? cx : cy,
+                  original: axis === 'x' ? props.connectorMidX : props.connectorMidY,
+                  zoom: this.viewportManager.getZoom(), applied: 0,
+                };
+                this.container.style.cursor = axis === 'x' ? 'ew-resize' : 'ns-resize';
+                document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
+                return;
+              }
               // 직선/연결선: 끝점 핸들 드래그 (sw=시작, ne=끝)
               if (ref.type === 'line' && (dir === 'sw' || dir === 'ne')) {
                 const zoom = this.viewportManager.getZoom();
@@ -1569,7 +1581,35 @@ export function onContextMenu(this: any, e: MouseEvent): void {
   this.contextMenu.show(e.clientX, e.clientY, items);
 }
 
+function updateConnectorMidpointDrag(this: any, event: MouseEvent): void {
+  const drag = this.connectorMidpointDrag;
+  const rect = this.container.querySelector('#scroll-content')?.getBoundingClientRect();
+  if (!drag || !rect) return;
+  const xAxis = drag.axis === 'x';
+  const coordinate = xAxis ? event.clientX - rect.left : event.clientY - rect.top;
+  const delta = Math.round((coordinate - drag.start) / drag.zoom * (7200 / 96));
+  // 두 안쪽 점은 이동 축의 좌표가 같다. 실제 적용량만 기록해 양 끝에서도 되돌릴 수 있다.
+  const total = Math.max(-0x7fffffff, -0x80000000 - drag.original,
+    Math.min(0x7fffffff, 0x7fffffff - drag.original, delta));
+  const step = total - drag.applied;
+  if (step === 0) return;
+  const { sec, ppi, ci, cellPath } = drag.ref;
+  this.wasm.moveConnectorMidpoint(sec, ppi, ci, xAxis ? step : 0, xAxis ? 0 : step, cellPath);
+  drag.applied = total;
+  this.eventBus.emit('document-changed');
+  this.renderPictureObjectSelection();
+}
+
 export function onMouseMove(this: any, e: MouseEvent): void {
+  if (this.connectorMidpointDrag) {
+    if (!this.dragRafId) {
+      this.dragRafId = requestAnimationFrame(() => {
+        this.dragRafId = 0;
+        updateConnectorMidpointDrag.call(this, e);
+      });
+    }
+    return;
+  }
   // 연결선 드로잉 모드: 연결점 오버레이 + 프리뷰
   if (this.connectorDrawingMode) {
     const sc = this.container.querySelector('#scroll-content');
@@ -1786,6 +1826,10 @@ export function onMouseMove(this: any, e: MouseEvent): void {
           const props = this.getObjectProperties(ref);
           if (props.sizeProtect) {
             this.container.style.cursor = '';
+            return;
+          }
+          if (dir === 'midpoint') {
+            this.container.style.cursor = props.connectorMidAxis === 'x' ? 'ew-resize' : 'ns-resize';
             return;
           }
         } catch { /* ignore */ }
@@ -2008,6 +2052,26 @@ export function onMouseUp(this: any, e: MouseEvent): void {
 }
 
 function finishMouseUp(this: any, _e: MouseEvent): void {
+  const midpoint = this.connectorMidpointDrag;
+  if (midpoint) {
+    if (this.dragRafId) {
+      cancelAnimationFrame(this.dragRafId);
+      this.dragRafId = 0;
+    }
+    try {
+      updateConnectorMidpointDrag.call(this, _e);
+    } finally {
+      this.connectorMidpointDrag = null;
+      this.container.style.cursor = '';
+      if (midpoint.applied) {
+        this.executeOperation({
+          kind: 'record', command: new MoveConnectorMidpointCommand(midpoint.ref,
+            midpoint.axis === 'x' ? midpoint.applied : 0, midpoint.axis === 'y' ? midpoint.applied : 0),
+        });
+      }
+    }
+    return;
+  }
   // 그림 배치 모드 마우스업 → 삽입 실행
   if (this.imagePlacementMode && this.imagePlacementDrag && this.imagePlacementData) {
     this.finishImagePlacement(_e);

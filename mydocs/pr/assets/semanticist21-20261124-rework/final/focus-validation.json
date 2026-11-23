@@ -1,0 +1,188 @@
+{
+  "source": "e4ce75728af706c8fdab93882172ad07843b00b8",
+  "base": "28a6afc1ebe3e9873605f2d306ca094b422abf24",
+  "builds": {
+    "merged-tools": {
+      "native": {
+        "source": "e4ce75728af706c8fdab93882172ad07843b00b8",
+        "tree": "794ce7f2353c69af625193fb9e01f68e8a39a987",
+        "command": [
+          "cargo",
+          "build",
+          "--verbose",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--bin",
+          "rhwp"
+        ],
+        "artifacts": {
+          "rhwp": "b720d2639648cc7b91bb351886936f755aceaebc8e9253955cf77a4160f52ebf"
+        },
+        "seconds": 521.6
+      },
+      "wasm": {
+        "source": "e4ce75728af706c8fdab93882172ad07843b00b8",
+        "tree": "794ce7f2353c69af625193fb9e01f68e8a39a987",
+        "command": [
+          "docker",
+          "compose",
+          "-p",
+          "rhwp",
+          "--env-file",
+          ".env.docker",
+          "run",
+          "--no-deps",
+          "-T",
+          "--rm",
+          "--user",
+          "1002:1002",
+          "--env",
+          "HOST_UID=1002",
+          "--env",
+          "HOST_GID=1002",
+          "--env",
+          "CARGO_TARGET_DIR=/review-target",
+          "--env",
+          "CARGO_BUILD_JOBS=6",
+          "--env",
+          "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16",
+          "--volume",
+          "${REVIEW_TARGET}:/review-target",
+          "--volume",
+          "${REVIEW_OUTPUT}/merged-tools/pkg:/app/pkg",
+          "wasm"
+        ],
+        "artifacts": {
+          "rhwp_bg.wasm": "f5e6f59a67dbdf081e1da213e11ac8f6b9168ab7bad5c69fd4f4cd7001221965",
+          "rhwp.js": "8b64575064ff9157860de67cd2101bb10f8fe7a5b8903a9423601a660269e4b6",
+          "rhwp.d.ts": "efb8459a1fd97f68db160acd4e35693b39808737aa4edb812d9c60f2f9619bc0",
+          "rhwp_bg.wasm.d.ts": "2207627014063a898cdbea1f3b8181da92d275f827b954e32ec93545d6ea932b"
+        },
+        "seconds": 1545.2
+      }
+    },
+    "base-tools": {
+      "native": {
+        "source": "28a6afc1ebe3e9873605f2d306ca094b422abf24",
+        "tree": "100857fd1397cbc33b7f490450b6ce009e80c4dd",
+        "command": [
+          "cargo",
+          "build",
+          "--verbose",
+          "--locked",
+          "--profile",
+          "release-test",
+          "--features",
+          "native-skia",
+          "--lib",
+          "--bin",
+          "rhwp"
+        ],
+        "artifacts": {
+          "rhwp": "73aef617d58cda2802d3a68864e745cf303edf79213609e9160c7c7b7c947419"
+        },
+        "seconds": 560.7
+      },
+      "wasm": {
+        "source": "28a6afc1ebe3e9873605f2d306ca094b422abf24",
+        "tree": "100857fd1397cbc33b7f490450b6ce009e80c4dd",
+        "command": [
+          "docker",
+          "compose",
+          "-p",
+          "rhwp",
+          "--env-file",
+          ".env.docker",
+          "run",
+          "--no-deps",
+          "-T",
+          "--rm",
+          "--user",
+          "1002:1002",
+          "--env",
+          "HOST_UID=1002",
+          "--env",
+          "HOST_GID=1002",
+          "--env",
+          "CARGO_TARGET_DIR=/review-target",
+          "--env",
+          "CARGO_BUILD_JOBS=6",
+          "--env",
+          "CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16",
+          "--volume",
+          "${REVIEW_TARGET}:/review-target",
+          "--volume",
+          "${REVIEW_OUTPUT}/base-tools/pkg:/app/pkg",
+          "wasm"
+        ],
+        "artifacts": {
+          "rhwp_bg.wasm": "54abaa50f0ba7c60024692b6ab81836fa1382d3053b10fb9a634f542832bc6da",
+          "rhwp.js": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2",
+          "rhwp.d.ts": "1d5973fa33679bd15640cc939dcd52a0264616231c4dc40757520b8cd591e518",
+          "rhwp_bg.wasm.d.ts": "8420feca179e6ce4e15696be48ba705999443567d957e35de7edbdab1b3eb7bb"
+        },
+        "seconds": 1345.5
+      }
+    }
+  },
+  "summary": [
+    {
+      "pr": 9281,
+      "backend": "native",
+      "documents": 8,
+      "pages": 32,
+      "candidateMinimum": "100.00",
+      "develMinimum": "50.88",
+      "declined": 0
+    },
+    {
+      "pr": 9281,
+      "backend": "wasm",
+      "documents": 8,
+      "pages": 32,
+      "candidateMinimum": "100.00",
+      "develMinimum": "51.06",
+      "declined": 0
+    },
+    {
+      "pr": 9286,
+      "backend": "native",
+      "documents": 25,
+      "pages": 25,
+      "candidateMinimum": "100.00",
+      "develMinimum": "58.64",
+      "declined": 0
+    },
+    {
+      "pr": 9286,
+      "backend": "wasm",
+      "documents": 25,
+      "pages": 25,
+      "candidateMinimum": "100.00",
+      "develMinimum": "49.43",
+      "declined": 0
+    },
+    {
+      "pr": 9325,
+      "backend": "native",
+      "documents": 12,
+      "pages": 12,
+      "candidateMinimum": "100.00",
+      "develMinimum": "49.17",
+      "declined": 0
+    },
+    {
+      "pr": 9325,
+      "backend": "wasm",
+      "documents": 12,
+      "pages": 12,
+      "candidateMinimum": "100.00",
+      "develMinimum": "49.17",
+      "declined": 0
+    }
+  ]
+}

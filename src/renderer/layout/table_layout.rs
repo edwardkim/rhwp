@@ -3587,6 +3587,15 @@ impl LayoutEngine {
         ) {
             return 0.0;
         }
+        // 종이·쪽 기준 글 앞/뒤 개체는 칸과 무관한 절대 자리에 놓인다. 한컴은 이 개체로
+        // 칸을 키우지 않고(셀 안 연결선·도형: 칸은 글자 줄 높이 그대로) 뒤 본문도 밀지 않는다.
+        if matches!(
+            common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText
+        ) && !matches!(common.vert_rel_to, VertRelTo::Para)
+        {
+            return 0.0;
+        }
 
         let object_height = hwpunit_to_px(common.height as i32, self.dpi);
         let top_offset = if matches!(common.vert_rel_to, VertRelTo::Para) {

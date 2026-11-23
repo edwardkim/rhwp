@@ -2407,6 +2407,28 @@ export class MoveLineEndpointCommand implements EditCommand {
   mergeWith(): null { return null; }
 }
 
+/** 꺾인 연결선 안쪽 두 점의 이동만 되돌린다. 양 끝점과 개체 크기는 편집하지 않는다. */
+export class MoveConnectorMidpointCommand implements EditCommand {
+  readonly type = 'moveConnectorMidpoint';
+  readonly timestamp = Date.now();
+
+  constructor(
+    private ref: Pick<ObjectPropsRef, 'sec' | 'ppi' | 'ci' | 'cellPath'>,
+    private dx: number,
+    private dy: number,
+  ) {}
+
+  private move(wasm: WasmBridge, dx: number, dy: number): DocumentPosition {
+    const { sec, ppi, ci, cellPath } = this.ref;
+    wasm.moveConnectorMidpoint(sec, ppi, ci, dx, dy, cellPath);
+    return { sectionIndex: sec, paragraphIndex: ppi, charOffset: 0 };
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition { return this.move(wasm, this.dx, this.dy); }
+  undo(wasm: WasmBridge): DocumentPosition { return this.move(wasm, -this.dx, -this.dy); }
+  mergeWith(): null { return null; }
+}
+
 /**
  * [Task #3230] 개체 속성 변경의 역연산 명령 (kind:'record' 용, #2337 계열).
  *

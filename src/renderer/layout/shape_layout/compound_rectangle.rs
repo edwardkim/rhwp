@@ -75,7 +75,7 @@ pub(super) fn append_border(
             commands,
             ShapeStyle {
                 fill_color: Some(color),
-                opacity: rect.style.opacity,
+                opacity: crate::renderer::alpha_to_opacity(rect.style.stroke_alpha),
                 ..ShapeStyle::default()
             },
             None,

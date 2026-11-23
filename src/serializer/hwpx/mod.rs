@@ -532,6 +532,11 @@ where
             crate::model::document::HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS,
         )?;
     }
+    // 채움 alpha를 바이트로 기록한 패키지는 구버전 복원 옵션으로 다시 열어도 같은 값이다.
+    z.write_deflated(
+        crate::model::document::RHWP_BYTE_ALPHA_HWPX_MARKER_PATH,
+        b"1",
+    )?;
     if doc.layout_profile().hwp3_external_realign() {
         z.write_deflated(
             crate::model::document::HWP3_EXTERNAL_REALIGN_HWPX_PATH,
