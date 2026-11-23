@@ -18,10 +18,9 @@ use rhwp::model::style::Font;
 
 const FAMILY: &str = "RHWP HFT Outline Fixture";
 const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
-#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+const CFF_JAMO: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutlineJamo.otf");
 const SOURCE_SANS_FIRST: &[u8] =
     include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.028-Regular.otf");
-#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 const SOURCE_SANS_SECOND: &[u8] =
     include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf");
 
@@ -86,7 +85,7 @@ fn verified_cff_query_alias_accepts_only_the_selected_program() {
         .register_hft_outline_font_native("임의 별칭", CFF, 0)
         .unwrap());
     assert!(!core
-        .register_hft_outline_font_native("실제 조회 별칭", &synthetic_cff_for('나'), 0)
+        .register_hft_outline_font_native("실제 조회 별칭", CFF_JAMO, 0)
         .unwrap());
     assert!(
         core.register_hft_outline_font_native("실제 조회 별칭", CFF, 0)
@@ -127,7 +126,7 @@ fn legacy_outline_registration_preserves_unicode_family_case_folding() {
 
 #[test]
 fn split_legacy_outline_candidates_replace_atomically_and_retain_order() {
-    // 관계형: 공개 합성 CFF 두 조각을 실제 후보 순서로 교체한다.
+    // 관계형: 저장소의 두 CFF 프로그램을 공급 순서대로 교체한다.
     let mut core = DocumentCore::new_empty();
     let mut document = core.document().clone();
     document.doc_info.font_faces = vec![vec![Font {
@@ -136,8 +135,7 @@ fn split_legacy_outline_candidates_replace_atomically_and_retain_order() {
         ..Default::default()
     }]];
     core.set_document(document);
-    let second = synthetic_cff_for('나');
-    let first_order = [(CFF, 0), (second.as_slice(), 0)];
+    let first_order = [(CFF, 0), (CFF_JAMO, 0)];
     assert!(core
         .register_hft_outline_font_candidates_native(FAMILY, &first_order)
         .unwrap());
@@ -160,7 +158,7 @@ fn split_legacy_outline_candidates_replace_atomically_and_retain_order() {
         "한도 오류로 기존 후보를 일부만 교체하지 않는다"
     );
     assert!(core
-        .register_hft_outline_font_candidates_native(FAMILY, &[(second.as_slice(), 0), (CFF, 0)])
+        .register_hft_outline_font_candidates_native(FAMILY, &[(CFF_JAMO, 0), (CFF, 0)])
         .unwrap());
     let ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
     assert!(
@@ -208,7 +206,7 @@ fn verified_legacy_advance_survives_a_supplied_display_otf() {
 
     let mut fonts = NativePuaFonts::default();
     fonts
-        .register_otf("synthetic", false, false, &synthetic_cff_for('A'), 0)
+        .register_otf("Source Sans 3", false, false, SOURCE_SANS_FIRST, 0)
         .unwrap();
     let mut style = TextStyle {
         font_family: "HCI Poppy".into(),
@@ -218,7 +216,7 @@ fn verified_legacy_advance_survives_a_supplied_display_otf() {
     };
     let measure = |style: &TextStyle| EmbeddedTextMeasurer.compute_char_positions("A", style)[1];
     let source_width = measure(&style);
-    style.native_otf_metrics = fonts.get_otf("synthetic", false, false);
+    style.native_otf_metrics = fonts.get_otf("Source Sans 3", false, false);
     assert_eq!(
         measure(&style),
         source_width,
@@ -477,27 +475,22 @@ fn hwpx_supplied_cff_punctuation_keeps_glyph_owner_and_content_order() {
     }
     // 원본에서 파생한 합성 경계: 글꼴은 MIT fixture만 공급한다.
     // 저장 줄 경로와 저장 줄을 제거한 재조판 경로에 같은 소유 계약을 적용한다.
-    let latin_cff = synthetic_cff_for('(');
+    let latin_cff = SOURCE_SANS_SECOND;
     let latin_ttf = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf");
     let korean_ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
     for reflow in [false, true] {
         for (korean, latin, source_hft, expected) in [
-            (CFF, Some(latin_cff.as_slice()), true, "fixture-latin"),
+            (CFF, Some(latin_cff), true, "fixture-latin"),
             (CFF, None, true, "fixture-korean"),
-            (
-                latin_cff.as_slice(),
-                Some(latin_cff.as_slice()),
-                true,
-                "fixture-korean",
-            ),
+            (latin_cff, Some(latin_cff), true, "fixture-korean"),
             (CFF, Some(latin_ttf.as_slice()), true, "fixture-korean"),
             (
                 korean_ttf.as_slice(),
-                Some(latin_cff.as_slice()),
+                Some(latin_cff),
                 true,
                 "fixture-korean",
             ),
-            (CFF, Some(latin_cff.as_slice()), false, "fixture-korean"),
+            (CFF, Some(latin_cff), false, "fixture-korean"),
         ] {
             let mut input = document.clone();
             if reflow {
@@ -788,28 +781,6 @@ mod native {
         bytes
     }
 
-    fn replace_windows_family_suffix(mut bytes: Vec<u8>, suffix: u8) -> Vec<u8> {
-        let count = u16::from_be_bytes([bytes[4], bytes[5]]) as usize;
-        let entry = (0..count)
-            .map(|index| 12 + index * 16)
-            .find(|&pos| &bytes[pos..pos + 4] == b"name")
-            .unwrap();
-        let table = u32::from_be_bytes(bytes[entry + 8..entry + 12].try_into().unwrap()) as usize;
-        let records = u16::from_be_bytes([bytes[table + 2], bytes[table + 3]]) as usize;
-        let strings = table + u16::from_be_bytes([bytes[table + 4], bytes[table + 5]]) as usize;
-        for index in 0..records {
-            let record = table + 6 + index * 12;
-            let platform = u16::from_be_bytes([bytes[record], bytes[record + 1]]);
-            let name_id = u16::from_be_bytes([bytes[record + 6], bytes[record + 7]]);
-            if platform == 3 && name_id == 1 {
-                let length = u16::from_be_bytes([bytes[record + 8], bytes[record + 9]]) as usize;
-                let offset = u16::from_be_bytes([bytes[record + 10], bytes[record + 11]]) as usize;
-                bytes[strings + offset + length - 1] = suffix;
-            }
-        }
-        bytes
-    }
-
     fn paint(y: f64, hft: bool, profile: RenderProfile) -> RasterPixels {
         let run = TextRunNode {
             text: "가".into(),
@@ -901,32 +872,22 @@ mod native {
 
     #[test]
     fn split_cff_uses_selected_glyph_outline_in_print_profile() {
-        // 첫 face는 가, 같은 family의 두 번째 face는 나만 제공한다.
-        let mut second = CFF.to_vec();
-        let count = u16::from_be_bytes([second[4], second[5]]) as usize;
-        let cmap = (0..count)
-            .find_map(|index| {
-                let pos = 12 + index * 16;
-                (second.get(pos..pos + 4) == Some(b"cmap")).then(|| {
-                    u32::from_be_bytes(second[pos + 8..pos + 12].try_into().unwrap()) as usize
-                })
-            })
-            .unwrap();
-        let sub =
-            cmap + u32::from_be_bytes(second[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
-        assert_eq!(u16::from_be_bytes([second[sub], second[sub + 1]]), 4);
-        for offset in [sub + 14, sub + 20] {
-            second[offset..offset + 2].copy_from_slice(&('나' as u16).to_be_bytes());
-        }
-        second[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('나' as u16).to_be_bytes());
+        // 같은 family의 두 배포 버전 중 3.052에만 Ɓ가 있다.
+        let first = ttf_parser::Face::parse(super::SOURCE_SANS_FIRST, 0).unwrap();
+        let second = ttf_parser::Face::parse(super::SOURCE_SANS_SECOND, 0).unwrap();
+        assert!(first.glyph_index('Ɓ').is_none());
+        assert!(second.glyph_index('Ɓ').is_some());
         let renderer = SkiaLayerRenderer::new()
-            .try_with_font_data(&[CFF.to_vec(), second])
+            .try_with_font_data(&[
+                super::SOURCE_SANS_FIRST.to_vec(),
+                super::SOURCE_SANS_SECOND.to_vec(),
+            ])
             .unwrap();
         let paint_at = |y| {
             let run = TextRunNode {
-                text: "나".into(),
+                text: "Ɓ".into(),
                 style: TextStyle {
-                    font_family: FAMILY.into(),
+                    font_family: "Source Sans 3".into(),
                     font_size: 32.0,
                     source_font_is_hft: true,
                     ..Default::default()
@@ -1042,11 +1003,8 @@ mod native {
 
     #[test]
     fn unrelated_fallback_does_not_inherit_original_legacy_outline_policy() {
-        let first = localized_alias_cff(CFF.to_vec(), b'1');
-        let second =
-            replace_windows_family_suffix(localized_alias_cff(synthetic_cff_for('나'), b'2'), b'2');
         let renderer = SkiaLayerRenderer::new()
-            .try_with_font_data(&[first, second])
+            .try_with_font_data(&[CFF.to_vec(), super::SOURCE_SANS_SECOND.to_vec()])
             .unwrap();
         let mut core =
             DocumentCore::from_bytes(include_bytes!("../../saved/blank2010.hwp")).unwrap();
@@ -1057,9 +1015,9 @@ mod native {
         assert!(!reference.preserves_raster_text_geometry());
         let paint = |hft| {
             let run = TextRunNode {
-                text: "나".into(),
+                text: "Ɓ".into(),
                 style: TextStyle {
-                    font_family: format!("{FAMILY},RHWP HFT Outline Fixtur2"),
+                    font_family: format!("{FAMILY},Source Sans 3"),
                     font_size: 32.0,
                     source_font_is_hft: hft,
                     ..Default::default()
@@ -1147,65 +1105,33 @@ mod native_otf_program_contract {
 
     #[test]
     fn split_family_uses_the_program_that_contains_each_character() {
-        // 저장소의 합성 CFF 글꼴은 가만 지원한다. 같은 글꼴의 cmap을 나로
-        // 바꿔 서로 다른 문자를 공급하는 두 번째 프로그램을 메모리에서 만든다.
-        let first = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
-        let mut second = first.to_vec();
-        let table_count = u16::from_be_bytes([second[4], second[5]]) as usize;
-        let cmap = (0..table_count)
-            .find_map(|index| {
-                let pos = 12 + index * 16;
-                (second.get(pos..pos + 4) == Some(b"cmap")).then(|| {
-                    u32::from_be_bytes(second[pos + 8..pos + 12].try_into().unwrap()) as usize
-                })
-            })
-            .unwrap();
-        let sub =
-            cmap + u32::from_be_bytes(second[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
-        assert_eq!(u16::from_be_bytes([second[sub], second[sub + 1]]), 4);
-        // 첫 세그먼트의 end/start와 idDelta를 가에서 나로 옮긴다.
-        for offset in [sub + 14, sub + 20] {
-            assert_eq!(&second[offset..offset + 2], &[0xac, 0x00]);
-            second[offset..offset + 2].copy_from_slice(&[0xb0, 0x98]);
-        }
-        let delta = 1u16.wrapping_sub('나' as u16).to_be_bytes();
-        second[sub + 24..sub + 26].copy_from_slice(&delta);
         let mut fonts = NativePuaFonts::default();
         fonts
-            .register_otf("synthetic", false, false, first, 0)
+            .register_otf("Source Sans 3", false, false, super::SOURCE_SANS_FIRST, 0)
             .unwrap();
+        let first = fonts.get_otf("Source Sans 3", false, false).unwrap();
+        assert!(first.advance_em('A').is_some());
+        assert!(first.advance_em('Ɓ').is_none());
         fonts
-            .register_otf("synthetic", false, false, &second, 0)
+            .register_otf("Source Sans 3", false, false, super::SOURCE_SANS_SECOND, 0)
             .unwrap();
-        let metrics = fonts.get_otf("synthetic", false, false).unwrap();
-        assert!(metrics.advance_em('가').is_some());
-        assert!(metrics.advance_em('나').is_some());
-        assert!(metrics.advance_em('다').is_none());
+        let metrics = fonts.get_otf("Source Sans 3", false, false).unwrap();
+        assert_eq!(metrics.advance_em('A'), first.advance_em('A'));
+        let second = ttf_parser::Face::parse(super::SOURCE_SANS_SECOND, 0).unwrap();
+        let glyph = second.glyph_index('Ɓ').unwrap();
+        let advance =
+            f64::from(second.glyph_hor_advance(glyph).unwrap()) / f64::from(second.units_per_em());
+        assert_eq!(metrics.advance_em('Ɓ'), Some(advance));
+        assert!(metrics.advance_em('가').is_none());
     }
 
     #[test]
     fn earlier_true_type_glyph_blocks_a_later_cff_advance() {
         let ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
-        let mut cff = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf").to_vec();
-        let count = u16::from_be_bytes([cff[4], cff[5]]) as usize;
-        let cmap = (0..count)
-            .find_map(|index| {
-                let pos = 12 + index * 16;
-                (cff.get(pos..pos + 4) == Some(b"cmap")).then(|| {
-                    u32::from_be_bytes(cff[pos + 8..pos + 12].try_into().unwrap()) as usize
-                })
-            })
-            .unwrap();
-        let sub = cmap + u32::from_be_bytes(cff[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
-        assert_eq!(u16::from_be_bytes([cff[sub], cff[sub + 1]]), 4);
-        for offset in [sub + 14, sub + 20] {
-            cff[offset..offset + 2].copy_from_slice(&('A' as u16).to_be_bytes());
-        }
-        cff[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('A' as u16).to_be_bytes());
-
+        let cff = super::SOURCE_SANS_FIRST;
         let mut before = NativePuaFonts::default();
         before.register_otf("same", false, false, ttf, 0).unwrap();
-        before.register_otf("same", false, false, &cff, 0).unwrap();
+        before.register_otf("same", false, false, cff, 0).unwrap();
         assert_eq!(
             before
                 .get_otf("same", false, false)
@@ -1215,7 +1141,7 @@ mod native_otf_program_contract {
         );
 
         let mut after = NativePuaFonts::default();
-        after.register_otf("same", false, false, &cff, 0).unwrap();
+        after.register_otf("same", false, false, cff, 0).unwrap();
         after.register_otf("same", false, false, ttf, 0).unwrap();
         assert!(after
             .get_otf("same", false, false)
@@ -1405,7 +1331,7 @@ fn original_legacy_latin_punctuation_precedes_a_hangul_slots_display_ttf_fallbac
     let mut document = core.document().clone();
     document.provenance.format = rhwp::model::provenance::SourceFormat::Hwpx;
     for (lang, faces) in document.doc_info.font_faces.iter_mut().enumerate() {
-        faces[0].name = if lang == 1 { FAMILY } else { "fixture-korean" }.into();
+        faces[0].name = if lang == 1 { "Source Sans 3" } else { FAMILY }.into();
         faces[0].alt_type = 2;
     }
     for style in &mut document.doc_info.char_shapes {
@@ -1416,20 +1342,18 @@ fn original_legacy_latin_punctuation_precedes_a_hangul_slots_display_ttf_fallbac
     }
     core.set_document(document);
     core.set_font_environment(Some(FontEnvironment::from_json(
-        r#"{"id":"primary-cff-with-ttf-fallback","substitutions":{},"preserveSourceMetrics":true,"glyphFallbacks":{"fixture-korean":["RHWP Equation Contract"]}}"#
+        r#"{"id":"primary-cff-with-ttf-fallback","substitutions":{},"preserveSourceMetrics":true,"glyphFallbacks":{"RHWP HFT Outline Fixture":["RHWP Equation Contract"]}}"#
     ).unwrap())).unwrap();
-    let korean = cff_named("fixture-korean");
-    let latin = synthetic_cff_for('(');
     let ttf = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
     let renderer = SkiaLayerRenderer::new()
-        .try_with_font_data(&[korean, latin, ttf])
+        .try_with_font_data(&[CFF.to_vec(), SOURCE_SANS_SECOND.to_vec(), ttf])
         .unwrap();
     renderer.prepare_native_otf_fonts(&mut core).unwrap();
     let mut owners = Vec::new();
     punctuation(&core.build_page_render_tree(0).unwrap().root, &mut owners);
     assert_eq!(owners.len(), 1, "원문의 구두점 누락·중복 금지");
     assert!(
-        owners[0].starts_with(FAMILY),
+        owners[0].starts_with("Source Sans 3"),
         "원본 영문 글꼴이 괄호의 윤곽을 공급한다: {owners:?}"
     );
     assert_eq!(core.document().sections[0].paragraphs[0].text, "가(가");
