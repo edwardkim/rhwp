@@ -1,0 +1,61 @@
+source	scope	F11_count	input	format	selected_expected	input_value	field_A_가	field_B_나	all_states_matched
+base	body	1	keyboard	live	나	xy	x	y	False
+base	body	1	keyboard	HWP	나	xy	x	y	False
+base	body	1	keyboard	HWPX	나	xy	x	y	False
+base	body	1	ime	live	나	한	한		False
+base	body	1	ime	HWP	나	한	한		False
+base	body	1	ime	HWPX	나	한	한		False
+base	body	2	keyboard	live	가	xy			False
+base	body	2	keyboard	HWP	가	xy			False
+base	body	2	keyboard	HWPX	가	xy			False
+base	body	2	ime	live	가	한			False
+base	body	2	ime	HWP	가	한			False
+base	body	2	ime	HWPX	가	한			False
+base	cell	1	keyboard	live	나	xy			False
+base	cell	1	keyboard	HWP	나	xy			False
+base	cell	1	keyboard	HWPX	나	xy			False
+base	cell	1	ime	live	나	한			False
+base	cell	1	ime	HWP	나	한			False
+base	cell	1	ime	HWPX	나	한			False
+base	cell	2	keyboard	live	가	xy			False
+base	cell	2	keyboard	HWP	가	xy			False
+base	cell	2	keyboard	HWPX	가	xy			False
+base	cell	2	ime	live	가	한			False
+base	cell	2	ime	HWP	가	한			False
+base	cell	2	ime	HWPX	가	한			False
+candidate	body	1	keyboard	live	나	xy		xy	True
+candidate	body	1	keyboard	HWP	나	xy		xy	True
+candidate	body	1	keyboard	HWPX	나	xy		xy	True
+candidate	body	1	ime	live	나	한		한	True
+candidate	body	1	ime	HWP	나	한		한	True
+candidate	body	1	ime	HWPX	나	한		한	True
+candidate	body	2	keyboard	live	가	xy	x	y	False
+candidate	body	2	keyboard	HWP	가	xy	x	y	False
+candidate	body	2	keyboard	HWPX	가	xy	x	y	False
+candidate	body	2	ime	live	가	한	한		True
+candidate	body	2	ime	HWP	가	한	한		True
+candidate	body	2	ime	HWPX	가	한	한		True
+candidate	cell	1	keyboard	live	나	xy		xy	True
+candidate	cell	1	keyboard	HWP	나	xy		xy	True
+candidate	cell	1	keyboard	HWPX	나	xy		xy	True
+candidate	cell	1	ime	live	나	한		한	True
+candidate	cell	1	ime	HWP	나	한		한	True
+candidate	cell	1	ime	HWPX	나	한		한	True
+candidate	cell	2	keyboard	live	가	xy	x	y	False
+candidate	cell	2	keyboard	HWP	가	xy	x	y	False
+candidate	cell	2	keyboard	HWPX	가	xy	x	y	False
+candidate	cell	2	ime	live	가	한	한		True
+candidate	cell	2	ime	HWP	가	한	한		True
+candidate	cell	2	ime	HWPX	가	한	한		True
+candidate	body	1	ime-two	live	나	한글		한글	True
+candidate	body	1	ime-two	HWP	나	한글		한글	True
+candidate	body	1	ime-two	HWPX	나	한글		한글	True
+candidate	body	2	ime-two	live	가	한글	한	글	False
+candidate	body	2	ime-two	HWP	가	한글	한	글	False
+candidate	body	2	ime-two	HWPX	가	한글	한	글	False
+candidate	cell	1	ime-two	live	나	한글		한글	True
+candidate	cell	1	ime-two	HWP	나	한글		한글	True
+candidate	cell	1	ime-two	HWPX	나	한글		한글	True
+candidate	cell	2	ime-two	live	가	한글	한	글	False
+candidate	cell	2	ime-two	HWP	가	한글	한	글	False
+candidate	cell	2	ime-two	HWPX	가	한글	한	글	False
