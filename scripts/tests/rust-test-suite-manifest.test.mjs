@@ -256,8 +256,9 @@ test('공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harnes
     }
   }
   const symbol = renderHarness('regression_suite_001', ['tests/cases/issue_8153_symbol_coverage.rs']);
-  assert.match(symbol, /#\[path = "\.\.\/common\/symbol_font_program\.rs"\]/);
-  assert.equal((symbol.match(/^mod symbol_font_program;$/gm) ?? []).length, 1);
+  assert.match(symbol, /#\[path = "\.\.\/\.\.\/src\/renderer\/font_symbol_coverage\/bitmap\.rs"\]/);
+  assert.equal((symbol.match(/^mod font_symbol_bitmap;$/gm) ?? []).length, 1);
+  assert.doesNotMatch(symbol, /symbol_font_program/);
   for (const source of [
     'tests/cases/legacy_centered_bar_glyph_fit.rs',
     'tests/cases/issue_7733_legacy_bullet_program_order.rs',
@@ -266,7 +267,7 @@ test('공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harnes
     'tests/cases/unrelated.rs',
   ]) {
     const harness = renderHarness('regression_suite_001', [source]);
-    assert.doesNotMatch(harness, /symbol_font_program/);
+    assert.doesNotMatch(harness, /font_symbol_bitmap|symbol_font_program/);
   }
 });
 
