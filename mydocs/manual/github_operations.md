@@ -881,4 +881,6 @@ devel 대상 PR에는 CI, CodeQL, Render Diff의 현재 head·run·attempt를 �
 
 Render Diff는 `output/render-diff-build/evidence.json`(schema_version 1)을 수치와 출처의 공통 색인으로 쓴다. `run_id`, `run_attempt`, `pr_head`, `tested_sha`로 실행을 구별한다. `comparisons`의 검사별 `metrics`, `pages`, `evidence` 및 `files`의 경로별 SHA-256을 사용하면 Markdown 없이 결과를 읽을 수 있다. 빌드와 실행 증거는 `build`, `native_build`, `consumption`에 기록한다. 실제 측정이 확인된 Print만 포함하며, 측정 커밋과 TSV 해시·쪽·점수가 일치해야 한다.
 
+새로 생성한 색인의 `pr_event_base`는 PR 이벤트에 기록된 기준 SHA이고, `tested_tree`는 실제 측정 checkout의 tree SHA다. `tested_merge_first_parent`는 측정 커밋에 부모가 두 개 있고 두 번째 부모가 제출 head와 일치할 때 기록한다. 이벤트 base가 실행 사이에 전진할 수 있으므로 두 값을 별도로 대조한다. PR merge로 확인할 수 없으면 첫 부모는 `null`이며, 과거 색인에는 세 필드가 없을 수 있다.
+
 보고 workflow는 현재 attempt가 올린 소형 `render-diff-index-<run_id>-<attempt>`의 JSON만 읽는다. 압축을 디스크에 풀거나 PR 코드를 실행하지 않는다. 결과 파일이 없는 완료 단계는 결과 미확인으로 표시한다. 기본 브랜치 반영 뒤 실제 PR에서 최초 코멘트 ID와 재실행 뒤 ID가 같은지 확인한다.

@@ -4,6 +4,9 @@ import hashlib
 import importlib.util
 import io
 import json
+import subprocess
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 from zipfile import Path as ZipPath, ZipFile
@@ -277,6 +280,61 @@ class RenderDiffEvidenceTests(unittest.TestCase):
             self.assertIn(EVIDENCE.code(row["result"]), markdown)
             self.assertIn("<br>".join(map(EVIDENCE.code, row["point"].splitlines())), markdown)
             self.assertTrue(set(row["evidence"]).issubset(index["files"]))
+
+    def test_cli_records_actual_merge_objects_in_a_shallow_checkout(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            repo, shallow = root / 'history', root / 'shallow'
+            subprocess.run(['git', 'init', '-q', '-b', 'test', str(repo)], check=True)
+
+            def git(*args):
+                return subprocess.check_output([
+                    'git', '-C', str(repo), '-c', 'user.name=Fixture',
+                    '-c', 'user.email=fixture@example.com', '-c', 'commit.gpgsign=false', *args
+                ], text=True).strip()
+
+            def run_index(*args):
+                output = root / 'evidence.json'
+                result = subprocess.check_output([
+                    sys.executable, EVIDENCE.__file__, str(root), '--json-output', str(output), *args
+                ], text=True)
+                return json.loads(output.read_text(encoding='utf-8')), result
+
+            tree = git('write-tree')
+            event_base = git('commit-tree', tree, '-m', 'Event base')
+            actual_base = git('commit-tree', tree, '-p', event_base, '-m', 'Advanced base')
+            head = git('commit-tree', tree, '-p', event_base, '-m', 'PR head')
+            (repo / 'test.txt').write_text('Merged content\n', encoding='utf-8')
+            git('add', 'test.txt')
+            tested_tree = git('write-tree')
+            self.assertNotEqual(tested_tree, tree)
+            merge = git('commit-tree', tested_tree, '-p', actual_base, '-p', head, '-m', 'Tested merge')
+            git('update-ref', 'HEAD', merge)
+            subprocess.run(['git', 'clone', '-q', '--depth=1', repo.as_uri(), str(shallow)], check=True)
+            self.assertEqual(subprocess.check_output(
+                ['git', '-C', str(shallow), 'rev-list', '--count', 'HEAD'], text=True).strip(), '1')
+
+            index, markdown = run_index(
+                '--checkout', str(shallow), '--pr-head', head, '--pr-event-base', event_base
+            )
+            self.assertEqual(index['tested_sha'], merge)
+            self.assertEqual(index['tested_tree'], tested_tree)
+            self.assertEqual(index['pr_event_base'], event_base)
+            self.assertEqual(index['tested_merge_first_parent'], actual_base)
+            self.assertIn(f'PR event base {EVIDENCE.code(event_base)}', markdown)
+            self.assertIn(f'Tested PR merge first parent {EVIDENCE.code(actual_base)}', markdown)
+
+            non_pr, _ = run_index('--checkout', str(shallow))
+            self.assertIsNone(non_pr['tested_merge_first_parent'])
+            self.assertNotIn('pr_event_base', non_pr)
+            git('update-ref', 'HEAD', head)
+            single_parent, _ = run_index('--checkout', str(repo), '--pr-head', head, '--pr-event-base', event_base)
+            self.assertIsNone(single_parent['tested_merge_first_parent'])
+
+            replay, _ = run_index('--tested-sha', merge, '--pr-head', head)
+            self.assertEqual(replay['tested_sha'], merge)
+            self.assertNotIn('tested_tree', replay)
+            self.assertNotIn('tested_merge_first_parent', replay)
 
     def test_print_sweep_needs_explicit_complete_matching_evidence(self):
         manifest = {"mode": "silhouette_only", "run_state": "complete", "completed_pages": [1, 3],

@@ -957,13 +957,14 @@ jobs:
         continue-on-error: true
         env:
           PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_EVENT_BASE: ${{ github.event.pull_request.base.sha }}
         run: |
           mkdir -p output/render-diff-build
           run_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/attempts/$GITHUB_RUN_ATTEMPT"
           index=$(mktemp)
           trap 'rm -f "$index"' EXIT
           python3 scripts/render_diff_evidence.py . --run-url "$run_url" --pr-head "$PR_HEAD" \
-            --tested-sha "$(git rev-parse HEAD)" --json-output output/render-diff-build/evidence.json > "$index"
+            --pr-event-base "$PR_EVENT_BASE" --checkout . --json-output output/render-diff-build/evidence.json > "$index"
           mv "$index" output/render-diff-build/evidence.md
 
       - name: Upload render diff artifacts
