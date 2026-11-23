@@ -34,12 +34,12 @@
 
 같은 입력·독립 Print의 전쪽 Native/fresh WASM 최저90% 이상과 직접 확대 판독을 확보한 뒤 내용·줄/개체 소속·폭 비율·캐럿 경계 관계로 복원한다. ±2px 좌표를 고정하려면 해당 페이지 양쪽98% 이상과 독립 기대 좌표를 추가로 입증한다. 이관은 이슈 종료나 문서 피델리티 완료가 아니다.
 
-## 2026-11-23 독립 Print 전쪽 대조
+## 2026-11-23~24 독립 Print 전쪽 대조
 
 | 변환본 | 쪽수 | Native 최저 | fresh WASM 최저 | 489쪽 Native / fresh WASM |
 | --- | ---: | ---: | ---: | ---: |
 | HWP5 | 763 | [99.57%](sql-hwp5-native.tsv) | [99.34%](sql-hwp5-wasm.tsv) | 100.00% / 99.98% |
-| HWPX | 763 | [99.57%](sql-hwpx-native.tsv) | [96.82%](sql-hwpx-wasm.tsv) | 100.00% / 99.98% |
+| HWPX | 763 | [99.57%](sql-hwpx-native.tsv) | [99.34%](sql-hwpx-wasm.tsv) | 100.00% / 99.98% |
 
 측정 조건은 96 DPI, 한컴 2024 Print, 보정 전 2px raw 실루엣이다. HWP5는 위 세
 Print 분할본을 순서대로 대조했다. 별도로 출력한 HWPX 1-up 기준 PDF는 96,144,250바이트다.
@@ -64,6 +64,7 @@ fresh WASM 모두 99.99%이며 재측정한 여섯 쪽은 모두 99.98% 이상�
 - HWPX [Native](sql-hwpx-brackets-native.tsv) · [fresh WASM](sql-hwpx-brackets-wasm.tsv)
 - [16쪽 독립 Print와 양쪽 출력 확대 비교](sql-page-16-brackets.png)
 
-대괄호 보정 후 HWP5 fresh WASM 전763쪽을 다시 비교했다. 최저는 757쪽
-99.34%이며, 464쪽이 100.00%였다. 전쪽 TSV 링크에 이 결과를 반영했다.
-HWPX 전쪽 TSV의 96.82%는 대괄호 보정 전 값이다.
+대괄호 보정 후 각 변환본의 fresh WASM 763쪽을 다시 비교했다.
+두 형식의 최저값은 757쪽 99.34%다. 100.00%인 쪽은 HWP5 464쪽과 HWPX
+461쪽이다. HWPX 전쪽 TSV SHA-256은
+`cfcac1a1d94fd117e3922054ccb24df3d14c69ff65db30f3447a5aeb3ddec36c`다.
