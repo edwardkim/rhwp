@@ -1,3 +1,8 @@
+//! 관계형(제어점·끝점·인쇄 경로), 고정형(독립 인쇄의 ¼타원 접선 비율).
+//! 주석 갱신 2026-11-24T01:49:33+09:00 / 직전 파일 변경 6f4ded68c7391bf0497930230ef9aeba1c8ed29e, 2026-11-23T22:19:57+09:00.
+//! 2026-11-24, Windows 한컴 Print 대비 96 DPI 2px raw 실루엣. 꺾임 0개·1개 원본은 각 1쪽 Native/fresh WASM 100.00%, 나머지 10개 연결선도 전쪽 100.00%다.
+//! 전쪽 측정과 원본은 `mydocs/pr/assets/semanticist21-20261124-rework/final/`에 기록한다.
+//!
 //! 관계형 검사. 꺾인·곡선 연결선의 가운데 점을 옮긴 뒤 제어점·크기·위치·저장 결과를 입력과 대조한다.
 //! 주석 갱신 2026-11-23T16:00:00+09:00.
 //! 곡선 모양과 셀 높이는 한/글 12.30(Mac) 인쇄 PDF에서 잰 규칙과 대조한다. 픽셀 값은 옮기지 않았다.
@@ -345,5 +350,52 @@ fn floating_connector_in_a_cell_keeps_the_row_and_following_text() {
             DocumentCore::from_bytes(&bytes.unwrap()).unwrap()
         };
         assert_eq!(place(&reopen(&with)), place(&reopen(&empty)), "HWPX {hwpx}");
+    }
+}
+
+#[test]
+fn arcs_with_zero_or_one_bend_preserve_printed_paths_and_endpoints() {
+    for (file, bend) in [("one-elbow.hwpx", true), ("no-elbow.hwpx", false)] {
+        let bytes = std::fs::read(
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("samples/semanticist21-20261124-rework")
+                .join(file),
+        )
+        .unwrap();
+        let original = DocumentCore::from_bytes(&bytes).unwrap();
+        let serialized = [
+            bytes,
+            original.export_hwp_native().unwrap(),
+            original.export_hwpx_native().unwrap(),
+        ];
+        for data in serialized {
+            let doc = DocumentCore::from_bytes(&data).unwrap();
+            let tree = doc.build_page_render_tree(0).unwrap();
+            let node=find(&tree.root,&|n|matches!(&n.node_type,RenderNodeType::Path(p) if p.connector_endpoints.is_some())).expect("원본 연결선");
+            let RenderNodeType::Path(path) = &node.node_type else {
+                unreachable!()
+            };
+            let (sx, sy, ex, ey) = path.connector_endpoints.unwrap();
+            assert!(sx != ex && sy != ey, "양 끝점이 보존되어야 한다");
+            if bend {
+                let [PathCommand::MoveTo(x, y), PathCommand::CurveTo(c1x, c1y, c2x, c2y, end_x, end_y)] =
+                    path.commands.as_slice()
+                else {
+                    panic!("한컴 인쇄의 단일 ¼타원")
+                };
+                assert_eq!((*x, *y, *end_x, *end_y), (sx, sy, ex, ey));
+                assert!((c1x - sx).abs() < 0.001 && (c2y - ey).abs() < 0.001);
+                // 한컴 PDF에서 추출한 양 끝 접선 길이 / 각 축의 반지름.
+                assert!(((c1y - sy) / (ey - sy) - 0.553).abs() < 0.003);
+                assert!(((ex - c2x) / (ex - sx) - 0.552).abs() < 0.003);
+                assert!(path.style.stroke_color.is_some());
+            } else {
+                assert!(matches!(
+                    path.commands.as_slice(),
+                    [PathCommand::MoveTo(_, _)]
+                ));
+                assert!(path.style.stroke_color.is_none() && path.line_style.is_none());
+            }
+        }
     }
 }

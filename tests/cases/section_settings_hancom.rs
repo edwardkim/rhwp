@@ -1,3 +1,8 @@
+//! 관계형·고정형(쪽별 내용 소속, 원본 판형 및 인쇄 쪽 번호).
+//! 주석 갱신 2026-11-24T01:49:33+09:00 / 직전 파일 변경 f528069f3b38100e5928c1fb63bcfe1fba089d95, 2026-11-23T14:41:00+09:00.
+//! 2026-11-24, Windows 한컴 Print 대비 96 DPI 2px raw 실루엣. B5 대조군 4종은 각 4쪽 모두 Native/fresh WASM 100.00%다.
+//! 전쪽 측정과 원본은 `mydocs/pr/assets/semanticist21-20261124-rework/final/`에 기록한다.
+//!
 //! 검사 유형: 관계형(한컴 12.30 Mac PDF로 확인한 구역 설정 계약).
 //!
 //! 시험 문서 `two-sections.hwpx`는 구역마다 두 쪽이고, 쪽마다 바탕쪽·머리말·꼬리말과 가운데 아래 쪽
@@ -255,4 +260,62 @@ fn first_section_def_split_from_column_def_falls_back_like_hancom() {
     });
     let core = DocumentCore::from_bytes(&reordered).unwrap();
     assert_eq!(marked(&core), [true; 4]);
+}
+
+/// Windows 한컴 Print의 네 쪽에서 머리말·꼬리말·본문·바탕쪽의 소속을 함께 확인한다.
+#[test]
+fn first_section_uses_the_character_order_and_requires_a_column_definition() {
+    let samples =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/semanticist21-20261124-rework");
+    for (file, adjacent) in [
+        ("b5-adjacent.hwpx", true),
+        ("b5-text.hwpx", false),
+        ("b5-page-number.hwpx", false),
+        ("b5-no-column.hwpx", false),
+    ] {
+        let input = std::fs::read(samples.join(file)).unwrap();
+        let original = DocumentCore::from_bytes(&input).unwrap();
+        let check = |doc: &DocumentCore| {
+            let width = doc.document().sections[0].section_def.page_def.width;
+            assert_eq!(width, if adjacent { 51592 } else { 59528 }, "{file}");
+            assert_eq!(
+                page_numbers(doc),
+                if adjacent { [5, 6, 7, 8] } else { [1, 2, 3, 4] },
+                "{file}"
+            );
+            for (page, body) in ["첫째", "둘째", "셋째", "넷째"].iter().enumerate() {
+                let text = page_text(doc, page as u32);
+                assert!(
+                    text.contains(body)
+                        && text.contains("머리말확인")
+                        && text.contains("꼬리말확인"),
+                    "{file} {page}: {text}"
+                );
+                assert_eq!(
+                    text.contains("바탕쪽표식"),
+                    adjacent || page >= 2,
+                    "{file} {page}"
+                );
+                assert_eq!(
+                    text.contains('A'),
+                    file == "b5-text.hwpx" && page == 0,
+                    "{file} {page}"
+                );
+            }
+        };
+        check(&original);
+        for hwpx in [true, false] {
+            let mut document = DocumentCore::from_bytes(&input).unwrap();
+            for _ in 0..2 {
+                let saved = if hwpx {
+                    document.export_hwpx_native()
+                } else {
+                    document.export_hwp_native()
+                }
+                .unwrap();
+                document = DocumentCore::from_bytes(&saved).unwrap();
+                check(&document);
+            }
+        }
+    }
 }
