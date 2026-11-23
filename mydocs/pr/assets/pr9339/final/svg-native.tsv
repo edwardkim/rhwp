@@ -1,0 +1,6 @@
+document	backend	page	raw_match_percent	png_sha256
+grid2x2	native	1	100.0	4a7d021d07fe49e3a7f2456dbe73aceba5eb3343acdd72965d43839173539962
+row3-mixed	native	1	99.94474	f787f46e28570002c3ff1c3ba8f4b7f6dfaafa7b65bbbf02a8658656f5ccc482
+grid-right-same	native	1	100.0	5b36e669065d6a56050976e1faad4425f95e8e28ca1ee59519fad31415b9d327
+grid-center-out	native	1	100.0	294803e3ccbf279f3a5f7acef4a2946270f51f8677859aac945f3fa92b5d3263
+grid-overlap-one	native	1	100.0	45d6b03ad101cdb887ec9f702f88ba133279b868c4e0c137f75c7b966d5d72c0

@@ -1,0 +1,6 @@
+document	backend	page	raw_match_percent	png_sha256
+grid2x2	wasm	1	100.0	35c0aa620e484225db35f2760d6f3ab2b4c12d632f6b72b430cee13b24488edf
+row3-mixed	wasm	1	99.94469	beda6997329db86165bdc2db8fe7bd870b5dd4527d1825b3487265be3447be3b
+grid-right-same	wasm	1	100.0	489bdfda4688fdab28f8723d8ddaad57dce965bb5a610c72c44e2de5a81144fc
+grid-center-out	wasm	1	100.0	a23857d2b7562caac19c0a0ebbbadf4585cb9094a4b3ff0de83ab6e691a30565
+grid-overlap-one	wasm	1	100.0	73648f24dd054353d13cc4c87adc1ded85f875e4b13fd956fac384ab31b3f717
