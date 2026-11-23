@@ -30,6 +30,9 @@ collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공
 Cairo는 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022`는 MCP 2024로 다시
 인쇄한 후 전쪽을 비교한다.
 [기준 PDF 출처와 재출력](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)을 따른다.
+새 기준 PDF를 만들거나 기존 쌍의 출처를 확인할 때는
+[Print 영수증 작성·대조 절차](../mcp_hwp2024Convert_usage.md#print-영수증을-남기고-다시-확인하기)에
+따라 생성 기록과 원본·PDF의 SHA-256을 대조한다.
 작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존한다.
 최종 제출용 TSV는 PR 본문에 전체 원문을 넣거나, 본문 크기 제한 시 원본 asset의 링크로 제출한다.
 아래 [본문 삽입·저장소 링크](#tsv-원문-본문-삽입과-저장소-링크)를 따른다. 실행 로그·중간 JSON은 Git에 커밋하지 않는다.
