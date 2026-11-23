@@ -10289,6 +10289,39 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
     table: &Table,
     next_para: Option<&Paragraph>,
 ) -> Option<i32> {
+    let next = next_para.filter(|next| next.controls.is_empty())?;
+    native_folded_empty_rowbreak_host_advance_hu(native_hwp5_layout, para, table, next)
+}
+
+/// 저장 줄 사다리가 상자 높이를 포함하지 않는 연속 배치에서, 다음 문단이
+/// 실제 글줄 앞에 두 자리차지 표를 갖는지 확인한다. 앵커 표가 통째 들어갈 때
+/// 자신의 양수 오프셋과 바깥 여백을 분할 예약 없이 별도 상자로 소비한다.
+pub(crate) fn native_empty_rowbreak_before_stored_float_stack(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next: Option<&Paragraph>,
+) -> bool {
+    let Some(next) = next else { return false };
+    let [Control::Table(first), Control::Table(second)] = next.controls.as_slice() else {
+        return false;
+    };
+    !next.stored_text_partition_is_dirty()
+        && !next.cell_format_vpos_dirty
+        && is_para_topbottom_float(&first.common)
+        && is_para_topbottom_float(&second.common)
+        && signed_hwpunit(first.common.vertical_offset) == 0
+        && signed_hwpunit(second.common.vertical_offset) > 0
+        && native_folded_empty_rowbreak_host_advance_hu(native_hwp5_layout, para, table, next)
+            .is_some()
+}
+
+fn native_folded_empty_rowbreak_host_advance_hu(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next: &Paragraph,
+) -> Option<i32> {
     let has_non_whitespace_text = |paragraph: &Paragraph| {
         paragraph
             .text
@@ -10317,7 +10350,7 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
             })
             .count()
             != 1
-        || !next_para.is_some_and(|next| has_non_whitespace_text(next) && next.controls.is_empty())
+        || !has_non_whitespace_text(next)
     {
         return None;
     }
@@ -10338,13 +10371,11 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
     // `next.vpos - host.vpos == advance` 로 저장되는 반면(= advance 가 실 흐름 증거),
     // 일반 물리 ladder 문서는 델타가 표 높이+offset 을 이미 포함하므로 advance 를
     // 다시 더하면 이중 계상되어 쪽 경계 한 줄이 +1 로 밀린다 (10k r19 회귀 4건).
-    let next_vpos = next_para
-        .and_then(|next| {
-            next.line_segs
-                .iter()
-                .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)
-        })
-        .map(|seg| seg.vertical_pos)?;
+    let next_vpos = next
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x80000000 == 0 && seg.line_height > 0)?
+        .vertical_pos;
     if (next_vpos - host_seg.vertical_pos - advance).abs() > 1 {
         return None;
     }

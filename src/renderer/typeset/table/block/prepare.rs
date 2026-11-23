@@ -1719,16 +1719,7 @@ impl TypesetEngine {
             table,
             self.dpi,
         ) + layout_engine
-            .saved_single_cell_terminal_host_spacing_px(table, para, styles)
-            + crate::renderer::layout::stored_unconsumed_rowbreak_host_advance_hu(
-                self.profile.get().hwp5_stored_pagination_layout(),
-                para,
-                table,
-                paragraphs_all.get(para_idx + 1),
-                st.pre_emitted_host_paras.contains(&para_idx),
-            )
-            .map(|advance| hwpunit_to_px(advance, self.dpi))
-            .unwrap_or(0.0);
+            .saved_single_cell_terminal_host_spacing_px(table, para, styles);
         // 호스트 배치를 처음 조회한 뒤 내용 소비 없는 이월로 조각이 바뀔 수 있다.
         // 실제 새 프레임에서 닫힌 원본 상자를 다시 결정하고,
         // 스캐너 예산과 확정 단계가 그 원점·흐름 끝을 함께 사용하게 한다.

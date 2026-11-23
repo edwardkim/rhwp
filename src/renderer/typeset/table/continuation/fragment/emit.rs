@@ -41,10 +41,19 @@ impl TypesetEngine {
         let table_footnotes = &input.prepared.table_footnotes;
         let table_footnotes_follow_terminal = table.cells.iter().any(|cell| cell.row_span > 1);
         let host_spacing_total = input.prepared.host_spacing_total;
-        let terminal_host_spacing = input.prepared.terminal_host_spacing;
         let relax_terminal_table_footnote_fit = input.prepared.relax_terminal_table_footnote_fit;
         let cursor_row = input.start.cursor_row;
         let is_continuation = input.start.is_continuation;
+        let terminal_host_spacing = input.prepared.terminal_host_spacing
+            + crate::renderer::layout::stored_unconsumed_rowbreak_host_advance_hu(
+                st.profile.hwp5_stored_pagination_layout(),
+                input.source.paragraph,
+                table,
+                input.source.paragraphs_all.get(para_idx + 1),
+                st.pre_emitted_host_paras.contains(&para_idx),
+                is_continuation,
+            )
+            .map_or(0.0, |advance| hwpunit_to_px(advance, self.dpi));
         let start_cut_is_block = input.start.start_cut_is_block;
         let start_row_height_override = input.start.start_row_height_override;
         let start_cut = &input.start.start_cut;

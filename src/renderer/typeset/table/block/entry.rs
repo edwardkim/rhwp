@@ -2559,11 +2559,16 @@ impl TypesetEngine {
                 // 저장 사다리가 표 공간을 담지 않는 빈 앵커는 옛 안내 줄의 꼬리 간격을
                 // 포함한 saved-host 포맷보다 현재 개체 상자가 우선한다. 다음 문단의
                 // 빈 줄·텍스트는 이 상자 뒤에서 자기 줄 상자를 소비한다.
-                crate::renderer::float_placement::empty_table_anchor_ladder_lacks_outer_box(
-                    para,
-                    table,
-                    paragraphs_all.get(para_idx + 1),
-                )
+                let next = paragraphs_all.get(para_idx + 1);
+                (crate::renderer::float_placement::empty_table_anchor_ladder_lacks_outer_box(
+                    para, table, next,
+                ) || (!st.profile.session_edited()
+                    && !para.stored_text_partition_is_dirty()
+                    && !para.cell_format_vpos_dirty
+                    && !self.render_normalization.table_text_reflowed(table)
+                    && crate::renderer::float_placement::native_empty_rowbreak_before_stored_float_stack(
+                        st.profile.hwp5_stored_pagination_layout(), para, table, next,
+                    )))
                 .then(|| {
                     let table_top = st.current_height
                         + host_spacing_before
