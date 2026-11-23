@@ -5,11 +5,9 @@
 //! 독립 2020 Print의 T11 U+2022는 1000/1000em이며 뒤 본문은 그 한 칸 뒤에 속한다.
 //! 91쪽은 기존 글꼴 조건에서 Native 99.75467% → 99.99166%로 확인했다.
 //! 91쪽의 T11/T18은 전진과 별개로 원형 잉크의 크기와 장평 적용 위치를 검증한다.
-//! 절대 좌표를 고정하지 않는다. 공급 순서 검사는 MIT 합성 프로그램만 메모리에 적재한다.
+//! 절대 좌표를 고정하지 않는다. 공급 순서 검사는 기존 fixture와 Adobe 배포 원본을 공급한다.
 //! 개인 글꼴 설치·비공개 프로그램·OS의 우연한 fallback을 요구하지 않는다.
 
-#[cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
-use super::symbol_font_program;
 use rhwp::DocumentCore;
 
 fn chemical_document() -> DocumentCore {
@@ -122,7 +120,7 @@ fn supplied_core(explicit: bool) -> DocumentCore {
     if explicit {
         core.set_font_environment(Some(
             FontEnvironment::from_json(
-                r#"{"id":"explicit-glyph-program-order","substitutions":{},"glyphFallbacks":{"HY중고딕":["RHWP Host Fixture"]}}"#,
+                r#"{"id":"explicit-glyph-program-order","substitutions":{},"glyphFallbacks":{"HY중고딕":["Source Code Pro"]}}"#,
             )
             .unwrap(),
         ))
@@ -134,26 +132,25 @@ fn supplied_core(explicit: bool) -> DocumentCore {
 #[cfg(all(feature = "native-skia", not(target_arch = "wasm32")))]
 fn supplied_renderer(with_alias_fallback: bool) -> rhwp::renderer::skia::SkiaLayerRenderer {
     use rhwp::renderer::skia::SkiaLayerRenderer;
-    let primary = symbol_font_program::mapped_program(
-        include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf"),
-        &[('A', 2)],
-    );
-    let supplier = symbol_font_program::mapped_program(
-        include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf"),
-        &[('€', 1)],
-    );
-    let generic = symbol_font_program::mapped_program(
-        include_bytes!("../../assets/fonts/LatinModernMath-VariableOutline-subset.otf"),
-        &[('€', 1)],
-    );
+    let primary = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
+    let supplier = include_bytes!("../fixtures/fonts/source-code-pro/SourceCodePro-Regular.otf");
+    let generic = include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf");
+    let primary_face = ttf_parser::Face::parse(primary, 0).unwrap();
+    assert!(primary_face.glyph_index('A').is_some());
+    assert!(primary_face.glyph_index('€').is_none());
+    for program in [supplier.as_slice(), generic.as_slice()] {
+        let face = ttf_parser::Face::parse(program, 0).unwrap();
+        let euro = face.glyph_index('€').expect("배포 원본의 유로 기호");
+        assert!(face.glyph_bounding_box(euro).is_some());
+    }
     let mut renderer = SkiaLayerRenderer::new()
-        .try_with_font_data(&[primary, supplier, generic])
+        .try_with_font_data(&[primary.to_vec(), supplier.to_vec(), generic.to_vec()])
         .unwrap()
         .with_font_family_alias("HY중고딕", "RHWP Kerning Boundary")
         .unwrap();
     if with_alias_fallback {
         renderer = renderer
-            .with_font_family_alias("HCR Dotum", "RHWP LMM Variable Outline")
+            .with_font_family_alias("HCR Dotum", "Source Sans 3")
             .unwrap();
     }
     renderer
@@ -172,7 +169,7 @@ fn explicit_supplier_owns_native_trace_and_actual_paint_before_generic_aliases()
     )
     .unwrap();
     let records = trace["records"].as_array().unwrap();
-    for (ch, supplier) in [('A', "RHWP Kerning Boundary"), ('€', "RHWP Host Fixture")] {
+    for (ch, supplier) in [('A', "RHWP Kerning Boundary"), ('€', "Source Code Pro")] {
         let record = records
             .iter()
             .find(|record| record["source"]["character"] == ch.to_string())
@@ -205,5 +202,5 @@ fn ordinary_selection_keeps_its_existing_alias_fallback() {
         .iter()
         .find(|record| record["source"]["character"] == "€")
         .unwrap();
-    assert_eq!(record["paint"]["native"]["resolved"], "Latin Modern Math");
+    assert_eq!(record["paint"]["native"]["resolved"], "Source Sans 3");
 }
