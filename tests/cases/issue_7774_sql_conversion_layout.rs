@@ -1,8 +1,10 @@
 //! 관계형·고정형 회귀 — #7774의 원본 저장 글줄, 내용 대응, 본문·꼬리말 분리와 쪽수.
-//! 주석 작성 2026-11-23 20:18 KST.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-11-23T22:53:14+09:00
+//! `fb20980cb99121f40bec049420d288704ac36d11`.
 //! 2026-11-23 독립 한컴 2024 Print, 96 DPI, 2px raw 실루엣.
 //! HWP5·HWPX 각각 전763쪽 Native/fresh WASM 최저 99.57%/96.82%.
 //! 489쪽 각각 100.00%/99.98%, 본문·꼬리말 대상 7쪽은 양쪽 100.00%.
+//! 전진폭 보정 후 16쪽은 두 변환본 모두 Native/fresh WASM 각각 99.99%다.
 //! 근거는 `mydocs/pr/assets/issue7774/sql-sample10-regressions-20261015/`에 있다.
 #![cfg(not(target_arch = "wasm32"))]
 use rhwp::document_core::DocumentCore;
@@ -128,5 +130,60 @@ fn sql_converted_twins_keep_terminal_body_and_legacy_line_ownership() {
                 "{name} {printed_page}쪽 본문·꼬리말 분리"
             );
         }
+    }
+}
+
+#[test]
+fn sql_contents_brackets_keep_the_original_halfwidth_advance() {
+    use rhwp::renderer::font_environment::FontEnvironment;
+
+    // 이 공개 표시 프로그램의 대괄호 폭은 독립 Print의 원본 명조 0.5em과 다르다.
+    let alternate = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
+    for name in INPUTS {
+        let mut document =
+            DocumentCore::from_bytes(&std::fs::read(format!("{FIXTURES}{name}")).unwrap())
+                .expect("SQL 변환본 열기");
+        document.set_hangul2024_compat(true);
+        let environment = FontEnvironment::from_json(
+            r#"{"id":"sql-contents-display-family","preserveSourceMetrics":true,"substitutions":{"명조":"Myeongjo"}}"#,
+        )
+        .expect("공개 표시 글꼴 환경");
+        document
+            .set_font_environment(Some(environment))
+            .expect("표시 계열 설정");
+        assert!(document
+            .prepare_native_otf_fonts_with(|request| {
+                (request.bold
+                    && request.italic
+                    && !request.source_ttf
+                    && request.family == "Myeongjo")
+                    .then(|| (alternate.to_vec(), 0))
+            })
+            .expect("표시 프로그램 등록"));
+
+        let trace = document
+            .get_font_decision_trace_native(15, r#"{"maxCharacters":4096}"#)
+            .expect("16쪽 목차의 글자 전진");
+        let trace: serde_json::Value = serde_json::from_str(&trace).expect("글꼴 추적 JSON");
+        let mut brackets = Vec::new();
+        for record in trace["records"].as_array().expect("쪽 전체 글자 추적") {
+            let source = &record["source"];
+            let (Some(paragraph), Some(character @ ("[" | "]"))) = (
+                source["paragraphIndex"].as_u64(),
+                source["character"].as_str(),
+            ) else {
+                continue;
+            };
+            if !matches!(paragraph, 702 | 724) {
+                continue;
+            }
+            assert_eq!(record["document"]["face"], "명조");
+            assert_eq!(
+                record["layoutMetric"]["baseAdvanceHwpunit"], 450,
+                "{name} {paragraph} 문단 대괄호는 독립 Print의 0.5em으로 전진한다"
+            );
+            brackets.push((paragraph, character));
+        }
+        assert_eq!(brackets, [(702, "["), (702, "]"), (724, "["), (724, "]")]);
     }
 }

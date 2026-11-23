@@ -52,3 +52,14 @@ SHA-256은
 
 - [489쪽 SQL 문장과 소속 글줄](sql-hwpx-page-489.png)
 - [554쪽 마지막 본문과 쪽번호](sql-hwpx-page-554.png)
+
+## 16쪽 대괄호 원본 폭 확인
+
+두 변환본의 16쪽에는 굵고 기울인 명조로 ‘[주의]’를 쓰는 원본 문단이 두 곳 있다.
+독립 Print에서 각 대괄호는 450 HU로 전진한다. 다른 표시용 글꼴을 사용해도 네 글자의
+원본 전진폭과 소속을 유지하는 회귀를 등록했다. 두 형식의 16쪽은 보정 후 Native와
+fresh WASM 모두 99.99%이며 재측정한 여섯 쪽은 모두 99.98% 이상이다.
+
+- HWP5 [Native](sql-hwp5-brackets-native.tsv) · [fresh WASM](sql-hwp5-brackets-wasm.tsv)
+- HWPX [Native](sql-hwpx-brackets-native.tsv) · [fresh WASM](sql-hwpx-brackets-wasm.tsv)
+- [16쪽 독립 Print와 양쪽 출력 확대 비교](sql-page-16-brackets.png)
