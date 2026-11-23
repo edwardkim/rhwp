@@ -40,16 +40,42 @@ fn text(node: &RenderNode, result: &mut String) {
 
 #[test]
 fn coanchored_title_and_body_stay_on_the_first_page() {
-    assert_coanchored_tables(SOURCE, BODY_TEXT);
+    assert_coanchored_tables(SOURCE);
 }
 
 #[test]
 fn coanchored_inline_tail_negative_spacing_keeps_body_on_anchor_page() {
     let bytes = include_bytes!("../fixtures/coanchored_inline_tail/negative-spacing.hwp");
-    assert_coanchored_tables(bytes, "BodyEnd of bodyBody endTail line");
+    assert_coanchored_table_placement(bytes, "BodyEnd of bodyBody endTail line", |body| {
+        let tail_cell = body
+            .children
+            .iter()
+            .rfind(|node| matches!(node.node_type, RenderNodeType::TableCell(_)))
+            .unwrap();
+        let mut nested = Vec::new();
+        top_level_tables(tail_cell, &mut nested);
+        let [nested] = nested.as_slice() else {
+            panic!("Expected one nested table in the last cell");
+        };
+        let tail_line = tail_cell.children.last().unwrap();
+        assert!(matches!(tail_line.node_type, RenderNodeType::TextLine(_)));
+        let mut label = String::new();
+        text(tail_line, &mut label);
+        assert_eq!(label, "Tail line");
+        assert!(nested.bbox.y + nested.bbox.height <= tail_line.bbox.y);
+        contents_stay_in_cells(tail_cell, None);
+    });
 }
 
-fn assert_coanchored_tables(bytes: &[u8], expected_body: &str) {
+fn assert_coanchored_tables(bytes: &[u8]) {
+    assert_coanchored_table_placement(bytes, BODY_TEXT, |body| contents_stay_in_cells(body, None));
+}
+
+fn assert_coanchored_table_placement(
+    bytes: &[u8],
+    expected_body: &str,
+    check_body: impl FnOnce(&RenderNode),
+) {
     let core = DocumentCore::from_bytes(bytes).unwrap();
     assert_eq!(core.page_count(), 2);
 
@@ -70,8 +96,10 @@ fn assert_coanchored_tables(bytes: &[u8], expected_body: &str) {
         let mut actual = String::new();
         text(table, &mut actual);
         assert_eq!(actual, expected);
-        contents_stay_in_cells(table, None);
     }
+    contents_stay_in_cells(title, None);
+    check_body(body);
+    contents_stay_in_cells(next, None);
 }
 
 fn source_body(document: &rhwp::model::document::Document) -> &Table {
@@ -159,7 +187,7 @@ fn coanchored_managed_cache_survives_public_save_and_reopen_paths() {
         core.export_hwp_with_adapter().unwrap(),
         core.export_hwpx_native().unwrap(),
     ] {
-        assert_coanchored_tables(&bytes, BODY_TEXT);
+        assert_coanchored_tables(&bytes);
         let reopened = DocumentCore::from_bytes(&bytes).unwrap();
         let after = rendered_body(&reopened);
         if bytes.starts_with(b"PK") {
@@ -308,7 +336,7 @@ fn coanchored_empty_header_footer_and_saved_copy_preserve_table_ownership() {
         "samples/pr9042/metadata-empty-footer.hwp",
         "samples/pr9042/pr9042-hancom-saved.hwp",
     ] {
-        assert_coanchored_tables(&std::fs::read(path).unwrap(), BODY_TEXT);
+        assert_coanchored_tables(&std::fs::read(path).unwrap());
     }
 }
 
