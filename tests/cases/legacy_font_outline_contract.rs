@@ -18,6 +18,12 @@ use rhwp::model::style::Font;
 
 const FAMILY: &str = "RHWP HFT Outline Fixture";
 const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+const SOURCE_SANS_FIRST: &[u8] =
+    include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.028-Regular.otf");
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+const SOURCE_SANS_SECOND: &[u8] =
+    include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf");
 
 #[test]
 fn source_legacy_outline_follows_the_selected_environment_family_only() {
@@ -568,8 +574,8 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
             std::env::temp_dir().join(format!("rhwp-split-bold-{}-{suffix}", std::process::id()));
         std::fs::create_dir_all(dir.join("fonts")).unwrap();
         std::fs::create_dir_all(dir.join("cache")).unwrap();
-        std::fs::write(dir.join("fonts/first.otf"), CFF).unwrap();
-        std::fs::write(dir.join("fonts/second.otf"), synthetic_cff_for('나')).unwrap();
+        std::fs::write(dir.join("fonts/first.otf"), SOURCE_SANS_FIRST).unwrap();
+        std::fs::write(dir.join("fonts/second.otf"), SOURCE_SANS_SECOND).unwrap();
         let conf = format!(
             r#"<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig><dir>{}/fonts</dir><cachedir>{}/cache</cachedir><match target="font"><test name="weight" compare="less_eq"><const>medium</const></test><test target="pattern" name="weight" compare="more_eq"><const>bold</const></test><edit name="embolden" mode="assign"><bool>true</bool></edit><edit name="weight" mode="assign"><const>bold</const></edit></match></fontconfig>"#,
             dir.display(),
@@ -601,9 +607,15 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
 
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 fn assert_split_family_glyphs(renderer: &rhwp::renderer::skia::SkiaLayerRenderer, source: &str) {
+    const FAMILY: &str = "Source Sans 3";
+    let first = ttf_parser::Face::parse(SOURCE_SANS_FIRST, 0).unwrap();
+    let second = ttf_parser::Face::parse(SOURCE_SANS_SECOND, 0).unwrap();
+    assert!(first.glyph_index('A').is_some());
+    assert!(first.glyph_index('Ɓ').is_none());
+    assert!(second.glyph_index('Ɓ').is_some());
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
-    core.insert_text_native(0, 0, 0, "가나").unwrap();
+    core.insert_text_native(0, 0, 0, "AƁ").unwrap();
     let mut document = core.document().clone();
     for faces in &mut document.doc_info.font_faces {
         for face in faces {
@@ -620,7 +632,7 @@ fn assert_split_family_glyphs(renderer: &rhwp::renderer::skia::SkiaLayerRenderer
             .unwrap(),
     )
     .unwrap();
-    for character in ["가", "나"] {
+    for character in ["A", "Ɓ"] {
         let record = trace["records"]
             .as_array()
             .unwrap()
@@ -639,7 +651,7 @@ fn assert_split_family_glyphs(renderer: &rhwp::renderer::skia::SkiaLayerRenderer
 #[test]
 fn supplied_synthetic_bold_keeps_both_split_glyphs_on_each_native_os() {
     let renderer = rhwp::renderer::skia::SkiaLayerRenderer::new()
-        .try_with_font_data(&[CFF.to_vec(), synthetic_cff_for('나')])
+        .try_with_font_data(&[SOURCE_SANS_FIRST.to_vec(), SOURCE_SANS_SECOND.to_vec()])
         .unwrap();
     assert_split_family_glyphs(&renderer, "custom");
 }
@@ -1103,53 +1115,34 @@ mod native {
 mod native_otf_program_contract {
     use rhwp::renderer::native_pua_fonts::NativePuaFonts;
 
-    fn is_cff_program(bytes: &[u8], index: u32) -> bool {
-        ttf_parser::Face::parse(bytes, index)
-            .is_ok_and(|face| face.tables().cff.is_some() || face.tables().cff2.is_some())
-    }
-
-    fn collection(first: &[u8], second: &[u8]) -> Vec<u8> {
-        let mut result = b"ttcf\0\x01\0\0\0\0\0\x02\0\0\0\0\0\0\0\0".to_vec();
-        for (index, source) in [first, second].into_iter().enumerate() {
-            while !result.len().is_multiple_of(4) {
-                result.push(0);
-            }
-            let start = u32::try_from(result.len()).unwrap();
-            result[12 + index * 4..16 + index * 4].copy_from_slice(&start.to_be_bytes());
-            let mut face = source.to_vec();
-            let tables = u16::from_be_bytes([face[4], face[5]]) as usize;
-            for table in 0..tables {
-                let pos = 12 + table * 16 + 8;
-                let offset = u32::from_be_bytes(face[pos..pos + 4].try_into().unwrap());
-                face[pos..pos + 4].copy_from_slice(&(offset + start).to_be_bytes());
-            }
-            result.extend(face);
-        }
-        result
-    }
-
     #[test]
-    fn collection_uses_each_faces_actual_outline_and_retains_both_faces() {
+    fn standalone_cff_and_selected_collection_face_supply_their_own_glyphs() {
         let cff = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
-        let ttf = include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf");
-        let data = collection(cff, ttf);
-        assert!(is_cff_program(&data, 0));
-        assert!(!is_cff_program(&data, 1));
-        assert!(!is_cff_program(&data, 2));
+        let collection = include_bytes!("../fixtures/fonts/RHWPExactFaceSmoke.ttc");
+        assert!(ttf_parser::Face::parse(cff, 0)
+            .unwrap()
+            .tables()
+            .cff
+            .is_some());
+        let first = ttf_parser::Face::parse(collection, 0).unwrap();
+        let second = ttf_parser::Face::parse(collection, 1).unwrap();
+        assert!(second.tables().glyf.is_some());
+        assert!(first.glyph_index('\u{e103}').is_some());
+        assert!(second.glyph_index('\u{e104}').is_some());
+        assert!(ttf_parser::Face::parse(collection, 2).is_err());
+
         let mut fonts = NativePuaFonts::default();
         fonts
-            .register_otf("collection", false, false, &data, 0)
+            .register_otf("collection", false, false, cff, 0)
             .unwrap();
         fonts
-            .register_otf("collection", false, false, &data, 1)
+            .register_otf("collection", false, false, collection, 1)
             .unwrap();
         let metrics = fonts.get_otf("collection", false, false).unwrap();
         assert!(metrics.advance_em('가').is_some());
-        assert_eq!(metrics.advance_em('A'), None);
-        assert!(
-            metrics.has_glyph('A'),
-            "두 번째 TTF face가 글리프를 공급한다"
-        );
+        assert_eq!(metrics.advance_em('\u{e104}'), None);
+        assert_eq!(metrics.source_ttf_advance_em('\u{e104}'), Some(1.0));
+        assert!(!metrics.has_glyph('\u{e103}'));
     }
 
     #[test]
