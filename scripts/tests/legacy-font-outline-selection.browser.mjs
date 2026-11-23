@@ -29,7 +29,7 @@ test('구형 글꼴을 선언한 문서의 인쇄는 명시 공급한 TrueType �
   const server = createSweepServer(files, new Map());
   await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
   t.after(async () => { server.closeAllConnections(); await new Promise(accept => server.close(accept)); });
-  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'natural-hft-ttf');
+  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'natural-legacy-ttf');
   let browser;
   t.after(async () => {
     if (browser) await browser.close();
@@ -60,7 +60,7 @@ test('구형 글꼴을 선언한 문서의 인쇄는 명시 공급한 TrueType �
           const doc = new wasm.HwpDocument(source);
           try {
             doc.setHangul2024Compat(printer === 2024);
-            doc.setFontEnvironment(JSON.stringify({id: 'natural-hft-ttf-control',
+            doc.setFontEnvironment(JSON.stringify({id: 'natural-legacy-ttf-control',
               substitutions: {'RHWP Original HFT': family}, trueTypeFaces: [family],
               preserveSourceMetrics: !natural}));
             if (supply !== 'missing') doc.registerTextFontGlyphCoverage(family, supply === 'variable' ? variable : bytes, 0);
@@ -98,7 +98,7 @@ test('구형 글꼴·TrueType 선언의 합성 굵기는 공급된 CFF 윤곽을
   const server = createSweepServer(files, new Map());
   await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
   t.after(async () => { server.closeAllConnections(); await new Promise(accept => server.close(accept)); });
-  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'hft-bold');
+  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'legacy-bold');
   let browser;
   t.after(async () => {
     if (browser) await browser.close();
@@ -233,7 +233,7 @@ test('인쇄용 윤곽을 공급해도 옛한글 우선 글꼴과 화면 출력�
   const server = createSweepServer(files, new Map());
   await new Promise((accept, reject) => { server.once('error', reject); server.listen(0, '127.0.0.1', accept); });
   t.after(async () => { server.closeAllConnections(); await new Promise(accept => server.close(accept)); });
-  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'hft-selection');
+  const profile = createSweepBrowserProfile(join(root, 'output/pr-review/browser-profile-tests'), 'legacy-outline-selection');
   let browser;
   t.after(async () => {
     if (browser) await browser.close();

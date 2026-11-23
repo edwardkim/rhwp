@@ -529,5 +529,5 @@ impl HftOutlineFonts {
 }
 
 #[cfg(target_arch = "wasm32")]
-#[path = "hft_outline/print_text.rs"]
+#[path = "legacy_font_outline/print_text.rs"]
 mod print_text;

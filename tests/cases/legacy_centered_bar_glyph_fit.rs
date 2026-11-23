@@ -77,7 +77,7 @@ fn render(
 }
 
 #[test]
-fn narrow_display_glyph_is_centered_in_the_source_hft_bar_cell_without_stretching() {
+fn narrow_display_glyph_is_centered_in_the_source_legacy_bar_cell_without_stretching() {
     let program = symbol_font_program::mapped_program(
         include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
         &[('–', 1)],
@@ -135,7 +135,7 @@ fn unverified_source_bar_keeps_the_supplied_program_origin() {
 }
 
 #[test]
-fn regular_hft_bar_contract_does_not_recenter_the_bold_supplier_glyph() {
+fn regular_legacy_bar_contract_does_not_recenter_the_bold_supplier_glyph() {
     let program = symbol_font_program::mapped_program(
         include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
         &[('–', 1)],

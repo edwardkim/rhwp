@@ -81,7 +81,7 @@ fn check_tablespace(root: &RenderNode, input: &str) {
 }
 
 #[test]
-fn sql_converted_twins_keep_terminal_body_and_hft_line_ownership() {
+fn sql_converted_twins_keep_terminal_body_and_legacy_line_ownership() {
     for name in INPUTS {
         let document = DocumentCore::from_bytes(
             &std::fs::read(format!("{FIXTURES}{name}")).expect("SQL 변환 원본"),

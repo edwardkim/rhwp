@@ -20,7 +20,7 @@ const FAMILY: &str = "RHWP HFT Outline Fixture";
 const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
 
 #[test]
-fn source_hft_outline_follows_the_selected_environment_family_only() {
+fn source_legacy_outline_follows_the_selected_environment_family_only() {
     // 관계형: 저장된 HFT 이름과 실제 공급 family가 달라도 같은 선택을 소비한다.
     // 비 HFT 원본은 실제 프로그램 신원 없이 허용하지 않으며 미선택 family도 거부한다.
     use rhwp::renderer::font_environment::FontEnvironment;
@@ -93,7 +93,7 @@ fn verified_cff_query_alias_accepts_only_the_selected_program() {
 }
 
 #[test]
-fn hft_outline_registration_preserves_unicode_family_case_folding() {
+fn legacy_outline_registration_preserves_unicode_family_case_folding() {
     // 관계형: 같은 family의 유니코드 대소문자 정규화는 기존 등록 계약을 보존한다.
     use rhwp::renderer::font_environment::FontEnvironment;
     let mut core = DocumentCore::new_empty();
@@ -120,7 +120,7 @@ fn hft_outline_registration_preserves_unicode_family_case_folding() {
 }
 
 #[test]
-fn split_hft_outline_candidates_replace_atomically_and_retain_order() {
+fn split_legacy_outline_candidates_replace_atomically_and_retain_order() {
     // 관계형: 공개 합성 CFF 두 조각을 실제 후보 순서로 교체한다.
     let mut core = DocumentCore::new_empty();
     let mut document = core.document().clone();
@@ -195,7 +195,7 @@ fn synthetic_cff_for(character: char) -> Vec<u8> {
 }
 
 #[test]
-fn verified_hft_advance_survives_a_supplied_display_otf() {
+fn verified_legacy_advance_survives_a_supplied_display_otf() {
     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
     use rhwp::renderer::native_pua_fonts::NativePuaFonts;
     use rhwp::renderer::TextStyle;
@@ -227,7 +227,7 @@ fn verified_hft_advance_survives_a_supplied_display_otf() {
 }
 
 #[test]
-fn declared_hft_hyphenation_point_keeps_its_half_em_before_display_fallback() {
+fn declared_legacy_hyphenation_point_keeps_its_half_em_before_display_fallback() {
     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
     use rhwp::renderer::native_pua_fonts::NativePuaFonts;
     use rhwp::renderer::TextStyle;
@@ -273,7 +273,7 @@ fn declared_hft_hyphenation_point_keeps_its_half_em_before_display_fallback() {
 }
 
 #[test]
-fn hft_mapped_symbol_retains_source_advance_with_display_otf() {
+fn legacy_mapped_symbol_retains_source_advance_with_display_otf() {
     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
     use rhwp::renderer::native_pua_fonts::NativePuaFonts;
     use rhwp::renderer::supplemental_metrics::{
@@ -580,7 +580,7 @@ fn skia_synthetic_bold_selects_both_split_family_glyphs() {
         let result = std::process::Command::new(std::env::current_exe().unwrap())
             .args([
                 "--exact",
-                "hft_outline_font_contract::skia_synthetic_bold_selects_both_split_family_glyphs",
+                "legacy_font_outline_contract::skia_synthetic_bold_selects_both_split_family_glyphs",
                 "--nocapture",
             ])
             .env(MARKER, "1")
@@ -856,7 +856,7 @@ mod native {
     }
 
     #[test]
-    fn print_hft_contour_preserves_quarter_pixel_baseline() {
+    fn print_legacy_contour_preserves_quarter_pixel_baseline() {
         let original = center(&paint(4.1, true, RenderProfile::Print));
         let quarter = center(&paint(4.35, true, RenderProfile::Print));
         let whole = center(&paint(5.1, true, RenderProfile::Print));
@@ -870,7 +870,7 @@ mod native {
     }
 
     #[test]
-    fn screen_and_non_hft_keep_existing_font_raster() {
+    fn screen_and_non_legacy_keep_existing_font_raster() {
         for y in [4.1, 4.35] {
             assert_eq!(
                 paint(y, true, RenderProfile::Screen),
@@ -962,7 +962,7 @@ mod native {
     }
 
     #[test]
-    fn localized_split_family_keeps_selected_hft_outline_origin_in_2022_print() {
+    fn localized_split_family_keeps_selected_legacy_outline_origin_in_2022_print() {
         let first = localized_alias_cff(CFF.to_vec(), b'1');
         let second = localized_alias_cff(synthetic_cff_for('나'), b'2');
         let renderer = SkiaLayerRenderer::new()
@@ -1029,7 +1029,7 @@ mod native {
     }
 
     #[test]
-    fn unrelated_fallback_does_not_inherit_original_hft_outline_policy() {
+    fn unrelated_fallback_does_not_inherit_original_legacy_outline_policy() {
         let first = localized_alias_cff(CFF.to_vec(), b'1');
         let second =
             replace_windows_family_suffix(localized_alias_cff(synthetic_cff_for('나'), b'2'), b'2');
@@ -1274,7 +1274,7 @@ fn cff_named(family: &str) -> Vec<u8> {
 }
 
 #[test]
-fn verified_hwpx_hft_bold_tracking_reaches_the_final_run() {
+fn verified_hwpx_legacy_bold_tracking_reaches_the_final_run() {
     use rhwp::model::paragraph::CharShapeRef;
     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
     use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -1390,7 +1390,7 @@ fn static_cff_registration_preserves_source_cmap_and_advances() {
 
 #[cfg(feature = "native-skia")]
 #[test]
-fn original_hft_latin_punctuation_precedes_a_hangul_slots_display_ttf_fallback() {
+fn original_legacy_latin_punctuation_precedes_a_hangul_slots_display_ttf_fallback() {
     use rhwp::renderer::{
         font_environment::FontEnvironment,
         render_tree::{RenderNode, RenderNodeType},

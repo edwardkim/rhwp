@@ -5,7 +5,7 @@
 
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareNativePuaFonts, prepareHftOtfFonts} from '../visual-sweep-font-registration.mjs';
+import {prepareNativePuaFonts, prepareSweepLayoutFonts} from '../visual-sweep-font-registration.mjs';
 
 // 관계형: 선언 체인의 실제 프로그램 공급과 TTF 원본·대체의 소유를 구분한다.
 // 주석 갱신: 2026-11-04 15:12 KST. 합성 공급자 바이트이며 실물 좌표 핀이 아니다.
@@ -23,7 +23,7 @@ test('쉼표로 연결한 후보에서 원본 TrueType과 표시용 글꼴을 �
   const received = [];
   const owner = {getNativeOtfFontRequests: () => JSON.stringify(requests),
     prepareNativeOtfFonts(provider) {for (const request of requests) received.push(provider(JSON.stringify(request)));}};
-  const proofs = await prepareHftOtfFonts(owner, fonts, async font => Uint8Array.from(font.signature).buffer);
+  const proofs = await prepareSweepLayoutFonts(owner, fonts, async font => Uint8Array.from(font.signature).buffer);
   assert.ok(received[0] instanceof Uint8Array, '체인 전체를 단일 family 이름으로 조회하지 않는다');
   assert.equal(received[1], null, '다른 표시 프로그램을 원본 TTF로 등록하지 않는다');
   assert.deepEqual([...received[2]], [79,84,84,79]);
@@ -47,7 +47,7 @@ test('동명 표시용 글꼴은 TTF·TTC·CFF 순으로 공급하고 원본 Tru
     {families: ['Mixed'], weight: 400, style: 'normal', sha256: 'ttc-face', collectionFace: true, signature: [0, 1, 0, 0, 2]},
     {families: ['Mixed'], weight: 400, style: 'normal', sha256: 'ttf', openTypeCff: false, signature: [0, 1, 0, 0]},
   ];
-  await prepareHftOtfFonts(owner, fonts, async record => Uint8Array.from(record.signature).buffer);
+  await prepareSweepLayoutFonts(owner, fonts, async record => Uint8Array.from(record.signature).buffer);
   assert.deepEqual(received[0].map(bytes => Array.from(bytes)), [fonts[2].signature, fonts[1].signature, fonts[0].signature]);
   assert.deepEqual(received[1].map(bytes => Array.from(bytes)), [fonts[2].signature, fonts[1].signature]);
 });
@@ -66,7 +66,7 @@ test('표시용 글꼴은 일치하는 TTF와 CFF만 공급한다', async () => 
     {families: ['Installed'], weight: 400, style: 'normal', sha256: 'cff', openTypeCff: true},
     {families: ['TrueType'], weight: 400, style: 'normal', sha256: 'ttf'},
   ];
-  const proof = await prepareHftOtfFonts(owner, fonts, async face =>
+  const proof = await prepareSweepLayoutFonts(owner, fonts, async face =>
     Uint8Array.from(face.sha256 === 'cff' ? [79, 84, 84, 79] : [0, 1, 0, 0]).buffer);
   assert.deepEqual(received[0].map(bytes => Array.from(bytes)), [[0, 1, 0, 0], [79, 84, 84, 79]]);
   assert.deepEqual([...received[1]], [0, 1, 0, 0]);
@@ -82,7 +82,7 @@ test('같은 family의 분할 CFF는 표시 후보 순서로 모두 전달한다
     prepareNativeOtfFonts(provider) { received = provider(JSON.stringify(request)); }};
   const fonts = ['first', 'second'].map((sha256, i) => ({families: ['Split'], weight: 400,
     style: 'normal', sha256, openTypeCff: true, index: i}));
-  const proofs = await prepareHftOtfFonts(owner, fonts, async record =>
+  const proofs = await prepareSweepLayoutFonts(owner, fonts, async record =>
     Uint8Array.of(79, 84, 84, 79, record.index).buffer);
   assert.ok(Array.isArray(received));
   assert.deepEqual(received.map(bytes => bytes[4]), [0, 1]);
@@ -97,7 +97,7 @@ test('같은 family의 CFF 합계가 WASM 한도를 넘으면 공급 가능한 �
     weight: 400, style: 'normal', sha256, openTypeCff: true}));
   const bytes = new ArrayBuffer(24 * 1024 * 1024);
   new DataView(bytes).setUint32(0, 0x4f54544f);
-  const proofs = await prepareHftOtfFonts(owner, fonts, async () => bytes);
+  const proofs = await prepareSweepLayoutFonts(owner, fonts, async () => bytes);
   assert.equal(received.length, 2);
   assert.deepEqual(proofs.map(proof => proof.sha256), ['first', 'second']);
 });
@@ -112,7 +112,7 @@ test('한 요청의 여러 family도 하나의 WASM 공급 예산을 공유한�
   })));
   const bytes = new ArrayBuffer(24 * 1024 * 1024);
   new DataView(bytes).setUint32(0, 0x4f54544f);
-  const proofs = await prepareHftOtfFonts(owner, fonts, async () => bytes);
+  const proofs = await prepareSweepLayoutFonts(owner, fonts, async () => bytes);
   assert.equal(received.length, 2, 'family가 바뀌어도 같은 요청의 예산을 초기화하지 않는다');
   assert.deepEqual(proofs.map(proof => proof.sha256), ['First-0', 'First-1']);
 });

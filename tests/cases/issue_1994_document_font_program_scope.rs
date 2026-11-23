@@ -287,7 +287,7 @@ fn slot_selected_face_query_precedes_shared_family() {
 }
 
 #[test]
-fn automatic_hft_program_identity_preserves_its_canonical_paint_alias() {
+fn automatic_legacy_program_identity_preserves_its_canonical_paint_alias() {
     let mut core = selected_program_core();
     let mut document = core.document().clone();
     for fonts in &mut document.doc_info.font_faces {

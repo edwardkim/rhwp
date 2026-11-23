@@ -28,7 +28,7 @@ fn advance(s: &TextStyle, text: &str) -> f64 {
     p[p.len() - 1]
 }
 #[test]
-fn implicit_double_rule_does_not_inherit_the_body_hft_bold_tracking() {
+fn implicit_double_rule_does_not_inherit_the_body_legacy_bold_tracking() {
     for face in ["한양중고딕 (HFT)", "한양신명조 (HFT)"] {
         let normal = style(face, false);
         let bold = style(face, true);

@@ -641,7 +641,7 @@ pub struct ResolvedStyleSet {
     pub hwp3_variant: bool,
     /// [#7051] HFT 한글 전용 face 의 ASCII 를 반각으로 잰다. HWP3 변환본(`hwp3_variant`)이거나,
     /// 그 신호가 없는 저장본에서 문서 자신의 저장 줄이 반각 조판을 증언할 때 켠다
-    /// (`hft_ascii_evidence`). `hwp3_variant` 의 다른 보정(문단 간격 등)과는 독립이다.
+    /// (`legacy_ascii_evidence`). `hwp3_variant` 의 다른 보정(문단 간격 등)과는 독립이다.
     pub hft_ascii_halfwidth: bool,
     /// 한 pagination/edit transaction의 모든 fresh-layout 소비자가 함께 읽는
     /// exact-font source snapshot. Font payload는 registry의 Arc에 한 번만 있고,

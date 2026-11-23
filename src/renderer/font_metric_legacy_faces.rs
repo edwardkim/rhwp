@@ -7,10 +7,10 @@
 
 use super::{FontMetric, LatinRange};
 
-#[path = "font_metric_konghan_hft.rs"]
+#[path = "font_metric_legacy_konghan.rs"]
 mod konghan;
 
-#[path = "font_metric_system_hft.rs"]
+#[path = "font_metric_legacy_system.rs"]
 mod system;
 
 static ASCII_0: [u16; 95] = [

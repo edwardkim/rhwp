@@ -777,7 +777,7 @@ fn worklife_repeated_plus_keeps_the_following_value_on_its_independent_origin() 
     assert_eq!(core.document().sections[0].paragraphs[pi].text, text);
 }
 #[test]
-fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
+fn worklife_declared_legacy_quote_keeps_the_following_year_in_canvas_print() {
     use rhwp::document_core::CanvasMetricReply;
     use rhwp::renderer::supplemental_metrics::{MetricBackend, MetricContext};
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -911,7 +911,7 @@ fn worklife_declared_hft_quote_keeps_the_following_year_in_canvas_print() {
     assert_eq!(core.page_count(), 6);
 }
 #[test]
-fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
+fn declared_legacy_quote_preserves_ttf_and_unmeasured_style_boundaries() {
     use rhwp::renderer::supplemental_metrics::{MetricBackend, MetricContext};
     let context = MetricContext {
         document_generation: 1,
@@ -964,7 +964,7 @@ fn declared_hft_quote_preserves_ttf_and_unmeasured_style_boundaries() {
     );
 }
 #[test]
-fn hft_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership() {
+fn legacy_human_bold_tracking_preserves_regular_ttf_spaces_and_native_program_ownership() {
     let mut program = core("휴먼명조", "가 •", None);
     let mut source = program.document().clone();
     for font in source.doc_info.font_faces.iter_mut().flatten() {
@@ -1038,7 +1038,7 @@ fn original_hci_bold_comparison_glyphs_preserve_style_and_ttf_boundaries() {
     }
 }
 #[test]
-fn declared_hft_gothic_keeps_its_monospace_ascii_punctuation() {
+fn declared_legacy_gothic_keeps_its_monospace_ascii_punctuation() {
     // 별도 빈 HWPX의 전체 ASCII 표본을 한컴2020 Print: 95자 모두500/1000em.
     // sample11의 좌표나 잠정 배치를 기대값으로 사용하지 않는다.
     let input = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/hwp3-sample11.hwp");

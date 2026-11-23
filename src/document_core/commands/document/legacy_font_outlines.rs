@@ -5,7 +5,7 @@ use crate::{document_core::DocumentCore, error::HwpError};
 impl DocumentCore {
     /// 호스트 글꼴 세대 교체 시 특정 family의 오래된 paint 공급을 폐기한다.
     pub fn clear_text_font_family_native(&mut self, family: &str) {
-        self.hft_outline_fonts.clear_family(family);
+        self.legacy_font_outlines.clear_family(family);
     }
 
     /// 실제 FontFace의 cmap와 선택적 Print TTF 윤곽을 등록한다. 저장·측정 정보는 바꾸지 않는다.
@@ -16,12 +16,12 @@ impl DocumentCore {
         face_index: u32,
     ) -> Result<bool, HwpError> {
         let changed = self
-            .hft_outline_fonts
+            .legacy_font_outlines
             .pua_coverage
             .register(family, bytes, face_index)
             .map_err(|message| HwpError::RenderError(message.into()))?;
         #[cfg(target_arch = "wasm32")]
-        self.hft_outline_fonts
+        self.legacy_font_outlines
             .register_print_font(family, bytes, face_index);
         Ok(changed)
     }
@@ -46,14 +46,15 @@ impl DocumentCore {
         use sha2::{Digest, Sha256};
         let family = family.trim();
         #[cfg(target_arch = "wasm32")]
-        self.hft_outline_fonts.clear_print_primary(family);
+        self.legacy_font_outlines.clear_print_primary(family);
         let environment = self.resolved_font_environment();
         // 실제 선택 신원과 첫 공급 face가 같은 경우에만 유형 미상의 CFF도 허용한다.
         // 원본 유형·조판 폭을 다시 분류하지 않으며 기존 프로그램 바이트 한도를 먼저 확인한다.
         let supplied_identity = candidates
             .first()
             .filter(|(bytes, _)| {
-                !bytes.is_empty() && bytes.len() <= crate::renderer::hft_outline::MAX_SOURCE_BYTES
+                !bytes.is_empty()
+                    && bytes.len() <= crate::renderer::legacy_font_outline::MAX_SOURCE_BYTES
             })
             .map(|(bytes, index)| {
                 let mut hash = Sha256::new();
@@ -100,7 +101,7 @@ impl DocumentCore {
         if !owns_supplied_outline {
             return Ok(false);
         }
-        self.hft_outline_fonts
+        self.legacy_font_outlines
             .register_candidates(family, candidates)
             .map_err(|message| HwpError::RenderError(message.into()))
     }

@@ -72,7 +72,7 @@ fn actual_source_spots_keep_the_declared_slot_and_use_the_verified_missing_glyph
 }
 
 #[test]
-fn explicit_hft_does_not_borrow_a_truetype_programs_missing_glyph_contract() {
+fn explicit_legacy_does_not_borrow_a_truetype_programs_missing_glyph_contract() {
     let style = TextStyle {
         font_family: "Malgun Gothic".into(),
         font_size: 32.0,

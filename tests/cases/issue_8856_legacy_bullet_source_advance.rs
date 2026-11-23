@@ -26,7 +26,7 @@ fn source_core() -> DocumentCore {
 
 /// 검사 유형: 관계형. 원본 글자 크기에 대한 전진과 소속 개수를 검사한다.
 #[test]
-fn original_hft_bullet_keeps_full_cell_before_the_following_text() {
+fn original_legacy_bullet_keeps_full_cell_before_the_following_text() {
     let core = source_core();
     let trace: Value = serde_json::from_str(
         &core

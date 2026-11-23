@@ -317,7 +317,7 @@ mod split_hft_original_programs {
     }
 
     #[test]
-    fn display_program_preserves_original_hft_advance() {
+    fn display_program_preserves_original_legacy_advance() {
         let mut style = original_style();
         let original = width(&style);
         supply(&mut style, &[font(COMPATIBLE, 900)]);

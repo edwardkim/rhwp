@@ -118,7 +118,7 @@ fn check(path: &str, expected: &[(char, u16)]) {
 }
 
 #[test]
-fn hanyang_junggothic_hft_draws_cjk_brackets_full_width() {
+fn hanyang_junggothic_legacy_draws_cjk_brackets_full_width() {
     check(
         "samples/issue8697/hft-hanyang_junggothic-probe.hwpx",
         &[
@@ -141,7 +141,7 @@ fn hanyang_junggothic_hft_draws_cjk_brackets_full_width() {
 }
 
 #[test]
-fn sinmyeong_junggothic_hft_uses_its_own_latin_widths() {
+fn sinmyeong_junggothic_legacy_uses_its_own_latin_widths() {
     check(
         "samples/issue8697/hft-sinmyeong_junggothic-probe.hwpx",
         &[

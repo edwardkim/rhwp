@@ -75,7 +75,7 @@ fn check(alias: bool) {
 }
 
 #[test]
-fn original_hft_relation_symbol_owns_a_full_em() {
+fn original_legacy_relation_symbol_owns_a_full_em() {
     check(false);
 }
 

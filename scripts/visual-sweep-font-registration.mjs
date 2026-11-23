@@ -165,7 +165,7 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
 }
 
 // Canvas의 원본 TrueType 요청과 표시용 요청에 선택한 글꼴의 폭을 공급한다.
-export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
+export async function prepareSweepLayoutFonts(owner, fonts, loadBytes) {
   if (typeof owner?.getNativeOtfFontRequests !== 'function'
       || typeof owner?.prepareNativeOtfFonts !== 'function') {
     throw Error('글꼴 폭 공급 API가 없는 WASM입니다.');

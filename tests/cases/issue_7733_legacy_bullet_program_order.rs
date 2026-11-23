@@ -20,7 +20,7 @@ fn chemical_document() -> DocumentCore {
 }
 
 #[test]
-fn original_hft_bullets_keep_one_em_before_the_following_text() {
+fn original_legacy_bullets_keep_one_em_before_the_following_text() {
     let core = chemical_document();
     assert_eq!(core.page_count(), 103);
     let trace: serde_json::Value = serde_json::from_str(
@@ -53,7 +53,7 @@ fn original_hft_bullets_keep_one_em_before_the_following_text() {
 }
 
 #[test]
-fn original_hft_sinmyeongjo_bullets_keep_their_print_ink_inside_the_source_slot() {
+fn original_legacy_sinmyeongjo_bullets_keep_their_print_ink_inside_the_source_slot() {
     use rhwp::{paint::RenderProfile, renderer::render_tree::RenderNodeType};
 
     let core = chemical_document();

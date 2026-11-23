@@ -481,7 +481,7 @@ fn display_replacement_preserves_existing_tables_and_latin_slot_metrics() {
 }
 
 #[test]
-fn declared_hft_substitute_keeps_its_own_punctuation_contract() {
+fn declared_legacy_substitute_keeps_its_own_punctuation_contract() {
     use rhwp::model::style::SubstFont;
     use rhwp::renderer::font_environment::FontEnvironment;
     let make = |name: &str, substitute: bool| {
@@ -535,7 +535,7 @@ fn declared_hft_substitute_keeps_its_own_punctuation_contract() {
 }
 
 #[test]
-fn verified_hft_round_markers_keep_source_advance_after_display_program_supply() {
+fn verified_legacy_round_markers_keep_source_advance_after_display_program_supply() {
     // 기존 독립 Print: 평가결과서 U+2219와 로드맵 44쪽 U+2218은 1em.
     // 공개 Noto Sans Symbols 2의 실제 hmtx는 각각 0.270/0.276em이다.
     // 설치 글꼴 없이 표시 프로그램을 직접 공급해 후단 덮어쓰기를 재현한다.

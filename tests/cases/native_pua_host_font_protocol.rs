@@ -232,7 +232,7 @@ fn missing_source_glyph_does_not_inherit_the_paint_fallback_advance() {
 }
 
 #[test]
-fn same_family_hft_and_truetype_requests_keep_distinct_source_programs() {
+fn same_family_legacy_and_truetype_requests_keep_distinct_source_programs() {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native().unwrap();
     core.insert_text_native(0, 0, 0, "A가").unwrap();
@@ -838,7 +838,7 @@ fn unassigned_hwp5_font_bits_allow_source_probe_without_truetype_declaration() {
 }
 
 #[test]
-fn supplied_truetype_advance_is_distinct_from_hft_and_cff() {
+fn supplied_truetype_advance_is_distinct_from_legacy_and_cff() {
     use rhwp::renderer::{
         layout::{EmbeddedTextMeasurer, TextMeasurer},
         TextStyle,
@@ -887,7 +887,7 @@ fn supplied_truetype_advance_is_distinct_from_hft_and_cff() {
 }
 
 #[test]
-fn hft_bold_tracking_requires_verified_source_and_program() {
+fn legacy_bold_tracking_requires_verified_source_and_program() {
     use rhwp::renderer::{
         layout::{EmbeddedTextMeasurer, TextMeasurer},
         TextStyle,

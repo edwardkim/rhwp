@@ -8,7 +8,7 @@
 use rhwp::{model::style::Font, renderer::font_environment::FontEnvironment, DocumentCore};
 
 #[test]
-fn selected_program_identity_does_not_promote_a_logical_hft_family() {
+fn selected_program_identity_does_not_promote_a_logical_legacy_family() {
     let source = "Logical HFT Name";
     let family = "Selected Physical Family";
     let fallback = "Declared Glyph Fallback";

@@ -28,7 +28,7 @@ fn core() -> DocumentCore {
     DocumentCore::from_bytes(xml.as_bytes()).unwrap()
 }
 #[test]
-fn original_hft_program_keeps_its_print_frame_when_source_metrics_are_preserved() {
+fn original_legacy_program_keeps_its_print_frame_when_source_metrics_are_preserved() {
     for (preserve, query, expected) in [
         (true, "명조", true),
         (false, "명조", false),

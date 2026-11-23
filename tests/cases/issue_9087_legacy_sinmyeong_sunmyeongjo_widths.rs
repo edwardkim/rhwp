@@ -162,7 +162,7 @@ const WIDTHS: &[(char, u16)] = &[
 ///
 /// 수정 전에는 대체 글꼴 폭(숫자 0.5em 등)으로 쟀다.
 #[test]
-fn sinmyeong_sunmyeongjo_hft_uses_its_own_latin_widths() {
+fn sinmyeong_sunmyeongjo_legacy_uses_its_own_latin_widths() {
     check(
         "samples/issue9087/hft-sinmyeong_sunmyeongjo-probe.hwpx",
         0.0,
@@ -174,7 +174,7 @@ fn sinmyeong_sunmyeongjo_hft_uses_its_own_latin_widths() {
 ///
 /// 수정 전에는 폭 표가 없어 HFT 굵기 전진 계약에 연결되지 않았다.
 #[test]
-fn bold_sinmyeong_sunmyeongjo_hft_adds_bold_tracking_to_its_own_glyphs() {
+fn bold_sinmyeong_sunmyeongjo_legacy_adds_bold_tracking_to_its_own_glyphs() {
     check(
         "samples/issue9087/hft-sinmyeong_sunmyeongjo-bold-probe.hwpx",
         0.05,

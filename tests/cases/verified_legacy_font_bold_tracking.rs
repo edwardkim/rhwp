@@ -113,7 +113,7 @@ fn render(
 }
 
 #[test]
-fn verified_hft_tracking_reaches_centered_placement_without_widening_spaces() {
+fn verified_legacy_tracking_reaches_centered_placement_without_widening_spaces() {
     for (source, family) in [
         ("딸기", "Strawberry"),
         ("Strawberry", "Strawberry"),

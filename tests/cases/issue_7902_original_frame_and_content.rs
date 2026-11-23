@@ -96,7 +96,7 @@ fn hft_number_baseline(sample: &str, page: u32) {
 }
 
 #[test]
-fn hwp_generated_hft_number_keeps_print_baseline_and_content() {
+fn hwp_generated_legacy_number_keeps_print_baseline_and_content() {
     for page in [29, 100] {
         hft_number_baseline(
             "samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp",
@@ -106,7 +106,7 @@ fn hwp_generated_hft_number_keeps_print_baseline_and_content() {
 }
 
 #[test]
-fn hwpx_generated_hft_number_keeps_print_baseline_and_content() {
+fn hwpx_generated_legacy_number_keeps_print_baseline_and_content() {
     for variant in ["control", "shifted", "later"] {
         let sample = format!("tests/fixtures/pr7704_manual_reflow/6761-{variant}.hwpx");
         hft_number_baseline(&sample, 29);
@@ -119,7 +119,7 @@ fn hwpx_generated_hft_number_keeps_print_baseline_and_content() {
 
 #[cfg(feature = "native-skia")]
 #[test]
-fn native_generated_hft_font_trace_uses_paint_aliases() {
+fn native_generated_legacy_font_trace_uses_paint_aliases() {
     use rhwp::{document_core::DocumentCore, renderer::skia::SkiaLayerRenderer};
 
     for sample in [

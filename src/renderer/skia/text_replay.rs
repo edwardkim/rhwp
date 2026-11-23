@@ -92,9 +92,10 @@ impl SkiaTextReplay<'_> {
                     style,
                 );
                 let hft_outline_family = (self.hft_outline_enabled
-                    && crate::renderer::hft_outline::supports_style(style))
+                    && crate::renderer::legacy_font_outline::supports_style(style))
                 .then(|| {
-                    let family = crate::renderer::hft_outline::first_family(&style.font_family);
+                    let family =
+                        crate::renderer::legacy_font_outline::first_family(&style.font_family);
                     let face = match_supplied_family(self.custom_typefaces, family, font_style)
                         .or_else(|| {
                             match_system_family_style(
@@ -125,7 +126,7 @@ impl SkiaTextReplay<'_> {
                         let outline = outlines.entry(face.unique_id()).or_insert_with(|| {
                             (face.family_name().eq_ignore_ascii_case(primary_family)
                                 || typeface_declares_family(&face, requested_family))
-                            .then(|| super::hft_outline::HftOutlineReplay::new(&face))
+                            .then(|| super::legacy_font_outline::HftOutlineReplay::new(&face))
                             .flatten()
                         });
                         outline

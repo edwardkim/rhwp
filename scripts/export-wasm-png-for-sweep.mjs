@@ -262,7 +262,7 @@ async function main() {
               return imageDescriptor.set.call(this, value);
             },
           });
-          const {prepareNativePuaFonts, prepareObservedFontFallbacks, prepareHftOtfFonts} = await import('/font-registration.mjs');
+          const {prepareNativePuaFonts, prepareObservedFontFallbacks, prepareSweepLayoutFonts} = await import('/font-registration.mjs');
           const loadBytes = async record => {
             const response = await fetch(record.url);
             if (!response.ok) throw Error('공급 글꼴을 읽을 수 없습니다.');
@@ -270,7 +270,7 @@ async function main() {
           };
           const observedFonts = await prepareObservedFontFallbacks(doc, fonts, observedFontFallbacks, loadBytes);
           const nativePuaFonts = await prepareNativePuaFonts(doc, fonts, loadBytes);
-          const hftOtfFonts = await prepareHftOtfFonts(doc, fonts, loadBytes);
+          const hftOtfFonts = await prepareSweepLayoutFonts(doc, fonts, loadBytes);
           // Studio와 같은 Canvas 측정 세션을 페이지 수 조회 전에 적용한다.
           const {CanvasMetricSession} = await import('/canvas-metric-session.js');
           const metricSession = new CanvasMetricSession();

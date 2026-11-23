@@ -120,7 +120,7 @@ struct NativeOtfProgram {
     cff: bool,
     static_truetype: bool,
     visible_notdef_advance: Option<f64>,
-    verified_hft_bold_tracking: bool,
+    verified_legacy_font_bold_tracking: bool,
     visible_old_hangul_advances: Arc<BTreeMap<char, f64>>,
 }
 
@@ -333,7 +333,7 @@ impl NativeOtfMetrics {
                     (
                         f64::from(width) / f64::from(face.units_per_em()),
                         program.faux_bold,
-                        program.verified_hft_bold_tracking,
+                        program.verified_legacy_font_bold_tracking,
                         program_index,
                     )
                 });
@@ -434,7 +434,7 @@ impl NativePuaFonts {
         selection_digest.update(face_index.to_be_bytes());
         let selection_digest: [u8; 32] = selection_digest.finalize().into();
         let faux_bold = bold && !face.is_bold();
-        let verified_hft_bold_tracking = face.names().into_iter().any(|name| {
+        let verified_legacy_font_bold_tracking = face.names().into_iter().any(|name| {
             matches!(
                 name.name_id,
                 ttf_parser::name_id::FAMILY | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
@@ -501,7 +501,7 @@ impl NativePuaFonts {
             cff,
             static_truetype,
             visible_notdef_advance,
-            verified_hft_bold_tracking,
+            verified_legacy_font_bold_tracking,
             visible_old_hangul_advances: Arc::new(visible_old_hangul_advances),
         });
         self.otf_programs

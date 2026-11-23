@@ -1829,7 +1829,7 @@ impl DocumentCore {
         let tree = self.build_page_tree(page_num)?;
         let _overflows = self.layout_engine.take_overflows();
         let mut renderer = SvgRenderer::new();
-        renderer.source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        renderer.source_font_coverage = self.legacy_font_outlines.pua_coverage.clone();
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.debug_overlay = self.debug_overlay;
@@ -1873,7 +1873,7 @@ impl DocumentCore {
         let profile = layer_tree.profile;
 
         let mut renderer = SvgLayerRenderer::new();
-        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        renderer.inner_mut().source_font_coverage = self.legacy_font_outlines.pua_coverage.clone();
         let embedded_fonts = self.collect_embedded_font_bytes_by_name();
         for (family, bytes) in &embedded_fonts {
             let _ = renderer
@@ -2158,7 +2158,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let tree = self.build_page_layer_tree_with_profile(page_num, profile)?;
         let mut renderer = SvgLayerRenderer::new();
-        renderer.inner_mut().source_font_coverage = self.hft_outline_fonts.pua_coverage.clone();
+        renderer.inner_mut().source_font_coverage = self.legacy_font_outlines.pua_coverage.clone();
         let embedded_fonts = self.collect_embedded_font_bytes_by_name();
         for (family, bytes) in &embedded_fonts {
             let _ = renderer

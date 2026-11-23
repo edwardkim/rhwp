@@ -111,7 +111,7 @@ fn painted_glyphs(svg: &str) -> Vec<(f64, f64, f64, String)> {
 /// 글자 크기 중 79 단위 뒤에 온다(0.952em). 수정 전 rhwp 의 paint 는 반각(0.476em)이라 뒤
 /// 글자들이 당겨지고 `〈` 잉크가 「표」에 겹쳤다.
 #[test]
-fn toc_angle_bracket_takes_full_hft_advance() {
+fn toc_angle_bracket_takes_full_legacy_advance() {
     let mut core = DocumentCore::from_bytes(&std::fs::read(SOURCE).expect("기준 입력"))
         .expect("기준 문서 열기");
     // CLI·Visual Sweep 의 기본 Native 웹폰트 환경과 같은 꼴: HFT 를 표시용 TTF 로 대체하되

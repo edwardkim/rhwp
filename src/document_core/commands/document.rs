@@ -2,8 +2,8 @@
 
 mod cell_line_frame;
 mod grown_table_heights;
-mod hft_outline_fonts;
 mod initial_fields;
+mod legacy_font_outlines;
 mod metafile_fonts;
 mod nested_row_page_starts;
 mod reflowed_table_frames;
@@ -337,7 +337,7 @@ impl DocumentCore {
         // [#7051] 계보 신호가 없는 저장본은 저장 줄 사다리로 HFT ASCII 반각 조판을 판정한다.
         // 편집 중 판정이 흔들리지 않도록 로드 시 한 번만 내린다.
         if !styles.hft_ascii_halfwidth {
-            let witnesses = crate::renderer::hft_ascii_evidence::count_hft_ascii_witnesses(
+            let witnesses = crate::renderer::legacy_ascii_evidence::count_hft_ascii_witnesses(
                 &document,
                 &styles,
                 DEFAULT_DPI,
@@ -451,7 +451,7 @@ impl DocumentCore {
             pagination: Vec::new(),
             styles,
             canvas_metrics: None,
-            hft_outline_fonts: Default::default(),
+            legacy_font_outlines: Default::default(),
             metafile_fonts: Default::default(),
             font_environment: None,
             host_font_environment: None,

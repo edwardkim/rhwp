@@ -95,7 +95,7 @@ fn pair(core: &DocumentCore, page: u32, text: &str, family: &str) -> (Value, Val
 }
 
 #[test]
-fn original_hft_glyph_paint_has_its_print_frame_without_moving_source() {
+fn original_legacy_glyph_paint_has_its_print_frame_without_moving_source() {
     let core = load("samples/issue1949_giant_cell_nested_tables_perf.hwpx");
     assert_eq!(core.page_count(), 115);
     let (source, paint) = pair(&core, 14, "충분한 부력과", "한양신명조");
@@ -273,7 +273,7 @@ fn substituted_hwp3_program_keeps_its_existing_origin() {
 /// C275 단일 shadeColor 인과 대조에서도 그 뒤6쪽까지 같은 전환이 지속됐다.
 /// 독립 PDF 9쪽 첫 '<' 원점(182.08,113.60)CSSpx을±2px로 함께 보호한다.
 #[test]
-fn earlier_source_fill_preserves_later_hft_print_device_frame() {
+fn earlier_source_fill_preserves_later_legacy_print_device_frame() {
     let mut core = load("samples/rowbreak-problem-pages.hwp");
     core.set_hangul2024_compat(true);
     assert_eq!(core.page_count(), 18, "독립 한컴 Print 전쪽수 보존");

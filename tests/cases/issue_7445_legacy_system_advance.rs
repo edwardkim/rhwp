@@ -107,7 +107,7 @@ fn original_program_advance(id: u32) {
     }
 }
 #[test]
-fn title_uses_original_hft_natural_width_and_tracking() {
+fn title_uses_original_legacy_natural_width_and_tracking() {
     original_program_advance(8)
 }
 #[test]

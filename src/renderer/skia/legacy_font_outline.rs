@@ -4,7 +4,7 @@ use std::cell::RefCell;
 
 use skia_safe::{Canvas, Data, Font, Paint, PathBuilder, Typeface};
 
-use crate::renderer::hft_outline::{contour, ContourCache};
+use crate::renderer::legacy_font_outline::{contour, ContourCache};
 use crate::renderer::PathCommand;
 
 pub(super) struct HftOutlineReplay {

@@ -1,7 +1,7 @@
 import './empty-picture-payload.browser.mjs';
 import './issue_8160_print_jpeg_frame.browser.mjs';
 import './picture-tones.browser.mjs';
-import './hft-outline-font-selection.browser.mjs';
+import './legacy-font-outline-selection.browser.mjs';
 import './print-text-geometry.browser.mjs';
 import './print-primary-glyph-geometry.browser.mjs';
 import './split-otf-canvas.browser.mjs';

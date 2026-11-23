@@ -120,7 +120,7 @@ fn missing_ttf_without_document_substitute_requests_hancom_batang() {
 /// 이 원본의 TTF·대체 없는 `한양신명조` 본문(`<신설>`, `제4조(사업시행예정…`)을
 /// Type3 /T10(HFT)으로 출력한다. 한컴 기본 대체(한컴바탕)를 요청하면 안 된다.
 #[test]
-fn ttf_declared_hancom_builtin_hft_name_does_not_request_hancom_batang() {
+fn ttf_declared_hancom_builtin_legacy_name_does_not_request_hancom_batang() {
     let bytes =
         std::fs::read("samples/issue1891/80168_regulatory_analysis.hwpx").expect("80168 원본");
     let core = DocumentCore::from_bytes(&bytes).expect("80168 원본 파싱");
@@ -211,7 +211,7 @@ fn bullet_runs(node: &RenderNode, out: &mut Vec<(f64, f64)>) {
 /// `∙`(/Widths 1000)과 반각 공백(/Widths 500)의 합이다. 수정 전에는 표시용 HY중고딕
 /// 표의 U+2219 결측을 반각으로 재어 `∙ ` 런이 14.4px·17.3px 로 좁았다.
 #[test]
-fn hft_symbol_slot_bullet_advances_one_em() {
+fn legacy_symbol_slot_bullet_advances_one_em() {
     let core = load();
     let doc_info = &core.document().doc_info;
     let symbol = &doc_info.font_faces[5];

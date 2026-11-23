@@ -58,7 +58,7 @@ fn paint_and_measurement_use_the_same_missing_point_supplier() {
 }
 
 #[test]
-fn hft_source_does_not_borrow_the_ttf_supplier_contract() {
+fn legacy_source_does_not_borrow_the_ttf_supplier_contract() {
     let mut source = style("HY견고딕");
     source.source_font_is_ttf = false;
     source.source_font_is_hft = true;

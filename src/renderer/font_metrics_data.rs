@@ -15,8 +15,8 @@ pub(crate) use vertical::win_descent_em;
 #[path = "font_metric_han_santteut.rs"]
 mod han_santteut;
 
-#[path = "font_metric_legacy_hft.rs"]
-mod legacy_hft;
+#[path = "font_metric_legacy_faces.rs"]
+mod legacy_faces;
 
 #[path = "font_metric_hci_poppy.rs"]
 mod hci_poppy;
@@ -95,7 +95,7 @@ mod symbol_slot_chars;
 #[path = "font_metric_nimbus_roman.rs"]
 mod nimbus_roman;
 
-pub(crate) use legacy_hft::{
+pub(crate) use legacy_faces::{
     centered_bar_advance_em as original_hft_centered_bar_advance_em,
     is_metric_face as is_legacy_hft_metric_face, metric_face_name as legacy_hft_metric_face,
 };
@@ -576,8 +576,8 @@ pub(crate) fn find_metric_decision_for_character<'a>(
     let mut decision = find_metric_decision(name, bold, italic)?;
     // 부분 HFT 표에 새로 확인한 일반 glyph를 굵게·기울임의 공급 근거로
     // 상속하지 않는다. 확인하지 않은 서식은 기존 표시 대체 조회가 폭을 소유한다.
-    if legacy_hft::is_metric_face(decision.metric.name)
-        && legacy_hft::rejects_regular_bar_style(decision.metric.name, bold, italic, character)
+    if legacy_faces::is_metric_face(decision.metric.name)
+        && legacy_faces::rejects_regular_bar_style(decision.metric.name, bold, italic, character)
     {
         return None;
     }
@@ -735,7 +735,7 @@ impl FontMetrics {
             .chain(MEASURED_FONT_METRIC_OVERLAYS.iter())
             .chain(CORE14_FONT_METRICS.iter())
             .chain(han_santteut::METRICS.iter())
-            .chain(legacy_hft::METRICS.iter())
+            .chain(legacy_faces::METRICS.iter())
             .chain(hci_poppy::METRICS.iter())
             .chain(hci_tulip::METRICS.iter())
             .chain(nimbus_roman::METRICS.iter())

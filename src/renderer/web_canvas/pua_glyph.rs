@@ -8,9 +8,9 @@ impl WebCanvasRenderer {
         if !contains_old_hangul_jamo(text) {
             return None;
         }
-        let fonts = self.hft_outline_fonts.as_ref()?;
+        let fonts = self.legacy_font_outlines.as_ref()?;
         if let Some((glyph, _)) = pua_glyph::source_program_glyph(style, text) {
-            if (crate::renderer::hft_outline::supports_style(style)
+            if (crate::renderer::legacy_font_outline::supports_style(style)
                 && fonts.glyph(&style.font_family, glyph).is_some())
                 || fonts.print_primary_glyph(style, glyph).is_some()
             {

@@ -87,7 +87,7 @@ fn positions(style: &TextStyle) -> Vec<f64> {
 }
 
 #[test]
-fn real_primary_program_does_not_inherit_inferred_hft_decoration() {
+fn real_primary_program_does_not_inherit_inferred_legacy_decoration() {
     let id = program_identity(false);
     for spacing in [-10, 0, 10] {
         let regular = selected_style(false, spacing, false, &id);

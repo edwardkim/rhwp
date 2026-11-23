@@ -34,7 +34,7 @@ fn width(text: &str, style: &TextStyle) -> f64 {
     positions.last().unwrap() - positions[0]
 }
 #[test]
-fn hft_bold_decoration_survives_outline_supply() {
+fn legacy_bold_decoration_survives_outline_supply() {
     // 독립 HFT Print: 윤곽 자체의 전진과 별도로 굵은 한글에0.05em이 추가된다.
     // fixture의 hmtx는0.9em이므로 윤곽 폭을1em으로 덮어쓰는 보정도 검출한다.
     for size in [20.0, 24.0] {
@@ -51,7 +51,7 @@ fn hft_bold_decoration_survives_outline_supply() {
     }
 }
 #[test]
-fn explicit_natural_outline_does_not_inherit_hft_decoration() {
+fn explicit_natural_outline_does_not_inherit_legacy_decoration() {
     let mut selected = style(24.0);
     selected.preserve_glyph_ink = true;
     selected.natural_program_metrics = true;
@@ -64,7 +64,7 @@ fn explicit_natural_outline_does_not_inherit_hft_decoration() {
     );
 }
 #[test]
-fn unmarked_programs_and_spaces_do_not_gain_hft_decoration() {
+fn unmarked_programs_and_spaces_do_not_gain_legacy_decoration() {
     let mut unmarked = style(24.0);
     unmarked.source_font_is_hft = false;
     let regular = width("가", &unmarked);

@@ -38,7 +38,7 @@ fn verified_dotum_small_square_preserves_its_original_three_eighths_cell() {
 }
 
 #[test]
-fn explicit_hft_program_keeps_its_existing_compatibility_cell() {
+fn explicit_legacy_program_keeps_its_existing_compatibility_cell() {
     for family in ["돋움", "Dotum"] {
         let style = TextStyle {
             font_family: family.to_owned(),

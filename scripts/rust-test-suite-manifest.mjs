@@ -47,8 +47,8 @@ const SHARED_SUPPORT_MODULES = [
     module: 'symbol_font_program',
     source: 'tests/common/symbol_font_program.rs',
     consumers: [
-      'tests/cases/hft_centered_bar_glyph_fit.rs',
-      'tests/cases/issue_7733_hft_bullet_program_order.rs',
+      'tests/cases/legacy_centered_bar_glyph_fit.rs',
+      'tests/cases/issue_7733_legacy_bullet_program_order.rs',
       'tests/cases/issue_8153_symbol_coverage.rs',
       'tests/cases/issue_8153_symbol_fallback.rs',
       'tests/cases/skia_native_glyph_replay.rs',

@@ -2,7 +2,7 @@
 
 use super::WebCanvasRenderer;
 use crate::renderer::{
-    hft_outline::{has_natural_hft_program, supports_style},
+    legacy_font_outline::{has_natural_hft_program, supports_style},
     PathCommand, TextStyle,
 };
 
@@ -20,7 +20,7 @@ impl WebCanvasRenderer {
         if chars.next().is_some() {
             return false;
         }
-        let Some(commands) = self.hft_outline_fonts.as_ref().and_then(|fonts| {
+        let Some(commands) = self.legacy_font_outlines.as_ref().and_then(|fonts| {
             let original = supports_style(style)
                 .then(|| fonts.glyph(&style.font_family, character))
                 .flatten();

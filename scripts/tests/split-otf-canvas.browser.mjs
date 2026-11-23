@@ -112,7 +112,7 @@ test('fresh WASM은 단일 공급과 분할 OTF 배열을 모두 받아 누락 g
       const outlineFirst = doc.registerHftOutlineFont('RHWP HFT Outline Fixture', first, 0);
       doc.clearTextFontFamily('RHWP HFT Outline Fixture');
       const outlineAfterClear = doc.registerHftOutlineFont('RHWP HFT Outline Fixture', first, 0);
-      doc.setFontEnvironment(JSON.stringify({id: 'split-hft-actual-owner',
+      doc.setFontEnvironment(JSON.stringify({id: 'split-cff-source-owner',
         substitutions: {'RHWP HFT Outline Fixture': 'Selected Split'}}));
       for (const bytes of [second, first]) {
         const face = new FontFace('Selected Split', bytes); await face.load(); document.fonts.add(face);

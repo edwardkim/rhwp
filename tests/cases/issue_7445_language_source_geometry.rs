@@ -69,7 +69,7 @@ fn automatic_environment(c: &DocumentCore) -> FontEnvironment {
 }
 
 #[test]
-fn automatic_display_fallback_keeps_original_hft_bracket_advance_and_following_text() {
+fn automatic_display_fallback_keeps_original_legacy_bracket_advance_and_following_text() {
     let mut c = DocumentCore::from_bytes(
         &std::fs::read(concat!(
             env!("CARGO_MANIFEST_DIR"),

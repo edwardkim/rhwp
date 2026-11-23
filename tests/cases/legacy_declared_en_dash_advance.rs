@@ -32,7 +32,7 @@ fn advance(style: &TextStyle, text: &str) -> f64 {
 }
 
 #[test]
-fn original_hft_en_dash_uses_its_independent_full_em_advance() {
+fn original_legacy_en_dash_uses_its_independent_full_em_advance() {
     for size in [13.333333333333334, 20.0, 40.0] {
         for ratio in [0.8, 1.0, 1.2] {
             let style = source_style(size, ratio);
@@ -47,7 +47,7 @@ fn original_hft_en_dash_uses_its_independent_full_em_advance() {
 }
 
 #[test]
-fn display_alias_does_not_replace_the_declared_hft_en_dash_advance() {
+fn display_alias_does_not_replace_the_declared_legacy_en_dash_advance() {
     let original = source_style(20.0, 1.0);
     let alias = TextStyle {
         font_family: "표시용 대체 글꼴".into(),
@@ -61,7 +61,7 @@ fn display_alias_does_not_replace_the_declared_hft_en_dash_advance() {
 }
 
 #[test]
-fn unmeasured_bold_hft_en_dash_keeps_its_narrower_supplier_advance() {
+fn unmeasured_bold_legacy_en_dash_keeps_its_narrower_supplier_advance() {
     for size in [13.333333333333334, 20.0, 40.0] {
         for ratio in [0.8, 1.0, 1.2] {
             let regular = source_style(size, ratio);
