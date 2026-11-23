@@ -215,5 +215,6 @@ fetch·visibility branch·Cargo 검증은 [로컬 검증](local_validation.md)�
    다시 대조해 하락·누락 해소를 확인한다. 원 PR head·후보 SHA, TSV, 하락 쪽·backend·전후 수치,
    원인과 해결 증적을 개별 검토 문서와 통합 PR 본문에 연결한다.
 
-원 PR보다 낮은 쪽은 하락폭과 관계없이 이 절을 적용한다. [최신 devel 대비 2%p 재검토 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)과
+원 PR보다 낮은 쪽은 하락폭과 관계없이 이 절을 적용한다. 최종 후보가 98% 이상인 쪽도 포함한다.
+[최신 devel 대비 2%p 재검토 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)과
 [정본 보호 표시값 검사](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도 함께 검증한다.
