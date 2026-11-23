@@ -11,7 +11,7 @@
 [PR #9335](https://github.com/edwardkim/rhwp/pull/9335)가 병합된
 `df263432be6135cdbf624dfc691d4c6367a47bfa`를 기준으로 삼았다.
 표 편집과 각주·미주 경로, 평행 그림자 및 인라인 도형 변경이 들어왔다.
-[원 PR과 통합 검증 기록](../pr/semanticist21_20261123_table_notes_shadows_review.md)을 대조한다.
+[원 PR과 보존된 통합 검증 기록](https://github.com/edwardkim/rhwp/blob/7d6628982c81e702d58d8d0e6f52059f68a0b9ae/mydocs/pr/archives/semanticist21_20261123_table_notes_shadows_review.md)을 대조한다.
 
 두 브랜치 끝에서 추가된 독립 인쇄 쪽수 행은 원본 경로가 서로 달랐다.
 `oracle_page_count_baseline.tsv`의 기존 행을 보존하고 #9335의 원본 17종과
@@ -21,7 +21,15 @@
 
 Studio의 TypeScript 선언 두 파일에서 충돌이 발생했고 자동 적용된 JavaScript에도
 같은 빌드의 생성물이 필요하다. 통합 소스 `3df7e740a8f9be501d1e24d6c9411befccdf44a3`에서
-fresh WASM을 빌드해 JavaScript와 선언 파일 두 개를 함께 갱신한다.
+fresh WASM을 빌드하고 JavaScript와 선언 파일 두 개를 대조했다. 선언 파일 두 개의
+함수 인자 표기가 바뀌었다. JavaScript는 #9335의 생성본과 바이트가 같았다.
+공개 메서드 614개의 선언과 실행 시 노출을 확인했고, 양쪽의 기존 선언과 #9335가 추가한
+메서드 다섯 개가 모두 보존됐다.
+
+표 셀과 글상자에 각주·미주를 삽입해 번호와 내용을 읽었다. 저장 전과 HWP·HWPX
+재열기에서 번호 2와 3, 내용, 쪽수 및 미주 소유 경로가 일치했다. 미주 안
+캐럿은 같은 줄에서 글자 순서대로 전진했다.
+[후보 WASM 해시·공개 API·주석 검증](../verification/issue7754-nine-fidelity/after-pr9335/wasm-candidate-api-and-notes.json)
 
 ## 검증 계획
 
