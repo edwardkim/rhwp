@@ -12907,7 +12907,7 @@
         }
       ]
     },
-    "2303981a60823932": {
+    "6b4fb980a6b95b1d": {
       "files": [
         {
           "filename": "HMKMM.TTF",
@@ -12940,6 +12940,710 @@
         {
           "filename": "e50c7200521c-H2HDRM.TTF",
           "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "filename": "HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+        }
+      ]
+    },
+    "9d84d90c250997d7": {
+      "files": [
+        {
+          "filename": "ENGMJ.otf",
+          "sha256": "92f7b9f4aab6a183da9adedc051eeadb329db563bfb5a3187e4cc861365e633c"
+        },
+        {
+          "filename": "ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "filename": "ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "filename": "ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "filename": "FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "filename": "FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "filename": "HGGMJ.otf",
+          "sha256": "34e58d7685669addf992dd969f14bfea6eb3f7b7aa2b3ff17bba1275d353768b"
+        },
+        {
+          "filename": "HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "filename": "HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "filename": "HJJGT.otf",
+          "sha256": "0f1e4ef8ecac061b874c51b6a6580ba6f3f19b4eab10212f33d70b6e942ccfb1"
+        },
+        {
+          "filename": "HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "filename": "HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "filename": "JPJGT.otf",
+          "sha256": "dbe024359d0d21b7b152cc4a1233601503f0a4f340d0ecc5ce9b48626147ff63"
+        },
+        {
+          "filename": "JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "filename": "JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "filename": "SPJGT.otf",
+          "sha256": "484d604651628146dc9b3be7906db40f19657933ed30532ad1fd4874407c9480"
+        },
+        {
+          "filename": "SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "filename": "SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "filename": "TEDNREN.otf",
+          "sha256": "d292d1972ff9de8641c52e3bff41fa0d5ba012c3fd0a1b6514f49e4a5f29fced"
+        },
+        {
+          "filename": "TEDNRHG.otf",
+          "sha256": "00eae1decfbbee1f2344ff95ec396eacd7581a70d65849a3305d3e2df5137b13"
+        },
+        {
+          "filename": "TEGMJEN.otf",
+          "sha256": "fc341efba989722650bbba15690cbf91db2eb34fdc0eaaad6c8f04ea4a26154f"
+        },
+        {
+          "filename": "TEGMJHG.otf",
+          "sha256": "131637753baf43730900998e21694da10d6b12ca08d08634bc1c00d39f30fd92"
+        },
+        {
+          "filename": "TEGMJHJ.otf",
+          "sha256": "2d7451e56c62084fa3debd781825890e18c12fef78409f656057d687a3abd684"
+        },
+        {
+          "filename": "TEGMJJP.otf",
+          "sha256": "aad05d3cb2ebc9c2e5bc7fb731745179ec51d75fb9b54fb61b2950bf19a305c4"
+        },
+        {
+          "filename": "TEGMJSP.otf",
+          "sha256": "a73255db51e05eb4a170321f1f6b0288a9dcf7d0e5b86a1e553c16a5635c263b"
+        },
+        {
+          "filename": "TEJGTEN.otf",
+          "sha256": "e5a90d4446f551d3ae2f412990fe8011395a2d75e5af3ea7f2ed51dde5be366e"
+        },
+        {
+          "filename": "TEJGTHG.otf",
+          "sha256": "a2b6e400e1e8beaea1661e55bf5977ee823e2a4ae67033e758574f9238611860"
+        },
+        {
+          "filename": "TEJGTHJ.otf",
+          "sha256": "5c9e1ea0fc307c155ae7910a9d4acdf618d72ae78489aeac28902c680e426cce"
+        },
+        {
+          "filename": "TEJGTJP.otf",
+          "sha256": "96ee02cb33abb83c7985bed4ff49e7b8c3757299865e06f13c61c750a1f98d1c"
+        },
+        {
+          "filename": "TEJMJEN.otf",
+          "sha256": "becde524c507ba1e555360eae97f99e1770ac4403a55eda2b8b64ff313d602c9"
+        },
+        {
+          "filename": "TEJMJHG.otf",
+          "sha256": "674bc8b40889eefecddc7833cfd6de1367bc7ed15656814b3cbf6a26fea211cf"
+        },
+        {
+          "filename": "TEJMJHJ.otf",
+          "sha256": "ae4361b1549046dfc09b9415a9a8cdb52a076e96c8415b9eefd046d82465e1be"
+        },
+        {
+          "filename": "TESGREN.otf",
+          "sha256": "653e3453afb3a8a44144b7b9dc5e149f2ae7924c9f908ee04f171749935768cc"
+        },
+        {
+          "filename": "TESGRHG.otf",
+          "sha256": "2845c370f3eb07eaea5e76ffef82fd104108c406d9dd2c1803aa5c1036612cf7"
+        },
+        {
+          "filename": "TESMJEN.otf",
+          "sha256": "1d7e232e98ba8a11e763ea69ff7be6cf36b2fc2c2d632a6b3115c4723969f0e9"
+        },
+        {
+          "filename": "TESMJHG.otf",
+          "sha256": "3f13c08d9c437a79e27f359dc8f6931aa1a82718ebede2b83a9a51c3cb0c3963"
+        },
+        {
+          "filename": "TESMJJP.otf",
+          "sha256": "91839ccb18c63ab15463648c4927429c9b098bf422dcab55269a55314cdcccfd"
+        },
+        {
+          "filename": "TETGREN.otf",
+          "sha256": "48158aad4e733ed85968c3bb93576134a11f2041568efb09ff45a076d6349ea1"
+        },
+        {
+          "filename": "TETGRHG.otf",
+          "sha256": "51346f5f5cf82c7de4b8f0bd2ba6ff488cada811d98f110bc47f535ddbee2867"
+        },
+        {
+          "filename": "TETGRSP.otf",
+          "sha256": "4d1cee6065faf8306d01715349b6878982e7e4ecc809956be79a30d95185e8dd"
+        },
+        {
+          "filename": "TETGTEN.otf",
+          "sha256": "201c780a79692958a160d4a36bc1af1ab170b2f33861f2c9137010cc19b14ae3"
+        },
+        {
+          "filename": "TETGTHG.otf",
+          "sha256": "dd9e2e8b78787b70e5415e8a3637f0f2760e36dd595bb25b7286308eebfff9a3"
+        },
+        {
+          "filename": "TETGTHJ.otf",
+          "sha256": "99aebf558bfdd242862d96e348339b9a4fd341b8104e0197fa02104716d8fa27"
+        },
+        {
+          "filename": "TETGTJP.otf",
+          "sha256": "0ad13d050c4888b8b9e8d5cecb0215d5dfb52d6d5f842beac4d86999e0922631"
+        },
+        {
+          "filename": "USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "filename": "HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "filename": "신그래픽체.ttf",
+          "sha256": "e1a8b7ed54994d9d193ffc9e9f2b5de2d9d103c7886c467a14cab8271c81b6be"
+        }
+      ]
+    },
+    "407501e6ccf0cf8c": {
+      "files": [
+        {
+          "filename": "SPJGT.otf",
+          "sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a"
+        },
+        {
+          "filename": "arial.ttf",
+          "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+        },
+        {
+          "filename": "arialbd.ttf",
+          "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+        },
+        {
+          "filename": "arialbi.ttf",
+          "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+        },
+        {
+          "filename": "ariali.ttf",
+          "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+        },
+        {
+          "filename": "HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "filename": "HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "filename": "JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "filename": "HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "filename": "H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "filename": "H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "filename": "H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "filename": "HMFMMUEX.TTC",
+          "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+        },
+        {
+          "filename": "HANBatang.ttf",
+          "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+        },
+        {
+          "filename": "HANDotum.ttf",
+          "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898"
+        },
+        {
+          "filename": "ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "filename": "ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "filename": "ENSMJI.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "filename": "FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "filename": "FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "filename": "HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "filename": "HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "filename": "HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "filename": "HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "filename": "HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "filename": "JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "filename": "SPMJ.otf",
+          "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2"
+        },
+        {
+          "filename": "SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "filename": "USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "filename": "HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "filename": "malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "filename": "malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "filename": "malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "filename": "HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+        },
+        {
+          "filename": "HANBatangB.ttf",
+          "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f"
+        },
+        {
+          "filename": "HANDotumB.ttf",
+          "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51"
+        },
+        {
+          "filename": "HDOTUM.TTF",
+          "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        },
+        {
+          "filename": "ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "filename": "ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "filename": "ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "filename": "ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "filename": "HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        },
+        {
+          "filename": "HANBatangB.ttf",
+          "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+        },
+        {
+          "filename": "HANDotum.ttf",
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+        },
+        {
+          "filename": "HANDotumB.ttf",
+          "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+        },
+        {
+          "filename": "ariblk.ttf",
+          "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23"
+        },
+        {
+          "filename": "wingding.ttf",
+          "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+        },
+        {
+          "filename": "dotumche.ttf",
+          "sha256": "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62"
+        },
+        {
+          "filename": "gulim.ttc",
+          "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+        },
+        {
+          "filename": "0ea38ac53e8d-batang.TTC",
+          "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "filename": "ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        }
+      ]
+    },
+    "a6013c2b14ec49cd": {
+      "files": [
+        {
+          "filename": "SPJGT.otf",
+          "sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a"
+        },
+        {
+          "filename": "arial.ttf",
+          "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+        },
+        {
+          "filename": "arialbd.ttf",
+          "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+        },
+        {
+          "filename": "arialbi.ttf",
+          "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+        },
+        {
+          "filename": "ariali.ttf",
+          "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+        },
+        {
+          "filename": "HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "filename": "HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "filename": "JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "filename": "HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "filename": "H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "filename": "H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "filename": "H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "filename": "HMFMMUEX.TTC",
+          "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+        },
+        {
+          "filename": "HANBatang.ttf",
+          "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+        },
+        {
+          "filename": "HANDotum.ttf",
+          "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898"
+        },
+        {
+          "filename": "ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "filename": "ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "filename": "ENSMJI.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "filename": "FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "filename": "FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "filename": "HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "filename": "HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "filename": "HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "filename": "HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "filename": "HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "filename": "JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "filename": "SPMJ.otf",
+          "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2"
+        },
+        {
+          "filename": "SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "filename": "USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "filename": "HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "filename": "malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "filename": "malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "filename": "malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "filename": "HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+        },
+        {
+          "filename": "HANBatangB.ttf",
+          "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f"
+        },
+        {
+          "filename": "HANDotumB.ttf",
+          "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51"
+        },
+        {
+          "filename": "HDOTUM.TTF",
+          "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        },
+        {
+          "filename": "ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "filename": "ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "filename": "ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "filename": "ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "filename": "HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        },
+        {
+          "filename": "HANBatangB.ttf",
+          "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+        },
+        {
+          "filename": "HANDotum.ttf",
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+        },
+        {
+          "filename": "HANDotumB.ttf",
+          "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+        },
+        {
+          "filename": "ariblk.ttf",
+          "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23"
+        },
+        {
+          "filename": "wingding.ttf",
+          "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+        },
+        {
+          "filename": "dotumche.ttf",
+          "sha256": "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62"
+        },
+        {
+          "filename": "gulim.ttc",
+          "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+        },
+        {
+          "filename": "0ea38ac53e8d-batang.TTC",
+          "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "filename": "ENJGT.otf",
+          "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+        },
+        {
+          "filename": "HGJGT.otf",
+          "sha256": "ef7def56521a7087f67a623245a7c9c9899dfdc07e4839ed1f0a89f56e847013"
+        }
+      ]
+    },
+    "e3c38b4af39c5cb7": {
+      "files": [
+        {
+          "filename": "HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "filename": "HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "filename": "ENJGT.otf",
+          "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c"
+        },
+        {
+          "filename": "ENMJ.otf",
+          "sha256": "6055db675c538c216942788d7b83c8812c955d5bef37c2d6903a5cdb00c2930b"
+        },
+        {
+          "filename": "ENSMJ.otf",
+          "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2"
+        },
+        {
+          "filename": "H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "filename": "H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "filename": "H2MJRE.TTF",
+          "sha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002"
+        },
+        {
+          "filename": "HBATANG.TTF",
+          "sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068"
+        },
+        {
+          "filename": "HDOTUM.TTF",
+          "sha256": "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757"
+        },
+        {
+          "filename": "HMEHL.otf",
+          "sha256": "a49e5cb16f806afef0e69f05c3c3668dda3db90e3229a9a3cd2d1f83995e34d4"
+        },
+        {
+          "filename": "HYGPRM.TTF",
+          "sha256": "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a"
+        },
+        {
+          "filename": "MALGUN.TTF",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "filename": "SPMJ.otf",
+          "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2"
+        },
+        {
+          "filename": "SPSMJ.otf",
+          "sha256": "c9825ad4daaea9809b50dfeb0f1145a2ddccbbccbdd076e491d0570ea38d5ce3"
+        },
+        {
+          "filename": "TETGREN.otf",
+          "sha256": "e3601c10b4ffd156c14d1e0138cd7ab5fd439214347d8883c6524a39cbc2a5a5"
+        },
+        {
+          "filename": "TETGTEN.otf",
+          "sha256": "678e0724266842b469ccee25e4f089c24cb78de8698cc4054248fb76776a1198"
+        },
+        {
+          "filename": "batang.TTC",
+          "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+        },
+        {
+          "filename": "gulim.TTC",
+          "sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c"
+        },
+        {
+          "filename": "pala.ttf",
+          "sha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad"
+        },
+        {
+          "filename": "6ff0f49540ef-Gulim.ttf",
+          "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab"
         }
       ]
     }
@@ -13629,7 +14333,10 @@
               "field": "provenance.font_supply.files"
             }
           },
-          "font_environment": null,
+          "font_environment": {
+            "path": "mydocs/verification/protected-font-supply/environments/seo-helvetica-styles-native.json",
+            "sha256": "1aa4baa41c9959c3f56e39e6e1496210c8bcc3821e76bd5cfeb900bb49ea265c"
+          },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
             "sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a"
@@ -14632,7 +15339,7 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "c0dd8344461fd0e5",
+          "font_set": "9d84d90c250997d7",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -14643,7 +15350,10 @@
               "field": "provenance.font_supply.files"
             }
           },
-          "font_environment": null,
+          "font_environment": {
+            "path": "mydocs/verification/protected-font-supply/environments/exam-social-native.json",
+            "sha256": "140fc6b91a98564a6b8faed82ac0cb10e630378edc0781a623a6fbedd31fdb3e"
+          },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
             "sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a"
@@ -14862,20 +15572,20 @@
           }
         },
         "wasm": {
-          "font_set": "e33ea144db11ccea",
-          "inventory_kind": "recorded_supply",
+          "font_set": "e3c38b4af39c5cb7",
+          "inventory_kind": "ordered_supply",
           "inventory_source": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
-            "sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+            "path": "mydocs/verification/protected-font-supply/records/nested-table-wasm-original-programs-validation.json",
+            "sha256": "369773855415cd4f5e4296015cdbd26877ab3183a85c03170dd95a6645e988d9",
             "selector": {
               "key": "nested",
               "backend": "wasm",
-              "field": "provenance.font_supply.files"
+              "field": "font_supply.files"
             }
           },
           "font_environment": {
-            "path": "mydocs/verification/protected-font-supply/environments/nested-table.json",
-            "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
+            "path": "mydocs/verification/protected-font-supply/environments/nested-table-wasm.json",
+            "sha256": "ddafdbf48b5ca98cd18bbe18fedb0a8df5da7a1fb1dbf7aa2b9ac08feb0436d2"
           },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/nested-table-protected-validation.json",
@@ -14899,10 +15609,10 @@
             "path": "mydocs/verification/protected-font-supply/environments/nested-table.json",
             "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
           },
-          "supply_mode": "document_selected_files_from_recorded_environment",
+          "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/verification/protected-font-supply/records/nested-table-wasm-original-programs-validation.json",
+            "sha256": "369773855415cd4f5e4296015cdbd26877ab3183a85c03170dd95a6645e988d9",
             "selector": {
               "key": "nested",
               "backend": "wasm"
@@ -15547,7 +16257,7 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "c0dd8344461fd0e5",
+          "font_set": "9d84d90c250997d7",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
@@ -15558,7 +16268,10 @@
               "field": "provenance.font_supply.files"
             }
           },
-          "font_environment": null,
+          "font_environment": {
+            "path": "mydocs/verification/protected-font-supply/environments/exam-social-native.json",
+            "sha256": "140fc6b91a98564a6b8faed82ac0cb10e630378edc0781a623a6fbedd31fdb3e"
+          },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
             "sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a"
@@ -16003,19 +16716,20 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "f57745c75bbbd21a",
+          "font_set": "407501e6ccf0cf8c",
           "inventory_kind": "ordered_supply",
           "inventory_source": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-spec13-font-programs.tsv",
-            "sha256": "151ead21b63bad998413b517db7ed9df2402c6fdd8285498376b6e453088548a",
+            "path": "mydocs/verification/protected-font-supply/records/chemical-native-original-programs-validation.json",
+            "sha256": "69ad299abe03d6e68e9be999b292881c1cf0d60d708f6e8f1ab29635721f6af2",
             "selector": {
-              "document": "chemical",
-              "backend": "native"
+              "key": "chemical",
+              "backend": "native",
+              "field": "font_supply.files"
             }
           },
           "font_environment": {
-            "path": "mydocs/verification/protected-font-supply/environments/chemical-qualified.json",
-            "sha256": "54231e1396bbf28c755198879206f77497495a208e2635c2856839e4eb2d6d35"
+            "path": "mydocs/verification/protected-font-supply/environments/chemical-native.json",
+            "sha256": "7391597ca1d06bfca8c36141f290fc8f744e9ec2d532fd7443dd7659b7f81ca2"
           },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/chemical-spec13-protected-validation.json",
@@ -16041,8 +16755,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/verification/protected-font-supply/records/chemical-native-original-programs-validation.json",
+            "sha256": "69ad299abe03d6e68e9be999b292881c1cf0d60d708f6e8f1ab29635721f6af2",
             "selector": {
               "key": "chemical",
               "backend": "native"
@@ -16053,24 +16767,25 @@
             "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d"
           },
           "qualified_output_evidence": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-qualified-output-validation.json",
-            "sha256": "0b2f298c1c71077f330f52e507dea9f5b2e8b7d6b5ac6b5d03f450cf6809a90d"
+            "path": "mydocs/verification/protected-font-supply/records/chemical-native-original-programs-validation.json",
+            "sha256": "69ad299abe03d6e68e9be999b292881c1cf0d60d708f6e8f1ab29635721f6af2"
           }
         },
         "wasm": {
-          "font_set": "41203851b66ecbe2",
+          "font_set": "a6013c2b14ec49cd",
           "inventory_kind": "ordered_supply",
           "inventory_source": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-spec13-font-programs.tsv",
-            "sha256": "151ead21b63bad998413b517db7ed9df2402c6fdd8285498376b6e453088548a",
+            "path": "mydocs/verification/protected-font-supply/records/chemical-wasm-original-programs-validation.json",
+            "sha256": "2ff2355a93744b075874a32a1201b61b11d4cf8741e758454574b8b26284a747",
             "selector": {
-              "document": "chemical",
-              "backend": "wasm"
+              "key": "chemical",
+              "backend": "wasm",
+              "field": "font_supply.files"
             }
           },
           "font_environment": {
-            "path": "mydocs/verification/protected-font-supply/environments/chemical-qualified.json",
-            "sha256": "54231e1396bbf28c755198879206f77497495a208e2635c2856839e4eb2d6d35"
+            "path": "mydocs/verification/protected-font-supply/environments/chemical-wasm.json",
+            "sha256": "8730fc96a15984bd784334225eaf01b9ea38731b1dd96fbd0717c628eb7d9708"
           },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/chemical-spec13-protected-validation.json",
@@ -16096,8 +16811,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
+            "path": "mydocs/verification/protected-font-supply/records/chemical-wasm-original-programs-validation.json",
+            "sha256": "2ff2355a93744b075874a32a1201b61b11d4cf8741e758454574b8b26284a747",
             "selector": {
               "key": "chemical",
               "backend": "wasm"
@@ -16108,8 +16823,8 @@
             "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d"
           },
           "qualified_output_evidence": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-qualified-output-validation.json",
-            "sha256": "0b2f298c1c71077f330f52e507dea9f5b2e8b7d6b5ac6b5d03f450cf6809a90d"
+            "path": "mydocs/verification/protected-font-supply/records/chemical-wasm-original-programs-validation.json",
+            "sha256": "2ff2355a93744b075874a32a1201b61b11d4cf8741e758454574b8b26284a747"
           }
         }
       }
@@ -16378,7 +17093,7 @@
           }
         },
         "wasm": {
-          "font_set": "2303981a60823932",
+          "font_set": "6b4fb980a6b95b1d",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
             "path": "mydocs/verification/protected-font-supply/records/recorded-system-font-inventory.json",

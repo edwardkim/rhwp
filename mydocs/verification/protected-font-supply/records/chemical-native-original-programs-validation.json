@@ -1,0 +1,296 @@
+{
+  "key": "chemical",
+  "backend": "native",
+  "comparison_profile": "print",
+  "dpi": 96,
+  "compat": "2022",
+  "page_count": 103,
+  "input": {
+    "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+    "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+    "bytes": 193536
+  },
+  "reference_pdf": {
+    "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+    "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+    "bytes": 1245068
+  },
+  "baseline": {
+    "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597"
+  },
+  "font_environment": {
+    "path": "mydocs/verification/protected-font-supply/environments/chemical-native.json",
+    "sha256": "7391597ca1d06bfca8c36141f290fc8f744e9ec2d532fd7443dd7659b7f81ca2"
+  },
+  "font_supply": {
+    "files": [
+      {
+        "filename": "SPJGT.otf",
+        "sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a"
+      },
+      {
+        "filename": "arial.ttf",
+        "sha256": "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+      },
+      {
+        "filename": "arialbd.ttf",
+        "sha256": "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+      },
+      {
+        "filename": "arialbi.ttf",
+        "sha256": "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+      },
+      {
+        "filename": "ariali.ttf",
+        "sha256": "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+      },
+      {
+        "filename": "HGSMJ.otf",
+        "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+      },
+      {
+        "filename": "HMEPO.otf",
+        "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+      },
+      {
+        "filename": "JPMJ.otf",
+        "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+      },
+      {
+        "filename": "HMKMM.TTF",
+        "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+      },
+      {
+        "filename": "H2GTRE.TTF",
+        "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+      },
+      {
+        "filename": "H2GTRM.TTF",
+        "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+      },
+      {
+        "filename": "H2HDRM.TTF",
+        "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+      },
+      {
+        "filename": "HMFMMUEX.TTC",
+        "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+      },
+      {
+        "filename": "HANBatang.ttf",
+        "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+      },
+      {
+        "filename": "HANDotum.ttf",
+        "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898"
+      },
+      {
+        "filename": "ENMJ.otf",
+        "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+      },
+      {
+        "filename": "ENSMJ.otf",
+        "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+      },
+      {
+        "filename": "ENSMJI.otf",
+        "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+      },
+      {
+        "filename": "FLMJ.otf",
+        "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+      },
+      {
+        "filename": "FLSMJ.otf",
+        "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+      },
+      {
+        "filename": "HGMJ.otf",
+        "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+      },
+      {
+        "filename": "HJMJ.otf",
+        "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+      },
+      {
+        "filename": "HJSMJ.otf",
+        "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+      },
+      {
+        "filename": "HMKMG.otf",
+        "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+      },
+      {
+        "filename": "HMKSM.otf",
+        "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+      },
+      {
+        "filename": "JPSMJ.otf",
+        "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+      },
+      {
+        "filename": "SPMJ.otf",
+        "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2"
+      },
+      {
+        "filename": "SPSMJ.otf",
+        "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+      },
+      {
+        "filename": "USER.otf",
+        "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+      },
+      {
+        "filename": "HBATANG.TTF",
+        "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+      },
+      {
+        "filename": "malgun.ttf",
+        "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+      },
+      {
+        "filename": "malgunbd.ttf",
+        "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+      },
+      {
+        "filename": "malgunsl.ttf",
+        "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+      },
+      {
+        "filename": "HMKMG.TTF",
+        "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+      },
+      {
+        "filename": "HANBatangB.ttf",
+        "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f"
+      },
+      {
+        "filename": "HANDotumB.ttf",
+        "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51"
+      },
+      {
+        "filename": "HDOTUM.TTF",
+        "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+      },
+      {
+        "filename": "ARIALN.TTF",
+        "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+      },
+      {
+        "filename": "ARIALNB.TTF",
+        "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+      },
+      {
+        "filename": "ARIALNBI.TTF",
+        "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+      },
+      {
+        "filename": "ARIALNI.TTF",
+        "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+      },
+      {
+        "filename": "HANBatang.ttf",
+        "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+      },
+      {
+        "filename": "HANBatangB.ttf",
+        "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+      },
+      {
+        "filename": "HANDotum.ttf",
+        "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+      },
+      {
+        "filename": "HANDotumB.ttf",
+        "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+      },
+      {
+        "filename": "ariblk.ttf",
+        "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23"
+      },
+      {
+        "filename": "wingding.ttf",
+        "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+      },
+      {
+        "filename": "dotumche.ttf",
+        "sha256": "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62"
+      },
+      {
+        "filename": "gulim.ttc",
+        "sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+      },
+      {
+        "filename": "0ea38ac53e8d-batang.TTC",
+        "sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+      },
+      {
+        "filename": "ENJGT.otf",
+        "sha256": "25dc3c5c9fd7e414ba9791a578845315916e13bf8e09ccf76e0101c6bab04659"
+      }
+    ]
+  },
+  "symbol_fallback": {
+    "source": "한양중고딕",
+    "languageSlot": 5,
+    "fontId": 15,
+    "postscript": "Myeongjo-SPMJ",
+    "sha256": "87c4cd1acd713cca565bd34694b2df5aa3240d6ef8c8d178b6b36782cd46edd2",
+    "confirmed_pages": [
+      60,
+      70,
+      72
+    ],
+    "samples": [
+      "U+279C",
+      "U+2022"
+    ]
+  },
+  "results": [
+    {
+      "producer": "base",
+      "source": "321ab8f97791ecf58b56f178f49b7795a836fb79",
+      "status": "passed",
+      "pages": 103,
+      "minimum": "99.99",
+      "changes": [
+        {
+          "page": 74,
+          "before": "99.88",
+          "after": "100.00"
+        },
+        {
+          "page": 93,
+          "before": "99.97",
+          "after": "100.00"
+        }
+      ],
+      "losses": [],
+      "visual_manifest_sha256": "2ae18fff0023afe215793a51de715ca0f5a8ce2dd921eb112de224beca9fca42",
+      "tsv_sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3"
+    },
+    {
+      "producer": "candidate",
+      "source": "330af8608ac741b14041d3e372284a6111346b9c",
+      "status": "passed",
+      "pages": 103,
+      "minimum": "99.99",
+      "changes": [
+        {
+          "page": 74,
+          "before": "99.88",
+          "after": "100.00"
+        },
+        {
+          "page": 93,
+          "before": "99.97",
+          "after": "100.00"
+        }
+      ],
+      "losses": [],
+      "visual_manifest_sha256": "ae1150b152352f81b63f8abfb8e6c80874f8c549dabaf762b7f5034ab6472532",
+      "tsv_sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3"
+    }
+  ]
+}
