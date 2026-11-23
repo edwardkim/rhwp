@@ -74,3 +74,7 @@ Native의 함초롬바탕 조건은 2쪽 95.38% → 100.00%, 3쪽 95.71% → 100
 ## Merge 후 contributor PR comment 계획
 
 실제 통합 PR과 병합 SHA를 확인한 뒤 입증한 주장과 보정 범위를 존댓말로 안내한다. 같은 원본의 해당 쪽 review·overlay를 병합 SHA 고정 raw URL로 게시한다.
+
+## 통합 제출과 CI
+
+[통합 PR #9372](https://github.com/edwardkim/rhwp/pull/9372)의 코드 후보와 통과한 GitHub 검사는 [통합 검토 기록](pr_9372_review.md)에 정리했다.
