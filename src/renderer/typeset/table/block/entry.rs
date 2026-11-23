@@ -270,11 +270,8 @@ impl TypesetEngine {
                 // 빈 호스트도 현재 쪽의 점유다. 문자가 없다고 줄 높이까지 이월하지 않는다.
                 // 가시 호스트도 현재 쪽에서 한 번 소비하고 표만 다음 쪽으로 넘긴다.
                 // 기존 소비 표시를 사용해 출력 단계의 호스트 중복을 막는다.
-                // [#8997] 호스트 글줄은 먼저 현재 쪽에 낸다. 공백만 있는 호스트는 그린 높이가
-                // 없어 쪽 아래 띠와 겹치지 않고, 계획(`para_has_non_whitespace_text`)과 같은
-                // 기준으로 빈 호스트로도 인정한다.
-                if self.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
-                    || (!para_has_non_whitespace_text(para) && !host_precedes_inline)
+                if (!para_has_visible_text(para) && !host_precedes_inline)
+                    || self.pre_emit_deferred_host_lines(st, para_idx, para, composed_all, styles)
                 {
                     st.defer_stored_frame(crate::renderer::typeset::DeferredStoredFrameControl {
                         target_page: following_body.and_then(|(_, page)| page),
