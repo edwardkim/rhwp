@@ -32,6 +32,22 @@ last_verified: 2026-11-23
 #9372가 수용할 때도 90%에 미달했던 조건은 식품 자료 8쪽, 제주 자료 9쪽,
 소비자 물가 1쪽이며 같은 쪽의 수치를 유지했다.
 
+## 리베이스 뒤 작업 대상 전쪽 비교
+
+작업 대상 15문서의 2,413쪽을 Native와 fresh WASM 각각 독립 한컴 Print에 대조했다.
+전쪽 raw 최저는 Native 98.14%, fresh WASM 98.16%이며 98% 미만은 0쪽이다.
+다시 산출한 30개 전쪽 TSV는 해당 문서 절에 연결해 둔 TSV와 바이트가 모두 일치했다.
+
+같은 Print 조건의 devel과 후보 비교에서 2%p를 초과해 하락한 쪽은 없었다.
+PNG는 Native 2,374쪽, fresh WASM 2,352쪽이 일치했다. 원본 색 유지 옵션을 추가한
+입력은 양쪽이 지원하는 기본 Print 조건도 따로 대조했다. 사양서 Native의 기준은 원본 공급
+22개를 한 번에 등록할 때 메타파일 글꼴 바이트 한도에 도달했다. 사용 프로그램 21개를
+같은 순서로 공급한 대조에서 사양서 178쪽 PNG가 모두 일치했다. 후보의 22개 공급 조건은
+독립 Print와 178쪽을 전부 대조했다.
+
+- [Native 기준·후보 TSV](assets/issue7766/rebase-validation/targeted-native.tsv)
+- [fresh WASM 기준·후보 TSV](assets/issue7766/rebase-validation/targeted-wasm.tsv)
+
 ## 정본 보호 전쪽 비교
 
 [공식 글꼴 공급 자료](../verification/protected-font-supply/manifest.json)의 문서별 조건을
