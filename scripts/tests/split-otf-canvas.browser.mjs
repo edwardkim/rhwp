@@ -1,4 +1,4 @@
-// 실제 Chrome의 동일 family 분할 FontFace 선택 계약이다. 합성 글꼴만 사용한다.
+// 실제 Chrome의 동일 family 분할 FontFace 선택과 원본 OTF 공급을 검증한다.
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
 import {readFileSync, rmSync} from 'node:fs';
@@ -38,9 +38,9 @@ function boldProgram(bytes) {
 
 test('Chrome은 역순 등록된 CFF의 원래 후보 순서와 글리프별 fallback을 유지한다', async t => {
   const files = new Map([
-    ['/first.otf', ['application/octet-stream', remap('가', 900)]],
-    ['/overlap.otf', ['application/octet-stream', remap('가', 400)]],
-    ['/hangul.otf', ['application/octet-stream', remap('나', 700)]],
+    ['/first.woff2', ['font/woff2', readFileSync(join(root, 'assets/fonts/Happiness-Sans-Regular.woff2'))]],
+    ['/overlap.woff2', ['font/woff2', readFileSync(join(root, 'assets/fonts/Happiness-Sans-Title.woff2'))]],
+    ['/math.otf', ['font/otf', readFileSync(join(root, 'assets/fonts/LatinModernMath-VariableOutline-subset.otf'))]],
     ['/fallback.ttf', ['application/octet-stream', readFileSync(join(root, 'tests/fixtures/fonts/RHWPHostFixture-Regular.ttf'))]],
   ]);
   const server = createSweepServer(files, new Map());
@@ -52,8 +52,8 @@ test('Chrome은 역순 등록된 CFF의 원래 후보 순서와 글리프별 fal
   browser = await require('puppeteer-core').launch({executablePath: findChrome(process.env.VISUAL_SWEEP_CHROME), headless: true, userDataDir: profile});
   const page = await browser.newPage(); await page.goto(`http://127.0.0.1:${server.address().port}`);
   const result = await page.evaluate(async () => {
-    const programs = await Promise.all(['/first.otf', '/overlap.otf', '/hangul.otf', '/fallback.ttf'].map(async path => (await fetch(path)).arrayBuffer()));
-    for (const [family, bytes] of [['ReferenceFirst', programs[0]], ['ReferenceOverlap', programs[1]], ['ReferenceHangul', programs[2]],
+    const programs = await Promise.all(['/first.woff2', '/overlap.woff2', '/math.otf', '/fallback.ttf'].map(async path => (await fetch(path)).arrayBuffer()));
+    for (const [family, bytes] of [['ReferenceFirst', programs[0]], ['ReferenceOverlap', programs[1]], ['ReferenceMath', programs[2]],
       ['ReferenceTtf', programs[3]], ['Split', programs[2]], ['Split', programs[1]], ['Split', programs[0]],
       ['Mixed', programs[3]], ['Mixed', programs[0]]]) {
       const face = new FontFace(family, bytes); await face.load(); document.fonts.add(face);
@@ -61,17 +61,17 @@ test('Chrome은 역순 등록된 CFF의 원래 후보 순서와 글리프별 fal
     await document.fonts.ready;
     const canvas = document.createElement('canvas'); const ctx = canvas.getContext('2d');
     const measure = (family, text) => { ctx.font = `40px ${family}`; return ctx.measureText(text).width; };
-    return {first: measure('ReferenceFirst', '가'), overlap: measure('ReferenceOverlap', '가'),
-      hangul: measure('ReferenceHangul', '나'), splitFirst: measure('Split', '가'), splitHangul: measure('Split', '나'),
-      ttf: measure('ReferenceTtf', 'A'), mixedOtf: measure('Mixed', '가'), mixedTtf: measure('Mixed', 'A'),
-      aliasFallback: measure('ReferenceFirst, ReferenceHangul', '나')};
+    return {first: measure('ReferenceFirst', 'A'), overlap: measure('ReferenceOverlap', 'A'),
+      math: measure('ReferenceMath', 'ℎ'), splitFirst: measure('Split', 'A'), splitMath: measure('Split', 'ℎ'),
+      ttf: measure('ReferenceTtf', '😀'), mixedCff: measure('Mixed', 'A'), mixedTtf: measure('Mixed', '😀'),
+      aliasFallback: measure('ReferenceFirst, ReferenceMath', 'ℎ')};
   });
   assert.notEqual(result.first, result.overlap, '겹치는 글리프의 다른 폭으로 순서를 관측한다');
   assert.equal(result.splitFirst, result.first, JSON.stringify(result));
-  assert.equal(result.splitHangul, result.hangul, JSON.stringify(result));
-  assert.equal(result.mixedOtf, result.first, JSON.stringify(result));
+  assert.equal(result.splitMath, result.math, JSON.stringify(result));
+  assert.equal(result.mixedCff, result.first, JSON.stringify(result));
   assert.equal(result.mixedTtf, result.ttf, JSON.stringify(result));
-  assert.equal(result.aliasFallback, result.hangul, JSON.stringify(result));
+  assert.equal(result.aliasFallback, result.math, JSON.stringify(result));
 });
 
 test('fresh WASM은 단일 공급과 분할 OTF 배열을 모두 받아 누락 glyph의 전진을 갱신한다', async t => {
