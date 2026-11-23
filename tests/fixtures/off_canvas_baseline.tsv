@@ -75,3 +75,7 @@ issue8573/text-host-topbottom-line-below.hwp	1
 issue8573/whitespace-host-topbottom-line-below.hwp	1
 # #9239 신규 공개 샘플(고령자 취업지원 제도개선 30023, 한/글 Print 62쪽): 43쪽 문단 519 의 글자처럼 취급 표는 위 캡션이 285문단(5408px)이라 캡션 뒤쪽과 바깥 표(21×7)가 쪽 아래로 넘는다. 한 줄이라 나뉘지 않으며 한/글 Print 도 같다 — 기준 PDF 전체에 바깥 표의 글자(「이탈리아」)가 없고 43쪽에는 캡션 첫 문단의 표만 보인다. 수정 전(devel 411a9f944c)과 수정 후의 값이 같다.
 issue9239/senior-employment-policy-caption-float-table.hwp	223
+# #9323 열 삽입 공개 대조군. 한컴 PDF의 오른쪽 괘선은 595pt 용지에서 645.37pt까지 그려진다.
+# 같은 파일을 연 devel과 후보가 각각 표 1개(오른쪽 67.08px)를 검출했다. 글 다섯 항목은 모두 용지 안에 있다.
+semanticist21-20261123/merged-grid-column.hwp	1
+semanticist21-20261123/merged-grid-column.hwpx	1

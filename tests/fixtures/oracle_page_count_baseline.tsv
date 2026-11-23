@@ -740,3 +740,21 @@ samples/pr4093/outline_navigation_table_cell_number.hwpx	1	1
 samples/한글문서파일형식_5.0_revision1.3.hwp	71	71
 mydocs/pr/assets/issue7445/education-curriculum-map/1342000_edu_curriculum_map.hwp	415	415
 samples/issue6782/1480000-201900042-chemical-product-labeling-study.hwp	103	103
+# 표·주석·도형 17개 원본의 독립 한컴 인쇄. 합계 19쪽.
+samples/semanticist21-20261123/inline-shape.hwp	1	1
+samples/semanticist21-20261123/inline-shape.hwpx	1	1
+samples/semanticist21-20261123/merged-grid-column.hwp	1	1
+samples/semanticist21-20261123/merged-grid-column.hwpx	1	1
+samples/semanticist21-20261123/merged-grid-row.hwp	1	1
+samples/semanticist21-20261123/merged-grid-row.hwpx	1	1
+samples/semanticist21-20261123/merged-grid-source.hwp	1	1
+samples/semanticist21-20261123/merged-grid-source.hwpx	1	1
+samples/semanticist21-20261123/nested-table.hwp	1	1
+samples/semanticist21-20261123/nested-table.hwpx	1	1
+samples/semanticist21-20261123/shadow-presets.hwpx	1	1
+samples/semanticist21-20261123/single-row-resize.hwp	1	1
+samples/semanticist21-20261123/single-row-resize.hwpx	1	1
+samples/semanticist21-20261123/table-cell-notes.hwp	2	2
+samples/semanticist21-20261123/table-cell-notes.hwpx	2	2
+samples/semanticist21-20261123/textbox-notes.hwp	1	1
+samples/semanticist21-20261123/textbox-notes.hwpx	1	1

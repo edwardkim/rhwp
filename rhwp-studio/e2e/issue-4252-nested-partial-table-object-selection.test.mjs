@@ -59,7 +59,7 @@ runTest('#4252 재귀 분할 중첩 표 객체 선택 경로', async ({ page }) 
     const wasm = window.__wasm;
     if (!wasm?.doc) throw new Error('WASM document not loaded');
 
-    const tree = JSON.parse(wasm.doc.getPageLayerTree(4));
+    const tree = wasm.getPageLayerTreeObject(4, 'screen');
     let target = null;
     const visit = (value) => {
       if (!value || typeof value !== 'object' || target) return;

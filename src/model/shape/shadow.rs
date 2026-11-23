@@ -38,8 +38,16 @@ pub(crate) fn to_hwpx(kind: u32) -> &'static str {
     HWPX_NAMES.get(kind as usize).copied().unwrap_or("NONE")
 }
 
+/// 평행·작게·크게 그림자의 기본 이동량(HWPUNIT). 저장 offset은 이 값에 부호를 보존해 더한다.
+const PRESET_HU: f64 = 600.0;
+/// 한/글 12.30 화면에서 잰 작게·크게 그림자의 배율.
+const NARROW_SCALE: f64 = 0.75;
+const ENLARGE_SCALE: f64 = 1.25;
+/// 기울임 그림자는 본체 높이의 반이고, 먼 변이 본체 높이의 9/16만큼 옆으로 밀린다(한/글 12.30 화면에서 잰 값).
+const SHEAR_HEIGHT: f64 = 0.5;
+const SHEAR_SLOPE: f64 = 0.5625;
+
 /// 평행 그림자의 기본 이동량. 저장 offset은 이 값에 부호를 보존해 더한다.
-/// 다른 계열의 기울임·원근·배율을 단순 이동으로 대체하지 않는다.
 pub(crate) fn parallel_preset_hu(kind: u32) -> Option<(i32, i32)> {
     match kind {
         1 => Some((-600, -600)),
@@ -50,12 +58,81 @@ pub(crate) fn parallel_preset_hu(kind: u32) -> Option<(i32, i32)> {
     }
 }
 
-/// 독립 개체의 선언 원점은 본체와 그림자를 합친 외곽의 왼쪽 위다.
+/// 본체 상자(x, y, w, h) 위의 점을 그림자 자리로 옮기는 아핀 행렬 `[a, b, c, d, e, f]`
+/// (x' = a·x + c·y + e, y' = b·x + d·y + f). `unit`은 HWPUNIT 하나의 길이, `offset`은 저장 offset이다.
+/// 평행은 이동, 작게·크게는 왼쪽 위·오른쪽 아래 모서리를 기준으로 줄이고 늘린 뒤 왼쪽 위로 옮기며,
+/// 기울임은 아래 변에서 위(뒤쪽 그림자) 또는 아래(앞쪽 그림자, 상하로 뒤집힘)로 반 높이만큼 눕힌다.
+/// 원근(9~12)은 한/글 Mac에서 고를 수 없고 단순 이동으로 대체하지 않으므로 None이다.
+pub fn matrix(
+    kind: u32,
+    [x, y, w, h]: [f64; 4],
+    unit: f64,
+    (offset_x, offset_y): (f64, f64),
+) -> Option<[f64; 6]> {
+    let d = PRESET_HU * unit;
+    let bottom = y + h;
+    let m = match kind {
+        1..=4 => {
+            let (px, py) = parallel_preset_hu(kind)?;
+            [
+                1.0,
+                0.0,
+                0.0,
+                1.0,
+                f64::from(px) * unit,
+                f64::from(py) * unit,
+            ]
+        }
+        13 | 14 => {
+            let (s, ax, ay) = if kind == 13 {
+                (NARROW_SCALE, x, y)
+            } else {
+                (ENLARGE_SCALE, x + w, bottom)
+            };
+            [s, 0.0, 0.0, s, ax - s * ax - d, ay - s * ay - d]
+        }
+        5..=8 => {
+            // 5 왼쪽 위, 6 오른쪽 위, 7 왼쪽 아래, 8 오른쪽 아래
+            let c = if matches!(kind, 5 | 7) {
+                SHEAR_SLOPE
+            } else {
+                -SHEAR_SLOPE
+            };
+            let dy = if kind <= 6 {
+                SHEAR_HEIGHT
+            } else {
+                -SHEAR_HEIGHT
+            };
+            [1.0, 0.0, c, dy, -c * bottom, bottom - dy * bottom]
+        }
+        _ => return None,
+    };
+    let m = [m[0], m[1], m[2], m[3], m[4] + offset_x, m[5] + offset_y];
+    m.iter().all(|v| v.is_finite()).then_some(m)
+}
+
+/// 행렬로 옮긴 상자의 외곽(x, y, w, h).
+pub fn transformed_box(m: [f64; 6], [x, y, w, h]: [f64; 4]) -> [f64; 4] {
+    let corners = [(x, y), (x + w, y), (x, y + h), (x + w, y + h)]
+        .map(|(px, py)| (m[0] * px + m[2] * py + m[4], m[1] * px + m[3] * py + m[5]));
+    let min_x = corners.iter().map(|p| p.0).fold(f64::INFINITY, f64::min);
+    let min_y = corners.iter().map(|p| p.1).fold(f64::INFINITY, f64::min);
+    let max_x = corners
+        .iter()
+        .map(|p| p.0)
+        .fold(f64::NEG_INFINITY, f64::max);
+    let max_y = corners
+        .iter()
+        .map(|p| p.1)
+        .fold(f64::NEG_INFINITY, f64::max);
+    [min_x, min_y, max_x - min_x, max_y - min_y]
+}
+
+/// 독립 개체의 선언 원점은 본체와 그림자를 합친 외곽의 왼쪽 위다(한/글 12.30 화면에서 확인).
+/// 본체를 원점에서 얼마나 밀어야 하는지(HWPUNIT) 돌려준다.
 /// 묶음 자식의 renderingInfo 원점과는 별개의 배치 계약이다.
-pub(crate) fn parallel_body_origin_hu(kind: u32, x: i32, y: i32) -> Option<(f64, f64)> {
-    let (base_x, base_y) = parallel_preset_hu(kind)?;
-    Some((
-        (-(f64::from(base_x) + f64::from(x))).max(0.0),
-        (-(f64::from(base_y) + f64::from(y))).max(0.0),
-    ))
+pub fn body_origin_hu(kind: u32, x: i32, y: i32, w: f64, h: f64) -> Option<(f64, f64)> {
+    let m = matrix(kind, [0.0, 0.0, w, h], 1.0, (f64::from(x), f64::from(y)))?;
+    let [sx, sy, _, _] = transformed_box(m, [0.0, 0.0, w, h]);
+    Some(((-sx).max(0.0), (-sy).max(0.0)))
 }
