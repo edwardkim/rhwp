@@ -426,10 +426,9 @@ CDP `SystemInfo.getInfo`의 `gpu.featureStatus`를 함께 확인한다. 소프�
 `VISUAL_SWEEP_CHROME`의 실행 wrapper에 `--disable-gpu`를 지정하고 base와 후보를 같은 조건으로
 다시 산출한다. 원 GPU 결과도 보존하며 다른 실행의 쪽별 최고값을 합치지 않는다.
 
-공용 `target/pr-review`에서 base/head를 순차 빌드하면 각 실행 파일·WASM package를 별도
-output 경로에 고정하고 source·build 명령·파일 SHA를 기록한다. 빠른 Cargo 성공만으로
-producer를 확정하지 않는다. 실제 변경 경계의 출력으로 확인하고 잘못 복사한 산출물의 결과는
-무효로 구분한 뒤 재검증한다. 공유 target 전체를 삭제해 해결하지 않는다.
+기준·후보 빌드의 고정과 재사용은 [최신 devel 비교용 빌드 보존](../pr_review/local_validation.md#최신-devel-비교용-빌드-보존)을
+따른다. 로컬 `devel`이 최신 `upstream/devel`과 일치하면 기본 작업공간에서 빌드하고 기준을 `output`에
+고정한다. 실제 변경 경계의 출력으로 각 산출물의 소유를 확인한 뒤 시각 비교에 사용한다.
 
 ### macOS 외부 연결 그림 공급
 

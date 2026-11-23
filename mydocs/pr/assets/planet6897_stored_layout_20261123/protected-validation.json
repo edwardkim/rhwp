@@ -1,0 +1,1145 @@
+{
+  "source": "330af8608ac741b14041d3e372284a6111346b9c",
+  "base": "321ab8f97791ecf58b56f178f49b7795a836fb79",
+  "producers": {
+    "native": "a0f743ede058a75dbcefcf901e511ec9f7068e02eaa0977f1036e9a5ac79338d",
+    "wasm": "117cfdcbed3132b2a417fd9dccd74e1b16fb5b2f4f037677a2da0f38415d9259",
+    "wasm_js": "d2d2b445cf853cf162c7664288fe34f4bb1468f0fba5512cbe79441bb53345b2"
+  },
+  "previous_protected_tsv_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "status": "passed",
+  "datasets": 46,
+  "pages": 4046,
+  "declines": [],
+  "records": [
+    {
+      "key": "yeongwol",
+      "backend": "native",
+      "document_id": "0b7e7d0538284271",
+      "pages": 4,
+      "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/yeongwol/native/silhouette.tsv",
+        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "yeongwol",
+      "backend": "wasm",
+      "document_id": "0b7e7d0538284271",
+      "pages": 4,
+      "input_sha256": "6d723789148699479983fbcb6fa6368a252c1187fe0a7b3c922b583f6727ec09",
+      "reference_pdf_sha256": "a04da624238d77da4832dd302017c7d2f559a01da02e4c1b4ae12cfd3f77b123",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/yeongwol/wasm/silhouette.tsv",
+        "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-body-list-typed",
+      "backend": "native",
+      "document_id": "2b43ec3782a748e1",
+      "pages": 1,
+      "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-body-list-typed/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-body-list-typed",
+      "backend": "wasm",
+      "document_id": "2b43ec3782a748e1",
+      "pages": 1,
+      "input_sha256": "ebe04aa214d85ca3f472083ae749f534de446ecf6f58eec532a6c2149839e687",
+      "reference_pdf_sha256": "d4c80383b977a0f61e057adadb9f302d591bbb26e0917c61128ee36d37aed5b3",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-body-list-typed/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "handbook-hwp",
+      "backend": "native",
+      "document_id": "2fb2575d58042dcf",
+      "pages": 383,
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.97",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/handbook-hwp/native/silhouette.tsv",
+        "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "handbook-hwp",
+      "backend": "wasm",
+      "document_id": "2fb2575d58042dcf",
+      "pages": 383,
+      "input_sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+      "reference_pdf_sha256": "3cdf329004cffad0ebacd122586e5e1702aff36b3015cbcb401d038857019593",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.96",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/handbook-hwp/wasm/silhouette.tsv",
+        "sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "native",
+      "document_id": "4314830495cfde87",
+      "pages": 1,
+      "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-helvetica-styles/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "document_id": "4314830495cfde87",
+      "pages": 1,
+      "input_sha256": "2095908091871ec5ff78c4bd225779029646258bfd543e4e6afde7f36550f7da",
+      "reference_pdf_sha256": "fd8672dcb24dd7bb1d50983b0545033e7c2513bbb2ecfc48edde1cb4e77058ba",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-helvetica-styles/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "native",
+      "document_id": "43c0a207f6daa0bb",
+      "pages": 64,
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample16-hwpx/native/silhouette.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "document_id": "43c0a207f6daa0bb",
+      "pages": 64,
+      "input_sha256": "49e3e809eb41e22b2c059383db32b0cf038787269b5c523d1ff59d1a52b4340c",
+      "reference_pdf_sha256": "be4a0286d3ad5209a1a0787fd4ff691e110ddbcf7bde3a52a4547958e452a1ee",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample16-hwpx/wasm/silhouette.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "document_id": "4bac5a5d1702df5f",
+      "pages": 64,
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample16-hwp2022/native/silhouette.tsv",
+        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "document_id": "4bac5a5d1702df5f",
+      "pages": 64,
+      "input_sha256": "fec3671c9a83cb8388cbdaab38754cb17a8da54d0314ca7e3f56860e871506fe",
+      "reference_pdf_sha256": "c4e05635726869d737f1640db4e4f29c868df9e1c31e350b0b06e115fd210b33",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample16-hwp2022/wasm/silhouette.tsv",
+        "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-re-03-latin",
+      "backend": "native",
+      "document_id": "52ee61fe7201e36b",
+      "pages": 1,
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-re-03-latin/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-re-03-latin",
+      "backend": "wasm",
+      "document_id": "52ee61fe7201e36b",
+      "pages": 1,
+      "input_sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+      "reference_pdf_sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-re-03-latin/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "native",
+      "document_id": "59f6ab1155623bda",
+      "pages": 1,
+      "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/angle-narrow/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "wasm",
+      "document_id": "59f6ab1155623bda",
+      "pages": 1,
+      "input_sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+      "reference_pdf_sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/angle-narrow/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "outline",
+      "backend": "native",
+      "document_id": "69bcf084e2ae31a5",
+      "pages": 9,
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/outline/native/silhouette.tsv",
+        "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "outline",
+      "backend": "wasm",
+      "document_id": "69bcf084e2ae31a5",
+      "pages": 9,
+      "input_sha256": "28a60bd05e152fd5292bdc8b75c6dbd980a04375c0d8890b752e32017fd1731d",
+      "reference_pdf_sha256": "0b176d3020e89d6a896b4efcab87bb9683298ea10b8593ad799bf99009668acb",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/outline/wasm/silhouette.tsv",
+        "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "issue8040-insert",
+      "backend": "native",
+      "document_id": "71f98206e45c354a",
+      "pages": 4,
+      "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/issue8040-insert/native/silhouette.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "document_id": "71f98206e45c354a",
+      "pages": 4,
+      "input_sha256": "3c3ff50b430c3129a4ce06575b1a398d01fbd4ec17d9dd895f467a945f656e82",
+      "reference_pdf_sha256": "d368c0ded6f0d9309784e9165aad7360b326a86c01d9938beb95c768ae0d4e74",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/issue8040-insert/wasm/silhouette.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "nested",
+      "backend": "native",
+      "document_id": "78e1720edfe2277d",
+      "pages": 17,
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.98",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/nested/native/silhouette.tsv",
+        "sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "document_id": "78e1720edfe2277d",
+      "pages": 17,
+      "input_sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+      "reference_pdf_sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/nested/wasm/silhouette.tsv",
+        "sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1"
+      },
+      "losses": [],
+      "increases": [
+        {
+          "page": 2,
+          "previous": "99.99",
+          "current": "100.00"
+        },
+        {
+          "page": 7,
+          "previous": "99.99",
+          "current": "100.00"
+        },
+        {
+          "page": 17,
+          "previous": "99.98",
+          "current": "100.00"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "native",
+      "document_id": "7df4af8174abd82a",
+      "pages": 64,
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample16-hwp2024/native/silhouette.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "document_id": "7df4af8174abd82a",
+      "pages": 64,
+      "input_sha256": "f737ee22888b0a11171622b3e1c12d71d0f42cf066f729d3c98dde9ca6cc122d",
+      "reference_pdf_sha256": "62745aebf90af452bf278f8cfb97c4d523e854496a998279d0e88c7a9a3d9c9b",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample16-hwp2024/wasm/silhouette.tsv",
+        "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "handbook-hwpx",
+      "backend": "native",
+      "document_id": "941fe0c3549c0017",
+      "pages": 383,
+      "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.97",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/handbook-hwpx/native/silhouette.tsv",
+        "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "handbook-hwpx",
+      "backend": "wasm",
+      "document_id": "941fe0c3549c0017",
+      "pages": 383,
+      "input_sha256": "c6dd7e847a99f219681afc5a29c80a9665c04df9cda4d820a3350d739664fdf6",
+      "reference_pdf_sha256": "299cb2d994bba8b63f78b681bd74580286e298f25689b4ff4f40c66c54bfa85e",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "99.96",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/handbook-hwpx/wasm/silhouette.tsv",
+        "sha256": "42d98e13b63b2cdaa6b49f2b313e53fd2b281214a5b4b46caeabc92ab186b97a"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "issue7905",
+      "backend": "native",
+      "document_id": "a8e95b4accc79fa8",
+      "pages": 6,
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "98.86",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/issue7905/native/silhouette.tsv",
+        "sha256": "f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893"
+      },
+      "losses": [],
+      "increases": [],
+      "font_supply": "recorded automatic local and web",
+      "same_base_candidate_png": 6,
+      "same_base_candidate_render_tree": 6
+    },
+    {
+      "key": "issue7905",
+      "backend": "wasm",
+      "document_id": "a8e95b4accc79fa8",
+      "pages": 6,
+      "input_sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
+      "reference_pdf_sha256": "1ce35eb7e2d6f93e41834215d6cf7653e3a09ea2fc544856b3df3a89e6d24511",
+      "compat": "2024",
+      "dpi": 96,
+      "minimum": "98.86",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/issue7905/wasm/silhouette.tsv",
+        "sha256": "2bffc1537a24f58a1447d9211be6c987290b133882b6336c97ac762d6a222c56"
+      },
+      "losses": [],
+      "increases": [],
+      "font_supply": "recorded automatic local and web",
+      "same_base_candidate_png": 6,
+      "same_base_candidate_render_tree": 6,
+      "registered_programs": [
+        {
+          "pages": "p0001-0001",
+          "loaded_programs": [
+            {
+              "family": "굴림",
+              "registeredFamily": "굴림",
+              "sourceSha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "Gulim",
+              "registeredFamily": "Gulim",
+              "sourceSha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한컴바탕",
+              "registeredFamily": "한컴바탕",
+              "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+              "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "Haansoft Batang",
+              "registeredFamily": "Haansoft Batang",
+              "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+              "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "바탕",
+              "registeredFamily": "바탕",
+              "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+              "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "Batang",
+              "registeredFamily": "Batang",
+              "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+              "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한양견고딕",
+              "registeredFamily": "한양견고딕",
+              "sourceSha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "sha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "HY Gyeongothic",
+              "registeredFamily": "HY Gyeongothic",
+              "sourceSha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "sha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한양신명조",
+              "registeredFamily": "한양신명조",
+              "sourceSha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "HY Sinmyeongjo",
+              "registeredFamily": "HY Sinmyeongjo",
+              "sourceSha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한양중고딕",
+              "registeredFamily": "한양중고딕",
+              "sourceSha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "HY Junggothic",
+              "registeredFamily": "HY Junggothic",
+              "sourceSha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            }
+          ]
+        },
+        {
+          "pages": "p0002-0006",
+          "loaded_programs": [
+            {
+              "family": "굴림",
+              "registeredFamily": "굴림",
+              "sourceSha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "Gulim",
+              "registeredFamily": "Gulim",
+              "sourceSha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "sha256": "6ff0f49540efc2a6fd980d95e3d930635635b082dd1c10d31fe81b7971d7fdab",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한컴바탕",
+              "registeredFamily": "한컴바탕",
+              "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+              "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "Haansoft Batang",
+              "registeredFamily": "Haansoft Batang",
+              "sourceSha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+              "sha256": "d10501295740bc29bf5a8fe3eb8fad1903ef63a54aa77c6cc744a609f3a627cf",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "바탕",
+              "registeredFamily": "바탕",
+              "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+              "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "Batang",
+              "registeredFamily": "Batang",
+              "sourceSha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+              "sha256": "3eadb23023f4d8a4947b7f49bc3cd12f1ac43cd03bd07cc6c22fecf21d46bb3a",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [
+                "cmap-format4-terminal-notdef",
+                "drop-embedded-bitmap-strikes"
+              ],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한양견고딕",
+              "registeredFamily": "한양견고딕",
+              "sourceSha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "sha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "HY Gyeongothic",
+              "registeredFamily": "HY Gyeongothic",
+              "sourceSha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "sha256": "f8c6dadbbeafc534b9c62eb1fb390a207a322f682b1542abd11f70a2f1826ee3",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한양신명조",
+              "registeredFamily": "한양신명조",
+              "sourceSha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "HY Sinmyeongjo",
+              "registeredFamily": "HY Sinmyeongjo",
+              "sourceSha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "sha256": "97cf924058802123f52b26e365f5d9bfe35d379cb4ccab688285179e8e39b3f2",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "한양중고딕",
+              "registeredFamily": "한양중고딕",
+              "sourceSha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            },
+            {
+              "family": "HY Junggothic",
+              "registeredFamily": "HY Junggothic",
+              "sourceSha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "sha256": "be6bb7a453d15aa9aebe230925fff89641b1cea1331db880257d087f6939c81c",
+              "faceIndex": 0,
+              "weight": 400,
+              "style": "normal",
+              "repairs": [],
+              "sourceKind": "external"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "key": "sample10",
+      "backend": "native",
+      "document_id": "b1a9055c4c7e6f09",
+      "pages": 763,
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.57",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample10/native/silhouette.tsv",
+        "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd"
+      },
+      "losses": [],
+      "increases": [],
+      "font_supply": "recorded automatic local and web",
+      "same_base_candidate_png": 763,
+      "same_base_candidate_render_tree": 763
+    },
+    {
+      "key": "sample10",
+      "backend": "wasm",
+      "document_id": "b1a9055c4c7e6f09",
+      "pages": 763,
+      "input_sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
+      "reference_pdf_sha256": "310e3251e910ac8c7c6f34d0e50d85c4a0ecbbadd65e69fe4f5071370931a918",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.57",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/sample10/wasm/silhouette.tsv",
+        "sha256": "f0ff5f22ed2dfb65f1063f73a3b80fad44ba4f331d714a4acc16657628498de5"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "native",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "pages": 4,
+      "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/issue8040-insert-delete/native/silhouette.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "pages": 4,
+      "input_sha256": "fe0953499311b5be82c85560a92a35c26ea6be3ee0b9f64460d111b3313dc8ee",
+      "reference_pdf_sha256": "84704f8c2cccf955379c648ea7d9dbf04242e6c4fb2620e37d87ac004b7a330d",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/issue8040-insert-delete/wasm/silhouette.tsv",
+        "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "native",
+      "document_id": "cdacd874b6e6ac66",
+      "pages": 1,
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-pic-crop-01/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "document_id": "cdacd874b6e6ac66",
+      "pages": 1,
+      "input_sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+      "reference_pdf_sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-pic-crop-01/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "native",
+      "document_id": "d03a9dde3d5dc7ac",
+      "pages": 1,
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-shape-group-02/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "wasm",
+      "document_id": "d03a9dde3d5dc7ac",
+      "pages": 1,
+      "input_sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+      "reference_pdf_sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/seo-shape-group-02/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "chemical",
+      "backend": "native",
+      "document_id": "870eabd0a7d9534c",
+      "pages": 103,
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/native/silhouette.tsv",
+        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3"
+      },
+      "losses": [],
+      "increases": [
+        {
+          "page": 74,
+          "previous": "99.88",
+          "current": "100.00"
+        },
+        {
+          "page": 93,
+          "previous": "99.97",
+          "current": "100.00"
+        }
+      ]
+    },
+    {
+      "key": "chemical",
+      "backend": "wasm",
+      "document_id": "870eabd0a7d9534c",
+      "pages": 103,
+      "input_sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",
+      "reference_pdf_sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.99",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/chemical/wasm/silhouette.tsv",
+        "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3"
+      },
+      "losses": [],
+      "increases": [
+        {
+          "page": 74,
+          "previous": "99.88",
+          "current": "100.00"
+        },
+        {
+          "page": 93,
+          "previous": "99.97",
+          "current": "100.00"
+        }
+      ]
+    },
+    {
+      "key": "spec13",
+      "backend": "native",
+      "document_id": "3298ed895b9a645c",
+      "pages": 71,
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.92",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/spec13/native/silhouette.tsv",
+        "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "spec13",
+      "backend": "wasm",
+      "document_id": "3298ed895b9a645c",
+      "pages": 71,
+      "input_sha256": "f21edf2138e134702366f2fb6a2ab082b05c6dcb42216ec4fa2575ed292efd1d",
+      "reference_pdf_sha256": "1d1da9e6fe22563ae2c5285bbbfc6762974fb7f002278084cbc11e5266bdc782",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.92",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/spec13/wasm/silhouette.tsv",
+        "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "outline-demo",
+      "backend": "native",
+      "document_id": "6456507d769ec90b",
+      "pages": 3,
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/outline-demo/native/silhouette.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "outline-demo",
+      "backend": "wasm",
+      "document_id": "6456507d769ec90b",
+      "pages": 3,
+      "input_sha256": "90e7442874bee1e5f774287b38323ed556e241539c783e100d0b7b93631aa6b4",
+      "reference_pdf_sha256": "c24e248c56bad280219bbd32f59fc6f07a3895fb5146b225c9ae4f9e4ac662be",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/outline-demo/wasm/silhouette.tsv",
+        "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "decree",
+      "backend": "native",
+      "document_id": "61c6ae96913006c5",
+      "pages": 74,
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.98",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/decree/native/silhouette.tsv",
+        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "decree",
+      "backend": "wasm",
+      "document_id": "61c6ae96913006c5",
+      "pages": 74,
+      "input_sha256": "5090e9d20ce75814febeb4b79e106ea6abfd2546e511f229900d137d42623617",
+      "reference_pdf_sha256": "367fb3749f571521eef2036fe4327ce5b9cf6b7728966257328c1144f08ff8c9",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "99.98",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/decree/wasm/silhouette.tsv",
+        "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "native",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "pages": 1,
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/outline-minimal/native/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "pages": 1,
+      "input_sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c",
+      "reference_pdf_sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81",
+      "compat": "2022",
+      "dpi": 96,
+      "minimum": "100.00",
+      "tsv": {
+        "path": "mydocs/pr/assets/planet6897_stored_layout_20261123/protected/outline-minimal/wasm/silhouette.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      },
+      "losses": [],
+      "increases": []
+    }
+  ]
+}

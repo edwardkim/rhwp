@@ -185,3 +185,8 @@ issue8891/1480000-201900510_facility_pollution_study.hwp	1
 [2027] 온새미로 1 본교재.hwpx	0
 issue1891/86712_regulatory_analysis.hwpx	0
 복학원서.hwp	0
+# #9353 신규 공개 샘플(의왕시 조례 별표 5 변속차로의 최소길이, 한컴 2024 Print 3쪽, 전쪽 Native 최저 96.84 / fresh WASM 96.89):
+# 음수 줄간격(줄 높이 1200HU, 줄간격 -240HU) 두 줄 칸 6개의 두 글줄 상자가 저장대로 3.2px(=240HU) 겹친다(첫 줄이 두 런인 칸은
+# 2건). 한컴 Print도 둘째 줄을 첫 줄 아래 960HU에 둔다. 수정 전(devel 17b17c934b) 6건은 행 37 칸(2쪽 끝, 2건)이 쪽 사이에서
+# 나뉘어 빠진 값이다.
+issue9353/uiwang_lane_min_length.hwp	8

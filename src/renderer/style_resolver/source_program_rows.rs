@@ -8,12 +8,15 @@ pub(crate) enum SourceProgramRowOwner {
     DeclaredTrueType,
     /// 유형 미상의 HWP5 등은 대체 프로그램이 저장 줄 전체를 재현해야 한다.
     StoredFallback(Box<ResolvedCharStyle>),
+    /// 언어 슬롯에 실제 대체 프로그램과 그 자연 전진을 명시했다.
+    ScopedNaturalReplacement,
 }
 
 pub(super) fn refresh_with_storage<S: storage::Storage>(
     doc_info: &DocInfo,
     styles: &mut ResolvedStyleSet,
     declared_hwpx_ttf: bool,
+    environment: Option<&super::super::font_environment::FontEnvironment>,
     storage: &S,
 ) -> Result<(), S::Error> {
     let trace = std::env::var("RHWP_DIAG_SOURCE_PROGRAM").ok();
@@ -21,7 +24,8 @@ pub(super) fn refresh_with_storage<S: storage::Storage>(
     // #8639의 양방향 한컴 Print와 구판/현재 HWPX의 독립 0→8 Print 대조:
     // 0x08이면 같은 가로 상자의 저장 줄을 유지한다. 대체 선언의 유무가
     // HWPX의 명시적 TTF를 이 정책에서 제외하는 조건은 아니다.
-    if doc_info.track_change_flags() & TRACK_CHANGE_KEEPS_STORED_ROWS != 0 {
+    let keep_stored_rows = doc_info.track_change_flags() & TRACK_CHANGE_KEEPS_STORED_ROWS != 0;
+    if keep_stored_rows && !environment.is_some_and(|env| env.has_scoped_natural_replacements()) {
         return Ok(());
     }
     let dpi = styles.resolved_dpi.unwrap_or(96.0);
@@ -57,13 +61,33 @@ pub(super) fn refresh_with_storage<S: storage::Storage>(
                 continue;
             };
             let primary = primary_font_name(style.font_family_for_lang(language));
+            if !font.is_embedded
+                && style.font_families_natural_program_metrics[language]
+                && environment.is_some_and(|env| {
+                    env.has_scoped_natural_replacement(
+                        &font.name,
+                        language,
+                        shape.font_ids[language],
+                    )
+                })
+            {
+                storage.insert_map(
+                    std::sync::Arc::make_mut(&mut styles.source_program_projection_slots),
+                    (shape_id as u32, language),
+                    SourceProgramRowOwner::ScopedNaturalReplacement,
+                )?;
+                continue;
+            }
             if trace
                 .as_ref()
                 .is_some_and(|filter| filter == "all" || font.name.contains(filter))
             {
                 eprintln!("SOURCE_PROGRAM shape={shape_id} lang={language} declared_hwpx_ttf={declared_hwpx_ttf} source={:?} primary={primary:?} alt={} subst={:?} metric={:?} original_glyph={:?} trusted={} verified={} source_ttf={}", font.name, font.alt_type, font.subst_font.as_ref().map(|subst| (subst.font_type, &subst.face)), style.metric_face_for_lang(language), style.original_glyph_metric_face_for_lang(language), style.font_metric_trusted_for_lang(language), super::super::layout::verified_source_projection_face(primary, style.bold, style.italic), style.source_ttf_for_lang(language));
             }
-            if font.alt_type != 1
+            // 원본을 열 때의 캐시 보존은 명시적으로 바꾼 슬롯의 자연 전진
+            // 선택과 별도다. 나머지 슬롯은 변경 추적의 원래 정책을 따른다.
+            if keep_stored_rows
+                || font.alt_type != 1
                 || font.is_embedded
                 || font.native_program.is_some()
                 || (primary != font.name.trim()

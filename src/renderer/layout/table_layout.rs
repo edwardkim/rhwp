@@ -2555,6 +2555,20 @@ fn stored_text_paragraphs_share_vpos_frame(
     })
 }
 
+/// 다음 저장 줄이 앞 줄의 음수 줄 간격 전진(줄 높이 + 줄 간격)에 정확히 놓였는가.
+/// 앞 줄 바닥보다 위지만 앞 줄이 스스로 저장한 걸음이므로 되감김이 아니다.
+fn stored_line_advance_is_negative_step(
+    previous: &crate::model::paragraph::LineSeg,
+    next: &crate::model::paragraph::LineSeg,
+) -> bool {
+    previous.line_spacing < 0
+        && previous.line_height + previous.line_spacing >= 0
+        && i64::from(next.vertical_pos)
+            == i64::from(previous.vertical_pos)
+                + i64::from(previous.line_height)
+                + i64::from(previous.line_spacing)
+}
+
 /// 원본 셀의 변경되지 않은 글줄 사이에서 확인한 물리 프레임 되감김.
 /// 빈 문단도 저장 줄 상자를 소유하며 실제 프레임을 닫을 수 있다.
 /// 양수 원점은 원본 간격과 공유 셀 좌표계의 인증을 함께 소비한다.
@@ -17597,6 +17611,11 @@ impl LayoutEngine {
                 cur.vertical_pos >= 0
                     && prev_end > 0
                     && cur.vertical_pos < prev_end
+                    // [#9353] 음수 저장 줄 간격의 전진(줄 높이 + 줄 간격)에 정확히 놓인 다음 줄은
+                    // 앞 줄이 스스로 저장한 평범한 한 걸음이다. 칸 전체의 겹침 사다리 판정(걸음
+                    // 셋 이상)이 서지 않는 칸 — 같은 자리에 겹쳐 적은 두 줄(ls = −lh), 두 줄 문단이
+                    // 드문 칸(lh 900·ls −92) — 에서도 이 걸음을 저장 쪽 되감김으로 읽지 않는다.
+                    && !stored_line_advance_is_negative_step(prev, cur)
                     // [#5585] 문단 안 줄에도 같은 계약 — 앞 줄 시작보다 뒤로 가야 되감김이다.
                     && (!cell_uses_overlapping_line_boxes
                         || cur.vertical_pos < prev.vertical_pos

@@ -1,0 +1,558 @@
+{
+  "base": "e7b45a7a71e9d038bd137a9dc2ac3ef37e0ac2e5",
+  "base_producer": "54d6aca1d7381900688b6bcd1292e892cd1a9bf6",
+  "head": "b8baf0bc29bfbcff1aed9eb6c44982c71242d4d1",
+  "claims": [
+    {
+      "pr": 9363,
+      "backend": "native",
+      "pages": 18,
+      "minimum_candidate_raw": "57.54",
+      "claims": [
+        {
+          "page": 12,
+          "base_raw": "61.04",
+          "candidate_raw": "99.85",
+          "files": {
+            "raw": {
+              "path": "pr-9363/consumer-price/native/raw-012.png",
+              "sha256": "01659f3b96d367d65caec6fa346d3222f1c64e58ac6a346f8e6f2ca813e0a4f2"
+            },
+            "pdf": {
+              "path": "pr-9363/consumer-price/native/pdf-012.png",
+              "sha256": "ac6a53c0ab8bd3f330aa111b6d4541163b6f90fc19c3094e54c0cda89d6dbcc9"
+            },
+            "review": {
+              "path": "pr-9363/consumer-price/native/review-012.png",
+              "sha256": "74b2b7e86dbfe275dbfb258e2a2c1e3434e5dbf0b4507687ffbd4b0910595940"
+            },
+            "overlay": {
+              "path": "pr-9363/consumer-price/native/overlay-012.png",
+              "sha256": "4f1c70db017925b2c2b0a783a49a3cf78bbd321f00fc1b9cb7dc3000de1f9286"
+            }
+          }
+        },
+        {
+          "page": 18,
+          "base_raw": "30.20",
+          "candidate_raw": "99.81",
+          "files": {
+            "raw": {
+              "path": "pr-9363/consumer-price/native/raw-018.png",
+              "sha256": "667873b1b23b7e0aff053eb8a8b7001a1c3a5d12c4769ce4240bddd04dc61f3d"
+            },
+            "pdf": {
+              "path": "pr-9363/consumer-price/native/pdf-018.png",
+              "sha256": "a0f89b869eca7bbeb55501191fd42487d7b6703d353e46533bd754c15e839584"
+            },
+            "review": {
+              "path": "pr-9363/consumer-price/native/review-018.png",
+              "sha256": "548202952d4a45a5aa0a8a78e53b62c0be9c34f6ff2a6dc39ce9a1956720b3c2"
+            },
+            "overlay": {
+              "path": "pr-9363/consumer-price/native/overlay-018.png",
+              "sha256": "2b56b68dda12f6fcc6e479cae4ba3ecaed4a406f2f114f2adc31284bd7271dd6"
+            }
+          }
+        }
+      ],
+      "declines": [],
+      "changed_pages": [
+        12,
+        18
+      ],
+      "tsv": [
+        {
+          "name": "base-silhouette.tsv",
+          "sha256": "ceb2d74a1652ec76314f563347a944e71a5149a8a54d7c40ab9e8fb42cd24863",
+          "pages": 18
+        },
+        {
+          "name": "silhouette.tsv",
+          "sha256": "017e9dbecac05e9d4cb9ade3efb2a46b92939c3aa0a71479c10a83a9d84f7265",
+          "pages": 18
+        }
+      ]
+    },
+    {
+      "pr": 9363,
+      "backend": "wasm",
+      "pages": 18,
+      "minimum_candidate_raw": "57.52",
+      "claims": [
+        {
+          "page": 12,
+          "base_raw": "61.33",
+          "candidate_raw": "99.82",
+          "files": {
+            "raw": {
+              "path": "pr-9363/consumer-price/wasm/raw-012.png",
+              "sha256": "dacfddcc51fa9d265820fa409701a2ae40363b87e6e13776b3112b893a941f80"
+            },
+            "pdf": {
+              "path": "pr-9363/consumer-price/wasm/pdf-012.png",
+              "sha256": "ac6a53c0ab8bd3f330aa111b6d4541163b6f90fc19c3094e54c0cda89d6dbcc9"
+            },
+            "review": {
+              "path": "pr-9363/consumer-price/wasm/review-012.png",
+              "sha256": "4ce5713dd2bffa2c38427cb62f4d1a50302c05cc43b8f8a1725f54fae4142e41"
+            },
+            "overlay": {
+              "path": "pr-9363/consumer-price/wasm/overlay-012.png",
+              "sha256": "d26aea6c5a7173bd63a451a9d781493b860c44a6a399a8db5dbaeb0ebe066c26"
+            }
+          }
+        },
+        {
+          "page": 18,
+          "base_raw": "30.14",
+          "candidate_raw": "99.79",
+          "files": {
+            "raw": {
+              "path": "pr-9363/consumer-price/wasm/raw-018.png",
+              "sha256": "526b887d2649d6f0242a4244e5913b09d22a036e5f9ca5633fa8f3c5305ef6d8"
+            },
+            "pdf": {
+              "path": "pr-9363/consumer-price/wasm/pdf-018.png",
+              "sha256": "a0f89b869eca7bbeb55501191fd42487d7b6703d353e46533bd754c15e839584"
+            },
+            "review": {
+              "path": "pr-9363/consumer-price/wasm/review-018.png",
+              "sha256": "8044445c2bdea745e9fd2f8afc6a3eaf2e9650a1400dc375ace6ac0bd276d501"
+            },
+            "overlay": {
+              "path": "pr-9363/consumer-price/wasm/overlay-018.png",
+              "sha256": "0fec0b6fafe5cc23caccc9e7a8f58d06b37c87417546b7d9a2f89c2d0d0efa63"
+            }
+          }
+        }
+      ],
+      "declines": [],
+      "changed_pages": [
+        12,
+        18
+      ],
+      "tsv": [
+        {
+          "name": "base-silhouette.tsv",
+          "sha256": "aef8d27c6d42ce4e8b7de289729d6357229a3583fd91a922ed49dc814ef72144",
+          "pages": 18
+        },
+        {
+          "name": "silhouette.tsv",
+          "sha256": "76f05152f900697cf955933f8f59cb2ed4889065f75ca785f2714f301ed78f82",
+          "pages": 18
+        }
+      ]
+    },
+    {
+      "pr": 9364,
+      "backend": "native",
+      "pages": 3,
+      "minimum_candidate_raw": "96.68",
+      "claims": [
+        {
+          "page": 2,
+          "base_raw": "92.85",
+          "candidate_raw": "96.68",
+          "files": {
+            "raw": {
+              "path": "pr-9364/uiwang/native/raw-002.png",
+              "sha256": "b11be77f58dc8855f4803181b05bea778a416ce39e839079dceb3f59d455fc30"
+            },
+            "pdf": {
+              "path": "pr-9364/uiwang/native/pdf-002.png",
+              "sha256": "eee4763f6505175d7ca5aed7a78f24da6dd283de41b7a723013884d4667b831c"
+            },
+            "review": {
+              "path": "pr-9364/uiwang/native/review-002.png",
+              "sha256": "d9b776564de6d041f7c61aafed513211cc240ff615f1b30bdbabdba6ce04dc18"
+            },
+            "overlay": {
+              "path": "pr-9364/uiwang/native/overlay-002.png",
+              "sha256": "154a41bb375eea2d73cc659d4fbb1eba38169fed1039456ff7c2c31af27e59be"
+            }
+          }
+        },
+        {
+          "page": 3,
+          "base_raw": "43.55",
+          "candidate_raw": "97.67",
+          "files": {
+            "raw": {
+              "path": "pr-9364/uiwang/native/raw-003.png",
+              "sha256": "b4536f50feae1a641260ed450d09b510270ad0f283c218d4411a62c93dcc590e"
+            },
+            "pdf": {
+              "path": "pr-9364/uiwang/native/pdf-003.png",
+              "sha256": "9651fb893ab59adaf9af0fe5a9cfa70a82cbca9b9c37317d3d08f4fa5d60215a"
+            },
+            "review": {
+              "path": "pr-9364/uiwang/native/review-003.png",
+              "sha256": "9758c25558be68e78cdea4df385424c588724f6d4de8a7e13e79b15caaf650e5"
+            },
+            "overlay": {
+              "path": "pr-9364/uiwang/native/overlay-003.png",
+              "sha256": "e9482ab813ac49c495860176bf841affb798347d40c75b9ff820dcc151814ce4"
+            }
+          }
+        }
+      ],
+      "declines": [],
+      "changed_pages": [
+        2,
+        3
+      ],
+      "tsv": [
+        {
+          "name": "base-silhouette.tsv",
+          "sha256": "a44304421296bf38f0dcd531caa448c83c264eaefb01f75aaef7e55ea2218ffd",
+          "pages": 3
+        },
+        {
+          "name": "silhouette.tsv",
+          "sha256": "619bef138d945bd51b544fbac99989f5d9929edac5efbd056b18cedacf527577",
+          "pages": 3
+        }
+      ]
+    },
+    {
+      "pr": 9364,
+      "backend": "wasm",
+      "pages": 3,
+      "minimum_candidate_raw": "96.68",
+      "claims": [
+        {
+          "page": 2,
+          "base_raw": "92.91",
+          "candidate_raw": "96.68",
+          "files": {
+            "raw": {
+              "path": "pr-9364/uiwang/wasm/raw-002.png",
+              "sha256": "8233b1209199449ebf412e3047f9766cab65a3967ac57ebad7f348d6f1260d63"
+            },
+            "pdf": {
+              "path": "pr-9364/uiwang/wasm/pdf-002.png",
+              "sha256": "eee4763f6505175d7ca5aed7a78f24da6dd283de41b7a723013884d4667b831c"
+            },
+            "review": {
+              "path": "pr-9364/uiwang/wasm/review-002.png",
+              "sha256": "c177dda3711cf74f89abfa59a290dd970c1f5a214f3fd35961bb59c6ecd3a923"
+            },
+            "overlay": {
+              "path": "pr-9364/uiwang/wasm/overlay-002.png",
+              "sha256": "46ca04d832f1a4ed9398d0de2cf1e607203e379afcbec2d3025de24d28fa566c"
+            }
+          }
+        },
+        {
+          "page": 3,
+          "base_raw": "43.72",
+          "candidate_raw": "97.71",
+          "files": {
+            "raw": {
+              "path": "pr-9364/uiwang/wasm/raw-003.png",
+              "sha256": "7ad0d07340f34d0d3de7f5185089af8e292aaa9034d17bc54cf23d691a351557"
+            },
+            "pdf": {
+              "path": "pr-9364/uiwang/wasm/pdf-003.png",
+              "sha256": "9651fb893ab59adaf9af0fe5a9cfa70a82cbca9b9c37317d3d08f4fa5d60215a"
+            },
+            "review": {
+              "path": "pr-9364/uiwang/wasm/review-003.png",
+              "sha256": "d903f4f670af4a58b222d3b8efd6fee2510aa68302ec55478199addc039306e7"
+            },
+            "overlay": {
+              "path": "pr-9364/uiwang/wasm/overlay-003.png",
+              "sha256": "6954d796be4649595fdfd8e8380231b8147aed92c297515155e3e4cc9f1f1987"
+            }
+          }
+        }
+      ],
+      "declines": [],
+      "changed_pages": [
+        2,
+        3
+      ],
+      "tsv": [
+        {
+          "name": "base-silhouette.tsv",
+          "sha256": "8626fa2d59215ceb49ba323563bcb02c5d8c824847f6f4804bde2af0689af7c4",
+          "pages": 3
+        },
+        {
+          "name": "silhouette.tsv",
+          "sha256": "6606e57a2e6ad9e023cba4cb82d758760d8b09df3ec2429f936b322c552ea888",
+          "pages": 3
+        }
+      ]
+    }
+  ],
+  "incoming_9365": [
+    {
+      "backend": "native",
+      "case": "grid2x2",
+      "identical_pixels": true,
+      "base_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "candidate_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "row3-mixed",
+      "identical_pixels": true,
+      "base_sha256": "516bac8018f4213093c7dd0d08f95bc5e9f182772899ea9ea819e93a30303bf4",
+      "candidate_sha256": "516bac8018f4213093c7dd0d08f95bc5e9f182772899ea9ea819e93a30303bf4",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-right",
+      "identical_pixels": true,
+      "base_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "candidate_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-right-same",
+      "identical_pixels": true,
+      "base_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "candidate_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-overlap-one",
+      "identical_pixels": true,
+      "base_sha256": "e5eebe2256cadf64054a86d6092e0f1aa6d7a09257973772e1dedecf66964666",
+      "candidate_sha256": "e5eebe2256cadf64054a86d6092e0f1aa6d7a09257973772e1dedecf66964666",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-center-in",
+      "identical_pixels": true,
+      "base_sha256": "3aa9bd41a53befefa6b6ca51077a892517703fe3041f8a43f6ad18ca1eed169d",
+      "candidate_sha256": "3aa9bd41a53befefa6b6ca51077a892517703fe3041f8a43f6ad18ca1eed169d",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-center-out",
+      "identical_pixels": true,
+      "base_sha256": "35aa8ff6a595413fffabe3031111420224ac3f5d4735e38475cd81304ef0fc02",
+      "candidate_sha256": "35aa8ff6a595413fffabe3031111420224ac3f5d4735e38475cd81304ef0fc02",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-margin",
+      "identical_pixels": true,
+      "base_sha256": "7d6781c7e964d357bfe149001206d89481cedd4559e51011a5b955cd69f2666d",
+      "candidate_sha256": "7d6781c7e964d357bfe149001206d89481cedd4559e51011a5b955cd69f2666d",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-positive",
+      "identical_pixels": true,
+      "base_sha256": "fa01e2ecb38c0fef95078c44511ac64853b25c2016f2585c86deee422859ae55",
+      "candidate_sha256": "fa01e2ecb38c0fef95078c44511ac64853b25c2016f2585c86deee422859ae55",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-center-aligned",
+      "identical_pixels": true,
+      "base_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "candidate_sha256": "02782895dd502cefe2d90995002a0cfdaea8b1dc0afbdbf4c29dd72e4233bbbe",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-overlap-first",
+      "identical_pixels": true,
+      "base_sha256": "cc493057bec7ac88fcffd5b9a40687ec30740f6f2fc18dcc2a98d53fce1d21a9",
+      "candidate_sha256": "cc493057bec7ac88fcffd5b9a40687ec30740f6f2fc18dcc2a98d53fce1d21a9",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "native",
+      "case": "grid-outside",
+      "identical_pixels": true,
+      "base_sha256": "e5eebe2256cadf64054a86d6092e0f1aa6d7a09257973772e1dedecf66964666",
+      "candidate_sha256": "e5eebe2256cadf64054a86d6092e0f1aa6d7a09257973772e1dedecf66964666",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid2x2",
+      "identical_pixels": true,
+      "base_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "candidate_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "row3-mixed",
+      "identical_pixels": true,
+      "base_sha256": "fcc944e1ebcb28b0389ff4dfade29ef278ae3313a290ba6a8366b16f7c6a7e62",
+      "candidate_sha256": "fcc944e1ebcb28b0389ff4dfade29ef278ae3313a290ba6a8366b16f7c6a7e62",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-right",
+      "identical_pixels": true,
+      "base_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "candidate_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-right-same",
+      "identical_pixels": true,
+      "base_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "candidate_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-overlap-one",
+      "identical_pixels": true,
+      "base_sha256": "3696e062d4c0b2d8d1779fed51e04e3cf83b061497dca27bca34d854f360823e",
+      "candidate_sha256": "3696e062d4c0b2d8d1779fed51e04e3cf83b061497dca27bca34d854f360823e",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-center-in",
+      "identical_pixels": true,
+      "base_sha256": "2a0e04229b029a4268123e509e969150fbb410be804b62b8a19dcafb8842ea97",
+      "candidate_sha256": "2a0e04229b029a4268123e509e969150fbb410be804b62b8a19dcafb8842ea97",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-center-out",
+      "identical_pixels": true,
+      "base_sha256": "de085c8ca6dad15d950f285c02de8efc96951da0703168a8a4a21921ba27c8b8",
+      "candidate_sha256": "de085c8ca6dad15d950f285c02de8efc96951da0703168a8a4a21921ba27c8b8",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-margin",
+      "identical_pixels": true,
+      "base_sha256": "e06b104a4bbede02c1a4a9a4c21b9907b2a96c0e8099df71e862a67cddf8cef1",
+      "candidate_sha256": "e06b104a4bbede02c1a4a9a4c21b9907b2a96c0e8099df71e862a67cddf8cef1",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-positive",
+      "identical_pixels": true,
+      "base_sha256": "066c817b10e8861625a43cd0ae7b4c64ea7909dc0aeb5f6d853a045c7cd9ece7",
+      "candidate_sha256": "066c817b10e8861625a43cd0ae7b4c64ea7909dc0aeb5f6d853a045c7cd9ece7",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-center-aligned",
+      "identical_pixels": true,
+      "base_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "candidate_sha256": "0f755c1ed80406137f54566ba241990293613810af415506c3a5b9aa2266c126",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-overlap-first",
+      "identical_pixels": true,
+      "base_sha256": "f0ef69b67c5a4664e3b1da89e53371b92455f9e5d937bd2d9d620451bbbbd4a7",
+      "candidate_sha256": "f0ef69b67c5a4664e3b1da89e53371b92455f9e5d937bd2d9d620451bbbbd4a7",
+      "render_exit": [
+        0,
+        0
+      ]
+    },
+    {
+      "backend": "wasm",
+      "case": "grid-outside",
+      "identical_pixels": true,
+      "base_sha256": "3696e062d4c0b2d8d1779fed51e04e3cf83b061497dca27bca34d854f360823e",
+      "candidate_sha256": "3696e062d4c0b2d8d1779fed51e04e3cf83b061497dca27bca34d854f360823e",
+      "render_exit": [
+        0,
+        0
+      ]
+    }
+  ],
+  "images_identical": 24
+}

@@ -1054,6 +1054,28 @@ impl FontEnvironment {
         })
     }
 
+    pub(crate) fn has_scoped_natural_replacement(
+        &self,
+        source: &str,
+        language_slot: usize,
+        font_id: u16,
+    ) -> bool {
+        self.selects_natural_program_for(source)
+            && self
+                .document_substitution(source, language_slot, font_id)
+                .is_some_and(|selection| {
+                    selection.target != source
+                        && !super::installed_font_program_aliases(source)
+                            .contains(&selection.target.as_str())
+                })
+    }
+
+    pub(crate) fn has_scoped_natural_replacements(&self) -> bool {
+        self.document_substitutions.iter().any(|slot| {
+            self.has_scoped_natural_replacement(&slot.source, slot.language_slot, slot.font_id)
+        })
+    }
+
     pub(crate) fn replacement_for(
         &self,
         face: &str,
