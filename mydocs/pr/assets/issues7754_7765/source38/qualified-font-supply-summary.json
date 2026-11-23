@@ -1,0 +1,236 @@
+{
+  "source": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-qualified-protected-font-paths.json",
+  "exact_entries_across_conditions": 1271,
+  "conditions": {
+    "native:yeongwol": {
+      "exact_files": 204,
+      "unmatched_declared_files": 31,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:yeongwol": {
+      "exact_files": 203,
+      "unmatched_declared_files": 19,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:seo-body-list-typed": {
+      "exact_files": 1,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:seo-body-list-typed": {
+      "exact_files": 1,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:handbook-hwp": {
+      "exact_files": 48,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:handbook-hwp": {
+      "exact_files": 48,
+      "unmatched_declared_files": 13,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:seo-helvetica-styles": {
+      "exact_files": 1,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:seo-helvetica-styles": {
+      "exact_files": 1,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:sample16-hwpx": {
+      "exact_files": 55,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:sample16-hwpx": {
+      "exact_files": 55,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:sample16-hwp2022": {
+      "exact_files": 55,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:sample16-hwp2022": {
+      "exact_files": 55,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:seo-re-03-latin": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:seo-re-03-latin": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:angle-narrow": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:angle-narrow": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:outline": {
+      "exact_files": 40,
+      "unmatched_declared_files": 17,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:outline": {
+      "exact_files": 40,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:issue8040-insert": {
+      "exact_files": 46,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:issue8040-insert": {
+      "exact_files": 46,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:nested": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json"
+    },
+    "wasm:nested": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json"
+    },
+    "native:sample16-hwp2024": {
+      "exact_files": 55,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:sample16-hwp2024": {
+      "exact_files": 55,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:handbook-hwpx": {
+      "exact_files": 48,
+      "unmatched_declared_files": 13,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:handbook-hwpx": {
+      "exact_files": 48,
+      "unmatched_declared_files": 13,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:issue7905": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json"
+    },
+    "wasm:issue7905": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/integration_open_prs_20261120/final-protected/validation.json"
+    },
+    "native:sample10": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json"
+    },
+    "wasm:sample10": {
+      "exact_files": 66,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:issue8040-insert-delete": {
+      "exact_files": 46,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:issue8040-insert-delete": {
+      "exact_files": 46,
+      "unmatched_declared_files": 14,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:seo-pic-crop-01": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:seo-pic-crop-01": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:seo-shape-group-02": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "wasm:seo-shape-group-02": {
+      "exact_files": 1,
+      "unmatched_declared_files": 15,
+      "source_evidence": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json"
+    },
+    "native:chemical": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json"
+    },
+    "wasm:chemical": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json"
+    },
+    "native:spec13": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json"
+    },
+    "wasm:spec13": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json"
+    },
+    "native:outline-demo": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json"
+    },
+    "wasm:outline-demo": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json"
+    },
+    "native:decree": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json"
+    },
+    "wasm:decree": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/semanticist21-20261121/validation/final/validation.json"
+    },
+    "native:outline-minimal": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json"
+    },
+    "wasm:outline-minimal": {
+      "exact_files": 0,
+      "unmatched_declared_files": 0,
+      "source_evidence": "mydocs/pr/assets/issues7733_7738_20261117/hy-hanyang-font-identity/protected-validation.json"
+    }
+  }
+}

@@ -1,0 +1,1048 @@
+{
+  "collected_at": 1795344885.9614358,
+  "source_head": "8f9fd0414ffcfb720fa4a601c79c4590480de0e8",
+  "scope": "Pre-9318 source105 only. Whole-document qualified invocations; never pagewise best scores.",
+  "baseline_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "datasets": [
+    {
+      "key": "yeongwol",
+      "backend": "native",
+      "document_id": "0b7e7d0538284271",
+      "expected_pages": 4,
+      "pages": 4,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/yeongwol/silhouette.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/yeongwol/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "yeongwol",
+      "backend": "wasm",
+      "document_id": "0b7e7d0538284271",
+      "expected_pages": 4,
+      "pages": 4,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/yeongwol/silhouette.tsv",
+          "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/yeongwol/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-body-list-typed",
+      "backend": "native",
+      "document_id": "2b43ec3782a748e1",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-body-list-typed/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-body-list-typed/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-body-list-typed",
+      "backend": "wasm",
+      "document_id": "2b43ec3782a748e1",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-body-list-typed/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-body-list-typed/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "handbook-hwp",
+      "backend": "native",
+      "document_id": "2fb2575d58042dcf",
+      "expected_pages": 383,
+      "pages": 383,
+      "complete_coverage": true,
+      "minimum": "99.97",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/handbook-hwp/silhouette.tsv",
+          "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/handbook-hwp/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "handbook-hwp",
+      "backend": "wasm",
+      "document_id": "2fb2575d58042dcf",
+      "expected_pages": 383,
+      "pages": 383,
+      "complete_coverage": true,
+      "minimum": "99.96",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-001-032/silhouette.tsv",
+          "sha256": "dbe1bff4b965dbbffdbbe5f1562009ff0a64219ee746054a5c229798d8c94332",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-033-064/silhouette.tsv",
+          "sha256": "2d87779874694aca2f76d61a47b2a9a48b39e13a729e025684f26d2b58157828",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-033-064/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-065-096/silhouette.tsv",
+          "sha256": "14ab00ee2671c3018d9c61ddc073fedde27ae1c35a99ea3330c217edbcd0667e",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-065-096/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-097-128/silhouette.tsv",
+          "sha256": "62428497966d7ce8f4243017a2af9bdbf8206a65535fa25ed54580b530fb4f39",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-097-128/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-129-160/silhouette.tsv",
+          "sha256": "4ce5a7821ebc8356c18bc2c1d9a9e379bdfddd6a82152b03cc3dccca407aa506",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-129-160/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-161-192/silhouette.tsv",
+          "sha256": "3162e21b96f316c9255311bcf7e77b908fe11a19b413d86bf1d09bc31e569893",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-161-192/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-193-224/silhouette.tsv",
+          "sha256": "8d126176d7c80348d9ccd7f0b26d90f8a515a92165ab5602b1df0003af80ff68",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-193-224/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-225-256/silhouette.tsv",
+          "sha256": "a3ad30d670ddb2a5cc5b5e723916d5e14d485411777dc945c251938e2eddc8c3",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-225-256/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-257-288/silhouette.tsv",
+          "sha256": "5ad0236619ee3ac91495a9278624003a9c555324c7abca19d54d01b2bb5db8c1",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-257-288/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-289-320/silhouette.tsv",
+          "sha256": "94e2838cee9ce572be538416e352644e96d6c9a84a3a671e024746ee431a839b",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-289-320/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-321-352/silhouette.tsv",
+          "sha256": "ac2de5002d0c83929b84efc4df090cff71dd0c9047dd8e933c2cd34e0a5d8e8f",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-321-352/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-353-383/silhouette.tsv",
+          "sha256": "54e1161de54eff1e8caa29ce08494be4d81dd719c2b6954a23f54860c9362106",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwp-353-383/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "native",
+      "document_id": "4314830495cfde87",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-helvetica-styles/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-helvetica-styles/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-helvetica-styles",
+      "backend": "wasm",
+      "document_id": "4314830495cfde87",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-helvetica-styles/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-helvetica-styles/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "native",
+      "document_id": "43c0a207f6daa0bb",
+      "expected_pages": 64,
+      "pages": 64,
+      "complete_coverage": true,
+      "minimum": "99.99",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample16-hwpx/silhouette.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample16-hwpx/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwpx",
+      "backend": "wasm",
+      "document_id": "43c0a207f6daa0bb",
+      "expected_pages": 64,
+      "pages": 64,
+      "complete_coverage": true,
+      "minimum": "77.56",
+      "declines": [
+        {
+          "page": 18,
+          "protected": "99.99",
+          "candidate": "77.56"
+        },
+        {
+          "page": 35,
+          "protected": "100.00",
+          "candidate": "82.37"
+        }
+      ],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwpx-001-032/silhouette.tsv",
+          "sha256": "34d09595ad1912d002f8270054eb03228a2877738d3e9a462aab208ebf3b26ad",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwpx-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwpx-033-064/silhouette.tsv",
+          "sha256": "c1e44d79cf33be00dfaa374455992a099f229bf0e5ee57c7708a172b2e06418c",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwpx-033-064/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "native",
+      "document_id": "4bac5a5d1702df5f",
+      "expected_pages": 64,
+      "pages": 64,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample16-hwp2022/silhouette.tsv",
+          "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample16-hwp2022/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2022",
+      "backend": "wasm",
+      "document_id": "4bac5a5d1702df5f",
+      "expected_pages": 64,
+      "pages": 64,
+      "complete_coverage": true,
+      "minimum": "99.98",
+      "declines": [
+        {
+          "page": 18,
+          "protected": "100.00",
+          "candidate": "99.99"
+        },
+        {
+          "page": 35,
+          "protected": "100.00",
+          "candidate": "99.98"
+        }
+      ],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2022-001-032/silhouette.tsv",
+          "sha256": "6e088c25ab6498efb1b012aab4c5aea4c077d0c02d276522bdf40f604054d424",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2022-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2022-033-064/silhouette.tsv",
+          "sha256": "88e5fe0035de1b25919d353d9ce152fdd377e47ea277f4baf0e8b1ef89469a44",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2022-033-064/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-re-03-latin",
+      "backend": "native",
+      "document_id": "52ee61fe7201e36b",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-re-03-latin/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-re-03-latin/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-re-03-latin",
+      "backend": "wasm",
+      "document_id": "52ee61fe7201e36b",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-re-03-latin/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-re-03-latin/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "native",
+      "document_id": "59f6ab1155623bda",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/angle-narrow/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/angle-narrow/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "angle-narrow",
+      "backend": "wasm",
+      "document_id": "59f6ab1155623bda",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/angle-narrow/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/angle-narrow/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "outline",
+      "backend": "native",
+      "document_id": "69bcf084e2ae31a5",
+      "expected_pages": 9,
+      "pages": 9,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source124",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source124-qualified-outline/native/candidate/outline/silhouette.tsv",
+          "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source124-qualified-outline/native/candidate/outline/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "outline",
+      "backend": "wasm",
+      "document_id": "69bcf084e2ae31a5",
+      "expected_pages": 9,
+      "pages": 9,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source124",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source124-qualified-outline/wasm/candidate/outline/silhouette.tsv",
+          "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source124-qualified-outline/wasm/candidate/outline/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "issue8040-insert",
+      "backend": "native",
+      "document_id": "71f98206e45c354a",
+      "expected_pages": 4,
+      "pages": 4,
+      "complete_coverage": true,
+      "minimum": "99.99",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/issue8040-insert/silhouette.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/issue8040-insert/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "issue8040-insert",
+      "backend": "wasm",
+      "document_id": "71f98206e45c354a",
+      "expected_pages": 4,
+      "pages": 4,
+      "complete_coverage": true,
+      "minimum": "99.99",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/issue8040-insert/silhouette.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/issue8040-insert/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "nested",
+      "backend": "native",
+      "document_id": "78e1720edfe2277d",
+      "expected_pages": 17,
+      "pages": 17,
+      "complete_coverage": true,
+      "minimum": "99.98",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/nested/silhouette.tsv",
+          "sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/nested/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "nested",
+      "backend": "wasm",
+      "document_id": "78e1720edfe2277d",
+      "expected_pages": 17,
+      "pages": 17,
+      "complete_coverage": true,
+      "minimum": "99.98",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/nested/silhouette.tsv",
+          "sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/nested/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "native",
+      "document_id": "7df4af8174abd82a",
+      "expected_pages": 64,
+      "pages": 64,
+      "complete_coverage": true,
+      "minimum": "99.99",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample16-hwp2024/silhouette.tsv",
+          "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample16-hwp2024/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample16-hwp2024",
+      "backend": "wasm",
+      "document_id": "7df4af8174abd82a",
+      "expected_pages": 64,
+      "pages": 64,
+      "complete_coverage": true,
+      "minimum": "77.56",
+      "declines": [
+        {
+          "page": 18,
+          "protected": "99.99",
+          "candidate": "77.56"
+        },
+        {
+          "page": 35,
+          "protected": "100.00",
+          "candidate": "82.37"
+        }
+      ],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2024-001-032/silhouette.tsv",
+          "sha256": "34d09595ad1912d002f8270054eb03228a2877738d3e9a462aab208ebf3b26ad",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2024-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2024-033-064/silhouette.tsv",
+          "sha256": "c1e44d79cf33be00dfaa374455992a099f229bf0e5ee57c7708a172b2e06418c",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample16-hwp2024-033-064/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "handbook-hwpx",
+      "backend": "native",
+      "document_id": "941fe0c3549c0017",
+      "expected_pages": 383,
+      "pages": 383,
+      "complete_coverage": true,
+      "minimum": "99.97",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source108-required-handbook/required-handbook-8153-native/silhouette.tsv",
+          "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source108-required-handbook/required-handbook-8153-native/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "handbook-hwpx",
+      "backend": "wasm",
+      "document_id": "941fe0c3549c0017",
+      "expected_pages": 383,
+      "pages": 383,
+      "complete_coverage": true,
+      "minimum": "99.96",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-001-032/silhouette.tsv",
+          "sha256": "dbe1bff4b965dbbffdbbe5f1562009ff0a64219ee746054a5c229798d8c94332",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-033-064/silhouette.tsv",
+          "sha256": "2d87779874694aca2f76d61a47b2a9a48b39e13a729e025684f26d2b58157828",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-033-064/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-065-096/silhouette.tsv",
+          "sha256": "14ab00ee2671c3018d9c61ddc073fedde27ae1c35a99ea3330c217edbcd0667e",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-065-096/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-097-128/silhouette.tsv",
+          "sha256": "62428497966d7ce8f4243017a2af9bdbf8206a65535fa25ed54580b530fb4f39",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-097-128/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-129-160/silhouette.tsv",
+          "sha256": "4ce5a7821ebc8356c18bc2c1d9a9e379bdfddd6a82152b03cc3dccca407aa506",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-129-160/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-161-192/silhouette.tsv",
+          "sha256": "3162e21b96f316c9255311bcf7e77b908fe11a19b413d86bf1d09bc31e569893",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-161-192/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-193-224/silhouette.tsv",
+          "sha256": "8d126176d7c80348d9ccd7f0b26d90f8a515a92165ab5602b1df0003af80ff68",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-193-224/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-225-256/silhouette.tsv",
+          "sha256": "a3ad30d670ddb2a5cc5b5e723916d5e14d485411777dc945c251938e2eddc8c3",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-225-256/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-257-288/silhouette.tsv",
+          "sha256": "5ad0236619ee3ac91495a9278624003a9c555324c7abca19d54d01b2bb5db8c1",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-257-288/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-289-320/silhouette.tsv",
+          "sha256": "94e2838cee9ce572be538416e352644e96d6c9a84a3a671e024746ee431a839b",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-289-320/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-321-352/silhouette.tsv",
+          "sha256": "ac2de5002d0c83929b84efc4df090cff71dd0c9047dd8e933c2cd34e0a5d8e8f",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-321-352/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-353-383/silhouette.tsv",
+          "sha256": "54e1161de54eff1e8caa29ce08494be4d81dd719c2b6954a23f54860c9362106",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/handbook-hwpx-353-383/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "issue7905",
+      "backend": "native",
+      "document_id": "a8e95b4accc79fa8",
+      "expected_pages": 6,
+      "pages": 6,
+      "complete_coverage": true,
+      "minimum": "98.86",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/issue7905/silhouette.tsv",
+          "sha256": "f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/issue7905/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "issue7905",
+      "backend": "wasm",
+      "document_id": "a8e95b4accc79fa8",
+      "expected_pages": 6,
+      "pages": 6,
+      "complete_coverage": true,
+      "minimum": "98.86",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/issue7905/silhouette.tsv",
+          "sha256": "2bffc1537a24f58a1447d9211be6c987290b133882b6336c97ac762d6a222c56",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/issue7905/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample10",
+      "backend": "native",
+      "document_id": "b1a9055c4c7e6f09",
+      "expected_pages": 763,
+      "pages": 763,
+      "complete_coverage": true,
+      "minimum": "99.57",
+      "declines": [],
+      "qualified_source": "source129",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample10/silhouette.tsv",
+          "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/sample10/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "sample10",
+      "backend": "wasm",
+      "document_id": "b1a9055c4c7e6f09",
+      "expected_pages": 763,
+      "pages": 128,
+      "complete_coverage": false,
+      "minimum": "31.61",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-001-032/silhouette.tsv",
+          "sha256": "ecae67bb01f540e9e55466a11bd7c9f2f414a6a50098614b1166c19eff672602",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-033-064/silhouette.tsv",
+          "sha256": "2d87779874694aca2f76d61a47b2a9a48b39e13a729e025684f26d2b58157828",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-033-064/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-065-096/silhouette.tsv",
+          "sha256": "14ab00ee2671c3018d9c61ddc073fedde27ae1c35a99ea3330c217edbcd0667e",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-065-096/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-097-128/silhouette.tsv",
+          "sha256": "62428497966d7ce8f4243017a2af9bdbf8206a65535fa25ed54580b530fb4f39",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/sample10-097-128/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "native",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "expected_pages": 4,
+      "pages": 4,
+      "complete_coverage": true,
+      "minimum": "99.99",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/issue8040-insert-delete/silhouette.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/issue8040-insert-delete/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "issue8040-insert-delete",
+      "backend": "wasm",
+      "document_id": "ccd0cd0b7e76fe2f",
+      "expected_pages": 4,
+      "pages": 4,
+      "complete_coverage": true,
+      "minimum": "99.99",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/issue8040-insert-delete/silhouette.tsv",
+          "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/issue8040-insert-delete/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "native",
+      "document_id": "cdacd874b6e6ac66",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-pic-crop-01/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-pic-crop-01/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-pic-crop-01",
+      "backend": "wasm",
+      "document_id": "cdacd874b6e6ac66",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-pic-crop-01/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-pic-crop-01/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "native",
+      "document_id": "d03a9dde3d5dc7ac",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-shape-group-02/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/seo-shape-group-02/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "seo-shape-group-02",
+      "backend": "wasm",
+      "document_id": "d03a9dde3d5dc7ac",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-shape-group-02/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/seo-shape-group-02/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "chemical",
+      "backend": "native",
+      "document_id": "870eabd0a7d9534c",
+      "expected_pages": 103,
+      "pages": 103,
+      "complete_coverage": true,
+      "minimum": "99.99",
+      "declines": [],
+      "qualified_source": "source118",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source118-full-chemical/native/chemical/silhouette.tsv",
+          "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source118-full-chemical/native/chemical/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "chemical",
+      "backend": "wasm",
+      "document_id": "870eabd0a7d9534c",
+      "expected_pages": 103,
+      "pages": 103,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source118",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source118-full-chemical/wasm/chemical/silhouette.tsv",
+          "sha256": "2b4dc472b3c8267e03c34e0a4a62fe65c3987f7caab39ce1cde6c6d744bcd573",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source118-full-chemical/wasm/chemical/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "spec13",
+      "backend": "native",
+      "document_id": "3298ed895b9a645c",
+      "expected_pages": 71,
+      "pages": 71,
+      "complete_coverage": true,
+      "minimum": "99.92",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/spec13/silhouette.tsv",
+          "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/spec13/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "spec13",
+      "backend": "wasm",
+      "document_id": "3298ed895b9a645c",
+      "expected_pages": 71,
+      "pages": 71,
+      "complete_coverage": true,
+      "minimum": "99.92",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/spec13-001-032/silhouette.tsv",
+          "sha256": "f52148e30060cb0e3fcc93d692f9d0f7d950ae72de3a3914c9e3a56aa8f8fa4a",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/spec13-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/spec13-033-064/silhouette.tsv",
+          "sha256": "2d87779874694aca2f76d61a47b2a9a48b39e13a729e025684f26d2b58157828",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/spec13-033-064/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/spec13-065-071/silhouette.tsv",
+          "sha256": "26a26d7d9f3c49571419b62d641b8fe2fd2f65deb4d11d7744342bd8015b2ae9",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/spec13-065-071/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "outline-demo",
+      "backend": "native",
+      "document_id": "6456507d769ec90b",
+      "expected_pages": 3,
+      "pages": 3,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/outline-demo/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/outline-demo/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "outline-demo",
+      "backend": "wasm",
+      "document_id": "6456507d769ec90b",
+      "expected_pages": 3,
+      "pages": 3,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/outline-demo/silhouette.tsv",
+          "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/outline-demo/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "decree",
+      "backend": "native",
+      "document_id": "61c6ae96913006c5",
+      "expected_pages": 74,
+      "pages": 74,
+      "complete_coverage": true,
+      "minimum": "99.98",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/decree/silhouette.tsv",
+          "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/decree/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "decree",
+      "backend": "wasm",
+      "document_id": "61c6ae96913006c5",
+      "expected_pages": 74,
+      "pages": 74,
+      "complete_coverage": true,
+      "minimum": "99.98",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/decree-001-032/silhouette.tsv",
+          "sha256": "5d5da312c4cd0b69d1dc65d290b9bf7e2657e9363d328698fbbd027f6c0ab921",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/decree-001-032/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/decree-033-064/silhouette.tsv",
+          "sha256": "dfea7d8bbadae416e81463fd617b1b485b951703437d19513aa39049e1cf816a",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/decree-033-064/silhouette_manifest.json"
+        },
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/decree-065-074/silhouette.tsv",
+          "sha256": "d857160eb0e1cdaa8acc9a6f81d2367924db1cc1dd6046fe27ff4f6752dbbc22",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/decree-065-074/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "native",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/outline-minimal/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-native/outline-minimal/silhouette_manifest.json"
+        }
+      ]
+    },
+    {
+      "key": "outline-minimal",
+      "backend": "wasm",
+      "document_id": "12ba0f8dcb5ba0f5",
+      "expected_pages": 1,
+      "pages": 1,
+      "complete_coverage": true,
+      "minimum": "100.00",
+      "declines": [],
+      "qualified_source": "source109",
+      "receipts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/outline-minimal/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "manifest": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source109-protected-wasm/outline-minimal/silhouette_manifest.json"
+        }
+      ]
+    }
+  ],
+  "backends": {
+    "native": {
+      "complete_coverage": true,
+      "completed_datasets": 23,
+      "total_datasets": 23,
+      "complete_pages": 2023,
+      "declines_in_complete_datasets": 0,
+      "passed": true
+    },
+    "wasm": {
+      "complete_coverage": false,
+      "completed_datasets": 22,
+      "total_datasets": 23,
+      "complete_pages": 1260,
+      "declines_in_complete_datasets": 6,
+      "passed": false
+    }
+  },
+  "passed": false
+}

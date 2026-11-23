@@ -1,0 +1,118 @@
+{
+  "scope": "Historical completed output preserved before new Source88 rebase validation. None of the Source55/79 measurements validate the rebased head.",
+  "files": [
+    {
+      "source": "output/pr-review/issue7754-nine/source55-required-handbook-state.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/source55-required-handbook-state.json",
+      "bytes": 65452,
+      "sha256": "112a4209ad301441faf4c1bbb61b27f387ebc368d4a470b87fb25793143a19fe"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus-state.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/source79-decree-full-exact-ttf-focus-state.json",
+      "bytes": 334812,
+      "sha256": "6617d72f98615ef342ee0309b49d1dfac1cbb0b3293333207bd1eeca87e45cfa"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source87-rebase-9316.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/source87-rebase-9316.json",
+      "bytes": 726,
+      "sha256": "412fe7bd20aa507ecd288b40ca1c555a59a8673d497f75f932bd267ffd5fa4e9"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source87-range-diff.txt",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/source87-range-diff.txt",
+      "bytes": 8035,
+      "sha256": "2ef685e5fa190fc1f4c8a891200b7e37ad4f9dd3ef05280ea7cb4a7f78e44c22",
+      "original_log": {
+        "commit": "c1ead7045fb0bc6793f140c8001410e317d3eb1a",
+        "path": "mydocs/pr/assets/issues7754_7765/source46/source87-range-diff.txt",
+        "sha256": "53a07248e848db4bb9b241576a94d2d09faa95eabd117abc5d27089cdeb766e1"
+      }
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source87-completed-incremental-cleanup.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/source87-completed-incremental-cleanup.json",
+      "bytes": 4249,
+      "sha256": "a424f63fac945c1a9d0f87f58fa8292b587d8e2518ce1bb6d102a552cb2e1bb2"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source88-producer-worktrees.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/source88-producer-worktrees.json",
+      "bytes": 819,
+      "sha256": "3ec09a645141bc2202efdab9520d51c58b12139668a404a896971c6982853e28"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source55-required-handbook/required-handbook-8153-gate.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-required-handbook/required-handbook-8153-gate.json",
+      "bytes": 540,
+      "sha256": "04fa73d429f80c0ffe944ae8b14d58b384221cc8e332e42241052ced49f5bdcd"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source55-required-handbook/summary.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-required-handbook/summary.json",
+      "bytes": 373859,
+      "sha256": "1a56ae7505e34cfe24107e3949a7baf81cc799010e1265854e390a432c4c1b0f"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source55-required-handbook/required-handbook-8153-native/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-required-handbook/required-handbook-8153-native/silhouette.tsv",
+      "bytes": 8428,
+      "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source55-required-handbook/required-handbook-8153-native/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-required-handbook/required-handbook-8153-native/silhouette_manifest.json",
+      "bytes": 358657,
+      "sha256": "5f275526fc66f65fb06d8ede9b16b66057bd685cd139cbf600af14673574acca"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/native/base/silhouette.tsv",
+      "bytes": 1649,
+      "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/base/decree/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/native/base/silhouette_manifest.json",
+      "bytes": 71290,
+      "sha256": "e3190a55351aa87a90d57d69d85119c88be838b7b76024f45ef777788ac717c9"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/candidate/decree/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/native/candidate/silhouette.tsv",
+      "bytes": 1649,
+      "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/native/candidate/decree/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/native/candidate/silhouette_manifest.json",
+      "bytes": 72040,
+      "sha256": "3db5b9c6961b24842fea8672054ffb58d48094366a4e242fe69ba5c1fd5e2270"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/wasm/base/decree/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/wasm/base/silhouette.tsv",
+      "bytes": 1649,
+      "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/wasm/base/decree/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/wasm/base/silhouette_manifest.json",
+      "bytes": 72327,
+      "sha256": "981e0d0ee961ef9fae7544570de3fb1298ecc65ad9345f7b3ef0ec4705d040ca"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/wasm/candidate/decree/silhouette.tsv",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/wasm/candidate/silhouette.tsv",
+      "bytes": 1649,
+      "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5"
+    },
+    {
+      "source": "output/pr-review/issue7754-nine/source79-decree-full-exact-ttf-focus/wasm/candidate/decree/silhouette_manifest.json",
+      "retained": "mydocs/pr/assets/issues7754_7765/source46/old-source37-decree/wasm/candidate/silhouette_manifest.json",
+      "bytes": 73077,
+      "sha256": "b91c7dc588a2937fb826bff8ceeb6a283c8d996dafe28d2cbeac4674279a52ba"
+    }
+  ]
+}

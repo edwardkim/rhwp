@@ -24,6 +24,7 @@ from oracle_pdf_selection import (
 
 
 from oracle_page_count import regenerate
+from oracle_page_count.logical_page_reference import permits_logical_pages
 
 
 class OraclePdfSelectionTests(unittest.TestCase):
@@ -110,7 +111,7 @@ class OracleVerifiedReferenceTests(unittest.TestCase):
         self.registry.write_text(json.dumps(dict(schema_version=1, references=entries)),
                                  encoding='utf-8')
 
-    def run_regeneration(self, extracted_pdf=None, retired=()):
+    def run_regeneration(self, extracted_pdf=None, retired=(), nup=False):
         scratch = self.root / 'scratch'
         scratch.mkdir(exist_ok=True)
         baseline = self.root / 'generated.tsv'
@@ -124,7 +125,7 @@ class OracleVerifiedReferenceTests(unittest.TestCase):
                   mock.patch.object(regenerate, 'FIXTURE', str(baseline)),
                   mock.patch.object(regenerate, 'inactive_oracle_samples', return_value=set(retired)),
                   mock.patch.object(regenerate, 'git_pdf_paths', return_value=[self.pdf]),
-                  mock.patch.object(regenerate, 'rhwp_info', return_value=(3, False, None)),
+                  mock.patch.object(regenerate, 'rhwp_info', return_value=(3, nup, None)),
                   mock.patch.object(regenerate, 'rhwp_text', return_value=['표본'] * 3),
                   mock.patch.object(regenerate, 'oracle_pages_and_text', side_effect=oracle),
                   mock.patch.object(regenerate.tempfile, 'mkdtemp', return_value=str(scratch)),
@@ -145,6 +146,44 @@ class OracleVerifiedReferenceTests(unittest.TestCase):
         output = self.run_regeneration()
         self.assertIn('samples/guide.hwp\t3\t3', output)
         self.assertIn(self.pdf, output)
+
+    def write_logical_evidence(self, rows=None):
+        if rows is None:
+            rows = '1\t100.00\n2\t98.00\n3\t99.00\n'
+        proof = {}
+        for backend in ('native', 'wasm'):
+            relative = f'mydocs/pr/assets/reference/{backend}.tsv'
+            path = self.root / relative
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('page\tsilhouette_raw_match_percent\n' + rows, encoding='utf-8')
+            proof[backend] = dict(tsv=relative, sha256=self.digest(relative))
+        self.entry['logical_page_comparison'] = proof
+        self.write_registry([self.entry])
+
+    def test_nup_is_excluded_without_verified_logical_pdf_and_retained_with_it(self):
+        self.assertNotIn(f'{self.sample}\t3\t3', self.run_regeneration(nup=True))
+        self.assertFalse(permits_logical_pages(None))
+        self.write_logical_evidence()
+        refs = regenerate.load_verified_references(self.root)
+        self.assertTrue(permits_logical_pages(refs[self.sample]))
+        self.assertIn(f'{self.sample}\t3\t3', self.run_regeneration(nup=True))
+
+    def test_logical_reference_rejects_missing_backend_changed_bytes_or_wrong_pages(self):
+        self.write_logical_evidence()
+        proof = self.entry['logical_page_comparison']
+        self.write_registry([dict(self.entry, logical_page_comparison={'native': proof['native']})])
+        with self.assertRaisesRegex(ValueError, 'Native'):
+            regenerate.load_verified_references(self.root)
+        self.write_registry([self.entry])
+        (self.root / proof['wasm']['tsv']).write_text('changed', encoding='utf-8')
+        with self.assertRaisesRegex(ValueError, '바이트'):
+            regenerate.load_verified_references(self.root)
+        for rows in ('1\t100\n2\t100\n', '1\t100\n1\t100\n3\t100\n',
+                     '1\t97.99\n2\t100\n3\t100\n', '1\tNaN\n2\t100\n3\t100\n'):
+            with self.subTest(rows=rows):
+                self.write_logical_evidence(rows)
+                with self.assertRaisesRegex(ValueError, 'TSV'):
+                    regenerate.load_verified_references(self.root)
 
     def test_changed_source_or_reference_bytes_are_rejected(self):
         for relative in [self.sample, self.pdf]:

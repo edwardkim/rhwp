@@ -1,0 +1,439 @@
+{
+  "key": "nested",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/silhouette.tsv",
+  "tsv_sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "9309f6a9464d3f7e8972f754d92536aa43da3123c44f5982a253e720a7a5aa60",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-001.png",
+      "pdf_sha256": "63ab788f05680b74196208e927b7d0cdebbacc45daa983cf4c2f94f887c02e55"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "186578f9e5f8f99dabc0206611d7862611f89795043046ba4ad345b614049284",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-002.png",
+      "pdf_sha256": "9875a07240d43600c0c9d0ff5979f40d25fec51b852eb8fb63aea736b46076d0"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "a6654e34c23f775f15da3aa90aaa7b789235a4008f9fec442dbc305f7849b987",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-003.png",
+      "pdf_sha256": "0993dfc34f606c53d49fc2cfb2e8a443a2b6d5894b08e6200872f5c4bc795b19"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "8ba11af08d55d071f51de302ea6a8620f6a3b4cce214d0a3fe995d1604b9e6b7",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-004.png",
+      "pdf_sha256": "064ed840f32420e57f4f384da1383f83f967213425341bbf8ad1f7641711f33b"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "8a48d87377ebf1f8eddb681a9ff519a620bcd86360d087d67fb2a7c4dd6bda9c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-005.png",
+      "pdf_sha256": "ce8b9e75e2c0fdc0d418674700bb2024cbdd75b2b606fef4a2ac59a3e34c546e"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "356927c7fac61bc592459cf8e8145f47cb71a2ddaa7dec430172f660d66077b3",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-006.png",
+      "pdf_sha256": "7385460220c1a7a70b4367dd95fbab50a370357e9432ff7d66778256803a78f8"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "288e88eb56cb29c90d40e4a836b77885db19cc64d537940d28acc5dacbc616c0",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-007.png",
+      "pdf_sha256": "c0da4cf8285d720900bca9e1d74753f4dc653aa7d74711a53519dc7c6266f81b"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "444cf2b32b62183a82811aa23abbde635443c416172a2c8a005ca7ba45495f29",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-008.png",
+      "pdf_sha256": "4b712668cb0d0a39facb94e1d691ffb8db9befd502ec3f3cb998453717902b84"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "6a8033f01b2745aed31fd3968c2287a96240c054e1f562f557099cbc23a1990d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-009.png",
+      "pdf_sha256": "73a40060b849794cad771a911940cc66839b3bcda571e869b8d68f83dfb39a81"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "82c021d940e01d92442905adcd6640f2f634505f7fe981c5cff39461ad995a1a",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-010.png",
+      "pdf_sha256": "4be34e37ef6f754b365fbadbeddf7b45150f53bb43df7fe7abd5bedf2d78b909"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "a443d1acc6d90691cc1d040334135f4439167ccc2f803a2190a4b17012c293b9",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-011.png",
+      "pdf_sha256": "f49e38427c452afad0aa3e67990ba5334c568524adf8832c15595b128ec99687"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "ab637dbb81cc9c7e255b126105cc0045fbdcb6e75a0eb1d8c93f4afc2566f5d0",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-012.png",
+      "pdf_sha256": "b591cee184468fbe4d1a66b63f0c18613d5e9999c6f4eecf2ca77a28cb3cb593"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "45b475927b38e8347ca94eadcd9be2e86178b44c3bc82a331300dd7b21e1f210",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-013.png",
+      "pdf_sha256": "b24f66a214accd92b72d6b83c5549c04109510052a97b92b3d552707ceae5554"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "8e6330b4715fd784fbf680f0a65bfb508632e02646ab490a285a138526bd6d9d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-014.png",
+      "pdf_sha256": "f0234defaf4a720338e7bcc69f7d94d96b0354265f57b9dcc77550ed7d889ffe"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "50cfde7e8b6545bba4860a70b10d1dba5a1db52a4d1238489ff3ff42fd16e4b8",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-015.png",
+      "pdf_sha256": "23d3666cb44de83bf6df6b0499f797bf72bbebff9047681de1e22a0343f26f7a"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "8fe0413d4436bc858c395e708126e444c83eba75d0038254b11fbeaff512655f",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-016.png",
+      "pdf_sha256": "c516bb845db139ef478af795b3c1c0ed725f07aca8fc46ad4ebdf508119374d1"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "d0c6df5513eb9ff54ffefeebc5a0e5aaf5bc7fddd1b1dc38178d2ecc5805443d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/pdf_png/pdf-017.png",
+      "pdf_sha256": "50abbfbfac42d459a0037909aa13f14bfc54003b1faf9f45ae4db272c9342712"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 42372,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99469,
+      "silhouette_raw_unmatched_pixels": 3,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56520,
+      "tolerant_content_match_percent": 99.99469
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 34290,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 90187,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 61547,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 56175,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99299,
+      "silhouette_raw_unmatched_pixels": 5,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71328,
+      "tolerant_content_match_percent": 99.99299
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99771,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 87383,
+      "tolerant_content_match_percent": 99.99771
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 103290,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.9985,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 132994,
+      "tolerant_content_match_percent": 99.9985
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99921,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 126000,
+      "tolerant_content_match_percent": 99.99921
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 111076,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 111737,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 120982,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99918,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 121325,
+      "tolerant_content_match_percent": 99.99918
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99689,
+      "silhouette_raw_unmatched_pixels": 2,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64289,
+      "tolerant_content_match_percent": 99.99689
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97637,
+      "silhouette_raw_unmatched_pixels": 3,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 12694,
+      "tolerant_content_match_percent": 99.97637
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 17,
+      "pdf": 17
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "sha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626"
+    },
+    "pdf": {
+      "path": "pdf/review-integration-20261026/issue2007_nested_cell_pagination_42065-2020.pdf",
+      "sha256": "bb486ef1215e79c2ca0c891b2b194bdf988691b0e91b8a07ebdbffc6d749473b"
+    },
+    "git_head": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "sha256": "249e11dedc91f4f2c90b145e82b9bd0102d27a0b1e1ebaa15030431178cdfa02"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "c6f7a75ee9ff965e004bf029a7c4211240e2e359dc01c2635efbe883222819d1"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/tsjang/rhwp/mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/nested-font-environment.json",
+      "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "none",
+      "files": []
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-nested-original-world/candidate/nested/silhouette-checkpoint.json"
+}

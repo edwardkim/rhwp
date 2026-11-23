@@ -1,0 +1,416 @@
+{
+  "candidate": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+  "metric": "silhouette_raw_match_percent",
+  "dpi": 96,
+  "radius_px": 2,
+  "panel_order": [
+    "independent_hancom_print",
+    "candidate_native",
+    "candidate_fresh_wasm"
+  ],
+  "documents": [
+    {
+      "key": "issue7756",
+      "pages": 1,
+      "input": {
+        "path": "samples/복학원서.hwp",
+        "sha256": "da81b4010331bcac290f900c7cf224c97ee8355399614725ce46c197ff1a22a4"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7756/bokhak-original-print-2024.pdf",
+        "sha256": "38ff94fabff9672417bef2d17986b3d9944e7818fe42e091294024f737e104f4"
+      },
+      "runs": {
+        "native": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7756.tsv",
+          "sha256": "48d30614f46673bee2486ff1f85d90e111f63680cbdf87ad4395493982133cdb",
+          "original_shards": [
+            {
+              "part": "issue7756",
+              "sha256": "48d30614f46673bee2486ff1f85d90e111f63680cbdf87ad4395493982133cdb",
+              "pages": 1
+            }
+          ],
+          "minimum": "99.00"
+        },
+        "wasm": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7756.tsv",
+          "sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49",
+          "original_shards": [
+            {
+              "part": "issue7756",
+              "sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49",
+              "pages": 1
+            }
+          ],
+          "minimum": "98.99"
+        }
+      },
+      "target_pages": [
+        {
+          "page": 1,
+          "purpose": "application-receipt",
+          "raw_percent": {
+            "native": "99.00",
+            "wasm": "98.99"
+          },
+          "crop_px": [
+            74,
+            675,
+            726,
+            1037
+          ],
+          "original_png_sha256": [
+            "2a55acaccdc5597e9d9ff66e04e828c0f5f00af153f60ba5f376afb0d6bdfc78",
+            "16d1833e0e09ecc4a149b485f55cfb5aa40474c2e9c62664ff090a96f5b479c4",
+            "f9fec63898dcad0f18af00512b3438323cfac535e6cb3ef139221f70e43275ae"
+          ],
+          "panel": {
+            "file": "enrollment-application-p001.png",
+            "sha256": "ce114a6ac8f4901df7d6f361febc325f0142cbbe8c61b1bfbf0365264d0757c1"
+          },
+          "observation_ko": "워터마크와 절취선, 접수증의 제목·날짜·날인 순서를 확인했다. 영문 serif 윤곽과 빨간 낙관 테두리에 차이가 남는다."
+        }
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 1,
+        "current_native_raw_percent": "99.00",
+        "current_fresh_wasm_raw_percent": "98.99",
+        "current_devel_fresh_wasm_raw_percent": "96.59",
+        "current_candidate_wasm_whole_document_minimum": "98.99",
+        "current_candidate_wasm_tsv_sha256": "8c855d62aa5534e14d4a1b6c06c274d93ea4d3b63a7f5d98836cb0ea16399a49"
+      }
+    },
+    {
+      "key": "issue7757",
+      "pages": 3,
+      "input": {
+        "path": "samples/task1768/distribution_doc.hwpx",
+        "sha256": "f217c02af7bc2a6641b9544afd29765ddccdd15021507b7554521f68b9d560dc"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf",
+        "sha256": "0299869bf040b01e07a19dde600852e44aec406257916b781eabdfbce6ed5aba"
+      },
+      "runs": {
+        "native": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7757.tsv",
+          "sha256": "b24739dcb96d444bc4224ee04e4d5e4699a504c2226887e6c0ab4863ac7a8e69",
+          "original_shards": [
+            {
+              "part": "issue7757",
+              "sha256": "b24739dcb96d444bc4224ee04e4d5e4699a504c2226887e6c0ab4863ac7a8e69",
+              "pages": 3
+            }
+          ],
+          "minimum": "99.78"
+        },
+        "wasm": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7757.tsv",
+          "sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853",
+          "original_shards": [
+            {
+              "part": "issue7757",
+              "sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853",
+              "pages": 3
+            }
+          ],
+          "minimum": "99.80"
+        }
+      },
+      "target_pages": [
+        {
+          "page": 3,
+          "purpose": "budget-table-unit-label",
+          "raw_percent": {
+            "native": "100.00",
+            "wasm": "100.00"
+          },
+          "crop_px": [
+            80,
+            482,
+            733,
+            772
+          ],
+          "original_png_sha256": [
+            "b57b5935c3813d7feefb2e8576fe3eb7421a3e0a6c496318398c088b931b00c6",
+            "9a56e08ec16c2e7d5a5abbcbb698d6f82098c00e0d5d5e8f850e3e02308ea3c0",
+            "94e6a34a001fbfa945f737506d426c7117530e313f5f6c0892acc319471fcfee"
+          ],
+          "panel": {
+            "file": "budget-table-p003.png",
+            "sha256": "307a76fb70de974e264a747020881423c487c798587f76b226440c60c4ca3a83"
+          },
+          "observation_ko": "오른쪽의 단위 문구가 예산 표보다 앞선다. 두 경로의 왼쪽 괘선과 본문 폭을 한컴 Print와 대조했다.",
+          "test": "tests/cases/issue_7160_tac_table_line_break.rs",
+          "coordinate_checks": [
+            {
+              "target": "unit-label-left",
+              "tolerance_css_px": 1
+            },
+            {
+              "target": "table-left",
+              "tolerance_css_px": 2
+            }
+          ]
+        }
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 3,
+        "current_native_raw_percent": "100.00",
+        "current_fresh_wasm_raw_percent": "100.00",
+        "current_devel_fresh_wasm_raw_percent": "100.00",
+        "current_candidate_wasm_whole_document_minimum": "99.80",
+        "current_candidate_wasm_tsv_sha256": "0944c0acb36a32fc4617c72360a8f549db97762f72b5d3d4be51080c58231853"
+      }
+    },
+    {
+      "key": "issue7759",
+      "pages": 1,
+      "input": {
+        "path": "samples/143E433F503322BD33.hwp",
+        "sha256": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa"
+      },
+      "reference_pdf": {
+        "path": "pdf/143E433F503322BD33-hwp-2020.pdf",
+        "sha256": "41451dd4d1b6a43b78cc532500a54a310314da84fc1b2963e49485443d0b4d0d"
+      },
+      "runs": {
+        "native": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7759.tsv",
+          "sha256": "4cbc47b53303e29dabba64cfe0b66201bb79f413ad8e3ceee19d66b0bed9180e",
+          "original_shards": [
+            {
+              "part": "issue7759",
+              "sha256": "4cbc47b53303e29dabba64cfe0b66201bb79f413ad8e3ceee19d66b0bed9180e",
+              "pages": 1
+            }
+          ],
+          "minimum": "99.93"
+        },
+        "wasm": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7759.tsv",
+          "sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d",
+          "original_shards": [
+            {
+              "part": "issue7759",
+              "sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d",
+              "pages": 1
+            }
+          ],
+          "minimum": "99.94"
+        }
+      },
+      "target_pages": [
+        {
+          "page": 1,
+          "purpose": "source-text-and-columns",
+          "raw_percent": {
+            "native": "99.93",
+            "wasm": "99.94"
+          },
+          "crop_px": [
+            45,
+            180,
+            753,
+            455
+          ],
+          "original_png_sha256": [
+            "d32c8c1e3c78dbb4b205ebe57b07887c028f6a1da3d0562b898c8cadbf8d7ab2",
+            "1c67b078e5ee7f5d154ec328140717c80549756ab74a8e8f2505a4a058e37f9b",
+            "289c28af0d86fd10bd940d2cad4c89ae42baa2d8b327d86d70c3c642220554b7"
+          ],
+          "panel": {
+            "file": "two-columns-and-chart-p001.png",
+            "sha256": "ab7ce4f4cad6c82f996562808ca384bf9ed56355541e070e67e45f476cc26532"
+          },
+          "observation_ko": "두 단의 줄 위치와 문장 순서, 본문 옆 차트의 범례와 계열을 확인했다."
+        }
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 1,
+        "current_native_raw_percent": "99.93",
+        "current_fresh_wasm_raw_percent": "99.94",
+        "current_devel_fresh_wasm_raw_percent": "99.94",
+        "current_candidate_wasm_whole_document_minimum": "99.94",
+        "current_candidate_wasm_tsv_sha256": "76992e7f4bead895100ff512c2dc4dc1b8daa6ca22e1b06296b2bf41b4c8be6d"
+      }
+    },
+    {
+      "key": "issue7761",
+      "pages": 46,
+      "input": {
+        "path": "samples/[2027] 온새미로 1 본교재.hwp",
+        "sha256": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue7761/onsaemiro-hwp-original-print-2024.pdf",
+        "sha256": "8015d2d28ee20ba66579f9375a0e36dfdd8e8725228015dc807748110bc09219"
+      },
+      "runs": {
+        "native": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7761.tsv",
+          "sha256": "1dad5df5afe9a33062ec481cbf21c7ffd97dfa1691634015a272a399c4907fa3",
+          "original_shards": [
+            {
+              "part": "issue7761",
+              "sha256": "1dad5df5afe9a33062ec481cbf21c7ffd97dfa1691634015a272a399c4907fa3",
+              "pages": 46
+            }
+          ],
+          "minimum": "99.98"
+        },
+        "wasm": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7761.tsv",
+          "sha256": "dc04516a4b48bae8c247ae11d3cb83ca54662c44ef566c1941093bed11bb90af",
+          "original_shards": [
+            {
+              "part": "issue7761-001-032",
+              "sha256": "5d4edefb26efbe34cb8a5bc9db4d3d222badb50c4b3aa549d8fe9da9086dfe7b",
+              "pages": 32
+            },
+            {
+              "part": "issue7761-033-046",
+              "sha256": "3ee37fdbefeea1e60536fed8833479476a369513054dcab2d9de37bad2c2545e",
+              "pages": 14
+            }
+          ],
+          "minimum": "99.98"
+        }
+      },
+      "target_pages": [
+        {
+          "page": 5,
+          "purpose": "square-wrap-content",
+          "raw_percent": {
+            "native": "100.00",
+            "wasm": "100.00"
+          },
+          "crop_px": [
+            68,
+            111,
+            733,
+            558
+          ],
+          "original_png_sha256": [
+            "e4b2aa77db6fecc7b2fe27d5e78aaf6e42a10a019a59eae464a79655b1baeb69",
+            "da2ef47510b6143cbf603443df0f01ef8e6b7e37aea4783a820b7e8874316157",
+            "da37c5e11b57b092e2d35e4c90983099552ee6a1826fa8501c43053db190bb67"
+          ],
+          "panel": {
+            "file": "onsaemiro-square-wrap-p005.png",
+            "sha256": "81f75581c4aa71ed11e55aefd8f2d36aea7c41bee326b757180c2c7b98b972f0"
+          },
+          "observation_ko": "[A] 옆 첫 줄 끝의 세와 다음 줄 첫 글자 계가 한컴 Print의 줄 경계와 같다. 표·본문·후속 문항을 확인했다."
+        }
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 5,
+        "current_native_raw_percent": "100.00",
+        "current_fresh_wasm_raw_percent": "100.00",
+        "current_devel_fresh_wasm_raw_percent": "94.71",
+        "current_candidate_wasm_whole_document_minimum": "99.98",
+        "current_candidate_wasm_whole_document_pages": 46,
+        "current_candidate_wasm_whole_document_pages_at_100": 44,
+        "current_candidate_wasm_whole_document_pngs_equal_to_prior_candidate": 46,
+        "current_candidate_wasm_tsv_sha256": "dc04516a4b48bae8c247ae11d3cb83ca54662c44ef566c1941093bed11bb90af"
+      }
+    },
+    {
+      "key": "issue7762",
+      "pages": 46,
+      "input": {
+        "path": "samples/[2027] 온새미로 1 본교재.hwpx",
+        "sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c"
+      },
+      "reference_pdf": {
+        "path": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+        "sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab"
+      },
+      "runs": {
+        "native": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7762.tsv",
+          "sha256": "3ed177ec81dd10bb3ee1cf4653edc88520ffb9d336479a0659660be8729df9a5",
+          "original_shards": [
+            {
+              "part": "issue7762",
+              "sha256": "3ed177ec81dd10bb3ee1cf4653edc88520ffb9d336479a0659660be8729df9a5",
+              "pages": 46
+            }
+          ],
+          "minimum": "99.98"
+        },
+        "wasm": {
+          "tsv": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7762.tsv",
+          "sha256": "2299ebdf16e567670d65d96ecb9f8359608f9dd1637eb816a9310a712ebe6b7c",
+          "original_shards": [
+            {
+              "part": "issue7762-001-032",
+              "sha256": "5d4edefb26efbe34cb8a5bc9db4d3d222badb50c4b3aa549d8fe9da9086dfe7b",
+              "pages": 32
+            },
+            {
+              "part": "issue7762-033-046",
+              "sha256": "ede22c0db6549c9c638affb21f2e64f0226c35f15dac89a65a24c26d9f5f2cdd",
+              "pages": 14
+            }
+          ],
+          "minimum": "99.98"
+        }
+      },
+      "target_pages": [
+        {
+          "page": 5,
+          "purpose": "square-wrap-content",
+          "raw_percent": {
+            "native": "100.00",
+            "wasm": "100.00"
+          },
+          "crop_px": [
+            68,
+            111,
+            733,
+            558
+          ],
+          "original_png_sha256": [
+            "e4b2aa77db6fecc7b2fe27d5e78aaf6e42a10a019a59eae464a79655b1baeb69",
+            "da2ef47510b6143cbf603443df0f01ef8e6b7e37aea4783a820b7e8874316157",
+            "da37c5e11b57b092e2d35e4c90983099552ee6a1826fa8501c43053db190bb67"
+          ],
+          "panel": {
+            "file": "onsaemiro-square-wrap-p005.png",
+            "sha256": "81f75581c4aa71ed11e55aefd8f2d36aea7c41bee326b757180c2c7b98b972f0"
+          },
+          "observation_ko": "[A] 옆 첫 줄과 다음 줄의 글자 소속, 표·본문·후속 문항을 별도 HWPX 원본에서 확인했다."
+        }
+      ],
+      "after_pr9322": {
+        "candidate_source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+        "native_and_fresh_wasm_pngs_match_prior_panel": true,
+        "representative_page": 5,
+        "current_native_raw_percent": "100.00",
+        "current_fresh_wasm_raw_percent": "100.00",
+        "current_devel_fresh_wasm_raw_percent": "94.71",
+        "current_candidate_wasm_whole_document_minimum": "99.98",
+        "current_candidate_wasm_whole_document_pages": 46,
+        "current_candidate_wasm_whole_document_pages_at_100": 44,
+        "current_candidate_wasm_whole_document_pngs_equal_to_prior_candidate": 46,
+        "current_candidate_wasm_tsv_sha256": "2299ebdf16e567670d65d96ecb9f8359608f9dd1637eb816a9310a712ebe6b7c"
+      }
+    }
+  ],
+  "purpose_ko": "현재 후보의 원래 이슈 대표 구간에서 내용·순서·배치를 독립 한컴 Print와 직접 대조했다."
+}

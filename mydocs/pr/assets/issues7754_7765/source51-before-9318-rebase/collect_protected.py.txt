@@ -1,0 +1,36 @@
+from pathlib import Path
+from decimal import Decimal
+import json, csv, hashlib, time
+R=Path('/home/tsjang/rhwp');O=R/'output/pr-review/issue7754-nine'
+def read(p):return json.loads(Path(p).read_text())
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+M=R/'mydocs/pr/assets/visual-protected-baseline/manifest.json';m=read(M);baseline=M.with_name('final.tsv')
+assert sha(baseline)==m['table_sha256']=='b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597'
+expected={(x['document_id'],x['backend'],int(x['page'])):Decimal(x['silhouette_raw_match_percent']) for x in csv.DictReader(baseline.open(),delimiter='\t')}
+summary={'collected_at':time.time(),'source_head':'8f9fd0414ffcfb720fa4a601c79c4590480de0e8','scope':'Pre-9318 source105 only. Whole-document qualified invocations; never pagewise best scores.','baseline_sha256':sha(baseline),'datasets':[]}
+chemical=read(O/'source118-complete-fonts-full-chemical-state.json');outline=read(O/'source124-qualified-outline-state.json');sample=read(O/'source129-native-sample10-resume-state.json')
+assert chemical['passed'] and outline['passed'] and sample['passed']
+for d in m['datasets']:
+ b=d['backend'];key=d['logical_key'];state=read(O/f'source109-protected-{b}-state.json');records=[x for x in state['results'] if x['key']==key];source='source109'
+ if key=='chemical':records=[x for x in chemical['results'] if x['backend']==b];source='source118'
+ if key=='outline':records=[x for x in outline['results'] if x['backend']==b and x['role']=='candidate'];source='source124'
+ if key=='sample10' and b=='native':records=[sample];source='source129'
+ rows=[];receipts=[]
+ for x in records:
+  p=Path(x['tsv'])
+  if not p.exists() or not x.get('complete_coverage',True):continue
+  assert x.get('source_head')==summary['source_head'],(key,b,'wrong producer')
+  assert sha(p)==x['tsv_sha256'],(key,b,'TSV changed')
+  rows+=list(csv.DictReader(p.open(),delimiter='\t'));receipts.append({'tsv':str(p),'sha256':sha(p),'manifest':x['manifest']})
+ pages=[int(x['page']) for x in rows];complete=pages==list(range(1,d['page_count']+1));declines=[]
+ if complete:
+  for row in rows:
+   page=int(row['page']);value=Decimal(row['silhouette_raw_match_percent']);floor=expected[(d['document_id'],b,page)]
+   if value<floor:declines.append({'page':page,'protected':str(floor),'candidate':str(value)})
+ summary['datasets'].append({'key':key,'backend':b,'document_id':d['document_id'],'expected_pages':d['page_count'],'pages':len(rows),'complete_coverage':complete,'minimum':str(min(Decimal(x['silhouette_raw_match_percent']) for x in rows)) if rows else None,'declines':declines,'qualified_source':source,'receipts':receipts})
+summary['backends']={}
+for b in ['native','wasm']:
+ a=[x for x in summary['datasets'] if x['backend']==b];complete=all(x['complete_coverage'] for x in a);summary['backends'][b]={'complete_coverage':complete,'completed_datasets':sum(x['complete_coverage'] for x in a),'total_datasets':len(a),'complete_pages':sum(x['pages'] for x in a if x['complete_coverage']),'declines_in_complete_datasets':sum(len(x['declines']) for x in a),'passed':complete and all(not x['declines'] for x in a)}
+summary['passed']=all(x['passed'] for x in summary['backends'].values())
+(O/'source145-qualified-protected-summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n')
+print(json.dumps(summary['backends'],ensure_ascii=False))

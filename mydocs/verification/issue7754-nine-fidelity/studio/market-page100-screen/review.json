@@ -1,0 +1,102 @@
+{
+  "issue": 7755,
+  "page": 100,
+  "input": {
+    "path": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    "sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    "sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+  },
+  "reference_raster": {
+    "tool": "pdftoppm",
+    "dpi": 96
+  },
+  "studio": {
+    "profile": "screen",
+    "requested_backend": "canvas2d",
+    "actual_backend": "canvas2d",
+    "browser": "Chrome/158.0.8127.36"
+  },
+  "images": {
+    "base": {
+      "file": "base.png",
+      "dimensions_px": [
+        794,
+        1123
+      ],
+      "source_head": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+      "served_wasm_sha256": "bf4074a8aad9bd3a9a605ca4998acf1fe3b53cf378c486e67bc0091cdaaaf6ba",
+      "heading_bbox": [
+        352,
+        217,
+        441,
+        236
+      ],
+      "png_sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+    },
+    "candidate": {
+      "file": "candidate.png",
+      "dimensions_px": [
+        794,
+        1123
+      ],
+      "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+      "served_wasm_sha256": "a17cd643b322457f5a8a5644c065395a5d925f4e88496542f52ca8c048d425cb",
+      "heading_bbox": [
+        352,
+        279,
+        441,
+        298
+      ],
+      "png_sha256": "5b234616d6fb0b9e811af1fb61d25cd9a173536220517f3916a855b7b5f1de17"
+    },
+    "reference": {
+      "file": "hancom-print.png",
+      "dimensions_px": [
+        794,
+        1122
+      ],
+      "heading_bbox": [
+        353,
+        279,
+        441,
+        297
+      ],
+      "png_sha256": "41695f69cb01947810b10b2ba8d9bac7aa2032122863847dbc4e4af4e5a33e2c"
+    }
+  },
+  "heading_scan_bounds_px": [
+    335,
+    209,
+    455,
+    313
+  ],
+  "heading_scan_method_ko": "해당 영역의 명도 127 이하 픽셀에서 처음 연속하는 수평 잉크 행의 경계를 관찰했다. 좌표 원점은 이미지 왼쪽 위다.",
+  "visual_observation_ko": "빈 줄 묶음 아래 제3절 소결 제목과 이어지는 세 문단이 한컴 Print와 같은 세로 위치로 돌아왔다. Studio 화면에서 제목 획의 글꼴 모양 차이가 보인다.",
+  "native_raw_silhouette_percent": {
+    "base": "26.80",
+    "candidate": "100.00"
+  },
+  "native_evidence": "../../native-target-and-feature-comparison.json",
+  "after_pr9322": {
+    "method": "리베이스 후 현재 기준과 후보의 Canvas2D 화면 PNG 해시를 각각 이전 확대 판독 이미지와 대조",
+    "base": {
+      "source_head": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "served_wasm_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+      "png_sha256": "bd512374bb769bc9f461ec97867706f2e3e41aa81af90d1ce4edab07d8f85397"
+    },
+    "candidate": {
+      "source_head": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "served_wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+      "png_sha256": "5b234616d6fb0b9e811af1fb61d25cd9a173536220517f3916a855b7b5f1de17"
+    },
+    "heading_first_ink_row": {
+      "base": 217,
+      "candidate": 279,
+      "reference": 279
+    },
+    "previous_review_same_pngs": true
+  }
+}

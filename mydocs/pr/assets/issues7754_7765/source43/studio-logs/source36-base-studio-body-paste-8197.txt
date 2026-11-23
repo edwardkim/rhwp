@@ -1,0 +1,27 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27 at http://127.0.0.1:41037
+=== E2E: Issue 8197: body plain-text paste keeps edits and batches layout ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445
+400문단 쪽별 텍스트 배치와 HWP/HWPX 반복 저장 통과
+서식, 캐럿과 Undo/Redo 통과
+8:32:37 AM [vite] (client) [Unhandled error] StudioCommandError: Studio 편집 명령을 완료하지 못했습니다.
+ > CommandErrorBoundary.fail src/core/command-error.ts:122:21
+    120 |        return payload;
+    121 |      });
+    122 |      this.lastError = new StudioCommandError(cause, report);
+        |                       ^
+    123 |      return this.lastError;
+    124 |    }
+ > InputHandler.withCommandErrorBoundary src/engine/input-handler.ts:3340:21
+ > InputHandler.tryPasteBodyParagraphs src/engine/input-handler.ts:3391:9
+ > InputHandler.pastePlainText src/engine/input-handler-keyboard.ts:437:48
+ > InputHandler.onPaste src/engine/input-handler-keyboard.ts:2132:17
+ > InputHandler.onPaste src/engine/input-handler.ts:2138:22
+ > window.__pasteIssue8197 pptr:evaluate;runTest.skipLoadApp%20(file%3A%2F%2F%2Fhome%2Ftsjang%2Frhwp%2Frhwp-studio%2Fe2e%2Fbody-plain-text-paste-issue8197.test.mjs%3A13%3A14):8:22
+ > pptr:evaluate;runTest.skipLoadApp%20(file%3A%2F%2F%2Fhome%2Ftsjang%2Frhwp%2Frhwp-studio%2Fe2e%2Fbody-plain-text-paste-issue8197.test.mjs%3A129%3A31):14:18
+
+8:32:39 AM [vite] (client) [console.warn] [CursorState] updateRect 실패 → rect=null pos=(0,1,1) cell=(undefined,undefined,undefined,undefined): 렌더링 오류: 문단 (sec=0, para=1)이 페이지에 없습니다
+400문단 배치·캐럿, HWP/HWPX 재저장, 서식·선택·Undo/Redo 및 배치 중 실패 복구 확인
+
+📋 HTML 보고서: ../output/e2e/body-plain-text-paste-issue8197-report.html

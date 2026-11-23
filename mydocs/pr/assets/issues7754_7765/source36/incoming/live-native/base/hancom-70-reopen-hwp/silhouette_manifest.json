@@ -1,0 +1,114 @@
+{
+  "key": "hancom-70-reopen-hwp",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-live-scores/native/base/hancom-70-reopen-hwp/silhouette.tsv",
+  "tsv_sha256": "18c3218f9c1f9d579a7f6cf3333ac572189e0f2944c87aba9164496dfd272c48",
+  "dpi": null,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/base/hancom-70/reopen-hwp/rhwp_png/page-0001.png",
+      "rhwp_sha256": "c7cab3ff4761527f3a845e6d42d94d9aa01746393061c3fa0798079844d16f0f",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-live-scores/native/base/hancom-70-reopen-hwp/pdf_png/pdf-001.png",
+      "pdf_sha256": "78cb65231503cebad3c8146f0eaf18bd16a654d4f1ad97dc7371a80357f87c55"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/base/hancom-70/reopen-hwp/rhwp_png/page-0002.png",
+      "rhwp_sha256": "c1ab44871bc8951ddf05e8e8f0f3f46a3b613c6faa984c6de456c3bb96bb0b9c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-live-scores/native/base/hancom-70-reopen-hwp/pdf_png/pdf-002.png",
+      "pdf_sha256": "90d876aef92f5c97a862d96dffd01c0e5deea1f0622a9ce7c0ca78a95906c86c"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/base/hancom-70/reopen-hwp/rhwp_png/page-0003.png",
+      "rhwp_sha256": "e6f130690fb53101581f9a717a5643dcc97468c14b0f49d283731652e499ca08",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-live-scores/native/base/hancom-70-reopen-hwp/pdf_png/pdf-003.png",
+      "pdf_sha256": "e2e8d6703ceead29bc7f9bf928cb5cf63a5263df4d74c0c4efe039f6327dd5d2"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/base/hancom-70/reopen-hwp/rhwp_png/page-0004.png",
+      "rhwp_sha256": "b2e9a72dcf3d6b61a4eafc750472f852f6c852396e0e17cc896cec9a564a58f5",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-live-scores/native/base/hancom-70-reopen-hwp/pdf_png/pdf-004.png",
+      "pdf_sha256": "4a11dc5336565c52f9e11e9b660aad99b7c3feb8885ae8fcb7cdef5a2cea461c"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 194195,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 151780,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123187,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.58519,
+      "silhouette_raw_unmatched_pixels": 513,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 123671,
+      "tolerant_content_match_percent": 99.58519
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "10.2.0",
+    "pillow_core_sha256": "4a49d7868b44f6b1f8525252b0157ead5896c13292f421986ae7f4d18a9037b1",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": null,
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  }
+}

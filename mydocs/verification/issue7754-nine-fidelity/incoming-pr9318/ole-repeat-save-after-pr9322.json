@@ -1,0 +1,157 @@
+{
+  "integration_pr": 9318,
+  "original_pr": 9269,
+  "input": {
+    "path": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+    "sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2"
+  },
+  "accepted_contract": {
+    "path": "mydocs/pr/assets/planet6897_9240_9282_20261121/validation/ole-repeat-save-v4.json",
+    "sha256": "f3d435e83a4d22803dd6459e227ca836803b579603cc598718b6e4b3b507df03"
+  },
+  "checks": {
+    "edit_and_reopen_generations_per_format": 2,
+    "converted_and_edited_documents": 20,
+    "ole_cfb_zipped_payloads": {
+      "BIN0003.OLE": "c6a57b7ae84b5b096698a9abcdc28dc34e85d1bb03a142e39daeccbe062f490e",
+      "BIN0004.OLE": "701c3139052181b5e258114d7df477e8a140ff2f2ee2e9f887ab1f7a74e46fbc"
+    },
+    "independent_hwp_cfb_record_count": 2,
+    "independent_hwpx_xml_record_count": 2,
+    "edited_markers": true
+  },
+  "roles": {
+    "native-base": {
+      "source_head": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "program_sha256": "169c8a00b73a4373db37cde92819840dffea77164a84085fe4b50784628b8d53",
+      "outputs": [
+        {
+          "file": "pass0.hwpx",
+          "sha256": "709154250dd83a5a5b04488eab80a8904169e3ac8609d32a502bf72c698b43f6"
+        },
+        {
+          "file": "pass1.hwp",
+          "sha256": "61041b626c4a4ea212c623688ddd4b04228e21b52d442998162c18cae6940c03"
+        },
+        {
+          "file": "pass1.hwpx",
+          "sha256": "ffc3e583391e99b0461e1839f72ddd6ad459ed2a638d162ae59d3341759ffdd0"
+        },
+        {
+          "file": "pass2.hwp",
+          "sha256": "b16f926b4c91450e0d3007e261fb1af1032f4c201fba21d9b13163acff027fb3"
+        },
+        {
+          "file": "pass2.hwpx",
+          "sha256": "a8c707a4dbecde0e04e0837263950b5ca4656dc24c3f48384e005a67608ca4b1"
+        }
+      ],
+      "log_sha256": {
+        "export-hwpx.log": "a04d87d9e9e8858893b670f8f8c54eb18d8e9a82e1cd1d8f1239ce04f2fd4bc1",
+        "edit-hwp-1.log": "2677ad071cf481016b2cd0849df911ed5154abd191b56cbcb910d3fdb44fae1f",
+        "reopen-hwp-1.log": "2dc8a12b3a37ffa330ecabf0ec2d779de162e74fdd26b3b108d85c1a212ac4b1",
+        "edit-hwp-2.log": "020a3610585fdd50e9295dae1d233e947abc2149eda517ee23036cb2b8b82ef9",
+        "reopen-hwp-2.log": "5352f3a7ab604575ce35ac542328563fe634ab5e87ab16fd8014f8f9657988f7",
+        "edit-hwpx-1.log": "2e9036c2155e45dcc65cc8c507a4e020bfde7161ab0ec42a2dc7e78310caf7ae",
+        "reopen-hwpx-1.log": "5661bd9ff8fe69c04942a5bd2ca07001d76e13052bd47d436320c2d388615f9c",
+        "edit-hwpx-2.log": "d9733c44e042c6e88a74f56608ca9e5c10f8dd4513e98cfdf4cef106ea2f9b70",
+        "reopen-hwpx-2.log": "942ff23e49e0e9f78ac2747d4c90b706636592fc4d305cae61f1cc3164c2c7fc"
+      }
+    },
+    "native-candidate": {
+      "source_head": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "program_sha256": "c214cd39c5b6cba08e80852de8cccdbbed58965595d8900b06be1d04960eef4d",
+      "outputs": [
+        {
+          "file": "pass0.hwpx",
+          "sha256": "709154250dd83a5a5b04488eab80a8904169e3ac8609d32a502bf72c698b43f6"
+        },
+        {
+          "file": "pass1.hwp",
+          "sha256": "61041b626c4a4ea212c623688ddd4b04228e21b52d442998162c18cae6940c03"
+        },
+        {
+          "file": "pass1.hwpx",
+          "sha256": "ffc3e583391e99b0461e1839f72ddd6ad459ed2a638d162ae59d3341759ffdd0"
+        },
+        {
+          "file": "pass2.hwp",
+          "sha256": "b16f926b4c91450e0d3007e261fb1af1032f4c201fba21d9b13163acff027fb3"
+        },
+        {
+          "file": "pass2.hwpx",
+          "sha256": "a8c707a4dbecde0e04e0837263950b5ca4656dc24c3f48384e005a67608ca4b1"
+        }
+      ],
+      "log_sha256": {
+        "export-hwpx.log": "722de79547112cb368f6f893021f9cd0d186642427522e1c63787f72224ccd01",
+        "edit-hwp-1.log": "fc221c25b57de339539a3ddb0f656db31a37530c051657f41d356f4dcdfb93ae",
+        "reopen-hwp-1.log": "d1b5ba443d6fd081ff2534f892c06b4ee279ea77d35a6d15c7f1424358698bbc",
+        "edit-hwp-2.log": "407d151e840b5988ec5bdf3f6689b5a3459b83e41b7f7fdf1bad1303b35fda41",
+        "reopen-hwp-2.log": "d9e63adcf2a174d9791cf5db3557cea602d31069f78076879a9ab296bdd6fc4b",
+        "edit-hwpx-1.log": "088f9071bbe14f8d885a8a6f101b42f213e1ceb8eb412489e55870091bbb4755",
+        "reopen-hwpx-1.log": "e0d92a037c0f222049f6786f6283fec8565034fccfc0b2ada0c42344b3acb311",
+        "edit-hwpx-2.log": "b4fc3046cd2151ea7bb92d1a0c658237e3d1fcba5025c5be6fc84aaed5efbaa8",
+        "reopen-hwpx-2.log": "3a98d1692b2d44982c3e9d128e621871843fffd38c6a0e42b69294d9cbebd1b3"
+      }
+    },
+    "wasm-base": {
+      "source_head": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "program_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+      "outputs": [
+        {
+          "file": "pass0.hwpx",
+          "sha256": "709154250dd83a5a5b04488eab80a8904169e3ac8609d32a502bf72c698b43f6"
+        },
+        {
+          "file": "pass1.hwp",
+          "sha256": "61041b626c4a4ea212c623688ddd4b04228e21b52d442998162c18cae6940c03"
+        },
+        {
+          "file": "pass1.hwpx",
+          "sha256": "ffc3e583391e99b0461e1839f72ddd6ad459ed2a638d162ae59d3341759ffdd0"
+        },
+        {
+          "file": "pass2.hwp",
+          "sha256": "b16f926b4c91450e0d3007e261fb1af1032f4c201fba21d9b13163acff027fb3"
+        },
+        {
+          "file": "pass2.hwpx",
+          "sha256": "a8c707a4dbecde0e04e0837263950b5ca4656dc24c3f48384e005a67608ca4b1"
+        }
+      ],
+      "log_sha256": {
+        "roundtrip.log": "d81635e2d13a05637dac58693f34d8a4bb1276e2be42abf2a4ad81e7d9315c4a"
+      }
+    },
+    "wasm-candidate": {
+      "source_head": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "program_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+      "outputs": [
+        {
+          "file": "pass0.hwpx",
+          "sha256": "709154250dd83a5a5b04488eab80a8904169e3ac8609d32a502bf72c698b43f6"
+        },
+        {
+          "file": "pass1.hwp",
+          "sha256": "61041b626c4a4ea212c623688ddd4b04228e21b52d442998162c18cae6940c03"
+        },
+        {
+          "file": "pass1.hwpx",
+          "sha256": "ffc3e583391e99b0461e1839f72ddd6ad459ed2a638d162ae59d3341759ffdd0"
+        },
+        {
+          "file": "pass2.hwp",
+          "sha256": "b16f926b4c91450e0d3007e261fb1af1032f4c201fba21d9b13163acff027fb3"
+        },
+        {
+          "file": "pass2.hwpx",
+          "sha256": "a8c707a4dbecde0e04e0837263950b5ca4656dc24c3f48384e005a67608ca4b1"
+        }
+      ],
+      "log_sha256": {
+        "roundtrip.log": "eb3b0f6f0d35bbe5da1c3d62d6045cb62414f44ad51dfca8ee40f4159827e3fe"
+      }
+    }
+  }
+}

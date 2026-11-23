@@ -133,6 +133,10 @@ pub struct Paragraph {
     /// (`serde(skip)` — IR dump/ir-sweep 축의 필드 집합을 바꾸지 않는다.)
     #[serde(skip_serializing)]
     pub source_line_seg_vertical_pos: Option<Vec<i32>>,
+    /// 본문 흐름 투영이 옮기기 전의 원본 첫 줄 원점. 현재 좌표는 line_segs가 소유한다.
+    /// 저장 reset의 원본 프레임 인증에만 사용하며 파일·IR에 직렬화하지 않는다.
+    #[serde(skip_serializing)]
+    pub layout_stored_first_origin: Option<i32>,
     /// 단 정의 부재로 본문 세로 축을 재구성했는지 나타내는 조판 전용 출처다.
     /// 문자 분할의 유효성과 별개이며 원본 파일이나 IR로 직렬화하지 않는다.
     #[serde(skip_serializing)]
@@ -1015,6 +1019,7 @@ impl Paragraph {
     #[inline]
     pub fn invalidate_layout_inputs(&mut self) {
         self.stored_text_partition_dirty = true;
+        self.layout_stored_first_origin = None;
         self.hwp3_saved_space_corrections.clear();
         self.layout_object_projection = false;
         self.layout_float_band = false;
@@ -1061,6 +1066,7 @@ impl Paragraph {
         // source-position snapshot owned by the replaced rows.
         self.layout_only_fill_lines = 0;
         self.source_line_seg_vertical_pos = None;
+        self.layout_stored_first_origin = None;
         self.layout_rebased_body_axis = false;
         // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
         // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
@@ -2828,6 +2834,7 @@ impl Paragraph {
             layout_only_fill_lines: 0,
             // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).
             source_line_seg_vertical_pos: None,
+            layout_stored_first_origin: None,
             // 새 줄은 본문 축을 이어 붙인 저장 줄이 아니다.
             layout_rebased_body_axis: false,
             // 갈라진 문단은 앞 문단의 새 저장 줄에 이어 계산된다.

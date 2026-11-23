@@ -1,0 +1,82 @@
+{
+  "started": 1795330483.7579935,
+  "pid": 1907895,
+  "scope": "Two independent full alphabet specimens, no target document content, coordinates or PDF glyph programs. Standard bullets/arrows plus generic punctuation.",
+  "results": [
+    {
+      "key": "hanyang-junggothic",
+      "face": "한양중고딕",
+      "input": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source56-independent-specimens/hanyang-junggothic.hwpx",
+      "input_sha256": "79c2714845d7ed0941534bc765665e7f0302dac1333abfce84d21daef3d10592",
+      "characters": 11187,
+      "observations": [
+        {
+          "status": "running",
+          "job_id": "b656772a-6ed7-45a8-baa7-72aa68a70f4a",
+          "engine": "2020",
+          "terminal": false,
+          "print": {}
+        },
+        {
+          "status": "succeeded",
+          "job_id": "b656772a-6ed7-45a8-baa7-72aa68a70f4a",
+          "engine": "2020",
+          "terminal": true,
+          "print": {
+            "engine": "2020",
+            "hancom_version": "11.0.0.9136",
+            "pdf_print_method": 0,
+            "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+          }
+        }
+      ],
+      "start": {
+        "status": "queued",
+        "job_id": "b656772a-6ed7-45a8-baa7-72aa68a70f4a",
+        "engine": "2020",
+        "print": {}
+      },
+      "output": "/home/tsjang/rhwp/pdf/private-issue7754-independent-font-specimens-20261122/hanyang-junggothic-alphabet-2020.pdf",
+      "pdf_sha256": "b061c2fbd646ecb31ac1b6547fcd0656535b61fa965e19c6ef1442ebf38107e8",
+      "bytes": 5442045,
+      "print": {
+        "engine": "2020",
+        "hancom_version": "11.0.0.9136",
+        "pdf_print_method": 0,
+        "pdf_output_mode": "hancom2020_pdf_driver_one_up"
+      },
+      "complete": true
+    },
+    {
+      "key": "hanyang-sinmyeongjo",
+      "face": "한양신명조",
+      "input": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source56-independent-specimens/hanyang-sinmyeongjo.hwpx",
+      "input_sha256": "12559d8965770f3046f492a0cc3e27ff70a9e4c3a5fe0a105f7e9a6e2c8e73a6",
+      "characters": 11187,
+      "observations": [
+        {
+          "status": "running",
+          "job_id": "6f8482ce-038f-40d1-9fa3-58c3bca90beb",
+          "engine": "2020",
+          "terminal": false,
+          "print": {}
+        },
+        {
+          "status": "failed",
+          "job_id": "6f8482ce-038f-40d1-9fa3-58c3bca90beb",
+          "engine": "2020",
+          "terminal": true,
+          "print": {}
+        }
+      ],
+      "start": {
+        "status": "queued",
+        "job_id": "6f8482ce-038f-40d1-9fa3-58c3bca90beb",
+        "engine": "2020",
+        "print": {}
+      }
+    }
+  ],
+  "error": "conversion_not_succeeded",
+  "ended": 1795331115.654959
+}

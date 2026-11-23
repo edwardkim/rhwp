@@ -1,0 +1,186 @@
+{
+  "base": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "candidate": "3045dc9768ffe0be3f1329ab55d33bc5b48527d2",
+  "files": [
+    {
+      "path": "scripts/ci-impact-policy.cjs",
+      "base_sha256": "6ad2be6456a8e5c50dcb5df7b27b6e79c57ccc77084eba580c3b92505df9159e",
+      "candidate_sha256": "6ad2be6456a8e5c50dcb5df7b27b6e79c57ccc77084eba580c3b92505df9159e"
+    },
+    {
+      "path": "scripts/ci-impact-classifier.cjs",
+      "base_sha256": "0192cb7bf486f09e971da78acd76916203b5d9a64134f56355571ce9413c017f",
+      "candidate_sha256": "0192cb7bf486f09e971da78acd76916203b5d9a64134f56355571ce9413c017f"
+    },
+    {
+      "path": "scripts/pr-ci-summary.cjs",
+      "base_sha256": "dfbb4ab52629af3a9a7c9c96706e9845f319c4fd9825249dd2c11d850ed610de",
+      "candidate_sha256": "dfbb4ab52629af3a9a7c9c96706e9845f319c4fd9825249dd2c11d850ed610de"
+    },
+    {
+      "path": "scripts/publish-pr-ci-summary.cjs",
+      "base_sha256": "d2e283860447b932c01dcb423d375f7fdc6ee3c833aea07f68b1fd820412f015",
+      "candidate_sha256": "d2e283860447b932c01dcb423d375f7fdc6ee3c833aea07f68b1fd820412f015"
+    },
+    {
+      "path": "scripts/pr-ci-render-artifact.cjs",
+      "base_sha256": "e0ab65a5037f8a1fc9217e60b6d141ce6d94209e4b698defa59e498816791b4b",
+      "candidate_sha256": "e0ab65a5037f8a1fc9217e60b6d141ce6d94209e4b698defa59e498816791b4b"
+    },
+    {
+      "path": "scripts/pr_ci_render_reports.py",
+      "base_sha256": "0b79d889dddbb1e027306215da2baa179d8ea1a79e5fd306e5764aa62da6fc07",
+      "candidate_sha256": "0b79d889dddbb1e027306215da2baa179d8ea1a79e5fd306e5764aa62da6fc07"
+    },
+    {
+      "path": "scripts/render_diff_evidence.py",
+      "base_sha256": "121592bf5bf8c3508a1eea31804d394d76e5f7f7ae047a5fbe60cd32d4b8ca67",
+      "candidate_sha256": "121592bf5bf8c3508a1eea31804d394d76e5f7f7ae047a5fbe60cd32d4b8ca67"
+    },
+    {
+      "path": "scripts/tests/pr-ci-summary.test.cjs",
+      "base_sha256": "4b18961a58f46df3b36d6fbcb46e0e1a6f3ac9bd611d6ae30be2d50d289098e6",
+      "candidate_sha256": "4b18961a58f46df3b36d6fbcb46e0e1a6f3ac9bd611d6ae30be2d50d289098e6"
+    },
+    {
+      "path": "scripts/tests/test_render_diff_workflow.py",
+      "base_sha256": "1b22078d56f556cb342cc696c8d57cc4e129d5508b0519c7e794892f8ea4351e",
+      "candidate_sha256": "1b22078d56f556cb342cc696c8d57cc4e129d5508b0519c7e794892f8ea4351e"
+    },
+    {
+      "path": ".github/workflows/adapter-diff.yml",
+      "base_sha256": "7874a0636ac65aa41208e43ff8eabf193164b592bc9b6ed22c8f12348b988322",
+      "candidate_sha256": "7874a0636ac65aa41208e43ff8eabf193164b592bc9b6ed22c8f12348b988322"
+    },
+    {
+      "path": ".github/workflows/build-nextest-archives.yml",
+      "base_sha256": "aefead34a53ededb38d01d55a08b39db45a7702955215378871e5b2443991ee0",
+      "candidate_sha256": "aefead34a53ededb38d01d55a08b39db45a7702955215378871e5b2443991ee0"
+    },
+    {
+      "path": ".github/workflows/cache-generation-sweep.yml",
+      "base_sha256": "57cf8b890aee0ad64ef34549635b9d3ecc6c2f814c08c37b590f8f20252338d3",
+      "candidate_sha256": "57cf8b890aee0ad64ef34549635b9d3ecc6c2f814c08c37b590f8f20252338d3"
+    },
+    {
+      "path": ".github/workflows/cancel-stale-pr-runs.yml",
+      "base_sha256": "871776c904d8e6ab957652b4c05ea02f0d41a305dbfc1be49cba278c7c6c5a41",
+      "candidate_sha256": "871776c904d8e6ab957652b4c05ea02f0d41a305dbfc1be49cba278c7c6c5a41"
+    },
+    {
+      "path": ".github/workflows/ci-impact-policy.yml",
+      "base_sha256": "f9a528cb27a34c8b4b06fd4b0a39ade922ada8843a407ee61358a81cb8de86cb",
+      "candidate_sha256": "f9a528cb27a34c8b4b06fd4b0a39ade922ada8843a407ee61358a81cb8de86cb"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "base_sha256": "f812568c79a81a9ee4c3565890ada8ac948ca4f973c6f43050c085bdeb30d32b",
+      "candidate_sha256": "f812568c79a81a9ee4c3565890ada8ac948ca4f973c6f43050c085bdeb30d32b"
+    },
+    {
+      "path": ".github/workflows/close-issues-on-devel-push.yml",
+      "base_sha256": "531c80b5e6ea0db4cc6224de434360604edbe811a5865a570eecd86bdfa7107e",
+      "candidate_sha256": "531c80b5e6ea0db4cc6224de434360604edbe811a5865a570eecd86bdfa7107e"
+    },
+    {
+      "path": ".github/workflows/codeql.yml",
+      "base_sha256": "fa86f54cb0b1ff8f47d783764ac012cb7d81026ce6c26bbc36d43a2acb39b651",
+      "candidate_sha256": "fa86f54cb0b1ff8f47d783764ac012cb7d81026ce6c26bbc36d43a2acb39b651"
+    },
+    {
+      "path": ".github/workflows/deploy-pages.yml",
+      "base_sha256": "0cc160da0dbb71562edb123797210b4d95b2ec29eba3b5695fca5e948801f342",
+      "candidate_sha256": "0cc160da0dbb71562edb123797210b4d95b2ec29eba3b5695fca5e948801f342"
+    },
+    {
+      "path": ".github/workflows/full-renderer-sweep.yml",
+      "base_sha256": "d1c22794fdde2a2370fd033610d6d8a62b40a3df3b177cb9ebde580cd5cb02f5",
+      "candidate_sha256": "d1c22794fdde2a2370fd033610d6d8a62b40a3df3b177cb9ebde580cd5cb02f5"
+    },
+    {
+      "path": ".github/workflows/fuzz-smoke.yml",
+      "base_sha256": "a6ea5fc47dd1fd4d53aada9fe1b696295dc6fff7d06ac74bdfb9e0ddfbfa2259",
+      "candidate_sha256": "a6ea5fc47dd1fd4d53aada9fe1b696295dc6fff7d06ac74bdfb9e0ddfbfa2259"
+    },
+    {
+      "path": ".github/workflows/gym-release-gate.yml",
+      "base_sha256": "248a51625a8ae8a76aceac8b339d3f9788cf771153783cb2a7286db5d6ab949b",
+      "candidate_sha256": "248a51625a8ae8a76aceac8b339d3f9788cf771153783cb2a7286db5d6ab949b"
+    },
+    {
+      "path": ".github/workflows/issue-form-labels.yml",
+      "base_sha256": "55d17662573611f6b13e7958a7883ee304267609d3bfc8d74a8c070a3117046f",
+      "candidate_sha256": "55d17662573611f6b13e7958a7883ee304267609d3bfc8d74a8c070a3117046f"
+    },
+    {
+      "path": ".github/workflows/layout-anomaly-advisory.yml",
+      "base_sha256": "22f3913e621d74ac2560a92cf5b982d1eecbe76c2818a9798428862680ed38d6",
+      "candidate_sha256": "22f3913e621d74ac2560a92cf5b982d1eecbe76c2818a9798428862680ed38d6"
+    },
+    {
+      "path": ".github/workflows/native-host-package.yml",
+      "base_sha256": "7a6e355058d0ea21161f6a7913665592e38bc7391aae9709ae2ffff66933a166",
+      "candidate_sha256": "7a6e355058d0ea21161f6a7913665592e38bc7391aae9709ae2ffff66933a166"
+    },
+    {
+      "path": ".github/workflows/npm-publish.yml",
+      "base_sha256": "d484a1c1f37ced24f7f4aef2a3f52c3a7831d31ae8f610fcbd9e518a6e6e9bbe",
+      "candidate_sha256": "d484a1c1f37ced24f7f4aef2a3f52c3a7831d31ae8f610fcbd9e518a6e6e9bbe"
+    },
+    {
+      "path": ".github/workflows/oracle-public-advisory.yml",
+      "base_sha256": "640699b751f19d4f4f8486c3a983996bd23959aa7794bc8c3507d50e43786527",
+      "candidate_sha256": "640699b751f19d4f4f8486c3a983996bd23959aa7794bc8c3507d50e43786527"
+    },
+    {
+      "path": ".github/workflows/pr-ci-summary.yml",
+      "base_sha256": "34de13076abc00bf3a80d9e46dd496de473db41b6cdd87d1ae9aff674e3877f2",
+      "candidate_sha256": "34de13076abc00bf3a80d9e46dd496de473db41b6cdd87d1ae9aff674e3877f2"
+    },
+    {
+      "path": ".github/workflows/proptest-roundtrip.yml",
+      "base_sha256": "41366f54b46a616e3601780b1a6d038df919e3287732bb08f77c7d677ab8cc7f",
+      "candidate_sha256": "41366f54b46a616e3601780b1a6d038df919e3287732bb08f77c7d677ab8cc7f"
+    },
+    {
+      "path": ".github/workflows/refresh-nextest-duration.yml",
+      "base_sha256": "bbb697de43350adbf0dbd70aefa87139921d10d3f9a68e591ee8d3ed70cba5ae",
+      "candidate_sha256": "bbb697de43350adbf0dbd70aefa87139921d10d3f9a68e591ee8d3ed70cba5ae"
+    },
+    {
+      "path": ".github/workflows/release-binary.yml",
+      "base_sha256": "a0f2a67592f5557491fa0b92e2d83afb381b43c090e27bd8349c7bb7aae4e8de",
+      "candidate_sha256": "a0f2a67592f5557491fa0b92e2d83afb381b43c090e27bd8349c7bb7aae4e8de"
+    },
+    {
+      "path": ".github/workflows/release-operations-contracts.yml",
+      "base_sha256": "99fffe1767d295fcc7c59a329c51a7f8463d1da7c25c682b344ade5aff348f93",
+      "candidate_sha256": "99fffe1767d295fcc7c59a329c51a7f8463d1da7c25c682b344ade5aff348f93"
+    },
+    {
+      "path": ".github/workflows/render-diff.yml",
+      "base_sha256": "08a5d1a3b0df9872f35eb9328c06fc8a1bd13295738be05aa55fb05fe87a3bd1",
+      "candidate_sha256": "08a5d1a3b0df9872f35eb9328c06fc8a1bd13295738be05aa55fb05fe87a3bd1"
+    },
+    {
+      "path": ".github/workflows/run-nextest-archives.yml",
+      "base_sha256": "fd435240b47084ade6596155bc7450c1c8b931beac4ea15cf91c7ce51ef1e14d",
+      "candidate_sha256": "fd435240b47084ade6596155bc7450c1c8b931beac4ea15cf91c7ce51ef1e14d"
+    },
+    {
+      "path": ".github/workflows/skill-router-gate.yml",
+      "base_sha256": "e1b617a32c249c0730ad61ea7cc24a6fb65f6a6c24e292ba07a704568b54a434",
+      "candidate_sha256": "e1b617a32c249c0730ad61ea7cc24a6fb65f6a6c24e292ba07a704568b54a434"
+    },
+    {
+      "path": ".github/workflows/trusted-postmerge-ci-reuse.yml",
+      "base_sha256": "aa44b780924332380b83b609195c5ccae6495102fd9ba0d9e724ad873ae9814c",
+      "candidate_sha256": "aa44b780924332380b83b609195c5ccae6495102fd9ba0d9e724ad873ae9814c"
+    },
+    {
+      "path": "scripts/measure_render_diff_wasm.py",
+      "base_sha256": "0a2ad5760c2e6c7a55c4d7196077194370efdf05248c3226ba9c71b703cfccc7",
+      "candidate_sha256": "0a2ad5760c2e6c7a55c4d7196077194370efdf05248c3226ba9c71b703cfccc7"
+    }
+  ]
+}

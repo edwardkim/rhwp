@@ -1,0 +1,64 @@
+{
+  "recorded": 1795322180.9364426,
+  "free_before": 671916032,
+  "deleted": [
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base",
+      "bytes": 88888464,
+      "kind": "obsolete_binary",
+      "sha256": "91dc23f0a85d17485765b6452b463908aecd43b27c771e0db689a80e8aa87052"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base5665-optimized",
+      "bytes": 89434480,
+      "kind": "obsolete_binary",
+      "sha256": "c02d7932b79f712bb07e435445a8bd0f69998d6bcef1eea7226fbb26281e63e1"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source32-optimized",
+      "bytes": 89036480,
+      "kind": "obsolete_binary",
+      "sha256": "3836895000bbe4544802ff4bebb52a0a5ef7dfa3c4a049b07f06d4bd341336d7"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source34-optimized",
+      "bytes": 89285424,
+      "kind": "obsolete_binary",
+      "sha256": "98a0c5983d060a37e5ac79c6ee24e0a1f3f4dd7d567d005935d55a7c653db13e"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source35-optimized",
+      "bytes": 89269400,
+      "kind": "obsolete_binary",
+      "sha256": "bb33373861f729951db4b21ed6401b7c9f925e2e74c6b9b60fcc932be17d01cd"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-square-host",
+      "bytes": 88888792,
+      "kind": "obsolete_binary",
+      "sha256": "2411dbbadf520d5c226624c88674a30b66e631c365fce1ea912bfc823952d204"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-stored-wrap",
+      "bytes": 88939464,
+      "kind": "obsolete_binary",
+      "sha256": "0f2e97f083bf0f95a1b35bddaf61ead54b5c3f33c26b4dbd745ba5fa85924c19"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-stored-wrap-external",
+      "bytes": 88939936,
+      "kind": "obsolete_binary",
+      "sha256": "71ace861958ae2bbae0729f9add9ac21b87b050824fe9865b4348cde1335a373"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/base-wasm/issue7755/silhouette-parts/p0002-0065/chrome-worker-0-5WSqC5",
+      "bytes": null,
+      "kind": "completed_temporary_browser_profile"
+    }
+  ],
+  "preserved": [],
+  "prior_attempt": "Conservative guard rejected unrelated prefix/scheduler references before any deletion; exact per-candidate guards corrected.",
+  "scope": "Only named obsolete owned binaries and completed temporary browser profiles; current producers, libraries, inputs, PDFs, PNGs, TSVs retained.",
+  "free_after": 1433546752,
+  "actual_free_delta": 761630720
+}

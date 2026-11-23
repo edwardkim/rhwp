@@ -1,0 +1,358 @@
+{
+  "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+  "candidate": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+  "toolchain": "1.93.1",
+  "build_jobs": 1,
+  "font_isolation": {
+    "visible_fonts": [
+      "ttfs/opensource/NotoSansKR-ExtraLight.ttf",
+      "ttfs/opensource/NotoSansKR-Regular.ttf",
+      "ttfs/opensource/NotoSansSymbols2-Regular.ttf",
+      "ttfs/opensource/RHWPOldHangul-Regular.otf",
+      "ttfs/opensource/RHWPPublicBatang-Regular.ttf"
+    ],
+    "native_references": {
+      "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/rust-native-lib.json",
+      "sha256": "f3d60404afeb2b2b767fe641c498d37610ea8cc925ff82b46fcadf4a64bb9ae2"
+    }
+  },
+  "preflight": [
+    {
+      "gate": "candidate-prepare",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "93c91d1ffe9c86ce423b2e84bba4929675c5bcb14d38775f7ef256d6f71b1bde",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 29.15
+    },
+    {
+      "gate": "manifest-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "93e861523623bcd84d57b808edb62af5af2aa82a"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "1de1ea1b43bbd69935395f7fbc85029253e3f46505962f912dbabeb9c495e912",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 12.88
+    },
+    {
+      "gate": "unit-tier-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "93e861523623bcd84d57b808edb62af5af2aa82a"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "dee262356bb2ad3d464c331a7888262da2eb25f6799e90c8cc53dcdcdecce9fe",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 95.51
+    },
+    {
+      "gate": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_digest_provenance": "computed_from_preserved_log",
+      "elapsed_seconds": 143.01
+    }
+  ],
+  "clippy": [
+    {
+      "gate": "native-root-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "5d01fabf76b937e6ab99f3414044d3fb894d87520641a241ca880f1fe0505d34",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 202.47,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "ext4"
+    },
+    {
+      "gate": "native-skia-lib-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "67ec00376dc5f26ca09f89937db2ff1303ebfcdc5edea3e759718c727c9e29ba",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 174.95,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "ext4"
+    },
+    {
+      "gate": "workspace-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "f222cc6da24a471358b428bf8c5d0d35ca3ef741c400f884ca2146f3c0e6ee2b",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 215.17,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "overlay"
+    },
+    {
+      "gate": "wasm-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--lib",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "e6657624f7daa802f0eed83ec4f3481e7c01c05ef5b85224befdbf3a73e27d8c",
+      "stdout_digest_provenance": "recorded_at_exit",
+      "elapsed_seconds": 174.44,
+      "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+      "target_mount": "overlay"
+    }
+  ],
+  "storage_recovery": {
+    "event": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "terminated_service": {
+        "ActiveState": "failed",
+        "MainPID": "0",
+        "Result": "exit-code",
+        "ExecMainStatus": "1"
+      },
+      "failed_gate": "workspace-clippy",
+      "completed_gates": 36,
+      "failed_stdout_sha256": "9084e1ed3994dede9d3c2f94c27bbda268d97efaccf05817fceafaae7c88222d",
+      "failed_state_sha256": "a36cf24282f0d8425383accb26dd08882e618b3c6de302dd6b3da39abc45bd72"
+    },
+    "event_record_sha256": "cd74308d591bc8474a5cd194163fd9100b2533d0ac55b76c1e297cc73050a894",
+    "target_directory": "/home/tsjang/rhwp/target/pr-review",
+    "target_mount": "overlay",
+    "writable_layer": "private temporary filesystem",
+    "launcher_sha256": "8adc5eb465970b471c35ee0a660979d7acb7123dc4eb70d23f85d6e32e6f6349",
+    "writable_layer_limit_mib": {
+      "initial": 6400,
+      "before_running_full_suite": 8400,
+      "receipt_sha256": "158e6f6d09c94eadabd94e5e1b1f36de0312bee50afd18a9c40a5513a51cd12f"
+    }
+  },
+  "workspace_build": {
+    "gate": "workspace-build",
+    "command": [
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review"
+    ],
+    "exit_code": 0,
+    "stdout_sha256": "005f56f3ec1783d18a6aa550e07759c8791ecbbfe9f544946431145579076b68",
+    "stdout_digest_provenance": "recorded_at_exit",
+    "elapsed_seconds": 369.08,
+    "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+    "target_mount": "overlay"
+  },
+  "full_release_test_nextest": {
+    "gate": "all-rust",
+    "command": [
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "/home/tsjang/rhwp/target/pr-review",
+      "--tests",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "exit_code": 0,
+    "stdout_sha256": "0233aaf8a3011c80b5394e806a5205f7741d06702e4904ca127faf631a7024fc",
+    "stdout_digest_provenance": "recorded_at_exit",
+    "elapsed_seconds": 5512.54,
+    "font_isolation_wrapper_sha256": "257b8b0eec78216e298177f82f6d173df7aa29ea51379e1a49fea783fb5c9bb4",
+    "tests": {
+      "tests_run": 13995,
+      "passed": 13995,
+      "failed": 0,
+      "skipped": 45,
+      "slow": 11,
+      "binaries": 55,
+      "test_seconds": 963.365,
+      "passing_test_inventory_sha256": "a356a969c045164bb2f538d7fb846a19f86637c42b29d4a93c8378846ecbca90"
+    },
+    "target_mount": "overlay"
+  },
+  "changed_regression_module_registration": {
+    "candidate": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+    "base": "93e861523623bcd84d57b808edb62af5af2aa82a",
+    "generated_harness_count": 28,
+    "changed_modules": [
+      {
+        "test": "tests/cases/armor_cli_contract.rs",
+        "sha256": "0c1390dad6a874a87f2d56708c288dadb724ba69dce7ef8ec099c5194fdabb73",
+        "harness": "regression_suite_026",
+        "module": "armor_cli_contract"
+      },
+      {
+        "test": "tests/cases/body_overflow_baseline.rs",
+        "sha256": "27a2635b1f7dfd821c4c9890d590cfb738c2fef09e58fccae2ff040db222498e",
+        "harness": "regression_suite_026",
+        "module": "body_overflow_baseline"
+      },
+      {
+        "test": "tests/cases/issue_2279_layout_oracles.rs",
+        "sha256": "4912cb6ad2437d262ee73afaa687971ecf70e82be69b9e93a85ce52a52cdab25",
+        "harness": "regression_suite_022",
+        "module": "issue_2279_layout_oracles"
+      },
+      {
+        "test": "tests/cases/issue_4961_font_decision_trace.rs",
+        "sha256": "ad0516e07e6f948a920517f72bf548ef782350724f77aee9338a9d45eb099ae1",
+        "harness": "regression_suite_026",
+        "module": "issue_4961_font_decision_trace"
+      },
+      {
+        "test": "tests/cases/issue_5804_dash_leader_glyphs.rs",
+        "sha256": "69feadd4d66f8ea8b5fa9bb74dde345d8700cf5e08f83e7b9e745b8e7a14b4d8",
+        "harness": "regression_suite_001",
+        "module": "issue_5804_dash_leader_glyphs"
+      },
+      {
+        "test": "tests/cases/issue_5830_dash_leader_last_line.rs",
+        "sha256": "fc2ac60286049e70dfeb3e25f7f92ce31cb6f5be72f8bc93c486825e13eef019",
+        "harness": "regression_suite_004",
+        "module": "issue_5830_dash_leader_last_line"
+      },
+      {
+        "test": "tests/cases/issue_6761_stored_vpos_rewind_page_break.rs",
+        "sha256": "17e492b39ed6fe8f31d763b42e0a200f52b5be13839ee62bc028b34f703aa037",
+        "harness": "regression_suite_016",
+        "module": "issue_6761_stored_vpos_rewind_page_break"
+      },
+      {
+        "test": "tests/cases/issue_7080_area_dot_fullwidth.rs",
+        "sha256": "5ff0c4b0da01a2203e0e35f6fa1e23b8400538b4c4093edbb5599f717849d347",
+        "harness": "regression_suite_006",
+        "module": "issue_7080_area_dot_fullwidth"
+      },
+      {
+        "test": "tests/cases/issue_7160_tac_table_line_break.rs",
+        "sha256": "75e232af6fd16bddbe69e4539cd8eaaa63de123c7c1580a1da98b69c9efae807",
+        "harness": "regression_suite_022",
+        "module": "issue_7160_tac_table_line_break"
+      },
+      {
+        "test": "tests/cases/issue_7754_font_logical_family_ownership.rs",
+        "sha256": "f8c8ad4398c2963e9d0e05b1201078f679493c2fed1f3d65ac62a10a2088da9c",
+        "harness": "regression_suite_015",
+        "module": "issue_7754_font_logical_family_ownership"
+      },
+      {
+        "test": "tests/cases/issue_7754_original_frame_and_glyph_origins.rs",
+        "sha256": "a62f3c767cd47d6b53cdc03f159ae4d579b2e4bb2a22bec155213b731f97ab1c",
+        "harness": "regression_suite_013",
+        "module": "issue_7754_original_frame_and_glyph_origins"
+      },
+      {
+        "test": "tests/cases/issue_7755_market_flow_content.rs",
+        "sha256": "f8b52f4ef833f2a19f1dafc54e8f404a1e4d38cca6329d9e8edd8e683b60bef3",
+        "harness": "regression_suite_018",
+        "module": "issue_7755_market_flow_content"
+      },
+      {
+        "test": "tests/cases/issue_7765_current_source_frames.rs",
+        "sha256": "8e47e699e30e17024184be6cfdfcb78548f02728c282276ce5610dd7b2e2a7c0",
+        "harness": "regression_suite_024",
+        "module": "issue_7765_current_source_frames"
+      },
+      {
+        "test": "tests/cases/issue_7765_hwpx_saved_flow_ownership.rs",
+        "sha256": "483100f7465498e41100279ee9d919a075039d03f641db48d4c19536e03e0a29",
+        "harness": "regression_suite_020",
+        "module": "issue_7765_hwpx_saved_flow_ownership"
+      },
+      {
+        "test": "tests/cases/issue_8153_print_glyph_geometry.rs",
+        "sha256": "cecea0bfbef4d6c58341defd5793c4ef4afc8b3d1645a358e74412d31f8afd56",
+        "harness": "regression_suite_004",
+        "module": "issue_8153_print_glyph_geometry"
+      },
+      {
+        "test": "tests/cases/off_canvas_baseline.rs",
+        "sha256": "aeefa80af42ca2cf8364ed67d8ccab853f3956182a0d4f8a65590739557d10b3",
+        "harness": "regression_suite_003",
+        "module": "off_canvas_baseline"
+      },
+      {
+        "test": "tests/cases/oracle_page_count_baseline.rs",
+        "sha256": "046c6fd8737d0d5a7f55312eff827171b7bf8a3f89fac1e531bc6fc7e4d65a25",
+        "harness": "regression_suite_003",
+        "module": "oracle_page_count_baseline"
+      },
+      {
+        "test": "tests/cases/text_overlap_baseline.rs",
+        "sha256": "44e5f8b2f4493290331e2f0d4b0972163f5afed89cf140b6d568bc72fc50b93a",
+        "harness": "regression_suite_008",
+        "module": "text_overlap_baseline"
+      }
+    ]
+  }
+}

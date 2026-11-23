@@ -1,0 +1,820 @@
+{
+  "roles": {
+    "base": {
+      "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "native_program_sha256": "169c8a00b73a4373db37cde92819840dffea77164a84085fe4b50784628b8d53"
+    },
+    "candidate": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "native_program_sha256": "c214cd39c5b6cba08e80852de8cccdbbed58965595d8900b06be1d04960eef4d"
+    }
+  },
+  "condition": {
+    "dpi": 96,
+    "radius_px": 2,
+    "metric": "silhouette_raw_match_percent",
+    "font_environment": {
+      "path": "font-environment.json",
+      "sha256": "879b96b57edd8ed48105ffbb36e690d1de24fa66fc3640a0acfbcef890c84c12",
+      "historical_sha256": "7ac0e909653ac1beca0ee6d630766e3d39f73a687e8dd3c972b6578c928bdc2a",
+      "dotum_fallback_reference": "mydocs/pr/assets/pr9280/indic-hancom.tsv",
+      "available_system_font_sha256": {
+        "HANBatang.ttf": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014",
+        "HANBatangB.ttf": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5",
+        "HANDotum.ttf": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea",
+        "HANDotumB.ttf": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4",
+        "gulim.ttc": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226",
+        "msyi.ttf": "80aef1c25135b945e9de7d09e6445c386405eb2e0ea7032d4cd00a2fe3eef0ae"
+      }
+    }
+  },
+  "comparison": {
+    "pages": 37,
+    "base_candidate_identical_pngs": 37,
+    "declines": 0,
+    "minimum": "99.17"
+  },
+  "pages": [
+    {
+      "case": "hancom5",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.5-2020.hwpx",
+        "sha256": "94ee2e7f58dfa328cf4f43b84632f4efb7c7396bad1e880a1b16bab3c79b257f"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5-2020.pdf",
+        "sha256": "43b5bda7c39f9d4695fe57729f4476e8ab0008fced559047d1b4d07f8b06933c"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "c5accb329ad62845a28c32232af9d88a85751d4e1312f33df7d5e272e2db8a83",
+      "reference_png_sha256": "b876e4a460b9cf4d57326ed8305454c81ad3d0963ff5ab0236864590a01f8a7b",
+      "tsv": {
+        "path": "native/hancom5.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "hancom6",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.6-2020.hwpx",
+        "sha256": "ee1e2197d12727f0470c6c0bb8a44efdbd932b6978de57841fa0b8840d9a62ea"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6-2020.pdf",
+        "sha256": "d269741fccd472fdf81ab4159cfe7dd773484d740fade75b2b625d4ff7378fc9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.97",
+      "accepted_raw_percent": "99.97",
+      "base_candidate_png_sha256": "d3e464b9a6966e03fdf6c53a063f8d1e10e9e06cedac0d04dde2d7f10e50f62f",
+      "reference_png_sha256": "88c3a0a88740ab81a3f3b87ca5247670300a6047f6caf6e3bfb2a2ef26f145e5",
+      "tsv": {
+        "path": "native/hancom6.tsv",
+        "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99"
+      }
+    },
+    {
+      "case": "neighbors-hwp5",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/neighbors-v5.hwp",
+        "sha256": "fe06995eae6499fa5a4c19e72a7be8491723b4985520ec333794e09984ea995f"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/neighbors-v5-2020.pdf",
+        "sha256": "1b3c5488670d8b4f325fccdb868d1350143537df55d898a2051d0de7183bc4e4"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "772cd912293c9ce373a5cdb6bf27c7f47770c73f66e6c641ecb1b20b77a9b120",
+      "reference_png_sha256": "3261ac5ecccae1dae2eba9047e9a968b1aaca59ea047696b9080c1be2e96ed22",
+      "tsv": {
+        "path": "native/neighbors-hwp5.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "neighbors-hwp6",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/neighbors-v6.hwp",
+        "sha256": "07429b766c1e0078bf79f2673056a403dc9cb5e904b74eaf4815b4a2c8fa2d18"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/neighbors-v6-2020.pdf",
+        "sha256": "0bcdf1ed67959fa858271a4b58453b4906fd4781f5872a76cd5f9f07c818a0b9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.97",
+      "accepted_raw_percent": "99.97",
+      "base_candidate_png_sha256": "79c30e1e6a16661a6b5eddb8f7b5d802c873abaca2f35ec3d84de198f27ef952",
+      "reference_png_sha256": "4ce5d37040e0b0bfae28898694d6229790d82ad20420ad0fa486526bee64c13f",
+      "tsv": {
+        "path": "native/neighbors-hwp6.tsv",
+        "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99"
+      }
+    },
+    {
+      "case": "neighbors-hwpx5",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/neighbors5.hwpx",
+        "sha256": "59ab3ce9dc8fb4d367b0c02362da5ef460007a98948e103b418d31622e6a0766"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/neighbors-v5-2020.pdf",
+        "sha256": "1b3c5488670d8b4f325fccdb868d1350143537df55d898a2051d0de7183bc4e4"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "772cd912293c9ce373a5cdb6bf27c7f47770c73f66e6c641ecb1b20b77a9b120",
+      "reference_png_sha256": "3261ac5ecccae1dae2eba9047e9a968b1aaca59ea047696b9080c1be2e96ed22",
+      "tsv": {
+        "path": "native/neighbors-hwpx5.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "neighbors-hwpx6",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/neighbors6.hwpx",
+        "sha256": "9b4200b0bac4c44aa2c8555a09617bb664a59de03889e15bf2019ad44d8547be"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/neighbors-v6-2020.pdf",
+        "sha256": "0bcdf1ed67959fa858271a4b58453b4906fd4781f5872a76cd5f9f07c818a0b9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.97",
+      "accepted_raw_percent": "99.97",
+      "base_candidate_png_sha256": "79c30e1e6a16661a6b5eddb8f7b5d802c873abaca2f35ec3d84de198f27ef952",
+      "reference_png_sha256": "4ce5d37040e0b0bfae28898694d6229790d82ad20420ad0fa486526bee64c13f",
+      "tsv": {
+        "path": "native/neighbors-hwpx6.tsv",
+        "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99"
+      }
+    },
+    {
+      "case": "original5",
+      "input": {
+        "path": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.5.hwp",
+        "sha256": "bd45ac8a92eefc77695a0800130215452cd83f9a2f312e41d4c09385e31857f2"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5-2020.pdf",
+        "sha256": "43b5bda7c39f9d4695fe57729f4476e8ab0008fced559047d1b4d07f8b06933c"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "c5accb329ad62845a28c32232af9d88a85751d4e1312f33df7d5e272e2db8a83",
+      "reference_png_sha256": "b876e4a460b9cf4d57326ed8305454c81ad3d0963ff5ab0236864590a01f8a7b",
+      "tsv": {
+        "path": "native/original5.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "original6",
+      "input": {
+        "path": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwp",
+        "sha256": "7ccb9736edbfbd727c8fdcaa4eff44f4e196168254b3f22c539193e4d78f79d3"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6-2020.pdf",
+        "sha256": "d269741fccd472fdf81ab4159cfe7dd773484d740fade75b2b625d4ff7378fc9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.97",
+      "accepted_raw_percent": "99.97",
+      "base_candidate_png_sha256": "d3e464b9a6966e03fdf6c53a063f8d1e10e9e06cedac0d04dde2d7f10e50f62f",
+      "reference_png_sha256": "88c3a0a88740ab81a3f3b87ca5247670300a6047f6caf6e3bfb2a2ef26f145e5",
+      "tsv": {
+        "path": "native/original6.tsv",
+        "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99"
+      }
+    },
+    {
+      "case": "saved5",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/v5.hwpx",
+        "sha256": "5bdd71ec32501c8cdfd9651fd5aa29998705d2bfa2257f9bb6d21ef3b3edbd17"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.5-2020.pdf",
+        "sha256": "43b5bda7c39f9d4695fe57729f4476e8ab0008fced559047d1b4d07f8b06933c"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "c5accb329ad62845a28c32232af9d88a85751d4e1312f33df7d5e272e2db8a83",
+      "reference_png_sha256": "b876e4a460b9cf4d57326ed8305454c81ad3d0963ff5ab0236864590a01f8a7b",
+      "tsv": {
+        "path": "native/saved5.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "saved6",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/v6.hwpx",
+        "sha256": "d546b9bcde769bfda82659b95100443eed5a7c9ea9cb29b09ee6575333fcebec"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/legacy-symbols-v5.0.1.6-2020.pdf",
+        "sha256": "d269741fccd472fdf81ab4159cfe7dd773484d740fade75b2b625d4ff7378fc9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.97",
+      "accepted_raw_percent": "99.97",
+      "base_candidate_png_sha256": "d3e464b9a6966e03fdf6c53a063f8d1e10e9e06cedac0d04dde2d7f10e50f62f",
+      "reference_png_sha256": "88c3a0a88740ab81a3f3b87ca5247670300a6047f6caf6e3bfb2a2ef26f145e5",
+      "tsv": {
+        "path": "native/saved6.tsv",
+        "sha256": "561d4d47f78b0b8ae70ad6ec8d29c3a170ad0b344a57e00d42aeefb8a4787c99"
+      }
+    },
+    {
+      "case": "seallegacy",
+      "input": {
+        "path": "samples/issue5140-version-boundary/issue5800-v5.0.1.5.hwp",
+        "sha256": "f3898d64da3f8cf8307fa29bd52d9f3c8339b6003e5ab6610b2325684c32c3c1"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf",
+        "sha256": "d41e66fecf8b3801b0ed86f109acd95e130df8737506a1a8e72cc8cab15997a9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.95",
+      "accepted_raw_percent": "99.95",
+      "base_candidate_png_sha256": "a7f5e2870f9ed204120044b2b43ba13923b4ee4e673da5c144d01f7dbf284a48",
+      "reference_png_sha256": "37322c4a1795d4cb83e6fb2869fd0e916c594412aff876c5b79a4dc39b8a9d02",
+      "tsv": {
+        "path": "native/seallegacy.tsv",
+        "sha256": "26f5983a25fb7de417202ba2547ec98a5294a2f6b57fd09507e34a66aff1e53d"
+      }
+    },
+    {
+      "case": "seallegacy-saved",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/seallegacy.hwpx",
+        "sha256": "4eeb0fcf6950e565ebf34d7ae6b04a889fc4a506e39145b8d83baeff27a6b134"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/issue5800-v5.0.1.5-2020.pdf",
+        "sha256": "d41e66fecf8b3801b0ed86f109acd95e130df8737506a1a8e72cc8cab15997a9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.95",
+      "accepted_raw_percent": "99.95",
+      "base_candidate_png_sha256": "a7f5e2870f9ed204120044b2b43ba13923b4ee4e673da5c144d01f7dbf284a48",
+      "reference_png_sha256": "37322c4a1795d4cb83e6fb2869fd0e916c594412aff876c5b79a4dc39b8a9d02",
+      "tsv": {
+        "path": "native/seallegacy-saved.tsv",
+        "sha256": "26f5983a25fb7de417202ba2547ec98a5294a2f6b57fd09507e34a66aff1e53d"
+      }
+    },
+    {
+      "case": "sealmodern",
+      "input": {
+        "path": "samples/issue5800-hancom-symbol.hwp",
+        "sha256": "e09951a7ac179344a9f9c3dd9625a6de757a5d5cc5cee2fcb7c76c040959476d"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf",
+        "sha256": "af0f46cbc65984afd845f273a60af9486ee4b2476fe408a01b203def567156e9"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "86cf834f3203dd654daaae20628b1bdded6d83feaa2a0dc9729b07464de84796",
+      "reference_png_sha256": "00b19dfa0adaf89a91192666fe837d671f8435b0fe0b9dc08eaf4b3e9ed2106b",
+      "tsv": {
+        "path": "native/sealmodern.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "sealmodern-saved",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/sealmodern.hwpx",
+        "sha256": "a7b442eef59fbf46b197d7ef2dbe8f55b743eb0c2159fab175946760df1ec700"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/issue5800-hancom-symbol-2020.pdf",
+        "sha256": "af0f46cbc65984afd845f273a60af9486ee4b2476fe408a01b203def567156e9"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "86cf834f3203dd654daaae20628b1bdded6d83feaa2a0dc9729b07464de84796",
+      "reference_png_sha256": "00b19dfa0adaf89a91192666fe837d671f8435b0fe0b9dc08eaf4b3e9ed2106b",
+      "tsv": {
+        "path": "native/sealmodern-saved.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "advances-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-number-advances.hwp",
+        "sha256": "00372178fa768ce6aab01eaae7bcf39126e0443c12f7bf2efb41bc2439ae765e"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf",
+        "sha256": "4e2af63d4cd287f45b258bfd6dd7a3bf93a7f6c4493e2c4a5e34e33cd2845ba6"
+      },
+      "compat": 2022,
+      "raw_percent": "99.25",
+      "accepted_raw_percent": "99.25",
+      "base_candidate_png_sha256": "61e3d44bc965a95f6aa73bca8f99da07861d7b6782f47036413dfe0289f343a6",
+      "reference_png_sha256": "ee124a9c48fe3f6b7783d26bfc6c138d90117fefe714d313b97a9f07b9b47f3a",
+      "tsv": {
+        "path": "native/advances-hwp.tsv",
+        "sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46"
+      }
+    },
+    {
+      "case": "advances-hwpx",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/indic/indic-number-advances.hwpx",
+        "sha256": "5b140f1402d6f1d3412bde6878f6749eb5a0259176191118481a7fd611c2d136"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-advances-2020.pdf",
+        "sha256": "4e2af63d4cd287f45b258bfd6dd7a3bf93a7f6c4493e2c4a5e34e33cd2845ba6"
+      },
+      "compat": 2022,
+      "raw_percent": "99.25",
+      "accepted_raw_percent": "99.25",
+      "base_candidate_png_sha256": "61e3d44bc965a95f6aa73bca8f99da07861d7b6782f47036413dfe0289f343a6",
+      "reference_png_sha256": "ee124a9c48fe3f6b7783d26bfc6c138d90117fefe714d313b97a9f07b9b47f3a",
+      "tsv": {
+        "path": "native/advances-hwpx.tsv",
+        "sha256": "46ccdd2e0e2dfdec7bc1366e2418de12c83faf6bf5b872b9be8ee71fe24a7f46"
+      }
+    },
+    {
+      "case": "batang-bold-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-number-batang-bold.hwp",
+        "sha256": "680baa206e568f0eb8cfcee492d4d98db8b8441a7a9d6e841ab9ef66ffa82811"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf",
+        "sha256": "17c2891460ae1715bcaebf7b9341e43f1e00d4cb83f502952026dbf325d653ba"
+      },
+      "compat": 2022,
+      "raw_percent": "99.41",
+      "accepted_raw_percent": "99.41",
+      "base_candidate_png_sha256": "b6ec2a1bcf3a6d6253b6aab6a6a59bf81e30a19199784d20e9d2c7931c78670c",
+      "reference_png_sha256": "2de996e37cdf94da4613cc3897b99ba88ddf195c30ff2bed0c19695cf705408a",
+      "tsv": {
+        "path": "native/batang-bold-hwp.tsv",
+        "sha256": "eeab75bb4558ca3516e66485a28faf71d2aa744ef8a5e2cdc3a018a0ee492c36"
+      }
+    },
+    {
+      "case": "batang-bold-hwpx",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/indic/indic-number-batang-bold.hwpx",
+        "sha256": "5785c2f65349ebd5234f222b77e5f100355c14a32d89a7e45358da67f3c34c4c"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-batang-bold-2020.pdf",
+        "sha256": "17c2891460ae1715bcaebf7b9341e43f1e00d4cb83f502952026dbf325d653ba"
+      },
+      "compat": 2022,
+      "raw_percent": "99.41",
+      "accepted_raw_percent": "99.41",
+      "base_candidate_png_sha256": "b6ec2a1bcf3a6d6253b6aab6a6a59bf81e30a19199784d20e9d2c7931c78670c",
+      "reference_png_sha256": "2de996e37cdf94da4613cc3897b99ba88ddf195c30ff2bed0c19695cf705408a",
+      "tsv": {
+        "path": "native/batang-bold-hwpx.tsv",
+        "sha256": "eeab75bb4558ca3516e66485a28faf71d2aa744ef8a5e2cdc3a018a0ee492c36"
+      }
+    },
+    {
+      "case": "dotum-bold-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-number-dotum-bold.hwp",
+        "sha256": "1ccb33e661ad3d15d9db2b91130d9cc1605b866d53935e4e7c79d6f3c5039451"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf",
+        "sha256": "c3a0c85f16e6e9408438bda55a703b25e3ea60bbaf61f2418ed25a6992c3d18d"
+      },
+      "compat": 2022,
+      "raw_percent": "99.42",
+      "accepted_raw_percent": "99.40",
+      "base_candidate_png_sha256": "97e6a3aba785cb2644496215dfe0026794aabec2f15cf143d27224ff4fd17afe",
+      "reference_png_sha256": "b6a5592cba34587232b6901d635377fb0d032824d8449c326b6add61ef73520e",
+      "tsv": {
+        "path": "native/dotum-bold-hwp.tsv",
+        "sha256": "501b5c64d1f45224d91f336a980e219d2b899389e14fdcdbacd91cc15328cf64"
+      }
+    },
+    {
+      "case": "dotum-bold-hwpx",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/indic/indic-number-dotum-bold.hwpx",
+        "sha256": "55e9a140511dbdfa690589aeff04519b9e8600808d49080dcec5bcc22da5101d"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-dotum-bold-2020.pdf",
+        "sha256": "c3a0c85f16e6e9408438bda55a703b25e3ea60bbaf61f2418ed25a6992c3d18d"
+      },
+      "compat": 2022,
+      "raw_percent": "99.42",
+      "accepted_raw_percent": "99.40",
+      "base_candidate_png_sha256": "97e6a3aba785cb2644496215dfe0026794aabec2f15cf143d27224ff4fd17afe",
+      "reference_png_sha256": "b6a5592cba34587232b6901d635377fb0d032824d8449c326b6add61ef73520e",
+      "tsv": {
+        "path": "native/dotum-bold-hwpx.tsv",
+        "sha256": "501b5c64d1f45224d91f336a980e219d2b899389e14fdcdbacd91cc15328cf64"
+      }
+    },
+    {
+      "case": "dotum-hwp",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-number-dotum.hwp",
+        "sha256": "da9d394daba0ba6e3bd30bcd3d813a15d322d238eb28b62a7b71533d00cf499c"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf",
+        "sha256": "03d874e45cfe51f7ba1d73d23aa8c4f6b7aa35ea0e395dd65403bbc86a07f683"
+      },
+      "compat": 2022,
+      "raw_percent": "99.32",
+      "accepted_raw_percent": "99.31",
+      "base_candidate_png_sha256": "edda7bb935c53ba1facce8f0f560908aaee3e33532d4421e68f5567df382c81e",
+      "reference_png_sha256": "5823562a5f81865eb1943c4c6230b3d1af183296e095a63521f0a3a784935a34",
+      "tsv": {
+        "path": "native/dotum-hwp.tsv",
+        "sha256": "ddf66e822b2d6b7a9dd18a24af7e74167d7445481903ca4f25aa06d7f1b3ec39"
+      }
+    },
+    {
+      "case": "dotum-hwpx",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/indic/indic-number-dotum.hwpx",
+        "sha256": "04d03dce14e132ec29ea0b3ac86f5adc76ad9d5cbd62a26377656282f7f5af51"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-dotum-2020.pdf",
+        "sha256": "03d874e45cfe51f7ba1d73d23aa8c4f6b7aa35ea0e395dd65403bbc86a07f683"
+      },
+      "compat": 2022,
+      "raw_percent": "99.32",
+      "accepted_raw_percent": "99.31",
+      "base_candidate_png_sha256": "edda7bb935c53ba1facce8f0f560908aaee3e33532d4421e68f5567df382c81e",
+      "reference_png_sha256": "5823562a5f81865eb1943c4c6230b3d1af183296e095a63521f0a3a784935a34",
+      "tsv": {
+        "path": "native/dotum-hwpx.tsv",
+        "sha256": "ddf66e822b2d6b7a9dd18a24af7e74167d7445481903ca4f25aa06d7f1b3ec39"
+      }
+    },
+    {
+      "case": "indic-break-controls",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-break-controls.hwp",
+        "sha256": "ec5593b897ce1d8336a53c063d2301b876ffab012df59f56eda1a156d021fd1e"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-break-controls-2020.pdf",
+        "sha256": "46acd625a0e67e5cdbdd6d1b63c86b68c8c974c49bfece81525f6cac9a0b8b24"
+      },
+      "compat": 2022,
+      "raw_percent": "99.87",
+      "accepted_raw_percent": "99.87",
+      "base_candidate_png_sha256": "8bf984c4bc7ee93ac2be311f124ec66304f334ad91664c3927ec805ace86c4dd",
+      "reference_png_sha256": "40df2d66f3ebe184a072679a7b7ba08bc51cc28e5e6c1ee45be854d3161a9d3c",
+      "tsv": {
+        "path": "native/indic-break-controls.tsv",
+        "sha256": "04d5aaced6735bab5829864e58d39818e1a60046989fae5ecf994affa242236f"
+      }
+    },
+    {
+      "case": "indic-number-line-widths",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-number-line-widths.hwp",
+        "sha256": "0c4dea313973c9351cc6c6d77d1e3167746eaf173e10f08d6d7fb20bbc4ba547"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf",
+        "sha256": "a80a4b3cdc2c09b57b2706b3ccdd8dff811f397a7d418546ef23035deb913cb4"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "96361269c1332c3ee5b4fe8f11d37ac70b5533bfd54ff3717ba911f632894f24",
+      "reference_png_sha256": "b70e6e4ae22d6b6a6da1223f2ba5ad63ed6dda3c2d2b72b56f0830902eaad207",
+      "tsv": {
+        "path": "native/indic-number-line-widths.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "indic-number-long-lines",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-number-long-lines.hwp",
+        "sha256": "d3513755092e8b032a6eb911200da6addda8a0739981969e45d87ffb1a1057d1"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf",
+        "sha256": "1ed6b7bedccd1ab138b9da65b0a1a0c7ee23a13963d1d9ff4d4de68367c30373"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "f1afd56739caa1d0287f72791c165425deff79c082161af9db64bca8eca8afaf",
+      "reference_png_sha256": "1f522d5cfa1085e9e7504fd152b05b9b2272088a20125bb83a7fd7c1ffae2e68",
+      "tsv": {
+        "path": "native/indic-number-long-lines.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "indic-run-boundaries",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-run-boundaries.hwp",
+        "sha256": "f32669a28d63c50c0df2eab80f8ec0a130c773908d939a8433d450f279a2d0fc"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-run-boundaries-2020.pdf",
+        "sha256": "1c7e0a1b4f7c13173403a58071a891f4834569ad9b1c605c7f27dd897c335836"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "d6ce3d37a837a9dbb7ce48d7d443d2ee26f79b2e3923e74498de1d06d4296aa4",
+      "reference_png_sha256": "be3af61786b3064678622d11631717d25a5583465b43c8849cf33d8a0d9c1756",
+      "tsv": {
+        "path": "native/indic-run-boundaries.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "indic-run-pairs",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-run-pairs.hwp",
+        "sha256": "3190a4263bb2e5e85a0125c0e6da36135c82bcf658b61252277354b0d57ffad9"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-run-pairs-2020.pdf",
+        "sha256": "0fd49ad11a6fac5ddfac7ce4b01fa971ac3744bb7d104178dbca0a577b19c829"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "4c85d53747090690d9351d4dbe176ec88e7a81742891bbf3e47e30d76055a48b",
+      "reference_png_sha256": "7dee55ccb780ce7ed74b4a52112f4a7d9cf3674dc339f6185c8a53d7dbaec91a",
+      "tsv": {
+        "path": "native/indic-run-pairs.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "indic-seal-mixed",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-seal-mixed.hwp",
+        "sha256": "a16fbd46ea966e0ee0544fb74992a5af66effd10b92bfebc353826f03ddffcc8"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-seal-mixed-2020.pdf",
+        "sha256": "10da6a83f894ce9fc2ecf22c7f2ff7e455ce213ba8c9abb89f6cabc2a202580f"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "69b35d1d4ec999698ebe6faa44ce234768231e3d067ac68b4c3f4b940cc4f80f",
+      "reference_png_sha256": "c3d4b122ecd0492baa5f1f6b081395bc42145afa3b357b6a0aef9394d855e798",
+      "tsv": {
+        "path": "native/indic-seal-mixed.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "indic-seal-ten",
+      "input": {
+        "path": "mydocs/pr/assets/pr9280/indic/indic-seal-ten.hwp",
+        "sha256": "4974fde9f676bd1125c83c231a047759c5a78566a5033bc064ac56395cd74a8b"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-seal-ten-2020.pdf",
+        "sha256": "dc1ce1a9bb92c0c0efab1089bd4ef74d5790b0a013d971f7d97d2a2aeefab431"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "3e867468322322d718c13c82f297d8cff81cea2d4ca4034f17230d17e30bf094",
+      "reference_png_sha256": "0233f21aa11b4d6698f896497e3ce8e0c2a12d941cf743c9773aa6815a8c34cf",
+      "tsv": {
+        "path": "native/indic-seal-ten.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "syloti-boundaries-hwp",
+      "input": {
+        "path": "samples/issue5140-version-boundary/syloti-boundaries.hwp",
+        "sha256": "2dc1fdb162d895d7b4602432b68b701c29d57e69a3a9eaea4676c5457da1b748"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf",
+        "sha256": "70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4"
+      },
+      "compat": 2022,
+      "raw_percent": "99.84",
+      "accepted_raw_percent": "99.84",
+      "base_candidate_png_sha256": "075babad502c59adb19914b7b26aedd6ac9a7ed85a6f3500c53877c5134d39dc",
+      "reference_png_sha256": "c60b77ddc8fb57ed13c35f39d884b94d5e96a965cbcda4490c0339cadcb95183",
+      "tsv": {
+        "path": "native/syloti-boundaries-hwp.tsv",
+        "sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6"
+      }
+    },
+    {
+      "case": "syloti-boundaries-hwpx",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/syloti-boundaries.hwpx",
+        "sha256": "61c76df9de279e76f6dd62dacaa4615a41b2a9d8c51118c276430ca3a32c5bb7"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/syloti-boundaries-2020.pdf",
+        "sha256": "70ee06449dd5baa42a9f517a5863e45c88682a2166f7dbe656072e1c51492ca4"
+      },
+      "compat": 2022,
+      "raw_percent": "99.84",
+      "accepted_raw_percent": "99.84",
+      "base_candidate_png_sha256": "075babad502c59adb19914b7b26aedd6ac9a7ed85a6f3500c53877c5134d39dc",
+      "reference_png_sha256": "c60b77ddc8fb57ed13c35f39d884b94d5e96a965cbcda4490c0339cadcb95183",
+      "tsv": {
+        "path": "native/syloti-boundaries-hwpx.tsv",
+        "sha256": "d7b38777bcd1628064c252b33623ee543fa3dfa1d1072f20deedb376bc83e3e6"
+      }
+    },
+    {
+      "case": "syloti-mark-control-hwp",
+      "input": {
+        "path": "samples/issue5140-version-boundary/syloti-mark-control.hwp",
+        "sha256": "6412d298aa3f7b1444c04ee681f6a5b6e8669091d02d8ebb7fd0a4bff08f1bb5"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf",
+        "sha256": "1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.95",
+      "accepted_raw_percent": "99.95",
+      "base_candidate_png_sha256": "2485855b00080fa6a0eea178bef7e977e9cb989c8277720ab2ca7d9cc50a85e7",
+      "reference_png_sha256": "b465511be998cff85f5ee9b42fe37c0503cbbacc7da0acf9b41684f763b5fe01",
+      "tsv": {
+        "path": "native/syloti-mark-control-hwp.tsv",
+        "sha256": "26f5983a25fb7de417202ba2547ec98a5294a2f6b57fd09507e34a66aff1e53d"
+      }
+    },
+    {
+      "case": "syloti-mark-control-hwpx",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/syloti-mark-control.hwpx",
+        "sha256": "e1498abf1b94c181ad5486901c72065938d1cb0990e64321a2d4d3eb25144ffb"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/syloti-mark-control-2020.pdf",
+        "sha256": "1550235fd52f360deeeffc7e6353d798007c8ded2a827706b923dbf69e7f6fd9"
+      },
+      "compat": 2022,
+      "raw_percent": "99.95",
+      "accepted_raw_percent": "99.95",
+      "base_candidate_png_sha256": "2485855b00080fa6a0eea178bef7e977e9cb989c8277720ab2ca7d9cc50a85e7",
+      "reference_png_sha256": "b465511be998cff85f5ee9b42fe37c0503cbbacc7da0acf9b41684f763b5fe01",
+      "tsv": {
+        "path": "native/syloti-mark-control-hwpx.tsv",
+        "sha256": "26f5983a25fb7de417202ba2547ec98a5294a2f6b57fd09507e34a66aff1e53d"
+      }
+    },
+    {
+      "case": "syloti-placeholders-hwp",
+      "input": {
+        "path": "samples/issue5140-version-boundary/syloti-placeholders.hwp",
+        "sha256": "8ae5c95f6cf9c1e7ae71f6bc9f48462a6a2f55a74b33f0a36a12c2e0313eef14"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf",
+        "sha256": "d04b61cbc149362432b5e91f7333b393dd009bfe578615bfd6de8e7d7720a49e"
+      },
+      "compat": 2022,
+      "raw_percent": "99.17",
+      "accepted_raw_percent": "99.17",
+      "base_candidate_png_sha256": "0ff244eedc39ab5649728957fd274b06e39a27c0d7047f39f9b1a7aeec31d21d",
+      "reference_png_sha256": "2fef817ce1e09f602efd6b9a6c9433c7706a214e9efdbe917b4d5941a02a146c",
+      "tsv": {
+        "path": "native/syloti-placeholders-hwp.tsv",
+        "sha256": "594d3975949dd9b9d1fe48d08ea0baf7a9c39a88f72a7b9c2d145238db108fc0"
+      }
+    },
+    {
+      "case": "syloti-placeholders-hwpx",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/syloti-placeholders.hwpx",
+        "sha256": "917c2ac1764a8f20210a5a4120dd691b6b39c21f6422e197bab7cda85756e99f"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/syloti-placeholders-2020.pdf",
+        "sha256": "d04b61cbc149362432b5e91f7333b393dd009bfe578615bfd6de8e7d7720a49e"
+      },
+      "compat": 2022,
+      "raw_percent": "99.17",
+      "accepted_raw_percent": "99.17",
+      "base_candidate_png_sha256": "0ff244eedc39ab5649728957fd274b06e39a27c0d7047f39f9b1a7aeec31d21d",
+      "reference_png_sha256": "2fef817ce1e09f602efd6b9a6c9433c7706a214e9efdbe917b4d5941a02a146c",
+      "tsv": {
+        "path": "native/syloti-placeholders-hwpx.tsv",
+        "sha256": "594d3975949dd9b9d1fe48d08ea0baf7a9c39a88f72a7b9c2d145238db108fc0"
+      }
+    },
+    {
+      "case": "indic-number-line-widths-reopened",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/indic/indic-number-line-widths.hwpx",
+        "sha256": "e050d8d2475f9d535456a7d1e6eee6d5ebbac2a73f14e07dd29c5a6a66669f97"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-line-widths-2020.pdf",
+        "sha256": "a80a4b3cdc2c09b57b2706b3ccdd8dff811f397a7d418546ef23035deb913cb4"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "96361269c1332c3ee5b4fe8f11d37ac70b5533bfd54ff3717ba911f632894f24",
+      "reference_png_sha256": "b70e6e4ae22d6b6a6da1223f2ba5ad63ed6dda3c2d2b72b56f0830902eaad207",
+      "tsv": {
+        "path": "native/indic-number-line-widths-reopened.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    },
+    {
+      "case": "indic-number-long-lines-reopened",
+      "input": {
+        "path": "tests/fixtures/issue5140-version-boundary/indic/indic-number-long-lines.hwpx",
+        "sha256": "458b11669c4b23b42cf0c5a3895ca8d3db51a12196637496a3d65d262cda5f61"
+      },
+      "reference_pdf": {
+        "path": "pdf/issue5140-version-boundary/indic/indic-number-long-lines-2020.pdf",
+        "sha256": "1ed6b7bedccd1ab138b9da65b0a1a0c7ee23a13963d1d9ff4d4de68367c30373"
+      },
+      "compat": 2022,
+      "raw_percent": "100.00",
+      "accepted_raw_percent": "100.00",
+      "base_candidate_png_sha256": "f1afd56739caa1d0287f72791c165425deff79c082161af9db64bca8eca8afaf",
+      "reference_png_sha256": "1f522d5cfa1085e9e7504fd152b05b9b2272088a20125bb83a7fd7c1ffae2e68",
+      "tsv": {
+        "path": "native/indic-number-long-lines-reopened.tsv",
+        "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+      }
+    }
+  ],
+  "representative_review": {
+    "syloti-placeholders-hwp": {
+      "observation": "단독 결합 부호의 점선 원과 뒤따르는 C의 위치를 확인했다.",
+      "artifacts": {
+        "review": {
+          "path": "review/native/syloti-placeholders-hwp-review.png",
+          "sha256": "926f68ce0e82a2ff301266627a5c567eb39b0d89b690e88bef520f1ba4814f60"
+        },
+        "overlay": {
+          "path": "review/native/syloti-placeholders-hwp-overlay.png",
+          "sha256": "f868383ef3cd49bbcd5c8a644e425227feeca785d63dc25b718ba5a061be3ed5"
+        }
+      }
+    },
+    "dotum-bold-hwp": {
+      "observation": "앞뒤 A·B 사이에 원본 인쇄와 같은 누락 글리프 상자가 표시되는 것을 확인했다.",
+      "artifacts": {
+        "review": {
+          "path": "review/native/dotum-bold-hwp-review.png",
+          "sha256": "89b13931f3beeede011003073ac6442dd5a2d2fa565df5dd2a2c0f43f720b403"
+        },
+        "overlay": {
+          "path": "review/native/dotum-bold-hwp-overlay.png",
+          "sha256": "bcdb3173043099ba48b52b81dff831d86576db791c8381836c0f919f416c96d3"
+        }
+      }
+    },
+    "sealmodern": {
+      "observation": "연속된 누락 글리프의 빈 윤곽과 이어지는 본문이 원본 인쇄와 같은 줄에 있는 것을 확인했다.",
+      "artifacts": {
+        "review": {
+          "path": "review/native/sealmodern-review.png",
+          "sha256": "efb4fe34f3fae351d71ddebb71b914959ab2989469dcc3f0c68a33b7c258c4cc"
+        },
+        "overlay": {
+          "path": "review/native/sealmodern-overlay.png",
+          "sha256": "8a8f9233cc64a3b8c1eb6f736f7ffb9d366354b4ca7003d3aaeef3c084eaddd3"
+        }
+      }
+    }
+  }
+}

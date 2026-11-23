@@ -1,0 +1,12 @@
+== p0001-0001 ==
++ /home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base1a27-optimized dump-note-shape /home/tsjang/rhwp/mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx
++ node /home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs --pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27 --input /home/tsjang/rhwp/mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx --out /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-canonical-protected-wasm/base/angle-narrow/silhouette-parts/p0001-0001 --fonts /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-canonical-protected-wasm/base/angle-narrow/silhouette-parts/p0001-0001/font-catalog.json --options /home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-canonical-protected-wasm/base/angle-narrow/silhouette-parts/p0001-0001/canvas-options.json
+(node:1823397) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+TimeoutError: Timed out after 30000 ms while waiting for the WS endpoint URL to appear in stdout!
+    at ChromeLauncher.launch (file:///home/tsjang/rhwp/rhwp-studio/node_modules/puppeteer-core/lib/puppeteer/node/BrowserLauncher.js:233:23)
+    at async ChromeLauncher.launch (file:///home/tsjang/rhwp/rhwp-studio/node_modules/puppeteer-core/lib/puppeteer/node/ChromeLauncher.js:39:16)
+    at async PuppeteerNode.launch (file:///home/tsjang/rhwp/rhwp-studio/node_modules/puppeteer-core/lib/puppeteer/node/PuppeteerNode.js:124:16)
+    at async worker (file:///home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs:202:19)
+    at async Promise.all (index 0)
+    at async main (file:///home/tsjang/rhwp/scripts/export-wasm-png-for-sweep.mjs:516:5)

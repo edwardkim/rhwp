@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-10-23
+last_verified: 2026-11-22
 ---
 
 # 시각·fixture 증적
@@ -401,7 +401,7 @@ Visual Sweep으로 위치·줄바꿈·외곽선·글꼴을 별도 판독하고, 
 구분해 기록한다. 명시적 대체를 사용할 때는 [대체 글꼴 설정과 비교 조건](../verification/visual_sweep_guide.md#대체-글꼴-설정과-비교-조건)에 따라
 Print의 실제 프로그램 근거·공급 파일·선택 결과를 남기고, 대상 글꼴이 없는 환경의 재검증을 구분한다.
 전체·집중 회귀는 [최소 글꼴 환경](local_validation.md#회귀-테스트의-최소-글꼴-환경)에서
-실행한다. OTF를 포함한 글꼴을 저장소나 배포물에 추가할 때는 먼저 출처, 라이선스,
+실행한다. 글꼴을 저장소나 배포물에 추가할 때는 먼저 출처, 라이선스,
 재배포 권한과 필수 고지를 확인한다. 라이선스 절차를 마치지 않은 글꼴은 배포하지 않는다.
 
 #### 완료 페이지의 98% 이상 실루엣과 px 좌표 회귀

@@ -1,0 +1,44 @@
+{
+  "producer_source": "436f8629b7f2b9aee520962297b79cdf15c17743",
+  "results": [
+    {
+      "label": "candidate-contract-build",
+      "command": [
+        "rustc",
+        "--edition=2021",
+        "/home/tsjang/rhwp/tests/cases/issue_7754_split_hft_program_contract.rs",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-contract-tests",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-native-library/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out",
+        "--test",
+        "--cfg",
+        "feature=\"native-skia\""
+      ],
+      "exit_code": 0,
+      "seconds": 31.641978841042146,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-candidate-contract-build.log"
+    },
+    {
+      "label": "candidate-contract-run",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font/run.sh",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-contract-tests",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "seconds": 0.44003643305040896,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-candidate-contract-run.log"
+    }
+  ],
+  "actual_test_stdout": "\nrunning 3 tests\ntest display_program_preserves_original_hft_advance ... ok\ntest earlier_original_jamo_is_not_replaced_by_later_compatible_program ... ok\ntest native_paint_reaches_visible_compatible_glyph_in_later_fragment ... ok\n\ntest result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s\n\n",
+  "scope": "diagnostic exact public API; official Native CI module run still required"
+}

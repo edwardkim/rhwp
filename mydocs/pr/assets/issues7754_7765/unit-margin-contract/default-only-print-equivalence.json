@@ -1,0 +1,770 @@
+{
+  "original_pdf": "pdf/issue7765/regulatory-86712-hwpx-original-print-2024.pdf",
+  "original_sha256": "369cf882ad36c1aea27ff4f4ad6fa9d66720d7638a6e8793b0b9b79f75a443f8",
+  "variant_pdf": "output/pr-review/issue7754-nine/regulatory-resave/legacy-unit-consistent-defaults-print-2024.pdf",
+  "variant_sha256": "d8421877b6caec661915efa8d651bec6588b421cb8f988b0e41c01ccf9fbab51",
+  "dpi": 96,
+  "pages": [
+    {
+      "page": 1,
+      "identical_raster": true,
+      "original_sha256": "2eb82e433855c2b6ee57f1eaf80248b4962281db0aaa6290ec81bc2ed754f696",
+      "variant_sha256": "2eb82e433855c2b6ee57f1eaf80248b4962281db0aaa6290ec81bc2ed754f696"
+    },
+    {
+      "page": 2,
+      "identical_raster": true,
+      "original_sha256": "8640ae04bcf0bddd1938ecf761686eec7ef3386fb286fddc7d5f29749a5bf754",
+      "variant_sha256": "8640ae04bcf0bddd1938ecf761686eec7ef3386fb286fddc7d5f29749a5bf754"
+    },
+    {
+      "page": 3,
+      "identical_raster": true,
+      "original_sha256": "11ff154309243856b8ba0b28fe36b117219979b64f53f23b52019af6e459d0aa",
+      "variant_sha256": "11ff154309243856b8ba0b28fe36b117219979b64f53f23b52019af6e459d0aa"
+    },
+    {
+      "page": 4,
+      "identical_raster": true,
+      "original_sha256": "e68126e006f98144c20418a2b87a675faf7137d0ba87e3ef7ee123fdd43708b1",
+      "variant_sha256": "e68126e006f98144c20418a2b87a675faf7137d0ba87e3ef7ee123fdd43708b1"
+    },
+    {
+      "page": 5,
+      "identical_raster": true,
+      "original_sha256": "82f4b55aca10625a4361332a00499dc7fa867c32eb25e34fc6917c50911ffd80",
+      "variant_sha256": "82f4b55aca10625a4361332a00499dc7fa867c32eb25e34fc6917c50911ffd80"
+    },
+    {
+      "page": 6,
+      "identical_raster": true,
+      "original_sha256": "b5fa3a2c80c46c77372325a1990c55fe73ffcc561b3c6cafc297cb17d5063434",
+      "variant_sha256": "b5fa3a2c80c46c77372325a1990c55fe73ffcc561b3c6cafc297cb17d5063434"
+    },
+    {
+      "page": 7,
+      "identical_raster": true,
+      "original_sha256": "a389a0ed5ba3a7bd1e479bb87cb238cf928b391802f08e8c5687798911bb46c2",
+      "variant_sha256": "a389a0ed5ba3a7bd1e479bb87cb238cf928b391802f08e8c5687798911bb46c2"
+    },
+    {
+      "page": 8,
+      "identical_raster": true,
+      "original_sha256": "151cc79a90cac30bab917fb458f0a23e2e34eb380821bdd9d5ac3ad3aa2306b2",
+      "variant_sha256": "151cc79a90cac30bab917fb458f0a23e2e34eb380821bdd9d5ac3ad3aa2306b2"
+    },
+    {
+      "page": 9,
+      "identical_raster": true,
+      "original_sha256": "7eac080723c36cf3ac8929e298e2a069e1c385d309fbbdf58fc012dc71a0afdf",
+      "variant_sha256": "7eac080723c36cf3ac8929e298e2a069e1c385d309fbbdf58fc012dc71a0afdf"
+    },
+    {
+      "page": 10,
+      "identical_raster": true,
+      "original_sha256": "874a4ed2c2e2a0d562e1e6124c1b9e1593f6f75a61e0b04c4e8359bd53199df6",
+      "variant_sha256": "874a4ed2c2e2a0d562e1e6124c1b9e1593f6f75a61e0b04c4e8359bd53199df6"
+    },
+    {
+      "page": 11,
+      "identical_raster": true,
+      "original_sha256": "2e7ed9c7965dd43d8ba9c4813bea9556bb43f69747f90ae322e5c28335d84513",
+      "variant_sha256": "2e7ed9c7965dd43d8ba9c4813bea9556bb43f69747f90ae322e5c28335d84513"
+    },
+    {
+      "page": 12,
+      "identical_raster": true,
+      "original_sha256": "0facaea15149956d5e1fe1a2b31fa13301fbb85d1366e37611f9b00999cfec1c",
+      "variant_sha256": "0facaea15149956d5e1fe1a2b31fa13301fbb85d1366e37611f9b00999cfec1c"
+    },
+    {
+      "page": 13,
+      "identical_raster": true,
+      "original_sha256": "d55330d63d767ab688650c605d2cdcdae6e19762048d4e4e392260c7b5d48a2f",
+      "variant_sha256": "d55330d63d767ab688650c605d2cdcdae6e19762048d4e4e392260c7b5d48a2f"
+    },
+    {
+      "page": 14,
+      "identical_raster": true,
+      "original_sha256": "99c83afd7d43b47376d9fabd02fa06e966e5c721fbd2b791734a3b2fd4e11036",
+      "variant_sha256": "99c83afd7d43b47376d9fabd02fa06e966e5c721fbd2b791734a3b2fd4e11036"
+    },
+    {
+      "page": 15,
+      "identical_raster": true,
+      "original_sha256": "9e76de435b42d290873c51f520236ce518a13b8b22fc1dfadf2142aad012c411",
+      "variant_sha256": "9e76de435b42d290873c51f520236ce518a13b8b22fc1dfadf2142aad012c411"
+    },
+    {
+      "page": 16,
+      "identical_raster": true,
+      "original_sha256": "de866865f077fbd1d65d06cfaa0ece9a3165b092131cbece6ace544f88bb2b52",
+      "variant_sha256": "de866865f077fbd1d65d06cfaa0ece9a3165b092131cbece6ace544f88bb2b52"
+    },
+    {
+      "page": 17,
+      "identical_raster": true,
+      "original_sha256": "d32d173edcaf86c072e464abb7dc0d5bc91e34d2c6c762a85a17fc2d8df712da",
+      "variant_sha256": "d32d173edcaf86c072e464abb7dc0d5bc91e34d2c6c762a85a17fc2d8df712da"
+    },
+    {
+      "page": 18,
+      "identical_raster": true,
+      "original_sha256": "fb3923efe376c6c8e609c6f0098ea9d53b4d5a18c5b3cb9e42417767c467a05a",
+      "variant_sha256": "fb3923efe376c6c8e609c6f0098ea9d53b4d5a18c5b3cb9e42417767c467a05a"
+    },
+    {
+      "page": 19,
+      "identical_raster": true,
+      "original_sha256": "1a4e7f546b49a492be9bae10c3e48d646af366afac94d30f456b31a35b3cb9bb",
+      "variant_sha256": "1a4e7f546b49a492be9bae10c3e48d646af366afac94d30f456b31a35b3cb9bb"
+    },
+    {
+      "page": 20,
+      "identical_raster": true,
+      "original_sha256": "985f4ae75a66fec39e1c15f63063195c5b085a9f3c5454bc8442b6ba72f74ad7",
+      "variant_sha256": "985f4ae75a66fec39e1c15f63063195c5b085a9f3c5454bc8442b6ba72f74ad7"
+    },
+    {
+      "page": 21,
+      "identical_raster": true,
+      "original_sha256": "91e791046d7989b725bc291bdb17da3753e5ecca2376bc90a72d823cf15df251",
+      "variant_sha256": "91e791046d7989b725bc291bdb17da3753e5ecca2376bc90a72d823cf15df251"
+    },
+    {
+      "page": 22,
+      "identical_raster": true,
+      "original_sha256": "aa5147609ac2d7bb5e22aa30286560c517d38885d622aee437f9dc0f97fd9c9d",
+      "variant_sha256": "aa5147609ac2d7bb5e22aa30286560c517d38885d622aee437f9dc0f97fd9c9d"
+    },
+    {
+      "page": 23,
+      "identical_raster": true,
+      "original_sha256": "686f13a0b657b63f6d298600e13fe0a8ea73dc30c83d4af7ce305306d99e5508",
+      "variant_sha256": "686f13a0b657b63f6d298600e13fe0a8ea73dc30c83d4af7ce305306d99e5508"
+    },
+    {
+      "page": 24,
+      "identical_raster": true,
+      "original_sha256": "75ca2384ade667942373eb9bd83f6967392b7debae2fa041a6d4d6850a2ad2c3",
+      "variant_sha256": "75ca2384ade667942373eb9bd83f6967392b7debae2fa041a6d4d6850a2ad2c3"
+    },
+    {
+      "page": 25,
+      "identical_raster": true,
+      "original_sha256": "6b1d21a5cfe1ff69a37f17a3e5d967a4489bfe6c08333a1ccc505ab56845a01b",
+      "variant_sha256": "6b1d21a5cfe1ff69a37f17a3e5d967a4489bfe6c08333a1ccc505ab56845a01b"
+    },
+    {
+      "page": 26,
+      "identical_raster": true,
+      "original_sha256": "fa4482a80cd9a51efc686cab4614cec084907920b752bd19093a32853c804895",
+      "variant_sha256": "fa4482a80cd9a51efc686cab4614cec084907920b752bd19093a32853c804895"
+    },
+    {
+      "page": 27,
+      "identical_raster": true,
+      "original_sha256": "1e11a3887318539a309079f305a6c774c4f288fbf0156378ba7563ae9d0d0bde",
+      "variant_sha256": "1e11a3887318539a309079f305a6c774c4f288fbf0156378ba7563ae9d0d0bde"
+    },
+    {
+      "page": 28,
+      "identical_raster": true,
+      "original_sha256": "4a187d592319c521e4a7a1b44e8474dac71420df582b8618d5e0ac62b8fe87bd",
+      "variant_sha256": "4a187d592319c521e4a7a1b44e8474dac71420df582b8618d5e0ac62b8fe87bd"
+    },
+    {
+      "page": 29,
+      "identical_raster": true,
+      "original_sha256": "0e1255b4a97a390c12304035106fb502bccdca23ecbd5e798e11a7ad2a67e84b",
+      "variant_sha256": "0e1255b4a97a390c12304035106fb502bccdca23ecbd5e798e11a7ad2a67e84b"
+    },
+    {
+      "page": 30,
+      "identical_raster": true,
+      "original_sha256": "70bafa564e8774e9abcde18f7651b1f284403b75ca8656b6796fdbb1d64f0b90",
+      "variant_sha256": "70bafa564e8774e9abcde18f7651b1f284403b75ca8656b6796fdbb1d64f0b90"
+    },
+    {
+      "page": 31,
+      "identical_raster": true,
+      "original_sha256": "42bffa1ff3cb12577196d22fb118686fe96bfa8b535d859597af8b0535e551df",
+      "variant_sha256": "42bffa1ff3cb12577196d22fb118686fe96bfa8b535d859597af8b0535e551df"
+    },
+    {
+      "page": 32,
+      "identical_raster": true,
+      "original_sha256": "9c5d15fa96edd2cedb430cbc614697b97a6c425e8dba2bfdd1533e2bd3bb9f66",
+      "variant_sha256": "9c5d15fa96edd2cedb430cbc614697b97a6c425e8dba2bfdd1533e2bd3bb9f66"
+    },
+    {
+      "page": 33,
+      "identical_raster": true,
+      "original_sha256": "c77ec47cafe27e2504dafc0391695339b8fcccd31f74daeb6e05b502be155e0d",
+      "variant_sha256": "c77ec47cafe27e2504dafc0391695339b8fcccd31f74daeb6e05b502be155e0d"
+    },
+    {
+      "page": 34,
+      "identical_raster": true,
+      "original_sha256": "64eff1c17deea16fea4bdc07369bc8075c210ba22f0e931a6df6d2dad8438850",
+      "variant_sha256": "64eff1c17deea16fea4bdc07369bc8075c210ba22f0e931a6df6d2dad8438850"
+    },
+    {
+      "page": 35,
+      "identical_raster": true,
+      "original_sha256": "84fcec291349f0d15635045f652e7ee1fa785cbc81e2b4a4ebf356419840d929",
+      "variant_sha256": "84fcec291349f0d15635045f652e7ee1fa785cbc81e2b4a4ebf356419840d929"
+    },
+    {
+      "page": 36,
+      "identical_raster": true,
+      "original_sha256": "3ea788955111a6e5f8a4f95b3d615e20e6f0872e6f6c6c8b24a303f19bc2cbde",
+      "variant_sha256": "3ea788955111a6e5f8a4f95b3d615e20e6f0872e6f6c6c8b24a303f19bc2cbde"
+    },
+    {
+      "page": 37,
+      "identical_raster": true,
+      "original_sha256": "ce0ee4b41e8ae69d26abce529be741370ef277ad7c3f9398f110097fd5686d08",
+      "variant_sha256": "ce0ee4b41e8ae69d26abce529be741370ef277ad7c3f9398f110097fd5686d08"
+    },
+    {
+      "page": 38,
+      "identical_raster": true,
+      "original_sha256": "7d696ce4fa84554fa1b62c253894723853fa05354d24ece32aee6a4759fc254a",
+      "variant_sha256": "7d696ce4fa84554fa1b62c253894723853fa05354d24ece32aee6a4759fc254a"
+    },
+    {
+      "page": 39,
+      "identical_raster": true,
+      "original_sha256": "5764ac3cae9d8eaaa69c3329e6059b4edee43fefa5125fed4bf7a84f0952d8e7",
+      "variant_sha256": "5764ac3cae9d8eaaa69c3329e6059b4edee43fefa5125fed4bf7a84f0952d8e7"
+    },
+    {
+      "page": 40,
+      "identical_raster": true,
+      "original_sha256": "26c87afdfbeaeb4e7ec58fc95b6712fd41e85f7fed4fce2c2001f902ddefb336",
+      "variant_sha256": "26c87afdfbeaeb4e7ec58fc95b6712fd41e85f7fed4fce2c2001f902ddefb336"
+    },
+    {
+      "page": 41,
+      "identical_raster": true,
+      "original_sha256": "bb0926d0dfcaa41d0110772d00d68f3ff65586b18e68a57a05513a3a958b03ea",
+      "variant_sha256": "bb0926d0dfcaa41d0110772d00d68f3ff65586b18e68a57a05513a3a958b03ea"
+    },
+    {
+      "page": 42,
+      "identical_raster": true,
+      "original_sha256": "db9064e06733a0abb2148913b9c1612af3f78a30d3febb8469557498aa85111f",
+      "variant_sha256": "db9064e06733a0abb2148913b9c1612af3f78a30d3febb8469557498aa85111f"
+    },
+    {
+      "page": 43,
+      "identical_raster": true,
+      "original_sha256": "38a251556d73abd497fd4aed2e3a71790f3282a72ac9290f31c403df2ce8aa92",
+      "variant_sha256": "38a251556d73abd497fd4aed2e3a71790f3282a72ac9290f31c403df2ce8aa92"
+    },
+    {
+      "page": 44,
+      "identical_raster": true,
+      "original_sha256": "716f8764a5201caf3e2497d7e1a369d74dacf378792d345fb33870400c47ed9c",
+      "variant_sha256": "716f8764a5201caf3e2497d7e1a369d74dacf378792d345fb33870400c47ed9c"
+    },
+    {
+      "page": 45,
+      "identical_raster": true,
+      "original_sha256": "414d54fcd1061dcae7b86f650dbd8e3cecdb035dd9609361e197e2e674392114",
+      "variant_sha256": "414d54fcd1061dcae7b86f650dbd8e3cecdb035dd9609361e197e2e674392114"
+    },
+    {
+      "page": 46,
+      "identical_raster": true,
+      "original_sha256": "c6ba4d2c81aa66c4b1a33f8d56d1e4485dc8bdf91cc350d6ea2739e5c8aa754a",
+      "variant_sha256": "c6ba4d2c81aa66c4b1a33f8d56d1e4485dc8bdf91cc350d6ea2739e5c8aa754a"
+    },
+    {
+      "page": 47,
+      "identical_raster": true,
+      "original_sha256": "8a6e0f0f2a0ad2bcc0ba586cdabf5360322c3663c1f4847f1573b5101cca96c8",
+      "variant_sha256": "8a6e0f0f2a0ad2bcc0ba586cdabf5360322c3663c1f4847f1573b5101cca96c8"
+    },
+    {
+      "page": 48,
+      "identical_raster": true,
+      "original_sha256": "ff65859ee26e1a65657b2b583b9cb13c241084a6846e9989e668bc0c678f2fd2",
+      "variant_sha256": "ff65859ee26e1a65657b2b583b9cb13c241084a6846e9989e668bc0c678f2fd2"
+    },
+    {
+      "page": 49,
+      "identical_raster": true,
+      "original_sha256": "d691fb3f3d0eee7ea11e7a1cfe3f856d079e76661c2e0a79053ccd2957d316dc",
+      "variant_sha256": "d691fb3f3d0eee7ea11e7a1cfe3f856d079e76661c2e0a79053ccd2957d316dc"
+    },
+    {
+      "page": 50,
+      "identical_raster": true,
+      "original_sha256": "0e2800218125fe4616fb5489f29ead329f2e7ff96a4bef96b77ab96abd25f43c",
+      "variant_sha256": "0e2800218125fe4616fb5489f29ead329f2e7ff96a4bef96b77ab96abd25f43c"
+    },
+    {
+      "page": 51,
+      "identical_raster": true,
+      "original_sha256": "7d3efab0f9702cdadf714b1a7f7f5d6f8be671628b83b77e1f2f3fd7ae0c47e3",
+      "variant_sha256": "7d3efab0f9702cdadf714b1a7f7f5d6f8be671628b83b77e1f2f3fd7ae0c47e3"
+    },
+    {
+      "page": 52,
+      "identical_raster": true,
+      "original_sha256": "5fa34606aa6e58be4109474fd6a44da64accba69509c05a53617a4e7b673a0bf",
+      "variant_sha256": "5fa34606aa6e58be4109474fd6a44da64accba69509c05a53617a4e7b673a0bf"
+    },
+    {
+      "page": 53,
+      "identical_raster": true,
+      "original_sha256": "d1cdb3232939c7ee647504b8aee836661d52fe7a234a92d468daddea71e58fc2",
+      "variant_sha256": "d1cdb3232939c7ee647504b8aee836661d52fe7a234a92d468daddea71e58fc2"
+    },
+    {
+      "page": 54,
+      "identical_raster": true,
+      "original_sha256": "0f16274327defbc98e40cf480f37a12b953b28b834c0fbd8c03c97bbbbe6d279",
+      "variant_sha256": "0f16274327defbc98e40cf480f37a12b953b28b834c0fbd8c03c97bbbbe6d279"
+    },
+    {
+      "page": 55,
+      "identical_raster": true,
+      "original_sha256": "fcddf1978d6b0dd56d01e1ad80769b9d96c217391e0a8bbf7c5cb5708c80883d",
+      "variant_sha256": "fcddf1978d6b0dd56d01e1ad80769b9d96c217391e0a8bbf7c5cb5708c80883d"
+    },
+    {
+      "page": 56,
+      "identical_raster": true,
+      "original_sha256": "8377144dc3d248204c2c706208ec3173d5e40d2a3f191acd454fcbcb144c8195",
+      "variant_sha256": "8377144dc3d248204c2c706208ec3173d5e40d2a3f191acd454fcbcb144c8195"
+    },
+    {
+      "page": 57,
+      "identical_raster": true,
+      "original_sha256": "fab5eb8f3c5ded8abb044dd8d73b6c1d9e7b1e7e524b095d482370a18042b078",
+      "variant_sha256": "fab5eb8f3c5ded8abb044dd8d73b6c1d9e7b1e7e524b095d482370a18042b078"
+    },
+    {
+      "page": 58,
+      "identical_raster": true,
+      "original_sha256": "11c8d956be54f5ef0e756d77981d324a3a7356f44de86660c7f498adafd88af9",
+      "variant_sha256": "11c8d956be54f5ef0e756d77981d324a3a7356f44de86660c7f498adafd88af9"
+    },
+    {
+      "page": 59,
+      "identical_raster": true,
+      "original_sha256": "7e297fcf14bd33d255181360202f541db48cc1ab93b0a2936c37441f7b09944d",
+      "variant_sha256": "7e297fcf14bd33d255181360202f541db48cc1ab93b0a2936c37441f7b09944d"
+    },
+    {
+      "page": 60,
+      "identical_raster": true,
+      "original_sha256": "3abbf744c92feb1936fe0e05aae559fb966dd2ffe4c57992f4156671756d81a1",
+      "variant_sha256": "3abbf744c92feb1936fe0e05aae559fb966dd2ffe4c57992f4156671756d81a1"
+    },
+    {
+      "page": 61,
+      "identical_raster": true,
+      "original_sha256": "bfbd266b233f8dc3977b6bf0e157ec11a0cad908a4b692f2add4e8e572806b33",
+      "variant_sha256": "bfbd266b233f8dc3977b6bf0e157ec11a0cad908a4b692f2add4e8e572806b33"
+    },
+    {
+      "page": 62,
+      "identical_raster": true,
+      "original_sha256": "49f0d69c721a6fbe03dd6434f298f615a44c8927b5f294a0adb790fca2744065",
+      "variant_sha256": "49f0d69c721a6fbe03dd6434f298f615a44c8927b5f294a0adb790fca2744065"
+    },
+    {
+      "page": 63,
+      "identical_raster": true,
+      "original_sha256": "c40b0d32e80f29797e6ade6445e627df8403992bb630e149e7f788510cb492d2",
+      "variant_sha256": "c40b0d32e80f29797e6ade6445e627df8403992bb630e149e7f788510cb492d2"
+    },
+    {
+      "page": 64,
+      "identical_raster": true,
+      "original_sha256": "5d832a053e342c425b2ad8dd4e97db81cd3f08f886d614826f9f3ed17815d31e",
+      "variant_sha256": "5d832a053e342c425b2ad8dd4e97db81cd3f08f886d614826f9f3ed17815d31e"
+    }
+  ],
+  "all_identical": true,
+  "diagnostic_input": {
+    "original": "samples/issue1891/86712_regulatory_analysis.hwpx",
+    "original_sha256": "0f4f055c74a3d39f70e417ca6c700880d9645a202798cd0e5c11f6e32c180a19",
+    "variant": "output/pr-review/issue7754-nine/regulatory-resave/legacy-unit-consistent-defaults.hwpx",
+    "variant_sha256": "d8810d180125be3269810e117f208bac0ee63cfa72e86d94cabc4a9e7a97f3dc",
+    "changes": [
+      {
+        "id": "24",
+        "field": "intent",
+        "case": {
+          "value": "-1233",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2467,
+        "default_new": -2466
+      },
+      {
+        "id": "35",
+        "field": "intent",
+        "case": {
+          "value": "-1500",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -3001,
+        "default_new": -3000
+      },
+      {
+        "id": "40",
+        "field": "intent",
+        "case": {
+          "value": "-1073",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2147,
+        "default_new": -2146
+      },
+      {
+        "id": "43",
+        "field": "intent",
+        "case": {
+          "value": "-1168",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2337,
+        "default_new": -2336
+      },
+      {
+        "id": "44",
+        "field": "intent",
+        "case": {
+          "value": "-1170",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2341,
+        "default_new": -2340
+      },
+      {
+        "id": "47",
+        "field": "intent",
+        "case": {
+          "value": "-1867",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -3735,
+        "default_new": -3734
+      },
+      {
+        "id": "48",
+        "field": "intent",
+        "case": {
+          "value": "-1238",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2477,
+        "default_new": -2476
+      },
+      {
+        "id": "49",
+        "field": "intent",
+        "case": {
+          "value": "-1152",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2305,
+        "default_new": -2304
+      },
+      {
+        "id": "52",
+        "field": "intent",
+        "case": {
+          "value": "-1136",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2273,
+        "default_new": -2272
+      },
+      {
+        "id": "53",
+        "field": "intent",
+        "case": {
+          "value": "-818",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -1637,
+        "default_new": -1636
+      },
+      {
+        "id": "61",
+        "field": "intent",
+        "case": {
+          "value": "-1080",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2161,
+        "default_new": -2160
+      },
+      {
+        "id": "62",
+        "field": "intent",
+        "case": {
+          "value": "-1066",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2133,
+        "default_new": -2132
+      },
+      {
+        "id": "64",
+        "field": "intent",
+        "case": {
+          "value": "-1684",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -3369,
+        "default_new": -3368
+      },
+      {
+        "id": "67",
+        "field": "intent",
+        "case": {
+          "value": "-1092",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2185,
+        "default_new": -2184
+      },
+      {
+        "id": "68",
+        "field": "intent",
+        "case": {
+          "value": "-562",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -1125,
+        "default_new": -1124
+      },
+      {
+        "id": "72",
+        "field": "intent",
+        "case": {
+          "value": "-1118",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2237,
+        "default_new": -2236
+      },
+      {
+        "id": "74",
+        "field": "intent",
+        "case": {
+          "value": "-1071",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2143,
+        "default_new": -2142
+      },
+      {
+        "id": "76",
+        "field": "intent",
+        "case": {
+          "value": "-1367",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2735,
+        "default_new": -2734
+      },
+      {
+        "id": "78",
+        "field": "intent",
+        "case": {
+          "value": "-1068",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2137,
+        "default_new": -2136
+      },
+      {
+        "id": "79",
+        "field": "intent",
+        "case": {
+          "value": "-1094",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2189,
+        "default_new": -2188
+      },
+      {
+        "id": "82",
+        "field": "intent",
+        "case": {
+          "value": "-1592",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -3185,
+        "default_new": -3184
+      },
+      {
+        "id": "84",
+        "field": "intent",
+        "case": {
+          "value": "-818",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -1637,
+        "default_new": -1636
+      },
+      {
+        "id": "90",
+        "field": "intent",
+        "case": {
+          "value": "-1397",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2795,
+        "default_new": -2794
+      },
+      {
+        "id": "98",
+        "field": "intent",
+        "case": {
+          "value": "-1592",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -3185,
+        "default_new": -3184
+      },
+      {
+        "id": "105",
+        "field": "intent",
+        "case": {
+          "value": "-1044",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2089,
+        "default_new": -2088
+      },
+      {
+        "id": "107",
+        "field": "intent",
+        "case": {
+          "value": "-1059",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2119,
+        "default_new": -2118
+      },
+      {
+        "id": "116",
+        "field": "intent",
+        "case": {
+          "value": "-1043",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2087,
+        "default_new": -2086
+      },
+      {
+        "id": "122",
+        "field": "intent",
+        "case": {
+          "value": "-875",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -1751,
+        "default_new": -1750
+      },
+      {
+        "id": "132",
+        "field": "intent",
+        "case": {
+          "value": "-1086",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2173,
+        "default_new": -2172
+      },
+      {
+        "id": "133",
+        "field": "intent",
+        "case": {
+          "value": "-1098",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2197,
+        "default_new": -2196
+      },
+      {
+        "id": "134",
+        "field": "intent",
+        "case": {
+          "value": "-1121",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2243,
+        "default_new": -2242
+      },
+      {
+        "id": "135",
+        "field": "intent",
+        "case": {
+          "value": "-1397",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2795,
+        "default_new": -2794
+      },
+      {
+        "id": "137",
+        "field": "intent",
+        "case": {
+          "value": "-1404",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2809,
+        "default_new": -2808
+      },
+      {
+        "id": "139",
+        "field": "intent",
+        "case": {
+          "value": "-1068",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2137,
+        "default_new": -2136
+      },
+      {
+        "id": "147",
+        "field": "intent",
+        "case": {
+          "value": "-1404",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2809,
+        "default_new": -2808
+      },
+      {
+        "id": "148",
+        "field": "intent",
+        "case": {
+          "value": "-1447",
+          "unit": "HWPUNIT"
+        },
+        "default_old": -2895,
+        "default_new": -2894
+      }
+    ]
+  },
+  "job_id": "a9b180a4-c75e-4a5e-a692-6a2d641ace86",
+  "print": {
+    "engine": "2024",
+    "hancom_version": "13.0.0.3901",
+    "pdf_print_method": 0,
+    "pdf_output_mode": "frame_print_to_pdf_ex_one_up"
+  },
+  "role": "Independent diagnostic evidence; not a regression fixture or qualification of the renderer."
+}

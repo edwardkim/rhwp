@@ -1,0 +1,213 @@
+{
+  "production_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "scope": "before source34 corrections; numeric Native only; direct p1 needs correction; fresh WASM and actual encrypted original separate",
+  "native_pages": 583,
+  "originals": 10,
+  "complete_coverage": true,
+  "numeric_threshold_passed": true,
+  "overall_complete": false,
+  "comparisons": [
+    {
+      "key": "issue7756",
+      "pages": 1,
+      "base_minimum": 96.59,
+      "candidate_minimum": 99.0
+    },
+    {
+      "key": "issue7759",
+      "pages": 1,
+      "base_minimum": 99.93,
+      "candidate_minimum": 99.93
+    },
+    {
+      "key": "issue7757",
+      "pages": 3,
+      "base_minimum": 99.78,
+      "candidate_minimum": 99.78
+    },
+    {
+      "key": "issue7760",
+      "pages": 19,
+      "base_minimum": 99.18,
+      "candidate_minimum": 99.18
+    },
+    {
+      "key": "issue7754-plain",
+      "pages": 24,
+      "base_minimum": 98.17,
+      "candidate_minimum": 98.14
+    },
+    {
+      "key": "issue7761",
+      "pages": 46,
+      "base_minimum": 94.6,
+      "candidate_minimum": 99.98
+    },
+    {
+      "key": "issue7762",
+      "pages": 46,
+      "base_minimum": 94.6,
+      "candidate_minimum": 99.98
+    },
+    {
+      "key": "issue7765-hwp",
+      "pages": 64,
+      "base_minimum": 98.08,
+      "candidate_minimum": 98.08
+    },
+    {
+      "key": "issue7765-hwpx",
+      "pages": 64,
+      "base_minimum": 19.46,
+      "candidate_minimum": 98.69
+    },
+    {
+      "key": "issue7755",
+      "pages": 315,
+      "base_minimum": 26.8,
+      "candidate_minimum": 98.4
+    }
+  ],
+  "tsv_receipts": [
+    {
+      "key": "issue7756",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7756/silhouette.tsv",
+      "sha256": "07bbddba4bb93374631f49bfe4e2dfa33aa99a66facc388a8cb87e2bc3ee8ca2",
+      "pages": 1
+    },
+    {
+      "key": "issue7756",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7756/silhouette.tsv",
+      "sha256": "48d30614f46673bee2486ff1f85d90e111f63680cbdf87ad4395493982133cdb",
+      "pages": 1
+    },
+    {
+      "key": "issue7759",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7759/silhouette.tsv",
+      "sha256": "4cbc47b53303e29dabba64cfe0b66201bb79f413ad8e3ceee19d66b0bed9180e",
+      "pages": 1
+    },
+    {
+      "key": "issue7759",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7759/silhouette.tsv",
+      "sha256": "4cbc47b53303e29dabba64cfe0b66201bb79f413ad8e3ceee19d66b0bed9180e",
+      "pages": 1
+    },
+    {
+      "key": "issue7757",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7757/silhouette.tsv",
+      "sha256": "b24739dcb96d444bc4224ee04e4d5e4699a504c2226887e6c0ab4863ac7a8e69",
+      "pages": 3
+    },
+    {
+      "key": "issue7757",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7757/silhouette.tsv",
+      "sha256": "b24739dcb96d444bc4224ee04e4d5e4699a504c2226887e6c0ab4863ac7a8e69",
+      "pages": 3
+    },
+    {
+      "key": "issue7760",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7760/silhouette.tsv",
+      "sha256": "172585033d8a550d1ac6120b2d27fe6d7b131ba54b6ce3cb36b695a7c93100d3",
+      "pages": 19
+    },
+    {
+      "key": "issue7760",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7760/silhouette.tsv",
+      "sha256": "172585033d8a550d1ac6120b2d27fe6d7b131ba54b6ce3cb36b695a7c93100d3",
+      "pages": 19
+    },
+    {
+      "key": "issue7754-plain",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7754-plain/silhouette.tsv",
+      "sha256": "05795cae4b73f75879694c5919f8c4cff29b72ed51652be876d56c5a32a13d68",
+      "pages": 24
+    },
+    {
+      "key": "issue7754-plain",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7754-plain/silhouette.tsv",
+      "sha256": "09d064a4aa045274dd015899ecee3b048dc3d5252cad9c7a65431b8cd0aa04da",
+      "pages": 24
+    },
+    {
+      "key": "issue7761",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7761/silhouette.tsv",
+      "sha256": "41f37117a854d3a3152e8f2c7964a334f94d794d2fab64111a461e1966c8ef06",
+      "pages": 46
+    },
+    {
+      "key": "issue7761",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7761/silhouette.tsv",
+      "sha256": "1dad5df5afe9a33062ec481cbf21c7ffd97dfa1691634015a272a399c4907fa3",
+      "pages": 46
+    },
+    {
+      "key": "issue7762",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/silhouette.tsv",
+      "sha256": "d1a978b270aae575d3845e7e2222c4424c92f11c000b6f6dbfc0826f9ce775b2",
+      "pages": 46
+    },
+    {
+      "key": "issue7762",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7762/silhouette.tsv",
+      "sha256": "3ed177ec81dd10bb3ee1cf4653edc88520ffb9d336479a0659660be8729df9a5",
+      "pages": 46
+    },
+    {
+      "key": "issue7765-hwp",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7765-hwp/silhouette.tsv",
+      "sha256": "c1d41409c14f7933a1cce1c43c12f6616ef0d0e0fdfe7fec236d4f9348cea141",
+      "pages": 64
+    },
+    {
+      "key": "issue7765-hwp",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7765-hwp/silhouette.tsv",
+      "sha256": "c1d41409c14f7933a1cce1c43c12f6616ef0d0e0fdfe7fec236d4f9348cea141",
+      "pages": 64
+    },
+    {
+      "key": "issue7765-hwpx",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7765-hwpx/silhouette.tsv",
+      "sha256": "a85fb67a56d6405e284f1fa01d82029d8b2ef82d5c5dcb6a2d7d7ecf39b0f0c6",
+      "pages": 64
+    },
+    {
+      "key": "issue7765-hwpx",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7765-hwpx/silhouette.tsv",
+      "sha256": "f1b360739d518555851bd9a644ea38b8a039896720b836ba5d2c8eed3f9201ed",
+      "pages": 64
+    },
+    {
+      "key": "issue7755",
+      "role": "base",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7755/silhouette.tsv",
+      "sha256": "48dc81ee93b1f07a97208ef7146d1771aa31d63a8dbd13c333d549d6a6b39ad8",
+      "pages": 315
+    },
+    {
+      "key": "issue7755",
+      "role": "candidate",
+      "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/candidate/issue7755/silhouette.tsv",
+      "sha256": "539562fe370c1da57c258c31c24f1f14ac00f96045295a5da8b0952a0c5a35d2",
+      "pages": 315
+    }
+  ]
+}

@@ -1,0 +1,356 @@
+{
+  "candidate_producer_source": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+  "base": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+  "native": {
+    "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+    "font_isolation_wrapper_sha256": "7b2dc40a9da98796e460e1414a4fd8dee13da3ee68bc11364e0f6bcb94a75360",
+    "unfiltered_native_library": {
+      "passed": 4033,
+      "failed": 0,
+      "ignored": 12,
+      "executables": 4,
+      "log_sha256": "c44d76140099afcd4331d833447dc2e8ef9c9add8a5783625b0ca0202f0b0705"
+    },
+    "native_ci_selectors": {
+      "tests_passed": 194,
+      "cases": [
+        {
+          "case": "cli_exit_codes_native",
+          "tests_run": 2,
+          "passed": 2,
+          "filtered": 0,
+          "exit_code": 0,
+          "log_sha256": "82174224f2e578af3eb81a3a624cf29b72a46777e2397ba306d7c0beadc5cf3a"
+        },
+        {
+          "case": "issue_1144_native",
+          "tests_run": 1,
+          "passed": 1,
+          "filtered": 0,
+          "exit_code": 0,
+          "log_sha256": "3c69a6ad1fc096c6fc540f8d44a3d4c5570963ab633d37376cde03d09281fa0c"
+        },
+        {
+          "case": "issue_2225_missing_picture_placeholder",
+          "tests_run": 2,
+          "passed": 2,
+          "filtered": 345,
+          "exit_code": 0,
+          "log_sha256": "bc0666cb126287436d188daa064821bf38b4454c26d0c0005478f0b213b6efe9"
+        },
+        {
+          "case": "render_p37_direct_pdf_export",
+          "tests_run": 37,
+          "passed": 37,
+          "filtered": 335,
+          "exit_code": 0,
+          "log_sha256": "8e00fe7f9bd57a540b2767ff5bee1dfe94a8b801d3c93c9ae209151f167dda9e"
+        },
+        {
+          "case": "issue_7950_pdf_paint",
+          "tests_run": 4,
+          "passed": 4,
+          "filtered": 341,
+          "exit_code": 0,
+          "log_sha256": "b861530da9353e1d0698600f9a5cd19674ea0acd52db664a56193cad0eda0f38"
+        },
+        {
+          "case": "issue_2083_hide_fill_page_background",
+          "tests_run": 1,
+          "passed": 1,
+          "filtered": 358,
+          "exit_code": 0,
+          "log_sha256": "6bfe01c3709b6c60980bff79d795d3fbec9b51c8cb439e8c00898daa8e552972"
+        },
+        {
+          "case": "issue_2292_chart_png_clip",
+          "tests_run": 1,
+          "passed": 1,
+          "filtered": 373,
+          "exit_code": 0,
+          "log_sha256": "2f0b5f078ed0300249815789a7251b6b02b242c46131cd5e600d8ef079c86f11"
+        },
+        {
+          "case": "issue_2293_chart_png_text",
+          "tests_run": 2,
+          "passed": 2,
+          "filtered": 375,
+          "exit_code": 0,
+          "log_sha256": "c6458506579b272eb0cc507c078950458331d7e625ba37ef2fb452ad4ffe46af"
+        },
+        {
+          "case": "issue_7820_sixel_contract",
+          "tests_run": 7,
+          "passed": 7,
+          "filtered": 335,
+          "exit_code": 0,
+          "log_sha256": "410449df9d3359283c0e719cb85cc1dd442c62700b84a261644ed2dbad5ce0c7"
+        },
+        {
+          "case": "issue_8150_kitty_contract",
+          "tests_run": 8,
+          "passed": 8,
+          "filtered": 334,
+          "exit_code": 0,
+          "log_sha256": "66c5a990a8ae2ff91d072ea56bd5b5719d32d02368c9874ed6ac8b2528e62664"
+        },
+        {
+          "case": "issue_4961_font_decision_trace",
+          "tests_run": 12,
+          "passed": 12,
+          "filtered": 347,
+          "exit_code": 0,
+          "log_sha256": "fc465020cc791fd571951817e1d2473f43f20a5f74c951e351b95da937c4a2f7"
+        },
+        {
+          "case": "issue_7902_original_frame_and_content",
+          "tests_run": 7,
+          "passed": 7,
+          "filtered": 352,
+          "exit_code": 0,
+          "log_sha256": "7a3b4d5eaef7a08f30ffb7d1fc66c072158df4ba97cda502345e2f936920606b"
+        },
+        {
+          "case": "issue_8160_hwp2022_paragraph_relations",
+          "tests_run": 3,
+          "passed": 3,
+          "filtered": 355,
+          "exit_code": 0,
+          "log_sha256": "99749c79f15a4fedf997e331af0da3580c233871e577bfa2531a1ad193ae4f25"
+        },
+        {
+          "case": "native_fractional_glyph_origin",
+          "tests_run": 7,
+          "passed": 7,
+          "filtered": 347,
+          "exit_code": 0,
+          "log_sha256": "fbdb1522029cea0f7acaa78c8f865b900940e797ba767b2faf9f1aad436855c1"
+        },
+        {
+          "case": "skia_native_glyph_replay",
+          "tests_run": 25,
+          "passed": 25,
+          "filtered": 322,
+          "exit_code": 0,
+          "log_sha256": "a271ba86326752c7480682d8f2116ef8452df1068bb69b05104d01da91398ff2"
+        },
+        {
+          "case": "issue_8153_opaque_mixed_axis_image_sampling",
+          "tests_run": 2,
+          "passed": 2,
+          "filtered": 341,
+          "exit_code": 0,
+          "log_sha256": "462e7a0ed4ae346de58d87b19866da4c93839d2fe4c2a146ddd325d074b5382e"
+        },
+        {
+          "case": "issue_8153_print_glyph_geometry",
+          "tests_run": 9,
+          "passed": 9,
+          "filtered": 368,
+          "exit_code": 0,
+          "log_sha256": "c03d77787d49b753d7f8a1d388ac15736f052b09830cbd634fc1dd99430947bc"
+        },
+        {
+          "case": "issue_8153_symbol_fallback",
+          "tests_run": 2,
+          "passed": 2,
+          "filtered": 374,
+          "exit_code": 0,
+          "log_sha256": "c04a4cd6b6f9081c36949dc77c8f9e11fe6f409394a78a3f1c034c584133e15b"
+        },
+        {
+          "case": "issue_536_native_region_cache",
+          "tests_run": 39,
+          "passed": 39,
+          "filtered": 306,
+          "exit_code": 0,
+          "log_sha256": "07591f648473189eb20811d30e977854943cc8149e8fc2f0e026f53cfbb3720e"
+        },
+        {
+          "case": "skia_region_plan",
+          "tests_run": 10,
+          "passed": 10,
+          "filtered": 332,
+          "exit_code": 0,
+          "log_sha256": "a6bff09b82f74140ca4738aa7f72adf493cb9680e93b0c750b604aa5f6f97481"
+        },
+        {
+          "case": "skia_host_surface",
+          "tests_run": 13,
+          "passed": 13,
+          "filtered": 329,
+          "exit_code": 0,
+          "log_sha256": "ef163de1088f88759a714a2e5ae7d6ac32faf40db1687d4a7e6d1774b1a57417"
+        }
+      ],
+      "selectors_passed": 21
+    },
+    "focused_regressions": [
+      {
+        "selector": "issue_7754_font_logical_family_ownership",
+        "tests_passed": 1,
+        "log_sha256": "9e78cd7f8806ec810a2826155dd68ef779f43d7cd750205886e90f285341aad7"
+      },
+      {
+        "selector": "oracle_page_count_baseline",
+        "tests_passed": 17,
+        "log_sha256": "41df63f14cb00e70f09b43e7e05267fe25eed9d5b899c1629395e3a95e87d248"
+      },
+      {
+        "selector": "issue_7754_original_frame_and_glyph_origins",
+        "tests_passed": 2,
+        "log_sha256": "e2169eaca4b76cb657342d079c30f4ef275c3724d2513c59188115495b9b1169"
+      },
+      {
+        "selector": "issue_8418_hft_outline_tracking",
+        "tests_passed": 3,
+        "log_sha256": "117b0a2a71e9f0793801ecb0ac72dfe3e1821f0d6f90ebbf00051914a23dee88"
+      },
+      {
+        "selector": "issue_8225_group_child_ctrl_data",
+        "tests_passed": 5,
+        "log_sha256": "1b048789fcafcedd483d392777e7cbe2bbbae3985038b4ce6204d73ec810e69b"
+      }
+    ]
+  },
+  "rust_lint": [
+    {
+      "check": "native-root-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log_sha256": "c3e49f9d568e1332f92ee4979d6618c5efb4a252d20748c9241607f08621ed45"
+    },
+    {
+      "check": "native-skia-lib-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--lib",
+        "--features",
+        "native-skia",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log_sha256": "3b3e4588ed71bd152f0d00c99fd27c63994d072527a94eff39a5de3b3a5d778b"
+    },
+    {
+      "check": "workspace-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log_sha256": "339504f3ea1976326f8af26e6d1caa0fadd233799ec22ac651bd368576d51977"
+    },
+    {
+      "check": "wasm-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--lib",
+        "--target-dir",
+        "target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit_code": 0,
+      "log_sha256": "21448d56ecb00a9e46f42c975cafd4d96d47fe4fad36220a83b8c39cb9b50897"
+    }
+  ],
+  "workspace_build": {
+    "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace",
+      "--target-dir",
+      "target/pr-review"
+    ],
+    "exit_code": 0,
+    "seconds": 352.3137687551789,
+    "log_sha256": "50c97d454c677fe19e96295b285bfea82418bcde7a669dfc5ca8ae92f21ae402"
+  },
+  "minimum_font_environment": {
+    "visible_font_list_sha256": "0429940ab2fa83a69c2274cf85ce5c3b1adc56595a00484353a396a83df8691e",
+    "lint_wrapper_sha256": "d52e677e141ca8dff69b89315c3faf12054bad30411fa03f5058a95d5366a6c2"
+  },
+  "studio": {
+    "checked_head": "ce7d1baded3b11f2521c74caa753f6d7fd796a24",
+    "typecheck": {
+      "command": [
+        "./node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "unit": {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit_code": 0,
+      "counts": {
+        "tests": 2834,
+        "pass": 2834,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "log_sha256": "f6366d0a7d3fb3a0429a7b916f70cd9ee9cded0d9e1816fd8d4cd022e539a0c7"
+    }
+  },
+  "full_rust_integration": {
+    "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+    "scope_ko": "PR #9322 리베이스 전 생산본",
+    "command": [
+      "cargo",
+      "nextest",
+      "run",
+      "--locked",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "target/pr-review",
+      "--tests",
+      "--test-threads",
+      "12",
+      "--no-fail-fast"
+    ],
+    "exit_code": 0,
+    "passed": 13984,
+    "failed": 0,
+    "slow": 15,
+    "skipped": 45,
+    "test_runtime_seconds": 1221.52,
+    "total_seconds": 4367.596827131929,
+    "log_sha256": "08f88af6eb58d1216a42b3596dfb9c7d027f9b4e0ba3630a45f1e422c280b121"
+  }
+}

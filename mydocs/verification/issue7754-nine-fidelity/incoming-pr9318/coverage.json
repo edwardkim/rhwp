@@ -1,0 +1,368 @@
+{
+  "integration_pr": 9318,
+  "prior_evidence_path": "mydocs/pr/assets/planet6897_9240_9282_20261121/after-9316/claim-validation.json",
+  "prior_evidence_sha256": "9fd895af0b5221e4f28974092ed0ea7799f6be1c4ddff028f0b288d374e0d669",
+  "retained_results": {
+    "base-native": {
+      "producer_sha": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+      "producer_binary_sha256": "e87beeaabb8c36c5dfc9bae1e460c39f5f22086e2cf2431865b0b60c5b41123c",
+      "conditions": {
+        "547": {
+          "original_pr": 9240,
+          "input": "samples/issue547/online-search-rfp.hwp",
+          "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "reference_pdf": "pdf/issue547/online-search-rfp-2024.pdf",
+          "reference_pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+          "pages": 22,
+          "minimum": "99.72",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-native/547.tsv",
+          "tsv_sha256": "b133029a3ec68439f2e5b7b4a842f70b6d63eba7bada579ac2dfa8ab477e42a5"
+        },
+        "886": {
+          "original_pr": 9240,
+          "input": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+          "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+          "reference_pdf": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+          "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+          "pages": 64,
+          "minimum": "98.14",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-native/886.tsv",
+          "tsv_sha256": "b07525be5e499d90aa436e08d140daf7366ac9b9d6494567ac6e7934888768d3"
+        },
+        "9239": {
+          "original_pr": 9269,
+          "input": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+          "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+          "reference_pdf": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+          "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+          "pages": 62,
+          "minimum": "98.89",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-native/9239.tsv",
+          "tsv_sha256": "bf0a8de517df77cdad9c7d64645d746472cbbfc8b89965dbadcd3fa5efdc4986"
+        },
+        "9272": {
+          "original_pr": 9278,
+          "input": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+          "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+          "reference_pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+          "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+          "pages": 7,
+          "minimum": "99.98",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-native/9272.tsv",
+          "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2"
+        },
+        "9279": {
+          "original_pr": 9282,
+          "input": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+          "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+          "reference_pdf": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+          "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+          "pages": 3,
+          "minimum": "100.00",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-native/9279.tsv",
+          "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607"
+        },
+        "9285": {
+          "original_pr": 9287,
+          "input": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+          "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+          "reference_pdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+          "reference_pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+          "pages": 9,
+          "minimum": "99.80",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-native/9285.tsv",
+          "tsv_sha256": "8a78eb7c7692f3cb5c63841149edb8ce90e56c42111c54830a0ba06c926155ad"
+        }
+      }
+    },
+    "candidate-native": {
+      "producer_sha": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+      "producer_binary_sha256": "ebf5994ce2a598c89ab981f00331be90f92fb56d0d4d1463b2c139fd3a6f9ea5",
+      "conditions": {
+        "547": {
+          "original_pr": 9240,
+          "input": "samples/issue547/online-search-rfp.hwp",
+          "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "reference_pdf": "pdf/issue547/online-search-rfp-2024.pdf",
+          "reference_pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+          "pages": 22,
+          "minimum": "99.72",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native/547.tsv",
+          "tsv_sha256": "b133029a3ec68439f2e5b7b4a842f70b6d63eba7bada579ac2dfa8ab477e42a5",
+          "max_decline_pp_vs_new_base": "0"
+        },
+        "886": {
+          "original_pr": 9240,
+          "input": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+          "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+          "reference_pdf": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+          "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+          "pages": 64,
+          "minimum": "98.14",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native/886.tsv",
+          "tsv_sha256": "b07525be5e499d90aa436e08d140daf7366ac9b9d6494567ac6e7934888768d3",
+          "max_decline_pp_vs_new_base": "0"
+        },
+        "9239": {
+          "original_pr": 9269,
+          "input": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+          "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+          "reference_pdf": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+          "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+          "pages": 62,
+          "minimum": "98.89",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native/9239.tsv",
+          "tsv_sha256": "bf0a8de517df77cdad9c7d64645d746472cbbfc8b89965dbadcd3fa5efdc4986",
+          "max_decline_pp_vs_new_base": "0"
+        },
+        "9272": {
+          "original_pr": 9278,
+          "input": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+          "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+          "reference_pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+          "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+          "pages": 7,
+          "minimum": "99.98",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native/9272.tsv",
+          "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+          "max_decline_pp_vs_new_base": "0"
+        },
+        "9279": {
+          "original_pr": 9282,
+          "input": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+          "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+          "reference_pdf": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+          "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+          "pages": 3,
+          "minimum": "100.00",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native/9279.tsv",
+          "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+          "max_decline_pp_vs_new_base": "0"
+        },
+        "9285": {
+          "original_pr": 9287,
+          "input": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+          "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+          "reference_pdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+          "reference_pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+          "pages": 9,
+          "minimum": "99.80",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-native/9285.tsv",
+          "tsv_sha256": "8a78eb7c7692f3cb5c63841149edb8ce90e56c42111c54830a0ba06c926155ad",
+          "max_decline_pp_vs_new_base": "0"
+        }
+      }
+    },
+    "base-wasm": {
+      "producer_sha": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+      "producer_binary_sha256": "bf4074a8aad9bd3a9a605ca4998acf1fe3b53cf378c486e67bc0091cdaaaf6ba",
+      "conditions": {
+        "547": {
+          "original_pr": 9240,
+          "input": "samples/issue547/online-search-rfp.hwp",
+          "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "reference_pdf": "pdf/issue547/online-search-rfp-2024.pdf",
+          "reference_pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+          "pages": 22,
+          "minimum": "99.72",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/547.tsv",
+          "tsv_sha256": "e51f36b6db2f82405957b0f9cb8cf4948dc6a99bef07b8206317f1e57c9bb421"
+        },
+        "886": {
+          "original_pr": 9240,
+          "input": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+          "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+          "reference_pdf": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+          "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+          "pages": 64,
+          "minimum": "98.15",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/886.tsv",
+          "tsv_sha256": "5a29ede466b7cc80407ee6471ed9fba0c4b7a358f5c88ee6c1ac01a34a5b5b43"
+        },
+        "9239": {
+          "original_pr": 9269,
+          "input": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+          "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+          "reference_pdf": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+          "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+          "pages": 62,
+          "minimum": "98.93",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9239.tsv",
+          "tsv_sha256": "1bf045a6f9248611634eae3a9e7a2bb976a2986f11056879d360778e069e1c6f"
+        },
+        "9272": {
+          "original_pr": 9278,
+          "input": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+          "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+          "reference_pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+          "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+          "pages": 7,
+          "minimum": "99.98",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9272.tsv",
+          "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2"
+        },
+        "9279": {
+          "original_pr": 9282,
+          "input": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+          "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+          "reference_pdf": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+          "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+          "pages": 3,
+          "minimum": "100.00",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9279.tsv",
+          "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607"
+        },
+        "9285": {
+          "original_pr": 9287,
+          "input": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+          "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+          "reference_pdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+          "reference_pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+          "pages": 9,
+          "minimum": "99.81",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/base-wasm/9285.tsv",
+          "tsv_sha256": "e85c751a01a4e85204d547bd6502c72b5d72ec0449f3b022b9651858ba01395e"
+        }
+      }
+    },
+    "candidate-wasm": {
+      "producer_sha": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+      "producer_binary_sha256": "a17cd643b322457f5a8a5644c065395a5d925f4e88496542f52ca8c048d425cb",
+      "producer_js_sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+      "conditions": {
+        "547": {
+          "original_pr": 9240,
+          "input": "samples/issue547/online-search-rfp.hwp",
+          "input_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+          "reference_pdf": "pdf/issue547/online-search-rfp-2024.pdf",
+          "reference_pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+          "pages": 22,
+          "minimum": "99.72",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/547.tsv",
+          "tsv_sha256": "e51f36b6db2f82405957b0f9cb8cf4948dc6a99bef07b8206317f1e57c9bb421",
+          "max_drop_from_base_pp": "0.00",
+          "captures": [
+            {
+              "part": "547",
+              "pages": 22,
+              "tsv_sha256": "e51f36b6db2f82405957b0f9cb8cf4948dc6a99bef07b8206317f1e57c9bb421",
+              "capture_manifest_sha256": "879c7a6a71b9e25fad3d58fb3054f5e059d7ea423fc760431e20ef616ce45b86"
+            }
+          ]
+        },
+        "886": {
+          "original_pr": 9240,
+          "input": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+          "input_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+          "reference_pdf": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+          "reference_pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+          "pages": 64,
+          "minimum": "98.15",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/886.tsv",
+          "tsv_sha256": "5a29ede466b7cc80407ee6471ed9fba0c4b7a358f5c88ee6c1ac01a34a5b5b43",
+          "max_drop_from_base_pp": "0.00",
+          "captures": [
+            {
+              "part": "886-001-032",
+              "pages": 32,
+              "tsv_sha256": "3bfa48bf4fe98c8d8e5ba767c6ad2bee68d39d562dc8bbbf99c05660c495750c",
+              "capture_manifest_sha256": "407ae1e3a78b91699ce5c69aa5279bfe12bca53745abe8a2128db124678f431d"
+            },
+            {
+              "part": "886-033-064",
+              "pages": 32,
+              "tsv_sha256": "082fb65eb951eb7372d7c1f9bfd46e0e18a0ac3ea43d162986d5c89ee6735ff7",
+              "capture_manifest_sha256": "a4f265ef592940e8adcf8af405d7c67a9ddc31e78cbe4fdf4e2b4d898dde24ea"
+            }
+          ]
+        },
+        "9239": {
+          "original_pr": 9269,
+          "input": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+          "input_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+          "reference_pdf": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+          "reference_pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+          "pages": 62,
+          "minimum": "98.93",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9239.tsv",
+          "tsv_sha256": "1bf045a6f9248611634eae3a9e7a2bb976a2986f11056879d360778e069e1c6f",
+          "max_drop_from_base_pp": "0.00",
+          "captures": [
+            {
+              "part": "9239-001-032",
+              "pages": 32,
+              "tsv_sha256": "10b273784d15ffe17091973b66b7bfc17ed6febfca1a1682abde488abfe70881",
+              "capture_manifest_sha256": "d5a4f3ecfb2c3eb2f2e6c95cb71f3651e3f28ddf7940282231700770a8a5f321"
+            },
+            {
+              "part": "9239-033-062",
+              "pages": 30,
+              "tsv_sha256": "98d024f91bd95a85a3a271ad626507b276a434e9aae9c17a25a64f286a98804c",
+              "capture_manifest_sha256": "9328f2ccb318759dffb31f144e26f8023a7e195c2d922d049b31e80f677a3728"
+            }
+          ]
+        },
+        "9272": {
+          "original_pr": 9278,
+          "input": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+          "input_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+          "reference_pdf": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+          "reference_pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+          "pages": 7,
+          "minimum": "99.98",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9272.tsv",
+          "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+          "max_drop_from_base_pp": "0.00",
+          "captures": [
+            {
+              "part": "9272",
+              "pages": 7,
+              "tsv_sha256": "da6c8869a57d141a5a6d92e3a2f34a54c3c36ee3c2a174101de424e74abd69b2",
+              "capture_manifest_sha256": "0540ee09bf4091d7306fe7517049d5bd82d866f375af11b0b277fc30b4031546"
+            }
+          ]
+        },
+        "9279": {
+          "original_pr": 9282,
+          "input": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+          "input_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+          "reference_pdf": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+          "reference_pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+          "pages": 3,
+          "minimum": "100.00",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9279.tsv",
+          "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+          "max_drop_from_base_pp": "0.00",
+          "captures": [
+            {
+              "part": "9279",
+              "pages": 3,
+              "tsv_sha256": "469cad8dc2f9a9b3afab10d1d29914f11045fc6d4f2c620aa5ef57f421259607",
+              "capture_manifest_sha256": "16448a462e7f9f39a926fdec78f306afc4a2c682b0eba94bce594553bcda4bce"
+            }
+          ]
+        },
+        "9285": {
+          "original_pr": 9287,
+          "input": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+          "input_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+          "reference_pdf": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+          "reference_pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+          "pages": 9,
+          "minimum": "99.81",
+          "tsv_path": "mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/candidate-wasm/9285.tsv",
+          "tsv_sha256": "e85c751a01a4e85204d547bd6502c72b5d72ec0449f3b022b9651858ba01395e",
+          "max_drop_from_base_pp": "0.00",
+          "captures": [
+            {
+              "part": "9285",
+              "pages": 9,
+              "tsv_sha256": "e85c751a01a4e85204d547bd6502c72b5d72ec0449f3b022b9651858ba01395e",
+              "capture_manifest_sha256": "0cc49c102abc9af5b70669bdfce2298257b33c5546a693972652199727e5d76c"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

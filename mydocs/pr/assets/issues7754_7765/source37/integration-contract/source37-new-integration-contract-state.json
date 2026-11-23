@@ -1,0 +1,65 @@
+{
+  "started": 1795319123.7767286,
+  "results": [
+    {
+      "label": "before",
+      "library_sha256": "656ef974b4e59433ee9ad6464f7f6ab66790a58f5e591e2c26ec65f76850c0c6",
+      "build_command": [
+        "rustc",
+        "--edition=2021",
+        "/home/tsjang/rhwp/tests/cases/issue_7754_font_logical_family_ownership.rs",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-integration-contract-before",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-nested-live/librhwp-candidate.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-01a0026680b78649.rlib",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out",
+        "--test"
+      ],
+      "build_exit_code": 0,
+      "run_command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-integration-contract-before",
+        "--nocapture"
+      ],
+      "run_exit_code": 101
+    },
+    {
+      "label": "after",
+      "library_sha256": "d0b6e0a2eb5421bc0e69e77c6886b771ebe547dd58b278522b213c37f7802df3",
+      "build_command": [
+        "rustc",
+        "--edition=2021",
+        "/home/tsjang/rhwp/tests/cases/issue_7754_font_logical_family_ownership.rs",
+        "-o",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-integration-contract-after",
+        "--extern",
+        "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-native-library/librhwp.rlib",
+        "-L",
+        "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+        "--extern",
+        "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-01a0026680b78649.rlib",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+        "-L",
+        "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out",
+        "--test"
+      ],
+      "build_exit_code": 0,
+      "run_command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-integration-contract-after",
+        "--nocapture"
+      ],
+      "run_exit_code": 0
+    }
+  ],
+  "complete": true,
+  "ended": 1795319142.7776682
+}

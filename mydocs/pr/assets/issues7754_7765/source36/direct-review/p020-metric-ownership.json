@@ -1,0 +1,30 @@
+{
+  "page": 20,
+  "box": [
+    150,
+    350,
+    650,
+    820
+  ],
+  "scale": 2,
+  "dpi": 96,
+  "reading": "HFT 전진폭 보존 조건 변경으로 픽셀이 달라진 유일한 Native 쪽이다. 독립 Print와 source35/36의 같은 영역을 2배 확대해 옛한글·후속 글자와 본문 간격, 문단 경계, HFAXVIEW 영문 표기 및 후속 문장의 내용·순서를 대조했다. glyph 누락·중복·겹침과 줄 이동을 발견하지 않았다. 앞서 Native 1·2·5쪽을 읽은 증거는 해당 PNG의 바이트/픽셀 동일성으로만 연결하고 이 20쪽은 따로 판독했다.",
+  "files": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-focused-native/issue7754-plain/pdf_png/pdf-020.png",
+      "sha256": "b2e7479b6389f5c5b671b7747fe617a0dc607b3bde58f88620117fb61894d3fa"
+    },
+    {
+      "label": "Native source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/rhwp_png/rhwp_020.png",
+      "sha256": "27d8fc4eec691826226a4daeb0edb28766b7b7902d81231275b8d5623f022046"
+    },
+    {
+      "label": "Native source36",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-focused-native/issue7754-plain/rhwp_png/rhwp_020.png",
+      "sha256": "43aae96ef6580eefff5681c9e66c6bea34c008f1b9efad6d2e1025956a29e319"
+    }
+  ],
+  "read_at": "2026-11-22T07:37:14.001134+09:00"
+}

@@ -1,0 +1,24 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source105-candidate sha256 d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896 at http://127.0.0.1:36221
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896
+{"catalog":"none","trees":0,"perInput":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"treeMs":0,"prepares":20,"reads":0,"medianMs":33.300000071525574,"text":"A가가가가가가가가가가가가가가가가가가가가가","cursor":22,"pages":3,"warmupRegistrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"registrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"composed":"A가가가가가가가가가가가가가가가가가가가가가한","pasted":"A가가가가가가가가가가가가가가가가가가가가가한Z","undone":"A가가가가가가가가가가가가가가가가가가가가가한","redone":"A가가가가가가가가가가가가가가가가가가가가가한Z","finalPages":3,"finalCursor":25,"finalPage":0,"layoutHash":"2a5f7535dd4010e4c45f34885ba7c9d598ac612353c8ddf05bfe154f7f6d29e6","paintHash":"7be7d4e8832becdac57335fe76735d674d9b584dada2cc4ea73ee6f28d40e682","faceReads":[]}
+  [wasm-artifact] matched d02f8e1661a0eb51fbbe33212998755fb1f5c221ae1fac78b2083297461d9896
+{"catalog":"empty","trees":0,"perInput":[[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]],"treeMs":0,"prepares":21,"reads":0,"medianMs":34.35000002384186,"text":"A가가가가가가가가가가가가가가가가가가가가가","cursor":22,"pages":3,"warmupRegistrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"registrations":{"registerTextFontGlyphCoverage":{"calls":0,"bytes":0},"registerHftOutlineFont":{"calls":0,"bytes":0}},"composed":"A가가가가가가가가가가가가가가가가가가가가가한","pasted":"A가가가가가가가가가가가가가가가가가가가가가한Z","undone":"A가가가가가가가가가가가가가가가가가가가가가한","redone":"A가가가가가가가가가가가가가가가가가가가가가한Z","finalPages":3,"finalCursor":25,"finalPage":0,"layoutHash":"2a5f7535dd4010e4c45f34885ba7c9d598ac612353c8ddf05bfe154f7f6d29e6","paintHash":"7be7d4e8832becdac57335fe76735d674d9b584dada2cc4ea73ee6f28d40e682","faceReads":[]}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+21 !== 20
+
+    at file:///home/tsjang/rhwp/rhwp-studio/e2e/host-font-input-issue9165.test.mjs:154:14 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 21,
+  expected: 20,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

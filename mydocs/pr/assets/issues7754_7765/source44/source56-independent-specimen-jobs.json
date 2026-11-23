@@ -1,0 +1,22 @@
+{
+  "purpose": "Two independent full alphabet specimens, no target document content, coordinates or PDF glyph programs. Standard bullets/arrows plus generic punctuation.",
+  "symbols": "·•∙○◦․‧～“”←↑→↓➜",
+  "client_archive_sha256": "830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72",
+  "jobs": [
+    {
+      "key": "hanyang-junggothic",
+      "face": "한양중고딕",
+      "input": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source56-independent-specimens/hanyang-junggothic.hwpx",
+      "input_sha256": "79c2714845d7ed0941534bc765665e7f0302dac1333abfce84d21daef3d10592",
+      "characters": 11187
+    },
+    {
+      "key": "hanyang-sinmyeongjo",
+      "face": "한양신명조",
+      "input": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source56-independent-specimens/hanyang-sinmyeongjo.hwpx",
+      "input_sha256": "12559d8965770f3046f492a0cc3e27ff70a9e4c3a5fe0a105f7e9a6e2c8e73a6",
+      "characters": 11187
+    }
+  ],
+  "output_dir": "/home/tsjang/rhwp/pdf/private-issue7754-independent-font-specimens-20261122"
+}

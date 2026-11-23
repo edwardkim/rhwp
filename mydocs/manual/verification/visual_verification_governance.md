@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-16
+last_verified: 2026-11-22
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -18,8 +18,10 @@ last_verified: 2026-11-16
 같은 조건의 정본 보호 전쪽 TSV가 있으면 사용하고, 해당 결과가 없으면 `--handbook-gate`를 실행한다.
 지원 웹폰트를 사용할 수 있다. **정본 보호 TSV 전체의 공식 두 자리
 값 하락 금지는 통합 담당 collaborator·maintainer에게만 추가 적용한다.** 이 특별 검증 전체의
-원본 OTF 확보·설치와 환경 재현을 일반 기여자의 제출 조건으로 요구하지 않는다.
+기준 글꼴 확보·설치와 환경 재현을 일반 기여자의 제출 조건으로 요구하지 않는다.
 특별 검증에 필요한 환경 확보·보정·재검증은 통합 담당자가 수행한다.
+Visual Sweep 검증 환경의 글꼴 공급·선택 문제는 메인터너·콜라보레이터에게만 전달하고,
+일반 기여자에게 보정을 요구하지 않는다.
 
 공식 시각 판정과 보호 TSV·회귀 기대값은 Windows 데스크톱 **한컴 2020·2024의
 `Hancom PDF` 프린터 인쇄(Print) PDF**를 기준으로 검증한다. 웹한글기안기, Cairo,
@@ -115,7 +117,7 @@ Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 �
 [정본 보호 TSV](../../pr/assets/visual-protected-baseline/final.tsv)와
 [입력·기준 PDF·측정 조건 manifest](../../pr/assets/visual-protected-baseline/manifest.json)를
 품질 하한으로 적용한다. PR 번호나 파일명만으로 과거 표를 골라 비교하지 않는다.
-일반 사용자·외부 contributor에게 원본 OTF의 보유·설치나
+일반 사용자·외부 contributor에게 기준 글꼴의 보유·설치나
 이 특별 보호 검증의 재현을 제출 조건으로 요구하지 않는다. 통합 담당 collaborator·maintainer가
 원본 글꼴 공급 조건을 확인한 환경에서 수행하며, 이를 위해 비공개 글꼴을 저장소에 배포하지 않는다.
 일반 시각 검증 의무와 90%·완료 페이지 98% 기준은 각 정본의 적용 범위를 유지한다.
@@ -125,13 +127,9 @@ Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 �
 해당 등록 문서에 한해서 동일 입력·PDF·backend의 정본 표시값 하락을 검사한다.
 공통 검사 통과를 정본 전체 통과로 간주하거나 비공개 글꼴을 요구하는 근거로 사용하지 않는다.
 
-다른 호스트의 보호 검증을 Mac에서 재현할 때는
-[기준 글꼴의 확보·이관·실제 선택 확인](visual_sweep_guide.md#macos에서-정본-보호-문서의-글꼴-공급-재현)을
-먼저 수행한다. 누락된 기준 글꼴을 확보해 같은 조건으로 다시 비교하며, 환경 차이를
-이 절의 하락 금지에 대한 예외로 취급하지 않는다.
-동명 프로그램의 버전과 실제 출력 글리프도
-[공급·선택 확인 절차](visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)로 확인한다.
-점수 재현과 수용 당시 공급 조건의 동일성은 각각 입증한다.
+문서별 글꼴 조건은 [공식 공급 자료](../../verification/protected-font-supply/README.md)를 따르고,
+실제 선택은 [공급·선택 확인 절차](visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)로 대조한다.
+환경 차이는 하락 금지의 예외가 아니며, 점수 재현과 공급 조건의 동일성을 각각 입증한다.
 
 1. 정본 보호 TSV와 manifest의 commit SHA·경로·SHA-256을 고정한다. manifest의
    `table_sha256`을 확인하고, 입력 SHA·기준 PDF SHA·compat·DPI가 일치하는 `document_id`의
@@ -153,7 +151,7 @@ Native·fresh WASM TSV 원본, 비교 명령·전쪽 수·최대 하락폭 및 �
    보호 TSV·PDF·글꼴·DPI·마스크·판정 기준을 바꿔 통과시키지 않고 원인을 보정한 후보에서 재검증한다.
 5. review에는 보호 TSV와 후보 TSV, source/producer SHA, 비교 조건·명령·전쪽 수와
    문서/backend/페이지별 보호값·후보값·하락 목록을 기록한다. 하락 쪽은 같은 쪽의 review·overlay로
-   확인한다. 이 특별 보호 검증의 미완료를 일반 사용자에게 원본 OTF 설치 요구로 전가하지 않는다.
+   확인한다. 이 특별 보호 검증의 미완료를 일반 사용자에게 기준 글꼴 설치 요구로 전가하지 않는다.
 6. **검증을 완료해 수용한 최종 전쪽 결과에 상승한 공식 표시값이 있으면 그 값을 새 보호 하한으로
    반드시 반영한다.** 기존 기준을 통과했다는 이유로 더 낮은 과거 하한을 유지하지 않는다.
    먼저 갱신 전 정본과 대조해 전쪽 하락 0쪽·누락 0쪽 및 입력·PDF·측정 조건의 일치를 확인한다.

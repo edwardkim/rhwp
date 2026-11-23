@@ -1,0 +1,10 @@
+✔ canonical font inventory and license contract (7.96268ms)
+✔ every public repository font has matching bytes and redistribution notices (311.774516ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 432.691106

@@ -1,0 +1,74 @@
+{
+  "page": 100,
+  "document_pages": 315,
+  "input": {
+    "path": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    "sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    "sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+  },
+  "comparison": {
+    "profile": "print",
+    "backend": "fresh-wasm-canvas2d",
+    "dpi": 96,
+    "silhouette_radius_px": 2,
+    "heading_roi_px": {
+      "x_start": 260,
+      "x_end_exclusive": 500,
+      "y_start": 195,
+      "y_end_exclusive": 305
+    },
+    "heading_ink_rule": "휘도 180 미만인 픽셀이 3개 이상인 첫 행"
+  },
+  "matched_rendering_condition": {
+    "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+    "font_environment_sha256": null,
+    "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+    "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+    "comparison_profile": "print"
+  },
+  "output": {
+    "base": {
+      "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "program_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+      "raw_percent": "27.35",
+      "png_sha256": "44ee5f0ce7e9458d44d94614d0724c54e290cb8d6251d5bd3c038a287cf957c2",
+      "heading_first_ink_row": 218,
+      "capture_manifest_sha256": "5948eb8d386263cadac4c01b887a657247d71b67130c7d1600ae5a882d5fa17e"
+    },
+    "candidate": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "program_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+      "raw_percent": "100.00",
+      "png_sha256": "9e4b8efba835eb9eadf3a79d2426e54e875abd47806f7096c143e8f18300ea42",
+      "heading_first_ink_row": 279,
+      "capture_manifest_sha256": "613bebdd77aa256708e11d75c46d79a7796aae4c2b2eb65bd6a694752c77b33c"
+    },
+    "hancom_print": {
+      "png_sha256": "31b421f77363614573e2798c5137e433a60634000d77a9245e125c9fa3472831",
+      "heading_first_ink_row": 279
+    }
+  },
+  "previous_candidate": {
+    "source": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+    "matched_png_sha256": "9e4b8efba835eb9eadf3a79d2426e54e875abd47806f7096c143e8f18300ea42"
+  },
+  "review": {
+    "panel_order": [
+      "independent_hancom_print",
+      "base_fresh_wasm",
+      "candidate_fresh_wasm"
+    ],
+    "crop_px": [
+      105,
+      174,
+      689,
+      520
+    ],
+    "sha256": "2f45b5c94e6fe91452c5b6bf352f352c1a81d87b6fa39239202b927ee4fcdf22",
+    "panel": "issue7755-wasm-page-100-print-comparison.png",
+    "observation": "제3절 소결 제목과 본문의 시작 위치 및 줄 순서를 확대 대조했다. 후보의 제목 첫 잉크 행은 독립 한컴 Print와 같은 279행이었다."
+  }
+}

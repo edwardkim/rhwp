@@ -1,0 +1,139 @@
+{
+  "started": 1795342724.6321497,
+  "scope": "Only completed historical Source1-83 task-owned diagnostic executables and obsolete WASM artifacts. Base Source88 and candidate Source105 are explicitly excluded. Preserve all source/recipes, glyph/font bytes, hashes/logs, TSV/PNG/PDF evidence and active target/cache.",
+  "preserved_base_library": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source88-base-native-library/librhwp.rlib",
+  "references": [],
+  "free_before": 744583168,
+  "files": [
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-password-fonttrace-minfont-v3/harness",
+      "bytes": 59824096,
+      "links_before": 1,
+      "sha256": "08ae3d6e990223f5119080b9ddab45fe1b0fe9fea871cf1cf6a9ddcb225b7d2a"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source30-hwpx-regression-before/harness",
+      "bytes": 89027712,
+      "links_before": 1,
+      "sha256": "5cba0f09b879e5a394c176eb314a2a2a3b93b55a3be3f18a70b091492ebfd365"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-password-fonttrace-minfont-v4/harness",
+      "bytes": 59838232,
+      "links_before": 1,
+      "sha256": "71e054331f2eefa41fd0f44c2d522adfaab1ed73f11e38a6f18b2c6125f542d2"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-corpus-probe/probe",
+      "bytes": 43613240,
+      "links_before": 1,
+      "sha256": "b38a395c57bfbe020a571fa69c690707c850459a9051ce59e8ab8e6561bbd338"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-metric-provenance-probe/source33-contract-tests",
+      "bytes": 40234024,
+      "links_before": 1,
+      "sha256": "a386a4396ee08b9c1f1857dbd25ee9b640bc59688b44232f31f4b778259dc865"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-metric-provenance-probe/source35-contract-tests",
+      "bytes": 40235736,
+      "links_before": 1,
+      "sha256": "aa065be46afa32e0a19ce20c780ead2b8cc0d1aa4c4695e486be9c94db830c34"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source30-watermark-existing/existing-watermark-tests",
+      "bytes": 96356952,
+      "links_before": 1,
+      "sha256": "d2a5d0d4b7d2cedd36693ecce91f108e56b7e33ca555d5d1ed61e06c9beaf6f4"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source30-watermark-existing/layer-probe",
+      "bytes": 97078440,
+      "links_before": 1,
+      "sha256": "7d2946e01808313e76754285109cd99fb990399adc076e894201c7dbdf8957da"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-nested-live/candidate-runner",
+      "bytes": 72177864,
+      "links_before": 1,
+      "sha256": "cec007a5e037b5fbe923808d30c5db624302a6e41d202bc66300df11a0874afd"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-nested-live/base-runner",
+      "bytes": 72231024,
+      "links_before": 1,
+      "sha256": "bd2f190d93caadef6ee17a941eb513eec74b25dec867811b4d5c4df5745f5364"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-corpus-default-probe/probe",
+      "bytes": 43618912,
+      "links_before": 1,
+      "sha256": "bf10269cc9c7741e43222de78177fd8911ab62137fde6ecd7b5c69e15c71d72d"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-dash-regression-minfont/harness",
+      "bytes": 49844624,
+      "links_before": 1,
+      "sha256": "dc49c3270498583b5de2cf0ea68d3a2e10a34da06aa291d53b534ff7e68320b6"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-hwpx-regression-minfont-v2/harness",
+      "bytes": 45959104,
+      "links_before": 1,
+      "sha256": "38c1bebf528d71b0d7fe7bacbceb3d5166f3225d7429177fadf04f2a0d413cc3"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-hwpx-regression-minfont/harness",
+      "bytes": 45955568,
+      "links_before": 1,
+      "sha256": "e2324f60fd1e4df6a4aac9f0254c6ccdeca812701347b803b9fa204c31725b27"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-existing-minfont/harness",
+      "bytes": 50437840,
+      "links_before": 1,
+      "sha256": "85812c31d347fe6e7a8339354764b95dadf47e28f8f0e64426bd38f835c42059"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-password-fonttrace-minfont/harness",
+      "bytes": 59814480,
+      "links_before": 1,
+      "sha256": "9531fa9c154df2cfda07a473e640e43807b25db23eebb1a12c0819123d055e49"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-restored-minfont-first/harness",
+      "bytes": 50821152,
+      "links_before": 1,
+      "sha256": "2537bf05755d98d8dd27c836314112828675b87d91ef17304023fe6151d20a9e"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-regulatory-restoration-minfont-v2/harness",
+      "bytes": 51794128,
+      "links_before": 1,
+      "sha256": "735d62d2a2e4e1d12a3b638f3b701d821c092886b586e602c387ab4aedd08b6a"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-password-fonttrace-minfont-v2/harness",
+      "bytes": 59814736,
+      "links_before": 1,
+      "sha256": "4bfafd4059e6245352d4a708629d91495790abb905e1258915c44d7cbcaceb03"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-dash-regression-minfont-v2/harness",
+      "bytes": 49828352,
+      "links_before": 1,
+      "sha256": "326c2c68ca5ebaa5e0b02d3bd812eb9deaa96ddb97befdc4688e029062aa1d36"
+    },
+    {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-regulatory-restoration-minfont/harness",
+      "bytes": 51721632,
+      "links_before": 1,
+      "sha256": "1240e5902f211a551a51f3263a99740b9ee738adf9115ba181489ec95866582d"
+    }
+  ],
+  "ended": 1795342762.4650838,
+  "free_after": 1632579584,
+  "complete": true,
+  "actual_free_delta": 887996416
+}
