@@ -643,19 +643,46 @@ fn compact_truetype_retains_unicode_coverage_and_natural_advances() {
 
 #[test]
 fn truetype_metrics_do_not_exhaust_budget_with_unused_font_bytes() {
+    use rhwp::renderer::native_webfonts::decode_font;
+
+    let programs = [
+        include_bytes!("../../assets/fonts/NotoSerifKR-Regular.woff2").as_slice(),
+        include_bytes!("../../assets/fonts/NotoSerifKR-Bold.woff2"),
+        include_bytes!("../../assets/fonts/GowunBatang-Regular.woff2"),
+        include_bytes!("../../assets/fonts/GowunBatang-Bold.woff2"),
+        include_bytes!("../../assets/fonts/GowunDodum-Regular.woff2"),
+        include_bytes!("../../assets/fonts/RHWPPublicBatang-Regular.woff2"),
+        include_bytes!("../../assets/fonts/Cafe24Supermagic-Regular-v1.0.woff2"),
+        include_bytes!("../../assets/fonts/Cafe24Ssurround-v2.0.woff2"),
+        include_bytes!("../../assets/fonts/D2Coding-Bold.woff2"),
+        include_bytes!("../../assets/fonts/D2Coding-Regular.woff2"),
+        include_bytes!("../../assets/fonts/NanumMyeongjo-ExtraBold.woff2"),
+    ];
     let mut fonts = NativePuaFonts::default();
-    for index in 0..7u8 {
-        let mut padded = REGULAR.to_vec();
-        padded.resize(10 * 1024 * 1024, index);
+    let mut original_bytes = 0;
+    for (index, source) in programs.into_iter().enumerate() {
+        let program = decode_font(source).expect("저장소 기본 공급 글꼴의 원본 프로그램");
+        original_bytes += program.len();
+        let face = ttf_parser::Face::parse(&program, 0).unwrap();
+        assert!(face.tables().glyf.is_some() && !face.is_variable());
+        let glyph = face.glyph_index('A').expect("원본 라틴 글리프");
+        let advance =
+            f64::from(face.glyph_hor_advance(glyph).unwrap()) / f64::from(face.units_per_em());
         let family = format!("fixture-{index}");
         fonts
-            .register_otf_for_source(&family, false, false, true, &padded, 0)
-            .expect("전진폭에 사용하지 않는 바이트는 보유 한도를 차지하지 않음");
-        assert!(fonts
-            .get_otf_for_source(&family, false, false, true)
-            .and_then(|metrics| metrics.source_ttf_advance_em('A'))
-            .is_some());
+            .register_otf_for_source(&family, false, false, true, &program, 0)
+            .expect("원본 윤곽 전체 대신 측정 프로그램만 보유");
+        assert_eq!(
+            fonts
+                .get_otf_for_source(&family, false, false, true)
+                .and_then(|metrics| metrics.source_ttf_advance_em('A')),
+            Some(advance)
+        );
     }
+    assert!(
+        original_bytes > 64 * 1024 * 1024,
+        "공급한 서로 다른 원본 프로그램의 합이 보유 한도를 넘어야 함"
+    );
 }
 
 #[test]
