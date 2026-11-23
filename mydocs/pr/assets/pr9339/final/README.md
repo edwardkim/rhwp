@@ -45,6 +45,12 @@
 
 형식 사양서 16쪽은 공식 하한 100.00%에 대해 이 호스트의 Native에서 98.71%였다. devel과 보정 후보의 전쪽 PNG가 같았다. 독립 PDF와 대조한 차이는 문단 79의 삽입 그림에 쓰인 문자·선의 생김새에 집중된다. 렌더 트리에서도 해당 영역은 단일 그림이다. [16쪽 같은 배율의 확대 비교](spec13-native-16.png) · [확보한 글꼴의 Native 실측](protected-system-native.tsv)
 
+## devel의 보호 기준값 재현 후속
+
+2026-11-23 작업지시자는 그림 배치 보정본과 기준 `devel`의 PNG와 점수가 같은 기존 미달 172건을 이 PR에 한해 수용했다. 4,046개 측정 행을 `devel`의 정본과 원본 SHA·PDF SHA·백엔드·호환 버전·DPI·쪽 번호로 다시 연결했다. 미달 172건의 정본값·기준값·보정값·동일한 PNG 해시는 [승인 범위 TSV](accepted-existing-floors.tsv)에 있다. [쪽별 공식 하한표](../../visual-protected-baseline/final.tsv)
+
+후속 조사는 `devel`에서 수행한다. 시행령(`decree`) Native 59쪽·WASM 60쪽과 `hwp3-sample10` Native 11쪽·WASM 16쪽부터 생산 당시 글꼴 선택·렌더링 환경을 대조한다. 형식 사양서 16쪽의 삽입 그림은 독립 PDF와 래스터화 경로도 대조한다. 완료 기준은 같은 기준 PDF와 입력·DPI에서 양쪽 백엔드의 전쪽 공식값 재현 및 원인 기록이다. [기준 입력·측정 조건](../../visual-protected-baseline/manifest.json) · [형식 사양서 16쪽 확대](spec13-native-16.png)
+
 ## 샘플 추가와 저장 검증
 
 `grid-outside.hwpx`는 의도적으로 그림 하나를 칸 밖에 둔다. Native 진단에서 기준 devel과 보정 후보가 같은 그림 한 개를 가리켰고, 데스크톱 Print에서도 그 그림은 칸에 보이지 않는다. 나머지 열한 문서에서 새 off-canvas 항목은 0개였다. 새 샘플 12개는 독립 PDF와 쪽 수가 모두 1로 일치했다. 표 뒤 문단과 그림 소속·순서·누락 여부는 회귀 검사에서도 확인한다. [입력별 보정 전후 진단](fixture-diagnostics.tsv)

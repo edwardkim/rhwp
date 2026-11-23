@@ -1,5 +1,7 @@
 # PR #9339 검토 — 표 한 칸의 자리차지 그림 배치
 
+**메인터너 보정 후 수용 가능 — #9338 해결 범위의 로컬 검증 완료.** 2026-11-23 작업지시자가 보정본 `4ef474f6f3`의 수용과 기존 보호값 미달 172건에 한정한 예외를 승인했다. 원 기여의 여섯 커밋을 보존한 보정본을 본 저장소에 제출하고, 그 커밋의 CI와 셀프 리뷰를 거쳐 merge commit으로 통합한다. [적용한 172건의 문서·백엔드·쪽·점수·PNG 해시](assets/pr9339/final/accepted-existing-floors.tsv)
+
 ## 메인테이너 보정과 정본 보호 상태
 
 현재 PR의 기여 head는 `f5bd466536d25250442d14d08e070b7061415e4c`이다. 표 칸의 그림별 정렬과 겹침 처리를 보완한 소스에 #9350·#9355를 포함한 devel `17b17c934b527aa523f037ca12d8713394e43c82`를 병합했다. 로컬 검증 소스는 `c1504cb12199081c010188557ff2f1e14d36d5ef`다. [보완한 공통 계산](pr_9339_review_impl.md)
@@ -8,7 +10,9 @@
 
 공개 글꼴만 노출한 환경에서 `cargo nextest`의 전체 회귀 14,017개가 통과했다. 건너뛰기 항목은 45개였다. 같은 호스트에서 기준 devel과 보정본으로 #9350의 문서 10종을 출력해 Native·WASM 각각 583쪽의 PNG가 모두 같은 것을 확인했다. [별도 빌드와 새 devel 기능 검증](assets/pr9339/final/README.md#새-devel의-기능-검증)
 
-**다른 보호 문서의 쪽별 하한 미달로 머지 보류.** 명시적 글꼴 312개를 모두 확인했다. DotumChe Regular 2.21은 화학물질 표시 기준에 한해 허용했다. 103쪽 전부에서 Native·fresh WASM의 쪽별 하한을 충족했고, 이 파일만 제외한 대조군도 전쪽의 PNG가 같았다. 보호 문서 23종의 2,023쪽씩을 합산하면 공식 하한 미달은 Native 84쪽·WASM 88쪽이다. 해당 쪽의 PNG는 각각 기준 devel과 후보에서 동일하다. [문서군별 측정 결과](assets/pr9339/final/README.md#글꼴과-보호-문서-재현) · [돋움체 공급·재검증](assets/pr9339/final/chemical-dotumche-verification.json)
+보호 문서 23종의 2,023쪽씩을 비교했다. `devel`과 보정본의 PNG 및 공식 표시값은 4,046건 모두 같았다. 두 소스 모두 과거 하한에 미달한 11개 문서의 Native 84건·fresh WASM 88건이 이번 수용 예외의 전부다. 보호 하한표의 SHA-256은 `b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597`이다. 확인한 명시적 글꼴 312개에는 승인된 Windows 설치본 6개와 화학물질 문서에 한정한 DotumChe Regular 2.21 한 개가 포함된다. 화학물질 문서의 103쪽은 두 백엔드 모두 공식 하한을 충족했다. [문서군별 측정 결과와 후속 조사](assets/pr9339/final/README.md#devel의-보호-기준값-재현-후속) · [돋움체 공급·재검증](assets/pr9339/final/chemical-dotumche-verification.json)
+
+현재 `devel`은 `321ab8f97791ecf58b56f178f49b7795a836fb79`다. 기준 실행 `17b17c934b` 이후 변경은 `mydocs/` 아래에만 있었고 쪽별 공식 하한표의 Git blob도 같다. 제출 전 원 기여 `f5bd466536`이 보정본의 조상인지 확인했다. 같은 계정의 리뷰어 미지정 [Draft #9301](https://github.com/edwardkim/rhwp/pull/9301) `83fe8497e2`와 보정본을 `git merge-tree --write-tree`로 대조해 충돌이 없음을 확인했다.
 
 ## 접수 당시 판정
 
@@ -47,11 +51,15 @@
 
 원 기여의 회귀 두 개는 관계형 검사다. 테스트 첫머리에 웹한글기안기 기준이 남아 있어 제출 시 사용한 데스크톱 Print, Native·WASM 실측, 측정 시각과 증거 경로를 함께 반영할 필요가 있다. 공개 원본과 경계 입력으로 독립 검토했고, 기여자가 설명한 사내 원문 23개는 직접 재검증하지 않았다. [회귀 검사](../../tests/cases/cell_negative_offset_picture_stack.rs) · [보완 계획](pr_9339_review_impl.md)
 
-원 head의 원격 CI는 위 표의 실행이다. 현재 로컬 비교는 최신 devel과 기여 head의 병합 소스를 사용한다. 전체 회귀·정본 보호 4,046행은 수용 후보의 검증 항목으로 남는다. #9338의 완료 여부는 재현된 그림 겹침을 해소한 뒤 판정한다.
+위 표는 접수 당시의 원격 CI다. 이후 수용 후보의 원본·대조군 12개, 전체 회귀와 정본 보호 4,046행을 별도로 검증한 최종 결과는 이 문서 첫 절에 기록했다.
 
 
 ## 검토 도중 갱신된 원 PR과 devel
 
 2026-11-23 16:27 KST에 원 PR의 현재 head `f5bd466536d25250442d14d08e070b7061415e4c`를 확인했다. 지정 당시 head와 여섯 커밋의 메시지 이력이 바뀌었으며, 두 끝의 Git 트리는 모두 `fe72add8719994c88a0d250ceacfc3db0ee46973`이다. 수용 후보는 기여자의 현재 여섯 커밋을 부모로 삼는다.
 
-같은 사이 devel에 [#9351](https://github.com/edwardkim/rhwp/pull/9351)이 병합되어 기준을 `be6f60aa6a93889b1bbc10e7e4a113dcc27a7f07`로 갱신했다. 이 기준과 원 기여를 실제로 병합한 커밋은 `e4e0b16bca2bec78ab5e64d9b4da44b383edaf85`다. 새 의존성으로 공개 원본, 경계 대조군, 최근 조판 변경, 정본 보호와 Rust 검증을 다시 수행한다. 앞 절의 결과는 표에 적은 시점의 소스에서 측정했다.
+같은 사이 devel에 [#9351](https://github.com/edwardkim/rhwp/pull/9351)이 병합되어 기준을 `be6f60aa6a93889b1bbc10e7e4a113dcc27a7f07`로 갱신했다. 이 기준과 원 기여의 실제 병합은 `e4e0b16bca2bec78ab5e64d9b4da44b383edaf85`다. 이후 최신 기준으로 공개 원본, 경계 대조군, 최근 조판 변경과 Rust 검증을 마쳤다. [소스별 측정 조건과 검증 결과](assets/pr9339/final/README.md)
+
+## Merge 후 contributor PR comment 계획
+
+원 기여자에게 공개 원본 두 개와 독립 인쇄본 제공에 대한 감사를 전하고, 수용 PR·merge commit·검증 CI를 연결한다. 2×2 문서와 혼합 배치 문서 각각의 1쪽에 대해 Native·fresh WASM의 review와 독립 overlay를 merge SHA에 고정해 첨부한다. 같은 위치의 오른쪽 정렬에서 원 PR은 네 장 중 두 장만 표시했고, 보정본은 네 장과 표 뒤 문단의 위치를 복원했음을 설명한다. 공개 원본과 경계 대조군 결과 및 기존 보호값의 한정 예외를 연결한다. [표본별 실측](assets/pr9339/page-scores.tsv) · [시각 증적](assets/pr9339/final/README.md)
