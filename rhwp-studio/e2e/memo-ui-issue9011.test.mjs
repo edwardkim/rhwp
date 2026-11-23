@@ -78,6 +78,7 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
     ih.updateCaret();
   });
   assert.equal(await dirty(page), false);
+  await page.waitForSelector('.memo-margin', { hidden: true });
   await open(page);
   const focused = () => page.evaluate(() => document.activeElement.id || document.activeElement.textContent);
   assert.equal(await focused(), 'memo-text');
@@ -290,9 +291,10 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
       assert.equal(focus.charOffset, expectedOffset);
       assert.equal(focus.cellPath.at(-1).cellIndex, 1);
       assert.equal(await dirty(page), false, '메모 이동은 저장 상태를 바꾸지 않는다');
-      const mark = `.memo-marker-layer button[data-memo-id="${memo.id}"]`;
-      await page.waitForSelector(mark, { visible: true });
-      await page.click(mark);
+      const card = `.memo-card[data-memo-id="${memo.id}"]`;
+      await page.waitForSelector(card, { visible: true });
+      await page.click(card + ' .memo-card-open');
+      assert.equal(await page.$('.memo-marker-layer'), null, '쪽 안쪽에 중복 메모 버튼을 만들지 않는다');
       assert.equal(await page.$eval('#memo-text', el => el.value), memo.text);
       assert.equal(await dirty(page), false, '표시에서 메모를 열어도 문서는 바뀌지 않는다');
       await close(page);
@@ -303,7 +305,7 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   const beforeMargin = await state(page);
   const saveBytes = () => page.evaluate(() => [...window.__wasm.exportHwpx()]);
   const beforePreview = await saveBytes();
-  await toggleMemoView('view:memo-margin');
+  await page.waitForSelector('.memo-margin', { visible: true });
   await page.waitForFunction(() => document.querySelectorAll('.memo-card').length === 3);
   assert.equal(await page.$eval('[data-cmd="view:memo-guides"]', item => item.getAttribute('aria-pressed')), 'true');
   await page.waitForFunction(() => document.querySelectorAll('.memo-margin-guides polyline').length === 3);
@@ -327,6 +329,11 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   await page.waitForFunction(() => !document.querySelector('.memo-margin-guides polyline'));
   await toggleMemoView('view:memo-margin');
   await page.waitForSelector('.memo-margin', { hidden: true });
+  assert.equal(await page.$('.memo-marker-layer'), null);
+  await toggleMemoView('view:memo-list');
+  await page.waitForSelector('#memo-text');
+  assert.equal(await page.$$('[data-memo-choice]').then(choices => choices.length), beforeMargin.length + 1);
+  await close(page);
   assert.deepEqual(await state(page), beforeMargin);
   assert.deepEqual(await saveBytes(), beforePreview, '보기 상태는 저장 내용에 기록되지 않는다');
   assert.equal(await dirty(page), false);
@@ -587,7 +594,7 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   assert.deepEqual([cellMemo.startCharIdx, cellMemo.endCharIdx, cellMemo.path.at(-1).cellIndex], [0, 3, 0]);
   const card = '.memo-card[data-memo-id="' + cellMemo.id + '"]';
   await page.waitForSelector(card);
-  assert.equal(await page.$eval('.memo-marker-layer', e => e.hidden), true);
+  assert.equal(await page.$('.memo-marker-layer'), null);
   await page.hover(card);
   await page.waitForSelector(card + '.is-active');
   assert.ok(await page.$('.memo-highlight-layer .is-active'));
@@ -606,8 +613,7 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
 
   await toggleMemoView('view:memo-visibility');
   await page.waitForSelector('.memo-margin', { hidden: true });
-  await page.waitForFunction(() => !document.querySelector('.memo-highlight-layer span')
-    && document.querySelector('.memo-marker-layer').hidden);
+  await page.waitForFunction(() => !document.querySelector('.memo-highlight-layer span'));
   await toggleMemoView('view:memo-visibility');
   await page.waitForSelector(card, { visible: true });
   await position({ ...body, charOffset: 7 });

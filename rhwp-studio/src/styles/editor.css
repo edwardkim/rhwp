@@ -153,26 +153,6 @@
   white-space: nowrap;
 }
 
-.memo-marker-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  overflow: clip;
-}
-.memo-marker-layer > button {
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  padding: 0;
-  border: 1px solid var(--ui-border-strong);
-  border-radius: 4px;
-  background: var(--ui-accent-bg);
-  color: var(--ui-text);
-  cursor: pointer;
-  pointer-events: auto;
-}
-
 .memo-margin {
   grid-column: 4;
   grid-row: 1 / -1;
@@ -248,7 +228,6 @@
 .memo-highlight-layer { position: absolute; inset: 0; pointer-events: none; overflow: clip; z-index: 2; }
 .memo-highlight-layer span { position: absolute; background: var(--doc-memo-mark); mix-blend-mode: multiply; }
 .memo-highlight-layer .is-active { background: var(--doc-memo-mark-active); box-shadow: inset 0 -1px var(--doc-memo-ink); }
-.memo-marker-layer[hidden] { display: none; }
 .memo-margin-guides {
   position: absolute;
   inset: 0;

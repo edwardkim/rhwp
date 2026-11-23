@@ -42,8 +42,11 @@ export class MemoMargin {
   private focused: number | null = null;
   private entries = new Map<number, { card: HTMLElement; signature: string }>();
 
-  visible = false;
+  private showMargin: boolean | null = null;
+  private hasAnchoredMemos = false;
   annotations = true;
+
+  private get visible(): boolean { return this.showMargin ?? this.hasAnchoredMemos; }
 
   get draftAnchor() { return this.request?.anchor; }
 
@@ -68,12 +71,12 @@ export class MemoMargin {
     bus.on('memo-compose', value => this.compose(value as MemoComposeRequest));
     bus.on('memo-view-toggle', option => {
       if (option === 'margin') {
-        this.visible = !this.visible;
-        if (this.visible) this.annotations = true;
+        this.showMargin = !this.visible;
+        if (this.showMargin) this.annotations = true;
       }
       if (option === 'visibility') {
         this.annotations = !this.annotations;
-        this.visible = this.annotations;
+        this.showMargin = this.annotations;
       }
       if (option === 'guides') {
         this.connected = !this.connected;
@@ -81,6 +84,12 @@ export class MemoMargin {
       }
       this.syncVisibility();
     });
+    this.syncVisibility();
+  }
+
+  setHasAnchoredMemos(hasAnchoredMemos: boolean): void {
+    if (this.hasAnchoredMemos === hasAnchoredMemos) return;
+    this.hasAnchoredMemos = hasAnchoredMemos;
     this.syncVisibility();
   }
 
@@ -113,7 +122,7 @@ export class MemoMargin {
       return;
     }
     this.request = request;
-    this.visible = this.annotations = true;
+    this.showMargin = this.annotations = true;
     const form = document.createElement('form');
     form.className = 'memo-inline-editor';
     const title = document.createElement('strong');

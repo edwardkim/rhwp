@@ -4,7 +4,6 @@ import type { CursorRect, SelectionRect } from '@/core/types';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CanvasView } from '@/view/canvas-view';
 import { MemoMargin, type MemoAction } from './memo-margin';
-import { t } from '../i18n/index.ts';
 
 export interface MemoMark {
   memo: MemoInfo;
@@ -20,30 +19,25 @@ export function installMemoMarkers(
   const content = container.querySelector<HTMLElement>('#scroll-content');
   if (!content) return;
   const scrollContent = content;
-  const layer = document.createElement('div');
-  layer.className = 'memo-marker-layer';
   const highlightLayer = document.createElement('div');
   highlightLayer.className = 'memo-highlight-layer';
-  content.append(highlightLayer, layer);
+  content.append(highlightLayer);
   const virtual = canvas.getVirtualScroll();
   let marks: MemoMark[] | null = null;
   let generation = -1;
   let scheduled = false;
-  const buttons = new Map<number, HTMLButtonElement>();
   const margin = new MemoMargin(container, bus, open, schedule);
 
   function update() {
     scheduled = false;
-    if (layer.parentElement !== scrollContent) {
-      scrollContent.append(highlightLayer, layer);
+    if (highlightLayer.parentElement !== scrollContent) {
+      scrollContent.append(highlightLayer);
       marks = null;
     }
     if (generation !== wasm.documentGeneration) {
       generation = wasm.documentGeneration;
       marks = null;
       margin.reset();
-      for (const button of buttons.values()) button.remove();
-      buttons.clear();
     }
     if (!marks) {
       const memos = wasm.pageCount > 0 ? wasm.getMemos() : [];
@@ -59,56 +53,26 @@ export function installMemoMarkers(
         return target ? [{ memo, rect: target.rect, highlight: target.highlight, replies: families.get(memo.id) ?? [] }] : [];
       });
     }
-    layer.hidden = !margin.annotations || margin.visible;
+    margin.setHasAnchoredMemos(marks.length > 0);
     highlightLayer.replaceChildren();
 
     const zoom = canvas.getViewportManager().getZoom();
     const pages = new Set(virtual.getVisiblePages(
       container.scrollTop, container.clientHeight, container.scrollLeft, container.clientWidth,
     ));
-    const visible = marks.filter(mark => pages.has(mark.rect.pageIndex));
-    const ids = new Set(visible.map(mark => mark.memo.id));
-    for (const [id, button] of buttons) {
-      if (ids.has(id)) continue;
-      button.remove();
-      buttons.delete(id);
-    }
     const locate = (rect: CursorRect) => {
       const page = rect.pageIndex;
       const left = virtual.getPageLeftResolved(page, scrollContent.clientWidth);
       return {
         x: left + rect.x * zoom,
         y: virtual.getPageOffset(page) + (rect.y + rect.height) * zoom,
-        edge: left + virtual.getPageWidth(page) - 20,
+        edge: left + virtual.getPageWidth(page),
       };
     };
     const draftAnchor = margin.draftAnchor;
     const draft = draftAnchor ? wasm.getMemoTarget(draftAnchor, true) : null;
-    const located = [];
-    const bottom = new Map<number, number>();
-    for (const { memo, rect, replies } of [...visible].sort((a, b) => a.rect.y - b.rect.y)) {
-      let button = buttons.get(memo.id);
-      if (!button) {
-        button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = '▤';
-        button.dataset.memoId = String(memo.id);
-        button.addEventListener('click', () => open(memo.id));
-        layer.append(button);
-        buttons.set(memo.id, button);
-      }
-      const label = t('dialog.memo.marker', { p1: memo.text.slice(0, 50) });
-      button.title = label;
-      button.setAttribute('aria-label', label);
-      const page = rect.pageIndex;
-      const desired = virtual.getPageOffset(page) + rect.y * zoom;
-      const top = Math.max(desired, bottom.get(page) ?? desired);
-      bottom.set(page, top + 20);
-      const anchor = locate(rect);
-      button.style.left = String(anchor.edge) + 'px';
-      button.style.top = String(top) + 'px';
-      located.push({ memo, replies, ...anchor });
-    }
+    const located = marks.filter(({ rect }) => pages.has(rect.pageIndex))
+      .map(({ memo, rect, replies }) => ({ memo, replies, ...locate(rect) }));
     if (margin.annotations) {
       const paint = (rect: CursorRect, highlight: SelectionRect[], active: boolean, isDraft = false) => {
         for (const r of highlight.length ? highlight : [{ ...rect, width: 2 }]) {

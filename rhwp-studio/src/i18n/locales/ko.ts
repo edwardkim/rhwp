@@ -1838,7 +1838,6 @@ const catalog = {
   "dialog.memo.margin": "여백 메모",
   "dialog.memo.marginEmpty": "이 화면에 표시할 메모가 없습니다.",
   "dialog.memo.noLocation": "이 메모의 위치를 확인할 수 없습니다.",
-  "dialog.memo.marker": "메모 보기: {p1}",
   "dialog.memo.insertHere": "메모 넣기",
   "dialog.memo.viewList": "메모 내용 보기",
   "dialog.memo.editHere": "메모 내용 편집",

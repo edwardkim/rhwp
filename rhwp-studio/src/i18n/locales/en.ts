@@ -1838,7 +1838,6 @@ const catalog = {
   "dialog.memo.margin": "Margin comments",
   "dialog.memo.marginEmpty": "There are no comments in this view.",
   "dialog.memo.noLocation": "This memo’s location is unavailable.",
-  "dialog.memo.marker": "Open memo: {p1}",
   "dialog.memo.insertHere": "Insert memo",
   "dialog.memo.viewList": "Memo list",
   "dialog.memo.editHere": "Edit memo",
