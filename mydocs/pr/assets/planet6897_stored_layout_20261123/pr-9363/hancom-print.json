@@ -1,0 +1,15 @@
+{
+  "job_id": "5f42bbe8-b591-417b-a93b-4331316dc02e",
+  "engine": "2024",
+  "input": "samples/issue9291/consumer-price-trend-page-start-empty-line.hwp",
+  "input_sha256": "c9354fd934d772bd3c50c3f2c2a019b50b824c705563063a321db0a4ee4745ff",
+  "pdf": "pdf/issue9291/consumer-price-trend-page-start-empty-line-2024.pdf",
+  "pdf_sha256": "dfb56730a6038b3634e1246d6a2a8eb21805a90a33e5f64e377c41447f6cd46c",
+  "pdf_bytes": 649391,
+  "creator": "Hwp 2024 13.0.0.3901",
+  "producer": "Hancom PDF 1.3.0.550",
+  "pdf_output_mode": "hancom2024_pdf_driver_one_up",
+  "pdf_print_method": 0,
+  "input_preprocess": "scripts_disabled",
+  "pdf_page_count": 18
+}

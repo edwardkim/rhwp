@@ -1,9 +1,9 @@
 //! 관계형·고정형 — [#9291] 빈 줄 감추기 구역에서도 저장 사다리가 쪽 첫 빈 줄의 자리를 남기면 그 줄을 지우지 않는다.
-//! 주석 갱신: 2026-11-23 19:05 KST (새 파일)
+//! 주석 갱신: 2026-11-23T22:58:04+0900
 //!
 //! 입력: 통계청 공개 보도자료(「2012년 6월 소비자물가동향」, HWP, `lastSavedWith.product = null`,
 //! version 6.0.5.771, 18쪽) `samples/issue9291/consumer-price-trend-page-start-empty-line.hwp`.
-//! 기준: 한컴 Print PDF `pdf/issue9291/consumer-price-trend-page-start-empty-line-2020.pdf`(18쪽).
+//! 기준: 한컴 Print PDF `pdf/issue9291/consumer-price-trend-page-start-empty-line-2024.pdf`(18쪽).
 //!
 //! 구역 정의는 빈 줄 감추기(SectionDef bit 19)를 켠다. 12쪽은 빈 문단 pi=164(저장 vpos 0,
 //! 줄 높이 1400, 줄간격 −280)로 시작하고 다음 문단 pi=165(「2. 소비자물가 추이 (2-2)」)의 첫 저장 줄
@@ -18,7 +18,7 @@
 //! - 관계형 반례: pi=165 저장 vpos 를 빈 줄과 같은 0 으로 바꾸면(사다리가 빈 줄 자리를 남기지
 //!   않음) 빈 줄은 감춰져 제목 줄 윗변 = 본문 윗변.
 //!
-//! 측정(2026-11-23, 이 파일과 같은 커밋의 코드, base = upstream/devel `17b17c934b` 바이너리,
+//! 원 PR의 이력 측정(2026-11-23, 한컴 2022 인쇄본, base = upstream/devel `17b17c934b` 바이너리,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴 맑은 고딕(Regular·Bold)·바탕 + `ttfs/opensource` —
 //! 문서 본 글꼴 없는 환경):

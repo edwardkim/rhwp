@@ -16,9 +16,8 @@
 - 회귀 계약: 전체 18쪽. 12쪽·18쪽 제목 줄 윗변 − 본문 윗변 = 다음 문단 저장 vpos. 다음 문단이 빈 줄과
   같은 vpos 에 저장된 반례(메모리 변형)에서는 빈 줄을 감춰 제목 줄이 본문 윗변에 놓인다.
 - 바이트 정본: [MANIFEST.json](MANIFEST.json)의 SHA-256과 크기
-- 기준 엔진: **2020** — `info --json` 의 `lastSavedWith.product` 가 null(version 6.0.5.771)
-  (2024 저장본이 아니므로 engine 2020).
+- 기준 엔진은 한컴 2024다. 원 PR 인쇄본의 Creator가 한컴 2022여서 같은 원본을 MCP로 다시 인쇄했다.
 
-기준 PDF: [`pdf/issue9291/consumer-price-trend-page-start-empty-line-2020.pdf`](../../pdf/issue9291/consumer-price-trend-page-start-empty-line-2020.pdf)
-— 677,033 bytes, SHA-256 `1428d3bc21e322b34b79b2584c5d57ae9796656409424aae7a531fdbff890caf`,
-Creator `Hwp 2022 12.0.0.4547`(engine 2020 profile), 18쪽.
+기준 PDF는 [consumer-price-trend-page-start-empty-line-2024.pdf](../../pdf/issue9291/consumer-price-trend-page-start-empty-line-2024.pdf)다.
+Creator `Hwp 2024 13.0.0.3901`, Producer `Hancom PDF 1.3.0.550`, 18쪽, 649,391바이트.
+SHA-256 `dfb56730a6038b3634e1246d6a2a8eb21805a90a33e5f64e377c41447f6cd46c`.
