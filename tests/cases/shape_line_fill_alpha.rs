@@ -404,68 +404,77 @@ fn transparent_ellipse_preserves_the_printed_stroke_direction_after_saving() {
     let portrait =
         include_bytes!("../../samples/semanticist21-20261124-rework/old-transparent.hwp");
     let landscape = include_bytes!("../../samples/semanticist21-20261124-rework/ellipse-wide.hwpx");
-    for source in [portrait.as_slice(), landscape.as_slice()] {
-        let original = DocumentCore::from_bytes(source).unwrap();
-        let saved = [
-            original.export_hwp_native().unwrap(),
-            original.export_hwpx_native().unwrap(),
-        ];
-        for bytes in [source, &saved[0], &saved[1]] {
-            let doc = DocumentCore::from_bytes(bytes).unwrap();
-            let svg = doc.render_page_svg_native(0).unwrap();
-            let xml = roxmltree::Document::parse(&svg).unwrap();
-            let mut contours = xml
-                .descendants()
-                .filter(|n| n.attribute("stroke") == Some("#972f78"));
-            let contour = contours.next().expect("원본 타원의 윤곽선");
-            assert!(contours.next().is_none(), "테두리 중복");
-            assert!(contour.attribute("stroke-dasharray").is_some());
-            assert_eq!(
-                contour
-                    .attribute("fill-opacity")
-                    .unwrap()
-                    .parse::<f64>()
-                    .unwrap(),
-                0.0
-            );
-            let path = contour.attribute("d").expect("파선의 시작점과 진행 방향");
-            let commands: Vec<_> = PathParser::from(path).collect::<Result<_, _>>().unwrap();
-            let PathSegment::MoveTo {
-                abs: true,
-                x: start_x,
-                y: start_y,
-            } = commands[0]
-            else {
-                panic!("닫힌 타원의 시작점");
-            };
-            let PathSegment::CurveTo {
-                abs: true,
-                x: east,
-                y: equator,
-                x2,
-                y2,
-                ..
-            } = commands[1]
-            else {
-                panic!("첫 파선이 통과하는 오른쪽 끝");
-            };
-            assert!(start_x < east && start_y < y2 && y2 < equator);
-            assert_eq!(x2, east, "오른쪽 끝의 수직 접선");
-            let PathSegment::CurveTo {
-                abs: true,
-                x,
-                y,
-                y1,
-                ..
-            } = commands[2]
-            else {
-                panic!("오른쪽 끝에서 아래로 이어지는 호");
-            };
-            assert!(x < east && y > equator && y1 > equator);
-            assert!(matches!(
-                commands.last(),
-                Some(PathSegment::ClosePath { .. })
-            ));
-        }
+    let [portrait_leads, landscape_leads] =
+        [portrait.as_slice(), landscape.as_slice()].map(|source| {
+            let original = DocumentCore::from_bytes(source).unwrap();
+            let saved = [
+                original.export_hwp_native().unwrap(),
+                original.export_hwpx_native().unwrap(),
+            ];
+            [source, &saved[0], &saved[1]].map(|bytes| {
+                let doc = DocumentCore::from_bytes(bytes).unwrap();
+                let svg = doc.render_page_svg_native(0).unwrap();
+                let xml = roxmltree::Document::parse(&svg).unwrap();
+                let mut contours = xml
+                    .descendants()
+                    .filter(|n| n.attribute("stroke") == Some("#972f78"));
+                let contour = contours.next().expect("원본 타원의 윤곽선");
+                assert!(contours.next().is_none(), "테두리 중복");
+                assert!(contour.attribute("stroke-dasharray").is_some());
+                assert_eq!(
+                    contour
+                        .attribute("fill-opacity")
+                        .unwrap()
+                        .parse::<f64>()
+                        .unwrap(),
+                    0.0
+                );
+                let path = contour.attribute("d").expect("파선의 시작점과 진행 방향");
+                let commands: Vec<_> = PathParser::from(path).collect::<Result<_, _>>().unwrap();
+                let PathSegment::MoveTo {
+                    abs: true,
+                    x: start_x,
+                    y: start_y,
+                } = commands[0]
+                else {
+                    panic!("닫힌 타원의 시작점");
+                };
+                let PathSegment::CurveTo {
+                    abs: true,
+                    x: east,
+                    y: equator,
+                    x2,
+                    y2,
+                    ..
+                } = commands[1]
+                else {
+                    panic!("첫 파선이 통과하는 오른쪽 끝");
+                };
+                assert!(start_x < east && start_y < y2 && y2 < equator);
+                assert_eq!(x2, east, "오른쪽 끝의 수직 접선");
+                let PathSegment::CurveTo {
+                    abs: true,
+                    x,
+                    y,
+                    y1,
+                    ..
+                } = commands[2]
+                else {
+                    panic!("오른쪽 끝에서 아래로 이어지는 호");
+                };
+                assert!(x < east && y > equator && y1 > equator);
+                assert!(matches!(
+                    commands.last(),
+                    Some(PathSegment::ClosePath { .. })
+                ));
+                equator - start_y
+            })
+        });
+    // 한컴 PDF의 첫 파선이 적도 위에서 시작하는 거리는 세로 타원이 더 길다.
+    for (portrait, landscape) in portrait_leads.into_iter().zip(landscape_leads) {
+        assert!(
+            portrait > landscape,
+            "인쇄본처럼 너비에 따라 첫 파선의 시작점이 달라야 한다"
+        );
     }
 }
