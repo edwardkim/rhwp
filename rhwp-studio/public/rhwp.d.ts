@@ -2180,6 +2180,16 @@ export class HwpDocument {
      */
     mergeTableWithNext(section_idx: number, parent_para_idx: number, control_idx: number): string;
     /**
+     * 꺾인·곡선 연결선의 가운데 점(안쪽 제어점 둘)을 그 축으로 옮긴다 (HWPUNIT 거리).
+     * 축은 `getShapeProperties`의 `connectorMidAxis`("x"·"y")이며, 그 축의 거리만 쓴다.
+     */
+    moveConnectorMidpoint(sec: number, para: number, ci: number, dx: number, dy: number): string;
+    /**
+     * 가운데 점 이동의 경로 변형: 표 셀·글상자·머리말/꼬리말 안 연결선.
+     * `cell_path_json`은 `setCellShapePropertiesByPath`와 같은 경로다.
+     */
+    moveConnectorMidpointByPath(sec: number, parent_para: number, cell_path_json: string, ci: number, dx: number, dy: number): string;
+    /**
      * 개체를 한 걸음 옮긴다 — 웹한글컨트롤 `ShapeObjMove*`(걸음 56 HWPUNIT).
      */
     moveControlAt(para_in_list: number, control_index: number, dx: number, dy: number): string;
@@ -3679,6 +3689,8 @@ export interface InitOutput {
     readonly hwpdocument_mergeTableCells: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly hwpdocument_mergeTableCellsEx: (a: number, b: number, c: number) => [number, number, number, number];
     readonly hwpdocument_mergeTableWithNext: (a: number, b: number, c: number, d: number) => [number, number, number, number];
+    readonly hwpdocument_moveConnectorMidpoint: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
+    readonly hwpdocument_moveConnectorMidpointByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
     readonly hwpdocument_moveControlAt: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_moveInlineControl: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_moveLineEndpoint: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number, number, number];
