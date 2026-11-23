@@ -18,7 +18,7 @@ class PageWorkerTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory)
             sources = []
-            for index, data in enumerate([font_bytes('AB'), b'broken font', font_bytes('A')]):
+            for index, data in enumerate([font_bytes(2), b'broken font', font_bytes(1)]):
                 source = folder / f'{index}.svg'
                 source.write_text('<svg><style>@font-face{font-family:Fixture;src:url(data:font/ttf;base64,'
                                   + base64.b64encode(data).decode('ascii') + ')}</style></svg>')
