@@ -243,7 +243,7 @@ test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () =>
 
 test('공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harness마다 한 번 공급한다', () => {
   const consumers = [
-    'tests/cases/legacy_centered_bar_glyph_fit.rs',
+    'tests/cases/issue_7733_legacy_bullet_program_order.rs',
     'tests/cases/issue_8153_symbol_coverage.rs',
     'tests/cases/issue_8153_symbol_fallback.rs',
   ];
@@ -256,8 +256,14 @@ test('공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harnes
       assert.ok(harness.includes(`mod ${name};`));
     }
   }
-  const unrelated = renderHarness('regression_suite_001', ['tests/cases/unrelated.rs']);
-  assert.doesNotMatch(unrelated, /symbol_font_program/);
+  for (const source of [
+    'tests/cases/legacy_centered_bar_glyph_fit.rs',
+    'tests/cases/skia_native_glyph_replay.rs',
+    'tests/cases/unrelated.rs',
+  ]) {
+    const harness = renderHarness('regression_suite_001', [source]);
+    assert.doesNotMatch(harness, /symbol_font_program/);
+  }
 });
 
 test('신규 source는 선택된 suite에 정확히 한 번만 배정한다', (t) => {
