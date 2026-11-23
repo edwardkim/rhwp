@@ -1,0 +1,1018 @@
+{
+  "key": "issue7762",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "completed_pages": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43,
+    44,
+    45,
+    46
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/silhouette.tsv",
+  "tsv_sha256": "d1a978b270aae575d3845e7e2222c4424c92f11c000b6f6dbfc0826f9ce775b2",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_001.png",
+      "rhwp_sha256": "162d064a93391e74d1cf7f3432f2766e194977ede661662fd832530c85300c98",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-001.png",
+      "pdf_sha256": "7b801a4c574aafa77187d80906806279f93b480a9ad603011e6848503e7361af"
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_002.png",
+      "rhwp_sha256": "d78505c19231cb7ab5f6982743796d42448e8f154409e3ae5c2abc3c909600c6",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-002.png",
+      "pdf_sha256": "1dbb3120ba814ace3aed3fcf0482011e9d213ef1747c93ba827ad9be4880e844"
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_003.png",
+      "rhwp_sha256": "07b849229bfa238a6cfc93c29379afa36178b8aa9fd0e7ef7cf1ae31002262b3",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-003.png",
+      "pdf_sha256": "3cc76a3a28abbaee658bb4970cb59d5417b798f58c6e7722f00b7426fc473f54"
+    },
+    {
+      "page": 4,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_004.png",
+      "rhwp_sha256": "6729e99ad08a3a1b462bfe0306119349f90cfc34ddc2cf5fcb7073617d77b255",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-004.png",
+      "pdf_sha256": "d1842126b7d300e5a47e273c9925f9566be368f09a70f580c14b04b769f114fc"
+    },
+    {
+      "page": 5,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_005.png",
+      "rhwp_sha256": "d365c3cefa346edb362938e7e2eb2f247fb03834f241b6eda5907dba24b83e1a",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-005.png",
+      "pdf_sha256": "e4b2aa77db6fecc7b2fe27d5e78aaf6e42a10a019a59eae464a79655b1baeb69"
+    },
+    {
+      "page": 6,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_006.png",
+      "rhwp_sha256": "ea1ecaa6e9e01aee971eb63ed0c24d0ca05a32af457bef0781b74a3dde99f336",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-006.png",
+      "pdf_sha256": "62373a44c01c36e74b11b43cd2a0a76071f4a156bdbca431a1108e5995d554fc"
+    },
+    {
+      "page": 7,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_007.png",
+      "rhwp_sha256": "6d0b7f720eb9ffe0ddbfbc86b2c8353c84b98736cdfbb6afe85c53ad4bed9e5d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-007.png",
+      "pdf_sha256": "b61f0a2a675afb68067c6657d7b54dc268340ebef5ea9821456dbb1a6d8e1822"
+    },
+    {
+      "page": 8,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_008.png",
+      "rhwp_sha256": "5da69e0bbb7097275b9dcb0b02b684544c4a7092a319a74b07ec373130f79167",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-008.png",
+      "pdf_sha256": "347bf0000d685dad5e5cc31c7ab96f21eb6ba04f17c36d9bc083cf80e1a29757"
+    },
+    {
+      "page": 9,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_009.png",
+      "rhwp_sha256": "ba35ab9e807c8ec4384eb7d97bd8fca678429efb6d98b62b2a7cbbbb238dff4c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-009.png",
+      "pdf_sha256": "4d04b99be677098a5f48716ff6074cd575f317c723e6602eb8761c68013fb082"
+    },
+    {
+      "page": 10,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_010.png",
+      "rhwp_sha256": "274202389da94e8e256bf4645a64f4dca62dfe4b38c7880ec4a596c2e1eb4b88",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-010.png",
+      "pdf_sha256": "710371210e66146544b845ce30f3c381c93b8f79a2922a97b215fb23a3b44154"
+    },
+    {
+      "page": 11,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_011.png",
+      "rhwp_sha256": "3d5e23173e807481cef2ee804150ae165f599ebc2904de3872305ef95e1e6282",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-011.png",
+      "pdf_sha256": "68d2fb9193dbc3aafee78149fee9d491755243dc324c452a1add1f6a3ea5a353"
+    },
+    {
+      "page": 12,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_012.png",
+      "rhwp_sha256": "d29f259a609e41c81bbeecdc545fd189bfc52f3903e087704f94dd3bc99a88be",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-012.png",
+      "pdf_sha256": "c6551f9bec314bd4a65533145f168ae534a3bd4bdbc931c07e7b2ddfcbbbc326"
+    },
+    {
+      "page": 13,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_013.png",
+      "rhwp_sha256": "df0487939a7d7ddf9b17e9525665b34cedacd9274f94743c063c006a980dd4b4",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-013.png",
+      "pdf_sha256": "47d6448ddab5278f2978145cd0d453364db8db9f67b41fa3a997f1be9891b496"
+    },
+    {
+      "page": 14,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_014.png",
+      "rhwp_sha256": "b9b7ffd936fdcb6fe6062cd21d816c4812944d4400190e851fbe68d084de7cc0",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-014.png",
+      "pdf_sha256": "67bcdb821f61c7acc1cb1d552e017dde067b25eee10d3cf0e0bbc3294a4d17c7"
+    },
+    {
+      "page": 15,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_015.png",
+      "rhwp_sha256": "0f62b8bf05729a5368b94ba58b6ba681a80d4adcb47625da9613932e4102428a",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-015.png",
+      "pdf_sha256": "a2e614d5add239856040b7c267972f10fa386faf9e4450cd5ec7b2bc1f12240d"
+    },
+    {
+      "page": 16,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_016.png",
+      "rhwp_sha256": "bf5488ee7c776afc8d4716b8bd51a651715c54463ab560349795fbc73257d320",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-016.png",
+      "pdf_sha256": "a1417c81b85a2db346bb61fa4318bc5a1e810cd49729a9bcc6c1b14a96656997"
+    },
+    {
+      "page": 17,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_017.png",
+      "rhwp_sha256": "e6f3cec047ed9c4175904c4f2b7b53c8b37a9b6d6097ae9c0bd31f95f15aa8c6",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-017.png",
+      "pdf_sha256": "baf2219fcfb422661252f79114a45c14f9da4a5d3b1374794494dab56e672f23"
+    },
+    {
+      "page": 18,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_018.png",
+      "rhwp_sha256": "6bda71f6dad96dc1f0710c82ba4661e9849a5569b5e0f5cac4870b357bc24fd3",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-018.png",
+      "pdf_sha256": "214835a9148c759ea2d064f525157b9c602215b5a359b65e4d85621774c52eda"
+    },
+    {
+      "page": 19,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_019.png",
+      "rhwp_sha256": "e82908fe8264a21caa450b24a2a291464b448abd496b11e7ceb9fae844fc659a",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-019.png",
+      "pdf_sha256": "01c480603686d05a29e42a9b0e1e514444b87e759c4bf0d4c50a57cccf1a2d6d"
+    },
+    {
+      "page": 20,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_020.png",
+      "rhwp_sha256": "64a8f2a38a085385afcccaea682076600555f6259de0cfd0d148bccb954cbf5c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-020.png",
+      "pdf_sha256": "a402935453974049fa7da2f34e82c9c0298310ba193fccf28d472df7e1276215"
+    },
+    {
+      "page": 21,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_021.png",
+      "rhwp_sha256": "2669a450683e59f6aa25a26cb1726d317befba7bfe9c3e91f9cb5f43a5297f91",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-021.png",
+      "pdf_sha256": "7f0d4c7857f4cf0bfba84459fbe322db5698bb566747d023c3691c5264faf253"
+    },
+    {
+      "page": 22,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_022.png",
+      "rhwp_sha256": "6d313d99c17dee936add75d61fe0034565608bb30bf2ff7be4a2764e086a3a56",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-022.png",
+      "pdf_sha256": "c16c82c38beeeb424831d74c7c03249d14bd8e68aa7981557a15453598ec6755"
+    },
+    {
+      "page": 23,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_023.png",
+      "rhwp_sha256": "e5a3271707f986c14a27f03f6413ea9863c888fe325d59821309cd06b064bf5c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-023.png",
+      "pdf_sha256": "7b035908c928a2ac0c932ee6c05fba6720e5b9a5f6077c50df99f0be20728b5a"
+    },
+    {
+      "page": 24,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_024.png",
+      "rhwp_sha256": "5fe6b2a26aec75d3f564dbc2ccdd7675ed4249fb3e447132111dd84c4f7bec3e",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-024.png",
+      "pdf_sha256": "aff246932a0b2f5cd6c0e72102556afe437504f46f4175aa576b008e155e37a9"
+    },
+    {
+      "page": 25,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_025.png",
+      "rhwp_sha256": "6ddda4ea05e7f2ae2873e94fa61fc48b181d08277c5ac50e64e3f6a5f37f019c",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-025.png",
+      "pdf_sha256": "9cc84873ffedbdf2126d7cc009cd1148edc31a316dadfa8c71fc98c0425417fe"
+    },
+    {
+      "page": 26,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_026.png",
+      "rhwp_sha256": "1209fcb48e5efaf2e70801c9b0036ef198f180643ca14a56e6893690d757d092",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-026.png",
+      "pdf_sha256": "af4165e27289b3100351f225b42a8bf6fcf9cabdf05ecf5d7389d5907bd4a08a"
+    },
+    {
+      "page": 27,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_027.png",
+      "rhwp_sha256": "5988fa7e8c222ae8f46fceece5e4da47ee30ffda17d96bed6512d38753cd93cb",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-027.png",
+      "pdf_sha256": "eac61900af5fa94ff92fc09f24e05a8d20af6cfe4ee4f7e3875a1578d449aa10"
+    },
+    {
+      "page": 28,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_028.png",
+      "rhwp_sha256": "9f17b9e3745754b57cfc925f7a69ed019ee479fc5b3bd055085dcb56fabbe8e6",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-028.png",
+      "pdf_sha256": "ba31f4d60cdf46e14f55128ceb3be9915510d56ef8bd7c834d687f12b4263954"
+    },
+    {
+      "page": 29,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_029.png",
+      "rhwp_sha256": "6aba6078ce0145fbe8b76d74aca4c109fc215df3c6156184dbd456e2dfc527f6",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-029.png",
+      "pdf_sha256": "64232225160dc7fdc57c6a12c01c12114f2dfc1c414b9e65bc9772f5dedeac45"
+    },
+    {
+      "page": 30,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_030.png",
+      "rhwp_sha256": "616c2ab313af9c0157e7a4b7f65bc4465e771cc8935f6630d16dac76d01bebc5",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-030.png",
+      "pdf_sha256": "d16f8e8ef3c6df3dc41fa4b844a77000963523ba3d964c730691583a159a9526"
+    },
+    {
+      "page": 31,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_031.png",
+      "rhwp_sha256": "8f6ec0054a9c56b0b0447fc76ac70d68c018085332fc4722c66c6e923d2ca0d9",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-031.png",
+      "pdf_sha256": "cc3dc4a17a27c15c5c10b4af5e9155a245802af9ba17f48025e5cdcde6463990"
+    },
+    {
+      "page": 32,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_032.png",
+      "rhwp_sha256": "2f8455399295b932470a8af2cd7268990c994ee4fd18175b1ee16aa1dab617ec",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-032.png",
+      "pdf_sha256": "14e7b312a0a9e4bb21b9cc1b37854a519e84078a1a60e3dc952554e923e07c11"
+    },
+    {
+      "page": 33,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_033.png",
+      "rhwp_sha256": "e3ccb9fc6e9ef0d6ccb349b9679f0c98bb87607defb4a949f4a914e658836c87",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-033.png",
+      "pdf_sha256": "4d698cb7281243c491cc644b7167dc4d741c6e2ed9a689eca61da9c4aa09776c"
+    },
+    {
+      "page": 34,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_034.png",
+      "rhwp_sha256": "677922f56b9cf16e7a093dfa093b6392799264ac6154da5278a3cdd5984403f9",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-034.png",
+      "pdf_sha256": "0dced1874f4a7750f8bdb2be262bd72274557a7a14b1a378ee22b796cc5d886e"
+    },
+    {
+      "page": 35,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_035.png",
+      "rhwp_sha256": "6c56c1a8c4df28e11c2cc4881927d1783240dcdb6700dcaa1b59da4ee9186ef7",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-035.png",
+      "pdf_sha256": "25de830983c2e6c6ad3207b0ee658946521aaf33055ca288b8de23de09055512"
+    },
+    {
+      "page": 36,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_036.png",
+      "rhwp_sha256": "a01d75afcfc65bab3b606a801496502021bef5f84cd84a138b4d955ff4c46fb0",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-036.png",
+      "pdf_sha256": "023d20833fdd8e789a225015beefdb454b37f2b4f6587343077ee6f6a7c46992"
+    },
+    {
+      "page": 37,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_037.png",
+      "rhwp_sha256": "d2bb116981e01134f6db9c262af71f97cccfd16f2103e5f95055f842c8e82447",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-037.png",
+      "pdf_sha256": "c20b93bd352161b07b56a8c579b1acb0e069247f2a499d900e5c6c8e64c472b6"
+    },
+    {
+      "page": 38,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_038.png",
+      "rhwp_sha256": "300728fbad90d80521cda98876ecaa9fc9ac694dbaa1fc6322a2e8e4b376c425",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-038.png",
+      "pdf_sha256": "15649da3782ba944658ab2e3c1ba4f9e97e5e8f6f04f9d798d19e1de3c60ab93"
+    },
+    {
+      "page": 39,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_039.png",
+      "rhwp_sha256": "38d366225c18b7f151956ea47aefdb14f1eaec152584820b5ad6f589c193ec57",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-039.png",
+      "pdf_sha256": "bfe60bafda7fe510a8cc1f467f0bac74334d627ebd516eac865d5d84aa447746"
+    },
+    {
+      "page": 40,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_040.png",
+      "rhwp_sha256": "9b3d203ced3907ee08bde2d983d9a345eb470470041309ecaa865ea35a1f0f7d",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-040.png",
+      "pdf_sha256": "6a50f141e2c97690814b8cb1ecf05d6a7280bf6d41b7f7b946990a43f09f39b8"
+    },
+    {
+      "page": 41,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_041.png",
+      "rhwp_sha256": "f6f92484be0d812f9184a9b6f8d42f9f6f89fe090c917213c65713b00b8a5b1f",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-041.png",
+      "pdf_sha256": "820c6a91c733c4abd693206a183e3f1244d8895ec344d477b393ddfac111429c"
+    },
+    {
+      "page": 42,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_042.png",
+      "rhwp_sha256": "f52eca8f1b43d9a8389fe1c4abb89253fcfd23c88db44b5cc4e10737657870e7",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-042.png",
+      "pdf_sha256": "ba272482bb8cc5b855786059a8b5f1e49ad1c93dfa2e7b5e4e331c9b04e8b099"
+    },
+    {
+      "page": 43,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_043.png",
+      "rhwp_sha256": "71b6f9bb36400f6928d84f04f3b7fa0eaa2ff29edc6246f3258d434dbf794e12",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-043.png",
+      "pdf_sha256": "a60de78baba943033986996fe4e5be3ce7358ecd50e5660802bbc6e522202b96"
+    },
+    {
+      "page": 44,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_044.png",
+      "rhwp_sha256": "15ab6be7e9a14e5b7ad26a5680820891ad7cb15911083cdcdb9fcd10715e492e",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-044.png",
+      "pdf_sha256": "59985d18aa23077042799b93447303bffff51578c4023e7591f0adf0caadbd54"
+    },
+    {
+      "page": 45,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_045.png",
+      "rhwp_sha256": "3cf6511f2848c6757ea47b99bad780a477930acd27a0e2ac35ad7bcf7c4afdbf",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-045.png",
+      "pdf_sha256": "1867a3063388c95e378b1f3c8960b6aca9a06c5800bbfdf3fe5f8a13aaf2a3ab"
+    },
+    {
+      "page": 46,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/rhwp_png/rhwp_046.png",
+      "rhwp_sha256": "713e8f29a2557eb2f5b3388b953c726a276b2dd6b6da30e6c61dd438b9e2ffee",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/pdf_png/pdf-046.png",
+      "pdf_sha256": "2181e4fd97b4b856df0d716d092775833ea004442c58ca070518e3afcc517414"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 1,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 105279,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 2,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 24789,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 3,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44998,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 4,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.62139,
+      "silhouette_raw_unmatched_pixels": 376,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 99311,
+      "tolerant_content_match_percent": 99.62139
+    },
+    {
+      "page": 5,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 94.60189,
+      "silhouette_raw_unmatched_pixels": 3600,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 66690,
+      "tolerant_content_match_percent": 94.60189
+    },
+    {
+      "page": 6,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 66125,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 7,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.98037,
+      "silhouette_raw_unmatched_pixels": 14,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71329,
+      "tolerant_content_match_percent": 99.98037
+    },
+    {
+      "page": 8,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 23458,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 9,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 70664,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 10,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45011,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 11,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.10366,
+      "silhouette_raw_unmatched_pixels": 391,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 43622,
+      "tolerant_content_match_percent": 99.10366
+    },
+    {
+      "page": 12,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.51167,
+      "silhouette_raw_unmatched_pixels": 297,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60819,
+      "tolerant_content_match_percent": 99.51167
+    },
+    {
+      "page": 13,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.19153,
+      "silhouette_raw_unmatched_pixels": 387,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 47868,
+      "tolerant_content_match_percent": 99.19153
+    },
+    {
+      "page": 14,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48694,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 15,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 44865,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 16,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.97224,
+      "silhouette_raw_unmatched_pixels": 15,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 54034,
+      "tolerant_content_match_percent": 99.97224
+    },
+    {
+      "page": 17,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.99856,
+      "silhouette_raw_unmatched_pixels": 1,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 69615,
+      "tolerant_content_match_percent": 99.99856
+    },
+    {
+      "page": 18,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49239,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 19,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 2306,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 20,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.86212,
+      "silhouette_raw_unmatched_pixels": 426,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 37438,
+      "tolerant_content_match_percent": 98.86212
+    },
+    {
+      "page": 21,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.67444,
+      "silhouette_raw_unmatched_pixels": 256,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 78634,
+      "tolerant_content_match_percent": 99.67444
+    },
+    {
+      "page": 22,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.29533,
+      "silhouette_raw_unmatched_pixels": 290,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 41154,
+      "tolerant_content_match_percent": 99.29533
+    },
+    {
+      "page": 23,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.62491,
+      "silhouette_raw_unmatched_pixels": 396,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 105575,
+      "tolerant_content_match_percent": 99.62491
+    },
+    {
+      "page": 24,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48040,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 25,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 38254,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 26,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.54221,
+      "silhouette_raw_unmatched_pixels": 61,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 13325,
+      "tolerant_content_match_percent": 99.54221
+    },
+    {
+      "page": 27,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.40111,
+      "silhouette_raw_unmatched_pixels": 389,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 64953,
+      "tolerant_content_match_percent": 99.40111
+    },
+    {
+      "page": 28,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.31085,
+      "silhouette_raw_unmatched_pixels": 377,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 54705,
+      "tolerant_content_match_percent": 99.31085
+    },
+    {
+      "page": 29,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 98.91602,
+      "silhouette_raw_unmatched_pixels": 376,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 34687,
+      "tolerant_content_match_percent": 98.91602
+    },
+    {
+      "page": 30,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 49329,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 31,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 45726,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 32,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.50567,
+      "silhouette_raw_unmatched_pixels": 61,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 12340,
+      "tolerant_content_match_percent": 99.50567
+    },
+    {
+      "page": 33,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 2342,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 34,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.31594,
+      "silhouette_raw_unmatched_pixels": 284,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 41517,
+      "tolerant_content_match_percent": 99.31594
+    },
+    {
+      "page": 35,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.33784,
+      "silhouette_raw_unmatched_pixels": 3879,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 105921,
+      "tolerant_content_match_percent": 96.33784
+    },
+    {
+      "page": 36,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60954,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 37,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 48231,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 38,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.48199,
+      "silhouette_raw_unmatched_pixels": 63,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 12162,
+      "tolerant_content_match_percent": 99.48199
+    },
+    {
+      "page": 39,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.86989,
+      "silhouette_raw_unmatched_pixels": 89,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 68405,
+      "tolerant_content_match_percent": 99.86989
+    },
+    {
+      "page": 40,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.82619,
+      "silhouette_raw_unmatched_pixels": 103,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 59259,
+      "tolerant_content_match_percent": 99.82619
+    },
+    {
+      "page": 41,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.64157,
+      "silhouette_raw_unmatched_pixels": 253,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 70586,
+      "tolerant_content_match_percent": 99.64157
+    },
+    {
+      "page": 42,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 96.65563,
+      "silhouette_raw_unmatched_pixels": 2708,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 80972,
+      "tolerant_content_match_percent": 96.65563
+    },
+    {
+      "page": 43,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60439,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 44,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 60766,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 45,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.45675,
+      "silhouette_raw_unmatched_pixels": 52,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 9572,
+      "tolerant_content_match_percent": 99.45675
+    },
+    {
+      "page": 46,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 4134,
+      "tolerant_content_match_percent": 100.0
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 46,
+      "pdf": 46
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/[2027] 온새미로 1 본교재.hwpx",
+      "sha256": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c"
+    },
+    "pdf": {
+      "path": "pdf/[2027] 온새미로 1 본교재-hwpx-2024.pdf",
+      "sha256": "051aa8c4b94ca7cddc21e18d7fdc45b370e492b65c711c801d2c95479117cbab"
+    },
+    "git_head": "e6895accbe23daa2e57fa73c48bc9fe61c55ee57",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base5665-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-base5665-optimized",
+      "sha256": "c02d7932b79f712bb07e435445a8bd0f69998d6bcef1eea7226fbb26281e63e1"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [
+        "-윤고딕310",
+        "DX스피드Bold",
+        "Dinbla",
+        "G마켓 산스 Medium",
+        "IM혜민 Bold",
+        "KBL 점프체 B TTF",
+        "KBL 점프체 R TTF",
+        "KoPubWorld돋움체_Pro Light",
+        "KoPubWorld돋움체_Pro Medium",
+        "KoPubWorld바탕체_Pro Light",
+        "KoPubWorld바탕체_Pro Medium",
+        "YoonV YoonMyungjo300Std_OTF",
+        "a로케트",
+        "강원교육모두 Bold",
+        "페이북 OTF ExtraBold"
+      ],
+      "local_document_substitutes": [
+        "-윤고딕310",
+        "DX스피드Bold",
+        "Dinbla",
+        "G마켓 산스 Medium",
+        "IM혜민 Bold",
+        "KBL 점프체 B TTF",
+        "KBL 점프체 R TTF",
+        "KoPubWorld돋움체_Pro Light",
+        "KoPubWorld돋움체_Pro Medium",
+        "KoPubWorld바탕체_Pro Light",
+        "KoPubWorld바탕체_Pro Medium",
+        "YoonV YoonMyungjo300Std_OTF",
+        "a로케트",
+        "강원교육모두 Bold",
+        "페이북 OTF ExtraBold"
+      ],
+      "resources": [],
+      "module_sha256": "c6f7a75ee9ff965e004bf029a7c4211240e2e359dc01c2635efbe883222819d1"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2024",
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "none",
+      "files": []
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-native/base/issue7762/silhouette-checkpoint.json"
+}

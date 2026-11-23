@@ -1,0 +1,72 @@
+{
+  "actual_manifest_sha256": "f767e51ebe32a6af82724668e676047fa4266825edbf3f077c5d273a56340253",
+  "manifest_run_state": "complete",
+  "completed_pages": 1,
+  "actual_capture_provenance": {
+    "hwp": {
+      "path": "samples/pr4093/outline_navigation_table_cell_number.hwpx",
+      "sha256": "a033627d1c48817201bee8edd1b2d71b8c49a407af97346b6f1c7fb912602b1c"
+    },
+    "pdf": {
+      "path": "pdf/issue7382-regression-review/outline_navigation_table_cell_number-2020.pdf",
+      "sha256": "7e92550f0724026b7c88d1f843411b7ace744cce273f614e338cbd55d40eba81"
+    },
+    "git_head": "e63992fb2f4fbedb9c58569232b176ae91b98331",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "b40792c53700b9424a89f86463116b1e50b68c23ec3160d3eab718b569d108d4"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/Users/tsjang/.local/share/uv/python/cpython-3.12.11-macos-aarch64-none/bin/python3.12",
+      "executable_sha256": "dcebc9a450a63fcc1801995f64c59705dd5eaddb26bcd817b7bfcee5d9b7300e",
+      "library": "/Users/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.dylib",
+      "library_sha256": "33c98063af28c0b7cbf8227f4422bf5c15942df2455cf7f0a5dce3dc601d52b0",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/rhwp-native",
+      "path": "output/pr-review/issues-7733-7738-20261117/gray-tail-owned-diagnostic-final/rhwp-native",
+      "sha256": "69883dbf754be9e02453c63ec88d49bdd1749b76123698e5a47d9a1a8c1ecbf4"
+    },
+    "native_webfont_fallback": {
+      "registry_sha256": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "mappings": {},
+      "document_glyph_fallbacks": [],
+      "unmapped_sources": [],
+      "local_document_substitutes": [],
+      "resources": [],
+      "module_sha256": "eb0e4f15131209ed065b1ab5ca072e49ba5382857de2e9d61847ae9fe8f3ebd6"
+    },
+    "raster_backend": "native-skia",
+    "png_exporter_sha256": "a3a7fedf397bc9f5a180bfa106e37cabe920725c1add9b0c7c5a3efe39eaa5e9",
+    "layout_generation": "2022"
+  },
+  "font_supply": {
+    "path": "mydocs/pr/assets/issues7733_7738_20261117/final-efe954/protected-font-conditions/supply-e7612572933cf957.json",
+    "sha256": "150366b0d122404861a68f35a16881cdbc995203bd09868312d5a41dc8a7f08e"
+  },
+  "not_font_binaries": true
+}

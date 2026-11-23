@@ -1071,7 +1071,27 @@ fn try_char_style_to_text_style<S: crate::renderer::style_resolver::storage::Sto
                 storage,
             )?,
             // [#7387] 공백은 run 의 언어 슬롯과 무관하게 영문 슬롯 글꼴이 정한다.
-            font_space_em: cs.font_space_em,
+            font_space_em: cs.font_space_em.or_else(|| {
+                // 정적 공백 계약이 없을 때도 원본 useFontSpace 선언을 잃지 않는다.
+                // 실제 선택한 동일 프로그램만 해소하며 generic fallback을 재지정하지 않는다.
+                if !styles
+                    .source_char_shapes
+                    .get(char_style_id as usize)?
+                    .use_font_space
+                {
+                    return None;
+                }
+                let identity = cs.font_families_primary_program.get(1).copied().flatten()?;
+                styles
+                    .native_pua_fonts
+                    .get_otf_for_source(
+                        cs.font_family_for_lang(1),
+                        cs.bold,
+                        cs.italic,
+                        styles.native_otf_metrics_source_ttf(char_style_id, 1),
+                    )?
+                    .selected_program_space_advance_em(&identity)
+            }),
             inherited_half_space_em: false,
             layout_half_space: false,
             layout_half_space_em: {
@@ -1300,6 +1320,7 @@ static KOPUB_DOTUM_LATIN_0: [u16; 95] = [
 
 /// 저장 줄의 재구성에 사용할 수 있는 실제 원본 전진 표인가.
 /// KoPub Dotum Light의 전진은 독립 Print와 TTF에서 확인했다(#7765).
+/// 맑은 고딕 regular도 원 TTF의 cmap·hmtx와 정적 표를 대조했다.
 /// 글꼴의 모든 문자를 인증하지 않으며 검증된 범위만 별도로 확인한다.
 pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bool) -> bool {
     let face = face.trim();
@@ -1308,7 +1329,15 @@ pub(crate) fn verified_source_projection_face(face: &str, bold: bool, italic: bo
         && (matches!(face, "KoPub돋움체 Light" | "KoPubDotum Light" | "KoPub Dotum Light")
             // 같은 Light 프로그램의 설치 조회 이름도 동일한 검증 범위를 쓴다.
             // Medium/Bold·World와 계열 이름만 같은 프로그램은 인증하지 않는다.
-            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face))
+            || super::super::installed_font_program_aliases("KoPub돋움체 Light").contains(&face)
+            || matches!(face, "맑은 고딕" | "Malgun Gothic"))
+}
+
+fn verified_source_projection_character(face: &str, ch: char) -> bool {
+    (' '..='~').contains(&ch)
+        || ('가'..='힣').contains(&ch)
+        || (!matches!(face.trim(), "맑은 고딕" | "Malgun Gothic")
+            && super::kopub_symbol_metrics::advance_em(true, false, ch).is_some())
 }
 
 pub(crate) fn verified_source_projection_text(
@@ -1318,11 +1347,9 @@ pub(crate) fn verified_source_projection_text(
     text: &str,
 ) -> bool {
     verified_source_projection_face(face, bold, italic)
-        && text.chars().all(|ch| {
-            (' '..='~').contains(&ch)
-                || ('가'..='힣').contains(&ch)
-                || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
-        })
+        && text
+            .chars()
+            .all(|ch| verified_source_projection_character(face, ch))
 }
 
 /// 원 프로그램의 확인된 결측을 같은 선언 체인의 실제 폭 공급자가 해소한 경우다.
@@ -1335,10 +1362,7 @@ pub(crate) fn verified_source_projection_text_with_fallback(style: &TextStyle, t
         return false;
     }
     text.chars().all(|ch| {
-        if (' '..='~').contains(&ch)
-            || ('가'..='힣').contains(&ch)
-            || super::kopub_symbol_metrics::advance_em(true, false, ch).is_some()
-        {
+        if verified_source_projection_character(primary, ch) {
             return true;
         }
         if font_metrics_data::verified_named_program_has_glyph(
@@ -2327,26 +2351,42 @@ fn measure_scalar_advance<'a>(
                 )
             })
             .flatten();
-        let old_glyph_metric = cluster_glyph
-            .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
-            .and_then(|glyph| {
-                style
-                    .selected_primary_font_program
-                    .and_then(|_| {
-                        font_metrics_data::old_hangul_syllable_advance_em(
-                            css_primary_face(display_family),
-                            style.bold,
-                            style.italic,
-                            glyph,
-                        )
-                    })
-                    .map(|em| (glyph, em, None))
-                    .or_else(|| {
-                        if latin.is_some() {
-                            return None;
-                        }
-                        font_metrics_data::declared_old_hangul_fallback(style, glyph)
-                            .map(|(metric, em)| (glyph, em, Some(metric)))
+        // 표시용 원 glyph를 선택해도 저장 HFT의 전진폭 계약은 유지한다.
+        // 실제 프로그램의 hmtx는 자연 메트릭을 요청했거나 HFT가 아닌 경로에서만 쓴다.
+        let old_glyph_metric = (cluster_len[i] > 1
+            && (!style.source_font_is_hft || style.natural_program_metrics))
+            .then(|| {
+                crate::renderer::pua_glyph::source_program_glyph(
+                    style,
+                    &chars[i..i + usize::from(cluster_len[i])]
+                        .iter()
+                        .collect::<String>(),
+                )
+            })
+            .flatten()
+            .map(|(glyph, advance)| (glyph, advance, None))
+            .or_else(|| {
+                cluster_glyph
+                    .filter(|glyph| crate::renderer::pua_oldhangul::is_pua_old_hangul(*glyph))
+                    .and_then(|glyph| {
+                        style
+                            .selected_primary_font_program
+                            .and_then(|_| {
+                                font_metrics_data::old_hangul_syllable_advance_em(
+                                    css_primary_face(display_family),
+                                    style.bold,
+                                    style.italic,
+                                    glyph,
+                                )
+                            })
+                            .map(|em| (glyph, em, None))
+                            .or_else(|| {
+                                if latin.is_some() {
+                                    return None;
+                                }
+                                font_metrics_data::declared_old_hangul_fallback(style, glyph)
+                                    .map(|(metric, em)| (glyph, em, Some(metric)))
+                            })
                     })
             });
         let metric_character = cluster_glyph

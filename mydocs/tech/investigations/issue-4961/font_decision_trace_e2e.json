@@ -11,9 +11,34 @@
       "path": "samples/143E433F503322BD33.hwp",
       "page": 0,
       "expectedStatus": "complete",
-      "renderPinsDeferredToIssue7445": [
-        "expectedCounts",
-        "expectedLayoutHash"
+      "expectedCounts": {
+        "recordsOmitted": 0
+      },
+      "validateRunOwnership": true,
+      "generatedRunOwners": [
+        {
+          "sectionIndex": 0,
+          "paragraphIndex": 3,
+          "text": "1."
+        },
+        {
+          "sectionIndex": 0,
+          "paragraphIndex": 11,
+          "text": "2."
+        }
+      ],
+      "unavailableRunOwners": [
+        {
+          "sectionIndex": 0,
+          "paragraphIndex": 7,
+          "nestedPath": [
+            0,
+            65534,
+            0
+          ],
+          "text": "(단위: 조 원)",
+          "reason": "tableCaptionAddressUnavailable"
+        }
       ]
     },
     {
@@ -27,9 +52,6 @@
         "recordsEmitted": 607,
         "recordsOmitted": 0
       },
-      "renderPinsDeferredToIssue7445": [
-        "expectedLayoutHash"
-      ],
       "validateRunOwnership": true
     },
     {
@@ -43,9 +65,6 @@
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
-      "renderPinsDeferredToIssue7445": [
-        "expectedLayoutHash"
-      ],
       "validateRunOwnership": true
     },
     {
@@ -59,9 +78,6 @@
         "recordsEmitted": 41,
         "recordsOmitted": 0
       },
-      "renderPinsDeferredToIssue7445": [
-        "expectedLayoutHash"
-      ],
       "validateRunOwnership": true
     }
   ],

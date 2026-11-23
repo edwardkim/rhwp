@@ -1,0 +1,119 @@
+{
+  "started": 1795287505.2093258,
+  "pid": 1523817,
+  "base": "5665e538292a0686a912f6a4d8950c55be89929a",
+  "candidate": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "candidate_branch": "task/7754-nine-fidelity-devel",
+  "environment": {
+    "CARGO_BUILD_JOBS": "4",
+    "CARGO_TARGET_DIR": "/home/tsjang/rhwp/target/pr-review",
+    "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "16"
+  },
+  "running": null,
+  "completed": true,
+  "ended": 1795289845.8727856,
+  "results": [
+    {
+      "label": "base-native",
+      "source_head": "5665e538292a0686a912f6a4d8950c55be89929a",
+      "source_tree": "c72aeecbaf6f9939b75f14e51dba2b574c19bed6",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "started": 1795287515.7149386,
+      "exit_code": 0,
+      "seconds": 580.6865824619308,
+      "ended": 1795288096.4018402,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-base-native-build.log",
+      "binary": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-base5665-optimized",
+      "binary_sha256": "c02d7932b79f712bb07e435445a8bd0f69998d6bcef1eea7226fbb26281e63e1",
+      "production_source_files_sha256": "cb3d0ea71de8e04c2434a83175c299abf1e5a27188f63f5bf5439c7a3cbb73f9"
+    },
+    {
+      "label": "base-wasm",
+      "source_head": "5665e538292a0686a912f6a4d8950c55be89929a",
+      "source_tree": "c72aeecbaf6f9939b75f14e51dba2b574c19bed6",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base5665"
+      ],
+      "started": 1795288097.481639,
+      "exit_code": 0,
+      "seconds": 613.504364172928,
+      "ended": 1795288710.9910698,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-base-wasm-build.log",
+      "files": {
+        "rhwp.js": "f38b73899bde75b74e9eb4ed924627595dee12339706d4ed88eeaf5d7c9d81fe",
+        "rhwp_bg.wasm": "c24c42b8475106f34d19ec2883826ad1386f5e959bd3b49bcf4180313f1053a9",
+        "rhwp.d.ts": "c1a41880744219c07f05488b4502d16b9683aa00e077f01ebb46b4f03349a6c8",
+        "rhwp_bg.wasm.d.ts": "7c149a623d1bcc94bf94acc3c6aab784e3a1b6a907b8adeb52765302e3eb6654"
+      },
+      "optimized_wrapper_completed": true,
+      "production_source_files_sha256": "cb3d0ea71de8e04c2434a83175c299abf1e5a27188f63f5bf5439c7a3cbb73f9"
+    },
+    {
+      "label": "candidate-native",
+      "source_head": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+      "source_tree": "0b8fa35b587c8a3a555640ed513fe64dfc355697",
+      "command": [
+        "cargo",
+        "build",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--bin",
+        "rhwp"
+      ],
+      "started": 1795288715.3229628,
+      "exit_code": 0,
+      "seconds": 530.1168506890535,
+      "ended": 1795289245.4487,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-candidate-native-build.log",
+      "binary": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source33-optimized",
+      "binary_sha256": "14d4ae261ee487dfa3603e13b928f16d38326462b31d828d56b0d7f4670bb6bb",
+      "production_source_files_sha256": "e3686fdfe1d1af6eb2240b9f72ba85c7277d0e5b9ee8379ff433315e0848f20b"
+    },
+    {
+      "label": "candidate-wasm",
+      "source_head": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+      "source_tree": "0b8fa35b587c8a3a555640ed513fe64dfc355697",
+      "command": [
+        "scripts/wasm-pack-locked.sh",
+        "--target",
+        "web",
+        "--out-dir",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source33"
+      ],
+      "started": 1795289246.5404532,
+      "exit_code": 0,
+      "seconds": 598.5334601919167,
+      "ended": 1795289845.0884867,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-candidate-wasm-build.log",
+      "files": {
+        "rhwp.js": "f38b73899bde75b74e9eb4ed924627595dee12339706d4ed88eeaf5d7c9d81fe",
+        "rhwp_bg.wasm": "3c5dff21cb6a620f49b1a7328f3e3a07e9149faea631f62f4e0ec59b81b0ebee",
+        "rhwp.d.ts": "fa6f55bf282eb6a5c38a50eea2d45e9b1cfd8d27f3634aff124c7c464a04637e",
+        "rhwp_bg.wasm.d.ts": "18b2a546542b8301deccb30c54c7f5c8ad26440129ff408ca2226c685738f3b9"
+      },
+      "optimized_wrapper_completed": true,
+      "production_source_files_sha256": "e3686fdfe1d1af6eb2240b9f72ba85c7277d0e5b9ee8379ff433315e0848f20b"
+    }
+  ]
+}

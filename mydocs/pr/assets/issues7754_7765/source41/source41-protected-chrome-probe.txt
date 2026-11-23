@@ -1,0 +1,6 @@
+{"launched_ms":5937,"version":"Chrome/155.0.8059.79"}
+[1827152:1827152:1122/143039.794591:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/tsjang/.config/google-chrome-for-testing/Crash Reports/settings.dat: Read-only file system (30)
+[1827152:1827152:1122/143039.794817:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/tsjang/.config/google-chrome-for-testing/Crash Reports/settings.dat: Read-only file system (30)
+[1827152:1827186:1122/143043.996450:ERROR:third_party/crashpad/crashpad/util/file/file_io_posix.cc:208] open /home/tsjang/.config/google-chrome-for-testing/Crash Reports/settings.dat: Read-only file system (30)
+
+DevTools listening on ws://127.0.0.1:36483/devtools/browser/912219e2-1260-4645-8fcf-87dd93c0d22b

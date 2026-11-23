@@ -1,0 +1,85 @@
+[
+  {
+    "source": "/opt/hnc/hoffice11/Shared/TTF/All/HBATANG.TTF",
+    "path": "/home/tsjang/rhwp/output/pr-review/font-catalog-cache/1aa0f9485392f77b7ad2c0f285000ac69b2b8e5bc3da58133dbe03e65ac413ff/35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05-0.ttf",
+    "families": [
+      "Haansoft Batang",
+      "한컴바탕"
+    ],
+    "glyph": "uF03A0"
+  },
+  {
+    "source": "/opt/hnc/hoffice11/Shared/TTF/All/HDOTUM.TTF",
+    "path": "/opt/hnc/hoffice11/Shared/TTF/All/HDOTUM.TTF",
+    "families": [
+      "Haansoft Dotum",
+      "한컴돋움",
+      "Haansoft-Dotum"
+    ],
+    "glyph": "uF03A0"
+  },
+  {
+    "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANBatang.ttf",
+    "path": "/opt/hnc/hoffice11/Shared/TTF/Install/HANBatang.ttf",
+    "families": [
+      "HCR Batang",
+      "함초롬바탕",
+      "HCRBatang"
+    ],
+    "glyph": "uF03A0"
+  },
+  {
+    "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANBatangB.ttf",
+    "path": "/opt/hnc/hoffice11/Shared/TTF/Install/HANBatangB.ttf",
+    "families": [
+      "HCR Batang",
+      "HCR Batang Bold",
+      "함초롬바탕",
+      "함초롬바탕 Bold",
+      "HCRBatang-Bold"
+    ],
+    "glyph": "uF03A0"
+  },
+  {
+    "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANDotum.ttf",
+    "path": "/opt/hnc/hoffice11/Shared/TTF/Install/HANDotum.ttf",
+    "families": [
+      "HCR Dotum",
+      "함초롬돋움",
+      "HCRDotum"
+    ],
+    "glyph": "uF03A0"
+  },
+  {
+    "source": "/opt/hnc/hoffice11/Shared/TTF/Install/HANDotumB.ttf",
+    "path": "/opt/hnc/hoffice11/Shared/TTF/Install/HANDotumB.ttf",
+    "families": [
+      "HCR Dotum",
+      "HCR Dotum Bold",
+      "함초롬돋움",
+      "함초롬돋움 Bold",
+      "HCRDotum-Bold"
+    ],
+    "glyph": "uF03A0"
+  },
+  {
+    "source": "/usr/local/share/fonts/hwp-convert-mcp-survey/1c0dce5aff03-HCRDotum.ttf",
+    "path": "/usr/local/share/fonts/hwp-convert-mcp-survey/1c0dce5aff03-HCRDotum.ttf",
+    "families": [
+      "HCR Dotum",
+      "함초롬돋움",
+      "HCRDotum"
+    ],
+    "glyph": "uF03A0"
+  },
+  {
+    "source": "/usr/local/share/fonts/hwp-convert-mcp-survey/8664669bd2d6-HANBatang.ttf",
+    "path": "/usr/local/share/fonts/hwp-convert-mcp-survey/8664669bd2d6-HANBatang.ttf",
+    "families": [
+      "HCR Batang",
+      "함초롬바탕",
+      "HCRBatang"
+    ],
+    "glyph": "uF03A0"
+  }
+]

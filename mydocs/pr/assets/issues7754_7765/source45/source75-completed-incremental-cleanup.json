@@ -1,0 +1,18 @@
+{
+  "started": 1795332075.4777427,
+  "scope": "Four completed and unlocked review-only debug incremental sessions; no Cargo/Rust processes or active file references. Preserve other profiles, deps, frozen producers and running visual outputs.",
+  "roots": [
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_oxide-1gpkx523jd4vd",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/pdf_oxide-03b2hl2d7gdq7",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp-22xkgfl1zffin",
+    "/home/tsjang/rhwp/target/pr-review/debug/incremental/rhwp_native_ffi-3dxxgl4q57wgc"
+  ],
+  "cargo_rust_processes": [],
+  "active_references": [],
+  "locks_acquired": 8,
+  "free_before": 1407315968,
+  "ended": 1795332076.5018709,
+  "complete": true,
+  "free_after": 2266886144,
+  "actual_free_delta": 859570176
+}

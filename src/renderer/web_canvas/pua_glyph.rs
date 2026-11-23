@@ -9,6 +9,14 @@ impl WebCanvasRenderer {
             return None;
         }
         let fonts = self.hft_outline_fonts.as_ref()?;
+        if let Some((glyph, _)) = pua_glyph::source_program_glyph(style, text) {
+            if (crate::renderer::hft_outline::supports_style(style)
+                && fonts.glyph(&style.font_family, glyph).is_some())
+                || fonts.print_primary_glyph(style, glyph).is_some()
+            {
+                return Some(glyph);
+            }
+        }
         if let Some(glyph) = fonts.pua_coverage.glyph(&style.font_family, text) {
             return Some(glyph);
         }

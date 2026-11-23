@@ -1,0 +1,487 @@
+{
+  "input": {
+    "path": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    "sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    "sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+  },
+  "page_count": 315,
+  "before_source": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "current_source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+  "measurements": {
+    "pages": 288,
+    "same_png": 245,
+    "same_score": 245
+  },
+  "common_page_range": [
+    1,
+    288
+  ],
+  "available_pages_before": 288,
+  "finished_pages_current": 315,
+  "archived_manifests_recovered_and_verified": 9,
+  "physical_png_paths": 1152,
+  "changed_pages": [
+    {
+      "page": 246,
+      "before_raw_percent": "78.73",
+      "after_raw_percent": "99.97",
+      "before_png_sha256": "adda50be50b3919391d3f556267ec481c4bbd5679babc41f71ee2c53478c2203",
+      "after_png_sha256": "04ed7e1ce7bf3848bdc20ade132b589793074d73d28e43341fcf0222da2b4737",
+      "reference_png_sha256": "6c6881f7e04a5375ea7f8630dab5f5e6f260be1ac40ef32eefdcb23915d51ed3"
+    },
+    {
+      "page": 247,
+      "before_raw_percent": "80.36",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "04a0e1955c7fb5697d8a7004a1240029af24ac57073a721b710e2a6e5aa1cd64",
+      "after_png_sha256": "cc9b42cb9f08b5807d81d3932c0a994d8cadb94f1b4e14f3189d4a71cf881e0a",
+      "reference_png_sha256": "d5a0623c8f6eef277f3f9dfee77225214192cc2b157f3b5fbba495318743fe9e"
+    },
+    {
+      "page": 248,
+      "before_raw_percent": "78.26",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "0f89544fcee22d85102328d487e531768f0b2e47d82bf29d2509f9334d276e12",
+      "after_png_sha256": "f72f7a8f9eb41492d250bd80e6eac264186accda8f45d0a50d49a0d2549833dc",
+      "reference_png_sha256": "5d0b5e3f4f90f692b3e63a114db4232392c84dbf56964662c65a8329e0e05331"
+    },
+    {
+      "page": 249,
+      "before_raw_percent": "91.17",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "6a38e652932727d27b9cb7682566ed0422b585d305c44611f16288babf475bde",
+      "after_png_sha256": "5b5c27854d759d637a19578a5b201da6123879a3d259c1b489cb4f22faf5eda7",
+      "reference_png_sha256": "f3f91556a63fcb1dfd9e491f30ad06ea64f658828af4b272f719ef065d7ba735"
+    },
+    {
+      "page": 250,
+      "before_raw_percent": "90.90",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "ded04caf20e9b87ee67c9155020cb844cab3d45e26bd197c536faa427ba56494",
+      "after_png_sha256": "4a74662bb94cdc0649c74426e7dde0ca3c39bafdd44bf1442f95063bdeabe479",
+      "reference_png_sha256": "9600348dda74d728f411a8de3334c1112141390e09231834f1749b0516b79235"
+    },
+    {
+      "page": 251,
+      "before_raw_percent": "91.26",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "6dca452c9974facecfa9e9a47bb56f17737411f313d0f5f9a41fed334a616cb5",
+      "after_png_sha256": "61feb646b407519a7334a81bd99e695b5dc93a4136e87987a996a6d9b84783a6",
+      "reference_png_sha256": "451ee59816ae10f94a04a2d8e5d11214df595835f5388ab878d0016ffcd9ad2e"
+    },
+    {
+      "page": 252,
+      "before_raw_percent": "91.42",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "98ba0320506b2f51f5c77ba3067affbdb06af507ccb26bc80c2f55a86e75af32",
+      "after_png_sha256": "7927310d8be4af6e7624c1d051c0c3d963425bf4970abfa8fa79238ba47cbe4f",
+      "reference_png_sha256": "50f70b5bddc52aaba5ab4d86181057f07767325c3e50642a10e21770967ece32"
+    },
+    {
+      "page": 253,
+      "before_raw_percent": "92.58",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "fb7f96462e9a154d98c07dcdc35a2e04a0143d2f605231549224e7cdd90cd5a6",
+      "after_png_sha256": "74512f40ea34bc2817e22600e31dcede9ba783344184d972dcd8ed5ae3ce9443",
+      "reference_png_sha256": "36026568aa1222ee5e27fdba64d20f6912d478f3c3e52e3a7b22ffc067e179fe"
+    },
+    {
+      "page": 254,
+      "before_raw_percent": "89.02",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "5d871f27b7f2de3355afbfd21044eb1073b69d20cbb7aad0298882a1cf2caefd",
+      "after_png_sha256": "39e722badd40ce9e57becd915d0248a89eb99a0a253bd99ee967017ee0e0f242",
+      "reference_png_sha256": "98f1cd9577f0cde8ae2a548b862fdc40c91675b3173c29e1c977396ad98922ca"
+    },
+    {
+      "page": 255,
+      "before_raw_percent": "89.17",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "47c50fa559c1235615d13b3152e076b4eee61611fab4ed877c9085114d080644",
+      "after_png_sha256": "5e32b34543bf1995e5204ae7bddea8457d69f50d077d23af4121d7046223c4fc",
+      "reference_png_sha256": "564814d957b91bd71abc9f303c58911686c7aaf265c72a42e23fe4d3d9ce99ba"
+    },
+    {
+      "page": 256,
+      "before_raw_percent": "91.22",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "fa7f21af559f48d354778867faaaf2261352335f7f89a32fee259b974ffdaeba",
+      "after_png_sha256": "392f85cdfd052bf171555fe0ea7c1d7525a6c63befd06b7754692fba339e2509",
+      "reference_png_sha256": "21f1d4609d2f7d80df240afc93a5aa91e4a9a0028631e08e8f4edf285af561f1"
+    },
+    {
+      "page": 257,
+      "before_raw_percent": "89.81",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "bb40ed35541d6eca8e790e6253533899b71baeb91f0f6556eb139ba800976392",
+      "after_png_sha256": "c33a4b35e45eac716134003e0baf4b5b3c50900b8bfb8f4aa9a59b4add1e1f1c",
+      "reference_png_sha256": "4b19616ae9edb4ddd177808f2b72d4a0d49001835ac0b8302a4da5c3631c0412"
+    },
+    {
+      "page": 258,
+      "before_raw_percent": "89.99",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "da16a4fe58a3768aca6c4a8cd772bbb320fcd44b64e229830bda445c7080bc00",
+      "after_png_sha256": "cf96fe1dfe8d51fbd196ea4dbd9d28d92c579d22b97221c99188430c89fb775c",
+      "reference_png_sha256": "a19e6c7ff22d40c446f4a53ab002938c1b8bfe439dd91929f91a4a675ebe1e96"
+    },
+    {
+      "page": 259,
+      "before_raw_percent": "85.41",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "70b396f06301360591c36e5a590fcc23de2859aeef9ac4fbadd9d0c347d9cf07",
+      "after_png_sha256": "354ab38ed9557ae706b84b1a75754e56fa4fe21442fe6c64b25814f1dbf8df3b",
+      "reference_png_sha256": "2090ea820838181cee6b704fd14e3af3fcb693f2930b9625f45b31db01b18609"
+    },
+    {
+      "page": 260,
+      "before_raw_percent": "90.41",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "e655af424ac35fff0fde1affc65176adca7496ded018cd81d331565880de06d5",
+      "after_png_sha256": "efa5a045594315c18b41a08f21ccdb0b40dd99e187b72ce6251915372dcb8aa4",
+      "reference_png_sha256": "0324f3b34ca3527e69b1b39547ef231e9406803a6edfa38bf40f20b3f6b94093"
+    },
+    {
+      "page": 261,
+      "before_raw_percent": "88.76",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "ff3404c359484847535fb322d090c59223636b644478d0beb93399251d0ea6d4",
+      "after_png_sha256": "8cd9979f43f1a21cf0be223044cb47a6ff0d650d8dac8dc8d46fb5772f57c45f",
+      "reference_png_sha256": "0e871c40cd69a8e5ab0bfda431a5c7224ee8c5f1d29b678d3c4de279572a226e"
+    },
+    {
+      "page": 262,
+      "before_raw_percent": "91.50",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "18d09995d782f276f2ff8b75f0335582f2d4f4511fbf571ca136f83bd3912b7d",
+      "after_png_sha256": "1a7bedb6d0460c47cde477b99318d6344270e2ce095d0a297ef8dbdf646b9038",
+      "reference_png_sha256": "d0cbdbe4ee51d194ab907602a805e8077a642be1483972d19d8dbbba6829a739"
+    },
+    {
+      "page": 263,
+      "before_raw_percent": "75.74",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "cd58a495b89b2206b9b1926b09c52dbefa57b4d6e8b2ca39f98b397a1ab5ab46",
+      "after_png_sha256": "56384c0dc4a39accb607e4fb210b40f01852d5f7ef27c3a29eb3bffe46192221",
+      "reference_png_sha256": "fa7e0834ba112dd8c85726ef958961f6adb160062c4035ad866d4d09c81e3f4f"
+    },
+    {
+      "page": 264,
+      "before_raw_percent": "87.35",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "c27d2cd492ebaf9b844de1b6058381422f1e1b10805d19a797e1212d3698171f",
+      "after_png_sha256": "f03f078c1acae22cc8be8a0df99a645e2dcfb582e4a89366140c260ee984c8f4",
+      "reference_png_sha256": "96fea9295391c28deb691286a051fd3113d9c9a05811f8647356ca7e47faf49f"
+    },
+    {
+      "page": 265,
+      "before_raw_percent": "82.66",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "e2a5e1d60c5f7281cb96a13d39b082c7998c9b8ee454d6a1b7c658e664676b44",
+      "after_png_sha256": "3d54303bb4e7c017ad1ecabd8df1bc6632e48aa009c2246c6463396e968bac3a",
+      "reference_png_sha256": "5fa08036d3695a7e4734f28938cc8e1c695d9ee6168820010dc6df1e7fbfbc01"
+    },
+    {
+      "page": 266,
+      "before_raw_percent": "86.81",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "afb463a309dc4f321f3d48a78902fd95187910666f559911562955c20a26c093",
+      "after_png_sha256": "5bd7295c626ffb19586c403dc110a0241a979b73493a5768c5899cbdcad46d0b",
+      "reference_png_sha256": "17d1213e156c178fd7b76c81cad239c03cd142635fc6061abaccc997855ddfc0"
+    },
+    {
+      "page": 267,
+      "before_raw_percent": "90.49",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "79b8f13805765f037327ee1148851d4fca07f383e42eb4738707d7909985e6ca",
+      "after_png_sha256": "a89884f9d6ceff2050f29fbbebc0617cef1117c5e9191f9fbcf09b5ca6d13c17",
+      "reference_png_sha256": "0324e2e3ba989e5d2acdb252741b934cb20835dc6f540cf692c0f446f3ca36ba"
+    },
+    {
+      "page": 268,
+      "before_raw_percent": "87.49",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "a2989d149237267be1b4715f2a53ccbeb495ff510ef66788cdb557d9959065c9",
+      "after_png_sha256": "4d796e9da26e56a2c1a41d8bec9e3dc2e5774456333fde786274665cb64c5445",
+      "reference_png_sha256": "1f11eb2ce59129901b245ce2b86b9705b96c6118f393d6f5ae15509991cd2e66"
+    },
+    {
+      "page": 269,
+      "before_raw_percent": "89.60",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "3d04c0fd76df83cf4d859ab249ac8957156ef39b8f00faceda4d56b76d844ad6",
+      "after_png_sha256": "8bcb7af100a2830767179a90555091ece03927b97687e8c8f18400eaa03a40c6",
+      "reference_png_sha256": "3aad49cf13ab8d1182882d2e3fd9f239274407fdbefd80fa57efbcc8f4e7c540"
+    },
+    {
+      "page": 270,
+      "before_raw_percent": "91.58",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "fa56bf577944d402e3fc4f9ec96ff875e941c4fc3605b13f9f220992429ce8c0",
+      "after_png_sha256": "fc038ad5fc55cceaed4577d776fed18b97f5c984ee061abe12f4f730a2eb1b4f",
+      "reference_png_sha256": "f47958d007bf32daa106bc62a67d8aa140c1cde8bfd9946c39951f37344633fa"
+    },
+    {
+      "page": 271,
+      "before_raw_percent": "89.69",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "418c3ef8622f6a8b3b3416c09e4f292f51237d21378d3245b1bb93221d304df5",
+      "after_png_sha256": "7692b37d2ae0945a974b67e317ec0f0890677dd3682f6364191d2fd7808629af",
+      "reference_png_sha256": "2d510764e19f85eb6bfff6e95cd076ee9ca69e3185c20c50b3d9215a798e8c6c"
+    },
+    {
+      "page": 272,
+      "before_raw_percent": "88.97",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "165f68b483a671ce31999085e1ab678d552d1f284f3d7bc56c7873be161a4770",
+      "after_png_sha256": "2206467a5cf346df71d6ddd0c50b41daab400dc08a3ebd437a6f0d96ec3b1f5d",
+      "reference_png_sha256": "16b911a75048dc7c11b0fe2b67c0f8922bb5e23ba8e12cea85b3f9a13c1a7aa2"
+    },
+    {
+      "page": 273,
+      "before_raw_percent": "90.39",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "4056c1afb3df26cc37fab925d5a20f05bbfff14bea6bef0185c34a1c47482320",
+      "after_png_sha256": "d9df0a047e2010f1cedc7157da8a161f9e2c42ef343436d209ce03c462ea2ed2",
+      "reference_png_sha256": "3cbb0e23d6f6b8b4c9ccda6b2d5db5244b55fbfb2f4f1047702178b69a0c017f"
+    },
+    {
+      "page": 274,
+      "before_raw_percent": "92.16",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "61957d2346e5ea68bbcaae0d5c399c4def571f80124cdf1e39daf366fddce0e2",
+      "after_png_sha256": "9cf67a041387d97e3eea2e42dbb51b35ae303569aeeb8118222ffa28638b02b0",
+      "reference_png_sha256": "5b3c52c678c99158f21e249b248b36af392f227c2253f20a802f34ba68e71f51"
+    },
+    {
+      "page": 275,
+      "before_raw_percent": "89.37",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "c8c642580451dfd286fdc97b6b6eb222ad773ffea5ee8c68b94c5f94109d063d",
+      "after_png_sha256": "128a9794736b1b2f50da878ce3561863f0c45d4a07b0a9bbf1c6f25d4b4c80a2",
+      "reference_png_sha256": "de60dd2fba16b3c0a8f573a8937adea79af20f98e72f09df75b531266c430d60"
+    },
+    {
+      "page": 276,
+      "before_raw_percent": "92.11",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "b300cfd138018f566b6ea619e397ce66eb61bdd657a7b7d2a44291f5d04369a7",
+      "after_png_sha256": "e6791e8654973fde069c6013d1039be5a855d923372702374bf211d6802cbfa0",
+      "reference_png_sha256": "6433c4322f06c6febee17df4644186e1f91fb86868df09adc64be242a7d0942f"
+    },
+    {
+      "page": 277,
+      "before_raw_percent": "88.58",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "fd64f686d21ad462639a8f091ca48a7fbef6f42bf1221616e031bb81a2e53ceb",
+      "after_png_sha256": "5432801fd311c06ade65c9a9d9d418f2bd9d829df90ba6854e2813cc5025d992",
+      "reference_png_sha256": "4372561f9d8ab141f3da016d3fc41579eb51676f8466f188d71e43fd00d4c77e"
+    },
+    {
+      "page": 278,
+      "before_raw_percent": "74.96",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "38823672321645a3d1bdb25f0529edb91da73285ddbb9aaa58ee1bfda9ea1630",
+      "after_png_sha256": "c2e283231f1beaddfa43005cbb878c37c8f36cfc407b0151b4d1d6587769578c",
+      "reference_png_sha256": "ca6167e46a3a74f524b874fec4f5fb241fc56e82ca1e9ef9bd10382c2173d740"
+    },
+    {
+      "page": 279,
+      "before_raw_percent": "92.28",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "7ada3c18bcf0c760844ecab536159c4aefbb2ef4f75a3f2df83f3b04f1962fa5",
+      "after_png_sha256": "75c34a3cc1301b6ee3f5fa12bbbe653dc5a8b7f14d95394f8b47b1183fe45b1b",
+      "reference_png_sha256": "07b58acc5ffa624196044014c8639d0f715fdf86da9940d8d8c2f07e44b9d516"
+    },
+    {
+      "page": 280,
+      "before_raw_percent": "86.74",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "66f963101b78586bb9b1ace9032212a7f10427f3ea291ce3e453208fb8767da6",
+      "after_png_sha256": "45dbcaf163de436d2e7e22cd6d106430190336f86e2db5a5626211c8263140d0",
+      "reference_png_sha256": "8cafa2d87d9ec1127e2f7712443361ea2ce58b8cfe08f44a12c1d6a65909285a"
+    },
+    {
+      "page": 281,
+      "before_raw_percent": "89.94",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "eb1f269f3bbe79aeedaae4a8bfe806e96ba49570b0e03dd0ce8611ead52dcd48",
+      "after_png_sha256": "75877f7748553eaa058ee1fbf0d7ed56e733aa487aa730a5c8f5e5cc36732cce",
+      "reference_png_sha256": "ff9d60b2064c4600ede17d7c17fc90475905ddcf91f72f9788a61743fd312289"
+    },
+    {
+      "page": 282,
+      "before_raw_percent": "90.16",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "efc6a0ce82739ff812a8bde4fe6fec8c69d1644d57b0be8771d3768b12aecea4",
+      "after_png_sha256": "741b04605cbb1d3f667b0d3c616e19a78f5a0f937de7b04741f30cf2aeb67b19",
+      "reference_png_sha256": "2bc3b9c4e56453d1194d4101264c6dc62e33f7b568e96d3bd1e0e8f8ccaf1c1a"
+    },
+    {
+      "page": 283,
+      "before_raw_percent": "90.07",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "2aff5dad3a39f9107ba730621a1afda484ccb6db3a156787d13e2bc9e5cbd61d",
+      "after_png_sha256": "2097fd2236b7312b5bf5c11693cdb800e69e0ac473e66ac3a6e430db187a0eb6",
+      "reference_png_sha256": "516480b16a83b7c229d8e937981d2869f3dbfcd3a2d00276d6c687bc789388a8"
+    },
+    {
+      "page": 284,
+      "before_raw_percent": "88.69",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "43d34072de0880835e52ce3d3ea0d92ca32240d1f889c674fa82a25cb3b17118",
+      "after_png_sha256": "441bcbc6e959d5f6fa181cda387c20fd1542efb3cbcf23007745835e5a29c64d",
+      "reference_png_sha256": "8007b81556e7ee60497c6d898d84814bd52050f9cb8c02e4fb7a02aa16418ec8"
+    },
+    {
+      "page": 285,
+      "before_raw_percent": "87.01",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "758e97d1ce646f268b5ea3f367a0b6f9ce2ad8db29c51747f67fdb735e904649",
+      "after_png_sha256": "2329cd13b23656fdc4bb1008e8871bf46f7e8a8b1891df3396520f333e8e7f60",
+      "reference_png_sha256": "5d76be888f0175e8335301594f2a48567385a026ad0984afb2fcded8ab84b4e9"
+    },
+    {
+      "page": 286,
+      "before_raw_percent": "89.10",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "8b4a4538f2ceaa9d64636ff54cc6b3e8d15d517ec370759df2f22afe98f9b63b",
+      "after_png_sha256": "210053e9f527f2addeffdac486028d640167296b2983b2fdb502e3fe62413141",
+      "reference_png_sha256": "305f656016c63ec622687965d2716ebff9daf4b9cb3dd308e8bdd9d15de4363a"
+    },
+    {
+      "page": 287,
+      "before_raw_percent": "85.74",
+      "after_raw_percent": "100.00",
+      "before_png_sha256": "c9bab516b40b16025f7f6e8ab545e74400850b5154891550866ccf0c0af1b654",
+      "after_png_sha256": "f72dba8419876009c5bb7bcbafb1dbbbb9b592828a461ba080821b9fb74c01db",
+      "reference_png_sha256": "d87910bb65d39da577c90659072ddb24ea3cd91aaf1a4e799c80ea534de4e6d0"
+    },
+    {
+      "page": 288,
+      "before_raw_percent": "87.75",
+      "after_raw_percent": "99.98",
+      "before_png_sha256": "ceb9856e5e17cc8f05b9b58fc9a391ef2bb1f5cd1818f38618e03866bb9fef29",
+      "after_png_sha256": "57c7df0c5d8669bc9fc386f06c47235ebefc87ef2345979628959c38c465f7d8",
+      "reference_png_sha256": "f97f8fbee710f341d10057442a585e1e7640c29231c1fa3992bdeb7966ff9a10"
+    }
+  ],
+  "same_font_supply_and_reference_raster_for_compared_pages": true,
+  "pages_improved": 43,
+  "pages_declined": 0,
+  "archived_before_pages_unavailable": [
+    289,
+    315
+  ],
+  "visual_review": {
+    "pages": [
+      246,
+      247
+    ],
+    "panel": {
+      "path": "issue7755-wasm-base-page-246-247-comparison.png",
+      "sha256": "231053572d8d7cf7d0bb4dd6f8bffa5cc9482dfa0119e2b301ef4fbf05fc1ac7"
+    },
+    "panel_order": [
+      "independent_hancom_print",
+      "base_before_pr9318_and_pr9322",
+      "current_base"
+    ],
+    "rows": [
+      "page_246",
+      "page_247"
+    ],
+    "page_246_table_start_region_px": [
+      145,
+      715,
+      660,
+      975
+    ],
+    "dark_pixels_below_luminance_180_on_page_246": {
+      "print": 0,
+      "before": 12012,
+      "current": 0
+    },
+    "observation": "리베이스 전 기준에서는 부록 B-2 제목과 첫 표 행이 246쪽 하단에 놓였다. 현재 기준에서는 독립 한컴 Print와 같이 247쪽에서 부록 제목과 표가 시작한다. 246쪽의 앞 표와 247쪽의 첫 행 및 이어지는 내용 순서를 확인했다."
+  },
+  "current_complete_measurement": {
+    "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+    "program_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba",
+    "pages": 315,
+    "minimum_percent": "27.35",
+    "pages_at_100": 211,
+    "pages_below_98": [
+      {
+        "page": 3,
+        "raw_percent": "95.95"
+      },
+      {
+        "page": 100,
+        "raw_percent": "27.35"
+      }
+    ],
+    "physical_png_paths_verified": 630,
+    "conditions": {
+      "font_supply": "cc4f16fc9e59752504daf337a9f3d52c70aa6caefb6805363b2990b4e69703ef",
+      "font_environment_sha256": null,
+      "registered_font_programs": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+      "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+      "comparison_profile": "print"
+    },
+    "capture_manifest_sha256": [
+      "11cde9639cd9f0d656b28422b05e490872215ec26a9dafa58d3eab9c3570a251",
+      "e3eed0d99b6bff091045b44f4d3096a2983d0d574266d1967dcc9b49aa7c4dd3",
+      "e8b87e7de95af03130b47de89bce045fd1d8af6e898e112c34163bb227d81560",
+      "5948eb8d386263cadac4c01b887a657247d71b67130c7d1600ae5a882d5fa17e",
+      "a0c15016a4116988dc54100cedae60acd7ea7796a2959580531e918b1d315c6f",
+      "0ffd6cbcec90dcdf3a6f4f740c978596baea4491e8e913a4e4ab67d14c9fa7d5",
+      "0c55ae5c343fb36bd14bf9966cbc683da51f5235afaf76facd77db7d124f78f4",
+      "4233f6f74864994ce25b91b2c29349ee4e23b11a6d6ac85544934abed0bfc5be",
+      "9402eaba4c67ee1c6a45a7e399bacea40bcd6ddab26dfc60c03ac135042d7c83",
+      "a890c5cd9eeba3b45dbe7ed26e3ebb6f6a9ac572bfa448e1d25884939594878d"
+    ],
+    "full_raw_tsv": {
+      "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9322/wasm/base/issue7755.tsv",
+      "sha256": "d2a3271fde9f0d87be1f5d1b06e7939a40d53c768a62f9da64cf58d4e7a9c48a"
+    },
+    "pages_289_through_315": {
+      "pages": 27,
+      "minimum_percent": "99.98"
+    }
+  },
+  "candidate_check_at_appendix_start": {
+    "backend": "fresh-wasm-canvas2d",
+    "matching_sources": {
+      "current_base": {
+        "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+        "wasm_sha256": "87197440e2de98962120f8896026aa6e78240470a1a02847d19f7ee677e457ba"
+      },
+      "current_candidate": {
+        "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+        "wasm_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91"
+      },
+      "previous_candidate": {
+        "source": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+        "wasm_sha256": "a17cd643b322457f5a8a5644c065395a5d925f4e88496542f52ca8c048d425cb"
+      }
+    },
+    "matching_render_and_print_png_pairs": [
+      {
+        "page": 246,
+        "raw_percent": "99.97",
+        "render_png_sha256": "04ed7e1ce7bf3848bdc20ade132b589793074d73d28e43341fcf0222da2b4737",
+        "print_png_sha256": "6c6881f7e04a5375ea7f8630dab5f5e6f260be1ac40ef32eefdcb23915d51ed3"
+      },
+      {
+        "page": 247,
+        "raw_percent": "100.00",
+        "render_png_sha256": "cc9b42cb9f08b5807d81d3932c0a994d8cadb94f1b4e14f3189d4a71cf881e0a",
+        "print_png_sha256": "d5a0623c8f6eef277f3f9dfee77225214192cc2b157f3b5fbba495318743fe9e"
+      }
+    ],
+    "same_rendering_condition_as_base": true
+  }
+}

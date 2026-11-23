@@ -1,0 +1,15 @@
+{
+  "key": "yeongwol",
+  "backend": "native",
+  "method": "Reconstruct the explicit qualified environment plus recorded native_webfont_fallback mappings with canonical prepare serialization and id calculation. Exact pre-existing SHA-256 equality required.",
+  "provenance": "mydocs/pr/assets/jinho-von-choi-20261114/final-source-8ad/protected-validation.json",
+  "provenance_sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+  "explicit_environment": "mydocs/pr/assets/jinho-von-choi-20261114/font-supply/yeongwol-qualified-environment.json",
+  "explicit_environment_sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d",
+  "algorithm": "scripts/visual_sweep_native_webfonts.py",
+  "algorithm_sha256": "c6f7a75ee9ff965e004bf029a7c4211240e2e359dc01c2635efbe883222819d1",
+  "recovered": "mydocs/pr/assets/issues7754_7765/source33/font-environments/a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9.json",
+  "sha256": "a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9",
+  "canonical_sha256": "a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9",
+  "exact_match": true
+}

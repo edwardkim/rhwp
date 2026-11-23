@@ -589,11 +589,10 @@ pub struct ResolvedStyleSet {
     /// 문서의 호환 대상이 MS 워드인가(HWP5 `HWPTAG_COMPATIBLE_DOCUMENT` 값 2, HWPX
     /// `targetProgram="MS_WORD"`). 한/글 문서와 다른 흐름 규칙을 고른다.
     pub(crate) word_compat_target: bool,
-    /// 문서 지정 대체가 있어도 현재 선택은 자기 메트릭을 가진 원본 TTF인 슬롯.
-    /// 값은 문서가 선언한 대체 프로그램의 해소 결과다. 저장 줄 전체가 이 대체
-    /// 프로그램의 채움과 일치하고 현재 원본 프로그램과 다른 경우에만 사용한다.
+    /// 검증된 원본 프로그램의 줄 소유와 저장 fallback 재현 계약을 구분한다.
+    /// 명시적 HWPX TTF의 동적 줄 정책도 전체 글리프·프레임 검증 뒤에만 소비한다.
     pub(crate) source_program_projection_slots:
-        std::sync::Arc<std::collections::HashMap<(u32, usize), ResolvedCharStyle>>,
+        std::sync::Arc<std::collections::HashMap<(u32, usize), SourceProgramRowOwner>>,
     /// 측정과 paint에 함께 전파하는 세션의 첨자 계약이다.
     pub script_metrics: crate::renderer::script_metrics::ScriptMetricsContract,
     pub(crate) native_pua_fonts: std::sync::Arc<crate::renderer::native_pua_fonts::NativePuaFonts>,

@@ -1,0 +1,125 @@
+{
+  "status": "premerge planning only",
+  "head": "93482b2d0069cfa7648c5f08df95ddc2eee9c179",
+  "current_base": "8a196ca7aea2aa3cf32d394f5b7da2bdf4520479",
+  "cases": [
+    {
+      "key": "9279",
+      "pages": 3,
+      "source_path": "samples/issue9279/forest-press-release-tac-table-shape-tail.hwpx",
+      "source_sha256": "4763ea3fac592f39dccc36808d022edd0be57db2746e38a50cb9dfe5e6726ea9",
+      "pdf_path": "pdf/issue9279/forest-press-release-tac-table-shape-tail-2024.pdf",
+      "pdf_sha256": "1a5a6c2d74197b6e691807b86e1bf3f346779abe623f2ee7e687054de5bde097",
+      "original_pr": 9282,
+      "minimum": "100.00",
+      "present_before_merge": {
+        "source_path": false,
+        "pdf_path": false
+      }
+    },
+    {
+      "key": "9272",
+      "pages": 7,
+      "source_path": "samples/issue9272/trade-remedy-decree-table-tail-empty-lines.hwpx",
+      "source_sha256": "37624fffaa34704360298c9edfc3d636f5a0fabd0db040a7bc6a161b73a1301d",
+      "pdf_path": "pdf/issue9272/trade-remedy-decree-table-tail-empty-lines-2024.pdf",
+      "pdf_sha256": "25f1443410590604f527e07739b0b33f3f34ba5d207e85b3f2fccac87c859fc7",
+      "original_pr": 9278,
+      "minimum": "99.98",
+      "present_before_merge": {
+        "source_path": false,
+        "pdf_path": false
+      }
+    },
+    {
+      "key": "9285",
+      "pages": 9,
+      "source_path": "samples/issue9285/child-product-safety-plan-wmf-mask-dib.hwpx",
+      "source_sha256": "45d1785c7c6db19dc595af3a3a66b5f60d820407db16331d3a43403b01ede8eb",
+      "pdf_path": "pdf/issue9285/child-product-safety-plan-wmf-mask-dib-2020.pdf",
+      "pdf_sha256": "d1da90986b7aeffff25765075c4e3c1a5f3d70755af13a1fa060be861610554b",
+      "original_pr": 9287,
+      "minimum": "99.78",
+      "present_before_merge": {
+        "source_path": false,
+        "pdf_path": false
+      }
+    },
+    {
+      "key": "547",
+      "pages": 22,
+      "source_path": "samples/issue547/online-search-rfp.hwp",
+      "source_sha256": "bcc0ac10f2410a85b677efea2ed034789820781bed5379109a987de28168924f",
+      "pdf_path": "pdf/issue547/online-search-rfp-2024.pdf",
+      "pdf_sha256": "60c46d0c41bd739a7f3609cf5bee2fc0e2178216ce89a9ee602bdd89512d5885",
+      "original_pr": 9240,
+      "minimum": "99.68",
+      "present_before_merge": {
+        "source_path": true,
+        "pdf_path": true
+      }
+    },
+    {
+      "key": "9239",
+      "pages": 62,
+      "source_path": "samples/issue9239/senior-employment-policy-caption-float-table.hwp",
+      "source_sha256": "7ee3c3ef43b95204383b800fbe36644e7eb5730f399065ebc90bab3c269082a2",
+      "pdf_path": "pdf/issue9239/senior-employment-policy-caption-float-table-hancom-2020.pdf",
+      "pdf_sha256": "2f7fbdd3cc9f9fe94b02b8ad524667fec96672609e324ec2fe6bfba7698f6151",
+      "original_pr": 9269,
+      "minimum": "98.96",
+      "present_before_merge": {
+        "source_path": false,
+        "pdf_path": false
+      }
+    },
+    {
+      "key": "886",
+      "pages": 64,
+      "source_path": "samples/issue886/1660000-201400009-kobe-earthquake.hwp",
+      "source_sha256": "a2a6d53dad049bf27c4855e05227e467aba7b71184f43a0dbd1136d972bea13f",
+      "pdf_path": "pdf/issue886/1660000-201400009-kobe-earthquake-hancom-2020.pdf",
+      "pdf_sha256": "d0fcc123cf3c73aa68ecd6e3ecd7676c887b0c21b6eb13833fce00a3278d6f59",
+      "original_pr": 9240,
+      "minimum": "98.12",
+      "present_before_merge": {
+        "source_path": false,
+        "pdf_path": false
+      }
+    }
+  ],
+  "post_merge_focus": [
+    {
+      "scope": "new PR originals",
+      "cases": [
+        "9279",
+        "9272",
+        "9285",
+        "547",
+        "9239",
+        "886"
+      ],
+      "pages_per_backend": 167,
+      "contract": "same new devel/candidate, independent Print, Native+fresh WASM full-page TSV, direct boundary reading"
+    },
+    {
+      "scope": "premerge protected WASM declines",
+      "cases": [
+        "sample16-hwpx",
+        "sample16-hwp2022",
+        "sample16-hwp2024"
+      ],
+      "pages": [
+        18,
+        35
+      ],
+      "contract": "Compare both new base and candidate first; inspect graphic fills and symbols before full-document runs. Current old-head scores remain failures."
+    }
+  ],
+  "authorization": {
+    "prepare_only": true,
+    "create_push_merge": false,
+    "windows_9316_direct_pdf": false,
+    "rebase_after_actual_merge_9318": true
+  }
+}

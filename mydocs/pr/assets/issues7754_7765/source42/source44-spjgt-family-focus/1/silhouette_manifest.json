@@ -1,0 +1,354 @@
+{
+  "key": "chemical",
+  "mode": "silhouette_only",
+  "run_state": "complete",
+  "requested_pages": [
+    61,
+    74,
+    91
+  ],
+  "completed_pages": [
+    61,
+    74,
+    91
+  ],
+  "missing_pages": [],
+  "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/silhouette.tsv",
+  "tsv_sha256": "5f1800e6369d9ff26053a272da032dd4766099eee86a1d9bd1e636003d076f11",
+  "dpi": 96,
+  "radius_px": 2,
+  "inputs": [
+    {
+      "page": 61,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/rhwp_png/rhwp_061.png",
+      "rhwp_sha256": "8dcca3f943ea387696100137d72146fb54426fb35ca2c71d7306c4cb0fb20660",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/pdf_png/pdf-061.png",
+      "pdf_sha256": "a36d8fd61846df216abe07948a5ceca858f8726db23d4dea3e350233b676bc00"
+    },
+    {
+      "page": 74,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/rhwp_png/rhwp_074.png",
+      "rhwp_sha256": "ea9e0d41b8e28773d9dbc66d854e240c6c8706a44c5994fafd73a22001e97cfd",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/pdf_png/pdf-074.png",
+      "pdf_sha256": "6fc040c64acb99a30f569e7fe3c11a7c0851fe462b09fdd733c87d24b0e09b89"
+    },
+    {
+      "page": 91,
+      "rhwp_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/rhwp_png/rhwp_091.png",
+      "rhwp_sha256": "2db004e451f86e499fb8c8a3e9d2cea6f94d88cedd63b8304c7f7e0776726d32",
+      "pdf_png": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/pdf_png/pdf-091.png",
+      "pdf_sha256": "98d14f8f5744362bca905986a6f4064b18e2a8231b615ee2db3a64aa7ad2b96f"
+    }
+  ],
+  "metrics": [
+    {
+      "page": 61,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 100.0,
+      "silhouette_raw_unmatched_pixels": 0,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 31363,
+      "tolerant_content_match_percent": 100.0
+    },
+    {
+      "page": 74,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.88094,
+      "silhouette_raw_unmatched_pixels": 24,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 20158,
+      "tolerant_content_match_percent": 99.88094
+    },
+    {
+      "page": 91,
+      "silhouette_method": "threshold_boundary_color_support_v1",
+      "silhouette_raw_match_percent": 99.95778,
+      "silhouette_raw_unmatched_pixels": 30,
+      "silhouette_boundary_reconciled_pixels": 0,
+      "silhouette_color_tolerance": 32,
+      "silhouette_content_union_pixels": 71050,
+      "tolerant_content_match_percent": 99.95778
+    }
+  ],
+  "silhouette_method": "threshold_boundary_color_support_v1",
+  "image_decoding": {
+    "alpha_background": "#ffffff",
+    "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+    "pillow_version": "12.3.0",
+    "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+    "zlib_version": "1.3"
+  },
+  "color_tolerance": 32,
+  "pr_review_gate": {
+    "status": "not_evaluated",
+    "metric": "silhouette_raw_match_percent",
+    "minimum_silhouette_raw_match_percent": 90.0,
+    "below_threshold_pages": [],
+    "unavailable_metric_pages": [],
+    "font_mismatch_evidence": null,
+    "document_page_counts": {
+      "rhwp": 103,
+      "pdf": 103
+    },
+    "page_count_mismatch": false,
+    "reason": "실루엣 보조값만 산출; 직접 시각·각주·본문 소유 검토 필요"
+  },
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
+      "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0"
+    },
+    "pdf": {
+      "path": "pdf/issue7382-regression-review/1480000-201900042-chemical-labeling-standards-2020.pdf",
+      "sha256": "b5bfc916dae3aff2fa02ea1942f12e84b7623b8753657c7fcead7ffbca3a8047"
+    },
+    "git_head": "8bfabd111f4a1e4dd7896bb09d5c406c100bbb8d",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "c3a60c2d34dea583ac6516417a55175b299d17ec8edf480abf4509cd82b252cb"
+    },
+    "image_decoding": {
+      "alpha_background": "#ffffff",
+      "script_sha256": "319623fb7f2f32c82a006c2170ba580d02f1a93c1d0b910a48d5fa3a0b2ecfa6",
+      "pillow_version": "12.3.0",
+      "pillow_core_sha256": "94310f4a073e9773a067df88513804649f50a974f78bd85a52c52d21170783f2",
+      "zlib_version": "1.3"
+    },
+    "svg_rasterizer": null,
+    "pdf_rasterizer": {
+      "program": "pypdfium2",
+      "backend": "pdfium",
+      "policy": "pdfium_smooth_rgb_exact_dpi_v2",
+      "antialias": {
+        "text": true,
+        "image": true,
+        "path": true
+      },
+      "coordinate_transform": {
+        "scale": "dpi/72 on both axes",
+        "buffer_extent": "ceil(page_points*dpi/72)",
+        "annotations": true
+      },
+      "script_sha256": "07c52ba9c3bf83d0d8554ea73e22ee441dc79b4009fcd1a130bad00d25f56030",
+      "available": true,
+      "executable": "/usr/bin/python3.12",
+      "executable_sha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+      "library": "/home/tsjang/rhwp/venv/lib/python3.12/site-packages/pypdfium2_raw/libpdfium.so",
+      "library_sha256": "224f8ece41f7e35891f11c10073b7b7062d7a18e9ef870586162a85c46130f7d",
+      "version": "153.0.7999.0",
+      "wrapper_version": "5.13.0",
+      "version_exit_code": 0
+    },
+    "comparison_profile": "print",
+    "rhwp_binary": {
+      "configured": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "path": "output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+      "sha256": "249e11dedc91f4f2c90b145e82b9bd0102d27a0b1e1ebaa15030431178cdfa02"
+    },
+    "raster_backend": "wasm-canvas2d",
+    "png_exporter_sha256": "c45e30335911d290b888a6d5b1bdae99caab701bd9949cf0d0698c7b36c8b1e9",
+    "layout_generation": "2022",
+    "font_environment": {
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/chemical-wasm-spjgt-family.json",
+      "sha256": "dd796487d56c245e847a614827eb1d280c7a01ee022969c9b89af16f9fc41a09"
+    },
+    "wasm": {
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37/rhwp.js",
+          "sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37/rhwp_bg.wasm",
+          "sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3"
+        }
+      ],
+      "exporter_sha256": "f0db771cef8386e121ba33ddaf87f8da982500b3a94b262549e5a5553300bd38",
+      "font_registration_sha256": "b963b39c6116aead4607a765936a940e174baa45e02492c48653f3f43c84280c",
+      "comparison_profile": "print",
+      "font_policy": "document embedded glyph resources; requested Canvas families supplied once per worker",
+      "render_tree": "WASM getPageRenderTree"
+    },
+    "font_supply": {
+      "mode": "direct-font-programs",
+      "source": "explicit",
+      "files": [
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source43-spjgt/SPJGT.otf",
+          "sha256": "6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/001-HGSMJ.otf",
+          "sha256": "ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/002-HMEPO.otf",
+          "sha256": "3fb64d42c25d035b7b7cc3bb286b54ae265eceb49f9f713030a32129edf68385"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/003-JPMJ.otf",
+          "sha256": "ef83c9a3a54c617ab830fdca218b6178ed87ef7b1ef014c9882b95f27e59400c"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/004-HMKMM.TTF",
+          "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/005-H2GTRE.TTF",
+          "sha256": "820d3212f688b546a327ea43a7202e3379cdbbd767ebac9753997e3f3d285171"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/006-H2GTRM.TTF",
+          "sha256": "0b18f81f9d463f6c498853af3bdad577e9c881a5b59dc7ef4c43287588d696d5"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/007-H2HDRM.TTF",
+          "sha256": "e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/008-HMFMMUEX.TTC",
+          "sha256": "be52401ea71e34d7c52bffacf25f95e3cc0bfdadc8a2a1f377d458f22484f7b7"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/009-HANBatang.ttf",
+          "sha256": "c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/010-HANDotum.ttf",
+          "sha256": "1d0437906d52e96af36943008f144ad74d6e994493df3a4210a9761e077ea898"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/011-ENMJ.otf",
+          "sha256": "ec4de33ea3ed69abb15ff19a27371e852f7829aa7b4265af90696b7eb0ddd65f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/012-ENSMJ.otf",
+          "sha256": "f09e4fd50d3027bccfce855c7ac279757402077d56ae0ef574e12d64e7d8aa2d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/013-ENSMJI.otf",
+          "sha256": "6f63dc09433ea5cb856020e68e9e9a94ad847504487710c3769e67708eb5cf0b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/014-FLMJ.otf",
+          "sha256": "ca1f4b3787b92d9ceff686ccc8ce352c789b854bbf02d01197fd3b7b97baae0e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/015-FLSMJ.otf",
+          "sha256": "297b2d904118e8f244b12f8999c02250cd9a7ce84286be8b4ddfc0148b42255b"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/016-HGMJ.otf",
+          "sha256": "352fc08acc3b2c4970c518f98190e0de61f438ecb1c7cb6d55d28d1738a93287"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/017-HJMJ.otf",
+          "sha256": "aa1589490d42490aed6972a7436ccccc47b84b0e589f638ef5900d844b4597ba"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/018-HJSMJ.otf",
+          "sha256": "fface3ab6e93ee8fa9ba67bfaf79065f73226099ab9845c6eb93a6b5199fc2c9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/019-HMKMG.otf",
+          "sha256": "62514ec65a65c0bd41f33d2c2d699ec68518c43d32f5c399df33f01733473dc9"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/020-HMKSM.otf",
+          "sha256": "99760ec20c65744bb9ae997b3b9f6b28ae4eebac7a80b202e24a32430537c33d"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/021-JPSMJ.otf",
+          "sha256": "683987bbc5ac0788bd6e2b10c003e0bdd7c758fe9c7b751d5d0a2b68c8213f8a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/022-SPMJ.otf",
+          "sha256": "16dbe01c8c2f4c171c9f4bb9ebf3cef16f0a96a634774d44832ad47a05fcc834"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/023-SPSMJ.otf",
+          "sha256": "a637fd85a142991eb28c173af224bc49a4522b0a61cece72d6236c3fb57da497"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/024-USER.otf",
+          "sha256": "c44793675f20c634a48aee1023a4d72e95010eb3e5a4c3ade2d90ce714243ece"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/025-HBATANG.TTF",
+          "sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/026-malgun.ttf",
+          "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/027-malgunbd.ttf",
+          "sha256": "e8cbc0b2afcc14fb45dfb6086d5102c0b23a96e7b6e708f3122acde1b86c9082"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/028-malgunsl.ttf",
+          "sha256": "c0ca810a242c4482594182db40f0f9d35a3d51bb2eeac750e6e867b2110eb00e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/029-HMKMG.TTF",
+          "sha256": "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/030-HANBatangB.ttf",
+          "sha256": "0d355f9766ffd1c7ec7648260611ddea9e12ea3c610423e552d52b921fc0f29f"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/031-HANDotumB.ttf",
+          "sha256": "5b0b9fa5f3ba2f7b2e3576c6c2e2f2a7a92f68c98f8270e10791ceb363ce1e51"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/032-HDOTUM.TTF",
+          "sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/033-ARIALN.TTF",
+          "sha256": "cad552553cf2a75afca01955751aaa115e2a64fd6c6eea42e1fbd236630b7e0a"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/034-ARIALNB.TTF",
+          "sha256": "6c4a4b643461def5411e0217b74a625dcf2fb681252ef5da1db0af4eae80aa7e"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/035-ARIALNBI.TTF",
+          "sha256": "161b859efd20c69ddebb23012a49f4f2030d56a0c1b9bcfd4df753217ce3e358"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/036-ARIALNI.TTF",
+          "sha256": "faf73aa7ce40b77ad19c09507a2263fe3f3ce9fa5642e8a1cd54fb3c9f52d599"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/037-HANBatang.ttf",
+          "sha256": "0dbeb7b129fcec63f8d6b7f1d3b5bb991c1d599e725286518ccc598de643f014"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/038-HANBatangB.ttf",
+          "sha256": "91da0dde2995484b69fed48b01c27206dbce952a2b4820d70d0264d385b585b5"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/039-HANDotum.ttf",
+          "sha256": "38126c8212411cfc4616d2d9463da75e46ae483f1d7d7f5bb2cd681de665c9ea"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/040-HANDotumB.ttf",
+          "sha256": "a8270c516d1a0212c2c5953c2c577d094935c9bd7933e5c8eaca5ccb35c719c4"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/045-ariblk.ttf",
+          "sha256": "10df702864b1f89cb29ba0d6b97c04228338d16807e13e8d8c74b91aba5e5f23"
+        },
+        {
+          "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/private-source42-ordered-fonts/chemical/wasm/group-2/052-wingding.ttf",
+          "sha256": "9bcd6064e3b52fa30a347edd6e82506e2ec8b1602930b423c629a82c10468a5b"
+        }
+      ]
+    }
+  },
+  "checkpoint": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source44-spjgt-family-focus/wasm/after_family/chemical/silhouette-checkpoint.json"
+}

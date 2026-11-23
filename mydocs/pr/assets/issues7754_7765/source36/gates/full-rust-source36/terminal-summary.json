@@ -1,0 +1,16 @@
+{
+  "recorded": 1795316047.8533225,
+  "summary": "Summary [1048.030s] 13970 tests run: 13968 passed (12 slow), 2 failed, 45 skipped",
+  "passed": 13968,
+  "failed": 2,
+  "skipped": 45,
+  "complete_inventory_executed": true,
+  "accepted": false,
+  "exit_code": 100,
+  "log_sha256": "5804394701aa75ec75458fafc5685f30695c5538dc0750186e731dc043e556de",
+  "failure_details": [
+    "test oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13 ... FAILED\n\n    failures:\n\n    failures:\n        oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13\n\n    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 358 filtered out; finished in 4.57s\n\n  stderr ───\n    정답지 쪽수 대조 partition 13/16: 50개 / 일치 48 / 기존 격차 유지·개선 1 / 건너뜀 0 / 전용 sentinel 제외 1\n\n    thread 'oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_13' (1747008) panicked at tests/generated/../cases/oracle_page_count_baseline.rs:346:5:\n    한글이 뽑은 쪽수와의 격차가 커졌다.\n    쪽수는 v1.0 \"한컴과 같은 조판\"의 1차 지표다(#5585 와 같은 축).\n    의도된 변화만 기준선에 반영한다 — 재생성:\n      python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe\n    samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp: 모아 찍기 선언이 새로 생겼다 — 기준선에서 빼야 한다",
+    "test oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15 ... FAILED\n\n    failures:\n\n    failures:\n        oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15\n\n    test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 358 filtered out; finished in 42.96s\n\n  stderr ───\n    oracle page-count slow sample partition 15/16: 42.775s samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp\n    정답지 쪽수 대조 partition 15/16: 50개 / 일치 49 / 기존 격차 유지·개선 0 / 건너뜀 0 / 전용 sentinel 제외 1\n\n    thread 'oracle_page_count_baseline::page_counts_do_not_drift_from_hancom_oracle_partition_15' (1747037) panicked at tests/generated/../cases/oracle_page_count_baseline.rs:346:5:\n    한글이 뽑은 쪽수와의 격차가 커졌다.\n    쪽수는 v1.0 \"한컴과 같은 조판\"의 1차 지표다(#5585 와 같은 축).\n    의도된 변화만 기준선에 반영한다 — 재생성:\n      python tools/oracle_page_count/regenerate.py --rhwp target/release-test/rhwp.exe\n    samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp: 모아 찍기 선언이 새로 생겼다 — 기준선에서 빼야 한다"
+  ],
+  "next_action": "Trace the original n-up exclusion and verified independent 1-up Print references before correcting the oracle contract. Preserve page counts and content checks."
+}

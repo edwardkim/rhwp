@@ -1,0 +1,12 @@
+[RustTestSuite] issue_8418_hft_outline_tracking -> regression_suite_028::issue_8418_hft_outline_tracking
+[RustTestSuite] cargo nextest run --locked --test regression_suite_028 -E test(/(^|::)issue_8418_hft_outline_tracking::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 48.65s
+────────────
+ Nextest run ID f387d80c-88c7-493a-b000-b84e6f667bb8 with nextest profile: default
+    Starting 3 tests across 1 binary (361 tests skipped)
+        PASS [   0.018s] (1/3) rhwp::regression_suite_028 issue_8418_hft_outline_tracking::explicit_natural_outline_does_not_inherit_hft_decoration
+        PASS [   0.019s] (2/3) rhwp::regression_suite_028 issue_8418_hft_outline_tracking::hft_bold_decoration_survives_outline_supply
+        PASS [   0.019s] (3/3) rhwp::regression_suite_028 issue_8418_hft_outline_tracking::unmarked_programs_and_spaces_do_not_gain_hft_decoration
+────────────
+     Summary [   0.021s] 3 tests run: 3 passed, 361 skipped

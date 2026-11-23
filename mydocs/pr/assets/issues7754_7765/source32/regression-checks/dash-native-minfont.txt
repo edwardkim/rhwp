@@ -1,0 +1,9 @@
+
+running 5 tests
+test case0::dash_leader_no_longer_emits_a_substitute_rule ... ok
+test case0::dash_leader_is_drawn_as_glyphs_not_a_line ... ok
+test case0::dash_leader_run_keeps_the_elastic_advance ... ok
+test case1::last_line_dash_leader_advance_stays_in_the_oracle_band ... ok
+test case1::stretched_dash_leader_stays_inside_the_text_area ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.93s

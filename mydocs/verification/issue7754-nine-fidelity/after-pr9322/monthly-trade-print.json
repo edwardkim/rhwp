@@ -1,0 +1,60 @@
+{
+  "issue": 7760,
+  "input": {
+    "path": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+    "sha256": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e"
+  },
+  "reference_pdf": {
+    "path": "pdf/156636617-monthly-trade-hwp-2020.pdf",
+    "sha256": "5a04f0ffdbfcde8d707ea6fe6e99bb446236daa7ae2c0b32830ae4303aec395b"
+  },
+  "document_pages": 19,
+  "dpi": 96,
+  "radius_px": 2,
+  "representative_page": 10,
+  "candidate_sources": {
+    "native": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "program_sha256": "c214cd39c5b6cba08e80852de8cccdbbed58965595d8900b06be1d04960eef4d"
+    },
+    "wasm": {
+      "source": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+      "program_sha256": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91"
+    }
+  },
+  "whole_document": {
+    "native": {
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/native/candidate/issue7760.tsv",
+        "sha256": "730240395cfbf281e1b1cf46fbcaf507200b55c0d0c30739303a1f60d51d53ad"
+      },
+      "minimum_raw_percent": "99.81",
+      "pages_at_100": 16,
+      "page_10_raw_percent": "99.81"
+    },
+    "wasm": {
+      "tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/wasm/candidate/issue7760.tsv",
+        "sha256": "d6ab6244e98687a2a9f240adbd53785aca64c6d36db64ce7d33e14aba46ba228"
+      },
+      "minimum_raw_percent": "99.86",
+      "pages_at_100": 15,
+      "page_10_raw_percent": "99.86"
+    }
+  },
+  "images": {
+    "native": {
+      "sha256": "905c9a481a7c2995ef24afd75fee8fcff776cc4536fb42ac46a1391c493d3fb3"
+    },
+    "wasm": {
+      "sha256": "0dcfa4e803e3a6e7d15539cb182689f8b1110808aba5dc992293d28266f38a5e",
+      "path": "mydocs/verification/issue7754-nine-fidelity/wasm/direct-review/monthly-trade-p010-fresh-wasm.png"
+    },
+    "hancom_print": {
+      "sha256": "08dd8e75f4440e279cfdd3a5095d4e41865d42aecea6adc8f4c8930e286c2f2d",
+      "path": "mydocs/verification/issue7754-nine-fidelity/wasm/direct-review/monthly-trade-p010-hancom-print.png"
+    }
+  },
+  "fresh_wasm_png_pairs_unchanged_from_devel": 19,
+  "observation_ko": "10쪽의 흑자국·적자국 표와 하단 무역 추이 그래프를 Native와 fresh WASM에서 한컴 Print에 직접 대조했다. 두 표와 그래프의 배치 및 표시 순서가 일치했다."
+}

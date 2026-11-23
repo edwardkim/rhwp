@@ -1,3 +1,10 @@
+//! 관계형·고정형: 독립 Print의 수용 범위에서 원본·공개 API·내용 소유를 보호한다.
+//! 주석 갱신: 2026-11-22T02:35:34+09:00; 직전 파일 변경 커밋: 2026-10-26T00:10:36+09:00 74c5a813cb6904c372f7c133c86793aacb27900c.
+//! 측정: 2026-11-22 KST, Print profile, 96DPI, PDFium, 보정 전2px raw.
+//! 실제 암호 HWPX와 평문 대응본 전24쪽: Native 최저98.29%, fresh WASM 최저98.22%; 양쪽에서 암호/평문24쪽 PNG가 각각 동일.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md와 문서별 Native/WASM 전쪽 TSV.
+//! 암호 문서의 쪽수는 독립 Print의24쪽이며 실제 API·CLI·MCP 경로에서 확인한다.
+//!
 //! #3604 보호 문서 MCP 계약.
 //!
 //! 공용 HWP3/HWPX fixture로 세션 암호 입력과 무상태 자식 stdin 전달을
@@ -13,8 +20,7 @@ const PASSWORD: &str = "123456";
 const WRONG_PASSWORD: &str = "mcp-password-must-not-echo";
 const FIXTURES: &[(&str, Option<u64>)] = &[
     ("samples/HWP3-password-123456.hwp", Some(24)),
-    // 이 HWPX의 쪽수 고정만 #7445에서 독립 시각 기준으로 재검토한다.
-    ("samples/HWP5-password-123456.hwpx", None),
+    ("samples/HWP5-password-123456.hwpx", Some(24)),
 ];
 
 // nextest archive의 런타임 실행 경로 재매핑을 우선한다(#3289).

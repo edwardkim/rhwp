@@ -1,0 +1,927 @@
+{
+  "base": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "candidate": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+  "environment": {
+    "CARGO_BUILD_JOBS": "3",
+    "CARGO_TARGET_DIR": "/home/tsjang/rhwp/target/pr-review",
+    "CARGO_PROFILE_RELEASE_CODEGEN_UNITS": "16",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "native_existing_ci_cases": [
+    "cli_exit_codes_native",
+    "issue_1144_native",
+    "issue_2225_missing_picture_placeholder",
+    "render_p37_direct_pdf_export",
+    "issue_7950_pdf_paint",
+    "issue_2083_hide_fill_page_background",
+    "issue_2292_chart_png_clip",
+    "issue_2293_chart_png_text",
+    "issue_7820_sixel_contract",
+    "issue_8150_kitty_contract",
+    "issue_4961_font_decision_trace",
+    "issue_7902_original_frame_and_content",
+    "issue_8160_hwp2022_paragraph_relations",
+    "native_fractional_glyph_origin",
+    "skia_native_glyph_replay",
+    "issue_8153_opaque_mixed_axis_image_sampling",
+    "issue_8153_print_glyph_geometry",
+    "issue_8153_symbol_fallback",
+    "issue_536_native_region_cache",
+    "skia_region_plan",
+    "skia_host_surface"
+  ],
+  "recorded": "2026-11-22T01:35:31.135366+00:00",
+  "results": [
+    {
+      "label": "base-prepare",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 6.450294086011127,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-base-prepare.log",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "log_sha256": "0ec0c7c2b02ad62c41a5469dcf54040bd239a935b41bde6529911d8592757ee3",
+      "summaries": []
+    },
+    {
+      "label": "base-ctrl-data",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8225_group_child_ctrl_data",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 92.8182060981635,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-base-ctrl-data.log",
+      "source_head": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+      "log_sha256": "aba90364525311d4d445e2fd6b94d240162e536f3c7dd57784aed0674b9831b5",
+      "summaries": [
+        "     Summary [   1.259s] 5 tests run: 5 passed, 355 skipped"
+      ]
+    },
+    {
+      "label": "candidate-prepare",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 2.8253094640094787,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-candidate-prepare.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "c45b0132e2163a037b09a95400700c9e3bf7afd62476be15b44b23d35cf6dd79",
+      "summaries": []
+    },
+    {
+      "label": "manifest-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "1a27faacff48ea7329e76ce8eca15aa9ca8aa877"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 1.8311643819324672,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-manifest-policy.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "07a71fa0abf92a495e826b09b327e6f794ab24246603b706d2584f7034335757",
+      "summaries": []
+    },
+    {
+      "label": "unit-tier-policy",
+      "command": [
+        "/usr/local/bin/node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "1a27faacff48ea7329e76ce8eca15aa9ca8aa877"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 36.10979436803609,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-unit-tier-policy.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "dee262356bb2ad3d464c331a7888262da2eb25f6799e90c8cc53dcdcdecce9fe",
+      "summaries": []
+    },
+    {
+      "label": "format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 42.61611047713086,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-format.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "summaries": []
+    },
+    {
+      "label": "native-unfiltered-lib",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "12"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 719.9389604208991,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-unfiltered-lib.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "5c4217db273e09edf1f97ac449edb255400baeaedfc55a35619c6c8205b3d8ee",
+      "summaries": [
+        "test result: ok. 3851 passed; 0 failed; 12 ignored; 0 measured; 0 filtered out; finished in 27.02s",
+        "test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s",
+        "test result: ok. 165 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+      ]
+    },
+    {
+      "label": "native-cli_exit_codes_native",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "cli_exit_codes_native",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 607.6019144789316,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-cli_exit_codes_native.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "c4f310cdcc6de5d382d59d3b2dc590d4436f8c2df1d02e1cdc65fdab0f18c96c",
+      "summaries": [
+        "     Summary [   0.711s] 2 tests run: 2 passed, 0 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_1144_native",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_1144_native",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 5.085854310076684,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_1144_native.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "53698fe73efb6e6c48dc14d96061cb639ebfd76f5e0283014f6bc318743690bc",
+      "summaries": [
+        "     Summary [   0.103s] 1 test run: 1 passed, 0 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_2225_missing_picture_placeholder",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 39.03779644402675,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_2225_missing_picture_placeholder.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "0c2a81b0f99afb093edad2fce7f270d425056c5e97e8916e100a730c53eb104b",
+      "summaries": [
+        "     Summary [   0.778s] 2 tests run: 2 passed, 350 skipped"
+      ]
+    },
+    {
+      "label": "native-render_p37_direct_pdf_export",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "render_p37_direct_pdf_export",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 38.13384328316897,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-render_p37_direct_pdf_export.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "c2148b55a89564b03bb87deba50221cbaf72923754291d5b603335633dfaf0bf",
+      "summaries": [
+        "     Summary [   0.496s] 36 tests run: 36 passed, 327 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_7950_pdf_paint",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_7950_pdf_paint",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 57.08678589086048,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_7950_pdf_paint.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "ac827cf4eaae018695818be4e5dd72579d2912922474e7c414432d0d82c5ca06",
+      "summaries": [
+        "     Summary [   0.453s] 4 tests run: 4 passed, 324 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_2083_hide_fill_page_background",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_2083_hide_fill_page_background",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 70.6807979659643,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_2083_hide_fill_page_background.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "98d1bb0bc00f09558ab7442ccba23be956c5358820d75bddb0064c02d27c63cb",
+      "summaries": [
+        "     Summary [   1.392s] 1 test run: 1 passed, 353 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_2292_chart_png_clip",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_2292_chart_png_clip",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 92.81732372799888,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_2292_chart_png_clip.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "a4d22c1767324da5352ba470699d51d8f736a9cc99deebc3ef07b9a5d3849e58",
+      "summaries": [
+        "     Summary [   0.336s] 1 test run: 1 passed, 363 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_2293_chart_png_text",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_2293_chart_png_text",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 114.2798703177832,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_2293_chart_png_text.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "451c3830046fd6b5cd367ecff9ebbc0c6e775a8c3a327daa6ae5cad49940aae6",
+      "summaries": [
+        "     Summary [   1.991s] 2 tests run: 2 passed, 378 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_7820_sixel_contract",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_7820_sixel_contract",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 55.248423432931304,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_7820_sixel_contract.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "36f9251226819501be063f299c5be5b75fd668a0482da029f1e37335cd413192",
+      "summaries": [
+        "     Summary [   0.635s] 7 tests run: 7 passed, 346 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_8150_kitty_contract",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8150_kitty_contract",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 9.784244548063725,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_8150_kitty_contract.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "237bc31885502044d98e0bb2525a6be7338bf3d3831370740e691643241292b8",
+      "summaries": [
+        "     Summary [   0.110s] 8 tests run: 8 passed, 345 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_4961_font_decision_trace",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_4961_font_decision_trace",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 50.27703969809227,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_4961_font_decision_trace.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "3109ae32a5a4952946acc1d49999f8e6f06b05956fdf4de94e883cff9a8efb47",
+      "summaries": [
+        "     Summary [   2.000s] 12 tests run: 12 passed, 358 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_7902_original_frame_and_content",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_7902_original_frame_and_content",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 11.084486560896039,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_7902_original_frame_and_content.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "d8cffe71724fe2f27fd7e49f5366183602b0cc962d27e49079a0492b8ab21e37",
+      "summaries": [
+        "     Summary [   8.810s] 7 tests run: 7 passed, 357 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_8160_hwp2022_paragraph_relations",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8160_hwp2022_paragraph_relations",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 3.6574335298500955,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_8160_hwp2022_paragraph_relations.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "793ecc58231a3150c0502e83fc54fb50990227e21da47120d40dba42cd7fcb77",
+      "summaries": [
+        "     Summary [   1.528s] 3 tests run: 3 passed, 350 skipped"
+      ]
+    },
+    {
+      "label": "native-native_fractional_glyph_origin",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "native_fractional_glyph_origin",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 46.62304246798158,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-native_fractional_glyph_origin.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "b7e6220354cd32c4315c41b1a221a235ae36776cea47687190c9d74a2fec9d7e",
+      "summaries": [
+        "     Summary [   0.556s] 7 tests run: 7 passed, 352 skipped"
+      ]
+    },
+    {
+      "label": "native-skia_native_glyph_replay",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "skia_native_glyph_replay",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 69.83373579918407,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-skia_native_glyph_replay.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "e7723a6af24ef1fcb864c170dc686413bbf4f7ced09257e67aa0f04462deabfe",
+      "summaries": [
+        "     Summary [   0.657s] 25 tests run: 25 passed, 318 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_8153_opaque_mixed_axis_image_sampling",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8153_opaque_mixed_axis_image_sampling",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 67.18108454695903,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_8153_opaque_mixed_axis_image_sampling.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "b9cf355e11db3c0ea1f2ef67f209fff746c929a4952e6697692f968f1541e832",
+      "summaries": [
+        "     Summary [   4.378s] 2 tests run: 2 passed, 341 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_8153_print_glyph_geometry",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8153_print_glyph_geometry",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 3.0540269990451634,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_8153_print_glyph_geometry.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "f146fe778afe5e5c9cf2109222bfa977480712d2618884873134e6a9ec355933",
+      "summaries": [
+        "     Summary [   0.603s] 9 tests run: 9 passed, 319 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_8153_symbol_fallback",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8153_symbol_fallback",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 3.481467091012746,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_8153_symbol_fallback.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "4b59b6e62dacab425e0da73483327677648d56cbcea43cd50ebe1721a8bd4439",
+      "summaries": [
+        "     Summary [   1.074s] 2 tests run: 2 passed, 352 skipped"
+      ]
+    },
+    {
+      "label": "native-issue_536_native_region_cache",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_536_native_region_cache",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 2.5895050519611686,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-issue_536_native_region_cache.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "3fae4d16923f4700bc0c742072bd478988c33cd6cf666fc0994e4a5d5cf8261d",
+      "summaries": [
+        "     Summary [   0.664s] 39 tests run: 39 passed, 289 skipped"
+      ]
+    },
+    {
+      "label": "native-skia_region_plan",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "skia_region_plan",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 36.979197868146,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-skia_region_plan.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "cf048ba7ea6dbc760e01370637127a6d825c4abc7f7f2a4cb4cd1f390a86cdbf",
+      "summaries": [
+        "     Summary [   0.031s] 10 tests run: 10 passed, 361 skipped"
+      ]
+    },
+    {
+      "label": "native-skia_host_surface",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "skia_host_surface",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 2.009391037048772,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-native-skia_host_surface.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "a8eebc7c7f96dce47cec2a8218330b856c4c1f7d2b06951d3c19045351655391",
+      "summaries": [
+        "     Summary [   0.069s] 13 tests run: 13 passed, 340 skipped"
+      ]
+    },
+    {
+      "label": "focused-issue_7754_original_frame_and_glyph_origins",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_7754_original_frame_and_glyph_origins",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 50.2043730430305,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-focused-issue_7754_original_frame_and_glyph_origins.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "970722a4ed7a76741db20d9e3eeaa4df77d3286633a46ef5aeb9bd6f1b1e4514",
+      "summaries": [
+        "     Summary [   0.730s] 2 tests run: 2 passed, 380 skipped"
+      ]
+    },
+    {
+      "label": "focused-issue_8418_hft_outline_tracking",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8418_hft_outline_tracking",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 33.81752863386646,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-focused-issue_8418_hft_outline_tracking.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "86177cfcbc2f1a71080886f5f4e32b4c5f1ee7bfb5d8fb65344df0df97be3c7a",
+      "summaries": [
+        "     Summary [   0.023s] 3 tests run: 3 passed, 370 skipped"
+      ]
+    },
+    {
+      "label": "focused-issue_8225_group_child_ctrl_data",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "/usr/local/bin/node",
+        "scripts/run-rust-test.mjs",
+        "issue_8225_group_child_ctrl_data",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--test-threads",
+        "12",
+        "--no-fail-fast"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 2.944212533067912,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-focused-issue_8225_group_child_ctrl_data.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "b2860a5d87401d0da3c65ff838330ac5e7360625e18fe3bf8a7211ce8b66e592",
+      "summaries": [
+        "     Summary [   1.118s] 5 tests run: 5 passed, 366 skipped"
+      ]
+    },
+    {
+      "label": "workspace-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 322.0178362519946,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-workspace-clippy.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "b382020ce625f52ca1b4fed92206cfbb03aafd3a7ae0e765eb63edfa75b21ea2",
+      "summaries": []
+    },
+    {
+      "label": "wasm-clippy",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "clippy",
+        "--locked",
+        "--target",
+        "wasm32-unknown-unknown",
+        "--lib",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 0,
+      "seconds": 231.1139266199898,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-wasm-clippy.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "ff7a6dab8f5bdedca07d84b69a970ef7d4fafc9fafa8f487e8824898cc21bc3f",
+      "summaries": []
+    },
+    {
+      "label": "workspace-build",
+      "command": [
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/minimal-font-review/run.sh",
+        "cargo",
+        "build",
+        "--locked",
+        "--workspace",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review"
+      ],
+      "cwd": "/home/tsjang/rhwp-worktrees/task-7754-rebase-5665",
+      "exit_code": 101,
+      "seconds": 388.86314109596424,
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source36-rust-workspace-build.log",
+      "source_head": "c48c2b895d31ba0fd4969c837bfc7a6d8a2c65ac",
+      "log_sha256": "0bbebdd3976ce856c1aa568bbda6dfb6fef6227718e1d53791aecb0b52b5b894",
+      "summaries": []
+    }
+  ],
+  "completed_prefix": 33,
+  "native_unfiltered": {
+    "passed": 4033,
+    "ignored": 12,
+    "failed": 0
+  },
+  "coverage_complete": false,
+  "remaining": [
+    "workspace build retry after disk-space repair",
+    "full nextest"
+  ],
+  "interruption": "Workspace build exhausted disk while writing native FFI archive and incremental graph; not a test failure."
+}

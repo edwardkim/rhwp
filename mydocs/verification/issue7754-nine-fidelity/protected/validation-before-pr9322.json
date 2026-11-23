@@ -1,0 +1,126 @@
+{
+  "passed": true,
+  "metric": "silhouette_raw_match_percent",
+  "dpi": 96,
+  "radius_px": 2,
+  "documents": 23,
+  "conditions": 46,
+  "compared_rows": 4046,
+  "same_origin_png_count": 4046,
+  "missing_rows": 0,
+  "declines": [],
+  "baseline_at_measurement": {
+    "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "commit": "3be32a741cffdf100c6870a28fb606b33bce1851",
+    "sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597"
+  },
+  "font_catalog_at_measurement": {
+    "path": "mydocs/verification/protected-font-supply/manifest.json",
+    "commit": "09f9ccff61bcf5d02910ce5417e3ba96b0b114b0",
+    "sha256": "b8ea0f7bc322263c301540a231384bea67cccafd5e574bc58a744358e6e89a4b",
+    "available_snapshot_commit": "8e2938661413a2ffed5336928a13c409fa863dd4"
+  },
+  "increases": [
+    {
+      "document_id": "870eabd0a7d9534c",
+      "document_key": "chemical",
+      "backend": "native",
+      "page": 74,
+      "previous": "99.88",
+      "current": "100.00"
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "document_key": "chemical",
+      "backend": "native",
+      "page": 93,
+      "previous": "99.97",
+      "current": "100.00"
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "document_key": "chemical",
+      "backend": "wasm",
+      "page": 26,
+      "previous": "99.99",
+      "current": "100.00"
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "document_key": "chemical",
+      "backend": "wasm",
+      "page": 74,
+      "previous": "99.88",
+      "current": "100.00"
+    },
+    {
+      "document_id": "870eabd0a7d9534c",
+      "document_key": "chemical",
+      "backend": "wasm",
+      "page": 93,
+      "previous": "99.97",
+      "current": "100.00"
+    }
+  ],
+  "execution": {
+    "native": {
+      "documents": 23,
+      "comparison": {
+        "pages": 2023,
+        "same_png": 2023,
+        "max_decline_pp": "0"
+      },
+      "receipt": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/protected/native/native-validation.json",
+        "sha256": "d08d7eb6f798381d165a6a35fdf3e8528fb3c3a640d267a02c3fbf5573ea4880"
+      },
+      "paired_tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/protected/native/native-base-candidate.tsv",
+        "sha256": "d2b33acb64f586b118357bb8c08611850fa670f9425d6a66f836fa768ea56f30"
+      },
+      "producers": {
+        "base": {
+          "source_head": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+          "binary_sha256": "e87beeaabb8c36c5dfc9bae1e460c39f5f22086e2cf2431865b0b60c5b41123c"
+        },
+        "candidate": {
+          "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+          "binary_sha256": "ebf5994ce2a598c89ab981f00331be90f92fb56d0d4d1463b2c139fd3a6f9ea5"
+        }
+      }
+    },
+    "wasm": {
+      "documents": 23,
+      "comparison": {
+        "pages": 2023,
+        "same_png": 2023,
+        "max_decline_pp": "0"
+      },
+      "receipt": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/protected/wasm/wasm-validation.json",
+        "sha256": "a7e7d34b8285c33a3a8cebf7f988721f7f1e3fd26f3d5aec208fbec3a7a40d7b"
+      },
+      "paired_tsv": {
+        "path": "mydocs/verification/issue7754-nine-fidelity/protected/wasm/wasm-base-candidate.tsv",
+        "sha256": "45d7456b59e3e9270a76f09537bab42d7963194a227cbb6e91006d5bb0ed29bc"
+      },
+      "producers": {
+        "base": {
+          "source_head": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+          "package_sha256": {
+            "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+            "rhwp_bg.wasm": "bf4074a8aad9bd3a9a605ca4998acf1fe3b53cf378c486e67bc0091cdaaaf6ba"
+          }
+        },
+        "candidate": {
+          "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+          "package_sha256": {
+            "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+            "rhwp_bg.wasm": "a17cd643b322457f5a8a5644c065395a5d925f4e88496542f52ca8c048d425cb"
+          }
+        }
+      }
+    }
+  },
+  "comparison_scope": "PR 9322 리베이스 이전의 생산본과 기준"
+}

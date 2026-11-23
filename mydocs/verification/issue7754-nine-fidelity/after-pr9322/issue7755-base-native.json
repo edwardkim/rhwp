@@ -1,0 +1,83 @@
+{
+  "compared_pages": 315,
+  "same_print_png": 315,
+  "same_native_png": 315,
+  "before_minimum": "26.80",
+  "after_minimum": "26.80",
+  "same_tsv": true,
+  "same_scores": 315,
+  "below_98_before": [
+    3,
+    100
+  ],
+  "below_98_after": [
+    3,
+    100
+  ],
+  "roles": {
+    "before_pr9322": {
+      "source": "622af208ee12c4cb16357d465e4802e7fd4726bc",
+      "program_sha256": "e87beeaabb8c36c5dfc9bae1e460c39f5f22086e2cf2431865b0b60c5b41123c",
+      "receipt": {
+        "part": "issue7755",
+        "first_page": 1,
+        "last_page": 315,
+        "pages": 315,
+        "exit_code": 1,
+        "sweep_gate": "re_review_required",
+        "raw_tsv_sha256": "1f4a99e6ded0ac01dba57ea8e92884e0733b7976d39c6f4250de1e117e2823e6",
+        "capture_manifest_sha256": "0c13d57f8f532ec02c7ba52f725a64bd762c1b30e0e0014a36b95c406d3cce42",
+        "condition": {
+          "font_supply": "f5bdfe9d7fdfa0f8ef249579f2b8dae3e1febbdf63bd643d87ec901f37b71903",
+          "font_environment_sha256": null,
+          "registered_font_programs": null,
+          "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+          "comparison_profile": "print"
+        }
+      }
+    },
+    "after_pr9322": {
+      "source": "93e861523623bcd84d57b808edb62af5af2aa82a",
+      "program_sha256": "169c8a00b73a4373db37cde92819840dffea77164a84085fe4b50784628b8d53",
+      "receipt": {
+        "part": "issue7755",
+        "first_page": 1,
+        "last_page": 315,
+        "pages": 315,
+        "exit_code": 1,
+        "sweep_gate": "re_review_required",
+        "raw_tsv_sha256": "1f4a99e6ded0ac01dba57ea8e92884e0733b7976d39c6f4250de1e117e2823e6",
+        "capture_manifest_sha256": "ac33e75acc039592596d5bfd90fdf8ac6e1b23198344ad48e0cd8bc2a60a30f6",
+        "condition": {
+          "font_supply": "f5bdfe9d7fdfa0f8ef249579f2b8dae3e1febbdf63bd643d87ec901f37b71903",
+          "font_environment_sha256": null,
+          "registered_font_programs": null,
+          "pdf_rasterizer": "975ec549230b6c48fd2ea2acc5a436d26f8813aba27e9ccac795e5a02232f7a9",
+          "comparison_profile": "print"
+        }
+      }
+    }
+  },
+  "input": {
+    "path": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+    "sha256": "84d297375c48e1e903247a389e9ec3907e3cdc57a4a7e29a819a01c2a1e3a341"
+  },
+  "reference_pdf": {
+    "path": "pdf/issue7755/market-2017-manual-print-2024.pdf",
+    "sha256": "89e32b43af21bde3cf869e76b816d214fa0bc30e3f14512c4c3af184430cd616"
+  },
+  "comparison": {
+    "backend": "native-skia",
+    "profile": "print",
+    "dpi": 96,
+    "silhouette_radius_px": 2
+  },
+  "shared_tsv": {
+    "path": "mydocs/verification/issue7754-nine-fidelity/native/base/issue7755.tsv",
+    "sha256": "1f4a99e6ded0ac01dba57ea8e92884e0733b7976d39c6f4250de1e117e2823e6"
+  },
+  "below_98_raw_percent": {
+    "3": "95.99",
+    "100": "26.80"
+  }
+}

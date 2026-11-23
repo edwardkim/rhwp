@@ -411,6 +411,22 @@ fn normalize_flow_with_storage<S: crate::storage::Storage>(
                 origin_changed |= shift != 0;
             }
             if origin_changed {
+                paragraph.layout_stored_first_origin = source
+                    .layout_stored_first_origin
+                    .or_else(|| {
+                        source
+                            .source_line_seg_vertical_pos
+                            .as_ref()?
+                            .first()
+                            .copied()
+                    })
+                    .or_else(|| {
+                        source
+                            .line_segs
+                            .first()
+                            .filter(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+                            .map(|line| line.vertical_pos)
+                    });
                 // 원문 문자 축은 그대로지만 물리 원점은 새 프레임 소유다.
                 // 이전 원점 snapshot을 남겨 같은 파생 줄을 서로 다른 축으로
                 // 판정하지 않는다. 원본 document의 snapshot은 보존된다.

@@ -1,3 +1,11 @@
+//! 관계형·고정형: 기존 계약을 유지하고 #7754~#7765의 수용한 원본 범위를 복원한다.
+//! 주석 갱신: 2026-11-22T03:21:21+09:00; 직전 파일 변경: 2026-10-24T15:11:35+09:00 60972534680a0c5e51e54ec189b92e252e81a867.
+//! 복원 원본 측정: 2026-11-22 KST,96DPI·Print·PDFium·보정 전2px raw, 각 독립 Print와 같은 전체 쪽수.
+//! Native/fresh WASM 전쪽 최저: 7754 평문24쪽98.29/98.22%,7755 315쪽98.40/98.40%,
+//! 7756 1쪽99.00/98.99%,7757 3쪽99.78/99.80%,7759 1쪽99.94/99.94%,7760 19쪽99.18/99.18%,
+//! 7761 HWP46쪽99.98/99.98%,7762 HWPX46쪽99.98/99.98%,7765 HWP64쪽98.08/98.11%·HWPX64쪽98.69/98.69%.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md; 시장구조조사의 선행 전쪽 교차 증거는 같은 상위 market-source7/README.md.
+//! 이번 복원 범위 밖 입력의 기존 계약·근거는 아래 기록을 유지한다. 시스템 글꼴을 요구하지 않는다.
 //! [#7080] `ㆍ`(U+318D) 의 전진폭이 반각이다 — 한/글은 전각을 준다.
 //!
 //! ## 증상
@@ -81,8 +89,13 @@ fn area_dot_advances(sample: &str, max_pages: u32) -> Vec<(String, f64)> {
 #[test]
 fn area_dot_is_full_width_across_font_families() {
     let mut dots: Vec<(String, f64)> = Vec::new();
-    // 86712 원문은 전체 피델리티 개선을 위해 #7445로 이관했다.
-    for sample in [SAMPLE_80168, SAMPLE_3249937] {
+    // source32의 원본별 Print에서 각46개의 ㆍ 전진은 0.999997~1.000001em이다.
+    for sample in [
+        SAMPLE_80168,
+        SAMPLE_3249937,
+        "samples/86712_regulatory_analysis.hwp",
+        "samples/issue1891/86712_regulatory_analysis.hwpx",
+    ] {
         dots.extend(area_dot_advances(sample, 40));
     }
     assert!(

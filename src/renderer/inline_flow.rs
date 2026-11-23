@@ -1454,11 +1454,18 @@ pub(crate) fn plan_square_table_host(
     if !uses_stored_rows
         && !uncached
         && rows.len() == para.line_segs.len()
-        && rows.iter().zip(&para.line_segs).all(|(row, source)| {
-            row.column_start == source.column_start && row.segment_width == source.segment_width
-        })
+        && rows
+            .iter()
+            .zip(&para.line_segs)
+            .enumerate()
+            .all(|(index, (row, source))| {
+                row.text_start == para.line_seg_text_start(index)
+                    && row.column_start == source.column_start
+                    && row.segment_width == source.segment_width
+            })
     {
-        // 같은 물리 구간의 저장 줄은 기존 소유자에게 남긴다.
+        // 같은 물리 상자에서도 문자 경계가 바뀌면 현재 계획을 fit과 배치에 전달한다.
+        // 원문 문자 소속까지 같은 저장 줄만 기존 소유자에게 남긴다.
         return None;
     }
     // 글자 없는 host 의 줄 하나는 개체 조판 부호의 글자 모양까지 든 가장 큰 글자로 높이를

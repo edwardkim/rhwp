@@ -728,7 +728,7 @@ pub(super) fn try_place_empty_para_float_table(
         styles,
         para_start_height,
         lanes,
-        st.empty_float_page(paragraphs),
+        st.empty_float_page(paragraphs, para_idx),
         table_reflowed,
         preceding_fragment_reflowed,
         || st.empty_float_available_height(ft.table_footnote_height, ft.table_footnote_count),

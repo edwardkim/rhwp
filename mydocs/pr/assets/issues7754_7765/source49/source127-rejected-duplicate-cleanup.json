@@ -1,0 +1,46 @@
+{
+  "time": 1795341149.8980155,
+  "scope": "Only rejected Source88 candidate artifact copies, byte-identical to retained actual base files. All current Source105 producers, base Source88 files, source, fonts and visual evidence are retained.",
+  "files": [
+    {
+      "removed_duplicate": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source88-candidate-optimized",
+      "retained_identical_file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source88-base-optimized",
+      "bytes": 89344712,
+      "sha256": "0ef4acf03c2fd5550a860e51ef621146231c7abc42e01e0c4ff9327d6342ac76"
+    },
+    {
+      "removed_duplicate": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source88-candidate-native-library/librhwp.rlib",
+      "retained_identical_file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source88-base-native-library/librhwp.rlib",
+      "bytes": 167671560,
+      "sha256": "eb7f7c3ede3650ef7d2582b6daa75d1755154fe4a615603a44936d29abbe9979"
+    },
+    {
+      "removed_duplicate": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-candidate/rhwp_bg.wasm",
+      "retained_identical_file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base/rhwp_bg.wasm",
+      "bytes": 29789250,
+      "sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5"
+    },
+    {
+      "removed_duplicate": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-candidate/rhwp.js",
+      "retained_identical_file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base/rhwp.js",
+      "bytes": 611033,
+      "sha256": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e"
+    },
+    {
+      "removed_duplicate": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-candidate/rhwp.d.ts",
+      "retained_identical_file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base/rhwp.d.ts",
+      "bytes": 247072,
+      "sha256": "857fd2f8edef2b846bbae74a9c132569bde6781ea7921f19f389c27565e64a13"
+    },
+    {
+      "removed_duplicate": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-candidate/rhwp_bg.wasm.d.ts",
+      "retained_identical_file": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base/rhwp_bg.wasm.d.ts",
+      "bytes": 84354,
+      "sha256": "e35f6f4c672a188703cf780790e602b997b0259cb8f2cced905f3b08041bfd74"
+    }
+  ],
+  "free_before": 70656000,
+  "free_after": 457691136,
+  "complete": true,
+  "actual_free_delta": 387035136
+}

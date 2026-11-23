@@ -747,6 +747,12 @@ impl Paginator {
                         para,
                         &st.current_items,
                         &hidden_empty_paras,
+                        source_context.stored_body_layout
+                            && has_two_suppressed_before(
+                                paragraphs,
+                                para_idx,
+                                super::super::px_to_hwpunit(st.layout.body_area.height, self.dpi),
+                            ),
                     )
                 {
                     hidden_empty_lines += 1;

@@ -1,0 +1,11 @@
+[RustTestSuite] issue_8153_opaque_mixed_axis_image_sampling -> regression_suite_002::issue_8153_opaque_mixed_axis_image_sampling
+[RustTestSuite] cargo nextest run --locked --test regression_suite_002 -E test(/(^|::)issue_8153_opaque_mixed_axis_image_sampling::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 49.29s
+────────────
+ Nextest run ID 3d48b05a-3de5-447b-a237-8c3d0d59299c with nextest profile: default
+    Starting 2 tests across 1 binary (324 tests skipped)
+        PASS [   3.730s] (1/2) rhwp::regression_suite_002 issue_8153_opaque_mixed_axis_image_sampling::hwp_original_frame_corner_and_bottom_ink_are_preserved
+        PASS [   3.795s] (2/2) rhwp::regression_suite_002 issue_8153_opaque_mixed_axis_image_sampling::hwpx_original_frame_corner_and_bottom_ink_are_preserved
+────────────
+     Summary [   3.796s] 2 tests run: 2 passed, 324 skipped

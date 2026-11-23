@@ -1446,6 +1446,19 @@ impl TypesetEngine {
             // 분할 행의 표시 높이(per-cell content+visible pad). advance_row_cut 의
             // consumed_height 는 패딩을 제외하므로, 좁은 #2439 strict 경로의 orphan
             // 판정은 렌더러가 실제로 그리는 이 높이를 사용한다(content 24px + pad 3.8px).
+            if !res.fully_consumed && !res.hit_hard_break && !rowspan_touched[r] {
+                let available = (v.blank_row_available_height() - consumed - cs_before).max(0.0);
+                if let Some(band) = layout_engine.reflow_nested_opening_minimum_band(
+                    table,
+                    r,
+                    row_start_cut,
+                    &res.end_cut,
+                    available,
+                    styles,
+                ) {
+                    res.physical_height = Some(band.parent_height);
+                }
+            }
             let split_total = saved_opening_frame_height.unwrap_or_else(|| {
                 res.physical_height.unwrap_or_else(|| {
                     layout_engine.row_cut_content_height(

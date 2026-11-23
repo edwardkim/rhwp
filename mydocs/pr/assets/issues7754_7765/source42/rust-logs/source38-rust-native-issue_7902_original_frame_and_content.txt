@@ -1,0 +1,16 @@
+[RustTestSuite] issue_7902_original_frame_and_content -> regression_suite_024::issue_7902_original_frame_and_content
+[RustTestSuite] cargo nextest run --locked --test regression_suite_024 -E test(/(^|::)issue_7902_original_frame_and_content::/) --cargo-profile release-test --target-dir /home/tsjang/rhwp/target/pr-review --features native-skia --test-threads 12 --no-fail-fast
+   Compiling rhwp v0.9.1 (/home/tsjang/rhwp-worktrees/task-7754-rebase-5665)
+    Finished `release-test` profile [optimized] target(s) in 52.47s
+────────────
+ Nextest run ID 5acc5f10-7dc7-4f70-81fd-5c063017509d with nextest profile: default
+    Starting 7 tests across 1 binary (351 tests skipped)
+        PASS [   0.891s] (1/7) rhwp::regression_suite_024 issue_7902_original_frame_and_content::native_generated_hft_font_trace_uses_paint_aliases
+        PASS [   2.203s] (2/7) rhwp::regression_suite_024 issue_7902_original_frame_and_content::hwp_generated_hft_number_keeps_print_baseline_and_content
+        PASS [   3.554s] (3/7) rhwp::regression_suite_024 issue_7902_original_frame_and_content::hwpx_nested_continuation_does_not_charge_bottom_margin_twice
+        PASS [   4.474s] (4/7) rhwp::regression_suite_024 issue_7902_original_frame_and_content::closed_source_frames_keep_center_alignment_instead_of_extra_line_spacing
+        PASS [   4.675s] (5/7) rhwp::regression_suite_024 issue_7902_original_frame_and_content::original_cells_survive_the_print_page_cuts_without_loss_or_duplication
+        PASS [   5.373s] (6/7) rhwp::regression_suite_024 issue_7902_original_frame_and_content::hwp_nested_continuation_does_not_charge_bottom_margin_twice
+        PASS [   5.885s] (7/7) rhwp::regression_suite_024 issue_7902_original_frame_and_content::hwpx_generated_hft_number_keeps_print_baseline_and_content
+────────────
+     Summary [   5.887s] 7 tests run: 7 passed, 351 skipped

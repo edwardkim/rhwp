@@ -1,0 +1,19 @@
+{
+  "production_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "status": "needs_correction",
+  "numeric_98_threshold_is_not_direct_visual_completion": true,
+  "direct_review_blockers": [
+    {
+      "input": "samples/HWP5-nopassword-123456.hwpx",
+      "pages": [
+        1
+      ],
+      "issues": [
+        "double paragraph margins around Square host picture",
+        "original keyboard PUA is replaced despite available original program",
+        "legacy source Jamo typography needs correct glyph supply"
+      ]
+    }
+  ],
+  "rust_status": "Native lib4033 and placeholder2 passed; remaining Rust gates not started on source33 because a final correction is required"
+}

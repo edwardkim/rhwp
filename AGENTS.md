@@ -75,8 +75,8 @@
   있으며 비공개 원본 OTF 보유는 요구하지 않는다. 정본 보호 TSV 전체의 특별 하락 금지
   검증은 통합 담당 collaborator·maintainer에게만 추가 적용한다. 일반 Visual Sweep에서는 자동 실행하지 않으며,
   실행과 판정은 [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md)을 따른다.
-  통합 담당자는 첫 전쪽 실행 전에 [동명 글꼴과 실제 사용 글리프 확인](mydocs/manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)의
-  절차로 수용 당시 공급 파일과 실제 사용 프로그램을 대조한다.
+  통합 담당자는 첫 전쪽 실행 전에 [문서별 글꼴 공급 조건](mydocs/verification/protected-font-supply/manifest.json)을 확인하고,
+  [실제 글리프 확인 절차](mydocs/manual/verification/visual_sweep_guide.md#동명-글꼴과-실제-사용-글리프-확인)에 따라 공급 조건과 실제 선택 기록을 대조한다.
 - Docker 설치는 로컬 검증의 필수 조건이 아니다. 사용 가능 환경과 불가 환경의
   [fresh WASM 실행 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)를
   구분하고, 호스트 경로도 최적화·브라우저·시각 검증까지 동일하게 완료한다.
