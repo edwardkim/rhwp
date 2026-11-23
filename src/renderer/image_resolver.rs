@@ -162,6 +162,7 @@ enum Conversion {
     PrintJpeg {
         quality: u8,
         transfer: PrintJpegTransfer,
+        bounds: Option<[u32; 4]>,
     },
     PrintJpegWindow {
         bounds: [u32; 4],

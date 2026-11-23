@@ -603,7 +603,7 @@ impl DocumentCore {
         }
     }
 
-    /// Print JPEG 변환에 원본 32비트 BI_RGB DIB의 색을 사용한다.
+    /// Print JPEG 변환에 원본 24·32비트 BI_RGB DIB의 색을 사용한다.
     pub fn set_print_bmp_full_color(&mut self, enabled: bool) {
         if self.print_bmp_full_color != enabled {
             self.print_bmp_full_color = enabled;

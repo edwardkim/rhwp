@@ -645,7 +645,14 @@ impl LayerBuilder {
                     let soft_edge_prepared = soft_edge_payload.is_some();
                     let group_projection = (self.shape_group_depth > 0
                         && image_fill_clip.is_none())
-                    .then(|| super::group_picture::project(&image, frame, self.layout_dpi, self.print_bmp_full_color))
+                    .then(|| {
+                        super::group_picture::project(
+                            &image,
+                            frame,
+                            self.layout_dpi,
+                            self.print_bmp_full_color,
+                        )
+                    })
                     .flatten();
                     if let Some((full, image, payload)) = group_projection {
                         image_fill_clip = Some(frame);

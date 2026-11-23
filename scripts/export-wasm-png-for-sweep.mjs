@@ -217,7 +217,7 @@ async function main() {
           if (printJobJson !== null) doc.setPrintJobContext(printJobJson);
           if (printPngRgb555) doc.setPrintPngRgb555(true);
           if (printBmpFullColor) {
-            if (typeof doc.setPrintBmpFullColor !== 'function') throw Error('32비트 BMP Print 장치 API가 없는 WASM입니다.');
+            if (typeof doc.setPrintBmpFullColor !== 'function') throw Error('BMP 원본 색의 Print 장치 API가 없는 WASM입니다.');
             doc.setPrintBmpFullColor(true);
           }
           if (linkedImages.length) {

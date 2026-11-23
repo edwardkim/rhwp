@@ -62,7 +62,7 @@ pub(super) fn print() {
     println!("      --json                 stdout에 PNG 산출물·전체 쪽수 JSON만 출력");
     println!("      --metadata-only        PNG 없이 전체 쪽수 JSON만 출력");
     println!("      --render-tree-output <폴더> 같은 문서의 선택 쪽 render tree를 함께 저장");
-    println!("      --print-bmp-full-color  Print JPEG에서 32비트 BI_RGB의 원본 색을 유지");
+    println!("      --print-bmp-full-color  Print JPEG에서 24·32비트 BI_RGB의 원본 색을 유지");
     println!("      --print-png-rgb555     Print의 불투명 PNG 압축에 RGB555 장치색을 적용");
     println!("      --print-job-context <JSON> 자동 인쇄 바닥글용 파일명과 현지 시각");
     println!("      --font-environment <JSON> 조판/출력의 명시적 글꼴 환경 적용");
