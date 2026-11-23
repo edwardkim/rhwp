@@ -17,35 +17,35 @@ HWPX는 99.99%·100.00%, HWP 2022는 100.00%·100.00%로 복원됐다. 이 두 �
 
 #9318로 유입된 원본 6종 167쪽은 새 base와 후보 모두 Native·fresh WASM에서 쪽마다 98% 이상이다.
 후보 fresh WASM 최저는 고베 지진 문서의 98.15%이며, base에서 하락한 쪽은 없다.
-[전쪽 TSV와 생산 SHA](../verification/issue7754-nine-fidelity/incoming-pr9318/coverage.json)에 각 조건을 기록했다.
+[전쪽 TSV와 생산 SHA](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/incoming-pr9318/coverage.json)에 각 조건을 기록했다.
 두 역할의 OLE 입력은 HWP·HWPX 각각 편집 후 두 번 저장·재열기를 실행했다. 독립 CFB/ZIP 검사에서
 OLE 속성, HWPX payload, 편집 표지의 보존을 확인했다.
 
 중첩 표의 Native 검증은 HWP·HWPX 입력에 각각 30줄과 70줄을 삽입해 HWP·HWPX로 저장하고
 다시 열었다. 두 생산본의 12개 대응 상태에서 페이지 소속과 PNG가 일치했다.
-[Native 편집·저장·재열기](../verification/issue7754-nine-fidelity/nested-table-native-edit-save-reopen.json)
+[Native 편집·저장·재열기](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/nested-table-native-edit-save-reopen.json)
 
 원래 아홉 이슈의 Native 대상 583쪽은 최저 98.08%다. Native 정본 보호 23종 2,023쪽은
 새 base와 후보의 PNG SHA-256이 전부 일치하며 기존 하한보다 낮은 쪽은 없다. 두 실행에서
-화학 문서 74·93쪽이 100.00%로 올랐다. [전쪽 비교와 생산 기록](../verification/issue7754-nine-fidelity/protected/native/native-validation.json)
+화학 문서 74·93쪽이 100.00%로 올랐다. [전쪽 비교와 생산 기록](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/protected/native/native-validation.json)
 
 공개 글꼴 검사에는 기존 검증의 격리 절차를 사용했다. 공개 글꼴 497개를 확인했고, 4개 문서의
 Native·fresh WASM 8조건이 모두 통과했다. 전쪽 공식 표시값은 100.00%다.
-[전쪽 TSV, 비교 및 오버레이](../verification/issue7754-nine-fidelity/public-font-gate/public-font-validation.json)
+[전쪽 TSV, 비교 및 오버레이](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/public-font-gate/public-font-validation.json)
 
 원래 이슈의 fresh WASM, 보호 정본 fresh WASM, 최소 글꼴 Rust·lint, 남은 Studio 검증은 진행 중이다.
 
 시장구조조사 100쪽의 Studio Canvas2D 화면과 독립 한컴 Print를 직접 대조했다.
 후보의 제목과 본문이 빈 줄 묶음 아래로 복원됐다. 제목의 첫 잉크 행은 새 base의 217px에서
-한컴 Print와 같은 279px로 옮겨졌다. [원본 PNG와 측정 근거](../verification/issue7754-nine-fidelity/studio/market-page100-screen/review.json)
+한컴 Print와 같은 279px로 옮겨졌다. [원본 PNG와 측정 근거](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/studio/market-page100-screen/review.json)
 
 고정 좌표·치수 회귀에 쓰는 안내서 2쪽과 규제분석 HWP 10·28·29쪽, HWPX 26쪽을 최종 생산본의
 Native·fresh WASM으로 재대조했다. 안내서 2쪽은 양쪽 99.99%, 규제분석 네 쪽은 양쪽 100.00%다.
-[전쪽 TSV와 확대 판독](../verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/review.json)
+[전쪽 TSV와 확대 판독](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/wasm/regression-coordinate-review/review.json)
 
 배포용 문서 3쪽은 Native·fresh WASM 모두 100.00%였고, 단위 문구와 예산 표의 위치를 직접
 확인했다. 복학원서·143E 공개 HWP·온새미로 HWP와 HWPX의 대표 구간도 새 생산본으로 대조했다.
-[대표 구간의 전쪽 TSV와 PNG](../verification/issue7754-nine-fidelity/representative-print-review/review.json)
+[대표 구간의 전쪽 TSV와 PNG](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/representative-print-review/review.json)
 
 보호 fresh WASM의 첫 `sample10` 실행은 연결 그림 옵션을 빠뜨려 1쪽 raw가 31.61%였다.
 [기존 지침](../manual/verification/visual_sweep_guide.md#macos-외부-연결-그림-공급)과

@@ -47,7 +47,7 @@ fresh WASM을 빌드하고 JavaScript와 선언 파일 두 개를 대조했다. 
 표 셀과 글상자에 각주·미주를 삽입해 번호와 내용을 읽었다. 저장 전과 HWP·HWPX
 재열기에서 번호 2와 3, 내용, 쪽수 및 미주 소유 경로가 일치했다. 미주 안
 캐럿은 같은 줄에서 글자 순서대로 전진했다.
-[후보 WASM 해시·공개 API·주석 검증](../verification/issue7754-nine-fidelity/after-pr9335/wasm-candidate-api-and-notes.json)
+[후보 WASM 해시·공개 API·주석 검증](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/wasm-candidate-api-and-notes.json)
 
 ## Studio 실행 검증
 
@@ -59,7 +59,7 @@ Vite의 저장소 쪽 자료 6개와 공개 쪽 자료 5개를 현재 Git 트리
 #9335에 기록된 브라우저 검사 5개를 다시 실행했다. 중첩 표 포인터와 개체 선택,
 표 경계 드래그, 각주 단축키와 삽입 검사가 모두 통과했다. 각 검사에서 브라우저가
 받은 WASM의 SHA-256이 후보 패키지와 일치했다.
-[Studio 빌드·단위 테스트·브라우저 검증](../verification/issue7754-nine-fidelity/after-pr9335/studio-local-validation.json)
+[Studio 빌드·단위 테스트·브라우저 검증](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/studio-local-validation.json)
 
 ## fresh WASM 기준·후보 편집 대조
 
@@ -72,7 +72,7 @@ Vite의 저장소 쪽 자료 6개와 공개 쪽 자료 5개를 현재 Git 트리
 각주와 미주를 편집해 저장 전, HWP 재열기, HWPX 재열기의 쪽수·번호·텍스트와 미주
 소유 경로를 비교했다. 용역내역서 HWP·HWPX의 원본, 행 삽입, 열 삽입을 각각 대조했고,
 양쪽에서 12건씩 재열어 병합 셀 위치와 너비가 보존되는 것을 확인했다.
-[기준·후보 WASM 편집 검증](../verification/issue7754-nine-fidelity/after-pr9335/wasm-paired-api-and-editing.json)
+[기준·후보 WASM 편집 검증](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/wasm-paired-api-and-editing.json)
 
 ## 보호 정본 글꼴 조건 대조
 
@@ -103,7 +103,7 @@ Vite의 저장소 쪽 자료 6개와 공개 쪽 자료 5개를 현재 Git 트리
 독립 Print에서 판독한 원점·괘선 위치·행 높이에 ±2px를 적용한다.
 암호 HWPX의 평문 대조군 2쪽은 각 99.99%였다. 규제분석 HWP 10·28·29쪽과
 HWPX 26쪽은 양쪽 모두 100.00%였다. 독립 한컴 Print와 후보의 PNG 해시를
-[전쪽 출력의 확대 판독 증거](../verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json)와
+[전쪽 출력의 확대 판독 증거](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9322/coordinate-pages/validation.json)와
 대조했으며 모두 일치했다.
 
 ## 보호 정본의 후보 Native 전쪽 검증
@@ -154,15 +154,15 @@ Nextest는 14,012개가 통과했고, 기존 러너 제외는 45개였다. Rust 
 | 보호 정본 23종 | 2,023 | 98.86% | 98.86% |
 
 아홉 이슈의 583쪽과 보조 사례 50쪽 중 Native 431쪽과 fresh WASM 420쪽이 100.00%였다.
-[기준·후보 전쪽 TSV와 쪽별 비교](../verification/issue7754-nine-fidelity/after-pr9335/print-comparisons.json)와
-[대표 15쪽 확대 판독·고정 회귀 5쪽 검증](../verification/issue7754-nine-fidelity/after-pr9335/print/target/representative/validation.json)을 연결했다.
+[기준·후보 전쪽 TSV와 쪽별 비교](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print-comparisons.json)와
+[대표 15쪽 확대 판독·고정 회귀 5쪽 검증](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/target/representative/validation.json)을 연결했다.
 
 보호 정본은 공식 하한 미달과 기준 대비 하락이 4,046개 비교에서 모두 0건이었다.
 [글꼴 공급 46조건의 검증 기록](../verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json)
 
 암호 안내 HWPX와 평문 대조군은 해독 조건 4개에서 24쪽 PNG가 각각 일치했다.
-[암호 문서 TSV와 대조 결과](../verification/issue7754-nine-fidelity/after-pr9335/issue7754-encrypted-parity.json)
+[암호 문서 TSV와 대조 결과](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/issue7754-encrypted-parity.json)
 
-[Rust 검사 49단계의 명령과 결과](../verification/issue7754-nine-fidelity/after-pr9335/rust-local-validation.json)
+[Rust 검사 49단계의 명령과 결과](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/rust-local-validation.json)
 
 보호값보다 높게 측정된 5행은 비교표에 기록했다. chemical native 74쪽 99.88% → 100.00%, chemical native 93쪽 99.97% → 100.00%, chemical wasm 26쪽 99.99% → 100.00%, chemical wasm 74쪽 99.88% → 100.00%, chemical wasm 93쪽 99.97% → 100.00%.

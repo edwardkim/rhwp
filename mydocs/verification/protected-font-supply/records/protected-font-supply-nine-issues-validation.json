@@ -11,7 +11,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 4,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "c1f1fb90ad8d6ecc",
@@ -25,7 +25,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 4,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "87d88777e181d5a9",
@@ -44,7 +44,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "3014401338c0270b",
@@ -58,7 +58,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "3014401338c0270b",
@@ -77,7 +77,7 @@
       "minimum_raw": "99.97",
       "unchanged_png": 383,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "a93b1d9fa44c8080",
@@ -91,7 +91,7 @@
       "minimum_raw": "99.96",
       "unchanged_png": 383,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "a93b1d9fa44c8080",
@@ -110,7 +110,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "222613226873cc85",
@@ -124,7 +124,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "222613226873cc85",
@@ -143,7 +143,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 64,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "ccea6770fda567ac",
@@ -157,7 +157,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 64,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "ccea6770fda567ac",
@@ -176,7 +176,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 64,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "ccea6770fda567ac",
@@ -190,7 +190,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 64,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "ccea6770fda567ac",
@@ -209,7 +209,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "3014401338c0270b",
@@ -223,7 +223,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "3014401338c0270b",
@@ -242,7 +242,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "3014401338c0270b",
@@ -256,7 +256,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "3014401338c0270b",
@@ -275,7 +275,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 9,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "29f326eafc1d3103",
@@ -289,7 +289,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 9,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "29f326eafc1d3103",
@@ -308,7 +308,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 4,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "c0dd8344461fd0e5",
@@ -322,7 +322,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 4,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "c0dd8344461fd0e5",
@@ -341,7 +341,7 @@
       "minimum_raw": "99.98",
       "unchanged_png": 17,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "e33ea144db11ccea",
@@ -355,7 +355,7 @@
       "minimum_raw": "99.98",
       "unchanged_png": 17,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "e33ea144db11ccea",
@@ -374,7 +374,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 64,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "ccea6770fda567ac",
@@ -388,7 +388,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 64,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "ccea6770fda567ac",
@@ -407,7 +407,7 @@
       "minimum_raw": "99.97",
       "unchanged_png": 383,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "a93b1d9fa44c8080",
@@ -421,7 +421,7 @@
       "minimum_raw": "99.96",
       "unchanged_png": 383,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "a93b1d9fa44c8080",
@@ -440,7 +440,7 @@
       "minimum_raw": "98.86",
       "unchanged_png": 6,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "065a04de96f9c95e",
@@ -454,7 +454,7 @@
       "minimum_raw": "98.86",
       "unchanged_png": 6,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "065a04de96f9c95e",
@@ -473,7 +473,7 @@
       "minimum_raw": "99.57",
       "unchanged_png": 763,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "5f486e0383f58ba7",
@@ -487,7 +487,7 @@
       "minimum_raw": "99.57",
       "unchanged_png": 763,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "7b5a9d80a5ed9665",
@@ -520,7 +520,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 4,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "c0dd8344461fd0e5",
@@ -534,7 +534,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 4,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "c0dd8344461fd0e5",
@@ -553,7 +553,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "3014401338c0270b",
@@ -567,7 +567,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "3014401338c0270b",
@@ -586,7 +586,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "3014401338c0270b",
@@ -600,7 +600,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "3014401338c0270b",
@@ -619,7 +619,7 @@
       "minimum_raw": "99.99",
       "unchanged_png": 103,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "f57745c75bbbd21a",
@@ -633,7 +633,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 103,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "41203851b66ecbe2",
@@ -652,7 +652,7 @@
       "minimum_raw": "99.92",
       "unchanged_png": 71,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "804451b9faaa3995",
@@ -666,7 +666,7 @@
       "minimum_raw": "99.92",
       "unchanged_png": 71,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "3e9ac095df771f70",
@@ -685,7 +685,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 3,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "f7692b47c11b0b05",
@@ -699,7 +699,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 3,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "f7692b47c11b0b05",
@@ -718,7 +718,7 @@
       "minimum_raw": "99.98",
       "unchanged_png": 74,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "a57202a71a3063be",
@@ -732,7 +732,7 @@
       "minimum_raw": "99.98",
       "unchanged_png": 74,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "2303981a60823932",
@@ -751,7 +751,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/native-paired.json",
         "sha256": "f06fa4d5603f7205bcc18632801673dc7899e960975208d1e390b50418eff34b"
       },
       "font_set": "f7692b47c11b0b05",
@@ -765,7 +765,7 @@
       "minimum_raw": "100.00",
       "unchanged_png": 1,
       "comparison": {
-        "path": "mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
+        "url": "https://raw.githubusercontent.com/edwardkim/rhwp/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue7754-nine-fidelity/after-pr9335/print/protected/wasm-paired.json",
         "sha256": "e0d3f8734e4c26531667b85b0b657d53d7b310d54ce8e6e23d3e2f79aaaeafd5"
       },
       "font_set": "f7692b47c11b0b05",
