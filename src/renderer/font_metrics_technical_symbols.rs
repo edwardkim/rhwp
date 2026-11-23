@@ -160,7 +160,6 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
             ("Arial", 2048, false, false) => return Some(false),
             // malgun.ttf 7a183cf1…192f regular의 실제 cmap 결측.
             ("Malgun Gothic", 2048, false, false) if ch == '\u{2024}' => return Some(false),
-            ("HCR Dotum", 1000, false, false) if ch == '\u{2024}' => return Some(true),
             ("HumanMyeongJo", 1024, false, false) => return Some(false),
             // H2HDRM.TTF e50c7200521c3ea59840e5dd42e79708905a74a607f2300ed862fe2491caf831:
             // 원 프로그램 cmap의 확인된 결측이다. 폭 표의 미수집을 뜻하지 않는다.
