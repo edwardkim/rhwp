@@ -1,0 +1,25 @@
+{
+  "schema": "rhwp/fixture-manifest@1",
+  "issue": 9353,
+  "title": "음수 줄 간격 저장 줄의 정상 다음 줄을 쪽 되감김으로 읽어 표 행을 쪽 안에서 나눈다",
+  "entries": [
+    {
+      "path": "samples/issue9353/uiwang_lane_min_length.hwp",
+      "format": "hwp",
+      "role": "regression_fixture",
+      "source": "https://github.com/edwardkim/rhwp/issues/9353",
+      "originalFilename": "21013395_[별표 5] 변속차로의 최소길이(의왕시 도로와 다른 시설의 연결에 관한 조례).hwp",
+      "bytes": 81408,
+      "sha256": "6c9b83e37bb56492e7ec654e4c57bca93d5ef0822b2e20da44bfa43449ff9bfd",
+      "lastSavedWith": {
+        "product": "hancom-office-2024",
+        "version": "13.0.0.2986"
+      },
+      "referenceEngine": "2024",
+      "referencePdf": "pdf/issue9353/uiwang_lane_min_length-2024.pdf",
+      "referencePdfSha256": "84249e6ae57e4c95074afd48ad48963536cbd3dd17f5d33489f4484a91dc35e5",
+      "referencePdfPageCount": 3,
+      "contract": "전체 3쪽으로 한/글 Print 와 같다. 셀[156] r=37,c=1 의 저장 줄 ls[0] vpos 0, lh 1200, ls -240 다음 ls[1] vpos 960 = 0 + 1200 - 240 은 첫 줄이 저장한 전진에 놓인 평범한 줄이므로 쪽 되감김이 아니다. 행 37(`21대 이상 50대 이하`)은 2쪽에 온전히 있고 3쪽은 행 38(`51대 이상`)로 시작한다."
+    }
+  ]
+}
