@@ -17,7 +17,8 @@ import {
   type NavigationAction,
   type NavigationKeyInput,
 } from './navigation-keymap';
-import type { DocumentPosition, CursorRect, CellBbox, CellPathLike } from '@/core/types';
+import type { DocumentPosition, CursorRect, CellBbox, CellPathLike, ControlPlace } from '@/core/types';
+import { controlPlaceOf, positionOfPlace, fieldPinKey } from './control-place';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { inlineOfficeClipboardImages, liftImagesToBlockLevel, needsRtfImageInlining } from './office-clipboard-images';
@@ -2311,31 +2312,44 @@ function clearAllControlSelection(self: any): void {
 export function handleF11(this: any): void {
   try {
     // 현재 선택 상태에 따라 검색 시작점 결정
-    // - 필드 텍스트 선택 중: anchor(선택 시작점)에서 검색 → 같은 필드 재선택 방지
-    // - 표/그림 객체 선택 중: 선택된 컨트롤 위치에서 검색
-    // - 그 외: 현재 커서 위치
+    // - 표/그림 객체 선택 중: 선택된 컨트롤의 앞 형제부터
+    // - F11로 고른 누름틀에 캐럿이 그대로 있으면: 그 컨트롤의 앞 형제부터 → 같은 자리 누름틀을 하나씩 고름
+    // - 그 밖의 선택 중: anchor(선택 시작점)에서 검색
+    // - 그 외: 현재 커서 위치 (셀·글상자 안이면 그 영역부터 훑고 표·개체로 나온다)
     let searchSec: number, searchPara: number, searchCharOffset: number;
+    let place: ControlPlace;
+    let fromControl = -1;
+    const pin = this.f11Field;
+    const caret = this.cursor.getPosition();
 
     if (this.cursor.isInTableObjectSelection()) {
       const ref = this.cursor.getSelectedTableRef();
       searchSec = ref!.sec; searchPara = ref!.ppi; searchCharOffset = 0;
+      place = { section: searchSec, para: searchPara, cellPath: [] };
+      fromControl = ref!.ci;
     } else if (this.cursor.isInPictureObjectSelection()) {
       const ref = this.cursor.getSelectedPictureRef();
       searchSec = ref!.sec; searchPara = ref!.ppi;
       // 선택된 도형의 텍스트 위치를 검색 시작점으로 사용
       const ctrlPositions = this.wasm.getControlTextPositions?.(ref!.sec, ref!.ppi);
       searchCharOffset = ctrlPositions?.[ref!.ci] ?? 0;
-    } else if (this.cursor.hasSelection()) {
-      const sel = this.cursor.getSelection()!;
-      searchSec = sel.anchor.sectionIndex;
-      searchPara = sel.anchor.paragraphIndex;
-      searchCharOffset = sel.anchor.charOffset;
+      place = { section: searchSec, para: searchPara, cellPath: [] };
+      fromControl = ref!.ci;
+    } else if (pin && pin.key === fieldPinKey(caret)) {
+      searchSec = caret.sectionIndex; searchPara = caret.paragraphIndex; searchCharOffset = caret.charOffset;
+      place = pin.place;
+      fromControl = pin.controlIndex;
     } else {
-      const pos = this.cursor.getPosition();
+      const pos = this.cursor.hasSelection() ? this.cursor.getSelection()!.anchor : caret;
       searchSec = pos.sectionIndex; searchPara = pos.paragraphIndex; searchCharOffset = pos.charOffset;
+      place = controlPlaceOf(pos);
     }
+    this.f11Field = null;
 
-    const result = this.wasm.findNearestControlBackward(searchSec, searchPara, searchCharOffset);
+    // 머리말·꼬리말·각주 편집 중에는 커서가 그 영역 좌표를 쓴다 — 본문 검색을 그대로 둔다.
+    const result = this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()
+      ? this.wasm.findNearestControlBackward(searchSec, searchPara, searchCharOffset)
+      : this.wasm.findNearestControlAt(place, searchCharOffset, fromControl, false);
 
     if (result.type === 'none') {
       // 더 이상 이전 컨트롤 없음 → 현재 선택 해제
@@ -2396,10 +2410,30 @@ export function handleF11(this: any): void {
     } else if (result.type === 'bookmark') {
       // 책갈피: 해당 위치로 커서 이동
       const charPos = result.charPos ?? 0;
-      try { this.cursor.moveTo({ sectionIndex: result.sec, paragraphIndex: result.para, charOffset: charPos }); } catch {}
+      const at = result.place ? positionOfPlace(result.place, charPos, result.areas)
+        : { sectionIndex: result.sec, paragraphIndex: result.para, charOffset: charPos };
+      try { this.cursor.moveTo(at); } catch {}
       this.updateCaret();
       // 책갈피 대화상자를 열어 수정/삭제 가능하게
       this.dispatcher?.dispatch('insert:bookmark');
+    } else if (result.type === 'field' && result.place) {
+      // 누름틀: 필드 글자 범위 선택. 빈 누름틀은 그 자리에 캐럿만 둔다.
+      // 같은 자리 누름틀을 가릴 수 있게 고른 컨트롤을 붙들고 활성으로 둔다 (updateCaret → activateFieldAt).
+      const start = result.start ?? 0;
+      const end = result.end ?? start;
+      const startPos = positionOfPlace(result.place, start, result.areas);
+      if (end > start) {
+        this.cursor.moveTo(positionOfPlace(result.place, end, result.areas));
+        this.cursor.setAnchor();
+      }
+      this.cursor.moveTo(startPos);
+      const info = {
+        fieldId: result.fieldId, fieldType: result.fieldType,
+        guideName: result.fieldId === undefined ? undefined : this.wasm.getClickHereProps(result.fieldId).guide,
+      };
+      this.f11Field = { key: fieldPinKey(startPos), place: result.place, controlIndex: result.ci, info };
+      this.updateCaret();
+      this.eventBus.emit('field-info-changed', info);
     } else if (result.type === 'field') {
       // 누름틀: 필드 텍스트 블록 선택 (charPos = 필드의 텍스트 내 위치)
       const fieldPos = { sectionIndex: result.sec, paragraphIndex: result.para, charOffset: result.charPos ?? 0 };

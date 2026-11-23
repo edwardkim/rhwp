@@ -647,6 +647,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "편집 세션의 활성 필드 포커스. 직렬화 비대상.",
     ),
     (
+        "queries/bookmark_query.rs",
+        "set_active_field_at",
+        Exempt::SessionState,
+        "주소의 컨트롤 번호로 고른 활성 필드 포커스 + 렌더 캐시 무효화. 직렬화 비대상.",
+    ),
+    (
         "queries/field_query.rs",
         "clear_active_field",
         Exempt::SessionState,

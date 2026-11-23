@@ -25,6 +25,7 @@ import { VirtualScroll } from '@/view/virtual-scroll';
 import { ViewportManager } from '@/view/viewport-manager';
 import type {
   DocumentPosition,
+  ControlPlace,
   CharProperties,
   ParaProperties,
   CursorRect,
@@ -64,6 +65,7 @@ import { CaretLayoutReveal } from './caret-layout-reveal';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 import { CellBlockLetterImeGuard } from '@/command/contextual-shortcut';
 import { ImeNavigationGuard } from './ime-navigation-guard';
+import { fieldPinKey } from './control-place';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -356,6 +358,11 @@ export class InputHandler {
   private fieldStartExitKey: string | null = null;
   /** 누름틀 끝 경계에서 오른쪽 이동으로 필드 밖에 머문 상태 */
   private fieldEndExitKey: string | null = null;
+  /** F11로 고른 누름틀. 같은 글자 자리의 누름틀은 자리로 가릴 수 없어 컨트롤 번호로 붙든다. */
+  f11Field: {
+    key: string; place: ControlPlace; controlIndex: number;
+    info: { fieldId?: number; fieldType?: string; guideName?: string };
+  } | null = null;
   /** 누름틀을 포함한 붙여넣기 직후 마지막 필드 끝을 바깥 위치로 고정한다 */
   private pastedFieldEndOutsidePending = false;
   /** 모양 복사로 기억한 글자/문단 모양 */
@@ -5488,15 +5495,24 @@ export class InputHandler {
       if (pos.charOffset !== start) {
         this.cursor.moveTo(normalized);
       }
-      this.wasm.setActiveField(normalized);
+      this.activateFieldAt(normalized);
       return normalized;
     } catch {
       return pos;
     }
   }
 
+  /** 그 자리의 누름틀을 활성으로 둔다. F11로 고른 누름틀이 그 자리에 있으면 그것을 둔다. 바뀌면 true. */
+  activateFieldAt(pos: DocumentPosition): boolean {
+    const pin = this.f11Field;
+    if (pin && pin.key === fieldPinKey(pos)) return this.wasm.setActiveFieldAt(pin.place, pin.controlIndex);
+    this.f11Field = null;
+    return this.wasm.setActiveField(pos);
+  }
+
   /** 마우스로 누름틀 위치를 직접 클릭하면 키보드 경계 이탈 상태를 해제한다. */
   prepareClickHerePointerEntry(pageX?: number): void {
+    this.f11Field = null;
     const pos = this.cursor.getPosition();
     try {
       const fi = this.wasm.getFieldInfoAt(pos);
@@ -5687,7 +5703,7 @@ export class InputHandler {
         this.fieldStartExitKey = null;
         this.fieldEndExitKey = null;
         // 활성 필드 설정 → 안내문 숨김 + 페이지 캐시 무효화
-        const fieldChanged = this.wasm.setActiveField(pos);
+        const fieldChanged = this.activateFieldAt(pos);
         const zoom = this.viewportManager.getZoom();
         const rects = this.getClickHereBoundaryRects(pos, fi.startCharIdx, fi.endCharIdx);
         if (!rects) return;
@@ -5701,7 +5717,7 @@ export class InputHandler {
           this.updateCaret();
         }
         // 상태 표시줄에 필드 정보 표시
-        this.eventBus.emit('field-info-changed', {
+        this.eventBus.emit('field-info-changed', this.f11Field?.info ?? {
           fieldId: fi.fieldId, fieldType: fi.fieldType, guideName: fi.guideName,
         });
         return;

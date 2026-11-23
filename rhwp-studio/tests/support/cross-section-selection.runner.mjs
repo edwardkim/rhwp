@@ -72,6 +72,7 @@ const guideHost = {
 };
 guideHost.canDeleteSelectionInFormMode = () => InputHandler.prototype.canDeleteSelectionInFormMode.call(guideHost);
 guideHost.prepareClickHereInputPosition = () => InputHandler.prototype.prepareClickHereInputPosition.call(guideHost);
+guideHost.activateFieldAt = (pos) => InputHandler.prototype.activateFieldAt.call(guideHost, pos);
 onInput.call(guideHost);
 assert.deepEqual(guideSelection, { start, end }, '누름틀 진입 전 교차 구역 선택 보존');
 assert.equal(guidePreparations, 0, '거절된 입력은 누름틀 활성화를 준비하지 않는다');
