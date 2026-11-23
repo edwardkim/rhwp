@@ -2055,14 +2055,14 @@ impl TypesetEngine {
         if let Some((row, used, height)) = accepted_stored_row_frame {
             continuation.stored_row_box_sum = Some((row, used + height));
         }
-        // [#2238] 중간 조각의 가시 높이 기록 — used_height(페이지 확정 시 current_height)
-        // 표시용. 전진 직후 current_height 가 리셋되므로 흐름/기하 불변.
-        st.advance_flow_by(
-            host_before_overhead
-                + vert_offset_overhead
-                + partial_height
-                + fragment_outer_bottom_overhead,
-        );
+        // 첫 부동 조각이 앞의 같은 문단 개체와 앵커를 공유하면 scan에서 사용한
+        // 원점으로 하단을 대조한다. 앞 개체가 소비한 높이를 조각에 다시 더하지 않는다.
+        let fragment_end = budget.fragment_flow_origin
+            + host_before_overhead
+            + vert_offset_overhead
+            + partial_height
+            + fragment_outer_bottom_overhead;
+        st.align_flow_to(st.current_height.max(fragment_end));
         if terminal_cut_consumed {
             let terminal_successor_gap = is_continuation
                 .then(|| st.table_flow_successor(para_idx, input.source.paragraphs_all))

@@ -2003,6 +2003,7 @@ impl TypesetEngine {
         FragmentBudget {
             fragment_opens_outer_top,
             physical_content_limit,
+            fragment_flow_origin,
             caption_extra,
             host_before_overhead,
             terminal_outer_bottom_overhead,
