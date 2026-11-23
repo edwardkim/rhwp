@@ -131,6 +131,42 @@ impl<'a> CoanchoredTableQuery<'a> {
         )
     }
 
+    /// 이어받은 표를 닫고 다음 본문을 배치하기 전에 남은 원본 host 줄을 소비한다.
+    /// 뒤로 미룬 형제 표는 이 줄의 전진과 별개다. 원본 후속 줄이 같은 사다리를 닫아야 한다.
+    pub(super) fn stored_host_advance_after_split(
+        &self,
+        next: &Paragraph,
+        next_spacing_before: f64,
+    ) -> Option<f64> {
+        use crate::model::paragraph::{ColumnBreakType, LineSeg};
+        let [line] = self.para.line_segs.as_slice() else {
+            return None;
+        };
+        let successor = next.line_segs.first()?;
+        if next.column_type != ColumnBreakType::None
+            || self.para.stored_text_partition_is_dirty()
+            || next.stored_text_partition_is_dirty()
+            || self.para.cell_format_vpos_dirty
+            || next.cell_format_vpos_dirty
+            || [line, successor].iter().any(|seg| {
+                seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || seg.line_height <= 0
+            })
+        {
+            return None;
+        }
+        let dpi = self.flow.dpi();
+        let advance = line
+            .line_height
+            .checked_add(line.line_spacing)?
+            .checked_add(crate::renderer::px_to_hwpunit(self.fmt.spacing_after, dpi))?;
+        let successor_pos = line
+            .vertical_pos
+            .checked_add(advance)?
+            .checked_add(crate::renderer::px_to_hwpunit(next_spacing_before, dpi))?;
+        (advance > 0 && successor_pos == successor.vertical_pos)
+            .then(|| crate::renderer::hwpunit_to_px(advance, dpi))
+    }
+
     /// 원래 순서의 남은 표와 최초 문단 시작 높이를 보존한다. 큐에는 아직 넣지 않는다.
     #[allow(clippy::too_many_arguments)]
     pub(in crate::renderer::typeset) fn remaining_controls(

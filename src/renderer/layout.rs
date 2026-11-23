@@ -11244,6 +11244,7 @@ impl LayoutEngine {
                     .get(item_para)
                     .and_then(|para| styles.para_styles.get(para.para_shape_id as usize))
                     .map_or(0.0, |style| style.spacing_after);
+                let mut owns_flow_floor = false;
                 for (&(owner, _), placement) in &col_content.paragraph_float_placements {
                     if owner == item_para
                         && matches!(
@@ -11268,7 +11269,7 @@ impl LayoutEngine {
                     {
                         new_y =
                             col_area.y + placement.paragraph_end(new_y - col_area.y, spacing_after);
-                        hcursor.min_flow_floor = hcursor.min_flow_floor.max(new_y);
+                        owns_flow_floor = true;
                     }
                 }
                 // The same saved endpoint closes pagination and paint. Adding
@@ -11305,6 +11306,9 @@ impl LayoutEngine {
                             new_y = resolved_end;
                         }
                     }
+                }
+                if owns_flow_floor {
+                    hcursor.min_flow_floor = hcursor.min_flow_floor.max(new_y);
                 }
             }
             if std::env::var_os("RHWP_DIAG_FLOW_ORIGIN").is_some() {
