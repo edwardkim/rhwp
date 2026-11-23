@@ -1,5 +1,9 @@
 # PR #9325 연결선 가운데 점 재검토
 
+메인테이너 보완 후 본문·셀 안의 가운데 선분을 실제 Studio 마우스로 옮기고 양 형식으로 저장·재열기했다. 꺾임 0개·1개 인쇄 대조군을 포함한 12쪽의 Native·fresh WASM 최저는 100.00%다. [최종 조작과 출력 검증](assets/semanticist21-20261124-rework/final/README.md)
+
+## 기여자 재제출 시점의 검토
+
 2026-11-24 메인테이너 판정은 **Studio 편집 완료 기준으로 머지 보류**다. 기여자가 답변한 두 인쇄 결함은 해소됐다. 남은 동작은 사용자가 화면의 가운데 손잡이를 드래그할 때 새 API를 호출하는 것이다. [보완 요청](https://github.com/edwardkim/rhwp/pull/9325#issuecomment-7089123105) · [기여자 답변](https://github.com/edwardkim/rhwp/pull/9325#issuecomment-7103632904)
 
 | 검증 | 후보에서 확인한 결과 |

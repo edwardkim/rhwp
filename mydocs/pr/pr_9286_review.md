@@ -1,5 +1,9 @@
 # PR #9286 구버전 HWPX의 도형 투명도 재검토
 
+메인테이너 보완 후 v0.9.1의 완전 투명 채움을 명시적으로 복구했고, 원본과 가로·묶음 타원의 첫 파선이 한컴 인쇄와 일치했다. 25쪽의 Native·fresh WASM 최저는 100.00%다. [최종 출력과 저장 검증](assets/semanticist21-20261124-rework/final/README.md)
+
+## 기여자 재제출 시점의 검토
+
 2026-11-24 메인테이너 판정은 **머지 보류**다. 원본 반투명 타원의 위쪽 위치는 개선됐고, 원본 표지가 들어 있는 기여자 fixture도 투명 채움을 보존한다. 공식 v0.9.1에서 실제로 저장한 표지 없는 HWPX의 투명 채움은 후보에서 사라진다. [보완 요청](https://github.com/edwardkim/rhwp/pull/9286#issuecomment-7089120496) · [기여자 답변](https://github.com/edwardkim/rhwp/pull/9286#issuecomment-7103633468)
 
 - 공식 v0.9.1 Linux 실행 파일의 배포 체크섬을 확인한 후 같은 HWP를 `rhwp export-hwpx`로 다시 저장했다. 산출물은 이전 보류 당시 파일과 ZIP 전체 SHA-256이 같다. `0106516be2183eb65cc2e3afe06812e2abd8a59870a232fc1bcb2219d51722bb`이며 두 원본 표지가 모두 없고 `winBrush alpha="1"`을 담고 있다. [배포물·원본·산출물 해시](assets/semanticist21-20261124-rework/release-0.9.1-export.json)

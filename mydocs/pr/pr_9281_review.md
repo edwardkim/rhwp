@@ -1,5 +1,9 @@
 # PR #9281 구역 설정 재검토
 
+메인테이너 보완 후 글자가 낀 첫 구역과 단 정의가 없는 문서 모두 A4·시작 번호 1로 인쇄됐다. 다음 구역까지 포함한 32쪽의 Native·fresh WASM 최저는 100.00%다. [최종 출력과 저장 검증](assets/semanticist21-20261124-rework/final/README.md)
+
+## 기여자 재제출 시점의 검토
+
 2026-11-24 메인테이너 판정은 **머지 보류**다. `semanticist21`이 보완한 원본에서는 첫 구역의 중복 바탕쪽이 사라졌다. 구역 정의와 단 정의 사이에 글자가 있는 문서에서는 용지와 시작 쪽 번호가 여전히 한컴 인쇄와 다르다. [보완 요청](https://github.com/edwardkim/rhwp/pull/9281#issuecomment-7089119750) · [기여자 답변](https://github.com/edwardkim/rhwp/pull/9281#issuecomment-7093796899)
 
 | 비교 입력 | Windows 한컴 Print | 후보 Native · fresh WASM |
