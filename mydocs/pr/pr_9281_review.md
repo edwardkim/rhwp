@@ -1,6 +1,6 @@
 # PR #9281 구역 설정 재검토
 
-메인테이너 보완 후 글자가 낀 첫 구역과 단 정의가 없는 문서 모두 A4·시작 번호 1로 인쇄됐다. 다음 구역까지 포함한 32쪽의 Native·fresh WASM 최저는 100.00%다. [최종 출력과 저장 검증](assets/semanticist21-20261124-rework/final/README.md)
+메인테이너 보완 후 글자가 낀 첫 구역과 단 정의가 없는 문서 모두 A4·시작 번호 1로 인쇄됐다. 다음 구역까지 포함한 32쪽의 Native·fresh WASM 최저는 100.00%다. 기존 보호 문서의 WASM 14쪽이 정본 하한에 미달해 통합을 보류한다. [최종 출력과 저장 검증](assets/semanticist21-20261124-rework/final/README.md)
 
 ## 기여자 재제출 시점의 검토
 
