@@ -318,6 +318,21 @@ fn floating_connector_in_a_cell_keeps_the_row_and_following_text() {
         .is_some(),
         "셀 안 연결선이 그려지지 않는다"
     );
+    // 한/글 인쇄는 칸을 키우지 않은 채 연결선·도형을 칸 밖까지 그린다. 칸 클립 아래에 두면
+    // 한 줄 높이 칸에 잘려 사라진다.
+    fn path_under_cell_clip(node: &RenderNode, clipped: bool) -> bool {
+        let clipped =
+            clipped || matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.clip);
+        (clipped && matches!(node.node_type, RenderNodeType::Path(_)))
+            || node
+                .children
+                .iter()
+                .any(|child| path_under_cell_clip(child, clipped))
+    }
+    assert!(
+        !path_under_cell_clip(&tree.root, false),
+        "셀 안 연결선이 칸 클립에 잘린다"
+    );
     // 연결선·도형이 든 칸과 빈 칸의 표 높이·뒤 본문 자리가 같다(편집 직후, HWP·HWPX로 다시 연 문서).
     assert_eq!(place(&with), place(&empty), "편집 직후");
     for hwpx in [false, true] {
