@@ -17,19 +17,20 @@
 //!   BlogForm_BookReview      357.19pt 351.49  379.37 우단 = 선언    유지     축소✗   유지✓
 //!   BlogForm_MovieReview     357.19   351.49  379.37 우단 = 선언    유지     축소✗   유지✓
 //!   hwpx_sample2 p3          541.36   538.60  538~539 폭  = 본문    축소     축소✓   축소✓
-//!   BlogForm_Recipe          357.19   351.49  379.37 우단 = 선언    축소     축소✗   축소✗
+//!   BlogForm_Recipe          357.19   351.49  379.37 우단 = 선언    축소     축소✗   유지✓
 //! ```
 //!
-//! 정본으로 판정 가능한 네 건에서 `#6590` 규칙은 1/4, 이 PR 은 **3/4** 를 맞춘다.
+//! #7059에서 네 건 중 세 건을 맞췄다. 저장 오른쪽 여백을 적용하면서 Recipe의 선언 폭도 복원했다.
 //!
-//! ⚠ `BlogForm_Recipe` 는 **전후 모두 틀린다**(회귀가 아니라 미해결). 그 문서는 칸 두 개가
-//! 모두 축소 폭에 수렴하는데 정본은 선언 폭이다 — 저장값과 정본이 직접 어긋나는 별개 축이라
-//! 따로 파야 한다. 이 시험은 그 상태를 **명시적으로 고정**해, 나중에 그 축을 건드리면 소리가
-//! 나게 한다.
+//! Recipe 1쪽의 선언 폭 검사는 관계형이다. 한컴 2024 Print
+//! `pdf/basic/BlogForm_Recipe-hwp-2024.pdf`의 두 바깥 괘선 사이는 475.79px(96 DPI)다.
+//! Native 93.06% → 100.00%, fresh WASM 93.04% → 100.00%. compat 2024, 2px raw 실루엣.
+//! 원본 문단이 소유한 같은 표가 본문 폭과 선언 폭 중 원본 선언 폭에 가깝게 출력되는지 검사한다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 /// 정본 `pdf/basic/BlogForm_BookReview-hwp-2020.pdf` 외 2판 — 괘선 우단 379.37pt.
@@ -38,8 +39,6 @@ const BOOK_REVIEW: &str = "samples/basic/BlogForm_BookReview.hwp";
 const MOVIE_REVIEW: &str = "samples/basic/BlogForm_MovieReview.hwp";
 /// 정본 `pdf/hwpx_sample2-2020.pdf` 3쪽 — 표 폭 538~539pt = 본문 폭.
 const HWPX_SAMPLE2: &str = "samples/hwpx_sample2.hwp";
-/// ⚠ 사다리와 정본이 어긋나는 미해결 표본. 상태 고정용.
-const RECIPE: &str = "samples/basic/BlogForm_Recipe.hwp";
 
 fn max_table_width(node: &RenderNode) -> f64 {
     let mut best = f64::NEG_INFINITY;
@@ -106,18 +105,46 @@ fn ladder_says_shrunk_so_the_rule_still_fires() {
     );
 }
 
-/// ⚠ 미해결 — 사다리와 정본이 어긋나는 표본의 상태를 고정한다.
-///
-/// `BlogForm_Recipe` 는 칸 두 개가 모두 축소 폭에 수렴하는데 정본 괘선은 선언 폭
-/// (`pdf/basic/BlogForm_Recipe-hwp-2020.pdf` x 22.51..379.37pt, 형제 표본과 같다)이다.
-/// `#6590` 규칙에서도 이 PR 에서도 축소된다 — **회귀가 아니라 미해결**이다. 이 축을 건드리면
-/// 이 시험이 먼저 소리를 낸다.
 #[test]
-fn recipe_still_disagrees_with_its_oracle() {
-    let (drawn, _, body_px) = widths(RECIPE, 0);
+fn recipe_footer_table_keeps_declared_width_with_stored_right_margin() {
+    let bytes = std::fs::read("samples/basic/BlogForm_Recipe.hwp").expect("한컴 원본");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("문서 로드");
+    core.set_hangul2024_compat(true);
+    assert_eq!(core.page_count(), 1, "한컴 Print의 쪽수");
+    let section = &core.document().sections[0];
+    let source_para = &section.paragraphs[1];
+    let [Control::Table(source)] = source_para.controls.as_slice() else {
+        panic!("둘째 본문 문단은 아래쪽 표 하나를 소유해야 한다");
+    };
+    let page = &section.section_def.page_def;
+    let content_width = page.width - page.margin_left - page.margin_right;
+    assert!(source.common.width > content_width);
+
+    let tree = core.build_page_render_tree(0).expect("첫 쪽 렌더");
+    let mut pending = vec![&tree.root];
+    let mut owned_tables = Vec::new();
+    while let Some(node) = pending.pop() {
+        pending.extend(&node.children);
+        if matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.section_index == Some(0)
+                && table.para_index == Some(1)
+                && table.control_index == Some(0)
+                && table.cell_context.is_none())
+        {
+            owned_tables.push(node);
+        }
+    }
+    let [rendered] = owned_tables.as_slice() else {
+        panic!("둘째 문단의 아래쪽 표를 한 번만 출력해야 한다");
+    };
+    let declared_px =
+        rhwp::renderer::hwpunit_to_px(source.common.width as i32, rhwp::renderer::DEFAULT_DPI);
+    let column_px =
+        rhwp::renderer::hwpunit_to_px(content_width as i32, rhwp::renderer::DEFAULT_DPI);
+    let drawn = rendered.bbox.width;
+    // 한컴 Print는 이 표를 본문 폭보다 넓은 원본 선언 폭으로 출력한다.
     assert!(
-        (drawn - body_px).abs() <= 1.5,
-        "Recipe 는 아직 축소된다(정본은 선언 폭). 상태가 바뀌었으면 정본으로 다시 재고 \
-         이 시험과 모듈 주석을 함께 갱신해라. 그려진 폭 {drawn:.1}px · 본문 {body_px:.1}px"
+        (drawn - declared_px).abs() < (drawn - column_px).abs(),
+        "아래쪽 표가 선언 폭 {declared_px:.2}px에 가깝게 표시되어야 한다. 본문 {column_px:.2}px, 실제 {drawn:.2}px",
     );
 }
