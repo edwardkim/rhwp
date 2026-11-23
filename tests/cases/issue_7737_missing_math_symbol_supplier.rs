@@ -82,7 +82,7 @@ fn explicit_hft_does_not_borrow_a_truetype_programs_missing_glyph_contract() {
     assert_eq!(
         EmbeddedTextMeasurer.estimate_text_width("⦁", &style),
         16.0,
-        "기존 HFT 미확인 폭을 다른 TTF 프로그램의 cmap으로 바꾸지 않는다"
+        "원본에서 폭을 확인하지 못해도 다른 TrueType의 문자표로 대체하지 않는다"
     );
 }
 

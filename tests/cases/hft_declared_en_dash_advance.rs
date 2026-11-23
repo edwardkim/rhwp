@@ -40,7 +40,7 @@ fn original_hft_en_dash_uses_its_independent_full_em_advance() {
             // 독립 원본의 1em과 원래 4HU 격자의 반올림 반폭을 구분한다.
             assert!(
                 (advance(&style, "–") - expected).abs() <= 2.0 / 75.0 + f64::EPSILON,
-                "원본 HFT en dash의 전진은 크기·장평에 비례한다"
+                "원본 en dash의 전진은 크기와 장평에 비례한다"
             );
         }
     }
@@ -75,7 +75,7 @@ fn unmeasured_bold_hft_en_dash_keeps_its_narrower_supplier_advance() {
             // 굵기 자간이 포함된 최종 전진도 일반 전각 칸보다 좁아야 한다.
             assert!(
                 bold_end > 0.0 && bold_end < regular_end,
-                "일반 HFT의 부분 메트릭을 미확인 굵게에 상속하면 뒤 글자가 밀린다: {bold_end} / {regular_end}"
+                "보통 글꼴에서 확인한 전진폭을 굵은 글꼴에 적용하면 뒤 글자가 밀린다: {bold_end} / {regular_end}"
             );
         }
     }

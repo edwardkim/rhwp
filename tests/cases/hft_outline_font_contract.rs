@@ -51,7 +51,7 @@ fn source_hft_outline_follows_the_selected_environment_family_only() {
     assert!(
         core.register_hft_outline_font_native("Selected CFF", CFF, 0)
             .unwrap(),
-        "실제 HFT 선택 family가 paint 윤곽을 공급해야 한다"
+        "선택한 표시용 CFF가 인쇄 윤곽을 공급해야 한다"
     );
     assert_eq!(
         rhwp::serializer::serialize_document(core.document()).unwrap(),
@@ -213,7 +213,11 @@ fn verified_hft_advance_survives_a_supplied_display_otf() {
     let measure = |style: &TextStyle| EmbeddedTextMeasurer.compute_char_positions("A", style)[1];
     let source_width = measure(&style);
     style.native_otf_metrics = fonts.get_otf("synthetic", false, false);
-    assert_eq!(measure(&style), source_width, "원본 HFT 전진을 보존한다");
+    assert_eq!(
+        measure(&style),
+        source_width,
+        "원본 글꼴의 전진폭을 보존한다"
+    );
     style.source_font_is_hft = false;
     assert_ne!(
         measure(&style),
@@ -264,7 +268,7 @@ fn declared_hft_hyphenation_point_keeps_its_half_em_before_display_fallback() {
     assert_ne!(
         measure(&style),
         0.5,
-        "원본 HFT 소유가 없는 명시 OTF에는 확장하지 않는다"
+        "원본 글꼴과 연결되지 않은 명시 OTF에는 이 폭을 적용하지 않는다"
     );
 }
 
@@ -871,7 +875,7 @@ mod native {
             assert_eq!(
                 paint(y, true, RenderProfile::Screen),
                 paint(y, false, RenderProfile::Screen),
-                "화면 출력은 HFT 전용 Print 윤곽에 영향을 받지 않는다"
+                "화면 출력에 인쇄용 윤곽을 적용하지 않는다"
             );
         }
         let original = center(&paint(4.1, false, RenderProfile::Print));
@@ -1433,7 +1437,7 @@ fn original_hft_latin_punctuation_precedes_a_hangul_slots_display_ttf_fallback()
     assert_eq!(owners.len(), 1, "원문의 구두점 누락·중복 금지");
     assert!(
         owners[0].starts_with(FAMILY),
-        "원 HFT 영문 프로그램이 괄호를 소유한다: {owners:?}"
+        "원본 영문 글꼴이 괄호의 윤곽을 공급한다: {owners:?}"
     );
     assert_eq!(core.document().sections[0].paragraphs[0].text, "가(가");
 }

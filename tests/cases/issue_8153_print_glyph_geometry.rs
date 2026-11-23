@@ -324,7 +324,7 @@ mod split_hft_original_programs {
         assert_eq!(
             width(&style),
             original,
-            "display CFF must not own HFT width"
+            "display CFF must not override the original font advance"
         );
 
         style.natural_program_metrics = true;
@@ -339,7 +339,7 @@ mod split_hft_original_programs {
         assert_eq!(
             width(&style),
             natural,
-            "non-HFT keeps actual program metrics"
+            "other source types retain the supplied program metrics"
         );
     }
 

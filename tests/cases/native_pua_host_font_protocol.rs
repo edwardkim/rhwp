@@ -260,7 +260,7 @@ fn same_family_hft_and_truetype_requests_keep_distinct_source_programs() {
     );
     assert!(
         requests.iter().any(|request| !request.source_ttf),
-        "HFT 요청이 없음: {requests:?}"
+        "표시용 글꼴 요청이 없다: {requests:?}"
     );
     let ttf = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
     let cff = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");

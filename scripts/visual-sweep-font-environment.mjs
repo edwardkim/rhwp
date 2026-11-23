@@ -34,7 +34,7 @@ export async function applySweepFontEnvironment(doc, environmentJson, preparePro
   }
   const plan = JSON.parse(doc.getDocumentFontSelectionPlan());
   if (plan.environmentId !== null) throw Error('새 문서에 예상하지 못한 글꼴 환경이 있습니다.');
-  // 기본 HFT face도 실제 설치된 OTF/TTF 프로그램으로 선택할 수 있다.
+  // 대체 후보가 없어도 원본 이름과 일치하는 TTF·OTF를 먼저 조회한다.
   // 후보가 없는 문서만 준비를 생략하고, 선택은 공통 Rust 계약에 맡긴다.
   if (plan.requests.length === 0) {
     const environment = JSON.parse(doc.buildFontEnvironmentFromAvailablePrograms('[]'));

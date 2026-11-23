@@ -212,6 +212,6 @@ fn hft_declared_bold_latin_keeps_the_bold_display_advance() {
     let span = end_x - first_x;
     assert!(
         (span - HANCOM_SECOND_LINE_PX).abs() < 2.0,
-        "HFT 굵은 제목 둘째 줄 {span:.2}px, 정본 {HANCOM_SECOND_LINE_PX:.2}px"
+        "원본 굵은 제목의 둘째 줄 {span:.2}px, 정본 {HANCOM_SECOND_LINE_PX:.2}px"
     );
 }

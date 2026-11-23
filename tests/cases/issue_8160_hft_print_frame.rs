@@ -105,7 +105,7 @@ fn issue_8160_selected_font_and_page_number_preserve_print_frame_ownership() {
     assert_eq!(
         origin(&source),
         origin(&paint),
-        "자동 번호의 원본 전진·배치에 본문 HFT 프레임을 중복 적용하지 않는다"
+        "자동 번호의 원본 전진과 배치에 본문 인쇄 프레임을 중복 적용하지 않는다"
     );
 
     // 명시한 원 프로그램은 이전 슬롯의 HFT 프레임을 상속하지 않는다.
@@ -178,13 +178,13 @@ fn issue_8160_selected_font_and_page_number_preserve_print_frame_ownership() {
         if preserves_source {
             assert!(
                 origin(&print).1 < origin(&source).1,
-                "자동 공급의 원본 HFT 프레임 보존"
+                "자동 공급에서도 원본 글꼴의 인쇄 프레임을 보존한다"
             );
         } else {
             assert_eq!(
                 origin(&print),
                 origin(&source),
-                "선택한 원 프로그램에 과거 슬롯의 HFT 프레임을 중첩하지 않음"
+                "선택한 원본 글꼴에 이전 슬롯의 인쇄 프레임을 중첩하지 않는다"
             );
         }
     }

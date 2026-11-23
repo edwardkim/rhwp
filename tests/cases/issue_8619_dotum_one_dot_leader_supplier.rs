@@ -110,7 +110,7 @@ fn hft_declared_source_does_not_borrow_the_dotum_program_gap() {
     let hangul = record(&program, "감");
     assert!(
         (advance(&dot) / advance(&hangul) - SUPPLIER_EM).abs() > 4.0 / advance(&hangul),
-        "HFT 원본의 `․`에 HDOTUM 자연 전진을 빌려 오지 않는다: 점 {} / 한글 {}",
+        "원본 `․`에는 표시용 HDOTUM의 자연 전진폭을 적용하지 않는다: 점 {} / 한글 {}",
         advance(&dot),
         advance(&hangul)
     );

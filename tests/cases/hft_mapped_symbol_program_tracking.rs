@@ -56,7 +56,7 @@ fn implicit_double_rule_does_not_inherit_the_body_hft_bold_tracking() {
         }
         assert!(
             advance(&bold, "A") > advance(&normal, "A"),
-            "원래 본문 HFT 굵기 전진을 제거하지 않는다"
+            "원본 본문의 굵기 전진을 유지한다"
         );
     }
 }
@@ -80,7 +80,7 @@ fn literal_unicode_rule_keeps_its_own_program_contract() {
     );
     assert!(
         advance(&s, "A") > advance(&style("한양중고딕 (HFT)", false), "A"),
-        "원래 HFT 본문 굵기 전진을 보존한다"
+        "원본 본문의 굵기 전진을 보존한다"
     );
 }
 #[test]

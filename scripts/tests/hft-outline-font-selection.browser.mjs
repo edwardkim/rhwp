@@ -18,7 +18,7 @@ import {findChrome} from '../rasterize-svg-webfonts.mjs';
 const root = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const require = createRequire(join(root, 'rhwp-studio/package.json'));
 
-test('HFT 원문의 명시 자연 TTF는 Print에서 실제 등록 윤곽을 쓰고 화면·자동 치환은 보존한다', async t => {
+test('구형 글꼴을 선언한 문서의 인쇄는 명시 공급한 TrueType 윤곽을 사용한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
@@ -87,7 +87,7 @@ test('HFT 원문의 명시 자연 TTF는 Print에서 실제 등록 윤곽을 쓰
 
 // 관계형: 같은 실제 CFF의 보통 윤곽을 합성 굵기의 fill·stroke도 소비해야 한다.
 // 저장소 소유 합성 글꼴의 계약 검사이며 실물 페이지의 위치 핀이나 시각 gate를 대신하지 않는다.
-test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 보존한다', async t => {
+test('구형 글꼴·TrueType 선언의 합성 굵기는 공급된 CFF 윤곽을 사용한다', async t => {
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([
     ['/rhwp.js', ['application/javascript', readFileSync(join(pkg, 'rhwp.js'))]],
@@ -221,7 +221,7 @@ test('HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 
   }
 });
 
-test('실제 HFT 윤곽 replay가 옛한글 우선 face와 화면 경로를 보존한다', async t => {
+test('인쇄용 윤곽을 공급해도 옛한글 우선 글꼴과 화면 출력을 유지한다', async t => {
   // Frontend package CI는 먼저 같은 source의 WASM을 pkg/에 빌드한다.
   const pkg = resolve(process.env.RHWP_SWEEP_TEST_WASM_PKG || join(root, 'pkg'));
   const files = new Map([
@@ -286,7 +286,7 @@ test('실제 HFT 윤곽 replay가 옛한글 우선 face와 화면 경로를 보�
       if (row.text === '\ua960') assert.ok(row.after.some(call => call.font.includes('RHWP Old Hangul')), JSON.stringify(row));
     } else {
       assert.equal(row.after.some(call => call.text === row.text), false,
-        `일반 HFT 윤곽 경로를 전체 비활성화해 통과하면 안 된다: ${JSON.stringify(row)}`);
+        `보통 글자의 인쇄용 윤곽도 실제로 사용해야 한다: ${JSON.stringify(row)}`);
     }
   }
 });

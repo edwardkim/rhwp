@@ -46,7 +46,7 @@ fn hft_bold_decoration_survives_outline_supply() {
         assert!((regular - size * 0.9).abs() <= hu * 3.0);
         assert!(
             (decorated - regular - size * 0.05).abs() <= hu * 3.0,
-            "HFT 꾸밈 전진 소유: regular={regular}, bold={decorated}, size={size}"
+            "원본 글꼴의 합성 굵기 전진폭: regular={regular}, bold={decorated}, size={size}"
         );
     }
 }
@@ -60,7 +60,7 @@ fn explicit_natural_outline_does_not_inherit_hft_decoration() {
     assert_eq!(
         width("가", &selected),
         regular,
-        "자연 전진을 선택한 세션은 원본 HFT의 추가 전진을 상속하지 않는다"
+        "공급된 글꼴의 자연 전진을 선택하면 원본 글꼴의 추가 전진을 적용하지 않는다"
     );
 }
 #[test]
@@ -77,7 +77,7 @@ fn unmarked_programs_and_spaces_do_not_gain_hft_decoration() {
     assert_eq!(
         width("가", &anonymous),
         regular,
-        "원본 family 주소가 없는 스타일은 공급 프로그램만으로 HFT 계약을 추정하지 않는다"
+        "원본 이름을 모르면 공급된 글꼴만으로 구형 글꼴의 추가 전진을 추정하지 않는다"
     );
     let mut hft = style(24.0);
     let space = width(" ", &hft);

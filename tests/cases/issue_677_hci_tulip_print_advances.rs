@@ -123,7 +123,7 @@ fn hci_tulip_table_runs_use_print_advances() {
     let shape = &doc_info.char_shapes[27];
     let latin = &doc_info.font_faces[1][usize::from(shape.font_ids[1])];
     assert_eq!(latin.name, "HCI Tulip");
-    assert_eq!(latin.alt_type, 2, "HFT 선언");
+    assert_eq!(latin.alt_type, 2, "구형 글꼴 선언");
     assert!(!shape.bold && !shape.italic);
     assert_eq!((shape.spacings[1], shape.ratios[1]), (0, 100));
 

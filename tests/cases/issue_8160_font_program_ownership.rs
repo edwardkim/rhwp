@@ -196,7 +196,7 @@ fn issue_8160_sample16_hft_bold_heading_preserves_content_and_independent_comple
     assert_eq!(origins.len(), 1);
     assert!(
         (origins[0].0 - 299.6766764322917).abs() <= 2.0,
-        "원본 HFT 굵은 전진 뒤 '터': {:?}",
+        "원본 굵은 글자의 전진 뒤 '터': {:?}",
         origins[0]
     );
     assert!((origins[0].1 - 636.1599934895834).abs() <= 2.0);

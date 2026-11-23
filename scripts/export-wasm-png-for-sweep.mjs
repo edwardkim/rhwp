@@ -450,7 +450,7 @@ async function main() {
             if (perPagePaintFonts && paintSelected) paintJobs.push({family, key, bytes});
             loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
           }
-          // 성공한 FontFace와 같은 바이트·후보 순서만 분할 HFT 윤곽에 공급한다.
+          // FontFace에 적재한 바이트와 순서를 인쇄용 분할 CFF 윤곽에도 적용한다.
           const outlinedFamilies = new Set();
           for (const {family, key, ordered} of jobs) {
             if (outlinedFamilies.has(key)) continue;

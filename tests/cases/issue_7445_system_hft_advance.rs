@@ -136,6 +136,6 @@ fn true_type_body_keeps_its_own_program() {
     let source_em = f64::from(core.document().doc_info.char_shapes[2].base_size);
     assert!(
         (r["layoutMetric"]["baseAdvanceHwpunit"].as_f64().unwrap() - source_em).abs() <= 1.,
-        "바탕 TrueType의 전각을 HFT 시스템0.88em으로 바꾸지 않는다"
+        "바탕 TrueType의 전각을 구형 시스템 글꼴의 0.88em으로 바꾸지 않는다"
     );
 }

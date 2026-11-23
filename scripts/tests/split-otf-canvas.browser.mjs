@@ -199,7 +199,7 @@ test('fresh WASM은 단일 공급과 분할 OTF 배열을 모두 받아 누락 g
   assert.equal(result.changedTree, true, '두 번째 프로그램의 글리프 전진이 실제 조판에 적용돼야 한다');
   assert.equal(result.outlineFirst, true, JSON.stringify(result));
   assert.equal(result.outlineAfterClear, true, '이전 세대의 윤곽 공급을 지운 뒤 다시 등록한다');
-  assert.equal(result.selectedFirst, true, '실제 표시 family도 원 HFT 소유를 유지한다');
+  assert.equal(result.selectedFirst, true, '선택된 표시용 OTF를 원본 글꼴 요청에 연결한다');
   assert.equal(result.candidatesChanged, true);
   assert.deepEqual(result.singlePaint.calls, ['나'], '첫 조각에 없는 글자만 Canvas가 그린다');
   assert.deepEqual(result.splitPaint.calls, [], '분할 프로그램 두 글자 모두 실제 윤곽을 그린다');
@@ -211,7 +211,7 @@ test('fresh WASM은 단일 공급과 분할 OTF 배열을 모두 받아 누락 g
   assert.deepEqual(result.verifiedCff.printed.strokes, [1, 1], '0.02em과 기존 Print 장치 최소 폭을 함께 적용한다');
   assert.deepEqual(result.verifiedCff.printed2024, result.verifiedCff.printed, '합성 굵기 계약은 두 Print 세대에 적용한다');
   assert.equal(result.verifiedCff.screen.text, '가나', '화면의 기존 글꼴 선택을 보존한다');
-  assert.equal(result.verifiedCff.regular.text, '가나', '미정 유형의 보통 글자를 HFT로 재분류하지 않는다');
+  assert.equal(result.verifiedCff.regular.text, '가나', '유형 미상의 보통 글자는 기존 출력 경로를 유지한다');
   assert.equal(result.verifiedCff.realBoldChanged, true, JSON.stringify(result.verifiedCff));
   assert.deepEqual(result.verifiedCff.realBold, {text: '가나', fills: 0, strokes: []}, '실제 Bold에 보통 CFF 합성 굵기를 덧씌우지 않는다');
   assert.equal(result.verifiedCff.unchanged, true, 'paint 등록은 조판 트리를 바꾸지 않는다');

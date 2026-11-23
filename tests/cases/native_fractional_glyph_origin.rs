@@ -724,7 +724,7 @@ mod system_program_preference {
             }
             assert_eq!(
                 positions[0], positions[1],
-                "같은 주 CFF의 CoreText 컨테이너 재포장이 HFT 대체 굵기 전진을 추가하지 않는다"
+                "같은 주 CFF를 CoreText용으로 다시 포장해도 구형 글꼴의 굵기 보정을 더하지 않는다"
             );
             return;
         }

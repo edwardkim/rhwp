@@ -166,7 +166,7 @@ fn hanyang_face_with_hft_substitute_keeps_the_hft_middle_dot() {
     // 0.380 · 「시·도조례」 0.386). 대체 TTF 규칙이 여기로 번지면 안 된다.
     let svg = page_svg("samples/80168_regulatory_analysis.hwp", 1);
     assert_all_near(
-        "80168 2쪽 한양중고딕(HFT 대체)",
+        "80168 2쪽 한양중고딕의 원본 문서 지정 대체",
         &advances_of(&svg, "한양중고딕"),
         0.381,
         0.03,

@@ -105,7 +105,7 @@ fn original_hft_glyph_paint_has_its_print_frame_without_moving_source() {
         .contains("/para:335/"));
     assert!(
         origin(&paint).1 < origin(&source).1 - 1e-6,
-        "독립 Print의 원본 HFT 글리프는 물리 인쇄 프레임을 소비한다: source={:?}, paint={:?}",
+        "독립 Print의 원본 글리프는 실물 인쇄 프레임을 사용한다: source={:?}, paint={:?}",
         origin(&source),
         origin(&paint)
     );
@@ -119,7 +119,7 @@ fn original_hft_glyph_paint_has_its_print_frame_without_moving_source() {
     let (source, paint) = pair(&core, 61, "파견, 용역, 특수형태근로", "한양신명조");
     assert!(
         origin(&paint).1 < origin(&source).1 - 1e-6,
-        "셀 배경을 도형 polygon fill로 간주해 후속 HFT 종이 프레임을 없애지 않는다: source={:?}, paint={:?}",
+        "셀 배경을 도형 채움으로 간주해 뒤 글자의 인쇄 프레임을 없애지 않는다: source={:?}, paint={:?}",
         origin(&source),
         origin(&paint)
     );
@@ -188,7 +188,7 @@ fn true_type_program_keeps_its_existing_origin() {
     assert_eq!(
         origin(&source),
         origin(&paint),
-        "명시 TrueType 원점에 HFT 프레임을 중복 적용하지 않는다"
+        "명시한 TrueType의 원점에 구형 인쇄 프레임을 중복 적용하지 않는다"
     );
 }
 
@@ -292,7 +292,7 @@ fn earlier_source_fill_preserves_later_hft_print_device_frame() {
     };
     assert!(
         (sx - 1.0).abs() < 1e-6 && (sy - 1.0).abs() < 1e-6,
-        "독립 Print에서 fill 이후600DPI CTM은0.120이며 HFT라고 정밀 종이 축척을 재적용하지 않는다: {sx}/{sy}"
+        "독립 Print의 채움 이후 600 DPI 변환 계수는 0.120이며 인쇄 축척을 다시 적용하지 않는다: {sx}/{sy}"
     );
     let (x, y) = origin(&paint);
     assert!((x - 182.08).abs() <= 2.0, "9쪽 독립 glyph 원점x: {x}");
@@ -497,7 +497,7 @@ fn primary_program_availability_keeps_the_source_print_frame() {
     let (_, before) = pair(&core, 0, "가", "휴먼명조");
     assert!(
         before["paintTransform"].is_object(),
-        "원 HFT Print 프레임이 실제 활성인 대조군"
+        "원본 글꼴의 인쇄 프레임이 적용되는 대조군"
     );
     let snapshot = serde_json::json!([{
         "query":"휴먼명조", "family":"휴먼명조", "programId":"primary-availability-contract", "trueType":true

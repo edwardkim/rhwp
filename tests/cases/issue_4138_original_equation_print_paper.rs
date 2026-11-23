@@ -409,7 +409,7 @@ fn svg_font_collection_keeps_the_equation_declared_program() {
         codepoints
             .get("RHWP Hancom Legacy Equation")
             .is_some_and(|set| set.contains(&'P')),
-        "표시 조각에 적힌 원본 HFT face를 실제 임베딩 요청에 전달한다"
+        "표시 조각에 기록된 원본 글꼴을 임베딩 요청에 전달한다"
     );
     assert!(
         !codepoints.contains_key("Latin Modern Math"),

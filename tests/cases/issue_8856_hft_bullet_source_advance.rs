@@ -49,7 +49,7 @@ fn original_hft_bullet_keeps_full_cell_before_the_following_text() {
             .unwrap();
         assert!(
             (advance / size - 1.0).abs() < 0.001,
-            "원본 HFT 한 칸이 대체 glyph 폭이나 반각 휴리스틱으로 바뀜: {record}"
+            "원본 기호의 한 칸 폭이 대체 글리프 폭이나 반각 추정값으로 바뀌었다: {record}"
         );
         count += 1;
     }

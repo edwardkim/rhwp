@@ -30,7 +30,7 @@ test('준비된 프로그램의 공통 환경을 첫 페이지 수 계산 전에
   assert.equal(doc.source, original, '선택 환경은 source font·본문을 편집하지 않는다');
 });
 
-test('대체가 없어도 설치된 원본 HFT 프로그램을 선택한다', async () => {
+test('대체 후보가 없어도 준비된 원본 CFF를 선택한다', async () => {
   const doc = documentFixture();
   doc.getDocumentFontSelectionPlan = () => JSON.stringify({environmentId: null,
     requests: [{primary: ['Installed Program'], substitute: []}]});

@@ -155,7 +155,7 @@ fn so_sueop_hwp_first_page_preserves_independent_hft_advances() {
     let hwp = school_glyph_advances("SO-SUEOP.hwp");
     assert!(
         hwp.iter().all(|a| (1.035..=1.045).contains(a)),
-        "HFT 독립 전진: {hwp:?}"
+        "원본 글꼴의 독립 Print 전진폭: {hwp:?}"
     );
 }
 

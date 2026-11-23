@@ -8,7 +8,7 @@ export function orderSweepFontPrograms(records) {
 }
 
 // 일반 동명 face는 공급 순서의 첫 프로그램을 사용한다.
-// 상호 보완하는 분할 HFT CFF만 원래 순서에서 여러 프로그램을 사용한다.
+// 글리프를 나누어 공급하는 CFF 후보는 원래 순서대로 사용한다.
 export function selectSweepPaintFontPrograms(records) {
   const ordered = orderSweepFontPrograms(records);
   return ordered.every(record => record.openTypeCff) ? ordered : ordered.slice(0, 1);
@@ -164,11 +164,11 @@ export async function installCanvasFont(family, bytes, descriptors, sourceOwner 
   return font;
 }
 
-// Canvas에서 선택한 원본 TrueType과 HFT 대체 OTF를 출처별로 조판에 공급한다.
+// Canvas의 원본 TrueType 요청과 표시용 요청에 선택한 글꼴의 폭을 공급한다.
 export async function prepareHftOtfFonts(owner, fonts, loadBytes) {
   if (typeof owner?.getNativeOtfFontRequests !== 'function'
       || typeof owner?.prepareNativeOtfFonts !== 'function') {
-    throw Error('HFT OpenType 폭 공급 API가 없는 WASM입니다.');
+    throw Error('글꼴 폭 공급 API가 없는 WASM입니다.');
   }
   const requests = JSON.parse(owner.getNativeOtfFontRequests());
   const programs = new Map(), loaded = new Map(), proofs = [];

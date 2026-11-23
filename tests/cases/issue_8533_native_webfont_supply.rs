@@ -530,7 +530,7 @@ fn declared_hft_substitute_keeps_its_own_punctuation_contract() {
     assert_eq!(
         make("#신명조", true),
         make("명조", false),
-        "문서가 선언한 실제 HFT 대체는 임의 표시 치환과 구별해 같은 글리프 전진을 사용"
+        "문서가 지정한 대체 글꼴의 글리프 전진폭을 적용한다"
     );
 }
 
@@ -596,7 +596,7 @@ fn verified_hft_round_markers_keep_source_advance_after_display_program_supply()
         assert_ne!(
             trace(&explicit, character)["widthSource"],
             "measuredOriginalGlyph",
-            "같은 이름의 명시 TrueType은 원본 HFT 프로그램과 구분한다"
+            "같은 이름의 명시 TrueType과 구형 글꼴 선언을 구분한다"
         );
     }
 }

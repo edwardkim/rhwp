@@ -79,7 +79,7 @@ fn stored_hyphen_uses_the_measured_latin_face_and_preserves_source_membership() 
             .as_deref()
             .map(String::as_str),
         None,
-        "원본이 명시한 TTF 폭에 HFT 부분 메트릭을 덮어쓰지 않는다"
+        "원본이 지정한 TrueType 전진폭을 구형 글꼴 폭으로 덮어쓰지 않는다"
     );
     assert_eq!(run.style.font_size, 20.0, "독립 Print 15pt");
     assert!(

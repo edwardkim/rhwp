@@ -107,7 +107,7 @@ fn another_program_does_not_borrow_primary_selection_identity() {
     let bold = selected_style(true, 0, false, id);
     assert!(
         positions(&bold)[1] > positions(&regular)[1],
-        "다른 프로그램은 기존 HFT 대체 꾸밈 경계를 유지한다"
+        "다른 프로그램의 합성 굵기 전진폭은 기존 규칙을 따른다"
     );
 }
 
