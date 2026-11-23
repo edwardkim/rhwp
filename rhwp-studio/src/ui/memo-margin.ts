@@ -1,14 +1,18 @@
 import type { EventBus } from '@/core/event-bus';
 import type { MemoComposeRequest, MemoInfo } from '@/core/memo-editor';
+import { userSettings } from '@/core/user-settings';
 import { t } from '../i18n/index.ts';
 import { LocalContextMenu } from './local-context-menu';
 
-export interface LocatedMemo {
-  memo: MemoInfo;
-  replies: MemoInfo[];
+export interface LocatedAnchor {
   x: number;
   y: number;
   edge: number;
+}
+
+export interface LocatedMemo extends LocatedAnchor {
+  memo: MemoInfo;
+  replies: MemoInfo[];
 }
 
 export type MemoAction = (id: number, action?: 'update' | 'reply' | 'remove') => void;
@@ -32,7 +36,7 @@ export class MemoMargin {
   private composer: HTMLFormElement | null = null;
   private menu = new LocalContextMenu();
   private request: MemoComposeRequest | null = null;
-  private connected = false;
+  private connected = userSettings.getViewSettings().showMemoGuides;
   private selected: number | null = null;
   private hovered: number | null = null;
   private focused: number | null = null;
@@ -40,6 +44,8 @@ export class MemoMargin {
 
   visible = false;
   annotations = true;
+
+  get draftAnchor() { return this.request?.anchor; }
 
   get active(): number | null { return this.request?.cardId ?? this.hovered ?? this.focused ?? this.selected; }
 
@@ -69,7 +75,10 @@ export class MemoMargin {
         this.annotations = !this.annotations;
         this.visible = this.annotations;
       }
-      if (option === 'guides') this.connected = !this.connected;
+      if (option === 'guides') {
+        this.connected = !this.connected;
+        userSettings.setShowMemoGuides(this.connected);
+      }
       this.syncVisibility();
     });
     this.syncVisibility();
@@ -147,9 +156,14 @@ export class MemoMargin {
     });
     this.composer = form;
     const card = request.cardId === null ? null : this.entries.get(request.cardId)?.card;
-    (card ?? this.panel).insertBefore(form, card ? null : this.cards);
+    if (card) card.append(form);
+    else if (request.kind === 'insert') {
+      form.classList.add('memo-draft');
+      this.cards.append(form);
+      this.cards.scrollTop = 0;
+    } else this.panel.insertBefore(form, this.cards);
     this.syncVisibility();
-    textarea.focus();
+    textarea.focus({ preventScroll: true });
   }
 
   private renderCard(memo: MemoInfo, replies: MemoInfo[]): HTMLElement {
@@ -218,7 +232,7 @@ export class MemoMargin {
     return card;
   }
 
-  update(located: readonly LocatedMemo[]): void {
+  update(located: readonly LocatedMemo[], draft: LocatedAnchor | null): void {
     this.guides.replaceChildren();
     if (this.panel.hidden) return;
     const content = this.container.querySelector('#scroll-content')!;
@@ -226,17 +240,45 @@ export class MemoMargin {
     const contentRect = content.getBoundingClientRect();
     const viewRect = this.container.getBoundingClientRect();
     const railRect = this.cards.getBoundingClientRect();
-    const visible = located.filter(mark => contentRect.top + mark.y >= viewRect.top
-      && contentRect.top + mark.y <= viewRect.bottom).sort((a, b) => a.y - b.y);
+    const inView = ({ y }: LocatedAnchor) => contentRect.top + y >= viewRect.top
+      && contentRect.top + y <= viewRect.bottom;
+    const visible = located.filter(inView).sort((a, b) => a.y - b.y);
+    const guide = (anchor: LocatedAnchor, toY: number, active: boolean, isDraft = false) => {
+      const fromX = contentRect.left + anchor.x;
+      const fromY = contentRect.top + anchor.y;
+      if (!this.connected || toY < railRect.top || toY > railRect.bottom
+        || fromX < viewRect.left || fromX > viewRect.right) return;
+      const elbow = Math.max(fromX, Math.min(viewRect.right, contentRect.left + anchor.edge));
+      const point = (px: number, py: number) => (px - editorRect.left) + ',' + (py - editorRect.top);
+      const line = document.createElementNS(SVG_NS, 'polyline');
+      line.classList.toggle('is-active', active);
+      if (isDraft) line.classList.add('is-draft');
+      line.setAttribute('points', [point(fromX, fromY), point(elbow, fromY), point(railRect.left, toY)].join(' '));
+      this.guides.append(line);
+    };
     const ids = new Set(visible.map(({ memo }) => memo.id));
     for (const [id, { card }] of this.entries) {
       if (ids.has(id) || this.composer?.parentElement === card) continue;
       card.remove();
       this.entries.delete(id);
     }
-    this.empty.hidden = visible.length !== 0;
+    const form = this.composer?.classList.contains('memo-draft') ? this.composer : null;
+    this.empty.hidden = visible.length !== 0 || !!form;
+    const scrolling = this.cards.scrollTop;
+    let draftTop = 0;
+    let draftHeight = 0;
+    if (form) {
+      draftHeight = form.offsetHeight;
+      const hasAnchor = draft !== null && inView(draft);
+      const preferred = hasAnchor ? contentRect.top + draft.y - railRect.top - draftHeight / 2 : 4;
+      // 기준 글자가 화면 밖으로 벗어나도 작성 중인 내용에는 접근할 수 있어야 한다.
+      draftTop = Math.max(4, Math.min(preferred, railRect.height - draftHeight - 4));
+      form.style.top = String(draftTop) + 'px';
+      if (hasAnchor) guide(draft, railRect.top + draftTop + Math.min(draftHeight / 2, 32) - scrolling, true, true);
+    }
     let next = 4;
-    for (const { memo, replies, x, y, edge } of visible) {
+    for (const anchor of visible) {
+      const { memo, replies, y } = anchor;
       const signature = JSON.stringify([memo, replies]);
       let entry = this.entries.get(memo.id);
       if (!entry || (entry.signature !== signature && this.composer?.parentElement !== entry.card)) {
@@ -252,20 +294,13 @@ export class MemoMargin {
       const fromY = contentRect.top + y;
       const height = card.offsetHeight;
       const preferred = fromY - railRect.top - height / 2;
-      const top = Math.max(next, Math.min(preferred, railRect.height - height - 4));
+      let top = Math.max(next, Math.min(preferred, railRect.height - height - 4));
+      if (form && top < draftTop + draftHeight + 7 && top + height + 7 > draftTop) {
+        top = draftTop + draftHeight + 7;
+      }
       card.style.top = String(top) + 'px';
       next = top + height + 7;
-
-      const toY = railRect.top + top + Math.min(height / 2, 32) - this.cards.scrollTop;
-      const fromX = contentRect.left + x;
-      if (!this.connected || toY < railRect.top || toY > railRect.bottom
-        || fromX < viewRect.left || fromX > viewRect.right) continue;
-      const elbow = Math.max(fromX, Math.min(viewRect.right, contentRect.left + edge));
-      const point = (px: number, py: number) => (px - editorRect.left) + ',' + (py - editorRect.top);
-      const guide = document.createElementNS(SVG_NS, 'polyline');
-      guide.classList.toggle('is-active', active);
-      guide.setAttribute('points', [point(fromX, fromY), point(elbow, fromY), point(railRect.left, toY)].join(' '));
-      this.guides.append(guide);
+      guide(anchor, railRect.top + top + Math.min(height / 2, 32) - scrolling, active);
     }
   }
 }

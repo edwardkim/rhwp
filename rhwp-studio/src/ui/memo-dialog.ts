@@ -5,7 +5,11 @@ import { t } from '../i18n/index.ts';
 
 /** 모든 글은 textContent/value로 표시해 문서 메모를 HTML로 해석하지 않는다. */
 export class MemoDialog extends ModalDialog {
-  private list!: HTMLSelectElement;
+  private list!: HTMLDivElement;
+  private options = new Map<number | null, HTMLButtonElement>();
+  private targetHelp!: HTMLParagraphElement;
+  private location!: HTMLDetailsElement;
+  private address!: HTMLSpanElement;
   private author!: HTMLInputElement;
   private text!: HTMLTextAreaElement;
   private error!: HTMLParagraphElement;
@@ -31,15 +35,20 @@ export class MemoDialog extends ModalDialog {
 
   protected createBody(): HTMLElement {
     const body = document.createElement('div');
-    body.style.display = 'flex'; body.style.flexDirection = 'column'; body.style.gap = '8px';
-    this.list = document.createElement('select');
+    body.className = 'memo-dialog-body';
+    this.list = document.createElement('div');
+    this.list.className = 'memo-dialog-list';
+    this.list.setAttribute('role', 'listbox');
     this.list.setAttribute('aria-label', t('dialog.memo.list'));
-    this.list.style.width = '100%';
-    this.list.size = 5;
-    this.list.addEventListener('change', () => this.select(this.list.value === '' ? null : Number(this.list.value)));
 
-    const label = document.createElement('p');
-    label.textContent = t(this.insertAvailable ? 'dialog.memo.targetHelp' : 'dialog.memo.invalidTarget');
+    this.targetHelp = document.createElement('p');
+    this.targetHelp.textContent = t(this.insertAvailable ? 'dialog.memo.targetHelp' : 'dialog.memo.invalidTarget');
+    this.location = document.createElement('details');
+    this.location.className = 'memo-dialog-location';
+    const summary = document.createElement('summary');
+    summary.textContent = t('dialog.memo.locationDetails');
+    this.address = document.createElement('span');
+    this.location.append(summary, this.address);
 
     const authorLabel = document.createElement('label');
     authorLabel.textContent = t('dialog.memo.author');
@@ -63,7 +72,7 @@ export class MemoDialog extends ModalDialog {
     this.remove = document.createElement('button');
     this.remove.style.alignSelf = 'flex-start';
     this.remove.type = 'button';
-    this.remove.className = 'dialog-btn';
+    this.remove.className = 'dialog-btn memo-delete';
     this.remove.textContent = t('dialog.memo.delete');
     this.remove.addEventListener('click', () => { void this.removeSelected(); });
 
@@ -101,36 +110,75 @@ export class MemoDialog extends ModalDialog {
     actions.style.gap = '6px';
     actions.style.flexWrap = 'wrap';
     actions.append(this.remove, this.goTo, this.reply, this.cancelReply);
-    body.append(this.list, label, this.relation, authorLabel, this.author, textLabel, this.text, actions, this.error);
+    body.append(this.list, this.targetHelp, this.relation, this.location, authorLabel, this.author, textLabel, this.text, actions, this.error);
     this.refresh(this.navigation.initialId);
     return body;
   }
 
   private refresh(preferred: number | null = null): void {
     this.list.replaceChildren();
-    const fresh = document.createElement('option');
-    fresh.value = '';
-    fresh.textContent = t('dialog.memo.new');
+    this.options.clear();
+    const fresh = this.appendOption(null, t('dialog.memo.new'));
     fresh.disabled = !this.insertAvailable;
-    this.list.append(fresh);
+    this.list.tabIndex = this.insertAvailable || this.memos.length ? -1 : 0;
 
     for (const memo of this.memos) {
-      const option = document.createElement('option');
-      option.value = String(memo.id);
+      const option = this.appendOption(memo.id, memo.text);
+      option.classList.toggle('is-reply', memo.parentId !== null);
+      const meta = document.createElement('span');
+      meta.className = 'memo-list-meta';
       const page = this.pageOf(memo);
-      option.textContent = [
+      const target = memo.path?.at(-1);
+      const fields = [
         memo.parentId === null ? '' : t('dialog.memo.reply'),
-        this.parentLabel(memo),
-        page === null ? '' : t('dialog.memo.page', { p1: page }),
-        memoLocation(memo),
         memo.author || t('dialog.memo.noAuthor'),
-        memo.text.slice(0, 60),
-      ].filter(Boolean).join(' · ');
-      this.list.append(option);
+        memo.date?.replace('T', ' ').slice(0, 16),
+        page === null ? '' : t('dialog.memo.page', { p1: page }),
+        memo.paraIndex === null ? '' : t(target?.type === 'cell' ? 'dialog.memo.areaCell'
+          : target?.type === 'textbox' ? 'dialog.memo.areaTextBox' : 'dialog.memo.areaBody'),
+      ];
+      meta.textContent = fields.filter(Boolean).join(' · ');
+      option.append(meta);
     }
 
     const fallback = this.insertAvailable ? null : this.memos[0]?.id ?? null;
     this.select(this.memos.some(memo => memo.id === preferred) ? preferred : fallback, false);
+  }
+
+  private appendOption(id: number | null, text: string): HTMLButtonElement {
+    const option = document.createElement('button');
+    option.type = 'button';
+    option.setAttribute('role', 'option');
+    option.dataset.memoChoice = id === null ? '' : String(id);
+    const preview = document.createElement('span');
+    preview.className = 'memo-list-preview';
+    preview.textContent = text.trim() || t('dialog.memo.emptyPreview');
+    option.append(preview);
+    option.addEventListener('click', () => {
+      if (this.selected !== id) this.select(id);
+    });
+    this.options.set(id, option);
+    this.list.append(option);
+    return option;
+  }
+
+  protected override onDialogKey(event: KeyboardEvent): boolean {
+    const keys = ['ArrowUp', 'ArrowDown', 'Home', 'End'];
+    if (!this.list.contains(document.activeElement) || !keys.includes(event.key)) return false;
+    const choices = [...this.options].filter(([, option]) => !option.disabled);
+    if (!choices.length) return false;
+    const index = choices.findIndex(([id]) => id === this.selected);
+    const next = event.key === 'Home' ? 0 : event.key === 'End' ? choices.length - 1
+      : Math.max(0, Math.min(choices.length - 1, index + (event.key === 'ArrowUp' ? -1 : 1)));
+    const [id, option] = choices[next];
+    if (id !== this.selected) this.select(id);
+    option.focus();
+    return true;
+  }
+
+  private focusList(): void {
+    const selected = this.options.get(this.selected);
+    (selected && !selected.disabled ? selected : this.list).focus();
   }
 
   private select(id: number | null, remember = true): void {
@@ -142,7 +190,16 @@ export class MemoDialog extends ModalDialog {
     const draft = this.drafts.get(id);
     const memo = this.memos.find(m => m.id === id);
     this.selected = id;
-    this.list.value = id === null ? '' : String(id);
+    for (const [choice, option] of this.options) {
+      const selected = choice === id && !option.disabled;
+      option.setAttribute('aria-selected', String(selected));
+      option.tabIndex = selected ? 0 : -1;
+      if (selected) option.scrollIntoView({ block: 'nearest' });
+    }
+    this.targetHelp.hidden = !!memo;
+    this.address.textContent = memo ? memoLocation(memo) : '';
+    this.location.hidden = !this.address.textContent;
+    if (remember) this.location.open = false;
     this.author.value = draft?.author ?? memo?.author ?? '';
     this.author.disabled = !!memo || !this.insertAvailable;
     this.text.value = draft?.text ?? memo?.text ?? '';
@@ -181,6 +238,7 @@ export class MemoDialog extends ModalDialog {
     if (!parent?.editable || parent.parentId !== null) return;
     this.rememberDraft();
     this.replying = true;
+    this.location.hidden = true;
     this.reply.hidden = true;
     this.reply.disabled = true;
     this.cancelReply.hidden = false;
@@ -221,7 +279,7 @@ export class MemoDialog extends ModalDialog {
         ? this.memos.find(memo => memo.parentId === edit.id && !previous.some(item => item.id === memo.id))?.id ?? edit.id
         : null;
       this.refresh(preferred);
-      if (edit.kind === 'remove') this.list.focus();
+      if (edit.kind === 'remove') this.focusList();
       this.error.textContent = t('dialog.memo.applied');
     } catch (error) {
       this.error.textContent = error instanceof Error ? error.message : String(error);
@@ -240,8 +298,8 @@ export class MemoDialog extends ModalDialog {
 
   protected override onTabKey(event: KeyboardEvent): boolean {
     const controls = [...this.dialog.querySelectorAll<HTMLElement>(
-      'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)',
-    )];
+      'button:not(:disabled), input:not(:disabled), textarea:not(:disabled), summary, [role="listbox"]',
+    )].filter(control => control.tabIndex >= 0 && control.getClientRects().length > 0);
     const current = controls.indexOf(document.activeElement as HTMLElement);
     const next = event.shiftKey
       ? (current <= 0 ? controls.length - 1 : current - 1)
@@ -261,7 +319,8 @@ export class MemoDialog extends ModalDialog {
     this.confirm.disabled = this.text.disabled;
     this.dialog.querySelector('.dialog-footer .dialog-btn:not(.dialog-btn-primary)')!.textContent = t('dialog.memo.close');
     this.dialog.querySelector('.dialog-close')?.setAttribute('aria-label', t('dialog.memo.close'));
-    (this.insertAvailable ? this.text : this.list).focus();
+    if (!this.text.disabled) this.text.focus();
+    else this.focusList();
   }
 }
 

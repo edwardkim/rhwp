@@ -97,7 +97,18 @@ export const memoCommand: CommandDef = {
       if (compose === 'insert' ? insertion !== null : (compose === 'update' || compose === 'reply') && chosen?.editable) {
         if (compose === 'reply' && chosen?.parentId !== null) return;
         const kind = compose as 'insert' | 'update' | 'reply';
+        const range = kind === 'insert' ? insertion?.range : undefined;
         const request: MemoComposeRequest = {
+          anchor: range && {
+            sectionIndex: range.target.section,
+            paraIndex: range.target.para,
+            startCharIdx: range.start,
+            endCharIdx: range.end,
+            path: range.target.cellPath.map(([controlIndex, cellIndex, paraIndex], i, path) =>
+              range.pos.isTextBox && i === path.length - 1
+                ? { type: 'textbox', controlIndex, paraIndex }
+                : { type: 'cell', controlIndex, cellIndex, paraIndex }),
+          },
           kind, cardId: chosen?.parentId ?? chosen?.id ?? null,
           restoreFocus: () => ih.focus(),
           author: kind === 'update' ? chosen!.author : '',

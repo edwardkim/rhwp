@@ -32,7 +32,6 @@ export function installMemoMarkers(
   const buttons = new Map<number, HTMLButtonElement>();
   const margin = new MemoMargin(container, bus, open, schedule);
 
-
   function update() {
     scheduled = false;
     if (layer.parentElement !== scrollContent) {
@@ -74,9 +73,20 @@ export function installMemoMarkers(
       button.remove();
       buttons.delete(id);
     }
+    const locate = (rect: CursorRect) => {
+      const page = rect.pageIndex;
+      const left = virtual.getPageLeftResolved(page, scrollContent.clientWidth);
+      return {
+        x: left + rect.x * zoom,
+        y: virtual.getPageOffset(page) + (rect.y + rect.height) * zoom,
+        edge: left + virtual.getPageWidth(page) - 20,
+      };
+    };
+    const draftAnchor = margin.draftAnchor;
+    const draft = draftAnchor ? wasm.getMemoTarget(draftAnchor, true) : null;
     const located = [];
     const bottom = new Map<number, number>();
-    for (const { memo, rect, highlight, replies } of [...visible].sort((a, b) => a.rect.y - b.rect.y)) {
+    for (const { memo, rect, replies } of [...visible].sort((a, b) => a.rect.y - b.rect.y)) {
       let button = buttons.get(memo.id);
       if (!button) {
         button = document.createElement('button');
@@ -94,22 +104,18 @@ export function installMemoMarkers(
       const desired = virtual.getPageOffset(page) + rect.y * zoom;
       const top = Math.max(desired, bottom.get(page) ?? desired);
       bottom.set(page, top + 20);
-      const right = virtual.getPageLeftResolved(page, scrollContent.clientWidth) + virtual.getPageWidth(page);
-      button.style.left = `${right - 20}px`;
+      const anchor = locate(rect);
+      button.style.left = String(anchor.edge) + 'px';
       button.style.top = String(top) + 'px';
-      located.push({
-        memo, replies,
-        x: right - virtual.getPageWidth(page) + rect.x * zoom,
-        y: desired + rect.height * zoom,
-        edge: right - 20,
-      });
+      located.push({ memo, replies, ...anchor });
     }
     if (margin.annotations) {
-      for (const { memo, rect, highlight } of marks) {
+      const paint = (rect: CursorRect, highlight: SelectionRect[], active: boolean, isDraft = false) => {
         for (const r of highlight.length ? highlight : [{ ...rect, width: 2 }]) {
           if (!pages.has(r.pageIndex)) continue;
           const mark = document.createElement('span');
-          mark.classList.toggle('is-active', margin.active === memo.id);
+          mark.classList.toggle('is-active', active);
+          if (isDraft) mark.classList.add('is-draft');
           const left = virtual.getPageLeftResolved(r.pageIndex, scrollContent.clientWidth);
           mark.style.left = String(left + r.x * zoom) + 'px';
           mark.style.top = String(virtual.getPageOffset(r.pageIndex) + r.y * zoom) + 'px';
@@ -117,9 +123,11 @@ export function installMemoMarkers(
           mark.style.height = String(r.height * zoom) + 'px';
           highlightLayer.append(mark);
         }
-      }
+      };
+      for (const { memo, rect, highlight } of marks) paint(rect, highlight, margin.active === memo.id);
+      if (draft) paint(draft.rect, draft.highlight, true, true);
     }
-    margin.update(located);
+    margin.update(located, draft ? locate(draft.rect) : null);
   }
 
   function schedule() {

@@ -31,6 +31,8 @@
   --ui-note-bg: #f5f6fa;
   --ui-note-border: #d0d4e2;
   --ui-note-text: #444444;
+  --ui-memo-bg: color-mix(in srgb, var(--ui-note-bg), var(--doc-memo-ink) 7%);
+  --ui-memo-active: color-mix(in srgb, var(--ui-note-bg), var(--doc-memo-ink) 17%);
   --ui-warning-bg: #fffbea;
   --ui-warning-border: #f0d060;
   --ui-warning-text: #7a6200;
@@ -43,6 +45,10 @@
   /* 문서 영역 token: 앱 테마와 문서 렌더를 분리한다. */
   --doc-workspace: #e0e0e0;
   --doc-paper: #ffffff;
+  --doc-memo-ink: #496f40;
+  --doc-memo-guide: #52794a;
+  --doc-memo-mark: color-mix(in srgb, var(--doc-memo-ink) 16%, transparent);
+  --doc-memo-mark-active: color-mix(in srgb, var(--doc-memo-ink) 30%, transparent);
   --doc-shadow: rgba(0, 0, 0, 0.2);
 
   /* 포커스/선택/핸들 */
@@ -178,6 +184,9 @@
   --ui-note-bg: #2d3440;
   --ui-note-border: #465065;
   --ui-note-text: #d8dee7;
+  --ui-memo-bg: color-mix(in srgb, var(--ui-note-bg), var(--doc-memo-guide) 6%);
+  --ui-memo-active: color-mix(in srgb, var(--ui-note-bg), var(--doc-memo-guide) 16%);
+  --doc-memo-guide: #709967;
   --ui-warning-bg: #433b1d;
   --ui-warning-border: #7b6b23;
   --ui-warning-text: #f0dfa0;

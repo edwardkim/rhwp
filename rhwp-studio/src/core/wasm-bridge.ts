@@ -4058,7 +4058,7 @@ export class WasmBridge {
   }
 
   /** 조회용 위치, 이동할 범위, 본문 표시가 같은 렌더 좌표를 사용한다. */
-  getMemoTarget(memo: MemoInfo, fullRange = false): { start: DocumentPosition; end: DocumentPosition; rect: CursorRect; highlight: SelectionRect[] } | null {
+  getMemoTarget(memo: MemoAnchor, fullRange = false): { start: DocumentPosition; end: DocumentPosition; rect: CursorRect; highlight: SelectionRect[] } | null {
     const { sectionIndex: sec, paraIndex: para, startCharIdx: start, endCharIdx: end, path } = memo;
     if (para === null || start === null || end === null) return null;
     try {

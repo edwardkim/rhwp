@@ -14,6 +14,7 @@ export type MemoEdit = { kind: 'insert'; author: string; text: string }
 export interface MemoComposeRequest {
   kind: 'insert' | 'update' | 'reply';
   cardId: number | null;
+  anchor?: MemoAnchor;
   restoreFocus: () => void;
   author: string;
   text: string;
