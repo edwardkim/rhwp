@@ -1,6 +1,6 @@
 # 구역·투명 타원·연결선의 메인테이너 보완 결과
 
-제품 커밋 `e4ce75728af706c8fdab93882172ad07843b00b8`에는 기여자의 세 커밋과 `devel`의 `28a6afc1ebe3e9873605f2d306ca094b422abf24`가 들어 있다. 45개 검증 입력의 69쪽을 Windows 한컴 2020·2024의 독립 Print PDF와 비교했다. Native Skia와 새로 빌드한 WASM Canvas 각각에서 96 DPI, 2px 보정 전 내용 실루엣의 전쪽 최저가 100.00%였다. [입력·인쇄 작업·SHA-256](focus-inputs.tsv) · [Native 전쪽](focus-native.tsv) · [WASM 전쪽](focus-wasm.tsv) · [같은 입력의 devel 비교](focus-pages.tsv) · [빌드 식별값](focus-validation.json)
+제품 커밋 `e4ce75728af706c8fdab93882172ad07843b00b8`에는 기여자의 세 커밋과 `devel`의 `28a6afc1ebe3e9873605f2d306ca094b422abf24`가 들어 있다. 45개 검증 입력의 69쪽을 Windows 한컴 2020·2024의 독립 Print PDF와 비교했다. Native Skia와 새로 빌드한 WASM Canvas 각각에서 96 DPI, 2px 보정 전 내용 실루엣의 전쪽 최저가 100.00%였다. [실행별 원본 TSV](silhouette/README.md) · [입력·인쇄 작업·SHA-256](focus-inputs.tsv) · [Native 전쪽](focus-native.tsv) · [WASM 전쪽](focus-wasm.tsv) · [같은 입력의 devel 비교](focus-pages.tsv) · [빌드 식별값](focus-validation.json)
 
 | 원 PR | 확인한 동작 | 입력 수 | 쪽 수 | Native 최저 | WASM 최저 |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -34,7 +34,7 @@ v0.9.1에서 저장한 무표지 HWPX는 `rhwp export-hwpx input.hwpx recovered.
 
 ## 정본 보호 문서 23종
 
-같은 입력·기준 PDF·96 DPI·글꼴 순서로 최신 `devel`과 보완 후보를 각각 렌더링했다. Native 2,023쪽은 모두 쪽별 하한을 충족했다. WASM은 2,023쪽 중 2,009쪽이 충족했고 아래 14쪽이 정본의 100.00%를 재현하지 못했다. 이 14쪽은 모두 기준·후보 PNG의 SHA-256이 같다. 전체 4,046행에서 기준보다 하락한 후보 측정값은 0건이다. 특별 보호 기준에 따라 세 원 PR의 통합은 보류한다. [전쪽·양쪽 PNG 해시](protected-host-pages.tsv) · [미달 14쪽](protected-host-below.tsv) · [검증 조건과 글꼴 공급 내역](protected-summary.json)
+같은 입력·기준 PDF·96 DPI·글꼴 순서로 최신 `devel`과 보완 후보를 각각 렌더링했다. Native 2,023쪽은 모두 쪽별 하한을 충족했다. WASM은 2,023쪽 중 2,009쪽이 충족했고 아래 14쪽이 정본의 100.00%를 재현하지 못했다. 이 14쪽은 모두 기준·후보 PNG의 SHA-256이 같다. 전체 4,046행에서 기준보다 하락한 후보 측정값은 0건이다. 2026-11-24 작업지시자는 기존 devel과 픽셀이 같은 이 14쪽에 한해 통합을 승인했다. 정본의 쪽별 하한은 100.00%로 유지한다. [전쪽·양쪽 PNG 해시](protected-host-pages.tsv) · [미달 14쪽](protected-host-below.tsv) · [검증 조건과 글꼴 공급 내역](protected-summary.json)
 
 | WASM 보호 문서 | 정본과 차이가 있는 쪽 | 기준·후보 최저 |
 | --- | --- | ---: |
