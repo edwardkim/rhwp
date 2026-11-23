@@ -1713,7 +1713,9 @@ impl LayoutEngine {
                 );
                 let (mut min_x, mut min_y) = (f64::INFINITY, f64::INFINITY);
                 let (mut max_x, mut max_y) = (f64::NEG_INFINITY, f64::NEG_INFINITY);
-                let commands = crate::renderer::ellipse::outline(|x, y| {
+                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing, self.dpi);
+                let patterned = style.stroke_color.is_some() && style.stroke_dash.is_hwp_pattern();
+                let commands = crate::renderer::ellipse::outline(patterned, |x, y| {
                     let (px, py) = transform_pt(rx + rx * x, ry + ry * y);
                     min_x = min_x.min(px);
                     min_y = min_y.min(py);
@@ -1721,7 +1723,6 @@ impl LayoutEngine {
                     max_y = max_y.max(py);
                     (px, py)
                 });
-                let (style, gradient) = drawing_to_shape_style(&ellipse.drawing, self.dpi);
                 let node_id = tree.next_id();
                 parent.children.push(RenderNode::new(
                     node_id,
