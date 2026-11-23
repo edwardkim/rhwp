@@ -48,7 +48,6 @@ const SHARED_SUPPORT_MODULES = [
     source: 'tests/common/symbol_font_program.rs',
     consumers: [
       'tests/cases/issue_8153_symbol_coverage.rs',
-      'tests/cases/issue_8153_symbol_fallback.rs',
     ],
   },
 ];

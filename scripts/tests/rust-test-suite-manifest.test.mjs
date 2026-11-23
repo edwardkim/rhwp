@@ -242,22 +242,26 @@ test('harness와 Cargo target 렌더링은 입력 순서와 무관하다', () =>
 });
 
 test('공용 helper는 소비 검사가 함께 또는 따로 배정돼도 harness마다 한 번 공급한다', () => {
-  const consumers = [
-    'tests/cases/issue_8153_symbol_coverage.rs',
-    'tests/cases/issue_8153_symbol_fallback.rs',
+  const shadowConsumers = [
+    'tests/cases/issue_8856_legacy_continuous_shadow.rs',
+    'tests/cases/skia_native_glyph_replay.rs',
   ];
-  for (const sources of [consumers, ...consumers.map((source) => [source])]) {
+  for (const sources of [shadowConsumers, ...shadowConsumers.map((source) => [source])]) {
     const harness = renderHarness('regression_suite_001', sources);
-    assert.equal((harness.match(/^mod symbol_font_program;$/gm) ?? []).length, 1);
-    assert.match(harness, /#\[path = "\.\.\/common\/symbol_font_program\.rs"\]/);
+    assert.equal((harness.match(/^mod legacy_shadow_fixture;$/gm) ?? []).length, 1);
+    assert.match(harness, /#\[path = "\.\.\/common\/legacy_shadow_fixture\.rs"\]/);
     for (const source of sources) {
       const name = path.basename(source, '.rs');
       assert.ok(harness.includes(`mod ${name};`));
     }
   }
+  const symbol = renderHarness('regression_suite_001', ['tests/cases/issue_8153_symbol_coverage.rs']);
+  assert.match(symbol, /#\[path = "\.\.\/common\/symbol_font_program\.rs"\]/);
+  assert.equal((symbol.match(/^mod symbol_font_program;$/gm) ?? []).length, 1);
   for (const source of [
     'tests/cases/legacy_centered_bar_glyph_fit.rs',
     'tests/cases/issue_7733_legacy_bullet_program_order.rs',
+    'tests/cases/issue_8153_symbol_fallback.rs',
     'tests/cases/skia_native_glyph_replay.rs',
     'tests/cases/unrelated.rs',
   ]) {
