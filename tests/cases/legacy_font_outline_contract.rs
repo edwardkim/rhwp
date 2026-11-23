@@ -285,12 +285,20 @@ fn legacy_mapped_symbol_retains_source_advance_with_display_otf() {
     };
     use rhwp::renderer::TextStyle;
 
+    const FAMILY: &str = "Source Code Pro";
+    const PROGRAM: &[u8] =
+        include_bytes!("../fixtures/fonts/source-code-pro/SourceCodePro-Regular.otf");
+    let face = ttf_parser::Face::parse(PROGRAM, 0).unwrap();
+    let glyph = face.glyph_index('═').unwrap();
+    assert_eq!(face.units_per_em(), 1000);
+    assert_eq!(face.glyph_hor_advance(glyph), Some(600));
+
     let mut fonts = NativePuaFonts::default();
     fonts
-        .register_otf("synthetic", false, false, &synthetic_cff_for('═'), 0)
+        .register_otf(FAMILY, false, false, PROGRAM, 0)
         .unwrap();
     let mut style = TextStyle {
-        font_family: "synthetic".into(),
+        font_family: FAMILY.into(),
         font_size: 20.0,
         source_font_is_hft: true,
         ..Default::default()
@@ -298,17 +306,13 @@ fn legacy_mapped_symbol_retains_source_advance_with_display_otf() {
     let measure =
         |text: &str, style: &TextStyle| EmbeddedTextMeasurer.compute_char_positions(text, style)[1];
     let source_width = measure("\u{F0827}", &style);
-    style.native_otf_metrics = fonts.get_otf("synthetic", false, false);
+    style.native_otf_metrics = fonts.get_otf(FAMILY, false, false);
     assert_eq!(
         measure("\u{F0827}", &style),
         source_width,
         "원본 기호 전진을 보존한다"
     );
-    assert_ne!(
-        measure("═", &style),
-        source_width,
-        "실제 문자는 OTF 전진을 사용한다"
-    );
+    assert_eq!(measure("═", &style), 12.0, "공급 원본의 600/1000em 전진");
     let context = MetricContext {
         document_generation: 1,
         font_generation: 1,
@@ -316,8 +320,7 @@ fn legacy_mapped_symbol_retains_source_advance_with_display_otf() {
     };
     let mut store = SupplementalMetricStore::new(context);
     style.native_otf_metrics = None;
-    let canvas =
-        SupplementalMetric::backend_measured(&style, "═", "synthetic".into(), 18.0).unwrap();
+    let canvas = SupplementalMetric::backend_measured(&style, "═", FAMILY.into(), 18.0).unwrap();
     store.replace(context, vec![canvas]).unwrap();
     store.bind_style(context, &mut style).unwrap();
     assert_eq!(

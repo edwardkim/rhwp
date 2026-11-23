@@ -669,6 +669,18 @@
   ],
   "repositoryOnlyFonts": [
     {
+      "repositoryPath": "tests/fixtures/fonts/source-code-pro/SourceCodePro-Regular.otf",
+      "sha256": "9f9664e2edf6f045c11e774f9bd0be6993971f2544a39061a5ce478b96b051f8",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/fonts/source-code-pro/LICENSE.md"
+      ],
+      "copyrightNotices": [
+        "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+      ],
+      "provenance": "tests/fixtures/fonts/source-code-pro/README.md"
+    },
+    {
       "repositoryPath": "tests/fixtures/fonts/source-sans-3/SourceSans3-3.028-Regular.otf",
       "sha256": "65683beb272304ff66cdac84ad47d648a7eec925ea954f512afe0999855f7a89",
       "license": "OFL-1.1",
