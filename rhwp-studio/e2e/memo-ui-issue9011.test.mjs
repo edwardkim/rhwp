@@ -18,7 +18,8 @@ const deleteMemo = page => page.click('[data-memo-dialog] .memo-delete');
 const memoMenu = '.menu-item[data-menu="view"] .md-memo-sub';
 const openMemoMenu = async page => {
   await page.click('.menu-item[data-menu="view"] .menu-title');
-  await page.click(memoMenu + ' > summary');
+  await page.hover(memoMenu + ' > summary');
+  await page.waitForSelector(memoMenu + ' > .md-sub-panel', { visible: true });
 };
 const toggleMemoView = async (page, cmd) => {
   await openMemoMenu(page);
@@ -669,12 +670,20 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   }
   await page.setViewport(desktop);
   await page.click('.menu-item[data-menu="view"] .menu-title');
+  assert.equal(await page.$eval(memoMenu, menu => menu.open), false);
+  await page.hover(memoMenu + ' > summary');
+  await page.waitForSelector(memoMenu + ' > .md-sub-panel', { visible: true });
+  await page.click(memoMenu + ' > summary');
+  await page.hover(memoMenu + ' [data-cmd="view:memo-list"]');
+  assert.equal(await page.$eval(memoMenu, menu => menu.open), true, '포인터를 하위 항목으로 옮겨도 열려 있다');
+  await page.hover('.menu-item[data-menu="view"] [data-cmd="view:toggle-clip"]');
+  await page.waitForSelector(memoMenu + ' > .md-sub-panel', { hidden: true });
   await page.focus(memoMenu + ' > summary');
   await page.keyboard.press('Enter');
   assert.equal(await page.$eval(memoMenu, menu => menu.open), true);
   await page.keyboard.press('Escape');
   assert.equal(await page.$eval(memoMenu, menu => menu.open), false);
-  console.log('  보기 메모 하위 메뉴, 320·390·600px 목록·카드 줄바꿈, 키보드 펼치기');
+  console.log('  보기 메모 하위 메뉴, 320·390·600px 목록·카드 줄바꿈, 호버와 키보드 펼치기');
 
   await toggleMemoView(page, 'view:memo-guides');
   await createNewDocument(page);

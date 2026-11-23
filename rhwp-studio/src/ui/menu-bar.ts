@@ -35,6 +35,7 @@ export class MenuBar {
     syncMenuShortcutLabels(container, registry);
     this.setupTitleClicks();
     this.setupTitleHover();
+    this.setupSubmenuHover();
     this.setupItemClicks();
     this.setupOutsideClose();
     this.setupKeyboardClose();
@@ -72,6 +73,30 @@ export class MenuBar {
           this.openMenu = item;
           this.updateMenuStates(item);
           this.onMenuOpen?.(item.dataset.menu ?? '', item);
+        }
+      });
+    }
+  }
+
+  private setupSubmenuHover(): void {
+    for (const submenu of this.container.querySelectorAll<HTMLDetailsElement>('details.md-sub')) {
+      let openedByHover = false;
+      submenu.addEventListener('pointerenter', event => {
+        if (event.pointerType !== 'mouse' || submenu.open || submenu.classList.contains('disabled')) return;
+        openedByHover = true;
+        submenu.open = true;
+      });
+      submenu.addEventListener('pointerleave', event => {
+        if (event.pointerType !== 'mouse' || !openedByHover) return;
+        openedByHover = false;
+        if (!submenu.querySelector(':focus-visible')) submenu.open = false;
+      });
+      submenu.querySelector('summary')?.addEventListener('click', event => {
+        // 마우스로 이미 펼친 항목을 클릭해도 닫히지 않는다. 터치와 키보드는 기본 동작을 쓴다.
+        if (submenu.classList.contains('disabled') || (event.detail > 0 && openedByHover && submenu.open)) {
+          event.preventDefault();
+        } else {
+          openedByHover = false;
         }
       });
     }
