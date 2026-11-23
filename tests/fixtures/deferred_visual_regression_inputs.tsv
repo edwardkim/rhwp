@@ -51,7 +51,7 @@ samples/issue1937_rowbreak_footnote_overpagination.hwp	body,off_canvas,oracle,ov
 samples/issue1949_giant_cell_nested_tables_perf.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7813
 samples/issue1949_giant_cell_nested_tables_perf.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7813
 samples/issue2006/1790387_prep_final_report.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	8044
-samples/issue2439/issue2439_repeat_table_overlap.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7739,7769,7780,7781
+samples/issue2439/issue2439_repeat_table_overlap.hwp	body,off_canvas,oracle,overflow_cell,render_page	7739,7780,7781
 samples/issue4514/sample1-repro.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7808
 samples/issue5584/3232693_employment_support_criteria.hwpx	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7822
 samples/issue5699/37787_regulatory_impact.hwp	body,off_canvas,oracle,overflow_cell,render_page,text_overlap	7777
