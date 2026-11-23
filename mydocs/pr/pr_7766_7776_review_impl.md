@@ -161,6 +161,11 @@ Print의 job은 `eb201818-8aa7-4f42-88a9-0337a7f02101`이다.
 
 축산 지침 기준은 한컴 2024 1-up job `c4a38f4b-1ed9-4bc7-a240-7d6add5ebbfc`,
 PDF SHA-256 `3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896`이다.
+원본의 저장 인쇄 방식은 `printMethod=4`다. 기존 #7382 PDF와 이번 독립 1-up PDF는
+모두 A4 12쪽이지만, 각 쪽에 한 번씩 나온 공통 단어의 폭을 대조하면 기존 PDF의
+폭 비율 중앙값은 쪽마다 77.1~77.2%다. 회귀 비교에는 rhwp의 현재 1-up 출력과 같은
+인쇄 조건을 사용했다. [기존 #7382 PDF](../../pdf/issue7382-regression-review/156757920-animal-welfare-husbandry-guidelines-2024.pdf)
+
 양쪽 100.00%인 2쪽에서 마지막 사육 기준 글줄의 본문 단 소속과 포함을 검사하고,
 2px 공차에서 본문 하단 넘침이 0건인 전쪽 원장 행을 복원한다.
 [독립 Print](../../pdf/issue7767/animal-welfare-husbandry-one-up-2024.pdf),
