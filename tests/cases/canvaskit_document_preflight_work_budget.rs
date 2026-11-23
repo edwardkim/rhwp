@@ -1,6 +1,6 @@
-//! 관계형: 문서 사전 검사의 작업 예산 소비·중단과 후속 쪽의 소유를 검사한다.
+//! 관계형: 문서 사전 검사의 쪽수 한도와 작업 예산 소비·중단을 검사한다.
 //! 공개 작업 상한 200,000은 자원 정책값이며 실물 배치의 px 고정 검사가 아니다.
-//! 주석 갱신: 2026-11-15T20:55:03+09:00.
+//! 주석 갱신: 2026-11-23T22:06:10+09:00.
 //! 실물 일치율로 만든 배치 검사가 아닌 합성 작업 예산 계약이다. OS 글꼴에 의존하지 않는다.
 
 use rhwp::paint::{LayerNode, PageLayerTree, RenderProfile};
@@ -105,5 +105,53 @@ fn a_page_above_the_new_bound_stops_before_later_pages_are_built() {
     assert_eq!(
         report.blockers[0].code,
         CanvasKitDocumentPreflightBlockerCode::WorkLimitExceeded
+    );
+}
+
+#[test]
+fn documents_through_one_thousand_pages_complete_within_the_work_budget() {
+    for page_count in [313, 1_000] {
+        let mut requested_pages = Vec::new();
+        let report = analyze_canvaskit_document_preflight(
+            page_count,
+            CanvasKitReplayMode::Default,
+            RenderProfile::Screen,
+            |page, _| {
+                requested_pages.push(page);
+                Ok::<_, &'static str>(CanvasKitPreflightPageBuild::Complete {
+                    tree: empty_page(),
+                    prelower_work_units: 2,
+                })
+            },
+        );
+        assert_eq!(report.limits.max_pages, 1_000);
+        assert_eq!(report.limits.max_work_units, 200_000);
+        assert!(report.complete && report.eligible);
+        assert_eq!(report.scanned_pages, page_count);
+        assert!(report.scanned_work_units <= report.limits.max_work_units);
+        assert_eq!(requested_pages, (0..page_count).collect::<Vec<_>>());
+        assert!(report.blockers.is_empty());
+    }
+}
+
+#[test]
+fn documents_above_one_thousand_pages_do_not_build_page_trees() {
+    let report = analyze_canvaskit_document_preflight(
+        1_001,
+        CanvasKitReplayMode::Default,
+        RenderProfile::Screen,
+        |_, _| -> Result<CanvasKitPreflightPageBuild, &'static str> {
+            panic!("쪽수 한도를 넘긴 문서의 트리를 만들면 안 된다")
+        },
+    );
+    assert_eq!(report.limits.max_pages, 1_000);
+    assert_eq!(report.scanned_pages, 0);
+    assert_eq!(report.scanned_work_units, 0);
+    assert!(!report.complete && !report.eligible);
+    assert_eq!(report.blockers.len(), 1);
+    assert_eq!(report.blockers[0].page_index, 1_000);
+    assert_eq!(
+        report.blockers[0].code,
+        CanvasKitDocumentPreflightBlockerCode::PageLimitExceeded
     );
 }
