@@ -25,6 +25,9 @@
 //! 수정 전 rhwp 는 사각형 높이를 칸 문단 원점부터 세어 둘째 행을 185px 로 키웠고(사각형은 칸
 //! clip 안에 그려 칸 밖 몫이 잘렸다), `paper_square`·`paper_front` 가 2쪽이 되었다. 글상자 안
 //! 종이 기준 사각형은 글상자 위끝부터 세어 놓여 바깥 글상자를 884px 로 키웠다.
+//!
+//! `paper_square_split` 의 나뉜 칸은 세로 정렬이 위다. 기준 PDF 는 같은 입력의 한컴 2020
+//! Print PDF(`pdf/paper_square_split-2020.pdf`)다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
@@ -101,6 +104,22 @@ fn text_line_y(node: &RenderNode, text: &str) -> Option<f64> {
         .find_map(|child| text_line_y(child, text))
 }
 
+fn text_line_box(node: &RenderNode, text: &str) -> Option<(f64, f64)> {
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) && has_text(node, text) {
+        return Some((node.bbox.y, node.bbox.height));
+    }
+    node.children
+        .iter()
+        .find_map(|child| text_line_box(child, text))
+}
+
+fn outer_table_top(node: &RenderNode) -> Option<f64> {
+    if matches!(node.node_type, RenderNodeType::Table(_)) {
+        return Some(node.bbox.y);
+    }
+    node.children.iter().find_map(outer_table_top)
+}
+
 fn check_single_page(name: &str) {
     let core = load(name);
     assert_eq!(core.page_count(), 1, "{name}: 쪽 수");
@@ -162,6 +181,44 @@ fn check_split(name: &str) {
     for text in ["MID LINE 43", "MID LINE 70", "ROW 1", "TAIL ROW", "END"] {
         assert!(has_text(&last.root, text), "{name}: {text} 는 2쪽");
     }
+    // 두 조각은 같은 본문 상단과 같은 표 바깥 위 여백을 소유한다.
+    let first_top = outer_table_top(&first.root).expect("첫 표 조각");
+    let last_top = outer_table_top(&last.root).expect("이어받은 표 조각");
+    assert!(
+        (first_top - last_top).abs() < 0.5,
+        "{name}: 표 조각 위끝 {first_top:.2} / {last_top:.2}"
+    );
+    // 재현물의 나뉜 칸은 세로 정렬이 위다. 첫 조각의 가시 줄은 칸 안 위 여백 바로
+    // 아래에서 시작한다(나뉜 칸의 가운데 정렬은 이 시험 범위 밖).
+    let mut cells = Vec::new();
+    outer_row_cells(&first.root, 0, 1, &mut cells);
+    assert_eq!(cells.len(), 1, "{name}: 첫 가운데 칸 조각");
+    let (cell_y, cell_h) = cells[0];
+    let (first_y, _) = text_line_box(&first.root, "MID LINE 1").expect("첫 가시 줄");
+    let (last_y, last_h) = text_line_box(&first.root, "MID LINE 42").expect("끝 가시 줄");
+    let top_gap = first_y - cell_y;
+    assert!(
+        top_gap < 4.0 && last_y + last_h <= cell_y + cell_h + 0.5,
+        "{name}: 위 정렬 위 {top_gap:.2}px, 끝 줄 아래 {:.2} / 칸 아래 {:.2}",
+        last_y + last_h,
+        cell_y + cell_h
+    );
+    let (next_y, _) = text_line_box(&last.root, "MID LINE 43").expect("이어받은 첫 줄");
+    assert!(next_y > last_top, "{name}: 이어받은 줄이 표 위끝 아래");
+    // 같은 입력의 한컴 2020 Print PDF는 앵커 문단이 2쪽이어도 사각형을 1쪽에 인쇄한다.
+    let mut first_rects = Vec::new();
+    rects_with_text(&first.root, "PAPER RECT", false, &mut first_rects);
+    assert_eq!(
+        first_rects.len(),
+        1,
+        "{name}: 종이 기준 사각형은 첫 칸 조각 쪽"
+    );
+    let mut last_rects = Vec::new();
+    rects_with_text(&last.root, "PAPER RECT", false, &mut last_rects);
+    assert!(
+        last_rects.is_empty(),
+        "{name}: 다음 쪽에는 사각형 중복 없음"
+    );
     let mut rects = Vec::new();
     for page in [&first, &last] {
         rects_with_text(&page.root, "PAPER RECT", false, &mut rects);
