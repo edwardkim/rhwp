@@ -194,3 +194,27 @@ fn tac_logo_line_before_stored_reset_stays_on_the_title_page() {
         "2쪽은 목차로 시작한다(한컴 Print 2쪽)"
     );
 }
+
+/// 관계형 — 한컴 2020 Print 90~93쪽에서 그림 뒤 본문과 갈린 표의 글줄·각주 소속을 확인한다.
+#[test]
+fn relocated_chart_and_split_rows_keep_their_print_page_owners() {
+    let core = core();
+    let pages: Vec<_> = (89..93).map(|page| compact(&core, page)).collect();
+    let print_owners = [
+        (90, "그림2-3.식량자급력의4가지유형"),
+        (90, "일본정부는외국으로부터의수입에의존"),
+        (91, "표2-4.일본의주요농산물비축기준"),
+        (92, "국민이최저한도로필요로하는열량의공급"),
+        (92, "대책본부장의직위는각사태에따라유동적임"),
+        (93, "험성이있는경우"),
+    ];
+    for (expected_page, text) in print_owners {
+        let actual: Vec<_> = pages
+            .iter()
+            .enumerate()
+            .filter(|(_, contents)| contents.contains(text))
+            .map(|(index, _)| 90 + index)
+            .collect();
+        assert_eq!(actual, [expected_page], "「{text}」의 한컴 Print 쪽 소속");
+    }
+}

@@ -2641,7 +2641,8 @@ impl LayoutEngine {
     /// their first line. An in-paragraph restart of two distinct text ranges
     /// establishes the boundary; paragraph-local zeros alone do not. The
     /// original row boxes must also exceed the object frame, and every cell
-    /// in this row must carry the same two-slot boundary.
+    /// must carry the same opening boundary. Later lines may advance within
+    /// that continuation frame without changing the opening cut.
     fn stored_joint_zero_origin_boundary(
         &self,
         cell: &crate::model::table::Cell,
@@ -2675,7 +2676,7 @@ impl LayoutEngine {
                 }
                 for (li, line) in paragraph.line_segs.iter().enumerate() {
                     if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                        || line.vertical_pos != 0
+                        || line.vertical_pos < 0
                         || line.line_height <= 0
                         || line.segment_width <= 0
                     {
@@ -2684,11 +2685,19 @@ impl LayoutEngine {
                     slots.push((pi, li, line));
                 }
             }
-            let [first, second] = slots.as_slice() else {
+            let [first, second, tail @ ..] = slots.as_slice() else {
                 return None;
             };
-            if first.2.column_start != second.2.column_start
+            if first.2.vertical_pos != 0
+                || second.2.vertical_pos != 0
+                || first.2.column_start != second.2.column_start
                 || first.2.segment_width != second.2.segment_width
+                || (!tail.is_empty() && !self.profile.get().hwp5_stored_pagination_layout())
+                || slots[1..].windows(2).any(|pair| {
+                    pair[1].2.vertical_pos <= pair[0].2.vertical_pos
+                        || pair[1].2.column_start != second.2.column_start
+                        || pair[1].2.segment_width != second.2.segment_width
+                })
             {
                 return None;
             }
@@ -2713,7 +2722,7 @@ impl LayoutEngine {
 
     /// The first jointly reset row ends the saved opening object frame. Its
     /// unused physical band belongs to that fragment, not to a content cursor.
-    pub(super) fn stored_joint_row_opening_height(
+    pub(crate) fn stored_joint_row_opening_height(
         &self,
         table: &crate::model::table::Table,
         row: usize,

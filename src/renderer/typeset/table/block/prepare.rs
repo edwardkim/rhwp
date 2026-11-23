@@ -14,6 +14,53 @@ use crate::renderer::typeset::{
 
 use super::{BlockTableInput, SplitTableEntry};
 
+/// 앞 쪽의 빈 줄 뒤에 새 쪽으로 이월한 표의 저장 끝이 이어지는지 확인한다.
+fn deferred_table_previous_page_blanks(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    para_idx: usize,
+    table: &crate::model::table::Table,
+) -> Option<std::ops::Range<usize>> {
+    use crate::model::paragraph::ColumnBreakType;
+
+    let host = paragraphs.get(para_idx)?;
+    let [anchor] = host.line_segs.as_slice() else {
+        return None;
+    };
+    if !matches!(host.controls.as_slice(), [Control::Table(_)])
+        || para_has_non_whitespace_text(host)
+        || host.stored_text_partition_is_dirty()
+        || is_synthetic_line_seg(anchor)
+        || anchor.vertical_pos <= 0
+    {
+        return None;
+    }
+
+    let first = para_idx + 1;
+    let table_end = i64::from(table.outer_margin_top)
+        + i64::from(table.common.height)
+        + i64::from(table.outer_margin_bottom);
+    for (index, next) in paragraphs.iter().enumerate().skip(first) {
+        let [line] = next.line_segs.as_slice() else {
+            break;
+        };
+        if !next.controls.is_empty()
+            || next.column_type != ColumnBreakType::None
+            || para_has_non_whitespace_text(next)
+            || next.stored_text_partition_is_dirty()
+            || is_synthetic_line_seg(line)
+        {
+            break;
+        }
+        if line.vertical_pos <= anchor.vertical_pos {
+            return (index > first
+                && line.vertical_pos < anchor.vertical_pos
+                && i64::from(line.vertical_pos) == table_end)
+                .then_some(first..index);
+        }
+    }
+    None
+}
+
 impl TypesetEngine {
     pub(super) fn prepare_block_table_continuation<'a>(
         &self,
@@ -1487,9 +1534,35 @@ impl TypesetEngine {
                         composed_all,
                         styles,
                     );
+                    // #8997 한컴 Print 90쪽. 실제 이월 지점에서 앞 쪽의 빈 줄과
+                    // 새 쪽의 표 끝을 구분한다. 저장 후속 vpos가 선언 높이와
+                    // 바깥 여백의 합이면 새 쪽에서는 옛 문단 오프셋을 반복하지 않는다.
+                    let previous_page_blanks = (st.col_count == 1
+                        && st.profile.hwp5_stored_pagination_layout()
+                        && !st.profile.session_edited()
+                        && is_para_topbottom_float(&table.common)
+                        && table.layout_page_break()
+                            == crate::model::table::TablePageBreak::RowBreak
+                        && table.common.flow_with_text
+                        && !table.common.allow_overlap
+                        && (table.common.vertical_offset as i32) > 0)
+                        .then(|| {
+                            deferred_table_previous_page_blanks(paragraphs_all, para_idx, table)
+                        })
+                        .flatten();
+                    let stored_blanks_relocated = previous_page_blanks.is_some();
+                    if let Some(blanks) = previous_page_blanks {
+                        for index in blanks {
+                            if !st.prefilled_paras.contains(&index) {
+                                st.place_unadvanced_empty_paragraph(index);
+                                st.mark_prefilled_paragraph(index);
+                            }
+                        }
+                    }
                     // 내용 유닛을 수용하지 못한 저장 흐름 표는 호스트 쪽을 떠났다.
                     // 거리 소진은 추정 임계값이 아니라 이 실제 전이에서 확정한다.
-                    first_anchor_offset_consumed = st.col_count == 1
+                    first_anchor_offset_consumed = stored_blanks_relocated
+                        || (st.col_count == 1
                     && (st.profile.hwpx_stored_layout()
                         || st.profile.hwp5_stored_pagination_layout())
                     && !st.profile.session_edited()
@@ -1520,7 +1593,7 @@ impl TypesetEngine {
                             && ft.caption_height > 0.0
                             && all_rows_h + first_frag_overhead > base_available))
                     && !table.common.allow_overlap
-                    && (table.common.vertical_offset as i32) > 0;
+                    && (table.common.vertical_offset as i32) > 0);
                     st.advance_column_or_new_page();
                 }
             }
@@ -1835,7 +1908,7 @@ impl TypesetEngine {
             });
         let relocated_picture_successor = relocated_picture_frame
             .then(|| {
-                let next = paragraphs_all.get(para_idx + 1)?;
+                let (_, next) = st.table_flow_successor(para_idx, paragraphs_all)?;
                 let top = if let Some(rows) = relocated_picture_caption_rows {
                     rows.iter().sum::<f64>()
                         + hwpunit_to_px(
@@ -1843,6 +1916,22 @@ impl TypesetEngine {
                                 + i32::from(table.outer_margin_bottom),
                             self.dpi,
                         )
+                } else if let Some(origin) = first_anchor_offset_consumed
+                    .then(|| {
+                        crate::renderer::float_placement::stored_relocated_measured_table_successor_origin(
+                            true,
+                            para,
+                            table,
+                            Some(next),
+                            ft.effective_height,
+                            self.dpi,
+                        )
+                    })
+                    .flatten()
+                {
+                    // 이미 앞 쪽에 둔 빈 줄을 건너뛴 첫 저장 줄이 온전한 표의
+                    // 실제 높이를 닫는다. 부분 컷의 논리 전진 높이를 더하지 않는다.
+                    origin
                 } else {
                     crate::renderer::float_placement::stored_relocated_picture_successor_origin(
                         true,

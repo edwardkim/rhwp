@@ -9432,8 +9432,68 @@ impl LayoutEngine {
             if hcursor.min_flow_floor > f64::MIN {
                 // 공통 저장 경계가 확정한 위 간격 뒤의 글줄 시작을 보호한다.
                 // 실제 표 바닥은 유지하며 논리 문단 상단만 간격 앞에 둘 수 있다.
-                let guard = y_before_vpos_adjust.max(hcursor.min_flow_floor)
-                    - hcursor.stored_boundary_spacing_before;
+                let saved_empty_slot = y_before_vpos_adjust < hcursor.min_flow_floor
+                    && self.profile.get().hwp5_stored_pagination_layout()
+                    && !self.profile.get().session_edited()
+                    && matches!(item, PageItem::FullParagraph { .. })
+                    && (|| {
+                        let PageItem::Table {
+                            para_index,
+                            control_index,
+                        } = col_content.items.get(item_ordinal.checked_sub(1)?)?
+                        else {
+                            return None;
+                        };
+                        let Control::Table(table) =
+                            paragraphs.get(*para_index)?.controls.get(*control_index)?
+                        else {
+                            return None;
+                        };
+                        let end = col_content
+                            .inline_placements
+                            .get(&(*para_index, *control_index))?
+                            .advance_end?;
+                        let para = paragraphs.get(item_para)?;
+                        let [line] = para.line_segs.as_slice() else {
+                            return None;
+                        };
+                        let style = styles.para_styles.get(para.para_shape_id as usize)?;
+                        let paints_border_or_fill = style
+                            .border_fill_id
+                            .checked_sub(1)
+                            .and_then(|index| styles.border_styles.get(usize::from(index)))
+                            .is_some_and(|border| {
+                                border.borders.iter().any(|line| {
+                                    line.line_type != crate::model::style::BorderLineType::None
+                                }) || border.fill_color.is_some()
+                                    || border.pattern.is_some()
+                                    || border.gradient.is_some()
+                                    || border.image_fill.is_some()
+                            });
+                        (para_index.checked_add(1) == Some(item_para)
+                            && table.common.treat_as_char
+                            && !table.common.affect_line_spacing
+                            && (col_area.y + end - y_before_vpos_adjust).abs() <= self.dpi / 7200.0
+                            && para.text.is_empty()
+                            && para.controls.is_empty()
+                            && !para.stored_text_partition_is_dirty()
+                            && line.tag
+                                & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                            && line.line_height > 0
+                            && line.line_height.checked_add(line.line_spacing) == Some(0)
+                            && style.head_type == crate::model::style::HeadType::None
+                            && !paints_border_or_fill)
+                            .then_some(())
+                    })()
+                    .is_some();
+                // 저장 TAC 전진에 붙은, 칠할 내용이 없는 0전진 줄은 상자 안에서 시작할 수 있다.
+                // 실제 표의 하한은 다음 가시 문단에도 남긴다.
+                let guard = if saved_empty_slot {
+                    y_before_vpos_adjust
+                } else {
+                    y_before_vpos_adjust.max(hcursor.min_flow_floor)
+                } - hcursor.stored_boundary_spacing_before;
                 if y_offset < guard {
                     y_offset = guard;
                 }
