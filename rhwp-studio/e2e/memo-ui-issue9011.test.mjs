@@ -329,8 +329,16 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   const awaitMemoText = await page.$eval('#memo-text', el => el.value);
   assert.ok(beforeMargin.some(memo => memo.text === awaitMemoText), '카드에서 해당 메모를 연다');
   await close(page);
+  await page.click('.memo-margin-close');
+  await page.waitForSelector('.memo-margin', { hidden: true });
+  await page.waitForFunction(() => !document.querySelector('.memo-margin-guides polyline, .memo-highlight-layer span'));
+  assert.equal(await page.$eval('[data-cmd="view:memo-visibility"]', item => item.getAttribute('aria-pressed')), 'false');
+  assert.equal(await page.$eval('[data-cmd="view:memo-guides"]', item => item.getAttribute('aria-pressed')), 'true');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'scroll-container');
+  await toggleMemoView(page, 'view:memo-visibility');
+  await page.waitForFunction(() => document.querySelectorAll('.memo-margin-guides polyline').length === 3);
+  assert.equal(await page.$eval('[data-cmd="view:memo-visibility"]', item => item.getAttribute('aria-pressed')), 'true');
   await toggleMemoView(page, 'view:memo-guides');
-  await page.waitForFunction(() => !document.querySelector('.memo-margin-guides polyline'));
   await toggleMemoView(page, 'view:memo-visibility');
   await page.waitForSelector('.memo-margin', { hidden: true });
   assert.equal(await page.$('.memo-marker-layer'), null);
@@ -629,6 +637,16 @@ await runTest('#9011 메모 UI CRUD·undo·redo·저장', async ({page}) => {
   assert.equal(await page.$eval(insertItem, el => el.classList.contains('disabled')), false, '입력 메뉴의 메모 넣기 활성');
   await page.$eval(insertItem, el => el.click());
   await page.waitForSelector('.memo-inline-editor textarea:focus');
+  await page.type('.memo-inline-editor textarea', '여백을 닫기 전 작성 중이던 메모');
+  await page.focus('.memo-margin-close');
+  await page.keyboard.press('Enter');
+  await page.waitForSelector('.memo-margin', { hidden: true });
+  assert.equal((await state(page)).length, 3, '여백 닫기는 초안을 문서에 반영하지 않는다');
+  await toggleMemoView(page, 'view:memo-visibility');
+  await page.waitForSelector('.memo-inline-editor textarea', { visible: true });
+  assert.equal(await page.$eval('.memo-inline-editor textarea', field => field.value),
+    '여백을 닫기 전 작성 중이던 메모');
+  await page.focus('.memo-inline-editor textarea');
   await page.keyboard.press('Escape');
   assert.equal((await state(page)).length, 3);
   console.log('  빠른 메뉴 본문·셀 위치, 인라인 회신 및 강조·숨기기');

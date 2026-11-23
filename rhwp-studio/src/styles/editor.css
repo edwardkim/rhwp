@@ -164,7 +164,19 @@
   color: var(--ui-text);
 }
 .memo-margin[hidden] { display: none; }
-.memo-margin h2 { margin: 0; padding: 8px; font-size: 13px; }
+/* Studio 오른쪽 패널과 같은 헤더를 사용하며 터치 버튼만큼 높이를 늘린다. */
+.memo-margin .memo-margin-header { height: auto; min-height: 32px; }
+.memo-margin .memo-margin-close { flex: none; }
+.memo-margin .memo-margin-close:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: -2px;
+}
+@media (pointer: coarse) {
+  .memo-margin .memo-margin-close {
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+  }
+}
 .memo-margin-cards { position: relative; overflow: auto; }
 .memo-margin-cards p { margin: 8px; color: var(--ui-text-muted); }
 .memo-card, .memo-inline-editor {

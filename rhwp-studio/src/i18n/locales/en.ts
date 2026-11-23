@@ -1836,6 +1836,7 @@ const catalog = {
   "menu.view.memo": "Memos",
   "command.view.memoGuides.label": "Show comment leader lines",
   "dialog.memo.margin": "Margin comments",
+  "dialog.memo.hideMargin": "Close margin comments",
   "dialog.memo.marginEmpty": "There are no comments in this view.",
   "dialog.memo.noLocation": "This memo’s location is unavailable.",
   "dialog.memo.insertHere": "Insert memo",

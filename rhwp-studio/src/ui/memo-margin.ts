@@ -54,27 +54,34 @@ export class MemoMargin {
   constructor(
     private container: HTMLElement, bus: EventBus, private open: MemoAction, private schedule: () => void,
   ) {
+    const header = document.createElement('header');
+    header.className = 'spl-header memo-margin-header';
     const title = document.createElement('h2');
+    title.className = 'spl-title';
     title.textContent = t('dialog.memo.margin');
+    const close = action('×', () => this.setVisible(false), 'spl-close memo-margin-close');
+    close.title = t('dialog.memo.hideMargin');
+    close.setAttribute('aria-label', close.title);
+    header.append(title, close);
     this.panel.className = 'memo-margin';
     this.panel.setAttribute('aria-label', title.textContent);
     this.panel.hidden = true;
     this.cards.className = 'memo-margin-cards';
     this.empty.textContent = t('dialog.memo.marginEmpty');
     this.cards.append(this.empty);
-    this.panel.append(title, this.cards);
+    this.panel.append(header, this.cards);
     this.guides.classList.add('memo-margin-guides');
     this.guides.setAttribute('aria-hidden', 'true');
     container.after(this.panel, this.guides);
     this.cards.addEventListener('scroll', schedule, { passive: true });
     bus.on('memo-compose', value => this.compose(value as MemoComposeRequest));
     bus.on('memo-view-toggle', option => {
-      if (option === 'visibility') this.showMemos = !this.visible;
+      if (option === 'visibility') this.setVisible(!this.visible);
       if (option === 'guides') {
         this.connected = !this.connected;
         userSettings.setShowMemoGuides(this.connected);
+        this.syncVisibility();
       }
-      this.syncVisibility();
     });
     this.syncVisibility();
   }
@@ -95,6 +102,13 @@ export class MemoMargin {
     this.entries.clear();
   }
 
+  private setVisible(visible: boolean): void {
+    const restoreFocus = !visible && this.panel.contains(document.activeElement);
+    this.showMemos = visible;
+    this.syncVisibility();
+    if (restoreFocus) this.container.focus({ preventScroll: true });
+  }
+
   private syncVisibility(): void {
     this.panel.hidden = !this.visible;
     if (this.panel.hidden) this.menu.hide();
@@ -109,11 +123,11 @@ export class MemoMargin {
 
   private compose(request: MemoComposeRequest): void {
     if (this.composer) {
-      this.composer.querySelector('textarea')?.focus();
+      this.setVisible(true);
+      this.composer.querySelector('textarea')?.focus({ preventScroll: true });
       return;
     }
     this.request = request;
-    this.showMemos = true;
     const form = document.createElement('form');
     form.className = 'memo-inline-editor';
     const title = document.createElement('strong');
@@ -162,7 +176,7 @@ export class MemoMargin {
       this.cards.append(form);
       this.cards.scrollTop = 0;
     } else this.panel.insertBefore(form, this.cards);
-    this.syncVisibility();
+    this.setVisible(true);
     textarea.focus({ preventScroll: true });
   }
 
