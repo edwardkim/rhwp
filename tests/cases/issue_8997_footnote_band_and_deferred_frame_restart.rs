@@ -1,5 +1,5 @@
 //! 관계형 — [#8997] 각주 구분선 띠·이월 표 뒤 빈 재시작 문단으로 90~93쪽 흐름을 한컴과 맞춘다.
-//! 주석 갱신: 2026-11-23 17:26 KST (새 파일)
+//! 주석 갱신: 2026-11-24 00:55 KST (반례 검사 추가; 처음 작성 2026-11-23 17:26 KST)
 //!
 //! 입력: `mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp`
 //! (한컴 2020 Print `pdf/issue8997/1543000-202100035-food-security-report-2020.pdf`, 141쪽).
@@ -16,6 +16,11 @@
 //!   감춰지지 않고 상자 아래에, 다음 문단 pi897 첫 줄은 그 줄 아래에 놓인다. 표 2-5 는 두 쪽으로
 //!   나뉘고 앞 조각은 행 3 의 첫 줄(「국민이최저한도로…」)과 각주 21 을 담고, 행 3 의 나머지
 //!   (「험성이있는경우」)는 다음 쪽에서 시작한다.
+//! - 반례(관계형): 재시작 문단 pi896 에 앞 간격(5000)을 준 사본에서도 빈 재시작 줄의 자리(표 아래끝
+//!   → 줄 위끝)와 다음 글 줄까지의 간격은 원본과 같다. 저장 줄 vpos 22586 = 바깥 상자 아래끝이
+//!   그 줄의 원점이고 앞 간격은 그 앞에서 소비된다. 10k A/B 에서 찾은 1490000-201400162 46쪽
+//!   (pi106 앞 간격 2500HU)이 이 경우다. 빈 재시작 문단을 받아들인 앞 커밋에서 99.17 → 85.85 로
+//!   떨어졌고, 재시작 줄의 앞 간격을 상자 아래끝 앞에서 소비하게 고쳐 99.17 로 되돌렸다.
 //!
 //! 측정: 2026-11-23, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
 //! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 내용 실루엣), 글꼴은 맑은 고딕(Regular·Bold)·
@@ -162,6 +167,57 @@ fn deferred_frame_keeps_the_blank_restart_line_below_it() {
     assert!(
         compact(&core, page).contains("그림2-3.식량자급력의4가지유형"),
         "표 쪽은 그림 2-3 제목을 담는다"
+    );
+}
+
+/// 이월 상자 아래 빈 재시작 줄과 그 위치를 잰다: (쪽, 표 아래끝 → 빈 줄 위끝, 빈 줄 → 다음 줄).
+fn blank_restart_gaps(core: &DocumentCore) -> (u32, f64, f64) {
+    let table_pages = pages_with_table(core, DEFERRED_TABLE_PARA);
+    assert_eq!(table_pages.len(), 1, "그림 2-3 표는 한 쪽에 통째로 놓인다");
+    let page = table_pages[0];
+    let boxes = page_boxes(core, page);
+    let table = boxes
+        .tables
+        .iter()
+        .find(|(s, p, _)| *s == Some(SECTION) && *p == Some(DEFERRED_TABLE_PARA))
+        .map(|(_, _, b)| *b)
+        .expect("그림 2-3 표");
+    let blank = first_line(&boxes, BLANK_RESTART_PARA).expect("빈 재시작 문단 줄");
+    let next = first_line(&boxes, NEXT_TEXT_PARA).expect("다음 글 문단 줄");
+    (page, blank.y - (table.y + table.height), next.y - blank.y)
+}
+
+/// 반례: 재시작 문단에 앞 간격이 있어도 저장 줄(vpos 22586 = 바깥 상자 아래끝)의 자리는
+/// 그대로다. 앞 간격은 상자 아래끝에 다시 더해지지 않는다(1490000-201400162 s2 pi106:
+/// 앞 간격 2500HU 의 빈 재시작 문단이 상자 아래끝보다 33.3px 아래에 그려지던 결함).
+#[test]
+fn spacing_before_does_not_move_the_stored_blank_restart_line() {
+    let plain = core();
+    let (page, table_gap, next_gap) = blank_restart_gaps(&plain);
+
+    let mut spaced = core();
+    {
+        let doc = spaced.document_mut();
+        let para = &mut doc.sections[SECTION].paragraphs[BLANK_RESTART_PARA];
+        let mut shape = doc.doc_info.para_shapes[para.para_shape_id as usize].clone();
+        assert_eq!(shape.spacing_before, 0, "원본 재시작 문단은 앞 간격이 없다");
+        shape.spacing_before = 5000;
+        shape.raw_data = None;
+        doc.doc_info.para_shapes.push(shape);
+        para.para_shape_id = (doc.doc_info.para_shapes.len() - 1) as u16;
+    }
+    let document = spaced.document().clone();
+    spaced.set_document(document);
+    let (spaced_page, spaced_table_gap, spaced_next_gap) = blank_restart_gaps(&spaced);
+
+    assert_eq!(spaced_page, page, "표와 재시작 줄은 같은 쪽에 있다");
+    assert!(
+        (spaced_table_gap - table_gap).abs() < 0.5,
+        "앞 간격을 준 재시작 줄도 상자 아래끝에서 {table_gap:.2}px 에 놓인다(실제 {spaced_table_gap:.2}px)"
+    );
+    assert!(
+        (spaced_next_gap - next_gap).abs() < 0.5,
+        "다음 글 줄은 재시작 줄에서 저장 간격 {next_gap:.2}px 뒤다(실제 {spaced_next_gap:.2}px)"
     );
 }
 
