@@ -13088,7 +13088,14 @@
             "sha256": "a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "yeongwol",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "87d88777e181d5a9",
@@ -13239,7 +13246,14 @@
             "sha256": "fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "yeongwol",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -13307,7 +13321,14 @@
           "accepted_font_set": "b619ae25ed02d3fb",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-body-list-typed",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "3014401338c0270b",
@@ -13357,7 +13378,14 @@
           "accepted_font_set": "b619ae25ed02d3fb",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-body-list-typed",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -13452,7 +13480,14 @@
             "sha256": "9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "handbook-hwp",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "a93b1d9fa44c8080",
@@ -13529,7 +13564,14 @@
             "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "handbook-hwp",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -13597,7 +13639,14 @@
           "accepted_font_set": "b619ae25ed02d3fb",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-helvetica-styles",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "222613226873cc85",
@@ -13647,7 +13696,14 @@
           "accepted_font_set": "b619ae25ed02d3fb",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-helvetica-styles",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -13754,7 +13810,14 @@
             "sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample16-hwpx",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "ccea6770fda567ac",
@@ -13841,7 +13904,14 @@
             "sha256": "300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample16-hwpx",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -13948,7 +14018,14 @@
             "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample16-hwp2022",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "ccea6770fda567ac",
@@ -14035,7 +14112,14 @@
             "sha256": "e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample16-hwp2022",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -14104,7 +14188,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-re-03-latin",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "3014401338c0270b",
@@ -14155,7 +14246,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-re-03-latin",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -14224,7 +14322,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "angle-narrow",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "3014401338c0270b",
@@ -14275,7 +14380,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "angle-narrow",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -14374,7 +14486,14 @@
             "capture_state": "generated_environment_not_preserved_as_input"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation",
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "outline",
+              "backend": "native"
+            }
+          },
           "qualified_program_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",
             "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d"
@@ -14455,7 +14574,14 @@
           "accepted_font_set": "8589f1c9287d5b59",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation",
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "outline",
+              "backend": "wasm"
+            }
+          },
           "qualified_program_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",
             "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d"
@@ -14552,7 +14678,14 @@
           "accepted_font_set": "4ddba2c962929cc2",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "issue8040-insert",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "c0dd8344461fd0e5",
@@ -14627,7 +14760,14 @@
           "accepted_font_set": "4ddba2c962929cc2",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "issue8040-insert",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -14686,7 +14826,14 @@
             "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
           },
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "nested",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "e33ea144db11ccea",
@@ -14727,7 +14874,14 @@
             "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
           },
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "nested",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -14834,7 +14988,14 @@
             "sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample16-hwp2024",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "ccea6770fda567ac",
@@ -14921,7 +15082,14 @@
             "sha256": "4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample16-hwp2024",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15016,7 +15184,14 @@
             "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "handbook-hwpx",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "a93b1d9fa44c8080",
@@ -15093,7 +15268,14 @@
             "sha256": "b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "handbook-hwpx",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15146,7 +15328,14 @@
           "accepted_font_set": "065a04de96f9c95e",
           "accepted_font_environment": null,
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "issue7905",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "065a04de96f9c95e",
@@ -15181,7 +15370,14 @@
           "accepted_font_set": "065a04de96f9c95e",
           "accepted_font_environment": null,
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "issue7905",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15240,7 +15436,14 @@
             "sha256": "11055ee9df8350c92dfb5203c48d9aa9f3a38afb457f38d519051d5c597f9b09"
           },
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample10",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "7b5a9d80a5ed9665",
@@ -15290,7 +15493,14 @@
           "accepted_font_set": "5f486e0383f58ba7",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "sample10",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15383,7 +15593,14 @@
           "accepted_font_set": "4ddba2c962929cc2",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "issue8040-insert-delete",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "c0dd8344461fd0e5",
@@ -15458,7 +15675,14 @@
           "accepted_font_set": "4ddba2c962929cc2",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "issue8040-insert-delete",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15527,7 +15751,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-pic-crop-01",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "3014401338c0270b",
@@ -15578,7 +15809,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-pic-crop-01",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15647,7 +15885,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-shape-group-02",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "3014401338c0270b",
@@ -15698,7 +15943,14 @@
           "accepted_font_set": "506019390591751e",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "seo-shape-group-02",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15756,7 +16008,14 @@
             "sha256": "374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation",
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "chemical",
+              "backend": "native"
+            }
+          },
           "qualified_program_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",
             "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d"
@@ -15804,7 +16063,14 @@
             "sha256": "d31081d4da1a713143035483b80ada9533cbe84be8a6edde24efa794d784183b"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation",
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "chemical",
+              "backend": "wasm"
+            }
+          },
           "qualified_program_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",
             "sha256": "86337078bfe2f12826a19876ad352582b23bc54157e2304569e4edf14dc3626d"
@@ -15864,7 +16130,14 @@
           "accepted_font_set": "f1c864214d48966a",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "spec13",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "3e9ac095df771f70",
@@ -15898,7 +16171,14 @@
           "accepted_font_set": "30c3bc27139d693f",
           "accepted_font_environment": null,
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "spec13",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -15950,7 +16230,14 @@
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "outline-demo",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "f7692b47c11b0b05",
@@ -15984,7 +16271,14 @@
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "outline-demo",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -16042,7 +16336,14 @@
             "sha256": "4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "decree",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "2303981a60823932",
@@ -16082,7 +16383,14 @@
             "sha256": "d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252"
           },
           "supply_mode": "explicit_files",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "decree",
+              "backend": "wasm"
+            }
+          }
         }
       }
     },
@@ -16134,7 +16442,14 @@
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "outline-minimal",
+              "backend": "native"
+            }
+          }
         },
         "wasm": {
           "font_set": "f7692b47c11b0b05",
@@ -16168,7 +16483,14 @@
           "accepted_font_set": "f7692b47c11b0b05",
           "accepted_font_environment": null,
           "supply_mode": "document_selected_files_from_recorded_environment",
-          "reproduction_validation": "pending_current_head_full_document_validation"
+          "reproduction_validation": {
+            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
+            "sha256": "fc5e3be2c6059923fa84f944f85ae1f03c4b46214bc16216c8fa94299c5d4a7f",
+            "selector": {
+              "key": "outline-minimal",
+              "backend": "wasm"
+            }
+          }
         }
       }
     }

@@ -145,15 +145,24 @@ Rust 검증 46단계가 통과한 뒤 WASM Clippy가 렌더링과 겹치는 동�
 빌드, 전체 Nextest는 렌더링을 잠시 멈춘 상태에서 다시 실행했다.
 Nextest는 14,012개가 통과했고, 기존 러너 제외는 45개였다. Rust 검사 49단계가 모두 통과했다.
 
-## 검증 계획
+## 최종 로컬 검증
 
-- 같은 조건의 Native·fresh WASM에서 아홉 이슈 원본 583쪽과 보조 검증 50쪽을
-  독립 Print에 대조한다. [이전 후보의 전쪽 결과와 확대 판독](task_m100_7754_stage21.md)을
-  새 결과와 함께 확인한다.
-- #9335의 공개 입력 17종·19쪽을 양쪽 렌더러에서 대조한다. 표 편집, 셀과 글상자의
-  주석 저장·재열기, 그림자 및 인라인 도형 검증을 원 수용 근거에 연결한다.
-  [원 수용 결과](../pr/assets/semanticist21-20261123-table-notes-shadows/focus-pages.tsv)
-- 같은 공급 조건으로 보호 정본에서 하락과 누락 여부를 확인한다.
-  [공식 공급 조건](../verification/protected-font-supply/manifest.json)
-- 현재 후보에서 집중 회귀, 전체 Rust와 Native Skia, Studio 빌드 및 실행 검증을 확인한다.
-  두 소스가 각각 변경한 쪽수 및 새 WASM API의 소비자 경로를 함께 검증한다.
+| 독립 한컴 Print 대조 | 경로별 쪽수 | Native 최저 | fresh WASM 최저 |
+| --- | ---: | ---: | ---: |
+| 아홉 이슈와 보조 사례 | 633 | 98.07% | 98.07% |
+| #9335 원 수용 입력 | 19 | 99.59% | 99.37% |
+| 보호 정본 23종 | 2,023 | 98.86% | 98.86% |
+
+아홉 이슈의 583쪽과 보조 사례 50쪽 중 Native 431쪽과 fresh WASM 420쪽이 100.00%였다.
+[기준·후보 전쪽 TSV와 쪽별 비교](../verification/issue7754-nine-fidelity/after-pr9335/print-comparisons.json)와
+[대표 15쪽 확대 판독·고정 회귀 5쪽 검증](../verification/issue7754-nine-fidelity/after-pr9335/print/target/representative/validation.json)을 연결했다.
+
+보호 정본은 공식 하한 미달과 기준 대비 하락이 4,046개 비교에서 모두 0건이었다.
+[글꼴 공급 46조건의 검증 기록](../verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json)
+
+암호 안내 HWPX와 평문 대조군은 해독 조건 4개에서 24쪽 PNG가 각각 일치했다.
+[암호 문서 TSV와 대조 결과](../verification/issue7754-nine-fidelity/after-pr9335/issue7754-encrypted-parity.json)
+
+[Rust 검사 49단계의 명령과 결과](../verification/issue7754-nine-fidelity/after-pr9335/rust-local-validation.json)
+
+보호값보다 높게 측정된 5행은 비교표에 기록했다. chemical native 74쪽 99.88% → 100.00%, chemical native 93쪽 99.97% → 100.00%, chemical wasm 26쪽 99.99% → 100.00%, chemical wasm 74쪽 99.88% → 100.00%, chemical wasm 93쪽 99.97% → 100.00%.
