@@ -105,8 +105,6 @@ const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     "issue6035/cgmp_evaluation_table.hwpx",
     // #7445: PDF49쪽/Native47쪽, 공통47쪽 최저0.22%로 렌더링 회귀 보류.
     "issue5699/37787_regulatory_impact.hwp",
-    // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
-    "hwpx/156160455-social-pig-farm-income.hwpx",
 ];
 
 fn collect_samples() -> Vec<(PathBuf, String)> {

@@ -152,6 +152,13 @@ Print의 job은 `eb201818-8aa7-4f42-88a9-0337a7f02101`이다.
 [WASM TSV](assets/issue7770/pig-farm-variants-wasm.tsv),
 [5쪽 확대 비교](assets/issue7770/pig-farm-page-05.png)를 연결한다.
 
+양돈 HWPX의 7쪽은 두 경로에서 각각 100.00%다. 한컴 Print와 대조해 앞 표,
+두 분포 그래프가 속한 표, 참고 3 제목과 뒤 본문의 순서와 포함 관계를 확인했다.
+같은 소유 관계를 이미 검사하던 #6797 회귀를 HWPX에도 적용했다. 공개 최소
+글꼴 환경의 전11쪽에서 2px를 넘는 본문 하단 넘침, 용지 밖 개체, 글줄 겹침이
+각각 0건이었다. 이전에 보류했던 세 공통 검사에 HWPX를 다시 포함했다.
+[HWPX 7쪽 Print·Native·WASM 비교](assets/issue7770/pig-farm-hwpx-page-07.png)
+
 축산 지침 기준은 한컴 2024 1-up job `c4a38f4b-1ed9-4bc7-a240-7d6add5ebbfc`,
 PDF SHA-256 `3c86ba0cb8d57587c8c4be95e8babde1b119bb9147dd617d83d7ce4081368896`이다.
 양쪽 100.00%인 2쪽에서 마지막 사육 기준 글줄의 본문 단 소속과 포함을 검사하고,
