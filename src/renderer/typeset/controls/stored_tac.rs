@@ -744,7 +744,6 @@ pub(super) fn prepare(
                 || crate::renderer::composer::control_slot_line_index(para, control_index)
                     != Some(0)
                 || seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                || seg.line_spacing < 0
                 || i64::from(seg.line_height)
                     != i64::from(table.common.height)
                         + caption_extent
@@ -753,7 +752,35 @@ pub(super) fn prepare(
             {
                 return None;
             }
-            let trailing = if opening_before.is_some()
+            // 음수 줄간격도 후속 원본의 원점과 닫히는 줄의 전진에 포함된다.
+            // 문단 뒤 간격을 합친 끝이 실제 표 하단보다 앞서면 일반 배치로 보낸다.
+            let closed_negative_spacing = if seg.line_spacing < 0 {
+                let next = next_para?;
+                let successor = next.line_segs.first()?;
+                let after = crate::renderer::px_to_hwpunit(fmt.spacing_after, dpi);
+                let before = crate::renderer::px_to_hwpunit(next_spacing_before, dpi);
+                if next.column_type != crate::model::paragraph::ColumnBreakType::None
+                    || next.stored_text_partition_is_dirty()
+                    || next.cell_format_vpos_dirty
+                    || successor.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        != 0
+                    || seg.line_spacing.checked_add(after)? < 0
+                    || seg
+                        .vertical_pos
+                        .checked_add(seg.line_height)?
+                        .checked_add(seg.line_spacing)?
+                        .checked_add(after)?
+                        .checked_add(before)?
+                        != successor.vertical_pos
+                {
+                    return None;
+                }
+                true
+            } else {
+                false
+            };
+            let trailing = if closed_negative_spacing
+                || opening_before.is_some()
                 || crate::renderer::composer::tac_next_line_full_spacing(
                     para,
                     next_para,
