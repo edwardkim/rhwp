@@ -1,18 +1,15 @@
-# 인라인 중첩 표 뒤의 음수 줄 간격
+# 인라인 중첩 표 뒤 음수 줄 간격 검증
 
-[합성 입력과 출처](../../../../tests/fixtures/coanchored_inline_tail/README.md)
+Windows에서 한컴오피스 2020 11.0.0.9136으로 공개 합성 HWP를 인쇄했다. 원본은 한컴 2020으로 저장한 공개 예제의 파일 헤더·문서 정보와 스타일을 유지한다. 인쇄 형식은 A4, 원본 방향, 전체 문서, 1-up이다. 서비스의 한컴 PDF 드라이버, Print method 0과 보호 글꼴 세션 등록을 응답에서 확인했다. [합성 입력](../../../../tests/fixtures/coanchored_inline_tail/negative-spacing.hwp) · [Print PDF](../../../../pdf/coanchored-inline-tail-negative-spacing/negative-spacing-2020.pdf) · [서버 상태](print-status.json) · [인쇄 영수증](print-receipt.json)
 
-macOS 한컴오피스 한글 Viewer 12.31.9에서 전체 문서를 A4로 인쇄했다. 이 PDF는 로컬 대조용이다. RHWP의 공식 제출용 기준본은 Windows 한컴 2020의 Hancom PDF 인쇄로 확보한다.
+서버는 `input_preprocess: "none"`을 반환했다. 영수증은 이 값을 그대로 기록하고, RHWP 검증기에서 같은 뜻인 `preprocess: null`로도 표기한다. 원본과 PDF의 SHA-256을 대조했다.
 
-| 출력 | 전체 쪽수 | 1쪽 raw 실루엣 일치율 | 2쪽 raw 실루엣 일치율 |
-| --- | ---: | ---: | ---: |
-| Mac 한컴 Viewer 인쇄 | 2 | | |
-| 수정 전 Native Skia | 3 | | |
-| 수정 전 fresh WASM Canvas | 3 | | |
-| 수정 후 Native Skia | 2 | 98.83% | 100.00% |
-| 수정 후 fresh WASM Canvas | 2 | 98.82% | 100.00% |
+| 경로 | 수정 전 → 수정 후 쪽수 | 수정 후 Print 실루엣 일치율 |
+| --- | --- | --- |
+| Native Skia | 3 → 2 | 1쪽 98.98%, 2쪽 100.00% |
+| fresh WASM Canvas | 3 → 2 | 1쪽 98.97%, 2쪽 100.00% |
 
-두 RHWP 출력은 Print 프로필, compat 2022, 96 DPI로 측정했다. 기준 PDF는 PDFium으로 래스터화했다. 수정 후 1쪽에서 제목 표, 본문 표, 중첩 표, 다음 글줄이 보인다. 2쪽에는 다음 표가 남는다. 384 DPI 확대에서 중첩 표와 다음 글줄 사이의 간격은 Mac 인쇄본이 약 6 CSS px 더 크다.
+96 DPI, PDFium 기준 래스터, 색상 경계 보정 전 2px 실루엣으로 두 쪽을 각각 검사했다. 수정 후 제목 표와 본문 표는 같은 1쪽에 놓이고 `Next page` 표는 2쪽에 놓인다. 중첩 표 직후 `Tail line`은 Print보다 약 6 CSS px 위에 있다. 수정 전 2쪽과 수정 후 1쪽에서 중첩 표와 글줄의 렌더링 위치는 동일했다.
 
-- Native [전쪽 TSV](mac-viewer/native/silhouette.tsv) · [1쪽 대조](mac-viewer/native/review-page-1.png) · [1쪽 오버레이](mac-viewer/native/overlay-page-1.png)
-- WASM [전쪽 TSV](mac-viewer/wasm/silhouette.tsv) · [1쪽 대조](mac-viewer/wasm/review-page-1.png) · [1쪽 오버레이](mac-viewer/wasm/overlay-page-1.png)
+- Native의 두 쪽과 대표 1쪽. [TSV](windows-2020/native/silhouette.tsv) · [비교](windows-2020/native/review-page-1.png) · [오버레이](windows-2020/native/overlay-page-1.png)
+- fresh WASM의 두 쪽과 대표 1쪽. [TSV](windows-2020/wasm/silhouette.tsv) · [비교](windows-2020/wasm/review-page-1.png) · [오버레이](windows-2020/wasm/overlay-page-1.png)

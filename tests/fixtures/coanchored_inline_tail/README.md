@@ -4,7 +4,7 @@
 
 중첩 표를 담은 저장 줄은 높이가 1,648 HWPUNIT이다. 이 중 하단 바깥 여백은 283 HWPUNIT이다. 줄 간격은 -56 HWPUNIT이고, 다음 줄은 중첩 표가 그려지는 영역 아래에서 시작한다.
 
-[한컴오피스 한글 Viewer 12.31.9에서 인쇄한 참고 PDF](../../../pdf/coanchored-inline-tail-negative-spacing/hancom-mac-viewer-print.pdf)는 2쪽이다. 1쪽에 제목 표, 본문 표, `Tail line`이 있고 2쪽에 `Next page` 표가 있다.
+[Windows 한컴 2020 Print](../../../pdf/coanchored-inline-tail-negative-spacing/negative-spacing-2020.pdf)는 2쪽이다. 1쪽에 제목 표, 본문 표, `Tail line`이 있고 2쪽에 `Next page` 표가 있다. 공개 원본에서 비어 있던 스크립트 저장소를 제거했고 나머지 스트림은 바이트 단위로 유지했다. [Print 영수증](../../../mydocs/pr/assets/coanchored-inline-tail-negative-spacing/print-receipt.json)
 
-- HWP SHA-256 `5fe29c822bcb48cd326d5e5ebf7581899478507e6634db8ac1f8d118478659a1`
-- PDF SHA-256 `a3b93b9f4a2bd811ee11a82ed2e8f2a247aa2fab0bc5ecfe47bf3c0840850e19`
+- HWP SHA-256 `5ce948af486c1c745153fa21e49479dcba1031bd2eefa97f1a889795b8261f18`
+- PDF SHA-256 `56f20f5abfdce8ccf3555d6e73b487de2c603b9b0d647f04fdc91d6cd3c4763d`

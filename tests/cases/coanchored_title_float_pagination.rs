@@ -1,8 +1,8 @@
 //! 검사 유형: 관계형·고정형(독립 Print의 전쪽 쪽수).
-//! 주석 갱신: 2026-11-23T14:08:11+09:00.
-//! 직전 파일 변경: 3e260212f85e551a570c4501c7786c8098c0156e 2026-11-23 13:58:40+09:00.
-//! 음수 줄 간격 합성 파일 2026-11-23 측정: 96 DPI·PDFium·2px raw, 한컴 Print와 동일한 전 2쪽.
-//! Native p1 98.83%·p2 100.00%, fresh WASM p1 98.82%·p2 100.00%.
+//! 주석 갱신: 2026-11-23T16:56:59+09:00.
+//! 직전 파일 변경: 1630a4c5b1edbbee356ce3f1f609eb6a00d12024 2026-11-23 14:31:10+09:00.
+//! 음수 줄 간격 합성 파일 2026-11-23 측정: 96 DPI·PDFium·2px raw, Windows 한컴 2020 Print와 같은 전 2쪽.
+//! Native p1 98.98%·p2 100.00%, fresh WASM p1 98.97%·p2 100.00%.
 //! 후속 파일·독립 PDF: tests/fixtures/coanchored_inline_tail/README.md.
 //! 전쪽 TSV·대조 이미지: mydocs/pr/assets/coanchored-inline-tail-negative-spacing/.
 //! 측정: 2026-11-13, 96 DPI·PDFium·색상 경계 보정 전 2px raw 실루엣, Native Skia/fresh 최적화 WASM Canvas.
