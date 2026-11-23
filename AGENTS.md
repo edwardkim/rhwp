@@ -48,6 +48,8 @@
   PR 생성·승인·통합을 보류하고 해결을 계속한다.
 - 사용자 또는 다른 도구가 만든 변경은 임의로 되돌리거나 삭제하지 않는다.
 - 작업 브랜치는 최신 `upstream/devel`을 기준으로 만들고, 일반 변경은 PR로 통합한다.
+- 로컬 `devel`이 최신 `upstream/devel`과 일치하면 기본 작업공간에서 비교용 빌드를 만들어 `output`에
+  고정하고, 비교용 임시 worktree 생성을 생략한다. [기준 빌드 보존 절차](mydocs/manual/pr_review/local_validation.md#최신-devel-비교용-빌드-보존)를 따른다.
 - 새 PR 준비·생성 전에는 본인 계정의 열린 PR을 먼저 확인한다. **이미 리뷰어가 지정된 PR은
   우선 처리 대상에서 제외**하고 임의로 갱신하지 않는다. 나머지 기존 PR의 lint를 포함한
   모든 CI 실패·오류를 신규 PR보다 우선 해결한다. 충돌·base 문제는 최신 `upstream/devel`로 rebase해 보정·커밋·

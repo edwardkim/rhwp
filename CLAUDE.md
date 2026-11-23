@@ -43,6 +43,14 @@
 `YYYYMMDD`를 쓴다. 원본 head 보존·SHA 기록 등은
 [체리픽 통합 브랜치 명명](mydocs/manual/codex/docs_and_git_workflow.md#외부-pr-검토와-체리픽-통합-브랜치-명명)을 따른다.
 
+## 최신 devel 비교용 빌드
+
+- 로컬 `devel`이 최신 `upstream/devel`과 같으면 기본 rhwp 작업공간에서 기준을 빌드한다. 비교용
+  임시 worktree 생성을 생략하고, 후보 빌드 전에 Native 실행 파일과 WASM 패키지를
+  `output/pr-review/<검토명>/base-tools/`에 고정한다.
+- 기준 source SHA·빌드 옵션·산출물 SHA-256이 일치하는 기존 결과를 재사용한다.
+  [기준 빌드 보존 절차](mydocs/manual/pr_review/local_validation.md#최신-devel-비교용-빌드-보존)를 따른다.
+
 ## PR 제출 전 검증과 Draft 제한
 
 CI workflow·action·CI 실행/재사용 판정 정책 변경 PR의 후속 기록은 **옵션 2**로 처리한다.
