@@ -32,6 +32,17 @@ last_verified: 2026-11-23
 #9372가 수용할 때도 90%에 미달했던 조건은 식품 자료 8쪽, 제주 자료 9쪽,
 소비자 물가 1쪽이며 같은 쪽의 수치를 유지했다.
 
+## 정본 보호 전쪽 비교
+
+[공식 글꼴 공급 자료](../verification/protected-font-supply/manifest.json)의 문서별 조건을
+적용했다. Native와 fresh WASM에서 각각 23조건·2,023쪽을 확인했다. 양쪽 최저는
+98.86%이며 보호 기준 대비 하락 및 쪽수 차이는 0쪽이다. sample10은 양쪽 763쪽
+최저 99.57%다. 행정업무운영 편람 HWP·HWPX는 각 383쪽의 최저가 Native
+99.97%, fresh WASM 99.96%다.
+
+- [Native 전쪽 기준·후보 TSV](assets/issue7766/rebase-validation/protected-native.tsv)
+- [fresh WASM 전쪽 기준·후보 TSV](assets/issue7766/rebase-validation/protected-wasm.tsv)
+
 ## #7766 명시적 쪽 나눔의 인라인 표와 본표 이어받기
 
 #1855가 캡션과 본표의 같은 쪽 소유를 복원한 뒤에도 44쪽의 캡션이 한컴 Print보다
