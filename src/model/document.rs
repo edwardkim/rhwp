@@ -15,6 +15,13 @@ use super::*;
 /// 마커가 사라져 native HWPX로 취급된다.
 pub const HWP5_ORIGIN_HWPX_MARKER_PATH: &str = "META-INF/rhwp-hwp5-origin";
 
+/// rhwp가 채우기·선 `alpha`를 한/글처럼 0~255 정수로 쓴 HWPX임을 표시하는 ZIP 보조 엔트리.
+///
+/// 예전 rhwp는 `alpha`를 0.0~1.0 비율로 써서 완전 투명(255)이 정수 `1`과 같은 글자가 된다.
+/// rhwp 원본 마커(HWP5·HWP3)가 있는데 이 표지가 없으면 그 시절 저장본이므로 비율로 읽는다.
+/// 한컴에서 다시 저장하면 두 마커가 모두 사라져 한컴 정수 규칙을 따른다.
+pub const RHWP_BYTE_ALPHA_HWPX_MARKER_PATH: &str = "META-INF/rhwp-byte-alpha";
+
 /// 제어 슬롯을 포함하는 문단 UTF-16 축으로 LineSeg를 저장하는 생산자 계약.
 /// 이전 `1` 산출물의 축 해석은 읽기 호환 경로에서 유지한다.
 pub const HWP5_ORIGIN_HWPX_PARAGRAPH_AXIS: &[u8] = b"2:paragraph-utf16";

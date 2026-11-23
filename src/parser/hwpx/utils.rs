@@ -139,19 +139,42 @@ pub fn parse_color_str(s: &str) -> u32 {
     0x00000000 // 검정
 }
 
-/// 속성 값을 bool로 파싱 ("true", "1" → true)
+thread_local! {
+    /// 지금 읽는 패키지가 채우기·선 `alpha`를 0.0~1.0 비율로 쓴 예전 rhwp 저장본인가.
+    static HWPX_RATIO_ALPHA: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// `parse_hwpx`가 header·구역을 읽는 동안 예전 rhwp 비율 `alpha` 해석을 세운다.
+pub(crate) struct RatioAlphaGuard;
+
+impl RatioAlphaGuard {
+    pub(crate) fn set(active: bool) -> Self {
+        HWPX_RATIO_ALPHA.with(|c| c.set(active));
+        RatioAlphaGuard
+    }
+}
+
+impl Drop for RatioAlphaGuard {
+    fn drop(&mut self) {
+        HWPX_RATIO_ALPHA.with(|c| c.set(false));
+    }
+}
+
 /// HWPX 채우기·선의 `alpha`(0=불투명 ~ 255=투명). 한컴 12.30은 0~255 정수로 쓴다
 /// (투명도 30% → 77). 소수점이 있는 값은 예전 rhwp 저장본처럼 0.0~1.0 비율로 읽는다.
+/// 예전 rhwp는 완전 투명(255)을 소수점 없이 `1`로 썼으므로, 그 저장본으로 확인된 패키지
+/// ([`RatioAlphaGuard`])에서는 모든 값을 비율로 읽는다.
 pub fn parse_alpha_byte(raw: &str) -> Option<u8> {
     let raw = raw.trim();
     let value = raw.parse::<f64>().ok().filter(|v| v.is_finite())?;
-    Some(if raw.contains('.') {
+    Some(if raw.contains('.') || HWPX_RATIO_ALPHA.with(|c| c.get()) {
         (value.clamp(0.0, 1.0) * 255.0).round() as u8
     } else {
         value.clamp(0.0, 255.0).round() as u8
     })
 }
 
+/// 속성 값을 bool로 파싱 ("true", "1" → true)
 pub fn parse_bool(attr: &quick_xml::events::attributes::Attribute) -> bool {
     let s = attr_str(attr);
     s == "true" || s == "1"

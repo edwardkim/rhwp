@@ -224,3 +224,116 @@ fn hwpx_writes_filled_arrow_as_hancom_does() {
     );
     assert!(!xml.contains("FILLED_"), "{xml}");
 }
+
+fn zip_entry(bytes: &[u8], name: &str) -> Option<String> {
+    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("zip");
+    let mut text = String::new();
+    std::io::Read::read_to_string(&mut archive.by_name(name).ok()?, &mut text).expect("읽기");
+    Some(text)
+}
+
+/// `skip` 엔트리를 뺀 같은 패키지. 한/글은 다시 저장할 때 모르는 META-INF 엔트리를 버린다.
+fn zip_without(bytes: &[u8], skip: &str) -> Vec<u8> {
+    let mut archive = zip::ZipArchive::new(std::io::Cursor::new(bytes)).expect("zip");
+    let mut out = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    for index in 0..archive.len() {
+        let file = archive.by_index_raw(index).expect("엔트리");
+        if file.name().map_or(true, |name| name != skip) {
+            out.raw_copy_file(file).expect("복사");
+        }
+    }
+    out.finish().expect("zip 닫기").into_inner()
+}
+
+/// 예전 rhwp(`devel` ca231d64f)가 채우기·선 투명도 255 사각형 HWP를 `export-hwpx`로 저장한 파일.
+/// 그 저장기는 alpha 를 0.0~1.0 비율로 써서 완전 투명 채우기가 `winBrush alpha="1"`이 됐고,
+/// 선 투명도는 늘 `alpha="0"`으로 썼다. HWP 원본 표지 `META-INF/rhwp-hwp5-origin`이 있다.
+const OLD_RHWP_TRANSPARENT_HWPX: &[u8] =
+    include_bytes!("../fixtures/shape_line_fill_alpha/old_rhwp_transparent_fill.hwpx");
+
+#[test]
+fn old_rhwp_hwpx_keeps_its_transparent_fill() {
+    let section = zip_entry(OLD_RHWP_TRANSPARENT_HWPX, "Contents/section0.xml").expect("구역");
+    assert!(
+        section.contains(r#"alpha="1"/></hc:fillBrush>"#),
+        "{section}"
+    );
+    assert!(zip_entry(OLD_RHWP_TRANSPARENT_HWPX, "META-INF/rhwp-hwp5-origin").is_some());
+
+    let reopened = DocumentCore::from_bytes(OLD_RHWP_TRANSPARENT_HWPX).expect("열기");
+    assert_eq!(shape_props(&reopened)["fillAlpha"], 255);
+    // 예전 저장기는 선 투명도를 남기지 않았다 — 저장된 불투명 선을 그대로 그린다.
+    assert_eq!(shape_props(&reopened)["lineAlpha"], 0);
+
+    // 새 rhwp로 다시 저장하면 정수 255와 정수 alpha 표지를 쓰고, 다시 열어도 투명하다.
+    let resaved = reopened.export_hwpx_native().expect("HWPX");
+    assert!(zip_entry(&resaved, "META-INF/rhwp-byte-alpha").is_some());
+    let section = zip_entry(&resaved, "Contents/section0.xml").expect("구역");
+    assert!(
+        section.contains(r#"alpha="255"/></hc:fillBrush>"#),
+        "{section}"
+    );
+    let again = DocumentCore::from_bytes(&resaved).expect("다시 열기");
+    assert_eq!(shape_props(&again)["fillAlpha"], 255);
+}
+
+/// rhwp 원본 표지가 없는 패키지(한/글이 다시 저장한 파일)의 정수 `alpha="1"`은 한/글처럼
+/// 거의 불투명한 바이트 1이다.
+#[test]
+fn hancom_alpha_one_without_rhwp_marker_stays_nearly_opaque() {
+    let hancom = zip_without(OLD_RHWP_TRANSPARENT_HWPX, "META-INF/rhwp-hwp5-origin");
+    let core = DocumentCore::from_bytes(&hancom).expect("열기");
+    assert_eq!(shape_props(&core)["fillAlpha"], 1);
+}
+
+/// 새 rhwp가 HWP에서 만든 HWPX는 정수 alpha 표지를 싣고, 바이트 1을 바이트 1로 다시 읽는다.
+#[test]
+fn new_rhwp_hwpx_from_hwp_reads_alpha_one_as_a_byte() {
+    let mut core = rectangle_with_alpha();
+    set(&mut core, r#"{"fillAlpha":1}"#);
+    let hwp = core.export_hwp_native().expect("HWP");
+    let from_hwp = DocumentCore::from_bytes(&hwp).expect("HWP 열기");
+    let hwpx = from_hwp.export_hwpx_native().expect("HWPX");
+    assert!(zip_entry(&hwpx, "META-INF/rhwp-hwp5-origin").is_some());
+    assert!(zip_entry(&hwpx, "META-INF/rhwp-byte-alpha").is_some());
+    let reopened = DocumentCore::from_bytes(&hwpx).expect("HWPX 열기");
+    assert_eq!(shape_props(&reopened)["fillAlpha"], 1);
+}
+
+/// 그려진 타원의 위끝(px).
+fn ellipse_top(core: &DocumentCore) -> f64 {
+    let svg = core.render_page_svg_native(0).expect("SVG");
+    let ellipse = svg
+        .lines()
+        .find(|line| line.starts_with("<ellipse"))
+        .expect("타원");
+    let attr = |name: &str| -> f64 {
+        let start = ellipse.find(&format!(" {name}=\"")).expect(name) + name.len() + 3;
+        ellipse[start..start + ellipse[start..].find('"').unwrap()]
+            .parse()
+            .unwrap()
+    };
+    attr("cy") - attr("ry")
+}
+
+/// 한/글 12.30 Mac에서 #8324 타원(문단 기준·위 정렬, 세로 -876)은 '쪽 영역 안으로 제한'이면
+/// 글 앞·글 뒤 모두 문단 위끝에 그려지고, 제한을 끄면 876 HU(11.68px) 위에 그려진다.
+#[test]
+fn restricted_front_and_behind_shape_ignores_negative_para_offset() {
+    for wrap in ["InFrontOfText", "BehindText"] {
+        let top = |restrict: bool, offset: i32| {
+            let mut core = shape_core("ellipse");
+            set(
+                &mut core,
+                &format!(
+                    r#"{{"textWrap":"{wrap}","vertRelTo":"Para","vertAlign":"Top","restrictInPage":{restrict},"vertOffset":{}}}"#,
+                    offset as u32
+                ),
+            );
+            ellipse_top(&core)
+        };
+        let anchor = top(true, 0);
+        assert!((top(true, -876) - anchor).abs() < 0.01, "{wrap}");
+        assert!((top(false, -876) - (anchor - 11.68)).abs() < 0.01, "{wrap}");
+    }
+}
