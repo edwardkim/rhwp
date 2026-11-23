@@ -28,6 +28,15 @@ Windows 설치본으로 공급이 가능해진 문서 6종을 기준 devel과 �
 
 돋움체는 `ttfs/windows/gulim.ttc`의 네 번째 서체(index 3, Version 5.04)로 확인됐다. 이 서체를 단일 TTF로 추출한 SHA-256은 `3674103f23382f9bf40e650d8860b9ce2338ae6bf9400bdcf0b56688743f8f53`로, 정본의 `dotumche.ttf`와 다르다. [파일별 해시 대조](font-program-lookup.tsv)
 
+화학물질 표시 기준에 필요한 단일 TTF의 내부 서체명은 `DotumChe`·`돋움체`다. 한컴오피스 2020에서 조사한 경로는 `/opt/hnc/hoffice11/Shared/TTF/Install/dotumche.ttf`이며, 현재 정본은 Native와 WASM 모두 53개 파일 중 50번째에 같은 SHA-256을 지정한다. [당시 파일 경로·해시·서체명](../../issue_8151/font-programs.tsv) · [문서별 공급 목록](../../../../verification/protected-font-supply/manifest.json)
+
+| 11월 23일 추가 대조 | 내부 서체명·버전 | 유니코드 문자표의 한글 완성형 음절 | SHA-256 |
+| --- | --- | ---: | --- |
+| 로컬 `ttfs/chemical/dotumche.ttf` (11,548바이트) | DotumCheUT 001.000 | 0 / 11,172 | `0f93ebba3db375268404e834f11eaefc349252799d6ba3cef2906cd16451f4b1` |
+| EverythingFonts의 공개 미리보기 WOFF2 | DotumChe 2.21 | 11,172 / 11,172 | `2170a738fb09250e6f099e560b259a04ec4ea7cd21b2f3bb5bfd55d07508c873` |
+
+사이트의 Regular TTF 다운로드는 로그인 화면으로 연결된다. 미리보기에서 서체명과 한글 음절 수를 확인했으며, 사이트 원본 TTF와 정본의 바이트 일치 여부는 미확인이다. 화학물질 표시 기준 103쪽의 정본 재검증은 해당 TTF 확보 후 진행한다. [EverythingFonts 미리보기](https://everythingfonts.com/font/dotumche#web) · [Regular TTF 다운로드](https://everythingfonts.com/font/dotumche/download/dotumche)
+
 Windows 11의 `C:\Windows\Fonts\H2MJSM.TTF`에 기록된 서체명은 한글 `HY신명조`, 영문 `HYSinMyeongJo-Medium`이다. 시행령 문서(`decree`)의 Native·WASM 공급 목록은 `49dd1ef0caa6…`를 지정하며, 이번 검증에서는 설치본 `f78f538885b2…`를 같은 순서에 공급했다.
 
 공개 생성법과 같은 빈 HWPX로 한양중고딕 독립 표본을 만들었다. 입력 SHA-256은 `79c2714845d7ed0941534bc765665e7f0302dac1333abfce84d21daef3d10592`이고, 한컴 2020 11.0.0.9136에서 재인쇄한 7쪽의 본문 11,187자가 생성 순서와 일치했다. 새 PDF의 SHA-256은 `618695320aee01224d30c14511ce319fa4b0883e1c97cb45d5bf8d40741c44c3`이다. 독립 자료의 모든 비어 있지 않은 Type 3 글리프 프로그램을 당시 해시와 대조했다. [표본 생성 기록](../../issues7754_7765/source44/source56-independent-specimen-jobs.json)
