@@ -2966,6 +2966,48 @@ impl LayoutEngine {
                 ),
                 (None, None) => (0, cell.paragraphs.len()),
             };
+            // 종이 기준 개체는 뒤 문단이 다음 쪽으로 넘어가도 칸의 첫 조각 쪽에 속한다.
+            // 한컴 Print의 paper_square_split은 60번째 문단의 개체를 1쪽에 인쇄한다.
+            // 문단 컷을 순회하기 전에 배치해 첫 조각의 비가시 문단도 앵커를 보존한다.
+            let paper_owned_by_first_fragment = |common: &crate::model::shape::CommonObjAttr| {
+                cut_units.is_some()
+                    && crate::renderer::float_placement::cell_object_detached_from_cell_flow(common)
+                    && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Paper)
+            };
+            if cut_units.is_some_and(|(start, _)| start == 0) {
+                for (cp_idx, para) in cell.paragraphs.iter().enumerate() {
+                    for (ctrl_idx, control) in para.controls.iter().enumerate() {
+                        if let Control::Shape(shape) = control {
+                            if paper_owned_by_first_fragment(shape.common()) {
+                                let first_new_child = table_node.children.len();
+                                self.layout_cell_shape(
+                                    tree,
+                                    table_node,
+                                    shape,
+                                    &inner_area,
+                                    text_y_start,
+                                    Alignment::Left,
+                                    para.para_shape_id,
+                                    styles,
+                                    bin_data_content,
+                                    clamp_header_negative_para_offset,
+                                    Some((
+                                        section_index,
+                                        para_index,
+                                        control_index,
+                                        cell_idx,
+                                        cp_idx,
+                                        ctrl_idx,
+                                    )),
+                                );
+                                for child in &table_node.children[first_new_child..] {
+                                    tree.mark_cell_overlay_node(child.id);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
             let reflow_block_flow = self.reflow_block_cell_flow_in_cell(cell, table, styles);
             for cp_idx in loop_start..loop_end_excl {
                 let para = &cell.paragraphs[cp_idx];
@@ -4471,6 +4513,9 @@ impl LayoutEngine {
                                 has_preceding_text = true;
                             }
                             Control::Shape(shape) => {
+                                if paper_owned_by_first_fragment(shape.common()) {
+                                    continue;
+                                }
                                 // TextBox를 포함한 Shape는 한 control이 여러 physical
                                 // fragment에 걸쳐 내부 문단을 이어 그릴 수 있다. Picture의
                                 // entry-only owner 규칙을 Shape에 적용하면 뒤 fragment의

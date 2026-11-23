@@ -9646,16 +9646,16 @@ pub(crate) fn computed_empty_table_host(para: &Paragraph, table: &Table) -> bool
 }
 
 /// 재조판한 빈 호스트에는 표 바깥 상자를 대신 소유하는 저장 줄이 없다.
-/// 새 행에서 시작한 조각은 바깥여백을 소유한다. 행 내부 컷은 그 행의 원래
-/// 상단이 아니므로 NO_LS만으로 같은 여백을 반복하지 않는다.
+/// 새 물리 조각은 바깥여백을 소유한다. 계산한 빈 호스트에는 저장된
+/// 조각 원점이 없으므로 행 내부 컷도 새 쪽의 바깥 상자를 다시 연다.
+/// 공개 `paper_square_split` HWPX/HWP의 첫/이어받기 Print PDF 괘선 차이가
+/// 정확히 283HU이며, 예산과 출력은 이 판정을 함께 사용한다.
 pub(crate) fn computed_rowbreak_owns_outer_frame(
     para: &Paragraph,
     table: &Table,
-    start_cut: &[usize],
+    _start_cut: &[usize],
 ) -> bool {
-    table.layout_page_break() == TablePageBreak::RowBreak
-        && start_cut.iter().all(|&cut| cut == 0)
-        && computed_empty_table_host(para, table)
+    table.layout_page_break() == TablePageBreak::RowBreak && computed_empty_table_host(para, table)
 }
 
 /// 선언이 실제 저장 행 점유의 비끝 prefix를 소유하면, 전체 표 높이가 아니다.
