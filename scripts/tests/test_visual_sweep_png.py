@@ -50,39 +50,42 @@ class ProgramPostScriptAliasTests(unittest.TestCase):
     def test_postscript_only_face_keeps_its_real_identity_in_cold_and_cached_catalogues(self):
         from fontTools.ttLib import TTFont
         fixture = Path(__file__).parents[2] / 'tests/fixtures/native_inline_placeholder/placeholder-contract.ttf'
-        with tempfile.TemporaryDirectory() as folder:
+        with tempfile.TemporaryDirectory() as folder, TTFont(fixture, lazy=True) as font:
             root = Path(folder)
-            source = root / 'postscript-only.ttf'
-            with TTFont(fixture) as font:
-                postscript = font['name'].getDebugName(6)
-                font['name'].names = [entry for entry in font['name'].names
-                                      if entry.nameID not in {1, 4, 16}]
-                font.save(source)
+            original_sha256 = sweep.sha256_file(fixture)
+            name_table = font['name']
+            postscript = name_table.getDebugName(6)
+            self.assertTrue(postscript)
+            postscript_records = [entry for entry in name_table.names if entry.nameID == 6]
             adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
                 sha256_file=sweep.sha256_file, write_json_atomic=sweep.write_json_atomic)
-            original = source.read_bytes()
-            for _ in range(2):
-                face = json.loads(png.font_catalog(adapter, root, [source], root).read_text())['faces'][0]
-                self.assertEqual(face['families'], [postscript])
-                self.assertEqual(face['primaryFamily'], postscript)
-                self.assertEqual(face['postScriptNames'], [postscript])
-                self.assertEqual(Path(face['path']).read_bytes(), original,
-                                 '실제 별칭을 공급하며 글꼴 프로그램을 바꾸지 않는다')
+            with patch.object(name_table, 'names', postscript_records), \
+                    patch('fontTools.ttLib.TTFont', return_value=font) as parser:
+                for _ in range(2):
+                    catalogue = png.font_catalog(adapter, root, [fixture], root)
+                    face = json.loads(catalogue.read_text())['faces'][0]
+                    self.assertEqual(face['families'], [postscript])
+                    self.assertEqual(face['primaryFamily'], postscript)
+                    self.assertEqual(face['postScriptNames'], [postscript])
+                    self.assertEqual(Path(face['path']), fixture)
+                    self.assertEqual(face['sha256'], original_sha256)
+            parser.assert_called_once()
+            self.assertEqual(sweep.sha256_file(fixture), original_sha256)
 
     def test_face_without_family_or_postscript_name_reports_the_source(self):
         from fontTools.ttLib import TTFont
         fixture = Path(__file__).parents[2] / 'tests/fixtures/native_inline_placeholder/placeholder-contract.ttf'
-        with tempfile.TemporaryDirectory() as folder:
+        with tempfile.TemporaryDirectory() as folder, TTFont(fixture, lazy=True) as font:
             root = Path(folder)
-            source = root / 'unnamed.ttf'
-            with TTFont(fixture) as font:
-                font['name'].names = [entry for entry in font['name'].names
-                                      if entry.nameID not in {1, 4, 6, 16}]
-                font.save(source)
+            name_table = font['name']
+            anonymous_records = [entry for entry in name_table.names
+                                 if entry.nameID not in {1, 4, 6, 16}]
             adapter = SimpleNamespace(resolve_input_path=lambda root, path: Path(path),
                 sha256_file=sweep.sha256_file, write_json_atomic=sweep.write_json_atomic)
-            with self.assertRaisesRegex(SystemExit, 'unnamed.ttf face=0'):
-                png.font_catalog(adapter, root, [source], root)
+            with patch.object(name_table, 'names', anonymous_records), \
+                    patch('fontTools.ttLib.TTFont', return_value=font), \
+                    self.assertRaisesRegex(SystemExit, r'placeholder-contract\.ttf face=0'):
+                png.font_catalog(adapter, root, [fixture], root)
 
     def test_cold_and_cached_catalogue_preserve_family_priority_and_supply_postscript_alias(self):
         from fontTools.ttLib import TTFont
