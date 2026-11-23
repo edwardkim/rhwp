@@ -50,7 +50,7 @@ export class MenuBar {
         if (this.openMenu === item) {
           this.closeAll();
         } else {
-          this.openMenu?.classList.remove('open');
+          this.closeAll();
           item.classList.add('open');
           this.openMenu = item;
           this.updateMenuStates(item);
@@ -67,7 +67,7 @@ export class MenuBar {
       if (!title) continue;
       title.addEventListener('mouseenter', () => {
         if (this.openMenu && this.openMenu !== item) {
-          this.openMenu.classList.remove('open');
+          this.closeAll();
           item.classList.add('open');
           this.openMenu = item;
           this.updateMenuStates(item);
@@ -151,6 +151,7 @@ export class MenuBar {
       const cmdId = el.dataset.cmd!;
       const enabled = this.dispatcher.isEnabled(cmdId);
       el.classList.toggle('disabled', !enabled);
+      if (el instanceof HTMLButtonElement) el.disabled = !enabled;
       if (cmdId === 'file:save') {
         el.removeAttribute('title');
       }
@@ -171,6 +172,9 @@ export class MenuBar {
   }
 
   private closeAll(): void {
+    this.openMenu?.querySelectorAll<HTMLDetailsElement>('details.md-sub[open]').forEach(sub => {
+      sub.open = false;
+    });
     this.openMenu?.classList.remove('open');
     this.openMenu = null;
   }

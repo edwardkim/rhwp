@@ -1833,7 +1833,7 @@ const catalog = {
   "dialog.zoom.title": "Zoom",
   "dialog.zoom.wheelText.text": "Scroll horizontally with the mouse wheel",
   "dialog.memo.goTo": "Go to memo",
-  "command.view.memoMargin.label": "Show margin comments",
+  "menu.view.memo": "Memos",
   "command.view.memoGuides.label": "Show comment leader lines",
   "dialog.memo.margin": "Margin comments",
   "dialog.memo.marginEmpty": "There are no comments in this view.",

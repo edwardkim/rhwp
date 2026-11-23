@@ -73,7 +73,7 @@ export function installMemoMarkers(
     const draft = draftAnchor ? wasm.getMemoTarget(draftAnchor, true) : null;
     const located = marks.filter(({ rect }) => pages.has(rect.pageIndex))
       .map(({ memo, rect, replies }) => ({ memo, replies, ...locate(rect) }));
-    if (margin.annotations) {
+    if (margin.visible) {
       const paint = (rect: CursorRect, highlight: SelectionRect[], active: boolean, isDraft = false) => {
         for (const r of highlight.length ? highlight : [{ ...rect, width: 2 }]) {
           if (!pages.has(r.pageIndex)) continue;

@@ -1220,6 +1220,7 @@ pre.dialog-pdf-import-json { margin: 0; max-height: 160px; overflow: auto; }
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-wrap: anywhere;
 }
 .memo-dialog-list {
   display: flex;
@@ -1263,3 +1264,11 @@ pre.dialog-pdf-import-json { margin: 0; max-height: 160px; overflow: auto; }
 .memo-list-meta, .memo-dialog-location { color: var(--ui-text-muted); font-size: .9em; }
 .memo-dialog-location summary { cursor: pointer; }
 .memo-dialog-location span { display: block; margin-block-start: 4px; overflow-wrap: anywhere; }
+
+/* 모바일의 가로 스크롤 폭과 별개로 확인·닫기 버튼을 실제 화면 너비에 맞춘다. */
+@media (max-width: 767px) {
+  .modal-overlay:has(> [data-memo-dialog]) {
+    width: 100vw;
+    width: 100dvw;
+  }
+}

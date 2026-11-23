@@ -401,13 +401,6 @@ export const viewCommands: CommandDef[] = [
     execute: services => services.eventBus.emit('memo-view-toggle', 'visibility'),
   },
   {
-    id: 'view:memo-margin',
-    label: t('command.view.memoMargin.label'),
-    icon: 'icon-comment',
-    canExecute: ctx => ctx.hasDocument,
-    execute: services => services.eventBus.emit('memo-view-toggle', 'margin'),
-  },
-  {
     id: 'view:memo-guides',
     label: t('command.view.memoGuides.label'),
     icon: 'icon-comment',

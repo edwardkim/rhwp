@@ -185,6 +185,7 @@
   border-color: var(--doc-memo-guide);
 }
 .memo-card header { display: flex; flex-wrap: wrap; gap: 4px 8px; font-size: 11px; }
+.memo-card header > * { min-width: 0; }
 .memo-card time { font-variant-numeric: tabular-nums; }
 .memo-card button, .memo-inline-editor button {
   color: inherit;
@@ -208,6 +209,10 @@
 }
 .memo-card > .memo-card-open { max-height: 6em; overflow: auto; }
 .memo-card-actions { display: flex; flex-wrap: wrap; justify-content: end; font-size: 11px; }
+.memo-card-actions button, .memo-inline-editor button {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
 .memo-card-actions button { min-height: 24px; }
 .memo-card details { border-top: 1px solid var(--ui-note-border); font-size: 12px; }
 .memo-card summary { cursor: pointer; padding: 3px; }

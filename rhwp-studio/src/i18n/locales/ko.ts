@@ -1833,7 +1833,7 @@ const catalog = {
   "dialog.zoom.title": "확대/축소",
   "dialog.zoom.wheelText.text": "마우스 휠을 사용하여 좌우로 스크롤하기",
   "dialog.memo.goTo": "메모 위치로 이동",
-  "command.view.memoMargin.label": "여백 메모 표시",
+  "menu.view.memo": "메모",
   "command.view.memoGuides.label": "메모 안내선 표시",
   "dialog.memo.margin": "여백 메모",
   "dialog.memo.marginEmpty": "이 화면에 표시할 메모가 없습니다.",

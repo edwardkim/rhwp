@@ -42,11 +42,10 @@ export class MemoMargin {
   private focused: number | null = null;
   private entries = new Map<number, { card: HTMLElement; signature: string }>();
 
-  private showMargin: boolean | null = null;
+  private showMemos: boolean | null = null;
   private hasAnchoredMemos = false;
-  annotations = true;
 
-  private get visible(): boolean { return this.showMargin ?? this.hasAnchoredMemos; }
+  get visible(): boolean { return this.showMemos ?? this.hasAnchoredMemos; }
 
   get draftAnchor() { return this.request?.anchor; }
 
@@ -70,14 +69,7 @@ export class MemoMargin {
     this.cards.addEventListener('scroll', schedule, { passive: true });
     bus.on('memo-compose', value => this.compose(value as MemoComposeRequest));
     bus.on('memo-view-toggle', option => {
-      if (option === 'margin') {
-        this.showMargin = !this.visible;
-        if (this.showMargin) this.annotations = true;
-      }
-      if (option === 'visibility') {
-        this.annotations = !this.annotations;
-        this.showMargin = this.annotations;
-      }
+      if (option === 'visibility') this.showMemos = !this.visible;
       if (option === 'guides') {
         this.connected = !this.connected;
         userSettings.setShowMemoGuides(this.connected);
@@ -104,10 +96,9 @@ export class MemoMargin {
   }
 
   private syncVisibility(): void {
-    this.panel.hidden = !this.visible || !this.annotations;
+    this.panel.hidden = !this.visible;
     if (this.panel.hidden) this.menu.hide();
-    for (const [name, value] of [['margin', this.visible], ['guides', this.connected],
-      ['visibility', this.annotations]] as const) {
+    for (const [name, value] of [['visibility', this.visible], ['guides', this.connected]] as const) {
       for (const item of document.querySelectorAll('[data-cmd="view:memo-' + name + '"]')) {
         item.classList.toggle('active', value);
         item.setAttribute('aria-pressed', String(value));
@@ -122,7 +113,7 @@ export class MemoMargin {
       return;
     }
     this.request = request;
-    this.showMargin = this.annotations = true;
+    this.showMemos = true;
     const form = document.createElement('form');
     form.className = 'memo-inline-editor';
     const title = document.createElement('strong');
