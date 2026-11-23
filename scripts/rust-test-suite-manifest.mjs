@@ -31,6 +31,11 @@ const RUST_MODULE_NAME = /^[a-z][a-z0-9_]*$/;
 // 소비 검사가 서로 다른 suite로 재배정돼도 각 harness가 자기 helper를 한 번 공급한다.
 const SHARED_SUPPORT_MODULES = [
   {
+    module: 'legacy_bold_tracking',
+    source: 'src/renderer/legacy_font_advances/tracking.rs',
+    consumers: ['tests/cases/native_pua_host_font_protocol.rs'],
+  },
+  {
     module: 'legacy_shadow_fixture',
     source: 'tests/common/legacy_shadow_fixture.rs',
     consumers: [

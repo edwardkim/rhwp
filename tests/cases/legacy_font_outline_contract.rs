@@ -1106,49 +1106,8 @@ mod native_otf_program_contract {
     }
 }
 
-/// MIT fixture의 name 표만 메모리에서 바꾼다. 실제 상용 글꼴은 배포하지 않는다.
-fn cff_named(family: &str) -> Vec<u8> {
-    let mut data = CFF.to_vec();
-    let count = u16::from_be_bytes([data[4], data[5]]) as usize;
-    let name = (0..count)
-        .find_map(|i| {
-            let pos = 12 + i * 16;
-            (data.get(pos..pos + 4) == Some(b"name"))
-                .then(|| u32::from_be_bytes(data[pos + 8..pos + 12].try_into().unwrap()) as usize)
-        })
-        .unwrap();
-    let count = u16::from_be_bytes([data[name + 2], data[name + 3]]) as usize;
-    let strings = name + u16::from_be_bytes([data[name + 4], data[name + 5]]) as usize;
-    for i in 0..count {
-        let pos = name + 6 + 12 * i;
-        let id = u16::from_be_bytes([data[pos + 6], data[pos + 7]]);
-        if !matches!(id, 1 | 16) {
-            continue;
-        }
-        let length = u16::from_be_bytes([data[pos + 8], data[pos + 9]]) as usize;
-        let start = strings + u16::from_be_bytes([data[pos + 10], data[pos + 11]]) as usize;
-        let platform = u16::from_be_bytes([data[pos], data[pos + 1]]);
-        let replacement = if matches!(platform, 0 | 3) {
-            family
-                .encode_utf16()
-                .chain(std::iter::repeat(32))
-                .take(length / 2)
-                .flat_map(u16::to_be_bytes)
-                .collect::<Vec<_>>()
-        } else {
-            family
-                .bytes()
-                .chain(std::iter::repeat(b' '))
-                .take(length)
-                .collect::<Vec<_>>()
-        };
-        data[start..start + length].copy_from_slice(&replacement);
-    }
-    data
-}
-
 #[test]
-fn verified_hwpx_legacy_bold_tracking_reaches_the_final_run() {
+fn declared_hwpx_tracking_family_reaches_the_final_run_without_authenticating_a_fallback() {
     use rhwp::model::paragraph::CharShapeRef;
     use rhwp::renderer::layout::{EmbeddedTextMeasurer, TextMeasurer};
     use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -1167,11 +1126,10 @@ fn verified_hwpx_legacy_bold_tracking_reaches_the_final_run() {
     let source = DocumentCore::from_bytes(input).unwrap().document().clone();
     // 같은 source 유형이거나 조회 이름만 같다는 이유로 다른 프로그램에 꾸밈을 빌려주지 않는다.
     for family in ["Senaru", "Kidney bean", "Strawberry"] {
-        for (source_hft, embedded, program_family, verified) in [
-            (true, false, family, true),
-            (false, false, family, false),
-            (true, true, family, false),
-            (true, false, "Unverified Fixture", false),
+        for (source_hft, embedded, declared) in [
+            (true, false, true),
+            (false, false, false),
+            (true, true, false),
         ] {
             let mut document = source.clone();
             document.sections.truncate(1);
@@ -1202,9 +1160,8 @@ fn verified_hwpx_legacy_bold_tracking_reaches_the_final_run() {
             shape.bold = true;
             let mut core = DocumentCore::new_empty();
             core.set_document(document);
-            let program = cff_named(program_family);
             core.prepare_native_otf_fonts_with(|request| {
-                (request.family == family).then(|| (program.clone(), 0))
+                (request.family == family).then(|| (CFF.to_vec(), 0))
             })
             .unwrap();
             let tree = core.build_page_render_tree(0).unwrap();
@@ -1216,19 +1173,24 @@ fn verified_hwpx_legacy_bold_tracking_reaches_the_final_run() {
                 .native_otf_metrics
                 .as_ref()
                 .is_some_and(|font| font.has_verified_hft_bold_tracking('가'));
-            assert_eq!(style.source_verified_hft_bold_tracking && program_verified, verified,
-                "source/program 양쪽의 독립 소유: {family}/{program_family}/{source_hft}/{embedded}");
-            if verified {
-                let mut regular = style.clone();
-                regular.bold = false;
+            assert_eq!(
+                style.source_verified_hft_bold_tracking, declared,
+                "source declaration: {family}/{source_hft}/{embedded}"
+            );
+            assert!(
+                !program_verified,
+                "a query name cannot certify the fallback program"
+            );
+            if declared {
+                let program = style.native_otf_metrics.as_ref().unwrap();
+                assert!(program.has_glyph('가'));
+                assert!(program.needs_faux_bold('가'));
+                // 기존 전각 fallback 전진은 유지한 채 이 선언의 효과만 확인한다.
+                let mut without_verification = style.clone();
+                without_verification.source_verified_hft_bold_tracking = false;
                 let measure =
                     |style: &TextStyle| EmbeddedTextMeasurer.compute_char_positions("가", style)[1];
-                let extra = measure(style) - measure(&regular);
-                // 한컴 2024 Print의 별도 TJ: 50/1000 em. 4HU 반올림의 양쪽 오차만 허용한다.
-                assert!(
-                    (extra - style.font_size * 0.05).abs() <= 4.0 / 75.0,
-                    "최종 run의 굵기 전진: {family}, {extra}"
-                );
+                assert_eq!(measure(style), measure(&without_verification));
             }
         }
     }

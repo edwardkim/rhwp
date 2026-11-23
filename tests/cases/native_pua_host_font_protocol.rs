@@ -859,59 +859,54 @@ fn supplied_truetype_advance_is_distinct_from_legacy_and_cff() {
 
 #[test]
 fn legacy_bold_tracking_requires_verified_source_and_program() {
+    use super::legacy_bold_tracking::has_verified_program_family;
     use rhwp::renderer::{
         layout::{EmbeddedTextMeasurer, TextMeasurer},
         TextStyle,
     };
-    let original = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
-    let mut renamed = original.to_vec();
-    let utf16 = |s: &str| {
-        s.encode_utf16()
+    use ttf_parser::name_id;
+
+    // 글꼴 프로그램과 별개인 name 레코드에서 실제 판정기가 읽는 필드만 제공한다.
+    for (id, label, accepted) in [
+        (name_id::FAMILY, "Sinmyeong Junggothic", true),
+        (name_id::TYPOGRAPHIC_FAMILY, "딸기", true),
+        (name_id::FULL_NAME, "Senaru", false),
+        (name_id::POST_SCRIPT_NAME, "Senaru", false),
+        (name_id::FAMILY, "Unverified CFF", false),
+    ] {
+        let label: Vec<u8> = label.encode_utf16().flat_map(u16::to_be_bytes).collect();
+        let mut record: Vec<u8> = [0, 1, 18, 3, 1, 0x0409, id, label.len() as u16, 0]
+            .into_iter()
             .flat_map(u16::to_be_bytes)
-            .collect::<Vec<_>>()
-    };
-    let from = utf16("RHWP HFT Outline Fixture");
-    let to = utf16("Sinmyeong Junggothic    ");
-    assert_eq!(from.len(), to.len());
-    let mut count = 0;
-    for offset in 0..=renamed.len() - from.len() {
-        if renamed[offset..offset + from.len()] == from {
-            renamed[offset..offset + to.len()].copy_from_slice(&to);
-            count += 1;
-        }
+            .collect();
+        record.extend(label);
+        let table = ttf_parser::name::Table::parse(&record).unwrap();
+        assert_eq!(has_verified_program_family(table.names), accepted);
     }
-    assert!(count > 0);
+
+    let original = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
     let mut programs = NativePuaFonts::default();
+    // 요청 이름만 인증된 family에 맞춰도 실제 파일에 이름이 없으면 전진을 빌려주지 않는다.
+    let requested = "Sinmyeong Junggothic";
     programs
-        .register_otf("verified", true, false, &renamed, 0)
+        .register_otf(requested, true, false, original, 0)
         .unwrap();
-    programs
-        .register_otf("other", true, false, original, 0)
-        .unwrap();
+    let program = programs.get_otf(requested, true, false).unwrap();
+    assert!(program.has_glyph('가'));
+    assert!(program.needs_faux_bold('가'));
+    assert!(!program.has_verified_hft_bold_tracking('가'));
     let mut style = TextStyle {
         font_size: 20.0,
         bold: true,
         source_font_is_hft: true,
-        native_otf_metrics: programs.get_otf("other", true, false),
+        native_otf_metrics: Some(program),
         ..Default::default()
     };
-    let width = |style: &TextStyle| {
-        let p = EmbeddedTextMeasurer.compute_char_positions("가", style);
-        p[1] - p[0]
-    };
+    let width = |style: &TextStyle| EmbeddedTextMeasurer.compute_char_positions("가", style)[1];
     let regular = width(&style);
     style.source_hwp3_hft_bold = true;
-    assert!(width(&style) > regular);
+    assert!((width(&style) - regular - 1.0).abs() < 0.1);
     style.source_hwp3_hft_bold = false;
-    style.native_otf_metrics = programs.get_otf("verified", true, false);
-    assert!(style
-        .native_otf_metrics
-        .as_ref()
-        .unwrap()
-        .has_verified_hft_bold_tracking('가'));
-    let without_source = width(&style);
     style.source_verified_hft_bold_tracking = true;
-    assert!((width(&style) - without_source - 1.0).abs() < 0.1);
-    style.native_otf_metrics = programs.get_otf("other", true, false);
     assert!((width(&style) - regular).abs() < 1e-8);
 }

@@ -4,8 +4,8 @@
 //! strawberry-tracking.hwpx 전체 1쪽: Native/fresh WASM 모두 89.84% → 100.00%, 전쪽 최저 100.00%.
 //! 12/18/24pt 보통·굵게의 같은 영역을 확대 판독했다. 실제 페이지 px를 고정하지 않는다.
 //! 정식 근거: mydocs/pr/assets/issue8957/tracking/ 및 pdf/issue8957/strawberry-tracking-2024.pdf.
-//! 실행 글꼴은 MIT 합성 RHWPHftOutline.otf의 이름/스타일만 메모리에서 바꾼다.
-//! 이 합성 계약은 제공 OTF의 윤곽 일치나 원본 표지 전쪽 통과를 대신하지 않는다.
+//! 공개 검사에서는 원본 프로그램의 family와 실제 굵기 비트를 읽는다.
+//! 명시적으로 공급한 원래 family의 확대·가운데 정렬은 통합 검증에서 원본으로 대조했다.
 
 use rhwp::{
     model::{provenance::SourceFormat, style::Alignment},
@@ -20,46 +20,11 @@ use sha2::{Digest, Sha256};
 
 const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
 
-fn program(family: &str, real_bold: bool) -> Vec<u8> {
-    let utf16 = |s: &str| {
-        s.encode_utf16()
-            .flat_map(u16::to_be_bytes)
-            .collect::<Vec<_>>()
-    };
-    let from = utf16("RHWP HFT Outline Fixture");
-    let to = utf16(&format!("{family:width$}", width = from.len() / 2));
-    assert_eq!(from.len(), to.len());
-    let mut bytes = CFF.to_vec();
-    let mut replaced = 0;
-    for offset in 0..=bytes.len() - from.len() {
-        if bytes[offset..offset + from.len()] == from {
-            bytes[offset..offset + to.len()].copy_from_slice(&to);
-            replaced += 1;
-        }
-    }
-    assert!(replaced > 0);
-    if real_bold {
-        let count = u16::from_be_bytes(bytes[4..6].try_into().unwrap()) as usize;
-        let offset = (0..count)
-            .find_map(|i| {
-                let p = 12 + i * 16;
-                (&bytes[p..p + 4] == b"OS/2")
-                    .then(|| u32::from_be_bytes(bytes[p + 8..p + 12].try_into().unwrap()) as usize)
-            })
-            .unwrap();
-        // OS/2 fsSelection: BOLD=5, REGULAR=6. The fixture owns no external outline data.
-        let selection = u16::from_be_bytes(bytes[offset + 62..offset + 64].try_into().unwrap());
-        bytes[offset + 62..offset + 64].copy_from_slice(&((selection | 32) & !64).to_be_bytes());
-        assert!(ttf_parser::Face::parse(&bytes, 0).unwrap().is_bold());
-    }
-    bytes
-}
-
-fn text_node(node: &RenderNode) -> Option<&RenderNode> {
-    if matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text == "가 가") {
+fn text_node<'a>(node: &'a RenderNode, text: &str) -> Option<&'a RenderNode> {
+    if matches!(&node.node_type, RenderNodeType::TextRun(run) if run.text == text) {
         return Some(node);
     }
-    node.children.iter().find_map(text_node)
+    node.children.iter().find_map(|node| text_node(node, text))
 }
 
 fn render(
@@ -67,6 +32,7 @@ fn render(
     source_type: u8,
     family: &str,
     bytes: &[u8],
+    text: &str,
     size: i32,
     bold: bool,
 ) -> RenderNode {
@@ -102,32 +68,26 @@ fn render(
         .unwrap()
         .unwrap();
     core.set_document(doc);
-    core.insert_text_native(0, 0, 0, "가 가").unwrap();
+    core.insert_text_native(0, 0, 0, text).unwrap();
     core.set_font_environment(Some(env)).unwrap();
     core.prepare_native_otf_fonts_with(|_| Some((bytes.to_vec(), 0)))
         .unwrap();
     let tree = core.build_page_render_tree(0).unwrap();
-    text_node(&tree.root)
+    text_node(&tree.root, text)
         .expect("same paragraph retains the complete text")
         .clone()
 }
 
 #[test]
-fn verified_legacy_tracking_reaches_centered_placement_without_widening_spaces() {
+fn fallback_program_does_not_borrow_verified_tracking_in_centered_layout() {
     for (source, family) in [
         ("딸기", "Strawberry"),
         ("Strawberry", "Strawberry"),
         ("신명 중고딕", "Sinmyeong Junggothic"),
     ] {
-        let bytes = program(family, false);
         for size in [1200, 1800, 2400] {
-            let regular = render(source, 2, family, &bytes, size, false);
-            let bold = render(source, 2, family, &bytes, size, true);
-            assert!(bold.bbox.width > regular.bbox.width, "{source} {size}");
-            assert!(
-                bold.bbox.x < regular.bbox.x,
-                "centered run expands to the left"
-            );
+            let regular = render(source, 2, family, CFF, "가 가", size, false);
+            let bold = render(source, 2, family, CFF, "가 가", size, true);
             assert!(
                 (bold.bbox.x + bold.bbox.width / 2.0 - regular.bbox.x - regular.bbox.width / 2.0)
                     .abs()
@@ -142,6 +102,16 @@ fn verified_legacy_tracking_reaches_centered_placement_without_widening_spaces()
             assert_eq!(b.para_index, r.para_index);
             assert_eq!(b.text, r.text);
             assert!(b.style.source_verified_hft_bold_tracking);
+            let program = b.style.native_otf_metrics.as_ref().unwrap();
+            assert!(program.needs_faux_bold('가'));
+            assert!(!program.has_verified_hft_bold_tracking('가'));
+            let mut without_verification = b.style.clone();
+            without_verification.source_verified_hft_bold_tracking = false;
+            assert_eq!(
+                EmbeddedTextMeasurer.compute_char_positions(&b.text, &b.style),
+                EmbeddedTextMeasurer.compute_char_positions(&b.text, &without_verification),
+                "{source} {size}"
+            );
             let positions = EmbeddedTextMeasurer.compute_char_positions(&b.text, &b.style);
             assert!(positions.windows(2).all(|p| p[1] > p[0]));
             assert!((positions.last().unwrap() - positions[0] - bold.bbox.width).abs() < 1e-7);
@@ -157,13 +127,28 @@ fn verified_legacy_tracking_reaches_centered_placement_without_widening_spaces()
 fn unverified_source_program_and_real_bold_keep_their_own_advances() {
     for (source, source_type, family, real_bold) in [
         ("딸기", 1, "Strawberry", false),
-        ("Unverified HFT", 2, "Strawberry", false),
+        ("Unverified declaration", 2, "Strawberry", false),
         ("딸기", 2, "Unverified CFF", false),
         ("딸기", 2, "Strawberry", true),
     ] {
-        let bytes = program(family, real_bold);
-        let regular = render(source, source_type, family, &bytes, 1800, false);
-        let bold = render(source, source_type, family, &bytes, 1800, true);
+        let (bytes, text) = if real_bold {
+            let program =
+                include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Bold.otf");
+            assert!(ttf_parser::Face::parse(program, 0).unwrap().is_bold());
+            (program.as_slice(), "A A")
+        } else {
+            (CFF, "가 가")
+        };
+        let regular = render(source, source_type, family, bytes, text, 1800, false);
+        let bold = render(source, source_type, family, bytes, text, 1800, true);
+        if real_bold {
+            let RenderNodeType::TextRun(run) = &bold.node_type else {
+                unreachable!()
+            };
+            let program = run.style.native_otf_metrics.as_ref().unwrap();
+            assert!(program.has_glyph('A'));
+            assert!(!program.needs_faux_bold('A'));
+        }
         assert_eq!(
             (
                 regular.bbox.x,
