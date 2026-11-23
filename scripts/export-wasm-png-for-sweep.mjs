@@ -340,23 +340,31 @@ async function main() {
         }
         // 같은 문서의 필요한 face를 한 번만 공급한다. 데이터는 SVG/base64로 복제하지 않는다.
         const fontInfo = await page.evaluate(async ({pages, fonts, scale}) => {
-          const {installCanvasFont, selectSweepPaintFontFaces, collectSweepPaintFontRequests, orderSweepFontPrograms} = await import('/font-registration.mjs');
+          const {installCanvasFont, selectSweepPaintFontFaces, collectSweepPaintFontRequests, orderSweepFontPrograms, selectSweepPaintFontPrograms} = await import('/font-registration.mjs');
           const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
           for (const page of pages) doc.renderPageToCanvasFilteredWithProfile(page - 1, canvas, scale, 'all', 'print');
-          // 이전 devel의 요청에는 실제 글자가 없는 SVG text 그룹도 있다.
-          // 글리프가 없으면 공급할 face도 없으므로 장치 글꼴 바이트를 소모하지 않는다.
-          const paintRequests = collectSweepPaintFontRequests(doc, pages);
-          const metafileRequests = paintRequests.metafile.filter(request => typeof request.text === 'string' && request.text.length > 0);
+          const bytesCache = new Map();
           const loadRequestedFont = async record => {
-            const response = await fetch(record.url);
-            if (!response.ok) throw Error('요청한 글꼴의 실제 프로그램을 읽을 수 없습니다.');
-            return response.arrayBuffer();
+            if (!bytesCache.has(record.sha256)) {
+              const response = await fetch(record.url);
+              if (!response.ok) throw Error('요청한 글꼴의 실제 프로그램을 읽을 수 없습니다.');
+              bytesCache.set(record.sha256, await response.arrayBuffer());
+            }
+            return bytesCache.get(record.sha256);
           };
-          const effectRequests = paintRequests.effects;
-          // 사용하지 않는 fallback 글꼴이 메타파일 바이트 상한을 소진하지 않게 한다.
-          const metafileFaces = await selectSweepPaintFontFaces(
-            doc, fonts, metafileRequests, effectRequests, loadRequestedFont);
-          metafileRequests.push(...effectRequests);
+          const perPagePaintFonts = typeof doc.getPagePaintFontRequests === 'function'
+            && typeof doc.clearMetafileFonts === 'function';
+          const pageFaces = new Map(), metafileFaces = new Set(), paintJobs = [];
+          const metafileRequests = [];
+          for (const range of perPagePaintFonts ? pages.map(number => [number]) : [pages]) {
+            const paint = collectSweepPaintFontRequests(doc, range);
+            // 이전 WASM의 SVG text 그룹에도 실제로 그릴 글자가 있어야 한다.
+            const metafiles = paint.metafile.filter(request => typeof request.text === 'string' && request.text.length > 0);
+            const faces = await selectSweepPaintFontFaces(doc, fonts, metafiles, paint.effects, loadRequestedFont);
+            for (const number of range) pageFaces.set(number, faces);
+            for (const key of faces) metafileFaces.add(key);
+            metafileRequests.push(...metafiles, ...paint.effects);
+          }
           const requested = new Set(), intrinsicRequested = new Set(), ttfRequested = new Set();
           if (metafileRequests.length) {
             for (const request of metafileRequests) {
@@ -409,7 +417,7 @@ async function main() {
             // CSS는 나중에 등록한 face를 먼저 검색하므로 후보 순서의 역순으로 적재한다.
             for (const candidate of [...ordered].reverse()) jobs.push({family, key, record: candidate, ordered});
           }
-          const bytesCache = new Map(), preparedPrograms = new Map();
+          const preparedPrograms = new Map();
           for (const {family, key, record, ordered} of jobs) {
             if (supplied.has(`${key}|${record.sha256}`)) continue;
             let bytes = bytesCache.get(record.sha256);
@@ -418,11 +426,12 @@ async function main() {
               if (!response.ok) throw Error(`공급 글꼴을 읽을 수 없습니다: ${record.url}`);
               bytes = await response.arrayBuffer(); bytesCache.set(record.sha256, bytes);
             }
+            const paintSelected = metafileFaces.has(key) && selectSweepPaintFontPrograms(ordered).includes(record);
             let textProgramSha256 = null;
             let font;
             try {
               font = await installCanvasFont(family, bytes, {weight: String(record.weight), style: record.style}, doc,
-                metafileFaces.has(`${family.toLowerCase()}|${record.weight}|${record.style}`),
+                !perPagePaintFonts && paintSelected,
                 intrinsicRequested.has(family.toLowerCase()), async program => {
                   preparedPrograms.set(`${key}|${record.sha256}`, new Uint8Array(program));
                   const digest = await crypto.subtle.digest('SHA-256', program);
@@ -433,6 +442,7 @@ async function main() {
             }
             catch (error) { throw Error(`선택한 Canvas 글꼴을 적재할 수 없습니다: ${family}, ${record.source}, ${error}`); }
             supplied.add(`${family.toLowerCase()}|${record.weight}|${record.style}|${record.sha256}`);
+            if (perPagePaintFonts && paintSelected) paintJobs.push({family, key, bytes});
             loaded.push({family, registeredFamily: font.family, sourceSha256: record.sourceSha256, sha256: record.sha256, textProgramSha256, faceIndex: record.faceIndex, weight: record.weight, style: record.style, repairs: record.repairs, sourceKind: record.sourceKind || 'external'});
           }
           // 성공한 FontFace와 같은 바이트·후보 순서만 분할 HFT 윤곽에 공급한다.
@@ -471,12 +481,25 @@ async function main() {
           // 캐시에 적재되기만 하고 아직 paint되지 않은 그림은 준비 뒤 다시 재생한다.
           await Promise.all([...globalThis.sweepImages]);
           if (globalThis.sweepImageErrors.length) throw Error(globalThis.sweepImageErrors.join('; '));
+          if (perPagePaintFonts) globalThis.sweepPagePaintFonts = {pageFaces, paintJobs, active: ''};
           return {requested: [...requested], loaded};
         }, {pages, fonts: workerFonts, scale: settings.scale});
         for (const number of pages) {
           const captureCanvasContext = await createPrintCaptureCanvas(page);
           const result = await page.evaluate(async ({number, scale}) => {
             const doc = globalThis.sweepDocument, canvas = document.getElementById('page');
+            const paintFonts = globalThis.sweepPagePaintFonts;
+            if (paintFonts) {
+              const faces = paintFonts.pageFaces.get(number);
+              const active = [...faces].sort().join('\n');
+              if (active !== paintFonts.active) {
+                doc.clearMetafileFonts();
+                for (const {family, key, bytes} of paintFonts.paintJobs) {
+                  if (faces.has(key)) doc.registerMetafileFont(family, new Uint8Array(bytes), 0);
+                }
+                paintFonts.active = active;
+              }
+            }
             for (let attempt = 0; attempt < 3; attempt++) {
               doc.renderPageToCanvasFilteredWithProfile(number - 1, canvas, scale, 'all', 'print');
               if (!globalThis.sweepImages.size) break;
@@ -504,7 +527,11 @@ async function main() {
           observedFonts: info.observedFonts, fontEnvironment: info.fontEnvironment,
           screenCanvasMetricsActive: info.screenCanvasMetricsActive, canvasMetricsActive: info.canvasMetricsActive,
           canvasContext, browser: await browser.version()});
-        await page.evaluate(() => { globalThis.sweepDocument.free(); delete globalThis.sweepDocument; });
+        await page.evaluate(() => {
+          globalThis.sweepDocument.free();
+          delete globalThis.sweepDocument;
+          delete globalThis.sweepPagePaintFonts;
+        });
       } finally {
         if (browser) {
           // 종료에 실패하면 활성 프로필을 지우지 않고 바깥 finally가 다시 닫게 둔다.

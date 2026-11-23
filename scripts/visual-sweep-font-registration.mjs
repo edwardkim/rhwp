@@ -7,6 +7,13 @@ export function orderSweepFontPrograms(records) {
   return records.toSorted((left, right) => rank(left) - rank(right));
 }
 
+// 일반 동명 face는 공급 순서의 첫 프로그램을 사용한다.
+// 상호 보완하는 분할 HFT CFF만 원래 순서에서 여러 프로그램을 사용한다.
+export function selectSweepPaintFontPrograms(records) {
+  const ordered = orderSweepFontPrograms(records);
+  return ordered.every(record => record.openTypeCff) ? ordered : ordered.slice(0, 1);
+}
+
 // 페이지별 실제 paint 요구를 우선한다. 빈 쪽에 문서 전체 글꼴을 다시 적재하지 않는다.
 export function collectSweepPaintFontRequests(owner, pages) {
   if (typeof owner?.getPagePaintFontRequests === 'function') {
@@ -89,7 +96,7 @@ export async function selectTextEffectFontFaces(owner, fonts, requests, loadByte
         const group = fonts.filter(face => face.families.some(name =>
           `${name.toLowerCase()}|${face.weight}|${face.style}` === key));
         // 실제 Canvas 공급과 같은 원본 프로그램·순서로 문자 소속을 확인한다.
-        const records = orderSweepFontPrograms(group);
+        const records = selectSweepPaintFontPrograms(group);
         for (const record of records) {
           const bytes = await loadBytes(record);
           if (!bytes) continue;
