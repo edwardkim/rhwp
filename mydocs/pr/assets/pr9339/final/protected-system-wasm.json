@@ -1,0 +1,91 @@
+{
+  "supply": "protected-system",
+  "backend": "wasm",
+  "base": "17b17c934b527aa523f037ca12d8713394e43c82",
+  "candidate": "c1504cb12199081c010188557ff2f1e14d36d5ef",
+  "floor_table_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "font_manifest_sha256": "e788a9600bf06f1a25dfb1b890f57a2fc2c33c0ad1dedfe777a05b827bab2e56",
+  "pages_compared": 1644,
+  "png_changes_vs_local_base": 0,
+  "below_floor": 25,
+  "omitted_pages": 379,
+  "missing_sources": [
+    {
+      "document": "chemical",
+      "pages": 103,
+      "hashes": [
+        "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62",
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+      ]
+    },
+    {
+      "document": "decree",
+      "pages": 74,
+      "hashes": [
+        "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc"
+      ]
+    },
+    {
+      "document": "outline",
+      "pages": 9,
+      "hashes": [
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8"
+      ]
+    },
+    {
+      "document": "sample16-hwp2022",
+      "pages": 64,
+      "hashes": [
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+      ]
+    },
+    {
+      "document": "sample16-hwp2024",
+      "pages": 64,
+      "hashes": [
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+      ]
+    },
+    {
+      "document": "sample16-hwpx",
+      "pages": 64,
+      "hashes": [
+        "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+      ]
+    },
+    {
+      "document": "seo-helvetica-styles",
+      "pages": 1,
+      "hashes": [
+        "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+        "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+        "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+        "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+      ]
+    }
+  ],
+  "below_per_document": {
+    "handbook-hwp": 1,
+    "handbook-hwpx": 1,
+    "sample10": 16,
+    "seo-body-list-typed": 1,
+    "spec13": 2,
+    "yeongwol": 4
+  }
+}

@@ -10,6 +10,32 @@
       "sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597"
     }
   },
+  "accepted_sha256_pairs": {
+    "arial.ttf": [
+      "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1",
+      "edfbd22a3d088fc2f5d7c79b8c9c732df6dc878a60f0a80be0f92a3c7a634404"
+    ],
+    "arialbd.ttf": [
+      "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69",
+      "4d59199834e7439c67ea4949407639961060b21b173833f566eb60ac6fd8f5af"
+    ],
+    "arialbi.ttf": [
+      "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994",
+      "d68bdf8ebfe67a72e6db02b104e8062de5e75c358ba9bb7ef5d0e5c70272a1c5"
+    ],
+    "ariali.ttf": [
+      "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62",
+      "4487a06c1b8de98deb0cab2c04a876cbc8f31b7e397dc1f2b2021c0746321d7c"
+    ],
+    "batang.ttc": [
+      "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+      "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+    ],
+    "H2MJSM.TTF": [
+      "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+      "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b"
+    ]
+  },
   "font_sets": {
     "3896354ee7730d21": {
       "files": [
@@ -15956,6 +15982,12 @@
     },
     {
       "key": "chemical",
+      "accepted_sha256_pairs": {
+        "dotumche.ttf": [
+          "097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62",
+          "c2c030ca896d46ff28dae17663e9fe22ab2fc6e6518c96d75e15ca8fb441bd2f"
+        ]
+      },
       "input": {
         "path": "samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp",
         "sha256": "4382eabadb86cde5730a7e7b972cea1828fea0c1c743a654c2a430cc19ae26c0",

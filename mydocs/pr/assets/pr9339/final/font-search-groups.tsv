@@ -1,0 +1,47 @@
+document	backend	fonts	environment_sha256	groups_in_search_order
+angle-narrow	native	16		1,9,2,4
+angle-narrow	wasm	16		1,9,2,4
+chemical	native	54	374d724612dab2e845b5d16cc96895b21f114aede6aa21153b6e700704f79dfa	2,52
+chemical	wasm	54	d31081d4da1a713143035483b80ada9533cbe84be8a6edde24efa794d784183b	2,52
+decree	native	561	4811005db14bede74017ab7206a2f9a17deb2207bd8d84c325c853941d7098ab	2,1,1,1,2,45,380,52,77
+decree	wasm	560	d3ee0027e75691a3130acaf169666bb59f059f42d3ea5ad5043d578fc4886252	1,1,1,1,1,2,45,380,51,77
+handbook-hwp	native	61	9d1351039b7e802f708c5c1bab199b30c612eaf4ab9a3f9561d2eee1ceb892be	35,2,13,6,1,4
+handbook-hwp	wasm	61	b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25	35,2,13,6,1,4
+handbook-hwpx	native	61	b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25	35,2,13,6,1,4
+handbook-hwpx	wasm	61	b365798897121252598cb18e16d01799024caaad8fe7ccf509b983f10090ed25	35,2,13,6,1,4
+issue7905	native	27		12,1,10,4
+issue7905	wasm	516		387,52,77
+issue8040-insert	native	60		45,1,9,1,4
+issue8040-insert	wasm	60		45,1,9,1,4
+issue8040-insert-delete	native	60		45,1,9,1,4
+issue8040-insert-delete	wasm	60		45,1,9,1,4
+nested	native	55	892ba08ef1118af08f66cbd5bf64bd6a7767a2dde85e09afcbf355b07d7e6add	1,32,3,13,1,4,1
+nested	wasm	571	c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1	1,2,52,387,52,77
+outline	native	57	4ade9f383e2554fddcfa517cf8de6d1dadf51c379836a615795afabe9eeaf41d	37,2,10,1,1,4,2
+outline	wasm	55		37,2,10,1,1,4
+outline-demo	native	3	b55a761596a2cfa249555f0606e769ec8c7016ba0f5ba8524c883978bb3a9744	1,2
+outline-demo	wasm	516		387,52,77
+outline-minimal	native	520	595daa8857592f59eebb4a1f8a6cad54a07ce337916344085e23b8af14a58a6b	387,52,77,2,2
+outline-minimal	wasm	516		387,52,77
+sample10	native	80		65,1,10,4
+sample10	wasm	80		65,1,10,4
+sample16-hwp2022	native	70	e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b	52,2,10,1,1,4
+sample16-hwp2022	wasm	70	e64dc04a55787efcbd55dcddd9f7a9fc8454a1df06a20c4cd9e99c9dd88de36b	52,2,10,1,1,4
+sample16-hwp2024	native	70	4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b	52,2,10,1,1,4
+sample16-hwp2024	wasm	70	4fb70119f4959fb6461ed304d4b166c499b58caab0cc428f9fbab5fb2ef79b8b	52,2,10,1,1,4
+sample16-hwpx	native	70	300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183	52,2,10,1,1,4
+sample16-hwpx	wasm	70	300d7233a5527172ad4df993214d791fe214a69cf6e36017a637ca7cb928d183	52,2,10,1,1,4
+seo-body-list-typed	native	15		1,9,1,4
+seo-body-list-typed	wasm	15		1,9,1,4
+seo-helvetica-styles	native	15		1,9,1,4
+seo-helvetica-styles	wasm	15		1,9,1,4
+seo-pic-crop-01	native	16		1,9,2,4
+seo-pic-crop-01	wasm	16		1,9,2,4
+seo-re-03-latin	native	16		1,9,2,4
+seo-re-03-latin	wasm	16		1,9,2,4
+seo-shape-group-02	native	16		1,9,2,4
+seo-shape-group-02	wasm	16		1,9,2,4
+spec13	native	18	e4764d4c95b65187d013d1848231cbf7770b8767b88ad2a830d49b4cc1f8f4b3	18
+spec13	wasm	19		1,18
+yeongwol	native	235	a3a6458dc372877daa22941d7d45ec46c249e1c0cff1465631170b08059abab9	181,4,33,4,2,2,2,2,2,1,2
+yeongwol	wasm	222	fa15a5cc106788922437324b4f501e124fc3043eec8756f1e1ba8faaed890a9d	181,4,33,4
