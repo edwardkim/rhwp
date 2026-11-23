@@ -150,9 +150,24 @@ pub fn estimate_footnote_note_height(footnote: &Footnote, dpi: f64) -> f64 {
     }
 }
 
+/// 한컴 Print 가 각주 구분선 굵기와 관계없이 구분선 중심 아래에 두는 띠(0.25mm).
+///
+/// [#8997] oracle10k 142 문서 2,921 쪽의 한컴 Print 벡터 좌표에서 첫 각주 줄 위끝 − 구분선
+/// 중심 − 「구분선 아래」 간격이 굵기 0.32·0.48·1.12·1.92·2.72px 모두 같은 0.95px 였다
+/// (rhwp 는 굵기 전체를 더했다). 쪽 아래에 붙는 구역의 위끝은 이 띠로 정해진다.
+pub(crate) const FOOTNOTE_SEPARATOR_BAND_MM: f64 = 0.25;
+
+pub(crate) fn footnote_separator_band_px(shape: &FootnoteShape, dpi: f64) -> f64 {
+    super::layout::border_width_to_px(shape.separator_line_width)
+        .max(0.5)
+        .min(FOOTNOTE_SEPARATOR_BAND_MM * dpi / 25.4)
+}
+
+/// 각주 구역에서 구분선이 차지하는 높이: 구분선 위 + 구분선 띠 + 구분선 아래 간격.
+/// 구분선 굵기는 이 높이에 들지 않는다([`FOOTNOTE_SEPARATOR_BAND_MM`]).
 pub fn footnote_separator_overhead_px(shape: &FootnoteShape, dpi: f64) -> f64 {
     super::hwpunit_to_px(shape.separator_above_margin_hu() as i32, dpi)
-        + super::layout::border_width_to_px(shape.separator_line_width).max(0.5)
+        + footnote_separator_band_px(shape, dpi)
         + super::hwpunit_to_px(shape.separator_below_margin_hu() as i32, dpi)
 }
 
