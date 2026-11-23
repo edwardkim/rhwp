@@ -1,0 +1,29 @@
+{
+  "started": 1795312964.1937115,
+  "pid": 1708186,
+  "stopped_supervisors": [
+    {
+      "pid": 1698892,
+      "start_ticks": "169987884",
+      "script": "run_source36_matrix_role.py",
+      "resumed": 1795315664.7967904
+    },
+    {
+      "pid": 1698914,
+      "start_ticks": "169987954",
+      "script": "run_source36_matrix_role.py",
+      "resumed": 1795315664.7984517
+    },
+    {
+      "pid": 1699095,
+      "start_ticks": "169993763",
+      "script": "run_source36_canonical_protected_matrix.py",
+      "resumed": 1795315664.7989
+    }
+  ],
+  "scope": "Only task-owned rendering supervisor PIDs are stopped. Existing child rendering jobs continue normally. Cargo is never signaled. No output or shared target is removed.",
+  "resume_condition": "Rust full inventory terminates, or 45 minute scheduling limit",
+  "supervisors_waiting": false,
+  "resume_reason": "45 minute scheduling limit reached",
+  "ended": 1795315664.799045
+}

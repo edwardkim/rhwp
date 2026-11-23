@@ -1,0 +1,35 @@
+from pathlib import Path
+import os,subprocess,time,json,hashlib,shutil,traceback
+R=Path('/home/tsjang/rhwp-worktrees/task-7754-pr9293-preview');O=Path('/home/tsjang/rhwp/output/pr-review/issue7754-nine');S=O/'source74-preview-build-state.json'
+BASE='1a27faacff48ea7329e76ce8eca15aa9ca8aa877';HEAD='c89b59865cfd64d40ee6f8d5e30667105c54d7d6';BRANCH='task/7754-nine-fidelity-devel'
+env=dict(os.environ,CARGO_BUILD_JOBS='2',CARGO_TARGET_DIR='/home/tsjang/rhwp/target/pr-review',CARGO_PROFILE_RELEASE_CODEGEN_UNITS='16')
+# Both builds use the repository's standard optimized profiles and locked wrapper.
+for k in ['CARGO_PROFILE_RELEASE_TEST_OPT_LEVEL','CARGO_PROFILE_RELEASE_OPT_LEVEL','RHWP_WASM_CDYLIB_ONLY']:env.pop(k,None)
+s={'started':time.time(),'pid':os.getpid(),'base':BASE,'candidate':HEAD,'candidate_branch':'detached local preparation preview; PR9293 is unmerged','results':[],'environment':{k:env[k] for k in ['CARGO_BUILD_JOBS','CARGO_TARGET_DIR','CARGO_PROFILE_RELEASE_CODEGEN_UNITS']}}
+def save():S.write_text(json.dumps(s,ensure_ascii=False,indent=2)+'\n')
+def git(*a):return subprocess.check_output(['git',*a],cwd=R,text=True).strip()
+def clean():
+ d=git('status','--porcelain=v1');assert not d,f'tracked/untracked work must be preserved: {d[:600]}'
+def identity():
+ files=git('ls-files','--','src','crates','build_scripts','.cargo','Cargo.toml','Cargo.lock','rust-toolchain.toml','build.rs').splitlines()
+ return {p:hashlib.file_digest((R/p).open('rb'),'sha256').hexdigest() for p in files if (R/p).is_file()}
+def run(label,command,expected):
+ assert git('rev-parse','HEAD')==expected
+ before=identity();record={'label':label,'source_head':expected,'source_tree':git('rev-parse','HEAD^{tree}'),'command':command,'started':time.time(),'source_files':before};s['running']=label;save()
+ log=O/'logs'/f'source74-preview-{label}-build.txt';t=time.monotonic()
+ with log.open('w') as f:r=subprocess.run(command,cwd=R,env=env,stdout=f,stderr=subprocess.STDOUT,timeout=3600)
+ record.update(exit_code=r.returncode,seconds=time.monotonic()-t,ended=time.time(),log=str(log));s['results'].append(record);save();assert r.returncode==0,(label,r.returncode,log)
+ assert identity()==before,'production files changed while building'
+ if label.endswith('native'):
+  dest=O/'bin'/('rhwp-base5665-optimized' if label.startswith('base') else 'rhwp-source74-preview-optimized');shutil.copy2(Path('/home/tsjang/rhwp/target/pr-review/release-test/rhwp'),dest);record['binary']=str(dest);record['binary_sha256']=hashlib.file_digest(dest.open('rb'),'sha256').hexdigest();frozen=O/'source74-preview-native-library';frozen.mkdir(exist_ok=True);shutil.copy2(Path('/home/tsjang/rhwp/target/pr-review/release-test/deps/librhwp.rlib'),frozen/'librhwp.rlib');record['library_sha256']=hashlib.file_digest((frozen/'librhwp.rlib').open('rb'),'sha256').hexdigest()
+ else:
+  dest=O/('pkg-base5665' if label.startswith('base') else 'pkg-source74-preview');record['files']={n:hashlib.file_digest((dest/n).open('rb'),'sha256').hexdigest() for n in ['rhwp.js','rhwp_bg.wasm','rhwp.d.ts','rhwp_bg.wasm.d.ts']};record['optimized_wrapper_completed']=True
+ save();print(label,'exit0',round(record['seconds'],2),flush=True)
+try:
+ save();clean();assert git('rev-parse','HEAD')==HEAD
+ native=['cargo','build','--locked','--profile','release-test','--target-dir','/home/tsjang/rhwp/target/pr-review','--features','native-skia','--bin','rhwp']
+ run('candidate-native',native,HEAD)
+ run('candidate-wasm',['scripts/wasm-pack-locked.sh','--target','web','--out-dir',str(O/'pkg-source74-preview')],HEAD)
+ s['completed']=True;s['running']=None
+except BaseException as e:s['error']=str(e);s['traceback']=traceback.format_exc();print(s['traceback'],flush=True)
+finally:s['ended']=time.time();save()

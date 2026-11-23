@@ -1,0 +1,12 @@
+{
+  "package": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base",
+  "expected_sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5",
+  "served": [
+    {
+      "url": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source88-base/rhwp_bg.wasm",
+      "bytes": 29789250,
+      "sha256": "5df649e4e6327e0efe2d4e3231be43e399f67992458b560a2944a45ce825fef5"
+    }
+  ],
+  "all_match": true
+}

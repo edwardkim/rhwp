@@ -1654,6 +1654,12 @@ pub(crate) fn fit_measured_table_nested_tail_to_declared_height_with_storage<
                     paragraph.text.trim().is_empty()
                         && paragraph.controls.is_empty()
                         && paragraph.line_segs.len() <= 1
+                        // 양의 저장 원점은 child 뒤에서 공간을 소비하는 실제 줄이다.
+                        // 빈 문자열이라는 이유로 reset으로 취급해 높이를 회수하지 않는다.
+                        && paragraph
+                            .line_segs
+                            .first()
+                            .is_none_or(|line| line.vertical_pos == 0)
                 })
                 && !child.common.treat_as_char
                 && child.row_count == 1
@@ -6598,6 +6604,14 @@ let mut tables=p.controls.iter().filter_map(|c| match c{Control::Table(t)=>Some(
         }
         let (row_block_start, row_block_end) =
             compute_row_blocks_with_storage(table, row_heights.len(), storage)?;
+        if std::env::var("RHWP_DIAG_MEASURED_TABLE").is_ok_and(|filter| {
+            filter == "all"
+                || filter
+                    .split(',')
+                    .any(|id| id.parse::<u32>() == Ok(table.common.instance_id))
+        }) {
+            eprintln!("MEASURED_TABLE id={} depth={depth} total={total_height} rows={row_heights:?} frames={row_frame_heights:?} reflowed={}", table.common.instance_id, self.render_normalization.table_text_reflowed(table));
+        }
         Ok(MeasuredTable {
             para_index,
             control_index,

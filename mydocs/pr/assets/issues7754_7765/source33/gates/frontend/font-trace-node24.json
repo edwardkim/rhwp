@@ -1,0 +1,15 @@
+{
+  "command": [
+    "/usr/local/bin/node",
+    "--test",
+    "scripts/tests/font_decision_trace_contract.test.mjs",
+    "scripts/tests/font_decision_trace_e2e.test.mjs"
+  ],
+  "node_version": "v24.15.0",
+  "source_head": "a1b092c754345b8c374ba366e96468e3422424e0",
+  "wasm_sha256": "3c5dff21cb6a620f49b1a7328f3e3a07e9149faea631f62f4e0ec59b81b0ebee",
+  "started": 1795290723.8009021,
+  "prior_failure_reason": "The Rust minimum-font mount exposes /usr/bin/node v20 and hides ttfs/FONTS.md. These Node source/trace contracts require the normal supported Node24 environment, and do not render host fonts.",
+  "exit_code": 0,
+  "ended": 1795290736.9790885
+}

@@ -1,0 +1,37 @@
+  ➜  Local:   http://127.0.0.1:7700/
+  [browser] headless Chrome 실행
+
+[baseline] paragraph-line-basic (paragraph, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/paragraph-line-basic/canvas2d-screen.png
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/paragraph-line-basic/canvaskit-default-screen.png
+
+[baseline] paragraph-text-marks (paragraph, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/paragraph-text-marks/canvas2d-screen.png
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/paragraph-text-marks/canvaskit-default-screen.png
+
+[baseline] pua-special-glyphs (font, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/pua-special-glyphs/canvas2d-screen.png
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/pua-special-glyphs/canvaskit-default-screen.png
+
+[baseline] font-batang-hancom (font, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/font-batang-hancom/canvas2d-screen.png
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/font-batang-hancom/canvaskit-default-screen.png
+
+[baseline] font-native-bitmap (font-native-glyph, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/font-native-bitmap/canvas2d-screen.png
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/font-native-bitmap/canvaskit-default-screen.png
+
+[baseline] table-core (table, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/table-core/canvas2d-screen.png
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/table-core/canvaskit-default-screen.png
+
+[baseline] table-border-style (table, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/table-border-style/canvas2d-screen.png
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/table-border-style/canvaskit-default-screen.png
+
+[baseline] image-crop (image, page=0)
+  Baseline canvas2d (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/image-crop/canvas2d-screen.png
+3:18:32 AM [vite] (client) [console.warn] [CursorState] updateRect 실패 → rect=null pos=(0,1,0) cell=(undefined,undefined,undefined,undefined): 렌더링 오류: 커서 위치를 찾을 수 없습니다: sec=0, para=1, offset=0
+  Baseline canvaskit-default (screen): /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/image-crop/canvaskit-default-screen.png
+
+[baseline] browser report: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source32-browser-gates/canvaskit-readiness/browser-baseline-report.json

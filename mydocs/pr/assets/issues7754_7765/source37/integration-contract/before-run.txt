@@ -1,0 +1,16 @@
+
+running 1 test
+
+thread 'selected_program_identity_does_not_promote_a_logical_hft_family' (1782602) panicked at /home/tsjang/rhwp/tests/cases/issue_7754_font_logical_family_ownership.rs:61:13:
+assertion `left == right` failed
+  left: Array [String("Selected Physical Family"), String("Declared Glyph Fallback"), String("Logical HFT Name")]
+ right: Array [String("Selected Physical Family"), String("Declared Glyph Fallback")]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test selected_program_identity_does_not_promote_a_logical_hft_family ... FAILED
+
+failures:
+
+failures:
+    selected_program_identity_does_not_promote_a_logical_hft_family
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

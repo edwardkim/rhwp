@@ -1,0 +1,98 @@
+frozen pkg /home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37 at http://127.0.0.1:37449
+=== E2E: Issue #7403 canvas2d: host font identity, replacement and document preservation ===
+
+  [browser] headless Chrome 실행
+  [wasm-artifact] matched 76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3
+Canvas2D face and measurement contracts: {"checks":[{"style":"Regular","samePixels":true,"width":43.20008850097656,"expectedWidth":43.2,"referenceWidth":43.20008850097656,"measuredWidth":43.20008850097656,"aliasUsedByPaint":true,"aliasUsedByMeasure":true,"installed":1},{"style":"Italic","samePixels":true,"width":51.84010314941406,"expectedWidth":51.84,"referenceWidth":51.84010314941406,"measuredWidth":51.84010314941406,"aliasUsedByPaint":true,"aliasUsedByMeasure":true,"installed":1},{"style":"Oblique","samePixels":true,"width":57.60011291503906,"expectedWidth":57.6,"referenceWidth":57.60011291503906,"measuredWidth":57.60011291503906,"aliasUsedByPaint":true,"aliasUsedByMeasure":true,"installed":1}],"failed":{"loaded":0,"pending":0,"failed":1},"recovered":{"loaded":1,"pending":0,"failed":0},"detached":0}
+Canvas2D real charOverlap: {"family":"한양중고딕","loaded":1,"calls":[{"text":"1","x":89.13333333333334,"y":169.60000000000002,"font":"17.333px __rhwp_host_face_1_1, 한양중고딕, \"HY Junggothic\", HY중고딕, HYGothic, HYGothic-Medium, \"HCR Dotum\", 함초롬돋움, \"Malgun Gothic\", \"맑은 고딕\", \"Apple SD Gothic Neo\", \"HCR Dotum\", 함초롬돋움, \"Noto Sans KR ExtraLight\", \"Noto Sans KR\", \"Noto Sans CJK KR\", Pretendard, \"HCR Batang\", 함초롬바탕, \"HCR Batang Ext\", \"함초롬바탕 확장\", \"HCR Batang ExtB\", \"함초롬바탕 확장B\", \"RHWP Old Hangul\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif"}],"pageCount":17}
+#8946 layout environment: {"checks":[["omitted",true],["false",true],["program-A",true],["source-metrics",true],["enable-fresh-tree",true],["enable-fresh-paint",true],["enable-hwp-roundtrip-0",true],["enable-hwp-roundtrip-1",true],["enable-hwpx-roundtrip-0",true],["enable-hwpx-roundtrip-1",true],["split-query-identity",true],["same-id-new-bytes",true],["replace-bytes-fresh-tree",true],["replace-bytes-fresh-paint",true],["replace-bytes-hwp-roundtrip-0",true],["replace-bytes-hwp-roundtrip-1",true],["replace-bytes-hwpx-roundtrip-0",true],["replace-bytes-hwpx-roundtrip-1",true],["outline-context-tracks-program-identity",true],["opaque-identity-not-certified",true],["indexed-identity-consumed",true],["replace-cff-fresh-tree",true],["replace-cff-fresh-paint",true],["replace-cff-hwp-roundtrip-0",true],["replace-cff-hwp-roundtrip-1",true],["replace-cff-hwpx-roundtrip-0",true],["replace-cff-hwpx-roundtrip-1",true],["preview-page-tree-preserved",true],["page-outline-released",true],["filtered-outline-released",true],["patch-outline-released",true],["page-outline-program-consumed",true],["ttc-face",true],["ttc-sha",true],["replace-ttc-face-fresh-tree",true],["replace-ttc-face-fresh-paint",true],["replace-ttc-face-hwp-roundtrip-0",true],["replace-ttc-face-hwp-roundtrip-1",true],["replace-ttc-face-hwpx-roundtrip-0",true],["replace-ttc-face-hwpx-roundtrip-1",true],["remove",true],["remove-fresh-tree",true],["remove-fresh-paint",true],["remove-hwp-roundtrip-0",true],["remove-hwp-roundtrip-1",true],["remove-hwpx-roundtrip-0",true],["remove-hwpx-roundtrip-1",true],["restore",true],["restore-fresh-tree",true],["restore-fresh-paint",true],["restore-hwp-roundtrip-0",true],["restore-hwp-roundtrip-1",true],["restore-hwpx-roundtrip-0",true],["restore-hwpx-roundtrip-1",true],["disable",true],["disable-fresh-tree",true],["disable-fresh-paint",true],["disable-hwp-roundtrip-0",true],["disable-hwp-roundtrip-1",true],["disable-hwpx-roundtrip-0",true],["disable-hwpx-roundtrip-1",true],["read-failure",true],["read-failure-fresh-tree",true],["read-failure-fresh-paint",true],["read-failure-hwp-roundtrip-0",true],["read-failure-hwp-roundtrip-1",true],["read-failure-hwpx-roundtrip-0",true],["read-failure-hwpx-roundtrip-1",true],["read-recovery-fresh-tree",true],["read-recovery-fresh-paint",true],["read-recovery-hwp-roundtrip-0",true],["read-recovery-hwp-roundtrip-1",true],["read-recovery-hwpx-roundtrip-0",true],["read-recovery-hwpx-roundtrip-1",true],["detach-fresh-tree",true],["detach-fresh-paint",true],["detach-hwp-roundtrip-0",true],["detach-hwp-roundtrip-1",true],["detach-hwpx-roundtrip-0",true],["detach-hwpx-roundtrip-1",true],["reattach-fresh-tree",true],["reattach-fresh-paint",true],["reattach-hwp-roundtrip-0",true],["reattach-hwp-roundtrip-1",true],["reattach-hwpx-roundtrip-0",true],["reattach-hwpx-roundtrip-1",true],["backend",true],["explicit-metric-override",true],["saved-bytes",true],["portable-names",true],["explicit-owner",true],["late-disable",true],["late-replace",true],["late-document",true],["local-state",true],["ttc-native-measure-0",true],["ttc-native-measure-1",true],["ttc-native-advance-ratio",true]],"reads":[{"id":"face","rev":"0","source":"Regular","index":0},{"id":"face","rev":"0","source":"Regular","index":0},{"id":"face","rev":"1","source":"Regular","index":0},{"id":"second","rev":"1","source":"Regular","index":0},{"id":"face","rev":"2","source":"Italic","index":0},{"id":"face","rev":"2","source":"Italic","index":0},{"id":"face","rev":"3","source":"CFF","index":0},{"id":"face","rev":"3","source":"CFF","index":0},{"id":"face","rev":"3","source":"CFF","index":0},{"id":"face","rev":"4","source":"ttc","index":0},{"id":"face","rev":"5","source":"ttc","index":1},{"id":"face","rev":"5","source":"ttc","index":1},{"id":"face","rev":"7","source":"ttc","index":1},{"id":"face","rev":"7","source":"ttc","index":1},{"id":"face","rev":"7","source":"ttc","index":1},{"id":"face","rev":"7","source":"ttc","index":1},{"id":"face","rev":"7","source":"ttc","index":1},{"id":"face","rev":"7","source":"ttc","index":1},{"id":"face","rev":"7","source":"ttc","index":1},{"id":"face","rev":"8","source":"ttc","index":1},{"id":"face","rev":"8","source":"ttc","index":1},{"id":"face","rev":"9","source":"ttc","index":1},{"id":"face","rev":"9","source":"ttc","index":1},{"id":"face","rev":"9","source":"ttc","index":1},{"id":"face","rev":"9","source":"ttc","index":1},{"id":"face","rev":"9","source":"ttc","index":1},{"id":"face","rev":"9","source":"ttc","index":1}]}
+#8946 enabled UI history: {"clean":true,"bytes":true,"undo":true,"redo":true,"redoCount":1,"environment":"declared-program-f93f65f315e2bbd99dff3792dead5701af90bc70d285b88fa1e59e6410057a06","redone":true,"undone":true}
+  Screenshot: e2e/screenshots/host-font-7403-faces.png
+  Screenshot: e2e/screenshots/canvas2d-host-font-7403-document.png
+history: start
+history: typing
+history: refreshed
+history: verified
+race: switching document
+race: current document ready
+race: late document read discarded
+Document lifecycle contracts: {"historyResult":{"clean":true,"bytesUnchanged":true,"undoUnchanged":true,"redoUnchanged":true,"redoCount":1,"beforeLength":15,"redoneLength":16,"undoneLength":15},"switched":{"changedDocument":true,"sameImage":true,"sameBytes":true,"countBefore":1,"countAfter":1},"replacedRace":{"aborted":true,"sameImage":true,"count":1}}
+Provider detach contracts: {"state":{"active":false,"generation":47,"count":0,"lastError":null},"bytesUnchanged":true,"pages":1}
+{
+  "result": {
+    "metadataReads": 0,
+    "reads": [
+      {
+        "id": "face-400",
+        "version": "serif"
+      },
+      {
+        "id": "face-700",
+        "version": "serif"
+      },
+      {
+        "id": "face-400",
+        "version": "sans"
+      },
+      {
+        "id": "face-700",
+        "version": "sans"
+      },
+      {
+        "id": "face-400",
+        "version": "failed"
+      },
+      {
+        "id": "face-700",
+        "version": "failed"
+      },
+      {
+        "id": "face-400",
+        "version": "recovered"
+      },
+      {
+        "id": "face-700",
+        "version": "recovered"
+      }
+    ],
+    "cssBefore": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", \"Noto Sans Symbols2\", \"함초롬바탕\", \"D2Coding\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+    "cssAfter": "\"Malgun Gothic\", \"Apple SD Gothic Neo\", \"Noto Sans KR\", \"Pretendard\", \"Noto Sans Symbols2\", \"함초롬바탕\", \"D2Coding\", \"Segoe UI Emoji\", \"Noto Emoji\", \"Noto Color Emoji\", sans-serif",
+    "storedBefore": null,
+    "storedAfter": null,
+    "exactMatchesStyles": true,
+    "replacementChangesPixels": true,
+    "recoveryRestoresPixels": true,
+    "failedCount": 2,
+    "registered": 2
+  },
+  "preserved": {
+    "dirty": true,
+    "generation": 5,
+    "expectedGeneration": 5,
+    "hwpUnchanged": true,
+    "roundtrips": [
+      {
+        "name": "smoke.hwp",
+        "fonts": [
+          "RHWP Host Smoke",
+          "함초롬돋움",
+          "함초롬바탕"
+        ],
+        "bold": true
+      },
+      {
+        "name": "smoke.hwpx",
+        "fonts": [
+          "RHWP Host Smoke",
+          "함초롬돋움",
+          "함초롬바탕"
+        ],
+        "bold": true
+      }
+    ],
+    "svgUnchanged": true,
+    "svgHasAlias": false
+  }
+}
+
+📋 HTML 보고서: ../output/e2e/host-font-provider-issue7403-report.html

@@ -4,6 +4,8 @@ use std::io::Cursor;
 mod print_alpha;
 mod print_alpha_2024;
 mod print_crop;
+mod print_source_codec;
+pub(crate) use print_source_codec::unsupported_picture as nonprinting_source_picture;
 mod print_jpeg_encode;
 mod print_rgb555;
 mod print_tone;

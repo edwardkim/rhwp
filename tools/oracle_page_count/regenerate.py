@@ -49,6 +49,10 @@ if TOOLS_DIR not in sys.path:
     sys.path.insert(0, TOOLS_DIR)
 
 from oracle_pdf_selection import choose_canonical, engine_for_product, stem  # noqa: E402
+from oracle_page_count.logical_page_reference import (  # noqa: E402
+    permits_logical_pages,
+    validate_logical_page_comparison,
+)
 
 FIXTURE = 'tests/fixtures/oracle_page_count_baseline.tsv'
 
@@ -321,6 +325,7 @@ def load_verified_references(root=None):
                 raise ValueError(f'SHA-256 형식 오류: {relative}')
             if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
                 raise ValueError(f'등록된 바이트와 다르다: {relative}')
+        validate_logical_page_comparison(root, entry)
         refs[sample] = entry
     return refs
 
@@ -364,7 +369,7 @@ def main():
         got, nup, product = rhwp_info(args.rhwp, sample)
         if got is None:
             continue
-        if nup:
+        if nup and not permits_logical_pages(registration):
             skipped_nup.append(sample)
             continue
         picked = ([registration['pdf']] if registration is not None

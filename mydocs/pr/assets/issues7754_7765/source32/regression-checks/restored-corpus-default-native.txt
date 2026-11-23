@@ -1,0 +1,28 @@
+samples/issue1891/86712_regulatory_analysis.hwpx	64	0	0	0	0
+LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=16, type=Shape, first=false, y=1089.9, bottom=1084.7, overflow=5.2px
+samples/복학원서.hwp	1	0	0	0	0
+samples/143E433F503322BD33.hwp	1	0	0	0	0
+samples/task1768/distribution_doc.hwpx	3	0	0	0	0
+samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	19	0	0	0	0
+LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=15, type=Shape, first=false, y=1020.1, bottom=1009.1, overflow=10.9px
+samples/HWP5-nopassword-123456.hwpx	24	0	0	0	0
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=3, para_b=3, a=103.0~155.0, b=136.1~1069.6, overlap=18.9px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=5, para_b=5, a=712.0~912.4, b=712.0~912.4, overlap=200.4px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=5, para_b=5, a=712.0~912.4, b=712.0~932.6, overlap=200.4px
+samples/[2027] 온새미로 1 본교재.hwpx	46	0	0	0	0
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=3, para_b=3, a=103.0~155.0, b=136.1~1069.6, overlap=18.9px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=5, para_b=5, a=712.0~912.4, b=712.0~912.4, overlap=200.4px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=5, para_b=5, a=712.0~912.4, b=712.0~932.6, overlap=200.4px
+samples/[2027] 온새미로 1 본교재.hwp	46	0	0	0	0
+samples/86712_regulatory_analysis.hwp	64	0	0	0	0
+LAYOUT_OVERFLOW: page=4, sec=0, col=0, para=72, type=FullParagraph, first=false, y=968.4, bottom=961.9, overflow=6.5px
+LAYOUT_OVERFLOW: page=32, sec=0, col=0, para=423, type=FullParagraph, first=false, y=969.0, bottom=961.9, overflow=7.1px
+LAYOUT_OVERFLOW: page=32, sec=0, col=0, para=424, type=FullParagraph, first=false, y=969.0, bottom=961.9, overflow=7.1px
+LAYOUT_OVERFLOW: page=59, sec=0, col=0, para=648, type=FullParagraph, first=false, y=969.8, bottom=961.9, overflow=7.9px
+LAYOUT_OVERFLOW: page=64, sec=0, col=0, para=689, type=FullParagraph, first=false, y=965.3, bottom=961.9, overflow=3.4px
+LAYOUT_OVERFLOW: page=64, sec=0, col=0, para=690, type=FullParagraph, first=false, y=965.3, bottom=961.9, overflow=3.4px
+LAYOUT_OVERFLOW: page=90, sec=0, col=0, para=908, type=FullParagraph, first=false, y=964.6, bottom=961.9, overflow=2.7px
+LAYOUT_OVERFLOW: page=90, sec=0, col=0, para=909, type=FullParagraph, first=false, y=964.6, bottom=961.9, overflow=2.7px
+OVERLAP samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp p106 [OverlapAnomaly { path_a: "Page/Body/Column0/Table0/Cell79/TextLine1/TextRun0", type_a: "TextRun", bbox_a: BoundingBox { x: 601.4200000000001, y: 431.53333333333336, width: 27.360000000000014, height: 10.666666666666686 }, path_b: "Page/Body/Column0/Table0/Cell79/TextLine2/TextRun0", type_b: "TextRun", bbox_b: BoundingBox { x: 601.4200000000001, y: 439.53333333333336, width: 27.360000000000014, height: 10.666666666666686 }, overlap_w: 27.360000000000014, overlap_h: 2.6666666666666856 }]
+LAYOUT_OVERFLOW: page=142, sec=0, col=0, para=1268, type=FullParagraph, first=false, y=969.9, bottom=961.9, overflow=8.1px
+samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	315	0	0	1	0

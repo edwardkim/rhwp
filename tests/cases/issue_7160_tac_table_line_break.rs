@@ -1,3 +1,11 @@
+//! 관계형·고정형: 독립 Print의 내용·소유·배치와 기존 회귀 역할을 보호한다.
+//! 주석 갱신: 2026-11-22T02:16:55+09:00; 직전 파일 변경 커밋: 2026-10-18T17:36:58+09:00 285aac34364bfe909b25b333094c9465333563b4.
+//! 측정: 2026-11-22 KST, Print profile, 96DPI, PDFium, 색상 경계 보정 전2px raw.
+//! 원본 distribution_doc 전3쪽, Native 최저99.78% / fresh WASM 최저99.80%; 1·3쪽 양쪽100.00%.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md와 문서별 Native/WASM TSV.
+//! 원본·PDF·생산 소스·명령은 qualified-documents.json에 연결한다.
+//! 설치 글꼴을 요구하지 않으며 직접 확대 판독을 완료했다.
+//!
 //! [#7160] 줄에 남은 폭보다 넓은 글자처럼 취급 표가 줄바꿈되지 않아 host 글자가 표 아래로 간다.
 //!
 //! ## 무엇이 문제였나
@@ -16,7 +24,7 @@
 //!
 //! ## 기대값의 독립 근거
 //!
-//! 한/글 2024 정본 `pdf/distribution_doc-2024.pdf` 3쪽: 오른쪽 끝에 붙은 `( 단위 : 천원 )`
+//! 독립 한/글 2020 Print `pdf/issue7642-failed-regression-print-20261015/distribution_doc-2020.pdf` 3쪽: 오른쪽 끝에 붙은 `( 단위 : 천원 )`
 //! 줄 **다음** 줄에 표가 본문 폭 안으로 온다. 말미 공백에 줄상자를 주지 않는 것은 저장
 //! `PARA_LINE_SEG` 전수(말미 공백 문단 5,786건 중 공백만인 마지막 줄 0건)가 증언한다.
 #![cfg(not(target_arch = "wasm32"))]
@@ -26,6 +34,9 @@ use std::path::Path;
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
+const HOST_PARA: usize = 47;
+const HOST_TEXT: &str = "단위";
+
 const SAMPLE: &str = "samples/task1768/distribution_doc.hwpx";
 /// 한컴 정본에서 다음 쪽 첫 줄로 함께 넘어가는 소제목.
 const SECTION_HEADING_PARA: usize = 35;
@@ -33,9 +44,9 @@ const SECTION_HEADING_PARA: usize = 35;
 const FIRST_LIST_PARA: usize = 36;
 /// 본문 오른쪽 끝(px). 표가 이 밖으로 나가면 안 된다.
 const BODY_RIGHT: f64 = 725.7;
-/// 한컴 2024 기준 PDF 3쪽의 해당 표 왼쪽 테두리.
-const REFERENCE_TABLE_LEFT: f64 = 91.0;
-/// 한컴 2024 정본 PDF 3쪽 `(단위 : 천원)`의 render-box 왼쪽.
+/// 독립 한컴 2020 Print 3쪽의 표 왼쪽 괘선 약90.83px(96DPI).
+const REFERENCE_TABLE_LEFT: f64 = 90.83;
+/// 독립 한컴 Print 3쪽 `(단위 : 천원)`의 가시 render-box 왼쪽.
 const REFERENCE_UNIT_LABEL_LEFT: f64 = 628.0;
 
 fn open() -> DocumentCore {
@@ -57,6 +68,46 @@ fn column_nodes(root: &RenderNode) -> Vec<&RenderNode> {
     let mut out = Vec::new();
     walk(root, false, &mut out);
     out
+}
+
+fn run_text(node: &RenderNode) -> String {
+    let mut text = String::new();
+    fn walk(node: &RenderNode, out: &mut String) {
+        if let RenderNodeType::TextRun(run) = &node.node_type {
+            out.push_str(&run.text);
+        }
+        for child in &node.children {
+            walk(child, out);
+        }
+    }
+    walk(node, &mut text);
+    text
+}
+
+/// 표가 있는 쪽의 (표 bbox, host 문단 줄들).
+fn host_page(core: &DocumentCore) -> (u32, (f64, f64, f64), Vec<(f64, String)>) {
+    for page in 0..core.page_count() as u32 {
+        let tree = core.build_page_render_tree(page).expect("render tree");
+        let nodes = column_nodes(&tree.root);
+        let Some(table) = nodes.iter().find_map(|n| match &n.node_type {
+            RenderNodeType::Table(t) if t.para_index == Some(HOST_PARA) => {
+                Some((n.bbox.y, n.bbox.x, n.bbox.width))
+            }
+            _ => None,
+        }) else {
+            continue;
+        };
+        let lines: Vec<(f64, String)> = nodes
+            .iter()
+            .filter(|n| {
+                matches!(&n.node_type, RenderNodeType::TextLine(line)
+                    if line.para_index == Some(HOST_PARA))
+            })
+            .map(|n| (n.bbox.y, run_text(n)))
+            .collect();
+        return (page, table, lines);
+    }
+    panic!("표 pi={HOST_PARA} 가 있는 쪽이 없다");
 }
 
 fn find_text_run_x(node: &RenderNode, needle: &str) -> Option<f64> {
@@ -152,5 +203,45 @@ fn no_lineseg_heading_moves_with_its_following_list_to_the_next_page() {
         heading_page,
         Some(2),
         "한/글 기준 p3(0-based 2)에서 소제목과 목록이 시작해야 한다"
+    );
+}
+
+/// host 글자는 표 **위** 줄에 있다 — 표가 줄에 안 들어가면 표가 다음 줄로 간다.
+#[test]
+fn oversized_tac_table_moves_to_its_own_line_below_the_host_text() {
+    let core = open();
+    let (page, (table_y, table_x, table_w), lines) = host_page(&core);
+    let text_line = lines
+        .iter()
+        .find(|(_, text)| text.contains(HOST_TEXT))
+        .unwrap_or_else(|| {
+            panic!(
+                "{}쪽에 `{HOST_TEXT}` 줄이 없다 — 줄 목록 {:?}",
+                page + 1,
+                lines
+            )
+        });
+    assert!(
+        text_line.0 < table_y,
+        "{}쪽 `{HOST_TEXT}` 줄이 {:.1}px 로 표({table_y:.1}px) **아래**에 있다 — 정본은 표 위 줄에 둔다",
+        page + 1,
+        text_line.0
+    );
+    assert!(
+        table_x + table_w <= BODY_RIGHT + 1.0,
+        "{}쪽 표 오른쪽 끝이 {:.1}px 로 본문 {BODY_RIGHT}px 를 넘는다",
+        page + 1,
+        table_x + table_w
+    );
+}
+
+#[test]
+fn leading_viewtext_inline_table_keeps_its_visible_left_inset() {
+    let core = open();
+    let (page, (_, table_x, _), _) = host_page(&core);
+    assert!(
+        (table_x - REFERENCE_TABLE_LEFT).abs() <= 2.0,
+        "{}쪽 표 왼쪽이 {table_x:.1}px 이다 — 한컴 정본 {REFERENCE_TABLE_LEFT:.1}px의 첫 줄 들여쓰기를 따라야 한다",
+        page + 1
     );
 }

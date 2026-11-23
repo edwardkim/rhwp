@@ -1,3 +1,11 @@
+# #7754~#7765: source32 독립 Print·전쪽 두 경로98% 이상. 106쪽 두 줄은 Print에도 같은 간격이다.
+143E433F503322BD33.hwp	0
+86712_regulatory_analysis.hwp	0
+[2027] 온새미로 1 본교재.hwp	0
+[2027] 온새미로 1 본교재.hwpx	0
+issue1891/86712_regulatory_analysis.hwpx	0
+복학원서.hwp	0
+
 # #7727: 전204쪽 Native/fresh WASM 최저92.05/92.16% 수용 후 복원. fixed170b/후보의 기존 계산식 실측 모두0; 다른 원장은 유지.
 # 조이기 (#6976 단계): devel 236a601da 실측으로 85행을 내렸다 — 대상 행 합계 1,037 -> 667,
 # 원장 전체 1,386 -> 1,016. 증가·신규는 0 이라 완화가 아니다. 측정은 이 게이트 자신의
@@ -33,13 +41,13 @@ issue6133/156483831_poster_title_above_offset_float.hwp	1
 issue6764/1613000-202200037-air-traffic-controller-cbta.hwp	0
 issue6782/1480000-201900042-chemical-product-labeling-study.hwp	6
 issue6921/148733091-briefing-stenographic-record.hwp	0
-156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	1
+156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp	0
 2022년 국립국어원 업무계획.hwp	1
 2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	3
 253E164F57A1BC6934-empty.hwp	1
 76076_regulatory_analysis.hwp	1
 80168_regulatory_analysis.hwp	1
-HWP5-nopassword-123456.hwpx	24
+HWP5-nopassword-123456.hwpx	0
 basic/issue1994_behindtext_table_20200830.hwp	1
 basic/sungeo.hwp	4
 byeolpyo1.hwp	2
@@ -155,8 +163,8 @@ task1718/table_giant_cell_overfill.hwp	1
 task1725/text_footnote_tail_overpagination.hwp	13
 task1725/text_footnote_tail_overpagination.hwpx	13
 task1749/saved_bounds_cumulative_page_break.hwpx	1
-task1768/distribution_doc.hwpx	1
-task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	27
+task1768/distribution_doc.hwpx	0
+task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp	0
 task2070/hy_ladder3.hwpx	2
 task2093/1192000_hydrogen_policy_research.hwp	1
 task2097/18095317_eogu_geumji.hwp	1

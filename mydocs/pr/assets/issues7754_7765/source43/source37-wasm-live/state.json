@@ -1,0 +1,678 @@
+{
+  "started": 1795318871.7658424,
+  "results": [
+    {
+      "role": "base",
+      "key": "origin",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "lines": 30,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "--input",
+        "/home/tsjang/rhwp/samples/inner-table-01.hwp",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/origin-30",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/origin-30/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 27.276075033005327,
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "page_count": 3,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "d33e5cf459e3ea35c4bc62031157c3d3a884dbd02d0ff8b594a492e9a0e7d673",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "c69592e4fe94ca33718f3c9eb9616ad4cdbc1c6ff965d9b5acbdca675f6869d7",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "ffa5c41b9b9647c1445b3ef9f678756071d6059e7c0fedf5ec3ec75f9cae99c1",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "base",
+      "key": "origin",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "lines": 70,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "--input",
+        "/home/tsjang/rhwp/samples/inner-table-01.hwp",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/origin-70",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/origin-70/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 32.828665288863704,
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "page_count": 4,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "d33e5cf459e3ea35c4bc62031157c3d3a884dbd02d0ff8b594a492e9a0e7d673",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "c69592e4fe94ca33718f3c9eb9616ad4cdbc1c6ff965d9b5acbdca675f6869d7",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "7a1db4f15ae6cd49b071f417508a18f9850b7a91fb32caaa7d30449b1e50f9c9",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 4,
+          "pngSha256": "1d9dbee612b1050bff213b3930cc34bc14a113741045222781ac8fbe786d149b",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "base",
+      "key": "hancom",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "lines": 30,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "--input",
+        "/home/tsjang/rhwp/tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/hancom-30",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/hancom-30/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 28.17784970602952,
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "page_count": 3,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "69b19aea24d88b9db77e6ea49bd9aa5ecb951e048a50400619a2a9f57a83eb07",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "771f3986bd63ca40a0a277e8a01bcce14a4bb79b19f9dbf7d8d381dae5624227",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "8ab11ca647462ec51982febb2831dc677a3a2207501c962660fe5757449ac524",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "base",
+      "key": "hancom",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "lines": 70,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-base1a27",
+        "--input",
+        "/home/tsjang/rhwp/tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/hancom-70",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-wasm-live/base/hancom-70/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 34.37975738896057,
+      "wasm_sha256": "abdae9325eaa4df812872d80d03f388cb4a7b9d6cacf9323e8bfbf07bd4e3445",
+      "page_count": 4,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "69b19aea24d88b9db77e6ea49bd9aa5ecb951e048a50400619a2a9f57a83eb07",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "771f3986bd63ca40a0a277e8a01bcce14a4bb79b19f9dbf7d8d381dae5624227",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "f231d5d6042f967a13ee7ddfca25b82c6adaf65f63dda322d640a93e477c944a",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 4,
+          "pngSha256": "2fb2acedc801104a8e06d10ea59a450cdf60268de346babc8d794107f6738530",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "key": "origin",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "lines": 30,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "--input",
+        "/home/tsjang/rhwp/samples/inner-table-01.hwp",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/origin-30",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/origin-30/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 29.959255694877356,
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "page_count": 3,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "d33e5cf459e3ea35c4bc62031157c3d3a884dbd02d0ff8b594a492e9a0e7d673",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "c69592e4fe94ca33718f3c9eb9616ad4cdbc1c6ff965d9b5acbdca675f6869d7",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "ffa5c41b9b9647c1445b3ef9f678756071d6059e7c0fedf5ec3ec75f9cae99c1",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "key": "origin",
+      "source": "samples/inner-table-01.hwp",
+      "input_sha256": "15c24b0dabec0353da4e8445155f16a46eac6d370d5d65c81e8aa1cf47759bc1",
+      "lines": 70,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "--input",
+        "/home/tsjang/rhwp/samples/inner-table-01.hwp",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/origin-70",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/origin-70/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 34.62312512099743,
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "page_count": 4,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "d33e5cf459e3ea35c4bc62031157c3d3a884dbd02d0ff8b594a492e9a0e7d673",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "c69592e4fe94ca33718f3c9eb9616ad4cdbc1c6ff965d9b5acbdca675f6869d7",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "7a1db4f15ae6cd49b071f417508a18f9850b7a91fb32caaa7d30449b1e50f9c9",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 4,
+          "pngSha256": "1d9dbee612b1050bff213b3930cc34bc14a113741045222781ac8fbe786d149b",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "key": "hancom",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "lines": 30,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "--input",
+        "/home/tsjang/rhwp/tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/hancom-30",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/hancom-30/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 29.33313907496631,
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "page_count": 3,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "69b19aea24d88b9db77e6ea49bd9aa5ecb951e048a50400619a2a9f57a83eb07",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "771f3986bd63ca40a0a277e8a01bcce14a4bb79b19f9dbf7d8d381dae5624227",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "8ab11ca647462ec51982febb2831dc677a3a2207501c962660fe5757449ac524",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    },
+    {
+      "role": "candidate",
+      "key": "hancom",
+      "source": "tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+      "input_sha256": "3f888a3ef2ed9a5075bd8df2cd9ee8ac9ad10d24e396309641188f6a9aa927ed",
+      "lines": 70,
+      "command": [
+        "node",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-export-wasm-live.mjs",
+        "--pkg",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+        "--input",
+        "/home/tsjang/rhwp/tests/fixtures/nested-row-split/inner-table-01-2020.hwpx",
+        "--out",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/hancom-70",
+        "--fonts",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/font-catalog.json",
+        "--options",
+        "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/candidate/hancom-70/options.json"
+      ],
+      "exit_code": 0,
+      "seconds": 34.6597177258227,
+      "wasm_sha256": "76f7c64d27fe8fbbd7bd5baa2fdb3d30af9c8014fd16fb6b83afc498907ba7e3",
+      "page_count": 4,
+      "pages": [
+        {
+          "page": 1,
+          "pngSha256": "69b19aea24d88b9db77e6ea49bd9aa5ecb951e048a50400619a2a9f57a83eb07",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 2,
+          "pngSha256": "771f3986bd63ca40a0a277e8a01bcce14a4bb79b19f9dbf7d8d381dae5624227",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 3,
+          "pngSha256": "f231d5d6042f967a13ee7ddfca25b82c6adaf65f63dda322d640a93e477c944a",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        },
+        {
+          "page": 4,
+          "pngSha256": "2fb2acedc801104a8e06d10ea59a450cdf60268de346babc8d794107f6738530",
+          "width": 794,
+          "height": 1122,
+          "canvasContext": {
+            "alpha": true,
+            "colorSpace": "srgb",
+            "colorType": "unorm8",
+            "desynchronized": false,
+            "toneMapping": {
+              "mode": "standard"
+            },
+            "willReadFrequently": true
+          }
+        }
+      ]
+    }
+  ],
+  "base_source": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "candidate_source": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+  "scope": "Public edit API live 30/70-line growth, original HWP and actual Hancom HWPX. Saved reopen states are covered separately.",
+  "font_catalogue": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-wasm-live/font-catalog.json",
+  "font_catalogue_sha256": "d7cad8508597171dc5a8843f2dd8dbbf1862aaf9c5300f2ccf7290d912bb82ac",
+  "exporter_sha256": "32d926f2d99312096587d280ed0f8a4b396198350dd4511a67bad86527b38ceb",
+  "running": null,
+  "complete": true,
+  "ended": 1795328338.041188
+}

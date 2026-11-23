@@ -245,13 +245,31 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
     storage: &S,
 ) -> Result<Option<(Vec<LineSeg>, Vec<(u32, SpaceMetric)>)>, S::Error> {
     crate::storage::with_optional(|failure| {
+        let trace = std::env::var("RHWP_DIAG_SOURCE_ROWS").is_ok_and(|filter| {
+            filter == "all"
+                || filter
+                    .split(',')
+                    .any(|value| value.parse().ok() == Some(para.para_shape_id))
+        });
         if styles.source_program_projection_slots.is_empty() {
+            if trace {
+                eprintln!("SOURCE_ROWS shape={} no_slots", para.para_shape_id);
+            }
             return None;
         }
         if !stored_rows_match_paragraph_box(para, box_)
             || !crate::renderer::cell_paragraph_has_only_text_metadata(para)
             || para.text.chars().any(char::is_control)
         {
+            if trace {
+                eprintln!(
+                    "SOURCE_ROWS shape={} guard box={} metadata={} control_text={}",
+                    para.para_shape_id,
+                    stored_rows_match_paragraph_box(para, box_),
+                    crate::renderer::cell_paragraph_has_only_text_metadata(para),
+                    para.text.chars().any(char::is_control)
+                );
+            }
             return None;
         }
         let composed = crate::storage::optional(
@@ -259,6 +277,7 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
             failure,
         )?;
         let mut fallbacks = crate::storage::optional(storage.vec(0), failure)?;
+        let mut saw_declared_program = false;
         for run in composed.lines.iter().flat_map(|line| &line.runs) {
             if run.text.chars().all(char::is_whitespace) {
                 let original = styles.char_styles.get(run.char_style_id as usize)?;
@@ -282,10 +301,28 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
                 }
                 continue;
             }
-            let fallback = styles
+            let Some(owner) = styles
                 .source_program_projection_slots
-                .get(&(run.char_style_id, run.lang_index))?;
+                .get(&(run.char_style_id, run.lang_index))
+            else {
+                if trace {
+                    eprintln!(
+                        "SOURCE_ROWS shape={} missing_slot cs={} lang={} inserted={}",
+                        para.para_shape_id,
+                        run.char_style_id,
+                        run.lang_index,
+                        run.inserted_control_text
+                    );
+                }
+                return None;
+            };
             if run.inserted_control_text {
+                if trace {
+                    eprintln!(
+                        "SOURCE_ROWS shape={} inserted_control cs={} lang={}",
+                        para.para_shape_id, run.char_style_id, run.lang_index
+                    );
+                }
                 return None;
             }
             let original = styles.char_styles.get(run.char_style_id as usize)?;
@@ -312,51 +349,107 @@ pub(crate) fn project_current_source_program_rows_with_storage<S: crate::storage
                     &actual_style,
                     &run.text,
                 ) {
+                    if trace {
+                        eprintln!(
+                            "SOURCE_ROWS shape={} unverified_glyph cs={} lang={}",
+                            para.para_shape_id, run.char_style_id, run.lang_index
+                        );
+                    }
                     return None;
                 }
             }
-            crate::storage::optional(
-                storage.push(&mut fallbacks, (run.char_style_id, fallback)),
-                failure,
-            )?;
+            match owner {
+                crate::renderer::style_resolver::SourceProgramRowOwner::DeclaredTrueType => {
+                    saw_declared_program = true;
+                }
+                crate::renderer::style_resolver::SourceProgramRowOwner::StoredFallback(
+                    fallback,
+                ) => {
+                    crate::storage::optional(
+                        storage.push(&mut fallbacks, (run.char_style_id, fallback.as_ref())),
+                        failure,
+                    )?;
+                }
+            }
         }
-        if fallbacks.is_empty() {
+        if fallbacks.is_empty() && !saw_declared_program {
             return None;
-        }
-        let mut fallback_styles =
-            crate::storage::optional(crate::storage::try_clone(styles, storage), failure)?;
-        fallback_styles.source_program_projection_slots = Default::default();
-        for (id, fallback) in fallbacks {
-            *fallback_styles.char_styles.get_mut(id as usize)? =
-                crate::storage::optional(crate::storage::try_clone(fallback, storage), failure)?;
         }
         let first = para.line_segs.first()?.vertical_pos;
         let frame = box_.frame(first);
         // 대체 선언이 있다는 사실이나 현재 글자가 한 자 더 들어간다는 사실은
         // 저장 줄이 다른 프로그램의 캐시라는 증거가 아니다. 문서가 지정한 대체
         // 프로그램이 같은 상자에서 저장 줄 전체를 재현하는지 먼저 확인한다.
-        let fallback_rows = crate::storage::optional(
-            line_breaking::layout_paragraph_in_frame_with_storage(
-                para,
-                &mut crate::storage::optional(crate::storage::try_clone(&frame, storage), failure)?,
-                &fallback_styles,
-                dpi,
-                storage,
-            ),
-            failure,
-        )??;
-        if fallback_rows.len() != para.line_segs.len()
-            || fallback_rows
-                .iter()
-                .enumerate()
-                .any(|(index, row)| row.text_start != para.line_seg_text_start(index))
-        {
-            return None;
+        // 명시적 HWPX TTF는 앞서 선택한 동적 줄 정책이 소유한다. 유형이 불명확한
+        // 슬롯이 섞이면 기존 대체 프로그램의 전체 줄 재현 인증을 그대로 요구한다.
+        if !fallbacks.is_empty() {
+            let mut fallback_styles =
+                crate::storage::optional(crate::storage::try_clone(styles, storage), failure)?;
+            fallback_styles.source_program_projection_slots = Default::default();
+            for (id, fallback) in fallbacks {
+                *fallback_styles.char_styles.get_mut(id as usize)? = crate::storage::optional(
+                    crate::storage::try_clone(fallback, storage),
+                    failure,
+                )?;
+            }
+            let fallback_rows = crate::storage::optional(
+                line_breaking::layout_paragraph_in_frame_with_storage(
+                    para,
+                    &mut crate::storage::optional(
+                        crate::storage::try_clone(&frame, storage),
+                        failure,
+                    )?,
+                    &fallback_styles,
+                    dpi,
+                    storage,
+                ),
+                failure,
+            )??;
+            if fallback_rows.len() != para.line_segs.len()
+                || fallback_rows
+                    .iter()
+                    .enumerate()
+                    .any(|(index, row)| row.text_start != para.line_seg_text_start(index))
+            {
+                return None;
+            }
         }
-        crate::storage::optional(
+        if trace {
+            let rows = crate::storage::optional(
+                line_breaking::layout_paragraph_in_frame_with_storage(
+                    para,
+                    &mut crate::storage::optional(
+                        crate::storage::try_clone(&frame, storage),
+                        failure,
+                    )?,
+                    styles,
+                    dpi,
+                    storage,
+                ),
+                failure,
+            )??;
+            eprintln!(
+                "SOURCE_ROWS shape={} declared={saw_declared_program} source={:?} fresh={:?}",
+                para.para_shape_id,
+                para.line_segs
+                    .iter()
+                    .map(|l| l.text_start)
+                    .collect::<Vec<_>>(),
+                rows.iter().map(|l| l.text_start).collect::<Vec<_>>()
+            );
+        }
+        let projected = crate::storage::optional(
             project_stored_rows_with_storage(para, &frame, styles, dpi, false, true, storage),
             failure,
-        )?
+        )?;
+        if trace {
+            eprintln!(
+                "SOURCE_ROWS shape={} projected={:?}",
+                para.para_shape_id,
+                projected.as_ref().map(|(rows, _)| rows.len())
+            );
+        }
+        projected
     })
 }
 

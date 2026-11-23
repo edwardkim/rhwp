@@ -1,3 +1,11 @@
+//! 관계형·고정형: 기존 계약을 유지하고 #7754~#7765의 수용한 원본 범위를 복원한다.
+//! 주석 갱신: 2026-11-22T03:21:21+09:00; 직전 파일 변경: 2026-11-21T10:11:20+09:00 ca231d64f43f19da1d1d1aec4cf26a05b817aa22.
+//! 복원 원본 측정: 2026-11-22 KST,96DPI·Print·PDFium·보정 전2px raw, 각 독립 Print와 같은 전체 쪽수.
+//! Native/fresh WASM 전쪽 최저: 7754 평문24쪽98.29/98.22%,7755 315쪽98.40/98.40%,
+//! 7756 1쪽99.00/98.99%,7757 3쪽99.78/99.80%,7759 1쪽99.94/99.94%,7760 19쪽99.18/99.18%,
+//! 7761 HWP46쪽99.98/99.98%,7762 HWPX46쪽99.98/99.98%,7765 HWP64쪽98.08/98.11%·HWPX64쪽98.69/98.69%.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md; 시장구조조사의 선행 전쪽 교차 증거는 같은 상위 market-source7/README.md.
+//! 이번 복원 범위 밖 입력의 기존 계약·근거는 아래 기록을 유지한다. 시스템 글꼴을 요구하지 않는다.
 //! 용지 밖 그리기(`layout-anomaly` off-canvas) 원장 게이트 — samples 전수 래칫.
 //!
 //! # 왜 필요한가
@@ -100,9 +108,6 @@ const DEFERRED_OFF_CANVAS_FIXTURES: &[&str] = &[
     "pr-1674.hwp",
     // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
     "hwpx/156160455-social-pig-farm-income.hwpx",
-    // #7445: 86712 두 형식의 전체 피델리티 개선은 별도 처리한다.
-    "86712_regulatory_analysis.hwp",
-    "issue1891/86712_regulatory_analysis.hwpx",
 ];
 
 fn collect_samples() -> Vec<(PathBuf, String)> {

@@ -1,0 +1,18 @@
+{
+  "pid": 1792418,
+  "started": 1795320169.734405,
+  "waiting": null,
+  "command": [
+    "/home/tsjang/rhwp/venv/bin/python",
+    "scripts/visual_sweep_contributor.py",
+    "--rhwp-bin",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized",
+    "--wasm-pkg",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/pkg-source37",
+    "--out",
+    "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source38-contributor-gate"
+  ],
+  "exit_code": 0,
+  "ended": 1795327946.0190024,
+  "passed": true
+}

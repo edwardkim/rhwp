@@ -1,0 +1,29 @@
+{
+  "source32_runnable_and_ignored": 4047,
+  "source33_runnable_and_ignored": 4045,
+  "removed": [
+    "rhwp::renderer::composer::tests::legacy_hancom_product_names_use_display_projection_only",
+    "rhwp::renderer::composer::tests::legacy_hancom_product_projection_survives_line_boundary",
+    "rhwp::renderer::render_tree::tests::legacy_hancom_product_projection_covers_direct_text_runs_only",
+    "rhwp::renderer::render_tree::tests::legacy_hancom_product_projection_does_not_rewrite_pua_old_hangul"
+  ],
+  "added": [
+    "rhwp::renderer::composer::tests::product_names_keep_source_jamo_and_offsets_at_a_stored_line_break",
+    "rhwp::renderer::composer::tests::product_names_preserve_the_written_hangul_vowel"
+  ],
+  "reason": "New devel removes four legacy product display-projection tests and introduces two source Jamo/vowel preservation tests. This is the upstream change, not lost test collection in this task.",
+  "new_devel": "5665e538292a0686a912f6a4d8950c55be89929a",
+  "new_devel_test_locations": [
+    {
+      "name": "rhwp::renderer::composer::tests::product_names_keep_source_jamo_and_offsets_at_a_stored_line_break",
+      "present_in_new_devel": "5665e538292a0686a912f6a4d8950c55be89929a:src/renderer/composer/tests.rs:2115:fn product_names_keep_source_jamo_and_offsets_at_a_stored_line_break() {"
+    },
+    {
+      "name": "rhwp::renderer::composer::tests::product_names_preserve_the_written_hangul_vowel",
+      "present_in_new_devel": "5665e538292a0686a912f6a4d8950c55be89929a:src/renderer/composer/tests.rs:2088:fn product_names_preserve_the_written_hangul_vowel() {"
+    }
+  ],
+  "source32_passed": 4035,
+  "source33_passed": 4033,
+  "ignored_each": 12
+}

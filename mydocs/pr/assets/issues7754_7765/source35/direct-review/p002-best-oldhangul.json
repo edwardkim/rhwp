@@ -1,0 +1,43 @@
+{
+  "page": 2,
+  "box": [
+    155,
+    130,
+    635,
+    430
+  ],
+  "scale": 2,
+  "dpi": 96,
+  "created": 1795299128.1800392,
+  "inputs": [
+    {
+      "label": "Independent Hancom Print",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/pdf_png/pdf-002.png",
+      "sha256": "bd058e76e9e0915420ea45e540c547ee9c217fa4d32589523c117b93642143a8"
+    },
+    {
+      "label": "Native before source34",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source34-native-plain-full/issue7754-plain/rhwp_png/rhwp_002.png",
+      "sha256": "7658b4eae4be4ed647bb657f41c9b9c197ae31bc00deb047b30cd5e0e53f06cf"
+    },
+    {
+      "label": "Native after source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-native/issue7754-plain/rhwp_png/rhwp_002.png",
+      "sha256": "f122205da1889f5283e953ea3ca43a16961bed94b3f2285832c512920b8ddddb"
+    },
+    {
+      "label": "WASM before source33",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-issues-wasm/candidate/issue7754-plain/rhwp_png/rhwp_002.png",
+      "sha256": "cae41c40c66026a31c709adbf04827df34cd31be45e652d9d4c3ac160f82fb25"
+    },
+    {
+      "label": "fresh WASM after source35",
+      "path": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-focused-wasm/issue7754-plain/rhwp_png/rhwp_002.png",
+      "sha256": "cfc35b85ea4c76683c7b9e234ec2530261a535320329a29b20d1d2a4900ce4bf"
+    }
+  ],
+  "panel_sha256": "4078b81ff73582602f7bcc53dfad6504853d9fba7ee157e4fd88d3c264517dba",
+  "reading": "차례의 옛한글 포함 세 항목을 양쪽 경로에서 읽었다. 원 자형과 이어지는 본문, 점선 및 페이지 참조 6·8·9·10·12·19를 확인했다. 이전 WASM의 빠진 옛자모와 Native의 어긋난 후속 글자가 보정됐다. 양쪽 raw 99.99%인 동일 핵심 동작의 우선 회귀 후보이다.",
+  "read_at": "2026-11-22T07:17:50.665003+09:00",
+  "scope": "source35 only; source36 must be measured again"
+}

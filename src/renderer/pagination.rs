@@ -22,10 +22,12 @@ pub(crate) fn page_starts_with_hidden_empty_lines(
     para: &Paragraph,
     items: &[PageItem],
     hidden: &std::collections::HashSet<usize>,
+    source_prefix_already_suppressed: bool,
 ) -> bool {
     // 저장 줄이 없는 빈 문단은 실제 줄 상자를 소유할 수 있다. 저장 쪽의
     // 숨김 표식으로 추정하지 않고 기존 빈 문단 배치에 맡긴다.
-    !para.line_segs.is_empty()
+    !source_prefix_already_suppressed
+        && !para.line_segs.is_empty()
         // 명시 쪽·구역 나누기를 소유한 문단은 사용자가 만든 줄 상자를
         // 유지한다. 저장 조판에서 추정한 자동 경계만 숨김 대상이 될 수 있다.
         && (!matches!(
@@ -2061,6 +2063,7 @@ struct PaginationSourceContext {
     source_uses_inline_field_reset: bool,
     hwp3_converted_missing_lineseg: bool,
     stored_geometry_policy: crate::model::provenance::StoredGeometryPolicy,
+    stored_body_layout: bool,
 }
 crate::storage::clone_copy!(PaginationSourceContext);
 
@@ -2073,6 +2076,8 @@ impl PaginationSourceContext {
                 || hwp3_converted_missing_lineseg,
             hwp3_converted_missing_lineseg,
             stored_geometry_policy: profile.stored_geometry_policy(),
+            stored_body_layout: !profile.session_edited()
+                && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout()),
         }
     }
 
@@ -2081,6 +2086,7 @@ impl PaginationSourceContext {
             source_uses_inline_field_reset: is_hwp3_variant,
             hwp3_converted_missing_lineseg: is_hwp3_variant,
             stored_geometry_policy: is_hwp3_variant.into(),
+            stored_body_layout: false,
         }
     }
 }
@@ -2164,6 +2170,8 @@ impl Paginator {
 }
 
 mod engine;
+mod stored_empty_prefix;
+pub(crate) use stored_empty_prefix::has_two_suppressed_before;
 mod state;
 
 #[cfg(test)]

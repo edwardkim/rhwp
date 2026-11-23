@@ -2188,7 +2188,7 @@ impl SvgRenderer {
             return;
         }
         // 공통 인쇄 계약: 그림 미지정과 미해결 연결 그림의 편집용 대체 표시는 생략.
-        if img.is_nonprinting_picture_placeholder() && !self.show_missing_picture_placeholder {
+        if img.is_nonprinting_picture() && !self.show_missing_picture_placeholder {
             return;
         }
         // [Task #741] 빈 binary 데이터 (외부 file path 그림 등) 도 placeholder 처리.

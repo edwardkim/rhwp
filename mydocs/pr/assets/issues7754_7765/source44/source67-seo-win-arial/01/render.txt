@@ -1,0 +1,11 @@
+== p0001-0001 ==
++ /home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized dump-note-shape /home/tsjang/rhwp/tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp
++ /home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized capabilities --search export-png --json
++ /home/tsjang/rhwp/output/pr-review/issue7754-nine/bin/rhwp-source37-optimized export-png /home/tsjang/rhwp/tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp --profile print --json --dpi 96 --scale 1.0 --compat 2022 --font-path /usr/local/share/fonts/rhwp-issue8160-ted2/system-fonts/hancom-office-2020/All/HBATANG.TTF --font-path /home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arial.ttf --font-path /home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbd.ttf --font-path /home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/arialbi.ttf --font-path /home/tsjang/rhwp/output/pr-review/issue7754-nine/private-win10-font-supply-20261122/ariali.ttf -o /home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/silhouette-parts/p0001-0001/native-png/0 --render-tree-output /home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/silhouette-parts/p0001-0001/native-png/0/render_tree -p 0
+PNG export pages: 1
++ /home/tsjang/rhwp/venv/bin/python /home/tsjang/rhwp/scripts/visual_sweep_pdf.py --pdf /home/tsjang/rhwp/pdf/issue8109/print/control-styles-hwp-2020.pdf --dpi 96 --prefix /home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/silhouette-parts/p0001-0001/pdf_png/pdf --pages 1
+실루엣 보조값 1쪽: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/silhouette-parts/p0001-0001/silhouette.tsv
+{"key": "p0001-0001", "pages": 1, "minimum": "100.00", "exact100": 1}
+실루엣 보조값 1쪽: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/seo-helvetica-styles/silhouette.tsv
+{"key": "seo-helvetica-styles", "pages": 1, "minimum": "100.00", "exact100": 1}
+summary: /home/tsjang/rhwp/output/pr-review/issue7754-nine/source67-seo-win-arial/native/candidate/summary.json

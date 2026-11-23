@@ -1,0 +1,124 @@
+{
+  "source_head": "d322327c0f6d71c4343a5a2835dfaa6e4459a24c",
+  "studio_files_sha256": "1b031dbb263a2bea298d5c336a56e4d72ee02241134374d3449e647963b2f11a",
+  "wasm": {
+    "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+    "rhwp_bg.wasm": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91",
+    "rhwp.d.ts": "acffb5a11b613e4cbd0e2a027738eae1a813d4d15118ba7a5197e6a6a60e6f7f",
+    "rhwp_bg.wasm.d.ts": "f81274bb73354b867b43e8744e5dbee1f25cc4c8ccbab4f66fa107027a047dac"
+  },
+  "test_fixture_sha256": {
+    "tools/rhwp-subsecond/Cargo.toml": "17206fb1d5ebdc4795ad056206324b06b91f4db6f408bf012fecb6b05a2b09d0",
+    "ttfs/opensource/RHWPOldHangul-Regular.otf": "0a32ff354d11c955f819d84d91e695927d41aca0fd74b4a286b6235345101af4",
+    "samples/basic/KTX.hwp": "6c1a027d67b33c03f469b56548b4c7d6bca36b1c1190c7cc5eac88e35c403cf1",
+    "samples/biz_plan.hwp": "8b786d6824622afae2220b203beeef6e5592157e1896fea055ebc602817113c1",
+    "samples/footnote-01.hwp": "5bbc8a8fd23415aad59dd91d1eb261050946d9c64635933fcd49609ec2cc94e5",
+    "samples/kps-ai.hwp": "9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9",
+    "samples/shift-return.hwp": "78969c3bbe753373a3d5e983e7a0ea0dbbf132817bb25427f1ebdef851f8bd57",
+    "samples/tac-case-001.hwp": "c003385b7b3495dd93a2688ea74b8a07848543a6c0128cb693635d8ba6fe43da"
+  },
+  "results": {
+    "typecheck": {
+      "command": [
+        "./node_modules/.bin/tsc",
+        "--noEmit"
+      ],
+      "exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "seconds": 5.758825593162328,
+      "counts": {}
+    },
+    "unit": {
+      "command": [
+        "npm",
+        "test"
+      ],
+      "exit_code": 0,
+      "log_sha256": "a67444918b602f8e56a127ee8c5690e18ee6dae7de3bcc1164cdbef7c41712ff",
+      "seconds": 81.10399039997719,
+      "counts": {
+        "tests": 2834,
+        "pass": 2832,
+        "fail": 0,
+        "skipped": 2
+      }
+    },
+    "renderer-contract": {
+      "command": [
+        "node",
+        "--test",
+        "e2e/renderer-contract.test.mjs"
+      ],
+      "exit_code": 0,
+      "log_sha256": "5d5c70cc789fff969da2114f7506785dfd4c00c08c6585dad4382be38bc35826",
+      "seconds": 4.276763839181513,
+      "counts": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "node_runtime": {
+    "source_binding": {
+      "raw_wasm_sha256": "a6e454212c9ed644c8ccc4d34659fabebb48e030f5bf135900fec0dbf37f4f7e",
+      "raw_wasm_unix_mtime": 1795368929.0658083,
+      "wasm_bindgen_version": "0.2.127",
+      "wasm_bindgen_sha256": "f36dbe1938e78a79ce34d0ab3700907555161e293954f6f35bf6785a2f0cf916"
+    },
+    "node_package": {
+      "rhwp.js": "20c6beae71d92c79d63fbc4dc1813a37c4f4a817ef6ea6c2ea2d678d0e27da4c",
+      "rhwp_bg.wasm": "da3b82bf341b5938f49a5542f6989910c55dffde4ed84fa902004f9139c4d36e"
+    },
+    "test_fixture": {
+      "path": "samples/2010-01-06.hwp",
+      "sha256": "d2562d9219fc1d491dd6b9f6d787314153246efb79e18c42c63830ac22194958"
+    },
+    "command": [
+      "/usr/local/bin/node",
+      "--test",
+      "tests/mixed-char-format.test.ts",
+      "tests/pending-char-shape.test.ts"
+    ],
+    "test_counts": {
+      "tests": 6,
+      "pass": 6,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "0ec7f218e50df5a128ab7cbfe218c3c5072d284ef9ec4ab532b154974daf4d4b"
+  },
+  "font_decision_trace": {
+    "inputs": {
+      "scripts/tests/font_decision_trace_e2e.test.mjs": "69a3e3c8c2562a298bffc25972388de64dd698a91a94b52fd4566c72614b3982",
+      "mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json": "d38e9135ac2bc53f785086195cb095fc10bb1fc0257137449ee4241944b94025",
+      "mydocs/tech/investigations/issue-4961/font_decision_trace.schema.json": "49d74d8e93eda116e0135394d6c90a8ef4db03502ead211ac3fa09a4165343ac",
+      "assets/font-rules/font_rule_registry_v2.json": "35f3e1ac64348a6497b50cc98c7235a8adcb4c99bfa78fec6302bde6f525a299",
+      "tests/fixtures/font_trace_source_boundaries.json": "137cf0d096361116d360913d281fd22eb7d406651c62c4ce3f808507a9922429",
+      "scripts/font_decision_trace_contract.mjs": "c29037bf04a83e955e9526f0aeabc5c75ab3c9690533a173e5f9a13040aa7b3e",
+      "scripts/font_rule_ledger.mjs": "b9110d2d80c7646d136990c0dc57c647d97614f179f3368ffaf0b0a3a0c348d9",
+      "rhwp-studio/src/core/font-decision-trace.ts": "f2130c40c128efeeb07e270aeb63557f0eb01a226e27dd5956accc0cf245cb82",
+      "samples/143E433F503322BD33.hwp": "1bcdc7a2de38680cdb715556f40c8477f8242131d28de949b09e945022bf35fa",
+      "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp": "83fca0151c67e2adeb7a85203f5c75204d8e53af4e44902958c96b85adf6845e",
+      "samples/[2027] 온새미로 1 본교재.hwp": "e8592e74c9a8425c4ee2c5824d012ebe45e9f6dd36880b784ba594b4fd0a31ce",
+      "samples/[2027] 온새미로 1 본교재.hwpx": "85071b419b3467466ec391ecde187ad25723ce564178c2ed37c53b09e731138c"
+    },
+    "package": {
+      "rhwp.js": "36fa6ce45be4ef3c5617535a640a90bbd7363927fd47f8b8c7a5f7760585ed6e",
+      "rhwp_bg.wasm": "1e2f87874b23030eb78c031859987a7903e88a68c4bb136e6dfbcb5444755b91"
+    },
+    "command": [
+      "/usr/local/bin/node",
+      "--test",
+      "scripts/tests/font_decision_trace_e2e.test.mjs"
+    ],
+    "log_sha256": "03cbe924ad1dbc988824bd5a8f23818b31fbd7997b4aea5578a0b337abdd0b98",
+    "counts": {
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "skipped": 0
+    }
+  }
+}

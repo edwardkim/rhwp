@@ -1,0 +1,1138 @@
+{
+  "group": "features",
+  "backend": "wasm",
+  "complete_coverage": true,
+  "base_source": "1a27faacff48ea7329e76ce8eca15aa9ca8aa877",
+  "candidate_source": "68b4f6bdfda465aaafd0634c587cd6a17252fed6",
+  "source_states_sha256": {
+    "base": "ad080df96c8e478e107bc8aac527b7f3e51616a0661110d2028c1f56fa4e471d",
+    "candidate": "78cc083496a38715e1b66faaf43ce6fe1e16dded6280b385eedf7fff86d9905e"
+  },
+  "comparisons": [
+    {
+      "key": "captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "50d3e37a256f7dad9f1a5a524ee216b07ce8b8efe07566bd827bd3c6e92b8b38",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-captioned_picture_inside_a_caption_survives_hwp_round_trip/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "0ae2ad749b034b742bda77e3b01e4224c28b560816e2a46830b53da46042f5ed",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-cell_picture_caption_lines_address_the_caption",
+      "role": "base",
+      "pages": 1,
+      "minimum": "99.68",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-cell_picture_caption_lines_address_the_caption/silhouette.tsv",
+          "tsv_sha256": "87fb54a7cc1a769a6eb675e4c2449108aeeff8e115dbc7928ae1f712616dc74a",
+          "run_manifest_sha256": "52185aca3456619d53830aba497efa082d60f48e7b69ed7cfef0e1db9a372d40",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-cell_picture_caption_lines_address_the_caption",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "99.68",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-cell_picture_caption_lines_address_the_caption/silhouette.tsv",
+          "tsv_sha256": "87fb54a7cc1a769a6eb675e4c2449108aeeff8e115dbc7928ae1f712616dc74a",
+          "run_manifest_sha256": "76ccb90fb3abcf23fe04875bb2ba2b27d4213384616aa6da95fe6c6b84b3e32e",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-header-false-false",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-header-false-false/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "6028369fc93d8a26dd1ec906e27b135ceb469c0cdb933089e64ec67f3b2becea",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-header-false-false",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-false-false/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "2241de506bd86a3ba295ba40a3d44710b1aab1765148266efdb00dfe67d55a29",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-header-true-false",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-header-true-false/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "91b88f605751b3fa892bc005c9c327b6b6b56aeda8865234ebdef3711458db40",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-header-true-false",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-true-false/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "ea1ea0735a4a566a4321f910abf4ac1fcba8d6c49e709a20b94a634128a44a0e",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-header-true-true",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-header-true-true/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "cd6cf8873ff16eeabc4687e8bd5b83185b50c953eadcdce5a7f71ee6c7bddbaa",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-header-true-true",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-header-true-true/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "8a9e2a59b931e50895d2acf235b1c40ba1c1ce6ee6a69bf80f9c744306f159ef",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "22ed7551677c614a0d7f0815b47c6abd1c6398a6c369359a93e32d33ece021c7",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-include_margin_widens_a_bottom_caption_to_the_outer_margins/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "10a2cc243ed1f87402fc48a86d84654fa52e83d033f0e8aaf9194a262db9e208",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-inline_picture_caption_starts_under_the_picture",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-inline_picture_caption_starts_under_the_picture/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "270dc561a0e983390bcab045ec75629c6e513b60b69345106747a133a800ec8d",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-inline_picture_caption_starts_under_the_picture",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-inline_picture_caption_starts_under_the_picture/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "3e7f85a97648ca30968fc42cad07ced741100651149348510b863e05933cf5bc",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-narrowing_a_side_caption_rewraps_its_text",
+      "role": "base",
+      "pages": 1,
+      "minimum": "99.57",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/captions-caption-narrowing_a_side_caption_rewraps_its_text/silhouette.tsv",
+          "tsv_sha256": "6fa62f05fd812da7ec8d83ece040e99308df38fb39cc45003909319eceaa58d8",
+          "run_manifest_sha256": "55f0ea7a1f7421782e332acd3a4ec65c9a926ed8209c7362aa1923cdc65e5c57",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "captions-caption-narrowing_a_side_caption_rewraps_its_text",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "99.57",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/captions-caption-narrowing_a_side_caption_rewraps_its_text/silhouette.tsv",
+          "tsv_sha256": "6fa62f05fd812da7ec8d83ece040e99308df38fb39cc45003909319eceaa58d8",
+          "run_manifest_sha256": "f437fae5869bd3330369717fd99a3a9a457bff0b48decd89a15ffcf95c2a6446",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "empty-overlap-overlap-false-hwpx",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/empty-overlap-overlap-false-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "1259a1fb46371ce7c5f29fbf8e68f0bec237f8de97bdf912e583c3ea45a707cc",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "empty-overlap-overlap-false-hwpx",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/empty-overlap-overlap-false-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "65f3388ace687a103a7f0d9b770be110c249c375168f1c094682a923856e26c2",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "empty-overlap-overlap-true-hwpx",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/empty-overlap-overlap-true-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "a4e5505f22102c248ebd3e3fed8282a49a06e9c0bdf7d3877da6e9c430c2586c",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "empty-overlap-overlap-true-hwpx",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/empty-overlap-overlap-true-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "4e41ac30830f569c3e2ba67108fe61358e5536520949558f364f1c59dc1531b5",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c2-eachColumn",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-c2-eachColumn/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "375515666a8cb9059059474dbedc5d69a3e5c3273799d7999a8e97bfb42cc5dc",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c2-eachColumn",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c2-eachColumn/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "db51ff09afc9a875e7335fbfa0d7a513fe266f005f4d57f61b0b332e2b4eb074",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c2-rightColumn",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-c2-rightColumn/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "511667bcf9fe2503cbdb431e3ac42301c0fe1236882fc6c8fc6b500e7c950fe2",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c2-rightColumn",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c2-rightColumn/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "c201ec9c3a90e174eea008c3921b3738af08074965bce2f0df80f2e2d2eca914",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c3u-eachColumn",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-c3u-eachColumn/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "214fa2033315a7da24e4c0053d7c36d7a321362fd2e847ee264140721a8fdf2f",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c3u-eachColumn",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c3u-eachColumn/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "b9378933c628648fcaf0aef1647536a2789224b17ce8503ae2521103af825524",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c3u-touch-hwp",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-c3u-touch-hwp/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "0d283bbc07112f5e4b62891c633920675afd0b88546b3a9622e453cdafdcfb39",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c3u-touch-hwp",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c3u-touch-hwp/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "fb1c6d2a0fa7683fe9170a476ba44f68246aa5f10373a00b382710e1a794cddd",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c3u-touch-hwpx",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-c3u-touch-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "2038ecbfc4999ebdde4054c7585bcd0325f8b976f183ad6d6db07cf665b3465c",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-c3u-touch-hwpx",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-c3u-touch-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "4f01222d6ef61d5f3475d3401b33d1bd4cf379214b35c80458146fc69804269a",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-each",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-edited-each/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "6ed59b87a972bb179a946c00cea75da2f6a627309ea5eaaa6cf3d5b49150034e",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-each",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-each/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "fe76b5910162b852f9e9543be2556859cb0a30a08737c8d498400190f6994616",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-two",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-edited-two/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "9a289cf8f895f833faf73704cfd504d571d208b3dce7f89e8bf9891420351a25",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-two",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-two/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "06db3ee637117dc722082b4872442eb16b9da51b35b7c9e4909ac717075c63c1",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-e2",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-overflow-e2/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "db63d8f398e891f69da9f2e02558178aa66e2f823fd245f595e4225d56d2b79c",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-e2",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-e2/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "0c442b26c021a6b695253c0a4e3c2cb766fe8085d3b34eabab4fe0fa2f6897d4",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-e2-tail",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-overflow-e2-tail/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "a1ef70dff12f64cb0694576b255c3d295ecfd18da3e7449c524a7950a0573c3b",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-e2-tail",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-e2-tail/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "0fbf644c3033488dde5eb4db19031ce05292f306b0b71bad0995ea2e7b29c9db",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-refold-e3u",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-refold-e3u/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "15942cecfb7d67ba662bbd5b668f1a327fbe1c6fb1802a882dbb35578722c344",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-refold-e3u",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-refold-e3u/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "3db55b753883e160bca4202707c5b8480dcf530557efed0f20a5b498c72de2a7",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "resized-group-resized-group-hwp",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/resized-group-resized-group-hwp/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "cb8ca6e1cacb1eaa2c4bcf71351ef8a1cecd0e3391d7636b74ea90ee0a2346e8",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "resized-group-resized-group-hwp",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/resized-group-resized-group-hwp/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "018b8d207a41706fe9295f4eb117c4e7f8f61732ef4a3f7cb3908ab12467d3a9",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "resized-group-resized-group-hwpx",
+      "role": "base",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/resized-group-resized-group-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "c1c4ed8f90d7d90cdd98e958fdbd21b3c174ca81cc67af75cf5e39a815a5d9a7",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "resized-group-resized-group-hwpx",
+      "role": "candidate",
+      "pages": 1,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/resized-group-resized-group-hwpx/silhouette.tsv",
+          "tsv_sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+          "run_manifest_sha256": "22350324e091ba594414a35fccda4aa012186d1aaeb3d5bcb8c8ac669b285101",
+          "actual_full_page_counts": {
+            "rhwp": 1,
+            "pdf": 1
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-narrow",
+      "role": "base",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-edited-narrow/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "34599c97416dfbb895e603ca4b91b04e4ac6543afa1a086cb3b8f175952f64c8",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-narrow",
+      "role": "candidate",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-narrow/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "9ca3f2b7734621bf5be901cdd823fc94fdd27c4973acc2d6d8c961bdcb224b79",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-one",
+      "role": "base",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-edited-one/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "77cbf1d14e7d10b689e1095a101a3014da9ece5692f77f3ba018fd6db1e09e42",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-edited-one",
+      "role": "candidate",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-edited-one/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "081ea0d821c5815e8f04c63b19b38fa3f96bbe8fd8a04f36ba81dfa3c7007b50",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-e2-flow",
+      "role": "base",
+      "pages": 2,
+      "minimum": "99.22",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-overflow-e2-flow/silhouette.tsv",
+          "tsv_sha256": "7b55b10dee5269fec94ed4c36a869747432c5b77ec9a732dd501ff9d6fb0c049",
+          "run_manifest_sha256": "bca83b3ab9443300751c4d9f457397a3577f78c5cc2205e044b8aebe47982ee7",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-e2-flow",
+      "role": "candidate",
+      "pages": 2,
+      "minimum": "99.22",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-e2-flow/silhouette.tsv",
+          "tsv_sha256": "7b55b10dee5269fec94ed4c36a869747432c5b77ec9a732dd501ff9d6fb0c049",
+          "run_manifest_sha256": "9bb46e706ce73b33ac9500f4f071d0a8d8491a42f110e5634b9e17cae2ba9c06",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-r2",
+      "role": "base",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-overflow-r2/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "6fcd431e85fe49bd30d4b6b2977f345e78edfa382e30c8c26e5cb7da92087a3d",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-r2",
+      "role": "candidate",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r2/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "b56a95e0a12746cbb7f141efa9196c8d093574b93d994f9a38d3064fe0798067",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-r2-flow",
+      "role": "base",
+      "pages": 2,
+      "minimum": "99.30",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-overflow-r2-flow/silhouette.tsv",
+          "tsv_sha256": "97953f0ae367d4b07dc48e2c8c270af33404b9bd9427729310ec2436712286fb",
+          "run_manifest_sha256": "192d15cdf9d1877991d89f3b867ddbb17f7e6398200faeb886ef85ca41fb8c00",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-r2-flow",
+      "role": "candidate",
+      "pages": 2,
+      "minimum": "99.30",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r2-flow/silhouette.tsv",
+          "tsv_sha256": "97953f0ae367d4b07dc48e2c8c270af33404b9bd9427729310ec2436712286fb",
+          "run_manifest_sha256": "81ef8e62b809516cd938584b6e198d7fdd1dfe3d40fc9ea3bbae2e96b0537437",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-r3u",
+      "role": "base",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-overflow-r3u/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "cc865e9a196a6fb49fbc86d9b0be140012d1039f737ec227aa781ba0f92002e3",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-overflow-r3u",
+      "role": "candidate",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-overflow-r3u/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "ce23db7711167fd4674f0f6fdfee3260c54e56dea226cb2cc9ee2ba639b23789",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-refold-e3u-chain",
+      "role": "base",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/footnotes-refold-e3u-chain/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "24895b08d470e4b117b3cdfa766cd14dffd1a21191fe93dfe4a147ffd6548426",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "footnotes-refold-e3u-chain",
+      "role": "candidate",
+      "pages": 2,
+      "minimum": "100.00",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/footnotes-refold-e3u-chain/silhouette.tsv",
+          "tsv_sha256": "75a9bab7c2e3c98ae402a8caf9e39fecf6b6081c5a8aa222f99b01cf9da24690",
+          "run_manifest_sha256": "594c199152fd83783e7f770e0528d7328a34f31588cf5d78fa5637b157f23ce0",
+          "actual_full_page_counts": {
+            "rhwp": 2,
+            "pdf": 2
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-30-hwp",
+      "role": "base",
+      "pages": 3,
+      "minimum": "98.07",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/nested-row-split-nested-30-hwp/silhouette.tsv",
+          "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+          "run_manifest_sha256": "617c0aabd3d2df7d421000107fd86717a4bb00a721b4c9ad83afc3bd77aa68ac",
+          "actual_full_page_counts": {
+            "rhwp": 3,
+            "pdf": 3
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-30-hwp",
+      "role": "candidate",
+      "pages": 3,
+      "minimum": "98.07",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-30-hwp/silhouette.tsv",
+          "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+          "run_manifest_sha256": "4511aef10e51af90eef84ce56ab2e3ca5bb00de49c080dd3e50a200e9f91e3de",
+          "actual_full_page_counts": {
+            "rhwp": 3,
+            "pdf": 3
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-30-hwpx",
+      "role": "base",
+      "pages": 3,
+      "minimum": "98.07",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/nested-row-split-nested-30-hwpx/silhouette.tsv",
+          "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+          "run_manifest_sha256": "8b0c703e1ab96ed0bd7d6de65e163e29966486ebd373a359a61392308a037968",
+          "actual_full_page_counts": {
+            "rhwp": 3,
+            "pdf": 3
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-30-hwpx",
+      "role": "candidate",
+      "pages": 3,
+      "minimum": "98.07",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-30-hwpx/silhouette.tsv",
+          "tsv_sha256": "dbbc0a115b400a514ba0ab31a7960dc2b85aa730ada214470f4086c3fa00aa81",
+          "run_manifest_sha256": "357c0721f12e31adabd53048fe7b0c3106688161618d53c95199d879e1989518",
+          "actual_full_page_counts": {
+            "rhwp": 3,
+            "pdf": 3
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-70-hwp",
+      "role": "base",
+      "pages": 4,
+      "minimum": "98.23",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/nested-row-split-nested-70-hwp/silhouette.tsv",
+          "tsv_sha256": "a1a00d59bc14f14356db7548ee38aca48704d0b03a534de4669fcce362ed8180",
+          "run_manifest_sha256": "2beb4381ee23ff6d7bd46acf069086f447925242fa1e10f6f541d69b859a0eb9",
+          "actual_full_page_counts": {
+            "rhwp": 4,
+            "pdf": 4
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-70-hwp",
+      "role": "candidate",
+      "pages": 4,
+      "minimum": "98.23",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-70-hwp/silhouette.tsv",
+          "tsv_sha256": "a1a00d59bc14f14356db7548ee38aca48704d0b03a534de4669fcce362ed8180",
+          "run_manifest_sha256": "a90d4eb97eb4c1d3f4a5b5356f503b5119323d29a4fa6fe6977baba9aa0ce028",
+          "actual_full_page_counts": {
+            "rhwp": 4,
+            "pdf": 4
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-70-hwpx",
+      "role": "base",
+      "pages": 4,
+      "minimum": "98.24",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source36-features-wasm/base/nested-row-split-nested-70-hwpx/silhouette.tsv",
+          "tsv_sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+          "run_manifest_sha256": "6e28e6b484735eb33e3655bc38f1863011b4d288f6ba5eefc6784696c65d6fe8",
+          "actual_full_page_counts": {
+            "rhwp": 4,
+            "pdf": 4
+          }
+        }
+      ]
+    },
+    {
+      "key": "nested-row-split-nested-70-hwpx",
+      "role": "candidate",
+      "pages": 4,
+      "minimum": "98.24",
+      "parts": [
+        {
+          "tsv": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source37-features-wasm/candidate/nested-row-split-nested-70-hwpx/silhouette.tsv",
+          "tsv_sha256": "52b1b7e10e23981253a3c90358999e23815ce6a4f3f9886054a0b1556255c224",
+          "run_manifest_sha256": "6cb71286e9477f81926d5ef9a15e82cab95458966d6e10088fc6ff538939914e",
+          "actual_full_page_counts": {
+            "rhwp": 4,
+            "pdf": 4
+          }
+        }
+      ]
+    }
+  ],
+  "declines": [],
+  "passed": true,
+  "scope": "Same original, independent Print PDF, actual full page counts, complete requested coverage and per-page displayed raw comparison. Protected canonical gate is separate."
+}

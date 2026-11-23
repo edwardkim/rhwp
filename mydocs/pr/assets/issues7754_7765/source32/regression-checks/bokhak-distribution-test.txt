@@ -1,0 +1,26 @@
+
+running 18 tests
+test case0::installed_program_alias_preserves_current_source_frames ... ok
+test case0::successive_saved_restarts_with_link_fields_keep_their_page_owners ... ok
+test case1::leading_viewtext_inline_table_keeps_its_visible_left_inset ... ok
+test case1::no_lineseg_heading_moves_with_its_following_list_to_the_next_page ... ok
+test case1::oversized_tac_table_moves_to_its_own_line_below_the_host_text ... ok
+test case1::tac_table_that_fits_keeps_its_line ... ok
+test case1::viewtext_table_unit_label_uses_the_table_right_inset ... ok
+LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=16, type=Shape, first=false, y=1089.9, bottom=1084.7, overflow=5.2px
+test case2::issue_677_bokhak_receipt_preserves_table_and_host_order ... ok
+LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=16, type=Shape, first=false, y=1089.9, bottom=1084.7, overflow=5.2px
+test case2::issue_938_layer_tree_watermark_is_resolved_hancom_baked_png ... ok
+LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=16, type=Shape, first=false, y=1089.9, bottom=1084.7, overflow=5.2px
+test case2::issue_938_svg_watermark_is_hancom_baked_png ... ok
+test case3::center_aligned_cell_excludes_trailing_spaces ... ok
+LAYOUT_OVERFLOW: page=0, sec=0, col=0, para=16, type=Shape, first=false, y=1089.9, bottom=1084.7, overflow=5.2px
+test case3::right_aligned_cell_excludes_trailing_spaces ... ok
+test case4::closing_fragment_keeps_the_cell_trailing_empty_line_box ... ok
+test case5::continued_row_fragment_keeps_to_its_declared_cell_height ... ok
+test case0::completed_current_object_frame_keeps_the_next_table_print_origin ... ok
+test case0::final_fragment_keeps_the_empty_line_box_inside_its_print_border ... ok
+test case0::continuation_keeps_the_terminal_text_on_its_own_page_once ... ok
+test case5::middle_fragment_without_carried_boxes_does_not_stretch_the_last_fragment ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.50s

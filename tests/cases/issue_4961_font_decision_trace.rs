@@ -1,7 +1,10 @@
-//! 관계형: 글꼴 결정 추적과 공개 API 결과 계약.
-//! 주석 갱신: 2026-10-29T17:35:16+09:00; 직전 파일 커밋: 2026-10-29T16:49:36+09:00 (caa53280c1).
-//! 원본 소유·API 결과·왕복 보존을 검사하며 raw 일치율 측정은 이 검사의 대상이 아니다.
-//! 근거: mydocs/tech/investigations/issue-4961/font_decision_trace_e2e.json.
+//! 관계형·고정형: 폰트 추적 문자와 원본·공개 런의 단일 소유를 보호한다.
+//! 주석 갱신: 2026-11-22T02:35:34+09:00; 직전 파일 변경 커밋: 2026-10-30T19:50:11+09:00 c417310cab62bd7dcf8ef131f72001bb4a1fd3d9.
+//! 측정: 2026-11-22 KST, Print profile, 96DPI, PDFium, 보정 전2px raw.
+//! 143E 전1쪽 Native/WASM99.94%; 수출입 전19쪽 양쪽 최저99.18%; 온새미로 HWP/HWPX 각각46쪽 양쪽 최저99.98%.
+//! 각 원본의 전체 쪽수도 독립 Print와 같다. 좌표·전체 layoutHash 재고정 대신 원본 문자 주소·순서·내용을 검사한다.
+//! 근거: mydocs/pr/assets/issues7754_7765/source32/README.md와 문서별 Native/WASM 전쪽 TSV.
+//!
 use rhwp::document_core::DocumentCore;
 
 mod corpus_scope {
@@ -61,29 +64,14 @@ fn font_trace_profiles_follow_source_ownership_and_preserve_font_decisions() {
             max_characters,
         );
         assert_eq!(trace["status"], document["expectedStatus"], "{id}");
-        // #7445에 명시적으로 이관한 렌더링 절대핀만 생략한다.
-        // 같은 문서의 폰트 프로필과 다른 문서의 핀은 계속 검사한다.
-        let deferred_pins = document["renderPinsDeferredToIssue7445"].as_array();
-        let is_render_pin_deferred = |name: &str| {
-            deferred_pins.is_some_and(|pins| pins.iter().any(|pin| pin.as_str() == Some(name)))
-        };
-        if !is_render_pin_deferred("expectedCounts") {
-            let expected = document["expectedCounts"]
-                .as_object()
-                .expect("expectedCounts");
-            for (key, value) in expected {
-                assert_eq!(&trace["counts"][key], value, "{id}: {key}");
-            }
-            if document["validateRunOwnership"] == true {
-                assert_profile_run_ownership(document, &trace);
-            }
+        let expected = document["expectedCounts"]
+            .as_object()
+            .expect("expectedCounts");
+        for (key, value) in expected {
+            assert_eq!(&trace["counts"][key], value, "{id}: {key}");
         }
-        if !is_render_pin_deferred("expectedLayoutHash") {
-            assert_eq!(
-                trace["layoutHash"]["value"], document["expectedLayoutHash"],
-                "{id}"
-            );
-        }
+        assert!(document["validateRunOwnership"] == true);
+        assert_profile_run_ownership(document, &trace);
         assert_eq!(trace["backendSummary"]["native"]["status"], "unsupported");
         assert_eq!(
             trace["backendSummary"]["native"]["reasons"][0],

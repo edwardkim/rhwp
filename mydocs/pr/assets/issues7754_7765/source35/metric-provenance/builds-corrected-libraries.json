@@ -1,0 +1,54 @@
+[
+  {
+    "label": "source33",
+    "command": [
+      "rustc",
+      "--edition=2021",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-metric-provenance-probe/probe.rs",
+      "-o",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-metric-provenance-probe/source33-probe",
+      "--extern",
+      "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source33-native-libraries/librhwp-candidate.rlib",
+      "-L",
+      "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+      "--extern",
+      "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+      "-L",
+      "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+      "-L",
+      "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out"
+    ],
+    "exit_code": 0,
+    "stderr": "",
+    "seconds": 15.12905361596495,
+    "probe_exit_code": 0,
+    "stdout": "{\"original_hft_width\":20,\"display_only_program_width\":20,\"explicit_natural_program_width\":20,\"source_primary_identity\":false}\n",
+    "probe_stderr": ""
+  },
+  {
+    "label": "source35",
+    "command": [
+      "rustc",
+      "--edition=2021",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-metric-provenance-probe/probe.rs",
+      "-o",
+      "/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-metric-provenance-probe/source35-probe",
+      "--extern",
+      "rhwp=/home/tsjang/rhwp/output/pr-review/issue7754-nine/source35-native-library/librhwp.rlib",
+      "-L",
+      "dependency=/home/tsjang/rhwp/target/pr-review/release-test/deps",
+      "--extern",
+      "serde_json=/home/tsjang/rhwp/target/pr-review/release-test/deps/libserde_json-6b264a499acbc87b.rlib",
+      "-L",
+      "native=/home/tsjang/rhwp/target/pr-review/release-test/build/skia-bindings-079888cb8874cccd/out/skia",
+      "-L",
+      "native=/home/tsjang/rhwp/target/pr-review/release-test/build/ring-62411559129b98e5/out"
+    ],
+    "exit_code": 0,
+    "stderr": "",
+    "seconds": 1.3534927230793983,
+    "probe_exit_code": 0,
+    "stdout": "{\"original_hft_width\":20,\"display_only_program_width\":18.026666666666667,\"explicit_natural_program_width\":18.026666666666667,\"source_primary_identity\":false}\n",
+    "probe_stderr": ""
+  }
+]

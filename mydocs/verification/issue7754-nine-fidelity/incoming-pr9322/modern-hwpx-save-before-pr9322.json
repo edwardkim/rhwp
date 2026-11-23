@@ -1,0 +1,305 @@
+{
+  "scope_ko": "PR #9322 리베이스 전 생산본의 현대 HWPX 재저장 대조군",
+  "input": {
+    "path": "tests/fixtures/issue5140-version-boundary/rhwp-save/v6.hwpx",
+    "sha256": "d546b9bcde769bfda82659b95100443eed5a7c9ea9cb29b09ee6575333fcebec"
+  },
+  "expected_text_bold_utf16_sha256": "a44bcb46e255364ccae5215d39b9c76de2710026a213f84119eed835a7eec3d1",
+  "independent_hancom_hwpx": [
+    {
+      "path": "samples/issue5140-version-boundary/legacy-symbols-v5.0.1.6.hwpx",
+      "sha256": "b036334d8a6072a8c8e39b829b4d150617b8b2eb5592181f5fc3a10dd1c7041f"
+    },
+    {
+      "path": "tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.6-2020.hwpx",
+      "sha256": "ee1e2197d12727f0470c6c0bb8a44efdbd932b6978de57841fa0b8840d9a62ea"
+    },
+    {
+      "path": "tests/fixtures/issue5140-version-boundary/hancom/legacy-symbols-v5.0.1.6-2024.hwpx",
+      "sha256": "f9bb12c01c46a2388418c9fa27bca03140181391c87292248d0f79d6c1b3f680"
+    }
+  ],
+  "paragraphs": 16,
+  "differing_paragraphs_per_backend": 6,
+  "runs": {
+    "native": {
+      "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+      "producer_sha256": "ebf5994ce2a598c89ab981f00331be90f92fb56d0d4d1463b2c139fd3a6f9ea5",
+      "saved_hwpx_sha256": "5bf3093f38ae08383613a729157e7ce88e65a6e4f94a8111a27e3a53129b6b34",
+      "observations": [
+        {
+          "paragraph_index": 2,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A807",
+              "actual": "U+F0807"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 5,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A80E",
+              "actual": "U+F080E"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 6,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A80F",
+              "actual": "U+F080F"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 7,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A810",
+              "actual": "U+F0810"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 11,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A81A",
+              "actual": "U+F081A"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 14,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A832",
+              "actual": "U+F0832"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        }
+      ],
+      "cli_report_sha256": "7b4e99c80117e37bd788c2225d5c0f944a4109c8deb57a5e895b580e9d668310"
+    },
+    "wasm": {
+      "source_head": "b75ce19774a4b059b26c2d134d49d5f7ce4a93b2",
+      "producer_sha256": "a17cd643b322457f5a8a5644c065395a5d925f4e88496542f52ca8c048d425cb",
+      "saved_hwpx_sha256": "5bf3093f38ae08383613a729157e7ce88e65a6e4f94a8111a27e3a53129b6b34",
+      "observations": [
+        {
+          "paragraph_index": 2,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A807",
+              "actual": "U+F0807"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 5,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A80E",
+              "actual": "U+F080E"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 6,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A80F",
+              "actual": "U+F080F"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 7,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A810",
+              "actual": "U+F0810"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 11,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A81A",
+              "actual": "U+F081A"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        },
+        {
+          "paragraph_index": 14,
+          "text_differences": [
+            {
+              "scalar_index": 9,
+              "expected": "U+A832",
+              "actual": "U+F0832"
+            }
+          ],
+          "expected_bold_utf16": [
+            [
+              10,
+              16
+            ]
+          ],
+          "actual_bold_utf16": [
+            [
+              11,
+              17
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

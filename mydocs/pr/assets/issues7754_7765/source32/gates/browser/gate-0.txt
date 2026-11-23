@@ -1,0 +1,36 @@
+✔ 원본 빈 그림과 손상 그림의 decode 구분: corrupt=false (9724.191567ms)
+✔ 원본 빈 그림과 손상 그림의 decode 구분: corrupt=true (1879.863845ms)
+✔ issue_8160 표지: JPEG 인쇄 프레임은 실제 Canvas의 독립 Print 경계 픽셀을 보존한다 (3306.58906ms)
+✔ issue_8533 편람 140쪽: JPEG 인쇄 프레임은 실제 Canvas의 독립 Print 경계 픽셀을 보존한다 (10135.103835ms)
+(node:1501032) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ 잘린 그림의 소수 목적 영역이 아래에 그린 위 테두리를 지우지 않는다 (2144.10395ms)
+✔ 한컴 저장 대조군 hancom-blackwhite-zero-2024의 실제 Canvas·DOM RGB는 독립 Print를 따른다 (2506.14382ms)
+✔ 한컴 저장 대조군 hancom-color-probe-2024의 실제 Canvas·DOM RGB는 독립 Print를 따른다 (2346.389999ms)
+✔ 한컴 저장 대조군 hancom-color-probe-cross-2024의 실제 Canvas·DOM RGB는 독립 Print를 따른다 (2327.891341ms)
+✔ 한컴 저장 대조군 hancom-color-probe-boundary-2024의 실제 Canvas·DOM RGB는 독립 Print를 따른다 (2320.303073ms)
+✔ 한컴 저장 대조군 hancom-blackwhite-axis-probe-2024의 실제 Canvas·DOM RGB는 독립 Print를 따른다 (2478.33842ms)
+✔ HFT 원문의 명시 자연 TTF는 Print에서 실제 등록 윤곽을 쓰고 화면·자동 치환은 보존한다 (3466.535457ms)
+✔ HFT·TTF 선언의 합성 굵기가 실제 CFF를 쓰고 공급된 TTF는 보존한다 (2661.08214ms)
+✔ 실제 HFT 윤곽 replay가 옛한글 우선 face와 화면 경로를 보존한다 (2118.521399ms)
+✔ supplied static TrueType keeps its Print frame after metric compaction (2687.64246ms)
+✔ Print TTF는 앞 후보의 coverage가 미확인일 때 실제 Canvas 글리프를 보존한다 (2050.770142ms)
+✔ Print TTF 대체 글리프는 원 프로그램의 기하를 쓰고 Screen과 원 face는 보존한다 (1953.760903ms)
+✔ 실제 Canvas Print 글리프는 기하 모드를 소비하고 Screen으로 복귀한다 (2134.728462ms)
+✔ Legacy Print picture pen survives bitmap generations and stays out of Screen/HQ (2565.745985ms)
+✔ 확인된 주 TTF는 원본 선언과 관계없이 Print에서만 같은 프로그램의 윤곽을 쓴다 (2817.273108ms)
+✔ 주 TTF가 결측이어도 같은 family의 미확인 동반 프로그램을 건너뛰지 않는다 (2031.339578ms)
+✔ 완전한 CFF의 결측만 확인된 다음 TTF의 Print 윤곽으로 이어간다 (2010.071516ms)
+✔ Chrome은 역순 등록된 CFF의 원래 후보 순서와 글리프별 fallback을 유지한다 (1494.062509ms)
+✔ fresh WASM은 단일 공급과 분할 OTF 배열을 모두 받아 누락 glyph의 전진을 갱신한다 (2331.085641ms)
+✔ 원 PUA 마커의 실제 Canvas 잉크는 대체 face 대신 독립 Print의 기호를 사용한다 (4260.410332ms)
+✔ 합성 굵기는 등록한 실제 face의 윤곽 fill+stroke로 그리고 미등록 face는 기존 Canvas 경로를 쓴다 (3748.643794ms)
+✔ 공급한 실제 font program을 사용하고 워밍업 Canvas 상태를 캡처에 이어받지 않는다 (3918.047581ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 81807.415145

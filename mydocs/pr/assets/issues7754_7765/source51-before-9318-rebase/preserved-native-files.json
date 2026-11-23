@@ -1,0 +1,232 @@
+[
+  {
+    "path": "native/yeongwol/silhouette.tsv",
+    "sha256": "4475a64f14dc6abd397b9c38d09fd626931074cd6cd12472af9ac2c101c929a1",
+    "bytes": 192
+  },
+  {
+    "path": "native/yeongwol/silhouette_manifest.json",
+    "sha256": "1167f86f6e21f2ac2f4a0975b9d09371f1562ba4da30ee461815953d536f2016",
+    "bytes": 56521
+  },
+  {
+    "path": "native/seo-body-list-typed/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "native/seo-body-list-typed/silhouette_manifest.json",
+    "sha256": "bcb009bc606c310657a5275c599e9c7ff087b7988deedfb9c3f4a179eba66f9c",
+    "bytes": 5396
+  },
+  {
+    "path": "native/handbook-hwp/silhouette.tsv",
+    "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+    "bytes": 8428
+  },
+  {
+    "path": "native/handbook-hwp/silhouette_manifest.json",
+    "sha256": "3fde318952ebd6dee7562df956dd4427262c592d9c4a3696dbbfbca2045d7287",
+    "bytes": 345008
+  },
+  {
+    "path": "native/seo-helvetica-styles/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "native/seo-helvetica-styles/silhouette_manifest.json",
+    "sha256": "e3933b7bdf7dc5197666c99f067b364ab4162e395a2480c94013e1b00f5698c6",
+    "bytes": 6488
+  },
+  {
+    "path": "native/sample16-hwpx/silhouette.tsv",
+    "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+    "bytes": 1447
+  },
+  {
+    "path": "native/sample16-hwpx/silhouette_manifest.json",
+    "sha256": "82ed32c43e8f1012358adabd954fadbeda657454bf1ca86eec7510e9d3d3c0f5",
+    "bytes": 72563
+  },
+  {
+    "path": "native/sample16-hwp2022/silhouette.tsv",
+    "sha256": "418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7",
+    "bytes": 1447
+  },
+  {
+    "path": "native/sample16-hwp2022/silhouette_manifest.json",
+    "sha256": "0bc03ac8d22225a6970b05fc66fa96f34f6db6ecbc2c6d9dd2dba0d54f97b1e8",
+    "bytes": 72961
+  },
+  {
+    "path": "native/seo-re-03-latin/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "native/seo-re-03-latin/silhouette_manifest.json",
+    "sha256": "0661d40dd5d332ed942cf34813adc956c00bb24de493017e42176a2e29c4f5fa",
+    "bytes": 5502
+  },
+  {
+    "path": "native/angle-narrow/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "native/angle-narrow/silhouette_manifest.json",
+    "sha256": "9fd86abda109aa4a5556d83d88dc361fc6f0b4c41f7622828d1a977f9f592b03",
+    "bytes": 5367
+  },
+  {
+    "path": "native/outline/silhouette.tsv",
+    "sha256": "46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675",
+    "bytes": 292
+  },
+  {
+    "path": "native/outline/silhouette_manifest.json",
+    "sha256": "62ad1fc45d9dc7a4bdead3595ec50c57e00f7b35ca553b0ccdd722e911f810df",
+    "bytes": 22663
+  },
+  {
+    "path": "native/issue8040-insert/silhouette.tsv",
+    "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+    "bytes": 190
+  },
+  {
+    "path": "native/issue8040-insert/silhouette_manifest.json",
+    "sha256": "455b3ce9de92e19026c5da9cb5886c9f9f12701a7b276be01d82fd3f10e0ca50",
+    "bytes": 18790
+  },
+  {
+    "path": "native/nested/silhouette.tsv",
+    "sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+    "bytes": 454
+  },
+  {
+    "path": "native/nested/silhouette_manifest.json",
+    "sha256": "0a41e4c6c42002063f9b21134a49124adb79a398a85f523e00c0d47840332e47",
+    "bytes": 18899
+  },
+  {
+    "path": "native/sample16-hwp2024/silhouette.tsv",
+    "sha256": "e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942",
+    "bytes": 1447
+  },
+  {
+    "path": "native/sample16-hwp2024/silhouette_manifest.json",
+    "sha256": "5215f059ed42bd7f5fc6706de0892fcf6ab676831e3f2258da8599e600fd3ab4",
+    "bytes": 72967
+  },
+  {
+    "path": "native/handbook-hwpx/silhouette.tsv",
+    "sha256": "261cbaa3c053a992e7058701416c4b38fb504bef61e8df22e44e5c5e7fb9a590",
+    "bytes": 8428
+  },
+  {
+    "path": "native/handbook-hwpx/silhouette_manifest.json",
+    "sha256": "050403172d1f153cc3912f5fc99f9a9f2354d12e4577a5867187bc02f718d2d4",
+    "bytes": 359447
+  },
+  {
+    "path": "native/issue7905/silhouette.tsv",
+    "sha256": "f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893",
+    "bytes": 220
+  },
+  {
+    "path": "native/issue7905/silhouette_manifest.json",
+    "sha256": "dee046ab8fe6e617ed5585e5ba58a9793e331c042068f6e019a0e08c3cda87f5",
+    "bytes": 9426
+  },
+  {
+    "path": "native/sample10/silhouette.tsv",
+    "sha256": "248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd",
+    "bytes": 16746
+  },
+  {
+    "path": "native/sample10/silhouette_manifest.json",
+    "sha256": "00f2f375b47556088fc823c7e1b88ab17eed92a30c7f38f2adcd2b68eb57b033",
+    "bytes": 654268
+  },
+  {
+    "path": "native/issue8040-insert-delete/silhouette.tsv",
+    "sha256": "f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08",
+    "bytes": 190
+  },
+  {
+    "path": "native/issue8040-insert-delete/silhouette_manifest.json",
+    "sha256": "42df1b115fee2240a6d8d0fba6e668dea5513215d798393d9544fb2152acc8e0",
+    "bytes": 18881
+  },
+  {
+    "path": "native/seo-pic-crop-01/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "native/seo-pic-crop-01/silhouette_manifest.json",
+    "sha256": "4fb5753f91769bfa625df039e323ad27f5e9334692d0ce37d762d7e8bc46221e",
+    "bytes": 5485
+  },
+  {
+    "path": "native/seo-shape-group-02/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "native/seo-shape-group-02/silhouette_manifest.json",
+    "sha256": "c9e1f32836a11ae232bace91c23658998900c32a1aae70e98482d2c2cd5fb5bb",
+    "bytes": 5501
+  },
+  {
+    "path": "native/chemical/silhouette.tsv",
+    "sha256": "d55cc0d20d9cf48ab7af6139c63f9c7ce9d90ff2cd4d0c668a810fccb2ae63f3",
+    "bytes": 2268
+  },
+  {
+    "path": "native/chemical/silhouette_manifest.json",
+    "sha256": "1f062ebceed9028e6be904ccab87e7ad9586962e4f2dc118d4c7dcfc7daae00f",
+    "bytes": 105576
+  },
+  {
+    "path": "native/spec13/silhouette.tsv",
+    "sha256": "8872491efcc58b013f7647fcabdf0c9be12fdf14677b74410227ab3c4cdb477e",
+    "bytes": 1593
+  },
+  {
+    "path": "native/spec13/silhouette_manifest.json",
+    "sha256": "154f4bcd2032120039152639869ddb52a35616ac22c2aa563791b1518cc637dc",
+    "bytes": 68142
+  },
+  {
+    "path": "native/outline-demo/silhouette.tsv",
+    "sha256": "371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af",
+    "bytes": 172
+  },
+  {
+    "path": "native/outline-demo/silhouette_manifest.json",
+    "sha256": "3be1636e4d322c2a154031a79430515116f039202428c0d2926668e3daa62e25",
+    "bytes": 6846
+  },
+  {
+    "path": "native/decree/silhouette.tsv",
+    "sha256": "71762c0b40f0cb54b8b352b2c6865fbe64bc9c3a3d1f8e469f6e33541bdf2ed5",
+    "bytes": 1649
+  },
+  {
+    "path": "native/decree/silhouette_manifest.json",
+    "sha256": "0bc84de2b00f61b7d842797c4ba78143a5f41f9f790ce748ce620d18e72dde6d",
+    "bytes": 68012
+  },
+  {
+    "path": "native/outline-minimal/silhouette.tsv",
+    "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466",
+    "bytes": 132
+  },
+  {
+    "path": "native/outline-minimal/silhouette_manifest.json",
+    "sha256": "a1f3342d51a667ea6a73930387fca889bfc83c272472bcc61f2590cac5f69f6a",
+    "bytes": 5170
+  }
+]

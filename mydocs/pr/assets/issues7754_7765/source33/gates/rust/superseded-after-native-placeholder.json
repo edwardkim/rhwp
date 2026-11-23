@@ -1,0 +1,121 @@
+{
+  "started": 1795289948.3423069,
+  "results": [
+    {
+      "index": 0,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--prepare"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-00.log",
+      "exit_code": 0,
+      "seconds": 4.2051061789970845
+    },
+    {
+      "index": 1,
+      "command": [
+        "node",
+        "scripts/rust-test-suite-manifest.mjs",
+        "--check",
+        "--base-ref",
+        "5665e538292a0686a912f6a4d8950c55be89929a"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-01.log",
+      "exit_code": 0,
+      "seconds": 1.7218876250553876
+    },
+    {
+      "index": 2,
+      "command": [
+        "node",
+        "scripts/rust-unit-test-tiers.mjs",
+        "--check",
+        "--base-ref",
+        "5665e538292a0686a912f6a4d8950c55be89929a"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-02.log",
+      "exit_code": 0,
+      "seconds": 40.19990994618274
+    },
+    {
+      "index": 3,
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-03.log",
+      "exit_code": 0,
+      "seconds": 48.97703301301226
+    },
+    {
+      "index": 4,
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia",
+        "--lib",
+        "--",
+        "--test-threads",
+        "12"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-04.log",
+      "exit_code": 0,
+      "seconds": 1916.905062515987
+    },
+    {
+      "index": 5,
+      "command": [
+        "node",
+        "scripts/run-rust-test.mjs",
+        "issue_2225_missing_picture_placeholder",
+        "--",
+        "--cargo-profile",
+        "release-test",
+        "--target-dir",
+        "/home/tsjang/rhwp/target/pr-review",
+        "--features",
+        "native-skia"
+      ],
+      "log": "/home/tsjang/rhwp/output/pr-review/issue7754-nine/logs/source33-rust-gate-05.log",
+      "exit_code": 0,
+      "completion_observation": {
+        "parent_scheduler_pid": 1527879,
+        "completed_child_pid": 1549308,
+        "observed_state": "zombie pending parent wait",
+        "kernel_exit_status": 0,
+        "exit_code": 0,
+        "observed": 1795293249.9653478,
+        "test_summary": "2 tests run: 2 passed, 350 skipped (official focused helper filter)"
+      }
+    }
+  ],
+  "environment": {
+    "CARGO_BUILD_JOBS": "3",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "source_head": "e6895accbe23daa2e57fa73c48bc9fe61c55ee57",
+  "producer_source": "adaa1963674e1a69c4369b80160ac6eb873bec1b",
+  "running": null,
+  "passed": false,
+  "complete_coverage": false,
+  "superseded_for_confirmed_issue7754_correction": true,
+  "not_started_phase_indices": [
+    6,
+    7,
+    8,
+    9,
+    10
+  ],
+  "ended": 1795293249.9653735
+}
