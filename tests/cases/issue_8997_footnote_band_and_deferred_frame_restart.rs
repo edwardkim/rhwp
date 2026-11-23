@@ -1,5 +1,5 @@
 //! 관계형 — [#8997] 각주 구분선 띠·이월 표 뒤 빈 재시작 문단으로 90~93쪽 흐름을 한컴과 맞춘다.
-//! 주석 갱신: MEASURED_AT (새 파일)
+//! 주석 갱신: 2026-11-23 17:26 KST (새 파일)
 //!
 //! 입력: `mydocs/pr/assets/planet6897_clean20_20261113/counterexamples/1543000-202100035-food-security-report.hwp`
 //! (한컴 2020 Print `pdf/issue8997/1543000-202100035-food-security-report-2020.pdf`, 141쪽).
@@ -17,7 +17,16 @@
 //!   나뉘고 앞 조각은 행 3 의 첫 줄(「국민이최저한도로…」)과 각주 21 을 담고, 행 3 의 나머지
 //!   (「험성이있는경우」)는 다음 쪽에서 시작한다.
 //!
-//! MEASUREMENT_BLOCK
+//! 측정: 2026-11-23, `scripts/visual_sweep.py --silhouette-only --compat 2022 --dpi 96`
+//! (`silhouette_raw_match_percent`, 색상 경계 보정 전 2px 내용 실루엣), 글꼴은 맑은 고딕(Regular·Bold)·
+//! 바탕 + `ttfs/opensource` 를 Native·WASM 두 경로에 공급. source `d09f454b40`(코드) 위 시험 커밋.
+//!
+//! - 대상 쪽(89~93): Native 95.49·100.00·100.00·99.86·100.00, fresh WASM 95.64·99.96·100.00·99.84·99.99.
+//!   수정 전(PR #9327 head `39d018f7a3`) Native 95.49·29.74·35.83·29.30·24.29. 89쪽 95.49 는 수정 전과
+//!   같은 값이고 이 수정이 바꾸지 않는 쪽 위 글자 차이다.
+//! - 전체 141쪽(한컴 Print 와 같음). 전쪽 최저 Native 60.99(132쪽)·WASM 61.97(132쪽). 90 미만 5쪽
+//!   (4·6·68·85·132)은 수정 전과 같은 기존 미달로 #9326 에서 다룬다.
+//! - 증거: `mydocs/pr/assets/issue_8997/footnote/{native,wasm,base-native}/food_silhouette.tsv`, 대표 review·overlay PNG.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
