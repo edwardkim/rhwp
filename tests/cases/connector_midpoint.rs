@@ -1,6 +1,10 @@
 //! 관계형 검사. 꺾인·곡선 연결선의 가운데 점을 옮긴 뒤 제어점·크기·위치·저장 결과를 입력과 대조한다.
-//! 주석 갱신 2026-11-22T20:30:00+09:00.
-//! 실물 인쇄 좌표·픽셀을 대상으로 하는 검사는 없다.
+//! 주석 갱신 2026-11-23T16:00:00+09:00.
+//! 곡선 모양과 셀 높이는 한/글 12.30(Mac) 인쇄 PDF에서 잰 규칙과 대조한다. 픽셀 값은 옮기지 않았다.
+//!
+//! 한/글 인쇄는 가운데 점이 있는 곡선 연결선을 시작점→가운데 점→끝점의 4분의 1 타원 두 개로 그린다
+//! (안쪽 제어점이 각 타원의 모서리). 셀 안 종이 기준 글 앞 연결선·도형은 칸을 키우지 않아,
+//! 칸은 글자 줄 높이 그대로이고 표 뒤 본문도 제자리에 놓인다.
 //!
 //! 한/글 12.30(Mac)은 고른 꺾인·곡선 연결선의 가운데에 노란 마름모를 두고, 끌면 안쪽 제어점 둘을
 //! 가운데 선에 수직인 한 축으로만 옮긴다. 끝점·크기·위치는 그대로이고 끝점 상자 밖으로도 옮긴다.
@@ -9,6 +13,8 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::control::Control;
 use rhwp::model::shape::{ConnectorData, ShapeObject};
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+use rhwp::renderer::PathCommand;
 use rhwp::wasm_api::HwpDocument;
 
 /// 위·가운데·아래 사각형과, 위 사각형 오른쪽(1)에서 가운데 사각형 `end_index` 연결점으로 잇는 연결선.
@@ -191,4 +197,138 @@ fn single_bend_connector_has_no_midpoint() {
         .move_connector_midpoint_native(0, para, ctrl, 3000, 3000)
         .is_err());
     assert_eq!(connector(&doc, para, ctrl).0.control_points.len(), before);
+}
+
+fn find<'a>(node: &'a RenderNode, hit: &dyn Fn(&RenderNode) -> bool) -> Option<&'a RenderNode> {
+    if hit(node) {
+        return Some(node);
+    }
+    node.children.iter().find_map(|child| find(child, hit))
+}
+
+#[test]
+fn moved_arc_midpoint_is_on_two_quarter_ellipses() {
+    let (mut doc, para, ctrl, _) = connected("connector-arc", 3);
+    doc.move_connector_midpoint_native(0, para, ctrl, 3000, 0)
+        .unwrap();
+    let (conn, [x, y, _, _]) = connector(&doc, para, ctrl);
+    let px = |hu: i32| f64::from(hu) / 75.0;
+    let [_, a, b, _] = conn.control_points.as_slice() else {
+        panic!("제어점이 넷이 아니다");
+    };
+    let mid = (
+        px(x as i32 + (a.x + b.x) / 2),
+        px(y as i32 + (a.y + b.y) / 2),
+    );
+    for core in [
+        DocumentCore::from_bytes(&doc.export_hwp_native().unwrap()).unwrap(),
+        DocumentCore::from_bytes(&doc.export_hwpx_native().unwrap()).unwrap(),
+    ] {
+        let tree = core.build_page_render_tree(0).unwrap();
+        let node = find(&tree.root, &|n| {
+            matches!(n.node_type, RenderNodeType::Path(_))
+        })
+        .expect("연결선 경로가 없다");
+        let RenderNodeType::Path(path) = &node.node_type else {
+            unreachable!()
+        };
+        let [PathCommand::MoveTo(sx, sy), PathCommand::CurveTo(_, _, c2x, _, mx, my), PathCommand::CurveTo(d1x, _, _, _, _, _)] =
+            path.commands.as_slice()
+        else {
+            panic!("두 구간 곡선이 아니다: {:?}", path.commands);
+        };
+        // 곡선은 옮긴 가운데 점을 지나고, 거기서 가운데 선(세로) 방향으로 꺾임 없이 이어진다.
+        assert!(
+            (mx - mid.0).abs() < 0.01 && (my - mid.1).abs() < 0.01,
+            "{:?}",
+            path.commands
+        );
+        assert!((c2x - mx).abs() < 1e-9 && (d1x - mx).abs() < 1e-9);
+        // 각 구간은 끝점과 가운데 점을 잇는 4분의 1 타원이다(중심은 모서리의 맞은편).
+        let PathCommand::CurveTo(c1x, c1y, c2x, c2y, _, _) = path.commands[1] else {
+            unreachable!()
+        };
+        let t = 0.5_f64;
+        let bez = |p0: f64, p1: f64, p2: f64, p3: f64| {
+            (1.0 - t).powi(3) * p0
+                + 3.0 * (1.0 - t).powi(2) * t * p1
+                + 3.0 * (1.0 - t) * t * t * p2
+                + t.powi(3) * p3
+        };
+        let (qx, qy) = (bez(*sx, c1x, c2x, *mx), bez(*sy, c1y, c2y, *my));
+        let on_ellipse = ((qx - sx) / (mx - sx)).powi(2) + ((qy - my) / (my - sy)).powi(2);
+        assert!((on_ellipse - 1.0).abs() < 1e-3, "{on_ellipse}");
+    }
+}
+
+/// 위 사각형·가운데 사각형·곡선 연결선을 1×1 표 칸에 옮긴 문서(`with_shapes`가 거짓이면 지우기만 한다)와
+/// 표 뒤 본문 문단.
+fn cell_document(with_shapes: bool) -> HwpDocument {
+    let (mut doc, ..) = connected("connector-arc", 3);
+    let made: serde_json::Value =
+        serde_json::from_str(&doc.create_table_native(0, 0, 0, 1, 1).unwrap()).unwrap();
+    let table_para = made["paraIdx"].as_u64().unwrap() as usize;
+    let table_ctrl = made["controlIdx"].as_u64().unwrap() as usize;
+    let shapes: Vec<usize> = doc.document().sections[0].paragraphs[0]
+        .controls
+        .iter()
+        .enumerate()
+        .filter(|(_, c)| matches!(c, Control::Shape(_)))
+        .map(|(i, _)| i)
+        .collect();
+    // 위·가운데 사각형과 연결선. 아래 사각형은 본문에 남긴다.
+    let moved = [shapes[0], shapes[1], shapes[3]];
+    if with_shapes {
+        for &ci in &moved {
+            doc.copy_control_native(0, 0, &[], ci).unwrap();
+            doc.paste_internal_in_cell_by_path_native(0, table_para, &[(table_ctrl, 0, 0)], 0)
+                .unwrap();
+        }
+    }
+    for &ci in moved.iter().rev() {
+        doc.delete_shape_control_native(0, 0, ci).unwrap();
+    }
+    let last = doc.document().sections[0].paragraphs.len() - 1;
+    doc.insert_text_native(0, last, 0, "표 뒤 본문").unwrap();
+    doc
+}
+
+#[test]
+fn floating_connector_in_a_cell_keeps_the_row_and_following_text() {
+    let place = |core: &DocumentCore| {
+        let tree = core.build_page_render_tree(0).unwrap();
+        let table = find(&tree.root, &|n| {
+            matches!(n.node_type, RenderNodeType::Table(_))
+        })
+        .expect("표가 없다");
+        let text = find(
+            &tree.root,
+            &|n| matches!(&n.node_type, RenderNodeType::TextRun(run) if run.text.contains('뒤')),
+        )
+        .expect("표 뒤 본문이 없다");
+        (table.bbox.height, text.bbox.y)
+    };
+    let (with, empty) = (cell_document(true), cell_document(false));
+    let tree = with.build_page_render_tree(0).unwrap();
+    assert!(
+        find(&tree.root, &|n| matches!(
+            n.node_type,
+            RenderNodeType::Path(_)
+        ))
+        .is_some(),
+        "셀 안 연결선이 그려지지 않는다"
+    );
+    // 연결선·도형이 든 칸과 빈 칸의 표 높이·뒤 본문 자리가 같다(편집 직후, HWP·HWPX로 다시 연 문서).
+    assert_eq!(place(&with), place(&empty), "편집 직후");
+    for hwpx in [false, true] {
+        let reopen = |doc: &HwpDocument| {
+            let bytes = if hwpx {
+                doc.export_hwpx_native()
+            } else {
+                doc.export_hwp_native()
+            };
+            DocumentCore::from_bytes(&bytes.unwrap()).unwrap()
+        };
+        assert_eq!(place(&reopen(&with)), place(&reopen(&empty)), "HWPX {hwpx}");
+    }
 }

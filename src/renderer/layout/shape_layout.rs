@@ -2164,7 +2164,29 @@ impl LayoutEngine {
                         let mut path_end_y = conn_y2;
                         commands.push(PathCommand::MoveTo(path_start_x, path_start_y));
 
-                        if conn.link_type.is_arc() {
+                        if conn.link_type.is_arc() && conn.midpoint_axis().is_some() {
+                            // 가운데 점이 있는 곡선 연결선: 한/글 인쇄처럼 안쪽 제어점 둘을 모서리로 삼아
+                            // 시작점→가운데 점(두 점의 가운데)→끝점을 4분의 1 타원 두 개로 잇는다.
+                            // 곡선은 옮긴 가운데 점을 지나고 거기서 가운데 선 방향으로 꺾임 없이 이어진다.
+                            const KAPPA: f64 = 0.552_284_749_830_793_6;
+                            let corner = |from: (f64, f64), at: (f64, f64)| {
+                                (
+                                    from.0 + KAPPA * (at.0 - from.0),
+                                    from.1 + KAPPA * (at.1 - from.1),
+                                )
+                            };
+                            let a = connector_point_xy(&conn.control_points[1]);
+                            let b = connector_point_xy(&conn.control_points[2]);
+                            let mid = ((a.0 + b.0) / 2.0, (a.1 + b.1) / 2.0);
+                            let end = (conn_x2, conn_y2);
+                            for (from, at, to) in
+                                [((path_start_x, path_start_y), a, mid), (mid, b, end)]
+                            {
+                                let (c1x, c1y) = corner(from, at);
+                                let (c2x, c2y) = corner(to, at);
+                                commands.push(PathCommand::CurveTo(c1x, c1y, c2x, c2y, to.0, to.1));
+                            }
+                        } else if conn.link_type.is_arc() {
                             // 곡선 연결선: 제어점(type=2)을 bezier 제어점으로, 나머지는 앵커로 사용
                             let cps = &conn.control_points;
                             let end_x = conn_x2;

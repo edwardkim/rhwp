@@ -894,6 +894,30 @@ pub struct ConnectorData {
     pub raw_trailing: Vec<u8>,
 }
 
+impl ConnectorData {
+    /// 꺾인·곡선 연결선 가운데 점의 이동 축.
+    ///
+    /// 한/글처럼 끝점 사이 안쪽 제어점 둘이 같은 x에 있으면(세로 가운데 선) x로, 같은 y면 y로만 옮긴다.
+    /// 꺾임이 하나뿐이거나 두 점이 한 축에 놓이지 않으면 가운데 점이 없다.
+    pub fn midpoint_axis(&self) -> Option<char> {
+        if !self.link_type.is_stroke() && !self.link_type.is_arc() {
+            return None;
+        }
+        match self.control_points.as_slice() {
+            [_, a, b, _] if a.point_type == 2 && b.point_type == 2 => {
+                if a.x == b.x {
+                    Some('x')
+                } else if a.y == b.y {
+                    Some('y')
+                } else {
+                    None
+                }
+            }
+            _ => None,
+        }
+    }
+}
+
 /// 사각형 개체 (HWPTAG_SHAPE_COMPONENT_RECTANGLE)
 #[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct RectangleShape {

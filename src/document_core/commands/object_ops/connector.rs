@@ -2,29 +2,7 @@
 
 use crate::document_core::DocumentCore;
 use crate::model::control::Control;
-use crate::model::shape::{ConnectorData, LineShape, ShapeObject};
-
-/// 꺾인·곡선 연결선 가운데 점의 이동 축.
-///
-/// 한/글처럼 안쪽 제어점 둘이 같은 x에 있으면(세로 가운데 선) x로, 같은 y면 y로만 옮긴다.
-/// 꺾임이 하나뿐이거나 두 점이 한 축에 놓이지 않으면 가운데 점을 옮길 수 없다.
-pub(crate) fn connector_midpoint_axis(conn: &ConnectorData) -> Option<char> {
-    if !conn.link_type.is_stroke() && !conn.link_type.is_arc() {
-        return None;
-    }
-    match conn.control_points.as_slice() {
-        [_, a, b, _] if a.point_type == 2 && b.point_type == 2 => {
-            if a.x == b.x {
-                Some('x')
-            } else if a.y == b.y {
-                Some('y')
-            } else {
-                None
-            }
-        }
-        _ => None,
-    }
-}
+use crate::model::shape::{LineShape, ShapeObject};
 
 /// 도형 속성 JSON의 연결선 꼬리: 종류, 안쪽 제어점(type=2) 평균 좌표, 가운데 점 이동 축.
 pub(crate) fn connector_props_json(line: &LineShape) -> String {
@@ -42,7 +20,8 @@ pub(crate) fn connector_props_json(line: &LineShape) -> String {
     let count = inner.len() as i32;
     let x = inner.iter().map(|p| p.x).sum::<i32>() / count;
     let y = inner.iter().map(|p| p.y).sum::<i32>() / count;
-    let axis = connector_midpoint_axis(conn)
+    let axis = conn
+        .midpoint_axis()
         .map(|axis| format!(",\"connectorMidAxis\":\"{axis}\""))
         .unwrap_or_default();
     format!(

@@ -683,7 +683,7 @@ impl DocumentCore {
             _ => None,
         }
         .ok_or_else(|| HwpError::RenderError("연결선이 아닙니다".to_string()))?;
-        let axis = super::connector::connector_midpoint_axis(conn).ok_or_else(|| {
+        let axis = conn.midpoint_axis().ok_or_else(|| {
             HwpError::RenderError("가운데 점을 옮길 수 없는 연결선입니다".to_string())
         })?;
         for point in &mut conn.control_points[1..3] {
