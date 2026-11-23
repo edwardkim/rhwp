@@ -6,7 +6,7 @@
 
 ## 원 변경과 충돌 해소
 
-원 head `a0b40b2f937eee79413724928c79c603ce3d2433`는 HWP 5.0.1.5의 선 기호를 HWPX 보충 평면으로 변환하고, 5.0.1.6의 본문 코드 포인트는 보존한다. 저장기와 검증기가 UTF-16 단위의 글자 서식·줄 위치 계산을 공유한다. [원 기여 검증](../../verification/issue5140-version-boundary/README.md)
+원 head `a0b40b2f937eee79413724928c79c603ce3d2433`는 HWP 5.0.1.5의 선 기호를 HWPX 보충 평면으로 변환하고, 5.0.1.6의 본문 코드 포인트는 보존한다. 저장기와 검증기가 UTF-16 단위의 글자 서식·줄 위치 계산을 공유한다. [원 기여 검증](https://github.com/edwardkim/rhwp/blob/17b17c934b527aa523f037ca12d8713394e43c82/mydocs/verification/issue5140-version-boundary/README.md)
 
 최신 devel `622af208ee12c4cb16357d465e4802e7fd4726bc`를 원 head에 병합했다. 양쪽이 같은 자리에 추가한 한컴 인쇄 기준은 `tests/fixtures/oracle_page_count_verified_references.json`에서 대조했다. 공통 15개, 원 PR의 2개와 devel의 4개를 포함한 21개 원본·PDF 쌍의 SHA-256을 모두 확인했다. 충돌 구간 6개의 PDF 실측 쪽수와 Native에서 연 실제 쪽수가 모두 일치했다. 제품 소스와 기대값의 충돌은 없었다. [기준 목록](../../../tests/fixtures/oracle_page_count_verified_references.json) · [검증 영수증](../assets/issue5140-pr9280/validation.json)
 
