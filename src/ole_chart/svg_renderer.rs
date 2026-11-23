@@ -398,6 +398,15 @@ pub(super) fn series_fill(presentation: Option<&Presentation>, index: usize) -> 
     }
 }
 
+/// 구형 차트는 96 DPI에서 반올림한 참조 펜을 600 DPI 인쇄 장치에 전달한다.
+/// 이 폭은 색을 칠하는 펜의 크기이며 차트의 배치 여백과 독립이다.
+pub(super) fn chart_frame_device_stroke_width(twips: f64, dpi: f64) -> f64 {
+    const FRAME_PRINT_DPI: f64 = 600.0;
+    let reference_dpi = crate::renderer::DEFAULT_DPI;
+    let reference_pen = (twips.trunc() * reference_dpi / 1440.0).round().max(1.0);
+    reference_pen * dpi / FRAME_PRINT_DPI
+}
+
 pub(super) fn stored_chart_backdrop(
     presentation: &Presentation,
     width: f64,
@@ -421,8 +430,8 @@ pub(super) fn stored_chart_backdrop(
         if backdrop.fill_kind == 1 {
             fill = color(backdrop.fill_color);
         }
-        if backdrop.frame_enabled {
-            let stroke = backdrop.frame_width * dpi / 1440.0;
+        if backdrop.frame_enabled && backdrop.frame_width > 0.0 {
+            let stroke = chart_frame_device_stroke_width(backdrop.frame_width, dpi);
             let offset = stroke / 2.0;
             if stroke >= width.min(height) {
                 return None;

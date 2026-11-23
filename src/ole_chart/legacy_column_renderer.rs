@@ -28,10 +28,8 @@ fn supported(backdrop: Option<&Backdrop>) -> bool {
 // 구형 Frame은 정수 참조 펜을 600dpi Print 장치에 전달한다.
 // cosmetic 선은 참조 장치 한 픽셀의 coverage를 유지한다. 플롯의 예약 폭과는 별개다.
 fn frame_stroke_width(twips: f64, dpi: f64) -> f64 {
-    const FRAME_PRINT_DPI: f64 = 600.0;
-    let reference_dpi = crate::renderer::DEFAULT_DPI;
-    let pen = (twips.trunc() * reference_dpi / 1440.0).round().max(1.0);
-    (pen * dpi / FRAME_PRINT_DPI).max(dpi / reference_dpi)
+    super::svg_renderer::chart_frame_device_stroke_width(twips, dpi)
+        .max(dpi / crate::renderer::DEFAULT_DPI)
 }
 
 fn line(svg: &mut String, bounds: [f64; 4], pen: Pen, unit: f64) {
