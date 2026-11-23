@@ -259,7 +259,6 @@ fn saved_single_line_ladder_end(
         }
         let bottom = top + i64::from(line.line_height);
         content_end = Some(content_end.map_or(bottom, |end: i64| end.max(bottom)));
-        // 검증된 인라인 표의 아래 바깥 여백만 음수 줄 간격에 내어준다.
         let min_spacing = match paragraph.controls.as_slice() {
             [Control::Table(table)] if inline_tables_validated => {
                 -i32::from(table.outer_margin_bottom)
