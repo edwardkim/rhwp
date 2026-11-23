@@ -6786,6 +6786,20 @@ pub(crate) fn stored_table_next_page_placement(
             if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0 || line.line_height <= 0 {
                 return None;
             }
+            // [#8997] 쪽 끝에 들어가지 못한 빈 문단 줄은 앞 줄과 같은 vpos 로 저장된다
+            // (#6035 의 비전진 쌍 = 저장 시점 쪽 경계 흔적). 높이를 소비하지 않는 이 줄은
+            // 사다리를 끊지 않고, 재시작 등식은 뒤 줄에서 그대로 검사한다
+            // (1543000-202100035 s2 pi894·pi895 모두 55334, pi896 재시작 22586 = 283+22020+283).
+            if line_index == 0
+                && next.line_segs.len() == 1
+                && line.vertical_pos == previous.vertical_pos
+                && next.controls.is_empty()
+                && !para_has_non_whitespace_text(next)
+                && !std::ptr::eq(previous_para, para)
+            {
+                previous_para = next;
+                continue;
+            }
             if line.vertical_pos < previous.vertical_pos {
                 // 문서 끝의 빈 줄도 표 아래에서 재시작하는 저장 프레임이다.
                 // 뒤에 다른 개체나 본문이 있으면 그 본문의 직접 재시작만 수용한다.
@@ -6803,11 +6817,17 @@ pub(crate) fn stored_table_next_page_placement(
                         Control::Table(inline) => inline.common.treat_as_char,
                         _ => false,
                     });
+                // 빈 문단의 첫 줄 재시작도 바깥 상자 등식이 표만의 이월을 입증한다.
+                // 그 문단은 아래 반환값으로 표와 같은 다음 쪽에 묶인다(#8732 의 빈 되감김).
+                let blank_restart = line_index == 0
+                    && next.controls.is_empty()
+                    && !para_has_non_whitespace_text(next);
                 if i64::from(line.vertical_pos) != frame_height_hu
                     || !(para_has_non_whitespace_text(next)
                         || terminal_blank_tail
                         || group
-                        || inline_object_restart)
+                        || inline_object_restart
+                        || blank_restart)
                 {
                     return None;
                 }
