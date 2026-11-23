@@ -30,7 +30,7 @@ pub(super) fn render_legacy_column_fragment(
     render_fragment(chart, Some(presentation), bounds, bin_data_id, dpi)
 }
 
-fn render_fragment(
+pub(super) fn render_fragment(
     chart: &OleChart,
     presentation: Option<&Presentation>,
     [x, y, width, height]: [f64; 4],
@@ -41,7 +41,17 @@ fn render_fragment(
     let safe_y = finite_or(y, 0.0);
     let safe_w = positive_finite_or(width, 1.0);
     let safe_h = positive_finite_or(height, 1.0);
-    let body = render_body(chart, presentation, safe_w, safe_h, dpi);
+    let body = match presentation {
+        Some(p) if p.chart_type == 14 => {
+            super::legacy_pie_renderer::render(chart, p, safe_w, safe_h, dpi)
+                .unwrap_or_else(|| render_body(chart, None, safe_w, safe_h, dpi))
+        }
+        Some(p) if p.chart_type == 11 => {
+            super::legacy_percent_bar_renderer::render(chart, p, safe_w, safe_h, dpi)
+                .unwrap_or_else(|| render_body(chart, None, safe_w, safe_h, dpi))
+        }
+        _ => render_body(chart, presentation, safe_w, safe_h, dpi),
+    };
 
     format!(
         "<g class=\"hwp-ole-chart hwp-ole-chart-rust-svg\" \
@@ -386,6 +396,43 @@ pub(super) fn series_fill(presentation: Option<&Presentation>, index: usize) -> 
         ),
         None => chart_color(index).to_string(),
     }
+}
+
+pub(super) fn stored_chart_backdrop(
+    presentation: &Presentation,
+    width: f64,
+    height: f64,
+    dpi: f64,
+) -> Option<String> {
+    let mut fill = "white".to_string();
+    let mut outline = String::new();
+    let color = |value: u32| {
+        format!(
+            "#{:02x}{:02x}{:02x}",
+            value & 255,
+            (value >> 8) & 255,
+            (value >> 16) & 255
+        )
+    };
+    if let Some(backdrop) = &presentation.backdrop {
+        if backdrop.shadow_enabled || !matches!(backdrop.fill_kind, 0 | 1) {
+            return None;
+        }
+        if backdrop.fill_kind == 1 {
+            fill = color(backdrop.fill_color);
+        }
+        if backdrop.frame_enabled {
+            let stroke = backdrop.frame_width * dpi / 1440.0;
+            let offset = stroke / 2.0;
+            if stroke >= width.min(height) {
+                return None;
+            }
+            outline = format!("<rect x=\"{offset}\" y=\"{offset}\" width=\"{}\" height=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{stroke}\"/>", width - stroke, height - stroke, color(backdrop.frame_color));
+        }
+    }
+    Some(format!(
+        "<rect width=\"{width}\" height=\"{height}\" fill=\"{fill}\"/>{outline}"
+    ))
 }
 
 fn chart_color(idx: usize) -> &'static str {
