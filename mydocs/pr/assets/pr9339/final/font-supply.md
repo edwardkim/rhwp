@@ -1,6 +1,6 @@
 # PR #9339 정본 보호 글꼴 확인
 
-2026-11-23 검토 기준 devel `17b17c934b`에서 요구하는 고유 프로그램 312개 중 304개는 로컬 파일의 SHA-256을 확인했다. 8개는 같은 해시를 확보하지 못했다. 해당 파일이 필요한 7개 문서 양쪽 백엔드의 758쪽은 별도 검증 상태로 기록한다. [공식 공급 조건](../../../../verification/protected-font-supply/manifest.json)
+2026-11-23 19:29 KST 재확인 결과, devel `321ab8f977`의 고유 프로그램 312개 중 305개는 로컬 파일의 SHA-256을 확인했다. 나머지 7개가 필요한 문서 7종은 백엔드별 379쪽이다. [공식 공급 조건](../../../../verification/protected-font-supply/manifest.json)
 
 | 파일 | 필요한 SHA-256 | 해당 문서 |
 | --- | --- | --- |
@@ -11,15 +11,18 @@
 | `arialbi.ttf` | `e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
 | `ariali.ttf` | `79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62` | chemical, sample16-hwp2022, sample16-hwp2024, sample16-hwpx, seo-helvetica-styles |
 | `dotumche.ttf` | `097a83c15227aa0b01bba1c446d2cf67ac04694052e60d41fef557ed5a0a8a62` | chemical |
-| `SPJGT.otf` | `6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a` | chemical |
 
 ## 직접 대조한 파일
 
-필수 고유 프로그램 312개를 기준으로 보면 `ttfs` 안에서 295개, 그 밖의 로컬 경로나 복원 결과에서만 9개를 확보했다. 미확보 8개는 위 표와 같다. [312개 전체의 SHA-256과 폴더 내 일치 경로](ttfs-inventory.tsv)
+필수 고유 프로그램 312개를 기준으로 보면 `ttfs` 안에서 296개, 그 밖의 로컬 경로나 복원 결과에서만 9개를 확보했다. 미확보 7개는 위 표와 같다. [312개 전체의 SHA-256과 폴더 내 일치 경로](ttfs-inventory.tsv)
 
 폴더 대조 중 devel에 병합된 #9359(`321ab8f977`)의 목록도 확인했다. 23종 문서와 두 백엔드의 비교에서 바뀐 값은 검증 기록 파일의 SHA-256 46곳뿐이다. 새 기록 파일의 실제 해시를 검증했고, 공급 모드·파일명·글꼴 SHA-256·순서와 4,046행 보호 하한표가 같음을 확인했다. [검증 기록 정리 PR](https://github.com/edwardkim/rhwp/pull/9359)
 
-로컬 `ttfs`의 하위 폴더와 ZIP 2개에 있는 글꼴 후보 1,068개를 확인했다. 나머지 확장자의 파일·ZIP 항목 69개도 해시로 대조해 추가 일치는 0개였다. Arial 네 파일, 바탕·굴림 TTC와 SPJGT는 동명 파일이 있었고, 검토 시작 당시 찾던 11개 프로그램과 정확히 같은 파일은 이 폴더에 0개였다. 필수 굴림 파일은 별도 로컬 변환기 자료에서 찾아 SHA-256 `4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226`을 확인했다.
+18:16 조사 때는 로컬 `ttfs`의 하위 폴더와 ZIP 2개의 글꼴 후보가 1,068개였다. 19:29 재확인 때는 `hft-fonts-cmap-v2`의 387개를 포함해 1,455개였다. 새 `hft-fonts-cmap-v2/SPJGT.otf`의 SHA-256은 `6f6cc714a13a2a68f4f9446c082ff7e6514d3088b14a954edf82933a0417b51a`로 정본과 같다. 기존 `hft/SPJGT.otf`는 `484d6046…`이다. 화학물질 문서의 양쪽 공급 목록에는 새 파일을 반영한 뒤에도 다른 글꼴 6개가 미확보다.
+
+처음 찾던 11개 중 이 폴더에서 해시가 일치한 것은 새 SPJGT 한 개다. Arial 네 파일과 바탕·굴림 TTC는 동명 파일의 해시가 다르다. 필수 굴림 파일은 별도 로컬 변환기 자료에서 찾아 SHA-256 `4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226`을 확인했다.
+
+두 SPJGT의 내부 이름은 모두 `HY Junggothic`이다. 선호 유니코드 문자표의 항목 수는 기존 536개, 새 파일 893개다. 새 파일의 두 유니코드 문자표에는 `○`(U+25CB)가 `hft343B`에 연결되어 있고, `•`(U+2022)는 두 파일 모두 매핑이 없다.
 
 돋움체는 `ttfs/windows/gulim.ttc`의 네 번째 서체(index 3, Version 5.04)로 확인됐다. 이 서체를 단일 TTF로 추출한 SHA-256은 `3674103f23382f9bf40e650d8860b9ce2338ae6bf9400bdcf0b56688743f8f53`로, 정본의 `dotumche.ttf`와 다르다. [파일별 해시 대조](font-program-lookup.tsv)
 
