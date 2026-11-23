@@ -1,4 +1,5 @@
 import { PDF_PRINT_GUIDANCE, printProgressText } from '@/command/print-pages';
+import { createPrintMemoOptions, type PrintMemoOptions } from '@/command/print-memo';
 import { ModalDialog } from './dialog';
 
 import { t } from '../i18n/index.ts';
@@ -7,6 +8,7 @@ type PdfPrintDialogState = 'confirm' | 'preparing' | 'complete' | 'error';
 export interface PdfPrintDecision {
   confirmed: boolean;
   hideFutureGuidance: boolean;
+  memos: PrintMemoOptions;
 }
 
 /**
@@ -24,10 +26,12 @@ export class PdfPrintDialog extends ModalDialog {
   private confirmButton: HTMLButtonElement | null = null;
   private cancelButton: HTMLButtonElement | null = null;
   private closeButton: HTMLButtonElement | null = null;
+  private memoOptions: ReturnType<typeof createPrintMemoOptions> | null = null;
 
   constructor(
     private readonly pageCount: number,
     private readonly showGuidance = true,
+    private readonly hasMemos = false,
   ) {
     super(t('dialog.pdfPrint.title'), 460);
   }
@@ -99,7 +103,12 @@ export class PdfPrintDialog extends ModalDialog {
     this.errorMessage.hidden = true;
     this.errorMessage.setAttribute('role', 'alert');
 
-    body.append(summary, guidance, stateNote, preference, progress, this.errorMessage);
+    body.append(summary, guidance, stateNote, preference);
+    if (this.hasMemos) {
+      this.memoOptions = createPrintMemoOptions(document);
+      body.append(this.memoOptions.fieldset);
+    }
+    body.append(progress, this.errorMessage);
     return body;
   }
 
@@ -124,7 +133,9 @@ export class PdfPrintDialog extends ModalDialog {
     if (this.cancelButton) this.cancelButton.disabled = true;
     if (this.closeButton) this.closeButton.hidden = true;
 
+    if (this.memoOptions) this.memoOptions.fieldset.disabled = true;
     this.resolveDecision({
+      memos: this.memoOptions?.value() ?? { include: false, list: false },
       confirmed: true,
       hideFutureGuidance: this.showGuidance && this.hideFutureGuidanceCheck.checked,
     });
@@ -132,7 +143,7 @@ export class PdfPrintDialog extends ModalDialog {
 
   override hide(): void {
     if (this.state === 'preparing') return;
-    this.resolveDecision({ confirmed: false, hideFutureGuidance: false });
+    this.resolveDecision({ confirmed: false, hideFutureGuidance: false, memos: { include: false, list: false } });
     super.hide();
   }
 
@@ -157,7 +168,11 @@ export class PdfPrintDialog extends ModalDialog {
       this.closeButton = this.dialog.querySelector('.dialog-close');
 
       if (this.confirmButton) this.confirmButton.textContent = t('dialog.pdfPrint.confirmButton.text.xbae1d2');
-      if (!this.showGuidance) this.beginPreparing();
+      if (!this.showGuidance) {
+        this.dialog.querySelector<HTMLElement>('.dialog-pdf-guidance')!.hidden = true;
+        this.dialog.querySelector<HTMLElement>('.dialog-pdf-preference')!.hidden = true;
+        if (!this.hasMemos) this.beginPreparing();
+      }
     });
   }
 

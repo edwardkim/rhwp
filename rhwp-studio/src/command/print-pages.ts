@@ -176,6 +176,22 @@ ${pageSizeRules}
   .print-preview-bar button:focus-visible { outline: 2px solid #93c5fd; outline-offset: 2px; }
   .print-preview-bar .print-preview-primary { background: #2563eb; border-color: #60a5fa; }
   .print-preview-bar .print-preview-primary:hover { background: #1d4ed8; }
+  .print-preview-bar details {
+    position: relative;
+  }
+  .print-preview-bar summary { cursor: pointer; padding: 6px; white-space: nowrap; }
+  .print-preview-bar .print-memo-options {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 100%;
+    background: #253349;
+    border: 1px solid #708099;
+    border-radius: 4px;
+    padding: 6px;
+    white-space: nowrap;
+  }
+  .print-preview-bar .print-memo-options legend { position: absolute; clip-path: inset(50%); }
+  .print-preview-bar .print-memo-options label { display: flex; gap: 5px; padding: 3px; }
   .print-preview-title {
     min-width: 0;
     overflow: hidden;
@@ -194,7 +210,7 @@ export function appendPrintStyle(doc: Document, pages: PrintPage[]): void {
   doc.head.appendChild(style);
 }
 
-export function appendSvgPage(doc: Document, container: HTMLElement, printPage: PrintPage): void {
+export function appendSvgPage(doc: Document, container: HTMLElement | DocumentFragment, printPage: PrintPage): void {
   const page = doc.createElement('div');
   page.className = `page ${printPage.className}`;
 

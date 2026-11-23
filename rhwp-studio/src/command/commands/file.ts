@@ -44,7 +44,6 @@ import {
   pdfPrintTitle,
   printProgressText,
   printReadyText,
-  type PrintIntent,
   type PrintPage,
 } from '@/command/print-pages';
 import {
@@ -63,6 +62,7 @@ import {
   type FileSystemWindowLike,
 } from '@/command/file-system-access';
 import { openDocumentViaPicker } from '../file-open-picker';
+import { composePrintMemos, createPrintMemoOptions, type PrintMemoOptions } from '@/command/print-memo';
 import { PdfPrintDialog } from '@/ui/pdf-print-dialog';
 import { userSettings } from '@/core/user-settings';
 import { showToast } from '@/ui/toast';
@@ -526,6 +526,7 @@ function setupPrintDocument(
   fileName: string,
   printPages: PrintPage[],
   previewWindow: Window | null = null,
+  updateMemos?: (options: PrintMemoOptions) => PrintPage[],
 ): void {
   doc.documentElement.lang = 'ko';
 
@@ -544,7 +545,7 @@ function setupPrintDocument(
   doc.body.replaceChildren();
   doc.body.className = previewWindow ? 'rhwp-print-preview' : '';
   if (previewWindow) {
-    appendPrintPreviewBar(doc, previewWindow, fileName, printPages.length);
+    appendPrintPreviewBar(doc, previewWindow, fileName, printPages.length, updateMemos);
   }
   for (const printPage of printPages) {
     appendSvgPage(doc, doc.body, printPage);
@@ -556,6 +557,7 @@ function appendPrintPreviewBar(
   printWindow: Window,
   fileName: string,
   pageCount: number,
+  updateMemos?: (options: PrintMemoOptions) => PrintPage[],
 ): void {
   const bar = doc.createElement('div');
   bar.className = 'print-preview-bar';
@@ -580,6 +582,33 @@ function appendPrintPreviewBar(
   title.textContent = t('command.file.title.text', { p1: fileName, p2: pageCount });
 
   bar.append(printButton, closeButton, title);
+  if (updateMemos) {
+    const options = createPrintMemoOptions(doc);
+    const disclosure = doc.createElement('details');
+    const summary = doc.createElement('summary');
+    summary.textContent = t('dialog.memo.printOptions');
+    disclosure.append(summary, options.fieldset);
+    const feedback = doc.createElement('span');
+    feedback.setAttribute('role', 'status');
+    options.fieldset.addEventListener('change', () => {
+      try {
+        const pages = updateMemos(options.value());
+        const replacement = doc.createDocumentFragment();
+        for (const page of pages) appendSvgPage(doc, replacement, page);
+        doc.querySelector('style')?.remove();
+        appendPrintStyle(doc, pages);
+        doc.body.querySelectorAll(':scope > .page').forEach(page => page.remove());
+        doc.body.append(replacement);
+        title.textContent = t('command.file.title.text', { p1: fileName, p2: pages.length });
+        feedback.textContent = '';
+        printButton.disabled = false;
+      } catch (error) {
+        feedback.textContent = String(error);
+        printButton.disabled = true;
+      }
+    });
+    bar.append(disclosure, feedback);
+  }
   doc.body.appendChild(bar);
 }
 
@@ -602,28 +631,31 @@ function setPrintPreviewLoading(
   if (loadingMessage) loadingMessage.textContent = message;
 }
 
-async function preparePrintPages(
-  services: CommandServices,
-  intent: PrintIntent,
-  onProgress: (currentPage: number, pageCount: number) => void,
-): Promise<PrintPage[]> {
+function capturePrintSource(services: CommandServices, captureMemos: boolean) {
   const wasm = services.wasm;
-  // Capture a portable pagination consistently; restore Canvas before yielding.
-  const pages = wasm.withPrintJobContext(() => wasm.withPortableMetrics(() =>
-    Array.from({ length: wasm.pageCount }, (_, i) => ({
+  // 기준 글자와 본문은 같은 portable print 쪽 배치에서 읽는다.
+  return wasm.withPrintJobContext(() => wasm.withPortableMetrics(() => ({
+    pages: Array.from({ length: wasm.pageCount }, (_, i) => ({
       svg: wasm.renderPageSvgWithProfile(i, 'print'),
       info: wasm.getPageInfo(i),
     })),
-  ));
-  const pageCount = pages.length;
-  const printPages: PrintPage[] = [];
-  for (let i = 0; i < pageCount; i++) {
-    onProgress(i + 1, pageCount);
-    const { svg, info: pageInfo } = pages[i];
-    printPages.push(createPrintPage(svg, pageInfo, i));
+    memos: captureMemos ? wasm.getMemos().map(memo => ({ memo, rect: wasm.getMemoTarget(memo)?.rect ?? null })) : [],
+  })));
+}
+
+function makePrintPages(source: ReturnType<typeof capturePrintSource>, options: PrintMemoOptions): PrintPage[] {
+  return composePrintMemos(source.pages, source.memos, options)
+    .map(({ svg, info }, index) => createPrintPage(svg, info, index));
+}
+
+async function reportPreparedPages(
+  pages: PrintPage[], onProgress: (current: number, total: number) => void,
+): Promise<PrintPage[]> {
+  for (let i = 0; i < pages.length; i++) {
+    onProgress(i + 1, pages.length);
     if (i % 5 === 0) await new Promise(resolve => setTimeout(resolve, 0));
   }
-  return printPages;
+  return pages;
 }
 
 let printJobActive = false;
@@ -655,7 +687,7 @@ async function runPdfPrint(services: CommandServices): Promise<void> {
     if (pageCount === 0) return;
 
     const showGuidance = userSettings.getShowPdfPrintGuidance();
-    dialog = new PdfPrintDialog(pageCount, showGuidance);
+    dialog = new PdfPrintDialog(pageCount, showGuidance, wasm.getMemos().length > 0);
     dialogVisible = true;
     const decision = await dialog.showAsync();
     if (!decision.confirmed) return;
@@ -673,9 +705,10 @@ async function runPdfPrint(services: CommandServices): Promise<void> {
     await waitForHostPaint();
 
     surface = await createPrintSurface();
-    const printPages = await preparePrintPages(services, 'pdf', (current, total) => {
+    const source = capturePrintSource(services, decision.memos.include);
+    const printPages = await reportPreparedPages(makePrintPages(source, decision.memos), (current, total) => {
       if (statusEl) statusEl.textContent = printProgressText('pdf', current, total);
-      dialog?.updateProgress(current);
+      dialog?.updateProgress(Math.min(current, source.pages.length));
     });
 
     setupPrintDocument(surface.document, wasm.fileName, printPages);
@@ -739,13 +772,15 @@ async function runPrintPreview(services: CommandServices): Promise<void> {
     if (!surface) return;
     setPrintPreviewLoading(surface, initialProgress);
 
-    const printPages = await preparePrintPages(services, 'print', (current, total) => {
+    const source = capturePrintSource(services, true);
+    const updateMemos = (options: PrintMemoOptions) => makePrintPages(source, options);
+    const printPages = await reportPreparedPages(updateMemos({ include: false, list: false }), (current, total) => {
       const progressText = printProgressText('print', current, total);
       if (statusEl) statusEl.textContent = progressText;
       if (surface) setPrintPreviewLoading(surface, progressText);
     });
-
-    setupPrintDocument(surface.document, wasm.fileName, printPages, surface.window);
+    setupPrintDocument(surface.document, wasm.fileName, printPages, surface.window,
+      source.memos.length ? updateMemos : undefined);
     await waitForPrintSurfaceReady(surface);
     if (statusEl) statusEl.textContent = printReadyText('print');
     keepPreviewOpen = true;

@@ -36,7 +36,9 @@ const printHtml = readFileSync(
 test('PDF와 인쇄 미리보기는 페이지 준비 pipeline을 공유하고 surface만 분리한다', () => {
   assert.match(commandSource, /runPdfPrint\(services\)/);
   assert.match(commandSource, /runPrintPreview\(services\)/);
-  assert.equal(commandSource.match(/preparePrintPages\(services,/g)?.length, 2);
+  assert.equal(commandSource.match(/capturePrintSource\(services,/g)?.length, 2);
+  assert.match(commandSource, /makePrintPages\(source, decision\.memos\)/);
+  assert.match(commandSource, /updateMemos = \(options: PrintMemoOptions\) => makePrintPages\(source, options\)/);
   assert.match(commandSource, /createPrintSurface\(\)/);
   assert.match(commandSource, /createPrintPreviewSurface\(\)/);
   assert.match(commandSource, /surface\.window\.print\(\)/);
@@ -96,9 +98,10 @@ test('인쇄 전용 문서는 same-origin 미리보기 loading surface를 제공
 
 test('print pipeline은 저장 handle·파일명·dirty 상태를 변경하지 않는다', () => {
   const printSection = commandSource.slice(
-    commandSource.indexOf('async function preparePrintPages'),
+    commandSource.indexOf('function capturePrintSource'),
     commandSource.indexOf('export const fileCommands'),
   );
+  assert.ok(printSection.length > 0, '인쇄 경로가 검사 범위에 포함된다');
   assert.doesNotMatch(printSection, /\.fileName\s*=/);
   assert.doesNotMatch(printSection, /\.currentFileHandle\s*=/);
   assert.doesNotMatch(printSection, /documentState\.(markDirty|markClean)\(/);
