@@ -50,6 +50,7 @@ pub(crate) use reflow_block_cell::{
     supports_reflow_external_table_frame, ReflowBlockCellFlow, ReflowBlockOrigin,
     ReflowExternalTableFlow,
 };
+pub(crate) use stored_closed_cell_frame::stored_table_between_text_lines;
 pub(crate) mod stored_empty_host_frame;
 mod stored_nested_before_host;
 mod stored_nested_closing_host;
@@ -8529,6 +8530,8 @@ pub(crate) struct StoredBlockCellFlow {
     pub(crate) bottom: f64,
     /// 온전한 저장 프레임은 CellUnit 합으로 물리 빈 밴드를 다시 추측하지 않는다.
     pub(crate) closed_before_host: bool,
+    /// 표의 원본 바깥 상자와 앞뒤 글줄의 저장 전진이 같은 프레임을 닫는다.
+    pub(crate) table_between_text_lines: bool,
 }
 
 /// Stored text rows in successive single-column bands share a cell frame.
@@ -8723,6 +8726,13 @@ pub(crate) fn stored_block_cell_flow_with_storage<S: crate::storage::Storage>(
                 let Control::Table(table) = control else {
                     return false;
                 };
+                if stored_closed_cell_frame::stored_table_between_text_lines(
+                    paragraphs, pi, table, styles, dpi,
+                )
+                .is_some()
+                {
+                    return true;
+                }
                 let body = h[ci]
                     - hwpunit_to_px(
                         i32::from(table.outer_margin_top) + i32::from(table.outer_margin_bottom),
@@ -8776,6 +8786,7 @@ pub(crate) fn stored_block_cell_flow_with_storage<S: crate::storage::Storage>(
         },
         bottom: 0.0,
         closed_before_host: false,
+        table_between_text_lines: false,
     };
     let mut cursor = hwpunit_to_px(paragraphs[0].line_segs[0].vertical_pos, dpi);
     for (pi, para) in paragraphs.iter().enumerate() {
@@ -10291,6 +10302,38 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
 ) -> Option<i32> {
     let next = next_para.filter(|next| next.controls.is_empty())?;
     native_folded_empty_rowbreak_host_advance_hu(native_hwp5_layout, para, table, next)
+}
+
+/// 빈 저장 앵커에 속한 반복 격자의 끝 행은 원본 셀 높이 안에서 물리 띠를 닫는다.
+/// 실제 글줄과 다음 조각의 소유는 내용 컷이 정한다.
+pub(crate) fn native_repeat_grid_terminal_row_height_hu(
+    native_hwp5_layout: bool,
+    host: &Paragraph,
+    table: &Table,
+    next: Option<&Paragraph>,
+) -> Option<i32> {
+    if !table.repeat_header || table.common.horz_rel_to != HorzRelTo::Column {
+        return None;
+    }
+    native_empty_host_rowbreak_line_advance_hu(native_hwp5_layout, host, table, next)?;
+    let row = table.row_count.checked_sub(1)?;
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row == row)
+        .try_fold(0_i32, |height, cell| {
+            if cell.row_span != 1
+                || cell.dirty_flag
+                || cell.paragraphs.iter().any(|paragraph| {
+                    !paragraph.controls.is_empty()
+                        || crate::renderer::para_has_no_stored_line_segs(paragraph)
+                })
+            {
+                return None;
+            }
+            Some(height.max(i32::try_from(cell.height).ok()?))
+        })
+        .filter(|height| *height > 0)
 }
 
 /// 저장 줄 사다리가 상자 높이를 포함하지 않는 연속 배치에서, 다음 문단이

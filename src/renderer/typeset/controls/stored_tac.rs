@@ -304,7 +304,8 @@ pub(super) fn prepare_coanchored_first_line(
         return None;
     }
     let owns_line = has_float
-        || (!saved_page_opening && (has_fixed_decoration && full_trailing || closed_decorated_line));
+        || (!saved_page_opening
+            && (has_fixed_decoration && full_trailing || closed_decorated_line));
     if !owns_line {
         return None;
     }

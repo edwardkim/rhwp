@@ -8024,11 +8024,30 @@ impl LayoutEngine {
                     .then_some(frame)
             })
             .flatten();
+        let owns_repeat_grid_terminal_band =
+            !is_continuation
+                && !is_block_split
+                && !end_cut.is_empty()
+                && start_cut.is_empty()
+                && start_row == 0
+                && end_row == row_count
+                && end_row_height_override.is_some_and(|height| {
+                    paragraphs.get(para_index).and_then(|host| {
+                    crate::renderer::float_placement::native_repeat_grid_terminal_row_height_hu(
+                        self.profile.get().hwp5_stored_pagination_layout()
+                            && !self.profile.get().session_edited(),
+                        host,
+                        table,
+                        paragraphs.get(para_index + 1),
+                    )
+                }).is_some_and(|declared| height < hwpunit_to_px(declared, self.dpi))
+                });
         let owns_accepted_row_frame = end_row_height_override.is_some()
             && end_row.checked_sub(1).is_some_and(|row| {
                 self.native_stored_row_has_text_frame_boundary(table, row, styles)
                     // 같은 첫 물리 상자를 다시 접지 않는다. 셀 정렬 소유와는 별도다.
                     || accepted_nested_opening_frame.is_some()
+                    || owns_repeat_grid_terminal_band
                     // 독립 최소를 가진 칸이 수용한 빈 띠만 보존한다.
                     // scan과 같은 소유 판정으로 일반 내용 행의 여백을 늘리지 않는다.
                     || ((self.row_has_continuing_reflow_minimum(table, row, styles)

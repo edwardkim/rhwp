@@ -2403,6 +2403,7 @@ struct SequentialNestedCellLayout {
     origins: Vec<Vec<Option<f64>>>,
     bottom: f64,
     paragraph_origins: Option<Vec<f64>>,
+    table_between_text_lines: bool,
     reflowed: Option<crate::renderer::float_placement::ReflowBlockCellFlow>,
 }
 
@@ -8252,7 +8253,22 @@ impl LayoutEngine {
                     para.line_segs.first().map(|s| s.vertical_pos)
                 );
             }
-            if let Some(flow) = &single_column_flow {
+            if sequential_nested_layout
+                .as_ref()
+                .is_some_and(|layout| layout.table_between_text_lines)
+                && fragment_cut_units.is_none()
+                && !has_block_table_ctrl
+                && has_stored_para_anchor
+            {
+                // 계획의 좌표는 저장 글줄 원점이다. 문단 배치에서 앞 여백을
+                // 적용하므로 여기서 먼저 빼 같은 여백을 한 번만 소비한다.
+                let before = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map_or(0.0, |style| style.spacing_before);
+                para_y -= before;
+                snap_anchored_with_spacing_before = before > 0.0;
+            } else if let Some(flow) = &single_column_flow {
                 if start_line == 0 && !single_row_continuation && !single_row_fragment {
                     let spacing_before = styles
                         .para_styles
@@ -10288,16 +10304,31 @@ impl LayoutEngine {
                                 )
                             })
                             .flatten();
-                        let stored_float_frame = self
-                            .stored_nested_float_placement(
-                                table,
-                                cell,
-                                cp_idx,
-                                nested_table,
-                                ctrl_idx,
-                                para_y_before_compose,
-                                styles,
-                            )
+                        let between_stored_lines_origin = sequential_control_origin.filter(|_| {
+                            fragment_cut_units.is_none()
+                                && sequential_nested_layout.as_ref().is_some_and(|layout| {
+                                    layout.table_between_text_lines
+                                })
+                                && crate::renderer::float_placement::stored_table_between_text_lines(
+                                    &cell.paragraphs, cp_idx, nested_table, styles, self.dpi,
+                                ).is_some()
+                        });
+                        // 앞뒤 줄이 닫는 저장 상자는 이미 세로 점유를 소유한다.
+                        // 호스트 위치에서 다시 구한 배제 띠가 후속 글줄을 밀지 않게 한다.
+                        let stored_float_frame = between_stored_lines_origin
+                            .is_none()
+                            .then(|| {
+                                self.stored_nested_float_placement(
+                                    table,
+                                    cell,
+                                    cp_idx,
+                                    nested_table,
+                                    ctrl_idx,
+                                    para_y_before_compose,
+                                    styles,
+                                )
+                            })
+                            .flatten()
                             .filter(|frame| {
                                 !matches!(
                                     frame.flow,
@@ -10337,6 +10368,8 @@ impl LayoutEngine {
                             NestedTableOrigin::Paragraph(
                                 text_y_start + hwpunit_to_px(origin, self.dpi),
                             )
+                        } else if let Some(origin) = between_stored_lines_origin {
+                            NestedTableOrigin::Paragraph(origin)
                         } else if let Some(frame) = stored_float_frame {
                             NestedTableOrigin::Table(
                                 frame.table_top
@@ -12705,6 +12738,7 @@ impl LayoutEngine {
                     .collect(),
                 bottom: flow.bottom,
                 paragraph_origins: Some(flow.paragraph_origins.clone()),
+                table_between_text_lines: false,
                 reflowed: Some(flow),
             });
         }
@@ -12718,6 +12752,7 @@ impl LayoutEngine {
                 origins: flow.origins,
                 bottom: flow.bottom,
                 paragraph_origins: Some(flow.paragraph_origins),
+                table_between_text_lines: flow.table_between_text_lines,
                 reflowed: None,
             });
         }
@@ -12739,6 +12774,7 @@ impl LayoutEngine {
                 .collect(),
             bottom: 0.0,
             paragraph_origins: None,
+            table_between_text_lines: false,
             reflowed: None,
         };
         let mut flow_y = 0.0;

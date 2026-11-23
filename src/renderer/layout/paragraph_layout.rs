@@ -7214,14 +7214,10 @@ impl LayoutEngine {
                             matches!(p.controls.get(*ci), Some(Control::Table(t)) if t.common.treat_as_char)
                         })
                 });
-            // 문단 세로 정렬이 가운데이면 저장 BL은 TH/2의 정렬점이다(HWP5 표 44).
-            // 수식과 글자가 같은 줄에서 이 점을 곧바로 문자 기준선으로 쓰면
-            // 큰 수식 줄의 글자가 올라간다. 온전한 저장 줄과 같은 소유 구간인
-            // 수식 전용 TAC 줄만 해석하고, 재구성·다른 개체의 프레임은 유지한다.
-            let stored_equation_center = (!runs_all_whitespace
-                && !has_tac_shape
-                && !source_metrics_reflowed
-                && max_fs > 0.0
+            // 가운데 정렬 저장 줄의 BL은 상자 중심이다(HWP5 표 44).
+            // 같은 줄에 속한 도형·수식은 저장 정렬점을 쓰고 문자는 자기 상자
+            // 위에서 0.85em의 기준선을 갖는다. 그림·표가 섞인 줄은 기존 계약을 쓴다.
+            let stored_object_center = (!source_metrics_reflowed
                 && para_style.is_some_and(|style| style.vertical_alignment == 2)
                 && !line_tac_offsets_for_width.is_empty()
                 && para.is_some_and(|p| {
@@ -7232,13 +7228,32 @@ impl LayoutEngine {
                                 && source.line_height == comp_line.line_height
                                 && source.baseline_distance == comp_line.baseline_distance
                         })
-                        && line_tac_offsets_for_width.iter().all(|(_, _, ci)| {
-                            matches!(p.controls.get(*ci), Some(Control::Equation(e)) if e.common.treat_as_char)
-                        })
                 }))
             .then_some(hwpunit_to_px(comp_line.baseline_distance, self.dpi));
-            let baseline = if let Some(center) = stored_equation_center {
-                // 최소 글꼴 기준선으로 clamp한 값이 아닌 원래 정렬점을 소비한다.
+            let stored_equation_center = stored_object_center.filter(|_| {
+                !runs_all_whitespace
+                    && !has_tac_shape
+                    && max_fs > 0.0
+                    && para.is_some_and(|p| {
+                        line_tac_offsets_for_width.iter().all(|(_, _, ci)| {
+                            matches!(p.controls.get(*ci), Some(Control::Equation(e))
+                                if e.common.treat_as_char)
+                        })
+                    })
+            });
+            let stored_shape_center = stored_object_center.filter(|_| {
+                has_tac_shape && para.is_some_and(|p| {
+                    line_tac_offsets_for_width.iter().all(|(_, _, ci)| {
+                        matches!(p.controls.get(*ci), Some(Control::Shape(shape))
+                            if shape.common().treat_as_char
+                              && !matches!(shape.as_ref(), crate::model::shape::ShapeObject::Picture(_)))
+                    })
+                })
+            });
+            let object_baseline = stored_shape_center.unwrap_or(object_baseline);
+            let text_center = stored_equation_center
+                .or(stored_shape_center.filter(|_| !runs_all_whitespace && max_fs > 0.0));
+            let baseline = if let Some(center) = text_center {
                 center + max_fs * (0.85 - 0.5)
             } else if centered_inline_table_baseline {
                 baseline + max_fs * (0.85 - 0.5)
