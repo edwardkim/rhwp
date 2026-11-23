@@ -1,7 +1,7 @@
 ---
 kind: report
 status: active
-last_verified: 2026-11-23
+last_verified: 2026-11-24
 ---
 
 # #7766–#7776 조판 복원 구현 기록
@@ -112,7 +112,7 @@ Native Skia에도 같은 쪽별 조회를 연결했다. 동일한 원본 글꼴 
 96 DPI로 178쪽을 출력했으며, 기존 독립 Print 대비 최저는 동일한 1쪽의 95.21%였다.
 13·67·111쪽의 BMP 배경에도 같은 색 차이가 남아 있고, 그 밖의 174쪽은 99.68% 이상이었다.
 후보 Native 전쪽 TSV SHA-256은 `baa6314077ff3548e551d5a291664aaabfad866d253feb4229dfc0e3c47f8c75`다.
-최종 fresh WASM은 진행 중이다.
+이 수치는 페이지별 글꼴 공급만 적용한 중간 결과다.
 
 독립 한컴 2024 1-up의 1·67·111쪽 배경은 원본 24비트 BMP를 원본 RGB로 JPEG
 Q52 압축한 결과와 각각 562,536픽셀 전부 일치했다. 13쪽은 저장 자르기 범위
@@ -122,6 +122,8 @@ Q52 압축한 결과와 각각 562,536픽셀 전부 일치했다. 13쪽은 저�
 후속 Native 전178쪽은 독립 1-up 대비 최저 98.14%였다. 1·13·67·111쪽은
 각각 100.00%·98.59%·98.14%·99.09%였다. 해당 TSV SHA-256은
 `2dc76f5c6be5257ebd2d63752840213bf06a6f5ab150277b3984f9a0e43c750e`다.
+리베이스한 fresh WASM의 전178쪽 최저는 98.16%였다.
+[리베이스 후 전쪽 TSV](assets/issue7766/rebase-validation/targeted-wasm.tsv)
 
 ## #7771 표 셀의 부동 도형 내용 원점
 
@@ -316,4 +318,7 @@ ToUnicode 01을 U+00B7로 매핑한다. /Widths와 CharProc 전진은 384/1000em
 표시용 글꼴을 선택해도 이 원본 전진을 공통 측정 경로에서 보존한다. 저장소의
 공개 글꼴만 노출하고 표시용 글꼴을 공급한 동일 검사에서 수정 전 6쪽은
 375 HU로 실패했다. 수정 후 같은 시험은 6·12·16쪽의 576·384·576 HU를 확인하고
-통과했다. 독립 Print와의 보정 후 쪽별 대조는 최신 fresh WASM으로 재실행한다.
+통과했다. 리베이스한 정본 조건에서 전17쪽 최저는 Native 99.98%, fresh WASM
+100.00%였고, 양쪽의 6·12·16쪽은 모두 100.00%였다.
+[Native 전쪽 TSV](assets/issue7766/rebase-validation/protected-native.tsv) ·
+[fresh WASM 전쪽 TSV](assets/issue7766/rebase-validation/protected-wasm.tsv)
