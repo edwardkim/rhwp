@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 import re
+import subprocess
 from collections import defaultdict
 from html import escape
 from itertools import groupby
@@ -140,12 +141,32 @@ def review_point(worst, limit=None, failed=False):
     return text
 
 
-def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs=()):
+def checkout_identity(checkout, pr_head):
+    cmd = ['git', '-C', str(checkout)]
+    tested_sha = subprocess.check_output(cmd + ['rev-parse', '--verify', 'HEAD'], text=True).strip()
+    # The raw commit headers retain both parents in a shallow checkout.
+    raw_commit = subprocess.check_output(cmd + ['cat-file', 'commit', tested_sha])
+    headers = raw_commit.split(b'\n\n', 1)[0].splitlines()
+    tested_tree = next(line[5:].decode('ascii') for line in headers if line.startswith(b'tree '))
+    parents = [line[7:].decode('ascii') for line in headers if line.startswith(b'parent ')]
+    first_parent = parents[0] if len(parents) == 2 and parents[1] == pr_head else None
+    return tested_sha, tested_tree, first_parent
+
+
+def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs=(),
+                pr_event_base=None, tested_tree=None, tested_merge_first_parent=None):
     lines = ['### Visual comparison evidence', '']
     if run_url:
         lines.append(f'- Actions attempt {code(run_url)}')
-    if pr_head:
-        lines.append(f'- PR head {code(pr_head)}')
+    for label, value in (
+        ('PR head', pr_head),
+        ('PR event base', pr_event_base),
+        ('Tested checkout', tested_sha),
+        ('Tested tree', tested_tree),
+        ('Tested PR merge first parent', tested_merge_first_parent),
+    ):
+        if value:
+            lines.append(f'- {label} {code(value)}')
     lines.extend([
         '', '| Comparison | Role | Recorded result | Compared documents and pages | Evidence |',
         '| --- | --- | --- | --- | --- |',
@@ -371,6 +392,10 @@ def build_index(root, *, run_url=None, pr_head=None, tested_sha=None, sweep_dirs
                  run_attempt=int(run[2]) if run else None, native_build=native_build or None,
                  consumption=consumption_records, run_url=run_url, pr_head=pr_head, tested_sha=tested_sha,
                  comparisons=comparisons, files=files, build=build, incomplete_print_sweeps=incomplete_sweeps)
+    if pr_event_base:
+        index['pr_event_base'] = pr_event_base
+    if tested_tree:
+        index.update(tested_tree=tested_tree, tested_merge_first_parent=tested_merge_first_parent)
     # The Actions overview and PR comment both display these projection fields.
     overview = ['### PR 검증 결과', '', '| 검증 항목 | 결과 | 리뷰 포인트 |',
                 '| --- | --- | --- |']
@@ -392,10 +417,17 @@ def main():
     parser.add_argument('--pr-head', help='PR head SHA from Actions metadata')
     parser.add_argument('--print-sweep', action='append', default=[], metavar='DIR',
                         help='existing Print silhouette result directory, relative to input')
-    parser.add_argument('--tested-sha', help='checkout actually used by the measurement job')
+    checkout = parser.add_mutually_exclusive_group()
+    checkout.add_argument('--tested-sha', help='recorded checkout SHA, for replay without Git objects')
+    checkout.add_argument('--checkout', type=Path, help='Git checkout actually used by the measurement job')
+    parser.add_argument('--pr-event-base', help='base SHA recorded in the PR event')
     parser.add_argument('--json-output', type=Path, help='write the versioned machine-readable evidence index')
     args = parser.parse_args()
-    options = {'run_url': args.run_url, 'pr_head': args.pr_head, 'sweep_dirs': args.print_sweep, 'tested_sha': args.tested_sha}
+    options = dict(run_url=args.run_url, pr_head=args.pr_head, sweep_dirs=args.print_sweep,
+                   tested_sha=args.tested_sha, pr_event_base=args.pr_event_base)
+    if args.checkout is not None:
+        tested_sha, tree, first_parent = checkout_identity(args.checkout, args.pr_head)
+        options.update(tested_sha=tested_sha, tested_tree=tree, tested_merge_first_parent=first_parent)
     if args.input.is_dir():
         index, markdown = build_index(args.input, **options)
     else:
