@@ -44,8 +44,8 @@ const SHARED_SUPPORT_MODULES = [
     consumers: ['tests/cases/skia_native_glyph_replay.rs'],
   },
   {
-    module: 'symbol_font_program',
-    source: 'tests/common/symbol_font_program.rs',
+    module: 'font_symbol_bitmap',
+    source: 'src/renderer/font_symbol_coverage/bitmap.rs',
     consumers: [
       'tests/cases/issue_8153_symbol_coverage.rs',
     ],
