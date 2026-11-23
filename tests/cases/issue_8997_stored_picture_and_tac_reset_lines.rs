@@ -251,16 +251,17 @@ fn centered_contents_table_uses_its_declared_object_frame() {
     assert!(contents.contains("제1장서론") && contents.contains("생산,소비"));
 }
 
-/// 관계형 — 85쪽의 그림은 설명·출처 행 사이에서 자신의 전체 높이를 보존한다.
-#[test]
-fn picture_between_caption_and_source_stays_inside_its_row() {
-    let core = core();
-    let page = core.build_page_render_tree(84).expect("한컴 Print 85쪽");
+fn picture_between_text_rows(
+    core: &DocumentCore,
+    page: u32,
+    paragraph: usize,
+) -> (BoundingBox, BoundingBox) {
+    let page = core.build_page_render_tree(page).expect("한컴 Print 쪽");
     let mut remaining = vec![&page.root];
     let table = loop {
         let node = remaining.pop().expect("그림을 담은 원본 표");
         if matches!(&node.node_type, RenderNodeType::Table(table)
-            if table.section_index == Some(2) && table.para_index == Some(845))
+            if table.section_index == Some(2) && table.para_index == Some(paragraph))
         {
             break node;
         }
@@ -276,9 +277,29 @@ fn picture_between_caption_and_source_stays_inside_its_row() {
         .iter()
         .find(|node| matches!(&node.node_type, RenderNodeType::Image(_)))
         .expect("그림 행의 원본 그림");
-    assert!(picture.bbox.y > picture_row.bbox.y, "그림 위 안 여백");
+    (picture_row.bbox, picture.bbox)
+}
+
+/// 관계형 — 85쪽의 그림은 설명·출처 행 사이에서 자신의 전체 높이를 보존한다.
+#[test]
+fn picture_between_caption_and_source_stays_inside_its_row() {
+    let (row, picture) = picture_between_text_rows(&core(), 84, 845);
+    assert!(picture.y > row.y, "그림 위 안 여백");
     assert!(
-        picture.bbox.y + picture.bbox.height < picture_row.bbox.y + picture_row.bbox.height,
+        picture.y + picture.height < row.y + row.height,
         "그림의 전체 높이가 출처 행 전에 들어가야 한다",
+    );
+}
+
+/// 관계형 — 89쪽은 폭 없는 저장 줄의 위치와 무관하게 그림이 행의 가운데에 놓인다.
+#[test]
+fn declared_picture_row_centers_the_picture_instead_of_its_empty_line() {
+    let (row, picture) = picture_between_text_rows(&core(), 88, 884);
+    let above = picture.y - row.y;
+    let below = row.y + row.height - picture.y - picture.height;
+    assert!(above > 0.0 && below > 0.0, "그림 위·아래 안 여백");
+    assert!(
+        (above - below).abs() < 1e-6,
+        "그림 위·아래 여백 {above} / {below}"
     );
 }

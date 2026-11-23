@@ -9534,7 +9534,28 @@ impl LayoutEngine {
                                                 .abs()
                                                 <= 1.0
                                         });
+                                // 저장 칸의 실제 행이 그림과 안 여백을 담고 표 전체 선언도
+                                // 닫히면 이 첫 빈 줄의 위치는 그림의 배치 좌표가 아니다.
+                                // 그림 앞에 다른 내용이 없는 경우 칸의 가운데 정렬을 쓴다.
+                                let closed_centered_picture = effective_valign == VerticalAlign::Center
+                                    && row_filter.is_none()
+                                    && !single_row_fragment
+                                    && !self.profile.get().session_edited()
+                                    && !self.render_normalization.borrow().table_text_reflowed(table)
+                                    && cell.row_span == 1
+                                    && table.row_count == 3
+                                    && table.col_count == 1
+                                    && cell.row == 1
+                                    && table.cell_spacing == 0
+                                    && crate::renderer::px_to_hwpunit(cell_h, self.dpi)
+                                        == signed_hwpunit(cell.height)
+                                    && crate::renderer::float_placement::stored_picture_only_cell_height_hu(cell)
+                                        .is_some_and(|height| hwpunit_to_px(height, self.dpi) <= inner_height)
+                                    && crate::renderer::float_placement::stored_complete_column_frame(table)
+                                    && table.cells.iter().map(|cell| u64::from(cell.height)).sum::<u64>()
+                                        == u64::from(table.common.height);
                                 let trusts_stored_flow = !vpos_is_this_floats_own_displacement
+                                    && !closed_centered_picture
                                     && (self.profile.get().hwp5_stored_pagination_layout()
                                         || self.profile.get().hwpx_stored_layout());
                                 let stored_flow_vpos = trusts_stored_flow
