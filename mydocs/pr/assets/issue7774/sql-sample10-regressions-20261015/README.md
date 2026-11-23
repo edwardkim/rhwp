@@ -68,3 +68,14 @@ fresh WASM 모두 99.99%이며 재측정한 여섯 쪽은 모두 99.98% 이상�
 두 형식의 최저값은 757쪽 99.34%다. 100.00%인 쪽은 HWP5 464쪽과 HWPX
 461쪽이다. HWPX 전쪽 TSV SHA-256은
 `cfcac1a1d94fd117e3922054ccb24df3d14c69ff65db30f3447a5aeb3ddec36c`다.
+
+## 리베이스 뒤 16쪽 대괄호 비교
+
+devel `28a6afc1ebe3e9873605f2d306ca094b422abf24`과 후보 제품 `9a78578e17f46dbd53b19d1eb10445dbef7a2988`에
+같은 입력·독립 Print·96 DPI와 119개 글꼴을 같은 순서로 공급했다. HWP5·HWPX
+모두 16쪽의 fresh WASM raw 실루엣이 96.82%에서 99.99%로 올라갔다.
+두 문단의 ‘[주의]’ 런은 원점과 줄 높이를 유지하며 폭이 49.2px에서 37.2px로 바뀌었다.
+독립 Print를 확대해 대괄호 간격과 뒤 문장의 배치를 확인했다.
+
+- [HWP5 독립 Print·devel·후보](sql-hwp5-page-16-rebase.png)
+- [HWPX 독립 Print·devel·후보](sql-hwpx-page-16-rebase.png)
