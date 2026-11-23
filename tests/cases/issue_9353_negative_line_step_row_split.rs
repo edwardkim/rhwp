@@ -30,6 +30,8 @@
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::font_environment::FontEnvironment;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue9353/uiwang_lane_min_length.hwp";
 /// 한컴 PDF 의 전체 쪽수.
@@ -88,4 +90,60 @@ fn row_37_closes_page_two_and_page_three_starts_at_row_38() {
         1,
         "3쪽은 행 38 `51대 이상` 한 번을 담는다"
     );
+}
+
+/// 관계형. 같은 원본의 한컴 2024 Print 두 건에서 기호 슬롯 프로그램에 따른
+/// 문자 경계를 확인한다. 파일에 저장된 쪽수와 원본 바이트는 두 경로에서 보존한다.
+#[test]
+fn selected_symbol_program_rejoins_text_in_the_existing_note_lines() {
+    fn collect_lines(node: &RenderNode, lines: &mut Vec<String>) {
+        if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+            lines.push(
+                node.children
+                    .iter()
+                    .filter_map(|child| match &child.node_type {
+                        RenderNodeType::TextRun(run) => Some(run.text.as_str()),
+                        _ => None,
+                    })
+                    .collect(),
+            );
+        }
+        for child in &node.children {
+            collect_lines(child, lines);
+        }
+    }
+
+    let mut core = DocumentCore::from_bytes(include_bytes!(
+        "../../samples/issue9353/uiwang_lane_min_length.hwp"
+    ))
+    .unwrap();
+    core.set_hangul2024_compat(true);
+    let note_lines = |core: &DocumentCore| {
+        assert_eq!(core.page_count(), HANCOM_PAGES);
+        let mut lines = Vec::new();
+        collect_lines(&core.build_page_render_tree(2).unwrap().root, &mut lines);
+        let note = lines
+            .iter()
+            .position(|line| line.contains("주차 대수를 산정할 때에는"))
+            .expect("3쪽 비고 3번");
+        [
+            lines[note].trim().to_owned(),
+            lines[note + 1].trim().to_owned(),
+        ]
+    };
+    let [top, bottom] = note_lines(&core);
+    assert!(top.ends_with("」 별") && bottom.starts_with("표 1의"));
+    let environment = FontEnvironment::from_json(include_str!(
+        "../../mydocs/pr/assets/planet6897_stored_layout_20261123/pr-9364/hcr-symbol-slot.json"
+    ))
+    .unwrap();
+    core.set_font_environment(Some(environment)).unwrap();
+    let [top, bottom] = note_lines(&core);
+    assert!(
+        top.ends_with("」 별표") && bottom.starts_with("1의"),
+        "함초롬바탕 낫표 전진으로 채운 비고: {top:?} / {bottom:?}"
+    );
+    core.set_font_environment(None).unwrap();
+    let [top, bottom] = note_lines(&core);
+    assert!(top.ends_with("」 별") && bottom.starts_with("표 1의"));
 }

@@ -1,0 +1,17 @@
+{
+  "id": "uiwang-hwp2024-564-hcr-symbol-program",
+  "substitutions": {},
+  "trueTypeFaces": ["HCR Batang"],
+  "preserveSourceMetrics": true,
+  "replaceSourceMetricsFor": ["한컴바탕"],
+  "documentSubstitutions": [
+    {
+      "languageSlot": 5,
+      "fontId": 2,
+      "source": "한컴바탕",
+      "target": "HCR Batang",
+      "query": "HCR Batang",
+      "programId": "sweep-c5d544769d832477d48b7318222b9c3c2eced25455f7ba9acb23060dcecac104"
+    }
+  ]
+}
