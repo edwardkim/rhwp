@@ -32,11 +32,7 @@ impl NativePngExporter {
         let fallback_changed = self.renderer.prepare_declared_font_fallbacks(document)?;
         let pua_changed = self.renderer.prepare_native_pua_fonts(document)?;
         let otf_changed = self.renderer.prepare_native_otf_fonts(document)?;
-        let shadow_changed = self.profile == RenderProfile::Print
-            && self.renderer.prepare_text_shadow_fonts(document)?;
-        let metafile_changed = self.profile == RenderProfile::Print
-            && self.renderer.prepare_metafile_fonts(document)?;
-        Ok(fallback_changed || pua_changed || otf_changed || shadow_changed || metafile_changed)
+        Ok(fallback_changed || pua_changed || otf_changed)
     }
     /// 옵션 없는 기존 screen PNG의 시스템 글꼴 경로를 유지한다.
     pub fn system_defaults() -> Self {
@@ -58,7 +54,17 @@ impl NativePngExporter {
 
     pub fn render_page(&self, document: &DocumentCore, page_num: u32) -> Result<Vec<u8>, HwpError> {
         let options = &self.options;
-        let layer_tree = document.build_page_layer_tree_with_profile(page_num, self.profile)?;
+        document.require_portable_metrics()?;
+        let paint_fonts = if self.profile == RenderProfile::Print {
+            self.renderer.paint_fonts_for_page(document, page_num)?
+        } else {
+            None
+        };
+        let layer_tree = document.build_page_layer_tree_with_paint_fonts(
+            page_num,
+            self.profile,
+            paint_fonts.as_ref(),
+        )?;
 
         // 페이지 크기에서 effective scale + max_dimension 결정
         let mut raster_options = RasterRenderOptions::default();

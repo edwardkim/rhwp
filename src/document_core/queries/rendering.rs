@@ -1488,7 +1488,7 @@ impl DocumentCore {
             .map(|tree| tree.as_ref().clone())
     }
 
-    fn with_profile_page_tree<T>(
+    pub(in crate::document_core) fn with_profile_page_tree<T>(
         &self,
         page_num: u32,
         profile: RenderProfile,
@@ -1508,6 +1508,15 @@ impl DocumentCore {
         &self,
         page_num: u32,
         profile: RenderProfile,
+    ) -> Result<Arc<PageLayerTree>, HwpError> {
+        self.build_page_layer_tree_with_paint_fonts(page_num, profile, None)
+    }
+
+    pub(super) fn build_page_layer_tree_with_paint_fonts(
+        &self,
+        page_num: u32,
+        profile: RenderProfile,
+        supplied_fonts: Option<&crate::paint::metafile_fonts::MetafileFonts>,
     ) -> Result<Arc<PageLayerTree>, HwpError> {
         // Canvas 화면의 보충 폭은 인쇄 조판의 정본이 아니다. SVG·Native와
         // 마찬가지로 호출자가 전체 인쇄 쪽수 조회 전에 portable로 전환해야 한다.
@@ -1558,9 +1567,12 @@ impl DocumentCore {
         }
         let fingerprint = self
             .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
-        if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
-            if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
-                return Ok(Arc::clone(tree));
+        // Native가 빌린 쪽별 공급은 문서에 등록한 글꼴 세대와 다르다.
+        if supplied_fonts.is_none() {
+            if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
+                if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
+                    return Ok(Arc::clone(tree));
+                }
             }
         }
         let show_editor_visuals = profile.shows_editor_visuals();
@@ -1732,6 +1744,7 @@ impl DocumentCore {
                         crate::renderer::DEFAULT_DPI
                     },
             );
+            let paint_fonts = supplied_fonts.unwrap_or(&self.metafile_fonts);
             let mut builder = LayerBuilder::new(profile)
                 .with_layout_dpi(self.dpi)
                 .with_metafile_fonts(&if profile == RenderProfile::Print
@@ -1739,9 +1752,9 @@ impl DocumentCore {
                         || crate::paint::text_shadow::needs_font_metrics(&tree.root)
                         || crate::paint::dot_leader::needs_font_program(&tree.root))
                 {
-                    metafile_fonts::with_document_fonts(&self.metafile_fonts, &self.document)
+                    metafile_fonts::with_document_fonts(paint_fonts, &self.document)
                 } else {
-                    self.metafile_fonts.clone()
+                    paint_fonts.clone()
                 })
                 .with_metafile_catalogue(
                     if !self.hangul2024_compat
@@ -1764,7 +1777,7 @@ impl DocumentCore {
             Ok(builder.build_with_print_footer(tree, &embedded_fonts, print_footer))
         })?;
         let layer_tree = Arc::new(layer_tree);
-        {
+        if supplied_fonts.is_none() {
             let mut cache = self.page_layer_tree_cache.borrow_mut();
             if cache.len() <= idx {
                 cache.resize_with(idx + 1, Vec::new);
