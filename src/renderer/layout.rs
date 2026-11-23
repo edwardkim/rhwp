@@ -8449,6 +8449,10 @@ impl LayoutEngine {
                         stored_first_margin_is_page_relative(
                             first, paragraphs.get(*para_index + 1), styles, self.dpi,
                         )
+                        || (self.profile.get().hwp5_stored_pagination_layout()
+                            && super::stored_page_origin::stored_first_paper_picture_is_page_relative(
+                                first, paragraphs.get(*para_index + 1), styles, col_area.y, self.dpi,
+                            ))
                     })
         );
         let page_square_preserves_source_origin = (self.profile.get().hwpx_stored_layout()

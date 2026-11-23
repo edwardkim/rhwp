@@ -5977,10 +5977,12 @@ pub(crate) fn stored_tail_square_picture_placement(
 /// 같은 저장 축에서 닫힐 때만 그림이 호스트 텍스트 앞의 공간을 소유한다.
 /// 실제 앞 흐름도 그 경계에 있어야 하므로 편집되거나 누락된 공간을 되감지 않는다.
 #[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn stored_picture_before_host_placement(
     previous: &Paragraph,
     para: &Paragraph,
     successor: &Paragraph,
+    previous_spacing_after: f64,
     spacing_after: f64,
     successor_spacing_before: f64,
     frame_vpos: i32,
@@ -6008,6 +6010,7 @@ pub(crate) fn stored_picture_before_host_placement(
         || !dpi.is_finite()
         || dpi <= 0.0
         || !actual_host_flow_y.is_finite()
+        || !previous_spacing_after.is_finite()
         || !spacing_after.is_finite()
         || !successor_spacing_before.is_finite()
     {
@@ -6017,13 +6020,12 @@ pub(crate) fn stored_picture_before_host_placement(
         .vertical_pos
         .checked_add(prev.line_height)?
         .checked_add(prev.line_spacing)?;
-    let anchor_y = hwpunit_to_px(prev_end.checked_sub(frame_vpos)?, dpi);
+    let previous_end = hwpunit_to_px(prev_end.checked_sub(frame_vpos)?, dpi);
     let host_y = hwpunit_to_px(host.vertical_pos.checked_sub(frame_vpos)?, dpi);
-    let top = anchor_y + hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
+    let offset = hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi);
     let (_, height) = picture_flow_frame_size_hu(picture);
     // 글자 표시 여부와 별개로 저장 호스트 줄은 그림·캡션 뒤의 공간을 소유한다.
-    let bottom = top
-        + super::composer::captioned_picture_height_px(picture, dpi)
+    let object_height = super::composer::captioned_picture_height_px(picture, dpi)
         + hwpunit_to_px(
             i32::from(common.margin.top) + i32::from(common.margin.bottom),
             dpi,
@@ -6034,11 +6036,33 @@ pub(crate) fn stored_picture_before_host_placement(
     let next_y = hwpunit_to_px(next.vertical_pos.checked_sub(frame_vpos)?, dpi);
     let next_flow_y = next_y - successor_spacing_before;
     let unit = dpi / 7200.0;
+    let base_bottom = previous_end + offset + object_height;
+    let leading = if (base_bottom - host_y).abs() <= unit {
+        0.0
+    } else if previous_spacing_after > 0.0
+        && (base_bottom + previous_spacing_after - host_y).abs() <= unit
+    {
+        // 앞 문단 뒤 간격까지 지나야 저장 그림 상자가 뒤 호스트 줄을 닫는다.
+        // 그 간격은 그림 원점에만 반영하고 뒤 저장 줄을 다시 밀지 않는다.
+        previous_spacing_after
+    } else {
+        return None;
+    };
+    let anchor_y = previous_end + leading;
+    let top = anchor_y + offset;
+    let bottom = top + object_height;
+    // 커서가 앞 문단의 보이는 줄과 뒤 간격까지만 소비했으면, 뒤 저장 줄이
+    // 인증한 그림 상자 앞에서 남아 있는 저장 줄간격을 한 번만 소비한다.
+    let previous_visible_end =
+        previous_end - hwpunit_to_px(prev.line_spacing, dpi) + previous_spacing_after;
+    let at_verified_cursor = (actual_host_flow_y - previous_end).abs() <= unit
+        || (leading > 0.0
+            && ((actual_host_flow_y - previous_visible_end).abs() <= unit
+                || (actual_host_flow_y - anchor_y).abs() <= unit));
     if anchor_y < 0.0
         || top < anchor_y
         || height <= 0
-        || (actual_host_flow_y - anchor_y).abs() > unit
-        || (bottom - host_y).abs() > unit
+        || !at_verified_cursor
         || (host_end - next_flow_y).abs() > unit
     {
         return None;
