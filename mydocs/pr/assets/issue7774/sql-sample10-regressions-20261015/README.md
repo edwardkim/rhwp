@@ -33,3 +33,20 @@
 ## 복원 조건
 
 같은 입력·독립 Print의 전쪽 Native/fresh WASM 최저90% 이상과 직접 확대 판독을 확보한 뒤 내용·줄/개체 소속·폭 비율·캐럿 경계 관계로 복원한다. ±2px 좌표를 고정하려면 해당 페이지 양쪽98% 이상과 독립 기대 좌표를 추가로 입증한다. 이관은 이슈 종료나 문서 피델리티 완료가 아니다.
+
+## 2026-11-23 독립 Print 전쪽 대조
+
+| 변환본 | 쪽수 | Native 최저 | fresh WASM 최저 | 489쪽 Native / fresh WASM |
+| --- | ---: | ---: | ---: | ---: |
+| HWP5 | 763 | [99.57%](sql-hwp5-native.tsv) | [96.82%](sql-hwp5-wasm.tsv) | 100.00% / 99.98% |
+| HWPX | 763 | [99.57%](sql-hwpx-native.tsv) | [96.82%](sql-hwpx-wasm.tsv) | 100.00% / 99.98% |
+
+측정 조건은 96 DPI, 한컴 2024 Print, 보정 전 2px raw 실루엣이다. HWP5는 위 세
+Print 분할본을 순서대로 대조했다. 별도로 출력한 HWPX 1-up 기준 PDF는 96,144,250바이트다.
+SHA-256은
+`ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9`다.
+한컴 엔진 `13.0.0.3901`, job `0aa8ae32-b51b-4b42-bb30-3a51dd8c43af`에서 출력했다.
+아래 이미지는 독립 Print, Native, fresh WASM 순서다.
+
+- [489쪽 SQL 문장과 소속 글줄](sql-hwpx-page-489.png)
+- [554쪽 마지막 본문과 쪽번호](sql-hwpx-page-554.png)

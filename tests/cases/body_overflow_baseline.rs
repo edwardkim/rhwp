@@ -122,9 +122,6 @@ const DEFERRED_BODY_OVERFLOW_FIXTURES: &[&str] = &[
     "pr-1674.hwp",
     // #7445: 전11쪽 최저36.70%, 전체 피델리티 개선 전 렌더링 회귀 보류.
     "hwpx/156160455-social-pig-farm-income.hwpx",
-    // #7445: 전52쪽 최저39.97%로 캡션·쪽수·본문 넘침 회귀를 함께 보류한다.
-    // deferred_caption1853_validation.json의 전체 비교 근거를 따른다.
-    "issue1853_caption_precedes_body_split.hwpx",
     "issue3637/press_release_split_cell_nested_table.hwpx",
     "issue6031/3249937_asset_management_rules.hwpx",
     "hwpctl_API_v2.4.hwp",

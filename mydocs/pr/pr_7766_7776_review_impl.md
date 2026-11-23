@@ -36,7 +36,12 @@ last_verified: 2026-11-23
 흐름 커서에서 표 높이를 더해, 44쪽의 `used_height`를 915.2px에서 974.0px로 늘렸다.
 `FragmentBudget`의 원점을 방출 결과에도 연결해 두 개체의 실제 점유 끝을 사용하도록
 보정했다. 끝점 보정까지 포함한 Native는 52쪽 최저 98.40%, 44·45쪽 100.00%였다.
-위치 보정 빌드와 전쪽 TSV 및 52쪽 PNG가 같았다. Fresh WASM과 회귀 복원은 진행 중이다.
+위치 보정 빌드와 전쪽 TSV 및 52쪽 PNG가 같았다. 최적화한 fresh WASM도 전52쪽
+최저 98.40%, 44·45쪽 100.00%였다. 전쪽 원본과 확대 비교를
+[Native TSV](assets/issue7766/law-amendment-native.tsv),
+[WASM TSV](assets/issue7766/law-amendment-wasm.tsv),
+[44쪽 PNG](assets/issue7766/law-amendment-page-44.png)에 남겼다.
+저장 원점과 44→45쪽의 같은 셀 내용 이어받기를 검사하고, 기존 본문·쪽수 원장을 복원한다.
 
 ## #7772 사양서의 WASM 페이지별 글꼴 공급
 
@@ -122,3 +127,23 @@ Fresh WASM과 회귀 복원은 진행 중이다.
 전쪽 TSV SHA-256은 축산 지침 `909e0a9233fb51f6c18ec6a5c76ca34e8abbb3ee9b4baecef27111034cccb2d7`,
 양돈 HWP·HWPX 모두 `09899aa53d0abadd1809dc286c66b1ee537d30026a2d5a7acbfa8fe96d50632e`다.
 Visual Sweep Python 기존 검사 47건을 통과했다. Fresh WASM과 회귀 복원은 진행 중이다.
+
+## #7774 HWP5·HWPX SQL 변환본
+
+보관한 변환본 두 개를 각각의 독립 한컴 2024 Print와 대조했다. HWP5는 기존 정본
+300·300·163쪽을 원래 순서로 비교했다. HWPX는 한컴 2024 엔진 `13.0.0.3901`의
+1-up job `0aa8ae32-b51b-4b42-bb30-3a51dd8c43af`에서 독립 출력했다. PDF SHA-256은
+`ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9`다.
+
+두 변환본은 각 763쪽이며 96 DPI 2px raw 실루엣의 최저는 Native 각각 99.57%,
+fresh WASM 각각 96.82%였다. 과거 본문과 쪽번호가 교차했던
+125·243·339·397·554·588·744쪽은 두 입력과 두 경로 모두 100.00%였다.
+489쪽의 SQL 문장과 후속 한글은 출력 순서를 유지했으며 Native 각각 100.00%,
+fresh WASM 각각 99.98%였다. 757쪽에서 문자 그림의 줄 상자가 기하상 교차하는
+29건을 전수 확인했고, 대상 7쪽의 본문·꼬리말 교차는 없었다.
+
+두 독립 출력의 전쪽 TSV와 대표 비교 PNG는
+[SQL 변환본 증적](assets/issue7774/sql-sample10-regressions-20261015/README.md)에 있다.
+전수 겹침 원장과 같은 소유 줄의 반각 ASCII 전진, SQL 문장, 본문·쪽번호 분리 검사를 복원한다.
+WASM 12·13·14·16·21쪽의 98% 미달은 굵고 기울인 HFT 명조 런의 괄호가 표시 프로그램에서
+900 HU로 계산되는 경로까지 확인했다. 독립 Print와 Native의 원본 조판은 450 HU 반각이다.
