@@ -38,7 +38,7 @@
 
 | 변환본 | 쪽수 | Native 최저 | fresh WASM 최저 | 489쪽 Native / fresh WASM |
 | --- | ---: | ---: | ---: | ---: |
-| HWP5 | 763 | [99.57%](sql-hwp5-native.tsv) | [96.82%](sql-hwp5-wasm.tsv) | 100.00% / 99.98% |
+| HWP5 | 763 | [99.57%](sql-hwp5-native.tsv) | [99.34%](sql-hwp5-wasm.tsv) | 100.00% / 99.98% |
 | HWPX | 763 | [99.57%](sql-hwpx-native.tsv) | [96.82%](sql-hwpx-wasm.tsv) | 100.00% / 99.98% |
 
 측정 조건은 96 DPI, 한컴 2024 Print, 보정 전 2px raw 실루엣이다. HWP5는 위 세
@@ -63,3 +63,7 @@ fresh WASM 모두 99.99%이며 재측정한 여섯 쪽은 모두 99.98% 이상�
 - HWP5 [Native](sql-hwp5-brackets-native.tsv) · [fresh WASM](sql-hwp5-brackets-wasm.tsv)
 - HWPX [Native](sql-hwpx-brackets-native.tsv) · [fresh WASM](sql-hwpx-brackets-wasm.tsv)
 - [16쪽 독립 Print와 양쪽 출력 확대 비교](sql-page-16-brackets.png)
+
+대괄호 보정 후 HWP5 fresh WASM 전763쪽을 다시 비교했다. 최저는 757쪽
+99.34%이며, 464쪽이 100.00%였다. 전쪽 TSV 링크에 이 결과를 반영했다.
+HWPX 전쪽 TSV의 96.82%는 대괄호 보정 전 값이다.
