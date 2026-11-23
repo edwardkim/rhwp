@@ -304,6 +304,11 @@ pub(crate) fn declared_original_glyph_advance_em(
     {
         return Some(1.0);
     }
+    // SQL 변환본의 한컴 2024 Print는 명조 굵은 기울임 대괄호를 0.5em으로
+    // 전진시킨다. 표시용 CFF의 전각 hmtx와 구분해 원본 폭을 소비한다.
+    if face == "명조" && bold && italic && matches!(character, '[' | ']') {
+        return Some(0.5);
+    }
     // 독립 전체 ASCII 표본의 한컴2020 Print Type3는 95자 모두500/1000em이다.
     // 원본 HFT 선언을 확인한 호출자만 이 부분 표를 받는다. 실제 TrueType,
     // 미검증 italic·비ASCII에는 전달하지 않는다. 알 수 없는 고딕의 점·쉼표를
