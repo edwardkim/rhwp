@@ -7524,7 +7524,29 @@ impl LayoutEngine {
                 col_area.y + col_area.height,
                 self.dpi,
             );
-            let pinned_height = (box_bottom - y_start).max(0.0);
+            let source_content_height = table.cells.first().and_then(|cell| {
+                let padding = cell.effective_padding(&table.padding);
+                (is_continuation
+                    && start_cut.first().is_some_and(|&cut| cut > 0)
+                    && self.profile.get().hwp5_stored_pagination_layout()
+                    && !self.profile.get().session_edited()
+                    && !cell.dirty_flag
+                    && cell.vertical_align == crate::model::table::VerticalAlign::Top
+                    && i64::from(cell.height) <= i64::from(padding.top) + i64::from(padding.bottom)
+                    && cell.paragraphs.iter().all(|p| {
+                        p.controls.is_empty()
+                            && !p.stored_text_partition_is_dirty()
+                            && !p.cell_format_vpos_dirty
+                            && !crate::renderer::para_has_no_stored_line_segs(p)
+                    }))
+                // 원본 높이에 패딩만 있는 칸은 후속 글줄의 끝이 조각을 닫는다.
+                // 칸 전체의 아래 패딩은 맨 마지막 조각에서 소비한다.
+                .then(|| row_heights[0] - hwpunit_to_px(i32::from(padding.bottom), self.dpi))
+                .filter(|&height| height > 0.0)
+            });
+            let pinned_height = (box_bottom - y_start)
+                .max(0.0)
+                .min(source_content_height.unwrap_or(f64::INFINITY));
             // 호환성 투영은 떠 있는 그림의 세로 묶음을 독립적인 인라인 개체로 바꿀 수 있다.
             // 그 합성 줄 지오메트리는 저장된 전쪽 프레임이 아니다(issue2004 5쪽: PDF 끝은 1023px이 아닌 약 931px).
             // 1×1 표 모양만으로 프레임 소유를 추정하지 않고 같은 컷의 줄 출처를 소비한다.

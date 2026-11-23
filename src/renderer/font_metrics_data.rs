@@ -291,6 +291,9 @@ pub(crate) fn verified_missing_glyph_supplier(
         // 평가결과서(docs#648)의 독립 한컴2022 Print는 돋움 사이의 `․`만 Haansoft
         // Dotum CID 글꼴의 0.173em으로 출력한다. U+2027과 다른 weight/style은 바꾸지 않는다.
         ("Dotum", 1024, false, false, '\u{2024}') => Some("Haansoft Dotum"),
+        // 명시된 맑은 고딕 regular의 cmap에는 한점 리더가 없다.
+        // 국민임대 안내문 8쪽 한컴 Print는 HCRDotum의 288/1000em을 쓴다.
+        ("Malgun Gothic", 2048, false, false, '\u{2024}') => Some("HCR Dotum"),
         // 기호 슬롯을 HY신명조 TTF로 지정한 독립2020 Print의 두 점은
         // HBATANG이다. HFT 한양신명조의 전진은 해당 overlay가 보존한다.
         ("HYSinMyeongJo-Medium", 1024, false, false, '\u{2024}' | '\u{2027}') => {
