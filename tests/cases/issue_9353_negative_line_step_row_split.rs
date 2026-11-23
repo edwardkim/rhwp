@@ -1,6 +1,6 @@
 //! 관계형·고정형 — [#9353] 음수 줄 간격 저장 줄의 정상 다음 줄을 쪽 되감김으로 읽어 표 행을 쪽 안에서 나누지 않는다.
 //!
-//! 주석 갱신: 2026-11-23 16:40 KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-23 20:11 KST(+09:00), 새 파일.
 //!
 //! - 입력: 공개 문서 `samples/issue9353/uiwang_lane_min_length.hwp`(10k 공개 코퍼스
 //!   `21013395_[별표 5] 변속차로의 최소길이(의왕시 도로와 다른 시설의 연결에 관한 조례).hwp`,
@@ -18,13 +18,13 @@
 //! `…대 이상` 과 같은 쪽에 있다. 행 37 은 2쪽, 3쪽은 `51대 이상` 행을 담고 `50대 이하` 조각이 없다.
 //! 수정 전 두 검사 모두 3쪽의 `50대 이하` 조각으로 실패한다.
 //!
-//! 측정(2026-11-23, base = devel `7d6628982c`, 후보 = base + 이 수정,
+//! 측정(2026-11-23, base = devel `17b17c934b`, 후보 = base + 이 수정,
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴은 스크립트 기본 공급):
 //! - Native: 3쪽 / 3쪽, 1쪽 98.97 → 98.97, 2쪽 94.05 → 96.84, 3쪽 43.47 → 97.67, 전쪽 최저 96.84(2쪽)
-//! - fresh WASM: WASM_PLACEHOLDER
-//! - 2쪽 Native raw 가 98% 미만이므로 절대 px 좌표는 고정하지 않는다.
-//! - 증거: `mydocs/pr/assets/issue_9353/`(native·wasm 전쪽 TSV, 2·3쪽 review·overlay PNG)
+//! - fresh WASM: 3쪽 / 3쪽, 1쪽 99.25 → 99.25, 2쪽 93.78 → 96.89, 3쪽 44.10 → 97.77, 전쪽 최저 96.89(2쪽)
+//! - 2쪽 Native·WASM raw 가 98% 미만이므로 절대 px 좌표는 고정하지 않는다.
+//! - 증거: `mydocs/pr/assets/issue_9353/`(native·wasm·base 전쪽 TSV, 2·3쪽 review·overlay PNG, base 3쪽)
 #![cfg(not(target_arch = "wasm32"))]
 
 use std::path::Path;
