@@ -20,7 +20,7 @@ function readLine(nested) {
 
 await runTest('연결선 가운데 손잡이 드래그·되돌리기·저장', async ({ page }) => {
   const samples = ['connector-arc', 'connector-stroke', 'nested-connector-arc', 'nested-connector-stroke',
-    'two-vertical', 'two-horizontal-shift'];
+    'two-vertical', 'two-horizontal-shift', 'one-elbow', 'no-elbow'];
   for (const sample of samples) {
     await loadHwpFile(page, `semanticist21-20261124-rework/${sample}.hwpx`);
     const nested = sample.startsWith('nested-');
@@ -38,6 +38,16 @@ await runTest('연결선 가운데 손잡이 드래그·되돌리기·저장', a
       return { x: bounds.left + x, y: bounds.top + y, zoom };
     }, nested);
     await page.mouse.click(endpoint.x, endpoint.y);
+    if (sample === 'one-elbow' || sample === 'no-elbow') {
+      assert.equal(before.axis, undefined, sample);
+      const selection = await page.evaluate(() => {
+        const overlay = window.__inputHandler.pictureObjectRenderer;
+        return { handles: overlay.handles.map(h => h.dir), guide: Boolean(overlay.layer.querySelector('svg line')) };
+      });
+      assert.deepEqual(selection, { handles: ['sw', 'ne'], guide: false }, sample);
+      console.log(`${sample}: 두 끝점 선택과 가운데 손잡이·직선 안내선 부재 확인`);
+      continue;
+    }
     const handle = await page.evaluate(() => {
       const h = window.__inputHandler.pictureObjectRenderer.handles.find(h => h.dir === 'midpoint');
       if (!h) return null;
@@ -47,14 +57,8 @@ await runTest('연결선 가운데 손잡이 드래그·되돌리기·저장', a
     assert.ok(handle, `${sample}: 선을 클릭하면 가운데 손잡이가 나타난다`);
     await page.mouse.move(handle.x, handle.y);
     await page.mouse.down();
-    const pressed = await page.evaluate(({x, y}) => {
-      const input = window.__inputHandler;
-      const rect = document.querySelector('#scroll-content').getBoundingClientRect();
-      return { drag: input.connectorMidpointDrag?.axis, selected: input.cursor.getSelectedPictureRef(),
-        at: input.pictureObjectRenderer.getHandleAtPoint(x - rect.left, y - rect.top),
-        element: document.elementFromPoint(x, y)?.className, x, y };
-    }, handle);
-    assert.equal(pressed.drag, before.axis, `${sample}: ${JSON.stringify(pressed)}`);
+    const dragAxis = await page.evaluate(() => window.__inputHandler.connectorMidpointDrag?.axis);
+    assert.equal(dragAxis, before.axis, sample);
     await page.mouse.move(handle.x + 40, handle.y + 26, { steps: 5 });
     await page.mouse.up();
     const moved = await page.evaluate(readLine, nested);
