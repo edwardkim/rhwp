@@ -91,14 +91,21 @@ fn missing_primary_symbol_keeps_the_same_slot_with_unclassified_font_type() {
     use rhwp::renderer::TextStyle;
 
     let primary = include_bytes!("../fixtures/fonts/RHWPEquationLatinOnly.ttf").to_vec();
-    let fallback = symbol_font_program::mapped_program(
-        include_bytes!("../fixtures/fonts/RHWPHftOutline.otf"),
-        &[('∙', 1)],
-    );
+    let fallback =
+        include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf").to_vec();
+    let glyph = '∙';
+    assert!(ttf_parser::Face::parse(&primary, 0)
+        .unwrap()
+        .glyph_index(glyph)
+        .is_none());
+    assert!(ttf_parser::Face::parse(&fallback, 0)
+        .unwrap()
+        .glyph_index(glyph)
+        .is_some());
     let renderer = SkiaLayerRenderer::new()
         .try_with_font_data(&[primary.clone(), fallback.clone()])
         .unwrap();
-    let family = "RHWP Equation Contract,RHWP HFT Outline Fixture";
+    let family = "RHWP Equation Contract,Source Sans 3";
     let mut fonts = NativePuaFonts::default();
     for declared_ttf in [false, true] {
         fonts
@@ -111,7 +118,7 @@ fn missing_primary_symbol_keeps_the_same_slot_with_unclassified_font_type() {
         .unwrap();
     let render = |declared_ttf| {
         let run = TextRunNode {
-            text: "∙".into(),
+            text: glyph.to_string(),
             style: TextStyle {
                 font_family: family.into(),
                 font_size: 12.0,
