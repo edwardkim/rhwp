@@ -72,6 +72,9 @@ head CI와 충돌 해소를 확인한 뒤 신규 PR을 진행한다. **새 PR �
 4.3과 해당 보조 절차의 필수 검증을 빠짐없이 완료한 뒤 일반 Open PR을 제출한다. 실패·미실행을
 PR CI나 Draft로 우회하지 않는다. Draft는 특별한 조기 논의·WIP 목적을 작업지시자가 명시적으로
 승인한 경우만 허용하고 목적·미완료 항목·완료 계획을 본문에 적는다. 번호 확보·CI 대기는 사유가 아니다.
+렌더러·조판·글꼴 공급·Native 출력 또는 관련 Skia 회귀를 바꾼 새 제출 후보는
+[CI와 같은 Native Skia 사전 검사](mydocs/manual/pr_review/local_validation.md#ci와-같은-native-skia-사전-검사)의
+라이브러리·통합 모듈 실행 결과를 남긴다.
 Docker는 필수 설치 조건이 아니며 [환경별 fresh WASM 경로](mydocs/manual/pr_review/local_validation.md#환경에-따른-fresh-wasm-검증)의
 Docker 또는 호스트 빌드를 선택해 동일한 필수 검증을 완료한다.
 
