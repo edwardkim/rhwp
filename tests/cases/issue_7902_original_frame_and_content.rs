@@ -12,7 +12,14 @@ use rhwp::model::{
     table::{Cell, Table},
 };
 use serde_json::Value;
-use std::{path::Path, process::Command, sync::OnceLock};
+use std::{
+    path::Path,
+    process::Command,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        OnceLock,
+    },
+};
 
 const OVERFILL: &str = "samples/table_giant_cell_overfill.hwpx";
 const NESTED_HWP: &str = "samples/issue1949_giant_cell_nested_tables_perf.hwp";
@@ -30,14 +37,7 @@ fn hft_number_baseline(sample: &str, page: u32) {
         ),
         _ => panic!("독립 기대값이 없는 쪽: {page}"),
     };
-    let stamp = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .unwrap()
-        .as_nanos();
-    let directory = Trees(
-        std::env::temp_dir().join(format!("rhwp-7902-number-{}-{stamp}", std::process::id())),
-    );
-    std::fs::create_dir(&directory.0).unwrap();
+    let directory = Trees::new();
     let bin = std::env::var("CARGO_BIN_EXE_rhwp")
         .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned());
     let output = Command::new(bin)
@@ -152,6 +152,24 @@ fn native_generated_legacy_font_trace_uses_paint_aliases() {
 
 struct Trees(std::path::PathBuf);
 
+impl Trees {
+    fn new() -> Self {
+        static NEXT_DIRECTORY: AtomicU64 = AtomicU64::new(0);
+        let stamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let sequence = NEXT_DIRECTORY.fetch_add(1, Ordering::Relaxed);
+        let path = std::env::temp_dir().join(format!(
+            "rhwp-7902-{}-{stamp}-{sequence}",
+            std::process::id()
+        ));
+        // 생성한 검사만 해당 폴더를 정리한다.
+        std::fs::create_dir(&path).expect("검사 전용 임시 경로 생성");
+        Self(path)
+    }
+}
+
 impl Drop for Trees {
     fn drop(&mut self) {
         let _ = std::fs::remove_dir_all(&self.0);
@@ -169,13 +187,7 @@ fn pages(sample: &str) -> &'static Vec<Value> {
         _ => panic!("등록하지 않은 원본: {sample}"),
     };
     cache.get_or_init(|| {
-        let stamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_nanos();
-        let directory =
-            Trees(std::env::temp_dir().join(format!("rhwp-7902-{}-{stamp}", std::process::id())));
-        std::fs::create_dir(&directory.0).expect("검사 전용 임시 경로");
+        let directory = Trees::new();
         let bin = std::env::var("CARGO_BIN_EXE_rhwp")
             .unwrap_or_else(|_| env!("CARGO_BIN_EXE_rhwp").to_owned());
         let output = Command::new(bin)
