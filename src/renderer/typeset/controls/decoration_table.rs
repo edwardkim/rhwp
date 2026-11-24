@@ -41,6 +41,26 @@ pub(super) fn continuation(
     }
     let anchor_y = current_height + hwpunit_to_px(table.common.vertical_offset as i32, dpi);
     let room = base_available_height() - anchor_y;
+    let saved_fits = room > 0.0
+        && ft.effective_height > room
+        && crate::renderer::float_placement::saved_overlay_table_fits(
+            table,
+            ft.effective_height,
+            room,
+            dpi,
+        );
+    if saved_fits {
+        // 한/글 저장 크기로는 이 쪽에 드는 표다. 다음 쪽으로 넘길 행은 없지만, 행 끝 컷이 있는
+        // 배치와 컷 없는 전체 배치는 칸 안 중첩 표 위치가 달라 종전처럼 컷 배치로 모든 행을
+        // 그린다(잔여 행 0).
+        return Some(OverlayContinuation {
+            first_unfit: ft.row_heights.len(),
+            remaining_px: 0.0,
+            reserve_px: 0.0,
+            room,
+            row_fragment: None,
+        });
+    }
     if room > 0.0 && ft.effective_height > room {
         // `cumulative_heights` 는 접두합(len = 행 수 + 1)이다 —
         // `cum[i]` 는 행 0..i 의 합이므로, 처음으로 room 을 넘는

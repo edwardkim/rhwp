@@ -307,6 +307,7 @@ pub(super) fn prepare_table_control_with_storage<S: crate::storage::Storage>(
         *frame.body,
         frame.page_height,
         dpi,
+        st.decoration_table_flow_height(),
         || st.base_available_height(),
         original_hwpx,
     ))
