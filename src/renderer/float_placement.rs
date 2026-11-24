@@ -59,7 +59,7 @@ mod stored_padded_line;
 mod stored_row_picture_frame;
 pub(crate) use stored_nested_before_host::{
     stored_nested_before_host_placement, stored_opening_table_before_host_frame,
-    stored_table_before_host_frame,
+    stored_table_before_host_frame, stored_visible_table_before_host_frame,
 };
 pub(crate) use stored_nested_closing_host::stored_nested_host_closes_after_previous_line;
 pub(crate) use stored_nested_terminal_line::stored_nested_terminal_host_line_height_hu;
@@ -7019,6 +7019,15 @@ pub fn stored_cellbreak_fragment_row_end(
 }
 
 impl ParagraphFloatPlacement {
+    pub(crate) fn with_cell_host_line_origin(mut self, origin: f64) -> Self {
+        self.anchor_y += origin;
+        self.table_top += origin;
+        self.occupied_bottom += origin;
+        self.stored_host_origin = self.stored_host_origin.map(|y| y + origin);
+        self.stored_successor_line_origin = self.stored_successor_line_origin.map(|y| y + origin);
+        self
+    }
+
     /// An independently accepted float anchor also owns its horizontal
     /// column reference. Unauthenticated stored offsets keep the normal
     /// cell-flow alignment contract.
