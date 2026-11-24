@@ -1,0 +1,269 @@
+{
+  "base": {
+    "source": {
+      "key": "bin:0:2:src",
+      "resource": [
+        2137,
+        1321
+      ],
+      "screen_svg": {
+        "decoded": [
+          2137,
+          1321
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649"
+      },
+      "inline_dimensions": [
+        [
+          3024,
+          4032
+        ],
+        [
+          2137,
+          1321
+        ],
+        [
+          561,
+          346
+        ],
+        [
+          2448,
+          3264
+        ],
+        [
+          1219,
+          579
+        ],
+        [
+          720,
+          460
+        ]
+      ],
+      "pages_after_save": {},
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    "photo": {
+      "key": "bin:0:1:src",
+      "resource": [
+        2137,
+        1321
+      ],
+      "screen_svg": {
+        "decoded": [
+          2137,
+          1321
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "f086a28321e8902efe93dc2d509a8f8a521b89fa8b1b933f7998dabb754f0649"
+      },
+      "inline_dimensions": [
+        [
+          2137,
+          1321
+        ]
+      ],
+      "pages_after_save": {},
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    "padded": {
+      "key": "bin:0:1:src",
+      "resource": [
+        2137,
+        1321
+      ],
+      "screen_svg": {
+        "decoded": [
+          2137,
+          1321
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "d2eb995c9e4f43ad644847821ce65b6bf2bd956e229df2f24fd9279272741bc2"
+      },
+      "inline_dimensions": [
+        [
+          2137,
+          1321
+        ]
+      ],
+      "pages_after_save": {},
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    "normal": {
+      "key": "bin:0:1:src",
+      "resource": [
+        1321,
+        2137
+      ],
+      "screen_svg": {
+        "decoded": [
+          1321,
+          2137
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "2ac98731d12e44a860a7ed3b79b683b5178aa09b7863bdad1c198c8beb3c2ce1"
+      },
+      "inline_dimensions": [
+        [
+          1321,
+          2137
+        ]
+      ],
+      "pages_after_save": {},
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    }
+  },
+  "candidate": {
+    "source": {
+      "key": "bin:0:2:src",
+      "resource": [
+        1321,
+        2137
+      ],
+      "screen_svg": {
+        "decoded": [
+          1321,
+          2137
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "2ac98731d12e44a860a7ed3b79b683b5178aa09b7863bdad1c198c8beb3c2ce1"
+      },
+      "inline_dimensions": [
+        [
+          3024,
+          4032
+        ],
+        [
+          1321,
+          2137
+        ],
+        [
+          561,
+          346
+        ],
+        [
+          2448,
+          3264
+        ],
+        [
+          1219,
+          579
+        ],
+        [
+          720,
+          460
+        ]
+      ],
+      "pages_after_save": {},
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    "photo": {
+      "key": "bin:0:1:src",
+      "resource": [
+        1321,
+        2137
+      ],
+      "screen_svg": {
+        "decoded": [
+          1321,
+          2137
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "2ac98731d12e44a860a7ed3b79b683b5178aa09b7863bdad1c198c8beb3c2ce1"
+      },
+      "inline_dimensions": [
+        [
+          1321,
+          2137
+        ]
+      ],
+      "pages_after_save": {
+        "hwp1": 1,
+        "hwp2": 1,
+        "hwpx1": 1,
+        "hwpx2": 1
+      },
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    "padded": {
+      "key": "bin:0:1:src",
+      "resource": [
+        1321,
+        2137
+      ],
+      "screen_svg": {
+        "decoded": [
+          1321,
+          2137
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "3e0430785abeb236da020878b519ecb47602ed4db456ab3251bb4a55a75aab54"
+      },
+      "inline_dimensions": [
+        [
+          1321,
+          2137
+        ]
+      ],
+      "pages_after_save": {
+        "hwp1": 1,
+        "hwp2": 1,
+        "hwpx1": 1,
+        "hwpx2": 1
+      },
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    },
+    "normal": {
+      "key": "bin:0:1:src",
+      "resource": [
+        1321,
+        2137
+      ],
+      "screen_svg": {
+        "decoded": [
+          1321,
+          2137
+        ],
+        "frame": [
+          "136.04",
+          "289.06666666666666"
+        ],
+        "sha256": "2ac98731d12e44a860a7ed3b79b683b5178aa09b7863bdad1c198c8beb3c2ce1"
+      },
+      "inline_dimensions": [
+        [
+          1321,
+          2137
+        ]
+      ],
+      "pages_after_save": {
+        "hwp1": 1,
+        "hwp2": 1,
+        "hwpx1": 1,
+        "hwpx2": 1
+      },
+      "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36"
+    }
+  }
+}
