@@ -414,6 +414,8 @@ impl TypesetEngine {
                         || inline_frame_page_restart
                         || stored_picture_group_reset
                         || coanchored_host_reset
+                        || self.stored_leading_float_frame(st, paragraphs, para_idx, measured_tables, styles)
+                            .is_some_and(|frame| frame.restart)
                         || reconstructed_source_vpos.is_some()
                     };
                 // [#2279 OMIT-fit] spacing-누락 문서군에서 fresh 재계산이 직전
