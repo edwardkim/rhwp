@@ -1,9 +1,9 @@
 //! 관계형·고정형 — [#9000] 칸 안 중첩 표가 한/글이 저장한 쪽 프레임 경계에서 이어지는 큰 표의 쪽 컷·행 조각 상자.
 //!
-//! 주석 갱신: 2026-11-24 14:22 KST(+09:00), 새 파일.
+//! 주석 갱신: 2026-11-25 10:05 KST(+09:00), 새 파일(devel 0fbee2c04e rebase 재측정 반영).
 //!
-//! - 입력: `samples/issue9000/kaf_table_section.hwp` — 공개 회의자료(docs#881)
-//!   `samples/issue9000/kaf_general_meeting.hwp`(66쪽)에서 rhwp `edit delete-paragraph` 로
+//! - 입력: `samples/issue9000/kaf_table_section.hwp` — 10k 공개 코퍼스의 KAF 총회 회의자료(docs#881,
+//!   SHA-256 `8014ae9b…f6c9e5`, 66쪽, 저장소에 넣지 않음)에서 rhwp `edit delete-paragraph` 로
 //!   구역 1 문단 33~244(표 뒤 45~66쪽 내용)를 지운 파생본(44쪽). 1~44쪽 조판 항목은 원본과 같고
 //!   44쪽 끝에 원본 마지막 빈 문단만 남는다. 원본의 부록 쪽(48·50~52·54·64쪽)은 표와 무관한
 //!   별개 결함(#9379)으로 90% 미만이라 파생본으로 검증한다.
@@ -24,7 +24,8 @@
 //!   `Standard : KAF address standard` 가 34쪽).
 //!
 //! 측정(2026-11-24, base = devel `9ee9a5b0b1`, 후보 = base + 이 수정. devel `2c0c1d205a` 와 그 위로 rebase 한
-//! 후보의 재측정 TSV 도 바이트 단위로 같다.
+//! 후보의 재측정 TSV 도 바이트 단위로 같다. devel `0fbee2c04e` 와 그 위로 rebase 한 후보(충돌 해소 뒤)의 재측정
+//! TSV 4개도 바이트 단위로 같고, 두 검사는 `0fbee2c04e` 에서 실패하고 후보에서 통과한다.
 //! `scripts/visual_sweep.py --silhouette-only --dpi 96 --compat 2022`, raw =
 //! `silhouette_raw_match_percent`, 글꼴은 스크립트 기본 공급):
 //! - Native: 44쪽 / 44쪽. 33~44쪽 base 92.95·32.84·48.94·40.85·53.35·40.09·56.76·47.85·38.18·59.09·
