@@ -545,7 +545,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
         if let Some(Atom::Box(next)) = atoms.get(index) {
             if matches!(next.content, InlineFlowContent::Table { .. }) {
                 // 구분 공백 없이 붙은 TAC는 앞 어절의 수용 후보에 속한다.
-                // 후보가 한 줄보다 크면 새 줄에서 개체 앞 경계를 분리한다.
+                // 온전한 줄에도 들어가지 않는 조합은 표 앞에서 나눌 수 있다.
                 storage.insert_tree_map(&mut attached_word_metrics, start, metrics.with(next))?;
             }
         }
@@ -776,6 +776,7 @@ pub(crate) fn plan_with_storage<S: crate::storage::Storage>(
                 let lookahead = match &item.content {
                     InlineFlowContent::Text { range, .. } => attached_word_metrics
                         .get(&range.start)
+                        .filter(|metrics| metrics.width <= row_width + 0.01)
                         .copied()
                         .or_else(|| {
                             word_metrics
