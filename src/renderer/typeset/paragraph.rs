@@ -1580,7 +1580,11 @@ fn try_absorb_empty_page_start_with_storage<S: crate::storage::Storage>(
         return Ok(false);
     }
     st.begin_empty_paragraph_page();
+    // [#8997] 앞 쪽에서 넘어온 저장 상자(표·그림)가 이 쪽 맨 위를 차지하면 뒤 빈 문단은 쪽
+    // 첫 줄이 아니다. 한/글은 그 빈 줄을 감추지 않고 상자 아래에 둔다(1543000-202100035
+    // s2 pi896: 표 바깥 상자 아래끝 22586HU 에서 줄 하나 뒤 pi897 저장 vpos 24616).
     if st.hidden_empty_lines < 2
+        && st.page_start_stored_frames.is_empty()
         && crate::renderer::pagination::page_starts_with_hidden_empty_lines(
             para,
             &st.current_items,

@@ -63,6 +63,8 @@ git diff --check upstream/devel...HEAD
   head branch로 push해 `devel` 대상 통합 PR을 만들고, 그 PR이 merge된 뒤 원 PR은 merge된 통합 PR을
   링크한 comment와 함께 close한다.
 - 체리픽 통합 PR은 **생성 전에** 원 PR 번호별 archive 검토 기록을 통합 branch에 커밋하고 본문에서 연결한다.
+  조판·렌더링 변경의 후보가 원 PR보다 낮은 쪽은 원인을 검사하고 해결한 뒤 전쪽을 재검증한다.
+  [원 PR 대비 시각 하락 확인](multi_pr_update_branch.md#원-pr-대비-시각-하락-확인)을 따른다.
   원격 CI 결과와 필요한 오늘할일을 확정하는 시점은
   [여러 PR 체리픽 누적 검토](multi_pr_update_branch.md#421-여러-pr-체리픽-누적-검토)를 따른다.
 - PR head가 최신 `devel`과 이미 같은 history를 공유하더라도, integration branch의 기준은 항상

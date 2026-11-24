@@ -193,7 +193,7 @@ enum Conversion {
         height: u32,
         quality: u8,
     },
-    Hancom2024FillJpegRgb {
+    PrintOriginalRgbJpeg {
         quality: u8,
     },
 }

@@ -474,6 +474,14 @@ pub(in crate::renderer::typeset) fn initialize_first_paragraph_origin(
                                     styles,
                                     dpi,
                                 )
+                                || (st.profile.hwp5_stored_pagination_layout()
+                                    && crate::renderer::stored_page_origin::stored_first_paper_picture_is_page_relative(
+                                        first,
+                                        paragraphs.get(para_idx + 1),
+                                        styles,
+                                        st.inline_flow_column().y,
+                                        dpi,
+                                    ))
                             });
                         let clears_page_square_table = (st.profile.hwpx_stored_layout()
                             || st.profile.hwp5_stored_pagination_layout())

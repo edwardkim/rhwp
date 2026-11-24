@@ -3,7 +3,7 @@
   "created_at": "2026-11-08T22:37:56.286882+09:00",
   "baseline_kind": "수용된 최종 전쪽 검증의 상승분을 반영한 보호 하한. CI·병합 상태는 별도 기록한다.",
   "table": "final.tsv",
-  "table_sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
+  "table_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
   "row_count": 4046,
   "document_count": 23,
   "dataset_count": 46,
@@ -2168,8 +2168,22 @@
         "radius_px": 2
       },
       "page_count": 17,
-      "accepted_at": "2026-11-21T16:41:02.609001+09:00",
+      "accepted_at": "2026-11-24T18:00:30.260001+09:00",
       "source": {
+        "pr": null,
+        "evidence_commit": "b5cca33aabe090f0b38172bcb10f82d404cd2efd",
+        "code_commit": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+        "path": "mydocs/pr/assets/issue_9326/20261124/protected/nested-native-candidate.tsv",
+        "sha256": "ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1",
+        "metric_column": "silhouette_raw_match_percent",
+        "page_column": "page",
+        "document_filter": null,
+        "condition_evidence": "mydocs/pr/assets/issue_9326/20261124/protected/README.md",
+        "condition_evidence_sha256": "6fb7cc795632cf3560c48204e6589a85c2c50042b25fac9be77c85fa122ca736",
+        "precision": "공식 소수 둘째 자리 전쪽 원문"
+      },
+      "minimum_display": "100.00",
+      "previous_source": {
         "pr": null,
         "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
         "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
@@ -2180,20 +2194,6 @@
         "document_filter": null,
         "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
         "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
-        "precision": "공식 소수 둘째 자리 전쪽 원문"
-      },
-      "minimum_display": "99.98",
-      "previous_source": {
-        "pr": null,
-        "evidence_commit": "5d8f64bf042d197851467f2a107de7871ee6e1e7",
-        "code_commit": "1da7afbd64bbc59d9338a187ebcd21860ddc0842",
-        "path": "mydocs/working/assets/issue9104/final/protected/native/nested.tsv",
-        "sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
-        "metric_column": "silhouette_raw_match_percent",
-        "page_column": "page",
-        "document_filter": null,
-        "condition_evidence": "mydocs/working/assets/issue9104/final/visual-validation.json",
-        "condition_evidence_sha256": "c113ecfdb5b49d1040b2f35fc966cd3fd69986404f89ed3d76b07eeec2a8c394",
         "precision": "공식 소수 둘째 자리 전쪽 원문"
       },
       "source_history": [
@@ -2272,6 +2272,19 @@
           "document_filter": null,
           "condition_evidence": "mydocs/working/assets/issue9104/final/visual-validation.json",
           "condition_evidence_sha256": "c113ecfdb5b49d1040b2f35fc966cd3fd69986404f89ed3d76b07eeec2a8c394",
+          "precision": "공식 소수 둘째 자리 전쪽 원문"
+        },
+        {
+          "pr": null,
+          "evidence_commit": "3495ecbb2806aa87fc1a781a8d6c1517edd47b0f",
+          "code_commit": "84fd1cb0b77861b082cf33cf84de9e7bbe06832c",
+          "path": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/native/nested.tsv",
+          "sha256": "065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592",
+          "metric_column": "silhouette_raw_match_percent",
+          "page_column": "page",
+          "document_filter": null,
+          "condition_evidence": "mydocs/pr/assets/planet6897_9208_9236_20261121/final-protection/validation.json",
+          "condition_evidence_sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401",
           "precision": "공식 소수 둘째 자리 전쪽 원문"
         }
       ]
@@ -5370,9 +5383,21 @@
       "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/planet6897-stored-layout-20261123.json",
       "increased_row_count": 7,
       "evaluated_row_count": 4046
+    },
+    {
+      "pr": null,
+      "evidence_commit": "b5cca33aabe090f0b38172bcb10f82d404cd2efd",
+      "code_commit": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+      "condition_evidence": "mydocs/pr/assets/issue_9326/20261124/protected/README.md",
+      "condition_evidence_sha256": "6fb7cc795632cf3560c48204e6589a85c2c50042b25fac9be77c85fa122ca736",
+      "accepted_at": "2026-11-24T18:00:30.260001+09:00",
+      "acceptance_basis": "중첩 표 Native의 정본 글꼴 공급을 재현한 17쪽에서 하락·누락 0쪽을 확인하고 상승 3행을 반영했다.",
+      "registration_receipt": "mydocs/pr/assets/visual-protected-baseline/updates/issue9326-20261124.json",
+      "increased_row_count": 3,
+      "evaluated_row_count": 17
     }
   ],
-  "updated_at": "2026-11-23T21:57:49.920882+09:00",
-  "previous_table_sha256": "b2ea68f97a242d111522132b6c733f15a65b29b56e227943fd9c15f9c8d35597",
+  "updated_at": "2026-11-24T18:00:30.260001+09:00",
+  "previous_table_sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
   "deduplication_scope": "source_dataset_count·removed_duplicate_datasets·deduplicated_sources는 최초 통합의 이력이다. 현행 46개 데이터셋은 기존 18문서·36개 데이터셋의 수용 출처와 후속 상승 기록을 보존하고, 2026-11-18의 동일 최종 전쪽 실행에서 다섯 원본·10개 데이터셋을 추가한 결과다. 각 데이터셋의 source와 source_history를 따른다."
 }

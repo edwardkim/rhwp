@@ -43,6 +43,10 @@ impl Frame {
             .join(" ")
     }
 
+    pub(super) fn layout_dpi(self) -> f64 {
+        self.dpi
+    }
+
     #[cfg(any(feature = "native-skia", target_arch = "wasm32"))]
     pub(super) fn read(value: &str) -> Option<Self> {
         let values = numbers::<14>(value)?;
@@ -62,6 +66,31 @@ impl Frame {
             return None;
         }
         Some((self.values[4] / viewport.0, self.values[5] / viewport.1))
+    }
+
+    pub(super) fn a4_pen_frame(
+        self,
+        viewport: (f64, f64),
+    ) -> Option<([f64; 2], [f64; 2], [f64; 2])> {
+        // 2020 Hancom PDF의 기본 A4 용지와 600dpi 장치의 양 축 크기.
+        // 문서가 작은 용지일 때도 PDF 매체는 A4이며 문서 외곽이 클립을 소유한다.
+        let sheet = [4961.0, 7016.0];
+        if self.values[0] > 59_528.0
+            || self.values[1] > 84_189.0
+            || self.values[4] <= 1.0
+            || self.values[5] <= 1.0
+        {
+            return None;
+        }
+        let extent = [self.values[4] - 1.0, self.values[5] - 1.0];
+        Some((
+            [self.values[2], self.values[3]],
+            [extent[0] / viewport.0, extent[1] / viewport.1],
+            [
+                595.0 / sheet[0] * self.dpi / 72.0,
+                841.0 / sheet[1] * self.dpi / 72.0,
+            ],
+        ))
     }
 
     /// 논리 창을 PDF의 양수 X·아래 방향 Y 행렬과 원점으로 변환한다.

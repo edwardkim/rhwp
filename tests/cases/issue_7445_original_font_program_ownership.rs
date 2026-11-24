@@ -19,6 +19,9 @@
 //! 원본 글꼴 프로그램·기호 소유는 공개 글꼴 결정 API로 확인한다.
 //! 전쪽 Native/fresh WASM 90%와 해당 쪽 98%·직접 판독을 마친 실물 경계는
 //! 내용 관계와 독립±2CSSpx로 함께 보호한다. 근거: stage5 C75/C76 보고서.
+//! 공백 폭 관계형 검사 주석 갱신: 2026-11-24T02:45:03+09:00.
+//! 설치 글꼴 없이 같은 합성 글꼴의 양수·0 공백 전진을 대조한다. 공개 글꼴 결정 API의
+//! 폭 선택 계약을 확인하는 합성 검사이므로 실물 페이지 일치율과 좌표는 적용하지 않는다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::{renderer::font_environment::FontEnvironment, DocumentCore};
@@ -64,6 +67,70 @@ fn record(core: &DocumentCore, character: &str) -> Value {
         .find(|r| r["source"]["character"] == character)
         .expect("원본 글자 기록")
         .clone()
+}
+
+#[test]
+fn zero_advance_in_selected_font_preserves_default_space() {
+    use sha2::{Digest, Sha256};
+
+    let font_bytes = include_bytes!("../fixtures/fonts/RHWPEquationCJKRegular.ttf");
+    let face = ttf_parser::Face::parse(font_bytes, 0).unwrap();
+    let glyph = face.glyph_index(' ').unwrap();
+    assert!(face.glyph_hor_advance(glyph).unwrap() > 0);
+    let table = face
+        .raw_face()
+        .table(ttf_parser::Tag::from_bytes(b"hmtx"))
+        .unwrap();
+    let offset = table.as_ptr() as usize - font_bytes.as_ptr() as usize + usize::from(glyph.0) * 4;
+    let mut without_advance = font_bytes.to_vec();
+    without_advance[offset..offset + 2].copy_from_slice(&0u16.to_be_bytes());
+    let changed = ttf_parser::Face::parse(&without_advance, 0).unwrap();
+    assert_eq!(changed.glyph_hor_advance(glyph), Some(0));
+
+    let family = "RHWP Equation Contract";
+    let mut document = core(family, "A A", None);
+    let mut model = document.document().clone();
+    for shape in &mut model.doc_info.char_shapes {
+        shape.use_font_space = true;
+    }
+    document.set_document(model);
+    let default_space = advance(&record(&document, " "));
+
+    let prepare = |document: &mut DocumentCore, program: &[u8]| {
+        let digest: String = Sha256::digest(program)
+            .iter()
+            .map(|byte| format!("{byte:02x}"))
+            .collect();
+        let snapshot = serde_json::json!([{
+            "query": family,
+            "family": family,
+            "programId": format!("sweep-{digest}"),
+            "trueType": true,
+        }]);
+        let environment = FontEnvironment::from_available_programs(
+            &document.document().doc_info,
+            &snapshot.to_string(),
+        )
+        .unwrap()
+        .expect("공급된 원본 글꼴 프로그램 선택");
+        document.set_font_environment(Some(environment)).unwrap();
+        assert!(document
+            .prepare_native_otf_fonts_with(|request| {
+                request
+                    .family
+                    .split(',')
+                    .any(|name| name.trim() == family)
+                    .then(|| (program.to_vec(), 0))
+            })
+            .unwrap());
+    };
+    prepare(&mut document, font_bytes);
+    let positive = record(&document, " ");
+    assert_eq!(positive["layoutMetric"]["widthSource"], "useFontSpace");
+    assert!(advance(&positive) > 0.0 && advance(&positive) < default_space);
+
+    prepare(&mut document, &without_advance);
+    assert_eq!(advance(&record(&document, " ")), default_space);
 }
 
 #[test]

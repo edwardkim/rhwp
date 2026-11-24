@@ -30,6 +30,8 @@
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::renderer::hwpunit_to_px;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use std::path::Path;
 
@@ -192,5 +194,173 @@ fn tac_logo_line_before_stored_reset_stays_on_the_title_page() {
     assert!(
         compact(&core, 1).starts_with("목차"),
         "2쪽은 목차로 시작한다(한컴 Print 2쪽)"
+    );
+}
+
+/// 관계형 — 한컴 2020 Print 90~93쪽에서 그림 뒤 본문과 갈린 표의 글줄·각주 소속을 확인한다.
+#[test]
+fn relocated_chart_and_split_rows_keep_their_print_page_owners() {
+    let core = core();
+    let pages: Vec<_> = (89..93).map(|page| compact(&core, page)).collect();
+    let print_owners = [
+        (90, "그림2-3.식량자급력의4가지유형"),
+        (90, "일본정부는외국으로부터의수입에의존"),
+        (91, "표2-4.일본의주요농산물비축기준"),
+        (92, "국민이최저한도로필요로하는열량의공급"),
+        (92, "대책본부장의직위는각사태에따라유동적임"),
+        (93, "험성이있는경우"),
+    ];
+    for (expected_page, text) in print_owners {
+        let actual: Vec<_> = pages
+            .iter()
+            .enumerate()
+            .filter(|(_, contents)| contents.contains(text))
+            .map(|(index, _)| 90 + index)
+            .collect();
+        assert_eq!(actual, [expected_page], "「{text}」의 한컴 Print 쪽 소속");
+    }
+}
+
+const DEFERRED_TABLE_PARA: usize = 893;
+const BLANK_RESTART_PARA: usize = 896;
+const BODY_AFTER_RESTART: usize = 897;
+
+fn first_food_line(boxes: &PageBoxes, paragraph: usize) -> Option<BoundingBox> {
+    boxes
+        .lines
+        .iter()
+        .filter(|(section, index, _)| *section == Some(2) && *index == Some(paragraph))
+        .map(|(_, _, bounds)| *bounds)
+        .min_by(|left, right| left.y.total_cmp(&right.y))
+}
+
+fn restart_gaps(boxes: &PageBoxes) -> (f64, f64) {
+    let (_, _, table) = boxes
+        .tables
+        .iter()
+        .find(|(section, index, _)| *section == Some(2) && *index == Some(DEFERRED_TABLE_PARA))
+        .expect("90쪽에 그림 2-3 표가 있다");
+    let blank = first_food_line(boxes, BLANK_RESTART_PARA).expect("표 뒤에 빈 재시작 줄이 있다");
+    let next = first_food_line(boxes, BODY_AFTER_RESTART).expect("빈 줄 뒤에 본문이 있다");
+    assert!(blank.y >= table.y + table.height);
+    assert!(next.y >= blank.y + blank.height);
+    (blank.y - (table.y + table.height), next.y - blank.y)
+}
+
+/// 관계형 — 그림 2-3의 공백 호스트는 89쪽, 표와 빈 재시작 줄은 90쪽을 소유한다.
+#[test]
+fn deferred_table_keeps_whitespace_host_on_previous_print_page() {
+    let core = core();
+    let before = page_boxes(&core, 88);
+    let after = page_boxes(&core, 89);
+    assert!(first_food_line(&before, DEFERRED_TABLE_PARA).is_some());
+    assert!(first_food_line(&after, DEFERRED_TABLE_PARA).is_none());
+    assert!(before
+        .tables
+        .iter()
+        .all(|(section, index, _)| *section != Some(2) || *index != Some(DEFERRED_TABLE_PARA)));
+    restart_gaps(&after);
+}
+
+/// 관계형 — 원본 저장 줄이 인증한 표 아래 원점을 유지한다.
+#[test]
+fn stored_restart_line_consumes_paragraph_spacing_before_its_origin() {
+    let mut core = core();
+    let baseline = restart_gaps(&page_boxes(&core, 89));
+    let document = core.document_mut();
+    let paragraph = &mut document.sections[2].paragraphs[BLANK_RESTART_PARA];
+    let mut shape = document.doc_info.para_shapes[paragraph.para_shape_id as usize].clone();
+    assert_eq!(shape.spacing_before, 0);
+    shape.spacing_before = 5000;
+    shape.raw_data = None;
+    document.doc_info.para_shapes.push(shape);
+    paragraph.para_shape_id = (document.doc_info.para_shapes.len() - 1) as u16;
+    let document = core.document().clone();
+    core.set_document(document);
+    let with_spacing = restart_gaps(&page_boxes(&core, 89));
+    assert!((baseline.0 - with_spacing.0).abs() <= 0.5);
+    assert!((baseline.1 - with_spacing.1).abs() <= 0.5);
+}
+
+/// 관계형 — 6쪽 목차 표는 빈 줄 전진을 포함한 원본 내용 전체를 개체 선언 안에 배치한다.
+#[test]
+fn centered_contents_table_uses_its_declared_object_frame() {
+    let core = core();
+    let page = 5;
+    let section = 2;
+    let paragraph = 25;
+    let [Control::Table(source)] = core.document().sections[section].paragraphs[paragraph]
+        .controls
+        .as_slice()
+    else {
+        panic!("원본 목차 표가 없다");
+    };
+    assert!(source.cells[0].height > source.common.height);
+    let frame = page_boxes(&core, page)
+        .tables
+        .into_iter()
+        .find(|(s, p, _)| *s == Some(section) && *p == Some(paragraph))
+        .map(|(_, _, bounds)| bounds)
+        .expect("한컴 Print와 같은 6쪽에 목차 표가 있다");
+    let declared = hwpunit_to_px(source.common.height as i32, 96.0);
+    assert!(
+        (frame.height - declared).abs() < 1e-6,
+        "표의 실제 높이 {}가 원본 개체 선언 {declared}을 따른다",
+        frame.height,
+    );
+    let contents = compact(&core, page);
+    assert!(contents.contains("제1장서론") && contents.contains("생산,소비"));
+}
+
+fn picture_between_text_rows(
+    core: &DocumentCore,
+    page: u32,
+    paragraph: usize,
+) -> (BoundingBox, BoundingBox) {
+    let page = core.build_page_render_tree(page).expect("한컴 Print 쪽");
+    let mut remaining = vec![&page.root];
+    let table = loop {
+        let node = remaining.pop().expect("그림을 담은 원본 표");
+        if matches!(&node.node_type, RenderNodeType::Table(table)
+            if table.section_index == Some(2) && table.para_index == Some(paragraph))
+        {
+            break node;
+        }
+        remaining.extend(&node.children);
+    };
+    let picture_row = table
+        .children
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::TableCell(cell) if cell.row == 1))
+        .expect("가운데 그림 행");
+    let picture = picture_row
+        .children
+        .iter()
+        .find(|node| matches!(&node.node_type, RenderNodeType::Image(_)))
+        .expect("그림 행의 원본 그림");
+    (picture_row.bbox, picture.bbox)
+}
+
+/// 관계형 — 85쪽의 그림은 설명·출처 행 사이에서 자신의 전체 높이를 보존한다.
+#[test]
+fn picture_between_caption_and_source_stays_inside_its_row() {
+    let (row, picture) = picture_between_text_rows(&core(), 84, 845);
+    assert!(picture.y > row.y, "그림 위 안 여백");
+    assert!(
+        picture.y + picture.height < row.y + row.height,
+        "그림의 전체 높이가 출처 행 전에 들어가야 한다",
+    );
+}
+
+/// 관계형 — 89쪽은 폭 없는 저장 줄의 위치와 무관하게 그림이 행의 가운데에 놓인다.
+#[test]
+fn declared_picture_row_centers_the_picture_instead_of_its_empty_line() {
+    let (row, picture) = picture_between_text_rows(&core(), 88, 884);
+    let above = picture.y - row.y;
+    let below = row.y + row.height - picture.y - picture.height;
+    assert!(above > 0.0 && below > 0.0, "그림 위·아래 안 여백");
+    assert!(
+        (above - below).abs() < 1e-6,
+        "그림 위·아래 여백 {above} / {below}"
     );
 }

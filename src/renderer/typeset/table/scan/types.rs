@@ -46,6 +46,8 @@ pub(in crate::renderer::typeset) struct BlockRowScanVars {
     pub(in crate::renderer::typeset) reflow_blank_avail_for_rows: Option<f64>,
     /// 각주 refit이 필요한 표에서는 병합 칸의 빈 쪽 끝 띠를 미리 소유하지 않는다.
     pub(in crate::renderer::typeset) has_table_footnotes: bool,
+    /// 이미 수용한 쪽 각주의 위끝까지 남은 행 영역. 조각별 큐의 미래 각주는 별개다.
+    pub(in crate::renderer::typeset) existing_note_opening_rows: Option<f64>,
     pub(in crate::renderer::typeset) header_overhead: f64,
     pub(in crate::renderer::typeset) landscape_rowbreak_bleed: bool,
     pub(in crate::renderer::typeset) landscape_whole_row_tolerance: f64,

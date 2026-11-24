@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 
 use resvg::{tiny_skia, usvg};
 
-use super::{frame, images, text, xml};
+use super::{device_coverage, frame, images, text, xml};
 use crate::renderer::print_raster::Raster;
 
 const MAX_PIXELS: u64 = 67_108_864;
@@ -83,6 +83,10 @@ pub(crate) fn rasterize(
         return None;
     }
     for node in document.descendants().filter(|node| node.is_element()) {
+        if let Some(marker) = node.attribute(device_coverage::ATTRIBUTE) {
+            let sampled = device_coverage::sampled_path(node, marker, matrix, root_matrix)?;
+            edits.push((node.range(), sampled));
+        }
         if let Some(value) = node.attribute(text::ATTRIBUTE) {
             let marker = text::Marker::read(value)?;
             let device = frame.text_device_matrix(marker.pdf, marker.window, matrix)?;
