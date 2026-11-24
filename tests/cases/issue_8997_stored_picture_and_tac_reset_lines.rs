@@ -221,6 +221,67 @@ fn relocated_chart_and_split_rows_keep_their_print_page_owners() {
     }
 }
 
+const DEFERRED_TABLE_PARA: usize = 893;
+const BLANK_RESTART_PARA: usize = 896;
+const BODY_AFTER_RESTART: usize = 897;
+
+fn first_food_line(boxes: &PageBoxes, paragraph: usize) -> Option<BoundingBox> {
+    boxes
+        .lines
+        .iter()
+        .filter(|(section, index, _)| *section == Some(2) && *index == Some(paragraph))
+        .map(|(_, _, bounds)| *bounds)
+        .min_by(|left, right| left.y.total_cmp(&right.y))
+}
+
+fn restart_gaps(boxes: &PageBoxes) -> (f64, f64) {
+    let (_, _, table) = boxes
+        .tables
+        .iter()
+        .find(|(section, index, _)| *section == Some(2) && *index == Some(DEFERRED_TABLE_PARA))
+        .expect("90쪽에 그림 2-3 표가 있다");
+    let blank = first_food_line(boxes, BLANK_RESTART_PARA).expect("표 뒤에 빈 재시작 줄이 있다");
+    let next = first_food_line(boxes, BODY_AFTER_RESTART).expect("빈 줄 뒤에 본문이 있다");
+    assert!(blank.y >= table.y + table.height);
+    assert!(next.y >= blank.y + blank.height);
+    (blank.y - (table.y + table.height), next.y - blank.y)
+}
+
+/// 관계형 — 그림 2-3의 공백 호스트는 89쪽, 표와 빈 재시작 줄은 90쪽을 소유한다.
+#[test]
+fn deferred_table_keeps_whitespace_host_on_previous_print_page() {
+    let core = core();
+    let before = page_boxes(&core, 88);
+    let after = page_boxes(&core, 89);
+    assert!(first_food_line(&before, DEFERRED_TABLE_PARA).is_some());
+    assert!(first_food_line(&after, DEFERRED_TABLE_PARA).is_none());
+    assert!(before
+        .tables
+        .iter()
+        .all(|(section, index, _)| *section != Some(2) || *index != Some(DEFERRED_TABLE_PARA)));
+    restart_gaps(&after);
+}
+
+/// 관계형 — 원본 저장 줄이 인증한 표 아래 원점을 유지한다.
+#[test]
+fn stored_restart_line_consumes_paragraph_spacing_before_its_origin() {
+    let mut core = core();
+    let baseline = restart_gaps(&page_boxes(&core, 89));
+    let document = core.document_mut();
+    let paragraph = &mut document.sections[2].paragraphs[BLANK_RESTART_PARA];
+    let mut shape = document.doc_info.para_shapes[paragraph.para_shape_id as usize].clone();
+    assert_eq!(shape.spacing_before, 0);
+    shape.spacing_before = 5000;
+    shape.raw_data = None;
+    document.doc_info.para_shapes.push(shape);
+    paragraph.para_shape_id = (document.doc_info.para_shapes.len() - 1) as u16;
+    let document = core.document().clone();
+    core.set_document(document);
+    let with_spacing = restart_gaps(&page_boxes(&core, 89));
+    assert!((baseline.0 - with_spacing.0).abs() <= 0.5);
+    assert!((baseline.1 - with_spacing.1).abs() <= 0.5);
+}
+
 /// 관계형 — 6쪽 목차 표는 빈 줄 전진을 포함한 원본 내용 전체를 개체 선언 안에 배치한다.
 #[test]
 fn centered_contents_table_uses_its_declared_object_frame() {

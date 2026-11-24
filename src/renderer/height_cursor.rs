@@ -124,6 +124,35 @@ pub(crate) fn stored_ladder_omits_spacing_after(
         && !current.cell_format_vpos_dirty
 }
 
+/// 이월 저장 상자(`stored_successor_line_origin`)의 재시작 줄을 소유하는 문단인가.
+///
+/// host 바로 다음 문단이거나, 사이 문단이 모두 개체 없는 빈 문단(앞 쪽에 남은 줄)이고
+/// 이 문단 첫 줄의 저장 vpos 가 바깥 상자 아래끝과 같다(새 쪽 사다리의 재시작).
+/// [#8997] 1490000-201400162 s2: pi105 빈 줄은 앞 쪽, pi106 vpos 9916 = 상자 높이.
+pub(crate) fn stored_frame_successor(
+    owner: usize,
+    item_para: usize,
+    paragraphs: &[Paragraph],
+    origin: f64,
+    dpi: f64,
+) -> bool {
+    if owner.checked_add(1) == Some(item_para) {
+        return true;
+    }
+    owner < item_para
+        && paragraphs.get(owner + 1..item_para).is_some_and(|between| {
+            between
+                .iter()
+                .all(|p| p.controls.is_empty() && !super::layout::para_has_non_whitespace_text(p))
+        })
+        && paragraphs
+            .get(item_para)
+            .and_then(|p| p.line_segs.first())
+            .is_some_and(|line| {
+                i64::from(line.vertical_pos) == (origin * 7200.0 / dpi).round() as i64
+            })
+}
+
 fn para_has_visible_text(para: &Paragraph) -> bool {
     para.text.chars().any(|c| c > '\u{001F}' && c != '\u{FFFC}')
 }
@@ -453,57 +482,64 @@ impl HeightCursor {
     /// 완전 개체 프레임이 확정한 뒤 저장 줄을 현재 좌표축에 연결한다.
     /// 원본·정규화 줄 좌표는 각 입력의 값으로 변환하되 같은 실제 종료량을
     /// 소비한다. 이전 호스트의 줄간격이나 lazy 역산을 이 경계에 반복하지 않는다.
+    ///
+    /// 반환값은 연결한 문단의 시작 y 다. 상자 아래끝은 첫 줄 원점이므로 문단 시작은
+    /// 그 앞 간격만큼 위다 — 문단 배치가 앞 간격을 더해 첫 줄이 저장 기준(base)과 같은
+    /// 자리에 놓인다([#8997] 1490000-201400162 s2 pi106: 앞 간격 2500HU, 저장 줄 9916
+    /// = 상자 높이).
     pub(crate) fn bind_stored_frame_successor(
         &mut self,
         y_offset: f64,
         item_para: usize,
         paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
         placements: &std::collections::HashMap<
             (usize, usize),
             super::float_placement::ParagraphFloatPlacement,
         >,
-    ) -> bool {
+    ) -> Option<f64> {
         if self.session_edited
             || self.uniform_filler_ladder
             || !self.dpi.is_finite()
             || self.dpi <= 0.0
         {
-            return false;
+            return None;
         }
-        let Some(para) = paragraphs.get(item_para) else {
-            return false;
-        };
-        let Some(line) = para.line_segs.first() else {
-            return false;
-        };
+        let para = paragraphs.get(item_para)?;
+        let line = para.line_segs.first()?;
         if para.stored_text_partition_is_dirty()
             || para.cell_format_vpos_dirty
             || para.column_type != crate::model::paragraph::ColumnBreakType::None
             || line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
             || line.line_height <= 0
         {
-            return false;
+            return None;
+        }
+        let spacing_before = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map_or(0.0, |style| style.spacing_before);
+        if !spacing_before.is_finite() || spacing_before < 0.0 {
+            return None;
         }
         let unit = self.dpi / 7200.0;
         let origin = placements.iter().find_map(|(&(owner, _), placement)| {
             let origin = placement.stored_successor_line_origin?;
-            (owner.checked_add(1) == Some(item_para)
+            (stored_frame_successor(owner, item_para, paragraphs, origin, self.dpi)
                 && placement.flow == super::float_placement::ParagraphFloatFlow::NextLine
                 && origin.is_finite()
                 && (origin - placement.occupied_bottom).abs() <= unit
                 && (y_offset - self.col_area_y - origin).abs() <= unit)
                 .then_some(origin)
         });
-        let Some(origin) = origin else {
-            return false;
-        };
+        let origin = origin?;
         let base = line.vertical_pos - (origin * 7200.0 / self.dpi).round() as i32;
         self.col_anchor_y = self.col_area_y;
         self.vpos_page_base = Some(base);
         self.vpos_lazy_base = None;
         self.stored_column_origin = Some((base, self.col_area_y));
-        self.stored_boundary_spacing_before = 0.0;
-        true
+        self.stored_boundary_spacing_before = spacing_before;
+        Some(y_offset - spacing_before)
     }
 
     /// 후속 원본 줄이 확인한 재조판 소비 끝을 같은 단의 저장 축으로 잇는다.
@@ -645,6 +681,10 @@ impl HeightCursor {
                 } else {
                     self.vpos_lazy_base = Some(base);
                 }
+                // 문단 배치는 반환값(문단 시작) 뒤에 앞 간격을 더한다. 줄 원점이면 그 앞
+                // 간격만큼 앞에서 시작해야 첫 줄이 위 기준(base)과 같은 자리에 놓인다
+                // ([#8997] 이월 표 뒤 재시작 문단 pi106: 앞 간격 2500HU, 저장 줄 = 상자 아래끝).
+                return owned.first_line_y(spacing_before) - spacing_before;
             }
             return origin;
         }
