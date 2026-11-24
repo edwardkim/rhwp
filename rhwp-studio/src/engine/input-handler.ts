@@ -64,7 +64,7 @@ import { CaretLayoutReveal } from './caret-layout-reveal';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 import { CellBlockLetterImeGuard } from '@/command/contextual-shortcut';
 import { ImeNavigationGuard } from './ime-navigation-guard';
-import { fieldInfoAt, selectedFieldAt, type F11Field } from './control-place';
+import { atOtherSelectedField, fieldInfoAt, selectedFieldAt, type F11Field } from './control-place';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -5502,7 +5502,7 @@ export class InputHandler {
   /** 그 자리의 누름틀을 활성으로 둔다. F11로 고른 누름틀이 그 자리에 있으면 그것을 둔다. 바뀌면 true. */
   activateFieldAt(pos: DocumentPosition, selected = selectedFieldAt(this.wasm, pos, this.f11Field)): boolean {
     const pin = this.f11Field;
-    if (pin && selected) return this.wasm.setActiveFieldAt(pin.place, pin.controlIndex);
+    if (pin && (selected || atOtherSelectedField(pos, pin))) return this.wasm.setActiveFieldAt(pin.place, pin.controlIndex);
     this.f11Field = null;
     return this.wasm.setActiveField(pos);
   }
@@ -5690,7 +5690,7 @@ export class InputHandler {
     try {
       const pos = this.cursor.getPosition();
       const selected = selectedFieldAt(this.wasm, pos, this.f11Field);
-      if (!selected) this.f11Field = null;
+      if (!selected && !atOtherSelectedField(pos, this.f11Field)) this.f11Field = null;
       const fi = selected ?? this.wasm.getFieldInfoAt(pos);
       if (fi.inField && fi.startCharIdx !== undefined && fi.endCharIdx !== undefined) {
         if (this.isAtExitedFieldStart(pos, fi) || this.isAtExitedFieldEnd(pos, fi)) {

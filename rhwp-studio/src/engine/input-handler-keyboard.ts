@@ -18,7 +18,7 @@ import {
   type NavigationKeyInput,
 } from './navigation-keymap';
 import type { DocumentPosition, CursorRect, CellBbox, CellPathLike, ControlPlace } from '@/core/types';
-import { controlPlaceOf, positionOfPlace, selectedFieldAt } from './control-place';
+import { atOtherSelectedField, controlPlaceOf, positionOfPlace, selectedFieldAt } from './control-place';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { inlineOfficeClipboardImages, liftImagesToBlockLevel, needsRtfImageInlining } from './office-clipboard-images';
@@ -2313,7 +2313,7 @@ export function handleF11(this: any): void {
   try {
     // 현재 선택 상태에 따라 검색 시작점 결정
     // - 표/그림 객체 선택 중: 선택된 컨트롤의 앞 형제부터
-    // - F11로 고른 누름틀에 캐럿이 그대로 있으면: 그 컨트롤의 앞 형제부터 → 같은 자리 누름틀을 하나씩 고름
+    // - 캐럿이 F11로 고른 누름틀의 현재 범위에 있으면: 그 컨트롤의 앞 형제부터 → 같은 자리 누름틀을 하나씩 고름
     // - 그 밖의 선택 중: anchor(선택 시작점)에서 검색
     // - 그 외: 현재 커서 위치 (셀·글상자 안이면 그 영역부터 훑고 표·개체로 나온다)
     let searchSec: number, searchPara: number, searchCharOffset: number;
@@ -2335,7 +2335,7 @@ export function handleF11(this: any): void {
       searchCharOffset = ctrlPositions?.[ref!.ci] ?? 0;
       place = { section: searchSec, para: searchPara, cellPath: [] };
       fromControl = ref!.ci;
-    } else if (pin && selectedFieldAt(this.wasm, caret, pin)) {
+    } else if (pin && (selectedFieldAt(this.wasm, caret, pin) || atOtherSelectedField(caret, pin))) {
       searchSec = caret.sectionIndex; searchPara = caret.paragraphIndex; searchCharOffset = caret.charOffset;
       place = pin.place;
       fromControl = pin.controlIndex;
@@ -2431,7 +2431,7 @@ export function handleF11(this: any): void {
         fieldId: result.fieldId, fieldType: result.fieldType,
         guideName: result.fieldId === undefined ? undefined : this.wasm.getClickHereProps(result.fieldId).guide,
       };
-      this.f11Field = { place: result.place, controlIndex: result.ci, info };
+      this.f11Field = { startOffset: start, place: result.place, controlIndex: result.ci, info };
       this.updateCaret();
       this.eventBus.emit('field-info-changed', info);
     } else if (result.type === 'field') {

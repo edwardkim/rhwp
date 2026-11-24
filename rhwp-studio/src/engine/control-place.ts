@@ -46,6 +46,7 @@ export function positionOfPlace(place: ControlPlace, charOffset: number, areas: 
 }
 
 export interface F11Field {
+  startOffset: number;
   place: ControlPlace;
   controlIndex: number;
   info: { fieldId?: number; fieldType?: string; guideName?: string };
@@ -56,12 +57,22 @@ type FieldQueries = {
   getFieldInfoForControlAt(place: ControlPlace, controlIndex: number, offset: number): FieldInfoResult;
 };
 
-/** 입력 뒤 바뀐 범위에서 선택한 컨트롤을 조회한다. 다른 문단·셀이나 사라진 필드에는 적용하지 않는다. */
+function samePlace(a: ControlPlace, b: ControlPlace): boolean {
+  return a.section === b.section && a.para === b.para
+    && JSON.stringify(a.cellPath) === JSON.stringify(b.cellPath);
+}
+
+/** 누름틀 이외의 필드는 F11이 선택한 원래 자리에서 이전 컨트롤 탐색을 이어 간다. */
+export function atOtherSelectedField(pos: DocumentPosition, pin?: F11Field | null): boolean {
+  return !!pin && pin.info.fieldType !== 'clickhere' && pos.charOffset === pin.startOffset
+    && samePlace(controlPlaceOf(pos), pin.place);
+}
+
+/** 입력 뒤 바뀐 범위에서 선택한 누름틀을 조회한다. 다른 문단·셀이나 사라진 필드에는 적용하지 않는다. */
 export function selectedFieldAt(wasm: FieldQueries, pos: DocumentPosition, pin?: F11Field | null): FieldInfoResult | null {
-  if (!pin) return null;
+  if (!pin || pin.info.fieldType !== 'clickhere') return null;
   const place = controlPlaceOf(pos);
-  if (place.section !== pin.place.section || place.para !== pin.place.para
-      || JSON.stringify(place.cellPath) !== JSON.stringify(pin.place.cellPath)) return null;
+  if (!samePlace(place, pin.place)) return null;
   const info = wasm.getFieldInfoForControlAt(place, pin.controlIndex, pos.charOffset);
   return info.inField && info.fieldId === pin.info.fieldId ? info : null;
 }

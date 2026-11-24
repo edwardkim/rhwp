@@ -111,6 +111,20 @@ runTest('F11 같은 자리 누름틀', async ({ page }) => {
     }
   }
 
+  // 한 누름틀에 입력한 다음 다시 F11을 눌러 이웃을 선택하고, 문단 끝에서 필드를 빠져나간다.
+  await buildSamePlace(page);
+  await f11(page);
+  await page.keyboard.type('xy');
+  await f11(page);
+  assert(await picked(page) === '가', '입력 후 F11로 이전 누름틀 선택');
+  await page.keyboard.type('ab');
+  await page.keyboard.press('End');
+  await page.keyboard.type('!');
+  await settle(page);
+  for (const [format, fields] of Object.entries(await savedValues(page))) {
+    assert(fields['나'] === 'xy' && fields['가'] === 'ab', `${format} 선택 이동과 이탈: ${JSON.stringify(fields)}`);
+  }
+
   // 본문 누름틀 '본문' 뒤 1x1 표, 그 셀의 "셀 끝" 글자 자리 2에 누름틀 '셀'.
   await createNewDocument(page);
   await page.evaluate(() => {
