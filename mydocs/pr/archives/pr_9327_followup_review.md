@@ -57,9 +57,9 @@ macOS 최소 글꼴 환경의 전체 Nextest는 14,074건 통과, 실패 0건, 4
 
 Native Skia 단위 검사는 4,032건 통과, 실패 0건, 제외 12건입니다. Native Skia 집중 검사에서 누락 그림 자리표시자 2건과 37쪽 PDF 직접 내보내기 관련 37건을 통과했습니다. Native Clippy, WASM32 Clippy, workspace all-target Clippy와 workspace 빌드를 통과했습니다.
 
-정본 보호 46개 조건·4,046쪽의 공식 두 자리 표시값 하락은 0쪽입니다. 종합부동산세법 Native·fresh WASM 각 6쪽과 sample10 Native 763쪽은 문서별 허용 SHA-256으로 기존 하한을 재현했습니다. 중첩 표 Native 17쪽은 100.00%이며 2·7·17쪽을 상향합니다. [보호 비교 요약](../assets/issue_9326/20261124/protected/README.md)
+정본 보호 46개 조건·4,046쪽의 공식 두 자리 표시값 하락은 0쪽입니다. 종합부동산세법 Native·fresh WASM 각 6쪽과 sample10 Native 763쪽은 문서별 허용 SHA-256으로 기존 하한을 재현했습니다. 중첩 표 Native 17쪽은 100.00%이며 2·7·17쪽의 보호값을 상향했습니다. [보호 비교 요약](../assets/issue_9326/20261124/protected/README.md) · [갱신 영수증](../assets/visual-protected-baseline/updates/issue9326-20261124.json)
 
-실제 Studio Canvas2D에서 두 원본의 주장 쪽 14건을 확인했습니다. CanvasKit은 제주 차트 축소 대조군 2건에서 선택·렌더링됐습니다. 전체 원본을 CanvasKit으로 요청한 14건은 문서 글꼴 요구 목록을 완성하지 못해 Canvas2D가 선택됐으며 전체 원본의 CanvasKit 통과로 집계하지 않습니다.
+실제 Studio Canvas2D에서 두 원본의 주장 쪽 14건을 확인했습니다. CanvasKit은 제주 차트 축소 대조군 2건에서 선택·렌더링됐습니다. 전체 원본의 CanvasKit 준비는 devel과 후보 모두 200,000 작업 한도에 닿았습니다. 식량안보는 devel 92쪽·후보 91쪽, 제주는 양쪽 197쪽까지 검사한 상태였습니다. 전체 원본을 CanvasKit으로 요청한 14건에서 실제 선택은 Canvas2D였습니다.
 
 [#9326 미달 쪽과 #8997 이월 표 경계의 대응 결과](../assets/issue_9326/20261124/issue-page-coverage.json)
 

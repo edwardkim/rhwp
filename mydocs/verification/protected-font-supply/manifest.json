@@ -3,11 +3,11 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "e7b3c280d28c4b7548f36788f1a70aaca1e52cf80a5c292a1f1a27aa4870e82b"
+      "sha256": "e62f2516f4bf5be8f262ee3ff3b29c3b5d32f59c8db0a2971d0177877d1a467f"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-      "sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68"
+      "sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c"
     }
   },
   "accepted_sha256_pairs": {
@@ -15108,8 +15108,8 @@
             "sha256": "e038a1dc0793cdc43a40eeaeefe83d72baf5f92448a4fb4b98b523f729bb6159"
           },
           "accepted_condition_evidence": {
-            "path": "mydocs/verification/protected-font-supply/records/nested-table-protected-validation.json",
-            "sha256": "067ea7e42ff4b33b1069645fc9da12414a42b7c2b64e844da028bf54b287e401"
+            "path": "mydocs/pr/assets/issue_9326/20261124/protected/README.md",
+            "sha256": "6fb7cc795632cf3560c48204e6589a85c2c50042b25fac9be77c85fa122ca736"
           },
           "previous_pr": {
             "number": 9318,
@@ -15131,12 +15131,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
-            "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",
-            "selector": {
-              "key": "nested",
-              "backend": "native"
-            }
+            "path": "mydocs/pr/assets/issue_9326/20261124/protected/README.md",
+            "sha256": "6fb7cc795632cf3560c48204e6589a85c2c50042b25fac9be77c85fa122ca736"
           }
         },
         "wasm": {
