@@ -2448,7 +2448,11 @@ impl DocumentCore {
         parent_para_idx: usize,
         path: &[(usize, usize, usize)],
     ) -> Result<(), HwpError> {
-        let paragraph = self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?;
+        let paragraph = if path.is_empty() {
+            &mut self.document.sections[section_idx].paragraphs[parent_para_idx]
+        } else {
+            self.get_cell_paragraph_mut_by_path(section_idx, parent_para_idx, path)?
+        };
         paragraph.replace_line_segs(Vec::new());
         paragraph.invalidate_layout_inputs();
         Ok(())
