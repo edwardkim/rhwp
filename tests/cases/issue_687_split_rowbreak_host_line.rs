@@ -1,6 +1,6 @@
 //! [planet6897/rhwp-issue-docs#687] 관계형·고정형 회귀 — 여러 쪽으로 나뉜 빈 host RowBreak 자리차지 표가 끝난 뒤 host 줄 상자를 흐름에 남긴다.
 //!
-//! 주석 갱신: 2026-11-25T02:21:00+09:00, 새 파일.
+//! 주석 갱신: 2026-11-26T21:55:00+09:00 (devel `3fdaa04258` rebase 뒤 재측정). 첫 작성 2026-11-25T02:21:00+09:00, 새 파일.
 //!
 //! - 입력: `samples/issue687/gochang_wetland_final_report.hwp` — 공개 문서
 //!   「제2차 고창 운곡습지보호지역 보전계획 수립 연구용역 최종보고회 결과」(HWP5, 4쪽, 10k 코퍼스 #7287).
@@ -10,13 +10,13 @@
 //!   문단 25 에는 글앞으로 TAC 도형(□ 기호)이 있다.
 //! - 독립 기준: `pdf/issue687/gochang_wetland_final_report-2022.pdf`(한컴오피스 2022 12.0.0.4547
 //!   Print → Hancom PDF, 4쪽). 4쪽 표 끝 아래에 host 줄 한 줄(≈30px)을 두고 「향후 계획」이 이어진다.
-//! - 수정 전 rhwp(devel `28a6afc1eb`)는 끝 조각 뒤 host 줄 전진(#2439 계약)을 양수 오프셋·개체 없는
+//! - 수정 전 rhwp(devel `3fdaa04258`)는 끝 조각 뒤 host 줄 전진(#2439 계약)을 양수 오프셋·개체 없는
 //!   다음 문단에서만 계상해 「향후 계획」 이하가 표에 붙었다(약 30px 위).
 //!
-//! 측정: 2026-11-25 KST, `scripts/visual_sweep.py --silhouette-only`, compat 2022·96 DPI·보정 전 2px raw
+//! 측정: 2026-11-26 KST(base `3fdaa04258` 위 rebase head), `scripts/visual_sweep.py --silhouette-only`, compat 2022·96 DPI·보정 전 2px raw
 //! 실루엣(`silhouette_raw_match_percent`). 전체 4쪽 = 한컴 Print 4쪽. 대상 4쪽(표 끝 조각·「향후 계획」)
 //! Native 95.67% / fresh WASM 95.97%. 전쪽 최저 Native 92.72%(3쪽) / fresh WASM 92.87%(3쪽).
-//! 수정 전 Native 4쪽 86.66%. 4쪽 표 끝·「향후 계획」 경계를 독립 PDF와 같은 배율로 확대 판독했다.
+//! 수정 전(base `3fdaa04258`) Native 4쪽 86.66%(1~3쪽은 수정 후와 같음). 4쪽 표 끝·「향후 계획」 경계를 독립 PDF와 같은 배율로 확대 판독했다.
 //! 증거: `mydocs/pr/assets/issue_687/{native,wasm,base}/`(전쪽 TSV·review·overlay PNG, 확대 비교).
 //!
 //! 검사: 원본 계약(빈 host, 자리차지 RowBreak 표 하나, 오프셋 0, 접힌 사다리), 쪽수 4 = 한컴(고정형),
