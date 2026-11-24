@@ -47,15 +47,21 @@ fn assert_page_ownership_after_edit(bytes: &[u8], paragraph: usize) {
     if paragraph == 24 {
         assert_ne!(source[0], para.line_segs[0].vertical_pos);
     } else {
-        let previous = &core.document().sections[0].paragraphs[paragraph - 1];
+        // 원본의 문단 110·111에는 저장 줄이 없다. 직전 유효한 줄은 문단 109에 있다.
+        let preceding = &core.document().sections[0].paragraphs[..paragraph];
+        assert!(preceding
+            .last()
+            .unwrap()
+            .source_line_seg_vertical_pos
+            .is_none());
+        let previous_stored = preceding
+            .iter()
+            .rev()
+            .find_map(|p| p.source_line_seg_vertical_pos.as_ref()?.last())
+            .expect("앞 문단 중 마지막 저장 줄");
         assert!(
-            source[0]
-                < *previous
-                    .source_line_seg_vertical_pos
-                    .as_ref()
-                    .unwrap()
-                    .last()
-                    .unwrap()
+            source[0] < *previous_stored,
+            "쪽 경계에서 저장 세로 위치가 다시 시작한다"
         );
     }
     let offset = usize::from(!para.text.is_empty());
