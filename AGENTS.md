@@ -362,7 +362,10 @@ SHA-256·이전/보존 경로·활성 유지/제거 목록·복원 조건을 기
   재캡처를 먼저 한다. 기존 차이 또는 합성 입력이라는 분류만으로 보류 사유를 해소하지 않는다.
   기준 입력의 저장 정보가 무효라면 원본과 실패 증거를 보존하고, 독립적으로 재생성한 대조군의
   생성 절차와 변경점을 공개한다. 대조군 통과를 원본 입력의 일치로 바꾸어 보고하지 않는다.
-- 공식 기준 PDF는 Windows 데스크톱 한컴 2020·2024의 `Hancom PDF` 인쇄본만 수용한다.
+- 공식 기준 PDF는 Windows 데스크톱 한컴 2020·2024의 `Hancom PDF` 인쇄본을 기본으로 수용한다.
+  MCP가 인쇄 오류를 검출해 같은 엔진의 검증된 PDF 저장본을 반환하면
+  [한컴 Print 버그 예외](mydocs/manual/verification/visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)를 기록하고 Visual Sweep을 계속한다.
+  전쪽 TSV·쪽수·일치율·확대 판독 기준은 유지한다.
   Cairo 출력은 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022` 출력은 MCP 2024로
   다시 인쇄한다. 제품·인쇄 경로와 PDF 형식 버전을 구분하고
   [기준 PDF 재사용·재출력](mydocs/manual/pr_review/visual_fixture_evidence.md#35-시각-검증-원칙) 절차를 따른다.
