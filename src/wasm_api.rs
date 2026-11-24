@@ -3364,6 +3364,20 @@ impl HwpDocument {
             .map_err(|e| e.into())
     }
 
+    /// 지정한 누름틀이 글자 위치를 포함하면 해당 필드 정보와 현재 범위를 반환한다.
+    #[wasm_bindgen(js_name = getFieldInfoForControlAt)]
+    pub fn get_field_info_for_control_at(
+        &self,
+        place_json: &str,
+        control_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let place = crate::document_core::queries::parse_bookmark_place(place_json)?;
+        Ok(self
+            .core
+            .field_info_for_control_at(&place, control_idx as usize, char_offset as usize))
+    }
+
     /// 주소 문단(`place` 꼴 JSON)의 `control_idx` 누름틀을 활성 필드로 둔다. 같은 글자 자리의 여러 누름틀 가운데
     /// 고른 것에 입력이 들게 한다. 바뀌었으면 true다.
     #[wasm_bindgen(js_name = setActiveFieldAt)]

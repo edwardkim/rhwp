@@ -401,6 +401,7 @@ impl DocumentCore {
             .and_then(|section| section.paragraphs.get(parent_para_idx))
             .and_then(crate::renderer::composer::paragraph_flow_end);
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
+        let skew = validated_skew(shape, props_json)?;
         let caption_width_before = shape_caption_text_width(shape);
 
         // [#8399] 어울림 배제 밴드 지문 — 그림 속성 편집(#6204)과 같은 재투영 판정.
@@ -659,12 +660,7 @@ impl DocumentCore {
         }
 
         super::common::update_changed_polygon_geometry(shape, transform_before);
-        // 크기 편집이 행렬을 비운 뒤에 기울이기를 넣는다.
-        apply_skew(
-            shape,
-            crate::document_core::helpers::json_i32(props_json, "skewX"),
-            crate::document_core::helpers::json_i32(props_json, "skewY"),
-        )?;
+        apply_skew(shape, skew);
 
         if caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);
@@ -819,9 +815,10 @@ impl DocumentCore {
     pub(crate) fn apply_shape_props_inner(
         shape: &mut crate::model::shape::ShapeObject,
         props_json: &str,
-    ) -> bool {
+    ) -> Result<bool, HwpError> {
         use crate::document_core::helpers::{json_bool, json_i32, json_str};
 
+        let skew = validated_skew(shape, props_json)?;
         // [#6740] 변환 파생 상태 무효화 판정용 — 어떤 대입보다 먼저 잰다.
         let transform_before =
             super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr());
@@ -1031,7 +1028,8 @@ impl DocumentCore {
             group_geometry::finish_group_edit(group, transform_before, new_w, new_h);
         }
         super::common::update_changed_polygon_geometry(shape, transform_before);
-        caption_changed
+        apply_skew(shape, skew);
+        Ok(caption_changed)
     }
     /// 글상자(Shape) 삭제 (네이티브).
     ///
@@ -2886,21 +2884,25 @@ pub(crate) fn skew_degrees(sa: &crate::model::shape::ShapeComponentAttr) -> (f64
     )
 }
 
-/// `skewX`·`skewY`(도)를 한/글 12.30처럼 저장 행렬에 넣는다. 배율 행렬에 -tan 전단을 두고,
-/// 이동 행렬과 개체 offset을 기울인 모양의 외접 상자 왼쪽 위로, 개체 크기를 외접 상자로 맞춘다.
-/// 개체 위치(가로·세로 offset)는 그대로 둔다. 회전·대칭한 도형은 기울이지 않는다.
-/// 조회 결과를 그대로 되먹인 같은 값(직선·묶음의 0 포함)은 아무것도 바꾸지 않는다.
-fn apply_skew(
-    shape: &mut crate::model::shape::ShapeObject,
-    x: Option<i32>,
-    y: Option<i32>,
-) -> Result<(), HwpError> {
-    use crate::model::shape::ShapeObject;
-    let (old_x, old_y) = skew_degrees(shape.shape_attr());
-    let x = x.map_or(old_x, f64::from);
-    let y = y.map_or(old_y, f64::from);
-    if x == old_x && y == old_y {
-        return Ok(());
+/// 다른 속성을 쓰기 전에 요청 전체에서 최종 회전·대칭과 기울이기가 양립하는지 확인한다.
+fn validated_skew(
+    shape: &ShapeObject,
+    props: &str,
+) -> Result<(Option<i32>, Option<i32>), HwpError> {
+    use crate::document_core::helpers::{json_bool, json_i32};
+
+    let axes = (json_i32(props, "skewX"), json_i32(props, "skewY"));
+    if axes == (None, None) {
+        return Ok(axes);
+    }
+    let sa = shape.shape_attr();
+    let old = skew_degrees(sa);
+    let requested = (
+        axes.0.map_or(old.0, f64::from),
+        axes.1.map_or(old.1, f64::from),
+    );
+    if requested == (0.0, 0.0) && old == requested {
+        return Ok(axes);
     }
     if !matches!(
         shape,
@@ -2910,21 +2912,41 @@ fn apply_skew(
             | ShapeObject::Polygon(_)
             | ShapeObject::Curve(_)
     ) {
-        return Err(HwpError::RenderError(
-            "이 개체는 기울일 수 없습니다".to_string(),
-        ));
+        return Err(HwpError::RenderError("이 개체는 기울일 수 없습니다".into()));
     }
     let limit = f64::from(MAX_SKEW_DEGREES);
-    if x.abs() > limit || y.abs() > limit {
+    if requested.0.abs() > limit || requested.1.abs() > limit {
         return Err(HwpError::RenderError(format!(
             "기울이기는 -{MAX_SKEW_DEGREES}~{MAX_SKEW_DEGREES}도까지입니다"
         )));
     }
-    let sa = shape.shape_attr();
-    if sa.rotation_angle.rem_euclid(360) != 0 || sa.horz_flip || sa.vert_flip {
+    let rotation = json_i32(props, "rotationAngle").map_or(sa.rotation_angle, |value| value as i16);
+    if requested != (0.0, 0.0)
+        && (rotation.rem_euclid(360) != 0
+            || json_bool(props, "horzFlip").unwrap_or(sa.horz_flip)
+            || json_bool(props, "vertFlip").unwrap_or(sa.vert_flip))
+    {
         return Err(HwpError::RenderError(
-            "회전하거나 뒤집은 개체는 기울일 수 없습니다".to_string(),
+            "회전하거나 뒤집은 개체는 기울일 수 없습니다".into(),
         ));
+    }
+    Ok(axes)
+}
+
+/// `skewX`·`skewY`(도)를 한/글 12.30처럼 저장 행렬에 넣는다. 배율 행렬에 -tan 전단을 두고,
+/// 이동 행렬과 개체 offset을 기울인 모양의 외접 상자 왼쪽 위로, 개체 크기를 외접 상자로 맞춘다.
+/// 개체 위치(가로·세로 offset)는 그대로 둔다. 회전·대칭한 도형은 기울이지 않는다.
+/// 조회 결과를 그대로 되먹인 같은 값(직선·묶음의 0 포함)은 아무것도 바꾸지 않는다.
+fn apply_skew(shape: &mut ShapeObject, axes: (Option<i32>, Option<i32>)) {
+    if axes == (None, None) {
+        return;
+    }
+    let sa = shape.shape_attr();
+    let (old_x, old_y) = skew_degrees(sa);
+    let x = axes.0.map_or(old_x, f64::from);
+    let y = axes.1.map_or(old_y, f64::from);
+    if x == old_x && y == old_y {
+        return;
     }
     let original = (f64::from(sa.original_width), f64::from(sa.original_height));
     let current = (
@@ -2940,7 +2962,7 @@ fn apply_skew(
         }),
     );
     if original.0 <= 0.0 || original.1 <= 0.0 {
-        return Ok(());
+        return;
     }
     let (sx, sy) = (current.0 / original.0, current.1 / original.1);
     let (tan_x, tan_y) = (x.to_radians().tan(), y.to_radians().tan());
@@ -2976,7 +2998,6 @@ fn apply_skew(
     let common = shape.common_mut();
     common.width = width as u32;
     common.height = height as u32;
-    Ok(())
 }
 
 pub(crate) fn reflow_shape_caption_if_width_changed(

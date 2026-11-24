@@ -1202,6 +1202,26 @@ impl DocumentCore {
         }
     }
 
+    /// 같은 자리에 여러 누름틀이 있어도 명시적으로 고른 컨트롤의 현재 범위를 조회한다.
+    pub fn field_info_for_control_at(
+        &self,
+        place: &BookmarkPlace,
+        control_idx: usize,
+        char_offset: usize,
+    ) -> String {
+        let result = self
+            .place_lists(place)
+            .ok()
+            .and_then(|(_, host, path, lists)| {
+                let para = lists
+                    .last()?
+                    .0
+                    .get(path.last().map_or(host, |entry| entry.2))?;
+                super::field_query::click_here_info(para, Some(control_idx), char_offset)
+            });
+        result.unwrap_or_else(|| r#"{"inField":false}"#.into())
+    }
+
     /// `setActiveFieldAt`: 주소 문단의 `control_idx` 누름틀을 활성 필드로 둔다. 같은 글자 자리에 누름틀이
     /// 여럿이면 글자 자리로는 하나를 가릴 수 없다. 고른 누름틀을 활성으로 두면 그 자리 입력이 그 누름틀에 든다.
     /// 누름틀이 아니면 바꾸지 않고 false를 돌려준다.

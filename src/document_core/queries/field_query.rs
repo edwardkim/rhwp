@@ -1540,53 +1540,27 @@ impl DocumentCore {
 
 /// 문단 내 커서 위치의 필드 범위 정보를 JSON으로 반환한다.
 fn field_info_at_in_para(para: &Paragraph, char_offset: usize) -> String {
-    for fr in &para.field_ranges {
-        if fr.start_char_idx != fr.end_char_idx || char_offset != fr.start_char_idx {
-            continue;
-        }
-        if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
-            if field.field_type != FieldType::ClickHere {
-                continue;
-            }
-            let guide = field.guide_text().unwrap_or("");
-            return format!(
-                "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":true,\"guideName\":{},\"editableInForm\":{},\"controlIndex\":{}}}",
-                field.field_id,
-                field.field_type_str(),
-                fr.start_char_idx,
-                fr.end_char_idx,
-                json_escape(guide),
-                field.is_editable_in_form(),
-                fr.control_idx,
-            );
-        }
-    }
+    click_here_info(para, None, char_offset).unwrap_or_else(|| r#"{"inField":false}"#.into())
+}
 
-    for fr in &para.field_ranges {
-        if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
-            if field.field_type != FieldType::ClickHere {
-                continue;
-            }
-            // 커서가 필드 범위 내에 있는지 확인 (start 이상, end 이하)
-            // end가 exclusive이므로 커서가 end 위치에 있으면 필드 "끝"에 있는 것
-            if char_offset >= fr.start_char_idx && char_offset <= fr.end_char_idx {
-                let is_guide = fr.start_char_idx == fr.end_char_idx;
-                let guide = field.guide_text().unwrap_or("");
-                return format!(
-                    "{{\"inField\":true,\"fieldId\":{},\"fieldType\":\"{}\",\"startCharIdx\":{},\"endCharIdx\":{},\"isGuide\":{},\"guideName\":{},\"editableInForm\":{},\"controlIndex\":{}}}",
-                    field.field_id,
-                    field.field_type_str(),
-                    fr.start_char_idx,
-                    fr.end_char_idx,
-                    is_guide,
-                    json_escape(guide),
-                    field.is_editable_in_form(),
-                    fr.control_idx,
-                );
-            }
-        }
-    }
-    r#"{"inField":false}"#.to_string()
+/// 선택한 누름틀의 현재 범위를 사용한다. 인접한 빈 필드도 양 끝의 글자 위치를 공유할 수 있다.
+pub(super) fn click_here_info(
+    para: &Paragraph,
+    preferred: Option<usize>,
+    offset: usize,
+) -> Option<String> {
+    let (range, field) = click_here_range_at(para, offset, preferred)?;
+    Some(format!(
+        r#"{{"inField":true,"fieldId":{},"fieldType":"{}","startCharIdx":{},"endCharIdx":{},"isGuide":{},"guideName":{},"editableInForm":{},"controlIndex":{}}}"#,
+        field.field_id,
+        field.field_type_str(),
+        range.start_char_idx,
+        range.end_char_idx,
+        range.start_char_idx == range.end_char_idx,
+        json_escape(field.guide_text().unwrap_or("")),
+        field.is_editable_in_form(),
+        range.control_idx,
+    ))
 }
 
 /// 문단에서 필드를 수집한다 (재귀: 표 셀, 글상자 내부 포함).
@@ -2588,30 +2562,32 @@ pub(crate) fn insert_field_in_para(
 
 /// 문단에서 커서 위치의 ClickHere 필드 컨트롤 인덱스를 반환한다.
 fn find_field_ctrl_idx_in_para(para: &Paragraph, char_offset: usize) -> Option<usize> {
-    // 인접 누름틀 경계에서는 앞 누름틀의 끝과 다음 빈 누름틀의 시작이
-    // 같은 charOffset을 공유한다. 새 빈 누름틀을 먼저 잡아야 첫 입력이
-    // 앞 누름틀 값으로 붙지 않는다.
-    for fr in &para.field_ranges {
-        if fr.start_char_idx == fr.end_char_idx && char_offset == fr.start_char_idx {
-            if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
-                if field.field_type == FieldType::ClickHere {
-                    return Some(fr.control_idx);
-                }
-            }
-        }
-    }
+    click_here_range_at(para, char_offset, None).map(|(range, _)| range.control_idx)
+}
 
-    for fr in &para.field_ranges {
-        if let Some(Control::Field(field)) = para.controls.get(fr.control_idx) {
-            if field.field_type != FieldType::ClickHere {
-                continue;
-            }
-            if char_offset >= fr.start_char_idx && char_offset <= fr.end_char_idx {
-                return Some(fr.control_idx);
+fn click_here_range_at(
+    para: &Paragraph,
+    offset: usize,
+    preferred: Option<usize>,
+) -> Option<(&FieldRange, &Field)> {
+    let mut containing = None;
+    for range in &para.field_ranges {
+        if preferred.is_some_and(|index| index != range.control_idx)
+            || !(range.start_char_idx..=range.end_char_idx).contains(&offset)
+        {
+            continue;
+        }
+        if let Some(Control::Field(field)) = para.controls.get(range.control_idx) {
+            if field.field_type == FieldType::ClickHere {
+                // 같은 경계의 이전 필드 끝과 다음 빈 필드 중 위치로만 고를 때는 빈 필드가 먼저다.
+                if preferred.is_some() || range.start_char_idx == range.end_char_idx {
+                    return Some((range, field));
+                }
+                containing.get_or_insert((range, field));
             }
         }
     }
-    None
+    containing
 }
 
 /// 문단 내 커서 위치의 누름틀 필드를 제거하고 지운 컨트롤 번호를 돌려준다.

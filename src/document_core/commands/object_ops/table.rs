@@ -2011,7 +2011,7 @@ impl DocumentCore {
                 }
             };
             let caption_width_before = super::shape::shape_caption_text_width(shape);
-            let changed = Self::apply_shape_props_inner(shape, props_json);
+            let changed = Self::apply_shape_props_inner(shape, props_json)?;
             super::shape::reflow_shape_caption_if_width_changed(
                 shape,
                 caption_width_before,
