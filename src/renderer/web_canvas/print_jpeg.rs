@@ -16,9 +16,12 @@ pub(super) fn decode(data: &[u8]) -> Option<HtmlCanvasElement> {
         Some(image) => image,
         None => {
             let image = HtmlImageElement::new().ok()?;
+            // 브라우저가 EXIF 방향으로 돌리지 않게 일반 그리기와 같은 사본을 쓴다.
+            let upright = crate::renderer::image_resolver::upright_jpeg(data);
             let url = format!(
                 "data:image/jpeg;base64,{}",
-                base64::engine::general_purpose::STANDARD.encode(data)
+                base64::engine::general_purpose::STANDARD
+                    .encode(upright.as_deref().unwrap_or(data))
             );
             image.set_src(&url);
             super::IMAGE_CACHE.with(|cache| {
