@@ -1,0 +1,21 @@
+{
+  "Hancom 2024": {
+    "wider/skewed-resized": 0,
+    "original/skewed-restored": 0,
+    "original/plain-restored": 0,
+    "original/earlier-restored": 1163,
+    "original2020/restored2020": 0,
+    "control-wider-hwp/native-wider-hwp": 0,
+    "control-restored-hwp/native-restored-hwp": 0,
+    "control-wider-hwp/skewed-resized-hwp": 0,
+    "control-restored-hwp/skewed-restored-hwp": 0
+  },
+  "native": {
+    "oldRestoredVsOriginal": 1684,
+    "correctedRestoredVsOriginal": 0
+  },
+  "wasm": {
+    "oldRestoredVsOriginal": 1684,
+    "correctedRestoredVsOriginal": 0
+  }
+}
