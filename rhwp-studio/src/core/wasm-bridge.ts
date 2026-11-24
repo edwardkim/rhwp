@@ -24,7 +24,7 @@ import { createDocumentForBytes } from './pdf-import-layout';
 import { userSettings } from './user-settings';
 import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
+import type { DocumentInfo, PageInfo, PageDef, SectionDef, PageBorderFillSettings, EndnoteShapeSettings, NoteEditInfo, CursorRect, HitTestResult, BodyFootnoteMarkerHit, FootnoteAtCursorResult, DeleteFootnoteResult, LineInfo, TableDimensions, CellInfo, CellBbox, CellProperties, TableProperties, DocumentPosition, MoveVerticalResult, SelectionRect, CharProperties, ParaProperties, CellPathEntry, CellPathLike, NavContextEntry, FieldInfoResult, BookmarkInfo, ControlPlace, NearestControl, LayerRenderProfile, PageLayerTree, CanvasKitDocumentPreflight } from './types';
 import { parseCanvasKitDocumentPreflight } from './canvaskit-document-preflight';
 import { LayerResourceStore } from './layer-resource-store';
 import { readLayerTreeTransport, type LayerTreeExportOptions } from './layer-tree-transport';
@@ -1757,6 +1757,28 @@ export class WasmBridge {
   findNearestControlBackward(sec: number, para: number, charOffset: number): { type: string; sec: number; para: number; ci: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.findNearestControlBackward(sec, para, charOffset));
+  }
+
+  /**
+   * 주소 문단의 글자 자리에서 앞(forward면 뒤)으로 가장 가까운 선택 가능 컨트롤 (F11).
+   * 셀·글상자 안이면 그 영역을 먼저 훑고 그 표·개체로 나온다. fromControl이 0 이상이면 글자 자리 대신
+   * 그 컨트롤의 형제부터 이어 찾는다 — 같은 글자 자리의 누름틀을 하나씩 고르는 데 쓴다.
+   */
+  findNearestControlAt(place: ControlPlace, charOffset: number, fromControl: number, forward: boolean): NearestControl {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse(this.doc.findNearestControlAt(JSON.stringify(place), charOffset, fromControl, forward));
+  }
+
+  /** 지정한 컨트롤의 실제 필드 범위가 캐럿을 포함하는지 조회한다. */
+  getFieldInfoForControlAt(place: ControlPlace, controlIndex: number, offset: number): FieldInfoResult {
+    if (!this.doc) return { inField: false };
+    return JSON.parse(this.doc.getFieldInfoForControlAt(JSON.stringify(place), controlIndex, offset));
+  }
+
+  /** 주소 문단의 controlIndex 누름틀을 활성 필드로 둔다. 같은 자리 누름틀 가운데 고른 것에 입력이 든다. 바뀌면 true. */
+  setActiveFieldAt(place: ControlPlace, controlIndex: number): boolean {
+    if (!this.doc) return false;
+    return this.doc.setActiveFieldAt(JSON.stringify(place), controlIndex);
   }
 
   /** 현재 위치 이후의 가장 가까운 선택 가능 컨트롤 (Shift+F11) */

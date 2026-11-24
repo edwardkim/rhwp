@@ -3342,6 +3342,58 @@ impl HwpDocument {
         )
     }
 
+    /// 주소 문단(`getBookmarks`의 `place` 꼴 JSON)의 글자 자리에서 앞(`forward`면 뒤)으로 가장 가까운
+    /// 선택 가능 컨트롤을 찾는다. 표 셀·글상자·캡션·각주·미주·머리말·꼬리말 안이면 그 영역을 먼저 훑고
+    /// 그 영역을 가진 컨트롤로 나온다. 결과의 `place`는 그 컨트롤이 든 문단 주소이고, 필드면 그 범위를 준다.
+    /// `from_control`이 0 이상이면 글자 자리 대신 그 컨트롤 앞(뒤) 형제부터 찾는다.
+    #[wasm_bindgen(js_name = findNearestControlAt)]
+    pub fn find_nearest_control_at(
+        &self,
+        place_json: &str,
+        char_offset: u32,
+        from_control: i32,
+        forward: bool,
+    ) -> Result<String, JsValue> {
+        self.core
+            .find_nearest_control_at_native(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                char_offset as usize,
+                usize::try_from(from_control).ok(),
+                forward,
+            )
+            .map_err(|e| e.into())
+    }
+
+    /// 지정한 누름틀이 글자 위치를 포함하면 해당 필드 정보와 현재 범위를 반환한다.
+    #[wasm_bindgen(js_name = getFieldInfoForControlAt)]
+    pub fn get_field_info_for_control_at(
+        &self,
+        place_json: &str,
+        control_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        let place = crate::document_core::queries::parse_bookmark_place(place_json)?;
+        Ok(self
+            .core
+            .field_info_for_control_at(&place, control_idx as usize, char_offset as usize))
+    }
+
+    /// 주소 문단(`place` 꼴 JSON)의 `control_idx` 누름틀을 활성 필드로 둔다. 같은 글자 자리의 여러 누름틀 가운데
+    /// 고른 것에 입력이 들게 한다. 바뀌었으면 true다.
+    #[wasm_bindgen(js_name = setActiveFieldAt)]
+    pub fn set_active_field_at(
+        &mut self,
+        place_json: &str,
+        control_idx: u32,
+    ) -> Result<bool, JsValue> {
+        self.core
+            .set_active_field_at(
+                &crate::document_core::queries::parse_bookmark_place(place_json)?,
+                control_idx as usize,
+            )
+            .map_err(|e| e.into())
+    }
+
     /// 문단 내 컨트롤의 텍스트 위치 배열을 반환한다.
     #[wasm_bindgen(js_name = getControlTextPositions)]
     pub fn get_control_text_positions(&self, section_idx: u32, para_idx: u32) -> String {

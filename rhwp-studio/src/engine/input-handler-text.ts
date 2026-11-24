@@ -1,6 +1,7 @@
 /** input-handler text methods — extracted from InputHandler class */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import { fieldInfoAt } from './control-place';
 import { normalizeTextNewlines } from '../core/text-newlines';
 import {
   InsertTextCommand,
@@ -61,7 +62,7 @@ function overwrittenTextAt(this: any, pos: DocumentPosition, text: string): stri
   if (this.cursor.isInHeaderFooter() || this.cursor.isInFootnote()) return '';
   try {
     const limit = graphemes(text).length;
-    const fi = this.wasm.getFieldInfoAt(pos);
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
     let fieldEnd = Infinity; // 누름틀 안이면 그 끝
     if (fi.inField && fi.fieldType === 'clickhere') {
       if (this.isAtExitedFieldStart?.(pos, fi)) return '';
@@ -121,7 +122,7 @@ function tryConfirmRemoveClickHereAtBoundary(
 ): boolean {
   if (this.isFormMode?.()) return false;
   try {
-    const fi = this.wasm.getFieldInfoAt(pos);
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
     if (!fi.inField || fi.fieldType !== 'clickhere') return false;
     const start = fi.startCharIdx ?? -1;
     const end = fi.endCharIdx ?? -1;
@@ -246,10 +247,10 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
 
   // 필드 경계 보호: 필드 시작 위치에서는 Backspace 차단
   try {
-    const fi = this.wasm.getFieldInfoAt(pos);
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
     if (fi.inField && this.isAtExitedFieldStart?.(pos, fi)) {
       // 누름틀 시작 바깥에서는 Backspace가 앞쪽 본문 글자를 지운다.
-    } else if (fi.inField && charOffset <= fi.startCharIdx) {
+    } else if (fi.inField && fi.startCharIdx !== undefined && charOffset <= fi.startCharIdx) {
       if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'backward')) return;
       return;
     }
@@ -318,8 +319,8 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
 
   // 필드 경계 보호: 필드 끝 위치에서는 Delete 차단
   try {
-    const fi = this.wasm.getFieldInfoAt(pos);
-    if (fi.inField && charOffset >= fi.endCharIdx) {
+    const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
+    if (fi.inField && fi.endCharIdx !== undefined && charOffset >= fi.endCharIdx) {
       if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'forward')) return;
       return;
     }
@@ -597,7 +598,7 @@ export function onInput(this: any, e?: InputEvent): void {
         this._compositionFragment = captureTextFragment(this.wasm, anchor);
         // 앵커가 누름틀 밖인지 편집기의 빠져나온 끝 상태로 지금 정한다(빠져나온 시작에서는 덮지 않는다).
         // 누름틀 조회는 끝 위치도 안으로 치고, 그 상태는 첫 갱신 뒤 캐럿이 다음 누름틀에 들어가면 지워진다.
-        const fi = this.wasm.getFieldInfoAt(anchor);
+        const fi = fieldInfoAt(this.wasm, anchor, this.f11Field);
         this._compositionOutsideField = !fi.inField || this.isAtExitedFieldEnd?.(anchor, fi);
       }
       this.compositionLength += charCount(this._compositionCovered);

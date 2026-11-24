@@ -1,0 +1,195 @@
+{
+  "focused": {
+    "passed": 36,
+    "summary": "Summary [   0.166s] 36 tests run: 36 passed, 2553 skipped"
+  },
+  "full": {
+    "passed": 14074,
+    "summary": "Summary [ 778.096s] 14074 tests run: 14074 passed (2 slow), 45 skipped"
+  },
+  "native-lib": {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--profile",
+      "release-test",
+      "--features",
+      "native-skia",
+      "--lib"
+    ],
+    "exit": 0,
+    "passed": 4033,
+    "ignored": 12
+  },
+  "native-picture": {
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "issue_2225_missing_picture_placeholder",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "<review-target>",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "passed": 2,
+    "summary": "Summary [   1.748s] 2 tests run: 2 passed, 363 skipped"
+  },
+  "native-pdf": {
+    "command": [
+      "node",
+      "scripts/run-rust-test.mjs",
+      "render_p37_direct_pdf_export",
+      "--",
+      "--cargo-profile",
+      "release-test",
+      "--target-dir",
+      "<review-target>",
+      "--features",
+      "native-skia"
+    ],
+    "exit": 0,
+    "passed": 37,
+    "summary": "Summary [   2.596s] 37 tests run: 37 passed, 335 skipped"
+  },
+  "fmt": {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0
+  },
+  "clippy": {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  "clippy-wasm": {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "-p",
+      "rhwp",
+      "--lib",
+      "--target",
+      "wasm32-unknown-unknown",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  "workspace-build": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--workspace"
+    ],
+    "exit": 0
+  },
+  "clippy-workspace": {
+    "command": [
+      "cargo",
+      "clippy",
+      "--locked",
+      "--workspace",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  "release-build": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--release"
+    ],
+    "exit": 0
+  },
+  "release-lib": {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--release",
+      "--lib"
+    ],
+    "exit": 0,
+    "passed": 3976,
+    "ignored": 12
+  },
+  "doctest": {
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--doc"
+    ],
+    "exit": 0,
+    "passed": 8,
+    "ignored": 3
+  },
+  "minimalFontFiles": 5,
+  "suiteManifest": "[RustTestSuite] 확인 완료: 2504 sources / 10307 static test attrs / 28 suites + 20 exceptions = 48/48 integration targets / nextest 최소 6288 cases / weight 2194329..2198673",
+  "unitTestTiers": "[RustUnitTier] 확인 완료: 4092 tests / 295 modules / ready 0 / support 85 / white-box 4003 / cfg support items 28",
+  "defaultCliValidation": {
+    "parallelNativeCli": {
+      "sha256": "82de2b6d9a0d71218dfad391117e58eb1bd4cc5fe8318ed8994586b57c680a1f",
+      "export-png": [
+        {
+          "name": "export-png",
+          "available": true,
+          "requiresFeature": "native-skia"
+        }
+      ]
+    },
+    "isolatedFullRun": {
+      "sharedBefore": {
+        "sha256": "f7f4b6dbb3e1dc51b9ec5cf23bf7f67aad387302b4a31deb26e6e61fd8c88c62",
+        "exportPng": [
+          false
+        ]
+      },
+      "archivedBefore": {
+        "sha256": "f7f4b6dbb3e1dc51b9ec5cf23bf7f67aad387302b4a31deb26e6e61fd8c88c62",
+        "exportPng": [
+          false
+        ]
+      },
+      "archivedAfter": {
+        "sha256": "f7f4b6dbb3e1dc51b9ec5cf23bf7f67aad387302b4a31deb26e6e61fd8c88c62",
+        "exportPng": [
+          false
+        ]
+      },
+      "sharedAfter": {
+        "sha256": "f7f4b6dbb3e1dc51b9ec5cf23bf7f67aad387302b4a31deb26e6e61fd8c88c62",
+        "exportPng": [
+          false
+        ]
+      }
+    },
+    "twoFeatureContracts": {
+      "passed": 2,
+      "summary": "Summary [   7.998s] 2 tests run: 2 passed, 14117 skipped"
+    }
+  }
+}

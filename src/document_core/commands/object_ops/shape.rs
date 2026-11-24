@@ -303,12 +303,14 @@ impl DocumentCore {
                 ,\"arrowStart\":{},\"arrowEnd\":{},\"arrowStartSize\":{},\"arrowEndSize\":{}\
                 ,\"arrowStartFill\":{},\"arrowEndFill\":{}\
                 ,\"rotationAngle\":{},\"horzFlip\":{},\"vertFlip\":{}\
+                ,\"skewX\":{},\"skewY\":{}\
                 ,\"fillType\":\"{}\"",
                 bl.color, bl.width, bl.attr, bl.outline_style, bl.alpha,
                 line_type, line_end_shape,
                 arrow_start, arrow_end, arrow_start_size, arrow_end_size,
                 bl.attr & 0x4000_0000 != 0, bl.attr & 0x8000_0000 != 0,
                 sa.rotation_angle, sa.horz_flip, sa.vert_flip,
+                skew_degrees(sa).0, skew_degrees(sa).1,
                 fill_type
             );
             // 단색 채우기
@@ -399,6 +401,7 @@ impl DocumentCore {
             .and_then(|section| section.paragraphs.get(parent_para_idx))
             .and_then(crate::renderer::composer::paragraph_flow_end);
         let shape = self.resolve_shape_control_mut(section_idx, parent_para_idx, control_idx)?;
+        let skew = validated_skew(shape, props_json)?;
         let caption_width_before = shape_caption_text_width(shape);
 
         // [#8399] 어울림 배제 밴드 지문 — 그림 속성 편집(#6204)과 같은 재투영 판정.
@@ -657,6 +660,7 @@ impl DocumentCore {
         }
 
         super::common::update_changed_polygon_geometry(shape, transform_before);
+        apply_skew(shape, skew);
 
         if caption_changed {
             crate::parser::assign_auto_numbers(&mut self.document);
@@ -749,12 +753,14 @@ impl DocumentCore {
                 ,\"arrowStart\":{},\"arrowEnd\":{},\"arrowStartSize\":{},\"arrowEndSize\":{}\
                 ,\"arrowStartFill\":{},\"arrowEndFill\":{}\
                 ,\"rotationAngle\":{},\"horzFlip\":{},\"vertFlip\":{}\
+                ,\"skewX\":{},\"skewY\":{}\
                 ,\"fillType\":\"{}\"",
                 bl.color, bl.width, bl.attr, bl.outline_style, bl.alpha,
                 line_type, line_end_shape,
                 arrow_start, arrow_end, arrow_start_size, arrow_end_size,
                 bl.attr & 0x4000_0000 != 0, bl.attr & 0x8000_0000 != 0,
                 sa.rotation_angle, sa.horz_flip, sa.vert_flip,
+                skew_degrees(sa).0, skew_degrees(sa).1,
                 fill_type
             );
             if let Some(ref s) = fill.solid {
@@ -809,9 +815,10 @@ impl DocumentCore {
     pub(crate) fn apply_shape_props_inner(
         shape: &mut crate::model::shape::ShapeObject,
         props_json: &str,
-    ) -> bool {
+    ) -> Result<bool, HwpError> {
         use crate::document_core::helpers::{json_bool, json_i32, json_str};
 
+        let skew = validated_skew(shape, props_json)?;
         // [#6740] 변환 파생 상태 무효화 판정용 — 어떤 대입보다 먼저 잰다.
         let transform_before =
             super::common::shape_transform_fingerprint(shape.common(), shape.shape_attr());
@@ -1021,7 +1028,8 @@ impl DocumentCore {
             group_geometry::finish_group_edit(group, transform_before, new_w, new_h);
         }
         super::common::update_changed_polygon_geometry(shape, transform_before);
-        caption_changed
+        apply_skew(shape, skew);
+        Ok(caption_changed)
     }
     /// 글상자(Shape) 삭제 (네이티브).
     ///
@@ -2855,6 +2863,143 @@ pub(crate) fn shape_caption_text_width(shape: &ShapeObject) -> Option<u32> {
 }
 
 /// 속성 변경으로 도형 캡션 글 폭이 바뀌었으면(새 캡션 포함) 캡션 글을 새 폭으로 다시 줄 나눈다.
+/// 한/글 개체 속성의 가로·세로 기울이기 각도 한계(도).
+pub(crate) const MAX_SKEW_DEGREES: i32 = 89;
+
+/// 저장 행렬에서 읽은 가로·세로 기울이기(도). 회전·대칭이 있거나 행렬이 없으면 0이다.
+pub(crate) fn skew_degrees(sa: &crate::model::shape::ShapeComponentAttr) -> (f64, f64) {
+    if sa.rotation_angle.rem_euclid(360) != 0
+        || sa.horz_flip
+        || sa.vert_flip
+        || sa.raw_rendering.is_empty()
+        || sa.render_sx <= 0.0
+        || sa.render_sy <= 0.0
+    {
+        return (0.0, 0.0);
+    }
+    let degrees = |shear: f64| ((-shear).atan().to_degrees() * 100.0).round() / 100.0 + 0.0;
+    (
+        degrees(sa.render_b / sa.render_sy),
+        degrees(sa.render_c / sa.render_sx),
+    )
+}
+
+/// 다른 속성을 쓰기 전에 요청 전체에서 최종 회전·대칭과 기울이기가 양립하는지 확인한다.
+fn validated_skew(
+    shape: &ShapeObject,
+    props: &str,
+) -> Result<(Option<i32>, Option<i32>), HwpError> {
+    use crate::document_core::helpers::{json_bool, json_i32};
+
+    let axes = (json_i32(props, "skewX"), json_i32(props, "skewY"));
+    if axes == (None, None) {
+        return Ok(axes);
+    }
+    let sa = shape.shape_attr();
+    let old = skew_degrees(sa);
+    let requested = (
+        axes.0.map_or(old.0, f64::from),
+        axes.1.map_or(old.1, f64::from),
+    );
+    if requested == (0.0, 0.0) && old == requested {
+        return Ok(axes);
+    }
+    if !matches!(
+        shape,
+        ShapeObject::Rectangle(_)
+            | ShapeObject::Ellipse(_)
+            | ShapeObject::Arc(_)
+            | ShapeObject::Polygon(_)
+            | ShapeObject::Curve(_)
+    ) {
+        return Err(HwpError::RenderError("이 개체는 기울일 수 없습니다".into()));
+    }
+    let limit = f64::from(MAX_SKEW_DEGREES);
+    if requested.0.abs() > limit || requested.1.abs() > limit {
+        return Err(HwpError::RenderError(format!(
+            "기울이기는 -{MAX_SKEW_DEGREES}~{MAX_SKEW_DEGREES}도까지입니다"
+        )));
+    }
+    let rotation = json_i32(props, "rotationAngle").map_or(sa.rotation_angle, |value| value as i16);
+    if requested != (0.0, 0.0)
+        && (rotation.rem_euclid(360) != 0
+            || json_bool(props, "horzFlip").unwrap_or(sa.horz_flip)
+            || json_bool(props, "vertFlip").unwrap_or(sa.vert_flip))
+    {
+        return Err(HwpError::RenderError(
+            "회전하거나 뒤집은 개체는 기울일 수 없습니다".into(),
+        ));
+    }
+    Ok(axes)
+}
+
+/// `skewX`·`skewY`(도)를 한/글 12.30처럼 저장 행렬에 넣는다. 배율 행렬에 -tan 전단을 두고,
+/// 이동 행렬과 개체 offset을 기울인 모양의 외접 상자 왼쪽 위로, 개체 크기를 외접 상자로 맞춘다.
+/// 개체 위치(가로·세로 offset)는 그대로 둔다. 회전·대칭한 도형은 기울이지 않는다.
+/// 조회 결과를 그대로 되먹인 같은 값(직선·묶음의 0 포함)은 아무것도 바꾸지 않는다.
+fn apply_skew(shape: &mut ShapeObject, axes: (Option<i32>, Option<i32>)) {
+    if axes == (None, None) {
+        return;
+    }
+    let sa = shape.shape_attr();
+    let (old_x, old_y) = skew_degrees(sa);
+    let x = axes.0.map_or(old_x, f64::from);
+    let y = axes.1.map_or(old_y, f64::from);
+    if x == old_x && y == old_y {
+        return;
+    }
+    let original = (f64::from(sa.original_width), f64::from(sa.original_height));
+    let current = (
+        f64::from(if sa.current_width > 0 {
+            sa.current_width
+        } else {
+            sa.original_width
+        }),
+        f64::from(if sa.current_height > 0 {
+            sa.current_height
+        } else {
+            sa.original_height
+        }),
+    );
+    if original.0 <= 0.0 || original.1 <= 0.0 {
+        return;
+    }
+    let (sx, sy) = (current.0 / original.0, current.1 / original.1);
+    let (tan_x, tan_y) = (x.to_radians().tan(), y.to_radians().tan());
+    // 원래 좌표 → 기울인 좌표: x' = sx·x − tanX·sy·y, y' = −tanY·sx·x + sy·y
+    let (b, c) = (-tan_x * sy, -tan_y * sx);
+    let corners = [(0.0, 0.0), (original.0, 0.0), (0.0, original.1), original]
+        .map(|(px, py)| (sx * px + b * py, c * px + sy * py));
+    let min_x = corners.iter().map(|p| p.0).fold(f64::INFINITY, f64::min);
+    let min_y = corners.iter().map(|p| p.1).fold(f64::INFINITY, f64::min);
+    let max_x = corners
+        .iter()
+        .map(|p| p.0)
+        .fold(f64::NEG_INFINITY, f64::max);
+    let max_y = corners
+        .iter()
+        .map(|p| p.1)
+        .fold(f64::NEG_INFINITY, f64::max);
+    let (width, height) = ((max_x - min_x).round(), (max_y - min_y).round());
+    let sa = shape.shape_attr_mut();
+    sa.render_sx = sx;
+    sa.render_b = b;
+    sa.render_c = c;
+    sa.render_sy = sy;
+    sa.render_tx = -min_x;
+    sa.render_ty = -min_y;
+    sa.offset_x = (-min_x).round() as i32;
+    sa.offset_y = (-min_y).round() as i32;
+    sa.rotation_center = crate::model::Point {
+        x: (width / 2.0) as i32,
+        y: (height / 2.0) as i32,
+    };
+    sa.raw_rendering = crate::serializer::control::serialize_affine_rendering(sa);
+    let common = shape.common_mut();
+    common.width = width as u32;
+    common.height = height as u32;
+}
+
 pub(crate) fn reflow_shape_caption_if_width_changed(
     shape: &mut ShapeObject,
     before: Option<u32>,

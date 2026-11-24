@@ -43,6 +43,8 @@ const I8: PropKind = PropKind::Int(i8::MIN as i64, i8::MAX as i64);
 const I16: PropKind = PropKind::Int(i16::MIN as i64, i16::MAX as i64);
 const I32: PropKind = PropKind::Int(i32::MIN as i64, i32::MAX as i64);
 const U32: PropKind = PropKind::Int(0, u32::MAX as i64);
+/// 기울이기 각도(도)의 크기 한계. 90도에서 외접 상자가 끝없이 커진다.
+const MAX_SKEW: i64 = super::shape::MAX_SKEW_DEGREES as i64;
 
 const VERT_REL_TO: &[&str] = &["Paper", "Page", "Para"];
 const HORZ_REL_TO: &[&str] = &["Paper", "Page", "Column", "Para"];
@@ -138,6 +140,8 @@ pub(crate) const SHAPE_PROPS: &[PropSpec] = &[
     prop("rotationAngle", I16),
     prop("horzFlip", PropKind::Bool),
     prop("vertFlip", PropKind::Bool),
+    prop("skewX", PropKind::Int(-MAX_SKEW, MAX_SKEW)),
+    prop("skewY", PropKind::Int(-MAX_SKEW, MAX_SKEW)),
     prop("borderColor", COLOR),
     prop("borderWidth", I32),
     prop("lineAlpha", PropKind::Int(0, u8::MAX as i64)),

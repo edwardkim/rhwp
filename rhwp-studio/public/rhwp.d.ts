@@ -708,6 +708,13 @@ export class HwpDocument {
      */
     exportSelectionInCellHtmlEx(options_json: string): string;
     /**
+     * 주소 문단(`getBookmarks`의 `place` 꼴 JSON)의 글자 자리에서 앞(`forward`면 뒤)으로 가장 가까운
+     * 선택 가능 컨트롤을 찾는다. 표 셀·글상자·캡션·각주·미주·머리말·꼬리말 안이면 그 영역을 먼저 훑고
+     * 그 영역을 가진 컨트롤로 나온다. 결과의 `place`는 그 컨트롤이 든 문단 주소이고, 필드면 그 범위를 준다.
+     * `from_control`이 0 이상이면 글자 자리 대신 그 컨트롤 앞(뒤) 형제부터 찾는다.
+     */
+    findNearestControlAt(place_json: string, char_offset: number, from_control: number, forward: boolean): string;
+    /**
      * 커서에서 이전 방향으로 가장 가까운 선택 가능 컨트롤을 찾는다 (F11 키).
      */
     findNearestControlBackward(section_idx: number, para_idx: number, char_offset: number): string;
@@ -1101,6 +1108,10 @@ export class HwpDocument {
      * charOffset?, isTextbox? }`. positional 과 동일 동작(String 반환).
      */
     getFieldInfoAtInCellEx(options_json: string): string;
+    /**
+     * 지정한 누름틀이 글자 위치를 포함하면 해당 필드 정보와 현재 범위를 반환한다.
+     */
+    getFieldInfoForControlAt(place_json: string, control_idx: number, char_offset: number): string;
     /**
      * 문서 내 모든 필드 목록을 JSON 배열로 반환한다.
      *
@@ -2629,6 +2640,11 @@ export class HwpDocument {
      */
     setActiveField(section_idx: number, para_idx: number, char_offset: number): boolean;
     /**
+     * 주소 문단(`place` 꼴 JSON)의 `control_idx` 누름틀을 활성 필드로 둔다. 같은 글자 자리의 여러 누름틀 가운데
+     * 고른 것에 입력이 들게 한다. 바뀌었으면 true다.
+     */
+    setActiveFieldAt(place_json: string, control_idx: number): boolean;
+    /**
      * path 기반: 중첩 표 셀 내 활성 필드를 설정한다.
      */
     setActiveFieldByPath(section_idx: number, parent_para_idx: number, path_json: string, char_offset: number): boolean;
@@ -3427,6 +3443,7 @@ export interface InitOutput {
     readonly hwpdocument_exportSelectionInCellHtml: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly hwpdocument_exportSelectionInCellHtmlByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly hwpdocument_exportSelectionInCellHtmlEx: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly hwpdocument_findNearestControlAt: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
     readonly hwpdocument_findNearestControlBackward: (a: number, b: number, c: number, d: number) => [number, number];
     readonly hwpdocument_findNearestControlForward: (a: number, b: number, c: number, d: number) => [number, number];
     readonly hwpdocument_findNextEditableControl: (a: number, b: number, c: number, d: number, e: number) => [number, number];
@@ -3506,6 +3523,7 @@ export interface InitOutput {
     readonly hwpdocument_getFieldInfoAtByPath: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
     readonly hwpdocument_getFieldInfoAtInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
     readonly hwpdocument_getFieldInfoAtInCellEx: (a: number, b: number, c: number) => [number, number];
+    readonly hwpdocument_getFieldInfoForControlAt: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_getFieldList: (a: number) => [number, number];
     readonly hwpdocument_getFieldValue: (a: number, b: number) => [number, number, number, number];
     readonly hwpdocument_getFieldValueByName: (a: number, b: number, c: number) => [number, number, number, number];
@@ -3776,6 +3794,7 @@ export interface InitOutput {
     readonly hwpdocument_searchAllText: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly hwpdocument_searchText: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
     readonly hwpdocument_setActiveField: (a: number, b: number, c: number, d: number) => number;
+    readonly hwpdocument_setActiveFieldAt: (a: number, b: number, c: number, d: number) => [number, number, number];
     readonly hwpdocument_setActiveFieldByPath: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
     readonly hwpdocument_setActiveFieldInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
     readonly hwpdocument_setActiveFieldInCellEx: (a: number, b: number, c: number) => number;
