@@ -1,6 +1,6 @@
 # F11 누름틀 입력과 기울인 도형 크기 편집의 보완 검증
 
-2026년 11월 24일, semanticist21의 [#9288](https://github.com/edwardkim/rhwp/pull/9288)과 [#9314](https://github.com/edwardkim/rhwp/pull/9314)를 함께 검토했다. `devel`은 `9ee9a5b0b12115f06b31e07ec89b94e454c1a744`이다. 원 기여 두 건의 커밋 `3fc45e7057300b21c49ced254cb476fdab69ac39`, `0cb5fcd1c941ec24e83d8420597dbeb5586e4b05`를 모두 보존했다. 메인테이너 보완을 포함한 제품 및 테스트 소스는 `10f5bca362a34f3c3f27ac15e5d921d17d1d8097`이다.
+2026년 11월 24일, semanticist21의 [#9288](https://github.com/edwardkim/rhwp/pull/9288)과 [#9314](https://github.com/edwardkim/rhwp/pull/9314)를 함께 검토했다. `devel`은 `9ee9a5b0b12115f06b31e07ec89b94e454c1a744`이다. 원 기여 두 건의 커밋 `3fc45e7057300b21c49ced254cb476fdab69ac39`, `0cb5fcd1c941ec24e83d8420597dbeb5586e4b05`를 모두 보존했다. 제품 보완 소스는 `10f5bca362a34f3c3f27ac15e5d921d17d1d8097`이다. 이후 `3a12a42a2d`에서 도형 CLI 속성 검사도 보완했다.
 
 ## #9288 같은 자리에 있는 두 누름틀
 
@@ -11,6 +11,7 @@
 | 본문·셀에서 F11을 1번 또는 2번 누른 뒤 영문 키로 `xy`, 한글 조합으로 ‘한’과 ‘한글’ 입력 | 12개 조합에서 입력 직후, HWP 재열기, HWPX 재열기의 필드별 값 일치. 같은 HWPX 12개에서 XML 필드 시작·끝 사이의 실제 글자도 일치 |
 | 첫 입력과 다음 입력 사이에 화면 갱신이 없는 경우 | 보완 전 ‘가’에 `x`, ‘나’에 `y`가 저장됐다. 보완 뒤 현재 문서와 두 저장 형식 모두 ‘가’에 `xy`가 남았다. 실제 키 입력 외에 두 입력 이벤트를 한 번의 브라우저 작업 안에 보내 도착 순서도 고정했다 |
 | F11로 다음 필드 선택, 이미 채운 값 교체, End 뒤 본문 입력 | 선택 이동 뒤 ‘가’와 ‘나’의 값이 각각 보존됐다. 본문과 셀 양쪽에서 선택한 `xy`를 `ab`로 교체했다. End 뒤 입력한 느낌표는 문단 끝에 남았다 |
+| F11로 고른 ‘가’에 입력 후 Ctrl+Z, Ctrl+Y | 본문·셀에서 입력 취소 뒤 ‘가’가 비고 다시 실행하면 `x`가 복원됐다. 세 단계의 현재 값과 HWP·HWPX의 필드별 값 18개가 모두 일치했다 |
 | 공개 WASM API | wasm-pack 산출물·Studio public·배포용 dist 각각에서 메서드 3개의 TypeScript 소비 예제를 컴파일하고 실제 JavaScript로 필드 조회·활성화를 실행했다 |
 
 누름틀 E2E는 46개 확인 항목을 통과했다. 각주·머리말에서 선택한 필드로 입력하는 기여는 [#9354](https://github.com/edwardkim/rhwp/pull/9354)에 있다. [입력별·형식별 필드 값](f11-roundtrips.tsv) · [HWPX XML 독립 판독](field-xml.tsv) · [브라우저 검사](browser-results.json) · [배포 타입 소비](typescript-consumption.json) · [JavaScript 소비](wasm-public-consumption.json)
@@ -31,3 +32,33 @@ Native와 fresh WASM에서 원본, 너비 변경·복원, 저장 형식별 재�
 Rust 소스 트리 `9169ca1526ea904c830c95bca13615aa4dc44014`에서 빌드한 Native 바이너리의 SHA-256은 `01cc4a87f25fd0e8e5fb237f7cc3fde8159a499ca722d2cedd705aa9cc825118`이다. Docker에서 최적화한 WASM의 SHA-256은 `c85e0de944ca5448feab4411a7ebeb3793b137fb98e91213e807f385797c05f5`이며 브라우저가 받은 파일의 해시를 대조했다. 공통 공개 대조 문서 4개의 Native·WASM 검사를 모두 통과했다. [공통 문서별 검증 결과](public-controls/results.json) · [전쪽 TSV와 대표 PNG](public-controls/)
 
 #9376으로 들어온 세 기능도 현재 후보에서 다시 열어 확인했다. 첫 구역의 용지·번호가 있는 문서 4쪽, 반투명 타원 1쪽, 꺾임 1개인 연결선 1쪽은 양쪽 렌더러에서 한컴 인쇄 대비 100.00%였다. 12개 출력 PNG 모두 현재 devel과 같은 제품 소스로 검증한 결과와 바이트 단위로 같았다. [Native](devel-features-native.tsv) · [fresh WASM](devel-features-wasm.tsv)
+
+실제 CLI로 가로·세로 기울기를 각각 −89°, +89°로 저장한 뒤 WASM으로 열어 같은 각도를 읽었다. 각 축의 −90°, +90° 요청은 오류로 종료했고 출력 파일도 생성되지 않았다. 처음 전체 회귀에서 #9052의 CLI 속성 대조가 새 기울기 검증 함수를 읽지 않아 두 키만 누락됐다. 해당 함수를 포함해 CLI가 공개한 키와 실제 읽는 키의 집합을 계속 대조한다. [CLI의 8개 경계 결과](cli-skew-limits.json) · [기존 검사 도입 PR](https://github.com/edwardkim/rhwp/pull/9052)
+
+## 정본 보호 문서 23종
+
+Native와 fresh WASM에서 각각 2,023쪽을 렌더링했다. 동일한 입력·한컴 인쇄본·96 DPI·글꼴·브라우저 조건에서 현재 `devel`과 후보의 PNG SHA-256이 4,046행 모두 일치했다. Native는 2,023쪽 모두, WASM은 2,009쪽이 공식 하한을 충족했다. 양쪽 모두 새로 낮아진 쪽은 0개다. 화학물질 표시 기준 WASM 26쪽은 정본 99.99%에 대해 devel과 후보 모두 100.00%였다. [전쪽 측정값과 PNG 해시](protected-pages.tsv) · [조건과 산출물 해시](protected-summary.json)
+
+| WASM에서 정본 100.00%에 미달한 문서 | 쪽 | 현재 devel과 후보의 최저 |
+| --- | --- | ---: |
+| 가상융합산업 진흥법 시행령 | 1, 8, 29, 39, 46, 54, 63, 64 | 99.87% |
+| 중첩 표 | 17 | 99.98% |
+| HWP 3 sample10 | 81, 351 | 99.99% |
+| 한글 문서 파일 형식 5.0 revision 1.3 | 16, 17 | 99.97% |
+| 영월 서식 | 3 | 99.99% |
+
+이 14쪽은 #9376에서 확인한 기존 차이다. 이번 검사에서 쪽별 값과 PNG 해시를 다시 확인했다. 지난 검토에서 확인한 한글 획·부호·글머리표 차이와 OS별 재현 결과를 함께 연결했다. #9292의 보관 파일 58개도 SHA-256으로 확인했으며, 중첩 표 WASM 환경에서 미확보한 5개와 일치하는 파일은 없었다. 2026년 11월 24일 작업지시자는 devel과 PNG가 같은 기존 14쪽에 한정한 예외와, 새 통합 PR의 CI 성공 후 셀프 리뷰·병합을 승인했다. 공식 쪽별 하한은 100.00%다. [미달 14쪽](protected-below.tsv) · [인쇄 차이 확대](../../semanticist21-20261124-rework/final/protected-details.png) · [운영체제·브라우저별 대조](../../semanticist21-20261124-rework/final/browser-version-controls.json)
+
+## 최종 빌드와 회귀
+
+| 검사 | 결과 |
+| --- | --- |
+| 공개 글꼴 5개 환경의 전체 Rust 회귀 | 실행 14,074개 통과, 45개 건너뜀 |
+| 누름틀·도형·CLI 집중 Rust 회귀 | 36개 통과 |
+| Native 공식 검사 | 라이브러리 4,033개, 누락 그림 2개, 직접 PDF 출력 37개 통과 |
+| Studio | 2,835개 통과, 2개 건너뜀. TypeScript·빌드와 실제 브라우저 검사 71개 통과 |
+| 기본·워크스페이스·배포 빌드와 lint | fmt, 세 경로 Clippy, workspace 빌드, release 빌드 통과. release 라이브러리 3,976개와 doctest 8개 통과 |
+
+일반 회귀를 Native Skia 검사와 병행했을 때 두 실행이 같은 CLI 경로를 사용해 기능 목록 대조 두 건이 실패했다. Native CLI SHA-256 `82de2b6d9a0d71218dfad391117e58eb1bd4cc5fe8318ed8994586b57c680a1f`에는 `export-png`가 있었다. 기본 기능으로 만든 독립 nextest 아카이브의 CLI `f7f4b6dbb3e1dc51b9ec5cf23bf7f67aad387302b4a31deb26e6e61fd8c88c62`에서 두 검사와 전체 회귀가 통과했고, 전체 실행 전후의 해시도 일치했다. [검사별 명령·결과와 기능 조합](local-gates.json)
+
+원 PR은 각각 edwardkim이 리뷰어로 지정되어 있다. 두 원 head의 CI는 성공했다. 각주·머리말의 별도 변경은 #9354에서 진행 중이다. [#9288 검토](../../../archives/pr_9288_review.md) · [#9314 검토](../../../archives/pr_9314_review.md)

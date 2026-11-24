@@ -1,0 +1,27 @@
+{
+  "base": "9ee9a5b0b12115f06b31e07ec89b94e454c1a744",
+  "measured_base": "e4ce75728af706c8fdab93882172ad07843b00b8",
+  "base_src_tree": "9ccbecb66b9d026dbf317774833abbc0d40f42c2",
+  "candidate_src_tree": "9169ca1526ea904c830c95bca13615aa4dc44014",
+  "artifacts": {
+    "native": "01cc4a87f25fd0e8e5fb237f7cc3fde8159a499ca722d2cedd705aa9cc825118",
+    "wasm": "c85e0de944ca5448feab4411a7ebeb3793b137fb98e91213e807f385797c05f5"
+  },
+  "font_manifest": "ea38b1213009cce3a7d0a7bec45a1a4f86b09e3ed7c61b8b2ea6c6f9039a7369",
+  "results": {
+    "native": {
+      "pages": 2023,
+      "below_floor": 0,
+      "new_declines": 0,
+      "different_pngs": 0,
+      "lowest": "98.86"
+    },
+    "wasm": {
+      "pages": 2023,
+      "below_floor": 14,
+      "new_declines": 0,
+      "different_pngs": 0,
+      "lowest": "98.86"
+    }
+  }
+}
