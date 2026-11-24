@@ -1474,6 +1474,55 @@ impl Table {
         self.common.height = total_height;
     }
 
+    /// 셀 높이를 바꾼 뒤 표 높이를 행 높이 합으로 다시 적는다.
+    ///
+    /// `update_ctrl_dimensions`는 병합하지 않은 셀만 보고 높이를 정하지 않은 행(0)을 400HU로 센다.
+    /// - 병합 셀은 걸친 행의 합보다 크면 마지막 행을 모자란 만큼 키운다(조판의 `solve_rowspan_row_heights`).
+    ///   보지 않으면 병합 셀을 키워도 표 높이가 그대로라 글자처럼 취급한 표 뒤 문단이 옛 자리에 남는다.
+    /// - 병합 셀이 걸치지 않은 높이 0 행은 내용으로 높이가 정해지므로 그린 높이(`drawn_rows`, HU)로 센다.
+    ///   400HU로 세면 표 높이가 실제 행보다 작아져 글자처럼 취급한 표가 다른 행을 눌러 그린다.
+    pub(crate) fn sync_ctrl_height_from_rows(&mut self, drawn_rows: &[HwpUnit]) {
+        let row_count = usize::from(self.row_count);
+        let spanned = self.rows_touched_by_rowspans(row_count);
+        let mut rows: Vec<u64> = self
+            .get_raw_row_heights()
+            .iter()
+            .enumerate()
+            .map(|(row, &height)| {
+                let drawn = drawn_rows.get(row).copied().filter(|&h| h > 0);
+                u64::from(match (height, drawn) {
+                    (0, Some(drawn)) if !spanned.get(row).copied().unwrap_or(false) => drawn,
+                    (0, _) => 400,
+                    _ => height,
+                })
+            })
+            .collect();
+        let mut spans: Vec<(usize, usize, u64)> = self
+            .cells
+            .iter()
+            .filter(|cell| cell.row_span > 1 && cell.height < 0x8000_0000)
+            .map(|cell| {
+                let span = usize::from(cell.row_span);
+                let inner = self.inner_cell_spacing_hu(span).max(0) as u64;
+                (
+                    usize::from(cell.row),
+                    span,
+                    u64::from(cell.height).saturating_sub(inner),
+                )
+            })
+            .filter(|&(row, span, _)| row + span <= rows.len())
+            .collect();
+        spans.sort_by_key(|&(row, span, _)| (row + span, span));
+        for (row, span, height) in spans {
+            let sum: u64 = rows[row..row + span].iter().sum();
+            if height > sum {
+                rows[row + span - 1] += height - sum;
+            }
+        }
+        let total: u64 = rows.iter().sum();
+        self.sync_ctrl_height(total.min(u64::from(HwpUnit::MAX)) as HwpUnit);
+    }
+
     pub(crate) fn sync_ctrl_height(&mut self, height: HwpUnit) {
         self.common.height = height;
         if self.raw_ctrl_data.len() >= common_obj_offsets::HEIGHT.end {
