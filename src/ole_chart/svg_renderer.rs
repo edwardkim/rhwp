@@ -398,13 +398,14 @@ pub(super) fn series_fill(presentation: Option<&Presentation>, index: usize) -> 
     }
 }
 
+const CHART_FRAME_PRINT_DPI: f64 = 600.0;
+
 /// 구형 차트는 96 DPI에서 반올림한 참조 펜을 600 DPI 인쇄 장치에 전달한다.
 /// 이 폭은 색을 칠하는 펜의 크기이며 차트의 배치 여백과 독립이다.
 pub(super) fn chart_frame_device_stroke_width(twips: f64, dpi: f64) -> f64 {
-    const FRAME_PRINT_DPI: f64 = 600.0;
     let reference_dpi = crate::renderer::DEFAULT_DPI;
     let reference_pen = (twips.trunc() * reference_dpi / 1440.0).round().max(1.0);
-    reference_pen * dpi / FRAME_PRINT_DPI
+    reference_pen * dpi / CHART_FRAME_PRINT_DPI
 }
 
 pub(super) fn stored_chart_backdrop(
@@ -431,7 +432,16 @@ pub(super) fn stored_chart_backdrop(
             fill = color(backdrop.fill_color);
         }
         if backdrop.frame_enabled && backdrop.frame_width > 0.0 {
-            let stroke = chart_frame_device_stroke_width(backdrop.frame_width, dpi);
+            let reference_dpi = crate::renderer::DEFAULT_DPI;
+            let stroke = if presentation.chart_type == 14 {
+                // 원형 차트의 얇은 외곽선은 안티앨리어싱된 참조 픽셀의
+                // 반 폭까지 인쇄 장치의 정수 펜 단위로 보존한다.
+                let hairline_pixels = (CHART_FRAME_PRINT_DPI / (2.0 * reference_dpi)).floor();
+                chart_frame_device_stroke_width(backdrop.frame_width, dpi)
+                    .max(hairline_pixels * dpi / CHART_FRAME_PRINT_DPI)
+            } else {
+                chart_frame_device_stroke_width(backdrop.frame_width, dpi).max(dpi / reference_dpi)
+            };
             let offset = stroke / 2.0;
             if stroke >= width.min(height) {
                 return None;
