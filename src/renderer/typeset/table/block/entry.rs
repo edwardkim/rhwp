@@ -131,6 +131,26 @@ impl TypesetEngine {
         st: &mut TypesetState,
         mut input: BlockTableInput<'a>,
     ) -> Option<SplitTableEntry<'a>> {
+        // 앞 문단 표의 이어지는 조각 바로 뒤 문단 기준 표 host 는 문단 위 간격이 조각 띠와
+        // 겹친다. 배치(`HeightCursor::vpos_adjust`)와 같은 등식으로 문단 상단을 올린다.
+        if !st.profile.session_edited()
+            && matches!(st.current_items.last(), Some(PageItem::PartialTable {
+                para_index, is_continuation: true, ..
+            }) if input.para_idx.checked_sub(1) == Some(*para_index))
+        {
+            if let Some(lift) =
+                crate::renderer::float_placement::split_successor_float_host_origin_lift(
+                    input.para,
+                    st.current_height,
+                    input.fmt.spacing_before,
+                    self.dpi,
+                )
+            {
+                st.align_flow_to(st.current_height - lift);
+                input.para_start_height -= lift;
+                input.budget_para_start_height -= lift;
+            }
+        }
         // A saved opening fragment can establish its column frame through
         // the independently known body boundary. The object-only anchor,
         // saved object height and closing outside margin must close that
