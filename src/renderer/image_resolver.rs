@@ -643,9 +643,30 @@ pub(crate) fn emitted_image_bytes(
     bakes_watermark: bool,
 ) -> (&'static str, std::borrow::Cow<'_, [u8]>) {
     let mime = detect_image_mime_type(data);
+    if let Some((converted_mime, bytes)) = converted_image_bytes(data, mime, bakes_watermark) {
+        return (converted_mime, std::borrow::Cow::Owned(bytes));
+    }
+    // Studio의 신원 키·inline 웹 그림도 SVG와 같은 방향으로 디코드해야 한다.
+    let upright = if mime == "image/jpeg" {
+        upright_jpeg(data)
+    } else {
+        None
+    };
+    (
+        mime,
+        upright.map_or(std::borrow::Cow::Borrowed(data), std::borrow::Cow::Owned),
+    )
+}
+
+/// MIME만 조회할 때는 방향 태그를 편집할 사본을 만들 필요가 없다.
+fn converted_image_bytes(
+    data: &[u8],
+    mime: &str,
+    bakes_watermark: bool,
+) -> Option<(&'static str, Vec<u8>)> {
     // 변환 결과 mime 을 바이트와 함께 나른다 — WMF 는 PNG 가 아니라 SVG 로 나가므로
     // "변환에 성공하면 PNG" 로 접으면 mime 이 바이트와 어긋난다.
-    let converted: Option<(&'static str, Vec<u8>)> = match mime {
+    match mime {
         "image/bmp" => bmp_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
         "image/x-pcx" => pcx_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
         "image/tiff" => tiff_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
@@ -663,10 +684,6 @@ pub(crate) fn emitted_image_bytes(
             .map(|png| ("image/png", png)),
         "image/jpeg" => grayscale_jpeg_bytes_to_png_bytes(data).map(|png| ("image/png", png)),
         _ => None,
-    };
-    match converted {
-        Some((converted_mime, bytes)) => (converted_mime, std::borrow::Cow::Owned(bytes)),
-        None => (mime, std::borrow::Cow::Borrowed(data)),
     }
 }
 
@@ -677,7 +694,7 @@ pub(crate) fn emitted_image_bytes(
 /// 3.7MB 당 1.35 ms 라, 매 편집에 도는 경로에서는 이 절약이 그대로 이득이다.
 ///
 /// `resolved` 가 없을 때 "그러면 변환이 실패했다는 뜻이니 원본 mime 이다" 로 단축하지 않고
-/// `emitted_image_bytes` 에 위임한다. 그 전제는 `paint/builder.rs` 가 트리를 만들 때만
+/// 실제 바이트와 같은 형식 변환을 확인한다. 그 전제는 `paint/builder.rs` 가 트리를 만들 때만
 /// 성립하고, 직접 조립한 `PaintOp::Image { resolved: None }` 에는 성립하지 않는다 — 구조가
 /// 보장하지 않는 불변식에 기대면 조용히 갈라진다.
 pub(crate) fn emitted_image_mime(
@@ -687,7 +704,10 @@ pub(crate) fn emitted_image_mime(
 ) -> &'static str {
     match resolved {
         Some(payload) => payload.mime,
-        None => emitted_image_bytes(data, bakes_watermark).0,
+        None => {
+            let mime = detect_image_mime_type(data);
+            converted_image_bytes(data, mime, bakes_watermark).map_or(mime, |(mime, _)| mime)
+        }
     }
 }
 
