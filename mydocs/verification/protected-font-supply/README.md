@@ -12,6 +12,9 @@
 - 문서 항목의 `accepted_sha256_pairs`는 그 문서의 Native·WASM 공급 목록에서만 적용한다.
   화학물질 표시 기준(`chemical`)의 50번째 파일에는 정본 `dotumche.ttf` 또는
   명시된 해시의 `DotumChe-Regular.ttf`를 공급할 수 있다.
+  종합부동산세법(`issue7905`)에는 Windows 10의 Arial·Courier New·Times New Roman 각 4종과
+  `gulim.ttc`의 검증된 해시를 허용한다. [Native·WASM 6쪽 전수 비교 기록](records/issue7905-win10-font-acceptance.json)
+  `sample10`의 Native 공급 목록에도 같은 해시를 허용한다. [Native 763쪽 전수 비교 기록](records/sample10-win10-font-acceptance.json)
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는

@@ -15585,6 +15585,60 @@
     },
     {
       "key": "issue7905",
+      "accepted_sha256_pairs": {
+        "cour.ttf": [
+          "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84",
+          "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec"
+        ],
+        "courbd.ttf": [
+          "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943",
+          "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299"
+        ],
+        "courbi.ttf": [
+          "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7",
+          "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1"
+        ],
+        "couri.ttf": [
+          "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13",
+          "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb"
+        ],
+        "gulim.ttc": [
+          "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+          "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+        ],
+        "times.ttf": [
+          "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f",
+          "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf"
+        ],
+        "timesbd.ttf": [
+          "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77",
+          "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22"
+        ],
+        "timesbi.ttf": [
+          "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd",
+          "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea"
+        ],
+        "timesi.ttf": [
+          "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89",
+          "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
+        ],
+        "arial.ttf": [
+          "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
+          "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+        ],
+        "arialbd.ttf": [
+          "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820",
+          "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+        ],
+        "arialbi.ttf": [
+          "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b",
+          "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+        ],
+        "ariali.ttf": [
+          "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08",
+          "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+        ]
+      },
       "input": {
         "path": "mydocs/pr/assets/legal_hwpx_cellsz_host_line/input/jongbu_law.hwpx",
         "sha256": "63c5669a5fbf99bed259bb6040b3a1ec17b218e7115b867c32bd545dbb623cc1",
@@ -15687,6 +15741,60 @@
     },
     {
       "key": "sample10",
+        "accepted_sha256_pairs": {
+          "cour.ttf": [
+            "6aab1f79264ccda1e7129dba62dbe3750b10eaa27408a327dadb808724e62c84",
+            "93c3ff526c19d03496c01c6a1bfd1031f97af021a13e859a89dfc717a0b6b6ec"
+          ],
+          "courbd.ttf": [
+            "e376f24c9f27eb7370b25aa366d78da731834a1aea651858801c9a14e8906943",
+            "716c08d704f154870bd9fb78b185d0b644912301dfa9c9e6daf45bdb4832a299"
+          ],
+          "courbi.ttf": [
+            "ac3b362cf998eb33475655e12ab7cb2f6a35d1f2eff6f76af00ebb6f81c53ee7",
+            "8fdb188252a2db0f020c89831bddb61cadfe290c3616fe534479b4d3b10d09c1"
+          ],
+          "couri.ttf": [
+            "546406ddbb3e3f6b876a5e8a5dee62ac090d1448662e98d8844b22393813dd13",
+            "5861588608d3a3775d921a7e4acb8362b21630c6b63718bc68adb7137ce53beb"
+          ],
+          "gulim.ttc": [
+            "05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12",
+            "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+          ],
+          "times.ttf": [
+            "fbb57cdb0079137adc0e478913ca134dfee02aa2ef443738ec5e839bf97a1f7f",
+            "2cff2a03d8034801979dd6d16f09b9a825c3d710fcf068f2ebfbf0e1425c87cf"
+          ],
+          "timesbd.ttf": [
+            "e94ff9111656f17bd81e9f822f1e234edcd370bcbacfdebf998b8938f525ac77",
+            "621b4a765fef5d255d19530f4bf936104c6519f2e232a0eef1923474e5b9cf22"
+          ],
+          "timesbi.ttf": [
+            "8d2c8d8d25d9fc529d08558c42effa771617914a455603881e212a26e2f2ddcd",
+            "2852329a38acf9252504669d9c23d5e88366cf77e8209d508f5e7198639648ea"
+          ],
+          "timesi.ttf": [
+            "c2c134968be4259aaa78845d3aca5e91c4a0bd10d98e4d2e48ac3c12f3c63b89",
+            "3a1c2bc8528bfa432e0414d4ec69bf5813563c474e16a9ad0f57ca262f8d24a2"
+          ],
+          "arial.ttf": [
+            "5f9f2d8104ad5e69e1be8107224063dc8c36f9e24680b2f9be324244c0b424a1",
+            "c9b76220a5be42ead4733611e417cd65c5fd8aeaa33eb56576ac378a37d130a1"
+          ],
+          "arialbd.ttf": [
+            "3680a1bbffab914f36b27d5fd97b193de5bccfab882c41b41b5f8f99457b4820",
+            "766f06ac8761f82f25d032a220e89438f6064591af9915061f20b949efdedf69"
+          ],
+          "arialbi.ttf": [
+            "77a0b63c5f73eb85923f10359e68b8fc768487ae88ad902a1ea21276954e205b",
+            "e432c1b3568bd207e30e3d52d41e6431ea53a679eb52dd79b1a36aa6a4f3b994"
+          ],
+          "ariali.ttf": [
+            "c30c71d614e143c0d4e42aaf04d9a1f50f90b365a2654eb3f2c6598e5655af08",
+            "79a5742b865cf06891d4ae43e42cac0e5169c7b7b06b5b3c24ef8e0966d27b62"
+          ]
+        },
       "input": {
         "path": "samples/hwp3-sample10.hwp",
         "sha256": "d9ceb35d8abfb73e9afbe349bccb2a986cf552d66ae7f3f34dcfe4d9d385cb48",
