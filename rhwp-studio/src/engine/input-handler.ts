@@ -4762,6 +4762,7 @@ export class InputHandler {
     this.textarea.value = '';
     this.caret.hide();
     this.fieldMarker.hide();
+    this.f11Field = null;
     this.cursor.clearSelection();
     this.selectionRenderer.clear();
     this.history.clear(this.wasm);

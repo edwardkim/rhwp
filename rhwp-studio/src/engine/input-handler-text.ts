@@ -250,7 +250,7 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
     const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
     if (fi.inField && this.isAtExitedFieldStart?.(pos, fi)) {
       // 누름틀 시작 바깥에서는 Backspace가 앞쪽 본문 글자를 지운다.
-    } else if (fi.inField && charOffset <= fi.startCharIdx) {
+    } else if (fi.inField && fi.startCharIdx !== undefined && charOffset <= fi.startCharIdx) {
       if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'backward')) return;
       return;
     }
@@ -320,7 +320,7 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
   // 필드 경계 보호: 필드 끝 위치에서는 Delete 차단
   try {
     const fi = fieldInfoAt(this.wasm, pos, this.f11Field);
-    if (fi.inField && charOffset >= fi.endCharIdx) {
+    if (fi.inField && fi.endCharIdx !== undefined && charOffset >= fi.endCharIdx) {
       if (tryConfirmRemoveClickHereAtBoundary.call(this, pos, 'forward')) return;
       return;
     }

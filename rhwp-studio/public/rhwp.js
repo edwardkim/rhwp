@@ -3193,6 +3193,37 @@ export class HwpDocument {
         }
     }
     /**
+     * 주소 문단(`getBookmarks`의 `place` 꼴 JSON)의 글자 자리에서 앞(`forward`면 뒤)으로 가장 가까운
+     * 선택 가능 컨트롤을 찾는다. 표 셀·글상자·캡션·각주·미주·머리말·꼬리말 안이면 그 영역을 먼저 훑고
+     * 그 영역을 가진 컨트롤로 나온다. 결과의 `place`는 그 컨트롤이 든 문단 주소이고, 필드면 그 범위를 준다.
+     * `from_control`이 0 이상이면 글자 자리 대신 그 컨트롤 앞(뒤) 형제부터 찾는다.
+     * @param {string} place_json
+     * @param {number} char_offset
+     * @param {number} from_control
+     * @param {boolean} forward
+     * @returns {string}
+     */
+    findNearestControlAt(place_json, char_offset, from_control, forward) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(place_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_findNearestControlAt(this.__wbg_ptr, ptr0, len0, char_offset, from_control, forward);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
+        }
+    }
+    /**
      * 커서에서 이전 방향으로 가장 가까운 선택 가능 컨트롤을 찾는다 (F11 키).
      * @param {number} section_idx
      * @param {number} para_idx
@@ -5073,6 +5104,33 @@ export class HwpDocument {
             return getStringFromWasm0(ret[0], ret[1]);
         } finally {
             wasm.__wbindgen_free(deferred2_0, deferred2_1, 1);
+        }
+    }
+    /**
+     * 지정한 누름틀이 글자 위치를 포함하면 해당 필드 정보와 현재 범위를 반환한다.
+     * @param {string} place_json
+     * @param {number} control_idx
+     * @param {number} char_offset
+     * @returns {string}
+     */
+    getFieldInfoForControlAt(place_json, control_idx, char_offset) {
+        let deferred3_0;
+        let deferred3_1;
+        try {
+            const ptr0 = passStringToWasm0(place_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len0 = WASM_VECTOR_LEN;
+            const ret = wasm.hwpdocument_getFieldInfoForControlAt(this.__wbg_ptr, ptr0, len0, control_idx, char_offset);
+            var ptr2 = ret[0];
+            var len2 = ret[1];
+            if (ret[3]) {
+                ptr2 = 0; len2 = 0;
+                throw takeFromExternrefTable0(ret[2]);
+            }
+            deferred3_0 = ptr2;
+            deferred3_1 = len2;
+            return getStringFromWasm0(ptr2, len2);
+        } finally {
+            wasm.__wbindgen_free(deferred3_0, deferred3_1, 1);
         }
     }
     /**
@@ -12312,6 +12370,22 @@ export class HwpDocument {
     setActiveField(section_idx, para_idx, char_offset) {
         const ret = wasm.hwpdocument_setActiveField(this.__wbg_ptr, section_idx, para_idx, char_offset);
         return ret !== 0;
+    }
+    /**
+     * 주소 문단(`place` 꼴 JSON)의 `control_idx` 누름틀을 활성 필드로 둔다. 같은 글자 자리의 여러 누름틀 가운데
+     * 고른 것에 입력이 들게 한다. 바뀌었으면 true다.
+     * @param {string} place_json
+     * @param {number} control_idx
+     * @returns {boolean}
+     */
+    setActiveFieldAt(place_json, control_idx) {
+        const ptr0 = passStringToWasm0(place_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.hwpdocument_setActiveFieldAt(this.__wbg_ptr, ptr0, len0, control_idx);
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] !== 0;
     }
     /**
      * path 기반: 중첩 표 셀 내 활성 필드를 설정한다.

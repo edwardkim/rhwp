@@ -133,6 +133,7 @@ export const hwpdocument_exportSelectionHtml: (a: number, b: number, c: number, 
 export const hwpdocument_exportSelectionInCellHtml: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
 export const hwpdocument_exportSelectionInCellHtmlByPath: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
 export const hwpdocument_exportSelectionInCellHtmlEx: (a: number, b: number, c: number) => [number, number, number, number];
+export const hwpdocument_findNearestControlAt: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number, number, number];
 export const hwpdocument_findNearestControlBackward: (a: number, b: number, c: number, d: number) => [number, number];
 export const hwpdocument_findNearestControlForward: (a: number, b: number, c: number, d: number) => [number, number];
 export const hwpdocument_findNextEditableControl: (a: number, b: number, c: number, d: number, e: number) => [number, number];
@@ -212,6 +213,7 @@ export const hwpdocument_getFieldInfoAt: (a: number, b: number, c: number, d: nu
 export const hwpdocument_getFieldInfoAtByPath: (a: number, b: number, c: number, d: number, e: number, f: number) => [number, number];
 export const hwpdocument_getFieldInfoAtInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => [number, number];
 export const hwpdocument_getFieldInfoAtInCellEx: (a: number, b: number, c: number) => [number, number];
+export const hwpdocument_getFieldInfoForControlAt: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const hwpdocument_getFieldList: (a: number) => [number, number];
 export const hwpdocument_getFieldValue: (a: number, b: number) => [number, number, number, number];
 export const hwpdocument_getFieldValueByName: (a: number, b: number, c: number) => [number, number, number, number];
@@ -482,6 +484,7 @@ export const hwpdocument_saveSnapshot: (a: number) => number;
 export const hwpdocument_searchAllText: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
 export const hwpdocument_searchText: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => [number, number, number, number];
 export const hwpdocument_setActiveField: (a: number, b: number, c: number, d: number) => number;
+export const hwpdocument_setActiveFieldAt: (a: number, b: number, c: number, d: number) => [number, number, number];
 export const hwpdocument_setActiveFieldByPath: (a: number, b: number, c: number, d: number, e: number, f: number) => number;
 export const hwpdocument_setActiveFieldInCell: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => number;
 export const hwpdocument_setActiveFieldInCellEx: (a: number, b: number, c: number) => number;
