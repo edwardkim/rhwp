@@ -1393,23 +1393,44 @@ fn issue_8856_legacy_native_exporter_prepares_the_actual_supplied_program() {
     use rhwp::document_core::queries::{
         png_export::NativePngExporter, rendering::PngExportOptions,
     };
+
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("tests/fixtures/fonts/RHWPHostFixture-Regular.ttf");
+    let renderer = SkiaLayerRenderer::new().with_font_paths(std::slice::from_ref(&path));
+    let print = RenderProfile::Print;
+    let exporter = NativePngExporter::new(
+        print,
+        PngExportOptions {
+            font_paths: vec![path],
+            ..Default::default()
+        },
+    );
+    let decode = |png: Vec<u8>| image::load_from_memory(&png).unwrap().to_rgba8();
     for current in [false, true] {
         let mut core = host_request_document(current, 2);
-        let exporter = NativePngExporter::new(
-            RenderProfile::Print,
-            PngExportOptions {
-                font_paths: vec![path.clone()],
-                ..Default::default()
-            },
-        );
         exporter.prepare_document(&mut core).unwrap();
-        let run = actual_run(&core, RenderProfile::Print);
+        let original = core.export_hwp_native().unwrap();
+        let actual = decode(exporter.render_page(&core, 0).unwrap());
+        assert_eq!(core.export_hwp_native().unwrap(), original);
+        assert!(actual_run(&core, print).style.continuous_shadow.is_none());
+        let unregistered = core.build_page_layer_tree_with_profile(0, print).unwrap();
+
+        // 명시 등록한 fixture로 같은 쪽의 연속 그림자 출력을 독립적으로 구성한다.
+        assert!(core
+            .register_metafile_font_native(
+                "RHWP Host Fixture",
+                include_bytes!("../fixtures/fonts/RHWPHostFixture-Regular.ttf"),
+                0,
+            )
+            .unwrap());
+        assert!(actual_run(&core, print).style.continuous_shadow.is_some());
+        let registered = core.build_page_layer_tree_with_profile(0, print).unwrap();
+        let expected = decode(renderer.render_png(&registered).unwrap());
         assert!(
-            run.style.continuous_shadow.is_some(),
-            "실제 PNG 내보내기도 선택한 프로그램으로 계획을 만든다: current={current}"
+            expected != decode(renderer.render_png(&unregistered).unwrap()),
+            "글꼴 프로그램 공급에 따른 연속 그림자가 PNG에 보여야 한다: current={current}"
         );
+        assert_same_pixels(actual, expected);
     }
 }
 
