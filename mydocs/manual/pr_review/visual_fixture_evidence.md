@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-11-22
+last_verified: 2026-11-24
 ---
 
 # 시각·fixture 증적
@@ -126,10 +126,12 @@ HWP/HWPX 및 50 MiB 미만 PDF는 **검증에 사용한 파일을 검토 대상 
 
 본문 첨부 PDF는 먼저 `pdfinfo`로 `Creator`, `Producer`, PDF version, 페이지 수와 페이지 크기를
 확인한다. **공식 기준 PDF는 Windows 데스크톱 한컴 2020 또는 2024에서 `Hancom PDF`
-프린터를 선택해 인쇄(Print)한 파일만 수용한다.** 수동 인쇄본과 MCP 인쇄본에 같은 기준을 적용한다.
-웹한글기안기, Cairo, `Microsoft Print to PDF`, PDF 저장·내보내기, 다른 한컴 버전의 출력은
+프린터를 선택해 인쇄(Print)한 파일을 기본으로 수용한다.** 수동 인쇄본과 MCP 인쇄본에 같은 기준을 적용한다.
+MCP가 같은 엔진의 PDF 저장본으로 복구한 경우에는
+[한컴 Print 오류 예외](../verification/visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)를 적용해 공식 기준으로 검증을 계속한다.
+웹한글기안기, Cairo, `Microsoft Print to PDF`, 이 예외에 해당하지 않는 PDF 저장·내보내기, 다른 한컴 버전의 출력은
 출처를 표시한 참고 자료로 활용할 수 있다. 공식 Visual Sweep 판정·보호 TSV·회귀 기대값에는
-한컴 2020·2024의 인쇄 결과를 사용한다.
+한컴 2020·2024의 인쇄 결과 또는 위 조건을 충족한 MCP 대체 저장본을 사용한다.
 
 - `Producer`가 Cairo인 기존 PDF는 같은 HWP/HWPX의 저장 제품을
   `rhwp info --json <파일>`로 확인하고, [MCP 엔진 선택](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)에
@@ -142,7 +144,8 @@ HWP/HWPX 및 50 MiB 미만 PDF는 **검증에 사용한 파일을 검토 대상 
   `Creator: Hancom PDF`처럼 빌드와 제품 세대를 확인할 수 없는 필드는 수동 인쇄 기록이나
   MCP 영수증으로 보완한다. PDF 1.4/1.6 같은 형식 버전은 허용 제품을 판정하는 기준이 아니다.
 
-허용 제품·프린터·Print 경로·동일 입력·페이지 범위와 정상 출력을 확인한 기존 파일은 재사용한다.
+허용 제품·출력 경로(Print 또는 위 MCP 대체 저장 예외)·동일 입력·페이지 범위와 정상 출력을
+확인한 기존 파일은 재사용한다.
 기존 파일이 이미 `samples/` 등에 있으면 `pdf/`에 같은 바이트의 사본을 추가하지 않는다.
 review 문서와 비교 명령은 실제 보존 경로를 사용한다.
 
@@ -174,10 +177,10 @@ MCP 산출본과 직접 출력본 모두 PDF 1.4 등 여러 형식 버전일 수
 
 **한컴 웹한글기안기로 출력한 PDF는 제공 위치·작성자·기존 첨부 여부와 관계없이 공식 대조
 자료로 인정하지 않는다.** PR 본문·댓글뿐 아니라 제공자 설명과 생성 기록으로 출력 출처를
-확인한다. 데스크톱 Print 여부를 확인하지 못한 PDF도 확인 전에는 공식 기준으로 수용하지 않는다.
+확인한다. 데스크톱 Print 또는 위 MCP 대체 저장 예외를 확인하지 못한 PDF도 확인 전에는 공식 기준으로 수용하지 않는다.
 리뷰 문서와 contributor에게 게시하는 검토
 코멘트 모두에 웹한글기안기 PDF를 판정에서 제외했다는 점과, 같은 입력으로 확보한
-**Windows 데스크톱 한컴에서 `Hancom PDF` 프린터로 인쇄(Print)한 PDF**를 기준으로
+**Windows 데스크톱 한컴의 Print PDF 또는 수용 조건을 확인한 MCP 대체 저장본**을 기준으로
 검증했다는 점을 명시하고, `Microsoft Print to PDF` 출력은 제외한다.
 원 PR의 웹한글기안기 일치율을 데스크톱 Print 검증 결과로 재인용하지 않는다.
 
@@ -192,7 +195,9 @@ MCP 산출본과 직접 출력본 모두 PDF 1.4 등 여러 형식 버전일 수
 일반 기여자에게 MCP 접근 또는 호출을 요구하지 않는다. 기여자는 기준 PDF가 필요한 변경에서
 한컴 2020 또는 2024에서 직접 인쇄한 PDF를 원본 HWP/HWPX와 함께 PR 또는 관련 issue에 첨부한다.
 수동·MCP 모두 **`Hancom PDF` 프린터의 Print 인쇄 경로**를 사용하며,
-`Microsoft Print to PDF`나 PDF 저장/내보내기로 대신하지 않는다.
+인쇄 오류가 확인된 MCP 대체 저장본은 위 예외 조건으로 수용한다. 해당 job의 `pdf_output_mode`와
+`comment`, 제품·빌드, 입력·PDF 해시와 검증 결과를 연결해 「한컴 Print 버그 예외 — MCP PDF 대체 저장본」으로
+표기한다. 일반 PDF 저장·내보내기와 `Microsoft Print to PDF`는 이 예외에 포함하지 않는다.
 출력 계약·engine 2020/2024 선택은 [MCP 사용법](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
 여러 버전의 동작을 설명할 때는 자료의 제품 버전·빌드·OS·폰트·출력 방법과 공식 기준인지
 참고 자료인지를 구분한다. 기존 2020·2024 첨부본이 위 재사용 조건을 충족하면 그대로 사용한다.

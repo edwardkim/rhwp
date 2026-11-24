@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-22
+last_verified: 2026-11-24
 ---
 
 # PDF/PNG visual sweep 가이드
@@ -24,15 +24,17 @@ collaborator·maintainer의 추가 책임이다.** 일반 기여자에게 비공
 쪽수·페이지 분할 변경은 전체 문서를 비교하며 평균값·높은 페이지 선별로 미달을 숨기지 않는다.
 기준 PDF는 [원본 저장 버전에 맞는 한컴 Print 출력](../mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)을 따른다.
 공식 대조 자료는 같은 원본을 Windows 데스크톱 **한컴 2020 또는 2024의 `Hancom PDF`
-프린터로 인쇄(Print)**한 PDF만 사용한다. 실제 제품·버전·프린터·출력 경로를 확인한다.
-웹한글기안기, Cairo, `Microsoft Print to PDF`, PDF 저장·내보내기, 다른 한컴 버전의
+프린터로 인쇄(Print)**한 PDF를 기본으로 사용한다. 실제 제품·버전·프린터·출력 경로를 확인한다.
+MCP가 인쇄 오류로 대체 저장한 PDF는 [한컴 Print 버그 예외](visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)를 적용한다.
+웹한글기안기, Cairo, `Microsoft Print to PDF`, 위 예외에 해당하지 않는 PDF 저장·내보내기, 다른 한컴 버전의
 출력은 출처를 명시한 참고 자료로 활용한다.
 Cairo는 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022`는 MCP 2024로 다시
 인쇄한 후 전쪽을 비교한다.
 [기준 PDF 출처와 재출력](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)을 따른다.
 새 기준 PDF를 만들거나 기존 쌍의 출처를 확인할 때는
 [Print 영수증 작성·대조 절차](../mcp_hwp2024Convert_usage.md#print-영수증을-남기고-다시-확인하기)에
-따라 생성 기록과 원본·PDF의 SHA-256을 대조한다.
+따라 생성 기록과 원본·PDF의 SHA-256을 대조한다. MCP 대체 저장본은
+[대체 저장 응답 보존 절차](../mcp_hwp2024Convert_usage.md#인쇄-오류-시-pdf-대체-저장본-확인)를 따른다.
 작업 중 TSV·실행 로그·중간 JSON은 ignored `output/pr-review/<id>/`에 보존한다.
 최종 제출용 TSV는 PR 본문에 전체 원문을 넣거나, 본문 크기 제한 시 원본 asset의 링크로 제출한다.
 아래 [본문 삽입·저장소 링크](#tsv-원문-본문-삽입과-저장소-링크)를 따른다. 실행 로그·중간 JSON은 Git에 커밋하지 않는다.
@@ -64,6 +66,18 @@ RGBA·LA·팔레트 PNG의 투명 영역은 **흰 종이 위에 합성한 RGB**�
 - **표 셀의 visible line 경계 침범 또는 visible-ending 자연 text 폭 위험 후보**
 - **명시적 SVG clip이 glyph 근사 band의 상·하단을 2px 이상 부분 절단하는 후보**
 - **구조 heuristic에 걸리지 않는 glyph·PUA·제품명 표시 차이**의 review 후보
+
+### MCP가 PDF 인쇄 오류로 대체 저장한 경우
+
+1. 성공 상태·다운로드 응답에서 같은 job ID·요청 엔진과 `pdf_output_mode`·`comment`를 확인하고
+   [거버넌스의 수용 조건](visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)을 충족하는지 판정한다.
+2. 저장본의 실제 파일·해시·쪽수와 전쪽 래스터화 결과를 확인한다. 구조 검사는 OLE 차트의
+   모양·내용·미세 간격까지 보증하지 않으므로 알려진 오류 영역도 직접 판독한다.
+3. 「한컴 Print 버그 예외 — MCP PDF 대체 저장본」과 응답의 `comment` 원문을 review에 남기고
+   그 PDF를 기존 비교 명령의 기준 PDF로 지정한다. 실제 엔진에 맞는 `--compat`와
+   rhwp의 `print` 프로필을 유지한다.
+4. 같은 저장본으로 base·후보의 전쪽 Native/fresh WASM TSV와 대표 review·overlay를 산출한다.
+   기존 일치율·쪽수·내용 보존·확대 판독 기준에 따라 검증을 계속한다.
 
 ### 기여자 공통 보호 검사
 
