@@ -48,7 +48,11 @@ fn scaled_tiles(image: &ImageNode, frame: BoundingBox, dpi: f64, data: &[u8]) ->
     if image.crop.is_some_and(|crop| {
         crate::renderer::svg::compute_image_crop_src(
             crop,
-            metafile_geometry::wmf_crop_reference(image.original_size_hu),
+            metafile_geometry::wmf_crop_reference(
+                image.original_size_hu,
+                image.data.as_deref(),
+                image.crop,
+            ),
             width,
             height,
         ) != (0.0, 0.0, width, height)
