@@ -120,7 +120,7 @@ struct NativeOtfProgram {
     cff: bool,
     static_truetype: bool,
     visible_notdef_advance: Option<f64>,
-    verified_hft_bold_tracking: bool,
+    verified_legacy_font_bold_tracking: bool,
     visible_old_hangul_advances: Arc<BTreeMap<char, f64>>,
 }
 
@@ -333,7 +333,7 @@ impl NativeOtfMetrics {
                     (
                         f64::from(width) / f64::from(face.units_per_em()),
                         program.faux_bold,
-                        program.verified_hft_bold_tracking,
+                        program.verified_legacy_font_bold_tracking,
                         program_index,
                     )
                 });
@@ -434,14 +434,8 @@ impl NativePuaFonts {
         selection_digest.update(face_index.to_be_bytes());
         let selection_digest: [u8; 32] = selection_digest.finalize().into();
         let faux_bold = bold && !face.is_bold();
-        let verified_hft_bold_tracking = face.names().into_iter().any(|name| {
-            matches!(
-                name.name_id,
-                ttf_parser::name_id::FAMILY | ttf_parser::name_id::TYPOGRAPHIC_FAMILY
-            ) && name.to_string().is_some_and(|family| {
-                super::legacy_font_advances::has_verified_hft_bold_tracking_family(&family)
-            })
-        });
+        let verified_legacy_font_bold_tracking =
+            super::legacy_font_advances::tracking::has_verified_program_family(face.names());
         // CFF도 cmap/hmtx만 측정에 사용한다. 원본 신원·형식은 위에서 보존하고
         // 윤곽은 별도 paint 저장소가 소유하므로 측정 세션에 중복 보관하지 않는다.
         let compact = metric_sfnt::compact_metrics(bytes, face_index);
@@ -501,7 +495,7 @@ impl NativePuaFonts {
             cff,
             static_truetype,
             visible_notdef_advance,
-            verified_hft_bold_tracking,
+            verified_legacy_font_bold_tracking,
             visible_old_hangul_advances: Arc::new(visible_old_hangul_advances),
         });
         self.otf_programs

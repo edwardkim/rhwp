@@ -64,6 +64,7 @@ def export_native_png(vs, root, hwp, binary, base, selected, font_paths, environ
               '--dpi', str(dpi), '--scale', str(dpi / 96.0), *environment_args]
     compat = environment_args[environment_args.index('--compat') + 1]
     print_png_rgb555 = '--print-png-rgb555' in environment_args
+    print_bmp_full_color = '--print-bmp-full-color' in environment_args
     for directory in font_paths:
         common += ['--font-path', str(vs.resolve_input_path(root, directory))]
     work = base / 'native-png'
@@ -98,6 +99,7 @@ def export_native_png(vs, root, hwp, binary, base, selected, font_paths, environ
         if (result.get('backend') != 'native-skia' or result.get('comparisonProfile') != 'print'
                 or result.get('layoutGeneration') != compat
                 or result.get('printPngRgb555', False) != print_png_rgb555
+                or result.get('printBmpFullColor', False) != print_bmp_full_color
                 or result.get('renderedCount') != len(expected) or len(items) != len(expected)
                 or any(type(item.get('page')) is not int for item in items)
                 or {item.get('page') for item in items} != expected):
@@ -136,7 +138,7 @@ def export_native_png(vs, root, hwp, binary, base, selected, font_paths, environ
     vs.write_json_atomic(base / 'native-export.json', {
         'pageCount': count, 'all_pages_exported': selected is None,
         'rasterBackend': 'native-skia', 'comparisonProfile': 'print', 'layoutGeneration': compat,
-        'printPngRgb555': print_png_rgb555, 'pages': items,
+        'printPngRgb555': print_png_rgb555, 'printBmpFullColor': print_bmp_full_color, 'pages': items,
     })
 
 
@@ -576,13 +578,14 @@ def repair_terminal_cmap(data: bytes, glyph_count: int) -> bytes | None:
 
 def export_wasm_png(vs, root, hwp, package, base, selected, font_paths, environment, compat, dpi, workers,
                     observed_font_receipt=None, *, linked_images=None, print_png_rgb555=False,
-                    print_job_context=None):
+                    print_job_context=None, print_bmp_full_color=False):
     import sys
     catalogue = font_catalog(vs, root, font_paths, base)
     options = base / 'canvas-options.json'
     vs.write_json_atomic(options, {'pages': selected, 'workers': workers, 'scale': dpi / 96.0,
                                   'compat': compat, 'fontEnvironment': str(environment) if environment else None,
                                   'printPngRgb555': print_png_rgb555,
+                                  'printBmpFullColor': print_bmp_full_color,
                                   'printJobContext': str(print_job_context) if print_job_context else None,
                                   'observedFontReceipt': str(observed_font_receipt) if observed_font_receipt else None,
                                   'linkedImages': linked_images or [],
@@ -598,6 +601,7 @@ def export_wasm_png(vs, root, hwp, package, base, selected, font_paths, environm
     if (metadata.get('rasterBackend') != 'wasm-canvas2d'
             or metadata.get('comparisonProfile') != 'print'
             or metadata.get('printPngRgb555', False) != print_png_rgb555
+            or metadata.get('printBmpFullColor', False) != print_bmp_full_color
             or {item.get('page') for item in metadata.get('pages', [])} != expected
             or len(metadata.get('pages', [])) != len(expected)):
         raise SystemExit('WASM Canvas PNG 요청 쪽이 누락·중복되었습니다.')

@@ -669,6 +669,54 @@
   ],
   "repositoryOnlyFonts": [
     {
+      "repositoryPath": "tests/fixtures/fonts/source-code-pro/SourceCodePro-Regular.otf",
+      "sha256": "9f9664e2edf6f045c11e774f9bd0be6993971f2544a39061a5ce478b96b051f8",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/fonts/source-code-pro/LICENSE.md"
+      ],
+      "copyrightNotices": [
+        "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+      ],
+      "provenance": "tests/fixtures/fonts/source-code-pro/README.md"
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/source-sans-3/SourceSans3-3.028-Regular.otf",
+      "sha256": "65683beb272304ff66cdac84ad47d648a7eec925ea954f512afe0999855f7a89",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/fonts/source-sans-3/LICENSE-3.028.md"
+      ],
+      "copyrightNotices": [
+        "Copyright 2010-2020 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'."
+      ],
+      "provenance": "tests/fixtures/fonts/source-sans-3/README.md"
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf",
+      "sha256": "08df266400933d3178d081a45f94a08814c3e55b4b7dd2e0ff69cb1329f13ab6",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/fonts/source-sans-3/LICENSE-3.052.md"
+      ],
+      "copyrightNotices": [
+        "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+      ],
+      "provenance": "tests/fixtures/fonts/source-sans-3/README.md"
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/source-sans-3/SourceSans3-3.052-Bold.otf",
+      "sha256": "7776ddb9f3eb58683e59f28d558d8896b768c2d0c80799fb3f1c56c54dfd98c9",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/fonts/source-sans-3/LICENSE-3.052.md"
+      ],
+      "copyrightNotices": [
+        "© 2023 Adobe (http://www.adobe.com/), with Reserved Font Name ‘Source’"
+      ],
+      "provenance": "tests/fixtures/fonts/source-sans-3/README.md"
+    },
+    {
       "repositoryPath": "tests/fixtures/fonts/RHWPNativeContainer.ttf",
       "sha256": "a83760f59c9621a92ea17d86869cf8433030612e03d119a33efdc8347ae65bd1",
       "license": "OFL-1.1",
@@ -1056,6 +1104,18 @@
         "Copyright (c) 2025-2026 Edward Kim"
       ],
       "provenance": "tests/fixtures/issue8533/README.md"
+    },
+    {
+      "repositoryPath": "tests/fixtures/fonts/last-resort/LastResortHE-Regular.ttf",
+      "sha256": "3a936fe2379e9e164a8f9819095cbf53d9305a2d08532d9be5b496f4be45bcde",
+      "license": "OFL-1.1",
+      "licenseFiles": [
+        "tests/fixtures/fonts/last-resort/OFL.txt"
+      ],
+      "copyrightNotices": [
+        "© 2020–2025 Unicode, Inc."
+      ],
+      "provenance": "tests/fixtures/fonts/last-resort/README.md"
     }
   ]
 }

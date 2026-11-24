@@ -1,4 +1,13 @@
-//! 관계형·고정형: 합성 문자열의 원본 글꼴 전진폭 비율과 독립 폭 관측을 검사한다.
+//! 관계형·고정형 회귀 — HCI Poppy 원본 전진폭과 표시용 글꼴의 전진폭을 구분한다.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-11-01T19:39:21+09:00
+//! `ceb08df8144e6b11149b30b22d00ac9ae0e52f1e`.
+//! 중첩 표는 2026-11-23 한컴 2020 Print, 96 DPI 보정 전 2px 실루엣으로 비교했다.
+//! 수정 전 전17쪽 최저 Native/fresh WASM 99.98/99.64%.
+//! 수정 전 6쪽 100.00/99.89%, 12쪽 100.00/99.99%, 16쪽 100.00/99.64%.
+//! 독립 Type 3 폭과 재현 경로는 `mydocs/pr/pr_7766_7776_review_impl.md`에 기록했다.
+//! 아래 기록은 기존 합성 입력의 검증 근거다.
+//!
+//! 합성 문자열의 원본 글꼴 전진폭 비율과 독립 폭 관측을 검사한다.
 //! 주석 갱신: 2026-11-01T11:28:30+09:00; 직전 파일 커밋: 2026-10-31T23:53:29+09:00 (af175315e7e16800e65e573c2a2ac23e8d9da82b).
 //! 합성 문자 경계와 원본 프로그램 단위의 폭을 비교하며 실물 쪽의 시각 일치율을 판정하지 않는다.
 //! 근거: mydocs/pr/assets/issue_8160/poppy-original-widths.json, mydocs/pr/assets/issue_8160/poppy-ascii-neutral-advances.tsv.
@@ -189,6 +198,51 @@ fn hci_poppy_measured_ascii_styles_use_source_advances_and_italic_keeps_display_
             assert_eq!(
                 source, display,
                 "확인하지 않은 기울임체는 기존 표시 face 경로 유지"
+            );
+        }
+    }
+}
+
+#[test]
+fn source_bold_middle_dot_keeps_the_independent_print_advance() {
+    use rhwp::renderer::font_environment::FontEnvironment;
+
+    let source = include_bytes!("../../samples/basic/issue2007_nested_cell_pagination_42065.hwp");
+    let display = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
+    let mut doc = DocumentCore::from_bytes(source).expect("중첩 표 원본");
+    let environment = FontEnvironment::from_json(
+        r#"{"id":"poppy-display-for-regression","preserveSourceMetrics":true,"substitutions":{"HCI Poppy":"Poppy Display"}}"#,
+    ).expect("공개 표시용 글꼴 환경");
+    doc.set_font_environment(Some(environment))
+        .expect("원본 폭 설정");
+    assert!(doc
+        .prepare_native_otf_fonts_with(|request| {
+            (request.bold
+                && !request.italic
+                && !request.source_ttf
+                && request.family.split(',').next() == Some("Poppy Display"))
+            .then(|| (display.to_vec(), 0))
+        })
+        .expect("표시용 글꼴 공급"));
+    for (page, shape, expected) in [(6, 29, 576), (12, 87, 384), (16, 29, 576)] {
+        let trace = doc
+            .get_font_decision_trace_native(page - 1, r#"{"maxCharacters":4096}"#)
+            .expect("한컴 Print 대상 쪽의 글자 기록");
+        let trace: serde_json::Value = serde_json::from_str(&trace).expect("글꼴 기록 JSON");
+        let records = trace["records"].as_array().expect("문서의 글자 목록");
+        let dots: Vec<_> = records
+            .iter()
+            .filter(|record| {
+                record["source"]["codePoint"] == 183 && record["source"]["charShapeId"] == shape
+            })
+            .collect();
+        assert!(!dots.is_empty(), "{page}쪽의 원본 굵은 가운뎃점");
+        for record in dots {
+            assert_eq!(record["document"]["face"], "HCI Poppy");
+            assert_eq!(record["document"]["altType"], 2);
+            assert_eq!(
+                record["layoutMetric"]["baseAdvanceHwpunit"], expected,
+                "{page}쪽 굵은 가운뎃점의 독립 Type 3 전진은 384/1000em"
             );
         }
     }

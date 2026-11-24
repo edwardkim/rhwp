@@ -612,7 +612,7 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | --- | --- |
 | mydocs만 변경 | git diff --check, 문서 경로·링크·변경 범위 확인. Cargo 생략 |
 | Rust parser/model/CLI | 모든 Rust lint 묶음, focused test, release-test 전체. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
-| renderer/layout/typeset/WASM | focused test, release-test 전체, Native Skia 3종, wasm-pack build, 시각 증적. 단, 4.3.0의 검토 재사용 조건이면 focused test, WASM·시각 증적과 GitHub 전체 CI 근거 |
+| renderer/layout/typeset/WASM | focused test, release-test 전체, [CI와 같은 Native Skia 사전 검사](#ci와-같은-native-skia-사전-검사), wasm-pack build, 시각 증적. 단, 4.3.0의 검토 재사용 조건이면 focused test, WASM·시각 증적과 GitHub 전체 CI 근거 |
 | rhwp-studio만 변경 | TypeScript 검사, npm test, 실제 browser 동작 |
 | npm/editor public API·transport·type | 아래 package 검증 |
 | CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
@@ -861,17 +861,88 @@ cargo fmt --all -- --check
 cargo clippy --locked --all-targets -- -D warnings
 ~~~
 
-renderer 영향 PR의 Native Skia 공식 회귀 범위는 다음 3종이다.
+### CI와 같은 Native Skia 사전 검사
+
+렌더러·조판·글꼴 공급·Native 출력 경로 또는 해당 Skia 회귀를 바꾼 제출 후보는 같은 head의
+[CI 정의](../../../.github/workflows/ci.yml)에서 `Native Skia tests` 단계의 `release-test` 명령을 확인한다.
+최소 글꼴 환경에서 `native-skia` 라이브러리와 그 단계가 호출하는 통합 모듈을 모두 순차 실행한다.
+일반 nextest와 누락 그림·직접 PDF 집중 검사만 실행하면 `native-skia` 기능 전용 모듈이 빠질 수 있다.
+예를 들어 쪽별 인쇄 글꼴 준비를 바꾸면 `skia_native_glyph_replay`의 실제 PNG 연속 그림자 검사도 실행한다.
+
+검증 기록에 head·OS·글꼴 격리 조건과 각 모듈의 실행 건수·결과를 남긴다. 모듈이 0건을 실행했다면
+성공으로 집계하기 전에 `--prepare`로 현행 suite를 생성했는지, 모듈명 필터가 실제 suite를
+선택했는지 확인한다. 각 OS의 결과는 그 OS에서 수집한 항목에 적용한다. 변경이 여러 OS 전용 경로에
+걸치면 그 경로를 각 대상 OS에서 실행하거나 같은 head의 해당 OS CI 근거를 확인한다.
+4.3.0의 같은 head CI 재사용 조건은 그대로 적용한다.
+
+#### macOS의 Native Skia 실행
+
+위 macOS 절에 따라 CoreText에서 추가 설치 글꼴을 차단한 검증 프로세스 안에서 아래
+POSIX 명령을 실행한다. `sandbox-exec`를 사용한다면 `--prepare`와 Cargo를 모두 확인한
+프로필 안에서 실행한다. macOS 전용 `cfg`의 실제 수집 건수도 확인한다.
+
+#### Linux의 Native Skia 실행
+
+위 Ubuntu 예시처럼 `bwrap` 또는 검증한 격리 환경에서 글꼴 직접 탐색 경로와 Fontconfig 공급을
+제한한 뒤 아래 POSIX 명령을 실행한다. 배포판에 맞는 Fontconfig·FreeType 개발용 링크 파일도
+확인한다. Debian·Ubuntu는 `libfontconfig-dev`와 `libfreetype-dev`를 사용하며, 릴리스에 따라
+`libfontconfig1-dev`와 `libfreetype6-dev` 패키지명으로 제공될 수 있다. Linux 전용 검사가
+실제로 수집되는지 확인한다.
+
+#### macOS·Linux 공통 실행 명령
+
+격리 환경의 저장소 루트에서 실행한다. 이 명령과 아래 Windows 명령은 현재 CI 정의에서 동일한
+통합 모듈 목록을 읽는다. CI의 실행 형식이 바뀌면 실제 명령을 확인해서 전체 목록을 실행한다.
 
 ~~~bash
-cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia --lib
-node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
-  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
-node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
-  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
+(
+  set -e
+  export CARGO_TARGET_DIR="${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}"
+  rhwp_skia_cases="$(awk '
+    /^      - name: Native Skia tests$/ { step = 1 }
+    step && /^[[:space:]]+release-test\)$/ { profile = 1; next }
+    profile && /^[[:space:]]+;;$/ { exit }
+    profile && $1 == "node" && $2 == "scripts/run-rust-test.mjs" && $3 == "--cargo-test" { print $4 }
+  ' .github/workflows/ci.yml)"
+  test -n "$rhwp_skia_cases"
+  node scripts/rust-test-suite-manifest.mjs --prepare
+  cargo test --locked --profile release-test --features native-skia --lib
+  printf '%s\n' "$rhwp_skia_cases" | while IFS= read -r rhwp_skia_case; do
+    node scripts/run-rust-test.mjs --cargo-test "$rhwp_skia_case" -- \
+      --profile release-test --features native-skia || exit "$?"
+  done
+)
 ~~~
 
-fresh WASM은 아래 환경별 경로 중 하나를 완료한다. Docker 설치 여부와 관계없이 Native Skia 3종과
+#### Windows의 Native Skia 실행
+
+위 Windows 절에 따라 시스템 및 사용자 글꼴을 확인한 최소 글꼴 환경에서 PowerShell을 연다.
+아래 명령은 같은 검증용 target을 재사용한다. Windows 전용 DirectWrite 검사도 실제 수집되는지 확인한다.
+
+~~~powershell
+if (-not $rhwpReviewTargetDir) { throw '공용 target 경로를 먼저 고정하세요' }
+$env:CARGO_TARGET_DIR = $rhwpReviewTargetDir
+Remove-Item Env:RHWP_FONT_PATH -ErrorAction SilentlyContinue
+$workflow = Get-Content -Raw .github/workflows/ci.yml
+$nativeStep = [regex]::Match($workflow, '(?m)^      - name: Native Skia tests\r?$')
+if (-not $nativeStep.Success) { throw 'CI의 Native Skia 검사 단계를 찾지 못했습니다' }
+$releaseBlock = [regex]::Match($workflow.Substring($nativeStep.Index), '(?ms)^\s+release-test\)\r?\n(.*?)^\s+;;\r?$')
+if (-not $releaseBlock.Success) { throw 'Native Skia의 release-test 명령을 찾지 못했습니다' }
+$modulePattern = '(?m)^\s+node scripts/run-rust-test\.mjs --cargo-test ([a-z0-9_]+) --'
+$modules = [regex]::Matches($releaseBlock.Groups[1].Value, $modulePattern)
+if ($modules.Count -eq 0) { throw 'Native Skia 통합 모듈을 찾지 못했습니다' }
+node scripts/rust-test-suite-manifest.mjs --prepare
+if ($LASTEXITCODE -ne 0) { throw 'Rust suite 생성 실패' }
+cargo test --locked --profile release-test --features native-skia --lib
+if ($LASTEXITCODE -ne 0) { throw 'Native Skia 라이브러리 검사 실패' }
+foreach ($module in $modules) {
+  $case = $module.Groups[1].Value
+  node scripts/run-rust-test.mjs --cargo-test $case -- --profile release-test --features native-skia
+  if ($LASTEXITCODE -ne 0) { throw "Native Skia 통합 검사 실패 ($case)" }
+}
+~~~
+
+fresh WASM은 아래 환경별 경로 중 하나를 완료한다. Docker 설치 여부와 관계없이 Native Skia와
 WASM·브라우저·시각 검증의 적용 범위는 동일하다.
 
 `native-skia`가 Cargo feature이고 `skia`는 feature가 아니다. 따라서
@@ -1134,7 +1205,7 @@ embed E2E를 추가한다. 기본값 변경은 옵션을 생략한 smoke에서�
 VITE_URL=http://127.0.0.1:7700 npm --prefix rhwp-studio run e2e:embed
 ~~~
 
-대형 복합 변경 또는 승인된 전체 검증은 build, release lib, release-test, Native Skia 3종, fmt,
+대형 복합 변경 또는 승인된 전체 검증은 build, release lib, release-test, CI와 같은 Native Skia 사전 검사, fmt,
 diff check, clippy, doc test, TypeScript, npm test, 환경에 맞는 fresh WASM build를 이 순서로 실행한다.
 마지막 WASM 단계는 위 Docker 또는 호스트 경로 중 하나를 완료하며, Docker 사용 불가를 생략
 사유로 삼지 않는다.
@@ -1146,11 +1217,7 @@ cargo nextest run --locked \
   --cargo-profile release-test \
   --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
-cargo test --locked --profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia --lib
-node scripts/run-rust-test.mjs issue_2225_missing_picture_placeholder -- \
-  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
-node scripts/run-rust-test.mjs render_p37_direct_pdf_export -- \
-  --cargo-profile release-test --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" --features native-skia
+# 위 'CI와 같은 Native Skia 사전 검사'의 라이브러리와 통합 모듈을 모두 실행한다.
 cargo fmt --all -- --check
 git diff --check
 cargo clippy --locked --all-targets --target-dir "${rhwp_review_target_dir:?기본 작업공간에서 공용 target 경로를 먼저 고정하세요}" -- -D warnings

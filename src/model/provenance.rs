@@ -76,7 +76,7 @@ pub struct SourceProvenance {
     /// [#7051] 저장 줄 사다리가 HFT 한글 전용 face 의 ASCII 반각 조판을 증언한다.
     /// 계보 신호(`hwp3_lineage`)가 없는 저장본 — HWP3 변환 HWP5 를 한컴이 HWPX 로 다시
     /// 저장한 파일 등 — 을 위해 `DocumentCore` 가 로드 시 한 번 판정한다
-    /// (`renderer::hft_ascii_evidence`). 파서는 `false` 로 둔다.
+    /// (`renderer::legacy_ascii_evidence`). 파서는 `false` 로 둔다.
     pub hft_ascii_halfwidth_witnessed: bool,
     /// [#7702] 마지막 저장 제품이 한/글 2020(11.x) 보다 앞선다고 문서 메타데이터가 밝힌다.
     /// 그 저장 줄은 한/글 2020 의 공백 최소값(condense) 낱말 흡수 없이 끊겼을 수 있다.

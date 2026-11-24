@@ -49,7 +49,7 @@ impl WebCanvasRenderer {
             let _ = layer.ctx.scale(scale, scale);
             let _ = layer.ctx.translate(-b.x, -b.y);
             layer.hft_outline_enabled = self.hft_outline_enabled;
-            layer.hft_outline_fonts = self.hft_outline_fonts.take();
+            layer.legacy_font_outlines = self.legacy_font_outlines.take();
             if let Some(border) = &plan.border {
                 layer.render_text_run(&border.bbox, &border.run);
             }
@@ -58,7 +58,7 @@ impl WebCanvasRenderer {
             for glyph in &plan.interior {
                 layer.render_text_run(&glyph.bbox, &glyph.run);
             }
-            self.hft_outline_fonts = layer.hft_outline_fonts.take();
+            self.legacy_font_outlines = layer.legacy_font_outlines.take();
             let _ = self.ctx.draw_image_with_html_canvas_element_and_dw_and_dh(
                 &canvas,
                 b.x,

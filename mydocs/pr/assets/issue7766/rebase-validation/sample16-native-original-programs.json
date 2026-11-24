@@ -1,0 +1,13 @@
+{
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "head": "953b43187325496645683fcc15ca989a815b0596",
+  "documents": 3,
+  "pages": 192,
+  "backend": "native",
+  "baseline_sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
+  "same_png": 192,
+  "comparison": {
+    "path": "sample16-native-pair.tsv",
+    "sha256": "33a79bd62552cc22126f395f17cba8f49dbfde55c94efbeae8ddb99aca8d40da"
+  }
+}

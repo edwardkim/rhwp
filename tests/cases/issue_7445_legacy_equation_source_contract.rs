@@ -94,7 +94,7 @@ fn assert_same_origins(before: &[(String, f64, f64)], after: &[(String, f64, f64
             (before.1 - after.1).abs() <= 1.0 / 75.0,
             "baseline-only edit keeps the inner horizontal origin"
         );
-        assert!((before.2 - after.2).abs() <= 1.0 / 75.0, "baseline-only edit keeps the HFT program's inner vertical origin: {before:?} -> {after:?}");
+        assert!((before.2 - after.2).abs() <= 1.0 / 75.0, "baseline-only edit preserves the original font's inner vertical origin: {before:?} -> {after:?}");
     }
 }
 

@@ -11244,6 +11244,7 @@ impl LayoutEngine {
                     .get(item_para)
                     .and_then(|para| styles.para_styles.get(para.para_shape_id as usize))
                     .map_or(0.0, |style| style.spacing_after);
+                let mut owns_flow_floor = false;
                 for (&(owner, _), placement) in &col_content.paragraph_float_placements {
                     if owner == item_para
                         && matches!(
@@ -11268,7 +11269,7 @@ impl LayoutEngine {
                     {
                         new_y =
                             col_area.y + placement.paragraph_end(new_y - col_area.y, spacing_after);
-                        hcursor.min_flow_floor = hcursor.min_flow_floor.max(new_y);
+                        owns_flow_floor = true;
                     }
                 }
                 // The same saved endpoint closes pagination and paint. Adding
@@ -11305,6 +11306,9 @@ impl LayoutEngine {
                             new_y = resolved_end;
                         }
                     }
+                }
+                if owns_flow_floor {
+                    hcursor.min_flow_floor = hcursor.min_flow_floor.max(new_y);
                 }
             }
             if std::env::var_os("RHWP_DIAG_FLOW_ORIGIN").is_some() {
@@ -14799,6 +14803,9 @@ impl LayoutEngine {
                             placement.split_host_prefix().is_some()
                                 || placement.flow
                                     == super::float_placement::ParagraphFloatFlow::CoanchoredTable
+                                || (issue2439_visible_host_stack
+                                    && placement.flow
+                                        == super::float_placement::ParagraphFloatFlow::Exclusion)
                         })
                     {
                         // 앞줄·표·뒤줄 또는 같은 앵커의 흐름 표를 수용한 하단을 쓴다.
@@ -14815,13 +14822,9 @@ impl LayoutEngine {
                         )
                     {
                         if issue2439_visible_host_stack {
-                            // #2439: 저장된 두 표 visible-host 형상은 후행 표가 선행
-                            // 표 아래로 밀려난 높이까지 host 흐름이 실제로 소비한다.
-                            // typeset의 table_bottom + outer-bottom + LineSeg 간격과
-                            // 같은 경계에서 뒤의 서명문을 시작시킨다.
-                            table_visual_end
-                                + visible_outer_bottom_px
-                                + para_line_spacing_px(para, self.dpi)
+                            // 연속한 두 표 뒤 호스트 글줄은 바깥 아래 여백에서 시작한다.
+                            // 자기 줄간격은 글줄을 배치할 때 한 번 소비한다.
+                            table_visual_end + visible_outer_bottom_px
                         } else {
                             table_y_before
                         }
@@ -14958,14 +14961,6 @@ impl LayoutEngine {
                         // (한컴: 섹션 표와 다음 섹션 제목 사이 간격 = 표 아래 외곽여백).
                         let margin_bottom_px =
                             hwpunit_to_px(t.outer_margin_bottom as i32, self.dpi);
-                        let host_line_spacing_px = if issue2439_visible_host_stack {
-                            // 마지막 co-anchored 표 뒤의 host 서명문은 표 하단 여백과
-                            // 저장 LineSeg 간격을 모두 지난 뒤 시작한다. exclusion에
-                            // 포함해 뒤의 post-text 흐름과 typeset을 같은 경계로 맞춘다.
-                            para_line_spacing_px(para, self.dpi)
-                        } else {
-                            0.0
-                        };
                         let placement = ctx
                             .paragraph_float_placements
                             .get(&(para_index, control_index));
@@ -14974,10 +14969,9 @@ impl LayoutEngine {
                             top: placement.map_or(table_visual_top, |p| {
                                 col_area.y + p.exclusion_top(t, self.dpi)
                             }),
-                            bottom: placement.map_or(
-                                table_visual_end + margin_bottom_px + host_line_spacing_px,
-                                |p| col_area.y + p.occupied_bottom,
-                            ),
+                            bottom: placement.map_or(table_visual_end + margin_bottom_px, |p| {
+                                col_area.y + p.occupied_bottom
+                            }),
                             owner_para: para_index,
                             blocks_text: true,
                         });
@@ -17905,6 +17899,7 @@ impl LayoutEngine {
                             table,
                             paragraphs.get(para_index + 1),
                             host_pre_emitted,
+                            is_continuation,
                         ) {
                             y_offset += hwpunit_to_px(advance, self.dpi);
                         }

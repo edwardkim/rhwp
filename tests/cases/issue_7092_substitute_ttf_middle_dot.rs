@@ -160,13 +160,13 @@ fn hanyang_face_with_ttf_substitute_measures_middle_dot_as_the_substitute_truety
 }
 
 #[test]
-fn hanyang_face_with_hft_substitute_keeps_the_hft_middle_dot() {
+fn hanyang_face_with_legacy_substitute_keeps_the_legacy_middle_dot() {
     // 80168: `한양중고딕` TTF 선언이지만 대체 글꼴이 HFT `한양중고딕` — 한/글은 자기 HFT
     // 글리프로 그린다. 정본 2020·2022·2024 출력 모두 Type3 `/W` 0.381em(2쪽 「결정·변경」
     // 0.380 · 「시·도조례」 0.386). 대체 TTF 규칙이 여기로 번지면 안 된다.
     let svg = page_svg("samples/80168_regulatory_analysis.hwp", 1);
     assert_all_near(
-        "80168 2쪽 한양중고딕(HFT 대체)",
+        "80168 2쪽 한양중고딕의 원본 문서 지정 대체",
         &advances_of(&svg, "한양중고딕"),
         0.381,
         0.03,

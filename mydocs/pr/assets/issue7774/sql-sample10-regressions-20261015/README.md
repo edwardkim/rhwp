@@ -33,3 +33,49 @@
 ## 복원 조건
 
 같은 입력·독립 Print의 전쪽 Native/fresh WASM 최저90% 이상과 직접 확대 판독을 확보한 뒤 내용·줄/개체 소속·폭 비율·캐럿 경계 관계로 복원한다. ±2px 좌표를 고정하려면 해당 페이지 양쪽98% 이상과 독립 기대 좌표를 추가로 입증한다. 이관은 이슈 종료나 문서 피델리티 완료가 아니다.
+
+## 2026-11-23~24 독립 Print 전쪽 대조
+
+| 변환본 | 쪽수 | Native 최저 | fresh WASM 최저 | 489쪽 Native / fresh WASM |
+| --- | ---: | ---: | ---: | ---: |
+| HWP5 | 763 | [99.57%](sql-hwp5-native.tsv) | [99.34%](sql-hwp5-wasm.tsv) | 100.00% / 99.98% |
+| HWPX | 763 | [99.57%](sql-hwpx-native.tsv) | [99.34%](sql-hwpx-wasm.tsv) | 100.00% / 99.98% |
+
+측정 조건은 96 DPI, 한컴 2024 Print, 보정 전 2px raw 실루엣이다. HWP5는 위 세
+Print 분할본을 순서대로 대조했다. 별도로 출력한 HWPX 1-up 기준 PDF는 96,144,250바이트다.
+SHA-256은
+`ad6c03db8a81c5a65ba064ef0933b8a37446f1b106fa4b09757bc8b4bb7f04a9`다.
+한컴 엔진 `13.0.0.3901`, job `0aa8ae32-b51b-4b42-bb30-3a51dd8c43af`에서 출력했다.
+원본 HWPX를 한컴 2024 직접 인쇄 경로로 전달했고 `pdf_print_method=0`과 763쪽을 확인했다.
+전쪽 PDF는 `/home/tsjang/rhwp-local-pdf/issue7774/hwp3-sample10-hwpx-hancom-2024-one-up.pdf`에 보관한다.
+아래 이미지는 독립 Print, Native, fresh WASM 순서다.
+
+- [489쪽 SQL 문장과 소속 글줄](sql-hwpx-page-489.png)
+- [554쪽 마지막 본문과 쪽번호](sql-hwpx-page-554.png)
+
+## 16쪽 대괄호 원본 폭 확인
+
+두 변환본의 16쪽에는 굵고 기울인 명조로 ‘[주의]’를 쓰는 원본 문단이 두 곳 있다.
+독립 Print에서 각 대괄호는 450 HU로 전진한다. 다른 표시용 글꼴을 사용해도 네 글자의
+원본 전진폭과 소속을 유지하는 회귀를 등록했다. 두 형식의 16쪽은 보정 후 Native와
+fresh WASM 모두 99.99%이며 재측정한 여섯 쪽은 모두 99.98% 이상이다.
+
+- HWP5 [Native](sql-hwp5-brackets-native.tsv) · [fresh WASM](sql-hwp5-brackets-wasm.tsv)
+- HWPX [Native](sql-hwpx-brackets-native.tsv) · [fresh WASM](sql-hwpx-brackets-wasm.tsv)
+- [16쪽 독립 Print와 양쪽 출력 확대 비교](sql-page-16-brackets.png)
+
+대괄호 보정 후 각 변환본의 fresh WASM 763쪽을 다시 비교했다.
+두 형식의 최저값은 757쪽 99.34%다. 100.00%인 쪽은 HWP5 464쪽과 HWPX
+461쪽이다. HWPX 전쪽 TSV SHA-256은
+`cfcac1a1d94fd117e3922054ccb24df3d14c69ff65db30f3447a5aeb3ddec36c`다.
+
+## 리베이스 뒤 16쪽 대괄호 비교
+
+devel `28a6afc1ebe3e9873605f2d306ca094b422abf24`과 후보 제품 `9a78578e17f46dbd53b19d1eb10445dbef7a2988`에
+같은 입력·독립 Print·96 DPI와 119개 글꼴을 같은 순서로 공급했다. HWP5·HWPX
+모두 16쪽의 fresh WASM raw 실루엣이 96.82%에서 99.99%로 올라갔다.
+두 문단의 ‘[주의]’ 런은 원점과 줄 높이를 유지하며 폭이 49.2px에서 37.2px로 바뀌었다.
+독립 Print를 확대해 대괄호 간격과 뒤 문장의 배치를 확인했다.
+
+- [HWP5 독립 Print·devel·후보](sql-hwp5-page-16-rebase.png)
+- [HWPX 독립 Print·devel·후보](sql-hwpx-page-16-rebase.png)

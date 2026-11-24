@@ -708,7 +708,7 @@ impl LayoutEngine {
             (x, para_y)
         } else {
             // 셀 내 비-TAC 도형: horz_align/vert_align 속성 기반 배치
-            use crate::model::shape::{HorzAlign, HorzRelTo, VertAlign, VertRelTo};
+            use crate::model::shape::{HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo};
             let h_offset = hwpunit_to_px(child_common.horizontal_offset as i32, self.dpi);
             let mut vertical_offset = child_common.vertical_offset as i32;
             // 한컴은 머리말 안의 문단 기준 글상자에서 음수 `문단 내 위`를 0처럼 배치한다.
@@ -739,7 +739,19 @@ impl LayoutEngine {
             let x = match child_common.horz_align {
                 HorzAlign::Right | HorzAlign::Outside => ref_x + ref_w - child_w - h_offset,
                 HorzAlign::Center => ref_x + (ref_w - child_w) / 2.0 + h_offset,
-                _ => ref_x + h_offset,
+                _ => {
+                    // 셀 문단과 함께 흐르는 자리차지 도형은 바깥 여백의 왼쪽에서 정렬한다.
+                    // 자식 변환이나 셀 clip을 적용하기 전에 내용 원점을 안쪽으로 옮긴다.
+                    let margin = if child_common.horz_rel_to == HorzRelTo::Para
+                        && child_common.text_wrap == TextWrap::TopAndBottom
+                        && child_common.flow_with_text
+                    {
+                        hwpunit_to_px(i32::from(child_common.margin.left), self.dpi)
+                    } else {
+                        0.0
+                    };
+                    ref_x + h_offset + margin
+                }
             };
             let (ref_y, ref_h) = match child_common.vert_rel_to {
                 VertRelTo::Paper => (0.0, self.current_page_height.get()),

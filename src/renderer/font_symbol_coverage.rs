@@ -152,11 +152,7 @@ pub fn empty_symbol_codepoints(data: &[u8], face_index: u32) -> BTreeSet<u32> {
                 )
             })
         };
-        if has_empty_outline
-            && !face.is_color_glyph(glyph)
-            && face.glyph_svg_image(glyph).is_none()
-            && !bitmap::may_supply_ink(&face, glyph)
-        {
+        if has_empty_outline && !bitmap::has_color_or_bitmap_ink(&face, glyph) {
             empty.insert(character as u32);
         }
     }

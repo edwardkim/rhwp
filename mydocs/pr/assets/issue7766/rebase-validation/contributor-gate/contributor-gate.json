@@ -1,0 +1,481 @@
+{
+  "status": "passed",
+  "source_head": "953b43187325496645683fcc15ca989a815b0596",
+  "baseline": {
+    "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
+    "sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68"
+  },
+  "catalog_sha256": "5f1c1dae909916fab5da05f2f74f2e93dc83547f3432178a068c5d40bd6ce8d8",
+  "published_from_report_sha256": "9ce041842f4d3040c01d96e528c8ede9d98283da871497721dec4c9f2cf83941",
+  "native_sha256": "8abeddfb75573ac125e5f9c25e62328affed34900655ce9d2fe8a15e7b34d9bf",
+  "wasm_sha256": {
+    "rhwp.js": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
+    "rhwp_bg.wasm": "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84"
+  },
+  "results": [
+    {
+      "document": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "print_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "document_id": "52ee61fe7201e36b",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/re-03-latin-only-hancom.hwp",
+        "--pdf",
+        "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/52ee61fe7201e36b/native"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/52ee61fe7201e36b/native.log",
+          "sha256": "9997946fbd61df91ae0a9f7516ea3a0ec1fd72ed19ba3804a5f4beb07078397c"
+        },
+        "tsv": {
+          "path": "re-03-latin-only-hancom/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "re-03-latin-only-hancom/native/review.png",
+          "sha256": "a111f01df4061f51df965b1cd9d4a655e41238e5285e16bad001a4b415ac4d6a"
+        },
+        "overlay": {
+          "path": "re-03-latin-only-hancom/native/overlay.png",
+          "sha256": "d7cc5ec20993d4722033be297c666e97e5b78257bbbebf53accb2d5950ce6526"
+        }
+      }
+    },
+    {
+      "document": {
+        "path": "samples/re-03-latin-only-hancom.hwp",
+        "sha256": "52b8da3a7cd5625a5e9624aaa532be5faa29d9fc0fc96cc982109729d53cb09f",
+        "bytes": 9216
+      },
+      "print_pdf": {
+        "path": "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "sha256": "d82ea49f681c651d090a11f58ffb9db1a0ae2e37ff71b016400870432f7e53e3",
+        "bytes": 11752
+      },
+      "document_id": "52ee61fe7201e36b",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/re-03-latin-only-hancom.hwp",
+        "--pdf",
+        "pdf/re-03-latin-only-hancom-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/52ee61fe7201e36b/wasm",
+        "--wasm-pkg",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/pkg"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/52ee61fe7201e36b/wasm.log",
+          "sha256": "141e920fc6d23702a8d9b4cf36443679497b3c6ff3a826e55fa2b30ffc8fc556"
+        },
+        "tsv": {
+          "path": "re-03-latin-only-hancom/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "re-03-latin-only-hancom/wasm/review.png",
+          "sha256": "4d6cdc8b9b63a3e4b743244d9005595d2a06c1ac9bc995fcfeb2e33609d8a07b"
+        },
+        "overlay": {
+          "path": "re-03-latin-only-hancom/wasm/overlay.png",
+          "sha256": "5cabef4c9df878d626c79c41d60c2cf48c28052dd37736ca8c7296e523c2f715"
+        }
+      }
+    },
+    {
+      "document": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "print_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "document_id": "59f6ab1155623bda",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "--pdf",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/59f6ab1155623bda/native"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/59f6ab1155623bda/native.log",
+          "sha256": "0dd1048fb25ec95be431e26d4ca9c92985892aacbfa31e5bb17368c7a6d29ec6"
+        },
+        "tsv": {
+          "path": "angle-2400/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "angle-2400/native/review.png",
+          "sha256": "9b83e78d5119eab3e15717835fe084db96e511ff7f94fb65e64106ebf0ef9dd4"
+        },
+        "overlay": {
+          "path": "angle-2400/native/overlay.png",
+          "sha256": "ab306c3be09ad23de75d11c9d57d26614aeb23aec6a284a97ee108d6f26bb452"
+        }
+      }
+    },
+    {
+      "document": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "sha256": "16accd1b849e2c8e90071b0979df8d9bbf7ad0b4d265a3a6ad73c40bd32c5de5",
+        "bytes": 6848
+      },
+      "print_pdf": {
+        "path": "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "sha256": "c6f881cfc1fc0412ae39152526ab8259dc51d4520494bbb8527b08aa2db76712",
+        "bytes": 10328
+      },
+      "document_id": "59f6ab1155623bda",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400.hwpx",
+        "--pdf",
+        "mydocs/pr/assets/issue_8371/angle-narrow/angle-2400-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/59f6ab1155623bda/wasm",
+        "--wasm-pkg",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/pkg"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/59f6ab1155623bda/wasm.log",
+          "sha256": "14187975dd94335a9b0a8d170c80bb8077dceb0b95c51f422e4eaea3ca9ad8a6"
+        },
+        "tsv": {
+          "path": "angle-2400/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "angle-2400/wasm/review.png",
+          "sha256": "ba7c2bc04c06219c22d8a9728acdfa2d394bc954bae54616a028c5f163b41a51"
+        },
+        "overlay": {
+          "path": "angle-2400/wasm/overlay.png",
+          "sha256": "f04740402e2c4777d283bdedd283ea1c23b577e83c757515e11ba839e4474d47"
+        }
+      }
+    },
+    {
+      "document": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "print_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/pic-crop-01.hwp",
+        "--pdf",
+        "pdf/pic-crop-01-2022.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/cdacd874b6e6ac66/native"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/cdacd874b6e6ac66/native.log",
+          "sha256": "2df33b8a287b0705c31ef6d6b758db0d5141b318b60687e1828ee817b99aa2be"
+        },
+        "tsv": {
+          "path": "pic-crop-01/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "pic-crop-01/native/review.png",
+          "sha256": "66eff56d5bf57b3539e0038cd4ac1dea2feffd5665a35d7be758820b21c02abf"
+        },
+        "overlay": {
+          "path": "pic-crop-01/native/overlay.png",
+          "sha256": "5264e3c0874d5d1744cf938d42ed311e3f00fdb20186f7f4ddd6917dc65c7835"
+        }
+      }
+    },
+    {
+      "document": {
+        "path": "samples/pic-crop-01.hwp",
+        "sha256": "3b5afbe4cdb18faa49452a9cbed770d5caa27aed2f83b708e9ab8516c65ebf4c",
+        "bytes": 131072
+      },
+      "print_pdf": {
+        "path": "pdf/pic-crop-01-2022.pdf",
+        "sha256": "4ae5f6f8bc308bedf16fbca139de448c42d29b42bbba22221f4a1acc9694c4d3",
+        "bytes": 19211
+      },
+      "document_id": "cdacd874b6e6ac66",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/pic-crop-01.hwp",
+        "--pdf",
+        "pdf/pic-crop-01-2022.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/cdacd874b6e6ac66/wasm",
+        "--wasm-pkg",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/pkg"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/cdacd874b6e6ac66/wasm.log",
+          "sha256": "a6b7b0746e935ad2ccf4dc3a5c88aafb601ea6291f53dc7fa211d075f92e88ae"
+        },
+        "tsv": {
+          "path": "pic-crop-01/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "pic-crop-01/wasm/review.png",
+          "sha256": "a439e1ffc37f758d6306d583533c640768fe2188087f72dab65b09a385d4721c"
+        },
+        "overlay": {
+          "path": "pic-crop-01/wasm/overlay.png",
+          "sha256": "7cc6c346907a7ca7784eeaa861b9d10b4f443c546ed930ce512c3e98295fa1aa"
+        }
+      }
+    },
+    {
+      "document": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "print_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "native",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/shape-group-02.hwp",
+        "--pdf",
+        "pdf/shape-group-02-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/d03a9dde3d5dc7ac/native"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/d03a9dde3d5dc7ac/native.log",
+          "sha256": "05bafa7ba64a050504459061f9b3d11297fba2bc28d8ad4c14fc451c22181dba"
+        },
+        "tsv": {
+          "path": "shape-group-02/native/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "shape-group-02/native/review.png",
+          "sha256": "34e2bf3aa3be28f079c8bbd5185d7da8f0900c9f70277703980f45afbcae42ba"
+        },
+        "overlay": {
+          "path": "shape-group-02/native/overlay.png",
+          "sha256": "aa7df8ed4ec6aaf9ddd08a6ad5f0d4aaf0681b0f64ddd0b36819c0a399fd65fb"
+        }
+      }
+    },
+    {
+      "document": {
+        "path": "samples/shape-group-02.hwp",
+        "sha256": "12a4b4962a57b4d292d23a1809255ddb7e8400af4dc7884c5bcb7b4767a6628f",
+        "bytes": 16384
+      },
+      "print_pdf": {
+        "path": "pdf/shape-group-02-hwp-2020.pdf",
+        "sha256": "ab759c9c2031f4a6fe64c75381a2c5dbf215777a98b1b0b7cd0243f801662dc7",
+        "bytes": 89651
+      },
+      "document_id": "d03a9dde3d5dc7ac",
+      "backend": "wasm",
+      "pages": 1,
+      "minimum": "100.00",
+      "status": "passed",
+      "command": [
+        "venv/bin/python",
+        "scripts/visual_sweep.py",
+        "--silhouette-only",
+        "--resume",
+        "--hwp",
+        "samples/shape-group-02.hwp",
+        "--pdf",
+        "pdf/shape-group-02-hwp-2020.pdf",
+        "--key",
+        "document",
+        "--rhwp-bin",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/rhwp-native",
+        "--compat",
+        "2022",
+        "--dpi",
+        "96",
+        "--page-workers",
+        "1",
+        "--out",
+        "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/d03a9dde3d5dc7ac/wasm",
+        "--wasm-pkg",
+        "output/issues7766-7776/rebase-2c0c1d2/candidate-programs/pkg"
+      ],
+      "evidence": {
+        "log": {
+          "workspace_path": "output/issues7766-7776/rebase-2c0c1d2/visual/public/contributor/d03a9dde3d5dc7ac/wasm.log",
+          "sha256": "fb0b2040a6173177c1e9801924b2e9274de49650eaf7dda4e215eb6b733a923e"
+        },
+        "tsv": {
+          "path": "shape-group-02/wasm/silhouette.tsv",
+          "sha256": "75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466"
+        },
+        "review": {
+          "path": "shape-group-02/wasm/review.png",
+          "sha256": "167544c9351802829b9a60dcc0af107f720c26dfe2f829d87f68ed9288ac6827"
+        },
+        "overlay": {
+          "path": "shape-group-02/wasm/overlay.png",
+          "sha256": "286abc0e1e05ab32da7ec6522fb2459b319343256a8662fae6161d837719ce5a"
+        }
+      }
+    }
+  ]
+}

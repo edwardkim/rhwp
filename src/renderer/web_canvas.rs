@@ -116,9 +116,9 @@ use super::layout::split_into_clusters;
 #[cfg(target_arch = "wasm32")]
 mod faux_bold_outline;
 #[cfg(target_arch = "wasm32")]
-mod hft_outline;
-#[cfg(target_arch = "wasm32")]
 mod implicit_symbol;
+#[cfg(target_arch = "wasm32")]
+mod legacy_font_outline;
 #[cfg(target_arch = "wasm32")]
 mod middle_dot;
 #[cfg(target_arch = "wasm32")]
@@ -457,7 +457,7 @@ pub struct WebCanvasRenderer {
     active_decoration_trim: usize,
     suppress_text_glyphs: bool,
     metric_descriptor_mismatch: std::cell::Cell<bool>,
-    hft_outline_fonts: Option<super::hft_outline::HftOutlineFonts>,
+    legacy_font_outlines: Option<super::legacy_font_outline::HftOutlineFonts>,
     hft_outline_enabled: bool,
     print_text_geometry: bool,
     high_quality_images: bool,
@@ -498,7 +498,7 @@ impl WebCanvasRenderer {
             active_decoration_trim: 0,
             suppress_text_glyphs: false,
             metric_descriptor_mismatch: std::cell::Cell::new(false),
-            hft_outline_fonts: None,
+            legacy_font_outlines: None,
             hft_outline_enabled: false,
             print_text_geometry: false,
             high_quality_images: false,
@@ -513,8 +513,11 @@ impl WebCanvasRenderer {
         })
     }
 
-    pub(crate) fn set_hft_outline_fonts(&mut self, fonts: &super::hft_outline::HftOutlineFonts) {
-        self.hft_outline_fonts = Some(fonts.clone());
+    pub(crate) fn set_hft_outline_fonts(
+        &mut self,
+        fonts: &super::legacy_font_outline::HftOutlineFonts,
+    ) {
+        self.legacy_font_outlines = Some(fonts.clone());
     }
 
     /// 줌 스케일 설정 (1.0 = 100%, 2.0 = 200%)
@@ -3781,7 +3784,7 @@ impl WebCanvasRenderer {
     // empty .notdef even if a declared fallback has a visible missing glyph.
     fn visible_fallback_font(&self, text: &str, style: &TextStyle) -> Option<String> {
         // A mapped glyph may intentionally be empty. A verified owner keeps it.
-        if self.hft_outline_fonts.as_ref().is_some_and(|fonts| {
+        if self.legacy_font_outlines.as_ref().is_some_and(|fonts| {
             fonts
                 .pua_coverage
                 .text_faces
