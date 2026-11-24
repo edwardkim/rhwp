@@ -5177,7 +5177,17 @@ pub(crate) fn stored_table_column_origin(
             .and_then(|placement| placement.stored_host_origin)
             .map(|origin| source.saturating_sub(super::px_to_hwpunit(origin, dpi)))
     } else {
-        Some(stored_textless_float_box_origin(para, next, source).unwrap_or(source))
+        // 저장 host 줄이 원점 + 문단 앞 간격에 있으면 그 줄은 표 위가 아니라 앞 간격 뒤의 자리다
+        // ([#8735] 2차 중간보고서 73쪽 pi887: 줄 1000 = 앞 간격 1000, 다음 줄 40580 =
+        // 0 + 141 + 40298 + 141).
+        let spacing_before_hu = styles
+            .para_styles
+            .get(para.para_shape_id as usize)
+            .map(|style| super::px_to_hwpunit(style.spacing_before.max(0.0), dpi));
+        Some(
+            stored_textless_float_box_origin(para, next, source, spacing_before_hu)
+                .unwrap_or(source),
+        )
     }
 }
 
@@ -5193,7 +5203,7 @@ pub(crate) fn stored_inline_host_line_top_below_float(
         .any(|control| matches!(control, Control::Table(t) if t.common.treat_as_char))
         .then_some(())?;
     let source = para.line_segs.first()?.vertical_pos;
-    let origin = stored_textless_float_box_origin(para, next, source)?;
+    let origin = stored_textless_float_box_origin(para, next, source, None)?;
     Some(source - origin)
 }
 
@@ -5207,6 +5217,7 @@ fn stored_textless_float_box_origin(
     para: &Paragraph,
     next: Option<&Paragraph>,
     source: i32,
+    spacing_before_hu: Option<i32>,
 ) -> Option<i32> {
     // 글자처럼 취급한 표는 host 줄 안의 내용이다. 줄 높이에 이미 들어 있어 표 상자 등식에 끼지 않는다.
     let mut floats = para.controls.iter().filter_map(|control| match control {
@@ -5246,7 +5257,9 @@ fn stored_textless_float_box_origin(
     // 정하므로 표 아래에 놓인 host 줄은 이 갈래의 증거가 아니다(issue7198 첫 쪽).
     if !line_owns_inline_table
         && (0..i64::from(source)).contains(&origin)
-        && i64::from(source) < origin + i64::from(table.outer_margin_top)
+        && (i64::from(source) < origin + i64::from(table.outer_margin_top)
+            || spacing_before_hu
+                .is_some_and(|before| i64::from(source) - origin == i64::from(before)))
     {
         return i32::try_from(origin).ok();
     }
