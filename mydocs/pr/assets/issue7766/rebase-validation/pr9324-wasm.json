@@ -1,7 +1,7 @@
 {
   "inputSha256": "fbe318ac2fb20e42612571fe384567259b4785bc0375766c122cbc31cad828ca",
-  "programSha256": "9ac195870f5ae725728d9546bc2729b4f4ec5840a19c2f7e7f7a56d9ca77551f",
-  "wrapperSha256": "30036f51b5238704f98e9b5620946b05328f7379ce9f9d92a6faf19c07558033",
+  "programSha256": "0c4659cab1c3ff33db326fad3a8e4411dd1b7b736000df058607e9474f5b8c84",
+  "wrapperSha256": "823c5363cf9d67917d886148b88ff5cf9f4312f73d6f412c594665c652c7544d",
   "pageCount": 1,
   "originalTextSha256": "658cf2cd7348cc7c4ed201bf0a3a475c83d0d1dd47be3e7949bdc45595fe6e47",
   "originalLayoutSha256": "4ee39ac08fef6d81bd8ecff0dfaaa583cc6679a83677c105770930c0b5cefeec",
@@ -18,15 +18,15 @@
   "stablePageTextAndLayout": true,
   "insertedTextPersisted": true,
   "artifacts": {
-    "first.hwpx": "55f5531b00ab7fa5538e6e4f70367223ee72e5bf9234de5ba5f5c19dac099fb2",
-    "second.hwpx": "55f5531b00ab7fa5538e6e4f70367223ee72e5bf9234de5ba5f5c19dac099fb2",
+    "first.hwpx": "18aa2260f0387a6eabc64541f90df66c06b67b8a9afd86ed7d3b87195bc1c8e2",
+    "second.hwpx": "18aa2260f0387a6eabc64541f90df66c06b67b8a9afd86ed7d3b87195bc1c8e2",
     "restored.hwp": "cb7d6397baa1bd53db9ef5a23bc4a9bf5956980aaffbc69cdf8a7d3217bc1aef",
-    "edited.hwpx": "f5869e6eca207fc2ec6852359f3eff8081cea0257b8e9281484a1f576dbac39f",
+    "edited.hwpx": "0fe5e1b50bda28c9d78218a76a12e119b2a8fd9016b3165c1aaffcae4234919a",
     "edited.hwp": "581082e0f8a3291503348ae675fae8d0c7bb723693f9dd0ebb1b8f9aeb975745",
-    "value-two.hwpx": "aea432aa38f1b0949dc332a423b4a3fb9c85a6eef4a7585f40892c8e80f5ad3b",
-    "hancom.hwpx": "0c462fe3d40eb73115f4bb8ea80f312f62db5095e1afbec335f4dc27371d9106"
+    "value-two.hwpx": "579ef8bba53cca4382ce54830b491344304f7db088de28dbd7ce8903e3403284",
+    "hancom.hwpx": "db5c5d881567e14216d29880d03523d040355da5dd25df53c40fd4f41cf563b5"
   },
-  "source_sha": "9a78578e17f46dbd53b19d1eb10445dbef7a2988",
+  "source_sha": "953b43187325496645683fcc15ca989a815b0596",
   "role": "candidate",
   "stored_markers": {
     "first.hwpx": 1,
