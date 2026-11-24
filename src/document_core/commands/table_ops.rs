@@ -2484,7 +2484,7 @@ impl DocumentCore {
         };
         let columns_before = table.column_bounds();
         let mut applied_width_delta: i64 = 0;
-        let mut height_changed = false;
+        let mut applied_height_delta: i64 = 0;
         for update in updates {
             let Some(cell) = table.cells.get_mut(update.cell_idx) else {
                 continue;
@@ -2499,7 +2499,7 @@ impl DocumentCore {
                 let old_height = cell.height;
                 cell.height =
                     (cell.height as i32 + update.height_delta).max(MIN_CELL_SIZE as i32) as u32;
-                height_changed |= cell.height != old_height;
+                applied_height_delta += i64::from(cell.height) - i64::from(old_height);
             }
         }
         // 일부 줄의 칸 너비만 바꿔 줄마다 경계가 달라지면 한컴처럼 그 경계로 열 격자를 나눈다.
@@ -2509,10 +2509,12 @@ impl DocumentCore {
             }
         }
         table.update_ctrl_dimensions();
-        if height_changed {
-            table.sync_ctrl_height_from_rows(drawn_rows, height_surplus);
-        } else {
+        if applied_height_delta == 0 {
+            // 이웃 셀의 크기로 보상한 편집은 표 외곽 높이를 보존한다.
+            // 최소 셀 크기에 걸릴 수 있으므로 실제 적용한 변화량을 합한다.
             table.sync_ctrl_height(original_height);
+        } else {
+            table.sync_ctrl_height_from_rows(drawn_rows, height_surplus);
         }
         if applied_width_delta == 0 {
             table.common.width = original_width;
