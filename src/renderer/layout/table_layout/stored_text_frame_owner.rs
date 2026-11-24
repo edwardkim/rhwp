@@ -1,8 +1,8 @@
 //! 원본 표의 선언 조각과 공유 글줄 좌표계가 소유하는 텍스트 프레임.
 
 use super::{
-    stored_plain_text_paragraph_frame_reset, stored_text_paragraphs_share_vpos_frame, LayoutEngine,
-    ResolvedStyleSet,
+    stored_paragraph_origin_restarts, stored_plain_text_paragraph_frame_reset,
+    stored_text_paragraphs_share_vpos_frame, LayoutEngine, ResolvedStyleSet,
 };
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::table::{Cell, Table, TablePageBreak};
@@ -293,7 +293,13 @@ fn opening_text_frame_end_hu(
         }
         for (line_index, line) in paragraph.line_segs.iter().enumerate() {
             if let Some(before) = previous {
-                if line.vertical_pos < before.vertical_pos {
+                // [#8743] 문단 첫 줄의 같은 원점 재시작도 문단 간 되감김이다.
+                let restarts = if line_index == 0 && index > 0 {
+                    stored_paragraph_origin_restarts(before, line)
+                } else {
+                    line.vertical_pos < before.vertical_pos
+                };
+                if restarts {
                     if line_index != 0
                         || index == 0
                         || !stored_plain_text_paragraph_frame_reset(
