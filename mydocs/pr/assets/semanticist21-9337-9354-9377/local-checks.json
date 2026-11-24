@@ -1,0 +1,573 @@
+{
+  "source": "ff9194594e1d7396c3730b92f387e2a4d3c62b3a",
+  "devel": "e961a7877186de626643a6466cbecb137874c530",
+  "node_chrome": "Chrome/156.0.8078.47",
+  "wasm_sha256": {
+    "candidate": "7635d6a7846380ede14ad07778edd021e9f2606214d3ac83863f85bedb142f62",
+    "devel": "28c25a18c1ddd08fc9c9704546d3d7f9fa0661ead858ad9535f2e85ef9d84d42"
+  },
+  "baseline_cell_resize_gap": {
+    "before": {
+      "height": 106.7,
+      "gap": 12.4
+    },
+    "after": {
+      "height": 200,
+      "gap": 0.6
+    }
+  },
+  "candidate_cell_resize_gap": {
+    "before": {
+      "height": 106.7,
+      "gap": 12.4
+    },
+    "after": {
+      "height": 200,
+      "gap": 12.4
+    }
+  },
+  "gates": {
+    "compensation-focused": {
+      "exit": 0,
+      "passed": 12,
+      "summary": "Summary [   0.040s] 12 tests run: 12 passed, 360 skipped"
+    },
+    "release-final": {
+      "exit": 0
+    },
+    "release-lib-final": {
+      "exit": 0,
+      "passed": 3976,
+      "ignored": 12
+    },
+    "inventory": {
+      "exit": 0
+    },
+    "inventory-check": {
+      "exit": 0
+    },
+    "full": {
+      "exit": 0,
+      "passed": 14091,
+      "summary": "Summary [ 655.395s] 14091 tests run: 14091 passed (3 slow), 45 skipped"
+    },
+    "focused": {
+      "exit": 0,
+      "passed": 18,
+      "summary": "Summary [   0.815s] 18 tests run: 18 passed, 14118 skipped"
+    },
+    "native-lib": {
+      "exit": 0,
+      "passed": 4033,
+      "ignored": 12
+    },
+    "native-picture": {
+      "exit": 0,
+      "passed": 2,
+      "summary": "Summary [   0.373s] 2 tests run: 2 passed, 386 skipped"
+    },
+    "native-pdf": {
+      "exit": 0,
+      "passed": 37,
+      "summary": "Summary [   0.160s] 37 tests run: 37 passed, 300 skipped"
+    },
+    "fmt": {
+      "exit": 0
+    },
+    "diff": {
+      "exit": 0
+    },
+    "clippy-root": {
+      "exit": 0
+    },
+    "clippy": {
+      "exit": 0
+    },
+    "clippy-wasm": {
+      "exit": 0
+    },
+    "workspace-build": {
+      "exit": 0
+    },
+    "doctest": {
+      "exit": 0,
+      "passed": 8,
+      "ignored": 3
+    },
+    "typescript": {
+      "exit": 0
+    },
+    "studio": {
+      "exit": 0,
+      "passed": 2835,
+      "skipped": 2
+    },
+    "studio-build": {
+      "exit": 0
+    }
+  },
+  "protected_pages": {
+    "native": 2023,
+    "wasm": 2023
+  },
+  "known_floor_differences": 14,
+  "protected_environment": {
+    "dpi": 96,
+    "documents": 23,
+    "canonical_tsv_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
+    "font_manifest_sha256": "dbf2fc1e061d18118403c0bfe7881317118b5a0b36dd6a14430ef586ef1eb87c",
+    "font_program_slots": 589,
+    "distinct_supplied_sha256": 588,
+    "registered_alternatives": [
+      {
+        "file": "H2MJSM.TTF",
+        "registered_sha256": "49dd1ef0caa6989a7dd95b484fdd052cbc846f6514c0c08421ed03a6cb1669cc",
+        "supplied_sha256": "f78f538885b29f956cf84286e430898462d11430604625857ad587c0ea73925b"
+      },
+      {
+        "file": "batang.TTC",
+        "registered_sha256": "0ea38ac53e8d293a9598d913cb49740808164dfef972b10bfd3115159c5ac2c8",
+        "supplied_sha256": "51d9a8d4205239c865e24b6eb7e6e6dbacfd59c3e2c46f623db0af45e169c9d8"
+      }
+    ],
+    "native_sha256": {
+      "candidate": "b657e886902d7cc5bd0086c915343ae6108b43496ada7c692be9e9022db9b1b2",
+      "devel": "7e9db8d37788bb5c940877fc1b0b54c426d2c13739811be8da73e59f9a2b13e7"
+    },
+    "candidate_vs_devel_png_differences": 0,
+    "standalone_browser_checks": {
+      "cell_properties_dialog": "resize, undo and redo",
+      "row_drag": 10,
+      "header_footer_and_ime": 32,
+      "same_position_f11": 46,
+      "two_consecutive_saves": 44
+    },
+    "nested_native": {
+      "supply_count": 21,
+      "original_program_hashes": 15,
+      "repository_accepted_batang": 1,
+      "local_same_face_substitutions": 5,
+      "scope": "이 통합 PR 세 건의 중첩 표 Native 검증",
+      "local_font_files": [
+        "H2MJRE.TTF",
+        "HBATANG.TTF",
+        "HDOTUM.TTF",
+        "gulim.TTC",
+        "pala.ttf"
+      ],
+      "local_font_hash_pairs": [
+        {
+          "file": "H2MJRE.TTF",
+          "reference_sha256": "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "supplied_sha256": "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e"
+        },
+        {
+          "file": "HBATANG.TTF",
+          "reference_sha256": "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "supplied_sha256": "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        },
+        {
+          "file": "HDOTUM.TTF",
+          "reference_sha256": "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "supplied_sha256": "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        },
+        {
+          "file": "gulim.TTC",
+          "reference_sha256": "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "supplied_sha256": "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+        },
+        {
+          "file": "pala.ttf",
+          "reference_sha256": "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad",
+          "supplied_sha256": "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+        }
+      ],
+      "ordered_supply_sha256": "a5dad7e721eae1baba612fb8782fd8fcfc824919901408cca0033e1f1cbf3143",
+      "pages": 17,
+      "minimum": "100.00",
+      "candidate_vs_devel_png_changes": 0,
+      "linux_wasm_control_previous_supply_count": 16,
+      "known_linux_wasm_page": 17,
+      "known_linux_wasm_raw": "99.98",
+      "residual_pixel_coordinates": [
+        [
+          232,
+          202
+        ],
+        [
+          232,
+          203
+        ]
+      ],
+      "win11_wasm_supplement_minimum": "99.99",
+      "ordered_runtime_face_count": 40
+    },
+    "effective_supply_slots_per_backend": {
+      "native": 2005,
+      "wasm": 1990
+    }
+  },
+  "tool_versions": {
+    "rustc": "1.93.1",
+    "cargo_nextest": "0.9.137",
+    "node": "24.15.0"
+  },
+  "independent_print": {
+    "original_cases": 20,
+    "original_pages_per_backend": 92,
+    "additional_cases": 8,
+    "additional_pages_per_backend": 32,
+    "dpi": 96,
+    "original_minimum": {
+      "native": "99.09",
+      "wasm": "99.14"
+    }
+  },
+  "failed_then_fixed": {
+    "first_candidate": "c9395989d6000d0c9c19e70e079aad9446ebf28a",
+    "first_full_suite": {
+      "passed": 14080,
+      "failed": 2,
+      "excluded": 45
+    },
+    "compensated_table_height_hu": [
+      17932,
+      18232,
+      17932
+    ],
+    "verified_new_failures_first": 2,
+    "final_source": "ff9194594e1d7396c3730b92f387e2a4d3c62b3a"
+  },
+  "new_devel": {
+    "print_client_pull_request": 9385,
+    "layout_pull_request": 9388,
+    "sha": "e961a7877186de626643a6466cbecb137874c530",
+    "verified_mcp_archive_sha256": "79b3734bee610ba1d1bac85cdb9f9b2fdb2781246bd1f92bfe7618f7c42c9a57",
+    "queue_idle_before_new_print": true,
+    "oracle_test_file": "tools/test_oracle_pdf_selection.py",
+    "oracle_test_count": 18
+  },
+  "documentation_base": {
+    "integrated_devel": "dd1dc8509769df46593ca91e23c06167d0436607",
+    "changed_files": [
+      "AGENTS.md",
+      "CLAUDE.md",
+      "mydocs/manual/mcp_hwp2024Convert_usage.md",
+      "mydocs/manual/pr_review/visual_fixture_evidence.md",
+      "mydocs/manual/verification/visual_sweep_guide.md",
+      "mydocs/manual/verification/visual_verification_governance.md",
+      "mydocs/orders/20261124.md",
+      "mydocs/pr/archives/pr_9390_review.md"
+    ],
+    "modes": {
+      "hancom2024_pdf_driver_one_up": 23,
+      "hancom2020_pdf_driver_one_up": 3,
+      "existing_desktop_print": 4
+    },
+    "save_as_exceptions": 0
+  },
+  "final_browser_reopening": {
+    "records": 52,
+    "pages": 24,
+    "paragraphs_per_record": 365,
+    "text_and_ownership_match": true
+  },
+  "original_and_candidate_live_browser_edits": {
+    "9337": {
+      "original": {
+        "side": "9337",
+        "task": "9337",
+        "revision": "b69c815caa964dbbba1d55a9aae6654c875a5a05",
+        "wasm": "70440b0ee90767fb37a2fbd57092d591611d842f7cd9225da3fda05d27ecc833",
+        "browser": "Chrome/156.0.8078.47",
+        "edits": {
+          "properties": {
+            "live": {
+              "height": 200,
+              "followingGap": 12.4
+            },
+            "hwpx": {
+              "height": 200,
+              "followingGap": 12.4
+            }
+          },
+          "resize": {
+            "live": {
+              "height": 200,
+              "followingGap": 0.6
+            },
+            "hwpx": {
+              "height": 200,
+              "followingGap": 0.6
+            }
+          }
+        }
+      },
+      "candidate": {
+        "side": "candidate",
+        "task": "9337",
+        "revision": "ff9194594e1d7396c3730b92f387e2a4d3c62b3a",
+        "wasm": "7635d6a7846380ede14ad07778edd021e9f2606214d3ac83863f85bedb142f62",
+        "browser": "Chrome/156.0.8078.47",
+        "edits": {
+          "properties": {
+            "live": {
+              "height": 200,
+              "followingGap": 12.4
+            },
+            "hwpx": {
+              "height": 200,
+              "followingGap": 12.4
+            }
+          },
+          "resize": {
+            "live": {
+              "height": 200,
+              "followingGap": 12.4
+            },
+            "hwpx": {
+              "height": 200,
+              "followingGap": 12.4
+            }
+          }
+        }
+      }
+    },
+    "9354": {
+      "original": {
+        "side": "9354",
+        "task": "9354",
+        "revision": "fc4e2cf07a1439760d2cfb67c8230cb3140e2a78",
+        "wasm": "b14d48b2d9b6bb7d0417d4d8b20205458c54b1fc5182fd260d7c4006ec20c787",
+        "browser": "Chrome/156.0.8078.47",
+        "edits": {
+          "header": {
+            "before": "앞뒤",
+            "reported": 4,
+            "after": "앞뒤X",
+            "undo": "앞뒤X"
+          },
+          "footer": {
+            "before": "앞뒤",
+            "reported": 4,
+            "after": "앞뒤X",
+            "undo": "앞뒤X"
+          }
+        }
+      },
+      "candidate": {
+        "side": "candidate",
+        "task": "9354",
+        "revision": "ff9194594e1d7396c3730b92f387e2a4d3c62b3a",
+        "wasm": "7635d6a7846380ede14ad07778edd021e9f2606214d3ac83863f85bedb142f62",
+        "browser": "Chrome/156.0.8078.47",
+        "edits": {
+          "header": {
+            "before": "앞뒤",
+            "reported": 3,
+            "after": "앞뒤X",
+            "undo": "앞뒤"
+          },
+          "footer": {
+            "before": "앞뒤",
+            "reported": 3,
+            "after": "앞뒤X",
+            "undo": "앞뒤"
+          }
+        }
+      }
+    },
+    "9377": {
+      "original": {
+        "side": "9377",
+        "task": "9377",
+        "revision": "b3301e1905edd7fe504fe400c3560e27c421ad33",
+        "wasm": "1c381234fba16f92de5cc9d3f4f536417d8a6774b9e9f3943be9a62fbd716f2e",
+        "browser": "Chrome/156.0.8078.47",
+        "edits": {
+          "initial": 24,
+          "live": 24,
+          "reopened": 25,
+          "paragraphs": 365,
+          "changedOwners": 231
+        }
+      },
+      "candidate": {
+        "side": "candidate",
+        "task": "9377",
+        "revision": "ff9194594e1d7396c3730b92f387e2a4d3c62b3a",
+        "wasm": "7635d6a7846380ede14ad07778edd021e9f2606214d3ac83863f85bedb142f62",
+        "browser": "Chrome/156.0.8078.47",
+        "edits": {
+          "initial": 24,
+          "live": 24,
+          "reopened": 24,
+          "paragraphs": 365,
+          "changedOwners": 0
+        }
+      }
+    }
+  },
+  "isolated_native_font_cache_rechecks": [
+    {
+      "build": "9337",
+      "case": "contract-edited-hwp",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "9337",
+      "case": "contract-edited-hwpx",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "9337",
+      "case": "contract-original",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "9377",
+      "case": "line-112",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "9377",
+      "case": "line-24",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "9377",
+      "case": "line-original",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "candidate",
+      "case": "upstream-food",
+      "pages": 141,
+      "font_programs": 31,
+      "empty_after": 0,
+      "identical_output_pages": 141
+    },
+    {
+      "build": "contract",
+      "case": "contract-edited-hwp",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "contract",
+      "case": "contract-edited-hwpx",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "contract",
+      "case": "contract-original",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "devel",
+      "case": "contract-edited-hwp",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "devel",
+      "case": "contract-edited-hwpx",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "devel",
+      "case": "contract-original",
+      "pages": 2,
+      "font_programs": 10,
+      "empty_after": 0,
+      "identical_output_pages": 2
+    },
+    {
+      "build": "devel",
+      "case": "line-112",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "devel",
+      "case": "line-24",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "devel",
+      "case": "line-original",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "devel",
+      "case": "upstream-food",
+      "pages": 141,
+      "font_programs": 31,
+      "empty_after": 0,
+      "identical_output_pages": 141
+    },
+    {
+      "build": "lines",
+      "case": "line-112",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "lines",
+      "case": "line-24",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    },
+    {
+      "build": "lines",
+      "case": "line-original",
+      "pages": 24,
+      "font_programs": 19,
+      "empty_after": 0,
+      "identical_output_pages": 24
+    }
+  ]
+}

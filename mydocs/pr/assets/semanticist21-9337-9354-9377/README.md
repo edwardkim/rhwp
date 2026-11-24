@@ -37,10 +37,31 @@ Chrome 156에서 실제 셀 속성 창의 높이를 52.9 mm로 바꿨다. 병합
 
 ## 보호 기준과 이슈 범위
 
-최신 devel `4cd460efd5`와 제품 소스 `a1bc2e5fe6`에서 Native와 최적화 WASM을 각각 독립적으로 빌드해 전쪽을 다시 실행했다. 기준과 후보 WASM의 SHA-256은 각각 `fd537eb1848805e7aee42e5c1370998626b8faedf92af59fbe6560512da226ff`, `769d9a0e730cd98f51937ea6107642378613ecae65f1a213a1427c89a7cab3be`다. Chrome 156, 96 DPI, 문서별 한컴 인쇄 PDF와 등록된 글꼴 공급 순서를 맞췄다. 같은 병합 셀을 높이 15,000 HU로 바꾸는 브라우저 대조군에서 기준은 표 뒤 간격이 12.4 px에서 0.6 px로 줄고, 후보는 12.4 px를 유지했다. Cargo가 기존 바이너리를 재사용한 첫 기준 빌드는 제외했고, 이 차이가 재현된 기준 빌드로 전쪽을 다시 측정했다.
+첫 제출 검증은 devel `4cd460efd5`와 제품 소스 `a1bc2e5fe6`에서 Native와 최적화 WASM을 각각 독립적으로 빌드해 진행했다. 기준과 후보 WASM의 SHA-256은 각각 `fd537eb1848805e7aee42e5c1370998626b8faedf92af59fbe6560512da226ff`, `769d9a0e730cd98f51937ea6107642378613ecae65f1a213a1427c89a7cab3be`다. Chrome 156, 96 DPI, 문서별 한컴 인쇄 PDF와 등록된 글꼴 공급 순서를 맞췄다. 같은 병합 셀을 높이 15,000 HU로 바꾸는 브라우저 대조군에서 기준은 표 뒤 간격이 12.4 px에서 0.6 px로 줄고, 후보는 12.4 px를 유지했다. Cargo가 기존 바이너리를 재사용한 첫 기준 빌드는 제외했고, 이 차이가 재현된 기준 빌드로 전쪽을 다시 측정했다.
 
 23개 보호 문서에서 Native와 WASM 각 2,023쪽의 쪽별 점수와 PNG SHA-256이 기준과 후보에서 모두 같다. Native 2,023쪽, WASM 2,009쪽이 공식 하한을 충족했다. 화학물질 표시 기준 WASM 26쪽은 양쪽 모두 정본 99.99%에서 100.00%로 측정됐다. 정본 갱신에는 전쪽 하락 0건이 필요하므로 이번 결과는 측정값으로 기록했다. [TSV 원문별 경로·SHA-256·크기](page-tsv/index.tsv) · [4,046행 전쪽 대조](protected-pages.tsv) · [공식 하한에 미달한 14행](protected-below.tsv) · [동일 픽셀의 인쇄 차이 확대](../semanticist21-20261124-rework/final/protected-details.png)
 
 작업지시자는 직전 devel에서도 같은 픽셀로 나타난 기존 WASM 14쪽에만 수용 예외를 승인했다. 이 페이지들의 공식 하한은 100.00%다. 시행령 8쪽, 중첩 표 1쪽, HWP 3 sample10 2쪽, 형식 사양서 2쪽, 영월 서식 1쪽에서 기존 99.87~99.99%가 재현됐다. [직전 병합에서 기록한 14쪽](../semanticist21-9288-9314-20261124/corrected/protected-below.tsv)
 
 세 원 PR의 자동 종료 연결 이슈는 0개다. 본문에 참고한 [#6714](https://github.com/edwardkim/rhwp/issues/6714)·[#6882](https://github.com/edwardkim/rhwp/issues/6882)·[#5847](https://github.com/edwardkim/rhwp/issues/5847)·[#8310](https://github.com/edwardkim/rhwp/issues/8310)은 검토 시점에 이미 닫혀 있었다. 같은 기여자의 [#9298](https://github.com/edwardkim/rhwp/pull/9298#issuecomment-7089121727)은 앞서 게시한 JPEG 방향 수정과 별도로 남은 원본 8개 쪽의 조판 보완 요청을 기다리는 별도 PR이다.
+
+## 최신 devel의 렌더링과 원 기여별 재검증
+
+[#9388](https://github.com/edwardkim/rhwp/pull/9388)이 추가된 `e961a7877186de626643a6466cbecb137874c530`을 로컬에서 병합한 최종 제품은 `ff9194594e1d7396c3730b92f387e2a4d3c62b3a`다. 기준, 원 기여 3개, 후보의 Native와 최적화 WASM을 각각 별도 빌드로 고정했다. 한 차례 공용 Cargo 경로에서 원 PR과 후보가 같은 Native 실행 파일을 반환해 그 후보 측정을 폐기했다. 소스별 Cargo 빌드 식별 경로, 실행 파일 해시와 편집 결과로 다시 확인했다. Native 글꼴 공급 목록에 변환 중인 빈 임시 파일이 잡힌 측정도 폐기했다. 빌드별 변환 캐시를 분리해 원본·기준·후보의 20개 조합을 재측정했고, 실제 글꼴 프로그램의 순서와 SHA-256을 대조했다. 다시 측정한 516쪽에서 출력 PNG와 실루엣 값은 같았다. 표 높이 두 조작과 머리말·꼬리말 배치는 같은 기준으로 원 기여 및 최신 devel에서 반례를 재현했다. [원 기여와 후보의 전쪽 대조](original-candidate.tsv)
+
+| 원 PR | 원 head 대비 대조한 쪽·경로 | 상승 | 동일 | 하락 |
+| --- | ---: | ---: | ---: | ---: |
+| [#9337](https://github.com/edwardkim/rhwp/pull/9337) | 20 | 0 | 20 | 0 |
+| [#9354](https://github.com/edwardkim/rhwp/pull/9354) | 20 | 12 | 8 | 0 |
+| [#9377](https://github.com/edwardkim/rhwp/pull/9377) | 144 | 0 | 144 | 0 |
+
+식량안보와 제주 원본·한컴 인쇄본은 #9388의 SHA-256과 대조했다. 같은 입력에서 최신 devel과 후보의 출력 PNG SHA-256이 Native와 WASM에서 908행 모두 같았다. 세 원 PR의 주 대상은 경로별 92쪽 전부에서 Native 99.09%·WASM 99.14% 이상이었다. [#9388에서 반영한 두 문서의 전쪽 대조](9388-preservation.tsv) · [대상·대조군의 Native와 WASM TSV](page-tsv/index.tsv)
+
+| #9388 공개 문서 | 각 렌더러의 쪽수 | Native 전쪽 최저 | WASM 전쪽 최저 | 새 기준 대비 PNG 차이 |
+| --- | ---: | ---: | ---: | ---: |
+| 식량안보 보고서 | 141 | 98.26% | 98.20% | 0 |
+| 제주 관광교육 계획 | 313 | 98.18% | 98.15% | 0 |
+
+최종 제품의 전체 Rust 회귀 14,091건·집중 18건·Native 공식 3종 4,072건·Studio 2,835건과 필수 lint·배포 빌드가 통과했다. 23개 보호 문서의 양쪽 렌더러 4,046행을 새 기준과 같은 조건에서 다시 측정했다. 쪽별 PNG가 모두 일치했다. 승인된 기존 WASM 14쪽 중 실제로 하한보다 낮은 쪽은 14쪽이다. [로컬 검사와 실제 산출물 해시](local-checks.json) · 중첩 표 Native는 21개 글꼴을 정본 순서대로 공급했다. 원 해시가 일치한 15개, 공통 허용 바탕 TTC 1개와 이번 세 PR의 Native에 한해 승인한 로컬 파일 5개를 사용했다. 기준과 후보는 17쪽 모두 100.00%였고 PNG가 같았다. 다섯 파일 각각의 정본·실제 SHA-256과 공급 순서 전체의 SHA-256은 로컬 검사 기록에 있다. 중첩 표 WASM은 앞서 승인된 조건에서 17쪽의 PNG가 직전 검토와 같았다. 21개를 모두 공급한 보조 검사에서도 Linux의 기존 차이는 같은 두 픽셀이었다. [전쪽 보호값](protected-pages.tsv) · [공식 하한에 미달한 쪽](protected-below.tsv)
+
+[#9390](https://github.com/edwardkim/rhwp/pull/9390)·[#9391](https://github.com/edwardkim/rhwp/pull/9391)의 최신 기준 `dd1dc8509769df46593ca91e23c06167d0436607`은 검토 지침과 운영 기록 8개를 갱신했다. 실제 병합 트리에서 제품·검증 입력이 그대로임을 확인했다. 변경된 인쇄 지침을 적용해 목표·대조군 28개와 #9388의 두 문서에서 기준 PDF 해시와 출력 경로를 대조했다. 한컴 2024 MCP Print 23개, 한컴 2020 MCP Print 3개와 기존 데스크톱 인쇄본 4개였다. [인쇄 지침](https://github.com/edwardkim/rhwp/blob/dd1dc8509769df46593ca91e23c06167d0436607/mydocs/manual/verification/visual_verification_governance.md)

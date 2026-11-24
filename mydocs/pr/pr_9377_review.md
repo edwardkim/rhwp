@@ -25,3 +25,16 @@ HWPX의 저장 본문에 원본 쪽 좌표가 있으면, 편집으로 그 좌표
 원본 HWPX XML에서 문단 110·111에는 줄 정보가 없고, 문단 109의 마지막 저장 줄은 59,748 HU, 문단 112의 첫 줄은 3,768 HU다. 회귀 검사는 경계를 넘기 전 값을 직전 저장 줄에서 읽고, 편집한 112번 문단뿐 아니라 다시 연 모든 문단의 쪽 소속과 원본 글자를 대조한다.
 
 최종 제품 `a1bc2e5fe6`에서 빌드한 Chrome WASM으로 26개 문단의 편집을 다시 실행했다. 편집 직후와 HWP·HWPX로 다시 연 52건을 원본과 대조했다. 모두 24쪽이며 365개 문단 각각의 텍스트와 쪽 소속이 일치했다. [형식별 Native·브라우저 결과](assets/semanticist21-9337-9354-9377/corrected-reopen.tsv)
+
+## Merge 후 contributor PR comment 계획
+
+원 기여 커밋을 포함한 통합 PR의 병합 SHA를 확인한 뒤, #9377에 감사 댓글을 게시한다. 문단 112를 편집한 HWPX 8쪽을 한컴 인쇄에 대조한 아래 두 출력과 쪽별 TSV를 병합 SHA로 고정해 첨부한다. 편집 위치 앞뒤의 줄과 문단 소속을 비교한다. 26개 문단을 HWP·HWPX로 저장한 52건의 실제 쪽수·텍스트·쪽 소속 결과를 알린다.
+
+- Native Skia의 [전쪽 TSV](assets/semanticist21-9337-9354-9377/page-tsv/target/native/line-112.tsv) · [인쇄 비교](assets/semanticist21-9337-9354-9377/print-review/line-112-p008-native-review.png) · [겹쳐 보기](assets/semanticist21-9337-9354-9377/print-review/line-112-p008-native-overlay.png)
+- 브라우저 Canvas2D의 [전쪽 TSV](assets/semanticist21-9337-9354-9377/page-tsv/target/wasm/line-112.tsv) · [인쇄 비교](assets/semanticist21-9337-9354-9377/print-review/line-112-p008-wasm-review.png) · [겹쳐 보기](assets/semanticist21-9337-9354-9377/print-review/line-112-p008-wasm-overlay.png)
+
+## 최신 devel 병합 후 원 기여와의 최종 대조
+
+원 PR 최종 커밋 `b3301e1905edd7fe504fe400c3560e27c421ad33`에서 Native와 브라우저용 WASM을 각각 빌드했다. 원 PR 본문과 변경 파일에 시각 TSV가 없어 같은 원본·한컴 인쇄본·글꼴·96 DPI로 측정했다. 기준 `e961a78771`을 병합한 후보 `ff9194594e`과 쪽별로 대조한 144행에서 0행이 개선됐고 144행은 같은 일치율을 유지했다. 누락과 하락은 0행이었다. [원 커밋·기준·후보의 쪽별 측정과 PNG 해시](assets/semanticist21-9337-9354-9377/original-candidate.tsv) · [전체 검증 결과](assets/semanticist21-9337-9354-9377/local-checks.json)
+
+같은 Chrome 156에서 두 WASM 파일을 각각 불러와 실제 편집을 비교했다. 원본의 112번 문단에 글자를 넣었다 지우고 HWPX로 다시 열면 원 기여는 24쪽에서 25쪽으로 바뀌고 231개 문단이 다른 쪽에 놓였다. 후보는 24쪽과 365개 문단의 쪽 소속을 지켰다. [두 실행 파일의 해시와 편집 결과](assets/semanticist21-9337-9354-9377/local-checks.json)

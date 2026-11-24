@@ -1,6 +1,6 @@
 {
   "browser": "Chrome/156.0.8078.47",
-  "wasm_sha256": "769d9a0e730cd98f51937ea6107642378613ecae65f1a213a1427c89a7cab3be",
+  "wasm_sha256": "7635d6a7846380ede14ad07778edd021e9f2606214d3ac83863f85bedb142f62",
   "cell_properties_dialog": {
     "browser": "Chrome/156.0.8078.47",
     "before": {

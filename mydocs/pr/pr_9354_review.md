@@ -45,3 +45,16 @@ WASM API는 삽입하기 전의 실제 글자 위치에 입력한 유니코드 �
 같은 문서에서 HWPX의 `breakNonLatinWord`만 바꾼 두 대조군을 한컴 2024로 직접 인쇄했다. 본문에서는 설정에 따라 ‘천원)’과 다음 표가 한 줄 차이로 놓였다. 머리말에서는 두 설정 모두 ‘앞’과 ‘뒤’가 줄 양끝에 놓였다. `a1bc2e5fe6`에서 글줄 구성과 인라인 배치가 같은 줄 끝 판정을 쓰도록 보완했다. 기존 본문 회귀를 그대로 실행해 통과했다.
 
 최종 Native와 fresh WASM으로 두 경로에서 각각 본문 원본 9쪽과 한컴 2024에서 다시 인쇄한 네 설정 대조군 20쪽을 확인했다. 전쪽 실루엣은 모두 100.00%였다. ‘천원)’의 소속 줄, 바로 뒤 표의 윗변, 머리말의 글자 양끝을 같은 배율에서 대조했다. [입력·인쇄본](assets/semanticist21-9337-9354-9377/additional-print-sources.tsv) · [쪽별 측정](assets/semanticist21-9337-9354-9377/additional-pages.tsv) · [본문 줄 확대](assets/semanticist21-9337-9354-9377/body-overflow-comparison.png)
+
+## Merge 후 contributor PR comment 계획
+
+원 기여 커밋을 포함한 통합 PR의 병합 SHA를 확인한 뒤, #9354에 감사 댓글을 게시한다. 머리말의 줄 너비 표 앞 1쪽을 한컴 인쇄에 대조한 아래 두 출력과 쪽별 TSV를 병합 SHA로 고정해 첨부한다. 표가 다음 줄로 넘어갔을 때 앞줄의 두 글자가 양끝에 놓이는지 비교한다. 네 영역에서 입력을 소유한 필드, 표 뒤의 한글 입력·실행 취소와 일반 본문 어절 나눔 결과도 알린다.
+
+- Native Skia의 [전쪽 TSV](assets/semanticist21-9337-9354-9377/page-tsv/target/native/trailing-header.tsv) · [인쇄 비교](assets/semanticist21-9337-9354-9377/print-review/trailing-header-p001-native-review.png) · [겹쳐 보기](assets/semanticist21-9337-9354-9377/print-review/trailing-header-p001-native-overlay.png)
+- 브라우저 Canvas2D의 [전쪽 TSV](assets/semanticist21-9337-9354-9377/page-tsv/target/wasm/trailing-header.tsv) · [인쇄 비교](assets/semanticist21-9337-9354-9377/print-review/trailing-header-p001-wasm-review.png) · [겹쳐 보기](assets/semanticist21-9337-9354-9377/print-review/trailing-header-p001-wasm-overlay.png)
+
+## 최신 devel 병합 후 원 기여와의 최종 대조
+
+원 PR 최종 커밋 `fc4e2cf07a1439760d2cfb67c8230cb3140e2a78`에서 Native와 브라우저용 WASM을 각각 빌드했다. 원 PR 본문과 변경 파일에 시각 TSV가 없어 같은 원본·한컴 인쇄본·글꼴·96 DPI로 측정했다. 기준 `e961a78771`을 병합한 후보 `ff9194594e`과 쪽별로 대조한 20행에서 12행이 개선됐고 8행은 같은 일치율을 유지했다. 누락과 하락은 0행이었다. [원 커밋·기준·후보의 쪽별 측정과 PNG 해시](assets/semanticist21-9337-9354-9377/original-candidate.tsv) · [전체 검증 결과](assets/semanticist21-9337-9354-9377/local-checks.json)
+
+같은 Chrome 156에서 두 WASM 파일을 각각 불러와 실제 편집을 비교했다. 머리말과 꼬리말의 끝 표 뒤에 X를 넣었을 때 원 기여의 반환 위치는 4였고, 그 위치로 취소하면 X가 남았다. 후보는 3을 반환했고 두 영역 모두 원래 ‘앞뒤’가 복원됐다. [두 실행 파일의 해시와 편집 결과](assets/semanticist21-9337-9354-9377/local-checks.json)

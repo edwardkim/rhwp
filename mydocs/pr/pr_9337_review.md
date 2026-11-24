@@ -30,3 +30,16 @@
 통합 과정에서 공개 원본 `셀보호2.hwp`의 기존 회귀가 표 선언 높이 17,932 HU를 기대했는데 첫 보완본은 18,232 HU를 저장했다. 원래 검사는 #493의 입력과 #1443의 표 셀 보정 커밋 `b7b1dd20a7`에서 유래한다. 한 행의 높이를 키우는 일반 편집과 달리, 이 사례는 이웃 셀에 반대 부호의 높이 변화를 준다. 각 셀에 최소 높이를 적용한 뒤의 실제 변화량을 합산하도록 `7f0106b7e6`에서 수정했다. 기존 단언을 그대로 실행해 통과했다.
 
 셀 너비를 서로 1,200 HU, 높이를 서로 300 HU씩 반대 방향으로 조절해 최종 소스에서 HWP와 HWPX로 각각 저장했다. 두 파일을 한컴 2024로 인쇄하고 rhwp에서 다시 열었다. 한컴과의 내용 실루엣 일치율은 첫 보완본에서 두 형식 모두 75.92%였고, 최종 Native와 Chrome WASM에서는 두 형식 모두 100.00%였다. 옆 셀의 시작점과 마지막 행 아래 괘선의 위치도 대조했다. [실제 편집과 재열기](assets/semanticist21-9337-9354-9377/compensated-resize.tsv) · [표 아래쪽 확대](assets/semanticist21-9337-9354-9377/compensation-edited-hwp-comparison.png)
+
+## Merge 후 contributor PR comment 계획
+
+원 기여 커밋을 포함한 통합 PR의 병합 SHA를 확인한 뒤, #9337에 감사 댓글을 게시한다. 계약서 편집본 2쪽을 한컴 인쇄에 대조한 아래 두 출력과 쪽별 TSV를 병합 SHA로 고정해 첨부한다. 높이 변경 직후와 두 형식으로 다시 열었을 때 표 윗변과 뒤 문단 간격을 비교한다. 옆 셀을 반대 방향으로 조절한 사례는 원 표 높이 17,932 HU 보존 여부도 알린다.
+
+- Native Skia의 [전쪽 TSV](assets/semanticist21-9337-9354-9377/page-tsv/target/native/contract-edited-hwpx.tsv) · [인쇄 비교](assets/semanticist21-9337-9354-9377/print-review/contract-edited-hwpx-p002-native-review.png) · [겹쳐 보기](assets/semanticist21-9337-9354-9377/print-review/contract-edited-hwpx-p002-native-overlay.png)
+- 브라우저 Canvas2D의 [전쪽 TSV](assets/semanticist21-9337-9354-9377/page-tsv/target/wasm/contract-edited-hwpx.tsv) · [인쇄 비교](assets/semanticist21-9337-9354-9377/print-review/contract-edited-hwpx-p002-wasm-review.png) · [겹쳐 보기](assets/semanticist21-9337-9354-9377/print-review/contract-edited-hwpx-p002-wasm-overlay.png)
+
+## 최신 devel 병합 후 원 기여와의 최종 대조
+
+원 PR 최종 커밋 `b69c815caa964dbbba1d55a9aae6654c875a5a05`에서 Native와 브라우저용 WASM을 각각 빌드했다. 원 PR 본문과 변경 파일에 시각 TSV가 없어 같은 원본·한컴 인쇄본·글꼴·96 DPI로 측정했다. 기준 `e961a78771`을 병합한 후보 `ff9194594e`과 쪽별로 대조한 20행에서 0행이 개선됐고 20행은 같은 일치율을 유지했다. 누락과 하락은 0행이었다. [원 커밋·기준·후보의 쪽별 측정과 PNG 해시](assets/semanticist21-9337-9354-9377/original-candidate.tsv) · [전체 검증 결과](assets/semanticist21-9337-9354-9377/local-checks.json)
+
+같은 Chrome 156에서 두 WASM 파일을 각각 불러와 실제 편집을 비교했다. 원 기여의 셀 속성 편집과 크기 조절에서 표 뒤 간격은 각각 12.4 px·0.6 px였고, 후보에서는 두 조작과 HWPX 재열기 모두 12.4 px였다. [두 실행 파일의 해시와 편집 결과](assets/semanticist21-9337-9354-9377/local-checks.json)

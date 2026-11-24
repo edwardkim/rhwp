@@ -63,11 +63,11 @@ candidate	native	handbook-hwpx	page-tsv/protected/candidate/native/handbook-hwpx
 candidate	native	issue7905	page-tsv/protected/candidate/native/issue7905.tsv	6	f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893	220
 candidate	native	issue8040-insert	page-tsv/protected/candidate/native/issue8040-insert.tsv	4	f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08	190
 candidate	native	issue8040-insert-delete	page-tsv/protected/candidate/native/issue8040-insert-delete.tsv	4	f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08	190
-candidate	native	nested	page-tsv/protected/candidate/native/nested.tsv	17	065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592	454
+candidate	native	nested	page-tsv/protected/candidate/native/nested.tsv	17	ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1	460
 candidate	native	outline	page-tsv/protected/candidate/native/outline.tsv	9	46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675	292
 candidate	native	outline-demo	page-tsv/protected/candidate/native/outline-demo.tsv	3	371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af	172
 candidate	native	outline-minimal	page-tsv/protected/candidate/native/outline-minimal.tsv	1	75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466	132
-candidate	native	sample10	page-tsv/protected/candidate/native/sample10.tsv	763	248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd	16746
+candidate	native	sample10	page-tsv/protected/candidate/native/sample10.tsv	763	24a4c3bc3368f412242846a5523b7d733c95be9a9f92bf30643388ac27290e2f	16746
 candidate	native	sample16-hwp2022	page-tsv/protected/candidate/native/sample16-hwp2022.tsv	64	418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7	1447
 candidate	native	sample16-hwp2024	page-tsv/protected/candidate/native/sample16-hwp2024.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
 candidate	native	sample16-hwpx	page-tsv/protected/candidate/native/sample16-hwpx.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
@@ -90,7 +90,7 @@ candidate	wasm	nested	page-tsv/protected/candidate/wasm/nested.tsv	17	f71033828a
 candidate	wasm	outline	page-tsv/protected/candidate/wasm/outline.tsv	9	46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675	292
 candidate	wasm	outline-demo	page-tsv/protected/candidate/wasm/outline-demo.tsv	3	371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af	172
 candidate	wasm	outline-minimal	page-tsv/protected/candidate/wasm/outline-minimal.tsv	1	75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466	132
-candidate	wasm	sample10	page-tsv/protected/candidate/wasm/sample10.tsv	763	5d91c891cd78d0847208f0c51931639e167349f905f904c0696b7d24cc6b58ba	16750
+candidate	wasm	sample10	page-tsv/protected/candidate/wasm/sample10.tsv	763	26bb89bbe045d5d5f35979673c8c6c6d3fd5e8436a1a82e9998840664911dcb1	16750
 candidate	wasm	sample16-hwp2022	page-tsv/protected/candidate/wasm/sample16-hwp2022.tsv	64	418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7	1447
 candidate	wasm	sample16-hwp2024	page-tsv/protected/candidate/wasm/sample16-hwp2024.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
 candidate	wasm	sample16-hwpx	page-tsv/protected/candidate/wasm/sample16-hwpx.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
@@ -109,11 +109,11 @@ devel	native	handbook-hwpx	page-tsv/protected/devel/native/handbook-hwpx.tsv	383
 devel	native	issue7905	page-tsv/protected/devel/native/issue7905.tsv	6	f6879a02ba8764cd58d12fdc6514c1336bcc5dbd3c22631bf0e6aa85f72fa893	220
 devel	native	issue8040-insert	page-tsv/protected/devel/native/issue8040-insert.tsv	4	f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08	190
 devel	native	issue8040-insert-delete	page-tsv/protected/devel/native/issue8040-insert-delete.tsv	4	f570344a6869ef9e8380bc15e0ea6093f077b913079cf9d5a2d7c610b8fade08	190
-devel	native	nested	page-tsv/protected/devel/native/nested.tsv	17	065e29b177f9d5d2f16bfe073d878c98cc03399681ae727daf0a15a845b1f592	454
+devel	native	nested	page-tsv/protected/devel/native/nested.tsv	17	ecb048af51ad821884726d567a4f747feb05a3965bf51b2f49b9777e953ed0d1	460
 devel	native	outline	page-tsv/protected/devel/native/outline.tsv	9	46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675	292
 devel	native	outline-demo	page-tsv/protected/devel/native/outline-demo.tsv	3	371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af	172
 devel	native	outline-minimal	page-tsv/protected/devel/native/outline-minimal.tsv	1	75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466	132
-devel	native	sample10	page-tsv/protected/devel/native/sample10.tsv	763	248740c943667ee2121afdfc125ed838ae7e196e1c90265284613afc48f508bd	16746
+devel	native	sample10	page-tsv/protected/devel/native/sample10.tsv	763	24a4c3bc3368f412242846a5523b7d733c95be9a9f92bf30643388ac27290e2f	16746
 devel	native	sample16-hwp2022	page-tsv/protected/devel/native/sample16-hwp2022.tsv	64	418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7	1447
 devel	native	sample16-hwp2024	page-tsv/protected/devel/native/sample16-hwp2024.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
 devel	native	sample16-hwpx	page-tsv/protected/devel/native/sample16-hwpx.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
@@ -136,7 +136,7 @@ devel	wasm	nested	page-tsv/protected/devel/wasm/nested.tsv	17	f71033828aab2e31fa
 devel	wasm	outline	page-tsv/protected/devel/wasm/outline.tsv	9	46ca210065f8f67bc6a79bfc1aeca1b1d36505f9c8749da7c93ff198a3c40675	292
 devel	wasm	outline-demo	page-tsv/protected/devel/wasm/outline-demo.tsv	3	371cf5ea8358d027c470b21e0b8714a382cc0234194d53e1de889f530e9f09af	172
 devel	wasm	outline-minimal	page-tsv/protected/devel/wasm/outline-minimal.tsv	1	75764217b6231001246ab7d8b934bdc683297f16bd9ca4c983fffc90aa768466	132
-devel	wasm	sample10	page-tsv/protected/devel/wasm/sample10.tsv	763	5d91c891cd78d0847208f0c51931639e167349f905f904c0696b7d24cc6b58ba	16750
+devel	wasm	sample10	page-tsv/protected/devel/wasm/sample10.tsv	763	26bb89bbe045d5d5f35979673c8c6c6d3fd5e8436a1a82e9998840664911dcb1	16750
 devel	wasm	sample16-hwp2022	page-tsv/protected/devel/wasm/sample16-hwp2022.tsv	64	418d4bcbe4f906eea1d18e539b57a245dfaa26a79203c693a59af622ffa3caf7	1447
 devel	wasm	sample16-hwp2024	page-tsv/protected/devel/wasm/sample16-hwp2024.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
 devel	wasm	sample16-hwpx	page-tsv/protected/devel/wasm/sample16-hwpx.tsv	64	e19f299f16b0117e13d26b8ed77d5dfa038345b87b0421436feea2c09fa7a942	1447
