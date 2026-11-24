@@ -10,7 +10,7 @@
  *  (c) F11 두 번 뒤 입력 → 글이 가에 든다
  *  (d) 셀 안에서 F11 → 셀 누름틀, 표, 본문 누름틀
  */
-import { runTest, createNewDocument, assert } from './helpers.mjs';
+import { runTest, createNewDocument, getParaText, assert } from './helpers.mjs';
 
 const settle = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
 
@@ -123,6 +123,22 @@ runTest('F11 같은 자리 누름틀', async ({ page }) => {
   await settle(page);
   for (const [format, fields] of Object.entries(await savedValues(page))) {
     assert(fields['나'] === 'xy' && fields['가'] === 'ab', `${format} 선택 이동과 이탈: ${JSON.stringify(fields)}`);
+  }
+  assert((await getParaText(page, 0, 0)).endsWith('뒤끝!'), 'End 뒤 입력은 누름틀 밖의 문단 끝에 남는다');
+
+  // 첫 입력이 예약한 화면 갱신보다 두 번째 입력 이벤트가 먼저 도착하는 순서를 재현한다.
+  await buildSamePlace(page);
+  await f11(page);
+  await f11(page);
+  await page.evaluate(() => {
+    const input = window.__inputHandler.textarea;
+    for (const text of ['x', 'y']) {
+      input.value = text;
+      input.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: text }));
+    }
+  });
+  for (const [format, fields] of Object.entries(await savedValues(page))) {
+    assert(fields['가'] === 'xy' && fields['나'] === '', `${format} 화면 갱신 전 연속 입력: ${JSON.stringify(fields)}`);
   }
 
   // 본문 누름틀 '본문' 뒤 1x1 표, 그 셀의 "셀 끝" 글자 자리 2에 누름틀 '셀'.

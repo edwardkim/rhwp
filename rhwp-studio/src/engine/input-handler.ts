@@ -5619,7 +5619,10 @@ export class InputHandler {
     this.fieldStartExitKey = null;
     this.fieldEndExitKey = null;
     this.fieldMarker.hide();
-    this.wasm.clearActiveField();
+    // 다음 키는 화면 갱신 전에 올 수 있다. 방금 입력한 F11 누름틀의 경계 소속을 유지한다.
+    if (!selectedFieldAt(this.wasm, this.cursor.getPosition(), this.f11Field)) {
+      this.wasm.clearActiveField();
+    }
     this.eventBus.emit('document-changed');
     requestAnimationFrame(() => {
       this.updateCaret();
