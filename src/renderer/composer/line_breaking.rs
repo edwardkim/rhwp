@@ -303,7 +303,14 @@ fn break_before_text_token(
 /// 독립 Print에서 낱말 유지 문단도 한점 리더·분철점 뒤에서 나뉜다.
 /// 같은 폭의 U+00B7·ASCII 마침표는 라틴 낱말을 유지한다. 글꼴 슬롯과
 /// 줄 경계는 별도 계약이며, 이미 분리한 기호 토큰의 끝을 공통 소비한다.
-fn can_break_after_text_token(ch: char, korean_break_unit: u8) -> bool {
+pub(crate) fn can_break_after_text_token(token: &[char], korean_break_unit: u8) -> bool {
+    let Some((&ch, tail)) = token.split_first() else {
+        return false;
+    };
+    // 글자 단위의 줄 끝은 그 글자에 붙은 줄머리 금칙 문자까지 함께 소비한다.
+    if !tail.iter().all(|ch| is_line_start_forbidden(*ch)) {
+        return false;
+    }
     if is_hangul(ch) || ch.is_ascii_digit() {
         korean_break_unit == 1
     } else {
@@ -2799,10 +2806,12 @@ fn fill_one_interval(
                 // admitted the same glyph on 36966 − 980 = 35708 ≤ 36587. Sharing
                 // `text_token_fits_line_hwp` makes all six rows of that cell
                 // character-identical to the HWP 2024 PDF.
-                let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
-                    .iter()
-                    .all(|c| is_line_start_forbidden(*c));
-                if tail_all_line_start_forbidden && token_fits {
+                if token_fits
+                    && can_break_after_text_token(
+                        &text_chars[*start_idx..*end_idx],
+                        korean_break_unit,
+                    )
+                {
                     // 글자 모드의 후행 금칙 흡수분도 같은 "줄 끝 자리"로 본다.
                     //
                     // 한컴은 줄 끝 금칙 문자를 상자 밖에 매달지 않고 **그 줄 안에** 넣는다
@@ -2810,16 +2819,11 @@ fn fill_one_interval(
                     // 종전 `== 1` 가드는 흡수가 만든 2글자 묶음(`력·`)을 폭 판정에 통과하고도
                     // 줄 끝 후보에서 배제해, 줄이 묶음 **앞** 한 글자로 되감겼다 — 원본이
                     // `…상호 협력·` 로 끝내는 자리에서 우리는 `…상호 협` 으로 끝나 두 글자를 잃었다.
-                    // 1글자 토큰은 아래 슬라이스가 비어 `all()` 이 참이라 종전 동작 그대로다.
-                    let c = text_chars[*start_idx];
-                    let allow_break = can_break_after_text_token(c, korean_break_unit);
-                    if allow_break {
-                        cursor.last_break_token_idx = Some(ti);
-                        cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        cursor.width_at_last_break = cursor.lw + w_hwp; // 이 글자 폭 포함
-                        cursor.condense_budget_at_last_break = cursor.line_condense_budget;
-                        cursor.fs_at_last_break = cursor.line_max_fs;
-                    }
+                    cursor.last_break_token_idx = Some(ti);
+                    cursor.last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
+                    cursor.width_at_last_break = cursor.lw + w_hwp; // 이 글자 폭 포함
+                    cursor.condense_budget_at_last_break = cursor.line_condense_budget;
+                    cursor.fs_at_last_break = cursor.line_max_fs;
                 }
                 if !token_fits {
                     if *start_idx > cursor.line_start_idx {
@@ -3149,20 +3153,18 @@ fn fill_lines_before_cursor(
                     new_word_natural,
                 );
                 // Same single predicate as the live fill — see the note there.
-                let tail_all_line_start_forbidden = text_chars[*start_idx + 1..*end_idx]
-                    .iter()
-                    .all(|c| is_line_start_forbidden(*c));
                 // 위 `fill_one_interval` 과 같은 계약(흡수 묶음도 줄 끝 후보).
-                if tail_all_line_start_forbidden && token_fits {
-                    let c = text_chars[*start_idx];
-                    let allow_break = can_break_after_text_token(c, korean_break_unit);
-                    if allow_break {
-                        last_break_token_idx = Some(ti);
-                        last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
-                        width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
-                        condense_budget_at_last_break = line_condense_budget;
-                        fs_at_last_break = line_max_fs;
-                    }
+                if token_fits
+                    && can_break_after_text_token(
+                        &text_chars[*start_idx..*end_idx],
+                        korean_break_unit,
+                    )
+                {
+                    last_break_token_idx = Some(ti);
+                    last_break_char_idx = *end_idx; // 이 글자 다음 (이 글자 포함)
+                    width_at_last_break = lw + w_hwp; // 이 글자 폭 포함
+                    condense_budget_at_last_break = line_condense_budget;
+                    fs_at_last_break = line_max_fs;
                 }
                 if !text_token_fits_line_hwp(
                     lw,
