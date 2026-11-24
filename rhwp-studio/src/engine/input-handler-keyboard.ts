@@ -978,9 +978,9 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
         };
         const paraIdx = this.cursor.hfParaIdx;
         const charOffset = this.cursor.hfCharOffset;
-        this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, '\n');
-        this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, paraIdx, charOffset, '\n') });
-        this.cursor.setHfCursorPosition(paraIdx, charOffset + 1);
+        const { charOffset: end } = JSON.parse(this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, '\n'));
+        this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, paraIdx, charOffset, '\n', end - 1) });
+        this.cursor.setHfCursorPosition(paraIdx, end);
         this.afterEdit();
       } catch { /* ignore */ }
       return;

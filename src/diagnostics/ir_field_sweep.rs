@@ -635,6 +635,7 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         page_break_synthesized: _,
         // [#5847] reflow 이전 원본 vertpos 스냅샷 — IR 전용 부수 채널, 비교 대상 아님.
         source_line_seg_vertical_pos: _,
+        rebuilt_source_line_frame: _,
         // 렌더 흐름 투영 전의 원점은 원본 IR 속성이 아니다.
         layout_stored_first_origin: _,
         // 로드 후 재구성된 본문 축의 조판 전용 출처는 원본 IR 비교 대상이 아니다.

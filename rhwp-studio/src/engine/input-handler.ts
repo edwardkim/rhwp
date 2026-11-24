@@ -558,6 +558,7 @@ export class InputHandler {
   private compositionAnchor: DocumentPosition | null = null;
   private compositionLength = 0; // 문서에 삽입된 조합 텍스트 길이
   private compositionBodyLogical = false;
+  private compositionAreaTextStart: number | null = null;
   /** [#7489] 수정 모드에서 이번 조합이 덮어쓴 글자. null 이면 첫 조합 글자에서 정한다. */
   private _compositionCovered: string | null = '';
   /** [#7489] 이번 조합이 덮기 직전 문단 조각. 조합 취소면 되살리고, 확정이면 기록에 넘긴다. */

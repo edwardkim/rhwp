@@ -1653,18 +1653,20 @@ export class InsertTextInHeaderFooterCommand implements EditCommand {
     private paraIdx: number,
     private charOffset: number,
     private text: string,
+    private insertedAt = charOffset,
   ) {
-    this.lastContext = hfEditContext(target, paraIdx, charOffset + charCount(text));
+    this.lastContext = hfEditContext(target, paraIdx, insertedAt + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    wasm.insertTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.text);
-    this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset + charCount(this.text));
+    const result = JSON.parse(wasm.insertTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, this.text));
+    this.insertedAt = result.charOffset - charCount(this.text);
+    this.lastContext = hfEditContext(this.target, this.paraIdx, result.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.deleteTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.charOffset, charCount(this.text));
+    wasm.deleteTextInHeaderFooter(this.target.sectionIdx, this.target.isHeader, this.target.applyTo, this.paraIdx, this.insertedAt, charCount(this.text));
     this.lastContext = hfEditContext(this.target, this.paraIdx, this.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
@@ -1838,18 +1840,20 @@ export class InsertTextInFootnoteCommand implements EditCommand {
     private innerParaIdx: number,
     private charOffset: number,
     private text: string,
+    private insertedAt = charOffset,
   ) {
-    this.lastContext = fnEditContext(target, innerParaIdx, charOffset + charCount(text));
+    this.lastContext = fnEditContext(target, innerParaIdx, insertedAt + charCount(text));
   }
 
   execute(wasm: WasmBridge): DocumentPosition {
-    wasm.insertTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, this.text);
-    this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset + charCount(this.text));
+    const result = wasm.insertTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, this.text);
+    this.insertedAt = result.charOffset - charCount(this.text);
+    this.lastContext = fnEditContext(this.target, this.innerParaIdx, result.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }
 
   undo(wasm: WasmBridge): DocumentPosition {
-    wasm.deleteTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.charOffset, charCount(this.text));
+    wasm.deleteTextInFootnote(this.target.sectionIdx, this.target.paraIdx, this.target.controlIdx, this.innerParaIdx, this.insertedAt, charCount(this.text));
     this.lastContext = fnEditContext(this.target, this.innerParaIdx, this.charOffset);
     return hfFnStubPosition(this.target.sectionIdx);
   }

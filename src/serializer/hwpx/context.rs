@@ -178,7 +178,7 @@ pub struct SerializeContext {
     /// 새 HWP5 계보 산출물은 실제 방출된 문단의 제어 슬롯을 함께 센다.
     pub line_segs_on_paragraph_axis: bool,
     /// 지금 쓰는 구역 본문의 줄 위치 좌표계. `write_section` 이 구역마다 새로 둔다.
-    pub(crate) body_line_frame: crate::serializer::line_cache::BodyLineFrame,
+    pub(crate) body_uses_source_frames: bool,
     /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
     ///
     /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
@@ -195,7 +195,7 @@ impl Default for SerializeContext {
             char_shape_ids: IdPool::default(),
             line_segs_on_hwpx_axis: false,
             line_segs_on_paragraph_axis: false,
-            body_line_frame: Default::default(),
+            body_uses_source_frames: false,
             para_shape_ids: IdPool::default(),
             border_fill_ids: IdPool::default(),
             tab_pr_ids: IdPool::default(),

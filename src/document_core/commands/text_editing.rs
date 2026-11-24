@@ -1430,9 +1430,10 @@ pub(super) fn insert_area_text(
     if text.is_empty() || !has_clickhere_field_range(para) {
         return para.insert_text_at(char_offset, text);
     }
-    para.replace_text_keeping_slots(char_offset, 0, text, active, false);
+    let inserted_at = char_offset.min(para.text.chars().count());
+    para.replace_text_keeping_slots(inserted_at, 0, text, active, char_offset > inserted_at);
     para.invalidate_layout_inputs();
-    char_offset.min(para.text.chars().count())
+    inserted_at
 }
 
 /// 서식 글도 일반 입력과 같은 활성 누름틀·개체 앞뒤 소속으로 넣는다.

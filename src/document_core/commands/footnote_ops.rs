@@ -582,7 +582,7 @@ impl DocumentCore {
         );
         let fn_para =
             self.get_footnote_paragraph_mut(section_idx, para_idx, control_idx, fn_para_idx)?;
-        super::text_editing::insert_area_text(fn_para, char_offset, text, active);
+        let inserted_at = super::text_editing::insert_area_text(fn_para, char_offset, text, active);
 
         self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
 
@@ -590,11 +590,11 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = char_offset + new_chars_count;
+        let new_offset = inserted_at + new_chars_count;
         self.event_log.push(DocumentEvent::TextInserted {
             section: section_idx,
             para: para_idx,
-            offset: char_offset,
+            offset: inserted_at,
             len: new_chars_count,
         });
         Ok(super::super::helpers::json_ok_with(&format!(

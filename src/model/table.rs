@@ -1474,14 +1474,19 @@ impl Table {
         self.common.height = total_height;
     }
 
-    /// 셀 높이를 바꾼 뒤 표 높이를 행 높이 합으로 다시 적는다.
+    /// 저장한 행·병합 셀 높이와 내용 맞춤 행의 측정값으로 편집 시점의 행 점유 합을 구한다.
     ///
     /// `update_ctrl_dimensions`는 병합하지 않은 셀만 보고 높이를 정하지 않은 행(0)을 400HU로 센다.
     /// - 병합 셀은 걸친 행의 합보다 크면 마지막 행을 모자란 만큼 키운다(조판의 `solve_rowspan_row_heights`).
     ///   보지 않으면 병합 셀을 키워도 표 높이가 그대로라 글자처럼 취급한 표 뒤 문단이 옛 자리에 남는다.
     /// - 병합 셀이 걸치지 않은 높이 0 행은 내용으로 높이가 정해지므로 그린 높이(`drawn_rows`, HU)로 센다.
     ///   400HU로 세면 표 높이가 실제 행보다 작아져 글자처럼 취급한 표가 다른 행을 눌러 그린다.
-    pub(crate) fn sync_ctrl_height_from_rows(&mut self, drawn_rows: &[HwpUnit]) {
+    pub(crate) fn edited_row_height_sum(&self, drawn_rows: &[HwpUnit]) -> HwpUnit {
+        let drawn_rows = if drawn_rows.len() == usize::from(self.row_count) {
+            drawn_rows
+        } else {
+            &[]
+        };
         let row_count = usize::from(self.row_count);
         let spanned = self.rows_touched_by_rowspans(row_count);
         let mut rows: Vec<u64> = self
@@ -1520,7 +1525,24 @@ impl Table {
             }
         }
         let total: u64 = rows.iter().sum();
-        self.sync_ctrl_height(total.min(u64::from(HwpUnit::MAX)) as HwpUnit);
+        total.min(u64::from(HwpUnit::MAX)) as HwpUnit
+    }
+
+    /// 여러 행의 저장 외곽 높이가 행 점유 합보다 크면 그 여유분을 편집 후에도 보존한다.
+    pub(crate) fn row_height_surplus(&self, drawn_rows: &[HwpUnit]) -> HwpUnit {
+        if self.row_count <= 1 {
+            return 0;
+        }
+        self.common
+            .height
+            .saturating_sub(self.edited_row_height_sum(drawn_rows))
+    }
+
+    pub(crate) fn sync_ctrl_height_from_rows(&mut self, drawn_rows: &[HwpUnit], surplus: HwpUnit) {
+        self.sync_ctrl_height(
+            self.edited_row_height_sum(drawn_rows)
+                .saturating_add(surplus),
+        );
     }
 
     pub(crate) fn sync_ctrl_height(&mut self, height: HwpUnit) {

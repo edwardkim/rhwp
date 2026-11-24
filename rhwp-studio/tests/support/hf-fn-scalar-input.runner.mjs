@@ -13,19 +13,24 @@ registerHooks({ resolve(specifier, context, next) {
   }
   return next(specifier, context);
 } });
-const { onInput } = await import(pathToFileURL(resolve(src, 'engine/input-handler-text.ts')));
+const { onInput, replaceTextAtRaw } = await import(pathToFileURL(resolve(src, 'engine/input-handler-text.ts')));
 const { CommandHistory } = await import(pathToFileURL(resolve(src, 'engine/history.ts')));
 
 for (const mode of ['header', 'footer', 'footnote']) {
-  for (const value of ['가', '😀', '𠮷', '가😀𠮷']) {
+  for (const [value, requestedOffset] of [['가', 1], ['😀', 1], ['𠮷', 1], ['가😀𠮷', 1], ['가😀𠮷', 3]]) {
     let text = 'AB';
-    let offset = 1;
+    let offset = requestedOffset;
+    const insertedAt = Math.min(requestedOffset, text.length);
+    const withInput = input => 'AB'.slice(0, insertedAt) + input + 'AB'.slice(insertedAt);
     const history = new CommandHistory();
-    // Plain-text scalar bounds match Paragraph::insert_text_at/delete_text_at.
+    // A trailing inline control adds one logical caret position after the two text scalars.
     const insert = (...args) => {
       const chars = [...text];
-      chars.splice(Math.min(args.at(-2), chars.length), 0, ...args.at(-1));
+      const start = Math.min(args.at(-2), chars.length);
+      chars.splice(start, 0, ...args.at(-1));
       text = chars.join('');
+      const result = { ok: true, charOffset: start + [...args.at(-1)].length };
+      return mode === 'footnote' ? result : JSON.stringify(result);
     };
     const remove = (...args) => {
       const chars = [...text];
@@ -51,22 +56,33 @@ for (const mode of ['header', 'footer', 'footnote']) {
       onInput.call(host);
       assert.equal(offset, history.peekUndoTop().editContext().charOffset);
     }
-    assert.equal(text, `A${value}XB`, `${mode}: subsequent input must precede B`);
-    assert.equal(offset, 2 + [...value].length);
+    assert.equal(text, withInput(value + 'X'), `${mode}: subsequent input`);
+    assert.equal(offset, insertedAt + 1 + [...value].length);
     for (let cycle = 0; cycle < 2; cycle++) {
       history.undo(wasm);
-      assert.equal(text, `A${value}B`);
+      assert.equal(text, withInput(value));
       history.undo(wasm);
       assert.equal(text, 'AB');
-      assert.equal(history.peekRedoTop().editContext().charOffset, 1);
+      assert.equal(history.peekRedoTop().editContext().charOffset, requestedOffset);
       history.redo(wasm);
-      assert.equal(text, `A${value}B`);
+      assert.equal(text, withInput(value));
       const context = history.peekUndoTop().editContext();
       assert.equal(context.mode, mode === 'footnote' ? 'footnote' : 'headerFooter');
-      assert.equal(context.charOffset, 1 + [...value].length, `${mode}: redo caret`);
+      assert.equal(context.charOffset, insertedAt + [...value].length, `${mode}: redo caret`);
       history.redo(wasm);
-      assert.equal(text, `A${value}XB`);
-      assert.equal(history.peekUndoTop().editContext().charOffset, 2 + [...value].length);
+      assert.equal(text, withInput(value + 'X'));
+      assert.equal(history.peekUndoTop().editContext().charOffset, insertedAt + 1 + [...value].length);
+    }
+    // Successive IME updates replace just the composing range, including after the last inline control.
+    text = 'AB';
+    const composition = { cursor, wasm, isComposing: true,
+      canInsertTextInFormMode: () => true, canDeleteTextInFormMode: () => true };
+    const anchor = { sectionIndex: 0, paragraphIndex: 0, charOffset: requestedOffset };
+    let previous = '';
+    for (const update of ['ㅎ', '한', '한😀', '']) {
+      replaceTextAtRaw.call(composition, anchor, [...previous].length, update);
+      assert.equal(text, withInput(update), `${mode}: IME update at ${requestedOffset}`);
+      previous = update;
     }
   }
 }
