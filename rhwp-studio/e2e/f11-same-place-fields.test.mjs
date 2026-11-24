@@ -19,20 +19,47 @@ const f11 = async (page) => {
   await settle(page);
 };
 
-/** "앞 뒤끝" 글자 자리 2에 빈 누름틀 가·나를 차례로 넣고 캐럿을 문단 끝에 둔다. */
-const buildSamePlace = (page) => createNewDocument(page).then(() => page.evaluate(() => {
-  const w = window.__wasm;
-  const ih = window.__inputHandler;
-  w.doc.insertText(0, 0, 0, '앞 뒤끝');
-  for (const name of ['가', '나']) {
-    const r = JSON.parse(w.doc.insertClickHereField(0, 0, 2, `${name}안내`, '', name, true));
-    if (!r.ok) throw new Error(`insertClickHereField ${name}: ${JSON.stringify(r)}`);
+/** 본문이나 1×1 표의 같은 글자 자리에 빈 누름틀 두 개를 만든다. */
+async function buildSamePlace(page, area = 'body') {
+  await createNewDocument(page);
+  await page.evaluate((area) => {
+    const w = window.__wasm;
+    const ih = window.__inputHandler;
+    const position = { sectionIndex: 0, paragraphIndex: 0, charOffset: 4 };
+    const table = area === 'cell' ? w.createTable(0, 0, 0, 1, 1) : null;
+    if (table) {
+      if (!table.ok) throw new Error(JSON.stringify(table));
+      w.doc.insertTextInCell(0, table.paraIdx, table.controlIdx, 0, 0, 0, '앞 뒤끝');
+      Object.assign(position, { parentParaIndex: table.paraIdx, controlIndex: table.controlIdx, cellIndex: 0, cellParaIndex: 0 });
+    } else {
+      w.doc.insertText(0, 0, 0, '앞 뒤끝');
+    }
+    for (const name of ['가', '나']) {
+      const result = table
+        ? w.doc.insertClickHereFieldInCell(0, table.paraIdx, table.controlIdx, 0, 0, 2, false, name + '안내', '', name, true)
+        : w.doc.insertClickHereField(0, 0, 2, name + '안내', '', name, true);
+      if (!JSON.parse(result).ok) throw new Error(result);
+    }
+    window.__canvasView.loadDocument();
+    ih.cursor.moveTo(position);
+    ih.updateCaret();
+    ih.focus();
+  }, area);
+}
+
+async function typeHangul(page) {
+  const cdp = await page.createCDPSession();
+  try {
+    for (const [initial, syllable] of [['하', '한'], ['그', '글']]) {
+      for (const text of [initial, syllable]) {
+        await cdp.send('Input.imeSetComposition', { text, selectionStart: 1, selectionEnd: 1 });
+      }
+      await cdp.send('Input.insertText', { text: syllable });
+    }
+  } finally {
+    await cdp.detach();
   }
-  window.__canvasView?.loadDocument?.();
-  ih.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 4 });
-  ih.updateCaret();
-  ih.focus();
-}));
+}
 
 /** 지금 F11이 고른 것: 누름틀이면 그 이름, 표면 'table', 없으면 null. */
 const picked = (page) => page.evaluate(() => {
@@ -44,9 +71,17 @@ const picked = (page) => page.evaluate(() => {
   return list.find((f) => f.controlIndex === pin.controlIndex && f.fieldId === pin.info.fieldId)?.name ?? '?';
 });
 
-const values = (page) => page.evaluate(() => Object.fromEntries(
-  JSON.parse(window.__wasm.doc.getFieldList()).map((f) => [f.name, f.value]),
-));
+const savedValues = (page) => page.evaluate(() => {
+  const doc = window.__wasm.doc;
+  const values = (d) => Object.fromEntries(JSON.parse(d.getFieldList()).map((f) => [f.name, f.value]));
+  const snapshots = { live: values(doc) };
+  for (const [format, bytes] of [['HWP', doc.exportHwp()], ['HWPX', doc.exportHwpx()]]) {
+    const reopened = new doc.constructor(bytes);
+    try { snapshots[format] = values(reopened); }
+    finally { reopened.free(); }
+  }
+  return snapshots;
+});
 
 runTest('F11 같은 자리 누름틀', async ({ page }) => {
   await buildSamePlace(page);
@@ -57,20 +92,24 @@ runTest('F11 같은 자리 누름틀', async ({ page }) => {
   await f11(page);
   assert(await picked(page) === null, 'F11 세 번: 고를 것 없음');
 
-  await buildSamePlace(page);
-  await f11(page);
-  await page.keyboard.type('xy');
-  await settle(page);
-  const one = await values(page);
-  assert(one['나'] === 'xy' && one['가'] === '', `F11 한 번 뒤 입력은 나에: ${JSON.stringify(one)}`);
-
-  await buildSamePlace(page);
-  await f11(page);
-  await f11(page);
-  await page.keyboard.type('z');
-  await settle(page);
-  const two = await values(page);
-  assert(two['가'] === 'z' && two['나'] === '', `F11 두 번 뒤 입력은 가에: ${JSON.stringify(two)}`);
+  for (const area of ['body', 'cell']) {
+    for (const chosen of ['나', '가']) {
+      for (const input of ['xy', '한글']) {
+        await buildSamePlace(page, area);
+        await f11(page);
+        if (chosen === '가') await f11(page);
+        assert(await picked(page) === chosen, `${area} F11 선택 ${chosen}`);
+        if (input === '한글') await typeHangul(page);
+        else await page.keyboard.type(input);
+        await settle(page);
+        const peer = chosen === '가' ? '나' : '가';
+        for (const [format, fields] of Object.entries(await savedValues(page))) {
+          assert(fields[chosen] === input && fields[peer] === '',
+            `${area} ${format} 선택 ${chosen}, 입력 ${input}: ${JSON.stringify(fields)}`);
+        }
+      }
+    }
+  }
 
   // 본문 누름틀 '본문' 뒤 1x1 표, 그 셀의 "셀 끝" 글자 자리 2에 누름틀 '셀'.
   await createNewDocument(page);

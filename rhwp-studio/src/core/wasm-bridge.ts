@@ -1766,13 +1766,19 @@ export class WasmBridge {
    */
   findNearestControlAt(place: ControlPlace, charOffset: number, fromControl: number, forward: boolean): NearestControl {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).findNearestControlAt(JSON.stringify(place), charOffset, fromControl, forward));
+    return JSON.parse(this.doc.findNearestControlAt(JSON.stringify(place), charOffset, fromControl, forward));
+  }
+
+  /** 지정한 컨트롤의 실제 필드 범위가 캐럿을 포함하는지 조회한다. */
+  getFieldInfoForControlAt(place: ControlPlace, controlIndex: number, offset: number): FieldInfoResult {
+    if (!this.doc) return { inField: false };
+    return JSON.parse(this.doc.getFieldInfoForControlAt(JSON.stringify(place), controlIndex, offset));
   }
 
   /** 주소 문단의 controlIndex 누름틀을 활성 필드로 둔다. 같은 자리 누름틀 가운데 고른 것에 입력이 든다. 바뀌면 true. */
   setActiveFieldAt(place: ControlPlace, controlIndex: number): boolean {
     if (!this.doc) return false;
-    return (this.doc as any).setActiveFieldAt(JSON.stringify(place), controlIndex);
+    return this.doc.setActiveFieldAt(JSON.stringify(place), controlIndex);
   }
 
   /** 현재 위치 이후의 가장 가까운 선택 가능 컨트롤 (Shift+F11) */

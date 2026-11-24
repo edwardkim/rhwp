@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { controlPlaceOf, fieldPinKey, positionOfPlace } from '../src/engine/control-place.ts';
+import { controlPlaceOf, fieldInfoAt, positionOfPlace, selectedFieldAt } from '../src/engine/control-place.ts';
 
 test('본문·한 겹 셀·글상자·중첩 표 주소를 커서 위치와 맞바꾼다', () => {
   const body = { section: 1, para: 4, cellPath: [] as [number, number, number][] };
@@ -23,9 +23,24 @@ test('본문·한 겹 셀·글상자·중첩 표 주소를 커서 위치와 맞�
   assert.deepEqual(controlPlaceOf(inNested), nested);
 });
 
-test('F11 누름틀 열쇠는 같은 주소의 같은 글자 자리에서만 같다', () => {
-  const at = (charOffset: number, para = 0) => ({ sectionIndex: 0, paragraphIndex: para, charOffset });
-  assert.equal(fieldPinKey(at(2)), fieldPinKey(at(2)));
-  assert.notEqual(fieldPinKey(at(2)), fieldPinKey(at(3)));
-  assert.notEqual(fieldPinKey(at(2)), fieldPinKey({ ...at(2), parentParaIndex: 0, controlIndex: 1, cellIndex: 0, cellParaIndex: 0 }));
+test('입력 후 선택한 필드의 현재 범위와 셀 주소를 따른다', () => {
+  const place = { section: 1, para: 3, cellPath: [[0, 2, 0]] as [number, number, number][] };
+  const pin = { place, controlIndex: 1, info: { fieldId: 73 } };
+  const other = { inField: true, fieldId: 72 };
+  const wasm = {
+    getFieldInfoAt: () => other,
+    getFieldInfoForControlAt: (address: typeof place, index: number, offset: number) => {
+      assert.deepEqual(address, place);
+      assert.equal(index, 1);
+      return { inField: offset >= 2 && offset <= 4, fieldId: 73 };
+    },
+  };
+  for (const offset of [2, 3, 4]) {
+    assert.equal(fieldInfoAt(wasm, positionOfPlace(place, offset), pin).fieldId, 73);
+  }
+  const at = positionOfPlace(place, 3);
+  assert.equal(fieldInfoAt(wasm, positionOfPlace(place, 5), pin), other);
+  assert.equal(fieldInfoAt(wasm, { ...at, cellIndex: 0 }, pin), other);
+  assert.equal(fieldInfoAt(wasm, { ...at, sectionIndex: 0 }, pin), other);
+  assert.equal(selectedFieldAt(wasm, at, { ...pin, info: { fieldId: 74 } }), null);
 });

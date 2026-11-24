@@ -18,7 +18,7 @@ import {
   type NavigationKeyInput,
 } from './navigation-keymap';
 import type { DocumentPosition, CursorRect, CellBbox, CellPathLike, ControlPlace } from '@/core/types';
-import { controlPlaceOf, positionOfPlace, fieldPinKey } from './control-place';
+import { controlPlaceOf, positionOfPlace, selectedFieldAt } from './control-place';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { inlineOfficeClipboardImages, liftImagesToBlockLevel, needsRtfImageInlining } from './office-clipboard-images';
@@ -2335,7 +2335,7 @@ export function handleF11(this: any): void {
       searchCharOffset = ctrlPositions?.[ref!.ci] ?? 0;
       place = { section: searchSec, para: searchPara, cellPath: [] };
       fromControl = ref!.ci;
-    } else if (pin && pin.key === fieldPinKey(caret)) {
+    } else if (pin && selectedFieldAt(this.wasm, caret, pin)) {
       searchSec = caret.sectionIndex; searchPara = caret.paragraphIndex; searchCharOffset = caret.charOffset;
       place = pin.place;
       fromControl = pin.controlIndex;
@@ -2431,7 +2431,7 @@ export function handleF11(this: any): void {
         fieldId: result.fieldId, fieldType: result.fieldType,
         guideName: result.fieldId === undefined ? undefined : this.wasm.getClickHereProps(result.fieldId).guide,
       };
-      this.f11Field = { key: fieldPinKey(startPos), place: result.place, controlIndex: result.ci, info };
+      this.f11Field = { place: result.place, controlIndex: result.ci, info };
       this.updateCaret();
       this.eventBus.emit('field-info-changed', info);
     } else if (result.type === 'field') {

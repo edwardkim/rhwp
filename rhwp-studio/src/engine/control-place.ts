@@ -1,4 +1,4 @@
-import type { ControlPlace, DocumentPosition } from '@/core/types';
+import type { ControlPlace, DocumentPosition, FieldInfoResult } from '@/core/types';
 
 /** 커서 위치가 든 문단의 주소. 셀·글상자 안이면 본문 문단에서 시작하는 경로를 준다. */
 export function controlPlaceOf(pos: DocumentPosition): ControlPlace {
@@ -45,7 +45,27 @@ export function positionOfPlace(place: ControlPlace, charOffset: number, areas: 
   return pos;
 }
 
-/** F11로 고른 누름틀을 가리는 열쇠. 같은 문단 주소의 같은 글자 자리면 같다. */
-export function fieldPinKey(pos: DocumentPosition): string {
-  return JSON.stringify([controlPlaceOf(pos), pos.charOffset]);
+export interface F11Field {
+  place: ControlPlace;
+  controlIndex: number;
+  info: { fieldId?: number; fieldType?: string; guideName?: string };
+}
+
+type FieldQueries = {
+  getFieldInfoAt(pos: DocumentPosition): FieldInfoResult;
+  getFieldInfoForControlAt(place: ControlPlace, controlIndex: number, offset: number): FieldInfoResult;
+};
+
+/** 입력 뒤 바뀐 범위에서 선택한 컨트롤을 조회한다. 다른 문단·셀이나 사라진 필드에는 적용하지 않는다. */
+export function selectedFieldAt(wasm: FieldQueries, pos: DocumentPosition, pin?: F11Field | null): FieldInfoResult | null {
+  if (!pin) return null;
+  const place = controlPlaceOf(pos);
+  if (place.section !== pin.place.section || place.para !== pin.place.para
+      || JSON.stringify(place.cellPath) !== JSON.stringify(pin.place.cellPath)) return null;
+  const info = wasm.getFieldInfoForControlAt(place, pin.controlIndex, pos.charOffset);
+  return info.inField && info.fieldId === pin.info.fieldId ? info : null;
+}
+
+export function fieldInfoAt(wasm: FieldQueries, pos: DocumentPosition, pin?: F11Field | null): FieldInfoResult {
+  return selectedFieldAt(wasm, pos, pin) ?? wasm.getFieldInfoAt(pos);
 }
