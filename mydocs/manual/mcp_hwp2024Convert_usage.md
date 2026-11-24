@@ -96,9 +96,10 @@ python3 tools/oracle_public/audit_print_pairs.py --repo-root . \
 ## 개요
 
 - MCP server 이름: `hwp2024Convert`
+- 새 변환 시작: [대기열을 조회](#새-변환을-시작하기-전-대기열-확인)하고 `idle`일 때만 제출한다.
 - 실행 방식: `hwp2024-mcp-convert` CLI의 비동기 `start → status → download` 흐름.
   모든 문서 변환과 PR review 기준 PDF는 이 흐름을 사용한다.
-- VS Code 연동 방식: stdio MCP bridge `hwp2024-mcp-bridge`. 비동기 tool만 사용한다.
+- stdio MCP bridge: `hwp2024-mcp-bridge`. 비동기 변환 도구를 사용한다.
 - 지원 입력: `.hwp`, `.hwpx`
 - 지원 출력: `pdf`, `hwp`, `hwpx`
 - 지원 방향: `.hwp → pdf|hwp|hwpx`, `.hwpx → pdf|hwp`
@@ -124,17 +125,17 @@ Slack에 가입한 뒤 메인터너 또는 collaborator에게 접근 정보를 �
 
 ## 최신 client artifact
 
-rhwp에는 HWP 2024용 최신 client artifact 하나를 유지한다.
+새 변환에는 아래 client archive를 사용한다.
 
 ```text
-tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz
+tools/hwp-convert-mcp-2024-client-0.10.0.tgz
 ```
 
 | 항목 | 값 |
 | --- | --- |
-| package version | `0.9.0` |
-| archive bytes | 8,558 |
-| archive SHA-256 | `830b1f7ff3696a9b499d0043e48e3dccfba7817797a698003bd909226f13cf72` |
+| package version | `0.10.0` |
+| archive bytes | 8,655 |
+| archive SHA-256 | `79b3734bee610ba1d1bac85cdb9f9b2fdb2781246bd1f92bfe7618f7c42c9a57` |
 | 외부 npm runtime dependency | 없음 |
 | 포함 명령 | `hwp2024-mcp-bridge`, `hwp2024-mcp-convert` |
 
@@ -149,9 +150,9 @@ directory의 `$HOME/hwp-convert-2024/.env.local`에만 둔다. macOS와 Linux를
 
 | client OS | rhwp archive | 비공개 환경 파일 |
 | --- | --- | --- |
-| macOS | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
-| Linux | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `$HOME/hwp-convert-2024/.env.local` |
-| Windows | `C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260824-011002.tar.gz` | `C:\Users\<사용자>\hwp-convert-2024\.env.local` |
+| macOS | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-0.10.0.tgz` | `$HOME/hwp-convert-2024/.env.local` |
+| Linux | `$HOME/rhwp/tools/hwp-convert-mcp-2024-client-0.10.0.tgz` | `$HOME/hwp-convert-2024/.env.local` |
+| Windows | `C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-0.10.0.tgz` | `C:\Users\<사용자>\hwp-convert-2024\.env.local` |
 
 ```env
 HWP2024_MCP_SERVER_URL=http://<관리자가_제공한_MCP_endpoint>
@@ -178,17 +179,28 @@ HTTPS reverse proxy 뒤에 둔다.
 MCP tool에서는 요청의 선택적 `password` 필드로만 전달한다. client는 암호를 결과 JSON, job 상태,
 파일명 또는 로그에 기록하지 않는다.
 
+## 새 변환을 시작하기 전 대기열 확인
+
+새 변환을 시작하기 직전에 rhwp 저장소 루트에서 아래 명령으로 같은 MCP 서버의 대기열을 확인한다.
+`EnvFile`에는 기존 비공개 환경 파일 경로를 지정한다.
+
+```text
+npx -y --package="file:tools/hwp-convert-mcp-2024-client-0.10.0.tgz" -- hwp2024-mcp-convert queue-status --env-file "$EnvFile"
+```
+
+응답 JSON의 `status`가 `idle`일 때만 새 변환을 한 건 제출한다. `busy`이거나 조회에 실패하면
+제출을 보류한다. 다음 변환을 시작하기 직전에 다시 조회한다.
+
 ## 터미널 CLI
 
-macOS·Linux에서는 `npx`의 절대 경로를 확인한다. macOS GUI VS Code는 shell `PATH`를 상속하지 않을 수
-있으므로 VS Code 등록 시에도 이 경로를 사용한다.
+macOS·Linux에서는 `npx`의 절대 경로를 확인한다.
 
 ```bash
 command -v npx
 # macOS Homebrew 예: /opt/homebrew/bin/npx
 # Ubuntu 예: /usr/bin/npx
 
-export HWP2024_MCP_PACKAGE="$HOME/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz"
+export HWP2024_MCP_PACKAGE="$HOME/rhwp/tools/hwp-convert-mcp-2024-client-0.10.0.tgz"
 export HWP2024_MCP_ENV_FILE="$HOME/hwp-convert-2024/.env.local"
 ```
 
@@ -196,7 +208,7 @@ Windows PowerShell에서는 다음 변수로 경로를 한 번만 정의한다.
 
 ```powershell
 $Npx = 'C:\Program Files\nodejs\npx.cmd'
-$Package = 'C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-20260824-011002.tar.gz'
+$Package = 'C:\Users\<사용자>\rhwp\tools\hwp-convert-mcp-2024-client-0.10.0.tgz'
 $EnvFile = 'C:\Users\<사용자>\hwp-convert-2024\.env.local'
 & $Npx --version
 ```
@@ -288,7 +300,7 @@ status의 terminal 상태는 `succeeded`, `failed`, `expired`다. `succeeded`일
 변환 중에도 상태 조회와 완료 결과 다운로드는 가능하다.
 
 CLI의 `status`는 서버 상태 필드를 최상위에 펼치고 `terminal`만 추가한다. HTTP MCP tool
-`get_conversion_status`와 VS Code tool `get_local_conversion_status`는 상태 JSON을
+`get_conversion_status`와 MCP tool `get_local_conversion_status`는 상태 JSON을
 `content`의 text로 반환하며 `terminal`은 추가하지 않는다. MCP envelope의 `isError: false`는
 상태 조회가 성공했다는 뜻이다. 조회된 job 자체는 `failed`일 수 있으므로 내부 `status`도 확인한다.
 
@@ -400,95 +412,9 @@ metadata이며 status 응답 전체를 감싼 객체가 아니다.
 3. 생성된 PDF를 직접 열어 누락·빈 페이지·출력 손상을 확인한다. 원본과 생성 PDF를 함께 보존하고,
    검증 기록에는 MCP 실패 코드, 수동 생성 사실과 실제 사용한 한컴 버전을 남긴다.
 
-## VS Code MCP 등록
-
-VS Code Chat에서 tool을 사용할 때만 stdio bridge를 등록한다. terminal에서 bridge를 미리 실행해 두지
-않는다. workspace의 `.vscode/mcp.json` 또는 VS Code user MCP 설정에서 client OS에 맞는 하나만 사용한다.
-
-### macOS
-
-macOS GUI VS Code에서는 `command -v npx`의 절대 경로를 `command`에 쓰고, Homebrew 경로를 `PATH`에
-포함한다.
-
-```json
-{
-  "servers": {
-    "hwp2024Convert": {
-      "type": "stdio",
-      "command": "/opt/homebrew/bin/npx",
-      "args": [
-        "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
-        "--",
-        "hwp2024-mcp-bridge"
-      ],
-      "envFile": "${userHome}/hwp-convert-2024/.env.local",
-      "env": {
-        "PATH": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-      }
-    }
-  }
-}
-```
-
-Intel Mac에서 Node.js가 `/usr/local/bin/npx`에 설치됐거나 다른 경로가 나오면 `command`와 `PATH`를
-`command -v npx`의 결과로 바꾼다.
-
-### Linux
-
-Linux에서 Node.js가 system package로 설치됐다면 보통 `/usr/bin/npx`를 사용한다. nvm 등으로 설치했다면
-`command -v npx`의 절대 경로로 교체한다.
-
-```json
-{
-  "servers": {
-    "hwp2024Convert": {
-      "type": "stdio",
-      "command": "/usr/bin/npx",
-      "args": [
-        "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
-        "--",
-        "hwp2024-mcp-bridge"
-      ],
-      "envFile": "${userHome}/hwp-convert-2024/.env.local"
-    }
-  }
-}
-```
-
-### Windows PowerShell
-
-```json
-{
-  "servers": {
-    "hwp2024Convert": {
-      "type": "stdio",
-      "command": "C:\\Program Files\\nodejs\\npx.cmd",
-      "args": [
-        "-y",
-        "--package=file:${userHome}/rhwp/tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz",
-        "--",
-        "hwp2024-mcp-bridge"
-      ],
-      "envFile": "${userHome}/hwp-convert-2024/.env.local"
-    }
-  }
-}
-```
-
-VS Code MCP 접근이 차단되어 있으면 user settings에 다음을 추가한다.
-
-```json
-{
-  "chat.mcp.access": "all"
-}
-```
-
-설정 후 `Developer: Reload Window` 또는 VS Code 재시작을 수행한다. `MCP: List Servers`에서
-`hwp2024Convert`와 4개 tool이 보여야 한다.
-
 ## MCP tool 사용
+
+새 변환 도구를 호출하기 직전에 [대기열 상태](#새-변환을-시작하기-전-대기열-확인)가 `idle`인지 확인한다.
 
 ### 비동기 시작
 

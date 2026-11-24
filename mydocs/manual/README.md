@@ -80,8 +80,8 @@ Windows `hwp-convert-2024` 원격 MCP와 `hwp-convert-mcp-2024-client`를 사용
 
 | 저장한 한컴오피스 버전 | 변환 서비스 | 권위 문서 | client artifact |
 | --- | --- | --- | --- |
-| 2022 이하 | Windows `hwp-convert-2024`, `engine: 2020` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` |
-| 2024 | Windows `hwp-convert-2024`, `engine: 2024` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-20260824-011002.tar.gz` |
+| 2022 이하 | Windows `hwp-convert-2024`, `engine: 2020` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-0.10.0.tgz` |
+| 2024 | Windows `hwp-convert-2024`, `engine: 2024` | [HWP 2024 MCP 사용법](mcp_hwp2024Convert_usage.md) | `tools/hwp-convert-mcp-2024-client-0.10.0.tgz` |
 
 ## 문서 경계
 
