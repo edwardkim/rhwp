@@ -432,16 +432,10 @@ pub(super) fn stored_chart_backdrop(
             fill = color(backdrop.fill_color);
         }
         if backdrop.frame_enabled && backdrop.frame_width > 0.0 {
-            let reference_dpi = crate::renderer::DEFAULT_DPI;
-            let stroke = if presentation.chart_type == 14 {
-                // 원형 차트의 얇은 외곽선은 안티앨리어싱된 참조 픽셀의
-                // 반 폭까지 인쇄 장치의 정수 펜 단위로 보존한다.
-                let hairline_pixels = (CHART_FRAME_PRINT_DPI / (2.0 * reference_dpi)).floor();
-                chart_frame_device_stroke_width(backdrop.frame_width, dpi)
-                    .max(hairline_pixels * dpi / CHART_FRAME_PRINT_DPI)
-            } else {
-                chart_frame_device_stroke_width(backdrop.frame_width, dpi).max(dpi / reference_dpi)
-            };
+            // 인쇄의 외곽 벡터 괘선은 기준 래스터에서 한 픽셀의 피복을 유지한다.
+            // 외곽을 SVG 조각 안쪽에 그려도 래스터와 재샘플링에서 괘선이 끊기지 않게 한다.
+            let stroke = chart_frame_device_stroke_width(backdrop.frame_width, dpi)
+                .max(dpi / crate::renderer::DEFAULT_DPI);
             let offset = stroke / 2.0;
             if stroke >= width.min(height) {
                 return None;
