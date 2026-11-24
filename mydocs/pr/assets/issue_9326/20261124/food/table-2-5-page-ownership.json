@@ -1,0 +1,33 @@
+{
+  "head": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+  "native_sha256": "57ac54841729fb413fe3acda86cb077beaa584ba1e7bd5698723790ea7dc39b5",
+  "document": "1543000-202100035",
+  "reference": "Hancom 2020 Print",
+  "page_count": 141,
+  "source_table": {
+    "paragraph_index": 925,
+    "control_index": 0
+  },
+  "fragments": [
+    {
+      "page": 92,
+      "matching_line": "국민이 최저한도로 필요로 하는 열량의 공급이 곤란해 질 위",
+      "table_bbox": {
+        "x": 105.8,
+        "y": 482.8,
+        "w": 530.9,
+        "h": 345.6
+      }
+    },
+    {
+      "page": 93,
+      "matching_line": "험성이 있는 경우",
+      "table_bbox": {
+        "x": 105.8,
+        "y": 107.7,
+        "w": 530.9,
+        "h": 91.0
+      }
+    }
+  ]
+}

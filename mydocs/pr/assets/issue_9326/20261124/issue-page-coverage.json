@@ -1,0 +1,119 @@
+{
+  "candidate": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+  "food_and_jeju_full_rendering_issue": {
+    "issue": "https://github.com/edwardkim/rhwp/issues/9326",
+    "food_hancom_2020_print": [
+      {
+        "page": 4,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 6,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 68,
+        "native": "99.97",
+        "wasm": "99.97"
+      },
+      {
+        "page": 85,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 132,
+        "native": "100.00",
+        "wasm": "100.00"
+      }
+    ],
+    "jeju_win10_ted_hancom_2024_print": [
+      {
+        "page": 29,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 47,
+        "native": "99.94",
+        "wasm": "99.97"
+      },
+      {
+        "page": 48,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 49,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 50,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 51,
+        "native": "99.05",
+        "wasm": "99.04"
+      },
+      {
+        "page": 63,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 67,
+        "native": "99.95",
+        "wasm": "99.95"
+      },
+      {
+        "page": 103,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 110,
+        "native": "100.00",
+        "wasm": "100.00"
+      }
+    ],
+    "jeju_reference_note": "48~50쪽 차트가 포함된 Windows 한컴 2024 전체 Print와 비교. 기존 2020 점수와의 직접 증감으로 계산하지 않음."
+  },
+  "food_page_flow_issue": {
+    "issue": "https://github.com/edwardkim/rhwp/issues/8997",
+    "hancom_2020_print": [
+      {
+        "page": 89,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 90,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 91,
+        "native": "100.00",
+        "wasm": "100.00"
+      },
+      {
+        "page": 92,
+        "native": "99.86",
+        "wasm": "99.84"
+      },
+      {
+        "page": 93,
+        "native": "100.00",
+        "wasm": "100.00"
+      }
+    ],
+    "page_count": 141,
+    "source_table_fragments": 2,
+    "table_2_5_evidence": "food/table-2-5-page-ownership.json"
+  }
+}

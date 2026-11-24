@@ -405,6 +405,11 @@ manifest 최상위의 `accepted_sha256_pairs`는 공통 허용 쌍이고, 문서
 문서별 허용 쌍은 `scripts/check_protected_font.py --document <문서 key>`로 확인한다.
 기준과 후보에는 같은 파일을 같은 순서로 공급하고, 실제 사용한 SHA-256을 기록한다.
 
+이 대체 해시 등록과 검증 산출물 보존 절차는 정본 보호 문서에만 적용한다.
+전쪽 비교를 통과한 대체 해시는 공급 `manifest.json`의 해당 보호 문서 항목에 등록한다.
+대체 해시 확인을 위한 파일별 상세 SHA-256, 쪽별 비교 결과 등 실행 JSON과 로그는
+`output/pr-review/<작업명>/`에만 보존한다. `protected-font-supply/records/`에는 이 실행 산출물을 추가하지 않는다.
+
 글꼴 공급·설정이 바뀌면 새 output에서 같은 조건의 고정 base와 후보를 전쪽 비교한다.
 Rust 회귀의 [최소 글꼴 환경](../pr_review/local_validation.md#회귀-테스트의-최소-글꼴-환경)을
 보호 문서 시각 비교에 적용하지 않는다. 같은 호스트의 base에서도 하락했다는 사실이나

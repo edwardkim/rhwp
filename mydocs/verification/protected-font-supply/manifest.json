@@ -15092,20 +15092,20 @@
       "dpi": 96,
       "backends": {
         "native": {
-          "font_set": "e33ea144db11ccea",
+          "font_set": "e3c38b4af39c5cb7",
           "inventory_kind": "recorded_supply",
           "inventory_source": {
-            "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-accepted-validation.json",
-            "sha256": "b490d28a4167e91a3f9647354559b377c5e7dd8cb1070d5e60274cee0dfbdf7a",
+            "path": "mydocs/verification/protected-font-supply/records/nested-table-wasm-original-programs-validation.json",
+            "sha256": "369773855415cd4f5e4296015cdbd26877ab3183a85c03170dd95a6645e988d9",
             "selector": {
               "key": "nested",
-              "backend": "native",
-              "field": "provenance.font_supply.files"
+              "backend": "wasm",
+              "field": "font_supply.files"
             }
           },
           "font_environment": {
-            "path": "mydocs/verification/protected-font-supply/environments/nested-table.json",
-            "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
+            "path": "mydocs/verification/protected-font-supply/environments/nested-table-native.json",
+            "sha256": "e038a1dc0793cdc43a40eeaeefe83d72baf5f92448a4fb4b98b523f729bb6159"
           },
           "accepted_condition_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/nested-table-protected-validation.json",
@@ -15124,12 +15124,12 @@
             "recorded_supply_count": 1235,
             "accepted_programs_not_supplied": null
           },
-          "accepted_font_set": "e33ea144db11ccea",
+          "accepted_font_set": "e3c38b4af39c5cb7",
           "accepted_font_environment": {
-            "path": "mydocs/verification/protected-font-supply/environments/nested-table.json",
-            "sha256": "c43de121c1b5d7ed8e144856a3ad2cec661124a4c923c1bfde6dab70358913e1"
+            "path": "mydocs/verification/protected-font-supply/environments/nested-table-native.json",
+            "sha256": "e038a1dc0793cdc43a40eeaeefe83d72baf5f92448a4fb4b98b523f729bb6159"
           },
-          "supply_mode": "document_selected_files_from_recorded_environment",
+          "supply_mode": "explicit_files",
           "reproduction_validation": {
             "path": "mydocs/verification/protected-font-supply/records/protected-font-supply-nine-issues-validation.json",
             "sha256": "c8b1b7dc98d3e0ccb0981c6650b1f2e53500f25bd9a08a01a0f4c431e61ca69c",

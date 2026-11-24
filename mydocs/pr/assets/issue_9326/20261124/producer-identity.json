@@ -1,0 +1,22 @@
+{
+  "candidate": "24ec51a6f9186d509d3f3285faa6f9f6e067af5e",
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "artifacts": {
+    "rhwp": {
+      "sha256": "57ac54841729fb413fe3acda86cb077beaa584ba1e7bd5698723790ea7dc39b5",
+      "precommit_sha256": "57ac54841729fb413fe3acda86cb077beaa584ba1e7bd5698723790ea7dc39b5",
+      "identical": true
+    },
+    "pkg/rhwp.js": {
+      "sha256": "5ec4c5ce9ed9b852cb5e0d97a4baa6eb6fbe734cebdbb321709088d794678406",
+      "precommit_sha256": "5ec4c5ce9ed9b852cb5e0d97a4baa6eb6fbe734cebdbb321709088d794678406",
+      "identical": true
+    },
+    "pkg/rhwp_bg.wasm": {
+      "sha256": "48150c7062a0b396d7de6d3e0efe0100e67f73c416c01b7e0af11c8c168954d1",
+      "precommit_sha256": "48150c7062a0b396d7de6d3e0efe0100e67f73c416c01b7e0af11c8c168954d1",
+      "identical": true
+    }
+  },
+  "source_patch_sha256": "d2d9e52c8724881cab4ec2899926c5247b794c9a8be7cd5b985bee9a78e64125"
+}
