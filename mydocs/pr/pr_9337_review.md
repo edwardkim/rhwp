@@ -22,3 +22,5 @@
 
 - 셀 간격 0·300·600 HU 각각에서 두 편집 경로를 비교했다. 같은 편집 결과의 그려진 높이, 표 선언 높이, 표 아래와 뒤 문단 사이 간격은 HWP·HWPX로 다시 열어도 일치했다. 간격이 0인 입력의 표 높이는 200.0 px, 표 뒤 간격은 12.4 px였다. [속성·크기 조절·재열기](assets/semanticist21-9337-9354-9377/corrected-table.tsv)
 - 별지 제9호 용역표준계약서에서 세 셀을 58,083 HU에서 2,000 HU로 줄였다. 수정 전에는 편집한 표가 2쪽에서 아래로 밀렸다. 보완 뒤 같은 2쪽의 표 윗변은 77.5 px에 있고, 행 높이는 774.4 px에서 26.7 px가 됐다. Windows 한컴 2020에서 원본과 두 형식의 최종 저장본을 각각 직접 인쇄했다. [공개 원본과 인쇄본](assets/semanticist21-9337-9354-9377/sources-and-print.tsv) · [편집·재열기 좌표](assets/semanticist21-9337-9354-9377/contract-geometry.jsonl)
+
+한컴에서 직접 인쇄한 7개 입력은 Native와 fresh WASM에서 각각 10쪽이었다. 병합 셀 높이를 두 방식으로 편집한 4종은 전쪽 100.00%였다. 공개 계약서의 원본과 HWP·HWPX 저장본은 각각 2쪽이며 최저는 Native 99.38%, WASM 99.35%였다. 표를 줄인 2쪽은 세 입력 모두 양쪽 경로 100.00%였다. 계약서의 돋움은 원본의 글꼴 이름과 Windows 글꼴 모음 내부의 실제 서체를 대조해 공급했다. [쪽별 실루엣](assets/semanticist21-9337-9354-9377/focus-pages.tsv) · [계약서 2쪽 확대](assets/semanticist21-9337-9354-9377/contract-edited-hwpx-comparison.png) · [사용 글꼴·원본 모음의 해시](assets/semanticist21-9337-9354-9377/contract-font-programs.tsv)

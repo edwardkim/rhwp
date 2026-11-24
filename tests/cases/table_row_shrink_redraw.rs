@@ -1,5 +1,9 @@
-//! 관계형: 셀 높이를 줄이면 그린 행 높이가 새 선언을 따르고, 다른 행은 제 높이를 지킨다.
-//! 주석 갱신: 2026-11-23 KST. 합성 계약 검사라 한컴 PDF 시각 측정은 해당하지 않는다.
+//! 관계형 검사. 셀 높이 편집 뒤 행의 점유 높이와 표 뒤 문단의 간격을 두 편집 경로와 두 저장 형식에서 대조한다.
+//! 2026-11-24 15:55 KST 갱신. 직전 파일 변경은 2026-11-23 09:51:59 KST의 a6c7d1da185741b940e3dccf221376ff47c3c171이다.
+//! 2026-11-24 한컴 Print, 96 DPI의 보정 전 2px 실루엣으로 측정했다. 병합 셀 편집본 4종은 각각 1쪽이며
+//! 전쪽 Native와 fresh WASM 모두 100.00%였다. 용역표준계약서 원본 및 HWP·HWPX 편집본은 각각 2쪽이며
+//! 세 문서 각각의 전쪽 최저는 Native 99.38%, fresh WASM 99.35%다. 표를 줄인 2쪽은 두 경로 모두 100.00%다.
+//! 쪽별 수치와 입력·인쇄 해시는 `mydocs/pr/assets/semanticist21-9337-9354-9377/focus-pages.tsv`와 같은 디렉터리의 `sources-and-print.tsv`에 있다.
 //!
 //! 입력은 공개 API로 만든 글자처럼 취급한 3×2 표다. 첫 행은 한컴 양식처럼 셀 높이를 0(내용 맞춤)으로
 //! 두고 글자를 넣었으며, 표 높이는 한컴 저장본처럼 그린 행 높이의 합이다. HWP·HWPX로 저장해 다시 연
@@ -114,7 +118,49 @@ fn assert_rows(label: &str, actual: &[f64], expected: &[f64]) {
     }
 }
 
-fn shrink_redraws(resize: fn(&mut HwpDocument, usize, usize, &[usize], u32)) {
+type HeightEdit = fn(&mut HwpDocument, usize, usize, &[usize], u32);
+
+fn set_cell_height(
+    doc: &mut HwpDocument,
+    para: usize,
+    control: usize,
+    cells: &[usize],
+    height: u32,
+) {
+    let value = serde_json::json!({"height": height}).to_string();
+    for &index in cells {
+        doc.set_cell_properties_native(0, para, control, index, &value)
+            .unwrap();
+    }
+}
+
+fn resize_cell_height(
+    doc: &mut HwpDocument,
+    para: usize,
+    control: usize,
+    cells: &[usize],
+    height: u32,
+) {
+    let table = table(doc, para, control);
+    let updates: Vec<_> = cells
+        .iter()
+        .map(|&index| {
+            let delta = i64::from(height) - i64::from(table.cells[index].height);
+            serde_json::json!({"cellIdx": index, "heightDelta": delta})
+        })
+        .collect();
+    doc.resize_table_cells(
+        0,
+        para as u32,
+        control as u32,
+        &serde_json::to_string(&updates).unwrap(),
+    )
+    .expect("셀 크기 조절");
+}
+
+const HEIGHT_EDITS: [HeightEdit; 2] = [set_cell_height, resize_cell_height];
+
+fn shrink_redraws(resize: HeightEdit) {
     let (sources, para, control) = saved_sources();
     for (format, bytes) in sources {
         let mut doc = HwpDocument::from_bytes(&bytes).unwrap();
@@ -154,37 +200,12 @@ fn shrink_redraws(resize: fn(&mut HwpDocument, usize, usize, &[usize], u32)) {
 
 #[test]
 fn cell_properties_height_shrink_redraws_row() {
-    shrink_redraws(|doc, para, control, cells, height| {
-        for &cell in cells {
-            doc.set_cell_properties_native(
-                0,
-                para,
-                control,
-                cell,
-                &format!(r#"{{"height":{height}}}"#),
-            )
-            .unwrap();
-        }
-    });
+    shrink_redraws(set_cell_height);
 }
 
 #[test]
 fn resize_table_cells_shrink_redraws_row() {
-    shrink_redraws(|doc, para, control, cells, height| {
-        let current = table(doc, para, control).cells[cells[0]].height;
-        let delta = height as i64 - current as i64;
-        let updates: Vec<String> = cells
-            .iter()
-            .map(|cell| format!(r#"{{"cellIdx":{cell},"heightDelta":{delta}}}"#))
-            .collect();
-        doc.resize_table_cells(
-            0,
-            para as u32,
-            control as u32,
-            &format!("[{}]", updates.join(",")),
-        )
-        .expect("셀 크기 조절");
-    });
+    shrink_redraws(resize_cell_height);
 }
 
 /// 표 아래 선과 뒤 문단 캐럿 위 끝 사이 거리(px).
@@ -216,27 +237,76 @@ fn growing_a_merged_cell_moves_the_following_paragraph() {
         .unwrap();
     let before = drawn_rows(&doc, 1, 0).iter().sum::<f64>();
 
-    doc.set_cell_properties_native(0, 1, 0, merged, r#"{"height":11339}"#)
-        .unwrap();
-    let grown = drawn_rows(&doc, 1, 0).iter().sum::<f64>();
-    assert!(
-        grown > before + 5000.0,
-        "병합 셀이 걸친 행을 키운다: {before} → {grown}"
-    );
-    let live = gap_below_table(&doc, 1);
-    assert!(
-        (live - gap).abs() <= 1.0,
-        "편집 직후: 뒤 문단은 커진 표 아래에 같은 거리({gap}px)로 놓여야 하는데 {live}px다"
-    );
-    for (label, bytes) in [
-        ("HWP 다시 연 뒤", doc.export_hwp().unwrap()),
-        ("HWPX 다시 연 뒤", doc.export_hwpx().unwrap()),
-    ] {
-        let reopened = HwpDocument::from_bytes(&bytes).unwrap();
-        let after = gap_below_table(&reopened, 1);
+    let source = doc.export_hwpx().unwrap();
+    for edit in HEIGHT_EDITS {
+        let mut doc = HwpDocument::from_bytes(&source).unwrap();
+        edit(&mut doc, 1, 0, &[merged], 11_339);
+        let grown = drawn_rows(&doc, 1, 0).iter().sum::<f64>();
         assert!(
-            (after - gap).abs() <= 1.0,
-            "{label}: 뒤 문단은 커진 표 아래에 같은 거리({gap}px)로 놓여야 하는데 {after}px다"
+            grown > before + 5000.0,
+            "병합 셀이 걸친 행을 키운다: {before} → {grown}"
         );
+        let live = gap_below_table(&doc, 1);
+        assert!(
+            (live - gap).abs() <= 1.0,
+            "편집 직후: 뒤 문단은 커진 표 아래에 같은 거리({gap}px)로 놓여야 하는데 {live}px다"
+        );
+        for (label, bytes) in [
+            ("HWP 다시 연 뒤", doc.export_hwp().unwrap()),
+            ("HWPX 다시 연 뒤", doc.export_hwpx().unwrap()),
+        ] {
+            let reopened = HwpDocument::from_bytes(&bytes).unwrap();
+            let after = gap_below_table(&reopened, 1);
+            assert!(
+                (after - gap).abs() <= 1.0,
+                "{label}: 뒤 문단은 커진 표 아래에 같은 거리({gap}px)로 놓여야 하는데 {after}px다"
+            );
+        }
+    }
+}
+
+#[test]
+fn shrinking_contract_rows_keeps_the_table_at_its_host_line() {
+    let source = include_bytes!("../fixtures/issue9337/contract-appendix9.hwp");
+    for edit in HEIGHT_EDITS {
+        let mut doc = HwpDocument::from_bytes(source).expect("용역표준계약서");
+        let (para, control) = (1usize, 0usize);
+        let row = 3;
+        let changed = cells_in_row(&doc, para, control, row);
+        assert_eq!(changed.len(), 3);
+        let bounds = |doc: &HwpDocument| {
+            let bbox: serde_json::Value = serde_json::from_str(
+                &doc.get_table_bbox(0, para as u32, control as u32)
+                    .expect("표 상자"),
+            )
+            .unwrap();
+            (
+                bbox["pageIndex"].as_u64().unwrap(),
+                bbox["y"].as_f64().unwrap(),
+                bbox["height"].as_f64().unwrap(),
+            )
+        };
+        let (page, top, old_height) = bounds(&doc);
+        assert!(changed
+            .iter()
+            .all(|&index| table(&doc, para, control).cells[index].height > 2_000));
+        edit(&mut doc, para, control, &changed, 2_000);
+        let check_position = |doc: &HwpDocument| {
+            let (after_page, new_top, height) = bounds(doc);
+            assert_eq!(after_page, page);
+            assert!(
+                (top - new_top).abs() <= 1.0,
+                "표가 놓인 글줄 {top} → {new_top}"
+            );
+            assert!(height < old_height, "편집한 표는 줄어야 한다");
+            assert!(
+                (drawn_rows(doc, para, control)[usize::from(row)] - 2000.0).abs()
+                    <= PX_TOLERANCE_HU
+            );
+        };
+        check_position(&doc);
+        for saved in [doc.export_hwp().unwrap(), doc.export_hwpx().unwrap()] {
+            check_position(&HwpDocument::from_bytes(&saved).unwrap());
+        }
     }
 }

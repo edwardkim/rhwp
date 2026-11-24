@@ -35,3 +35,5 @@
 WASM API는 삽입하기 전의 실제 글자 위치에 입력한 유니코드 스칼라 개수를 더해 끝 위치를 돌려준다. Studio가 그 반환값으로 입력 이력을 만들도록 수정했다. 각주·미주·머리말·꼬리말에서 같은 위치에 있는 두 누름틀 중 선택한 하나만 입력을 소유했고, 두 저장 형식에서 원문과 각 필드의 범위를 확인했다. [영역별 재열기 결과](assets/semanticist21-9337-9354-9377/corrected-fields.tsv)
 
 줄 배치에는 본문과 같은 인라인 표의 측정 결과를 쓴다. 어절과 바로 뒤 표가 한 줄 전체에 들어가지 않으면 표 앞에서 줄을 나눈다. 너비가 없는 누름틀 경계와 숨은 안내문 길이를 포함한 저장 줄은 이 계산에서 처리하며, 동적 쪽 번호가 있는 머리말은 기존 치환 경로를 쓴다. 한컴에서 다시 저장한 HWP와 HWPX, 누름틀을 뺀 문서, 너비가 6,000 HU인 표와 표를 제거한 문서를 같은 독립 Print 절차로 확인했다. [입력·인쇄본·생산 버전](assets/semanticist21-9337-9354-9377/sources-and-print.tsv)
+
+넓은 표·좁은 표, 표·누름틀 제거 대조군, 한컴의 HWP·HWPX 재저장본을 포함한 10개 문서는 모두 1쪽이었다. 96 DPI로 한컴 인쇄와 비교한 결과 Native와 fresh WASM 모두 전쪽 100.00%였다. 넓은 표 앞의 ‘앞’과 ‘뒤’는 양쪽 끝에 놓이고 좁은 표는 글자 바로 뒤의 같은 줄에 배치된다. 실제 Chrome에서 머리말·꼬리말 4개 문서를 열어 직접 입력과 한글 IME 조합 입력을 실행했고, 실행 취소와 다시 실행 뒤 문자열과 캐럿을 함께 확인했다. [쪽별 실루엣](assets/semanticist21-9337-9354-9377/focus-pages.tsv) · [머리말 확대](assets/semanticist21-9337-9354-9377/trailing-header-comparison.png) · [꼬리말 확대](assets/semanticist21-9337-9354-9377/trailing-footer-comparison.png) · [키보드·IME 회귀](../../rhwp-studio/e2e/header-footer-inline-text-history.test.mjs)
