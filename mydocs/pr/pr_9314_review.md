@@ -1,5 +1,7 @@
 # PR #9314 재검토
 
+메인테이너 보완 소스 `10f5bca362`로 기울인 도형을 가로로 늘리고 복원했다. Native와 fresh WASM에서 각 13쪽의 최저 일치율은 99.97%와 99.77%다. 한컴 2024로 HWP·HWPX를 재인쇄한 두 상태에서 한컴 직접 편집본과 픽셀 차이가 0개였다. 지원하지 않는 기울기 편집을 거절해도 기존 너비와 저장 상태를 보존한다. [보완 검증과 전쪽 증거](assets/semanticist21-9288-9314-20261124/corrected/README.md)
+
 검토일은 2026-11-24 KST이다. 기여자 semanticist21의 head는 `0cb5fcd1c941ec24e83d8420597dbeb5586e4b05`이고 리뷰어는 edwardkim이다. 기여자는 #9286과 함께 적용한 Mac 한컴 결과로 이전 보류에 답했다. 이 답변 이후 #9314의 제품 커밋은 그대로다. [원 PR](https://github.com/edwardkim/rhwp/pull/9314) · [이전 보류](https://github.com/edwardkim/rhwp/pull/9314#issuecomment-7089122424) · [기여자 답변](https://github.com/edwardkim/rhwp/pull/9314#issuecomment-7105310342)
 
 #9286을 포함한 #9376이 반영된 `devel` `9ee9a5b0b1`에서 #9288·#9314의 원 기여 커밋을 병합한 로컬 후보는 `38b38f2924dfa6a863e6dcef3bab27f14e479248`이다. #9288은 누름틀 조회·선택을 변경한다. #9314만 같은 base에 병합한 Git tree는 `f7d871ed18bfbc109624a707c5becf7f9ca4bbad`이다.
@@ -32,7 +34,7 @@
 
 `set_shape_properties_native`는 크기 변경 뒤 `finish_top_level_edit`를 호출한다. 이 과정에서 사각형의 저장 행렬과 전단 계수가 지워진다. 이어서 실행되는 `apply_skew`는 저장 행렬에서 종전 각도를 구하므로, 너비만 입력하면 0°로 처리한다. 이전 각도 보존, 크기 변경 뒤 외접 상자·이동 행렬 재계산 및 양 형식 저장·재열기가 보완 범위다. [편집 순서](../../src/document_core/commands/object_ops/shape.rs#L640) · [기존 행렬 초기화](../../src/document_core/commands/object_ops/shape/group_geometry.rs#L59)
 
-현재 판정은 **머지 보류**이다. 너비를 원상 복원하면 기울기와 인쇄 결과가 보존되어야 한다. 오류로 거절된 복합 편집은 이전 너비까지 보존해야 한다. 아래에 두 번째 경계의 실측 결과를 기록했다.
+원 기여만 적용한 시점에는 **머지 보류**로 판정했다. 너비를 원상 복원하면 기울기와 인쇄 결과가 보존되어야 한다. 오류로 거절된 복합 편집은 이전 너비까지 보존해야 한다. 아래에 두 번째 경계의 실측 결과를 기록했다.
 
 ## 재현 명령
 

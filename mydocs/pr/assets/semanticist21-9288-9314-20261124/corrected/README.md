@@ -28,4 +28,6 @@ Windows 한컴 2020에서 직접 편집·저장한 HWP와 HWPX를 각각 대조�
 
 Native와 fresh WASM에서 원본, 너비 변경·복원, 저장 형식별 재열기 등 각 13쪽을 96 DPI의 독립 인쇄본에 대조했다. 수정 뒤 원본과 복원본 사이의 렌더링 차이는 두 경로 모두 0픽셀이다. 한컴 2024로 다시 인쇄한 HWP와 HWPX는 확대 상태와 복원 상태 각각에서 한컴이 직접 편집한 대조본과 0픽셀 차이였다. [전쪽 실루엣](shape-pages.tsv) · [Native 확대 비교](native-width-restored.png) · [WASM 확대 비교](wasm-width-restored.png) · [인쇄본 픽셀 대조](windows-and-backend-pixels.json)
 
-Rust 소스 트리 `9169ca1526ea904c830c95bca13615aa4dc44014`에서 빌드한 Native 바이너리의 SHA-256은 `01cc4a87f25fd0e8e5fb237f7cc3fde8159a499ca722d2cedd705aa9cc825118`이다. Docker에서 최적화한 WASM의 SHA-256은 `c85e0de944ca5448feab4411a7ebeb3793b137fb98e91213e807f385797c05f5`이며 브라우저가 받은 파일의 해시를 대조했다. 공통 공개 대조 문서 4개의 Native·WASM 검사를 모두 통과했다. [공통 문서별 검증 결과와 TSV·PNG](public-controls/results.json)
+Rust 소스 트리 `9169ca1526ea904c830c95bca13615aa4dc44014`에서 빌드한 Native 바이너리의 SHA-256은 `01cc4a87f25fd0e8e5fb237f7cc3fde8159a499ca722d2cedd705aa9cc825118`이다. Docker에서 최적화한 WASM의 SHA-256은 `c85e0de944ca5448feab4411a7ebeb3793b137fb98e91213e807f385797c05f5`이며 브라우저가 받은 파일의 해시를 대조했다. 공통 공개 대조 문서 4개의 Native·WASM 검사를 모두 통과했다. [공통 문서별 검증 결과](public-controls/results.json) · [전쪽 TSV와 대표 PNG](public-controls/)
+
+#9376으로 들어온 세 기능도 현재 후보에서 다시 열어 확인했다. 첫 구역의 용지·번호가 있는 문서 4쪽, 반투명 타원 1쪽, 꺾임 1개인 연결선 1쪽은 양쪽 렌더러에서 한컴 인쇄 대비 100.00%였다. 12개 출력 PNG 모두 현재 devel과 같은 제품 소스로 검증한 결과와 바이트 단위로 같았다. [Native](devel-features-native.tsv) · [fresh WASM](devel-features-wasm.tsv)
