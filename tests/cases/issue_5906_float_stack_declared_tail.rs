@@ -87,7 +87,7 @@ fn issue_5906_second_float_table_keeps_all_rows_on_page_two() {
         let expected = (run.style.font_size + run.style.letter_spacing) * run.style.ratio;
         assert!(
             (node.bbox.width - expected).abs() < 0.1,
-            "HFT 한점 리더는 원본 장평·자간을 적용한 전각 전진이어야 한다: 실제={}, 기대={expected}, 원본 HFT={}", node.bbox.width, run.style.hft_fullwidth_dot
+            "한점 리더는 원본 장평과 자간을 반영한 전각이어야 한다: 실제={}, 기대={expected}, 전각 표시={}", node.bbox.width, run.style.hft_fullwidth_dot
         );
     }
 }

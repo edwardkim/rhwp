@@ -724,7 +724,7 @@ mod system_program_preference {
             }
             assert_eq!(
                 positions[0], positions[1],
-                "같은 주 CFF의 CoreText 컨테이너 재포장이 HFT 대체 굵기 전진을 추가하지 않는다"
+                "같은 주 CFF를 CoreText용으로 다시 포장해도 구형 글꼴의 굵기 보정을 더하지 않는다"
             );
             return;
         }
@@ -816,30 +816,11 @@ mod synthetic_slant_family_coverage {
     use rhwp::renderer::skia::SkiaLayerRenderer;
     use rhwp::DocumentCore;
 
-    const FAMILY: &str = "RHWP HFT Outline Fixture";
-    const CFF: &[u8] = include_bytes!("../fixtures/fonts/RHWPHftOutline.otf");
-
-    fn second_glyph_program() -> Vec<u8> {
-        let mut bytes = CFF.to_vec();
-        let count = u16::from_be_bytes([bytes[4], bytes[5]]) as usize;
-        let cmap = (0..count)
-            .find_map(|i| {
-                let at = 12 + i * 16;
-                (bytes.get(at..at + 4) == Some(b"cmap")).then(|| {
-                    u32::from_be_bytes(bytes[at + 8..at + 12].try_into().unwrap()) as usize
-                })
-            })
-            .expect("합성 face의 cmap");
-        let sub =
-            cmap + u32::from_be_bytes(bytes[cmap + 8..cmap + 12].try_into().unwrap()) as usize;
-        assert_eq!(u16::from_be_bytes([bytes[sub], bytes[sub + 1]]), 4);
-        for at in [sub + 14, sub + 20] {
-            assert_eq!(&bytes[at..at + 2], &[0xac, 0x00]);
-            bytes[at..at + 2].copy_from_slice(&('나' as u16).to_be_bytes());
-        }
-        bytes[sub + 24..sub + 26].copy_from_slice(&1u16.wrapping_sub('나' as u16).to_be_bytes());
-        bytes
-    }
+    const FAMILY: &str = "Source Sans 3";
+    const FIRST: &[u8] =
+        include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.028-Regular.otf");
+    const SECOND: &[u8] =
+        include_bytes!("../fixtures/fonts/source-sans-3/SourceSans3-3.052-Regular.otf");
 
     #[test]
     fn same_family_split_glyphs_survive_synthetic_slant() {
@@ -853,8 +834,8 @@ mod synthetic_slant_family_coverage {
                 .join(format!("rhwp-split-slant-{}-{stamp}", std::process::id()));
             std::fs::create_dir_all(dir.join("fonts")).unwrap();
             std::fs::create_dir_all(dir.join("cache")).unwrap();
-            std::fs::write(dir.join("fonts/first.otf"), CFF).unwrap();
-            std::fs::write(dir.join("fonts/second.otf"), second_glyph_program()).unwrap();
+            std::fs::write(dir.join("fonts/first.otf"), FIRST).unwrap();
+            std::fs::write(dir.join("fonts/second.otf"), SECOND).unwrap();
             let config = format!(
                 r#"<?xml version="1.0"?><!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd"><fontconfig>
 <dir>{}/fonts</dir><cachedir>{}/cache</cachedir>
@@ -884,10 +865,18 @@ mod synthetic_slant_family_coverage {
             );
             return;
         }
+        assert!(ttf_parser::Face::parse(FIRST, 0)
+            .unwrap()
+            .glyph_index('Ɓ')
+            .is_none());
+        assert!(ttf_parser::Face::parse(SECOND, 0)
+            .unwrap()
+            .glyph_index('Ɓ')
+            .is_some());
         for bold in [false, true] {
             let mut core = DocumentCore::new_empty();
             core.create_blank_document_native().unwrap();
-            core.insert_text_native(0, 0, 0, "가나").unwrap();
+            core.insert_text_native(0, 0, 0, "AƁ").unwrap();
             let mut document = core.document().clone();
             for faces in &mut document.doc_info.font_faces {
                 for face in faces {
@@ -906,7 +895,7 @@ mod synthetic_slant_family_coverage {
                     .unwrap(),
             )
             .unwrap();
-            for character in ["가", "나"] {
+            for character in ["A", "Ɓ"] {
                 let record = trace["records"]
                     .as_array()
                     .unwrap()
@@ -918,7 +907,7 @@ mod synthetic_slant_family_coverage {
                 assert_eq!(record["paint"]["native"]["source"], "system");
             }
             let expected = SkiaLayerRenderer::new()
-                .try_with_font_data(&[CFF.to_vec(), second_glyph_program()])
+                .try_with_font_data(&[FIRST.to_vec(), SECOND.to_vec()])
                 .unwrap();
             let tree = core
                 .build_page_layer_tree_with_profile(0, RenderProfile::Print)

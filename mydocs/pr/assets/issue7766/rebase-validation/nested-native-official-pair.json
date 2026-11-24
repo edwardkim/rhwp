@@ -1,0 +1,163 @@
+{
+  "base": "2c0c1d205a54b8d5bd262241bac1391cffe0d801",
+  "source": "953b43187325496645683fcc15ca989a815b0596",
+  "pages": 17,
+  "candidate_drops": 0,
+  "metrics": [
+    {
+      "document": "nested",
+      "page": "1",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "b34432d094a5c4af1580b4e8460451c4b1a2a7f7e41d358705edd9145848dfc3",
+      "candidate_png_sha256": "b34432d094a5c4af1580b4e8460451c4b1a2a7f7e41d358705edd9145848dfc3"
+    },
+    {
+      "document": "nested",
+      "page": "2",
+      "official_raw": "99.99",
+      "base_raw": "99.99",
+      "candidate_raw": "99.99",
+      "base_png_sha256": "24e8f7705df7fb9061d7fb36a7bb567e033d31b966756e56d93bfbfa52fba784",
+      "candidate_png_sha256": "24e8f7705df7fb9061d7fb36a7bb567e033d31b966756e56d93bfbfa52fba784"
+    },
+    {
+      "document": "nested",
+      "page": "3",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "d41d53b3b6d7a08b5c74181b206c53839f5e78b4e9e64a0cc0acee2b60a724d2",
+      "candidate_png_sha256": "d41d53b3b6d7a08b5c74181b206c53839f5e78b4e9e64a0cc0acee2b60a724d2"
+    },
+    {
+      "document": "nested",
+      "page": "4",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "f09d0f41334d185d833128291e3a250f4a371b8f54351b2ed668213b12f7e85c",
+      "candidate_png_sha256": "f09d0f41334d185d833128291e3a250f4a371b8f54351b2ed668213b12f7e85c"
+    },
+    {
+      "document": "nested",
+      "page": "5",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "fc9c28b6c4b28c1c0057e2f04e9b84e1b5dc10d4fc3ce9123284db201c2adbf3",
+      "candidate_png_sha256": "fc9c28b6c4b28c1c0057e2f04e9b84e1b5dc10d4fc3ce9123284db201c2adbf3"
+    },
+    {
+      "document": "nested",
+      "page": "6",
+      "official_raw": "100.00",
+      "base_raw": "99.89",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "11e04d4d756de42da10b3087c69571cea9ec0302277f1c846106a6665ce324f0",
+      "candidate_png_sha256": "a5af3c76d9946614a4efc9f2e745372d925366f7fdb6af681889bfbab66c000b"
+    },
+    {
+      "document": "nested",
+      "page": "7",
+      "official_raw": "99.99",
+      "base_raw": "99.99",
+      "candidate_raw": "99.99",
+      "base_png_sha256": "8e0a783fa7b9ba310b3a408c1a91176050479c754739c648a5c49ccf8430f5a5",
+      "candidate_png_sha256": "8e0a783fa7b9ba310b3a408c1a91176050479c754739c648a5c49ccf8430f5a5"
+    },
+    {
+      "document": "nested",
+      "page": "8",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "444cf2b32b62183a82811aa23abbde635443c416172a2c8a005ca7ba45495f29",
+      "candidate_png_sha256": "444cf2b32b62183a82811aa23abbde635443c416172a2c8a005ca7ba45495f29"
+    },
+    {
+      "document": "nested",
+      "page": "9",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "f1a1a8d94c3cc9466ef864a2b100d7d0eacc6d649f2fe5b0f13b60990996ade2",
+      "candidate_png_sha256": "f1a1a8d94c3cc9466ef864a2b100d7d0eacc6d649f2fe5b0f13b60990996ade2"
+    },
+    {
+      "document": "nested",
+      "page": "10",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "478f66fc198ac1e1818dca7ffcbeb59ebbf0648715b7979d5fcbcca331a3053a",
+      "candidate_png_sha256": "478f66fc198ac1e1818dca7ffcbeb59ebbf0648715b7979d5fcbcca331a3053a"
+    },
+    {
+      "document": "nested",
+      "page": "11",
+      "official_raw": "100.00",
+      "base_raw": "99.99",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "dc49bf913fedd02333b5213216549d11b36636c6853d9986edf2b9adb696d9b6",
+      "candidate_png_sha256": "3cff145b358c881c9979d2e8a38c56484e3c52bdb551534b2c34f1e1ba046aed"
+    },
+    {
+      "document": "nested",
+      "page": "12",
+      "official_raw": "100.00",
+      "base_raw": "99.99",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "9e78187ae4dbed1c14c32f4df308af88f6429c2435cc6e439a6a1e8a0ca2de09",
+      "candidate_png_sha256": "988d1ad9e414cc9e9deab64fbd6638f70bc70be5ab55c80ed6aea21d6975a763"
+    },
+    {
+      "document": "nested",
+      "page": "13",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "f92e4d189cfc4914cfa44032fe72260b423242f2b0e12abe2f568101283c1193",
+      "candidate_png_sha256": "f92e4d189cfc4914cfa44032fe72260b423242f2b0e12abe2f568101283c1193"
+    },
+    {
+      "document": "nested",
+      "page": "14",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "4eefe919ff62ccdccb8955db521b0299d21bf2c7cd4f74305b21124055b19e01",
+      "candidate_png_sha256": "4eefe919ff62ccdccb8955db521b0299d21bf2c7cd4f74305b21124055b19e01"
+    },
+    {
+      "document": "nested",
+      "page": "15",
+      "official_raw": "100.00",
+      "base_raw": "100.00",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "df37a6e14b8f49ad7cba2fdf82bb429441d17d53518ef2b75d0816112b94b116",
+      "candidate_png_sha256": "eacfc8ad60ce6a2f88a8c7978267cb93b0abf802435029ad00c462dee1c668d3"
+    },
+    {
+      "document": "nested",
+      "page": "16",
+      "official_raw": "100.00",
+      "base_raw": "99.64",
+      "candidate_raw": "100.00",
+      "base_png_sha256": "b72a17cc00b49bd463bf99662d3a7d78200d85f52723cf77924a247e80fd39c3",
+      "candidate_png_sha256": "59d3960a9a860984bbd40a30cee575782377e4feb5049875a2e18173c2ba9c56"
+    },
+    {
+      "document": "nested",
+      "page": "17",
+      "official_raw": "99.98",
+      "base_raw": "99.98",
+      "candidate_raw": "99.98",
+      "base_png_sha256": "69be4c363c24adf9552bac666157ae43ce49c118ab4528968f27198bf1e9fff5",
+      "candidate_png_sha256": "69be4c363c24adf9552bac666157ae43ce49c118ab4528968f27198bf1e9fff5"
+    }
+  ],
+  "baseline_sha256": "ae4559e3d3d04f60da7887a11e889bfb4f6c5fa86df1e6c47745e9f6bb796a68",
+  "minimum": "99.98"
+}

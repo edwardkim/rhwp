@@ -30,7 +30,7 @@ fn semantic_text(node: &rhwp::renderer::render_tree::RenderNode, output: &mut St
 /// 전16쪽 Native/fresh 90%와 제목 확대 확인 뒤 추가한다.
 /// 독립 Print의 HFT bullet은 인접 굵은 한글과 같은 전각 전진을 갖는다.
 #[test]
-fn converted_hft_bullet_shares_the_adjacent_fullwidth_advance() {
+fn converted_legacy_bullet_shares_the_adjacent_fullwidth_advance() {
     let core = load("samples/hwp3-sample-hwp5.hwp");
     let layout: Value =
         serde_json::from_str(&core.get_page_text_layout_native(4).unwrap()).unwrap();

@@ -1,3 +1,9 @@
+//! 관계형 회귀 — 채용 공고 7쪽의 검은 밑줄과 파란 글자색을 구분한다.
+//! 주석 갱신 2026-11-23 KST. 직전 파일 변경 2026-10-04T19:03:36+09:00
+//! `731de9e1b4bb946d76f35108ed7e186ebe4ebecb`.
+//! 2026-11-23 한컴 2020 Print, 96 DPI 2px raw 실루엣. 35쪽 Native/fresh WASM 최저 98.38/98.51%.
+//! 7쪽 Native/fresh WASM 99.54/99.53%. 증거는 `mydocs/pr/assets/issue7776/`.
+//!
 //! 밑줄 색으로 저장된 **검정(COLORREF 0)** 은 글자색으로 대체되지 않는다.
 //!
 //! 종전(devel `72674c5653`): 렌더러 세 백엔드가 모두 `underline_color != 0` 을
@@ -87,6 +93,16 @@ fn stored_black_underline_does_not_take_the_text_color() {
     assert!(
         line_stroke_count(&svg, "#000000") >= 24,
         "검정 밑줄이 24개 이상이어야 한다 (정답지 25개)"
+    );
+}
+
+#[test]
+fn stored_black_underline_survives_a_blue_text_run() {
+    let svg = render_page_svg("samples/pr-1674.hwp", "6", "pr1674");
+    assert_eq!(
+        line_stroke_count(&svg, "#0000ff"),
+        0,
+        "한컴 Print 7쪽의 검은 밑줄은 파란 글자색을 물려받지 않는다"
     );
 }
 

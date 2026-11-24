@@ -12,6 +12,7 @@ pub(super) fn project(
     image: &ImageNode,
     frame: BoundingBox,
     dpi: f64,
+    print_bmp_full_color: bool,
 ) -> Option<(BoundingBox, ImageNode, ResolvedImagePayload)> {
     if !image.hancom2024_print_bitmap
         || image.fill_mode.is_some()
@@ -58,17 +59,18 @@ pub(super) fn project(
     original.crop = None;
     original.original_size_hu = None;
     original.original_size = None;
-    let payload = print_jpeg_payload(&original, full, dpi, false).or_else(|| {
-        if original
-            .data
-            .as_deref()
-            .is_none_or(|data| detect_image_mime_type(data) != "image/jpeg")
-        {
-            return None;
-        }
-        let width_points = full.width * 72.0 / dpi;
-        let height_points = full.height * 72.0 / dpi;
-        print_device_image_payload(&original, width_points, (width_points, height_points), true)
-    })?;
+    let payload =
+        print_jpeg_payload(&original, full, dpi, false, print_bmp_full_color).or_else(|| {
+            if original
+                .data
+                .as_deref()
+                .is_none_or(|data| detect_image_mime_type(data) != "image/jpeg")
+            {
+                return None;
+            }
+            let width_points = full.width * 72.0 / dpi;
+            let height_points = full.height * 72.0 / dpi;
+            print_device_image_payload(&original, width_points, (width_points, height_points), true)
+        })?;
     Some((full, original, payload))
 }

@@ -3894,7 +3894,7 @@ mod tests {
     /// 회귀 시(원명 미해소 → 휴리스틱 폴백) embedded 커버리지 구멍이
     /// 셀 재래핑 줄수를 바꾼다 (#2430 재래핑 오발동의 재발 형태).
     #[test]
-    fn issue_2430_hft_faces_ascii_embedded_coverage() {
+    fn issue_2430_legacy_faces_ascii_embedded_coverage() {
         let fs = 40.0 / 3.0; // 10pt = 13.333px
         for fam in [
             "한양신명조",

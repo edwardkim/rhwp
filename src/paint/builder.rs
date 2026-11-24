@@ -47,6 +47,7 @@ pub struct LayerBuilder {
     metafile_device_pixel_width: Option<f64>,
     hancom2024_print_bitmap: bool,
     print_png_rgb555: bool,
+    print_bmp_full_color: bool,
     metafile_fonts: super::metafile_fonts::MetafileFonts,
     prior_print_solid_fill: bool,
     hangul2024_print: bool,
@@ -70,6 +71,7 @@ impl LayerBuilder {
             metafile_device_pixel_width: None,
             hancom2024_print_bitmap: false,
             print_png_rgb555: false,
+            print_bmp_full_color: false,
             metafile_fonts: Default::default(),
             prior_print_solid_fill: false,
             hangul2024_print: false,
@@ -102,6 +104,11 @@ impl LayerBuilder {
 
     pub(crate) fn with_print_png_rgb555(mut self, enabled: bool) -> Self {
         self.print_png_rgb555 = enabled;
+        self
+    }
+
+    pub(crate) fn with_print_bmp_full_color(mut self, enabled: bool) -> Self {
+        self.print_bmp_full_color = enabled;
         self
     }
 
@@ -638,7 +645,14 @@ impl LayerBuilder {
                     let soft_edge_prepared = soft_edge_payload.is_some();
                     let group_projection = (self.shape_group_depth > 0
                         && image_fill_clip.is_none())
-                    .then(|| super::group_picture::project(&image, frame, self.layout_dpi))
+                    .then(|| {
+                        super::group_picture::project(
+                            &image,
+                            frame,
+                            self.layout_dpi,
+                            self.print_bmp_full_color,
+                        )
+                    })
                     .flatten();
                     if let Some((full, image, payload)) = group_projection {
                         image_fill_clip = Some(frame);
@@ -662,6 +676,7 @@ impl LayerBuilder {
                                             frame,
                                             self.layout_dpi,
                                             self.print_png_rgb555,
+                                            self.print_bmp_full_color,
                                         )
                                     })
                                     .flatten()

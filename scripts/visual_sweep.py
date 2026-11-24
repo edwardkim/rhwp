@@ -1561,6 +1561,7 @@ def render_target(
     wasm_pkg: Path | None = None,
     font_environment: Path | None = None,
     print_job_context: Path | None = None,
+    print_bmp_full_color: bool = False,
     observed_font_receipt: Path | None = None,
     embed_fonts: str | None = None,
     font_paths: list[Path] | None = None,
@@ -1642,6 +1643,8 @@ def render_target(
         directory.mkdir(parents=True, exist_ok=True)
 
     environment_args = ["--compat", compat]
+    if print_bmp_full_color:
+        environment_args.append("--print-bmp-full-color")
     rgb555_metadata = reference_print_png_rgb555(root, pdf) if rasterizer == "png" else None
     print_png_rgb555 = rgb555_metadata is not None
     if print_png_rgb555:
@@ -1672,6 +1675,8 @@ def render_target(
     else:
         provenance["raster_backend"] = "svg-" + svg_rasterizer
     provenance["layout_generation"] = compat
+    if print_bmp_full_color:
+        provenance["print_bmp_full_color"] = True
     if rgb555_metadata is not None:
         provenance["print_png_rgb555"] = True
         provenance["print_png_rgb555_reference_metadata"] = rgb555_metadata
@@ -1738,6 +1743,7 @@ def render_target(
                                               dpi, page_workers, observed_font_receipt,
                                               linked_images=linked_images or (exclusion_evidence.get("assets", []) if exclusion_evidence else None),
                                               print_png_rgb555=print_png_rgb555,
+                                              print_bmp_full_color=print_bmp_full_color,
                                               print_job_context=print_job_context)
                 else:
                     png_module.export_native_png(sys.modules[__name__], root, hwp, rhwp_bin, base,
@@ -5975,6 +5981,7 @@ def main() -> None:
     parser.add_argument("--embed-fonts", nargs="?", const="full", choices=("full",), help="진단 SVG에 원본 폰트를 전체 임베딩합니다. Unicode cmap 검사 후 캡처하며 공개 증적은 PNG로 보존합니다.")
     parser.add_argument("--font-path", type=Path, action="append", default=[], help="검증용 폰트 경로. --embed-fonts와 함께 사용하며 파일 hash를 기록합니다.")
     parser.add_argument("--font-environment", type=Path, help="조판/출력에 공통 적용할 명시적 폰트 환경 JSON")
+    parser.add_argument("--print-bmp-full-color", action="store_true", help="직접 PNG에서 32비트 BI_RGB의 원본 색을 유지")
     parser.add_argument("--print-job-context", type=Path, help="한컴 Print와 같은 파일명·현지 인쇄 시각을 기록한 JSON")
     parser.add_argument("--observed-font-receipt", type=Path, help="같은 입력·사용자 환경의 Native export-png JSON에 기록된 실제 대체 글꼴 관측 (WASM PNG 전용)")
     parser.add_argument(
@@ -6041,6 +6048,8 @@ def main() -> None:
         ),
     )
     args = parser.parse_args()
+    if args.print_bmp_full_color and (args.rasterizer != "png" or args.png_pair):
+        parser.error("--print-bmp-full-color는 원본을 직접 PNG로 출력하는 경로에서 사용합니다.")
     if args.page_workers < 1:
         parser.error("--page-workers는 양의 정수여야 합니다.")
     if not 0 <= args.pixel_diff_threshold <= 255:
@@ -6124,6 +6133,7 @@ def main() -> None:
             compat=args.compat, rasterizer=args.rasterizer, wasm_pkg=args.wasm_pkg,
             linked_images=image_records,
             print_job_context=args.print_job_context,
+            print_bmp_full_color=args.print_bmp_full_color,
         )
     re_review_targets: list[str] = []
     for target in selected:
@@ -6141,6 +6151,7 @@ def main() -> None:
             wasm_pkg=args.wasm_pkg,
             font_environment=args.font_environment,
             print_job_context=args.print_job_context,
+            print_bmp_full_color=args.print_bmp_full_color,
             observed_font_receipt=args.observed_font_receipt,
             embed_fonts=args.embed_fonts,
             font_paths=args.font_path,

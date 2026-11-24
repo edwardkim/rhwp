@@ -6256,15 +6256,8 @@ impl TypesetEngine {
                     .copied()
                     .unwrap_or(post_height);
                 st.apply_visible_float_exclusions(first_post_line_height, None);
-                if issue2439_visible_host_stack && is_last_table {
-                    // 마지막 표의 exclusion은 표 본체까지만 담는다. 한컴 저장 흐름은
-                    // 그 뒤의 outer-bottom과 host LineSeg 간격을 거친 뒤 서명문을
-                    // 배치하므로, 해당 두 성분을 post-text 앞에서 한 번만 복원한다.
-                    st.advance_flow_by(
-                        hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi)
-                            + para_line_spacing_px(para, self.dpi),
-                    );
-                }
+                // 확정한 배제 띠에는 표 아래 여백까지 들어 있다. 이 뒤에 놓는
+                // 호스트 글줄의 줄간격은 글줄 진행이 소비한다.
             }
             // [편집 세션] 자리차지(topbottom) 표가 Enter로 자라 post-text가 본문
             // 하한을 넘으면 문구를 새 쪽으로 보낸다. 저장 형상 열람은 저장 vpos를

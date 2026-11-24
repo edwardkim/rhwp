@@ -247,7 +247,7 @@ fn render_page_to_canvas_filtered_with_profile_impl(
         canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
+        renderer.set_hft_outline_fonts(&document.legacy_font_outlines);
         renderer.show_paragraph_marks = document.show_paragraph_marks;
         renderer.show_control_codes = document.show_control_codes;
         renderer.set_scale(scale);
@@ -314,7 +314,7 @@ fn render_page_patch_to_canvas_filtered_with_profile_impl(
     }
 
     let mut renderer = WebCanvasRenderer::new(canvas)?;
-    renderer.set_hft_outline_fonts(&document.hft_outline_fonts);
+    renderer.set_hft_outline_fonts(&document.legacy_font_outlines);
     renderer.show_paragraph_marks = document.show_paragraph_marks;
     renderer.show_control_codes = document.show_control_codes;
     renderer.set_scale(scale);
@@ -838,7 +838,7 @@ impl HwpDocument {
         .map_err(JsValue::from)
     }
 
-    /// 문서 내 지속 HFT 윤곽 등록의 소유 판정에 쓰이는 선언과 현재 환경.
+    /// 인쇄용 글꼴 윤곽을 연결할 때 사용하는 원본 글꼴 선언과 현재 환경.
     #[cfg(target_arch = "wasm32")]
     #[wasm_bindgen(js_name = getHftOutlineFontContext)]
     pub fn get_hft_outline_font_context(&self) -> Result<String, JsValue> {
@@ -858,7 +858,7 @@ impl HwpDocument {
             .map_err(|error| JsValue::from_str(&error.to_string()))
     }
 
-    /// 실제 FontFace의 원본 HFT 프로그램을 paint 전용으로 등록한다. 재조판하지 않는다.
+    /// FontFace에 적재한 글꼴을 인쇄용 윤곽으로 등록한다. 쪽 배치는 그대로 유지한다.
     #[wasm_bindgen(js_name = registerHftOutlineFont)]
     pub fn register_hft_outline_font(
         &mut self,
@@ -910,7 +910,7 @@ impl HwpDocument {
     #[cfg(target_arch = "wasm32")]
     #[wasm_bindgen(js_name = clearTextFontOutline)]
     pub fn clear_text_font_outline_wasm(&mut self, family: &str) {
-        self.hft_outline_fonts.clear_outline_family(family);
+        self.legacy_font_outlines.clear_outline_family(family);
     }
 
     /// TTC 원본 신원을 보존한 paint 후보. FontFace용 정규화 사본과 구분한다.
@@ -1367,7 +1367,7 @@ impl HwpDocument {
             canvas.set_height(scaled_canvas_extent(tree.page_height, scale));
 
             let mut renderer = WebCanvasRenderer::new(canvas)?;
-            renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
+            renderer.set_hft_outline_fonts(&self.legacy_font_outlines);
             renderer.show_paragraph_marks = self.show_paragraph_marks;
             renderer.show_control_codes = self.show_control_codes;
             renderer.dim_master_pages = self.dim_master_pages;
@@ -1431,7 +1431,7 @@ impl HwpDocument {
         canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
+        renderer.set_hft_outline_fonts(&self.legacy_font_outlines);
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.set_scale(scale);
@@ -1550,7 +1550,7 @@ impl HwpDocument {
         canvas.set_height(scaled_canvas_extent(tree.root.bbox.height, scale));
 
         let mut renderer = WebCanvasRenderer::new(canvas)?;
-        renderer.set_hft_outline_fonts(&self.hft_outline_fonts);
+        renderer.set_hft_outline_fonts(&self.legacy_font_outlines);
         renderer.show_paragraph_marks = self.show_paragraph_marks;
         renderer.show_control_codes = self.show_control_codes;
         renderer.set_scale(scale);

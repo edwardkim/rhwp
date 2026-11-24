@@ -32,6 +32,7 @@ struct PngExportArgs<'a> {
     render_profile: rhwp::paint::RenderProfile,
     hangul2024_compat: bool,
     print_png_rgb555: bool,
+    print_bmp_full_color: bool,
     json: bool,
     metadata_only: bool,
     render_tree_output: Option<String>,
@@ -55,6 +56,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     let mut render_profile = rhwp::paint::RenderProfile::Screen;
     let mut hangul2024_compat = false;
     let mut print_png_rgb555 = false;
+    let mut print_bmp_full_color = false;
     let mut json = false;
     let mut metadata_only = false;
     let mut render_tree_output = None;
@@ -62,6 +64,10 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     let mut i = 0;
     while i < args.len() {
         match args[i].as_str() {
+            "--print-bmp-full-color" => {
+                print_bmp_full_color = true;
+                i += 1;
+            }
             "--print-png-rgb555" => {
                 print_png_rgb555 = true;
                 i += 1;
@@ -242,6 +248,11 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
         return Err(EXIT_USAGE);
     }
 
+    if print_bmp_full_color && render_profile != rhwp::paint::RenderProfile::Print {
+        eprintln!("오류: --print-bmp-full-color는 --profile print와 함께 사용합니다.");
+        return Err(EXIT_USAGE);
+    }
+
     Ok(PngExportArgs {
         file_path,
         output_dir,
@@ -254,6 +265,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
         render_profile,
         hangul2024_compat,
         print_png_rgb555,
+        print_bmp_full_color,
         json,
         metadata_only,
         render_tree_output,
@@ -341,6 +353,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         render_profile,
         hangul2024_compat,
         print_png_rgb555,
+        print_bmp_full_color,
         json,
         metadata_only,
         render_tree_output,
@@ -370,6 +383,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         core.set_hangul2024_compat(true);
     }
     core.set_print_png_rgb555(print_png_rgb555);
+    core.set_print_bmp_full_color(print_bmp_full_color);
     core.set_print_job_context(print_job_context);
     // 실제 공급 글꼴은 SVG/PDF와 같은 환경에서 측정·쪽수·paint에 사용한다.
     // Skia에만 font_paths를 넘기면 원본 HFT 호환 폭으로 조판한 뒤 TrueType
@@ -556,6 +570,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
                         "comparisonProfile": profile,
                         "layoutGeneration": if hangul2024_compat { "2024" } else { "2022" },
                         "printPngRgb555": print_png_rgb555,
+                        "printBmpFullColor": print_bmp_full_color,
                         "outputDir": output_dir,
                         "pageCount": page_count,
                         "renderedCount": success,

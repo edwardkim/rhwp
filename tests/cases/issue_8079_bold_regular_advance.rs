@@ -184,7 +184,7 @@ fn bold_hangul_and_regular_digits_keep_their_advances() {
 }
 
 #[test]
-fn hft_declared_bold_latin_keeps_the_bold_display_advance() {
+fn legacy_declared_bold_latin_keeps_the_bold_display_advance() {
     // `issue5169` 1쪽 제목은 영문 슬롯이 HFT `HCI Poppy`(alt_type 2) 인 굵은 글자다.
     // 정본 둘째 줄 `Vision) 수립에 대한 한국의 기여` 는 140.6px → 652.9px (512.3px).
     // 보통 폭으로 바꾸면 이 줄이 6.6px 좁아져 가운데 정렬 시작이 3.3px 밀린다.
@@ -212,6 +212,6 @@ fn hft_declared_bold_latin_keeps_the_bold_display_advance() {
     let span = end_x - first_x;
     assert!(
         (span - HANCOM_SECOND_LINE_PX).abs() < 2.0,
-        "HFT 굵은 제목 둘째 줄 {span:.2}px, 정본 {HANCOM_SECOND_LINE_PX:.2}px"
+        "원본 굵은 제목의 둘째 줄 {span:.2}px, 정본 {HANCOM_SECOND_LINE_PX:.2}px"
     );
 }

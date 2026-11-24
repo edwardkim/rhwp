@@ -189,6 +189,19 @@ pub(in crate::renderer::typeset) fn place(
                 para_start_height,
             );
             if !deferred.is_empty() {
+                let page = st.stored_tac_page(paragraphs_all);
+                if page.profile.hwp5_stored_pagination_layout() && !page.profile.session_edited() {
+                    if let Some(advance) = next_para.and_then(|next| {
+                        let before = styles
+                            .para_styles
+                            .get(next.para_shape_id as usize)?
+                            .spacing_before;
+                        deferred_query.stored_host_advance_after_split(next, before)
+                    }) {
+                        st.advance_flow_by(advance);
+                        st.record_stored_paragraph_flow_end(para_idx, st.current_height);
+                    }
+                }
                 st.enqueue_deferred_table_controls(deferred);
                 break_after_current_table = true;
             }

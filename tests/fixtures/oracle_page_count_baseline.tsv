@@ -159,6 +159,8 @@ samples/hwp3-sample5.hwp	64	64
 samples/hwp_table_test-m.hwp	3	3
 samples/hwp_table_test.hwp	3	3
 samples/hwpctl_Action_Table__v1.1.hwp	16	16
+# 검증한 한컴 2024 독립 1-up: pdf/issue7772/hwpspec-hancom-one-up-2024.pdf.
+samples/hwpspec.hwp	178	178
 samples/hwpctl_ParameterSetID_Item_v1.2.hwp	74	74
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwp	9	9
 samples/hwpx/2024년 1분기 해외직접투자 보도자료 ff.hwpx	9	9
@@ -219,6 +221,7 @@ samples/issue1510_coanchored_float_tables.hwpx	2	2
 samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
+samples/issue1853_caption_precedes_body_split.hwpx	52	52
 samples/issue1893_clickhere_field_roundtrip.hwpx	1	1
 samples/issue1950_hwp3_tab_charoffset.hwp	1	1
 samples/issue2004_cell_image_stack.hwp	8	8
@@ -442,6 +445,7 @@ samples/pic2-2018.hwp	2	2
 samples/pic2.hwp	2	2
 samples/pic2.hwpx	2	2
 samples/pr-149.hwp	1	1
+samples/pr-1674.hwp	35	35
 samples/pua-test.hwp	1	1
 samples/re-01-hangul-only-empty-hancom.hwp	1	1
 samples/re-01-hangul-only-hancom.hwp	1	1

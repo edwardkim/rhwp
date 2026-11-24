@@ -163,13 +163,29 @@ pub(super) fn prepare_coanchored_first_line(
     available_height: f64,
     dpi: f64,
 ) -> Option<StoredTacControlPlacement> {
-    if !page.profile.hwp5_stored_pagination_layout()
+    let line = crate::renderer::composer::stored_first_tac_line(para)?;
+    // 저장 HWPX의 명시적 쪽 나눔은 개체 줄의 vpos를 새 쪽 안의 위치로 정한다.
+    // 줄의 앞 띠는 인라인 표가 소비하고, 같은 문단의 부동 표는 원래 앵커를 쓴다.
+    let saved_page_opening = page.profile.hwpx_stored_layout()
+        && !page.profile.session_edited()
+        && page.empty_column
+        && page.current_height == 0.0
+        && page.vpos_col_anchor == 0.0
+        && para.column_type == crate::model::paragraph::ColumnBreakType::Page
+        && !para.page_break_synthesized
+        && para.line_segs.len() == 1
+        && line.vertical_pos > 0
+        && hwpunit_to_px(line.vertical_pos, dpi) <= fmt.spacing_before
+        && para
+            .source_line_seg_vertical_pos
+            .as_deref()
+            .is_none_or(|source| source == [line.vertical_pos]);
+    if !(page.profile.hwp5_stored_pagination_layout() || saved_page_opening)
         || !page.side_wrap_empty
         || para.cell_format_vpos_dirty
     {
         return None;
     }
-    let line = crate::renderer::composer::stored_first_tac_line(para)?;
     let Control::Table(table) = para.controls.get(control_index)? else {
         return None;
     };
@@ -189,6 +205,11 @@ pub(super) fn prepare_coanchored_first_line(
     {
         return None;
     }
+    let inline_end = if saved_page_opening {
+        line.vertical_pos.checked_add(line.line_height)?
+    } else {
+        line.line_height
+    };
     let mut has_float = false;
     let mut has_fixed_decoration = false;
     let mut has_nonflow_decoration = false;
@@ -201,7 +222,7 @@ pub(super) fn prepare_coanchored_first_line(
                 if crate::renderer::float_placement::is_para_topbottom_float(&sibling.common)
                     && crate::renderer::float_placement::signed_hwpunit(
                         sibling.common.vertical_offset,
-                    ) >= line.line_height =>
+                    ) >= inline_end =>
             {
                 has_float = true;
             }
@@ -282,12 +303,14 @@ pub(super) fn prepare_coanchored_first_line(
     if has_nonflow_decoration && !closed_decorated_line {
         return None;
     }
-    if !has_float && !(has_fixed_decoration && full_trailing) && !closed_decorated_line {
+    let owns_line = has_float
+        || (!saved_page_opening
+            && (has_fixed_decoration && full_trailing || closed_decorated_line));
+    if !owns_line {
         return None;
     }
-    // 단 첫 원본 줄이 인증한 영점은 글줄의 임시 lazy 기준축과 다르다.
-    // 장식이 함께 있는 개체 줄도 그 원점을 수용·후속 흐름·paint에 전달한다.
-    let source_frame = closed_decorated_line.then_some(StoredColumnFrame {
+    // 실제 쪽 안의 저장 원점을 수용 결과에 함께 넣어 fit과 paint에서 같은 줄을 쓴다.
+    let source_frame = (closed_decorated_line || saved_page_opening).then_some(StoredColumnFrame {
         source_origin_hu: 0,
         column_anchor_y: page.vpos_col_anchor,
     });
@@ -722,7 +745,6 @@ pub(super) fn prepare(
                 || crate::renderer::composer::control_slot_line_index(para, control_index)
                     != Some(0)
                 || seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                || seg.line_spacing < 0
                 || i64::from(seg.line_height)
                     != i64::from(table.common.height)
                         + caption_extent
@@ -731,7 +753,35 @@ pub(super) fn prepare(
             {
                 return None;
             }
-            let trailing = if opening_before.is_some()
+            // 음수 줄간격도 후속 원본의 원점과 닫히는 줄의 전진에 포함된다.
+            // 문단 뒤 간격을 합친 끝이 실제 표 하단보다 앞서면 일반 배치로 보낸다.
+            let closed_negative_spacing = if seg.line_spacing < 0 {
+                let next = next_para?;
+                let successor = next.line_segs.first()?;
+                let after = crate::renderer::px_to_hwpunit(fmt.spacing_after, dpi);
+                let before = crate::renderer::px_to_hwpunit(next_spacing_before, dpi);
+                if next.column_type != crate::model::paragraph::ColumnBreakType::None
+                    || next.stored_text_partition_is_dirty()
+                    || next.cell_format_vpos_dirty
+                    || successor.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                        != 0
+                    || seg.line_spacing.checked_add(after)? < 0
+                    || seg
+                        .vertical_pos
+                        .checked_add(seg.line_height)?
+                        .checked_add(seg.line_spacing)?
+                        .checked_add(after)?
+                        .checked_add(before)?
+                        != successor.vertical_pos
+                {
+                    return None;
+                }
+                true
+            } else {
+                false
+            };
+            let trailing = if closed_negative_spacing
+                || opening_before.is_some()
                 || crate::renderer::composer::tac_next_line_full_spacing(
                     para,
                     next_para,

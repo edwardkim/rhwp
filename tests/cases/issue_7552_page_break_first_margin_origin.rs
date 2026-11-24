@@ -1,3 +1,10 @@
+//! 관계형 회귀 — #7766의 원본 저장 원점, 표 소속과 내용 이어받기.
+//! 주석 갱신 2026-11-23 20:15 KST. 직전 변경 2026-10-12 05:56:17 KST
+//! `bce6b28088b684f79aa4f1d514bda4453ac6b05f`.
+//! 2026-11-23 독립 한컴 2024 Print, 96 DPI, 2px raw 실루엣.
+//! Native와 fresh WASM 모두 전52쪽 최저 98.40%, 44·45쪽 각각 100.00%.
+//! 근거는 `mydocs/pr/assets/issue7766/`의 Native·WASM 전쪽 TSV와 비교 PNG에 있다.
+//!
 //! #7552 — 쪽 나누기 문단으로 시작하는 쪽의 저장 원점과, 그 원점을 바로잡으면 드러나는
 //! 표 host·표 조각 경계를 함께 고정한다.
 //!
@@ -191,6 +198,69 @@ fn empty_table_host_opens_at_previous_stored_line_end() {
         (actual - expected).abs() <= 0.5,
         "표 윗변 - 앞 줄 윗변 = {actual:.2}, 저장 줄 끝 거리 {expected:.2}"
     );
+}
+
+#[test]
+fn stored_caption_and_body_split_keep_their_own_origins_and_content() {
+    const SAMPLE: &str = "samples/issue1853_caption_precedes_body_split.hwpx";
+    const HOST: usize = 371;
+    let mut core = open(SAMPLE);
+    core.set_hangul2024_compat(true);
+    assert_eq!(core.page_count(), 52, "독립 Print의 전체 쪽수");
+
+    let opening = core
+        .build_page_render_tree(43)
+        .expect("캡션과 본표 첫 조각");
+    let following = core
+        .build_page_render_tree(44)
+        .expect("본표의 이어받는 조각");
+    fn owned_tables(root: &RenderNode) -> Vec<&RenderNode> {
+        column_nodes(root)
+            .into_iter()
+            .filter(|node| {
+                matches!(&node.node_type, RenderNodeType::Table(table)
+                    if table.para_index == Some(HOST) && table.cell_context.is_none())
+            })
+            .collect()
+    }
+    let first = owned_tables(&opening.root);
+    let tail = owned_tables(&following.root);
+    let [caption, body] = first.as_slice() else {
+        panic!("44쪽은 캡션과 본표의 첫 조각을 순서대로 갖는다");
+    };
+    assert_eq!(tail.len(), 1, "45쪽에는 본표만 이어진다");
+    assert!(caption.bbox.y + caption.bbox.height < body.bbox.y);
+
+    let paragraph = &core.document().sections[0].paragraphs[HOST];
+    let rhwp::model::control::Control::Table(caption_source) = &paragraph.controls[0] else {
+        panic!("원본의 캡션 표");
+    };
+    let body_area = opening
+        .root
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Body { .. }))
+        .expect("본문 영역");
+    let column = body_area
+        .children
+        .iter()
+        .find(|node| matches!(node.node_type, RenderNodeType::Column(_)))
+        .expect("본문 단");
+    let saved_offset =
+        i64::from(paragraph.line_segs[0].vertical_pos) + i64::from(caption_source.outer_margin_top);
+    assert!(
+        (caption.bbox.y - column.bbox.y - hu(saved_offset)).abs() <= 0.5,
+        "캡션 원점은 본문 단의 윗변, 저장 줄 원점과 캡션 위 여백으로 정해진다"
+    );
+    assert!(body.bbox.y + body.bbox.height <= column.bbox.y + column.bbox.height);
+
+    let first_text = flat(&core.extract_page_text_native(43).expect("44쪽 내용"));
+    let tail_text = flat(&core.extract_page_text_native(44).expect("45쪽 내용"));
+    assert_eq!(first_text.matches("유사입법례").count(), 1);
+    assert!(first_text.contains("경비를예산의범위에서지원할수있"));
+    assert!(!tail_text.contains("경비를예산의범위에서지원할수있"));
+    assert!(tail_text.contains("다.④활용지원센터가아닌기관"));
+    assert!(tail_text.contains("전자정부법"));
 }
 
 /// 표 첫 조각을 담은 쪽의 글자(공백 제거).

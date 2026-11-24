@@ -103,7 +103,7 @@ fn automatic_leader_survives_a_serialized_font_type_hint() {
         assert_eq!(
             positions("-----------", &hft),
             positions("-----------", &typed),
-            "직렬화의 유형 표기만으로 원본 HFT leader 전진을 바꾸지 않는다"
+            "직렬화의 유형 표기만으로 원본 리더의 전진폭을 바꾸지 않는다"
         );
         let explicit = TextStyle {
             preserve_glyph_ink: true,
