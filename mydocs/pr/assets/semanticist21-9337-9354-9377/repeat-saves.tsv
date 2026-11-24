@@ -1,0 +1,45 @@
+test	variant	firstFormat	secondFormat	matches
+본문 줄	24	hwp	hwp	True
+본문 줄	24	hwp	hwpx	True
+본문 줄	24	hwpx	hwp	True
+본문 줄	24	hwpx	hwpx	True
+본문 줄	36	hwp	hwp	True
+본문 줄	36	hwp	hwpx	True
+본문 줄	36	hwpx	hwp	True
+본문 줄	36	hwpx	hwpx	True
+본문 줄	112	hwp	hwp	True
+본문 줄	112	hwp	hwpx	True
+본문 줄	112	hwpx	hwp	True
+본문 줄	112	hwpx	hwpx	True
+병합 셀	properties	hwp	hwp	True
+병합 셀	properties	hwp	hwpx	True
+병합 셀	properties	hwpx	hwp	True
+병합 셀	properties	hwpx	hwpx	True
+계약서	properties	hwp	hwp	True
+계약서	properties	hwp	hwpx	True
+계약서	properties	hwpx	hwp	True
+계약서	properties	hwpx	hwpx	True
+병합 셀	resize	hwp	hwp	True
+병합 셀	resize	hwp	hwpx	True
+병합 셀	resize	hwpx	hwp	True
+병합 셀	resize	hwpx	hwpx	True
+계약서	resize	hwp	hwp	True
+계약서	resize	hwp	hwpx	True
+계약서	resize	hwpx	hwp	True
+계약서	resize	hwpx	hwpx	True
+누름틀	header	hwp	hwp	True
+누름틀	header	hwp	hwpx	True
+누름틀	header	hwpx	hwp	True
+누름틀	header	hwpx	hwpx	True
+누름틀	footer	hwp	hwp	True
+누름틀	footer	hwp	hwpx	True
+누름틀	footer	hwpx	hwp	True
+누름틀	footer	hwpx	hwpx	True
+누름틀	footnote	hwp	hwp	True
+누름틀	footnote	hwp	hwpx	True
+누름틀	footnote	hwpx	hwp	True
+누름틀	footnote	hwpx	hwpx	True
+누름틀	endnote	hwp	hwp	True
+누름틀	endnote	hwp	hwpx	True
+누름틀	endnote	hwpx	hwp	True
+누름틀	endnote	hwpx	hwpx	True

@@ -16,7 +16,7 @@ pub fn diff_exported_hwpx_documents(expected: &Document, actual: &Document) -> I
     let mut actual = actual.clone();
     for document in [&mut expected, &mut actual] {
         for section in &mut document.sections {
-            project_paragraphs(&mut section.paragraphs);
+            project_body_paragraphs(&mut section.paragraphs);
             for master in &mut section.section_def.master_pages {
                 project_paragraphs(&mut master.paragraphs);
             }
@@ -40,13 +40,26 @@ pub fn diff_exported_hwp_documents(expected: &Document, actual: &Document) -> Ir
 /// 원본 좌표 스냅샷(#5847)으로 되돌린다. HWPX 저장기와 원본 저장 줄 계약 HWP 저장(#8310)이
 /// 같은 계약을 쓴다.
 pub(crate) fn project_paragraphs(paragraphs: &mut [Paragraph]) {
+    project(paragraphs, false);
+}
+
+/// 구역 본문은 저장기와 같은 기준으로 원본 쪽 좌표를 복원하고, 좌표를 잃은 줄은 비운다.
+pub(crate) fn project_body_paragraphs(paragraphs: &mut [Paragraph]) {
+    let uses_source_frames =
+        crate::serializer::line_cache::body_uses_source_line_frames(paragraphs);
+    project(paragraphs, uses_source_frames);
+}
+
+fn project(paragraphs: &mut [Paragraph], body_uses_source_frames: bool) {
     for para in paragraphs {
         // #5847: 임시 재조판 줄은 파일에 싣지 않는다. 정상 원본 줄은 유지한다.
-        if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(para)
-            || para
-                .line_segs
-                .iter()
-                .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
+        if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(
+            para,
+            body_uses_source_frames,
+        ) || para
+            .line_segs
+            .iter()
+            .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
         {
             para.line_segs.clear();
         } else if let Some(positions) =

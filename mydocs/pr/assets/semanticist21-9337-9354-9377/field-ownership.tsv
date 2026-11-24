@@ -1,0 +1,9 @@
+area	format	active	selected_owns_input	ranges_survived_reopen
+header	hwp	True	True	True
+header	hwpx	True	True	True
+footer	hwp	True	True	True
+footer	hwpx	True	True	True
+footnote	hwp	True	True	True
+footnote	hwpx	True	True	True
+endnote	hwp	True	True	True
+endnote	hwpx	True	True	True

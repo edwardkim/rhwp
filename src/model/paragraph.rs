@@ -133,6 +133,9 @@ pub struct Paragraph {
     /// (`serde(skip)` — IR dump/ir-sweep 축의 필드 집합을 바꾸지 않는다.)
     #[serde(skip_serializing)]
     pub source_line_seg_vertical_pos: Option<Vec<i32>>,
+    /// 원본 쪽 좌표 스냅샷을 재조판으로 교체했다. 내보낼 때 렌더 좌표를 저장하지 않는다.
+    #[serde(skip)]
+    pub rebuilt_source_line_frame: bool,
     /// 본문 흐름 투영이 옮기기 전의 원본 첫 줄 원점. 현재 좌표는 line_segs가 소유한다.
     /// 저장 reset의 원본 프레임 인증에만 사용하며 파일·IR에 직렬화하지 않는다.
     #[serde(skip_serializing)]
@@ -1065,7 +1068,7 @@ impl Paragraph {
         // A fresh vector has no renderer-appended suffix and cannot reuse a
         // source-position snapshot owned by the replaced rows.
         self.layout_only_fill_lines = 0;
-        self.source_line_seg_vertical_pos = None;
+        self.rebuilt_source_line_frame |= self.source_line_seg_vertical_pos.take().is_some();
         self.layout_stored_first_origin = None;
         self.layout_rebased_body_axis = false;
         // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
@@ -2834,6 +2837,7 @@ impl Paragraph {
             layout_only_fill_lines: 0,
             // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).
             source_line_seg_vertical_pos: None,
+            rebuilt_source_line_frame: false,
             layout_stored_first_origin: None,
             // 새 줄은 본문 축을 이어 붙인 저장 줄이 아니다.
             layout_rebased_body_axis: false,

@@ -715,6 +715,8 @@ where
         super::super::column_sizes::for_export_with_storage(section, storage).map_err(xml_error)?;
     let section = section.as_ref();
     let mut vert_cursor: u32 = 0;
+    ctx.body_uses_source_frames =
+        crate::serializer::line_cache::body_uses_source_line_frames(&section.paragraphs);
 
     let first_para = section.paragraphs.first();
     // [#1584] 첫 문단 렌더 직전 set — 본문 첫 ColumnDef(섹션 템플릿 흡수분)의 인라인
@@ -1186,16 +1188,18 @@ where
             .project(para.char_count.max(serialized_axis_end))
             .saturating_add(injected_prefix_units)
             .saturating_sub(hwp5_only_units);
-        let axis_line_segs =
-            if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(para) {
-                // The retained rows are an edit-reflow template, not a partition of
-                // the current text. Omit the cache and let the consumer recompute it.
-                &source_line_segs[..0]
-            } else if line_seg_axis_end > 0 {
-                line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
-            } else {
-                source_line_segs
-            };
+        let axis_line_segs = if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(
+            para,
+            ctx.sub_list_depth == 0 && ctx.body_uses_source_frames,
+        ) {
+            // The retained rows are an edit-reflow template, not a partition of
+            // the current text. Omit the cache and let the consumer recompute it.
+            &source_line_segs[..0]
+        } else if line_seg_axis_end > 0 {
+            line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
+        } else {
+            source_line_segs
+        };
 
         // [#5847] 줄 전체가 reflow 합성(bit31)인 문단 — 원본에 linesegarray 가 없어
         // rhwp 가 조판용으로 만든 줄이다. 파일로 내면 구역 누적 vertpos 와 bit31
@@ -1213,7 +1217,7 @@ where
                 // 캐시를 신뢰해 조판을 폐기한다(08818: 81쪽 → 5쪽). axis 절단은 앞
                 // 접두 슬라이스라 인덱스가 그대로 대응한다.
                 let source_vpos = crate::serializer::line_cache::source_vertical_positions(para)
-                    .map(|v| &v[..axis_line_segs.len()]);
+                    .map(|v| &v[..axis_line_segs.len().min(v.len())]);
                 let linesegs = xml_value(
                     storage,
                     format_args!(

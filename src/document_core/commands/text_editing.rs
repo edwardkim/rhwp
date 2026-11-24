@@ -1192,7 +1192,7 @@ struct SquareOleWrapChainForEnter {
 }
 
 /// 이 문단(셀이면 그 경로)에서 입력을 받는 누름틀의 컨트롤 번호.
-fn active_field_control(
+pub(super) fn active_field_control(
     active_field: Option<&ActiveFieldInfo>,
     section_idx: usize,
     para_idx: usize,
@@ -1416,6 +1416,24 @@ fn has_clickhere_field_range(para: &Paragraph) -> bool {
                 if matches!(field.field_type, FieldType::ClickHere | FieldType::Formula)
         )
     })
+}
+
+/// 각주·미주·머리말·꼬리말 문단에 글을 넣는다. 누름틀이 있는 문단은 본문·셀처럼 그 자리의 활성 누름틀이,
+/// 없으면 그 자리의 첫 빈 누름틀만 새 글자를 품는다. 같은 자리의 빈 누름틀이 모두 글을 품지 않는다.
+/// 실제로 넣은 글자 자리를 돌려준다.
+pub(super) fn insert_area_text(
+    para: &mut Paragraph,
+    char_offset: usize,
+    text: &str,
+    active: Option<usize>,
+) -> usize {
+    if text.is_empty() || !has_clickhere_field_range(para) {
+        return para.insert_text_at(char_offset, text);
+    }
+    let inserted_at = char_offset.min(para.text.chars().count());
+    para.replace_text_keeping_slots(inserted_at, 0, text, active, char_offset > inserted_at);
+    para.invalidate_layout_inputs();
+    inserted_at
 }
 
 /// 서식 글도 일반 입력과 같은 활성 누름틀·개체 앞뒤 소속으로 넣는다.

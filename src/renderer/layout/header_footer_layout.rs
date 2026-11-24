@@ -599,8 +599,8 @@ impl LayoutEngine {
         self.border_box_override.set(parent_border_override);
     }
 
-    /// 저장 줄이 없는 TAC 표는 본문과 같은 상자·줄 소속·점유 결과를 사용한다.
-    /// 글자용 합성 기준선으로 표 상단을 다시 추측하지 않는다. 필드 치환과
+    /// 줄을 다시 나눠야 하는 TAC 표는 본문과 같은 상자·줄 소속·점유 결과를 사용한다.
+    /// 누름틀 경계는 폭을 차지하지 않고 입력된 글자는 본문 폭을 쓴다. 쪽 번호 치환과
     /// 그림·도형의 머리말 전용 주소는 각자의 기존 소비 경로에 남긴다.
     fn header_footer_inline_table_plan(
         &self,
@@ -613,13 +613,17 @@ impl LayoutEngine {
         crate::renderer::inline_flow::InlineFlowPlan,
         Vec<MeasuredTable>,
     )> {
-        if !crate::renderer::para_has_no_stored_line_segs(para)
+        let reflow = crate::renderer::para_has_no_stored_line_segs(para)
+            || para.stored_text_partition_is_dirty()
+            || para.stored_rows_include_hidden_guide();
+        if !reflow
             || para
                 .text
                 .chars()
                 .any(|ch| matches!(ch, '\u{0015}' | '\u{0016}' | '\u{0017}'))
             || !para.controls.iter().all(|control| {
                 matches!(control, Control::Table(table) if table.common.treat_as_char)
+                    || matches!(control, Control::Field(field) if field.field_type == crate::model::control::FieldType::ClickHere)
                     || matches!(
                         control,
                         Control::SectionDef(_)
