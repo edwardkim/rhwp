@@ -1,0 +1,147 @@
+//! 관계형 — [#9379] KAF 회의자료 부록: 글꼴에 어울리는 줄 높이 글 상자의 줄 피치, 원래 크기 전체를 자른 WMF 그림.
+//!
+//! 주석 갱신: 2026-11-25 09:40 KST(+09:00), 새 파일(base 갱신 재측정 반영).
+//!
+//! - 입력: `samples/issue9379/kaf_appendix.hwp` — 10k 공개 코퍼스의 KAF 총회 회의자료(docs#881,
+//!   HWP 5.0.2.2, SHA-256 `8014ae9b…f6c9e5`, 66쪽, 저장소에 넣지 않음)에서 rhwp `edit delete-paragraph`
+//!   로 구역 1 문단 32(33~44쪽의 11×6 표, #9000)만 지운 파생본(54쪽). 원본 45~66쪽이 33~54쪽이 된다.
+//! - 기준: `pdf/issue9379/kaf_appendix-2020.pdf`(한/글 2020 11.0.0.1623, `Hancom PDF` Print,
+//!   `hancom2020_pdf_driver_one_up`, 54쪽).
+//!
+//! 검사:
+//! - 관계형(줄 피치): 36·40·42쪽 1×1 글 상자 문단(문단 모양 bit 22 글꼴에 어울리는 줄 높이, 함초롬바탕
+//!   13pt, 퍼센트 192%)의 이웃 줄 사이 거리가 한/글 2020 이 같은 원본을 다시 저장한 줄 피치 3243 HU
+//!   (43.24px; 줄 높이 1691 = 13pt × HCRBatang hhea (1070+230)/1000)와 0.5px 안에서 같다. 원본 저장
+//!   줄 피치는 2496 HU(33.28px)로 옛 한/글이 상자를 적용하지 않은 값이며, 수정 전 rhwp 는 이 값을 그렸다.
+//! - 관계형(그림 자르기): 38·39·52쪽 WMF 그림(표 116 기준 이미지 크기 없음, 자르기 = 메타파일 원래
+//!   크기 전체 21180×17100·18000×6660·28980×13200 HU)은 자르기 창 없이 그림 틀 전체에 그려진다.
+//!   한/글 2020 Print 는 세 그림 모두 비트맵 전체를 틀에 채운다. 수정 전 rhwp 는 15000×15000 범위로
+//!   읽어 자르기 창(중첩 `<svg viewBox>`)으로 그림을 줄이거나 잘랐다.
+//! - 반례(관계형): 36쪽 띠 그림(자르기 위 48977 / 아래 49260, 원래 크기 297900×49260 의 일부)은 여전히
+//!   자르기 창으로 그린다 — 부분 자르기는 기존 계약을 유지한다.
+//! - 줄 피치·그림 자르기 검사는 수정 전(devel `8a26c00869`·`0fbee2c04e`)에 실패한다 — 36쪽 피치 33.28px,
+//!   38쪽 자르기 창 1개. 반례는 수정 전후 모두 통과한다.
+//!
+//! 측정(2026-11-25 00:51~02:32 KST, `scripts/visual_sweep.py --silhouette-only`, 96 DPI,
+//! `silhouette_raw_match_percent` = 색상 경계 보정 전 2px 내용 실루엣 일치율, 전체 54쪽 = 한컴 PDF 54쪽):
+//!
+//! | 쪽 | Native base | Native head | fresh WASM base | fresh WASM head |
+//! |---|---|---|---|---|
+//! | 36 | 82.48 | 91.77 | 82.17 | 92.09 |
+//! | 38 | 33.76 | 97.87 | 35.86 | 97.87 |
+//! | 39 | 30.67 | 100.00 | 33.72 | 100.00 |
+//! | 40 | 72.85 | 100.00 | 73.83 | 99.95 |
+//! | 42 | 79.06 | 100.00 | 79.68 | 99.99 |
+//! | 52 | 50.13 | 100.00 | 51.04 | 99.99 |
+//!
+//! - 전쪽 최저: Native head 91.77(36쪽), fresh WASM head 92.09(36쪽); base 는 Native 30.67·WASM 33.72(39쪽).
+//!   그 밖의 쪽은 base 와 head 가 같다. base = devel `8a26c00869`, head = 이 수정(source `e6df26160c`).
+//!   devel `0fbee2c04e` 와 그 위로 rebase 한 수정(source `26518dbadc`)의 재측정 TSV 4개가 바이트 단위로 같다.
+//! - 36쪽 남은 차이: 한/글 2020 은 내용이 넘치는 글 상자를 내용 높이로 늘려 그린다(#9395), 첫 줄 `such`
+//!   줄 나눔 차이. 줄 피치 자체는 한컴과 같다.
+//! - 증거: `mydocs/pr/assets/issue_9379/`(전쪽 Native·fresh WASM·base TSV, 36·38·39·40·42·52쪽 review·overlay).
+#![cfg(not(target_arch = "wasm32"))]
+
+use std::path::Path;
+
+use rhwp::document_core::DocumentCore;
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
+
+const SAMPLE: &str = "samples/issue9379/kaf_appendix.hwp";
+/// 한컴 PDF 의 전체 쪽수.
+const HANCOM_PAGES: u32 = 54;
+/// 한/글 2020 재저장 줄 피치 3243 HU 를 96 DPI 픽셀로.
+const HANCOM_PITCH_PX: f64 = 3243.0 * 96.0 / 7200.0;
+/// (쪽, 글 상자 줄 첫머리 글들). 저장 줄 나눔대로의 각 줄 첫머리.
+const TEXT_BOX_LINES: &[(u32, &[&str])] = &[
+    (36, &["In each", "as 'Road", "Cadastre"]),
+    (
+        40,
+        &[
+            "We categories",
+            "components that",
+            "listed below",
+            "delivery area",
+        ],
+    ),
+    (42, &["Parcel based", "Survey", "addresses system"]),
+];
+/// 원래 크기 전체를 자른 WMF 그림이 있는 쪽.
+const FULL_CROP_PICTURE_PAGES: &[u32] = &[38, 39, 52];
+/// 부분 자르기 띠 그림이 있는 쪽.
+const PARTIAL_CROP_PICTURE_PAGE: u32 = 36;
+
+fn open() -> DocumentCore {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
+    let bytes = std::fs::read(&path).unwrap_or_else(|e| panic!("read {SAMPLE}: {e}"));
+    let core = DocumentCore::from_bytes(&bytes).unwrap_or_else(|e| panic!("open {SAMPLE}: {e:?}"));
+    assert_eq!(core.page_count(), HANCOM_PAGES, "한컴 PDF 의 전체 쪽수");
+    core
+}
+
+fn text_runs<'a>(node: &'a RenderNode, out: &mut Vec<(&'a str, f64)>) {
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        out.push((run.text.as_str(), node.bbox.y));
+    }
+    for child in &node.children {
+        text_runs(child, out);
+    }
+}
+
+#[test]
+fn font_line_height_text_box_lines_use_the_font_line_box() {
+    let core = open();
+    for (page, firsts) in TEXT_BOX_LINES {
+        let tree = core.build_page_render_tree(page - 1).unwrap();
+        let mut runs = Vec::new();
+        text_runs(&tree.root, &mut runs);
+        let line_tops: Vec<f64> = firsts
+            .iter()
+            .map(|word| {
+                runs.iter()
+                    .find(|(text, _)| text.trim_start().starts_with(word))
+                    .unwrap_or_else(|| panic!("{page}쪽 글 상자 줄 `{word}`"))
+                    .1
+            })
+            .collect();
+        for pair in line_tops.windows(2) {
+            let pitch = pair[1] - pair[0];
+            assert!(
+                (pitch - HANCOM_PITCH_PX).abs() <= 0.5,
+                "{page}쪽 글 상자 줄 피치 {pitch:.2}px ≠ 한/글 2020 {HANCOM_PITCH_PX:.2}px \
+                 — 글꼴에 어울리는 줄 높이 문단은 글꼴 세로 상자(1691 HU)에 퍼센트 간격을 건다"
+            );
+        }
+    }
+}
+
+fn nested_crop_windows(svg: &str) -> usize {
+    svg.matches("<svg x=").count()
+}
+
+#[test]
+fn full_crop_wmf_pictures_fill_their_frames() {
+    let core = open();
+    for page in FULL_CROP_PICTURE_PAGES {
+        let svg = core.render_page_svg_native(page - 1).unwrap();
+        assert!(svg.contains("<image"), "{page}쪽: 그림이 그려져야 한다");
+        assert_eq!(
+            nested_crop_windows(&svg),
+            0,
+            "{page}쪽: 자르기가 WMF 원래 크기 전체와 같은 그림은 자르기 창 없이 틀 전체에 그린다"
+        );
+    }
+}
+
+#[test]
+fn partial_crop_wmf_picture_keeps_its_crop_window() {
+    let core = open();
+    let svg = core
+        .render_page_svg_native(PARTIAL_CROP_PICTURE_PAGE - 1)
+        .unwrap();
+    assert_eq!(
+        nested_crop_windows(&svg),
+        1,
+        "{PARTIAL_CROP_PICTURE_PAGE}쪽: 원래 크기의 일부만 자른 띠 그림은 자르기 창으로 그린다"
+    );
+}
