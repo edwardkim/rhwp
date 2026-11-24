@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/verification/visual_verification_governance.md
-last_verified: 2026-11-22
+last_verified: 2026-11-24
 ---
 
 # PR 시각 검증 거버넌스 (OVL-step)
@@ -28,6 +28,35 @@ Visual Sweep 검증 환경의 글꼴 공급·선택 문제는 메인터너·콜�
 `Microsoft Print to PDF`, 다른 한컴 제품 버전의 출력은 출처를 표시한 참고 자료로 활용한다.
 Cairo는 원본 저장 제품에 맞는 MCP 엔진으로, `Creator: Hwp 2022`는 MCP 2024로 다시 인쇄한다.
 [출처 확인·재출력·리뷰 표기](../pr_review/visual_fixture_evidence.md#35-시각-검증-원칙)를 따른다.
+MCP가 인쇄 PDF의 오류를 검출해 같은 엔진의 PDF 저장본으로 대체한 경우에는 아래 예외를 적용한다.
+
+## 한컴 Print 오류 시 MCP 대체 저장본 수용
+
+MCP가 `Hancom PDF` 인쇄 결과의 손상을 검출하고, **같은 입력·같은 한컴 2020 또는 2024
+엔진의 PDF로 저장하기(Save As PDF)**로 다시 생성해 검증한 결과는 공식 기준 PDF로 수용한다.
+한컴 Print 버그로 인한 출력 경로 예외를 기록하고, 해당 저장본으로 Visual Sweep을 계속한다.
+같은 문서를 다시 인쇄하도록 요구하며 검증을 중단하지 않는다.
+
+수용 근거는 같은 MCP job의 상태·다운로드 기록과 실제 파일로 확인한다.
+
+- 작업 상태 `succeeded`, 다운로드 응답 `status: success`, 요청 엔진과 실제 출력 제품·빌드가 확인된다.
+- `status.result.pdf_output_mode`가 요청 엔진에 맞는 `hancom2020_pdf_save_as` 또는
+  `hancom2024_pdf_save_as`이며, `comment`에 인쇄 오류 검출·PDF로 재저장·저장본 검사 통과가 명시된다.
+  다운로드 응답에서는 같은 내용을 `server` 아래에서 확인한다. `pdf_print_method: null`은
+  이 저장 경로에서 허용한다.
+- 입력 SHA-256, job ID, 출력 PDF의 바이트 수·SHA-256·전체 쪽수와 실제 보존 경로를 연결한다.
+  client/server 해시 일치와 PDF 구조·쪽수 검사 통과를 확인하고, 저장본을 전쪽 래스터화해
+  렌더링 오류를 확인한다. 알려진 손상 영역과 변경 영역은 같은 배율로 직접 판독한다.
+
+review·PR에는 **「한컴 Print 버그 예외 — MCP PDF 대체 저장본」**으로 출력 출처를 표시하고
+`comment` 원문과 위 근거를 연결한다. PDF의 `Creator`·`Producer`만으로 이 예외를 추정하지 않는다.
+임의의 수동 저장·내보내기 결과에는 이 예외를 자동 적용하지 않는다.
+
+이 예외는 기준 PDF의 생성 경로에 적용한다. **전쪽 Native/fresh WASM TSV, 쪽수·내용 보존,
+90% 하한·98% 제출 기준·devel 대비 하락 검사와 확대 판독은 그대로 수행한다.** 기준 PDF를
+교체하면 같은 저장본·SHA-256으로 base와 후보를 다시 비교하며, 기존 Print 기준 TSV와 저장본
+기준 TSV의 점수를 직접 비교하지 않는다. 보호 baseline 갱신은 기존 승인 절차를 따른다.
+응답 보존과 실행 방법은 [MCP 대체 저장본 확인](../mcp_hwp2024Convert_usage.md#인쇄-오류-시-pdf-대체-저장본-확인)을 따른다.
 
 ## 페이지별 TSV와 PR 재검토 필수 조건
 

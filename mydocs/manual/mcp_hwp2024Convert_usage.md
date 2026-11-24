@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-10-20
+last_verified: 2026-11-24
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -29,7 +29,8 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 
 조판·렌더링 검증의 공식 기준 PDF는 **Windows 데스크톱 한컴 2020 또는 2024의
 `Hancom PDF` Print 인쇄본**을 사용한다. MCP는 `2020`/`2024` engine을 명시하고
-`start → status → download`로 산출한다.
+`start → status → download`로 산출한다. 인쇄 오류가 검출되어 같은 엔진의 PDF 저장본으로
+대체된 경우에는 [대체 저장본 확인](#인쇄-오류-시-pdf-대체-저장본-확인)을 거쳐 공식 기준으로 사용한다.
 기존 `Producer`가 Cairo이면 같은 원본의 저장 제품을 확인한 뒤 위 엔진 선택 규칙으로
 다시 인쇄한다. 기존 `Creator: Hwp 2022` 인쇄본은 같은 입력을 `--engine 2024`로 다시
 인쇄한다. 원본의 저장 제품 판정과 기존 PDF의 실제 출력 제품 판정은 별개다.
@@ -39,16 +40,19 @@ PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 �
 현재 MCP의 `status.result`에 있는 `engine`, `hancom_version`, `pdf_print_method`,
 `pdf_output_mode`를 확인한다. 예를 들어 2020 출력의 `pdf_print_method: 0`과
 `pdf_output_mode: hancom2020_pdf_driver_one_up`은 한 쪽씩 PDF 인쇄 경로의 실행 증거다.
-결과 필드가 누락되거나 다른 모드이면 해당 engine의 실제 인쇄 경로를 별도로 확인한다.
+대체 저장 모드는 아래 예외 조건을 확인한다. 그 밖의 모드이거나 필드가 누락되면 해당 engine의
+실제 출력 경로를 별도로 확인한다.
 
 - 수동 출력도 해당 한컴에서 **파일 → 인쇄(Print) → PDF 출력**을 사용한다.
-  PDF로 저장/내보내기(Save As PDF), 다른 오피스의 변환 결과를 기준으로 대신하지 않는다.
+  MCP의 인쇄 오류 복구 예외 외에 PDF로 저장/내보내기(Save As PDF), 다른 오피스의 변환 결과를
+  기준으로 대신하지 않는다.
 - 기본은 원본 용지·방향을 유지한 전체 문서, 100% 배율·한 쪽씩(1-up) 인쇄다.
   모아 찍기·맞춰 찍기·용지 재지정이 검증 대상이면 설정과 비교 범위를 별도로 기록한다.
 - 입력 SHA-256·저장 제품 판정, 실제 한컴 제품/빌드·OS·글꼴, Print 출력 방법과 인쇄 설정,
   PDF SHA-256·전체 쪽수, MCP engine·job 식별자를 증적에 연결한다. 인증 정보는 기록하지 않는다.
 - 기존 PDF는 같은 원본, 한컴 2020·2024 중 실제 출력 제품, `Hancom PDF` 인쇄 경로를
-  확인한 경우 재사용한다. PDF 형식 버전은 이 출력 제품 판정과 별개다.
+  확인한 경우 재사용한다. MCP 대체 저장본도 아래 예외 근거를 확인하면 재사용한다.
+  PDF 형식 버전은 이 출력 제품 판정과 별개다.
 - 일반 기여자는 MCP 권한 없이 한컴 2020 또는 2024에서 직접 Print 출력해 제출할 수 있다.
   직접 출력본은 실제 출력 제품으로 이름 붙인다. 여러 제품의 동작을 다루면 비교 자료별
   버전과 용도를 구분한다.
@@ -92,6 +96,45 @@ python3 tools/oracle_public/audit_print_pairs.py --repo-root . \
 ```
 
 실제 기록 형식은 [34쌍의 보존 영수증](../pr/assets/hyunmyungjanelee_20261112/mcp-print-reference/receipts.json)에서 확인할 수 있다.
+
+### 인쇄 오류 시 PDF 대체 저장본 확인
+
+MCP는 PDF 인쇄 후 구조·참조 오류를 검사한다. 오류가 검출되면 같은 입력·같은 엔진에서
+한컴의 PDF로 저장하기로 한 번 다시 생성하고, 저장본의 구조와 쪽수를 검사한다.
+성공한 복구 결과에는 `comment`가 포함된다. client `0.10.0`의 `status`에서는 `result`,
+`download`에서는 `server` 아래에서 확인한다.
+
+다음은 2024 복구 응답의 확인 필드 예시다. 2020 복구는 `engine: "2020"`과
+`pdf_output_mode: "hancom2020_pdf_save_as"`를 반환한다.
+
+```json
+{
+  "status": "succeeded",
+  "result": {
+    "engine": "2024",
+    "hancom_version": "13.0.0.4225",
+    "pdf_page_count": 313,
+    "pdf_print_method": null,
+    "pdf_output_mode": "hancom2024_pdf_save_as",
+    "comment": "한컴 PDF 인쇄 결과에서 오류가 검출되어 한컴의 PDF로 저장하기로 다시 생성했습니다. 저장본은 PDF 구조 및 전체 313쪽 검사를 통과했습니다."
+  }
+}
+```
+
+`succeeded`를 확인한 뒤 기존 `download` 명령으로 수신한다. 상태 조회만으로 client PC에
+파일이 저장되지는 않는다. `status`·`download` 응답의 job ID와 엔진을 맞추고, 원본 SHA-256,
+실제 다운로드 PDF의 바이트 수·SHA-256·전체 쪽수, 출력 제품·빌드와 `comment` 원문을 보존한다.
+응답에 서버 URL·인증 정보가 포함되지 않았는지 확인해 검토 증적에 연결한다.
+
+이 기록과 실제 PDF 검사를 [거버넌스의 수용 조건](verification/visual_verification_governance.md#한컴-print-오류-시-mcp-대체-저장본-수용)에
+맞춰 확인하면 **「한컴 Print 버그 예외 — MCP PDF 대체 저장본」**으로 표기하고 Visual Sweep을
+계속한다. `pdf_print_method: null`을 이유로 재인쇄를 반복하지 않는다. 대체 저장 중에도
+`stage: converting_document`와 미제공 페이지 진행률, 결과 확정 전 `output_bytes: 0`이 표시될 수 있다.
+
+위 Print 영수증 생성·감사 도구는 현재 Print 경로만 수용한다. 대체 저장본은 이 도구의 Print
+성공 기록으로 작성하지 않고, 같은 job의 상태·다운로드 JSON과 입력·PDF 해시를 별도 증적으로
+연결해 위 예외로 검토한다. 성공 응답과 구조 검사만으로 시각 일치를 판정하지 않으며,
+전쪽 래스터화·Native/fresh WASM TSV와 알려진 오류 영역의 직접 판독을 수행한다.
 
 ## 개요
 
@@ -572,12 +615,14 @@ open·PDF smoke가 통과하기 전까지는 원본 제공자에게 양식 없�
 - `engine`: `start`와 `status` 응답에서 요청한 engine과 일치해야 한다. PR review 기준 PDF는
   [기준 PDF 인쇄 계약](#기준-pdf-인쇄-계약)에 따라 `2020` 또는 `2024`를 명시한다. 결과 파일명에는
   요청한 엔진의 연도를 붙인다.
-- `server.engine`: 서버가 반환할 수 있는 concrete backend 식별자다. 요청한 engine과의 일치 여부를
-  판정하는 값으로 사용하지 않는다. 현재 배포의 2024 backend는
-  `hancom-2024-direct-host`를 반환한다.
+- `server.engine`: 현재 배포는 요청 엔진 `2020` 또는 `2024`를 반환한다. 이전 서버에서 concrete
+  backend 식별자를 반환할 수 있으므로 요청 엔진은 `start`·`status`와 `engine_profile`로도 확인한다.
 - `server.engine_profile`, `server.hancom_version`: 서버가 제공하면 선택한 runtime의 추가 증적으로
   기록한다. 이 필드는 현재 배포 응답에 없을 수 있으므로 부재만으로 변환을 실패로 판단하지 않는다.
-- `server.backend: hwp-managed-direct-dll-host`
+- `server.backend`: 일반 직접 실행은 `hwp-managed-direct-dll-host`, 2020 대체 저장은
+  `hwp-automation-local-server`다.
+- PDF 대체 저장 결과는 `server.pdf_output_mode`와 `server.comment`를 함께 확인하고
+  [인쇄 오류 복구 예외](#인쇄-오류-시-pdf-대체-저장본-확인)에 따라 기준 PDF로 사용한다.
 - `server.worker_bits: 32`
 - client가 보고한 `size`, `sha256`과 local file이 일치
 - PDF는 `%PDF-` header와 `%%EOF`, HWPX는 ZIP signature, HWP는 CFB signature가 정상
