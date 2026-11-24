@@ -77,9 +77,11 @@ pub(super) fn finish_top_level_edit(
         scale_rendering(sa, kx, ky);
         if w != before.0 {
             sa.current_width = (f64::from(sa.original_width) * sa.render_sx) as u32;
+            sa.current_width_was_zero = false;
         }
         if h != before.1 {
             sa.current_height = (f64::from(sa.original_height) * sa.render_sy) as u32;
+            sa.current_height_was_zero = false;
         }
         sa.rotation_center.x = (w / 2) as i32;
         sa.rotation_center.y = (h / 2) as i32;
