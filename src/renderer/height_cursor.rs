@@ -787,6 +787,27 @@ impl HeightCursor {
                         .para_styles
                         .get(para.para_shape_id as usize)
                         .map_or(0.0, |style| style.spacing_before);
+                    // 저장 첫 줄이 조각 점유 끝에 있는 문단 기준 표 host 는 문단 상단(저장 첫 줄 −
+                    // 문단 위 간격)에서 시작한다. 표의 세로 오프셋이 그 상단에서 재진다.
+                    if let Some(lift) =
+                        crate::renderer::float_placement::split_successor_float_host_origin_lift(
+                            para,
+                            y_offset - self.col_area_y,
+                            spacing_before,
+                            self.dpi,
+                        )
+                    {
+                        if let Some(first) = para.line_segs.first() {
+                            self.vpos_lazy_base = Some(
+                                first.vertical_pos
+                                    - crate::renderer::px_to_hwpunit(
+                                        y_offset - self.col_area_y,
+                                        self.dpi,
+                                    ),
+                            );
+                        }
+                        return y_offset - lift;
+                    }
                     if let (Some(first), Some(spacing)) = (
                         para.line_segs.first().filter(|seg| {
                             seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
@@ -809,6 +830,14 @@ impl HeightCursor {
                                     self.dpi,
                                 ),
                         );
+                        // 문단 기준 개체의 원점은 문단 상단(저장 첫 줄 − 문단 위 간격)이다.
+                        // 앞 간격을 조각 안에서 소비한 줄에 표가 걸리면 표의 세로 오프셋은 그
+                        // 줄이 아니라 앞 간격만큼 위인 문단 상단에서 잰다([#8735] 2차 중간보고서
+                        // pi826: 조각 끝 = 저장 줄 17616, 한/글 표 윗변 = 17616 − 1000 + 1089 + 283,
+                        // pi1826: 같은 식으로 13048 − 1000 + 1668 + 283).
+                        if crate::renderer::float_placement::para_relative_float_table_host(para) {
+                            return line_top - spacing_before.max(0.0);
+                        }
                     }
                 }
             }
