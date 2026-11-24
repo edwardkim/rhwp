@@ -17,6 +17,8 @@ use rhwp::{model::style::SubstFont, DocumentCore};
 fn empty_symbol_uses_real_fallback_without_changing_source_or_positions() {
     use rhwp::renderer::{font_symbol_coverage::empty_symbol_codepoints, native_webfonts};
     const SYMBOL: char = '¢';
+    const PRIMARY_REQUEST: &str = "RHWP Empty Cent Fixture";
+    const FALLBACK_REQUEST: &str = "RHWP Cent Fallback Fixture";
     let primary = native_webfonts::decode_font(include_bytes!(
         "../../assets/fonts/SpoqaHanSans-Regular.woff2"
     ))
@@ -36,9 +38,9 @@ fn empty_symbol_uses_real_fallback_without_changing_source_or_positions() {
     let mut document = core.document().clone();
     for language in &mut document.doc_info.font_faces {
         for font in language {
-            font.name = "SpoqaHanSans".into();
+            font.name = PRIMARY_REQUEST.into();
             font.subst_font = Some(SubstFont {
-                face: "Source Sans 3".into(),
+                face: FALLBACK_REQUEST.into(),
                 font_type: 1,
                 ..Default::default()
             });
@@ -49,11 +51,18 @@ fn empty_symbol_uses_real_fallback_without_changing_source_or_positions() {
     let tree = core
         .build_page_layer_tree_with_profile(0, RenderProfile::Print)
         .unwrap();
+    // 같은 이름의 설치본은 cmap·윤곽이 다를 수 있다. 두 시험 입력을 명시 별칭에만 연결한다.
     let with_empty = SkiaLayerRenderer::new()
         .try_with_font_data(&[primary, fallback.to_vec()])
+        .unwrap()
+        .with_font_family_alias(PRIMARY_REQUEST, "SpoqaHanSans")
+        .unwrap()
+        .with_font_family_alias(FALLBACK_REQUEST, "Source Sans 3")
         .unwrap();
     let reference = SkiaLayerRenderer::new()
         .try_with_font_data(&[fallback.to_vec()])
+        .unwrap()
+        .with_font_family_alias(FALLBACK_REQUEST, "Source Sans 3")
         .unwrap();
     let expected = reference.render_png(&tree).unwrap();
     let actual = with_empty.render_png(&tree).unwrap();
@@ -74,6 +83,7 @@ fn empty_symbol_uses_real_fallback_without_changing_source_or_positions() {
         .find(|record| record["source"]["character"] == SYMBOL.to_string())
         .unwrap();
     assert_eq!(record["paint"]["native"]["resolved"], "Source Sans 3");
+    assert_eq!(record["paint"]["native"]["source"], "custom");
     assert_eq!(
         core.export_hwp_native().unwrap(),
         source,
