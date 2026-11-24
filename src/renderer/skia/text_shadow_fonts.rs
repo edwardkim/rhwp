@@ -81,14 +81,29 @@ impl SkiaLayerRenderer {
                 .find(|candidate| candidate.source != "legacy") else {
                     continue;
                 };
-                let Some((data, index)) = selected.typeface.to_existing_font_data() else {
+                let existing = selected.typeface.to_existing_font_data();
+                let program = existing
+                    .as_ref()
+                    .map(|(data, index)| (data.as_bytes(), *index));
+                // DirectWrite는 기존 스트림을 제공하지 않아도 원본 파일과 face index를 열 수 있다.
+                #[cfg(target_os = "windows")]
+                let reopened = if program.is_none() {
+                    selected.typeface.to_font_bytes()
+                } else {
+                    None
+                };
+                #[cfg(target_os = "windows")]
+                let program = program.or_else(|| {
+                    reopened
+                        .as_ref()
+                        .map(|(bytes, index)| (bytes.as_slice(), *index))
+                });
+                let Some((bytes, index)) = program else {
                     continue;
                 };
                 if !request.text.is_empty() {
                     let Some(missing) = crate::renderer::font_symbol_coverage::font_missing_text(
-                        data.as_bytes(),
-                        index,
-                        &remaining,
+                        bytes, index, &remaining,
                     ) else {
                         continue;
                     };
@@ -97,8 +112,7 @@ impl SkiaLayerRenderer {
                     }
                     remaining = missing;
                 }
-                // 이미 로드한 프로그램을 메모리로 공유한다. font file 복사는 하지 않는다.
-                changed |= register(family, data.as_bytes(), index)?;
+                changed |= register(family, bytes, index)?;
                 if !request.text.is_empty() && remaining.is_empty() {
                     break;
                 }
