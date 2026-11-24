@@ -1,0 +1,9 @@
+area	format	selected	original_ranges	edited_ranges	reopened_ranges	api_end	selected_owns
+header	hwp	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True
+header	hwpx	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True
+footer	hwp	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True
+footer	hwpx	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True
+footnote	hwp	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True
+footnote	hwpx	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True
+endnote	hwp	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True
+endnote	hwpx	True	[[0, 1, 1], [1, 1, 1]]	[[0, 1, 1], [1, 1, 2]]	[[0, 1, 1], [1, 1, 2]]	2	True

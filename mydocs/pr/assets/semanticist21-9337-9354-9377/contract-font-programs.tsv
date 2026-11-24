@@ -1,0 +1,7 @@
+order	file	sha256	source	extraction
+0	dotum-face-2.ttf	091d5088e9c9cefd239809ee3c634249df55dd13fcb13adc4bc50ba01a70fcb9	windows/gulim.ttc face 2	fontTools 4.62.1 TTFont(fontNumber=2, recalcTimestamp=False)
+1	gulim.ttc	05a38ff214ee932c6147a4e697b494040fd68ce654795f10f723c01d7bb8ee12	windows/gulim.ttc	원본 공급
+2	HBATANG.TTF	35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05	hwp/HBATANG.TTF	원본 공급
+3	HGSMJ.otf	ce22772ec45d28db48094d8097e7fcfed53f3f29b5dda936b623ee37accd8bc0	hft-fonts-cmap-v2/HGSMJ.otf	원본 공급
+4	HGGGT.otf	da42e4819214f960b3561d4acf51571ad0c887f258e3dc034f5c2fae5c842a68	hft-fonts-cmap-v2/HGGGT.otf	원본 공급
+5	HGJGT.otf	ef7def56521a7087f67a623245a7c9c9899dfdc07e4839ed1f0a89f56e847013	hft-fonts-cmap-v2/HGJGT.otf	원본 공급
