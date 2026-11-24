@@ -52,6 +52,7 @@ use crate::serializer::hwpx::serialize_hwpx;
 use crate::serializer::SerializeError;
 
 mod export_cache;
+pub(crate) use export_cache::project_body_paragraphs as project_exported_body_line_caches;
 pub(crate) use export_cache::project_paragraphs as project_exported_line_caches;
 pub use export_cache::{diff_exported_hwp_documents, diff_exported_hwpx_documents};
 

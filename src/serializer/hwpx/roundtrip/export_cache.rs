@@ -16,7 +16,7 @@ pub fn diff_exported_hwpx_documents(expected: &Document, actual: &Document) -> I
     let mut actual = actual.clone();
     for document in [&mut expected, &mut actual] {
         for section in &mut document.sections {
-            project_paragraphs(&mut section.paragraphs);
+            project_body_paragraphs(&mut section.paragraphs);
             for master in &mut section.section_def.master_pages {
                 project_paragraphs(&mut master.paragraphs);
             }
@@ -40,6 +40,19 @@ pub fn diff_exported_hwp_documents(expected: &Document, actual: &Document) -> Ir
 /// 원본 좌표 스냅샷(#5847)으로 되돌린다. HWPX 저장기와 원본 저장 줄 계약 HWP 저장(#8310)이
 /// 같은 계약을 쓴다.
 pub(crate) fn project_paragraphs(paragraphs: &mut [Paragraph]) {
+    project(paragraphs, None);
+}
+
+/// 구역 본문 문단의 투영. 다시 조판한 본문 줄도 저장기처럼 구역의 좌표계로 옮긴다.
+pub(crate) fn project_body_paragraphs(paragraphs: &mut [Paragraph]) {
+    let frame = crate::serializer::line_cache::BodyLineFrame::for_body(paragraphs);
+    project(paragraphs, Some(frame));
+}
+
+fn project(
+    paragraphs: &mut [Paragraph],
+    mut body: Option<crate::serializer::line_cache::BodyLineFrame>,
+) {
     for para in paragraphs {
         // #5847: 임시 재조판 줄은 파일에 싣지 않는다. 정상 원본 줄은 유지한다.
         if !crate::serializer::line_cache::can_serialize_hwpx_line_partition(para)
@@ -49,8 +62,12 @@ pub(crate) fn project_paragraphs(paragraphs: &mut [Paragraph]) {
                 .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0)
         {
             para.line_segs.clear();
-        } else if let Some(positions) =
-            crate::serializer::line_cache::source_vertical_positions(para).map(<[i32]>::to_vec)
+        } else if let Some(positions) = body
+            .as_mut()
+            .and_then(|frame| frame.positions(para))
+            .or_else(|| {
+                crate::serializer::line_cache::source_vertical_positions(para).map(<[i32]>::to_vec)
+            })
         {
             for (line, source) in para.line_segs.iter_mut().zip(positions) {
                 line.vertical_pos = source;
