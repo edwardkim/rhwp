@@ -10608,6 +10608,34 @@ fn native_folded_empty_rowbreak_host_advance_hu(
     table: &Table,
     next: &Paragraph,
 ) -> Option<i32> {
+    rowbreak_empty_host_line_advance_hu(native_hwp5_layout, para, table, next, true)
+}
+
+/// 여러 쪽으로 나뉜 빈 host RowBreak 표가 **끝난 뒤** 흐름에 남는 host 줄 전진량.
+///
+/// 한글은 나뉜 자리차지 표의 마지막 조각 아래에 host 문단의 줄 상자(`lh + ls`)를 두고
+/// 다음 문단을 그 뒤에 잇는다. 저장 사다리 `next.vpos - host.vpos == lh + ls`
+/// (#2808 판별자)가 그 줄이 실제 흐름이라는 직접 증거다. #2439 의 양수 오프셋·개체 없는
+/// 다음 문단 조건은 표 **앞쪽** 원점·fit 계약(오프셋 가산)의 모양이라, 끝 조각 뒤 계상에는
+/// 요구하지 않는다(#687: 오프셋 0, 다음 문단에 글앞으로 TAC 도형 — 한컴 4쪽에서
+/// 「향후 계획」이 표 끝 + 2252HU). 사다리가 표 높이를 품은 물리 사다리는 등식이 깨져
+/// 그대로 배제된다.
+pub(crate) fn split_rowbreak_empty_host_terminal_line_advance_hu(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    rowbreak_empty_host_line_advance_hu(native_hwp5_layout, para, table, next_para?, false)
+}
+
+fn rowbreak_empty_host_line_advance_hu(
+    native_hwp5_layout: bool,
+    para: &Paragraph,
+    table: &Table,
+    next: &Paragraph,
+    leading_offset_contract: bool,
+) -> Option<i32> {
     let has_non_whitespace_text = |paragraph: &Paragraph| {
         paragraph
             .text
@@ -10620,7 +10648,7 @@ fn native_folded_empty_rowbreak_host_advance_hu(
         || has_non_whitespace_text(para)
         || !matches!(table.common.vert_rel_to, VertRelTo::Para)
         || !matches!(table.layout_page_break(), TablePageBreak::RowBreak)
-        || signed_hwpunit(table.common.vertical_offset) <= 0
+        || (leading_offset_contract && signed_hwpunit(table.common.vertical_offset) <= 0)
         || para
             .controls
             .iter()
