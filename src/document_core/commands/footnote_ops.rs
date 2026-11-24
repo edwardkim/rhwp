@@ -574,9 +574,15 @@ impl DocumentCore {
         text: &str,
     ) -> Result<String, HwpError> {
         let new_chars_count = text.chars().count();
+        let active = super::text_editing::active_field_control(
+            self.active_field.as_ref(),
+            section_idx,
+            para_idx,
+            Some(&[(control_idx, 0, fn_para_idx)]),
+        );
         let fn_para =
             self.get_footnote_paragraph_mut(section_idx, para_idx, control_idx, fn_para_idx)?;
-        fn_para.insert_text_at(char_offset, text);
+        super::text_editing::insert_area_text(fn_para, char_offset, text, active);
 
         self.reflow_footnote_paragraph(section_idx, para_idx, control_idx, fn_para_idx);
 
