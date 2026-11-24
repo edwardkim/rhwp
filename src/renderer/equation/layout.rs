@@ -166,16 +166,17 @@ impl EqLayout {
     /// HYhwpEQ 대체 한글의 전진폭은 한컴 수식의 논리 격자에서 반올림한다.
     /// 출력 DPI를 바꿔도 같은 물리 전진폭을 소비한다.
     pub(crate) fn for_equation(equation: &crate::model::control::Equation, dpi: f64) -> Self {
+        let hancom_math_face = equation.uses_hyhwpeq_font();
+        let hancom_eqn = equation.font_name.eq_ignore_ascii_case("HancomEQN");
         Self {
             font_size: super::super::hwpunit_to_px(equation.font_size.max(1) as i32, dpi),
             dpi,
-            hancom_cjk_advance: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
+            hancom_cjk_advance: hancom_math_face,
             // 크기 고정은 개체의 예약 크기 계약이며 표시 글꼴을 바꾸지 않는다.
-            hancom_latin: equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
-                || equation.font_name.eq_ignore_ascii_case("HancomEQN"),
+            hancom_latin: hancom_math_face || hancom_eqn,
             latin_italic: true,
-            hancom_math_face: equation.font_name.eq_ignore_ascii_case("HYhwpEQ"),
-            hancom_eqn: equation.font_name.eq_ignore_ascii_case("HancomEQN"),
+            hancom_math_face,
+            hancom_eqn,
             legacy_equation: legacy::matches_version(equation),
             legacy_math_face: equation.uses_legacy_display()
                 || equation.uses_implicit_legacy_font(),
@@ -188,9 +189,7 @@ impl EqLayout {
                 .then(|| super::super::hwpunit_to_px(equation.common.width as i32, dpi)),
             // 두 face의 수학 PUA 숫자만 같은 512/1024 전진폭이다.
             // 영문·기호는 서로 다르므로 HancomEQN을 HYhwpEQ로 치환하지 않는다.
-            math_digit_advance: (equation.font_name.eq_ignore_ascii_case("HYhwpEQ")
-                || equation.font_name.eq_ignore_ascii_case("HancomEQN"))
-            .then_some(512),
+            math_digit_advance: (hancom_math_face || hancom_eqn).then_some(512),
             variable_italic: true,
             variable_bold: false,
             source_variable_glyphs: true,

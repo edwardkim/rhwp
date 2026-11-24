@@ -158,6 +158,7 @@ impl NativeOtfMetrics {
 
     /// 선택한 주 프로그램 자체의 공백 전진. 뒤 fallback의 공백은 사용하지 않는다.
     /// useFontSpace의 원본 선언을 확인한 호출자만 사용한다.
+    /// 전진이 0이면 유효한 공백 폭이 없으므로 호출자가 기본 폭을 사용한다.
     pub(crate) fn selected_program_space_advance_em(
         &self,
         identity: &super::font_environment::FontProgramIdentity,
@@ -171,7 +172,9 @@ impl NativeOtfMetrics {
         })?;
         let face = ttf_parser::Face::parse(&program.bytes, program.face_index).ok()?;
         let glyph = face.glyph_index(' ').filter(|glyph| glyph.0 != 0)?;
-        let advance = face.glyph_hor_advance(glyph)?;
+        let advance = face
+            .glyph_hor_advance(glyph)
+            .filter(|&advance| advance > 0)?;
         let em = face.units_per_em();
         (em > 0).then(|| f64::from(advance) / f64::from(em))
     }

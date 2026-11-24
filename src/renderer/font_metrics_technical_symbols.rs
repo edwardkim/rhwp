@@ -171,9 +171,7 @@ pub(crate) fn verified_program_has_glyph(metric: &FontMetric, ch: char) -> Optio
             ("BatangChe", 1024, false, false) if ch == '\u{2027}' => return Some(false),
             // H2GTRE.TTF ca822120…5c234의 실제 cmap 결측이다.
             // 독립 Print에서 HBATANG 공급을 확인한 U+2027만 해소한다.
-            ("HYGothic-Extra", 1024, false, false) if ch == '\u{2027}' => {
-                return Some(false)
-            }
+            ("HYGothic-Extra", 1024, false, false) if ch == '\u{2027}' => return Some(false),
             // gulim.TTC ed750275…776c의 GulimChe regular cmap 결측.
             // 독립2020 Print에서 공급자를 확인한 U+2024만 해소한다.
             ("GulimChe", 1024, false, false) if ch == '\u{2024}' => return Some(false),
@@ -207,6 +205,9 @@ pub(crate) fn verified_non_hft_glyph_width(metric: &FontMetric, ch: char) -> Opt
         // GulimChe의 같은 글리프는 반각이다. #9239 한컴 Print에서
         // 네모 뒤 공백의 원점도 한글 전각 전진의 절반만큼 이동한다.
         ("GulimChe", 1024, false, false, '\u{25AA}') => Some(512),
+        // 바탕의 흰 원 글머리는 좁은 문자다. 한컴 2020 Print에서 장평 94%·
+        // 자간 -7%인 12pt 원과 뒤 음절의 원점 차이가 바탕 원본 전진과 일치한다.
+        ("Batang", 1024, false, false, '\u{25E6}') => Some(384),
         _ => None,
     }
 }

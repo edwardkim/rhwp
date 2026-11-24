@@ -10,6 +10,8 @@ mod legacy_column_layout;
 mod legacy_column_renderer;
 mod legacy_combo_renderer;
 mod legacy_legend_layout;
+mod legacy_percent_bar_renderer;
+mod legacy_pie_renderer;
 mod legacy_presentation;
 mod legacy_string;
 mod legacy_text_metrics;
@@ -75,6 +77,15 @@ pub fn render_ole_chart_svg_fragment_with_contents_at_dpi(
         }
         if let Some(svg) = legacy_combo_renderer::render(chart, &presentation, bounds) {
             return svg;
+        }
+        if matches!(presentation.chart_type, 11 | 14) {
+            return svg_renderer::render_fragment(
+                chart,
+                Some(&presentation),
+                bounds,
+                bin_data_id,
+                dpi,
+            );
         }
     }
     let [x, y, width, height] = bounds;

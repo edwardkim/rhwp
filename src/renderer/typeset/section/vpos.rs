@@ -80,18 +80,23 @@ impl TypesetEngine {
             return;
         }
         let mut hc = self.source_height_cursor(st, paragraphs, composed);
-        if !hc.bind_stored_frame_successor(
-            st.current_height,
-            para_idx,
-            paragraphs,
-            &st.paragraph_float_placements,
-        ) && !hc.bind_computed_paragraph_successor(
-            st.current_height,
-            para_idx,
-            paragraphs,
-            styles,
-            &st.paragraph_origins,
-        ) {
+        if hc
+            .bind_stored_frame_successor(
+                st.current_height,
+                para_idx,
+                paragraphs,
+                styles,
+                &st.paragraph_float_placements,
+            )
+            .is_none()
+            && !hc.bind_computed_paragraph_successor(
+                st.current_height,
+                para_idx,
+                paragraphs,
+                styles,
+                &st.paragraph_origins,
+            )
+        {
             hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles);
         }
         st.record_rejected_stored_forward_origin(
@@ -163,22 +168,28 @@ impl TypesetEngine {
             st.mark_vpos_ladder_dirty();
         }
         let mut hc = self.source_height_cursor(st, paragraphs, composed);
-        let bound_successor = hc.bind_stored_frame_successor(
-            st.current_height,
-            para_idx,
-            paragraphs,
-            &st.paragraph_float_placements,
-        ) || hc.bind_computed_paragraph_successor(
-            st.current_height,
-            para_idx,
-            paragraphs,
-            styles,
-            &st.paragraph_origins,
-        );
-        let mut y = if bound_successor {
+        let bound_successor = hc
+            .bind_stored_frame_successor(
+                st.current_height,
+                para_idx,
+                paragraphs,
+                styles,
+                &st.paragraph_float_placements,
+            )
+            .or_else(|| {
+                hc.bind_computed_paragraph_successor(
+                    st.current_height,
+                    para_idx,
+                    paragraphs,
+                    styles,
+                    &st.paragraph_origins,
+                )
+                .then_some(st.current_height)
+            });
+        let mut y = if let Some(start) = bound_successor {
             st.record_vpos_column_anchor(0.0);
             st.record_vpos_origin_provenance(true);
-            st.current_height
+            start
         } else {
             hc.vpos_adjust(st.current_height, para_idx, paragraphs, styles)
         };

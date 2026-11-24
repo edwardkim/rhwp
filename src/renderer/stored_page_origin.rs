@@ -21,6 +21,112 @@ fn has_paragraph_float_graphic(paragraph: &Paragraph) -> bool {
     })
 }
 
+/// 일반 그림의 바깥 아래끝을 원본 본문 좌표계에서 잰다.
+/// 회전·전단·캡션이 있으면 개체 공통 높이만으로 끝을 인증할 수 없다.
+pub(crate) fn stored_picture_bottom_in_body_hu(
+    host: &crate::model::paragraph::Paragraph,
+    control_index: usize,
+    styles: &crate::renderer::style_resolver::ResolvedStyleSet,
+    body_top: f64,
+    dpi: f64,
+) -> Option<i64> {
+    use crate::model::{
+        control::Control,
+        paragraph::LineSeg,
+        shape::{TextWrap, VertAlign, VertRelTo},
+    };
+    use crate::renderer::px_to_hwpunit;
+
+    let [line] = host.line_segs.as_slice() else {
+        return None;
+    };
+    let Control::Picture(picture) = host.controls.get(control_index)? else {
+        return None;
+    };
+    let common = &picture.common;
+    let transform = &picture.shape_attr;
+    if host.stored_text_partition_is_dirty()
+        || host.cell_format_vpos_dirty
+        || host.source_line_seg_vertical_pos.is_some()
+        || line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
+        || line.line_height <= 0
+        || common.treat_as_char
+        || common.vert_align != VertAlign::Top
+        || !matches!(common.text_wrap, TextWrap::TopAndBottom | TextWrap::Square)
+        || common.height == 0
+        || common.height > i32::MAX as u32
+        || common.height != transform.current_height
+        || common.vertical_offset > i32::MAX as u32
+        || common.margin.top < 0
+        || common.margin.bottom < 0
+        || picture.caption.is_some()
+        || transform.rotation_angle != 0
+        || transform.render_b != 0.0
+        || transform.render_c != 0.0
+        || transform.render_ty != 0.0
+    {
+        return None;
+    }
+    let origin = match common.vert_rel_to {
+        VertRelTo::Para if common.text_wrap == TextWrap::TopAndBottom => {
+            let spacing = styles
+                .para_styles
+                .get(host.para_shape_id as usize)?
+                .spacing_before;
+            i64::from(line.vertical_pos) - i64::from(px_to_hwpunit(spacing, dpi))
+        }
+        VertRelTo::Paper => -i64::from(px_to_hwpunit(body_top, dpi)),
+        _ => return None,
+    };
+    Some(
+        origin
+            + i64::from(common.vertical_offset)
+            + i64::from(common.margin.top)
+            + i64::from(common.height)
+            + i64::from(common.margin.bottom),
+    )
+}
+
+/// 쪽 기준 그림의 완전한 바깥 상자가 두 번째 저장 문단의 첫 줄을 닫으면
+/// 첫 줄 vpos에는 앞 간격이 들어 있으며 본문 원점은 0이다.
+pub(crate) fn stored_first_paper_picture_is_page_relative(
+    first: &Paragraph,
+    next: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    body_top: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::{
+        paragraph::LineSeg,
+        shape::{TextWrap, VertRelTo},
+    };
+    let [Control::Picture(picture)] = first.controls.as_slice() else {
+        return false;
+    };
+    let Some(next) = next else { return false };
+    let Some(line) = next.line_segs.first() else {
+        return false;
+    };
+    let Some(first_line) = first.line_segs.first() else {
+        return false;
+    };
+    let Some(style) = styles.para_styles.get(first.para_shape_id as usize) else {
+        return false;
+    };
+    picture.common.vert_rel_to == VertRelTo::Paper
+        && picture.common.text_wrap == TextWrap::TopAndBottom
+        && style.spacing_before > 0.0
+        && first_line.vertical_pos == crate::renderer::px_to_hwpunit(style.spacing_before, dpi)
+        && next.controls.is_empty()
+        && !next.stored_text_partition_is_dirty()
+        && !next.cell_format_vpos_dirty
+        && next.source_line_seg_vertical_pos.is_none()
+        && line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && line.line_height > 0
+        && stored_picture_bottom_in_body_hu(first, 0, styles, body_top, dpi)
+            .is_some_and(|bottom| (bottom - i64::from(line.vertical_pos)).abs() <= 2)
+}
+
 /// 빈 host 줄이 띠에 흡수된([`crate::renderer::empty_host_line_absorbed_by_topbottom_float`])
 /// 문단 기준 자리차지 그림 하나가 소유하는 바깥 상자의 끝(px, 문단 시작 기준).
 /// 배치 `layout_body_picture` 와 같이 상자는 문단 시작 + 세로 오프셋에서 시작하고

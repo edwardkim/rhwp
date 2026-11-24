@@ -231,6 +231,21 @@ impl TypesetEngine {
         };
         // [Task #1025] split_block_start: 블록 분할 시 연속분 커서 복귀 기록.
         let issue2424_scan_started = profile.enabled.then(std::time::Instant::now);
+        let existing_note_opening_rows = (!is_continuation
+            && st.current_footnote_height > 0.0
+            && (input.prepared.table_footnotes.is_empty() || input.prepared.queue_table_footnotes))
+            .then(|| {
+                let top = budget.fragment_placement.map_or(
+                    st.current_height + budget.host_before_overhead + budget.vert_offset_overhead,
+                    |placement| placement.table_top,
+                );
+                (st.available_height()
+                    - top
+                    - budget.caption_extra
+                    - header_overhead
+                    - crate::renderer::hwpunit_to_px(table.outer_cell_spacing_hu(), self.dpi))
+                .max(0.0)
+            });
         let scan_vars = BlockRowScanVars {
             // 이전 쪽에서 이어진 문단 뒤의 저장 줄은 원래 쪽 좌표계일 수 있다.
             // 첫 표 프레임을 현재 흐름 원점에서 인증하지 못했다면 그 내부 컷도
@@ -261,6 +276,7 @@ impl TypesetEngine {
             header_overhead,
             landscape_rowbreak_bleed,
             has_table_footnotes: !input.prepared.table_footnotes.is_empty(),
+            existing_note_opening_rows,
             landscape_whole_row_tolerance,
             landscape_short_row_tolerance,
             landscape_short_row_max_height,
@@ -740,10 +756,31 @@ impl TypesetEngine {
             }
         }
         // refit의 내용 컷과 물리 상자를 함께 예약하고 완료 컷의 작은 줄간격 꼬리는 새 행으로 만들지 않는다.
+        // 기존 각주 앞에 수용한 공동 저장 프레임은 종료 바깥 여백을 쓰지 않는다.
+        // 일반 행의 아래 여백을 다시 적용하면 같은 컷의 외곽선만 위로 올라간다.
+        let keeps_joint_opening_frame = existing_note_opening_rows
+            .is_some_and(|available| consumed <= available)
+            && !is_continuation
+            && cursor_row == 0
+            && start_cut.is_empty()
+            && split_block_start.is_none()
+            && end_row_height_override.is_some_and(|accepted| {
+                end_row.checked_sub(1).is_some_and(|row| {
+                    layout_engine.stored_joint_row_opening_height(
+                        row_geometry_table,
+                        row,
+                        whole_row_fit_h,
+                        start_cut,
+                        &split_end_cut,
+                        styles,
+                    ) == Some(accepted)
+                })
+            });
         if split_block_start.is_none()
             && split_end_limit > 0.0
             && !split_end_cut.is_empty()
             && end_row > cursor_row
+            && !keeps_joint_opening_frame
         {
             let row = end_row - 1;
             let row_start = if row == cursor_row {

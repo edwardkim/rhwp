@@ -1,0 +1,17 @@
+{
+  "jeju": {
+    "pages": 313,
+    "identical_rhwp_pngs": 309,
+    "changed_rhwp_png_pages": [
+      47,
+      48,
+      49,
+      50
+    ]
+  },
+  "food": {
+    "pages": 141,
+    "identical_rhwp_pngs": 141,
+    "changed_rhwp_png_pages": []
+  }
+}

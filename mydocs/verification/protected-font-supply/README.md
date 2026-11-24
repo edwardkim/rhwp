@@ -12,10 +12,17 @@
 - 문서 항목의 `accepted_sha256_pairs`는 그 문서의 Native·WASM 공급 목록에서만 적용한다.
   화학물질 표시 기준(`chemical`)의 50번째 파일에는 정본 `dotumche.ttf` 또는
   명시된 해시의 `DotumChe-Regular.ttf`를 공급할 수 있다.
+  종합부동산세법(`issue7905`)에는 Windows 10의 Arial·Courier New·Times New Roman 각 4종과
+  `gulim.ttc`의 검증된 해시를 허용한다. `sample10`의 Native 공급 목록에도 같은 해시를 허용한다.
 - `font_environment`가 있으면 해당 JSON을 `--font-environment`로 지정한다.
 - 선택 우선순위는 manifest의 `selection_order`를 따른다.
 - `accepted_font_set`, `accepted_font_environment`와 `records/`는 수용 당시의 비교 근거이며, 현재 전쪽 재검증 상태는
   `reproduction_validation`에 기록한다.
+
+대체 해시 등록과 검증 산출물 보존에 관한 다음 절차는 정본 보호 문서에만 적용한다.
+대체 글꼴 해시를 허용할 때는 `manifest.json`의 해당 보호 문서 항목에 `accepted_sha256_pairs`를 등록한다.
+허용 여부를 판단하기 위한 상세 비교 JSON과 실행 로그는 `output/pr-review/<작업명>/`에만 보존한다.
+`records/`에는 해당 실행 산출물을 추가하지 않는다.
 
 `environments/`는 실행에 사용할 환경 JSON, `imports.json`은 이전 기록에서 이관한 파일의
 원래 경로·SHA-256과 공식 사본의 경로·`official_sha256`이다. 글꼴 프로그램 바이트는 포함하지 않는다.

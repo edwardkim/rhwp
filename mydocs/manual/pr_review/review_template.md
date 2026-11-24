@@ -52,6 +52,11 @@ TSV를 같은 조건·페이지로 비교한 증거를 적는다. 원본/PDF·pr
 90% 이상·평균 개선·CI 성공과 관계없이 재검토다. 기준 TSV가 없으면 미검증으로 기록한다.
 [상세 비교 기준](../verification/visual_verification_governance.md#upstream-devel-대비-페이지별-실루엣-하락-재검토)을 따른다.
 
+체리픽 통합의 개별 검토 문서에는 원 PR head의 제출 TSV와 최종 통합 후보 TSV를 연결하고, 같은 페이지·출력
+경로의 비교 결과를 적는다. 하락하면 하락폭에 관계없이 페이지·전후 수치·원인·보정 및 재검증 증적을 기록한다.
+하락과 증적 누락을 해소한 뒤 통합 PR 제출·승인·병합을 진행한다.
+[원 PR 대비 시각 하락 확인](multi_pr_update_branch.md#원-pr-대비-시각-하락-확인)을 따른다.
+
 collaborator·maintainer의 조판·렌더링 PR review에는
 [정본 보호 TSV 비교](../verification/visual_verification_governance.md#정본-보호-tsv의-공식-표시값-보존)도 기록한다.
 공식 두 자리 표시값의 페이지별 하락은 허용하지 않는다. 일반 사용자·외부 contributor에게 이 검증이나

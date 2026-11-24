@@ -2641,7 +2641,8 @@ impl LayoutEngine {
     /// their first line. An in-paragraph restart of two distinct text ranges
     /// establishes the boundary; paragraph-local zeros alone do not. The
     /// original row boxes must also exceed the object frame, and every cell
-    /// in this row must carry the same two-slot boundary.
+    /// must carry the same opening boundary. Later lines may advance within
+    /// that continuation frame without changing the opening cut.
     fn stored_joint_zero_origin_boundary(
         &self,
         cell: &crate::model::table::Cell,
@@ -2675,7 +2676,7 @@ impl LayoutEngine {
                 }
                 for (li, line) in paragraph.line_segs.iter().enumerate() {
                     if line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-                        || line.vertical_pos != 0
+                        || line.vertical_pos < 0
                         || line.line_height <= 0
                         || line.segment_width <= 0
                     {
@@ -2684,11 +2685,19 @@ impl LayoutEngine {
                     slots.push((pi, li, line));
                 }
             }
-            let [first, second] = slots.as_slice() else {
+            let [first, second, tail @ ..] = slots.as_slice() else {
                 return None;
             };
-            if first.2.column_start != second.2.column_start
+            if first.2.vertical_pos != 0
+                || second.2.vertical_pos != 0
+                || first.2.column_start != second.2.column_start
                 || first.2.segment_width != second.2.segment_width
+                || (!tail.is_empty() && !self.profile.get().hwp5_stored_pagination_layout())
+                || slots[1..].windows(2).any(|pair| {
+                    pair[1].2.vertical_pos <= pair[0].2.vertical_pos
+                        || pair[1].2.column_start != second.2.column_start
+                        || pair[1].2.segment_width != second.2.segment_width
+                })
             {
                 return None;
             }
@@ -2713,7 +2722,7 @@ impl LayoutEngine {
 
     /// The first jointly reset row ends the saved opening object frame. Its
     /// unused physical band belongs to that fragment, not to a content cursor.
-    pub(super) fn stored_joint_row_opening_height(
+    pub(crate) fn stored_joint_row_opening_height(
         &self,
         table: &crate::model::table::Table,
         row: usize,
@@ -6959,6 +6968,18 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
     ) -> bool {
         let profile = self.profile.get();
+        let normalization = self.render_normalization.borrow();
+        if profile.session_edited() || normalization.cell_frame_reflowed(table, cell) {
+            return false;
+        }
+        if cell.row == 1
+            && (profile.hwp5_stored_pagination_layout() || profile.hwpx_stored_layout())
+            && !normalization.table_text_reflowed(table)
+            && crate::renderer::float_placement::stored_captioned_picture_row_heights(table)
+                .is_some()
+        {
+            return true;
+        }
         let [para] = cell.paragraphs.as_slice() else {
             return false;
         };
@@ -6966,11 +6987,6 @@ impl LayoutEngine {
             return false;
         };
         profile.hwpx_stored_layout()
-            && !profile.session_edited()
-            && !self
-                .render_normalization
-                .borrow()
-                .cell_frame_reflowed(table, cell)
             && line.vertical_pos > 0
             && crate::renderer::float_placement::stored_picture_only_cell_height_hu(cell).is_some()
             && styles
@@ -9518,7 +9534,28 @@ impl LayoutEngine {
                                                 .abs()
                                                 <= 1.0
                                         });
+                                // 저장 칸의 실제 행이 그림과 안 여백을 담고 표 전체 선언도
+                                // 닫히면 이 첫 빈 줄의 위치는 그림의 배치 좌표가 아니다.
+                                // 그림 앞에 다른 내용이 없는 경우 칸의 가운데 정렬을 쓴다.
+                                let closed_centered_picture = effective_valign == VerticalAlign::Center
+                                    && row_filter.is_none()
+                                    && !single_row_fragment
+                                    && !self.profile.get().session_edited()
+                                    && !self.render_normalization.borrow().table_text_reflowed(table)
+                                    && cell.row_span == 1
+                                    && table.row_count == 3
+                                    && table.col_count == 1
+                                    && cell.row == 1
+                                    && table.cell_spacing == 0
+                                    && crate::renderer::px_to_hwpunit(cell_h, self.dpi)
+                                        == signed_hwpunit(cell.height)
+                                    && crate::renderer::float_placement::stored_picture_only_cell_height_hu(cell)
+                                        .is_some_and(|height| hwpunit_to_px(height, self.dpi) <= inner_height)
+                                    && crate::renderer::float_placement::stored_complete_column_frame(table)
+                                    && table.cells.iter().map(|cell| u64::from(cell.height)).sum::<u64>()
+                                        == u64::from(table.common.height);
                                 let trusts_stored_flow = !vpos_is_this_floats_own_displacement
+                                    && !closed_centered_picture
                                     && (self.profile.get().hwp5_stored_pagination_layout()
                                         || self.profile.get().hwpx_stored_layout());
                                 let stored_flow_vpos = trusts_stored_flow

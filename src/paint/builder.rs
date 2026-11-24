@@ -717,6 +717,24 @@ impl LayerBuilder {
                                     &self.metafile_fonts,
                                 )
                             });
+                        if self.profile == RenderProfile::Print && !self.hancom2024_print_bitmap {
+                            if let Some(payload) = resolved.as_mut() {
+                                super::metafile_print::place_device_strokes(
+                                    &image,
+                                    node.bbox,
+                                    self.image_page_size,
+                                    self.image_reference_origin,
+                                    self.layout_dpi,
+                                    payload,
+                                );
+                                super::metafile_print::place_monochrome_tiles(
+                                    &image,
+                                    node.bbox,
+                                    self.layout_dpi,
+                                    payload,
+                                );
+                            }
+                        }
                         if let Some(window) =
                             crate::renderer::image_resolver::resolve_print_jpeg_window(
                                 &mut image,
