@@ -138,3 +138,79 @@ fn overlapping_pictures_row_stacks_with_anchor_line() {
         "겹친 그림 행: 그린 높이 {height:.2} 가 그림 두 장 + 앵커 줄 + 안 여백 {expected:.2} 이어야 한다"
     );
 }
+
+/// 안 여백 위 141HU (px).
+const PAD_TOP_PX: f64 = 141.0 * HU_PX;
+/// 대조군 둘째 그림의 가로 오프셋 4000HU (px): 첫 그림과 가로로 겹친다.
+const OVERLAP_X_PX: f64 = 4000.0 * HU_PX;
+
+/// 1쪽 사진 칸(1열)의 행 번호 → (칸 위 끝, 그림 상자 (x, y) 목록).
+fn first_page_photo_cells(core: &DocumentCore) -> BTreeMap<u16, (f64, Vec<(f64, f64)>)> {
+    fn images(n: &RenderNode, out: &mut Vec<(f64, f64)>) {
+        if let RenderNodeType::Image(_) = &n.node_type {
+            out.push((n.bbox.x, n.bbox.y));
+        }
+        for c in &n.children {
+            images(c, out);
+        }
+    }
+    fn walk(n: &RenderNode, cells: &mut BTreeMap<u16, (f64, Vec<(f64, f64)>)>) {
+        if let RenderNodeType::TableCell(cell) = &n.node_type {
+            if cell.col == 1 {
+                let mut boxes = Vec::new();
+                images(n, &mut boxes);
+                cells.insert(cell.row, (n.bbox.y, boxes));
+            }
+            return;
+        }
+        for c in &n.children {
+            walk(c, cells);
+        }
+    }
+    let tree = core.build_page_render_tree(0).expect("render tree");
+    let mut cells = BTreeMap::new();
+    walk(&tree.root, &mut cells);
+    cells
+}
+
+/// 나란한 사진 칸: 그림 두 장이 같은 높이에 놓이고, 그림 띠 + 글자 크기 앵커 줄이 칸을 채워
+/// 가운데 정렬이어도 그림이 안 여백 바로 아래에서 시작한다(한컴 2020 인쇄본).
+#[test]
+fn side_by_side_pictures_start_at_cell_content_top() {
+    let cells = first_page_photo_cells(&load());
+    for row in 0..SIDE_ROWS {
+        let (cell_top, boxes) = &cells[&row];
+        assert_eq!(boxes.len(), 2, "행 {row}: 그림 두 장");
+        for &(_, y) in boxes {
+            assert!(
+                (y - (cell_top + PAD_TOP_PX)).abs() <= TOL_PX,
+                "행 {row}: 그림 위 {y:.2} 가 칸 위 {cell_top:.2} + 안 여백 {PAD_TOP_PX:.2} 이어야 한다 \
+                 (앵커 줄을 400HU 로 세면 가운데 정렬이 그림을 약 4px 내린다)"
+            );
+        }
+    }
+}
+
+/// 대조군: 겹침 허용 안 함인 자리차지 그림이 같은 문단 앞 그림과 가로로 겹치면 한컴은
+/// 둘째 그림을 첫 그림 아래로 내린다. 가로 자리는 오프셋 그대로다.
+#[test]
+fn overlapping_no_overlap_pictures_stack_vertically() {
+    let cells = first_page_photo_cells(&load());
+    let (cell_top, boxes) = &cells[&OVERLAP_ROW];
+    let [(x0, y0), (x1, y1)] = boxes.as_slice() else {
+        panic!("겹친 그림 행: 그림 두 장이어야 한다: {boxes:?}");
+    };
+    assert!(
+        (y0 - (cell_top + PAD_TOP_PX)).abs() <= TOL_PX,
+        "첫 그림 위 {y0:.2} 가 칸 위 {cell_top:.2} + 안 여백이어야 한다"
+    );
+    assert!(
+        (y1 - (y0 + PIC_PX)).abs() <= TOL_PX,
+        "둘째 그림 위 {y1:.2} 가 첫 그림 아래 끝 {:.2} 이어야 한다 (같은 높이면 겹쳐 그린 것)",
+        y0 + PIC_PX
+    );
+    assert!(
+        (x1 - (x0 + OVERLAP_X_PX)).abs() <= TOL_PX,
+        "둘째 그림 x {x1:.2} 는 첫 그림 x {x0:.2} + 오프셋 {OVERLAP_X_PX:.2} 그대로여야 한다"
+    );
+}
