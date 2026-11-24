@@ -4727,23 +4727,10 @@ let body_height=match nested_body_heights
                     // 겹치는 그림만 세로로 쌓인다(위 `ordinary_non_inline_h` 의 띠 규칙). 그리고
                     // 빈 앵커 줄은 그 띠 **아래**에 한 줄을 차지한다(그림이 하나뿐인 칸은 줄을
                     // 그림 자리로 흡수한다). 그림 띠 하나 + 앵커 줄 + 안 여백이 행 높이다.
-                    let unstored_multi_flow_picture_cell = table.common.treat_as_char
-                        && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
-                        && cell.paragraphs.len() == 1
-                        && cell.paragraphs[0].text.trim().is_empty()
-                        && crate::renderer::para_has_no_stored_line_segs(&cell.paragraphs[0])
-                        && cell.paragraphs[0]
-                            .controls
-                            .iter()
-                            .filter(|control| {
-                                matches!(control, Control::Picture(picture)
-                                    if !picture.common.treat_as_char
-                                        && picture.common.flow_with_text
-                                        && matches!(picture.common.text_wrap, TextWrap::TopAndBottom)
-                                        && matches!(picture.common.vert_rel_to, VertRelTo::Para))
-                            })
-                            .count()
-                            >= 2;
+                    let unstored_multi_flow_picture_cell =
+                        crate::renderer::float_placement::unstored_multi_flow_picture_cell(
+                            table, cell,
+                        );
                     let stacked_stored_picture_h = if table.common.treat_as_char
                         && matches!(table.layout_page_break(), TablePageBreak::RowBreak)
                         && cell.paragraphs.len() == 1
@@ -4919,13 +4906,11 @@ let body_height=match nested_body_heights
                     // 띠 아래 앵커 줄은 400HU 자리 줄이 아니라 그 문단 글자 크기의 줄이다
                     // (웹한글기안기: 10pt 문단의 나란한 사진 칸 = 그림 띠 + 13.3px + 안 여백).
                     let anchor_text_height = if unstored_multi_flow_picture_cell {
-                        let para = &cell.paragraphs[0];
-                        para.char_shape_id_at(0)
-                            .or_else(|| para.char_shapes.first().map(|shape| shape.char_shape_id))
-                            .and_then(|id| styles.char_styles.get(id as usize))
-                            .map(|style| style.font_size)
-                            .filter(|size| *size > 0.0)
-                            .unwrap_or(text_height)
+                        crate::renderer::float_placement::unstored_anchor_line_px(
+                            &cell.paragraphs[0],
+                            styles,
+                        )
+                        .unwrap_or(text_height)
                     } else {
                         text_height
                     };

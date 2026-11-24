@@ -3386,6 +3386,18 @@ impl LayoutEngine {
             .fold(0.0, f64::max)
     }
 
+    /// 칸 문단의 자리차지 흐름 높이. 저장 줄 없는 빈 문단에서 '겹침 허용 안 함' 그림이
+    /// 앞 그림 아래로 쌓이면 그 쌓인 높이, 아니면 그림 높이의 최댓값이다.
+    fn cell_paragraph_top_and_bottom_flow_height(
+        &self,
+        source: &Paragraph,
+        controls: &[Control],
+    ) -> f64 {
+        let max = self.paragraph_top_and_bottom_non_inline_flow_height(controls);
+        crate::renderer::float_placement::unstored_cell_topbottom_stack_height(source, self.dpi)
+            .map_or(max, |stacked| stacked.max(max))
+    }
+
     /// 빈 호스트의 그림·캡션은 행 컷 장부가 이미 한 번 예약한 문단 전진을 쓴다.
     /// 호스트 줄과 개체 band가 같은 조각에 모두 있을 때만 그 문단을 닫는다.
     /// 그림만 이월된 조각이나 떨어져 예약된 유닛은 별도의 소유 경로를 유지한다.
@@ -8670,6 +8682,9 @@ impl LayoutEngine {
                 );
             let mut no_overlap_placer =
                 crate::renderer::float_placement::NoOverlapSquarePlacer::default();
+            // 같은 문단의 '겹침 허용 안 함' 자리차지 그림 쌓기(저장 줄 없는 빈 문단).
+            let mut no_overlap_topbottom_placer =
+                crate::renderer::float_placement::NoOverlapSquarePlacer::default();
 
             for (ctrl_idx, ctrl) in source_controls.iter().enumerate() {
                 match ctrl {
@@ -9591,6 +9606,16 @@ impl LayoutEngine {
                                 pic_y,
                                 self.dpi,
                             );
+                            // 한컴은 겹침 허용 안 함인 자리차지 그림이 같은 문단 앞 그림과 가로로
+                            // 겹치면 그 아래로 내린다(가로로 떨어진 그림은 나란히 둔다).
+                            let pic_y = if crate::renderer::float_placement::unstored_cell_no_overlap_topbottom_picture(
+                                &cell.paragraphs[cp_idx],
+                                &pic.common,
+                            ) {
+                                no_overlap_topbottom_placer.place_box(&pic.common, pic_x, pic_y, self.dpi)
+                            } else {
+                                pic_y
+                            };
                             let pic_x = pic_x + picture_box.map_or(0.0, |frame| frame.margin_left);
                             let pic_y = pic_y + picture_box.map_or(0.0, |frame| frame.margin_top);
                             let pic_area = LayoutRect {
@@ -10984,8 +11009,10 @@ impl LayoutEngine {
                 ) {
                     para_y = para_y_before_compose + advance;
                 } else {
-                    para_y +=
-                        self.paragraph_top_and_bottom_non_inline_flow_height(&source_controls);
+                    para_y += self.cell_paragraph_top_and_bottom_flow_height(
+                        &cell.paragraphs[cp_idx],
+                        source_controls,
+                    );
                 }
             }
             let tac_host_closing_spacing =
@@ -11613,9 +11640,19 @@ impl LayoutEngine {
                     &cell.paragraphs,
                     styles,
                 );
+                // 그림 띠 아래 빈 앵커 줄은 문단 글자 크기의 줄이다(행 높이 측정과 같은 판정).
+                // 400HU 자리 줄로 세면 가운데 정렬이 그 차이의 절반만큼 그림을 내린다.
+                if crate::renderer::float_placement::unstored_multi_flow_picture_cell(table, cell) {
+                    if let Some(anchor) = crate::renderer::float_placement::unstored_anchor_line_px(
+                        &cell.paragraphs[0],
+                        styles,
+                    ) {
+                        text_height = text_height.max(anchor);
+                    }
+                }
                 for para in &cell.paragraphs {
                     text_height +=
-                        self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+                        self.cell_paragraph_top_and_bottom_flow_height(para, &para.controls);
                     for ctrl in &para.controls {
                         match ctrl {
                             Control::Picture(pic) => {
