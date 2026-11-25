@@ -568,6 +568,10 @@ name = "build_photo_caption_rows_fixture"
 path = "tools/fixture_generators/build_photo_caption_rows_fixture.rs"
 
 [[example]]
+name = "build_side_by_side_photo_cell_fixture"
+path = "tools/fixture_generators/build_side_by_side_photo_cell_fixture.rs"
+
+[[example]]
 name = "build_square_floor_empty_lead_fixture"
 path = "tools/fixture_generators/build_square_floor_empty_lead_fixture.rs"
 

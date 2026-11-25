@@ -3,11 +3,11 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "3efd53d82c2897301df951fd8d38294777167d6614558559532e255a6c98aa6b"
+      "sha256": "f3b29e20395d8b3e9fd3528d40371120a1c32bcbe88728c4f9e13f3eba920403"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
-      "sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8"
+      "sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1"
     }
   },
   "accepted_sha256_pairs": {
@@ -15412,12 +15412,6 @@
       "page_count": 17,
       "compat": "2022",
       "dpi": 96,
-      "accepted_sha256_pairs": {
-        "HYGPRM.TTF": [
-          "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
-          "29ed78060ed63c47be29862b2fbb86ceb30321aa915d4b446261b4512f0221a4"
-        ]
-      },
       "backends": {
         "native": {
           "font_set": "082bb886b86a6fd8",
@@ -15511,6 +15505,32 @@
             }
           }
         }
+      },
+      "accepted_sha256_pairs": {
+        "HYGPRM.TTF": [
+          "cf8614cb09e038ff24c0edb2ba2cfa6b8911c7c913cfe590e7e56014e7e63e5a",
+          "29ed78060ed63c47be29862b2fbb86ceb30321aa915d4b446261b4512f0221a4"
+        ],
+        "H2MJRE.TTF": [
+          "c7dda73691fb2669b586d12e615574ee6ff86dc5b08cd2bc255d95ab3b566002",
+          "2fda1cc69297fe605ee8804984d26666c2543b0ec22b8f50031123a18d81924e"
+        ],
+        "HBATANG.TTF": [
+          "bef6371830a14b7e275087f86517074392a54a9147819506a2c07637c88b4068",
+          "35f84328500fc2c3ee0b148aa75de0ed384bf9eee8dee9148c01b0a11a27fe05"
+        ],
+        "HDOTUM.TTF": [
+          "4e7f536a6715270e06c6cc3b5474456007c193a7754131335195286d889f6757",
+          "63738010103c4b6b33c3b67ae07668f0ec215948804b5a130354c6076cc8e3d0"
+        ],
+        "gulim.TTC": [
+          "ed7502755424c560f4538647eff0833b738fe7f3f4ba4de8fca9ff8c4d6a776c",
+          "4b9ac63e8920ed1bae29c068025ed30493464c18ee18617887daa18e59189226"
+        ],
+        "pala.ttf": [
+          "6f98bd91b902a1b8ef86c53b084d61d40282f1c1260fce08be7dd7034713f8ad",
+          "e47d594e2e2bc31b28f87b6f66483d32f925843ceb002f919c7a403aca48813d"
+        ]
       }
     },
     {
@@ -16820,8 +16840,8 @@
             "sha256": "8730fc96a15984bd784334225eaf01b9ea38731b1dd96fbd0717c628eb7d9708"
           },
           "accepted_condition_evidence": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-spec13-protected-validation.json",
-            "sha256": "96f0acd6b6345f20f5667d0515eab42b21baa79774eeee5760c9644127d56f81"
+            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+            "sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333"
           },
           "previous_pr": {
             "number": 9318,
@@ -16843,12 +16863,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/verification/protected-font-supply/records/chemical-wasm-original-programs-validation.json",
-            "sha256": "2ff2355a93744b075874a32a1201b61b11d4cf8741e758454574b8b26284a747",
-            "selector": {
-              "key": "chemical",
-              "backend": "wasm"
-            }
+            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+            "sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333"
           },
           "qualified_program_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",

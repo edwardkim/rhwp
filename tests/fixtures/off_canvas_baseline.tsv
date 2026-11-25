@@ -91,3 +91,7 @@ issue9239/senior-employment-policy-caption-float-table.hwp	223
 # 같은 파일을 연 devel과 후보가 각각 표 1개(오른쪽 67.08px)를 검출했다. 글 다섯 항목은 모두 용지 안에 있다.
 semanticist21-20261123/merged-grid-column.hwp	1
 semanticist21-20261123/merged-grid-column.hwpx	1
+
+# #9384 용지 끝 사진 대조. 한컴 2020 인쇄에서 같은 위치에서 잘리는 의도적 입력이다.
+pr9349-cell-floats/photo-a5-height.hwp	1
+pr9349-cell-floats/photo-short-page.hwp	1

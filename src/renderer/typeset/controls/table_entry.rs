@@ -1,6 +1,8 @@
 //! 표 컨트롤 진입 시 저장 줄 이월과 데코레이션 경로 선택 조회.
 //! 페이지 전환·항목 발행·표 측정/분할은 수행하지 않는다.
-use super::super::{para_has_visible_text, para_is_non_tac_overlay_table_anchor};
+use super::super::{
+    para_has_non_whitespace_text, para_has_visible_text, para_is_non_tac_overlay_table_anchor,
+};
 use crate::model::{paragraph::Paragraph, table::Table};
 use crate::renderer::{
     float_placement::{original_hwpx_infront_para_flow_paginates, signed_hwpunit},
@@ -62,6 +64,8 @@ pub(super) fn uses_decoration_placement(
     body: LayoutRect,
     paper_height: f64,
     dpi: f64,
+    flow_height: f64,
+    following: &[Paragraph],
     base_available_height: impl FnOnce() -> f64,
     original_hwpx: impl FnOnce() -> bool,
 ) -> bool {
@@ -107,9 +111,20 @@ pub(super) fn uses_decoration_placement(
     // paint와 같은 가장자리 정렬식을 사용하며 본문 안의 고정 표는 제외한다.
     let paper_outside_body =
         paper_table_is_outside_body(table, table_measured_h, body, paper_height, dpi);
+    let base_available = base_available_height();
     let oversized_multirow = table.row_count > 1
-        && table_measured_h > base_available_height()
-        && !paper_anchored_overlay_table;
+        && table_measured_h > base_available
+        && !paper_anchored_overlay_table
+        && !line_flow_continues_under_overlay(
+            para,
+            table,
+            next_para,
+            following,
+            table_measured_h,
+            flow_height,
+            base_available,
+            dpi,
+        );
     let followed_by_empty_overlay_guide = next_para.is_some_and(|p| {
         p.controls.is_empty()
             && !para_has_visible_text(p)
@@ -183,6 +198,102 @@ pub(super) fn uses_decoration_placement(
     )) || multicol_empty_overlay_anchor
             || multicol_tac_host_overlay_anchor))
         || horz_fully_outside_column
+}
+
+/// 쪽 하단을 넘는 문단 기준 글 앞/뒤 표라도 줄 좌표상 다음 문단이 표 띠 안에서
+/// 이어지면, 한글은 표만 다음 쪽으로 나누고 본문 흐름은 밀지 않는다(뒤 문단은 표와
+/// 겹친 제자리에 놓인다). 이 표는 #992 본문 분할 대신 #703 장식 배치와 #4568 잔여 행
+/// 이월을 탄다. 잔여 행 이월은 한 번뿐이라 두 쪽 안에 끝나는 표로 좁힌다.
+fn line_flow_continues_under_overlay(
+    para: &Paragraph,
+    table: &Table,
+    next_para: Option<&Paragraph>,
+    following: &[Paragraph],
+    measured_height: f64,
+    flow_height: f64,
+    base_available: f64,
+    dpi: f64,
+) -> bool {
+    use crate::model::shape::{TextWrap, VertRelTo};
+    use crate::model::table::TablePageBreak;
+    if table.common.treat_as_char
+        || !matches!(
+            table.common.text_wrap,
+            TextWrap::InFrontOfText | TextWrap::BehindText
+        )
+        || table.common.vert_rel_to != VertRelTo::Para
+        || table.layout_page_break() == TablePageBreak::None
+        || !measured_height.is_finite()
+        || base_available <= 0.0
+    {
+        return false;
+    }
+    // 줄 정보가 없는 원본은 불러올 때 채운 줄(합성 표시)로 같은 판정을 한다. 저장 줄과
+    // 합성 줄이 섞이면 두 좌표계가 달라 비교하지 않는다.
+    let (Some(anchor), Some(next)) = (
+        para.line_segs.first(),
+        next_para.and_then(|p| p.line_segs.first()),
+    ) else {
+        return false;
+    };
+    if (anchor.tag ^ next.tag) & 0x8000_0000 != 0 {
+        return false;
+    }
+    let (anchor_vpos, next_vpos) = (anchor.vertical_pos, next.vertical_pos);
+    let anchor_y = flow_height + hwpunit_to_px(signed_hwpunit(table.common.vertical_offset), dpi);
+    let gap = next_vpos - anchor_vpos;
+    gap > 0
+        && hwpunit_to_px(gap, dpi) < measured_height
+        && anchor_y >= 0.0
+        && anchor_y + measured_height <= 2.0 * base_available
+        && first_content_overlaps_overlay(
+            anchor,
+            following,
+            measured_height,
+            anchor_y + measured_height - base_available,
+            dpi,
+        )
+}
+
+/// 앵커 뒤 빈 문단(공백·개체 없음)을 건너 처음 나오는 내용 문단이 줄 좌표상 표와 겹치는가.
+/// 같은 쪽이면 앵커 줄부터 표 높이 안, 한 번 쪽이 바뀐 뒤면 다음 쪽으로 넘어갈 표 꼬리 안이다.
+/// 빈 문단 사다리가 표 높이와 다음 쪽 꼬리까지 덮고 그 뒤에 내용이 오면(#4514 필러 형상)
+/// 표가 흐름을 밀든 말든 배치가 같으므로 종전 본문 분할 경로를 둔다.
+fn first_content_overlaps_overlay(
+    anchor: &crate::model::paragraph::LineSeg,
+    following: &[Paragraph],
+    measured_height: f64,
+    tail_height: f64,
+    dpi: f64,
+) -> bool {
+    let mut previous = anchor.vertical_pos;
+    let mut page_changed = false;
+    for paragraph in following {
+        let (Some(first), Some(last)) = (paragraph.line_segs.first(), paragraph.line_segs.last())
+        else {
+            return false;
+        };
+        if (first.tag ^ anchor.tag) & 0x8000_0000 != 0 {
+            return false;
+        }
+        if first.vertical_pos < previous {
+            if page_changed {
+                return false;
+            }
+            page_changed = true;
+        }
+        previous = last.vertical_pos;
+        if paragraph.controls.is_empty() && !para_has_non_whitespace_text(paragraph) {
+            continue;
+        }
+        return if page_changed {
+            hwpunit_to_px(first.vertical_pos, dpi) < tail_height
+        } else {
+            first.vertical_pos > anchor.vertical_pos
+                && hwpunit_to_px(first.vertical_pos - anchor.vertical_pos, dpi) < measured_height
+        };
+    }
+    false
 }
 
 fn paper_table_is_outside_body(

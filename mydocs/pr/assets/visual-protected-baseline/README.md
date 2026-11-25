@@ -12,7 +12,7 @@
 
 - [final.tsv](final.tsv): 입력·기준 PDF·backend·페이지별 공식 두 자리 raw 보호값.
 - [manifest.json](manifest.json): 입력/PDF SHA-256·크기·측정 조건·전쪽 수·출처 commit/TSV/열/해시와 중복 제거 내역.
-- TSV SHA-256: `1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8`.
+- TSV SHA-256: `56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1`.
 - 입력 23개, Native/fresh WASM 각 23개 데이터셋·2,023쪽, 총 46개 데이터셋·4,046행.
 - 최초 통합 당시 수용 자료 56개 데이터셋 중 중복 20개를 정리했다. 이전 자료보다 공식 표시값이 낮아진 페이지는 0쪽이다.
 
@@ -41,7 +41,7 @@ HWP와 HWPX는 같은 제목이어도 별도 입력이다. 아래 최저값은 �
 | [issue3307_outline_number.hwpx](<../../../../samples/task3307/issue3307_outline_number.hwpx>) | 9 | 100.00% | 100.00% |
 | [body-list-typed-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/body-list-typed-hwp.hwp>) | 1 | 100.00% | 100.00% |
 | [control-styles-hwp.hwp](<../../../../tests/fixtures/issue_8109_saved_fonts/control-styles-hwp.hwp>) | 1 | 100.00% | 100.00% |
-| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 100.00% | 100.00% |
+| [1480000-201900042-chemical-labeling-standards.hwp](<../../../../samples/issue6782/1480000-201900042-chemical-labeling-standards.hwp>) | 103 | 99.99% | 100.00% |
 | [한글문서파일형식_5.0_revision1.3.hwp](<../../../../samples/한글문서파일형식_5.0_revision1.3.hwp>) | 71 | 99.92% | 99.92% |
 | [outline_navigation_panel_demo.hwpx](<../../../../samples/pr4093/outline_navigation_panel_demo.hwpx>) | 3 | 100.00% | 100.00% |
 | [78494-virtual-convergence-industry-decree.hwpx](<../../../../samples/issue6776/78494-virtual-convergence-industry-decree.hwpx>) | 74 | 99.98% | 99.98% |
@@ -195,3 +195,7 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 원본 및 한컴 Print에서 확인한 휴먼고딕 `HMKMG.TTF`를 Native에 공급하자 시행령의 9·32·50·66쪽이 100.00%로 복원됐다. 기존 PDF에 대한 시행령 74쪽이 조정 전 정본값과 모두 일치했다. 중첩 표 Native 10쪽에는 개별 승인한 값을 적용한다.
 
 [전쪽 검증](../planet6897_20261125/protected-native-mac/decree-ttf/README.md) · [복원 영수증](updates/planet6897-decree-hmkmg-20261125.json)
+
+## 2026-11-25 화학물질 표시 기준의 브라우저 출력
+
+보호 문서 23종의 Native·fresh WASM 4,046행에서 하락과 누락이 없었다. 화학물질 표시 기준의 브라우저 26쪽을 99.99%에서 100.00%로 상향했다. [최신 기준과 후보의 전쪽 대조](../hyunmyungjanelee-20261125/maintainer/current-9415/protection-pages.tsv) · [갱신 영수증](updates/pr9352-9384-9407-20261125.json)

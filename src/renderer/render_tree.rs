@@ -2199,6 +2199,8 @@ pub struct PageLayoutContext {
     horizontal_shaping_sidecars: HorizontalShapingPageSidecars,
     /// Q4-D2 bounded HWP5 vertical table-cell owners. Paint publication is D3-only.
     vertical_shaping_sidecars: VerticalShapingPageSidecars,
+    /// 칸 clip 밖에 놓이는 개체와 원본의 앞뒤 배치.
+    cell_overlay_nodes: std::collections::HashMap<NodeId, crate::model::shape::TextWrap>,
 }
 
 impl PageLayoutContext {
@@ -2212,7 +2214,36 @@ impl PageLayoutContext {
             page_bbox: BoundingBox::new(0.0, 0.0, width, height),
             horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
             vertical_shaping_sidecars: VerticalShapingPageSidecars::default(),
+            cell_overlay_nodes: std::collections::HashMap::new(),
         }
+    }
+
+    pub(crate) fn mark_cell_overlay_node(
+        &mut self,
+        id: NodeId,
+        wrap: crate::model::shape::TextWrap,
+    ) {
+        self.cell_overlay_nodes.insert(id, wrap);
+    }
+
+    /// 종이·쪽 기준 도형의 ‘글 뒤’는 표 배경·괘선보다 먼저, 나머지는 완성된 표 위에 그린다.
+    /// 같은 층의 순서와 칸 안에 속한 그림의 그리기 순서는 보존한다.
+    pub(crate) fn order_cell_overlay_nodes(&self, table_node: &mut RenderNode) {
+        if self.cell_overlay_nodes.is_empty()
+            || !table_node
+                .children
+                .iter()
+                .any(|child| self.cell_overlay_nodes.contains_key(&child.id))
+        {
+            return;
+        }
+        table_node
+            .children
+            .sort_by_key(|child| match self.cell_overlay_nodes.get(&child.id) {
+                Some(crate::model::shape::TextWrap::BehindText) => 0,
+                None => 1,
+                Some(_) => 2,
+            });
     }
 
     /// 페이지 인덱스

@@ -1,0 +1,13 @@
+PR	case	source	page	rule_above_visible_of_65	rule_inside_visible_of_130	rule_below_visible_of_60
+9352	paper_square_split-hwpx	Hancom Print	1	65	0	60
+9352	paper_square_split-hwpx	candidate native	1	65	130	60
+9352	paper_square_split-hwpx	final native	1	65	0	60
+9352	paper_square_split-hwpx	final wasm	1	65	0	60
+9352	paper-split-front	Hancom Print	1	65	0	60
+9352	paper-split-front	candidate native	1	65	0	60
+9352	paper-split-front	final native	1	65	0	60
+9352	paper-split-front	final wasm	1	65	0	60
+9352	paper-split-behind	Hancom Print	1	65	130	60
+9352	paper-split-behind	candidate native	1	65	130	60
+9352	paper-split-behind	final native	1	65	130	60
+9352	paper-split-behind	final wasm	1	65	130	60
