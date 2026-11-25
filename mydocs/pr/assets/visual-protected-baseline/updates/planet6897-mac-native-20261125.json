@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "candidate_source": "8355876d60cb96ff9ec36104202aef208aec7df1",
+  "evidence_commit": "882451d176d43e9571f5ba3bdaf0f4be555bfeea",
+  "condition_evidence": "mydocs/pr/assets/planet6897_20261125/protected-native-mac/validation.json",
+  "previous_table_sha256": "be050f801ed2f2152017357249f4b7c1068dc83c50347266d16599d61a1f4a5c",
+  "table_sha256": "2e51f8ff60713ce2a4d4cca53ce19fd861e19a9915dad7606de07b94620124ae",
+  "user_approved": true,
+  "compared_native_rows": 91,
+  "decreased_rows": [
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 1,
+      "previous": "100.00",
+      "accepted": "99.93"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 2,
+      "previous": "100.00",
+      "accepted": "99.83"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 5,
+      "previous": "100.00",
+      "accepted": "99.67"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 6,
+      "previous": "100.00",
+      "accepted": "99.64"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 7,
+      "previous": "100.00",
+      "accepted": "99.79"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 8,
+      "previous": "100.00",
+      "accepted": "99.97"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 9,
+      "previous": "100.00",
+      "accepted": "99.94"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 10,
+      "previous": "100.00",
+      "accepted": "99.98"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 16,
+      "previous": "100.00",
+      "accepted": "99.81"
+    },
+    {
+      "document_id": "78e1720edfe2277d",
+      "key": "nested",
+      "backend": "native",
+      "page": 17,
+      "previous": "100.00",
+      "accepted": "99.71"
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "native",
+      "page": 9,
+      "previous": "100.00",
+      "accepted": "99.90"
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "native",
+      "page": 32,
+      "previous": "100.00",
+      "accepted": "99.93"
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "native",
+      "page": 50,
+      "previous": "100.00",
+      "accepted": "99.93"
+    },
+    {
+      "document_id": "61c6ae96913006c5",
+      "key": "decree",
+      "backend": "native",
+      "page": 66,
+      "previous": "100.00",
+      "accepted": "99.93"
+    }
+  ]
+}
