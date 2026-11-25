@@ -17043,6 +17043,16 @@
             }
           }
         }
+      },
+      "accepted_sha256_pairs": {
+        "HMKMM.TTF": [
+          "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+          "c45c30b92569bf9066ac6003e90779e5405d522ceef7e36a4a0fab2ddc431c1c"
+        ],
+        "HMKMG.TTF": [
+          "9e43aaf13552cd66b6f73e5811be3c7858bdb03d8d35dc7662c89bf2ea54b280",
+          "08fbf7941fcdd77a5bae92060fdbb12f45487a11ab9560a419b43e4d971a3b96"
+        ]
       }
     },
     {
