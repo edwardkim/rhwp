@@ -2,7 +2,7 @@
 
 ## 최종 판정
 
-**표 조각과 경계 글의 쪽 소속 개선을 재현했다.** 원 PR head와 통합 후보를 같은 Mac에서 재출력한 결과 Native와 fresh WASM 모두 44쪽 중 하락한 쪽은 0쪽이다.
+**새 MCP 인쇄본 기준으로 원 PR 대비 하락은 두 경로 모두 0쪽이다.** 통합 후보에서 98% 미만인 쪽은 24·31쪽이며 제출을 보류한다.
 
 [원 PR #9386](https://github.com/edwardkim/rhwp/pull/9386) · [이슈 #9000](https://github.com/edwardkim/rhwp/issues/9000)
 
@@ -10,7 +10,7 @@ KAF 회의자료에서 표 구간을 남긴 44쪽 파생본이다. 코드는 칸
 
 원 PR의 전쪽 최저는 Native 94.32%·WASM 93.13%로 1쪽 표지에서 발생했고, 주장하는 33~44쪽은 양쪽 98% 이상이었다. 첨부 PDF는 PDF 1.4, A4 가로 44쪽이며 `Creator`에는 `Hwp 2018 11.0.0.1623`, `Producer`에는 `Hancom PDF 1.3.0.404`가 기록됐다. 저장소의 실행 파일 실측에서 이 빌드는 한컴 2020이며, 기존 MCP 2020 Print PDF에서도 같은 Creator·Producer를 확인했다. 원 PR이 기록한 동일 파생본의 Hancom PDF Print와 SHA-256이 첨부본에 맞아 기존 PDF를 기준으로 재사용했다. [제품 버전 실측](../../manual/verification/hangul_version_oracle.md#51-설치된-버전-확인) · [MCP 대조 기록](pr_9317_review.md#입력과-독립-인쇄-기준)
 
-갱신된 MCP에서 같은 원본을 한컴 2020으로 다시 출력했다. client 0.10.0에서 `start --engine 2020 --target pdf --timeout-seconds 1800`을 호출하고, `status`가 성공한 뒤 같은 job을 `download`로 받았다. `status.result`와 `download.server`의 `pdf_output_mode`는 `hancom2020_pdf_driver_one_up`, `pdf_print_method`는 `0`이다. MCP는 PDF 글꼴 이름의 공백 문법을 보정하고 전체 44쪽을 확인했다. 새 한컴 빌드 `11.0.0.9172`의 인쇄본을 원 PR 인쇄본과 96 DPI로 비교하면 표시값이 100.00% 미만인 쪽이 22쪽이다. 원 PR과 통합 후보의 비교는 기존에 제출된 같은 인쇄본을 기준으로 유지한다. [두 인쇄본 대조 및 MCP 영수증](../assets/planet6897_20261125/mcp-print-reissue.json) · [MCP 기준 PDF 인쇄 계약](../../manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)
+갱신된 MCP에서 같은 원본을 한컴 2020으로 다시 출력했다. client 0.10.0에서 `start --engine 2020 --target pdf --timeout-seconds 1800`을 호출하고, `status`가 성공한 뒤 같은 job을 `download`로 받았다. `status.result`와 `download.server`의 `pdf_output_mode`는 `hancom2020_pdf_driver_one_up`, `pdf_print_method`는 `0`이다. MCP는 PDF 글꼴 이름의 공백 문법을 보정하고 전체 44쪽을 확인했다. 새 한컴 빌드 `11.0.0.9172`의 인쇄본을 원 PR 인쇄본과 96 DPI로 비교하면 표시값이 100.00% 미만인 쪽이 22쪽이다. 기존 인쇄본으로 최초 제출 수치를 재현했다. 최종 제출 판정에는 이번 MCP 인쇄본을 원 PR과 통합 후보 양쪽의 전쪽에 적용했다. [두 인쇄본 대조 및 MCP 영수증](../assets/planet6897_20261125/mcp-print-reissue.json) · [MCP 기준 PDF 인쇄 계약](../../manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)
 
 ## 문구의 쪽 소속 재현
 
@@ -23,7 +23,22 @@ KAF 회의자료에서 표 구간을 남긴 44쪽 파생본이다. 코드는 칸
 
 원본과 PDF가 사용하는 휴먼명조 TrueType을 공급한 뒤 Native와 fresh WASM 전체 44쪽을 다시 비교했다. 26쪽 Native는 92.76%에서 99.93%로 회복했다. 전쪽 최저는 24쪽에서 Native 96.88%, WASM 96.93%다. 33~44쪽은 두 출력 모두 98% 이상이다. 원 PR 제출값 대비 남은 차이는 Native 35쪽 99.19→99.18%, WASM 21쪽 99.34→99.23%와 36쪽 98.42→98.38%다. 같은 글꼴을 공급한 리베이스 전후 후보의 Native 35쪽과 WASM 21쪽 PNG는 바이트 단위로 같고, WASM 36쪽은 렌더 트리와 점수가 같았다. [글꼴 공급 및 페이지별 결과](../assets/planet6897_20261125/kaf-font-recheck.json)
 
-## 원 PR head와 같은 조건으로 재측정
+## 새 MCP 인쇄본으로 전쪽 대조
+
+한컴 2020 `11.0.0.9172`에서 다시 인쇄한 [kaf_table_section-2020.pdf](../../../pdf/issue9000/mcp-11.0.0.9172/kaf_table_section-2020.pdf)로 원 PR과 통합 후보의 44쪽을 각각 대조했다. 같은 96 DPI·compat 2022에서 원 PR 대비 Native 1쪽, fresh WASM 1쪽이 상승했다. 두 경로에 하락은 0쪽이다.
+
+| 98% 미달 쪽 | 통합 후보 Native | 통합 후보 fresh WASM |
+| --- | --- | --- |
+| 24 | 97.05% | 97.10% |
+| 31 | 95.73% | 95.75% |
+
+- 원 PR 전쪽 [Native TSV](../assets/planet6897_20261125/mcp-print-comparison/kaf-table/native/original.tsv) · [fresh WASM TSV](../assets/planet6897_20261125/mcp-print-comparison/kaf-table/wasm/original.tsv)
+- 통합 후보 전쪽 [Native TSV](../assets/planet6897_20261125/mcp-print-comparison/kaf-table/native/candidate.tsv) · [fresh WASM TSV](../assets/planet6897_20261125/mcp-print-comparison/kaf-table/wasm/candidate.tsv)
+- fresh WASM 31쪽 [review](../assets/planet6897_20261125/mcp-print-comparison/kaf-table/wasm/review_031.png) · [overlay](../assets/planet6897_20261125/mcp-print-comparison/kaf-table/wasm/overlay_031.png)
+
+[기준 PDF 해시와 집계](../assets/planet6897_20261125/mcp-print-comparison/results.json)
+
+## 최초 제출 PDF로 원 PR 수치 재현
 
 원 PR head `f3edd5acaea4`와 통합 후보 `049fd5ed2fa1`를 같은 macOS에서 빌드했다. 같은 원본·한컴 Print PDF·공급 글꼴 순서와 96 DPI, compat 2022로 각각 44쪽을 비교했다. 두 출력 경로 모두 43쪽의 PNG가 바이트 단위로 같다. 31쪽은 Native 97.27→98.84%, fresh WASM 97.28→98.84%로 개선됐다.
 

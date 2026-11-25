@@ -3,7 +3,7 @@
   "workflow_devel": "50324d194d1cd7c46d168f07a58515086530f03b",
   "client": "tools/hwp-convert-mcp-2024-client-0.10.0.tgz",
   "method": "start (engine 2020, target pdf, timeout 1800초) → status → download",
-  "reference_decision": "원 PR 제출 TSV를 산출한 Hancom PDF 인쇄본을 유지한다. 새 인쇄본은 다른 한컴·프린터 빌드이며, 주어진 98쪽에서 픽셀 단위로 같은 페이지가 없었다.",
+  "reference_decision": "최초 제출 PDF는 원 PR 수치 재현에 사용했다. 최종 제출 판정은 한컴 2020 11.0.0.9172에서 재산출한 PDF를 양쪽 head에 같은 조건으로 적용한 결과를 따른다.",
   "datasets": {
     "kaf-table": {
       "existing_pdf": {
@@ -163,5 +163,6 @@
         ]
       }
     }
-  }
+  },
+  "submission_comparison": "mcp-print-comparison/results.json"
 }
