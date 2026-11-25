@@ -3,7 +3,7 @@
   "baseline": {
     "manifest": {
       "path": "mydocs/pr/assets/visual-protected-baseline/manifest.json",
-      "sha256": "83dbd94a274ed7a6a8c151bd048069f544e84a2dc360b00cb637f03e68ddbe8b"
+      "sha256": "f3b29e20395d8b3e9fd3528d40371120a1c32bcbe88728c4f9e13f3eba920403"
     },
     "table": {
       "path": "mydocs/pr/assets/visual-protected-baseline/final.tsv",
@@ -16840,8 +16840,8 @@
             "sha256": "8730fc96a15984bd784334225eaf01b9ea38731b1dd96fbd0717c628eb7d9708"
           },
           "accepted_condition_evidence": {
-            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-develop/runs.tsv",
-            "sha256": "4868000bd2cc4ec8a7fa601b143d98143c34ed40d5284f3dc9fe6bdbc6fb907b"
+            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+            "sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333"
           },
           "previous_pr": {
             "number": 9318,
@@ -16863,8 +16863,8 @@
           },
           "supply_mode": "explicit_files",
           "reproduction_validation": {
-            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-develop/runs.tsv",
-            "sha256": "4868000bd2cc4ec8a7fa601b143d98143c34ed40d5284f3dc9fe6bdbc6fb907b"
+            "path": "mydocs/pr/assets/hyunmyungjanelee-20261125/maintainer/current-9415/runs.tsv",
+            "sha256": "ca3607ec633db47dc2500306fecd603487c50bcec0a972bff94464a3c737b333"
           },
           "qualified_program_evidence": {
             "path": "mydocs/verification/protected-font-supply/records/used-ttc-glyph-identity.json",
