@@ -797,6 +797,13 @@ SHA-256은 `cdf7af0a476e8c0ede643c285b58c0c5f087eb7cd7b43784e14dd31549102b24`이
 `3d8ae6cd59fcace9d574487c69c741ac70eb964f5417a2ba22fbf7470157854f`다. 같은 경로 아래에
 `fragment-ownership/ownership.json`과 `controls.status`를 보존했다.
 
+`00da1ab356`의 #5699 겹침 검사는 `731de9e1b4`에서 이관됐다. 그 검사의 6쪽 본문 문단 62와
+표 63을 다시 확인했다. 후보에서 본문 줄의 하단은 표의 위보다 15.9px 앞선다. 한컴 Print에서도
+제목이 표의 첫 셀 글자보다 먼저 끝난다. 해당 쪽의 Native raw는 100.00%다. 같은 입력의
+`layout-anomaly --json` 전체 쪽 검사에서 본문 넘침은 devel 4건, 후보 0건이었다. 쪽 밖 배치와
+텍스트 겹침은 양쪽 모두 0건이다. `fragment-ownership/`에 `historical-5699-page-6.json`과 기하
+검사 JSON 두 개를 보존했다. 이관한 회귀는 후보 fresh WASM 확인 뒤 복원한다.
+
 첫 후보 WASM 빌드 로그에 후보 `rhwp` crate 컴파일 행이 없었다. 생성된 최적화 모듈은 기준과
 SHA-256 `9e1c8416ec0b2a72fc43aceaf03f01f8b2ecd82c4756dc6735d3198a75075904`가 같았으며,
 47쪽 TSV도 기준과 바이트 단위로 일치했다. 해당 실행은 후보 소스의 검증에 사용할 수 없다.
