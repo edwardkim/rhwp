@@ -17,6 +17,53 @@ pub(super) struct PreparedTextBox {
 /// 열린 문서에서 복원한 글줄이 차지하는 본체 높이. 원래 줄바꿈을 유지하며
 /// 글줄 끝과 아래 안 여백까지 사각형 테두리와 인쇄 클립을 함께 늘린다.
 pub(super) fn refreshed_line_box_height(shape: &ShapeObject, dpi: f64) -> Option<f64> {
+    if shape.common().size_protect {
+        return None;
+    }
+    refreshed_line_box_content_height(shape, dpi)
+}
+
+fn refreshed_line_box_content_height(shape: &ShapeObject, dpi: f64) -> Option<f64> {
+    let text_box = shape.drawing()?.text_box.as_ref()?;
+    text_box.font_line_heights_refreshed.then_some(())?;
+    line_box_content_height_hu(shape).map(|height| hwpunit_to_px(height, dpi))
+}
+
+/// 재저장된 글상자는 CTRL_HEADER에 이전 크기를 남길 수 있다. 저장한
+/// 글줄과 안 여백이 현재 요소 높이에 들어가고 종축 배율도 그 높이를
+/// 가리키면 테두리와 클립에 현재 높이를 사용한다. 글줄은 이미 저장된 좌표를 쓴다.
+pub(super) fn saved_line_box_height(shape: &ShapeObject, dpi: f64) -> Option<f64> {
+    let common = shape.common();
+    let attr = shape.shape_attr();
+    if common.size_protect
+        || common.width_criterion != SizeCriterion::Absolute
+        || common.width == 0
+        || common.height == 0
+        || attr.group_level != 0
+        || attr.rotation_angle != 0
+        || attr.horz_flip
+        || attr.vert_flip
+        || attr.original_width != common.width
+        || attr.current_width != common.width
+        || attr.original_height != common.height
+        || attr.current_height <= common.height
+        || attr.current_height_was_zero
+        || attr.current_width_was_zero
+        || attr.render_sx != 1.0
+        || attr.render_tx != 0.0
+        || attr.render_ty != 0.0
+        || !attr.has_saved_affine_geometry()
+    {
+        return None;
+    }
+    let height = line_box_content_height_hu(shape)?;
+    let current = i32::try_from(attr.current_height).ok()?;
+    let matrix_height = attr.render_sy * f64::from(attr.original_height);
+    (height == current && (matrix_height - f64::from(current)).abs() <= 0.5)
+        .then(|| hwpunit_to_px(current, dpi))
+}
+
+fn line_box_content_height_hu(shape: &ShapeObject) -> Option<i32> {
     let ShapeObject::Rectangle(rect) = shape else {
         return None;
     };
@@ -26,9 +73,7 @@ pub(super) fn refreshed_line_box_height(shape: &ShapeObject, dpi: f64) -> Option
     let [paragraph] = text_box.paragraphs.as_slice() else {
         return None;
     };
-    if !text_box.font_line_heights_refreshed
-        || common.treat_as_char
-        || common.size_protect
+    if common.treat_as_char
         || common.height_criterion != SizeCriterion::Absolute
         || common.vert_rel_to != VertRelTo::Para
         || common.vert_align != VertAlign::Top
@@ -57,9 +102,7 @@ pub(super) fn refreshed_line_box_height(shape: &ShapeObject, dpi: f64) -> Option
         .iter()
         .map(|line| line.vertical_pos.saturating_add(line.line_height))
         .max()?;
-    let height = content_end
-        .checked_add(i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom))?;
-    Some(hwpunit_to_px(height, dpi))
+    content_end.checked_add(i32::from(text_box.margin_top) + i32::from(text_box.margin_bottom))
 }
 
 /// 내용이 선언 상자를 넘으면 현재 문단 프레임으로 높이와 그릴 글줄을 함께 만든다.
@@ -75,7 +118,6 @@ pub(super) fn prepare(
     let common = shape.common();
     let text_box = shape.drawing()?.text_box.as_ref()?;
     if common.treat_as_char
-        || common.size_protect
         || !matches!(
             common.text_wrap,
             TextWrap::InFrontOfText | TextWrap::BehindText
@@ -95,7 +137,7 @@ pub(super) fn prepare(
     if !inner_width.is_finite() || inner_width <= 0.0 || !height.is_finite() {
         return None;
     }
-    if let Some(required) = refreshed_line_box_height(shape, dpi) {
+    if let Some(required) = refreshed_line_box_content_height(shape, dpi) {
         if required <= height {
             return None;
         }
@@ -104,8 +146,15 @@ pub(super) fn prepare(
         super::textbox_reflow::refold_preserving_row_geometry(paragraph, inner_width, styles, dpi);
         return Some(PreparedTextBox {
             shape: prepared,
-            height: required,
+            height: if common.size_protect {
+                height
+            } else {
+                required
+            },
         });
+    }
+    if common.size_protect {
+        return None;
     }
     // 온전한 저장 글줄이 현재 글자 높이·안 여백과 함께 들어가면 높이
     // 확장의 이유가 없다. 가로 재조판의 추정 폭으로 새 줄을 만든 뒤 그

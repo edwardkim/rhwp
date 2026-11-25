@@ -1,6 +1,6 @@
 //! 관계형 — [#9379] KAF 회의자료 부록: 글꼴에 어울리는 줄 높이 글 상자의 줄 피치, 원래 크기 전체를 자른 WMF 그림.
 //!
-//! 주석 갱신: 2026-11-25 09:40 KST(+09:00), 새 파일(base 갱신 재측정 반영).
+//! 주석 갱신: 2026-11-25 23:53 KST(+09:00), 한/글 2020 재저장·크기 보호 검증 반영.
 //!
 //! - 입력: `samples/issue9379/kaf_appendix.hwp` — 10k 공개 코퍼스의 KAF 총회 회의자료(docs#881,
 //!   HWP 5.0.2.2, SHA-256 `8014ae9b…f6c9e5`, 66쪽, 저장소에 넣지 않음)에서 rhwp `edit delete-paragraph`
@@ -38,6 +38,10 @@
 //!   그 밖의 쪽은 base 와 head 가 같다. base = devel `8a26c00869`, head = 이 수정(source `e6df26160c`).
 //!   devel `0fbee2c04e` 와 그 위로 rebase 한 수정(source `26518dbadc`)의 재측정 TSV 4개가 바이트 단위로 같다.
 //! - 36쪽은 내용에 맞춰 늘어난 인쇄 상자에 셋째 줄과 안 여백이 들어가는지 확인한다(#9395).
+//! - 관계형(#9395): 한/글 2020(11.0.0.9172) 재저장본의 개체 높이 7855 HU와 현재 요소 높이
+//!   8743 HU가 다르다. 저장 글줄과 안 여백이 현재 높이를 설명하는 종축 확대에서는 인쇄 클립이
+//!   현재 높이를 따른다. 크기를 보호한 대조본은 같은 글줄을 저장해도 요소 높이 7855 HU를 유지한다.
+//!   테스트는 해당 관계를 원본 모델에 재현해 클립과 저장 치수를 대조한다.
 //!   새 한컴 2020 Print에서 `such as`는 둘째 줄, `and Cadastre`는 셋째 줄에 있으며 위 검사로 보존한다.
 //! - 증거: `mydocs/pr/assets/issue_9379/`(전쪽 Native·fresh WASM·base TSV, 36·38·39·40·42·52쪽 review·overlay).
 #![cfg(not(target_arch = "wasm32"))]
@@ -46,6 +50,8 @@ use std::path::Path;
 
 use base64::Engine;
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
+use rhwp::model::shape::ShapeObject;
 use rhwp::paint::RenderProfile;
 use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
@@ -151,6 +157,65 @@ fn restored_font_line_height_keeps_the_last_line_inside_its_print_frame() {
         line_bottom < clip_bottom,
         "마지막 글줄 뒤에 아래 안 여백이 있어야 한다 ({line_bottom:.2} < {clip_bottom:.2})"
     );
+}
+
+fn terminology_textbox(core: &mut DocumentCore) -> &mut rhwp::model::shape::RectangleShape {
+    let Control::Shape(shape) = &mut core.document_mut().sections[1].paragraphs[46].controls[0]
+    else {
+        panic!("36쪽 용어 글 상자 도형");
+    };
+    let ShapeObject::Rectangle(rectangle) = shape.as_mut() else {
+        panic!("36쪽 용어 글 상자 사각형");
+    };
+    rectangle
+}
+
+#[test]
+fn resaved_textbox_uses_the_current_element_height_for_its_print_frame() {
+    let mut core = open();
+    let rectangle = terminology_textbox(&mut core);
+    let attr = &mut rectangle.drawing.shape_attr;
+    let stored_height = attr.original_height;
+    let text_box = rectangle.drawing.text_box.as_mut().unwrap();
+    text_box.font_line_heights_refreshed = false;
+    let last = text_box.paragraphs[0].line_segs.last().unwrap();
+    let content_height = last.vertical_pos
+        + last.line_height
+        + i32::from(text_box.margin_top + text_box.margin_bottom);
+    attr.current_height = u32::try_from(content_height).unwrap();
+    attr.render_sy = f64::from(attr.current_height) / f64::from(stored_height);
+    core.set_document(core.document().clone());
+    let tree = core.build_page_render_tree(35).unwrap();
+    let (textbox, first_line) =
+        find_textbox_with_line(&tree.root, "In each").expect("36쪽 용어 글 상자");
+    let clip = textbox.print_clip_bbox.expect("글 상자 인쇄 경계");
+    let last_line = textbox
+        .children
+        .iter()
+        .rev()
+        .find(|node| matches!(node.node_type, RenderNodeType::TextLine(_)))
+        .expect("마지막 글줄");
+    assert!(last_line.bbox.y + last_line.bbox.height < clip.y + clip.height);
+    assert!(first_line.bbox.y >= clip.y);
+    assert!((clip.height - f64::from(content_height) * 96.0 / 7200.0).abs() < 1e-6);
+}
+
+#[test]
+fn protected_textbox_keeps_its_declared_frame_when_lines_overflow() {
+    let mut core = open();
+    let rectangle = terminology_textbox(&mut core);
+    rectangle.common.size_protect = true;
+    let declared_height = f64::from(rectangle.common.height) * 96.0 / 7200.0;
+    core.set_document(core.document().clone());
+    let tree = core.build_page_render_tree(35).unwrap();
+    let (textbox, last_line) =
+        find_textbox_with_line(&tree.root, "and Cadastre").expect("크기 보호 상태의 셋째 줄");
+    let (second_line_box, _) =
+        find_textbox_with_line(&tree.root, "such as").expect("크기 보호 상태의 둘째 줄");
+    assert_eq!(second_line_box.id, textbox.id);
+    let clip = textbox.print_clip_bbox.expect("글 상자 인쇄 경계");
+    assert!((clip.height - declared_height).abs() < 1e-6);
+    assert!(last_line.bbox.y + last_line.bbox.height > clip.y + clip.height);
 }
 
 #[test]
