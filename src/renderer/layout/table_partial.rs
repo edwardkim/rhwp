@@ -5272,6 +5272,16 @@ impl LayoutEngine {
                                                 vis_h += ncs;
                                             }
                                         }
+                                        // The row cut assigns the child rows. Their visible
+                                        // frame also reserves the child's outer margins inside
+                                        // the physical fragment of the parent cell.
+                                        if self.nested_table_takes_no_flow(cell, cp_idx, nested_table)
+                                            && crate::renderer::float_placement::nested_table_is_overlay(nested_table)
+                                        {
+                                            let margins = i32::from(nested_table.outer_margin_top)
+                                                + i32::from(nested_table.outer_margin_bottom);
+                                            vis_h = vis_h.min((available_h - hwpunit_to_px(margins, self.dpi)).max(0.0));
+                                        }
                                         Some(NestedTableSplit {
                                             start_row,
                                             end_row,

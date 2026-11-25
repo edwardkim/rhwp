@@ -9045,6 +9045,20 @@ pub(crate) fn nested_table_is_page_overlay(table: &Table) -> bool {
         && table.common.vert_rel_to != VertRelTo::Para
 }
 
+/// A detached overlay contributes its frame to the owning cell independently of
+/// its host line. Stored hosts must identify that line in the original ladder.
+pub(crate) fn nested_table_takes_no_flow(
+    cell: &crate::model::table::Cell,
+    para_idx: usize,
+    table: &Table,
+) -> bool {
+    let host = &cell.paragraphs[para_idx];
+    (nested_table_is_overlay(table) || nested_table_is_page_overlay(table))
+        && (crate::renderer::para_has_no_stored_line_segs(host)
+            || (cell.paragraphs.len() == 1 && single_stored_overlay_anchor(host))
+            || stored_overlay_host_flow_line(host, cell.paragraphs.get(para_idx + 1)).is_some())
+}
+
 fn stored_empty_flow_lines(para: &Paragraph) -> Option<&[crate::model::paragraph::LineSeg]> {
     use crate::model::paragraph::LineSeg;
     if para_has_non_whitespace_text(para)

@@ -12707,17 +12707,7 @@ impl LayoutEngine {
         para_idx: usize,
         table: &crate::model::table::Table,
     ) -> bool {
-        let host = &cell.paragraphs[para_idx];
-        (self.nested_table_is_overlay(table)
-            || crate::renderer::float_placement::nested_table_is_page_overlay(table))
-            && (crate::renderer::para_has_no_stored_line_segs(host)
-                || (cell.paragraphs.len() == 1
-                    && crate::renderer::float_placement::single_stored_overlay_anchor(host))
-                || crate::renderer::float_placement::stored_overlay_host_flow_line(
-                    host,
-                    cell.paragraphs.get(para_idx + 1),
-                )
-                .is_some())
+        crate::renderer::float_placement::nested_table_takes_no_flow(cell, para_idx, table)
     }
 
     /// 셀 유닛 컷 `cut`(없으면 셀 전체)이 문단 `para_idx` 의 모든 유닛 — host 글줄과 중첩

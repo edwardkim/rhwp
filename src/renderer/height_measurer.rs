@@ -3305,6 +3305,58 @@ impl HeightMeasurer {
         }
     }
 
+    fn detached_nested_table_reach_with_storage<S: crate::storage::Storage>(
+        &self,
+        cell: &crate::model::table::Cell,
+        paragraph_heights: &[f64],
+        styles: &ResolvedStyleSet,
+        depth: usize,
+        storage: &S,
+    ) -> Result<f64, S::Error> {
+        let mut origin = 0.0;
+        let mut reach = 0.0_f64;
+        if depth < Self::MAX_NESTED_DEPTH {
+            for (index, para) in cell.paragraphs.iter().enumerate() {
+                for control in &para.controls {
+                    let Control::Table(child) = control else {
+                        continue;
+                    };
+                    if !crate::renderer::float_placement::nested_table_is_overlay(child)
+                        || !crate::renderer::float_placement::nested_table_takes_no_flow(
+                            cell, index, child,
+                        )
+                    {
+                        continue;
+                    }
+                    let stretch = self.render_normalization.nested_table_width_scale(child);
+                    let body = self.measure_table_impl_with_storage(
+                        child,
+                        0,
+                        0,
+                        styles,
+                        depth + 1,
+                        stretch,
+                        storage,
+                    )?;
+                    let margins =
+                        i32::from(child.outer_margin_top) + i32::from(child.outer_margin_bottom);
+                    if let Some(frame) =
+                        crate::renderer::float_placement::nested_overlay_outer_frame(
+                            child,
+                            origin,
+                            body.total_height + hwpunit_to_px(margins, self.dpi),
+                            self.dpi,
+                        )
+                    {
+                        reach = reach.max(frame.end);
+                    }
+                }
+                origin += paragraph_heights.get(index).copied().unwrap_or_default();
+            }
+        }
+        Ok(reach)
+    }
+
     pub(crate) fn unabsorbed_nested_tables_height_with_storage<S: crate::storage::Storage>(
         &self,
         paragraphs: &[Paragraph],
@@ -4741,7 +4793,7 @@ let body_height=match nested_body_heights
                         depth,
                         storage,
                     )?;
-                    if !self.session_edited
+                    let flow_end = if !self.session_edited
                         && (self.is_native_hwp5 || self.hwpx_stored_layout)
                         && !self.render_normalization.cell_frame_reflowed(table, cell)
                         && table_wrapper::unstored_tac_wrapper_shares_anchor_line(table, cell)
@@ -4749,7 +4801,15 @@ let body_height=match nested_body_heights
                         text_height.max(nested_sum + outgrown)
                     } else {
                         text_height + nested_sum + outgrown
-                    }
+                    };
+                    let overlay_end = self.detached_nested_table_reach_with_storage(
+                        cell,
+                        &para_flow_heights,
+                        styles,
+                        depth,
+                        storage,
+                    )?;
+                    flow_end.max(overlay_end)
                 } else if has_nested_table_in_cell {
                     // 마지막 문단의 마지막 LINE_SEG의 vpos + line_height
                     let last_seg_end: i32 = cell
