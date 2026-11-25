@@ -8118,6 +8118,7 @@ impl LayoutEngine {
             let source_controls = &para.controls;
             let frame_paragraph = composed.paragraph_with_frame_geometry(para);
             let para = frame_paragraph.as_ref();
+            let incoming_flow = para_y;
             if fragment_cut_units.is_none() {
                 if let Some(origins) = sequential_nested_layout
                     .as_ref()
@@ -8318,6 +8319,10 @@ impl LayoutEngine {
                     para.line_segs.first().map(|s| s.vertical_pos)
                 );
             }
+            let stored_before_visible_host =
+                (start_line == 0 && end_line == 1 && composed.lines.len() == 1)
+                    .then(|| self.stored_nested_before_visible_host(table, cell, cp_idx, styles))
+                    .flatten();
             if sequential_nested_layout
                 .as_ref()
                 .is_some_and(|layout| layout.table_between_text_lines)
@@ -8333,6 +8338,8 @@ impl LayoutEngine {
                     .map_or(0.0, |style| style.spacing_before);
                 para_y -= before;
                 snap_anchored_with_spacing_before = before > 0.0;
+            } else if let Some(frame) = stored_before_visible_host {
+                para_y = incoming_flow - frame.anchor_y;
             } else if let Some(flow) = &single_column_flow {
                 if start_line == 0 && !single_row_continuation && !single_row_fragment {
                     let spacing_before = styles
@@ -8740,9 +8747,7 @@ impl LayoutEngine {
                             )
                         })
                         .flatten();
-                    // 반환값(다음 문단 y)은 버린다 — 흐름 전진은 저장 vpos 계약 그대로.
-                    // 이 문단의 블록 표는 아래 `layout_table` 이 저장 좌표로 배치한다.
-                    let _ = self.layout_composed_paragraph_in_frame(
+                    let host_text_end = self.layout_composed_paragraph_in_frame(
                         tree,
                         cell_node,
                         composed_for_layout,
@@ -8767,6 +8772,9 @@ impl LayoutEngine {
                         stored_text_origin,
                         cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                     );
+                    if stored_before_visible_host.is_some() {
+                        para_y = host_text_end;
+                    }
                     has_preceding_text |= host_has_visible_text;
                 }
             }
@@ -10444,6 +10452,11 @@ impl LayoutEngine {
                                     && has_stored_para_anchor
                                     && !local_vpos_restart_seen)
                             })
+                            .or_else(|| {
+                                stored_before_visible_host.map(|frame| {
+                                    frame.with_cell_host_line_origin(para_y_before_compose)
+                                })
+                            })
                             .map(|frame| {
                                 frame.with_cell_column_anchor(
                                     nested_table,
@@ -10451,7 +10464,9 @@ impl LayoutEngine {
                                     hwpunit_to_px(
                                         nested_table.common.width.min(i32::MAX as u32) as i32,
                                         self.dpi,
-                                    ),
+                                    ) * stored_before_visible_host.map_or(1.0, |_| {
+                                        self.render_table_width_scale(nested_table)
+                                    }),
                                     self.dpi,
                                 )
                             });
@@ -11101,6 +11116,11 @@ impl LayoutEngine {
                             } else {
                                 &mut *cell_node
                             };
+                            let reflow_block_origin = reflow_block_origin.or_else(|| {
+                                stored_before_visible_host
+                                    .and(stored_float_frame)
+                                    .map(|frame| (frame.table_left, frame.table_top))
+                            });
                             let table_h = self.layout_table(
                                 tree,
                                 nested_parent,
@@ -11185,7 +11205,9 @@ impl LayoutEngine {
                             {
                                 stored_tac_host_outgrown = true;
                             }
-                            if let Some(advance) = (!unrestricted_reflow_block)
+                            let advances_table_flow =
+                                !unrestricted_reflow_block && stored_before_visible_host.is_none();
+                            if let Some(advance) = advances_table_flow
                                 .then(|| {
                                     self.nested_table_flow_advance(
                                         nested_table,
@@ -19207,6 +19229,9 @@ impl LayoutEngine {
                     .sum();
                 if nested_h > 0.0 {
                     let before_host_units = unit_cum;
+                    let stored_before_visible_host = (line_count == 1)
+                        .then(|| self.stored_nested_before_visible_host(table, cell, pi, styles))
+                        .flatten();
                     let stored_float_frame =
                         source_controls.iter().enumerate().find_map(|(ci, c)| {
                             let Control::Table(child) = c else {
@@ -19249,7 +19274,10 @@ impl LayoutEngine {
                         } else {
                             false
                         };
-                        if snaps_to_stored_frame(pi, li) {
+                        if let Some(frame) = stored_before_visible_host {
+                            lh -= frame.anchor_y;
+                            vpos_gap_before = true;
+                        } else if snaps_to_stored_frame(pi, li) {
                             if let Some(seg) = p.line_segs.get(li) {
                                 if !line_seg_is_synthetic(seg) {
                                     let target_top = stored_unit_start_px(
@@ -19334,7 +19362,9 @@ impl LayoutEngine {
                         ),
                         _ => None,
                     };
-                    let target_h = if let Some(frame) = stored_float_frame {
+                    let target_h = if stored_before_visible_host.is_some() {
+                        0.0
+                    } else if let Some(frame) = stored_float_frame {
                         // 위에서 이미 계상한 호스트 줄과 float의 겹치는 예약을 뺀다.
                         // 이 원장과 paint가 동일한 앵커 줄 및 바깥 여백을 소비한다.
                         frame.occupied_bottom - (unit_cum - before_host_units)
@@ -26622,6 +26652,43 @@ impl LayoutEngine {
             height = height.max(frame);
         }
         Some((cut, height))
+    }
+
+    pub(super) fn stored_nested_before_visible_host(
+        &self,
+        parent: &crate::model::table::Table,
+        cell: &crate::model::table::Cell,
+        para_index: usize,
+        styles: &ResolvedStyleSet,
+    ) -> Option<crate::renderer::float_placement::ParagraphFloatPlacement> {
+        let profile = self.profile.get();
+        if !profile.hwp5_stored_pagination_layout()
+            || profile.session_edited()
+            || self
+                .render_normalization
+                .borrow()
+                .cell_frame_reflowed(parent, cell)
+        {
+            return None;
+        }
+        let [Control::Table(child)] = cell.paragraphs.get(para_index)?.controls.as_slice() else {
+            return None;
+        };
+        if self
+            .render_normalization
+            .borrow()
+            .table_text_reflowed(child)
+        {
+            return None;
+        }
+        crate::renderer::float_placement::stored_visible_table_before_host_frame(
+            cell,
+            para_index,
+            child,
+            self.nested_table_body_height(child, styles),
+            styles,
+            self.dpi,
+        )
     }
 
     /// 저장 호스트 줄과 float가 공유하는 중첩 표 원점 및 점유 끝점.

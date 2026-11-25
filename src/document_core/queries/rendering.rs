@@ -6492,6 +6492,7 @@ impl DocumentCore {
                     self.dpi,
                     profile.hwpx_stored_layout() && !profile.hwp5_origin_hwpx(),
                     owned_hwp5_cells,
+                    profile.hwp5_stored_pagination_layout() && !profile.session_edited(),
                     storage,
                 )?
             } else {

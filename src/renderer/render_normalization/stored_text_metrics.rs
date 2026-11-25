@@ -10,6 +10,7 @@ use crate::renderer::{
     float_placement::is_para_topbottom_float,
     px_to_hwpunit,
     style_resolver::{detect_lang_category, ResolvedStyleSet},
+    table_row_frame::{clean_single_saved_line, stored_inline_tail_table_fits_line},
 };
 
 fn floating_text_host(paragraph: &Paragraph) -> bool {
@@ -249,6 +250,78 @@ fn owned_cell_with_current_metrics<S: crate::storage::Storage>(
     Ok(Some(result))
 }
 
+/// 개체가 줄간격 계산에 참여하지 않는 표 호스트의 오래된 저장 간격을 확인한다.
+/// 같은 문단 모양의 다음 글줄이 현재 글자 크기와 간격을 입증해야 한다.
+/// 셀의 마지막 문단까지 같은 저장 축으로 닫힐 때만 그 원점을 함께 보정한다.
+fn stale_inline_table_tail_spacing(
+    cell: &Cell,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> Option<(i32, i32)> {
+    let [.., host, next] = cell.paragraphs.as_slice() else {
+        return None;
+    };
+    let [Control::Table(table)] = host.controls.as_slice() else {
+        return None;
+    };
+    let host_line = clean_single_saved_line(host)?;
+    let next_line = clean_single_saved_line(next)?;
+    let host_bottom = host_line.vertical_pos.checked_add(host_line.line_height)?;
+    if cell.dirty_flag
+        || host_line.line_spacing >= 0
+        || host_line.line_spacing < -i32::from(table.outer_margin_bottom)
+        || table.common.affect_line_spacing
+        || host.raw_break_type != 0
+        || next.raw_break_type != 0
+        || !next.controls.is_empty()
+        || host.para_shape_id != next.para_shape_id
+        || host_line.column_start != next_line.column_start
+        || host_line.segment_width != next_line.segment_width
+        || host_bottom.checked_add(host_line.line_spacing)? != next_line.vertical_pos
+        || !stored_inline_tail_table_fits_line(host)
+    {
+        return None;
+    }
+    let style = styles.para_styles.get(host.para_shape_id as usize)?;
+    if style.line_spacing_type != LineSpacingType::Percent
+        || !style.line_spacing.is_finite()
+        || style.line_spacing < 100.0
+        || style.spacing_before != 0.0
+        || style.spacing_after != 0.0
+        || style.page_break_before
+        || style.head_type != HeadType::None
+    {
+        return None;
+    }
+    let font_size = crate::renderer::composer::paragraph_end_font_size_px(host, styles);
+    if !font_size.is_finite() || font_size <= 0.0 {
+        return None;
+    }
+    let dpi = styles.resolved_dpi.unwrap_or(dpi);
+    let metrics = crate::renderer::composer::frame_metrics_for_line(
+        font_size,
+        font_size,
+        style.line_spacing_type,
+        style.line_spacing,
+        dpi,
+    );
+    // 비율 간격은 4 HWPUNIT 단위로 저장된다. 한컴 재저장에서 확인한
+    // 정확한 중간값은 양쪽 표기가 가능하므로 현재 후속 줄의 실제 값을 쓴다.
+    let stored_spacing = next_line.line_spacing;
+    let nominal_spacing = f64::from(metrics.line_height) * (style.line_spacing - 100.0) / 100.0;
+    let matches_percent_spacing = stored_spacing == metrics.line_spacing
+        || (stored_spacing % 4 == 0 && (f64::from(stored_spacing) - nominal_spacing).abs() == 2.0);
+    if nominal_height(next, styles, dpi, false)? != metrics.line_height
+        || next_line.line_height != metrics.line_height
+        || next_line.text_height != metrics.text_height
+        || next_line.baseline_distance != metrics.baseline_distance
+        || !matches_percent_spacing
+    {
+        return None;
+    }
+    Some((stored_spacing, host_bottom.checked_add(stored_spacing)?))
+}
+
 fn project(
     paragraph: &Paragraph,
     cell: bool,
@@ -262,6 +335,7 @@ fn project(
         MetricScope::Render {
             hwpx_cells,
             owned_hwp5_cells: false,
+            hwp5_inline_table_spacing: false,
         },
         styles,
         dpi,
@@ -276,6 +350,7 @@ enum MetricScope {
     Render {
         hwpx_cells: bool,
         owned_hwp5_cells: bool,
+        hwp5_inline_table_spacing: bool,
     },
     ManagedCellsForExport,
 }
@@ -344,6 +419,32 @@ fn project_with_storage<S: crate::storage::Storage>(
                     table.cells[cell_index].paragraphs[paragraph_index] = child;
                 }
             }
+            if matches!(
+                scope,
+                MetricScope::Render {
+                    hwp5_inline_table_spacing: true,
+                    ..
+                }
+            ) {
+                if let Some((spacing, next_top)) =
+                    stale_inline_table_tail_spacing(cell, styles, dpi)
+                {
+                    if projected.is_none() {
+                        projected = Some(storage.clone_paragraph(paragraph)?);
+                    }
+                    let Control::Table(table) =
+                        &mut projected.as_mut().unwrap().controls[control_index]
+                    else {
+                        unreachable!()
+                    };
+                    let [.., host, next] = table.cells[cell_index].paragraphs.as_mut_slice() else {
+                        unreachable!()
+                    };
+                    host.line_segs[0].line_spacing = spacing;
+                    next.line_segs[0].vertical_pos = next_top;
+                    next.source_line_seg_vertical_pos = None;
+                }
+            }
         }
     }
     Ok(projected)
@@ -361,6 +462,7 @@ pub(crate) fn normalize(
         dpi,
         hwpx_cells,
         false,
+        false,
         &crate::storage::Unbounded,
     ) {
         Ok(value) => value,
@@ -373,6 +475,7 @@ pub(crate) fn normalize_with_storage<S: crate::storage::Storage>(
     dpi: f64,
     hwpx_cells: bool,
     owned_hwp5_cells: bool,
+    hwp5_inline_table_spacing: bool,
     storage: &S,
 ) -> Result<Option<Vec<Paragraph>>, S::Error> {
     normalize_in_scope(
@@ -382,6 +485,7 @@ pub(crate) fn normalize_with_storage<S: crate::storage::Storage>(
         MetricScope::Render {
             hwpx_cells,
             owned_hwp5_cells,
+            hwp5_inline_table_spacing,
         },
         storage,
     )

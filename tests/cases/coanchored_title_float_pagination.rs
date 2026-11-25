@@ -1,6 +1,10 @@
-//! 검사 유형: 관계형·고정형(독립 Print의 전쪽 쪽수).
-//! 주석 갱신: 2026-11-13T22:39:25+09:00.
-//! 직전 파일 변경: 62742884777cd8a07b431ead5bb4338520f590f7 2026-11-13T21:04:19+09:00.
+//! 검사 유형: 관계형·고정형(독립 Print의 전쪽 쪽수와 표 하단부터 글줄까지의 간격).
+//! 주석 갱신: 2026-11-26T03:19:12+0900.
+//! 직전 파일 변경: 29497a234161a242610c12649d939948cb578837 2026-11-26 02:32:29+09:00.
+//! 2026-11-26, 96 DPI·PDFium·색상 경계 보정 전 2px raw로 원본과 한컴 재저장본 두 종을 검사했다.
+//! 원본·160% 재저장본·90% 재저장본 모두 2쪽이며, 전쪽 최저는 Native·fresh WASM 각각 100.00%다.
+//! 표 하단 여백과 간격의 근거는 한컴 2020 11.0.0.9172 재저장본의 388 HU 및 −64 HU다.
+//! TSV·대조 이미지: mydocs/pr/assets/puckqook-9042-integration/. 원본·영수증: tests/fixtures/coanchored_inline_tail/.
 //! 측정: 2026-11-13, 96 DPI·PDFium·색상 경계 보정 전 2px raw 실루엣, Native Skia/fresh 최적화 WASM Canvas.
 //! 원 Mac Print 사례 전 2쪽 최저: Native 100.00% / WASM 100.00%.
 //! 무변경 저장·빈 머리말·빈 꼬리말 각각 전 2쪽 최저: Native 100.00% / WASM 100.00%.
@@ -17,6 +21,7 @@ use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 
 const SOURCE: &[u8] =
     include_bytes!("../../mydocs/pr/assets/coanchored-table-pagination/float-pagination.hwp");
+const BODY_TEXT: &str = "BodyEnd of bodyBody end";
 
 fn top_level_tables<'a>(node: &'a RenderNode, tables: &mut Vec<&'a RenderNode>) {
     if matches!(&node.node_type, RenderNodeType::Table(_)) {
@@ -42,7 +47,74 @@ fn coanchored_title_and_body_stay_on_the_first_page() {
     assert_coanchored_tables(SOURCE);
 }
 
+#[test]
+fn coanchored_inline_tail_negative_spacing_keeps_body_on_anchor_page() {
+    let inputs: [(&[u8], i32, i32); 3] = [
+        (
+            include_bytes!("../fixtures/coanchored_inline_tail/negative-spacing.hwp"),
+            -56,
+            388,
+        ),
+        (
+            include_bytes!(
+                "../fixtures/coanchored_inline_tail/negative-spacing-hancom-resaved.hwp"
+            ),
+            388,
+            388,
+        ),
+        (
+            include_bytes!(
+                "../fixtures/coanchored_inline_tail/negative-spacing-90-percent-hancom-resaved.hwp"
+            ),
+            -64,
+            -64,
+        ),
+    ];
+    for (bytes, stored_spacing, expected_spacing) in inputs {
+        let core =
+            assert_coanchored_table_placement(bytes, "BodyEnd of bodyBody endTail line", |body| {
+                let tail_cell = body
+                    .children
+                    .iter()
+                    .rfind(|node| matches!(node.node_type, RenderNodeType::TableCell(_)))
+                    .unwrap();
+                let mut nested = Vec::new();
+                top_level_tables(tail_cell, &mut nested);
+                let [nested] = nested.as_slice() else {
+                    panic!("Expected one nested table in the last cell");
+                };
+                let tail_line = tail_cell.children.last().unwrap();
+                assert!(matches!(tail_line.node_type, RenderNodeType::TextLine(_)));
+                let mut label = String::new();
+                text(tail_line, &mut label);
+                assert_eq!(label, "Tail line");
+
+                let clearance = tail_line.bbox.y - (nested.bbox.y + nested.bbox.height);
+                // 아래 바깥 여백 283 HU와 한컴 저장본의 글줄 간격을 합친다.
+                let expected = rhwp::renderer::hwpunit_to_px(283 + expected_spacing, 96.0);
+                assert!(
+                    (clearance - expected).abs() <= 2.0,
+                    "expected clearance {expected:.2}px, got {clearance:.2}px"
+                );
+                contents_stay_in_cells(tail_cell, None);
+            });
+        let source_tail = source_body(core.document()).cells.last().unwrap();
+        assert_eq!(
+            source_tail.paragraphs[0].line_segs[0].line_spacing,
+            stored_spacing
+        );
+    }
+}
+
 fn assert_coanchored_tables(bytes: &[u8]) {
+    assert_coanchored_table_placement(bytes, BODY_TEXT, |body| contents_stay_in_cells(body, None));
+}
+
+fn assert_coanchored_table_placement(
+    bytes: &[u8],
+    expected_body: &str,
+    check_body: impl FnOnce(&RenderNode),
+) -> DocumentCore {
     let core = DocumentCore::from_bytes(bytes).unwrap();
     assert_eq!(core.page_count(), 2);
 
@@ -59,16 +131,15 @@ fn assert_coanchored_tables(bytes: &[u8]) {
         panic!("Expected only the following table on page 2");
     };
     assert!(title.bbox.y + title.bbox.height <= body.bbox.y);
-    for (table, expected) in [
-        (title, "Title"),
-        (body, "BodyEnd of bodyBody end"),
-        (next, "Next page"),
-    ] {
+    for (table, expected) in [(title, "Title"), (body, expected_body), (next, "Next page")] {
         let mut actual = String::new();
         text(table, &mut actual);
         assert_eq!(actual, expected);
-        contents_stay_in_cells(table, None);
     }
+    contents_stay_in_cells(title, None);
+    check_body(body);
+    contents_stay_in_cells(next, None);
+    core
 }
 
 fn source_body(document: &rhwp::model::document::Document) -> &Table {

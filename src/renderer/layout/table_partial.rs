@@ -3199,10 +3199,18 @@ impl LayoutEngine {
 
                 let stored_host_flow =
                     self.stored_nested_host_physical_flow(cell, table, styles, cp_idx, cut_units);
+                let stored_before_visible_host = (start_line == 0
+                    && end_line == 1
+                    && composed.lines.len() == 1)
+                    .then(|| self.stored_nested_before_visible_host(table, cell, cp_idx, styles))
+                    .flatten();
                 let mut table_host_has_stored_origin = false;
                 let mut single_column_snap_spacing_before = false;
                 let mut stored_linear_spacing_before = None;
-                if stored_host_flow.is_some() {
+                if let Some(frame) = stored_before_visible_host {
+                    para_y -= frame.anchor_y;
+                    table_host_has_stored_origin = true;
+                } else if stored_host_flow.is_some() {
                     // 종료 줄의 저장 원점은 표의 시작점이 아니다. 앞 유닛에서
                     // 이어지는 현재 흐름 원점을 보존하고 같은 소유 구간을 소비한다.
                 } else if let Some(origin) = single_column_flow
@@ -5004,6 +5012,11 @@ impl LayoutEngine {
                                             })
                                         })
                                         .flatten())
+                                        .or_else(|| {
+                                            stored_before_visible_host.map(|frame| {
+                                                frame.with_cell_host_line_origin(para_y_before_lines)
+                                            })
+                                        })
                                         .map(|frame| {
                                             frame.with_cell_column_anchor(
                                                 nested_table,
@@ -5920,13 +5933,15 @@ impl LayoutEngine {
                                                 )
                                                 ..flow_end,
                                         );
-                                    } else if !self.nested_table_takes_no_flow(
-                                        cell,
-                                        cp_idx,
-                                        nested_table,
-                                    ) {
-                                        // 저장 줄 없는 문단의 글 앞/뒤 표는 흐름을 전진시키지 않는다
-                                        // (온전한 칸의 `nested_table_flow_advance` 와 같다).
+                                    } else if stored_before_visible_host.is_none()
+                                        && !self.nested_table_takes_no_flow(
+                                            cell,
+                                            cp_idx,
+                                            nested_table,
+                                        )
+                                    {
+                                        // 저장 호스트가 이미 예약한 표와 흐름 밖의 겹침 표는
+                                        // 후속 문단의 원점을 한 번 더 전진시키지 않는다.
                                         para_y = flow_end;
                                     }
                                     has_preceding_text = true;
