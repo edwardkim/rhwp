@@ -2,7 +2,9 @@
 
 ## 최종 판정
 
-**새 MCP 인쇄본 기준으로 원 PR 대비 하락은 두 경로 모두 0쪽이다.** 통합 후보에서 98% 미만인 쪽은 24·31·36·38쪽이며 제출을 보류한다.
+메인터너 보정 뒤 새 MCP 인쇄본 기준 24·36쪽은 Native·fresh WASM 모두 **100.00%**, 38쪽은
+**100.00%·99.93%**다. 31쪽은 새 MCP PDF의 글꼴 자원 오류를 재현했다.
+[최종 후보의 두 Print 기준과 증적](../assets/planet6897_20261125/kaf-print-repair/README.md)
 
 [원 PR #9400](https://github.com/edwardkim/rhwp/pull/9400) · [이슈 #9379](https://github.com/edwardkim/rhwp/issues/9379) · [글 상자 높이 후속 이슈 #9395](https://github.com/edwardkim/rhwp/issues/9395)
 
@@ -12,7 +14,7 @@ KAF 회의자료의 33~44쪽 표를 제거한 54쪽 파생본에 두 계약을 �
 
 첨부 PDF는 PDF 1.4, A4 가로 54쪽이다. `Creator`에 표시된 `Hwp 2018 11.0.0.1623`은 저장소에서 한컴 2020으로 실측한 빌드다. 이전 MCP 2020 Print PDF의 Creator·Producer도 각각 `Hwp 2018 11.0.0.1623`과 `Hancom PDF 1.3.0.404`다. 원 PR의 동일 파생본에 대한 Hancom PDF Print 기록과 대조해 첨부 PDF를 재사용했다. 66쪽 전체 원본의 MCP 재출력은 PDF 검증 단계에서 실패했다. [제품 버전 실측](../../manual/verification/hangul_version_oracle.md#51-설치된-버전-확인) · [MCP 대조 기록](pr_9317_review.md#입력과-독립-인쇄-기준)
 
-갱신된 MCP에서 같은 원본을 한컴 2020으로 다시 출력했다. client 0.10.0에서 `start --engine 2020 --target pdf --timeout-seconds 1800`을 호출하고, `status`가 성공한 뒤 같은 job을 `download`로 받았다. `status.result`와 `download.server`의 `pdf_output_mode`는 `hancom2020_pdf_driver_one_up`, `pdf_print_method`는 `0`이다. MCP는 PDF 글꼴 이름의 공백 문법을 보정하고 전체 54쪽을 확인했다. 새 한컴 빌드 `11.0.0.9172`의 인쇄본을 원 PR 인쇄본과 96 DPI로 비교하면 표시값이 100.00% 미만인 쪽이 23쪽이다. 기존 인쇄본으로 최초 제출 수치를 재현했다. 최종 제출 판정에는 이번 MCP 인쇄본을 원 PR과 통합 후보 양쪽의 전쪽에 적용했다. [두 인쇄본 대조 및 MCP 영수증](../assets/planet6897_20261125/mcp-print-reissue.json) · [MCP 기준 PDF 인쇄 계약](../../manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)
+갱신된 MCP에서 같은 원본을 한컴 2020으로 다시 출력했다. client 0.10.0에서 `start --engine 2020 --target pdf --timeout-seconds 1800`을 호출하고, `status`가 성공한 뒤 같은 job을 `download`로 받았다. `status.result`와 `download.server`의 `pdf_output_mode`는 `hancom2020_pdf_driver_one_up`, `pdf_print_method`는 `0`이다. MCP는 PDF 글꼴 이름의 공백 문법을 보정하고 전체 54쪽을 확인했다. 새 한컴 빌드 `11.0.0.9172`의 인쇄본을 원 PR 인쇄본과 96 DPI로 비교하면 표시값이 100.00% 미만인 쪽이 23쪽이다. 기존 인쇄본으로 최초 제출 수치를 재현했다. 벤치마크의 인쇄 조건을 통일하기 위해 원 PR과 통합 후보 양쪽을 이번 MCP 인쇄본에 전쪽 대조했다. [두 인쇄본 대조 및 MCP 영수증](../assets/planet6897_20261125/mcp-print-reissue.json) · [MCP 기준 PDF 인쇄 계약](../../manual/mcp_hwp2024Convert_usage.md#기준-pdf-인쇄-계약)
 
 ## 글 상자의 셋째 줄 잘림
 
@@ -33,7 +35,7 @@ KAF 회의자료의 33~44쪽 표를 제거한 54쪽 파생본에 두 계약을 �
 
 36쪽은 같은 Mac의 이전 후보 대비 fresh WASM 91.59→95.03%로 올랐다. 휴먼명조 TrueType을 공급한 Native·WASM 전체 54쪽 비교에서 원 PR 제출값보다 낮은 값이 남은 곳은 Native 38쪽(−0.01%p), WASM 21쪽(−0.11%p), 38·39쪽(각 −0.02%p)이다. WASM 38·39쪽 PNG는 리베이스 전 후보와 같다. 전체 Canvas 내보내기에서 윤곽 글꼴 세션 한도에 닿아, 같은 입력·글꼴·WASM으로 6개 세션에서 직접 출력했다. 54쪽의 빠진 쪽·중복을 검사한 후 Visual Sweep으로 전쪽 TSV를 계산했다. [페이지별 결과](../assets/planet6897_20261125/kaf-font-recheck.json)
 
-## 새 MCP 인쇄본으로 전쪽 대조
+## 보정 전 새 MCP 인쇄본으로 전쪽 대조
 
 한컴 2020 `11.0.0.9172`에서 다시 인쇄한 [kaf_appendix-2020.pdf](../../../pdf/issue9379/mcp-11.0.0.9172/kaf_appendix-2020.pdf)로 원 PR과 통합 후보의 54쪽을 각각 대조했다. 같은 96 DPI·compat 2022에서 원 PR 대비 Native 2쪽, fresh WASM 2쪽이 상승했다. 두 경로에 하락은 0쪽이다.
 
@@ -50,6 +52,25 @@ KAF 회의자료의 33~44쪽 표를 제거한 54쪽 파생본에 두 계약을 �
 - fresh WASM 38쪽 [review](../assets/planet6897_20261125/mcp-print-comparison/kaf-appendix/wasm/review_038.png) · [overlay](../assets/planet6897_20261125/mcp-print-comparison/kaf-appendix/wasm/overlay_038.png)
 
 [기준 PDF 해시와 집계](../assets/planet6897_20261125/mcp-print-comparison/results.json)
+
+## 메인터너 보정 검증
+
+36쪽에서는 늘어난 독립 글상자의 현재 폭으로 줄 소속을 다시 계산하고 보존된 세로 피치를 유지한다.
+둘째 줄의 `such as`와 셋째 줄의 `and Cadastre` 및 테두리 아래 본문이 새 인쇄본과 같은 위치에 있다.
+38쪽의 순수 단일 DIB는 원점에서 논리 창의 마지막 픽셀까지 포함하므로 전체 인쇄 틀로 재생한다.
+부분 자르기와 벡터·다중 그림이 합성된 WMF는 기존 자르기 경계를 사용한다. 테스트는 24쪽의 글줄
+소속과 38쪽의 안쪽 DIB 틀이 원본 바깥 인쇄 틀과 같은 관계를 검사한다.
+
+| 쪽 | 새 2020 Print Native | 새 2020 Print fresh WASM | 대조 범위 |
+| --- | --- | --- | --- |
+| 24 | 97.05→100.00% | 97.10→100.00% | 축소된 인라인 글상자의 4개 줄 |
+| 36 | 94.65→100.00% | 94.39→100.00% | 셋째 줄과 상자 안 여백 |
+| 38 | 96.01→100.00% | 96.01→99.93% | 단일 DIB 크기와 클립 |
+
+39쪽의 그림 폭은 신규 인쇄본 410.19pt, 기존 인쇄본 408.482pt로 빌드별 차이가 있다.
+후보 Native는 각각 100.00%·98.23%이며 기존 인쇄본의 보정 전 점수는 100.00%였다.
+31쪽의 신규 Print 비교와 유효한 기존 Print의 전쪽 비교를 함께 남겼다.
+[해시 및 24·36·38쪽 review·overlay](../assets/planet6897_20261125/kaf-print-repair/README.md)
 
 ## 최초 제출 PDF로 원 PR 수치 재현
 
