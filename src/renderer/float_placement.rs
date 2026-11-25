@@ -10026,10 +10026,13 @@ pub(crate) fn para_relative_float_table_host(para: &Paragraph) -> bool {
 /// 문단 상단을 흐름 위치에서 끌어올릴 거리(px).
 ///
 /// 한/글은 그 문단의 저장 첫 줄을 조각 점유 끝에 두고(문단 위 간격은 조각 띠와 겹친다),
-/// 문단 기준 개체의 세로 오프셋은 문단 상단 = 저장 첫 줄 − 문단 위 간격에서 잰다.
-/// 저장 첫 줄이 현재 흐름 위치(단 위끝 기준)와 같을 때만 그 등식이 증명된다
-/// ([#8735] 2차 중간보고서 pi826: 조각 끝 = 저장 줄 17616, 한/글 표 윗변 =
-/// 17616 − 1000 + 오프셋 1089 + 바깥 위 여백 283, pi1826: 13048 − 1000 + 1668 + 283).
+/// 문단 기준 개체의 세로 오프셋은 문단 상단 = 저장 첫 줄 − 문단 위 간격에서 잰다. 다만
+/// 자리차지 표는 앞 조각 띠와 겹치지 않으므로 표 윗변은 저장 첫 줄보다 위로 가지 않는다.
+/// 그래서 끌어올림은 `min(문단 위 간격, 세로 오프셋)` 이다. 저장 첫 줄이 현재 흐름
+/// 위치(단 위끝 기준)와 같을 때만 그 등식이 증명된다([#8735] 2차 중간보고서 pi826: 조각 끝 =
+/// 저장 줄 17616, 한/글 표 윗변 = 17616 − 1000 + 오프셋 1089 + 바깥 위 여백 283,
+/// pi1826: 13048 − 1000 + 1668 + 283; 반례 19087555 pi3: 앞 간격 500 · 오프셋 0 이라 표
+/// 윗변 = 저장 줄 + 141).
 pub(crate) fn split_successor_float_host_origin_lift(
     para: &Paragraph,
     flow_from_column_top: f64,
@@ -10037,14 +10040,22 @@ pub(crate) fn split_successor_float_host_origin_lift(
     dpi: f64,
 ) -> Option<f64> {
     let line = para.line_segs.first()?;
+    let offset = para.controls.iter().find_map(|control| match control {
+        Control::Table(table) if is_para_topbottom_float(&table.common) => Some(hwpunit_to_px(
+            signed_hwpunit(table.common.vertical_offset),
+            dpi,
+        )),
+        _ => None,
+    })?;
+    let lift = spacing_before.min(offset);
     (para_relative_float_table_host(para)
-        && spacing_before > 0.0
+        && lift > 0.0
         && line.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
         && !para.stored_text_partition_is_dirty()
         && !para.cell_format_vpos_dirty
         && (crate::renderer::px_to_hwpunit(flow_from_column_top, dpi) - line.vertical_pos).abs()
             <= 1)
-        .then_some(spacing_before)
+        .then_some(lift)
 }
 
 /// 문단 기준 자리차지 표의 마지막 조각 뒤 흐름이 소유하는 바깥 아래 여백.
