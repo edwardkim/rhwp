@@ -254,6 +254,19 @@ impl LayoutEngine {
                                     styles,
                                     self.dpi,
                                 )
+                                .or_else(|| {
+                                    // [#9396] 마지막 줄 앵커 그림이 다음 문단을 민 저장 띠는
+                                    // 앵커 줄 자리에서 오프셋을 잰다(typeset 쪽 소속과 같은 증거).
+                                    crate::renderer::layout::stored_band_after_last_anchor_line_offset_hu(
+                                        para,
+                                        paragraphs.get(para_index + 1),
+                                        &pic.common,
+                                        i64::from(pic.common.margin.top)
+                                            + i64::from(pic.common.margin.bottom),
+                                        control_index,
+                                    )
+                                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+                                })
                                 .unwrap_or(0.0);
                             let saved_y_offset = y_offset;
                             // [Task #1079] 파일 vpos 가 이미 그림 공간을 반영(그림 para 줄 앞
