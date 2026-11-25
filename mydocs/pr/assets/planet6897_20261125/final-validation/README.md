@@ -11,7 +11,14 @@ Native에 전달한 WASM 전용 연결 그림 옵션은 명령에서 거절됐�
 제외하고, Native에서 원본 경로의 연결 그림을 읽어 완료한 전쪽 결과를 사용했다. 시행령 Native는
 휴먼고딕 TTF를 포함한 74쪽 결과를 사용했다. [시행령 공급 확인](../protected-native-mac/decree-ttf/README.md)
 
-중첩 표의 재인쇄와 시행령의 재인쇄도 따로 대조했다. 기존 정본 경로와 PDF SHA-256은
-문서별 집계에 있고, 보호값과 인쇄본 재현 조건의 변경은 정본의 갱신 영수증에 남겼다.
+중첩 표를 한컴 2020 `11.0.0.9172`에서 17쪽으로 다시 인쇄했다. 최종 검증과 같은 출력 PNG를
+새 인쇄본에 대조한 최저는 16쪽의 Native 98.60%·fresh WASM 98.61%다. 기존 보호 PDF의
+같은 쪽은 각각 99.81%·100.00%다. 새 인쇄본의 16쪽에서 Type0 글꼴이 Type1 하위 개체를
+참조하는 오류가 확인되어, 보호 판정에는 기존 인쇄본을 적용했다.
+[중첩 표 인쇄 영수증과 비교](nested-reprint.json) ·
+[Native 17쪽 TSV](nested-reprint-native.tsv) · [fresh WASM 17쪽 TSV](nested-reprint-wasm.tsv)
+
+기존 정본 경로와 PDF SHA-256은 문서별 집계에 있고, 보호값과 인쇄본 재현 조건의 변경은
+정본의 갱신 영수증에 남겼다.
 [보호 자료 갱신 이력](../../visual-protected-baseline/README.md) ·
 [KAF 최종 전쪽·Studio 실측](../kaf-print-repair/README.md)
