@@ -1,13 +1,13 @@
 {
   "previous_table_sha256": "1f7ac7a52290acef829c03e15f2dd27e23c6a3450415266d4cc4067b70dfdcc8",
   "table_sha256": "56c0b80121c204e4f1c2f025b7a6720661773deb9aadbfa9fe8b4229601f51c1",
-  "evidence_commit": "7b10442580c89ed8b78d3b8f017309274347e25c",
-  "code_commit": "b12b85ad6ec037fff9ce41ac6fc34b8865d93920",
+  "evidence_commit": "eaa28252253313213839536fc4e40b81358424e4",
+  "code_commit": "8d1403eb14bbefb35690a50b6734b0c2ef9ba5cb",
   "producers": {
-    "native": "c37008abb47141d3456aca243024e1c993eed8d8e732567433b9e2b493355584",
-    "wasm": "2d3185071e75a28c4ab02b8f83fd09528d424fd6f7260f967f576bda22424f58"
+    "native": "d8719876ad6deec808e45c9338907d3508877721cca99563209e52c534a75013",
+    "wasm": "42769ea984419086d9b5ef779cf1fa6e5b1d2ff6734015c90145271bd114c0d2"
   },
-  "accepted_at": "2026-11-25T21:27:34.906752+09:00",
+  "accepted_at": "2026-11-26T02:05:08+09:00",
   "conditions": 46,
   "compared_rows": 4046,
   "declines": [],

@@ -198,4 +198,4 @@ Hancom PDF Print 기준을 사용하며 웹한글기안기 출력으로 대체�
 
 ## 2026-11-25 화학물질 표시 기준의 브라우저 출력
 
-보호 문서 23종의 Native·fresh WASM 4,046행에서 하락과 누락이 없었다. 화학물질 표시 기준의 브라우저 26쪽을 99.99%에서 100.00%로 상향했다. [전쪽 대조](../hyunmyungjanelee-20261125/maintainer/protected/base-candidate.tsv) · [갱신 영수증](updates/pr9352-9384-9407-20261125.json)
+보호 문서 23종의 Native·fresh WASM 4,046행에서 하락과 누락이 없었다. 화학물질 표시 기준의 브라우저 26쪽을 99.99%에서 100.00%로 상향했다. [최신 기준과 후보의 전쪽 대조](../hyunmyungjanelee-20261125/maintainer/current-develop/protection-pages.tsv) · [갱신 영수증](updates/pr9352-9384-9407-20261125.json)
